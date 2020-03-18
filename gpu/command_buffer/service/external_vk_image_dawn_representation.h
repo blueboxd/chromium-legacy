@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_DAWN_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_DAWN_REPRESENTATION_H_
 
+#include "base/files/scoped_file.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 
@@ -17,7 +18,7 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
                                     MemoryTypeTracker* tracker,
                                     WGPUDevice device,
                                     WGPUTextureFormat dawn_format,
-                                    int memory_fd);
+                                    base::ScopedFD memory_fd);
   ~ExternalVkImageDawnRepresentation() override;
 
   WGPUTexture BeginAccess(WGPUTextureUsage usage) override;
@@ -26,7 +27,7 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
  private:
   const WGPUDevice device_;
   const WGPUTextureFormat wgpu_format_;
-  const int memory_fd_;
+  base::ScopedFD memory_fd_;
 
   WGPUTexture texture_ = nullptr;
 

@@ -13,9 +13,7 @@ namespace updater {
 class UpdateService;
 }
 
-@interface CRUUpdateCheckXPCServiceDelegate : NSObject <NSXPCListenerDelegate> {
-  std::unique_ptr<updater::UpdateService> _service;
-}
+@interface CRUUpdateCheckXPCServiceDelegate : NSObject <NSXPCListenerDelegate>
 
 // Designated initializer.
 - (instancetype)initWithUpdateService:

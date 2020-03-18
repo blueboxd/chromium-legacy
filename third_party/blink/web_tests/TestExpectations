@@ -5266,7 +5266,7 @@ crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smoot
 crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # User Activation
-crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure ]
+crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tentative.html [ Failure ]
 crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-crossorigin-parent-manual.sub.html [ Timeout ]
 crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-sameorigin-parent-manual.html [ Timeout ]
 
@@ -5998,8 +5998,6 @@ crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-
 crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope-in-files.js [ Pass Crash ]
 crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-main-thread.https.html [ Pass Failure ]
 
-crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
-
 crbug.com/1015130 external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 crbug.com/1015130 virtual/scalefactor200/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 crbug.com/1015130 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
@@ -6515,12 +6513,6 @@ crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-break
 crbug.com/1047760 [ Win ] http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]
 
 crbug.com/1049454 external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Pass Timeout ]
-
-# Crashes with DCHECK enabled, but not on normal Release builds.
-crbug.com/944449 external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
-crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
-crbug.com/944449 external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
-crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
 
 # Sheriff 2020-02-10
 crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]

@@ -2608,7 +2608,8 @@ void Document::UpdateStyleAndLayoutTree() {
     ClearFocusedElementSoon();
   GetLayoutView()->ClearHitTestCache();
 
-  DCHECK(!document_animations_->NeedsAnimationTimingUpdate());
+  DCHECK(
+      !document_animations_->NeedsAnimationTimingUpdate(/*post_layout=*/true));
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_element_count;

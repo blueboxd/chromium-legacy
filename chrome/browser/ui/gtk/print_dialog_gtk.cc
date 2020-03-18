@@ -18,13 +18,14 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/printing_gtk_util.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -34,7 +35,6 @@
 #include "ui/events/platform/x11/x11_event_source.h"  // nogncheck
 #endif
 
-using content::BrowserThread;
 using printing::PageRanges;
 using printing::PrintSettings;
 
@@ -173,15 +173,16 @@ class GtkPrinterList {
 // static
 printing::PrintDialogGtkInterface* PrintDialogGtk::CreatePrintDialog(
     PrintingContextLinux* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return new PrintDialogGtk(context);
 }
 
 PrintDialogGtk::PrintDialogGtk(PrintingContextLinux* context)
-    : context_(context) {}
+    : base::RefCountedDeleteOnSequence<PrintDialogGtk>(
+          base::SequencedTaskRunnerHandle::Get()),
+      context_(context) {}
 
 PrintDialogGtk::~PrintDialogGtk() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (dialog_) {
     aura::Window* parent = gtk::GetAuraTransientParent(dialog_);
@@ -366,7 +367,7 @@ void PrintDialogGtk::ShowDialog(
 void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,
                                    const base::string16& document_name) {
   // This runs on the print worker thread, does not block the UI thread.
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // The document printing tasks can outlive the PrintingContext that created
   // this dialog.
@@ -392,8 +393,8 @@ void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,
   }
 
   // No errors, continue printing.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PrintDialogGtk::SendDocumentToPrinter, this,
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&PrintDialogGtk::SendDocumentToPrinter, this,
                                 document_name));
 }
 
@@ -490,7 +491,7 @@ static void OnJobCompletedThunk(GtkPrintJob* print_job,
 }
 void PrintDialogGtk::SendDocumentToPrinter(
     const base::string16& document_name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If |printer_| is nullptr then somehow the GTK printer list changed out
   // under us. In which case, just bail out.

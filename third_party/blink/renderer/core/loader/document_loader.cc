@@ -541,7 +541,7 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   history_item_->SetURL(UrlForHistory());
   history_item_->SetReferrer(SecurityPolicy::GenerateReferrer(
       referrer_.referrer_policy, history_item_->Url(), referrer_.referrer));
-  if (DeprecatedEqualIgnoringCase(http_method_, "POST")) {
+  if (EqualIgnoringASCIICase(http_method_, "POST")) {
     // FIXME: Eventually we have to make this smart enough to handle the case
     // where we have a stream for the body to handle the "data interspersed with
     // files" feature.
@@ -1255,7 +1255,7 @@ void DocumentLoader::StartLoadingInternal() {
 
   loading_mhtml_archive_ =
       EqualIgnoringASCIICase("multipart/related", response_.MimeType()) ||
-      DeprecatedEqualIgnoringCase("message/rfc822", response_.MimeType());
+      EqualIgnoringASCIICase("message/rfc822", response_.MimeType());
   if (loading_mhtml_archive_) {
     // To commit an mhtml archive synchronously we have to load the whole body
     // synchronously and parse it, and it's already loaded in a buffer usually.

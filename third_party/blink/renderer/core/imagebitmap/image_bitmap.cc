@@ -243,7 +243,8 @@ std::unique_ptr<CanvasResourceProvider> CreateProvider(
             ->UsageForMailbox(source_image->GetMailboxHolder().mailbox);
     auto resource_provider = CanvasResourceProvider::CreateSharedImageProvider(
         size, context_provider, kLow_SkFilterQuality, color_params,
-        source_image->IsOriginTopLeft(), usage_flags);
+        source_image->IsOriginTopLeft(),
+        CanvasResourceProvider::RasterMode::kGPU, usage_flags);
     if (resource_provider)
       return resource_provider;
 

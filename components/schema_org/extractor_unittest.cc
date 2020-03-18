@@ -45,6 +45,8 @@ class SchemaOrgExtractorTest : public testing::Test {
   PropertyPtr CreateTimeProperty(const std::string& name,
                                  const base::TimeDelta& value);
 
+  PropertyPtr CreateUrlProperty(const std::string& name, const GURL& url);
+
   PropertyPtr CreateEntityProperty(const std::string& name, EntityPtr value);
 };
 
@@ -104,6 +106,15 @@ PropertyPtr SchemaOrgExtractorTest::CreateTimeProperty(
   property->name = name;
   property->values = Values::New();
   property->values->time_values.push_back(value);
+  return property;
+}
+
+PropertyPtr SchemaOrgExtractorTest::CreateUrlProperty(const std::string& name,
+                                                      const GURL& value) {
+  PropertyPtr property = Property::New();
+  property->name = name;
+  property->values = Values::New();
+  property->values->url_values.push_back(value);
   return property;
 }
 
@@ -227,6 +238,20 @@ TEST_F(SchemaOrgExtractorTest, StringValueRepresentingDateTime) {
   expected->properties.push_back(CreateDateTimeProperty(
       "dateCreated", base::Time::FromDeltaSinceWindowsEpoch(
                          base::TimeDelta::FromMilliseconds(12999744000000))));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+TEST_F(SchemaOrgExtractorTest, UrlValue) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\", "
+      "\"contentUrl\":\"https://www.google.com\"}");
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+  expected->properties.push_back(
+      CreateUrlProperty("contentUrl", GURL("https://www.google.com")));
 
   EXPECT_EQ(expected, extracted);
 }

@@ -416,6 +416,16 @@ void CrossProcessFrameConnector::DidUpdateVisualProperties(
   frame_proxy_in_parent_renderer_->DidUpdateVisualProperties(metadata);
 }
 
+void CrossProcessFrameConnector::DidAckGestureEvent(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  auto* root_view = GetRootRenderWidgetHostView();
+  if (!root_view)
+    return;
+
+  root_view->ChildDidAckGestureEvent(event, ack_result);
+}
+
 void CrossProcessFrameConnector::SetVisibilityForChildViews(
     bool visible) const {
   current_child_frame_host()->SetVisibilityForChildViews(visible);

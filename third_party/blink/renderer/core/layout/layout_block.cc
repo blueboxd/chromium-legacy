@@ -1399,10 +1399,9 @@ void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,
   height_available_to_children_changed_ |= horizontal_scrollbar_changed;
 }
 
-void LayoutBlock::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  int scrollbar_width = ScrollbarLogicalWidth();
+MinMaxSizes LayoutBlock::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
 
   // See if we can early out sooner if the logical width is overridden or we're
   // size contained. Note that for multicol containers we need the column gaps.
@@ -1410,51 +1409,51 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
   const auto* block_flow = DynamicTo<LayoutBlockFlow>(this);
   if (!block_flow || !block_flow->MultiColumnFlowThread()) {
     if (HasOverrideIntrinsicContentLogicalWidth()) {
-      max_logical_width = min_logical_width =
-          OverrideIntrinsicContentLogicalWidth() + LayoutUnit(scrollbar_width);
-      return;
+      sizes += OverrideIntrinsicContentLogicalWidth();
+      return sizes;
     }
     LayoutUnit default_inline_size = DefaultIntrinsicContentInlineSize();
     if (default_inline_size != kIndefiniteSize) {
-      max_logical_width = min_logical_width = default_inline_size;
-      if (StyleRef().LogicalWidth().IsPercentOrCalc())
-        min_logical_width = LayoutUnit();
-      return;
+      sizes.max_size += default_inline_size;
+      if (!StyleRef().LogicalWidth().IsPercentOrCalc())
+        sizes.min_size = sizes.max_size;
+      return sizes;
     }
-    if (ShouldApplySizeContainment()) {
-      max_logical_width = min_logical_width = LayoutUnit(scrollbar_width);
-      return;
-    }
+    if (ShouldApplySizeContainment())
+      return sizes;
   }
 
+  MinMaxSizes child_sizes;
   if (ChildrenInline()) {
     // FIXME: Remove this const_cast.
     To<LayoutBlockFlow>(const_cast<LayoutBlock*>(this))
-        ->ComputeInlinePreferredLogicalWidths(min_logical_width,
-                                              max_logical_width);
+        ->ComputeInlinePreferredLogicalWidths(child_sizes.min_size,
+                                              child_sizes.max_size);
   } else {
-    ComputeBlockPreferredLogicalWidths(min_logical_width, max_logical_width);
+    ComputeBlockPreferredLogicalWidths(child_sizes.min_size,
+                                       child_sizes.max_size);
   }
 
-  max_logical_width = std::max(min_logical_width, max_logical_width);
+  child_sizes.max_size = std::max(child_sizes.min_size, child_sizes.max_size);
 
   auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(GetNode());
   if (html_marquee_element && html_marquee_element->IsHorizontal())
-    min_logical_width = LayoutUnit();
+    child_sizes.min_size = LayoutUnit();
   if (UNLIKELY(IsListBox(this) && StyleRef().LogicalWidth().IsPercentOrCalc()))
-    min_logical_width = LayoutUnit();
+    child_sizes.min_size = LayoutUnit();
 
   if (IsTableCell()) {
     Length table_cell_width =
         ToInterface<LayoutNGTableCellInterface>(this)->StyleOrColLogicalWidth();
-    if (table_cell_width.IsFixed() && table_cell_width.Value() > 0)
-      max_logical_width = std::max(min_logical_width,
-                                   AdjustContentBoxLogicalWidthForBoxSizing(
-                                       LayoutUnit(table_cell_width.Value())));
+    if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
+      child_sizes.max_size = std::max(
+          child_sizes.min_size, AdjustContentBoxLogicalWidthForBoxSizing(
+                                    LayoutUnit(table_cell_width.Value())));
+    }
   }
 
-  max_logical_width += scrollbar_width;
-  min_logical_width += scrollbar_width;
+  sizes += child_sizes;
+  return sizes;
 }
 
 DISABLE_CFI_PERF
@@ -1471,22 +1470,24 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
   if (!IsTableCell() && style_to_use.LogicalWidth().IsFixed() &&
       style_to_use.LogicalWidth().Value() >= 0 &&
       !(IsFlexItemCommon() && Parent()->StyleRef().IsDeprecatedWebkitBox() &&
-        !style_to_use.LogicalWidth().IntValue()))
+        !style_to_use.LogicalWidth().IntValue())) {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
-        AdjustContentBoxLogicalWidthForBoxSizing(
+        AdjustBorderBoxLogicalWidthForBoxSizing(
             LayoutUnit(style_to_use.LogicalWidth().Value()));
-  else
-    ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
-                                  max_preferred_logical_width_);
+  } else {
+    MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
+    min_preferred_logical_width_ = sizes.min_size;
+    max_preferred_logical_width_ = sizes.max_size;
+  }
 
   if (style_to_use.LogicalMaxWidth().IsFixed()) {
     max_preferred_logical_width_ =
         std::min(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
+                 AdjustBorderBoxLogicalWidthForBoxSizing(
                      LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
     min_preferred_logical_width_ =
         std::min(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
+                 AdjustBorderBoxLogicalWidthForBoxSizing(
                      LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
   }
 
@@ -1494,18 +1495,13 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
       style_to_use.LogicalMinWidth().Value() > 0) {
     max_preferred_logical_width_ =
         std::max(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
+                 AdjustBorderBoxLogicalWidthForBoxSizing(
                      LayoutUnit(style_to_use.LogicalMinWidth().Value())));
     min_preferred_logical_width_ =
         std::max(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
+                 AdjustBorderBoxLogicalWidthForBoxSizing(
                      LayoutUnit(style_to_use.LogicalMinWidth().Value())));
   }
-
-  LayoutUnit border_and_padding = BorderAndPaddingLogicalWidth();
-  DCHECK_GE(border_and_padding, LayoutUnit());
-  min_preferred_logical_width_ += border_and_padding;
-  max_preferred_logical_width_ += border_and_padding;
 
   // Table layout uses integers, ceil the preferred widths to ensure that they
   // can contain the contents.
@@ -1660,8 +1656,10 @@ void LayoutBlock::ComputeChildPreferredLogicalWidths(
         ToLayoutBox(child).ComputeLogicalHeightWithoutLayout();
     return;
   }
-  min_preferred_logical_width = child.MinPreferredLogicalWidth();
-  max_preferred_logical_width = child.MaxPreferredLogicalWidth();
+
+  MinMaxSizes child_preferred_logical_widths = child.PreferredLogicalWidths();
+  min_preferred_logical_width = child_preferred_logical_widths.min_size;
+  max_preferred_logical_width = child_preferred_logical_widths.max_size;
 
   // For non-replaced blocks if the inline size is min|max-content or a definite
   // size the min|max-content contribution is that size plus border, padding and

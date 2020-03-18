@@ -93,11 +93,11 @@ class FormFetcherImpl : public FormFetcher,
   void ProcessPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
- private:
   // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
-  void SplitResults(
+  virtual void SplitResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
+ private:
   // Results obtained from PasswordStore:
   std::vector<std::unique_ptr<autofill::PasswordForm>> non_federated_;
 

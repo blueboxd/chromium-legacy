@@ -106,10 +106,10 @@ void OnCaptured(scoped_refptr<FileManager> manager,
                 std::unique_ptr<PaintPreviewProto> proto) {
   base::TimeDelta time_delta = base::TimeTicks::Now() - start_time;
 
-  bool success = status == mojom::PaintPreviewStatus::kOk;
+  bool success = (status == mojom::PaintPreviewStatus::kOk);
   base::UmaHistogramBoolean("Browser.PaintPreview.CaptureExperiment.Success",
                             success);
-  if (!success) {
+  if (!success || !proto) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&CleanupOnFailure, root_dir, std::move(finished)));

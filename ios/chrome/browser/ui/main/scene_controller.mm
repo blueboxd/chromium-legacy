@@ -117,6 +117,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                SettingsNavigationControllerDelegate,
                                WebStateListObserving>
 
+// Navigation View controller for the settings.
+@property(nonatomic, strong)
+    SettingsNavigationController* settingsNavigationController;
+
 // The scene level component for url loading. Is passed down to
 // browser state level UrlLoadingService instances.
 @property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
@@ -181,7 +185,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 @end
 
 @implementation SceneController
-@synthesize settingsNavigationController;  //< From AppNavigation protocol.
 @synthesize appURLLoadingService =
     _appURLLoadingService;  //< From SceneControllerGuts
 @synthesize browserViewWrangler =

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.flags;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -41,5 +43,18 @@ public class StringCachedFieldTrialParameter extends CachedFieldTrialParameter {
                 ChromeFeatureList.getFieldTrialParamByFeature(getFeatureName(), getParameterName());
         SharedPreferencesManager.getInstance().writeString(
                 getSharedPreferenceKey(), value.isEmpty() ? getDefaultValue() : value);
+    }
+
+    /**
+     * Forces the parameter to return a specific value for testing.
+     *
+     * Caveat: this does not affect the value returned by native, only by
+     * {@link CachedFieldTrialParameter}.
+     *
+     * @param overrideValue the value to be returned
+     */
+    @VisibleForTesting
+    public void setForTesting(String overrideValue) {
+        CachedFeatureFlags.setOverrideTestValue(getSharedPreferenceKey(), overrideValue);
     }
 }

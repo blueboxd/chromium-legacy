@@ -121,8 +121,10 @@ StyleEngine::StyleEngine(Document& document)
     viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
   if (IsMaster())
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
-  if (auto* settings = GetDocument().GetSettings())
-    preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  if (auto* settings = GetDocument().GetSettings()) {
+    if (!settings->GetForceDarkModeEnabled())
+      preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  }
   if (Platform::Current() && Platform::Current()->ThemeEngine())
     forced_colors_ = Platform::Current()->ThemeEngine()->GetForcedColors();
 }

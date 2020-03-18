@@ -30,7 +30,8 @@ scoped_refptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   // TODO(smcgruer): Handle 'auto' time range value.
   DCHECK(time_range.IsDouble());
 
-  LayoutBox* box = scroll_source ? scroll_source->GetLayoutBox() : nullptr;
+  LayoutBox* box =
+      scroll_timeline->IsActive() ? scroll_source->GetLayoutBox() : nullptr;
 
   CompositorScrollTimeline::ScrollDirection orientation = ConvertOrientation(
       scroll_timeline->GetOrientation(), box ? box->Style() : nullptr);

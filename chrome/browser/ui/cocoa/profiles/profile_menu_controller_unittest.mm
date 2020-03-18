@@ -4,33 +4,28 @@
 
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
 
-#include <stddef.h>
-
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/sync_preferences/pref_service_syncable.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-class ProfileMenuControllerTest : public CocoaProfileTest {
+class ProfileMenuControllerTest : public BrowserWithTestWindowTest {
  public:
   ProfileMenuControllerTest() { RebuildController(); }
 
   void SetUp() override {
-    CocoaProfileTest::SetUp();
-    ASSERT_TRUE(profile());
+    CocoaTest::BootstrapCocoa();
+    BrowserWithTestWindowTest::SetUp();
 
     // Spin the runloop so |-initializeMenu| gets called.
     chrome::testing::NSRunLoopRunAllPending();
@@ -111,7 +106,7 @@ TEST_F(ProfileMenuControllerTest, RebuildMenu) {
   EXPECT_FALSE([menu_item() isHidden]);
 
   // Create some more profiles on the manager.
-  TestingProfileManager* manager = testing_profile_manager();
+  TestingProfileManager* manager = profile_manager();
   manager->CreateTestingProfile("Profile 2");
   manager->CreateTestingProfile("Profile 3");
 
@@ -153,7 +148,7 @@ TEST_F(ProfileMenuControllerTest, InsertItems) {
   [menu removeAllItems];
 
   // Create one more profile on the manager.
-  TestingProfileManager* manager = testing_profile_manager();
+  TestingProfileManager* manager = profile_manager();
   manager->CreateTestingProfile("Profile 2");
 
   // With more than one profile, insertItems should return YES.
@@ -200,7 +195,7 @@ TEST_F(ProfileMenuControllerTest, InitialActiveBrowser) {
 // BrowserWindow, so it is called manually.
 TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   NSMenu* menu = [controller() menu];
-  TestingProfileManager* manager = testing_profile_manager();
+  TestingProfileManager* manager = profile_manager();
   TestingProfile* profile2 = manager->CreateTestingProfile("Profile 2");
   TestingProfile* profile3 = manager->CreateTestingProfile("Profile 3");
   ASSERT_EQ(7, [menu numberOfItems]);
@@ -209,26 +204,28 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   Browser::CreateParams profile2_params(profile2, true);
   std::unique_ptr<Browser> p2_browser(
       CreateBrowserWithTestWindowForParams(&profile2_params));
-  BrowserList::SetLastActive(p2_browser.get());
+  [controller() activeBrowserChangedTo:p2_browser.get()];
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
 
   // Close the browser and make sure it's still active.
   p2_browser.reset();
+  [controller() activeBrowserChangedTo:nil];
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
 
   // Open a new browser and make sure it takes effect.
   Browser::CreateParams profile3_params(profile3, true);
   std::unique_ptr<Browser> p3_browser(
       CreateBrowserWithTestWindowForParams(&profile3_params));
-  BrowserList::SetLastActive(p3_browser.get());
+  [controller() activeBrowserChangedTo:p3_browser.get()];
   VerifyProfileNamedIsActive(@"Profile 3", __LINE__);
 
   p3_browser.reset();
+  [controller() activeBrowserChangedTo:nil];
   VerifyProfileNamedIsActive(@"Profile 3", __LINE__);
 }
 
 TEST_F(ProfileMenuControllerTest, DeleteActiveProfile) {
-  TestingProfileManager* manager = testing_profile_manager();
+  TestingProfileManager* manager = profile_manager();
 
   manager->CreateTestingProfile("Profile 2");
   TestingProfile* profile3 = manager->CreateTestingProfile("Profile 3");

@@ -9,8 +9,9 @@ import android.app.Dialog;
 import android.graphics.Color;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.IdRes;
 
 /**
  * Shows a text message at the top of a LinearLayout to show error and warning messages.
@@ -30,9 +31,8 @@ public class PersistentErrorView {
      * @param context The Activity where this View is shon.
      * @param type View type.
      */
-    public PersistentErrorView(Activity context, Type type) {
-        mTextView = (TextView) context.getLayoutInflater().inflate(
-                R.layout.persistent_error_message, null);
+    public PersistentErrorView(Activity context, @IdRes int errorViewId, Type type) {
+        mTextView = (TextView) context.findViewById(errorViewId);
 
         switch (type) {
             case ERROR:
@@ -44,16 +44,6 @@ public class PersistentErrorView {
                 mTextView.setTextColor(Color.BLACK);
                 break;
         }
-    }
-
-    /**
-     * Add the error message view at the top of the given {@link LinearLayout}
-     * @param layout the linear layout to add this view at the top.
-     * @return object reference for chaining.
-     */
-    public PersistentErrorView prependToLinearLayout(LinearLayout layout) {
-        layout.addView(mTextView, 0);
-        return this;
     }
 
     /**

@@ -154,14 +154,14 @@ TEST_F(CharacterComposerTest, FullyMatchingSequences) {
   ExpectDeadKeyFiltered(kCombiningHorn);
   ExpectUnicodeKeyComposed(VKEY_U, DomCode::US_U, EF_NONE, 'U',
                            base::string16(1, 0x1EEA));
-  // LATIN CAPITAL LETTER C WITH CEDILLA
+  // LATIN CAPITAL LETTER C WITH ACUTE
   ExpectDeadKeyFiltered(kCombiningAcute);
   ExpectUnicodeKeyComposed(VKEY_C, DomCode::US_C, EF_NONE, 'C',
-                           base::string16(1, 0x00C7));
-  // LATIN SMALL LETTER C WITH CEDILLA
+                           base::string16(1, 0x0106));
+  // LATIN SMALL LETTER C WITH ACUTE
   ExpectDeadKeyFiltered(kCombiningAcute);
   ExpectUnicodeKeyComposed(VKEY_C, DomCode::US_C, EF_NONE, 'c',
-                           base::string16(1, 0x00E7));
+                           base::string16(1, 0x0107));
   // GREEK SMALL LETTER EPSILON WITH TONOS
   ExpectDeadKeyFiltered(kCombiningAcute);
   ExpectUnicodeKeyComposed(VKEY_E, DomCode::US_E, EF_NONE, 0x03B5,

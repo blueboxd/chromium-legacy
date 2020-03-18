@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/scoped_observer.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_observer.h"
 #include "content/public/browser/url_data_source.h"
@@ -20,6 +22,7 @@ class Profile;
 // sources can only be embedded in the chrome://new-tab-page by using an
 // <iframe>.
 class UntrustedSource : public content::URLDataSource,
+                        public OneGoogleBarServiceObserver,
                         public PromoServiceObserver {
  public:
   explicit UntrustedSource(Profile* profile);
@@ -29,6 +32,7 @@ class UntrustedSource : public content::URLDataSource,
 
   // content::URLDataSource:
   std::string GetContentSecurityPolicyScriptSrc() override;
+  std::string GetContentSecurityPolicyChildSrc() override;
   std::string GetSource() override;
   void StartDataRequest(
       const GURL& url,
@@ -43,10 +47,19 @@ class UntrustedSource : public content::URLDataSource,
                             int render_process_id) override;
 
  private:
+  // OneGoogleBarServiceObserver:
+  void OnOneGoogleBarDataUpdated() override;
+  void OnOneGoogleBarServiceShuttingDown() override;
+
   // PromoServiceObserver:
   void OnPromoDataUpdated() override;
   void OnPromoServiceShuttingDown() override;
 
+  std::vector<content::URLDataSource::GotDataCallback>
+      one_google_bar_callbacks_;
+  OneGoogleBarService* one_google_bar_service_;
+  ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
+      one_google_bar_service_observer_{this};
   std::vector<content::URLDataSource::GotDataCallback> promo_callbacks_;
   PromoService* promo_service_;
   ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_{

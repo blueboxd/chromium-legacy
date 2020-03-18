@@ -228,6 +228,7 @@ void PaintLayerScrollableArea::DisposeImpl() {
     sequencer->DidDisposeScrollableArea(*this);
 
   RunScrollCompleteCallbacks();
+  InvalidateScrollTimeline();
 
   layer_ = nullptr;
 }
@@ -544,6 +545,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // The ScrollOffsetTranslation paint property depends on the scroll offset.
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
+  InvalidateScrollTimeline();
 
   if (scroll_type == mojom::blink::ScrollType::kUser ||
       scroll_type == mojom::blink::ScrollType::kCompositor) {
@@ -789,6 +791,7 @@ void PaintLayerScrollableArea::ContentsResized() {
   // Need to update the bounds of the scroll property.
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
   Layer()->SetNeedsCompositingInputsUpdate();
+  InvalidateScrollTimeline();
 }
 
 IntPoint PaintLayerScrollableArea::LastKnownMousePosition() const {
@@ -823,6 +826,7 @@ void PaintLayerScrollableArea::ScrollbarVisibilityChanged() {
   // Paint properties need to be updated, because clip rects
   // are affected by overlay scrollbars.
   layer_->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+  InvalidateScrollTimeline();
 
   // TODO(chrishr): this should be able to be removed.
   layer_->ClearClipRects();
@@ -960,9 +964,10 @@ void PaintLayerScrollableArea::UpdateScrollDimensions() {
   new_overflow_rect.Unite(PhysicalRect(
       new_overflow_rect.offset, LayoutContentRect(kExcludeScrollbars).size));
 
-  if (overflow_rect_.size != new_overflow_rect.size)
-    ContentsResized();
+  bool resized = overflow_rect_.size != new_overflow_rect.size;
   overflow_rect_ = new_overflow_rect;
+  if (resized)
+    ContentsResized();
   UpdateScrollOrigin();
 }
 

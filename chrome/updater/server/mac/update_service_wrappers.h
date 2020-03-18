@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/sequenced_task_runner.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 #include "chrome/updater/update_service.h"
 
@@ -17,7 +18,10 @@ using StateChangeCallback =
 
 @property(readonly, nonatomic) StateChangeCallback callback;
 
-- (instancetype)initWithRepeatingCallback:(StateChangeCallback)callback;
+- (instancetype)initWithRepeatingCallback:(StateChangeCallback)callback
+                           callbackRunner:
+                               (scoped_refptr<base::SequencedTaskRunner>)
+                                   callbackRunner;
 
 @end
 

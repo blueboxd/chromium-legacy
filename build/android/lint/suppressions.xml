@@ -273,8 +273,6 @@ Still reading?
     <ignore regexp="chrome/android/java/res/drawable/zoom_in.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/drawable/zoom_out.xml"/>
-    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
-    <ignore regexp="components/permissions/android/res/drawable/ic_infobar_nfc.xml"/>
   </issue>
   <!-- This warning just adds a lot of false positives. -->
   <issue id="ObsoleteSdkInt" severity="ignore"/>

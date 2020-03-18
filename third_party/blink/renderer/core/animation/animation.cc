@@ -396,7 +396,7 @@ double Animation::currentTimeForBinding(bool& is_null) {
 }
 
 double Animation::currentTime() const {
-  return currentTimeForBinding().value_or(NullValue());
+  return currentTimeForBinding().value_or(Timing::NullValue());
 }
 
 double Animation::currentTime(bool& is_null) {
@@ -423,6 +423,9 @@ bool Animation::PreCommit(
     int compositor_group,
     const PaintArtifactCompositor* paint_artifact_compositor,
     bool start_on_compositor) {
+  if (timeline_ && !timeline_->IsActive())
+    return false;
+
   bool soft_change =
       compositor_state_ &&
       (Paused() || compositor_state_->playback_rate != EffectivePlaybackRate());
@@ -572,7 +575,7 @@ void Animation::NotifyReady(double ready_time) {
 // Refer to Step 8.3 'pending play task' in
 // https://drafts.csswg.org/web-animations/#playing-an-animation-section.
 void Animation::CommitPendingPlay(double ready_time) {
-  DCHECK(!IsNull(ready_time));
+  DCHECK(!Timing::IsNull(ready_time));
   DCHECK(start_time_ || hold_time_);
   DCHECK(pending_play_);
   pending_play_ = false;
@@ -1366,12 +1369,12 @@ void Animation::updatePlaybackRate(double playback_rate,
           timeline_ ? timeline_->CurrentTimeSeconds() : base::nullopt;
       if (playback_rate) {
         if (timeline_time) {
-          start_time_ =
-              (timeline_time && unconstrained_current_time)
-                  ? ValueOrUnresolved((timeline_time.value() -
-                                       unconstrained_current_time.value()) /
-                                      playback_rate)
-                  : base::nullopt;
+          start_time_ = (timeline_time && unconstrained_current_time)
+                            ? base::make_optional<double>(
+                                  (timeline_time.value() -
+                                   unconstrained_current_time.value()) /
+                                  playback_rate)
+                            : base::nullopt;
         }
       } else {
         start_time_ = timeline_time;
@@ -1487,7 +1490,7 @@ void Animation::setPlaybackRate(double playback_rate,
   pending_playback_rate_ = base::nullopt;
   double previous_current_time = currentTime();
   playback_rate_ = playback_rate;
-  if (!IsNull(previous_current_time)) {
+  if (!Timing::IsNull(previous_current_time)) {
     setCurrentTime(previous_current_time, false, exception_state);
   }
 
@@ -1625,7 +1628,7 @@ void Animation::StartAnimationOnCompositor(
     time_offset = time_offset / fabs(EffectivePlaybackRate());
   }
 
-  DCHECK(!start_time || !IsNull(start_time.value()));
+  DCHECK(!start_time || !Timing::IsNull(start_time.value()));
   DCHECK_NE(compositor_group_, 0);
   DCHECK(To<KeyframeEffect>(content_.Get()));
   DCHECK(std::isfinite(time_offset));

@@ -14,6 +14,7 @@
 #include "components/captive_portal/core/buildflags.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
@@ -200,6 +201,9 @@ TabImpl::TabImpl(ProfileImpl* profile,
       web_contents_.get(),
       base::BindRepeating(&TabImpl::GetSessionServiceTabHelperDelegate,
                           base::Unretained(this)));
+
+  permissions::PermissionRequestManager::CreateForWebContents(
+      web_contents_.get());
 
 #if defined(OS_ANDROID)
   javascript_dialogs::TabModalDialogManager::CreateForWebContents(

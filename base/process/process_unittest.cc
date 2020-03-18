@@ -376,12 +376,20 @@ TEST_F(ProcessTest, PredefinedProcessIsRunning) {
 }
 #endif
 
+// Test is disabled on Windows AMR64 because
+// TerminateWithHeapCorruption() isn't expected to work there.
+// See: https://crbug.com/1054423
 #if defined(OS_WIN)
-TEST_F(ProcessTest, HeapCorruption) {
+#if defined(ARCH_CPU_ARM64)
+#define MAYBE_HeapCorruption DISABLED_HeapCorruption
+#else
+#define MAYBE_HeapCorruption HeapCorruption
+#endif
+TEST_F(ProcessTest, MAYBE_HeapCorruption) {
   EXPECT_EXIT(base::debug::win::TerminateWithHeapCorruption(),
               ::testing::ExitedWithCode(STATUS_HEAP_CORRUPTION), "");
 }
-#endif
+#endif  // OS_WIN
 
 TEST_F(ProcessTest, ChildProcessIsRunning) {
   Process process(SpawnChild("SleepyChildProcess"));

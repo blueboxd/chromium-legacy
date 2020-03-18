@@ -45,24 +45,6 @@ namespace blink {
 class EffectTiming;
 class ComputedEffectTiming;
 
-static inline bool IsNull(double value) {
-  return std::isnan(value);
-}
-
-static inline double NullValue() {
-  return std::numeric_limits<double>::quiet_NaN();
-}
-
-static inline base::Optional<double> ValueOrUnresolved(double a) {
-  return IsNull(a) ? base::nullopt : base::Optional<double>(a);
-}
-
-// TODO(crbug.com/1060971): Remove both ValueOrUnresolved().
-static inline base::Optional<double> ValueOrUnresolved(
-    const base::Optional<double>& value) {
-  return value;
-}
-
 struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
 
@@ -83,6 +65,9 @@ struct CORE_EXPORT Timing {
 
   using FillMode = CompositorKeyframeModel::FillMode;
   using PlaybackDirection = CompositorKeyframeModel::Direction;
+
+  static bool IsNull(double value) { return std::isnan(value); }
+  static double NullValue() { return std::numeric_limits<double>::quiet_NaN(); }
 
   static String FillModeString(FillMode);
   static FillMode StringToFillMode(const String&);

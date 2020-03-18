@@ -58,11 +58,4 @@ def _add_noop_jobs(ctx):
   for j in _GPU_NOOP_JOBS + _ANDROID_TEST_NOOP_JOBS:
     cfg.job.append(j)
 
-def _munge_trunk_only_jobs(ctx):
-  cfg = ctx.output['luci-scheduler.cfg']
-  for j in cfg.job:
-    if j.id in _ANDROID_NON_BRANCHED_TESTERS:
-      j.id = 'ci-' + j.id
-
 lucicfg.generator(_add_noop_jobs)
-lucicfg.generator(_munge_trunk_only_jobs)

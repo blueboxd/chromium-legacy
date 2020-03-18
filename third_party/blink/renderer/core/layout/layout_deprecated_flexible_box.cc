@@ -322,27 +322,22 @@ void LayoutDeprecatedFlexibleBox::StyleWillChange(
   LayoutBlock::StyleWillChange(diff, new_style);
 }
 
-void LayoutDeprecatedFlexibleBox::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
+MinMaxSizes LayoutDeprecatedFlexibleBox::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
     if (child->IsOutOfFlowPositioned())
       continue;
 
-    LayoutUnit margin = MarginWidthForChild(child);
-    LayoutUnit width = child->MinPreferredLogicalWidth() + margin;
-    min_logical_width = std::max(width, min_logical_width);
+    MinMaxSizes child_sizes = child->PreferredLogicalWidths();
+    child_sizes += MarginWidthForChild(child);
 
-    width = child->MaxPreferredLogicalWidth() + margin;
-    max_logical_width = std::max(width, max_logical_width);
+    sizes.Encompass(child_sizes);
   }
 
-  max_logical_width = std::max(min_logical_width, max_logical_width);
-
-  LayoutUnit scrollbar_width(ScrollbarLogicalWidth());
-  max_logical_width += scrollbar_width;
-  min_logical_width += scrollbar_width;
+  sizes.max_size = std::max(sizes.min_size, sizes.max_size);
+  sizes += BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
+  return sizes;
 }
 
 void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {

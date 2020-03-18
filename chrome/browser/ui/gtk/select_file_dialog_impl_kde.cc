@@ -26,13 +26,10 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/strings/grit/ui_strings.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -180,6 +177,8 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
   // A task runner for blocking pipe reads.
   scoped_refptr<base::SequencedTaskRunner> pipe_task_runner_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImplKDE);
 };
 
@@ -222,7 +221,7 @@ SelectFileDialogImplKDE::SelectFileDialogImplKDE(
 SelectFileDialogImplKDE::~SelectFileDialogImplKDE() {}
 
 bool SelectFileDialogImplKDE::IsRunning(gfx::NativeWindow parent_window) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (parent_window && parent_window->GetHost()) {
     XID xid = parent_window->GetHost()->GetAcceleratedWidget();
     return parents_.find(xid) != parents_.end();
@@ -241,7 +240,7 @@ void SelectFileDialogImplKDE::SelectFileImpl(
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   type_ = type;
 
   XID window_xid = x11::None;
@@ -410,8 +409,8 @@ void SelectFileDialogImplKDE::CreateSelectFolderDialog(
   int title_message_id = (type == SELECT_UPLOAD_FOLDER)
                              ? IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE
                              : IDS_SELECT_FOLDER_DIALOG_TITLE;
-  base::PostTaskAndReplyWithResult(
-      pipe_task_runner_.get(), FROM_HERE,
+  pipe_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &SelectFileDialogImplKDE::CallKDialogOutput, this,
           KDialogParams(
@@ -428,8 +427,8 @@ void SelectFileDialogImplKDE::CreateFileOpenDialog(
     const base::FilePath& default_path,
     XID parent,
     void* params) {
-  base::PostTaskAndReplyWithResult(
-      pipe_task_runner_.get(), FROM_HERE,
+  pipe_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &SelectFileDialogImplKDE::CallKDialogOutput, this,
           KDialogParams(
@@ -445,8 +444,8 @@ void SelectFileDialogImplKDE::CreateMultiFileOpenDialog(
     const base::FilePath& default_path,
     XID parent,
     void* params) {
-  base::PostTaskAndReplyWithResult(
-      pipe_task_runner_.get(), FROM_HERE,
+  pipe_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &SelectFileDialogImplKDE::CallKDialogOutput, this,
           KDialogParams(
@@ -462,8 +461,8 @@ void SelectFileDialogImplKDE::CreateSaveAsDialog(
     const base::FilePath& default_path,
     XID parent,
     void* params) {
-  base::PostTaskAndReplyWithResult(
-      pipe_task_runner_.get(), FROM_HERE,
+  pipe_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &SelectFileDialogImplKDE::CallKDialogOutput, this,
           KDialogParams("--getsavefilename",
@@ -500,7 +499,7 @@ void SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse(
     XID parent,
     void* params,
     std::unique_ptr<KDialogOutputParams> results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   parents_.erase(parent);
   SelectSingleFileHelper(params, false, std::move(results));
 }
@@ -509,7 +508,7 @@ void SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse(
     XID parent,
     void* params,
     std::unique_ptr<KDialogOutputParams> results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   parents_.erase(parent);
   SelectSingleFileHelper(params, true, std::move(results));
 }
@@ -518,7 +517,7 @@ void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
     XID parent,
     void* params,
     std::unique_ptr<KDialogOutputParams> results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "[kdialog] MultiFileResponse: " << results->output;
 
   parents_.erase(parent);

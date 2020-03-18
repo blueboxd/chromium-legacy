@@ -176,14 +176,6 @@ void ExtensionWebContentsObserver::DidFinishNavigation(
   }
 }
 
-void ExtensionWebContentsObserver::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  DCHECK(initialized_);
-  registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
-}
-
 void ExtensionWebContentsObserver::MediaPictureInPictureChanged(
     bool is_picture_in_picture) {
   DCHECK(initialized_);

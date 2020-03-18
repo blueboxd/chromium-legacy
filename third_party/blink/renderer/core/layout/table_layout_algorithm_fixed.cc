@@ -184,10 +184,10 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
       ++current_column;
     }
 
-    // TableLayoutAlgorithmFixed doesn't use min/maxPreferredLogicalWidths, but
-    // we need to clear the dirty bit on the cell so that we'll correctly mark
-    // its ancestors dirty in case we later call
-    // setPreferredLogicalWidthsDirty() on it later.
+    // TableLayoutAlgorithmFixed doesn't use PreferredLogicalWidths, but we
+    // need to clear the dirty bit on the cell so that we'll correctly mark its
+    // ancestors dirty in case we later call SetPreferredLogicalWidthsDirty()
+    // on it later.
     if (cell->PreferredLogicalWidthsDirty())
       cell->ClearPreferredLogicalWidthsDirty();
   }

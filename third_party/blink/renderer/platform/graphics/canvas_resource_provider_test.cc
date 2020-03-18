@@ -111,8 +111,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
-      /*is_origin_top_left = */ true,
-      /*shared_image_usage_flags = */ 0u);
+      true /*is_origin_top_left*/, CanvasResourceProvider::RasterMode::kGPU,
+      0u /*shared_image_usage_flags*/);
 
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
@@ -409,7 +409,7 @@ TEST_F(CanvasResourceProviderTest,
       ExternalCanvasResource::Create(
           mailbox, kSize, GL_TEXTURE_2D, kColorParams,
           SharedGpuContext::ContextProviderWrapper(), provider->CreateWeakPtr(),
-          kMedium_SkFilterQuality, /*is_origin_top_left=*/true);
+          kMedium_SkFilterQuality, true /*is_origin_top_left*/);
 
   // NewOrRecycledResource() would return nullptr before an ImportResource().
   EXPECT_TRUE(provider->ImportResource(resource));
@@ -486,18 +486,21 @@ TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize_SharedImage) {
 
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       IntSize(kMaxTextureSize - 1, kMaxTextureSize), context_provider_wrapper_,
-      kLow_SkFilterQuality, kColorParams, /* is_origin_top_left = */ true,
-      /* shared_image_usage_flags = */ 0u);
+      kLow_SkFilterQuality, kColorParams, true /*is_origin_top_left*/,
+      CanvasResourceProvider::RasterMode::kGPU,
+      0u /*shared_image_usage_flags*/);
   EXPECT_TRUE(provider->SupportsDirectCompositing());
   provider = CanvasResourceProvider::CreateSharedImageProvider(
       IntSize(kMaxTextureSize, kMaxTextureSize), context_provider_wrapper_,
-      kLow_SkFilterQuality, kColorParams, /* is_origin_top_left = */ true,
-      /* shared_image_usage_flags = */ 0u);
+      kLow_SkFilterQuality, kColorParams, true /*is_origin_top_left*/,
+      CanvasResourceProvider::RasterMode::kGPU,
+      0u /*shared_image_usage_flags*/);
   EXPECT_TRUE(provider->SupportsDirectCompositing());
   provider = CanvasResourceProvider::CreateSharedImageProvider(
       IntSize(kMaxTextureSize + 1, kMaxTextureSize), context_provider_wrapper_,
-      kLow_SkFilterQuality, kColorParams, /* is_origin_top_left = */ true,
-      /* shared_image_usage_flags = */ 0u);
+      kLow_SkFilterQuality, kColorParams, true /*is_origin_top_left*/,
+      CanvasResourceProvider::RasterMode::kGPU,
+      0u /*shared_image_usage_flags*/);
   // The CanvasResourceProvider for SharedImage should not be created or valid
   // if the texture size is greater than the maximum value
   EXPECT_TRUE(!provider || !provider->IsValid());

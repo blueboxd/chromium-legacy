@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -90,10 +89,6 @@ class AwRenderViewHostExt : public content::WebContentsObserver {
   void OnPageScaleFactorChanged(float page_scale_factor) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
   void OnDocumentHasImagesResponse(content::RenderFrameHost* render_frame_host,
                                    int msg_id,
@@ -120,8 +115,6 @@ class AwRenderViewHostExt : public content::WebContentsObserver {
   AwHitTestData last_hit_test_data_;
 
   bool has_new_hit_test_data_;
-
-  service_manager::BinderRegistry registry_;
 
   // Some WebView users might want to show their own error pages / logic.
   bool will_suppress_error_page_ = false;

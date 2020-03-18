@@ -1110,9 +1110,13 @@ void ShelfView::SwapButtons(views::View* button_to_swap, bool with_next) {
 
   // Swapping items in the model is sufficient, everything will then be
   // reflected in the views.
-  if (model_->Swap(src_index, with_next))
+  if (model_->Swap(src_index, with_next)) {
     AnimateToIdealBounds();
-  // TODO(manucornet): Announce the swap to screen readers.
+    const ShelfItem src_item = model_->items()[src_index];
+    const ShelfItem dst_item =
+        model_->items()[src_index + (with_next ? 1 : -1)];
+    AnnounceSwapEvent(src_item, dst_item);
+  }
 }
 
 void ShelfView::PointerPressedOnButton(views::View* view,
@@ -1621,6 +1625,23 @@ void ShelfView::AnnouncePinUnpinEvent(const ShelfItem& item, bool pinned) {
   base::string16 announcement = l10n_util::GetStringFUTF16(
       pinned ? IDS_SHELF_ITEM_WAS_PINNED : IDS_SHELF_ITEM_WAS_UNPINNED,
       item_title);
+  announcement_view_->GetViewAccessibility().OverrideName(announcement);
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                               /*send_native_event=*/true);
+}
+
+void ShelfView::AnnounceSwapEvent(const ShelfItem& first_item,
+                                  const ShelfItem& second_item) {
+  base::string16 first_item_title =
+      first_item.title.empty()
+          ? l10n_util::GetStringUTF16(IDS_SHELF_ITEM_GENERIC_NAME)
+          : first_item.title;
+  base::string16 second_item_title =
+      second_item.title.empty()
+          ? l10n_util::GetStringUTF16(IDS_SHELF_ITEM_GENERIC_NAME)
+          : second_item.title;
+  base::string16 announcement = l10n_util::GetStringFUTF16(
+      IDS_SHELF_ITEMS_WERE_SWAPPED, first_item_title, second_item_title);
   announcement_view_->GetViewAccessibility().OverrideName(announcement);
   announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
                                                /*send_native_event=*/true);

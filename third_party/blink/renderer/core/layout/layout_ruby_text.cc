@@ -64,7 +64,7 @@ void LayoutRubyText::AdjustInlineDirectionLineBounds(
     return LayoutBlockFlow::AdjustInlineDirectionLineBounds(
         expansion_opportunity_count, logical_left, logical_width);
 
-  int max_preferred_logical_width = MaxPreferredLogicalWidth().ToInt();
+  int max_preferred_logical_width = PreferredLogicalWidths().max_size.ToInt();
   if (max_preferred_logical_width >= logical_width)
     return;
 

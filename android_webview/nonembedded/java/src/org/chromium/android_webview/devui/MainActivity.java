@@ -65,8 +65,7 @@ public class MainActivity extends Activity {
             return true;
         });
 
-        mDifferentPackageError =
-                new WebViewPackageError(this, findViewById(R.id.main_activity_layout));
+        mDifferentPackageError = new WebViewPackageError(this);
         // show the dialog once when the activity is created.
         mDifferentPackageError.showDialogIfDifferent();
     }

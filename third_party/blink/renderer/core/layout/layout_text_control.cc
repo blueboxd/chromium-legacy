@@ -208,22 +208,25 @@ float LayoutTextControl::GetAvgCharWidth(const AtomicString& family) const {
   return font.Width(text_run);
 }
 
-void LayoutTextControl::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
+MinMaxSizes LayoutTextControl::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth();
+
   // Use average character width. Matches IE.
   AtomicString family =
       StyleRef().GetFont().GetFontDescription().Family().Family();
-  max_logical_width = PreferredContentLogicalWidth(
+  sizes.max_size += PreferredContentLogicalWidth(
       const_cast<LayoutTextControl*>(this)->GetAvgCharWidth(family));
   if (InnerEditorElement()) {
     if (LayoutBox* inner_editor_layout_box =
-            InnerEditorElement()->GetLayoutBox())
-      max_logical_width += inner_editor_layout_box->PaddingStart() +
-                           inner_editor_layout_box->PaddingEnd();
+            InnerEditorElement()->GetLayoutBox()) {
+      sizes.max_size += inner_editor_layout_box->PaddingStart() +
+                        inner_editor_layout_box->PaddingEnd();
+    }
   }
   if (!StyleRef().LogicalWidth().IsPercentOrCalc())
-    min_logical_width = max_logical_width;
+    sizes.min_size = sizes.max_size;
+  return sizes;
 }
 
 void LayoutTextControl::AddOutlineRects(Vector<PhysicalRect>& rects,

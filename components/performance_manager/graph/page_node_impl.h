@@ -29,8 +29,7 @@ class PageNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
-  PageNodeImpl(GraphImpl* graph,
-               const WebContentsProxy& contents_proxy,
+  PageNodeImpl(const WebContentsProxy& contents_proxy,
                const std::string& browser_context_id,
                const GURL& visible_url,
                bool is_visible,
@@ -113,7 +112,7 @@ class PageNodeImpl
   friend class FrozenFrameAggregatorAccess;
   friend class PageLoadTrackerAccess;
 
-  // PageNode implementation:
+  // PageNode implementation.
   const std::string& GetBrowserContextID() const override;
   bool IsVisible() const override;
   base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
@@ -135,8 +134,10 @@ class PageNodeImpl
 
   void AddFrame(FrameNodeImpl* frame_node);
   void RemoveFrame(FrameNodeImpl* frame_node);
-  void JoinGraph() override;
-  void LeaveGraph() override;
+
+  // NodeBase:
+  void OnJoiningGraph() override;
+  void OnBeforeLeavingGraph() override;
 
   void SetLifecycleState(LifecycleState lifecycle_state);
   void SetOriginTrialFreezePolicy(InterventionPolicy policy);

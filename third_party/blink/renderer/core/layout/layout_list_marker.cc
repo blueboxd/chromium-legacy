@@ -147,7 +147,7 @@ void LayoutListMarker::UpdateLayout() {
   } else {
     const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
     DCHECK(font_data);
-    SetLogicalWidth(MinPreferredLogicalWidth());
+    SetLogicalWidth(PreferredLogicalWidths().min_size);
     SetLogicalHeight(
         LayoutUnit(font_data ? font_data->GetFontMetrics().Height() : 0));
   }
@@ -171,7 +171,7 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
 }
 
 void LayoutListMarker::UpdateMarginsAndContent() {
-  UpdateMargins(MinPreferredLogicalWidth());
+  UpdateMargins(PreferredLogicalWidths().min_size);
 }
 
 void LayoutListMarker::UpdateContent() {
@@ -229,41 +229,38 @@ LayoutUnit LayoutListMarker::GetWidthOfText(ListStyleCategory category) const {
   return item_width + suffix_space_width;
 }
 
-void LayoutListMarker::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
+MinMaxSizes LayoutListMarker::ComputeIntrinsicLogicalWidths() const {
   const_cast<LayoutListMarker*>(this)->UpdateContent();
 
-  LayoutUnit logical_width;
+  MinMaxSizes sizes;
   if (IsImage()) {
     LayoutSize image_size(ImageBulletSize());
-    logical_width = StyleRef().IsHorizontalWritingMode() ? image_size.Width()
-                                                         : image_size.Height();
+    sizes = StyleRef().IsHorizontalWritingMode() ? image_size.Width()
+                                                 : image_size.Height();
   } else {
     ListStyleCategory category = GetListStyleCategory();
     switch (category) {
       case ListStyleCategory::kNone:
         break;
       case ListStyleCategory::kSymbol:
-        logical_width = WidthOfSymbol(StyleRef());
+        sizes = WidthOfSymbol(StyleRef());
         break;
       case ListStyleCategory::kLanguage:
       case ListStyleCategory::kStaticString:
-        logical_width = GetWidthOfText(category);
+        sizes = GetWidthOfText(category);
         break;
     }
   }
 
-  min_logical_width = logical_width;
-  max_logical_width = logical_width;
-
-  const_cast<LayoutListMarker*>(this)->UpdateMargins(logical_width);
+  const_cast<LayoutListMarker*>(this)->UpdateMargins(sizes.min_size);
+  return sizes;
 }
 
 void LayoutListMarker::ComputePreferredLogicalWidths() {
   DCHECK(PreferredLogicalWidthsDirty());
-  ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
-                                max_preferred_logical_width_);
+  MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
+  min_preferred_logical_width_ = sizes.min_size;
+  max_preferred_logical_width_ = sizes.max_size;
   ClearPreferredLogicalWidthsDirty();
 }
 

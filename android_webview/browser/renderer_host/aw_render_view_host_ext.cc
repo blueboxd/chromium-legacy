@@ -16,7 +16,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace android_webview {
 
@@ -202,13 +201,6 @@ bool AwRenderViewHostExt::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void AwRenderViewHostExt::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void AwRenderViewHostExt::OnDocumentHasImagesResponse(

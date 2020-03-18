@@ -25,6 +25,9 @@ extern const char kBasicCard[];
 // https://developers.google.com/pay/api/web/guides/tutorial
 extern const char kGooglePay[];
 
+// Google Play Billing method name.
+extern const char kGooglePlayBilling[];
+
 // Interledger method name.
 // https://w3c.github.io/webpayments/proposals/interledger/
 extern const char kInterledger[];

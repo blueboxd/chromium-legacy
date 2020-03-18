@@ -1237,6 +1237,44 @@ message AppStatus {
   optional string required_platform_version = 5;
 }
 
+// Provides all application types information.
+message AppInfo {
+  enum AppType {
+    TYPE_UNKNOWN = 0;
+    TYPE_ARC = 1;        // Android app.
+    TYPE_BUILTIN = 2;    // Built-in app.
+    TYPE_CROSTINI = 3;   // Linux (via Crostini) app.
+    TYPE_EXTENSION = 4;  // Extension-backed app.
+    TYPE_WEB = 5;        // Web app.
+  }
+
+  enum Status {
+    STATUS_UNKNOWN = 0;
+    STATUS_INSTALLED = 1;    // Installed and launachable.
+    STATUS_DISABLED = 2;     // Disabled or terminated.
+    STATUS_UNINSTALLED = 3;  // Uninstalled by user.
+  }
+
+  // ID of the application as defined by the OS, except for web apps, where it
+  // is the start url.
+  optional string app_id = 1;
+
+  // Type of application (Chrome native, extension, Crostini, web app).
+  optional AppType app_type = 2;
+
+  // Name of the application as defined by the OS.
+  optional string app_name = 3;
+
+  // Identify if the app is installed, disabled, or uninstalled.
+  optional Status status = 4;
+
+  // The time the app was installed, if available.
+  optional int64 install_time = 5;
+
+  // Version of the application, if applicable.
+  optional string version = 7;
+}
+
 // Provides Android application permission.
 message AndroidAppPermission {
   // Name of application permission.
@@ -1806,8 +1844,7 @@ message SessionStatusReportRequest {
   // If this is a kiosk session, this is the device local account ID.
   optional string device_local_account_id = 4;
 
-  // Information about installed apps for this user on this device,
-  // including information about ARC kiosk app for ARC kiosk session.
+  // Information about kiosk app for kiosk session.
   repeated AppStatus installed_apps = 5;
 
   // Information about ARC status.
@@ -1823,6 +1860,10 @@ message SessionStatusReportRequest {
 
   // Information about Crostini status.
   optional CrostiniStatus crostini_status = 10;
+
+  // Information about all applications for this user on this device, including
+  // uninstalled and disabled apps.
+  repeated AppInfo app_infos = 11;
 }
 
 // Response from DMServer to update devices' status.

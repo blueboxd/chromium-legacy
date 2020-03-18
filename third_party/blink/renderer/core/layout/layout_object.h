@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
@@ -214,8 +215,8 @@ const int kShowTreeCharacterOffset = 39;
 // Those widths are used to determine the final layout logical width, which
 // depends on the layout algorithm used and the available logical width.
 //
-// LayoutObject only has getters for the widths (MinPreferredLogicalWidth and
-// MaxPreferredLogicalWidth). However the storage for them is in LayoutBox (see
+// LayoutObject only has a getter for the widths (PreferredLogicalWidths).
+// However the storage for them is in LayoutBox (see
 // min_preferred_logical_width_ and max_preferred_logical_width_). This is
 // because only boxes implementing the full box model have a need for them.
 // Because LayoutBlockFlow's intrinsic widths rely on the underlying text
@@ -1766,28 +1767,20 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // to any ancestor using, e.g., localToAncestorTransform.
   virtual FloatRect LocalBoundingBoxRectForAccessibility() const = 0;
 
-  // This function returns the minimal logical width this object can have
-  // without overflowing. This means that all the opportunities for wrapping
-  // have been taken.
+  // This function returns the:
+  //  - Minimal logical width this object can have without overflowing. This
+  //    means that all the opportunities for wrapping have been taken.
+  //  - Maximal logical width.
   //
   // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS above.
   //
-  // CSS 2.1 calls this width the "preferred minimum width" (thus this name)
-  // and "minimum content width" (for table).
-  // However CSS 3 calls it the "min-content inline size".
+  // CSS 2.1 calls this width the "preferred minimum width"/"preferred width"
+  // (thus this name) and "minimum content width" (for table).
+  // However CSS 3 calls it the "min/max-content inline size".
   // https://drafts.csswg.org/css-sizing-3/#min-content-inline-size
-  // TODO(jchaffraix): We will probably want to rename it to match CSS 3.
-  virtual LayoutUnit MinPreferredLogicalWidth() const { return LayoutUnit(); }
-
-  // This function returns the maximum logical width this object can have.
-  //
-  // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS above.
-  //
-  // CSS 2.1 calls this width the "preferred width". However CSS 3 calls it
-  // the "max-content inline size".
   // https://drafts.csswg.org/css-sizing-3/#max-content-inline-size
   // TODO(jchaffraix): We will probably want to rename it to match CSS 3.
-  virtual LayoutUnit MaxPreferredLogicalWidth() const { return LayoutUnit(); }
+  virtual MinMaxSizes PreferredLogicalWidths() const { return MinMaxSizes(); }
 
   const ComputedStyle* Style() const { return style_.get(); }
 

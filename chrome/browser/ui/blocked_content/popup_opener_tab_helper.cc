@@ -12,6 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -51,7 +52,8 @@ PopupOpenerTabHelper::~PopupOpenerTabHelper() {
 
 void PopupOpenerTabHelper::OnOpenedPopup(PopupTracker* popup_tracker) {
   has_opened_popup_since_last_user_gesture_ = true;
-  has_opened_popup_ = true;
+  MaybeLogPagePopupContentSettings();
+
   last_popup_open_time_ = tick_clock_->NowTicks();
 }
 
@@ -76,28 +78,6 @@ PopupOpenerTabHelper::PopupOpenerTabHelper(content::WebContents* web_contents,
       web_contents->GetVisibility() != content::Visibility::HIDDEN);
 }
 
-void PopupOpenerTabHelper::WebContentsDestroyed() {
-  // If the user has opened a popup, record the page popup settings ukm.
-  if (has_opened_popup_) {
-    const GURL& url = web_contents()->GetLastCommittedURL();
-    if (!url.is_valid()) {
-      return;
-    }
-
-    const ukm::SourceId source_id =
-        ukm::GetSourceIdForWebContentsDocument(web_contents());
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    bool user_allows_popups =
-        HostContentSettingsMapFactory::GetForProfile(profile)
-            ->GetContentSetting(url, url, ContentSettingsType::POPUPS,
-                                std::string()) == CONTENT_SETTING_ALLOW;
-    ukm::builders::Popup_Page(source_id)
-        .SetAllowed(user_allows_popups)
-        .Record(ukm::UkmRecorder::Get());
-  }
-}
-
 void PopupOpenerTabHelper::OnVisibilityChanged(content::Visibility visibility) {
   // TODO(csharrison): Consider handling OCCLUDED tabs the same way as HIDDEN
   // tabs.
@@ -117,6 +97,31 @@ void PopupOpenerTabHelper::DidStartNavigation(
   // Treat browser-initiated navigations as user interactions.
   if (!navigation_handle->IsRendererInitiated())
     has_opened_popup_since_last_user_gesture_ = false;
+}
+
+void PopupOpenerTabHelper::MaybeLogPagePopupContentSettings() {
+  // If the user has opened a popup, record the page popup settings ukm.
+  const GURL& url = web_contents()->GetLastCommittedURL();
+  if (!url.is_valid())
+    return;
+
+  const ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents());
+
+  // Do not record duplicate Popup.Page events for popups opened in succession
+  // from the same opener.
+  if (source_id != last_opener_source_id_) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    bool user_allows_popups =
+        HostContentSettingsMapFactory::GetForProfile(profile)
+            ->GetContentSetting(url, url, ContentSettingsType::POPUPS,
+                                std::string()) == CONTENT_SETTING_ALLOW;
+    ukm::builders::Popup_Page(source_id)
+        .SetAllowed(user_allows_popups)
+        .Record(ukm::UkmRecorder::Get());
+    last_opener_source_id_ = source_id;
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PopupOpenerTabHelper)

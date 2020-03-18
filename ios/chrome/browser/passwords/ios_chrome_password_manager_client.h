@@ -109,8 +109,8 @@ class IOSChromePasswordManagerClient
   void PromptUserToEnableAutosignin() override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
-  password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
-      override;
+  const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
+      const override;
   bool IsMainFrameSecure() const override;
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetProfilePasswordStore() const override;

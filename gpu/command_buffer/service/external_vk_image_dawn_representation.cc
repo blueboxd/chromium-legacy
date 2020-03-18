@@ -26,11 +26,11 @@ ExternalVkImageDawnRepresentation::ExternalVkImageDawnRepresentation(
     MemoryTypeTracker* tracker,
     WGPUDevice device,
     WGPUTextureFormat wgpu_format,
-    int memory_fd)
+    base::ScopedFD memory_fd)
     : SharedImageRepresentationDawn(manager, backing, tracker),
       device_(device),
       wgpu_format_(wgpu_format),
-      memory_fd_(memory_fd),
+      memory_fd_(std::move(memory_fd)),
       dawn_procs_(dawn_native::GetProcs()) {
   DCHECK(device_);
 
@@ -67,8 +67,7 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
   descriptor.isCleared = IsCleared();
   descriptor.allocationSize = backing_impl()->image()->device_size();
   descriptor.memoryTypeIndex = backing_impl()->image()->memory_type_index();
-  descriptor.memoryFD = memory_fd_;
-  descriptor.waitFDs = {};
+  descriptor.memoryFD = dup(memory_fd_.get());
 
   // TODO(http://crbug.com/dawn/200): We may not be obeying all of the rules
   // specified by Vulkan for external queue transfer barriers. Investigate this.

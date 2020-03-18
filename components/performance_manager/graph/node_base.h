@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -38,14 +39,19 @@ class NodeBase {
 
   // TODO(siggi): Don't store the node type, expose it on a virtual function
   //    instead.
-  NodeBase(NodeTypeEnum type, GraphImpl* graph);
+  explicit NodeBase(NodeTypeEnum type);
   virtual ~NodeBase();
 
   // May be called on any sequence.
   NodeTypeEnum type() const { return type_; }
 
-  // May be called on any sequence.
-  GraphImpl* graph() const { return graph_; }
+  // Returns the graph that contains this node. Only valid after JoinGraph() and
+  // before LeaveGraph().
+  GraphImpl* graph() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(graph_);
+    return graph_;
+  }
 
   // Returns an opaque ID for |node|, unique across all nodes in the same graph,
   // zero for nullptr. This should never be used to look up nodes, only to
@@ -72,15 +78,27 @@ class NodeBase {
     return graph->GetObservers<Observer>();
   }
 
-  // Called just before joining |graph_|, a good opportunity to initialize
+  // Joins the |graph|. Assigns |graph_| and invokes OnJoiningGraph() to allow
+  // subclasses to initialize.
+  void JoinGraph(GraphImpl* graph);
+
+  // Leaves the graph that this node is a part of. Invokes
+  // OnBeforeLeavingGraph() to allow subclasses to uninitialize then clears
+  // |graph_|.
+  void LeaveGraph();
+
+  // Called as this node is joining |graph_|, a good opportunity to initialize
   // node state.
-  virtual void JoinGraph();
+  virtual void OnJoiningGraph();
   // Called just before leaving |graph_|, a good opportunity to uninitialize
   // node state.
-  virtual void LeaveGraph();
+  virtual void OnBeforeLeavingGraph();
 
-  GraphImpl* const graph_;
   const NodeTypeEnum type_;
+
+  // Assigned when JoinGraph() is called, up until LeaveGraph() is called, where
+  // it is reset to null.
+  GraphImpl* graph_ = nullptr;
 
   // Assigned on first use, immutable from that point forward.
   int64_t serialization_id_ = 0u;
@@ -114,8 +132,7 @@ class TypedNodeBase : public NodeBase {
   using ObservedProperty =
       ObservedPropertyImpl<NodeImplClass, NodeClass, NodeObserverClass>;
 
-  explicit TypedNodeBase(GraphImpl* graph)
-      : NodeBase(NodeImplClass::Type(), graph) {}
+  TypedNodeBase() : NodeBase(NodeImplClass::Type()) {}
 
   // Helper functions for casting from NodeBase to a concrete node type. This
   // CHECKs that the cast is valid.

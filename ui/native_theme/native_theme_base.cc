@@ -1631,8 +1631,6 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kPressedAccent:
     case kDisabledAccent:
     case kFill:
-    case kHoveredFill:
-    case kPressedFill:
     case kDisabledFill:
     case kLightenLayer:
     case kProgressValue:
@@ -1653,6 +1651,10 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
       return SkColorSetRGB(0xAC, 0xAC, 0xAC);
     case kDisabledBorder:
       return SkColorSetARGB(0x4D ,0xC3, 0xC3, 0xC3);
+    case kHoveredFill:
+      return SkColorSetRGB(0x54, 0x54, 0x54);
+    case kPressedFill:
+      return SkColorSetRGB(0x45, 0x45, 0x45);
     }
   NOTREACHED();
   return gfx::kPlaceholderColor;

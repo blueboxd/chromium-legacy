@@ -819,8 +819,11 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::BlockingStarted(
   DCHECK(worker_only().is_running_task);
 
   // MayBlock with no delay reuses WillBlock implementation.
-  if (outer_->after_start().may_block_without_delay)
+  // WillBlock is always used when time overrides is active. crbug.com/1038867
+  if (outer_->after_start().may_block_without_delay ||
+      base::subtle::ScopedTimeClockOverrides::overrides_active()) {
     blocking_type = BlockingType::WILL_BLOCK;
+  }
 
   switch (blocking_type) {
     case BlockingType::MAY_BLOCK:
@@ -836,10 +839,12 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::BlockingTypeUpgraded() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
 
-  // The blocking type always being WILL_BLOCK in this experiment, it should
-  // never be considered "upgraded".
-  if (outer_->after_start().may_block_without_delay)
+  // The blocking type always being WILL_BLOCK in this experiment and with time
+  // overrides, it should never be considered "upgraded".
+  if (outer_->after_start().may_block_without_delay ||
+      base::subtle::ScopedTimeClockOverrides::overrides_active()) {
     return;
+  }
 
   {
     CheckedAutoLock auto_lock(outer_->lock_);

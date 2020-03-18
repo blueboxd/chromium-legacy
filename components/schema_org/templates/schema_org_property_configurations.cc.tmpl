@@ -14,12 +14,13 @@ PropertyConfiguration GetPropertyConfiguration(const std::string& name) {
   {% for property in properties %}
   if (name == "{{property.name}}") {
     return {
-      .text = {{'true' if property.has_text else 'false'}},
-      .date = {{'true' if property.has_date else 'false'}},
-      .time = {{'true' if property.has_time else 'false'}},
-      .date_time = {{'true' if property.has_date_time else 'false'}},
-      .number = {{'true' if property.has_number else 'false'}},
-      .thing_types = {
+      /* .text = */ {{'true' if property.has_text else 'false'}},
+      /* .date = */ {{'true' if property.has_date else 'false'}},
+      /* .time = */ {{'true' if property.has_time else 'false'}},
+      /* .date_time = */ {{'true' if property.has_date_time else 'false'}},
+      /* .number = */ {{'true' if property.has_number else 'false'}},
+      /* .url = */ {{'true' if property.has_url else 'false'}},
+      /* .thing_types = */ {
         {% for thing_type in property.thing_types %}
         "{{thing_type}}",
         {% endfor %}

@@ -25,8 +25,6 @@
 // The main entrypoint into Linux toolkit specific code. GTK code should only
 // be executed behind this interface.
 
-class PrefService;
-
 namespace aura {
 class Window;
 }
@@ -96,7 +94,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual bool GetTint(int id, color_utils::HSL* tint) const = 0;
   virtual bool GetColor(int id,
                         SkColor* color,
-                        PrefService* pref_service) const = 0;
+                        bool use_custom_frame) const = 0;
   virtual bool GetDisplayProperty(int id, int* result) const = 0;
 
   // Returns the preferences that we pass to Blink.

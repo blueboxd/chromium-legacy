@@ -31,8 +31,7 @@ constexpr size_t kFooDataSize = sizeof(uintptr_t);
 // A dummy node type so that we can exercise node attached storage code paths.
 class DummyNode : public NodeBase, public Node {
  public:
-  explicit DummyNode(GraphImpl* graph)
-      : NodeBase(NodeTypeEnum::kInvalidType, graph) {}
+  DummyNode() : NodeBase(NodeTypeEnum::kInvalidType) {}
 
   ~DummyNode() override = default;
 
@@ -233,7 +232,7 @@ TEST_F(NodeAttachedDataTest, NodeDeathDestroysData) {
 }
 
 TEST_F(NodeAttachedDataTest, NodeOwnedStorage) {
-  DummyNode dummy_node(graph());
+  DummyNode dummy_node;
 
   // The storage in the dummy node should not be initialized.
   EXPECT_FALSE(dummy_node.dummy_data_.get());
@@ -256,7 +255,7 @@ TEST_F(NodeAttachedDataTest, NodeOwnedStorage) {
 }
 
 TEST_F(NodeAttachedDataTest, NodeInternalStorage) {
-  DummyNode dummy_node(graph());
+  DummyNode dummy_node;
 
   // The storage in the dummy node should not be initialized.
   EXPECT_FALSE(dummy_node.foo_data_.Get());

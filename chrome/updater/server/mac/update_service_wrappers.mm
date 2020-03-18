@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 
 static NSString* const kCRUUpdateState = @"updateState";
@@ -18,19 +17,25 @@ static NSString* const kCRUPriority = @"priority";
 using StateChangeCallback =
     base::RepeatingCallback<void(updater::UpdateService::UpdateState)>;
 
-@implementation CRUUpdateStateObserver
+@implementation CRUUpdateStateObserver {
+  scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
+}
 
 @synthesize callback = _callback;
 
-- (instancetype)initWithRepeatingCallback:(StateChangeCallback)callback {
+- (instancetype)initWithRepeatingCallback:(StateChangeCallback)callback
+                           callbackRunner:
+                               (scoped_refptr<base::SequencedTaskRunner>)
+                                   callbackRunner {
   if (self = [super init]) {
     _callback = callback;
+    _callbackRunner = callbackRunner;
   }
   return self;
 }
 
 - (void)observeUpdateState:(CRUUpdateStateWrapper* _Nonnull)updateState {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  _callbackRunner->PostTask(
       FROM_HERE, base::BindRepeating(_callback, [updateState updateState]));
 }
 

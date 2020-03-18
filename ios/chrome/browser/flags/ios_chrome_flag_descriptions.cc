@@ -261,6 +261,12 @@ const char kInProductHelpDemoModeDescription[] =
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
 
+const char kIOSLookalikeUrlNavigationSuggestionsUIName[] =
+    "Lookalike URL Navigation Suggestions UI";
+const char kIOSLookalikeUrlNavigationSuggestionsUIDescription[] =
+    "When enabled, an interstitial will be shown on navigations to lookalike "
+    "URLs.";
+
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
     "When enabled, the bottom toolbar will not get collapsed when scrolling "

@@ -139,11 +139,13 @@ void InputRouterImpl::SendKeyboardEvent(
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
+  TRACE_EVENT0("input", "InputRouterImpl::SendGestureEvent");
   input_stream_validator_.Validate(original_gesture_event.event);
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
   if (gesture_event_queue_.PassToFlingController(gesture_event)) {
+    TRACE_EVENT_INSTANT0("input", "FilteredForFling", TRACE_EVENT_SCOPE_THREAD);
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -154,6 +156,8 @@ void InputRouterImpl::SendGestureEvent(
       touch_action_filter_.FilterGestureEvent(&gesture_event.event);
   if (compositor_touch_action_enabled_ &&
       result == FilterGestureEventResult::kFilterGestureEventDelayed) {
+    TRACE_EVENT_INSTANT0("input", "DeferredForTouchAction",
+                         TRACE_EVENT_SCOPE_THREAD);
     gesture_event_queue_.QueueDeferredEvents(gesture_event);
     return;
   }
@@ -163,10 +167,13 @@ void InputRouterImpl::SendGestureEvent(
 void InputRouterImpl::SendGestureEventWithoutQueueing(
     GestureEventWithLatencyInfo& gesture_event,
     const FilterGestureEventResult& existing_result) {
+  TRACE_EVENT0("input", "InputRouterImpl::SendGestureEventWithoutQueueing");
   DCHECK_NE(existing_result,
             FilterGestureEventResult::kFilterGestureEventDelayed);
   if (existing_result ==
       FilterGestureEventResult::kFilterGestureEventFiltered) {
+    TRACE_EVENT_INSTANT0("input", "FilteredForTouchAction",
+                         TRACE_EVENT_SCOPE_THREAD);
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -200,6 +207,8 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
   }
 
   if (!gesture_event_queue_.DebounceOrForwardEvent(gesture_event)) {
+    TRACE_EVENT_INSTANT0("input", "FilteredForDebounce",
+                         TRACE_EVENT_SCOPE_THREAD);
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -261,6 +270,7 @@ void InputRouterImpl::StopFling() {
 }
 
 void InputRouterImpl::ProcessDeferredGestureEventQueue() {
+  TRACE_EVENT0("input", "InputRouterImpl::ProcessDeferredGestureEventQueue");
   GestureEventQueue::GestureQueue deferred_gesture_events =
       gesture_event_queue_.TakeDeferredEvents();
   for (auto& it : deferred_gesture_events) {
@@ -284,6 +294,8 @@ void InputRouterImpl::FallbackCursorModeSetCursorVisibility(bool visible) {
 #endif
 
 void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
+  TRACE_EVENT1("input", "InputRouterImpl::SetTouchActionFromMain",
+               "touch_action", TouchActionToString(touch_action));
   if (compositor_touch_action_enabled_) {
     touch_action_filter_.OnSetTouchAction(touch_action);
     touch_event_queue_.StopTimeoutMonitor();

@@ -1126,8 +1126,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
 
   // Expose class attribute.
   std::string class_attr;
-  if (GetData().GetHtmlAttribute("class", &class_attr) ||
-      GetData().GetStringAttribute(ax::mojom::StringAttribute::kClassName,
+  if (GetData().GetStringAttribute(ax::mojom::StringAttribute::kClassName,
                                    &class_attr)) {
     AddAttributeToList("class", class_attr, attributes);
   }

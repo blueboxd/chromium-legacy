@@ -8,9 +8,12 @@
 #include <utility>
 
 #include "base/memory/ref_counted_memory.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/promos/promo_data.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/common/url_constants.h"
@@ -33,18 +36,30 @@ std::string FormatTemplate(int resource_id,
 }  // namespace
 
 UntrustedSource::UntrustedSource(Profile* profile)
-    : promo_service_(PromoServiceFactory::GetForProfile(profile)) {
+    : one_google_bar_service_(
+          OneGoogleBarServiceFactory::GetForProfile(profile)),
+      promo_service_(PromoServiceFactory::GetForProfile(profile)) {
   // |promo_service_| is null in incognito, or when the feature is
   // disabled.
   if (promo_service_) {
     promo_service_observer_.Add(promo_service_);
+  }
+
+  // |one_google_bar_service_| is null in incognito, or when the feature is
+  // disabled.
+  if (one_google_bar_service_) {
+    one_google_bar_service_observer_.Add(one_google_bar_service_);
   }
 }
 
 UntrustedSource::~UntrustedSource() = default;
 
 std::string UntrustedSource::GetContentSecurityPolicyScriptSrc() {
-  return "script-src 'self' 'unsafe-inline';";
+  return "script-src 'self' 'unsafe-inline' https:;";
+}
+
+std::string UntrustedSource::GetContentSecurityPolicyChildSrc() {
+  return "child-src https:;";
 }
 
 std::string UntrustedSource::GetSource() {
@@ -56,6 +71,19 @@ void UntrustedSource::StartDataRequest(
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
   const std::string path = url.has_path() ? url.path().substr(1) : "";
+  if (path == "one-google-bar" && one_google_bar_service_) {
+    one_google_bar_callbacks_.push_back(std::move(callback));
+    if (one_google_bar_callbacks_.size() == 1) {
+      one_google_bar_service_->Refresh();
+    }
+    return;
+  }
+  if (path == "one_google_bar.js") {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    std::move(callback).Run(bundle.LoadDataResourceBytes(
+        IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_JS));
+    return;
+  }
   if (path == "promo" && promo_service_) {
     promo_callbacks_.push_back(std::move(callback));
     if (promo_callbacks_.size() == 1) {
@@ -108,7 +136,34 @@ bool UntrustedSource::ShouldServiceRequest(
     return false;
   }
   const std::string path = url.path().substr(1);
-  return path == "promo" || path == "promo.js" || path == "image";
+  return path == "one-google-bar" || path == "one_google_bar.js" ||
+         path == "promo" || path == "promo.js" || path == "image";
+}
+
+void UntrustedSource::OnOneGoogleBarDataUpdated() {
+  base::Optional<OneGoogleBarData> data =
+      one_google_bar_service_->one_google_bar_data();
+  std::string html;
+  if (data.has_value()) {
+    ui::TemplateReplacements replacements;
+    replacements["barHtml"] = data->bar_html;
+    replacements["inHeadScript"] = data->in_head_script;
+    replacements["inHeadStyle"] = data->in_head_style;
+    replacements["afterBarScript"] = data->after_bar_script;
+    replacements["endOfBodyHtml"] = data->end_of_body_html;
+    replacements["endOfBodyScript"] = data->end_of_body_script;
+    html = FormatTemplate(IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_HTML,
+                          replacements);
+  }
+  for (auto& callback : one_google_bar_callbacks_) {
+    std::move(callback).Run(base::RefCountedString::TakeString(&html));
+  }
+  one_google_bar_callbacks_.clear();
+}
+
+void UntrustedSource::OnOneGoogleBarServiceShuttingDown() {
+  one_google_bar_service_observer_.RemoveAll();
+  one_google_bar_service_ = nullptr;
 }
 
 void UntrustedSource::OnPromoDataUpdated() {

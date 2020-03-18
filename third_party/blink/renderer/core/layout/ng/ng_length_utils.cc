@@ -326,7 +326,7 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
 
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
     if (!box->PreferredLogicalWidthsDirty()) {
-      return {box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};
+      return box->PreferredLogicalWidths();
     }
     // Tables are special; even if a width is specified, they may end up being
     // sized different. So we just always let the table code handle this.
@@ -339,8 +339,9 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
             input.percentage_resolution_block_size);
         needs_size_reset = true;
       }
-      MinMaxSizes result{box->MinPreferredLogicalWidth(),
-                         box->MaxPreferredLogicalWidth()};
+
+      MinMaxSizes result = box->PreferredLogicalWidths();
+
       if (needs_size_reset)
         box->ClearOverrideContainingBlockContentSize();
       return result;
@@ -392,8 +393,7 @@ MinMaxSizes ComputeMinAndMaxContentSizeForOutOfFlow(
   if ((!box->PreferredLogicalWidthsDirty() &&
        !box->NeedsPreferredWidthsRecalculation()) ||
       box->IsTable()) {
-    return MinMaxSizes{box->MinPreferredLogicalWidth(),
-                       box->MaxPreferredLogicalWidth()};
+    return box->PreferredLogicalWidths();
   }
 
   // Compute the intrinsic sizes without regard to the specified sizes.
@@ -436,15 +436,14 @@ LayoutUnit ComputeInlineSizeForFragment(
       // to subtract inline margins from the available size. The code in
       // ResolveMainInlineLength knows how to handle that, just call that.
 
-      base::Optional<MinMaxSizes> min_max_sizes = MinMaxSizes{
-          box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};
+      base::Optional<MinMaxSizes> min_max_sizes = box->PreferredLogicalWidths();
       return ResolveMainInlineLength(space, style, border_padding,
                                      min_max_sizes, logical_width);
     }
     if (logical_width.IsMinContent())
-      return box->MinPreferredLogicalWidth();
+      return box->PreferredLogicalWidths().min_size;
     if (logical_width.IsMaxContent())
-      return box->MaxPreferredLogicalWidth();
+      return box->PreferredLogicalWidths().max_size;
   }
 
   base::Optional<MinMaxSizes> min_max_sizes;

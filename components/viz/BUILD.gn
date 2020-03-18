@@ -42,6 +42,7 @@ viz_test("viz_perftests") {
     "//components/viz/common:perf_tests",
     "//components/viz/service:perf_tests",
     "//components/viz/test:test_suite",
+    "//components/viz/test:test_support",
     "//mojo/core/embedder",
     "//skia",
   ]

@@ -747,10 +747,6 @@ const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 // Enable user metrics from within the installer.
 const char kEnableUserMetrics[] = "enable-user-metrics";
 
-// Enables the fullscreen toolbar to reveal itself for tab strip changes.
-const char kEnableFullscreenToolbarReveal[] =
-    "enable-fullscreen-toolbar-reveal";
-
 // Shows a notification when quitting Chrome with hosted apps running. Default
 // behavior is to also quit all hosted apps.
 const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";

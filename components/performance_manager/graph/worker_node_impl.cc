@@ -9,13 +9,11 @@
 
 namespace performance_manager {
 
-WorkerNodeImpl::WorkerNodeImpl(GraphImpl* graph,
-                               const std::string& browser_context_id,
+WorkerNodeImpl::WorkerNodeImpl(const std::string& browser_context_id,
                                WorkerType worker_type,
                                ProcessNodeImpl* process_node,
                                const base::UnguessableToken& dev_tools_token)
-    : TypedNodeBase(graph),
-      browser_context_id_(browser_context_id),
+    : browser_context_id_(browser_context_id),
       worker_type_(worker_type),
       process_node_(process_node),
       dev_tools_token_(dev_tools_token) {
@@ -142,17 +140,14 @@ const base::flat_set<WorkerNodeImpl*>& WorkerNodeImpl::child_workers() const {
   return child_workers_;
 }
 
-void WorkerNodeImpl::JoinGraph() {
+void WorkerNodeImpl::OnJoiningGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   process_node_->AddWorker(this);
-
-  NodeBase::JoinGraph();
 }
 
-void WorkerNodeImpl::LeaveGraph() {
+void WorkerNodeImpl::OnBeforeLeavingGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NodeBase::LeaveGraph();
 
   process_node_->RemoveWorker(this);
 }

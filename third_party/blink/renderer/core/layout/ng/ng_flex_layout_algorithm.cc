@@ -552,12 +552,12 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         // cases are correctly handled by this code, which was originally
         // written for case E.
         if (child.HasAspectRatio()) {
-          // Legacy uses child.MaxPreferredLogicalWidth() for this case, which
+          // Legacy uses child.PreferredLogicalWidths() for this case, which
           // is not exactly correct.
           // TODO(dgrogan): Replace with a variant of ComputeReplacedSize that
           // ignores min-width, width, max-width.
           flex_base_border_box =
-              child.GetLayoutBox()->MaxPreferredLogicalWidth();
+              child.GetLayoutBox()->PreferredLogicalWidths().max_size;
         } else {
           flex_base_border_box = MinMaxSizesFunc().max_size;
         }

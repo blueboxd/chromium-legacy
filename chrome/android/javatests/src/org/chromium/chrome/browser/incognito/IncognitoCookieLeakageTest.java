@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,27 +17,30 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
-import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
+import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.TestParams;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -48,19 +51,13 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
+@EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class IncognitoCookieLeakageTest {
     private String mCookiesTestPage;
     private EmbeddedTestServer mTestServer;
 
-    private ActivityType mActivity1;
-    private ActivityType mActivity2;
-
     private static final String COOKIES_SETTING_PATH = "/chrome/test/data/android/cookie.html";
-
-    @ClassParameter
-    private static List<ParameterSet> sClassParams =
-            new IncognitoDataTestUtils.TestParams().getParameters();
 
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mChromeActivityTestRule =
@@ -72,35 +69,19 @@ public class IncognitoCookieLeakageTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
-    public IncognitoCookieLeakageTest(String activityType1, String activityType2) {
-        mActivity1 = IncognitoDataTestUtils.ActivityType.valueOf(activityType1);
-        mActivity2 = IncognitoDataTestUtils.ActivityType.valueOf(activityType2);
-    }
-
     @Before
-    public void setUp() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { FirstRunStatus.setFirstRunFlowComplete(true); });
+    public void setUp() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mCookiesTestPage = mTestServer.getURL(COOKIES_SETTING_PATH);
         mChromeActivityTestRule.startMainActivityOnBlankPage();
-        LibraryLoader.getInstance().ensureInitialized();
     }
 
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { IncognitoDataTestUtils.closeTabs(mChromeActivityTestRule); });
+                () -> IncognitoDataTestUtils.closeTabs(mChromeActivityTestRule));
         IncognitoDataTestUtils.finishActivities();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { FirstRunStatus.setFirstRunFlowComplete(false); });
         mTestServer.stopAndDestroyServer();
-    }
-
-    private String getExpectedString() {
-        if (CustomTabIncognitoManager.hasIsolatedProfile()) return "\"\"";
-        if (mActivity1.incognito == mActivity2.incognito) return "\"Foo=Bar\"";
-        return "\"\"";
     }
 
     private void setCookies(Tab tab) throws TimeoutException {
@@ -115,20 +96,64 @@ public class IncognitoCookieLeakageTest {
         assertEquals(expected, actual);
     }
 
+    public static class IsolatedFlowsParams implements ParameterProvider {
+        @Override
+        public List<ParameterSet> getParameters() {
+            List<ParameterSet> result = new ArrayList<>();
+            result.addAll(new TestParams.RegularToIncognito().getParameters());
+            result.addAll(new TestParams.IncognitoToRegular().getParameters());
+            return result;
+        }
+    }
+
+    // TODO(crbug.com/1023759) : Currently, incognito CCTs are not isolated and hence they share
+    // the session with other incognito sessions. Once, they are properly isolated we should change
+    // the test to expect that cookies are not leaked from/to an incognito CCT session.
     @Test
-    @LargeTest
-    @RetryOnFailure
+    @MediumTest
+    @UseMethodParameter(TestParams.IncognitoToIncognito.class)
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
-            message = "TODO(crbug.com/1023759): The test is disabled in Android Kitkat because of "
-                    + "incognito cct flakiness.")
+            message = "TODO(crbug.com/1062357): The test is disabled in "
+                    + "Android Kitkat because of incognito CCT flakiness.")
     public void
-    testCookiesLeak() throws TimeoutException {
-        Tab setter_tab = mActivity1.launchUrl(
+    testCookiesDoNotLeakFromIncognitoToIncognito(
+            String incognitoActivityType1, String incognitoActivityType2) throws TimeoutException {
+        ActivityType incognitoActivity1 = ActivityType.valueOf(incognitoActivityType1);
+        ActivityType incognitoActivity2 = ActivityType.valueOf(incognitoActivityType1);
+
+        Tab setter_tab = incognitoActivity1.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mCookiesTestPage);
         setCookies(setter_tab);
 
-        Tab getter_tab = mActivity2.launchUrl(
+        Tab getter_tab = incognitoActivity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mCookiesTestPage);
-        assertCookies(getter_tab, getExpectedString());
+
+        String expected = CustomTabIncognitoManager.hasIsolatedProfile() ? "\"\"" : "\"Foo=Bar\"";
+
+        assertCookies(getter_tab, expected);
+    }
+
+    // This test cookie does not leak from regular to incognito and from incognito to regular
+    // session across different activity types.
+    @Test
+    @MediumTest
+    @UseMethodParameter(IsolatedFlowsParams.class)
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
+            message = "TODO(crbug.com/1062357): The test is disabled in "
+                    + "Android Kitkat because of incognito CCT flakiness.")
+    public void
+    testCookiesDoNotLeakBetweenRegularAndIncognito(
+            String setterActivityType, String getterActivityType) throws TimeoutException {
+        ActivityType setterActivity = ActivityType.valueOf(setterActivityType);
+        ActivityType getterActivity = ActivityType.valueOf(getterActivityType);
+
+        Tab setter_tab = setterActivity.launchUrl(
+                mChromeActivityTestRule, mCustomTabActivityTestRule, mCookiesTestPage);
+        setCookies(setter_tab);
+
+        Tab getter_tab = getterActivity.launchUrl(
+                mChromeActivityTestRule, mCustomTabActivityTestRule, mCookiesTestPage);
+
+        assertCookies(getter_tab, "\"\"");
     }
 }

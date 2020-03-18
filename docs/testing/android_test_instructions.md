@@ -265,7 +265,7 @@ out/Debug/bin/run_content_shell_test_apk --wait-for-java-debugger
 If running with `is_debug=false`, Java stacks from logcat need to be fixed up:
 
 ```shell
-build/android/stacktrace/java_deobfuscate.py out/Release/apks/ChromePublicTest.apk.mapping < stacktrace.txt
+out/Release/bin/java_deobfuscate out/Release/apks/ChromePublicTest.apk.mapping < stacktrace.txt
 ```
 
 Any stacks produced by test runner output will already be deobfuscated.

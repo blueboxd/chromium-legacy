@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/events/event.h"
 

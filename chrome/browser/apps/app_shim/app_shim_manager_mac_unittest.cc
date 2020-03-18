@@ -90,6 +90,7 @@ class MockDelegate : public AppShimManager::Delegate {
   MOCK_METHOD0(LaunchUserManager, void());
 
   MOCK_METHOD0(MaybeTerminate, void());
+  MOCK_METHOD0(HasNonBookmarkAppWindowsOpen, bool());
 
   void SetAppCanCreateHost(bool should_create_host) {
     allow_shim_to_connect_ = should_create_host;

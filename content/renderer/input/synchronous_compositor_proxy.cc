@@ -370,6 +370,11 @@ void SynchronousCompositorProxy::BindChannel(
     mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
     mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
         compositor_request) {
+  // Reset bound mojo channels before rebinding new variants as the
+  // associated RenderWidgetHost may be reused.
+  control_host_.reset();
+  host_.reset();
+  receiver_.reset();
   control_host_.Bind(std::move(control_host));
   host_.Bind(std::move(host));
   receiver_.Bind(std::move(compositor_request));

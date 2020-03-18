@@ -51,7 +51,8 @@ using base::SysUTF8ToNSString;
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
                               reply:(void (^_Nullable)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: " << [xpcError description];
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
     reply(-1);
   };
 
@@ -66,7 +67,8 @@ using base::SysUTF8ToNSString;
 
 - (void)checkForUpdatesWithReply:(void (^_Nullable)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: " << [xpcError description];
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
     reply(-1);
   };
 
@@ -79,7 +81,8 @@ using base::SysUTF8ToNSString;
                     updateState:(CRUUpdateStateObserver* _Nonnull)updateState
                           reply:(void (^_Nullable)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
-    LOG(ERROR) << "XPC connection failed: " << [xpcError description];
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
     reply(-1);
   };
 
@@ -95,7 +98,8 @@ using base::SysUTF8ToNSString;
 namespace updater {
 
 UpdateServiceOutOfProcess::UpdateServiceOutOfProcess() {
-  _client.reset([[CRUUpdateServiceOutOfProcessImpl alloc] init]);
+  client_.reset([[CRUUpdateServiceOutOfProcessImpl alloc] init]);
+  callback_runner_ = base::SequencedTaskRunnerHandle::Get();
 }
 
 void UpdateServiceOutOfProcess::RegisterApp(
@@ -108,11 +112,11 @@ void UpdateServiceOutOfProcess::RegisterApp(
   auto reply = ^(int error) {
     RegistrationResponse response;
     response.status_code = error;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    callback_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback), response));
   };
 
-  [_client.get()
+  [client_.get()
       registerForUpdatesWithAppId:SysUTF8ToNSString(request.app_id)
                         brandCode:SysUTF8ToNSString(request.brand_code)
                               tag:SysUTF8ToNSString(request.tag)
@@ -130,12 +134,12 @@ void UpdateServiceOutOfProcess::UpdateAll(
   __block base::OnceCallback<void(update_client::Error)> block_callback =
       std::move(callback);
   auto reply = ^(int error) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    callback_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
                                   static_cast<update_client::Error>(error)));
   };
 
-  [_client.get() checkForUpdatesWithReply:reply];
+  [client_.get() checkForUpdatesWithReply:reply];
 }
 
 void UpdateServiceOutOfProcess::Update(const std::string& app_id,
@@ -147,7 +151,7 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
   __block base::OnceCallback<void(update_client::Error)> block_callback =
       std::move(done);
   auto reply = ^(int error) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    callback_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
                                   static_cast<update_client::Error>(error)));
   };
@@ -155,9 +159,11 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
   base::scoped_nsobject<CRUPriorityWrapper> priorityWrapper(
       [[CRUPriorityWrapper alloc] initWithPriority:priority]);
   base::scoped_nsobject<CRUUpdateStateObserver> stateObserver(
-      [[CRUUpdateStateObserver alloc] initWithRepeatingCallback:state_update]);
+      [[CRUUpdateStateObserver alloc]
+          initWithRepeatingCallback:state_update
+                     callbackRunner:callback_runner_]);
 
-  [_client.get() checkForUpdateWithAppID:SysUTF8ToNSString(app_id)
+  [client_.get() checkForUpdateWithAppID:SysUTF8ToNSString(app_id)
                                 priority:priorityWrapper.get()
                              updateState:stateObserver.get()
                                    reply:reply];

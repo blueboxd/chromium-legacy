@@ -328,8 +328,19 @@ TEST_F(CookieManagerImplTest, UpdateBatching) {
     CreateAndSetCookieAsync(kCookieName1, kCookieValue1);
     CreateAndSetCookieAsync(kCookieName2, kCookieValue2);
     CreateAndSetCookieAsync(kCookieName1, kCookieValue3);
+
+    // Flush the Cookie Manager so that all cookie changes are processed.
     mojo_cookie_manager_.FlushForTesting();
 
+    // Run all pending tasks so that CookiesIteratorImpl receives all cookie
+    // changes through network::mojom::CookieChangeListener::OnCookieChange().
+    // This is important because fuchsia::web::CookiesIterator::GetNext() only
+    // returns cookie updates that have already been received by the iterator
+    // implementation.
+    base::RunLoop().RunUntilIdle();
+
+    // Request cookie updates through fuchsia::web::CookiesIterator::GetNext().
+    // Multiple updates to the same cookie should be coalesced.
     GetNextCookiesIteratorResult global_updates(global_changes.get());
     global_updates.ExpectCookieUpdates(
         {{kCookieName1, kCookieValue3}, {kCookieName2, kCookieValue2}});

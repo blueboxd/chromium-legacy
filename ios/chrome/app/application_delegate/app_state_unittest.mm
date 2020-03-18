@@ -536,13 +536,7 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
       browserInitializationStage];
   [[[browserLauncher stub] andReturn:interfaceProvider] interfaceProvider];
 
-  id settingsNavigationController =
-      [OCMockObject mockForClass:[SettingsNavigationController class]];
-
   id appNavigation = [OCMockObject mockForProtocol:@protocol(AppNavigation)];
-  [[[appNavigation stub] andReturn:settingsNavigationController]
-      settingsNavigationController];
-  [[appNavigation expect] closeSettingsAnimated:NO completion:nil];
 
   id startupInformation =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];

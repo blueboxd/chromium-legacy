@@ -15,19 +15,10 @@ class ChromeBrowserState;
 // Handles the navigation through the application.
 @protocol AppNavigation<NSObject>
 
-// Navigation View controller for the settings.
-@property(nonatomic, strong)
-    SettingsNavigationController* settingsNavigationController;
-
 // Presents a SignedInAccountsViewController for |browserState| on the top view
 // controller.
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ChromeBrowserState*)browserState;
-
-// Closes the settings UI with or without animation, with an optional
-// completion block.
-- (void)closeSettingsAnimated:(BOOL)animated
-                   completion:(ProceduralBlock)completion;
 
 @end
 

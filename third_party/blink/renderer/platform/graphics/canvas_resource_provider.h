@@ -105,12 +105,20 @@ class PLATFORM_EXPORT CanvasResourceProvider
   using RestoreMatrixClipStackCb =
       base::RepeatingCallback<void(cc::PaintCanvas*)>;
 
+  // Specifies whether the provider should rasterize paint commands on the CPU
+  // or GPU. This is used to support software raster with GPU compositing
+  enum class RasterMode {
+    kGPU,
+    kCPU,
+  };
+
   static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       SkFilterQuality,
       const CanvasColorParams&,
       bool is_origin_top_left,
+      RasterMode raster_mode,
       uint32_t shared_image_usage_flags);
 
   // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.

@@ -400,7 +400,8 @@ AcceleratedStaticBitmapImage::ConvertToColorSpace(
                          ->UsageForMailbox(mailbox_);
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       Size(), ContextProviderWrapper(), kLow_SkFilterQuality,
-      CanvasColorParams(image_info), IsOriginTopLeft(), usage_flags);
+      CanvasColorParams(image_info), IsOriginTopLeft(),
+      CanvasResourceProvider::RasterMode::kGPU, usage_flags);
   if (!provider) {
     return nullptr;
   }

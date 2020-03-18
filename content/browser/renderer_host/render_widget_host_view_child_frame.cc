@@ -493,6 +493,8 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
       is_scroll_sequence_bubbling_ = false;
     }
   }
+
+  frame_connector_->DidAckGestureEvent(event, ack_result);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessTouchpadZoomEventAckInRoot(

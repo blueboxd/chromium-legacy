@@ -32,8 +32,6 @@
 #include "chrome/browser/ui/gtk/printing_gtk_util.h"
 #include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
 #include "chrome/browser/ui/gtk/settings_provider_gtk.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -491,11 +489,10 @@ bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {
   return false;
 }
 
-bool GtkUi::GetColor(int id, SkColor* color, PrefService* pref_service) const {
+bool GtkUi::GetColor(int id, SkColor* color, bool use_custom_frame) const {
   for (const ColorMap& color_map :
-       {colors_, pref_service->GetBoolean(prefs::kUseCustomChromeFrame)
-                     ? custom_frame_colors_
-                     : native_frame_colors_}) {
+       {colors_,
+        use_custom_frame ? custom_frame_colors_ : native_frame_colors_}) {
     auto it = color_map.find(id);
     if (it != color_map.end()) {
       *color = it->second;

@@ -1,5 +1,5 @@
 Document
-++Text Name='Image'
+++Text Name='Image' ClassName='headerClass'
 ++++Text Name='Image' IsControlElement=false
-++Image Name='ImageAlt'
+++Image Name='ImageAlt' ClassName='imageClass'
 <-- End-of-file -->

@@ -86,6 +86,11 @@ const autofill::LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 
+const MockPasswordFeatureManager*
+StubPasswordManagerClient::GetPasswordFeatureManager() const {
+  return &password_feature_manager_;
+}
+
 MockPasswordFeatureManager*
 StubPasswordManagerClient::GetPasswordFeatureManager() {
   return &password_feature_manager_;

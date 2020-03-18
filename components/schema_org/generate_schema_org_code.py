@@ -49,6 +49,10 @@ def get_root_type(the_class, schema):
 
     if class_obj['@id'] == schema_org_id('Thing'):
         return class_obj
+    # Consider URLs to be a base type as we will use have a struct field for
+    # them specifically.
+    if class_obj['@id'] == schema_org_id('URL'):
+        return class_obj
     if (class_obj.has_key('@type')
             and schema_org_id('DataType') in class_obj['@type']):
         return class_obj
@@ -88,6 +92,8 @@ def parse_property(prop, schema):
             parsed_prop['has_number'] = True
         elif root_type['@id'] == schema_org_id('DateTime'):
             parsed_prop['has_date_time'] = True
+        elif root_type['@id'] == schema_org_id('URL'):
+            parsed_prop['has_url'] = True
     return parsed_prop
 
 

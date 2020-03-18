@@ -614,7 +614,7 @@ input[type="button" i], input[type="submit" i], input[type="reset" i], input[typ
     align-items: flex-start;
     text-align: center;
     cursor: default;
-    color: ButtonText;
+    color: -internal-light-dark-color(ButtonText, #AAAAAA);
     padding: 2px 6px 3px 6px;
     border: 2px outset ButtonFace;
     background-color: ButtonFace;

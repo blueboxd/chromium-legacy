@@ -1,6 +1,6 @@
-groby@chromium.org
-hcarmona@chromium.org
-msw@chromium.org
-rouslan@chromium.org
+# This framework is being removed; see https://crbug.com/496955.
+# Do not add new dependencies on it.
+
+ellyjones@chromium.org
 
 # COMPONENT: UI>Browser>Bubbles

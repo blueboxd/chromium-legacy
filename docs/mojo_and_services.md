@@ -454,7 +454,24 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 }
 ```
 
-TODO: add information about workers and embedders.
+For binding an embedder-specific document-scoped interface, override
+[`ContentBrowserClient::RegisterBrowserInterfaceBindersForFrame()`](https://cs.chromium.org/chromium/src/content/public/browser/content_browser_client.h?rcl=3eb14ce219e383daa0cd8d743f475f9d9ce8c81a&l=999)
+and add the binders to the provided map.
+
+*** aside
+NOTE: if BrowserInterfaceBroker cannot find a binder for the requested
+interface, it will call `ReportNoBinderForInterface()` on the relevant
+context host, which results in a `ReportBadMessage()` call on the host's
+receiver (one of the consequences is a termination of the renderer). To
+avoid this crash in tests (when content_shell doesn't bind some
+Chrome-specific interfaces, but the renderer requests them anyway),
+use the
+[`EmptyBinderForFrame`](https://cs.chromium.org/chromium/src/content/browser/browser_interface_binders.cc?rcl=12e73e76a6898cb6df6a361a98320a8936f37949&l=407)
+helper in `browser_interface_binders.cc`. However, it is recommended
+to have the renderer and browser sides consistent if possible.
+***
+
+TODO: add information about workers.
 
 ## Additional Support
 

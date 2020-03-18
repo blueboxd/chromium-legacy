@@ -44,5 +44,9 @@ const base::Feature kUseDefaultUserAgentInWebClient{
 const base::Feature kPreserveScrollViewProperties{
     "PreserveScrollViewProperties", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI{
+    "IOSLookalikeUrlNavigationSuggestionsUI",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace web

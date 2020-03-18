@@ -394,6 +394,15 @@ class OutputResultsTable extends HTMLTableSectionElement {
 
 /** Helps track and render a single match. */
 class OutputMatch extends HTMLTableRowElement {
+  constructor() {
+    super();
+    let mouseMoved;
+    this.addEventListener('mousedown', () => mouseMoved = false);
+    this.addEventListener('mousemove', () => mouseMoved = true);
+    this.addEventListener(
+        'click', () => !mouseMoved && this.classList.toggle('expanded'));
+  }
+
   /**
    * @param {!mojom.AutocompleteMatch} match
    * @return {!OutputMatch}

@@ -246,7 +246,7 @@ bool MessagePumpFuchsia::WatchZxHandle(zx_handle_t handle,
   return controller->WaitBegin();
 }
 
-bool MessagePumpFuchsia::HandleEvents(zx_time_t deadline) {
+bool MessagePumpFuchsia::HandleIoEventsUntil(zx_time_t deadline) {
   zx_status_t status = async_loop_->Run(zx::time(deadline), /*once=*/true);
   switch (status) {
     // Return true if some tasks or events were dispatched or if the dispatcher
@@ -271,33 +271,31 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
   AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
 
   for (;;) {
-    bool did_work = delegate->DoWork();
+    const Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
     if (!keep_running_)
       break;
 
-    did_work |= delegate->DoDelayedWork(&delayed_work_time_);
+    const bool did_handle_io_event = HandleIoEventsUntil(/*deadline=*/0);
     if (!keep_running_)
       break;
 
-    did_work |= HandleEvents(/*deadline=*/0);
-    if (!keep_running_)
-      break;
-
-    if (did_work)
+    bool attempt_more_work =
+        next_work_info.is_immediate() || did_handle_io_event;
+    if (attempt_more_work)
       continue;
 
-    did_work = delegate->DoIdleWork();
+    attempt_more_work = delegate->DoIdleWork();
     if (!keep_running_)
       break;
 
-    if (did_work)
+    if (attempt_more_work)
       continue;
 
-    zx_time_t deadline = delayed_work_time_.is_null()
+    zx_time_t deadline = next_work_info.delayed_run_time.is_max()
                              ? ZX_TIME_INFINITE
-                             : delayed_work_time_.ToZxTime();
+                             : next_work_info.delayed_run_time.ToZxTime();
 
-    HandleEvents(deadline);
+    HandleIoEventsUntil(deadline);
   }
 }
 
@@ -312,10 +310,11 @@ void MessagePumpFuchsia::ScheduleWork() {
 
 void MessagePumpFuchsia::ScheduleDelayedWork(
     const TimeTicks& delayed_work_time) {
-  // We know that we can't be blocked right now since this method can only be
-  // called on the same thread as Run, so we only need to update our record of
-  // how long to sleep when we do sleep.
-  delayed_work_time_ = delayed_work_time;
+  // Since this is always called from the same thread as Run(), there is nothing
+  // to do as the loop is already running. It will wait in Run() with the
+  // correct timeout when it's out of immediate tasks.
+  // TODO(https://crbug.com/885371): Consider removing ScheduleDelayedWork()
+  // when all pumps function this way (bit.ly/merge-message-pump-do-work).
 }
 
 }  // namespace base

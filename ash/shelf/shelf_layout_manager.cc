@@ -2596,8 +2596,6 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     return false;
   }
 
-  shelf_widget_->GetDragHandle()->SetWindowDragFromShelfInProgress(true);
-
   aura::Window* window =
       GetWindowForDragToHomeOrOverview(event_in_screen.location());
   allow_fling_from_overview_to_home_ = !window;
@@ -2627,8 +2625,6 @@ base::Optional<ShelfWindowDragResult> ShelfLayoutManager::MaybeEndWindowDrag(
   if (!IsWindowDragInProgress())
     return base::nullopt;
 
-  shelf_widget_->GetDragHandle()->SetWindowDragFromShelfInProgress(false);
-
   DCHECK_EQ(drag_status_, kDragInProgress);
   base::Optional<float> velocity_y;
   if (event_in_screen.type() == ui::ET_SCROLL_FLING_START) {
@@ -2649,8 +2645,6 @@ bool ShelfLayoutManager::MaybeEndDragFromOverviewToHome(
       !Shell::Get()->overview_controller()->InOverviewSession()) {
     return false;
   }
-
-  shelf_widget_->GetDragHandle()->SetWindowDragFromShelfInProgress(false);
 
   if (event_in_screen.type() != ui::ET_SCROLL_FLING_START)
     return false;
@@ -2684,7 +2678,6 @@ void ShelfLayoutManager::MaybeCancelWindowDrag() {
     return;
 
   DCHECK_EQ(drag_status_, kDragInProgress);
-  shelf_widget_->GetDragHandle()->SetWindowDragFromShelfInProgress(false);
   window_drag_controller_->CancelDrag();
 }
 

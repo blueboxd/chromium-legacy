@@ -8,6 +8,8 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -1479,6 +1481,78 @@ TEST_P(PaintLayerScrollableAreaTest, SetSnapContainerDataNeedsUpdate) {
 
   snap_coordinator.UpdateAllSnapContainerDataIfNeeded();
   EXPECT_FALSE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
+}
+
+class ScrollTimelineForTest : public ScrollTimeline {
+ public:
+  ScrollTimelineForTest(
+      Document* document,
+      Element* scroll_source,
+      CSSPrimitiveValue* start_scroll_offset =
+          CSSNumericLiteralValue::Create(10.0,
+                                         CSSPrimitiveValue::UnitType::kPixels),
+      CSSPrimitiveValue* end_scroll_offset =
+          CSSNumericLiteralValue::Create(90.0,
+                                         CSSPrimitiveValue::UnitType::kPixels))
+      : ScrollTimeline(document,
+                       scroll_source,
+                       ScrollTimeline::Vertical,
+                       start_scroll_offset,
+                       end_scroll_offset,
+                       100.0),
+        invalidated_(false) {}
+  void Invalidate() override {
+    ScrollTimeline::Invalidate();
+    invalidated_ = true;
+  }
+  bool Invalidated() const { return invalidated_; }
+  void ResetInvalidated() { invalidated_ = false; }
+  void Trace(Visitor* visitor) override { ScrollTimeline::Trace(visitor); }
+
+ private:
+  bool invalidated_;
+};
+
+// Verify that scrollable area changes invalidate scroll timeline.
+TEST_P(PaintLayerScrollableAreaTest, ScrollTimelineInvalidation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { height: 1000px; }
+    </style>
+    <div id='scroller'>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  Element* scroller_element = GetElementById("scroller");
+  ScrollTimelineForTest* scroll_timeline =
+      MakeGarbageCollected<ScrollTimelineForTest>(&GetDocument(),
+                                                  scroller_element);
+  scroll_timeline->ResetInvalidated();
+  // Verify that changing scroll offset invalidates scroll timeline.
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 30),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  EXPECT_TRUE(scroll_timeline->Invalidated());
+  scroll_timeline->ResetInvalidated();
+
+  // Verify that changing scroller size invalidates scroll timeline.
+  scroller_element->setAttribute(html_names::kStyleAttr, "height:110px;");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(scroll_timeline->Invalidated());
+  scroll_timeline->ResetInvalidated();
+
+  // Verify that changing content area size invalidates scroll timeline.
+  Element* spacer_element = GetElementById("spacer");
+  spacer_element->setAttribute(html_names::kStyleAttr, "height:900px;");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(scroll_timeline->Invalidated());
+  scroll_timeline->ResetInvalidated();
 }
 
 }  // namespace blink

@@ -394,7 +394,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
               kAcceleratedCompositedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0, FilterQuality(),
           context_->ColorParams(), presentation_mode,
-          std::move(dispatcher_weakptr), /*is_origin_top_left=*/false);
+          std::move(dispatcher_weakptr), false /*is_origin_top_left*/);
     } else if (!can_use_gpu && HasPlaceholderCanvas()) {
       provider = CanvasResourceProvider::Create(
           surface_size,
@@ -402,12 +402,14 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
               kSoftwareCompositedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0, FilterQuality(),
           context_->ColorParams(), presentation_mode,
-          std::move(dispatcher_weakptr), /*is_origin_top_left=*/false);
+          std::move(dispatcher_weakptr), false /*is_origin_top_left=*/);
     } else if (can_use_gpu) {
       provider = CanvasResourceProvider::CreateSharedImageProvider(
           surface_size, SharedGpuContext::ContextProviderWrapper(),
           FilterQuality(), context_->ColorParams(),
-          /*is_origin_top_left=*/false, /*shared_image_usage_flags*/ 0u);
+          false /*is_origin_top_left*/,
+          CanvasResourceProvider::RasterMode::kGPU,
+          0u /*shared_image_usage_flags*/);
 
     }  // else will try the BitmapProvider
 

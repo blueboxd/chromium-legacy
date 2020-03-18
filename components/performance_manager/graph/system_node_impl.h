@@ -23,7 +23,7 @@ class SystemNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kSystem; }
 
-  explicit SystemNodeImpl(GraphImpl* graph);
+  SystemNodeImpl();
   ~SystemNodeImpl() override;
 
   // This should be called after refreshing the memory usage data of the process

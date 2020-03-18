@@ -26,7 +26,7 @@ class NavigationHandle;
 class WebContentsImpl;
 
 // Native class for GestureListenerManagerImpl.
-class GestureListenerManager : public RenderWidgetHostConnector {
+class CONTENT_EXPORT GestureListenerManager : public RenderWidgetHostConnector {
  public:
   GestureListenerManager(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
@@ -68,6 +68,8 @@ class GestureListenerManager : public RenderWidgetHostConnector {
 
   void OnNavigationFinished(NavigationHandle* navigation_handle);
   void OnRenderProcessGone();
+
+  bool IsScrollInProgressForTesting();
 
  private:
   class ResetScrollObserver;

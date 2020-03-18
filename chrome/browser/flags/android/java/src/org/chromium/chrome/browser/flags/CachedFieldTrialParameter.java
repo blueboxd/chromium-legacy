@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.flags;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 
@@ -65,8 +66,13 @@ public abstract class CachedFieldTrialParameter {
     /**
      * @return A human-readable string uniquely identifying the field trial parameter.
      */
-    private String getFullName() {
-        return getFeatureName() + ":" + getParameterName();
+    private static String generateFullName(String featureName, String parameterName) {
+        return featureName + ":" + parameterName;
+    }
+
+    static String generateSharedPreferenceKey(String featureName, String parameterName) {
+        return ChromePreferenceKeys.FLAGS_FIELD_TRIAL_PARAM_CACHED.createKey(
+                generateFullName(featureName, parameterName));
     }
 
     /**
@@ -77,7 +83,7 @@ public abstract class CachedFieldTrialParameter {
             return mPreferenceKeyOverride;
         }
 
-        return ChromePreferenceKeys.FLAGS_FIELD_TRIAL_PARAM_CACHED.createKey(getFullName());
+        return generateSharedPreferenceKey(getFeatureName(), getParameterName());
     }
 
     /**
@@ -85,4 +91,15 @@ public abstract class CachedFieldTrialParameter {
      * future run will return it, if native is not loaded yet.
      */
     abstract void cacheToDisk();
+
+    /**
+     * Forces a field trial parameter value for testing. This is only for the annotation processor
+     * to use. Tests should use "PARAMETER.setForTesting()" instead.
+     */
+    @VisibleForTesting
+    public static void setForTesting(
+            String featureName, String variationName, String stringVariationValue) {
+        CachedFeatureFlags.setOverrideTestValue(
+                generateSharedPreferenceKey(featureName, variationName), stringVariationValue);
+    }
 }

@@ -251,6 +251,10 @@ AppShimHost* AppShimManager::FindHost(Profile* profile,
   return profile_state->GetHost();
 }
 
+bool AppShimManager::HasNonBookmarkAppWindowsOpen() {
+  return delegate_->HasNonBookmarkAppWindowsOpen();
+}
+
 AppShimHost* AppShimManager::GetHostForRemoteCocoaBrowser(Browser* browser) {
   const std::string app_id =
       web_app::GetAppIdFromApplicationName(browser->app_name());

@@ -231,6 +231,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 
   bool has_size() const { return has_size_; }
 
+  virtual void DidAckGestureEvent(const blink::WebGestureEvent& event,
+                                  InputEventAckState ack_result) {}
+
  protected:
   explicit FrameConnectorDelegate(bool use_zoom_for_device_scale_factor);
 

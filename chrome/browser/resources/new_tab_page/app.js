@@ -30,6 +30,12 @@ class AppElement extends PolymerElement {
   static get properties() {
     return {
       /** @private */
+      oneGoogleBarLoaded_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @private */
       promoLoaded_: {
         type: Boolean,
         value: false,
@@ -77,16 +83,17 @@ class AppElement extends PolymerElement {
           this.theme_ = theme;
         });
     this.eventTracker_.add(window, 'message', ({data}) => {
-      if ('frameType' in data && data.frameType === 'promo' &&
-          data.messageType === 'loaded') {
-        this.promoLoaded_ = true;
-        const onResize = () => {
-          const hidePromo = this.$.mostVisited.getBoundingClientRect().bottom >=
-              this.$.promo.offsetTop;
-          this.$.promo.style.opacity = hidePromo ? 0 : 1;
-        };
-        this.eventTracker_.add(window, 'resize', onResize);
-        onResize();
+      // Something in OneGoogleBar is sending a message that is received here.
+      // Need to ignore it.
+      if (typeof data !== 'object') {
+        return;
+      }
+      if ('frameType' in data) {
+        if (data.frameType === 'promo') {
+          this.handlePromoMessage_(data);
+        } else if (data.frameType === 'one-google-bar') {
+          this.handleOneGoogleBarMessage_(data);
+        }
       }
     });
   }
@@ -144,6 +151,47 @@ class AppElement extends PolymerElement {
       return '';
     }
     return `image?${this.theme_.backgroundImageUrl.url}`;
+  }
+
+  /**
+   * Handles messages from the OneGoogleBar iframe. The messages that are
+   * handled include show bar on load and activate/deactivate.
+   * The activate/deactivate controls if the OneGoogleBar accepts mouse events,
+   * though other events need to be forwarded to support touch.
+   * @param {!Object} data
+   * @private
+   */
+  handleOneGoogleBarMessage_(data) {
+    if (data.messageType === 'loaded') {
+      this.oneGoogleBarLoaded_ = true;
+      this.eventTracker_.add(window, 'mousemove', ({x, y}) => {
+        this.$.oneGoogleBar.postMessage({type: 'mousemove', x, y});
+      });
+    } else if (data.messageType === 'activate') {
+      this.$.oneGoogleBar.style.pointerEvents = 'unset';
+    } else if (data.messageType === 'deactivate') {
+      this.$.oneGoogleBar.style.pointerEvents = 'none';
+    }
+  }
+
+  /**
+   * Handle messages from promo iframe. This shows the promo on load and sets
+   * up the show/hide logic (in case there is an overlap with most-visited
+   * tiles).
+   * @param {!Object} data
+   * @private
+   */
+  handlePromoMessage_(data) {
+    if (data.messageType === 'loaded') {
+      this.promoLoaded_ = true;
+      const onResize = () => {
+        const hidePromo = this.$.mostVisited.getBoundingClientRect().bottom >=
+            this.$.promo.offsetTop;
+        this.$.promo.style.opacity = hidePromo ? 0 : 1;
+      };
+      this.eventTracker_.add(window, 'resize', onResize);
+      onResize();
+    }
   }
 }
 

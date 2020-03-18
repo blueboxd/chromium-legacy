@@ -131,16 +131,6 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
   return ContentSettingsType::DEFAULT;
 }
 
-// Helper method to convert PermissionType to ContentSettingType.
-ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
-  ContentSettingsType content_setting =
-      PermissionTypeToContentSettingSafe(permission);
-  DCHECK_NE(content_setting, ContentSettingsType::DEFAULT)
-      << "Unknown content setting for permission "
-      << static_cast<int>(permission);
-  return content_setting;
-}
-
 void SubscriptionCallbackWrapper(
     base::OnceCallback<void(PermissionStatus)> callback,
     ContentSetting content_setting) {
@@ -282,6 +272,17 @@ void PermissionManager::Shutdown() {
         ->RemoveObserver(this);
     subscriptions_.Clear();
   }
+}
+
+// static
+ContentSettingsType PermissionManager::PermissionTypeToContentSetting(
+    PermissionType permission) {
+  ContentSettingsType content_setting =
+      PermissionTypeToContentSettingSafe(permission);
+  DCHECK_NE(content_setting, ContentSettingsType::DEFAULT)
+      << "Unknown content setting for permission "
+      << static_cast<int>(permission);
+  return content_setting;
 }
 
 PermissionContextBase* PermissionManager::GetPermissionContextForTesting(

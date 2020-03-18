@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 from benchmarks import system_health
-import page_sets
-from page_sets.system_health import story_tags
 from telemetry import benchmark
+
+from contrib.system_health_infinite_scroll import janky_story_set
 
 
 @benchmark.Info(emails=['khokhlov@google.com'])
@@ -34,5 +34,4 @@ class SystemHealthInfiniteScroll(system_health.MobileCommonSystemHealth):
     return options
 
   def CreateStorySet(self, options):
-    return page_sets.SystemHealthStorySet(
-        platform=self.PLATFORM, tag=story_tags.INFINITE_SCROLL)
+    return janky_story_set.JankyStorySet()

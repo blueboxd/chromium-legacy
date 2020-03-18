@@ -27,7 +27,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-forward.h"
 
@@ -138,12 +137,6 @@ class PaymentRequestBrowserTestBase
   void OnCvcPromptShown() override;
   void OnProcessingSpinnerShown() override;
   void OnProcessingSpinnerHidden() override;
-
-  // content::WebContentsObserver implementation.
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
   // Will call JavaScript to invoke the PaymentRequest dialog and verify that
   // it's open and ready for input.
@@ -284,8 +277,6 @@ class PaymentRequestBrowserTestBase
   bool is_valid_ssl_ = true;
   bool is_browser_window_active_ = true;
   bool skip_ui_for_basic_card_ = false;
-
-  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestBrowserTestBase);
 };

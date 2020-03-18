@@ -77,7 +77,7 @@ bool PendingAnimations::Update(
         started_synchronized_on_compositor = true;
       }
 
-      if (!animation->timeline() || !animation->timeline()->IsActive())
+      if (!animation->timeline())
         continue;
 
       if (animation->Playing() && !animation->startTime()) {
@@ -119,7 +119,6 @@ bool PendingAnimations::Update(
   }
 
   DCHECK(pending_.IsEmpty());
-  DCHECK(start_on_compositor || deferred.IsEmpty());
   for (auto& animation : deferred)
     animation->SetCompositorPending();
   DCHECK_EQ(pending_.size(), deferred.size());

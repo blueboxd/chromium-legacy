@@ -48,8 +48,8 @@ input[type="reset" i],
 input[type="color" i],
 input[type="file" i]::-webkit-file-upload-button,
 button {
-  background-color: #efefef;
-  border-color: #767676;
+  background-color: -internal-light-dark-color(#efefef, #4A4A4A);
+  border-color: -internal-light-dark-color(#767676, #C3C3C3);
 }
 
 input[type="button" i]:disabled,
@@ -58,9 +58,9 @@ input[type="reset" i]:disabled,
 input[type="color" i]:disabled,
 input[type="file" i]:disabled::-webkit-file-upload-button,
 button:disabled {
-  background-color: rgba(239, 239, 239, 0.3);
-  border-color: rgba(118, 118, 118, 0.3);
-  color: rgba(16, 16, 16, 0.3);
+  background-color: -internal-light-dark-color(rgba(239, 239, 239, 0.3), rgba(19, 1, 1, 0.3));
+  border-color: -internal-light-dark-color(rgba(118, 118, 118, 0.3), rgba(195, 195, 195, 0.3));
+  color: -internal-light-dark-color(rgba(16, 16, 16, 0.3), #aaaaaa);
 }
 
 input[type="password" i]::-internal-reveal {

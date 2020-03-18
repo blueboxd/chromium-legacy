@@ -33,53 +33,9 @@ namespace base {
 namespace {
 
 bool PumpTypeUsesDoSomeWork(MessagePumpType type) {
-  switch (type) {
-    case MessagePumpType::DEFAULT:
-      return true;
-
-    case MessagePumpType::UI:
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(USE_GLIB) || \
-    defined(OS_MACOSX)
-      return true;
-#elif defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      // MessagePumpLibevent was migrated (ref. message_pump_for_ui.h and
-      // |use_libevent| in base/BUILD.gn for enabled conditions).
-      return std::is_same<MessagePumpForUI, MessagePumpLibevent>::value;
-#else
-      // TODO(gab): Complete migration of all UI pumps to DoSomeWork() as part
-      // of crbug.com/885371.
-      return false;
-#endif
-
-    case MessagePumpType::IO:
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      return true;
-#elif defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      // MessagePumpLibevent was migrated (ref. message_pump_for_io.h and
-      // |use_libevent| in base/BUILD.gn for enabled conditions).
-      return std::is_same<MessagePumpForIO, MessagePumpLibevent>::value;
-#else
-      // TODO(gab): Complete migration of all IO pumps to DoSomeWork() as part
-      // of crbug.com/885371.
-      return false;
-#endif
-
-    case MessagePumpType::CUSTOM:
-#if defined(OS_ANDROID)
-    case MessagePumpType::JAVA:
-#endif  // defined(OS_ANDROID)
-#if defined(OS_MACOSX)
-    case MessagePumpType::NS_RUNLOOP:
-#endif  // defined(OS_MACOSX)
-#if defined(OS_WIN)
-    case MessagePumpType::UI_WITH_WM_QUIT_SUPPORT:
-#endif  // defined(OS_WIN)
-      // Not tested in this file.
-      NOTREACHED();
-      return false;
-  }
-  NOTREACHED();
-  return false;
+  // TODO(https://crbug.com/885371): All MessagePumps use DoSomeWork(). As a
+  // result, tests should be simplified.
+  return true;
 }
 
 class MockMessagePumpDelegate : public MessagePump::Delegate {

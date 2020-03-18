@@ -39,7 +39,7 @@ void LayoutFieldset::ComputePreferredLogicalWidths() {
     return;
 
   if (LayoutBox* legend = FindInFlowLegend()) {
-    int legend_min_width = legend->MinPreferredLogicalWidth().ToInt();
+    int legend_min_width = legend->PreferredLogicalWidths().min_size.ToInt();
 
     const Length& legend_margin_left = legend->StyleRef().MarginLeft();
     const Length& legend_margin_right = legend->StyleRef().MarginRight();

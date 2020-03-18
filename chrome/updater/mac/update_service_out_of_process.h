@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/updater/update_service.h"
 
 @class CRUUpdateServiceOutOfProcessImpl;
@@ -50,7 +51,8 @@ class UpdateServiceOutOfProcess : public UpdateService {
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::scoped_nsobject<CRUUpdateServiceOutOfProcessImpl> _client;
+  base::scoped_nsobject<CRUUpdateServiceOutOfProcessImpl> client_;
+  scoped_refptr<base::SequencedTaskRunner> callback_runner_;
 };
 
 }  // namespace updater

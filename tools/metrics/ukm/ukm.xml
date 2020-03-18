@@ -8511,7 +8511,7 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="Popup.Page">
+<event name="Popup.Page" singular="True">
   <owner>justinmiron@google.com</owner>
   <summary>
     Page level pop-up statistics.

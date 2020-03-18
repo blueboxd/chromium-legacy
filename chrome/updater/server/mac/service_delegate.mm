@@ -92,7 +92,9 @@
 
 @end
 
-@implementation CRUUpdateCheckXPCServiceDelegate
+@implementation CRUUpdateCheckXPCServiceDelegate {
+  std::unique_ptr<updater::UpdateService> _service;
+}
 
 - (instancetype)initWithUpdateService:
     (std::unique_ptr<updater::UpdateService>)service {

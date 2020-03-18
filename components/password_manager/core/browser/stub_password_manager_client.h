@@ -59,7 +59,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   const GURL& GetLastCommittedEntryURL() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
   const autofill::LogManager* GetLogManager() const override;
-  MockPasswordFeatureManager* GetPasswordFeatureManager() override;
+  const MockPasswordFeatureManager* GetPasswordFeatureManager() const override;
+  MockPasswordFeatureManager* GetPasswordFeatureManager();
 
 #if defined(ON_FOCUS_PING_ENABLED) || \
     defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

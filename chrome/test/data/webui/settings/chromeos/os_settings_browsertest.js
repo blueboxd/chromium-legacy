@@ -456,7 +456,7 @@ var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
 };
 
 // Disabled due to flakiness: https://crbug.com/1056268.
-TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_All', () => {
+TEST_F('OSSettingsCrostiniPageTest', 'All', () => {
   mocha.run();
 });
 

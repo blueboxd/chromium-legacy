@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -25,7 +26,10 @@ class ScrollTimelineOptions;
 // control the conversion of scroll amount to time output.
 //
 // Spec: https://wicg.github.io/scroll-animations/#scroll-timelines
-class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
+class CORE_EXPORT ScrollTimeline
+    : public AnimationTimeline,
+      public LocalFrameView::LifecycleNotificationObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(ScrollTimeline);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -80,22 +84,47 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
                                 double max_offset,
                                 double& resolved_start_scroll_offset,
                                 double& resolved_end_scroll_offset) const;
-
-  // Must be called when this ScrollTimeline is attached/detached from an
-  // animation.
-  void AnimationAttached(Animation*) override;
-  void AnimationDetached(Animation*) override;
+  // Invalidates scroll timeline as a result of scroller properties change.
+  // If the invalidation is called outside of document lifecycle update,
+  // re-snapshot state and outdate attached animations. Outdating the animations
+  // is required for correctness of user scripts querying animation properties.
+  virtual void Invalidate();
 
   CompositorAnimationTimeline* EnsureCompositorTimeline() override;
+  // TODO(crbug.com/896249): These methods are temporary and currently required
+  // to support worklet animations. Once worklet animations become animations
+  // these methods will not be longer needed. They are used to keep track of
+  // number of worklet animations attached to the scroll timeline for updating
+  // compositing state.
+  void WorkletAnimationAttached();
+  void WorkletAnimationDetached();
 
   void Trace(Visitor*) override;
 
+  // LifecycleNotificationObserver overrides.
+  void WillStartLifecycleUpdate(const LocalFrameView&) override;
+  void DidFinishLifecycleUpdate(const LocalFrameView&) override;
+
   static bool HasActiveScrollTimeline(Node* node);
+  // Invalidates scroll timelines with a given scroller node.
+  // Called when scroller properties, affecting scroll timeline state, change.
+  // These properties are scroller offset, content size, viewport size,
+  // overflow, adding and removal of scrollable area.
+  static void Invalidate(Node* node);
 
  protected:
   base::Optional<base::TimeDelta> CurrentTimeInternal() override;
 
  private:
+  // https://wicg.github.io/scroll-animations/#avoiding-cycles
+  // Snapshots scroll timeline current time and phase.
+  // Called once per animation frame or any time state changes outside of
+  // document lifecycle.
+  void SnapshotState();
+  // Snapshotting is allowed when called outside of document lifecycle update.
+  bool IsSnapshottingAllowed() const;
+  bool ComputeIsActive() const;
+
   // Use |scroll_source_| only to implement the web-exposed API but use
   // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;
@@ -104,6 +133,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   struct PhaseAndTime {
     TimelinePhase phase;
     base::Optional<base::TimeDelta> current_time;
+    bool operator==(const PhaseAndTime& other) const {
+      return phase == other.phase && current_time == other.current_time;
+    }
   };
 
   PhaseAndTime ComputePhaseAndCurrentTime() const;
@@ -112,6 +144,10 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   Member<CSSPrimitiveValue> start_scroll_offset_;
   Member<CSSPrimitiveValue> end_scroll_offset_;
   double time_range_;
+
+  bool in_lifecycle_update_;
+  // Snapshotted value produced by the last SnapshotState call.
+  PhaseAndTime phase_and_time_snapshotted_;
 };
 
 template <>

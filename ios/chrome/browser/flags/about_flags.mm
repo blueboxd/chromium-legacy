@@ -571,6 +571,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOpenDownloadsInFilesAppName,
      flag_descriptions::kOpenDownloadsInFilesAppDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kOpenDownloadsInFilesApp)},
+    {"ios-lookalike-url-navigation-suggestions-ui",
+     flag_descriptions::kIOSLookalikeUrlNavigationSuggestionsUIName,
+     flag_descriptions::kIOSLookalikeUrlNavigationSuggestionsUIDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         web::features::kIOSLookalikeUrlNavigationSuggestionsUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.

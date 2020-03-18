@@ -176,12 +176,13 @@ void PaintPreviewClient::RenderFrameDeleted(
     auto data_it = all_document_data_.find(document_guid);
     if (data_it == all_document_data_.end())
       continue;
-    data_it->second.awaiting_subframes.erase(frame_guid);
-    data_it->second.finished_subframes.insert(frame_guid);
-    data_it->second.had_error = true;
-    if (data_it->second.awaiting_subframes.empty() || is_main_frame) {
+    auto* document_data = &data_it->second;
+    document_data->awaiting_subframes.erase(frame_guid);
+    document_data->finished_subframes.insert(frame_guid);
+    document_data->had_error = true;
+    if (document_data->awaiting_subframes.empty() || is_main_frame) {
       if (is_main_frame) {
-        for (const auto& subframe_guid : data_it->second.awaiting_subframes) {
+        for (const auto& subframe_guid : document_data->awaiting_subframes) {
           auto subframe_docs = pending_previews_on_subframe_[subframe_guid];
           subframe_docs.erase(document_guid);
           if (subframe_docs.empty())
@@ -189,7 +190,7 @@ void PaintPreviewClient::RenderFrameDeleted(
         }
       }
       interface_ptrs_.erase(frame_guid);
-      OnFinished(document_guid, &data_it->second);
+      OnFinished(document_guid, document_data);
     }
   }
   pending_previews_on_subframe_.erase(frame_guid);
@@ -235,7 +236,10 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
     return;
   }
 
-  auto* document_data = &all_document_data_[params.document_guid];
+  auto it = all_document_data_.find(params.document_guid);
+  if (it == all_document_data_.end())
+    return;
+  auto* document_data = &it->second;
 
   base::UnguessableToken frame_guid = token.value();
   if (params.is_main_frame)
@@ -264,7 +268,13 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
     const base::FilePath& file_path,
     CreateResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* document_data = &all_document_data_[params.document_guid];
+  auto it = all_document_data_.find(params.document_guid);
+  if (it == all_document_data_.end())
+    return;
+  auto* document_data = &it->second;
+  if (!document_data->callback)
+    return;
+
   if (result.error != base::File::FILE_OK) {
     std::move(document_data->callback)
         .Run(params.document_guid,
@@ -281,9 +291,9 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
   }
 
   document_data->awaiting_subframes.insert(frame_guid);
-  auto it = pending_previews_on_subframe_.find(frame_guid);
-  if (it != pending_previews_on_subframe_.end()) {
-    it->second.insert(params.document_guid);
+  auto subframe_it = pending_previews_on_subframe_.find(frame_guid);
+  if (subframe_it != pending_previews_on_subframe_.end()) {
+    subframe_it->second.insert(params.document_guid);
   } else {
     pending_previews_on_subframe_.insert(std::make_pair(
         frame_guid,
@@ -319,7 +329,10 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
   if (status == mojom::PaintPreviewStatus::kOk)
     status = RecordFrame(guid, frame_guid, is_main_frame, filename,
                          render_frame_id, std::move(response));
-  auto* document_data = &all_document_data_[guid];
+  auto it = all_document_data_.find(guid);
+  if (it == all_document_data_.end())
+    return;
+  auto* document_data = &it->second;
   if (status != mojom::PaintPreviewStatus::kOk)
     document_data->had_error = true;
 
@@ -333,8 +346,12 @@ void PaintPreviewClient::MarkFrameAsProcessed(
   pending_previews_on_subframe_[frame_guid].erase(guid);
   if (pending_previews_on_subframe_[frame_guid].empty())
     interface_ptrs_.erase(frame_guid);
-  all_document_data_[guid].finished_subframes.insert(frame_guid);
-  all_document_data_[guid].awaiting_subframes.erase(frame_guid);
+  auto it = all_document_data_.find(guid);
+  if (it == all_document_data_.end())
+    return;
+  auto* document_data = &it->second;
+  document_data->finished_subframes.insert(frame_guid);
+  document_data->awaiting_subframes.erase(frame_guid);
 }
 
 mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
@@ -345,17 +362,21 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     const content::GlobalFrameRoutingId& render_frame_id,
     mojom::PaintPreviewCaptureResponsePtr response) {
   auto it = all_document_data_.find(guid);
-  DCHECK(it != all_document_data_.end());
-  if (!it->second.proto) {
-    it->second.proto = std::make_unique<PaintPreviewProto>();
-    it->second.proto->mutable_metadata()->set_url(it->second.root_url.spec());
+  if (it == all_document_data_.end())
+    return mojom::PaintPreviewStatus::kCaptureFailed;
+  auto* document_data = &it->second;
+  if (!document_data->proto) {
+    document_data->proto = std::make_unique<PaintPreviewProto>();
+    document_data->proto->mutable_metadata()->set_url(
+        document_data->root_url.spec());
   }
 
-  PaintPreviewProto* proto_ptr = it->second.proto.get();
+  PaintPreviewProto* proto_ptr = document_data->proto.get();
 
   PaintPreviewFrameProto* frame_proto;
   if (is_main_frame) {
-    it->second.main_frame_blink_recording_time = response->blink_recording_time;
+    document_data->main_frame_blink_recording_time =
+        response->blink_recording_time;
     frame_proto = proto_ptr->mutable_root_frame();
     frame_proto->set_is_main_frame(true);
     uint64_t old_style_id = MakeOldStyleId(render_frame_id);
@@ -372,15 +393,15 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
           std::move(response), frame_guid, frame_proto);
 
   for (const auto& remote_frame_guid : remote_frame_guids) {
-    if (!base::Contains(it->second.finished_subframes, remote_frame_guid))
-      it->second.awaiting_subframes.insert(remote_frame_guid);
+    if (!base::Contains(document_data->finished_subframes, remote_frame_guid))
+      document_data->awaiting_subframes.insert(remote_frame_guid);
   }
   return mojom::PaintPreviewStatus::kOk;
 }
 
 void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
                                     PaintPreviewData* document_data) {
-  if (!document_data)
+  if (!document_data || !document_data->callback)
     return;
 
   base::UmaHistogramBoolean("Browser.PaintPreview.Capture.Success",

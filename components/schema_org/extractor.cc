@@ -16,7 +16,6 @@
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
 #include "components/schema_org/schema_org_property_configurations.h"
-#include "components/schema_org/validator.h"
 
 namespace schema_org {
 
@@ -73,6 +72,10 @@ bool ParseStringValue(const std::string& property_type,
     values->string_values.push_back(value.as_string());
     return true;
   }
+  if (prop_config.url) {
+    values->url_values.push_back(GURL(value));
+    return true;
+  }
   if (prop_config.number) {
     double d;
     bool parsed_double = base::StringToDouble(value, &d);
@@ -123,7 +126,6 @@ bool ParseRepeatedValue(const base::Value::ConstListView& arr,
 
   for (size_t j = 0; j < std::min(arr.size(), kMaxRepeatedSize); ++j) {
     auto& list_item = arr[j];
-
     switch (list_item.type()) {
       case base::Value::Type::BOOLEAN: {
         values->bool_values.push_back(list_item.GetBool());

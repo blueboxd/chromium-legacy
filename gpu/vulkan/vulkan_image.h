@@ -7,11 +7,17 @@
 
 #include <vulkan/vulkan.h>
 
+#include "base/files/scoped_file.h"
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
+#include "build/build_config.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/geometry/size.h"
+
+#if defined(OS_FUCHSIA)
+#include <lib/zx/vmo.h>
+#endif
 
 namespace gpu {
 
@@ -28,24 +34,44 @@ class VULKAN_EXPORT VulkanImage {
   static std::unique_ptr<VulkanImage> Create(
       VulkanDeviceQueue* device_queue,
       const gfx::Size& size,
-      VkFormat vk_format,
-      VkImageUsageFlags vk_usage,
-      VkImageCreateFlags vk_flags = 0,
+      VkFormat format,
+      VkImageUsageFlags usage,
+      VkImageCreateFlags flags = 0,
+      VkImageTiling image_tiling = VK_IMAGE_TILING_OPTIMAL,
       void* vk_image_create_info_next = nullptr,
       void* vk_memory_allocation_info_next = nullptr);
 
+  // Create VulkanImage with external memory, it can be exported and used by
+  // foreign API
+  static std::unique_ptr<VulkanImage> CreateWithExternalMemory(
+      VulkanDeviceQueue* device_queue,
+      const gfx::Size& size,
+      VkFormat format,
+      VkImageUsageFlags usage,
+      VkImageCreateFlags flags,
+      VkImageTiling image_tiling);
+
   static std::unique_ptr<VulkanImage> Create(
       VulkanDeviceQueue* device_queue,
-      VkImage vk_image,
-      VkDeviceMemory vk_device_memory,
+      VkImage image,
+      VkDeviceMemory device_memory,
       const gfx::Size& size,
-      VkFormat vk_format,
-      VkImageTiling vk_image_tiling,
-      VkDeviceSize vk_device_size,
+      VkFormat format,
+      VkImageTiling image_tiling,
+      VkDeviceSize device_size,
       uint32_t memory_type_index,
       base::Optional<VulkanYCbCrInfo>& ycbcr_info);
 
   void Destroy();
+
+#if defined(OS_POSIX)
+  base::ScopedFD GetMemoryFd(VkExternalMemoryHandleTypeFlagBits handle_type =
+                                 VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+#endif
+
+#if defined(OS_FUCHSIA)
+  zx::vmo GetMemoryZirconHandle();
+#endif
 
   const gfx::Size& size() const { return size_; }
   VkFormat format() const { return format_; }
@@ -57,15 +83,23 @@ class VULKAN_EXPORT VulkanImage {
   }
   VkImage image() const { return image_; }
   VkDeviceMemory device_memory() const { return device_memory_; }
+  VkExternalMemoryHandleTypeFlags handle_types() const { return handle_types_; }
 
  private:
   bool Initialize(VulkanDeviceQueue* device_queue,
                   const gfx::Size& size,
-                  VkFormat vk_format,
-                  VkImageUsageFlags vk_usage,
-                  VkImageCreateFlags vk_flags,
-                  void* vk_image_create_info_next,
-                  void* vk_memory_allocation_info_next);
+                  VkFormat format,
+                  VkImageUsageFlags usage,
+                  VkImageCreateFlags flags,
+                  VkImageTiling image_tiling,
+                  void* image_create_info_next,
+                  void* memory_allocation_info_next);
+  bool InitializeWithExternalMemory(VulkanDeviceQueue* device_queue,
+                                    const gfx::Size& size,
+                                    VkFormat format,
+                                    VkImageUsageFlags usage,
+                                    VkImageCreateFlags flags,
+                                    VkImageTiling image_tiling);
 
   VulkanDeviceQueue* device_queue_ = nullptr;
   gfx::Size size_;
@@ -76,6 +110,7 @@ class VULKAN_EXPORT VulkanImage {
   base::Optional<VulkanYCbCrInfo> ycbcr_info_;
   VkImage image_ = VK_NULL_HANDLE;
   VkDeviceMemory device_memory_ = VK_NULL_HANDLE;
+  VkExternalMemoryHandleTypeFlags handle_types_ = 0;
 };
 
 }  // namespace gpu

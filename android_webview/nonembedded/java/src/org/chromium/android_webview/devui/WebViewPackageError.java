@@ -12,7 +12,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.provider.Settings;
-import android.widget.LinearLayout;
 
 import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.base.Log;
@@ -36,12 +35,12 @@ public class WebViewPackageError {
      * @param context The {@link Activity} where the error is yield.
      * @param linearLayout the linearLayout to show error message at it's top.
      */
-    public WebViewPackageError(Activity context, LinearLayout linearLayout) {
+    public WebViewPackageError(Activity context) {
         mContext = context;
 
         mErrorDialog = buildDifferentPackageErrorDialog();
-        mErrorMessage = new PersistentErrorView(context, PersistentErrorView.Type.WARNING)
-                                .prependToLinearLayout(linearLayout)
+        mErrorMessage = new PersistentErrorView(
+                context, R.id.webview_package_error, PersistentErrorView.Type.WARNING)
                                 .setText("Warning: different WebView provider - Tap for more info.")
                                 .setDialog(mErrorDialog);
     }

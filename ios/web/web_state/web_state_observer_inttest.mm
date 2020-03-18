@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/ios/ios_util.h"
+#import "base/ios/ns_error_util.h"
 #include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
@@ -341,7 +342,7 @@ ACTION_P6(VerifyErrorFinishedContext,
           context,
           nav_id,
           committed,
-          error_code) {
+          net_error_code) {
   ASSERT_EQ(*context, arg1);
   EXPECT_EQ(web_state, arg0);
   ASSERT_TRUE((*context));
@@ -357,8 +358,9 @@ ACTION_P6(VerifyErrorFinishedContext,
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   // The error code will be different on bots and for local runs. Allow both.
-  NSInteger actual_error_code = (*context)->GetError().code;
-  EXPECT_EQ(error_code, actual_error_code);
+  NSError* error =
+      base::ios::GetFinalUnderlyingErrorFromError((*context)->GetError());
+  EXPECT_EQ(net_error_code, error.code);
   EXPECT_FALSE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   ASSERT_TRUE(!web_state->IsLoading());
@@ -973,7 +975,7 @@ TEST_F(WebStateObserverTest, FailedNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
                                            /*committed=*/true,
-                                           NSURLErrorNetworkConnectionLost));
+                                           net::ERR_CONNECTION_CLOSED));
 
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
@@ -1105,7 +1107,7 @@ TEST_F(WebStateObserverTest, WebViewUnsupportedSchemeNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
                                            /*committed=*/true,
-                                           NSURLErrorUnsupportedURL));
+                                           net::ERR_INVALID_URL));
 
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
@@ -1150,7 +1152,7 @@ TEST_F(WebStateObserverTest, WebViewUnsupportedUrlNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
                                            /*committed=*/true,
-                                           web::kWebKitErrorCannotShowUrl));
+                                           net::ERR_FAILED));
 
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));

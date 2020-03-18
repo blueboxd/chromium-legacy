@@ -391,21 +391,11 @@ TEST_F(ScrollTimelineTest, ScheduleFrameOnlyWhenScrollOffsetChanges) {
   EXPECT_TRUE(scroll_timeline->NextServiceScheduled());
 }
 
-// TODO(crbug.com/944449): Currently DCHECK, verifying that animations do not
-// need an update after layout phase, fails. Scroll timeline snapshotting will
-// fix it.
-#if DCHECK_IS_ON()
-#define MAYBE_ScheduleFrameWhenScrollerLayoutChanges \
-  DISABLED_ScheduleFrameWhenScrollerLayoutChanges
-#else  // DCHECK_IS_ON()
-#define MAYBE_ScheduleFrameWhenScrollerLayoutChanges \
-  ScheduleFrameWhenScrollerLayoutChanges
-#endif
 // This test verifies scenario when scroll timeline is updated as a result of
 // layout run. In this case the expectation is that at the end of paint
 // lifecycle phase scroll timeline schedules a new frame that runs animations
 // update.
-TEST_F(ScrollTimelineTest, MAYBE_ScheduleFrameWhenScrollerLayoutChanges) {
+TEST_F(ScrollTimelineTest, ScheduleFrameWhenScrollerLayoutChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller { overflow: scroll; width: 100px; height: 100px; }
@@ -442,6 +432,59 @@ TEST_F(ScrollTimelineTest, MAYBE_ScheduleFrameWhenScrollerLayoutChanges) {
   scroll_timeline->ResetNextServiceScheduled();
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(scroll_timeline->NextServiceScheduled());
+}
+
+// Verify that scroll timeline current time is updated once upon construction
+// and at the top of every animation frame.
+TEST_F(ScrollTimelineTest, CurrentTimeUpdateAfterNewAnimationFrame) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { height: 1000px; }
+    </style>
+    <div id='scroller'>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  ASSERT_TRUE(scroller);
+  ASSERT_TRUE(scroller->HasOverflowClip());
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 5),
+                                   mojom::blink::ScrollType::kProgrammatic);
+
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  bool current_time_is_null = false;
+  double time_before = scroll_timeline->currentTime(current_time_is_null);
+  ASSERT_FALSE(current_time_is_null);
+
+  scroll_timeline->WillStartLifecycleUpdate(*GetDocument().View());
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  // Verify that the current time didn't change before there is a new animation
+  // frame.
+  EXPECT_EQ(time_before, scroll_timeline->currentTime(current_time_is_null));
+  ASSERT_FALSE(current_time_is_null);
+  scroll_timeline->DidFinishLifecycleUpdate(*GetDocument().View());
+
+  // Simulate a new animation frame  which allows the timeline to compute a new
+  // current time.
+  GetPage().Animator().ServiceScriptedAnimations(base::TimeTicks::Now());
+
+  // Verify that current time did change in the new animation frame.
+  EXPECT_NE(time_before, scroll_timeline->currentTime(current_time_is_null));
+  ASSERT_FALSE(current_time_is_null);
 }
 
 }  //  namespace blink

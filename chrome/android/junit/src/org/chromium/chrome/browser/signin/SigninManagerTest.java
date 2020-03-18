@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -89,6 +90,20 @@ public class SigninManagerTest {
 
         mAccount = new CoreAccountInfo(
                 new CoreAccountId("gaia-id-user"), "user@domain.com", "gaia-id-user");
+    }
+
+    @Test
+    public void signInFromJava() {
+        doReturn(true).when(mAccountTrackerService).checkAndSeedSystemAccounts();
+        doReturn(mAccount)
+                .when(mIdentityManager)
+                .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                        eq(mAccount.getEmail()));
+
+        mSigninManager.onFirstRunCheckDone();
+        mSigninManager.signIn(SigninAccessPoint.START_PAGE, mAccount, null);
+
+        verify(mNativeMock).fetchAndApplyCloudPolicy(anyLong(), eq(mAccount), any());
     }
 
     @Test

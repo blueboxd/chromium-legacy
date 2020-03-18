@@ -128,9 +128,7 @@ class LayoutGrid final : public LayoutBlock {
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutGrid || LayoutBlock::IsOfType(type);
   }
-  void ComputeIntrinsicLogicalWidths(
-      LayoutUnit& min_logical_width,
-      LayoutUnit& max_logical_width) const override;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
 
   void AddChild(LayoutObject* new_child,
                 LayoutObject* before_child = nullptr) override;

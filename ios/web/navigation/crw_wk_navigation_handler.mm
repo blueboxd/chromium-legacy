@@ -1679,7 +1679,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
-  navigationContext->SetError(error);
+  navigationContext->SetError(web::NetErrorFromError(error));
   navigationContext->SetIsPost([self isCurrentNavigationItemPOST]);
   // TODO(crbug.com/803631) DCHECK that self.currentNavItem is the navigation
   // item associated with navigationContext.
@@ -2003,8 +2003,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
     CHECK(!error.cert);
 #endif
-  } else {
-    error = web::NetErrorFromError(error);
   }
   NSString* failingURLString =
       error.userInfo[NSURLErrorFailingURLStringErrorKey];

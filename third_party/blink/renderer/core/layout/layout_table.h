@@ -459,8 +459,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock,
   void PaintObject(const PaintInfo&,
                    const PhysicalOffset& paint_offset) const override;
   void UpdateLayout() override;
-  void ComputeIntrinsicLogicalWidths(LayoutUnit& min_width,
-                                     LayoutUnit& max_width) const override;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
   void ComputePreferredLogicalWidths() override;
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,

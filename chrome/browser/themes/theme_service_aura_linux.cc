@@ -62,7 +62,9 @@ bool SystemThemeX11::GetTint(int id, color_utils::HSL* hsl) const {
 }
 
 bool SystemThemeX11::GetColor(int id, SkColor* color) const {
-  return linux_ui_ && linux_ui_->GetColor(id, color, pref_service_);
+  return linux_ui_ && linux_ui_->GetColor(id, color,
+                                          pref_service_->GetBoolean(
+                                              prefs::kUseCustomChromeFrame));
 }
 
 bool SystemThemeX11::GetDisplayProperty(int id, int* result) const {

@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/signin_reauth_popup_delegate.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
@@ -166,14 +167,18 @@ void SigninViewController::ShowReauthPrompt(
     base::OnceCallback<void(signin::ReauthResult)> reauth_callback) {
   CloseModalSignin();
 
-  if (!base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
-    // Reauth is disabled - always return failure.
-    std::move(reauth_callback).Run(signin::ReauthResult::kDismissedByUser);
-    return;
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  if (base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
+    delegate_ = new SigninReauthPopupDelegate(this, browser, account_id,
+                                              std::move(reauth_callback));
+  } else {
+    // This currently displays a fake dialog for development purposes. Should
+    // not be called in production.
+    delegate_ = SigninViewControllerDelegate::CreateReauthDelegate(
+        this, browser, account_id, std::move(reauth_callback));
   }
-
-  delegate_ = SigninViewControllerDelegate::CreateReauthDelegate(
-      this, browser, account_id, std::move(reauth_callback));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);
 }
 
 bool SigninViewController::ShowsModalDialog() {

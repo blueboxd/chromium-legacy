@@ -3512,6 +3512,8 @@ if (enable_java_templates) {
           # BuildConfig, NativeLibraries, etc.
           input_jar = _unprocessed_jar_path
           output_jar = _final_ijar_path
+
+          # Some prebuilts have java deps (e.g. //third_party/proguard:retrace_java).
           deps = _accumulated_deps + _java_header_deps
           if (_has_sources) {
             deps += [ ":$_compile_java_target" ]

@@ -87,6 +87,9 @@ struct LayoutSelectionStatus {
       : start(passed_start), end(passed_end), line_break(passed_line_break) {
     DCHECK_LE(start, end);
   }
+
+  bool HasValidRange() const { return start < end; }
+
   bool operator==(const LayoutSelectionStatus& other) const {
     return start == other.start && end == other.end &&
            line_break == other.line_break;

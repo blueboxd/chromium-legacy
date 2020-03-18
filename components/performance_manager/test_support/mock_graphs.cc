@@ -5,6 +5,7 @@
 #include "components/performance_manager/test_support/mock_graphs.h"
 
 #include <string>
+#include <utility>
 
 #include "base/process/process.h"
 #include "base/time/time.h"
@@ -16,8 +17,8 @@
 
 namespace performance_manager {
 
-TestProcessNodeImpl::TestProcessNodeImpl(GraphImpl* graph)
-    : ProcessNodeImpl(graph, RenderProcessHostProxy()) {}
+TestProcessNodeImpl::TestProcessNodeImpl()
+    : ProcessNodeImpl(RenderProcessHostProxy()) {}
 
 void TestProcessNodeImpl::SetProcessWithPid(base::ProcessId pid,
                                             base::Process process,

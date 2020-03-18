@@ -109,6 +109,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool IsSubtreeThrottled() const override;
   void DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
+  void DidAckGestureEvent(const blink::WebGestureEvent& event,
+                          InputEventAckState ack_result) override;
 
   // Set the visibility of immediate child views, i.e. views whose parent view
   // is |view_|.

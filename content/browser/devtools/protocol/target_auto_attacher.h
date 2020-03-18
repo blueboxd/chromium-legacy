@@ -63,6 +63,7 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
   void UpdateFrames();
+  bool is_browser_mode() const { return !renderer_channel_; }
 
   Delegate* delegate_;
   DevToolsRendererChannel* renderer_channel_;

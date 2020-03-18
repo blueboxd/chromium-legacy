@@ -55,14 +55,14 @@ inline bool EndsOnIterationBoundary(double iteration_count,
 }  // namespace
 
 static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
-  DCHECK(!IsNull(x));
-  DCHECK(!IsNull(y));
+  DCHECK(!Timing::IsNull(x));
+  DCHECK(!Timing::IsNull(y));
   return x && y ? x * y : 0;
 }
 
 static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
                                                  double y) {
-  DCHECK(!IsNull(y));
+  DCHECK(!Timing::IsNull(y));
   return x.is_zero() || y == 0 ? 0 : (x * y).InSecondsF();
 }
 

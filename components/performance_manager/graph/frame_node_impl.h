@@ -57,8 +57,7 @@ class FrameNodeImpl
   // optionally with a |parent_frame_node|. For the main frame of |page_node|
   // the |parent_frame_node| parameter should be nullptr. |render_frame_id| is
   // the routing id of the frame (from RenderFrameHost::GetRoutingID).
-  FrameNodeImpl(GraphImpl* graph,
-                ProcessNodeImpl* process_node,
+  FrameNodeImpl(ProcessNodeImpl* process_node,
                 PageNodeImpl* page_node,
                 FrameNodeImpl* parent_frame_node,
                 int frame_tree_node_id,
@@ -190,8 +189,9 @@ class FrameNodeImpl
   void AddChildFrame(FrameNodeImpl* frame_node);
   void RemoveChildFrame(FrameNodeImpl* frame_node);
 
-  void JoinGraph() override;
-  void LeaveGraph() override;
+  // NodeBase:
+  void OnJoiningGraph() override;
+  void OnBeforeLeavingGraph() override;
 
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;

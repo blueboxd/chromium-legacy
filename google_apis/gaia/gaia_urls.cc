@@ -56,6 +56,7 @@ const char kOAuthRevokeTokenUrlSuffix[] = "AuthSubRevokeToken";
 const char kListAccountsSuffix[] = "ListAccounts?json=standard";
 const char kEmbeddedSigninSuffix[] = "embedded/setup/chrome/usermenu";
 const char kAddAccountSuffix[] = "AddSession";
+const char kReauthSuffix[] = "embedded/xreauth/chrome";
 const char kGetCheckConnectionInfoSuffix[] = "GetCheckConnectionInfo";
 
 // API calls from accounts.google.com (LSO)
@@ -151,6 +152,7 @@ GaiaUrls::GaiaUrls() {
   list_accounts_url_ = gaia_url_.Resolve(kListAccountsSuffix);
   embedded_signin_url_ = gaia_url_.Resolve(kEmbeddedSigninSuffix);
   add_account_url_ = gaia_url_.Resolve(kAddAccountSuffix);
+  reauth_url_ = gaia_url_.Resolve(kReauthSuffix);
   get_check_connection_info_url_ =
       gaia_url_.Resolve(kGetCheckConnectionInfoSuffix);
 
@@ -272,6 +274,10 @@ const GURL& GaiaUrls::embedded_signin_url() const {
 
 const GURL& GaiaUrls::add_account_url() const {
   return add_account_url_;
+}
+
+const GURL& GaiaUrls::reauth_url() const {
+  return reauth_url_;
 }
 
 const std::string& GaiaUrls::oauth2_chrome_client_id() const {

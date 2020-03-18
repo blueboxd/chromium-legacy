@@ -1,0 +1,89 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "weblayer/browser/permissions/permission_manager_factory.h"
+
+#include "components/content_settings/core/common/content_settings_types.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/permission_context_base.h"
+#include "components/permissions/permission_manager.h"
+#include "content/public/browser/permission_type.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
+#include "weblayer/browser/host_content_settings_map_factory.h"
+
+namespace weblayer {
+namespace {
+// Permission context which denies all requests.
+class DeniedPermissionContext : public permissions::PermissionContextBase {
+ public:
+  DeniedPermissionContext(
+      content::BrowserContext* browser_context,
+      ContentSettingsType content_settings_type,
+      blink::mojom::FeaturePolicyFeature feature_policy_feature)
+      : PermissionContextBase(browser_context,
+                              content_settings_type,
+                              feature_policy_feature) {}
+
+ protected:
+  ContentSetting GetPermissionStatusInternal(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override {
+    return CONTENT_SETTING_BLOCK;
+  }
+
+  bool IsRestrictedToSecureOrigins() const override { return true; }
+};
+
+permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
+    content::BrowserContext* browser_context) {
+  permissions::PermissionManager::PermissionContextMap permission_contexts;
+  // For now, all requests are denied. As features are added, their permission
+  // contexts can be added here instead of DeniedPermissionContext.
+  for (content::PermissionType type : content::GetAllPermissionTypes()) {
+    ContentSettingsType content_settings_type =
+        permissions::PermissionManager::PermissionTypeToContentSetting(type);
+    permission_contexts[content_settings_type] =
+        std::make_unique<DeniedPermissionContext>(
+            browser_context, content_settings_type,
+            blink::mojom::FeaturePolicyFeature::kNotFound);
+  }
+  return permission_contexts;
+}
+}  // namespace
+
+// static
+permissions::PermissionManager* PermissionManagerFactory::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
+  return static_cast<permissions::PermissionManager*>(
+      GetInstance()->GetServiceForBrowserContext(browser_context, true));
+}
+
+// static
+PermissionManagerFactory* PermissionManagerFactory::GetInstance() {
+  static base::NoDestructor<PermissionManagerFactory> factory;
+  return factory.get();
+}
+
+PermissionManagerFactory::PermissionManagerFactory()
+    : BrowserContextKeyedServiceFactory(
+          "PermissionManagerFactory",
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
+}
+
+PermissionManagerFactory::~PermissionManagerFactory() = default;
+
+KeyedService* PermissionManagerFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new permissions::PermissionManager(context,
+                                            CreatePermissionContexts(context));
+}
+
+content::BrowserContext* PermissionManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return context;
+}
+
+}  // namespace weblayer

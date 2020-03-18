@@ -137,6 +137,10 @@ class PermissionManager : public KeyedService,
   // KeyedService implementation
   void Shutdown() override;
 
+  // Helper method to convert PermissionType to ContentSettingType.
+  static ContentSettingsType PermissionTypeToContentSetting(
+      content::PermissionType permission);
+
   PermissionContextBase* GetPermissionContextForTesting(
       ContentSettingsType type);
 

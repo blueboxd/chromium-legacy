@@ -319,7 +319,7 @@ SystemNodeImpl* GraphImpl::FindOrCreateSystemNodeImpl() {
   if (!system_node_) {
     // Create the singleton system node instance. Ownership is taken by the
     // graph.
-    system_node_ = std::make_unique<SystemNodeImpl>(this);
+    system_node_ = std::make_unique<SystemNodeImpl>();
     AddNewNode(system_node_.get());
   }
 
@@ -402,7 +402,9 @@ void GraphImpl::AddNewNode(NodeBase* new_node) {
   DCHECK(it.second);  // Inserted successfully
 
   // Allow the node to initialize itself now that it's been added.
-  new_node->JoinGraph();
+  new_node->JoinGraph(this);
+
+  // Then notify observers.
   OnNodeAdded(new_node);
 }
 

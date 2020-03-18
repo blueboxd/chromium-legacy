@@ -8,7 +8,7 @@ import re
 from pylib import constants
 
 
-_EXCLUSIONS = [
+_BLACKLIST = [
     re.compile(r'.*OWNERS'),  # Should never be included.
     re.compile(r'.*\.crx'),  # Chrome extension zip files.
     re.compile(os.path.join('.*',
@@ -36,17 +36,15 @@ _EXCLUSIONS = [
     re.compile(os.path.join('.*', 'development', 'scripts', 'stack')),
 
     # Required for java deobfuscation on the host:
-    re.compile(r'.*build/android/stacktrace/.*'),
     re.compile(r'.*third_party/jdk/.*'),
-    re.compile(r'.*third_party/proguard/.*'),
 ]
 
 
 def _FilterDataDeps(abs_host_files):
-  exclusions = _EXCLUSIONS + [
-      re.compile(os.path.join(constants.GetOutDirectory(), 'bin'))
-  ]
-  return [p for p in abs_host_files if not any(r.match(p) for r in exclusions)]
+  blacklist = _BLACKLIST + [
+      re.compile(os.path.join(constants.GetOutDirectory(), 'bin'))]
+  return [p for p in abs_host_files
+          if not any(r.match(p) for r in blacklist)]
 
 
 def DevicePathComponentsFor(host_path, output_directory):

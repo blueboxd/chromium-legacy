@@ -63,6 +63,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
+    "//base/test:test_support",
     "//components/language/ios/browser",
     "//components/prefs:test_support",
     "//components/resources",

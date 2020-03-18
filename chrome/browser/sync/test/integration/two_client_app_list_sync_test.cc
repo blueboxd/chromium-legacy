@@ -21,6 +21,8 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
@@ -37,6 +39,11 @@ using apps_helper::IsAppEnabled;
 using apps_helper::IsIncognitoEnabled;
 using apps_helper::UninstallApp;
 using apps_helper::WaitForAppService;
+using syncer::SyncUserSettings;
+using syncer::UserSelectableOsType;
+using syncer::UserSelectableOsTypeSet;
+using syncer::UserSelectableType;
+using syncer::UserSelectableTypeSet;
 
 namespace {
 
@@ -331,16 +338,31 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
-  // Disable APP_LIST by disabling kApps since APP_LIST is in kApps groups.
-  ASSERT_TRUE(
-      GetClient(1)->DisableSyncForType(syncer::UserSelectableType::kApps));
+  // Disable APP_LIST by disabling apps sync.
+  SyncUserSettings* settings = GetClient(1)->service()->GetUserSettings();
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    UserSelectableOsTypeSet types = settings->GetSelectedOsTypes();
+    types.Remove(UserSelectableOsType::kOsApps);
+    settings->SetSelectedOsTypes(/*sync_all_os_types=*/false, types);
+  } else {
+    UserSelectableTypeSet types = settings->GetSelectedTypes();
+    types.Remove(UserSelectableType::kApps);
+    settings->SetSelectedTypes(/*sync_everything=*/false, types);
+  }
   InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_FALSE(AllProfilesHaveSameAppList());
 
-  // Enable APP_LIST by enabling kApps since APP_LIST is in kApps groups.
-  ASSERT_TRUE(
-      GetClient(1)->EnableSyncForType(syncer::UserSelectableType::kApps));
+  // Enable APP_LIST by enabling apps sync.
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    UserSelectableOsTypeSet types = settings->GetSelectedOsTypes();
+    types.Put(UserSelectableOsType::kOsApps);
+    settings->SetSelectedOsTypes(/*sync_all_os_types=*/false, types);
+  } else {
+    UserSelectableTypeSet types = settings->GetSelectedTypes();
+    types.Put(UserSelectableType::kApps);
+    settings->SetSelectedTypes(/*sync_everything=*/false, types);
+  }
   AwaitQuiescenceAndInstallAppsPendingForSync();
 
   ASSERT_TRUE(AllProfilesHaveSameAppList());

@@ -1079,6 +1079,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     WebElement element = node.To<WebElement>();
     is_iframe = element.HasHTMLTagName("iframe");
 
+    if (element.HasAttribute("class")) {
+      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kClassName,
+                                    element.GetAttribute("class").Utf8());
+    }
     if (accessibility_mode_.has_mode(ui::AXMode::kHTML)) {
       // TODO(ctguil): The tagName in WebKit is lower cased but
       // HTMLElement::nodeName calls localNameUpper. Consider adding
@@ -1089,8 +1093,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       for (unsigned i = 0; i < element.AttributeCount(); ++i) {
         std::string name =
             base::ToLowerASCII(element.AttributeLocalName(i).Utf8());
-        std::string value = element.AttributeValue(i).Utf8();
-        dst->html_attributes.push_back(std::make_pair(name, value));
+        if (name != "class") {  // class already in kClassName.
+          std::string value = element.AttributeValue(i).Utf8();
+          dst->html_attributes.push_back(std::make_pair(name, value));
+        }
       }
 
 // TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac

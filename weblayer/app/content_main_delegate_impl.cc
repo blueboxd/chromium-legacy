@@ -122,8 +122,6 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // WebLayer.
   cl->AppendSwitch(switches::kDisableSpeechSynthesisAPI);
   cl->AppendSwitch(switches::kDisableSpeechAPI);
-  if (!cl->HasSwitch(switches::kWebLayerFakePermissions))
-    cl->AppendSwitch(switches::kDisablePermissionsAPI);
   // TODO(crbug.com/1057099): make presentation-api work with WebLayer.
   cl->AppendSwitch(switches::kDisablePresentationAPI);
   // TODO(crbug.com/1057100): make remote-playback-api work with WebLayer.

@@ -146,8 +146,9 @@ LayoutUnit FileUploadControlIntrinsicInlineSize(const HTMLInputElement& input,
       font, label, box.StyleRef(), TextRun::kAllowTrailingExpansion));
   if (HTMLInputElement* button = input.UploadButton()) {
     if (LayoutObject* button_layout_object = button->GetLayoutObject()) {
-      default_label_width += button_layout_object->MaxPreferredLogicalWidth() +
-                             LayoutFileUploadControl::kAfterButtonSpacing;
+      default_label_width +=
+          button_layout_object->PreferredLogicalWidths().max_size +
+          LayoutFileUploadControl::kAfterButtonSpacing;
     }
   }
   return LayoutUnit(
@@ -1488,30 +1489,12 @@ bool LayoutBox::ApplyBoxClips(
   return does_intersect;
 }
 
-void LayoutBox::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  min_logical_width =
-      MinPreferredLogicalWidth() - BorderAndPaddingLogicalWidth();
-  max_logical_width =
-      MaxPreferredLogicalWidth() - BorderAndPaddingLogicalWidth();
-}
-
-LayoutUnit LayoutBox::MinPreferredLogicalWidth() const {
-  if (PreferredLogicalWidthsDirty()) {
-#if DCHECK_IS_ON()
-    SetLayoutNeededForbiddenScope layout_forbidden_scope(
-        const_cast<LayoutBox&>(*this));
-#endif
-    const_cast<LayoutBox*>(this)->ComputePreferredLogicalWidths();
-    DCHECK(!PreferredLogicalWidthsDirty());
-  }
-
-  return min_preferred_logical_width_;
+MinMaxSizes LayoutBox::ComputeIntrinsicLogicalWidths() const {
+  return PreferredLogicalWidths();
 }
 
 DISABLE_CFI_PERF
-LayoutUnit LayoutBox::MaxPreferredLogicalWidth() const {
+MinMaxSizes LayoutBox::PreferredLogicalWidths() const {
   if (PreferredLogicalWidthsDirty()) {
 #if DCHECK_IS_ON()
     SetLayoutNeededForbiddenScope layout_forbidden_scope(
@@ -1521,7 +1504,7 @@ LayoutUnit LayoutBox::MaxPreferredLogicalWidth() const {
     DCHECK(!PreferredLogicalWidthsDirty());
   }
 
-  return max_preferred_logical_width_;
+  return {min_preferred_logical_width_, max_preferred_logical_width_};
 }
 
 LayoutUnit LayoutBox::OverrideLogicalWidth() const {
@@ -3243,7 +3226,7 @@ void LayoutBox::ComputeLogicalWidth(
     if (treat_as_replaced) {
       computed_values.extent_ = std::max(
           ComputeReplacedLogicalWidth() + BorderAndPaddingLogicalWidth(),
-          MinPreferredLogicalWidth());
+          PreferredLogicalWidths().min_size);
     }
     return;
   }
@@ -3348,33 +3331,27 @@ LayoutUnit LayoutBox::FillAvailableMeasure(LayoutUnit available_logical_width,
 DISABLE_CFI_PERF
 LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
     const Length& logical_width_length,
-    LayoutUnit available_logical_width,
-    LayoutUnit border_and_padding) const {
+    LayoutUnit available_logical_width) const {
   if (logical_width_length.IsFillAvailable()) {
     if (!IsA<HTMLMarqueeElement>(GetNode())) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kCSSFillAvailableLogicalWidth);
     }
-    return std::max(border_and_padding,
+    return std::max(BorderAndPaddingLogicalWidth(),
                     FillAvailableMeasure(available_logical_width));
   }
 
-  LayoutUnit min_logical_width;
-  LayoutUnit max_logical_width;
-  ComputeIntrinsicLogicalWidths(min_logical_width, max_logical_width);
+  MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
 
   if (logical_width_length.IsMinContent())
-    return min_logical_width + border_and_padding;
+    return sizes.min_size;
 
   if (logical_width_length.IsMaxContent())
-    return max_logical_width + border_and_padding;
+    return sizes.max_size;
 
   if (logical_width_length.IsFitContent()) {
-    min_logical_width += border_and_padding;
-    max_logical_width += border_and_padding;
-    return std::max(min_logical_width,
-                    std::min(max_logical_width,
-                             FillAvailableMeasure(available_logical_width)));
+    return sizes.ClampSizeToMinAndMax(
+        FillAvailableMeasure(available_logical_width));
   }
 
   NOTREACHED();
@@ -3399,9 +3376,10 @@ LayoutUnit LayoutBox::ComputeLogicalWidthUsing(
         ValueForLength(logical_width, available_logical_width));
   }
 
-  if (logical_width.IsIntrinsic())
-    return ComputeIntrinsicLogicalWidthUsing(
-        logical_width, available_logical_width, BorderAndPaddingLogicalWidth());
+  if (logical_width.IsIntrinsic()) {
+    return ComputeIntrinsicLogicalWidthUsing(logical_width,
+                                             available_logical_width);
+  }
 
   LayoutUnit margin_start;
   LayoutUnit margin_end;
@@ -3423,9 +3401,9 @@ LayoutUnit LayoutBox::ComputeLogicalWidthUsing(
     // TODO(crbug.com/710026): Remove const_cast
     LayoutUnit w = LogicalWidth();
     const_cast<LayoutBox*>(this)->SetLogicalWidth(LayoutUnit());
+    MinMaxSizes preferred_logical_widths = PreferredLogicalWidths();
     LayoutUnit result =
-        std::max(MinPreferredLogicalWidth(),
-                 std::min(MaxPreferredLogicalWidth(), logical_width_result));
+        preferred_logical_widths.ClampSizeToMinAndMax(logical_width_result);
     const_cast<LayoutBox*>(this)->SetLogicalWidth(w);
     return result;
   }
@@ -4127,8 +4105,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
       // MinContent/MaxContent don't need the availableLogicalWidth argument.
       LayoutUnit available_logical_width;
       return ComputeIntrinsicLogicalWidthUsing(logical_width,
-                                               available_logical_width,
-                                               BorderAndPaddingLogicalWidth()) -
+                                               available_logical_width) -
              BorderAndPaddingLogicalWidth();
     }
     case Length::kFitContent:
@@ -4150,8 +4127,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
       // FIXME: Handle cases when containing block width is calculated or
       // viewport percent. https://bugs.webkit.org/show_bug.cgi?id=91071
       if (logical_width.IsIntrinsic())
-        return ComputeIntrinsicLogicalWidthUsing(
-                   logical_width, cw, BorderAndPaddingLogicalWidth()) -
+        return ComputeIntrinsicLogicalWidthUsing(logical_width, cw) -
                BorderAndPaddingLogicalWidth();
       if (cw > 0 || (!cw && (container_logical_width.IsFixed() ||
                              container_logical_width.IsPercentOrCalc())))
@@ -4837,13 +4813,9 @@ void LayoutBox::ComputeLogicalLeftPositionedOffset(
 LayoutUnit LayoutBox::ShrinkToFitLogicalWidth(
     LayoutUnit available_logical_width,
     LayoutUnit borders_plus_padding) const {
-  LayoutUnit preferred_logical_width =
-      MaxPreferredLogicalWidth() - borders_plus_padding;
-  LayoutUnit preferred_min_logical_width =
-      MinPreferredLogicalWidth() - borders_plus_padding;
-  return std::min(
-      std::max(preferred_min_logical_width, available_logical_width),
-      preferred_logical_width);
+  MinMaxSizes sizes = PreferredLogicalWidths();
+  sizes -= borders_plus_padding;
+  return sizes.ShrinkToFit(available_logical_width);
 }
 
 void LayoutBox::ComputePositionedLogicalWidthUsing(
@@ -4862,16 +4834,16 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
 
   DCHECK(width_size_type == kMinSize ||
          width_size_type == kMainOrPreferredSize || !logical_width.IsAuto());
-  if (width_size_type == kMinSize && logical_width.IsAuto())
+  if (width_size_type == kMinSize && logical_width.IsAuto()) {
     logical_width_value = LayoutUnit();
-  else if (logical_width.IsIntrinsic())
-    logical_width_value =
-        ComputeIntrinsicLogicalWidthUsing(
-            logical_width, container_logical_width, borders_plus_padding) -
-        borders_plus_padding;
-  else
+  } else if (logical_width.IsIntrinsic()) {
+    logical_width_value = ComputeIntrinsicLogicalWidthUsing(
+                              logical_width, container_logical_width) -
+                          borders_plus_padding;
+  } else {
     logical_width_value = AdjustContentBoxLogicalWidthForBoxSizing(
         ValueForLength(logical_width, container_logical_width));
+  }
 
   // 'left' and 'right' cannot both be 'auto' because one would of been
   // converted to the static position already

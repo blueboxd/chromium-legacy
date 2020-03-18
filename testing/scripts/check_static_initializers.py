@@ -26,13 +26,18 @@ _LINUX_SI_FILE_WHITELIST = {
 }
 _LINUX_SI_FILE_WHITELIST['nacl_helper'] = _LINUX_SI_FILE_WHITELIST['chrome']
 
-# TODO: Convert Mac to use the whitelist, but need to first modify
-# //tools/mac/dump-static-initializers.py to have the same stdout format as
-# //tools/linux/dump-static-initializers.py.
-#
+# Mac can use a whitelist when a dsym is available, otherwise we will fall back
+# to checking the count.
+_MAC_SI_FILE_WHITELIST = [
+    'InstrProfilingRuntime.cpp', # Only in coverage builds, not in production.
+    'sysinfo.cc', # Only in coverage builds, not in production.
+    'iostream.cpp', # Used to setup std::cin/cout/cerr.
+]
+
 # A static initializer is needed on Mac for libc++ to set up std::cin/cout/cerr
-# before main() runs.
-EXPECTED_MAC_SI_COUNT = 1
+# before main() runs. Coverage CQ will have a dsym so only iostream.cpp needs
+# to be counted here.
+FALLBACK_EXPECTED_MAC_SI_COUNT = 1
 
 
 def run_process(command):
@@ -73,11 +78,7 @@ def main_mac(src_dir):
         si_count = int(initializers_s, 16) / word_size
 
       # Print the list of static initializers.
-      if si_count > EXPECTED_MAC_SI_COUNT:
-        print('Expected <= %d static initializers in %s, but found %d' %
-              (EXPECTED_MAC_SI_COUNT, chromium_framework_executable, si_count))
-        ret = 1
-
+      if si_count > 0:
         # First look for a dSYM to get information about the initializers. If
         # one is not present, check if there is an unstripped copy of the build
         # output.
@@ -87,8 +88,16 @@ def main_mac(src_dir):
               mac_tools_path, 'dump-static-initializers.py')
           stdout = run_process(
               [dump_static_initializers, chromium_framework_dsym])
+          for line in stdout:
+            if re.match('0x[0-9a-f]+', line) and not any(
+                f in line for f in _MAC_SI_FILE_WHITELIST):
+              ret = 1
+              print 'Found invalid static initializer: {}'.format(line)
           print stdout
-        else:
+        elif si_count > FALLBACK_EXPECTED_MAC_SI_COUNT:
+          print('Expected <= %d static initializers in %s, but found %d' %
+              (FALLBACK_EXPECTED_MAC_SI_COUNT, chromium_framework_executable,
+               si_count))
           show_mod_init_func = os.path.join(mac_tools_path,
                                             'show_mod_init_func.py')
           args = [show_mod_init_func]

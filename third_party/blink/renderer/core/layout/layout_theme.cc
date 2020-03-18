@@ -749,7 +749,7 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kButtonshadow:
       return 0xFF888888;
     case CSSValueID::kButtontext:
-      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFAAAAAA : 0xFF000000;
     case CSSValueID::kCaptiontext:
       return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kField:

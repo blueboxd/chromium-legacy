@@ -11,6 +11,7 @@
 module schema_org.improved.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/url.mojom";
 
 // A property can have arrays of different types simultaneously. Non-array
 // values are converted to arrays of one element.
@@ -21,6 +22,7 @@ struct Values {
   array<double> double_values;
   array<mojo_base.mojom.Time> date_time_values;
   array<mojo_base.mojom.TimeDelta> time_values;
+  array<url.mojom.Url> url_values;
   array<Entity> entity_values;
 };
 

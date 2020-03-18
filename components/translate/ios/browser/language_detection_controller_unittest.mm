@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/task_environment.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -78,6 +79,7 @@ class LanguageDetectionControllerTest
   web::TestWebState web_state_;
   std::unique_ptr<LanguageDetectionController> controller_;
   std::unique_ptr<LanguageDetectionDetails> details_;
+  base::test::TaskEnvironment environment_;
 
   void OnLanguageDetermined(const LanguageDetectionDetails& details) override {
     details_ = std::make_unique<LanguageDetectionDetails>(details);

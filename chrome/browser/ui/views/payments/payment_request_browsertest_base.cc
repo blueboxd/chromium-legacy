@@ -42,7 +42,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/base_event_utils.h"
@@ -257,13 +256,6 @@ void PaymentRequestBrowserTestBase::OnProcessingSpinnerShown() {
 void PaymentRequestBrowserTestBase::OnProcessingSpinnerHidden() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::PROCESSING_SPINNER_HIDDEN);
-}
-
-void PaymentRequestBrowserTestBase::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
 }
 
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {

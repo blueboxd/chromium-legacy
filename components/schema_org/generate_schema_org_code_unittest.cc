@@ -45,6 +45,10 @@ TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsNumber) {
       property::GetPropertyConfiguration(property::kDownvoteCount).number);
 }
 
+TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsUrl) {
+  EXPECT_TRUE(property::GetPropertyConfiguration(property::kContentUrl).url);
+}
+
 TEST(GenerateSchemaOrgCodeTest, GetPropertyConfigurationSetsThingType) {
   EXPECT_THAT(
       property::GetPropertyConfiguration(property::kAcceptedPaymentMethod)

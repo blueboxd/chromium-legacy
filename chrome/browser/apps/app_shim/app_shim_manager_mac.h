@@ -131,6 +131,10 @@ class AppShimManager : public AppShimHostBootstrap::Client,
     // Terminate Chrome if Chrome attempted to quit, but was prevented from
     // quitting due to apps being open.
     virtual void MaybeTerminate() = 0;
+
+    // Return true if any app windows are open. This is eventually invoked
+    // by MaybeTerminate. It does not apply to bookmark apps.
+    virtual bool HasNonBookmarkAppWindowsOpen() = 0;
   };
 
   // Helper function to get the instance on the browser process. This will be
@@ -150,6 +154,9 @@ class AppShimManager : public AppShimHostBootstrap::Client,
   // still launching), create one, which will bind to the app process when it
   // finishes launching.
   AppShimHost* GetHostForRemoteCocoaBrowser(Browser* browser);
+
+  // Return true if any non-bookmark app windows open.
+  bool HasNonBookmarkAppWindowsOpen();
 
   // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(

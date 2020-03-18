@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
 
+#include <memory>
+
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -43,7 +45,7 @@ class ProcessNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
-  ProcessNodeImpl(GraphImpl*, RenderProcessHostProxy render_process_proxy);
+  explicit ProcessNodeImpl(RenderProcessHostProxy render_process_proxy);
 
   ~ProcessNodeImpl() override;
 
@@ -141,7 +143,8 @@ class ProcessNodeImpl
 
   void OnAllFramesInProcessFrozen();
 
-  void LeaveGraph() override;
+  // NodeBase:
+  void OnBeforeLeavingGraph() override;
 
   mojo::Receiver<mojom::ProcessCoordinationUnit> receiver_{this};
 

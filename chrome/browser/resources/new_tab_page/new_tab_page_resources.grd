@@ -92,6 +92,12 @@
           file="browser_proxy.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UTILS_JS"
           file="utils.js" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_HTML"
+          file="untrusted/one_google_bar.html" type="chrome_html"
+          compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_JS"
+          file="untrusted/one_google_bar.js" type="chrome_html"
+          compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML"
           file="untrusted/promo.html" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_JS"

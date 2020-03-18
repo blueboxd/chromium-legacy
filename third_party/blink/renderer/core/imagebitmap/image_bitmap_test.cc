@@ -260,8 +260,9 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
   CanvasColorParams color_params;
   auto resource_provider = CanvasResourceProvider::CreateSharedImageProvider(
       IntSize(100, 100), context_provider_wrapper, kLow_SkFilterQuality,
-      color_params, /*is_origin_top_left=*/true,
-      /*shared_image_usage_flags=*/0u);
+      color_params, true /*is_origin_top_left*/,
+      CanvasResourceProvider::RasterMode::kGPU,
+      0u /*shared_image_usage_flags*/);
 
   scoped_refptr<StaticBitmapImage> bitmap = resource_provider->Snapshot();
   ASSERT_TRUE(bitmap->IsTextureBacked());

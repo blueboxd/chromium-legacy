@@ -36,6 +36,7 @@
 #include "cc/input/scrollbar.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -524,6 +525,13 @@ void ScrollableArea::WillRemoveScrollbar(Scrollbar& scrollbar,
 void ScrollableArea::ContentsResized() {
   if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator())
     scroll_animator->ContentsResized();
+}
+
+void ScrollableArea::InvalidateScrollTimeline() {
+  if (auto* layout_box = GetLayoutBox()) {
+    if (auto* node = layout_box->GetNode())
+      ScrollTimeline::Invalidate(node);
+  }
 }
 
 bool ScrollableArea::HasOverlayScrollbars() const {

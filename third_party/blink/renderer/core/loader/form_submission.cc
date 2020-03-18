@@ -108,7 +108,7 @@ void FormSubmission::Attributes::UpdateEncodingType(const String& type) {
 
 FormSubmission::SubmitMethod FormSubmission::Attributes::ParseMethodType(
     const String& type) {
-  if (DeprecatedEqualIgnoringCase(type, "post"))
+  if (EqualIgnoringASCIICase(type, "post"))
     return FormSubmission::kPostMethod;
   if (EqualIgnoringASCIICase(type, "dialog"))
     return FormSubmission::kDialogMethod;

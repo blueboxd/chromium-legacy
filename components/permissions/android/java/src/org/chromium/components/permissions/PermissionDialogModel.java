@@ -22,7 +22,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 class PermissionDialogModel {
     public static PropertyModel getModel(
             ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
-        Context context = delegate.getWindow().getActivity().get();
+        Context context = delegate.getWindow().getContext().get();
         assert context != null;
         LayoutInflater inflater = LayoutInflater.from(context);
         View customView = inflater.inflate(R.layout.permission_dialog, null);

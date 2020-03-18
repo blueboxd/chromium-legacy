@@ -50,11 +50,11 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kBitmap,
                                size,
-                               /*msaa_sample_count=*/0,
+                               0 /*msaa_sample_count*/,
                                filter_quality,
                                color_params,
-                               /*is_origin_top_left=*/true,
-                               /*context_provider_wrapper=*/nullptr,
+                               true /*is_origin_top_left*/,
+                               nullptr /*context_provider_wrapper*/,
                                std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderBitmap() override = default;
@@ -540,7 +540,7 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
                                msaa_sample_count,
                                filter_quality,
                                color_params,
-                               /*is_origin_top_left=*/true,
+                               true /*is_origin_top_left*/,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)),
         msaa_sample_count_(msaa_sample_count) {
@@ -625,11 +625,6 @@ enum class CanvasResourceType {
 
 const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
     CanvasResourceProvider::ResourceUsage usage) {
-  static const Vector<CanvasResourceType> kAcceleratedFallbackList({
-      CanvasResourceType::kSharedImage,
-      // Fallback to software
-      CanvasResourceType::kBitmap,
-  });
 
   static const Vector<CanvasResourceType> kCompositedFallbackList({
       CanvasResourceType::kSharedImage,
@@ -669,14 +664,14 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
 
   static const Vector<CanvasResourceType> kEmptyList;
   switch (usage) {
+    case CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage:
     case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
       NOTREACHED();
       return kEmptyList;
     case CanvasResourceProvider::ResourceUsage::
         kSoftwareCompositedResourceUsage:
       return kCompositedFallbackList;
-    case CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage:
-      return kAcceleratedFallbackList;
+
     case CanvasResourceProvider::ResourceUsage::
         kAcceleratedCompositedResourceUsage:
       return kCompositedFallbackList;
@@ -833,8 +828,7 @@ CanvasResourceProvider::CreateBitmapProvider(
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params) {
   auto provider = std::make_unique<CanvasResourceProviderBitmap>(
-      size, filter_quality, color_params,
-      /*resource_dispatcher=*/nullptr);
+      size, filter_quality, color_params, nullptr /*resource_dispatcher*/);
   if (provider->IsValid())
     return provider;
 
@@ -848,6 +842,7 @@ CanvasResourceProvider::CreateSharedImageProvider(
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     bool is_origin_top_left,
+    RasterMode raster_mode,
     uint32_t shared_image_usage_flags) {
   if (!context_provider_wrapper)
     return nullptr;
@@ -865,7 +860,8 @@ CanvasResourceProvider::CreateSharedImageProvider(
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
       size, 0 /* msaa_sample_count */, filter_quality, color_params,
       context_provider_wrapper, nullptr /*resource_dispatcher*/,
-      is_origin_top_left, true /* is_accelerated */, shared_image_usage_flags);
+      is_origin_top_left, raster_mode == RasterMode::kGPU,
+      shared_image_usage_flags);
   if (provider->IsValid())
     return provider;
 

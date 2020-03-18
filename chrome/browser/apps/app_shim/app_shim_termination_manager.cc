@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/mac/app_mode_common.h"
@@ -24,11 +24,9 @@ namespace apps {
 namespace {
 
 void TerminateIfNoAppWindows() {
-  bool app_windows_left =
-      AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0);
-  if (!app_windows_left) {
+  auto* app_shim_manager = AppShimManager::Get();
+  if (app_shim_manager && !app_shim_manager->HasNonBookmarkAppWindowsOpen())
     chrome::AttemptExit();
-  }
 }
 
 class AppShimTerminationManagerImpl : public AppShimTerminationManager,

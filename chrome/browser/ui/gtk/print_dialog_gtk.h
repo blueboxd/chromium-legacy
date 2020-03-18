@@ -12,9 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "content/public/browser/browser_thread.h"
 #include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_linux.h"
 #include "ui/aura/window_observer.h"
@@ -29,9 +28,7 @@ using printing::PrintingContextLinux;
 
 // Needs to be freed on the UI thread to clean up its GTK members variables.
 class PrintDialogGtk : public printing::PrintDialogGtkInterface,
-                       public base::RefCountedThreadSafe<
-                           PrintDialogGtk,
-                           content::BrowserThread::DeleteOnUIThread>,
+                       public base::RefCountedDeleteOnSequence<PrintDialogGtk>,
                        public aura::WindowObserver {
  public:
   // Creates and returns a print dialog.
@@ -55,8 +52,7 @@ class PrintDialogGtk : public printing::PrintDialogGtkInterface,
   void OnJobCompleted(GtkPrintJob* print_job, const GError* error);
 
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
+  friend class base::RefCountedDeleteOnSequence<PrintDialogGtk>;
   friend class base::DeleteHelper<PrintDialogGtk>;
 
   explicit PrintDialogGtk(PrintingContextLinux* context);
@@ -87,6 +83,8 @@ class PrintDialogGtk : public printing::PrintDialogGtkInterface,
   GtkPrinter* printer_ = nullptr;
 
   base::FilePath path_to_pdf_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk);
 };

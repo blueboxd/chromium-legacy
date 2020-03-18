@@ -143,28 +143,6 @@ class ScopedPixelStore {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
 };
 
-#if defined(OS_FUCHSIA)
-zx::vmo GetMemoryZirconHandle(VkDevice device,
-                              const GrVkImageInfo& image_info) {
-  VkMemoryGetZirconHandleInfoFUCHSIA get_handle_info = {};
-  get_handle_info.sType =
-      VK_STRUCTURE_TYPE_TEMP_MEMORY_GET_ZIRCON_HANDLE_INFO_FUCHSIA;
-  get_handle_info.memory = image_info.fAlloc.fMemory;
-  get_handle_info.handleType =
-      VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-
-  zx::vmo vmo;
-  VkResult result = vkGetMemoryZirconHandleFUCHSIA(device, &get_handle_info,
-                                                   vmo.reset_and_get_address());
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "vkGetMemoryFuchsiaHandleKHR failed: " << result;
-    vmo.reset();
-  }
-
-  return vmo;
-}
-#endif
-
 }  // namespace
 
 // static
@@ -205,23 +183,15 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
       vulkan_implementation->enforce_protected_memory()
           ? VK_IMAGE_CREATE_PROTECTED_BIT
           : 0;
-
-  auto handle_type = vulkan_implementation->GetExternalImageHandleType();
-
-  VkExternalMemoryImageCreateInfoKHR external_image_create_info = {
-      .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
-      .handleTypes = handle_type,
-  };
-
-  VkExportMemoryAllocateInfoKHR external_memory_allocate_info = {
-      .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR,
-      .handleTypes = handle_type,
-  };
-
-  auto image = VulkanImage::Create(
-      device_queue, size, vk_format, vk_usage, vk_flags,
-      is_external ? &external_image_create_info : nullptr,
-      is_external ? &external_memory_allocate_info : nullptr);
+  std::unique_ptr<VulkanImage> image;
+  if (is_external) {
+    image = VulkanImage::CreateWithExternalMemory(device_queue, size, vk_format,
+                                                  vk_usage, vk_flags,
+                                                  VK_IMAGE_TILING_OPTIMAL);
+  } else {
+    image = VulkanImage::Create(device_queue, size, vk_format, vk_usage,
+                                vk_flags, VK_IMAGE_TILING_OPTIMAL);
+  }
   if (!image)
     return nullptr;
 
@@ -572,13 +542,13 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
 
-  int memory_fd = GetMemoryFd(image_info);
-  if (memory_fd < 0) {
+  auto memory_fd = image_->GetMemoryFd();
+  if (!memory_fd.is_valid()) {
     return nullptr;
   }
 
   return std::make_unique<ExternalVkImageDawnRepresentation>(
-      manager, this, tracker, wgpuDevice, wgpu_format, memory_fd);
+      manager, this, tracker, wgpuDevice, wgpu_format, std::move(memory_fd));
 #else  // !defined(OS_LINUX) || !BUILDFLAG(USE_DAWN)
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
@@ -595,8 +565,8 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
   GLuint memory_object = 0;
   if (!use_separate_gl_texture()) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-    int memory_fd = GetMemoryFd(image_info);
-    if (memory_fd < 0) {
+    auto memory_fd = image_->GetMemoryFd();
+    if (!memory_fd.is_valid()) {
       return 0;
     }
 
@@ -605,9 +575,10 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glMemoryObjectParameterivEXTFn(
         memory_object, GL_DEDICATED_MEMORY_OBJECT_EXT, &dedicated);
     api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
-                               GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
+                               GL_HANDLE_TYPE_OPAQUE_FD_EXT,
+                               memory_fd.release());
 #elif defined(OS_FUCHSIA)
-    zx::vmo vmo = GetMemoryZirconHandle(device(), image_info);
+    zx::vmo vmo = image_->GetMemoryZirconHandle();
     if (!vmo)
       return 0;
 
@@ -743,23 +714,6 @@ ExternalVkImageBacking::ProduceSkia(
   return std::make_unique<ExternalVkImageSkiaRepresentation>(manager, this,
                                                              tracker);
 }
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-int ExternalVkImageBacking::GetMemoryFd(const GrVkImageInfo& image_info) {
-  VkMemoryGetFdInfoKHR get_fd_info;
-  get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-  get_fd_info.pNext = nullptr;
-  get_fd_info.memory = image_info.fAlloc.fMemory;
-  get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
-
-  int memory_fd = -1;
-  vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
-  if (memory_fd < 0) {
-    DLOG(ERROR) << "Unable to extract file descriptor out of external VkImage";
-  }
-  return memory_fd;
-}
-#endif
 
 void ExternalVkImageBacking::InstallSharedMemory(
     base::WritableSharedMemoryMapping shared_memory_mapping,

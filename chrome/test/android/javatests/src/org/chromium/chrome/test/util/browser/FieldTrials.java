@@ -8,6 +8,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -143,7 +144,7 @@ public class FieldTrials {
                 Map<String, String> params = entry.getValue();
                 for (Map.Entry<String, String> param : params.entrySet()) {
                     CachedFeatureFlags.setForTesting(featureName, true);
-                    CachedFeatureFlags.setFieldTrialsForTesting(
+                    CachedFieldTrialParameter.setForTesting(
                             featureName, param.getKey(), param.getValue());
                 }
             }

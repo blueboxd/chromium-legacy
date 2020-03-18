@@ -25,10 +25,11 @@ AnimationPlaybackEvent::AnimationPlaybackEvent(
     const AtomicString& type,
     const AnimationPlaybackEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer->hasCurrentTime())
-    current_time_ = ValueOrUnresolved(initializer->currentTime());
-  if (initializer->hasTimelineTime())
-    timeline_time_ = ValueOrUnresolved(initializer->timelineTime());
+  if (initializer->hasCurrentTime() && !std::isnan(initializer->currentTime()))
+    current_time_ = initializer->currentTime();
+  if (initializer->hasTimelineTime() &&
+      !std::isnan(initializer->timelineTime()))
+    timeline_time_ = initializer->timelineTime();
   DCHECK(!current_time_ || !std::isnan(current_time_.value()));
   DCHECK(!timeline_time_ || !std::isnan(timeline_time_.value()));
 }

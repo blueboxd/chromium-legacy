@@ -45,6 +45,9 @@ LanguageDetectionController::LanguageDetectionController(
   DCHECK(js_manager_);
 
   translate_enabled_.Init(prefs::kOfferTranslateEnabled, prefs);
+  // Attempt to detect language since preloaded tabs will not execute
+  // WebStateObserver::PageLoaded.
+  StartLanguageDetection();
   web_state_->AddObserver(this);
   subscription_ = web_state_->AddScriptCommandCallback(
       base::BindRepeating(&LanguageDetectionController::OnTextCaptured,

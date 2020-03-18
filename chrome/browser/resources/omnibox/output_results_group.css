@@ -53,6 +53,14 @@ table {
   max-height: 28px;
 }
 
+.body tr.expanded {
+  height: 200px;
+}
+
+.body tr.expanded td > * {
+  max-height: 190px;
+}
+
 .body td {
   white-space: pre-wrap;
   word-break: break-all;

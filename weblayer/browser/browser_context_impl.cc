@@ -8,6 +8,7 @@
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/permission_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_service.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "weblayer/browser/fake_permission_controller_delegate.h"
+#include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/public/common/switches.h"
 
@@ -156,7 +158,7 @@ BrowserContextImpl::GetPermissionControllerDelegate() {
     }
     return permission_controller_delegate_.get();
   }
-  return nullptr;
+  return PermissionManagerFactory::GetForBrowserContext(this);
 }
 
 content::ClientHintsControllerDelegate*

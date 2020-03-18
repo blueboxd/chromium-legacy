@@ -64,8 +64,8 @@ class TestNodeWrapper {
 template <class NodeClass>
 struct TestNodeWrapper<NodeClass>::Factory {
   template <typename... Args>
-  static std::unique_ptr<NodeClass> Create(GraphImpl* graph, Args&&... args) {
-    return std::make_unique<NodeClass>(graph, std::forward<Args>(args)...);
+  static std::unique_ptr<NodeClass> Create(Args&&... args) {
+    return std::make_unique<NodeClass>(std::forward<Args>(args)...);
   }
 };
 
@@ -74,7 +74,6 @@ struct TestNodeWrapper<NodeClass>::Factory {
 template <>
 struct TestNodeWrapper<FrameNodeImpl>::Factory {
   static std::unique_ptr<FrameNodeImpl> Create(
-      GraphImpl* graph,
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node,
@@ -84,7 +83,7 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
       int32_t browsing_instance_id = 0,
       int32_t site_instance_id = 0) {
     return std::make_unique<FrameNodeImpl>(
-        graph, process_node, page_node, parent_frame_node, frame_tree_node_id,
+        process_node, page_node, parent_frame_node, frame_tree_node_id,
         render_frame_id, token, browsing_instance_id, site_instance_id);
   }
 };
@@ -94,10 +93,9 @@ struct TestNodeWrapper<FrameNodeImpl>::Factory {
 template <>
 struct TestNodeWrapper<ProcessNodeImpl>::Factory {
   static std::unique_ptr<ProcessNodeImpl> Create(
-      GraphImpl* graph,
       RenderProcessHostProxy proxy = RenderProcessHostProxy()) {
     // Provide an empty RenderProcessHostProxy by default.
-    return std::make_unique<ProcessNodeImpl>(graph, std::move(proxy));
+    return std::make_unique<ProcessNodeImpl>(std::move(proxy));
   }
 };
 
@@ -106,14 +104,13 @@ struct TestNodeWrapper<ProcessNodeImpl>::Factory {
 template <>
 struct TestNodeWrapper<PageNodeImpl>::Factory {
   static std::unique_ptr<PageNodeImpl> Create(
-      GraphImpl* graph,
       const WebContentsProxy& wc_proxy = WebContentsProxy(),
       const std::string& browser_context_id = std::string(),
       const GURL& url = GURL(),
       bool is_visible = false,
       bool is_audible = false) {
-    return std::make_unique<PageNodeImpl>(graph, wc_proxy, browser_context_id,
-                                          url, is_visible, is_audible);
+    return std::make_unique<PageNodeImpl>(wc_proxy, browser_context_id, url,
+                                          is_visible, is_audible);
   }
 };
 
@@ -122,13 +119,12 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
 template <>
 struct TestNodeWrapper<WorkerNodeImpl>::Factory {
   static std::unique_ptr<WorkerNodeImpl> Create(
-      GraphImpl* graph,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
       const std::string& browser_context_id = std::string(),
       const base::UnguessableToken& token = base::UnguessableToken::Create()) {
-    return std::make_unique<WorkerNodeImpl>(graph, browser_context_id,
-                                            worker_type, process_node, token);
+    return std::make_unique<WorkerNodeImpl>(browser_context_id, worker_type,
+                                            process_node, token);
   }
 };
 
@@ -139,7 +135,7 @@ TestNodeWrapper<NodeClass> TestNodeWrapper<NodeClass>::Create(GraphImpl* graph,
                                                               Args&&... args) {
   // Dispatch to a helper so that we can use partial specialization.
   std::unique_ptr<NodeClass> node =
-      Factory::Create(graph, std::forward<Args>(args)...);
+      Factory::Create(std::forward<Args>(args)...);
   graph->AddNewNode(node.get());
   return TestNodeWrapper<NodeClass>(std::move(node));
 }

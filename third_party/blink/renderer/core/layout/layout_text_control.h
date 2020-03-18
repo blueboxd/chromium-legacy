@@ -81,8 +81,7 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   }
 
  private:
-  void ComputeIntrinsicLogicalWidths(LayoutUnit& min_logical_width,
-                                     LayoutUnit& max_logical_width) const final;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final;
   void RemoveLeftoverAnonymousBlock(LayoutBlock*) final {}
 
   void AddOutlineRects(Vector<PhysicalRect>&,

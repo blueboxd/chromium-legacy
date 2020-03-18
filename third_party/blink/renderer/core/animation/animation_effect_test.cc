@@ -98,7 +98,7 @@ class TestAnimationEffect : public AnimationEffect {
       bool forwards,
       base::Optional<double> local_time,
       AnimationTimeDelta time_to_next_iteration) const override {
-    DCHECK(!local_time || !IsNull(local_time.value()));
+    DCHECK(!local_time || !Timing::IsNull(local_time.value()));
     local_time_ = local_time;
     time_to_next_iteration_ = time_to_next_iteration;
     return AnimationTimeDelta::FromSecondsD(

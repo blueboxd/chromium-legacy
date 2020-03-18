@@ -16,14 +16,12 @@
 
 namespace performance_manager {
 
-PageNodeImpl::PageNodeImpl(GraphImpl* graph,
-                           const WebContentsProxy& contents_proxy,
+PageNodeImpl::PageNodeImpl(const WebContentsProxy& contents_proxy,
                            const std::string& browser_context_id,
                            const GURL& visible_url,
                            bool is_visible,
                            bool is_audible)
-    : TypedNodeBase(graph),
-      contents_proxy_(contents_proxy),
+    : contents_proxy_(contents_proxy),
       visibility_change_time_(base::TimeTicks::Now()),
       main_frame_url_(visible_url),
       browser_context_id_(browser_context_id),
@@ -249,7 +247,7 @@ void PageNodeImpl::set_has_nonempty_beforeunload(
   has_nonempty_beforeunload_ = has_nonempty_beforeunload;
 }
 
-void PageNodeImpl::JoinGraph() {
+void PageNodeImpl::OnJoiningGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if DCHECK_IS_ON()
   // Dereferencing the WeakPtr associated with this node will bind it to the
@@ -257,16 +255,12 @@ void PageNodeImpl::JoinGraph() {
   // same WeakPtr).
   GetWeakPtr()->GetImpl();
 #endif
-
-  NodeBase::JoinGraph();
 }
 
-void PageNodeImpl::LeaveGraph() {
+void PageNodeImpl::OnBeforeLeavingGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK_EQ(0u, frame_node_count_);
-
-  NodeBase::LeaveGraph();
 }
 
 const std::string& PageNodeImpl::GetBrowserContextID() const {

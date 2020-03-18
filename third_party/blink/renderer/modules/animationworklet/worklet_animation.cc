@@ -283,7 +283,7 @@ WorkletAnimation::WorkletAnimation(
   effect_timings_ = std::make_unique<WorkletAnimationEffectTimings>(timings);
 
   if (timeline_->IsScrollTimeline())
-    timeline_->AnimationAttached(nullptr);
+    To<ScrollTimeline>(*timeline_).WorkletAnimationAttached();
 }
 
 String WorkletAnimation::playState() {
@@ -894,7 +894,7 @@ void WorkletAnimation::NotifyLocalTimeUpdated(
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
   if (timeline_->IsScrollTimeline())
-    timeline_->AnimationDetached(nullptr);
+    To<ScrollTimeline>(*timeline_).WorkletAnimationDetached();
   DestroyCompositorAnimation();
 }
 

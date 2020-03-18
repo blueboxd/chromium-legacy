@@ -589,6 +589,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void DidUpdateWebManifestURL(
       const base::Optional<GURL>& manifest_url) {}
 
+  // DEPRECATED. Please register interface binders with BrowserInterfaceBroker
+  // instead (see 'Interface-Brokers' section in //docs/mojo_and_services.md).
   // Called to give the embedder an opportunity to bind an interface request
   // from a frame. If the request can be bound, |interface_pipe| will be taken.
   virtual void OnInterfaceRequestFromFrame(

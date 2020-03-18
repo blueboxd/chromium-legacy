@@ -242,7 +242,8 @@ LayoutUnit GridTrackSizingAlgorithm::EstimatedGridAreaBreadthForChild(
                                                   kForColumns);
   if (grid_area_is_indefinite) {
     return direction == child_inline_direction
-               ? std::max(child.MaxPreferredLogicalWidth(), grid_area_size)
+               ? std::max(child.PreferredLogicalWidths().max_size,
+                          grid_area_size)
                : LayoutUnit(-1);
   }
   return grid_area_size;
@@ -356,7 +357,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinContentForChild(
     // FIXME: It's unclear if we should return the intrinsic width or the
     // preferred width.
     // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
-    return child.MinPreferredLogicalWidth() +
+    return child.PreferredLogicalWidths().min_size +
            GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(),
                                                        child) +
            algorithm_.BaselineOffsetForChild(child,
@@ -380,7 +381,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MaxContentForChild(
     // FIXME: It's unclear if we should return the intrinsic width or the
     // preferred width.
     // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
-    return child.MaxPreferredLogicalWidth() +
+    return child.PreferredLogicalWidths().max_size +
            GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(),
                                                        child) +
            algorithm_.BaselineOffsetForChild(child,

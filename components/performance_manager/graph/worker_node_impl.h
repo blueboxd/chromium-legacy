@@ -27,8 +27,7 @@ class WorkerNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kWorker; }
 
-  WorkerNodeImpl(GraphImpl* graph,
-                 const std::string& browser_context_id,
+  WorkerNodeImpl(const std::string& browser_context_id,
                  WorkerType worker_type,
                  ProcessNodeImpl* process_node,
                  const base::UnguessableToken& dev_tools_token);
@@ -59,8 +58,8 @@ class WorkerNodeImpl
   const base::flat_set<WorkerNodeImpl*>& child_workers() const;
 
  private:
-  void JoinGraph() override;
-  void LeaveGraph() override;
+  void OnJoiningGraph() override;
+  void OnBeforeLeavingGraph() override;
 
   // WorkerNode: These are private so that users of the
   // impl use the private getters rather than the public interface.

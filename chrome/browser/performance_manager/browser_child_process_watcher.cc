@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/process/process.h"
@@ -41,12 +42,16 @@ void BrowserChildProcessWatcher::Initialize() {
 void BrowserChildProcessWatcher::TearDown() {
   BrowserChildProcessObserver::Remove(this);
 
-  PerformanceManagerImpl* performance_manager =
-      PerformanceManagerImpl::GetInstance();
-  performance_manager->DeleteNode(std::move(browser_process_node_));
+  std::vector<std::unique_ptr<NodeBase>> nodes;
+  nodes.reserve(gpu_process_nodes_.size() + 1);
+
+  nodes.push_back(std::move(browser_process_node_));
+
   for (auto& node : gpu_process_nodes_)
-    performance_manager->DeleteNode(std::move(node.second));
+    nodes.push_back(std::move(node.second));
   gpu_process_nodes_.clear();
+
+  PerformanceManagerImpl::GetInstance()->BatchDeleteNodes(std::move(nodes));
 }
 
 void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(

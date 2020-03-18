@@ -745,9 +745,6 @@ extern const char
 extern const char kOmniboxLocalEntitySuggestionsName[];
 extern const char kOmniboxLocalEntitySuggestionsDescription[];
 
-extern const char kOmniboxMaterialDesignWeatherIconsName[];
-extern const char kOmniboxMaterialDesignWeatherIconsDescription[];
-
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 

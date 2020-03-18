@@ -76,7 +76,7 @@ python_library("test_runner_py") {
 
   # Proguard is needed only when using apks (rather than native executables).
   if (enable_java_templates) {
-    deps = [ "//build/android/stacktrace:java_deobfuscate" ]
+    deps = [ "//third_party/proguard:proguard603_java" ]
   }
 }
 

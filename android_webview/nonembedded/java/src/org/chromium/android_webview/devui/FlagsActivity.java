@@ -80,8 +80,7 @@ public class FlagsActivity extends Activity {
         Button resetFlagsButton = findViewById(R.id.reset_flags_button);
         resetFlagsButton.setOnClickListener((View view) -> { resetAllFlags(); });
 
-        mDifferentPackageError =
-                new WebViewPackageError(this, findViewById(R.id.flags_activity_layout));
+        mDifferentPackageError = new WebViewPackageError(this);
         // show the dialog once when the activity is created.
         mDifferentPackageError.showDialogIfDifferent();
     }

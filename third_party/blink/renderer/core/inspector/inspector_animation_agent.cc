@@ -230,10 +230,10 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
     // Use startTime where possible since currentTime is limited.
     base::Optional<double> timeline_time = animation->timeline()->CurrentTime();
     // TODO(crbug.com/916117): Handle NaN values for scroll linked animations.
-    *current_time = timeline_time
-                        ? timeline_time.value() -
-                              animation->startTime().value_or(NullValue())
-                        : NullValue();
+    *current_time =
+        timeline_time ? timeline_time.value() -
+                            animation->startTime().value_or(Timing::NullValue())
+                      : Timing::NullValue();
   }
   return Response::OK();
 }
@@ -257,10 +257,10 @@ Response InspectorAnimationAgent::setPaused(
       } else {
         base::Optional<double> timeline_time = clone->timeline()->CurrentTime();
         // TODO(crbug.com/916117): Handle NaN values.
-        current_time = timeline_time
-                           ? timeline_time.value() -
-                                 clone->startTime().value_or(NullValue())
-                           : NullValue();
+        current_time =
+            timeline_time ? timeline_time.value() -
+                                clone->startTime().value_or(Timing::NullValue())
+                          : Timing::NullValue();
       }
       clone->pause();
       clone->setCurrentTime(current_time, false);
@@ -310,7 +310,8 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     id_to_animation_clone_.Set(id, clone);
     id_to_animation_.Set(String::Number(clone->SequenceNumber()), clone);
     clone->play();
-    clone->setStartTime(animation->startTime().value_or(NullValue()), false);
+    clone->setStartTime(animation->startTime().value_or(Timing::NullValue()),
+                        false);
 
     animation->SetEffectSuppressed(true);
   }
@@ -509,7 +510,7 @@ DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
-  double time_ms = animation.startTime().value_or(NullValue());
+  double time_ms = animation.startTime().value_or(Timing::NullValue());
   auto* document_timeline = DynamicTo<DocumentTimeline>(animation.timeline());
   if (document_timeline) {
     if (ReferenceTimeline().PlaybackRate() == 0) {

@@ -1577,9 +1577,15 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
   // but not consumed.
   StopFlingingIfNecessary(event, ack_result);
 
-  if (!gesture_listener_manager_)
-    return;
-  gesture_listener_manager_->GestureEventAck(event, ack_result);
+  if (gesture_listener_manager_)
+    gesture_listener_manager_->GestureEventAck(event, ack_result);
+}
+
+void RenderWidgetHostViewAndroid::ChildDidAckGestureEvent(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  if (gesture_listener_manager_)
+    gesture_listener_manager_->GestureEventAck(event, ack_result);
 }
 
 bool RenderWidgetHostViewAndroid::OnUnconsumedKeyboardEventAck(

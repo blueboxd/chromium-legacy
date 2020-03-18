@@ -73,7 +73,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
     // TODO(bokan): This code doesn't handle subpixel sizes correctly. Because
     // of that, it's forced to maintain all the special ScrollbarMode code
     // below. https://crbug.com/812311.
-    int width = layout_view->MinPreferredLogicalWidth().ToInt();
+    int width = layout_view->PreferredLogicalWidths().min_size.ToInt();
 
     LayoutBox* document_layout_box = document_element->GetLayoutBox();
     if (!document_layout_box)
@@ -93,7 +93,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
       // already greater the maximum.
     } else if (new_size.Height() > max_auto_size_.Height() &&
                // If we have a real vertical scrollbar, it's already included in
-               // MinPreferredLogicalWidth, so don't add a hypothetical one.
+               // PreferredLogicalWidths(), so don't add a hypothetical one.
                !layout_viewport->HasVerticalScrollbar()) {
       new_size.Expand(
           layout_viewport->HypotheticalScrollbarThickness(kVerticalScrollbar),

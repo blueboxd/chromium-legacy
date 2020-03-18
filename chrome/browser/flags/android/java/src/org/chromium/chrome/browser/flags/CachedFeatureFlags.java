@@ -210,11 +210,8 @@ public class CachedFeatureFlags {
     }
 
     @VisibleForTesting
-    public static void setFieldTrialsForTesting(
-            String featureName, String variationName, String variationValue) {
-        StringCachedFieldTrialParameter parameter =
-                new StringCachedFieldTrialParameter(featureName, variationName, variationValue);
-        sOverridesTestFeatures.put(parameter.getSharedPreferenceKey(), variationValue);
+    public static void setOverrideTestValue(String preferenceKey, String overrideValue) {
+        sOverridesTestFeatures.put(preferenceKey, overrideValue);
     }
 
     /**

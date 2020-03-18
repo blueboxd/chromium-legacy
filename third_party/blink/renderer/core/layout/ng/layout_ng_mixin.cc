@@ -79,32 +79,18 @@ bool LayoutNGMixin<Base>::IsOfType(LayoutObject::LayoutObjectType type) const {
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
+MinMaxSizes LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths() const {
   NGBlockNode node(const_cast<LayoutNGMixin<Base>*>(this));
-  if (!node.CanUseNewLayout()) {
-    Base::ComputeIntrinsicLogicalWidths(min_logical_width, max_logical_width);
-    return;
-  }
+  if (!node.CanUseNewLayout())
+    return Base::ComputeIntrinsicLogicalWidths();
 
   LayoutUnit available_logical_height =
       LayoutBoxUtils::AvailableLogicalHeight(*this, Base::ContainingBlock());
 
-  const ComputedStyle& style = node.Style();
-  WritingMode writing_mode = style.GetWritingMode();
-
+  NGConstraintSpace space = ConstraintSpaceForMinMaxSizes();
   MinMaxSizes sizes = node.ComputeMinMaxSizes(
-      writing_mode, MinMaxSizesInput(available_logical_height));
-
-  NGConstraintSpace space = NGConstraintSpaceBuilder(writing_mode, writing_mode,
-                                                     /* is_new_fc */ true)
-                                .ToConstraintSpace();
-  NGBoxStrut border_padding =
-      ComputeBorders(space, style) + ComputePadding(space, style);
-
-  // This function returns content-box plus scrollbar.
-  sizes -= border_padding.InlineSum();
+      node.Style().GetWritingMode(), MinMaxSizesInput(available_logical_height),
+      &space);
 
   if (Base::IsTableCell()) {
     // If a table cell, or the column that it belongs to, has a specified fixed
@@ -115,13 +101,34 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
     Length table_cell_width = cell->StyleOrColLogicalWidth();
     if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
       sizes.max_size = std::max(sizes.min_size,
-                                Base::AdjustContentBoxLogicalWidthForBoxSizing(
+                                Base::AdjustBorderBoxLogicalWidthForBoxSizing(
                                     LayoutUnit(table_cell_width.Value())));
     }
   }
 
-  min_logical_width = sizes.min_size;
-  max_logical_width = sizes.max_size;
+  return sizes;
+}
+
+template <typename Base>
+NGConstraintSpace LayoutNGMixin<Base>::ConstraintSpaceForMinMaxSizes() const {
+  const ComputedStyle& style = Base::StyleRef();
+  const WritingMode writing_mode = style.GetWritingMode();
+
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
+                                   /* is_new_fc */ true);
+  builder.SetTextDirection(style.Direction());
+  builder.SetAvailableSize(
+      {Base::ContainingBlockLogicalWidthForContent(), kIndefiniteSize});
+
+  // Table cells borders may be collapsed, we can't calculate these directly
+  // from the style.
+  if (Base::IsTableCell()) {
+    builder.SetIsTableCell(true);
+    builder.SetTableCellBorders({Base::BorderStart(), Base::BorderEnd(),
+                                 Base::BorderBefore(), Base::BorderAfter()});
+  }
+
+  return builder.ToConstraintSpace();
 }
 
 template <typename Base>

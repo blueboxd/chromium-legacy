@@ -101,7 +101,7 @@ void LayoutMultiColumnSpannerPlaceholder::RecalcVisualOverflow() {
       layout_object_in_flow_thread_->VisualOverflowRect());
 }
 
-LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
+MinMaxSizes LayoutMultiColumnSpannerPlaceholder::PreferredLogicalWidths()
     const {
   // There should be no contribution from a spanner if the multicol container is
   // size-contained. Normally we'd stop at the object that has contain:size
@@ -111,17 +111,8 @@ LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
   // siblings of the flow thread, we need this check.
   // TODO(crbug.com/953919): What should we return for display-locked content?
   if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
-    return LayoutUnit();
-  return layout_object_in_flow_thread_->MinPreferredLogicalWidth();
-}
-
-LayoutUnit LayoutMultiColumnSpannerPlaceholder::MaxPreferredLogicalWidth()
-    const {
-  // See above.
-  // TODO(crbug.com/953919): What should we return for display-locked content?
-  if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
-    return LayoutUnit();
-  return layout_object_in_flow_thread_->MaxPreferredLogicalWidth();
+    return MinMaxSizes();
+  return layout_object_in_flow_thread_->PreferredLogicalWidths();
 }
 
 void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {

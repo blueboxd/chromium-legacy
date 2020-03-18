@@ -499,17 +499,13 @@ LayoutUnit LayoutGrid::GuttersSize(
   return gap_accumulator;
 }
 
-void LayoutGrid::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
-  min_logical_width = scrollbar_width;
-  max_logical_width = scrollbar_width;
+MinMaxSizes LayoutGrid::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
 
   if (HasOverrideIntrinsicContentLogicalWidth()) {
-    min_logical_width += OverrideIntrinsicContentLogicalWidth();
-    max_logical_width = min_logical_width;
-    return;
+    sizes += OverrideIntrinsicContentLogicalWidth();
+    return sizes;
   }
 
   std::unique_ptr<Grid> grid = Grid::Create(this);
@@ -535,8 +531,9 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   LayoutUnit total_gutters_size = GuttersSize(
       algorithm.GetGrid(), kForColumns, 0, number_of_tracks, base::nullopt);
 
-  min_logical_width += algorithm.MinContentSize() + total_gutters_size;
-  max_logical_width += algorithm.MaxContentSize() + total_gutters_size;
+  sizes.min_size += algorithm.MinContentSize() + total_gutters_size;
+  sizes.max_size += algorithm.MaxContentSize() + total_gutters_size;
+  return sizes;
 }
 
 void LayoutGrid::ComputeTrackSizesForIndefiniteSize(

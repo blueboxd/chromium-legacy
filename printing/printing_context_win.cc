@@ -237,6 +237,15 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   }
   // Set printer then refresh printer settings.
   scoped_dev_mode = CreateDevMode(printer.Get(), scoped_dev_mode.get());
+  if (!scoped_dev_mode)
+    return OnError();
+
+  // Since CreateDevMode() doesn't honor color settings through the GDI call
+  // to DocumentProperties(), ensure the requested values persist here.
+  scoped_dev_mode->dmFields |= DM_COLOR;
+  scoped_dev_mode->dmColor =
+      settings_->color() != GRAY ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+
   return InitializeSettings(settings_->device_name(), scoped_dev_mode.get());
 }
 

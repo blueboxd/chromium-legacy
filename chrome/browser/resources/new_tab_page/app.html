@@ -43,6 +43,19 @@
     flex-direction: column;
   }
 
+  #oneGoogleBarSpacer {
+    height: 56px;
+    width: 100%;
+  }
+
+  #oneGoogleBar {
+    height: 100%;
+    pointer-events: none;
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+  }
+
   #promo {
     bottom: 16px;
     height: 35px;
@@ -154,6 +167,10 @@
   </ntp-untrusted-iframe>
   <div id="backgroundGradient" hidden="[[!showBackgroundImage_]]"></div>
   <div id="content">
+    <div id="oneGoogleBarSpacer"></div>
+    <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
+        hidden$="[[!oneGoogleBarLoaded_]]">
+    </ntp-untrusted-iframe>
     <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_">
     </ntp-fakebox>
     <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]">

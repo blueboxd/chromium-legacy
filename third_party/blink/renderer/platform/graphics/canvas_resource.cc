@@ -799,8 +799,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSwapChain::Bitmap() {
 
   return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
       front_buffer_mailbox_, sync_token_, shared_texture_id, image_info,
-      GL_TEXTURE_2D,
-      /*is_origin_top_left=*/true, context_provider_wrapper_,
+      GL_TEXTURE_2D, true /*is_origin_top_left*/, context_provider_wrapper_,
       owning_thread_ref_, owning_thread_task_runner_,
       std::move(release_callback));
 }

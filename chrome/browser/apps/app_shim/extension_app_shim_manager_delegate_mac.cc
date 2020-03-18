@@ -7,6 +7,7 @@
 #include "apps/launcher.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -282,6 +283,10 @@ void ExtensionAppShimManagerDelegate::LaunchUserManager() {
 
 void ExtensionAppShimManagerDelegate::MaybeTerminate() {
   apps::AppShimTerminationManager::Get()->MaybeTerminate();
+}
+
+bool ExtensionAppShimManagerDelegate::HasNonBookmarkAppWindowsOpen() {
+  return AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0);
 }
 
 }  // namespace apps

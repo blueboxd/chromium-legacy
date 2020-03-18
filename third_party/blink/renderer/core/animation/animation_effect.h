@@ -98,7 +98,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     return EnsureCalculated().time_to_reverse_effect_change;
   }
   double LocalTime() const {
-    return EnsureCalculated().local_time.value_or(NullValue());
+    return EnsureCalculated().local_time.value_or(Timing::NullValue());
   }
 
   const Timing& SpecifiedTiming() const { return timing_; }

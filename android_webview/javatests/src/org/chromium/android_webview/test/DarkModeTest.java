@@ -122,6 +122,36 @@ public class DarkModeTest {
         assertNotDarkScheme(otherContents);
     }
 
+    @Test
+    @SmallTest
+    public void testColorSchemeUpdatedInPreferWebThemeMode() throws Throwable {
+        // Test that preferred-color-scheme is updated respectively in
+        // prefer-web-theme-over-ua-darkening-mode, and force dark is
+        // correctly applied when web theme is not available.
+
+        mSettings.setForceDarkMode(ForceDarkMode.FORCE_DARK_ON);
+        mSettings.setForceDarkBehavior(ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK);
+
+        // Load a web-page without dark theme support and check that preferred-color-scheme is set
+        // to no-preferences
+        mRule.loadUrlSync(mContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        assertNotDarkScheme(mContents);
+
+        // Load a web-page with dark theme support in them same WebView and check that
+        // preferred-color-scheme is set to dark, so media query is applied
+        final String supportsDarkScheme =
+                "<html><head><meta name=\"color-scheme\" content=\"dark light\"></head>"
+                + "<body></body></html>";
+        mRule.loadHtmlSync(
+                mContents, mContentsClient.getOnPageFinishedHelper(), supportsDarkScheme);
+        assertDarkScheme(mContents);
+
+        // Load a web-page with no dark theme support in them same WebView and check that
+        // preferred-color-scheme is set back to no-preferences
+        mRule.loadUrlSync(mContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        assertNotDarkScheme(mContents);
+    }
+
     private boolean prefersDarkTheme(AwContents contents) throws Exception {
         final String colorSchemeSelector =
                 "window.matchMedia('(prefers-color-scheme: dark)').matches";

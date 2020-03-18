@@ -52,6 +52,9 @@ extern const base::Feature kUseDefaultUserAgentInWebClient;
 // of properties using hard coded logic.
 extern const base::Feature kPreserveScrollViewProperties;
 
+// When enabled, display an interstitial on lookalike URL navigations.
+extern const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI;
+
 // Level at which battery power is considered low, and some cosmetic features
 // can be turned off.
 const float kLowBatteryLevelThreshold = 0.2;

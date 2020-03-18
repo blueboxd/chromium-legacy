@@ -145,6 +145,14 @@ exec('//consoles/tryserver.chromium.win.star')
 exec('//notifiers.star')
 
 exec('//generators/cq-builders-md.star')
+# This should be exec'ed before exec'ing scheduler-noop-jobs.star because
+# attempting to read the buildbucket field that is not set for the noop jobs
+# actually causes an empty buildbucket message to be set
+# TODO(https://crbug.com/1062385) The automatic generation of job IDs causes
+# problems when the number of builders with the same name goes from 1 to >1 or
+# vice-versa. This generator makes sure both the bucketed and non-bucketed IDs
+# work so that there aren't transient failures when the configuration changes
+exec('//generators/scheduler-bucketed-jobs.star')
 # TODO(https://crbug.com/966115) Run the generator to set the fallback field for
 # the empty CQ group until it's exposed in lucicfg or there is a better way to
 # create a CQ group for all of the canary branches

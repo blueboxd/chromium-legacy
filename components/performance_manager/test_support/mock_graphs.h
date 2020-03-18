@@ -10,7 +10,6 @@
 
 namespace performance_manager {
 
-class GraphImpl;
 class FrameNodeImpl;
 class PageNodeImpl;
 class SystemNodeImpl;
@@ -19,7 +18,7 @@ class SystemNodeImpl;
 // process' PID.
 class TestProcessNodeImpl : public ProcessNodeImpl {
  public:
-  explicit TestProcessNodeImpl(GraphImpl* graph);
+  TestProcessNodeImpl();
 
   void SetProcessWithPid(base::ProcessId pid,
                          base::Process process,

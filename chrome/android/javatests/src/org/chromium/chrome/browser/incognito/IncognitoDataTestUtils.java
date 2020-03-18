@@ -23,7 +23,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 /**
  * This class provides helper methods for launching any Urls in CCT or Tabs.
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeoutException;
  *
  */
 public class IncognitoDataTestUtils {
-    public static enum ActivityType {
+    public enum ActivityType {
         INCOGNITO_TAB(true, false),
         INCOGNITO_CCT(true, true),
         REGULAR_TAB(false, false),
@@ -40,29 +39,24 @@ public class IncognitoDataTestUtils {
         public final boolean incognito;
         public final boolean cct;
 
+        ActivityType(boolean incognito, boolean cct) {
+            this.incognito = incognito;
+            this.cct = cct;
+        }
+
         public Tab launchUrl(ChromeActivityTestRule chromeActivityRule,
-                CustomTabActivityTestRule customTabActivityTestRule, String url)
-                throws TimeoutException {
+                CustomTabActivityTestRule customTabActivityTestRule, String url) {
             if (cct) {
                 return launchUrlInCCT(customTabActivityTestRule, url, incognito);
             } else {
                 return launchUrlInTab(chromeActivityRule, url, incognito);
             }
         }
-
-        ActivityType(boolean incognito, boolean cct) {
-            this.incognito = incognito;
-            this.cct = cct;
-        }
     }
 
-    /**
-     * {@link ParameterProvider} used for parameterized test that provides a list of two activity
-     * types between whom we run incognito leakage tests.
-     */
-    public static class TestParams implements ParameterProvider {
-        @Override
-        public List<ParameterSet> getParameters() {
+    public static class TestParams {
+        private static List<ParameterSet> getParameters(
+                boolean firstIncognito, boolean secondIncognito) {
             List<ParameterSet> tests = new ArrayList<>();
 
             for (ActivityType activity1 : ActivityType.values()) {
@@ -73,18 +67,38 @@ public class IncognitoDataTestUtils {
                             && (activity2.incognito && !activity2.cct)) {
                         continue;
                     }
-                    // We remove the tests with two regular type activities (cct and tabbed) because
-                    // again they are known to share state.
-                    if (!activity1.incognito && !activity2.incognito) {
-                        continue;
-                    }
 
-                    tests.add(new ParameterSet()
-                                      .value(activity1.toString(), activity2.toString())
-                                      .name(activity1.toString() + "_" + activity2.toString()));
+                    if (activity1.incognito == firstIncognito
+                            && activity2.incognito == secondIncognito) {
+                        tests.add(new ParameterSet()
+                                          .value(activity1.toString(), activity2.toString())
+                                          .name(activity1.toString() + "_" + activity2.toString()));
+                    }
                 }
             }
+
             return tests;
+        }
+
+        public static class RegularToIncognito implements ParameterProvider {
+            @Override
+            public List<ParameterSet> getParameters() {
+                return TestParams.getParameters(false, true);
+            }
+        }
+
+        public static class IncognitoToRegular implements ParameterProvider {
+            @Override
+            public List<ParameterSet> getParameters() {
+                return TestParams.getParameters(true, false);
+            }
+        }
+
+        public static class IncognitoToIncognito implements ParameterProvider {
+            @Override
+            public List<ParameterSet> getParameters() {
+                return TestParams.getParameters(true, true);
+            }
         }
     }
 

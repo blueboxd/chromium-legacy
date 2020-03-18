@@ -10,9 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -31,7 +28,6 @@ base::FilePath* SelectFileDialogImpl::last_opened_path_ = nullptr;
 ui::SelectFileDialog* SelectFileDialogImpl::Create(
     ui::SelectFileDialog::Listener* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (use_kde_ == UNKNOWN) {
     // Start out assumimg we are not going to use KDE.
     use_kde_ = NO_KDE;

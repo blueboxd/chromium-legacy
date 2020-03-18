@@ -20,8 +20,7 @@ constexpr char FrameNodeImpl::kDefaultPriorityReason[] =
 
 using PriorityAndReason = frame_priority::PriorityAndReason;
 
-FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
-                             ProcessNodeImpl* process_node,
+FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
                              PageNodeImpl* page_node,
                              FrameNodeImpl* parent_frame_node,
                              int frame_tree_node_id,
@@ -29,8 +28,7 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              const base::UnguessableToken& dev_tools_token,
                              int32_t browsing_instance_id,
                              int32_t site_instance_id)
-    : TypedNodeBase(graph),
-      parent_frame_node_(parent_frame_node),
+    : parent_frame_node_(parent_frame_node),
       page_node_(page_node),
       process_node_(process_node),
       frame_tree_node_id_(frame_tree_node_id),
@@ -425,7 +423,7 @@ void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK_EQ(1u, removed);
 }
 
-void FrameNodeImpl::JoinGraph() {
+void FrameNodeImpl::OnJoiningGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Enable querying this node using process and frame routing ids.
@@ -437,13 +435,10 @@ void FrameNodeImpl::JoinGraph() {
     parent_frame_node_->AddChildFrame(this);
   page_node_->AddFrame(this);
   process_node_->AddFrame(this);
-
-  NodeBase::JoinGraph();
 }
 
-void FrameNodeImpl::LeaveGraph() {
+void FrameNodeImpl::OnBeforeLeavingGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NodeBase::LeaveGraph();
 
   DCHECK(child_frame_nodes_.empty());
 

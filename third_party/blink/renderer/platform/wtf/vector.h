@@ -628,7 +628,10 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
  public:
   using OffsetRange = typename Base::OffsetRange;
 
-  VectorBuffer() : Base(InlineBuffer(), inlineCapacity) {}
+  VectorBuffer() : Base(InlineBuffer(), inlineCapacity) {
+    // Make sure the inline buffer is clear.
+    Base::ClearUnusedSlots(InlineBuffer(), InlineBuffer() + inlineCapacity);
+  }
 
   VectorBuffer(HashTableDeletedValueType value) : Base(value) {}
   bool IsHashTableDeletedValue() const {
@@ -637,6 +640,8 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
 
   explicit VectorBuffer(wtf_size_t capacity)
       : Base(InlineBuffer(), inlineCapacity) {
+    // Make sure the inline buffer is clear.
+    Base::ClearUnusedSlots(InlineBuffer(), InlineBuffer() + inlineCapacity);
     if (capacity > inlineCapacity)
       Base::AllocateBuffer(capacity);
   }
@@ -1299,8 +1304,15 @@ class Vector
   // or copy-initialize all the elements.
   //
   // Fill(value) is a synonym for Fill(value, size()).
-  void Fill(const T&, wtf_size_t);
-  void Fill(const T& val) { Fill(val, size()); }
+  //
+  // The implementation of Fill uses std::fill which is not yet supported for
+  // garbage collected vectors.
+  template <typename A = Allocator>
+  std::enable_if_t<!A::kIsGarbageCollected> Fill(const T&, wtf_size_t);
+  template <typename A = Allocator>
+  std::enable_if_t<!A::kIsGarbageCollected> Fill(const T& val) {
+    Fill(val, size());
+  }
 
   // Swap two vectors quickly.
   void swap(Vector& other) {
@@ -1594,8 +1606,9 @@ wtf_size_t Vector<T, inlineCapacity, Allocator>::ReverseFind(
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-void Vector<T, inlineCapacity, Allocator>::Fill(const T& val,
-                                                wtf_size_t new_size) {
+template <typename A>
+std::enable_if_t<!A::kIsGarbageCollected>
+Vector<T, inlineCapacity, Allocator>::Fill(const T& val, wtf_size_t new_size) {
   if (size() > new_size) {
     Shrink(new_size);
   } else if (new_size > capacity()) {
@@ -2056,7 +2069,7 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
       return;
     // Inline buffer requires tracing immediately.
     const T* buffer_begin = buffer;
-    const T* buffer_end = buffer + size();
+    const T* buffer_end = buffer + inlineCapacity;
     if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
       for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
            buffer_entry++) {

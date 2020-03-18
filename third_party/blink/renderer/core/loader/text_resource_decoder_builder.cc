@@ -91,7 +91,7 @@ static const WTF::TextEncoding GetEncodingFromDomain(const KURL& url) {
 
 TextResourceDecoderOptions::ContentType DetermineContentType(
     const String& mime_type) {
-  if (DeprecatedEqualIgnoringCase(mime_type, "text/css"))
+  if (EqualIgnoringASCIICase(mime_type, "text/css"))
     return TextResourceDecoderOptions::kCSSContent;
   if (EqualIgnoringASCIICase(mime_type, "text/html"))
     return TextResourceDecoderOptions::kHTMLContent;

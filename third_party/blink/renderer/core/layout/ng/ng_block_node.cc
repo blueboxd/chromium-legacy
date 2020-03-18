@@ -721,10 +721,7 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizesFromLegacy(
     needs_size_reset = true;
   }
 
-  MinMaxSizes sizes;
-  // ComputeIntrinsicLogicalWidths returns content-box + scrollbar.
-  box_->ComputeIntrinsicLogicalWidths(sizes.min_size, sizes.max_size);
-  sizes += box_->BorderAndPaddingLogicalWidth();
+  MinMaxSizes sizes = box_->ComputeIntrinsicLogicalWidths();
 
   if (needs_size_reset)
     box_->ClearOverrideContainingBlockContentSize();

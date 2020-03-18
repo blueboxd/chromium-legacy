@@ -162,6 +162,9 @@ SynchronousCompositorHost::~SynchronousCompositorHost() {
   if (outstanding_begin_frame_requests_ && begin_frame_source_)
     begin_frame_source_->RemoveObserver(this);
   client_->DidDestroyCompositor(this, frame_sink_id_);
+  // TODO(crbug.com/1062576): We should shutdown the host_control as well since
+  // the Host was disconnected and we should signal all the waiters that we will
+  // never send a |BeginFrame| and expect any |BeginFrameResponse|.
   bridge_->HostDestroyedOnUIThread();
 }
 

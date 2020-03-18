@@ -105,8 +105,7 @@ public class CrashesListActivity extends Activity {
         ExpandableListView crashListView = findViewById(R.id.crashes_list);
         crashListView.setAdapter(mCrashListViewAdapter);
 
-        mDifferentPackageError =
-                new WebViewPackageError(this, findViewById(R.id.crashes_list_activity_layout));
+        mDifferentPackageError = new WebViewPackageError(this);
         mCrashConsentError =
                 buildCrashConsentError(PlatformServiceBridge.getInstance().canUseGms());
 
@@ -273,7 +272,7 @@ public class CrashesListActivity extends Activity {
                                         + " Do you want to proceed?")
                                 .setPositiveButton("Upload",
                                         (dialog, id) -> attemptUploadCrash(crashInfo.localId))
-                                .setNegativeButton("Cancel", (dialog, id) -> finish())
+                                .setNegativeButton("Cancel", (dialog, id) -> dialog.dismiss())
                                 .create()
                                 .show();
                     } else {
@@ -456,8 +455,8 @@ public class CrashesListActivity extends Activity {
             dialogBuilder.setMessage("Crash collection is not supported at the moment.");
         }
 
-        return new PersistentErrorView(this, PersistentErrorView.Type.ERROR)
-                .prependToLinearLayout(findViewById(R.id.crashes_list_activity_layout))
+        return new PersistentErrorView(
+                this, R.id.crash_consent_error, PersistentErrorView.Type.ERROR)
                 .setText("Crash collection is disabled. Tap for more info.")
                 .setDialog(dialogBuilder.create());
     }

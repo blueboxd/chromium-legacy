@@ -85,6 +85,7 @@
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
@@ -601,6 +602,14 @@ bool SyncTest::SetupClients() {
   }
 
 #if defined(OS_CHROMEOS)
+  // SplitSettingsSync makes several types (e.g. APPS, APP_LIST, PRINTERS) into
+  // OS sync types. OS sync is on-by-default, so enable it here.
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    for (int i = 0; i < num_clients(); ++i) {
+      GetSyncService(i)->GetUserSettings()->SetOsSyncFeatureEnabled(true);
+    }
+  }
+
   if (ArcAppListPrefsFactory::IsFactorySetForSyncTest()) {
     // Init SyncArcPackageHelper to ensure that the arc services are initialized
     // for each Profile, only can be called after test profiles are created.

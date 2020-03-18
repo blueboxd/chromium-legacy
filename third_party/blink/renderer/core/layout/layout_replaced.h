@@ -131,8 +131,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   void ComputePositionedLogicalHeight(
       LogicalExtentComputedValues&) const override;
 
-  void ComputeIntrinsicLogicalWidths(LayoutUnit& min_logical_width,
-                                     LayoutUnit& max_logical_width) const final;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final;
 
   // This function calculates the placement of the replaced contents. It takes
   // intrinsic size of the replaced contents, stretch to fit CSS content box

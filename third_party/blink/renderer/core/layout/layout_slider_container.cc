@@ -86,12 +86,12 @@ void LayoutSliderContainer::ComputeLogicalHeight(
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
-void LayoutSliderContainer::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  max_logical_width = LayoutUnit(LayoutSlider::kDefaultTrackLength *
-                                 StyleRef().EffectiveZoom());
-  min_logical_width = max_logical_width;
+MinMaxSizes LayoutSliderContainer::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += LayoutUnit(LayoutSlider::kDefaultTrackLength *
+                      StyleRef().EffectiveZoom()) +
+           BorderAndPaddingLogicalWidth();
+  return sizes;
 }
 
 void LayoutSliderContainer::UpdateLayout() {

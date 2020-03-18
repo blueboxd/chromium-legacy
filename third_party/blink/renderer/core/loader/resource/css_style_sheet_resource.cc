@@ -207,9 +207,9 @@ bool CSSStyleSheetResource::CanUseSheet(const CSSParserContext* parser_context,
     return true;
   AtomicString content_type = HttpContentType();
   return content_type.IsEmpty() ||
-         DeprecatedEqualIgnoringCase(content_type, "text/css") ||
-         DeprecatedEqualIgnoringCase(content_type,
-                                     "application/x-unknown-content-type");
+         EqualIgnoringASCIICase(content_type, "text/css") ||
+         EqualIgnoringASCIICase(content_type,
+                                "application/x-unknown-content-type");
 }
 
 StyleSheetContents* CSSStyleSheetResource::CreateParsedStyleSheetFromCache(

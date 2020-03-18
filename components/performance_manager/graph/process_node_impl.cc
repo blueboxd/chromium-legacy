@@ -13,10 +13,8 @@
 
 namespace performance_manager {
 
-ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph,
-                                 RenderProcessHostProxy render_process_proxy)
-    : TypedNodeBase(graph),
-      render_process_host_proxy_(std::move(render_process_proxy)) {
+ProcessNodeImpl::ProcessNodeImpl(RenderProcessHostProxy render_process_proxy)
+    : render_process_host_proxy_(std::move(render_process_proxy)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -220,9 +218,8 @@ void ProcessNodeImpl::OnAllFramesInProcessFrozen() {
     observer->OnAllFramesInProcessFrozen(this);
 }
 
-void ProcessNodeImpl::LeaveGraph() {
+void ProcessNodeImpl::OnBeforeLeavingGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NodeBase::LeaveGraph();
 
   // Make as if we're transitioning to the null PID before we die to clear this
   // instance from the PID map.

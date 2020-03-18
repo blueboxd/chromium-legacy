@@ -893,10 +893,10 @@ LayoutUnit LayoutReplaced::ComputeReplacedLogicalHeight(
       IntrinsicLogicalHeight());
 }
 
-void LayoutReplaced::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  min_logical_width = max_logical_width = IntrinsicLogicalWidth();
+MinMaxSizes LayoutReplaced::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth() + IntrinsicLogicalWidth();
+  return sizes;
 }
 
 void LayoutReplaced::ComputePreferredLogicalWidths() {
@@ -907,12 +907,15 @@ void LayoutReplaced::ComputePreferredLogicalWidths() {
   // containing block.
   const Length& logical_width = StyleRef().LogicalWidth();
   if (logical_width.IsPercentOrCalc() || logical_width.IsFillAvailable() ||
-      logical_width.IsFitContent())
-    ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
-                                  max_preferred_logical_width_);
-  else
+      logical_width.IsFitContent()) {
+    MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
+    sizes -= BorderAndPaddingLogicalWidth();
+    min_preferred_logical_width_ = sizes.min_size;
+    max_preferred_logical_width_ = sizes.max_size;
+  } else {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
         ComputeReplacedLogicalWidth(kComputePreferred);
+  }
 
   const ComputedStyle& style_to_use = StyleRef();
   if (style_to_use.LogicalWidth().IsPercentOrCalc() ||

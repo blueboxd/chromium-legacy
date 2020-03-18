@@ -18,7 +18,7 @@
 
 namespace performance_manager {
 
-SystemNodeImpl::SystemNodeImpl(GraphImpl* graph) : TypedNodeBase(graph) {}
+SystemNodeImpl::SystemNodeImpl() = default;
 
 SystemNodeImpl::~SystemNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

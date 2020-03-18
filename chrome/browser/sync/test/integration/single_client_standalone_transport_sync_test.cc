@@ -29,6 +29,8 @@
 namespace {
 
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
+  static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+                "Add new types below if they run in transport mode");
   // Only some special whitelisted types (and control types) are allowed in
   // standalone transport mode.
   syncer::ModelTypeSet allowed_types(
@@ -38,6 +40,18 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
   if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
     allowed_types.Put(syncer::DEVICE_INFO);
   }
+#if defined(OS_CHROMEOS)
+  // OS sync types run in transport mode.
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    allowed_types.PutAll({syncer::APPS, syncer::APP_SETTINGS, syncer::APP_LIST,
+                          syncer::APP_SETTINGS, syncer::ARC_PACKAGE,
+                          syncer::PRINTERS, syncer::OS_PREFERENCES,
+                          syncer::OS_PRIORITY_PREFERENCES});
+  }
+  if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
+    allowed_types.Put(syncer::WIFI_CONFIGURATIONS);
+  }
+#endif  // defined(OS_CHROMEOS)
   return allowed_types;
 }
 

@@ -68,17 +68,20 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
           continue;
         column_layout.column_has_no_cells = false;
 
-        if (cell->MaxPreferredLogicalWidth())
+        MinMaxSizes cell_preferred_logical_widths =
+            cell->PreferredLogicalWidths();
+
+        if (cell_preferred_logical_widths.max_size)
           column_layout.empty_cells_only = false;
 
         if (cell->ColSpan() == 1) {
           column_layout.min_logical_width =
-              std::max<int>(cell->MinPreferredLogicalWidth().ToInt(),
+              std::max<int>(cell_preferred_logical_widths.min_size.ToInt(),
                             column_layout.min_logical_width);
-          if (cell->MaxPreferredLogicalWidth() >
+          if (cell_preferred_logical_widths.max_size >
               column_layout.max_logical_width) {
             column_layout.max_logical_width =
-                cell->MaxPreferredLogicalWidth().ToInt();
+                cell_preferred_logical_widths.max_size.ToInt();
             max_contributor = cell;
           }
 
@@ -144,7 +147,7 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
           // min/max width of at least 1px for it.
           column_layout.min_logical_width =
               std::max<int>(column_layout.min_logical_width,
-                            cell->MaxPreferredLogicalWidth() ? 1 : 0);
+                            cell_preferred_logical_widths.max_size ? 1 : 0);
 
           // This spanning cell originates in this column. Insert the cell into
           // spanning cells list.
@@ -405,10 +408,13 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
     unsigned eff_col =
         table_->AbsoluteColumnToEffectiveColumn(cell->AbsoluteColumnIndex());
     wtf_size_t last_col = eff_col;
+    MinMaxSizes cell_preferred_logical_widths = cell->PreferredLogicalWidths();
     int cell_min_logical_width =
-        (cell->MinPreferredLogicalWidth() + spacing_in_row_direction).ToInt();
+        (cell_preferred_logical_widths.min_size + spacing_in_row_direction)
+            .ToInt();
     int cell_max_logical_width =
-        (cell->MaxPreferredLogicalWidth() + spacing_in_row_direction).ToInt();
+        (cell_preferred_logical_widths.max_size + spacing_in_row_direction)
+            .ToInt();
     float total_percent = 0;
     int span_min_logical_width = 0;
     int span_max_logical_width = 0;

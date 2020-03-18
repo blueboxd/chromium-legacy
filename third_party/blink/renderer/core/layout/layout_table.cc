@@ -311,7 +311,7 @@ void LayoutTable::UpdateLogicalWidth() {
   RecalcSectionsIfNeeded();
 
   // Recalculate preferred logical widths now, rather than relying on them being
-  // lazily recalculated, via MinPreferredLogicalWidth() further below. We might
+  // lazily recalculated, via PreferredLogicalWidths() further below. We might
   // not even get there.
   if (PreferredLogicalWidthsDirty())
     ComputePreferredLogicalWidths();
@@ -344,6 +344,8 @@ void LayoutTable::UpdateLogicalWidth() {
           ? PerpendicularContainingBlockLogicalHeight()
           : available_logical_width;
 
+  MinMaxSizes preferred_logical_widths = PreferredLogicalWidths();
+
   if (!IsLogicalWidthAuto()) {
     SetLogicalWidth(ConvertStyleLogicalWidthToComputedWidth(
         StyleRef().LogicalWidth(), container_width_in_inline_direction));
@@ -375,11 +377,11 @@ void LayoutTable::UpdateLogicalWidth() {
     }
 
     // Ensure we aren't bigger than our available width.
-    LayoutUnit max_width = MaxPreferredLogicalWidth();
+    LayoutUnit max_width = preferred_logical_widths.max_size;
     // scaledWidthFromPercentColumns depends on m_layoutStruct in
-    // TableLayoutAlgorithmAuto, which maxPreferredLogicalWidth fills in. So
-    // scaledWidthFromPercentColumns has to be called after
-    // maxPreferredLogicalWidth.
+    // TableLayoutAlgorithmAuto, which |PreferredLogicalWidths()| fills in. So
+    // |ScaledWidthFromPercentColumns()| has to be called after
+    // |PreferredLogicalWidths()|.
     LayoutUnit scaled_width = table_layout_->ScaledWidthFromPercentColumns() +
                               BordersPaddingAndSpacingInRowDirection();
     max_width = std::max(scaled_width, max_width);
@@ -402,8 +404,8 @@ void LayoutTable::UpdateLogicalWidth() {
   // Ensure we aren't smaller than our min preferred width. This MUST be done
   // after 'max-width' as we ignore it if it means we wouldn't accommodate our
   // content.
-  SetLogicalWidth(
-      LayoutUnit(std::max(LogicalWidth(), MinPreferredLogicalWidth()).Floor()));
+  SetLogicalWidth(LayoutUnit(
+      std::max(LogicalWidth(), preferred_logical_widths.min_size).Floor()));
 
   // Ensure we aren't smaller than our min-width style.
   const Length& style_min_logical_width = StyleRef().LogicalMinWidth();
@@ -431,7 +433,7 @@ void LayoutTable::UpdateLogicalWidth() {
   // nor what authors expect.
   // FIXME: When we convert to sub-pixel layout for tables we can remove the int
   // conversion. http://crbug.com/241198
-  DCHECK_GE(LogicalWidth().Floor(), MinPreferredLogicalWidth().Floor());
+  DCHECK_GE(LogicalWidth().Floor(), preferred_logical_widths.min_size.Floor());
 }
 
 // This method takes a ComputedStyle's logical width, min-width, or max-width
@@ -439,10 +441,10 @@ void LayoutTable::UpdateLogicalWidth() {
 LayoutUnit LayoutTable::ConvertStyleLogicalWidthToComputedWidth(
     const Length& style_logical_width,
     LayoutUnit available_width) const {
-  if (style_logical_width.IsIntrinsic())
-    return ComputeIntrinsicLogicalWidthUsing(
-        style_logical_width, available_width,
-        BordersPaddingAndSpacingInRowDirection());
+  if (style_logical_width.IsIntrinsic()) {
+    return ComputeIntrinsicLogicalWidthUsing(style_logical_width,
+                                             available_width);
+  }
 
   // HTML tables' width styles already include borders and paddings, but CSS
   // tables' width styles do not.
@@ -1089,38 +1091,38 @@ void LayoutTable::PaintMask(const PaintInfo& paint_info,
   TablePainter(*this).PaintMask(paint_info, paint_offset);
 }
 
-void LayoutTable::ComputeIntrinsicLogicalWidths(LayoutUnit& min_width,
-                                                LayoutUnit& max_width) const {
+MinMaxSizes LayoutTable::ComputeIntrinsicLogicalWidths() const {
   RecalcSectionsIfNeeded();
   // FIXME: Restructure the table layout code so that we can make this method
   // const.
+  MinMaxSizes sizes;
   const_cast<LayoutTable*>(this)->table_layout_->ComputeIntrinsicLogicalWidths(
-      min_width, max_width);
+      sizes.min_size, sizes.max_size);
 
   // FIXME: We should include captions widths here like we do in
   // computePreferredLogicalWidths.
+  sizes += LayoutUnit(BordersPaddingAndSpacingInRowDirection().ToInt());
+  return sizes;
 }
 
 void LayoutTable::ComputePreferredLogicalWidths() {
   DCHECK(PreferredLogicalWidthsDirty());
 
-  ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
-                                max_preferred_logical_width_);
+  MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
 
-  int borders_padding_and_spacing =
-      BordersPaddingAndSpacingInRowDirection().ToInt();
-  min_preferred_logical_width_ += borders_padding_and_spacing;
-  max_preferred_logical_width_ += borders_padding_and_spacing;
+  table_layout_->ApplyPreferredLogicalWidthQuirks(sizes.min_size,
+                                                  sizes.max_size);
+  min_preferred_logical_width_ = sizes.min_size;
+  max_preferred_logical_width_ = sizes.max_size;
 
-  table_layout_->ApplyPreferredLogicalWidthQuirks(min_preferred_logical_width_,
-                                                  max_preferred_logical_width_);
-
-  for (unsigned i = 0; i < captions_.size(); i++) {
-    min_preferred_logical_width_ = std::max(
-        min_preferred_logical_width_, captions_[i]->MinPreferredLogicalWidth());
+  for (const auto* caption : captions_) {
+    LayoutUnit min_preferred_logical_width =
+        caption->PreferredLogicalWidths().min_size;
+    min_preferred_logical_width_ =
+        std::max(min_preferred_logical_width_, min_preferred_logical_width);
     // Note: using captions' min-width is intentional here:
-    max_preferred_logical_width_ = std::max(
-        max_preferred_logical_width_, captions_[i]->MinPreferredLogicalWidth());
+    max_preferred_logical_width_ =
+        std::max(max_preferred_logical_width_, min_preferred_logical_width);
   }
 
   const ComputedStyle& style_to_use = StyleRef();
@@ -1130,11 +1132,11 @@ void LayoutTable::ComputePreferredLogicalWidths() {
       style_to_use.LogicalMinWidth().Value() > 0) {
     max_preferred_logical_width_ =
         std::max(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
+                 AdjustBorderBoxLogicalWidthForBoxSizing(
                      style_to_use.LogicalMinWidth().Value()));
     min_preferred_logical_width_ =
         std::max(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
+                 AdjustBorderBoxLogicalWidthForBoxSizing(
                      style_to_use.LogicalMinWidth().Value()));
   }
 
@@ -1145,7 +1147,7 @@ void LayoutTable::ComputePreferredLogicalWidths() {
     // least the size of its min-content, regardless of 'max-width'.
     max_preferred_logical_width_ =
         std::min(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
+                 AdjustBorderBoxLogicalWidthForBoxSizing(
                      style_to_use.LogicalMaxWidth().Value()));
   }
 

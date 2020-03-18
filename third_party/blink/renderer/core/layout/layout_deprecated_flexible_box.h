@@ -50,9 +50,7 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
   void PlaceChild(LayoutBox* child, const LayoutPoint& location);
 
  private:
-  void ComputeIntrinsicLogicalWidths(
-      LayoutUnit& min_logical_width,
-      LayoutUnit& max_logical_width) const override;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
 
   LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding);
 

@@ -101,9 +101,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit CrossAxisContentExtent() const;
 
  protected:
-  void ComputeIntrinsicLogicalWidths(
-      LayoutUnit& min_logical_width,
-      LayoutUnit& max_logical_width) const override;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
 
   bool HitTestChildren(HitTestResult&,
                        const HitTestLocation&,

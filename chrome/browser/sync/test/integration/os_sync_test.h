@@ -8,8 +8,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
-// Test suite for Chrome OS sync. Enables the SplitSettingsSync feature and the
-// OS sync enabled preference before running the test.
+// Test suite for Chrome OS sync. Enables the SplitSettingsSync feature.
+// TODO(jamescook): When SplitSettingsSync is on-by-default this class can be
+// deleted.
 class OsSyncTest : public SyncTest {
  public:
   explicit OsSyncTest(TestType type);
@@ -17,9 +18,6 @@ class OsSyncTest : public SyncTest {
 
   OsSyncTest(const OsSyncTest&) = delete;
   OsSyncTest& operator=(const OsSyncTest&) = delete;
-
-  // SyncTest:
-  bool SetupClients() override;
 
  private:
   // The names |scoped_feature_list_| and |feature_list_| are both used in

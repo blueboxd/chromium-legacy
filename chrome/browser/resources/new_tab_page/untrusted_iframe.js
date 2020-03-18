@@ -30,6 +30,15 @@ class UntrustedIframeElement extends PolymerElement {
     };
   }
 
+  /**
+   * Sends message to iframe.
+   * @param {*} message
+   */
+  postMessage(message) {
+    this.$.iframe.contentWindow.postMessage(
+        message, 'chrome-untrusted://new-tab-page');
+  }
+
   /** @private */
   computeSrc_() {
     return BrowserProxy.getInstance().createUntrustedIframeSrc(this.path);

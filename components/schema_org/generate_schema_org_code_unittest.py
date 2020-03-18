@@ -65,15 +65,15 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
             thing)
 
     def test_get_root_type_datatype(self):
-        text = {
-            '@id': schema_org_id('Text'),
+        number = {
+            '@id': schema_org_id('Number'),
             '@type': [schema_org_id('DataType'), 'rdfs:Class']
         }
-        url = {'@id': schema_org_id('URL'), 'rdfs:subClassOf': text}
-        schema = {'@graph': [url, text]}
+        integer = {'@id': schema_org_id('Integer'), 'rdfs:subClassOf': number}
+        schema = {'@graph': [integer, number]}
 
         self.assertEqual(
-            generate_schema_org_code.get_root_type(url, schema), text)
+            generate_schema_org_code.get_root_type(integer, schema), number)
 
     def test_parse_property_identifier(self):
         thing = {'@id': schema_org_id('Thing')}
@@ -89,26 +89,26 @@ class GenerateSchemaOrgCodeTest(unittest.TestCase):
             '@id': schema_org_id('PropertyValue'),
             'rdfs:subClassOf': structured_value
         }
-        text = {
-            '@id': schema_org_id('Text'),
+        number = {
+            '@id': schema_org_id('Number'),
             '@type': [schema_org_id('DataType'), 'rdfs:Class']
         }
-        url = {'@id': schema_org_id('URL'), 'rdfs:subClassOf': text}
+        integer = {'@id': schema_org_id('Integer'), 'rdfs:subClassOf': number}
         identifier = {
             '@id': schema_org_id('Identifier'),
-            schema_org_id('rangeIncludes'): [property_value, url, text]
+            schema_org_id('rangeIncludes'): [property_value, integer, number]
         }
         schema = {
             '@graph': [
-                thing, intangible, structured_value, property_value, text, url,
-                identifier
+                thing, intangible, structured_value, property_value, number,
+                integer, identifier
             ]
         }
 
         self.assertEqual(
             generate_schema_org_code.parse_property(identifier, schema), {
                 'name': 'Identifier',
-                'has_text': True,
+                'has_number': True,
                 'thing_types': [property_value['@id']]
             })
 

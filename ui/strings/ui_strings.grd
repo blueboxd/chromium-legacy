@@ -947,6 +947,9 @@ need to be translated for each locale.-->
       <message name="IDS_SHELF_ITEM_WAS_UNPINNED" desc="Accessibility announcement notifying users that an item was un-pinned from the shelf">
         <ph name="ITEM_TITLE">$1<ex>Files</ex></ph> was un-pinned
       </message>
+      <message name="IDS_SHELF_ITEMS_WERE_SWAPPED" desc="Accessibility announcement notifying users that two shelf items have been swapped">
+        <ph name="FIRST_ITEM_TITLE">$1<ex>Files</ex></ph> swapped with <ph name="SECOND_ITEM_TITLE">$2<ex>Settings</ex></ph>
+      </message>
       <message name="IDS_SHELF_NEXT" desc="Tooltip for the shelf arrow button that scrolls the shelf forward">
         Next
       </message>

@@ -31,7 +31,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
-#include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace ash {
 
@@ -369,7 +368,7 @@ void StatusAreaWidget::SchedulePaint() {
 }
 
 const ui::NativeTheme* StatusAreaWidget::GetNativeTheme() const {
-  return ui::NativeThemeDarkAura::instance();
+  return ui::NativeTheme::GetInstanceForDarkUI();
 }
 
 bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {

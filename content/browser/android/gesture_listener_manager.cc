@@ -242,6 +242,15 @@ void GestureListenerManager::OnRenderProcessGone() {
   ResetPopupsAndInput(true);
 }
 
+bool GestureListenerManager::IsScrollInProgressForTesting() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return false;
+
+  return Java_GestureListenerManagerImpl_isScrollInProgress(env, obj);
+}
+
 void GestureListenerManager::ResetPopupsAndInput(bool render_process_gone) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

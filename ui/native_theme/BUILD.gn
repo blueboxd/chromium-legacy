@@ -53,8 +53,6 @@ jumbo_component("native_theme") {
     sources += [
       "native_theme_aura.cc",
       "native_theme_aura.h",
-      "native_theme_dark_aura.cc",
-      "native_theme_dark_aura.h",
       "overlay_scrollbar_constants_aura.h",
     ]
   }

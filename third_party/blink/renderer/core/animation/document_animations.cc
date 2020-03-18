@@ -75,8 +75,13 @@ void DocumentAnimations::UpdateAnimationTimingForAnimationFrame() {
   UpdateAnimationTiming(*document_, timelines_, kTimingUpdateForAnimationFrame);
 }
 
-bool DocumentAnimations::NeedsAnimationTimingUpdate() {
+bool DocumentAnimations::NeedsAnimationTimingUpdate(bool post_layout) {
   for (auto& timeline : timelines_) {
+    // Layout can cause scroll offset to change and invalidate scroll timeline.
+    // We don't consider scroll timelines in this situation to avoid layout
+    // cycle.
+    if (post_layout && timeline->IsScrollTimeline())
+      continue;
     if (timeline->HasOutdatedAnimation() ||
         timeline->NeedsAnimationTimingUpdate())
       return true;

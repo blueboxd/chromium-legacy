@@ -267,6 +267,7 @@ enum class DialogIdentifier {
   PRINT_JOB_CONFIRMATION = 102,
   CROSTINI_RECOVERY = 103,
   PARENT_PERMISSION = 104,  // ChromeOS only.
+  SIGNIN_REAUTH = 105,
   // Add values above this line with a corresponding label in
   // tools/metrics/histograms/enums.xml
   MAX_VALUE

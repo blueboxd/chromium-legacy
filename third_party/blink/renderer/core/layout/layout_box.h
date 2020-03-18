@@ -800,8 +800,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
-  LayoutUnit MinPreferredLogicalWidth() const override;
-  LayoutUnit MaxPreferredLogicalWidth() const override;
+  MinMaxSizes PreferredLogicalWidths() const override;
 
   LayoutUnit OverrideLogicalHeight() const;
   LayoutUnit OverrideLogicalWidth() const;
@@ -1588,7 +1587,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // details about those widths.
   //
   // This function is public only for use by LayoutNG. Other callers should go
-  // through MinPreferredLogicalWidth/MaxPreferredLogicalWidth.
+  // through PreferredLogicalWidths.
   virtual void ComputePreferredLogicalWidths() {
     ClearPreferredLogicalWidthsDirty();
   }
@@ -1607,7 +1606,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // logical widths for this layout box.
   //
   // intrinsicWidth is defined as:
-  //     intrinsic size of content (without our border and padding) +
+  //     intrinsic size of content (with our border and padding) +
   //     scrollbarWidth.
   //
   // preferredWidth is defined as:
@@ -1615,9 +1614,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   //     Note: fixedWidth includes border and padding and scrollbarWidth.
   //
   // This is public only for use by LayoutNG. Do not call this elsewhere.
-  virtual void ComputeIntrinsicLogicalWidths(
-      LayoutUnit& min_logical_width,
-      LayoutUnit& max_logical_width) const;
+  virtual MinMaxSizes ComputeIntrinsicLogicalWidths() const;
 
   // Make it public.
   using LayoutObject::BackgroundIsKnownToBeObscured;
@@ -1658,8 +1655,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutUnit ComputeIntrinsicLogicalWidthUsing(
       const Length& logical_width_length,
-      LayoutUnit available_logical_width,
-      LayoutUnit border_and_padding) const;
+      LayoutUnit available_logical_width) const;
   LayoutUnit ComputeIntrinsicLogicalContentHeightUsing(
       const Length& logical_height_length,
       LayoutUnit intrinsic_content_height,
@@ -1864,12 +1860,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // The logical width of the element if it were to break its lines at every
   // possible opportunity.
   //
-  // See LayoutObject::minPreferredLogicalWidth() for more details.
+  // See LayoutObject::PreferredLogicalWidths() for more details.
   LayoutUnit min_preferred_logical_width_;
 
   // The logical width of the element if it never breaks any lines at all.
   //
-  // See LayoutObject::maxPreferredLogicalWidth() for more details.
+  // See LayoutObject::PreferredLogicalWidths() for more details.
   LayoutUnit max_preferred_logical_width_;
 
   // LayoutBoxUtils is used for the LayoutNG code querying protected methods on

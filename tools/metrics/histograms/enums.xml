@@ -15159,6 +15159,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="101" label="App Uninstall"/>
   <int value="102" label="Print Job Confirmation"/>
   <int value="103" label="Crostini Recovery Dialog"/>
+  <int value="104" label="Signin Reauth Dialog"/>
 </enum>
 
 <enum name="DialogOriginRelationship">

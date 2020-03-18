@@ -234,6 +234,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void GestureEventAck(const blink::WebGestureEvent& event,
                                InputEventAckState ack_result);
 
+  virtual void ChildDidAckGestureEvent(const blink::WebGestureEvent& event,
+                                       InputEventAckState ack_result);
+
   // When key event is not uncosumed in render, browser may want to consume it.
   virtual bool OnUnconsumedKeyboardEventAck(
       const NativeWebKeyboardEventWithLatencyInfo& event);

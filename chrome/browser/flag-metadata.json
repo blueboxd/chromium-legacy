@@ -2629,6 +2629,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "ios-lookalike-url-navigation-suggestions-ui",
+    "owners": [ "livvielin" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "isolate-origins",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
     // This is useful for isolating additional origins beyond the normal site
@@ -3007,11 +3012,6 @@
     "name": "omnibox-loose-max-limit-on-dedicated-rows",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 93
-  },
-  {
-    "name": "omnibox-material-design-weather-icons",
-    "owners": [ "manukh", "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
   },
   {
     "name": "omnibox-max-url-matches",

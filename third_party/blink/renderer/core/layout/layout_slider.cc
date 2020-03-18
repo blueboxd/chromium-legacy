@@ -45,13 +45,14 @@ LayoutUnit LayoutSlider::BaselinePosition(
   return Size().Height() + MarginTop();
 }
 
-void LayoutSlider::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  max_logical_width =
+MinMaxSizes LayoutSlider::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
+  sizes.max_size +=
       LayoutUnit(kDefaultTrackLength * StyleRef().EffectiveZoom());
   if (!StyleRef().Width().IsPercentOrCalc())
-    min_logical_width = max_logical_width;
+    sizes.min_size = sizes.max_size;
+  return sizes;
 }
 
 }  // namespace blink

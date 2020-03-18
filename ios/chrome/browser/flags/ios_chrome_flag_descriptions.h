@@ -224,6 +224,11 @@ extern const char kInfobarUIRebootDescription[];
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
 
+// Title and description for the flag to enable interstitials on lookalike
+// URL navigations.
+extern const char kIOSLookalikeUrlNavigationSuggestionsUIName[];
+extern const char kIOSLookalikeUrlNavigationSuggestionsUIDescription[];
+
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
 extern const char kLockBottomToolbarDescription[];

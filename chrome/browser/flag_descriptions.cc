@@ -1267,12 +1267,6 @@ const char kOmniboxLocalEntitySuggestionsDescription[] =
     "layout, similar to #omnibox-rich-entity-suggestions. Enabling this feature"
     "will also enable #omnibox-rich-entity-suggestions.";
 
-const char kOmniboxMaterialDesignWeatherIconsName[] =
-    "Omnibox Material Design Weather Icons";
-const char kOmniboxMaterialDesignWeatherIconsDescription[] =
-    "Use material design weather icons in the omnibox when displaying weather "
-    "answers.";
-
 const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
 const char kOmniboxOnFocusSuggestionsDescription[] =
     "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "

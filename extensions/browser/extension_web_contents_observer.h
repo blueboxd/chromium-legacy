@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 class BrowserContext;
@@ -95,11 +94,6 @@ class ExtensionWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
-
   // Subclasses should call this first before doing their own message handling.
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
@@ -125,8 +119,6 @@ class ExtensionWebContentsObserver
 
   // Whether this object has been initialized.
   bool initialized_;
-
-  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebContentsObserver);
 };

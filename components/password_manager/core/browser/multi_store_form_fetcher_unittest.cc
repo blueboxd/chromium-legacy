@@ -140,6 +140,8 @@ class MultiStoreFormFetcherTest : public testing::Test {
     account_mock_store_->ShutdownOnUIThread();
   }
 
+  FakePasswordManagerClient* client() { return &client_; }
+
  protected:
   // A wrapper around form_fetcher_.Fetch(), adding the call expectations.
   void Fetch() {
@@ -244,6 +246,52 @@ TEST_F(MultiStoreFormFetcherTest, MergeFromBothStores) {
                                    Pointee(federated3)));
   EXPECT_TRUE(form_fetcher_->IsBlacklisted());
   EXPECT_THAT(form_fetcher_->GetPreferredMatch(), Pointee(non_federated3));
+}
+
+TEST_F(MultiStoreFormFetcherTest, BlacklistEntryInTheAccountStore) {
+  Fetch();
+  PasswordForm blacklisted = CreateBlacklisted();
+  blacklisted.in_store = PasswordForm::Store::kAccountStore;
+
+  // Pass response from the first store.
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(std::make_unique<PasswordForm>(blacklisted));
+  form_fetcher_->OnGetPasswordStoreResults(std::move(results));
+  // Pass empty response from the second store.
+  form_fetcher_->OnGetPasswordStoreResults({});
+
+  // Simluate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kAccountStore));
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+
+  // Simluate a user in the profile mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kProfileStore));
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+}
+
+TEST_F(MultiStoreFormFetcherTest, BlacklistEntryInTheProfileStore) {
+  Fetch();
+  PasswordForm blacklisted = CreateBlacklisted();
+  blacklisted.in_store = PasswordForm::Store::kProfileStore;
+
+  // Pass response from the first store.
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(std::make_unique<PasswordForm>(blacklisted));
+  form_fetcher_->OnGetPasswordStoreResults(std::move(results));
+  // Pass empty response from the second store.
+  form_fetcher_->OnGetPasswordStoreResults({});
+
+  // Simluate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kAccountStore));
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+
+  // Simluate a user in the profile mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kProfileStore));
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
 }
 
 }  // namespace password_manager

@@ -21,6 +21,14 @@
 namespace blink {
 
 namespace {
+using ScrollTimelineSet =
+    HeapHashMap<WeakMember<Node>, HeapHashSet<WeakMember<ScrollTimeline>>>;
+ScrollTimelineSet& GetScrollTimelineSet() {
+  DEFINE_STATIC_LOCAL(Persistent<ScrollTimelineSet>, set,
+                      (MakeGarbageCollected<ScrollTimelineSet>()));
+  return *set;
+}
+
 using ActiveScrollTimelineSet = HeapHashCountedSet<WeakMember<Node>>;
 ActiveScrollTimelineSet& GetActiveScrollTimelineSet() {
   DEFINE_STATIC_LOCAL(Persistent<ActiveScrollTimelineSet>, set,
@@ -134,21 +142,72 @@ ScrollTimeline::ScrollTimeline(Document* document,
       orientation_(orientation),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
-      time_range_(time_range) {}
+      time_range_(time_range),
+      in_lifecycle_update_(false) {
+  if (resolved_scroll_source_) {
+    ScrollTimelineSet& set = GetScrollTimelineSet();
+    if (!set.Contains(resolved_scroll_source_)) {
+      set.insert(resolved_scroll_source_,
+                 HeapHashSet<WeakMember<ScrollTimeline>>());
+    }
+    auto it = set.find(resolved_scroll_source_);
+    it->value.insert(this);
+  }
+  if (document_) {
+    if (auto* local_frame_view = document_->View())
+      local_frame_view->RegisterForLifecycleNotifications(this);
+  }
+  SnapshotState();
+}
 
 bool ScrollTimeline::IsActive() const {
+  DCHECK(!IsSnapshottingAllowed() ||
+         (phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime()));
+  return phase_and_time_snapshotted_.phase != TimelinePhase::kInactive;
+}
+
+void ScrollTimeline::Invalidate() {
+  if (!IsSnapshottingAllowed())
+    return;
+  if (phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime())
+    return;
+  SnapshotState();
+  for (Animation* animation : animations_needing_update_)
+    animation->SetOutdated();
+}
+
+bool ScrollTimeline::IsSnapshottingAllowed() const {
+  return !in_lifecycle_update_;
+}
+
+void ScrollTimeline::WillStartLifecycleUpdate(const LocalFrameView&) {
+  DCHECK(!in_lifecycle_update_);
+  in_lifecycle_update_ = true;
+}
+void ScrollTimeline::DidFinishLifecycleUpdate(const LocalFrameView&) {
+  DCHECK(in_lifecycle_update_);
+  in_lifecycle_update_ = false;
+  Invalidate();
+}
+
+bool ScrollTimeline::ComputeIsActive() const {
   LayoutBox* layout_box = resolved_scroll_source_
                               ? resolved_scroll_source_->GetLayoutBox()
                               : nullptr;
-  return layout_box && layout_box->HasOverflowClip();
+  return layout_box && layout_box->HasOverflowClip() &&
+         layout_box->GetScrollableArea();
 }
 
 TimelinePhase ScrollTimeline::Phase() const {
-  return ComputePhaseAndCurrentTime().phase;
+  DCHECK(!IsSnapshottingAllowed() ||
+         phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime());
+  return phase_and_time_snapshotted_.phase;
 }
 
 base::Optional<base::TimeDelta> ScrollTimeline::CurrentTimeInternal() {
-  return ComputePhaseAndCurrentTime().current_time;
+  DCHECK(!IsSnapshottingAllowed() ||
+         phase_and_time_snapshotted_ == ComputePhaseAndCurrentTime());
+  return phase_and_time_snapshotted_.current_time;
 }
 
 ScrollTimeline::PhaseAndTime ScrollTimeline::ComputePhaseAndCurrentTime()
@@ -156,7 +215,7 @@ ScrollTimeline::PhaseAndTime ScrollTimeline::ComputePhaseAndCurrentTime()
   // 1. If scroll timeline is inactive, return an unresolved time value.
   // https://github.com/WICG/scroll-animations/issues/31
   // https://wicg.github.io/scroll-animations/#current-time-algorithm
-  if (!IsActive()) {
+  if (!ComputeIsActive()) {
     return {TimelinePhase::kInactive, base::nullopt};
   }
   LayoutBox* layout_box = resolved_scroll_source_->GetLayoutBox();
@@ -206,11 +265,15 @@ ScrollTimeline::InitialStartTimeForAnimations() {
 }
 
 void ScrollTimeline::ScheduleNextService() {
-  DCHECK_EQ(outdated_animation_count_, 0U);
   if (AnimationsNeedingUpdateCount() == 0)
     return;
-  if (CurrentTimeInternal() != last_current_time_internal_)
+  // TODO(gerchiko): Phase also needs to be compared with the last phase.
+  if (ComputePhaseAndCurrentTime().current_time != last_current_time_internal_)
     ScheduleServiceOnNextFrame();
+}
+
+void ScrollTimeline::SnapshotState() {
+  phase_and_time_snapshotted_ = ComputePhaseAndCurrentTime();
 }
 
 Element* ScrollTimeline::scrollSource() {
@@ -249,14 +312,14 @@ void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
                                             double& current_offset,
                                             double& max_offset) const {
   DCHECK(layout_box);
+  DCHECK(layout_box->GetScrollableArea());
 
   // Depending on the writing-mode and direction, the scroll origin shifts and
   // the scroll offset may be negative. The easiest way to deal with this is to
   // use only the magnitude of the scroll offset, and compare it to (max_offset
   // - min_offset).
   PaintLayerScrollableArea* scrollable_area = layout_box->GetScrollableArea();
-  if (!scrollable_area)
-    return;
+
   // Using the absolute value of the scroll offset only makes sense if either
   // the max or min scroll offset for a given axis is 0. This should be
   // guaranteed by the scroll origin code, but these DCHECKs ensure that.
@@ -319,19 +382,13 @@ void ScrollTimeline::ResolveScrollStartAndEnd(
   }
 }
 
-void ScrollTimeline::AnimationAttached(Animation* animation) {
-  if (animation) {
-    AnimationTimeline::AnimationAttached(animation);
-  }
+void ScrollTimeline::WorkletAnimationAttached() {
   if (!resolved_scroll_source_)
     return;
   GetActiveScrollTimelineSet().insert(resolved_scroll_source_);
 }
 
-void ScrollTimeline::AnimationDetached(Animation* animation) {
-  if (animation) {
-    AnimationTimeline::AnimationDetached(animation);
-  }
+void ScrollTimeline::WorkletAnimationDetached() {
   if (!resolved_scroll_source_)
     return;
   GetActiveScrollTimelineSet().erase(resolved_scroll_source_);
@@ -346,9 +403,35 @@ void ScrollTimeline::Trace(Visitor* visitor) {
 }
 
 bool ScrollTimeline::HasActiveScrollTimeline(Node* node) {
-  ActiveScrollTimelineSet& set = GetActiveScrollTimelineSet();
+  ActiveScrollTimelineSet& worklet_animations_set =
+      GetActiveScrollTimelineSet();
+  auto worklet_animations_it = worklet_animations_set.find(node);
+  if (worklet_animations_it != worklet_animations_set.end() &&
+      worklet_animations_it->value > 0)
+    return true;
+
+  ScrollTimelineSet& set = GetScrollTimelineSet();
   auto it = set.find(node);
-  return it != set.end() && it->value > 0;
+  if (it == set.end())
+    return false;
+
+  for (auto& timeline : it->value) {
+    if (timeline->HasAnimations())
+      return true;
+  }
+  return false;
+}
+
+void ScrollTimeline::Invalidate(Node* node) {
+  ScrollTimelineSet& set = GetScrollTimelineSet();
+  auto it = set.find(node);
+
+  if (it == set.end())
+    return;
+
+  for (auto& timeline : it->value) {
+    timeline->Invalidate();
+  }
 }
 
 CompositorAnimationTimeline* ScrollTimeline::EnsureCompositorTimeline() {

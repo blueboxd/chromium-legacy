@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.flags;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -35,5 +37,19 @@ public class DoubleCachedFieldTrialParameter extends CachedFieldTrialParameter {
         double value = ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
                 getFeatureName(), getParameterName(), getDefaultValue());
         SharedPreferencesManager.getInstance().writeDouble(getSharedPreferenceKey(), value);
+    }
+
+    /**
+     * Forces the parameter to return a specific value for testing.
+     *
+     * Caveat: this does not affect the value returned by native, only by
+     * {@link CachedFieldTrialParameter}.
+     *
+     * @param overrideValue the value to be returned
+     */
+    @VisibleForTesting
+    public void setForTesting(double overrideValue) {
+        CachedFeatureFlags.setOverrideTestValue(
+                getSharedPreferenceKey(), String.valueOf(overrideValue));
     }
 }

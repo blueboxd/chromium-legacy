@@ -59,7 +59,9 @@ Polymer({
    * @return {boolean}
    */
   wasConfirmed() {
-    return this.$.dialog.getNative().returnValue == 'success';
+    return /** @type {!CrDialogElement} */ (this.$.dialog)
+               .getNative()
+               .returnValue == 'success';
   },
 
   /**
@@ -109,7 +111,7 @@ Polymer({
 
   /** @private */
   onDisconnectCancel_() {
-    this.$.dialog.cancel();
+    /** @type {!CrDialogElement} */ (this.$.dialog).cancel();
   },
 
   /** @private */

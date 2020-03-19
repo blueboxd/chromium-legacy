@@ -23,7 +23,7 @@ class AuthenticatorQRSheetView : public AuthenticatorRequestSheetView {
   ~AuthenticatorQRSheetView() override;
 
   // RefreshQRCode causes a fresh QR code to be painted.
-  void RefreshQRCode(const uint8_t new_qr_data[24]);
+  void RefreshQRCode(base::span<const uint8_t> new_qr_data);
 
  private:
   // AuthenticatorRequestSheetView:

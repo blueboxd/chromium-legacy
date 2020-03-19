@@ -116,7 +116,7 @@ class TestUnwinder : public Unwinder {
         stack_copy_(stack_copy),
         stack_copy_bottom_(stack_copy_bottom) {}
 
-  bool CanUnwindFrom(const Frame* current_frame) const override { return true; }
+  bool CanUnwindFrom(const Frame& current_frame) const override { return true; }
 
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,
@@ -148,7 +148,7 @@ class CallRecordingUnwinder : public Unwinder {
     update_modules_was_invoked_ = true;
   }
 
-  bool CanUnwindFrom(const Frame* current_frame) const override { return true; }
+  bool CanUnwindFrom(const Frame& current_frame) const override { return true; }
 
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,
@@ -238,7 +238,7 @@ class FakeTestUnwinder : public Unwinder {
   FakeTestUnwinder(const FakeTestUnwinder&) = delete;
   FakeTestUnwinder& operator=(const FakeTestUnwinder&) = delete;
 
-  bool CanUnwindFrom(const Frame* current_frame) const override {
+  bool CanUnwindFrom(const Frame& current_frame) const override {
     bool can_unwind = results_[current_unwind_].can_unwind;
     // NB: If CanUnwindFrom() returns false then TryUnwind() will not be
     // invoked, so current_unwind_ is guarantee to be incremented only once for

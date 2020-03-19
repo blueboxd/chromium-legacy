@@ -16,6 +16,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
+#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -43,10 +44,10 @@ class MojoPageTimingSender : public PageTimingSender {
     render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
         &page_load_metrics_);
   }
-  ~MojoPageTimingSender() override {}
+  ~MojoPageTimingSender() override = default;
   void SendTiming(
       const mojom::PageLoadTimingPtr& timing,
-      const mojom::PageLoadMetadataPtr& metadata,
+      const mojom::FrameMetadataPtr& metadata,
       mojom::PageLoadFeaturesPtr new_features,
       std::vector<mojom::ResourceDataUpdatePtr> resources,
       const mojom::FrameRenderDataUpdate& render_data,
@@ -276,6 +277,13 @@ void MetricsRenderFrameObserver::OnAdResourceTrackerGoingAway() {
 
 void MetricsRenderFrameObserver::OnAdResourceObserved(int request_id) {
   ad_request_ids_.insert(request_id);
+}
+
+void MetricsRenderFrameObserver::OnMainFrameDocumentIntersectionChanged(
+    const blink::WebRect& main_frame_document_intersection) {
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->OnMainFrameDocumentIntersectionChanged(
+        main_frame_document_intersection);
 }
 
 void MetricsRenderFrameObserver::MaybeSetCompletedBeforeFCP(int request_id) {

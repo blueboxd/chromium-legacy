@@ -39,6 +39,10 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
 
   ~BackGestureContextualNudgeControllerImpl() override;
 
+  // Calls when the user starts perform back gesture. We'll cancel the animation
+  // if the back nudge is waiting to be shown or is showing.
+  void OnBackGestureStarted();
+
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
   void OnSessionStateChanged(session_manager::SessionState state) override;

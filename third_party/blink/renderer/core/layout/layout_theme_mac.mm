@@ -715,10 +715,7 @@ void LayoutThemeMac::SetFontFromControlSize(ComputedStyle& style,
   // Reset line height.
   style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 
-  // TODO(esprehn): The fontSelector manual management is buggy and error prone.
-  FontSelector* font_selector = style.GetFont().GetFontSelector();
-  if (style.SetFontDescription(font_description))
-    style.GetFont().Update(font_selector);
+  style.SetFontDescription(font_description);
 }
 
 NSControlSize LayoutThemeMac::ControlSizeForSystemFont(

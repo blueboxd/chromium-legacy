@@ -23,9 +23,14 @@ class WeightedMean {
 
   // Adds |value| to the mean if |weight| is positive. Removes |value| from
   // the mean if |weight| is negative. Has no effect if |weight| is 0.
-  void AddSample(int64_t value, double weight);
+  template <typename T>
+  void AddSample(T value, double weight) {
+    AddDelta(value - weighted_mean_, weight);
+  }
 
  private:
+  void AddDelta(double delta, double weight);
+
   double weighted_mean_;
   double variance_sum_;
   double sum_weights_;

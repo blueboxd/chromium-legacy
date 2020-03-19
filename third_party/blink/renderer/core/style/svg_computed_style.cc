@@ -120,9 +120,9 @@ StyleDifference SVGComputedStyle::Diff(const SVGComputedStyle& other) const {
 
   if (DiffNeedsLayoutAndPaintInvalidation(other)) {
     style_difference.SetNeedsFullLayout();
-    style_difference.SetNeedsPaintInvalidationObject();
+    style_difference.SetNeedsPaintInvalidation();
   } else if (DiffNeedsPaintInvalidation(other)) {
-    style_difference.SetNeedsPaintInvalidationObject();
+    style_difference.SetNeedsPaintInvalidation();
   }
 
   return style_difference;

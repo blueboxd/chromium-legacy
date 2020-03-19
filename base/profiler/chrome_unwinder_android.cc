@@ -21,15 +21,15 @@ ChromeUnwinderAndroid::ChromeUnwinderAndroid(
 
 ChromeUnwinderAndroid::~ChromeUnwinderAndroid() = default;
 
-bool ChromeUnwinderAndroid::CanUnwindFrom(const Frame* current_frame) const {
-  return current_frame->module == chrome_module_;
+bool ChromeUnwinderAndroid::CanUnwindFrom(const Frame& current_frame) const {
+  return current_frame.module == chrome_module_;
 }
 
 UnwindResult ChromeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
                                               uintptr_t stack_top,
                                               ModuleCache* module_cache,
                                               std::vector<Frame>* stack) const {
-  DCHECK(CanUnwindFrom(&stack->back()));
+  DCHECK(CanUnwindFrom(stack->back()));
   do {
     const ModuleCache::Module* module = stack->back().module;
     uintptr_t pc = RegisterContextInstructionPointer(thread_context);
@@ -44,7 +44,7 @@ UnwindResult ChromeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
     stack->emplace_back(RegisterContextInstructionPointer(thread_context),
                         module_cache->GetModuleForAddress(
                             RegisterContextInstructionPointer(thread_context)));
-  } while (CanUnwindFrom(&stack->back()));
+  } while (CanUnwindFrom(stack->back()));
   return UnwindResult::UNRECOGNIZED_FRAME;
 }
 

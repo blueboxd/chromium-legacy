@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityClientConnectionKeeper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
@@ -30,6 +31,7 @@ import dagger.Subcomponent;
 public interface CustomTabActivityComponent extends BaseCustomTabActivityComponent {
     TrustedWebActivityCoordinator resolveTrustedWebActivityCoordinator();
 
+    CurrentPageVerifier resolveCurrentPageVerifier();
     CustomTabBottomBarDelegate resolveBottomBarDelegate();
     CustomTabActivityTabController resolveTabController();
     CustomTabActivityLifecycleUmaTracker resolveUmaTracker();

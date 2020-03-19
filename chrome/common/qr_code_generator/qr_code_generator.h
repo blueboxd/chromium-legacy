@@ -10,23 +10,25 @@
 
 #include "base/containers/span.h"
 
-// QRCodeGenerator generates version three, class Q QR codes that carry 32
+// QRCodeGenerator generates version five, class M QR codes that carry 84
 // bytes of raw data. References in the following comments refer to ISO 18004
 // (3rd edition).
 class QRCodeGenerator {
  public:
-  // kSize is the number of "tiles" in each dimension for a v3 QR code. See
+  // kSize is the number of "tiles" in each dimension for a v5 QR code. See
   // table 1. (The colored squares in in QR codes are called tiles in the
   // spec.)
-  static constexpr int kSize = 29;
-  // kTotalSize is the total number of tiles for a v3 QR code, in both
+  static constexpr int kSize = 37;
+  // kTotalSize is the total number of tiles for a v5 QR code, in both
   // directions.
   static constexpr int kTotalSize = kSize * kSize;
-  // These values are taken from table 9 (page 38) for a version three, class Q
-  // QR code.
-  static constexpr size_t kTotalBytes = 70;
+  // These values are taken from table 9 (page 38) for a version five, class M
+  // QR code. (That table is very badly formatted for version five, the rows in
+  // the last column don't line up correctly. The correct value for 5M is
+  // (67,43,12).)
+  static constexpr size_t kTotalBytes = 134;
   static constexpr size_t kNumSegments = 2;
-  static constexpr size_t kSegmentDataBytes = 17;
+  static constexpr size_t kSegmentDataBytes = 43;
 
   static constexpr size_t kSegmentBytes = kTotalBytes / kNumSegments;
   static constexpr size_t kSegmentECBytes = kSegmentBytes - kSegmentDataBytes;
@@ -36,8 +38,9 @@ class QRCodeGenerator {
 
   // Generate generates a QR code containing the given data and returns a
   // pointer to an array of kTotalSize bytes where the least-significant bit of
-  // each byte is set if that tile should be "black".
-  base::span<const uint8_t, kTotalSize> Generate(const uint8_t in[kInputBytes]);
+  // each byte is set if that tile should be "black". The length of |in| must be
+  // less than, or equal to, |kInputBytes|.
+  base::span<uint8_t, kTotalSize> Generate(base::span<const uint8_t> in);
 
  private:
   // MaskFunction3 implements one of the data-masking functions. See figure 21.

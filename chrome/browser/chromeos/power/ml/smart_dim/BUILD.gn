@@ -39,6 +39,7 @@ source_set("smart_dim") {
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/sessions",
+    "//services/data_decoder/public/cpp",
     "//ui/base",
   ]
 }

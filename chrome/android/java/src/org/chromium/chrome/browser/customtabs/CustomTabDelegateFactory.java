@@ -180,15 +180,30 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             return mHasActivityStarted;
         }
 
-        @Override
-        public int applyWebappScopePolicyForUrl(String url) {
-            int scopePolicy = super.applyWebappScopePolicyForUrl(url);
-            if (scopePolicy != WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR) {
-                return scopePolicy;
+        /**
+         * If the current activity is a webapp, applies the webapp's scope policy and returns the
+         * result. Returns {@link WebappScopePolicy#NavigationDirective#NORMAL_BEHAVIOR} if the
+         * current activity is not a webapp. Protected to allow subclasses to customize the logic.
+         */
+        protected @WebappScopePolicy.NavigationDirective int applyWebappScopePolicyForUrl(
+                String url) {
+            Context context = getAvailableContext();
+            if (context instanceof WebappActivity) {
+                WebappActivity webappActivity = (WebappActivity) context;
+                return WebappScopePolicy.applyPolicyForNavigationToUrl(
+                        webappActivity.scopePolicy(), webappActivity.getWebappInfo(), url);
             }
-            return mExternalIntentsPolicyProvider.shouldIgnoreExternalIntentHandlers(url)
-                    ? WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS
-                    : WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
+            return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
+        }
+
+        @Override
+        public boolean shouldDisableExternalIntentRequestsForUrl(String url) {
+            // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
+            if (applyWebappScopePolicyForUrl(url)
+                    == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS) {
+                return true;
+            }
+            return mExternalIntentsPolicyProvider.shouldIgnoreExternalIntentHandlers(url);
         }
     }
 

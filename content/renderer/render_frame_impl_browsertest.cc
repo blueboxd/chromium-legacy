@@ -534,7 +534,8 @@ TEST_F(RenderFrameImplTest, MainFrameDocumentIntersectionRecorded) {
   frame_widget()->OnMessageReceived(set_viewport_intersection_message);
   // Setting a new frame intersection in a local frame triggers the render frame
   // observer call.
-  EXPECT_EQ(observer.last_intersection_rect(), blink::WebRect(0, 0, 200, 140));
+  EXPECT_EQ(observer.last_intersection_rect(),
+            blink::WebRect(7, -11, 200, 140));
 }
 
 // Used to annotate the source of an interface request.

@@ -2013,7 +2013,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3688526734140524629">Cambia canale</translation>
 <translation id="3688578402379768763">Aggiornato</translation>
 <translation id="3688794912214798596">Cambia lingue…</translation>
-<translation id="3690369331356918524">Ricevi un avviso se le password vengono esposte a causa di una violazione dei dati</translation>
+<translation id="3690369331356918524">Ricevi un avviso se le password sono esposte a violazione dei dati</translation>
 <translation id="3691231116639905343">App per tastiera</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> vuole condividere il tuo schermo</translation>
 <translation id="369135240373237088">Accedi di nuovo con un account della scuola</translation>
@@ -2733,7 +2733,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4665446389743427678">Tutti i dati memorizzati da <ph name="SITE" /> saranno eliminati.</translation>
 <translation id="4668721319092543482">Fai clic per attivare <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">Realtà virtuale</translation>
-<translation id="4672879467403304774">Ti protegge su Chrome e altre app Google se esegui l'accesso</translation>
+<translation id="4672879467403304774">Ti protegge su Chrome e su altre app Google se esegui l'accesso</translation>
 <translation id="46733273239502219">Verranno cancellati anche i dati offline nelle app installate</translation>
 <translation id="4673442866648850031">Apri strumenti stilo quando lo stilo viene rimosso</translation>
 <translation id="4677772697204437347">Memoria GPU</translation>
@@ -4392,7 +4392,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6965648386495488594">Porta</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6966201992886493384">I siti possono utilizzare i cookie per migliorare la tua esperienza di navigazione, ad esempio per mantenere l'accesso o memorizzare gli articoli aggiunti al carrello</translation>
-<translation id="696780070563539690">I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su diversi siti, ad esempio per personalizzare gli annunci</translation>
+<translation id="696780070563539690">I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci</translation>
 <translation id="6968288415730398122">Inserisci la password per configurare il blocco schermo</translation>
 <translation id="6970480684834282392">Tipo di avvio</translation>
 <translation id="6970856801391541997">Stampa pagine specifiche</translation>
@@ -5432,7 +5432,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8320459152843401447">Il tuo intero schermo</translation>
 <translation id="8322814362483282060">A questa pagina è stato impedito l'accesso al microfono.</translation>
 <translation id="8323167517179506834">Digita un URL</translation>
-<translation id="8324784016256120271">I siti possono utilizzare i cookie per conoscere la tua attività di navigazione su diversi siti, ad esempio per personalizzare gli annunci</translation>
+<translation id="8324784016256120271">I siti possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci</translation>
 <translation id="8326478304147373412">PKCS #7, catena di certificati</translation>
 <translation id="8327039559959785305">Errore durante il montaggio di file Linux. Riprova.</translation>
 <translation id="8327676037044516220">Autorizzazioni e impostazioni contenuti</translation>

@@ -449,6 +449,13 @@ def goma_mac_builder(*, name, **kwargs):
   )
 
 goma_mac_builder(
+    name = 'Chromium iOS Goma RBE ToT',
+    caches = [xcode_cache.x11c29],
+    executable = 'recipe:ios/unified_builder_tester',
+    goma_backend = goma.backend.RBE_TOT,
+)
+
+goma_mac_builder(
     name = 'Chromium Mac Goma RBE Staging',
     goma_backend = goma.backend.RBE_STAGING,
 )

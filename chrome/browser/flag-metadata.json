@@ -1779,11 +1779,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-profile-card",
-    "owners": [ "tinazwang" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "enable-query-in-omnibox",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
@@ -3376,6 +3371,11 @@
     "name": "reduced-referrer-granularity",
     "owners": [ "davidvc", "mkwst", "jochen" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "related-searches",
+    "owners": [ "ayman", "donnd" ],
+    "expiry_milestone": 85
   },
   {
     "name": "release-notes",

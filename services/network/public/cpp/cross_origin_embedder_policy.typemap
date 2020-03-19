@@ -9,4 +9,6 @@ traits_headers = [
   "//services/network/public/cpp/cross_origin_embedder_policy_mojom_traits.h",
 ]
 sources = []
-type_mappings = [ "network.mojom.CrossOriginEmbedderPolicy=::network::CrossOriginEmbedderPolicy" ]
+type_mappings = [
+  "network.mojom.CrossOriginEmbedderPolicy=network::CrossOriginEmbedderPolicy",
+]

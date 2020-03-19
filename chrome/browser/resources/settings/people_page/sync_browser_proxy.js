@@ -14,7 +14,7 @@ cr.define('settings', function() {
    *            avatarImage: (string|undefined)}}
    * @see chrome/browser/ui/webui/settings/people_handler.cc
    */
-  let StoredAccount;
+  /* #export */ let StoredAccount;
 
   /**
    * @typedef {{childUser: (boolean|undefined),

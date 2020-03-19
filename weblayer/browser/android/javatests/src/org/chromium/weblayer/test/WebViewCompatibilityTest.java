@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.WebLayer;
@@ -35,8 +36,12 @@ public class WebViewCompatibilityTest {
                     InstrumentationRegistry.getTargetContext().getApplicationContext());
         });
         mActivityTestRule.launchShellWithUrl(mActivityTestRule.getTestDataURL("simple_page.html"));
-        WebView webView = TestThreadUtils.runOnUiThreadBlocking(
-                () -> { return new WebView(mActivityTestRule.getActivity()); });
+        WebView webView = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Loading WebView triggers loading from disk.
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                return new WebView(mActivityTestRule.getActivity());
+            }
+        });
         CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             webView.setWebViewClient(new WebViewClient() {

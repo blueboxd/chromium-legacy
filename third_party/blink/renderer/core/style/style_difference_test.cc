@@ -16,7 +16,7 @@ TEST(StyleDifferenceTest, StreamOutputDefault) {
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
       "collectInlines=0, reshape=0, "
-      "paintInvalidationType=NoPaintInvalidation, recomputeVisualOverflow=0, "
+      "paintInvalidation=0, recomputeVisualOverflow=0, "
       "visualRectUpdate=0, propertySpecificDifferences=, "
       "scrollAnchorDisablingPropertyChanged=0}",
       string_stream.str());
@@ -25,7 +25,7 @@ TEST(StyleDifferenceTest, StreamOutputDefault) {
 TEST(StyleDifferenceTest, StreamOutputAllFieldsMutated) {
   std::stringstream string_stream;
   StyleDifference diff;
-  diff.SetNeedsPaintInvalidationObject();
+  diff.SetNeedsPaintInvalidation();
   diff.SetNeedsPositionedMovementLayout();
   diff.SetNeedsReshape();
   diff.SetNeedsCollectInlines();
@@ -36,8 +36,7 @@ TEST(StyleDifferenceTest, StreamOutputAllFieldsMutated) {
   string_stream << diff;
   EXPECT_EQ(
       "StyleDifference{layoutType=PositionedMovement, "
-      "collectInlines=1, reshape=1, "
-      "paintInvalidationType=PaintInvalidationObject, "
+      "collectInlines=1, reshape=1, paintInvalidation=1, "
       "recomputeVisualOverflow=1, visualRectUpdate=1, "
       "propertySpecificDifferences=TransformChanged, "
       "scrollAnchorDisablingPropertyChanged=1}",
@@ -58,9 +57,8 @@ TEST(StyleDifferenceTest, StreamOutputSetAllProperties) {
   string_stream << diff;
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
-      "collectInlines=0, reshape=0, "
-      "paintInvalidationType=NoPaintInvalidation, recomputeVisualOverflow=0, "
-      "visualRectUpdate=0, "
+      "collectInlines=0, reshape=0, paintInvalidation=0, "
+      "recomputeVisualOverflow=0, visualRectUpdate=0, "
       "propertySpecificDifferences=TransformChanged|OpacityChanged|"
       "ZIndexChanged|FilterChanged|BackdropFilterChanged|CSSClipChanged|"
       "TextDecorationOrColorChanged|BlendModeChanged, "

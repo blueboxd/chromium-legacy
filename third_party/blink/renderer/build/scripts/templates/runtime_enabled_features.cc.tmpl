@@ -87,15 +87,19 @@ bool RuntimeEnabledFeatures::{{feature.name}}Enabled(const FeatureContext* conte
   if (!RuntimeEnabledFeatures::{{depends_on}}Enabled(context))
     return false;
   {% endfor %}
-  if (RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
+  {% for implied_by in feature.implied_by %}
+  if (RuntimeEnabledFeatures::{{implied_by}}Enabled(context))
     return true;
-{% if not feature.origin_trial_feature_name %}
+  {% endfor %}
+  if ({{feature.data_member_name}})
+    return true;
+  {% if not feature.origin_trial_feature_name %}
   // The feature does not have an origin trial name and its runtime flag
   // is not enabled.
   return false;
-{% else %}
+  {% else %}
   return context && context->FeatureEnabled(OriginTrialFeature::k{{feature.name}});
-{% endif %}
+  {% endif %}
 }
 
 {% endfor %}

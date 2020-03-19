@@ -179,6 +179,14 @@ SecurityLevel GetSecurityLevel(
     if (!visible_security_state.is_error_page &&
         !network::IsUrlPotentiallyTrustworthy(url) &&
         (url.IsStandard() || url.SchemeIs(url::kBlobScheme))) {
+      // Display ReaderMode pages as neutral even if the original URL was
+      // secure, because Chrome has modified the content so we don't want to
+      // present it as the actual content that the server sent. Distilled pages
+      // do not contain forms, payment handlers, or other JS from the original
+      // URL, so they won't be affected by a downgraded security level.
+      if (visible_security_state.is_reader_mode) {
+        return NONE;
+      }
       return GetSecurityLevelForNonSecureFieldTrial(
           visible_security_state.is_error_page,
           visible_security_state.insecure_input_events);
@@ -276,6 +284,7 @@ VisibleSecurityState::VisibleSecurityState()
       is_error_page(false),
       is_view_source(false),
       is_devtools(false),
+      is_reader_mode(false),
       connection_used_legacy_tls(false),
       should_suppress_legacy_tls_warning(false),
       should_suppress_mixed_content_warning(false) {}

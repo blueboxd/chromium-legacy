@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
@@ -157,15 +158,16 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
 using SystemWebAppNonClientFrameViewBrowserTest =
     web_app::SystemWebAppManagerBrowserTest;
 
-// System Web Apps don't get the hosted app buttons.
+// System Web Apps don't get the web app menu button.
 IN_PROC_BROWSER_TEST_P(SystemWebAppNonClientFrameViewBrowserTest,
-                       HideHostedAppButtonContainer) {
+                       HideWebAppMenuButton) {
   Browser* app_browser =
       WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()
-                         ->web_app_frame_toolbar_for_testing());
+                         ->web_app_frame_toolbar_for_testing()
+                         ->GetAppMenuButton());
 }
 
 // Checks that the title bar for hosted app windows is hidden when in fullscreen

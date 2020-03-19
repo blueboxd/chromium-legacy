@@ -59,11 +59,10 @@ void FtlMessageReceptionChannel::StopReceivingMessages() {
     return;
   }
 
-  // Current stream ready callbacks shouldn't receive notification for future
-  // stream.
+  // Current stream callbacks shouldn't receive notification for future streams.
   stream_ready_callbacks_.clear();
+  stream_closed_callbacks_.clear();
   StopReceivingMessagesInternal();
-  RunStreamClosedCallbacks(grpc::Status::CANCELLED);
 }
 
 const net::BackoffEntry&

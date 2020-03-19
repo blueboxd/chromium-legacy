@@ -73,6 +73,9 @@ const char kActionCategoryWebsite[] = "WEBSITE";
 
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
 const int kContextualSearchRequestVersion = 2;
+// Deprecated: kContextualSearchSingleRequest = 3;
+const int kRelatedSearchesVersion = 4;
+
 const int kContextualSearchMaxSelection = 100;
 const char kXssiEscape[] = ")]}'\n";
 const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
@@ -295,10 +298,15 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
     contextual_cards_version = field_trial_->GetContextualCardsVersion();
   }
 
+  int mainFunctionVersion = kContextualSearchRequestVersion;
+  if (base::FeatureList::IsEnabled(chrome::android::kRelatedSearches)) {
+    mainFunctionVersion = kRelatedSearchesVersion;
+  }
+
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      kContextualSearchRequestVersion, contextual_cards_version,
-      context->GetHomeCountry(), context->GetPreviousEventId(),
-      context->GetPreviousEventResults(), context->GetExactResolve(),
+      mainFunctionVersion, contextual_cards_version, context->GetHomeCountry(),
+      context->GetPreviousEventId(), context->GetPreviousEventResults(),
+      context->GetExactResolve(),
       context->GetTranslationLanguages().detected_language,
       context->GetTranslationLanguages().target_language);
 

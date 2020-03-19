@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/security_state/core/security_state.h"
@@ -133,7 +134,8 @@ bool LocationIconView::ShouldShowText() const {
   const GURL& url = location_bar_model->GetURL();
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(extensions::kExtensionScheme) ||
-      url.SchemeIs(url::kFileScheme)) {
+      url.SchemeIs(url::kFileScheme) ||
+      url.SchemeIs(dom_distiller::kDomDistillerScheme)) {
     return true;
   }
 
@@ -154,6 +156,11 @@ base::string16 LocationIconView::GetText() const {
 
   if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(url::kFileScheme))
     return l10n_util::GetStringUTF16(IDS_OMNIBOX_FILE);
+
+  if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(
+          dom_distiller::kDomDistillerScheme)) {
+    return l10n_util::GetStringUTF16(IDS_OMNIBOX_READER_MODE);
+  }
 
   if (delegate_->GetWebContents()) {
     // On ChromeOS, this can be called using web_contents from

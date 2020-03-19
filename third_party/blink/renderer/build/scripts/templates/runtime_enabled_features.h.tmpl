@@ -63,8 +63,18 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   {% for feature in features %}
   {% if not feature.in_origin_trial %}
   static void Set{{feature.name}}Enabled(bool enabled) { {{feature.data_member_name}} = enabled; }
-  static bool {{feature.name}}Enabled() { return {{feature.enabled_condition}}; }
-  static bool {{feature.name}}Enabled(const FeatureContext*) { return {{feature.enabled_condition}}; }
+  static bool {{feature.name}}Enabled() {
+    {% for depends_on in feature.depends_on %}
+    if (!{{depends_on}}Enabled())
+      return false;
+    {% endfor %}
+    {% for implied_by in feature.implied_by %}
+    if ({{implied_by}}Enabled())
+      return true;
+    {% endfor %}
+    return {{feature.data_member_name}};
+  }
+  static bool {{feature.name}}Enabled(const FeatureContext*) { return {{feature.name}}Enabled(); }
 
   {% endif %}
   {% endfor %}
@@ -81,7 +91,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
 
   {% for feature in origin_trial_controlled_features %}
   static void Set{{feature.name}}Enabled(bool enabled) { {{feature.data_member_name}} = enabled; }
-  static bool {{feature.name}}EnabledByRuntimeFlag() { return {{feature.enabled_condition}}; }
+  static bool {{feature.name}}EnabledByRuntimeFlag() { return {{feature.name}}Enabled(nullptr); }
   static bool {{feature.name}}Enabled(const FeatureContext*);
 
   {% endfor %}

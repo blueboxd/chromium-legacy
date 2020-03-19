@@ -167,6 +167,14 @@ NativeTheme* NativeTheme::GetInstanceForDarkUI() {
 }
 
 // static
+bool NativeTheme::SystemDarkModeSupported() {
+  if (@available(macOS 10.14, *)) {
+    return true;
+  }
+  return false;
+}
+
+// static
 NativeThemeMac* NativeThemeMac::instance() {
   static base::NoDestructor<NativeThemeMac> s_native_theme(true, false);
   return s_native_theme.get();
@@ -294,13 +302,6 @@ void NativeThemeMac::PaintMenuItemBackground(
       NOTREACHED();
       break;
   }
-}
-
-bool NativeThemeMac::SystemDarkModeSupported() const {
-  if (@available(macOS 10.14, *)) {
-    return true;
-  }
-  return false;
 }
 
 NativeThemeMac::NativeThemeMac(bool configure_web_instance,

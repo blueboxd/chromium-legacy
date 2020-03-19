@@ -1817,9 +1817,10 @@ void TestRunner::AddLoadingFrame(blink::WebFrame* frame) {
 }
 
 void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
-  if (!IsFramePartOfMainTestWindow(frame))
-    return;
-
+  // Note that unlike AddLoadingFrame, we don't check if |frame| is part of the
+  // current main test window or not, because in some cases we might have
+  // marked the new page as the current main test window before we removed all
+  // the loading frames of the old main test window from |loading_frames_|.
   if (!base::Contains(loading_frames_, frame))
     return;
 

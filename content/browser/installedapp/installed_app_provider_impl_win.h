@@ -11,10 +11,9 @@
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom.h"
 
+class GURL;
+
 namespace content {
-
-class RenderFrameHost;
-
 namespace installed_app_provider_win {
 
 // Windows specific implementation of getInstalledRelatedApps.
@@ -23,7 +22,7 @@ namespace installed_app_provider_win {
 void FilterInstalledAppsForWin(
     std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
     blink::mojom::InstalledAppProvider::FilterInstalledAppsCallback callback,
-    RenderFrameHost* render_frame_host);
+    const GURL frame_url);
 
 }  // namespace installed_app_provider_win
 }  // namespace content

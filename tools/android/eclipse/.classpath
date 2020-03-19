@@ -345,7 +345,14 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_runtime_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_viewmodel_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_annotation_annotation.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_appcompat_appcompat_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_core_core_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_fragment_fragment_java.jar"/>"
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_lifecycle_lifecycle_common.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_lifecycle_lifecycle_livedata_core_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_lifecycle_lifecycle_livedata_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_lifecycle_lifecycle_runtime_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_lifecycle_lifecycle_viewmodel_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_test_core_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_test_ext_junit_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_test_monitor_java.jar"/>

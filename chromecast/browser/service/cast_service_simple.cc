@@ -72,10 +72,9 @@ void CastServiceSimple::StartInternal() {
   params.web_contents_params.enabled_for_dev = true;
   params.window_params.delegate = weak_factory_.GetWeakPtr();
   cast_web_view_ =
-      web_service_->CreateWebView(params, nullptr, /* site_instance */
-                                  GURL() /* initial_url */);
-  cast_web_view_->LoadUrl(startup_url_);
-  cast_web_view_->GrantScreenAccess();
+      web_service_->CreateWebView(params, GURL() /* initial_url */);
+  cast_web_view_->cast_web_contents()->LoadUrl(startup_url_);
+  cast_web_view_->window()->GrantScreenAccess();
   cast_web_view_->InitializeWindow(
       ::chromecast::mojom::ZOrder::APP,
       chromecast::VisibilityPriority::STICKY_ACTIVITY);
@@ -83,7 +82,7 @@ void CastServiceSimple::StartInternal() {
 
 void CastServiceSimple::StopInternal() {
   if (cast_web_view_) {
-    cast_web_view_->ClosePage();
+    cast_web_view_->cast_web_contents()->ClosePage();
   }
   cast_web_view_.reset();
 }

@@ -108,7 +108,7 @@ constexpr int kMinimumAccelerated2dCanvasSize = 128 * 129;
 
 HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(html_names::kCanvasTag, document),
-      ExecutionContextLifecycleObserver(&document),
+      ExecutionContextLifecycleObserver(GetExecutionContext()),
       PageVisibilityObserver(document.GetPage()),
       CanvasRenderingContextHost(
           CanvasRenderingContextHost::HostType::kCanvasHost),
@@ -1213,7 +1213,7 @@ void HTMLCanvasElement::LayoutObjectDestroyed() {
 }
 
 void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
-  SetExecutionContext(GetDocument().ToExecutionContext());
+  SetExecutionContext(GetExecutionContext());
   SetPage(GetDocument().GetPage());
   HTMLElement::DidMoveToNewDocument(old_document);
 }

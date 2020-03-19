@@ -23,13 +23,13 @@ CrostiniUpgraderPageHandler::CrostiniUpgraderPageHandler(
         pending_page_handler,
     mojo::PendingRemote<chromeos::crostini_upgrader::mojom::Page> pending_page,
     base::OnceClosure close_dialog_callback,
-    base::OnceClosure launch_closure)
+    base::OnceCallback<void(bool)> launch_callback)
     : web_contents_{web_contents},
       upgrader_ui_delegate_{upgrader_ui_delegate},
       receiver_{this, std::move(pending_page_handler)},
       page_{std::move(pending_page)},
       close_dialog_callback_{std::move(close_dialog_callback)},
-      launch_closure_{std::move(launch_closure)} {
+      launch_callback_{std::move(launch_callback)} {
   upgrader_ui_delegate_->AddObserver(this);
 }
 
@@ -87,18 +87,22 @@ void CrostiniUpgraderPageHandler::Cancel() {
 }
 
 void CrostiniUpgraderPageHandler::Launch() {
-  std::move(launch_closure_).Run();
+  std::move(launch_callback_).Run(true);
 }
 
 void CrostiniUpgraderPageHandler::CancelBeforeStart() {
   base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
                                 crostini::UpgradeDialogEvent::kNotStarted);
   upgrader_ui_delegate_->CancelBeforeStart();
+  if (launch_callback_) {
+    // Running launch closure - no upgrade wanted, no need to restart crostini.
+    std::move(launch_callback_).Run(false);
+  }
 }
 
 void CrostiniUpgraderPageHandler::Close() {
-  if (launch_closure_) {
-    std::move(launch_closure_).Run();
+  if (launch_callback_) {
+    std::move(launch_callback_).Run(true);
   }
   std::move(close_dialog_callback_).Run();
 }

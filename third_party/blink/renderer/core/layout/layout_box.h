@@ -407,16 +407,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                         ClientHeight());
   }
 
-  // TODO(crbu.com/962299): This method is only correct when |offset| is the
-  // correct paint offset. It's also incrrect in flipped blocks writing mode.
-  IntRect PixelSnappedBorderBoxRect(const PhysicalOffset& offset) const {
-    return PixelSnappedBorderBoxRect(offset.ToLayoutSize());
-  }
-  IntRect PixelSnappedBorderBoxRect(
-      const LayoutSize& offset = LayoutSize()) const {
+  // TODO(crbug.com/962299): This method snaps to pixels incorrectly because
+  // Location() is not the correct paint offset. It's also incorrect in flipped
+  // blocks writing mode.
+  IntRect PixelSnappedBorderBoxRect() const {
     return IntRect(IntPoint(),
-                   PixelSnappedIntSize(frame_rect_.Size(),
-                                       frame_rect_.Location() + offset));
+                   PixelSnappedBorderBoxSize(PhysicalOffset(Location())));
+  }
+  // TODO(crbug.com/962299): This method is only correct when |offset| is the
+  // correct paint offset.
+  IntSize PixelSnappedBorderBoxSize(const PhysicalOffset& offset) const {
+    return PixelSnappedIntSize(Size(), offset.ToLayoutPoint());
   }
   IntRect BorderBoundingBox() const final {
     return PixelSnappedBorderBoxRect();

@@ -1827,7 +1827,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchTranslationsName,
      flag_descriptions::kContextualSearchTranslationsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchTranslations)},
-
     {"direct-actions", flag_descriptions::kDirectActionsName,
      flag_descriptions::kDirectActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDirectActions)},
@@ -1836,6 +1835,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kExploreSites,
                                     kExploreSitesVariations,
                                     "ExploreSites InitialCountries")},
+    {"related-searches", flag_descriptions::kRelatedSearchesName,
+     flag_descriptions::kRelatedSearchesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kRelatedSearches)},
     {"shopping-assist", flag_descriptions::kShoppingAssistName,
      flag_descriptions::kShoppingAssistDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kShoppingAssist)},
@@ -4993,12 +4995,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPaintPreviewDemoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewDemo)},
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-    {"enable-profile-card", flag_descriptions::kProfileCardName,
-     flag_descriptions::kProfileCardDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kProfileCard)},
-#endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
     {"sync-setup-friendly-settings",

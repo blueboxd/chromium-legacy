@@ -518,6 +518,7 @@
 <translation id="1697686431566694143">Modifier le fichier</translation>
 <translation id="1698122934742150150">Session de navigation privée actuelle uniquement</translation>
 <translation id="1698650002254827833">Impossible de charger la liste des applications. Veuillez réessayer.</translation>
+<translation id="1700079447639026019">Sites ne pouvant pas utiliser de cookies</translation>
 <translation id="1701062906490865540">Supprimer ce profil utilisateur</translation>
 <translation id="1703331064825191675">Ne vous souciez plus jamais de vos mots de passe</translation>
 <translation id="1704970325597567340">Contrôle de sécurité effectué le <ph name="DATE" /></translation>
@@ -738,6 +739,7 @@
 <translation id="1990512225220753005">Ne pas afficher de raccourcis sur cette page</translation>
 <translation id="1992397118740194946">Non défini</translation>
 <translation id="1994173015038366702">URL du site</translation>
+<translation id="1995916364271252349">Permet de contrôler les informations que les sites peuvent utiliser et afficher (position, appareil photo, fenêtres pop-up et plus)</translation>
 <translation id="1997484222658892567"><ph name="URL" /> souhaite stocker de façon permanente des données volumineuses sur votre ordinateur local</translation>
 <translation id="1997616988432401742">Vos certificats</translation>
 <translation id="1999115740519098545">Au démarrage</translation>
@@ -993,6 +995,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2335111415680198280">{0,plural, =1{Fermer # fenêtre}one{Fermer # fenêtre}other{Fermer # fenêtres}}</translation>
 <translation id="2335122562899522968">Cette page place des cookies.</translation>
 <translation id="2336228925368920074">Ajouter tous les onglets aux favoris...</translation>
+<translation id="2336376423977300504">Toujours effacer les cookies à la fermeture du navigateur</translation>
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> tente de s'associer</translation>
 <translation id="2342740338116612727">Favoris ajoutés</translation>
@@ -1735,6 +1738,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3317459757438853210">Recto verso</translation>
 <translation id="3317678681329786349">Caméra et micro bloqués</translation>
 <translation id="3319048459796106952">Nouvelle fenêtre de nav&amp;igation privée</translation>
+<translation id="3320630259304269485">Navigation sécurisée (protection contre les sites dangereux) et autres paramètres de sécurité</translation>
 <translation id="3323521181261657960">Super ! Tu as plus de temps d'utilisation</translation>
 <translation id="3325910708063135066">Caméra et micro désactivés dans les préférences système Mac</translation>
 <translation id="3328489342742826322">La restauration depuis une sauvegarde entraîne la suppression des applications et des données Linux existantes de votre dossier Fichiers Linux.</translation>
@@ -1854,6 +1858,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3487007233252413104">fonction anonyme</translation>
 <translation id="348780365869651045">En attente du cache de l'application…</translation>
 <translation id="3488065109653206955">Partiellement activé</translation>
+<translation id="3489025949017384019">De nombreux sites risquent de ne pas fonctionner correctement</translation>
 <translation id="3492788708641132712">La synchronisation ne fonctionne pas. Essayez de vous reconnecter.</translation>
 <translation id="3493486281776271508">Connexion Internet requise</translation>
 <translation id="3493881266323043047">Validité</translation>
@@ -2009,6 +2014,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3688526734140524629">Changer de version</translation>
 <translation id="3688578402379768763">Mise à jour effectuée</translation>
 <translation id="3688794912214798596">Modifier les langues…</translation>
+<translation id="3690369331356918524">Vous alerte si des mots de passe sont compromis lors d'une violation des données</translation>
 <translation id="3691231116639905343">Applications de clavier</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> souhaite partager votre écran</translation>
 <translation id="369135240373237088">Connectez-vous à nouveau avec un compte scolaire</translation>
@@ -2147,6 +2153,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3841964634449506551">Mot de passe non valide</translation>
 <translation id="3842552989725514455">Police Serif</translation>
 <translation id="3846116211488856547">Accédez à des outils conçus pour développer des sites Web, des applications Android, etc. En installant Linux, vous téléchargerez <ph name="DOWNLOAD_SIZE" /> de données.</translation>
+<translation id="3847319713229060696">Contribuer à améliorer la sécurité sur le Web pour tous</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3850914401008572843">Le site <ph name="ORIGIN" /> ne peut pas ouvrir ce dossier, car il contient des fichiers système</translation>
 <translation id="3851428669031642514">Charger les scripts à risque</translation>
@@ -2629,6 +2636,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4534661889221639075">Réessayez.</translation>
 <translation id="4535127706710932914">Profil par défaut</translation>
 <translation id="4535767533210902251">Le lecteur d'empreinte digitale est la touche située en haut à droite de votre clavier. Appuyez dessus légèrement avec n'importe quel doigt.</translation>
+<translation id="4536140153723794651">Sites autorisés à utiliser des cookies</translation>
 <translation id="4538417792467843292">Supprimer le mot</translation>
 <translation id="4538684596480161368">Toujours bloquer l'exécution hors bac à sable des plug-ins sur <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Installée conformément à une règle d'entreprise</translation>
@@ -2726,6 +2734,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4665446389743427678">Toutes les données stockées par <ph name="SITE" /> seront supprimées.</translation>
 <translation id="4668721319092543482">Cliquez pour activer <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4670064810192446073">Réalité virtuelle</translation>
+<translation id="4672879467403304774">Assure votre sécurité sur Chrome et les autres applications Google lorsque vous êtes connecté</translation>
 <translation id="46733273239502219">Les données hors connexion des applications installées seront également effacées</translation>
 <translation id="4673442866648850031">Ouvrir les outils de stylet lors du retrait du stylet</translation>
 <translation id="4677772697204437347">Mémoire du processeur graphique</translation>
@@ -3144,6 +3153,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5275352920323889391">Chien</translation>
 <translation id="527605982717517565">Toujours exécuter JavaScript sur <ph name="HOST" /></translation>
 <translation id="5280174558369304332">Extensions à supprimer :</translation>
+<translation id="5280243692621919988">Effacer les cookies et les données des sites à la fermeture du navigateur</translation>
 <translation id="5280426389926346830">Créer un raccourci ?</translation>
 <translation id="528208740344463258">Pour télécharger et utiliser des applications Android, vous devez d'abord installer cette mise à jour obligatoire. Vous ne pouvez pas utiliser votre <ph name="DEVICE_TYPE" /> pendant la mise à jour. Une fois l'installation terminée, votre <ph name="DEVICE_TYPE" /> redémarrera.</translation>
 <translation id="5282733140964383898">Si vous activez la fonctionnalité "Interdire le suivi", une demande sera incluse dans le trafic de navigation. Le résultat dépend de l'obtention d'une réponse de la part du site Web, ainsi que de la façon dont celle-ci est interprétée. Par exemple, certains sites Web peuvent répondre à cette demande en affichant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation pour, par exemple, améliorer la sécurité, ou pour afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -4238,6 +4248,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6767566652486411142">Sélectionner une autre langue…</translation>
 <translation id="6767639283522617719">Impossible d'effectuer l'association au domaine. Assurez-vous que les paramètres sont corrects pour l'unité organisationnelle.</translation>
 <translation id="6769712124046837540">Ajout d'une imprimante en cours…</translation>
+<translation id="6770602306803890733">Renforce votre sécurité et celle de tous les utilisateurs sur le Web</translation>
 <translation id="6770664076092644100">Valider via NFC</translation>
 <translation id="6771503742377376720">Est une autorité de certification</translation>
 <translation id="6772339735733515807">Gérez vos extensions</translation>
@@ -4263,6 +4274,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6798578729981748444">Pour terminer l'importation, fermez toutes les fenêtres Firefox.</translation>
 <translation id="6798780071646309401">touche de verrouillage des majuscules activée</translation>
 <translation id="6798954102094737107">Plug-in : <ph name="PLUGIN_NAME" /></translation>
+<translation id="6801129617625983991">Paramètres généraux</translation>
 <translation id="6801435275744557998">Calibrer l'écran tactile</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6805038906417219576">OK</translation>
@@ -4381,6 +4393,8 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Périphérique</translation>
+<translation id="6966201992886493384">Les sites peuvent utiliser des cookies pour améliorer votre expérience de navigation, par exemple pour maintenir votre connexion ou mémoriser les articles de votre panier</translation>
+<translation id="696780070563539690">Les sites ne peuvent pas utiliser vos cookies pour voir votre activité de navigation sur l'ensemble des différents sites (par exemple, pour personnaliser les annonces)</translation>
 <translation id="6968288415730398122">Saisissez votre mot de passe pour configurer le verrouillage de l'écran</translation>
 <translation id="6970480684834282392">Type de démarrage</translation>
 <translation id="6970856801391541997">Imprimer des pages spécifiques</translation>
@@ -4790,6 +4804,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7507207699631365376">Afficher les <ph name="BEGIN_LINK" />Règles de confidentialité<ph name="END_LINK" /> de ce fournisseur</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
 <translation id="7508054832109420082">Autoriser l'accès aux imprimantes</translation>
+<translation id="751120035300339">Les sites ne peuvent pas utiliser de cookies pour améliorer votre expérience de navigation, par exemple pour maintenir votre connexion ou mémoriser les articles de votre panier</translation>
 <translation id="7513029293694390567">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Si cette fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
 <translation id="7514239104543605883">Copier sur votre appareil</translation>
 <translation id="7514365320538308">Télécharger</translation>
@@ -5420,6 +5435,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8320459152843401447">L'intégralité de votre écran</translation>
 <translation id="8322814362483282060">L'accès à votre micro est bloqué pour cette page</translation>
 <translation id="8323167517179506834">Saisir une URL</translation>
+<translation id="8324784016256120271">Les sites peuvent utiliser des cookies afin de voir votre activité de navigation sur l'ensemble des différents sites (par exemple, pour personnaliser les annonces)</translation>
 <translation id="8326478304147373412">PKCS #7, chaîne de certificats</translation>
 <translation id="8327039559959785305">Erreur lors de l'installation des fichiers Linux. Veuillez réessayer.</translation>
 <translation id="8327676037044516220">Autorisations et paramètres de contenu</translation>
@@ -5475,6 +5491,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8408068190360279472">Réseau <ph name="NETWORK_TYPE" /> : connexion…</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Demander d'abord (recommandé)</translation>
+<translation id="8417573335434189196">Ce mode ne vous protège pas contre les téléchargements, les extensions ou les sites Web dangereux. Chrome ne recommande pas ce paramètre.</translation>
 <translation id="8418445294933751433">Afficher dan&amp;s un onglet</translation>
 <translation id="8419098111404128271">Résultats de recherche pour "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">Bienvenue sur votre <ph name="DEVICE_TYPE" /> !</translation>
@@ -5640,6 +5657,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8642947597466641025">Augmente la taille du texte</translation>
 <translation id="8644655801811752511">Impossible de réinitialiser cette clé de sécurité. Essayez de la réinitialiser immédiatement après l’avoir insérée.</translation>
 <translation id="8645354835496065562">Continuer d'autoriser l'accès aux capteurs</translation>
+<translation id="8645920082661222035">Prédit les événements dangereux et vous en informe avant qu'ils ne surviennent</translation>
 <translation id="8647834505253004544">Adresse Web non valide</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ou <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Bien que vous ne puissiez plus accéder à votre ancien profil, vous pouvez quand même le supprimer.</translation>

@@ -139,7 +139,7 @@ bool ConvertToPrinter(const std::string& service_type,
   // If we don't have the minimum information needed to attempt a setup, fail.
   // Also fail on a port of 0, as this is used to indicate that the service
   // doesn't *actually* exist, the device just wants to guard the name.
-  if (service_description.service_name.empty() || metadata.ty.empty() ||
+  if (service_description.service_name.empty() ||
       service_description.ip_address.empty() ||
       (service_description.address.port() == 0)) {
     return false;
@@ -148,7 +148,7 @@ bool ConvertToPrinter(const std::string& service_type,
   Printer& printer = detected_printer->printer;
   printer.set_id(ZeroconfPrinterId(service_description, metadata));
   printer.set_uuid(metadata.UUID);
-  printer.set_display_name(metadata.ty);
+  printer.set_display_name(service_description.instance_name());
   printer.set_description(metadata.note);
   printer.set_make_and_model(metadata.product);
   const char* uri_protocol;

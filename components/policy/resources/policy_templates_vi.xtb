@@ -4626,7 +4626,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7937944288846766530">Chính sách này kiểm soát việc người dùng có thể gửi yêu cầu cài đặt tiện ích của <ph name="PRODUCT_NAME" /> đến Bảng điều khiển dành cho quản trị viên của Google để xin phê duyệt hay không.
 
-      Khi bạn không đặt hoặc đặt chính sách CloudReportingEnabled thành tắt, chính sách này sẽ bị bỏ qua, các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
+      Khi bạn không đặt hoặc đặt chính sách CloudReportingEnabled thành tắt, thì chính sách này sẽ bị bỏ qua, và các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
       Khi bạn không đặt hoặc đặt chính sách này thành tắt, thì các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
       Khi bạn đặt chính sách này thành bật, thì các yêu cầu cài đặt tiện ích sẽ được tạo và tải lên Bảng điều khiển dành cho quản trị viên của Google.
 

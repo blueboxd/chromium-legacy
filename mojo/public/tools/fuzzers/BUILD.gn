@@ -8,7 +8,6 @@ import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
-import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 # mojo/public BUILD depends on this target. Needed for package discovery
 group("fuzzers") {
@@ -61,31 +60,4 @@ fuzzer_test("mojo_parse_message_proto_fuzzer") {
 
 proto_library("mojo_fuzzer_proto") {
   sources = [ "mojo_fuzzer.proto" ]
-}
-
-copy("mojolpm_proto_copy") {
-  sources = [ "mojolpm.proto" ]
-  outputs = [ "$root_gen_dir/mojolpm.proto" ]
-  testonly = true
-}
-
-proto_library("mojolpm_proto") {
-  sources = [ "mojolpm.proto" ]
-  generate_python = false
-
-  # TODO(markbrand): this is kind of a hack, but it works. not sure if it's
-  # the best way to get this generated in the right place though.
-  proto_out_dir = "mojo/public/tools/fuzzers/../../../../"
-  proto_deps = [ ":mojolpm_proto_copy" ]
-  testonly = true
-}
-
-static_library("mojolpm") {
-  sources = [ "mojolpm.cc" ]
-  deps = [
-    ":mojolpm_proto",
-    "//base",
-    "//mojo/public/cpp/bindings",
-  ]
-  testonly = true
 }

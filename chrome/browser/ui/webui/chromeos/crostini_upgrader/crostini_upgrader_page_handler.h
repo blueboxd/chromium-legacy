@@ -33,7 +33,7 @@ class CrostiniUpgraderPageHandler
       mojo::PendingRemote<chromeos::crostini_upgrader::mojom::Page>
           pending_page,
       base::OnceClosure close_dialog_callback,
-      base::OnceClosure launch_closure);
+      base::OnceCallback<void(bool)> launch_callback);
   ~CrostiniUpgraderPageHandler() override;
 
   // chromeos::crostini_upgrader::mojom::PageHandler:
@@ -69,7 +69,7 @@ class CrostiniUpgraderPageHandler
   mojo::Receiver<chromeos::crostini_upgrader::mojom::PageHandler> receiver_;
   mojo::Remote<chromeos::crostini_upgrader::mojom::Page> page_;
   base::OnceClosure close_dialog_callback_;
-  base::OnceClosure launch_closure_;
+  base::OnceCallback<void(bool)> launch_callback_;
 
   base::WeakPtrFactory<CrostiniUpgraderPageHandler> weak_ptr_factory_{this};
 

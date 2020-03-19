@@ -17,11 +17,11 @@
 #include "base/time/time.h"
 #include "chromecast/browser/cast_web_view_default.h"
 #include "chromecast/browser/cast_web_view_factory.h"
+#include "chromecast/browser/lru_renderer_cache.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/browser/media_session.h"
-#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -46,6 +46,8 @@ CastWebService::CastWebService(content::BrowserContext* browser_context,
     : browser_context_(browser_context),
       web_view_factory_(web_view_factory),
       window_manager_(window_manager),
+      overlay_renderer_cache_(
+          std::make_unique<LRURendererCache>(browser_context_, 1)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DCHECK(browser_context_);
@@ -58,26 +60,9 @@ CastWebService::~CastWebService() = default;
 
 CastWebView::Scoped CastWebService::CreateWebView(
     const CastWebView::CreateParams& params,
-    scoped_refptr<content::SiteInstance> site_instance,
     const GURL& initial_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto web_view = web_view_factory_->CreateWebView(
-      params, this, std::move(site_instance), initial_url);
-  CastWebView::Scoped scoped(web_view.get(), [this](CastWebView* web_view) {
-    OwnerDestroyed(web_view);
-  });
-  web_views_.insert(std::move(web_view));
-  return scoped;
-}
-
-CastWebView::Scoped CastWebService::CreateWebView(
-    const CastWebView::CreateParams& params,
-    const GURL& initial_url) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto web_view = web_view_factory_->CreateWebView(
-      params, this,
-      content::SiteInstance::CreateForURL(browser_context_, initial_url),
-      initial_url);
+  auto web_view = web_view_factory_->CreateWebView(params, this, initial_url);
   CastWebView::Scoped scoped(web_view.get(), [this](CastWebView* web_view) {
     OwnerDestroyed(web_view);
   });

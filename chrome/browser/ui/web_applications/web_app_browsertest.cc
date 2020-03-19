@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
@@ -771,6 +773,37 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, SubframeRedirectsToWebApp) {
       "This page has no title.",
       EvalJs(subframe, "document.body.innerText.trim();").ExtractString());
 }
+
+#if defined(OS_MACOSX)
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, NewAppWindow) {
+  BrowserList* const browser_list = BrowserList::GetInstance();
+  const GURL app_url = GetSecureAppURL();
+  const AppId app_id = InstallPWA(app_url);
+  Browser* const app_browser = LaunchWebAppBrowser(app_id);
+
+  EXPECT_EQ(browser_list->size(), 2U);
+  EXPECT_TRUE(chrome::ExecuteCommand(app_browser, IDC_NEW_WINDOW));
+  EXPECT_EQ(browser_list->size(), 3U);
+  Browser* const new_browser = browser_list->GetLastActive();
+  EXPECT_NE(new_browser, browser());
+  EXPECT_NE(new_browser, app_browser);
+  EXPECT_TRUE(new_browser->is_type_app());
+  EXPECT_EQ(new_browser->app_controller()->GetAppId(), app_id);
+
+  WebAppProviderBase::GetProviderBase(profile())
+      ->registry_controller()
+      .SetAppUserDisplayMode(app_id, DisplayMode::kBrowser);
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+  EXPECT_TRUE(chrome::ExecuteCommand(app_browser, IDC_NEW_WINDOW));
+  EXPECT_EQ(browser_list->GetLastActive(), browser());
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
+  EXPECT_EQ(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL(),
+      app_url);
+}
+
+#endif
 
 INSTANTIATE_TEST_SUITE_P(
     All,

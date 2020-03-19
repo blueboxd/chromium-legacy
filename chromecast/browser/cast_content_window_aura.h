@@ -9,6 +9,7 @@
 #include "chromecast/browser/cast_content_gesture_handler.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/ui/media_control_ui.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {

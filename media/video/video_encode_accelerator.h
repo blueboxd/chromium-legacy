@@ -39,6 +39,9 @@ class VideoFrame;
 //                  temporal_idx > 0.
 struct MEDIA_EXPORT Vp8Metadata final {
   Vp8Metadata();
+  Vp8Metadata(const Vp8Metadata& other);
+  Vp8Metadata(Vp8Metadata&& other);
+  ~Vp8Metadata();
   bool non_reference;
   uint8_t temporal_idx;
   bool layer_sync;

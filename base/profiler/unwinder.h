@@ -58,7 +58,7 @@ class Unwinder {
   // of frames. Note that if the unwinder returns true it may still legitmately
   // fail to unwind; e.g. in the case of a native unwind for a function that
   // doesn't have unwind information.
-  virtual bool CanUnwindFrom(const Frame* current_frame) const = 0;
+  virtual bool CanUnwindFrom(const Frame& current_frame) const = 0;
 
   // Attempts to unwind the frame represented by the context values.
   // Walks the native frames on the stack pointed to by the stack pointer in

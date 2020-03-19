@@ -46,6 +46,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -374,6 +375,11 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
     text = IDS_PAGE_INFO_FILE_PAGE;
   } else if (url.SchemeIs(content::kChromeDevToolsScheme)) {
     text = IDS_PAGE_INFO_DEVTOOLS_PAGE;
+  } else if (url.SchemeIs(dom_distiller::kDomDistillerScheme)) {
+    // TODO(crbug.com/840191): See if the original was secure or not, and adjust
+    // this string shown accordingly. This may be possible with virtual URLs,
+    // or by asking the distilled page what the original URL was.
+    text = IDS_PAGE_INFO_READER_MODE_PAGE;
   } else if (!url.SchemeIs(content::kChromeUIScheme)) {
     NOTREACHED();
   }
@@ -423,7 +429,8 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
       url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(extensions::kExtensionScheme) ||
       url.SchemeIs(content::kViewSourceScheme) ||
-      url.SchemeIs(url::kFileScheme)) {
+      url.SchemeIs(url::kFileScheme) ||
+      url.SchemeIs(dom_distiller::kDomDistillerScheme)) {
     return new InternalPageInfoBubbleView(anchor_view, anchor_rect, parent_view,
                                           web_contents, url);
   }

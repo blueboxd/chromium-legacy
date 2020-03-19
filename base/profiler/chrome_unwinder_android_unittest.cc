@@ -215,11 +215,8 @@ TEST(ChromeUnwinderAndroidTest, CanUnwindFrom) {
 
   ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module.get());
 
-  Frame chrome_frame{0x1100, chrome_module.get()};
-  EXPECT_TRUE(unwinder.CanUnwindFrom(&chrome_frame));
-
-  Frame non_chrome_frame{0x2100, non_chrome_module.get()};
-  EXPECT_FALSE(unwinder.CanUnwindFrom(&non_chrome_frame));
+  EXPECT_TRUE(unwinder.CanUnwindFrom({0x1100, chrome_module.get()}));
+  EXPECT_FALSE(unwinder.CanUnwindFrom({0x2100, non_chrome_module.get()}));
 }
 
 TEST(ChromeUnwinderAndroidTest, TryUnwind) {

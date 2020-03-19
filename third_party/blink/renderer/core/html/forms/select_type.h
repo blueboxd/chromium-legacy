@@ -28,7 +28,7 @@ class SelectType : public GarbageCollected<SelectType> {
                                HTMLSelectElement::SelectOptionFlags flags,
                                bool should_update_popup);
 
-  virtual void DidBlur();
+  virtual void DidBlur() = 0;
   virtual void DidDetachLayoutTree();
   virtual void DidRecalcStyle(const StyleRecalcChange change);
   virtual void DidSetSuggestedOption(HTMLOptionElement* option) = 0;
@@ -49,6 +49,9 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void SaveListboxActiveSelection();
   virtual void HandleMouseRelease();
   virtual void ListBoxOnChange();
+  // Clear OPTION selection information saved by SaveLastSelection().
+  // This is for ListBoxes.
+  virtual void ClearLastOnChangeSelection();
 
   virtual void ShowPopup();
   virtual void HidePopup();

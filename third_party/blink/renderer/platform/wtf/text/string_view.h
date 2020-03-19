@@ -253,6 +253,15 @@ WTF_EXPORT bool DeprecatedEqualIgnoringCaseAndNullity(const StringView&,
 
 WTF_EXPORT bool EqualIgnoringASCIICase(const StringView&, const StringView&);
 
+template <size_t N>
+inline bool EqualIgnoringASCIICase(const StringView& a,
+                                   const char (&literal)[N]) {
+  if (a.length() != N - 1 || (N == 1 && a.IsNull()))
+    return false;
+  return a.Is8Bit() ? EqualIgnoringASCIICase(a.Characters8(), literal, N - 1)
+                    : EqualIgnoringASCIICase(a.Characters16(), literal, N - 1);
+}
+
 // TODO(esprehn): Can't make this an overload of WTF::equal since that makes
 // calls to equal() that pass literal strings ambiguous. Figure out if we can
 // replace all the callers with equalStringView and then rename it to equal().

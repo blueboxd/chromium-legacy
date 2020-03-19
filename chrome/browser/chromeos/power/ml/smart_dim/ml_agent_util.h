@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/values.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
@@ -19,13 +20,13 @@ namespace ml {
 using ::chromeos::machine_learning::mojom::CreateGraphExecutorResult;
 using ::chromeos::machine_learning::mojom::LoadModelResult;
 
-// Parse JSON dict and extract essential fields from metadata_json.
-bool ParseMetaInfoFromString(const std::string& metadata_json,
-                             std::string* metrics_model_name,
-                             double* dim_threshold,
-                             size_t* expected_feature_size,
-                             base::flat_map<std::string, int>* inputs,
-                             base::flat_map<std::string, int>* outputs);
+// Extract essential fields from parsed JSON dict.
+bool ParseMetaInfoFromJsonObject(const base::Value& root,
+                                 std::string* metrics_model_name,
+                                 double* dim_threshold,
+                                 size_t* expected_feature_size,
+                                 base::flat_map<std::string, int>* inputs,
+                                 base::flat_map<std::string, int>* outputs);
 
 // Callbacks for LoadModel and CreateGraphExecutor used by BuiltinWorker and
 // DownloadWorker.

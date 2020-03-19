@@ -899,9 +899,6 @@ extern const char kPrintJobManagementAppDescription[];
 extern const char kPrivacySettingsRedesignName[];
 extern const char kPrivacySettingsRedesignDescription[];
 
-extern const char kProfileCardName[];
-extern const char kProfileCardDescription[];
-
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
 
@@ -1463,6 +1460,9 @@ extern const char kReaderModeInCCTDescription[];
 
 extern const char kRecoverFromNeverSaveAndroidName[];
 extern const char kRecoverFromNeverSaveAndroidDescription[];
+
+extern const char kRelatedSearchesName[];
+extern const char kRelatedSearchesDescription[];
 
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];

@@ -360,8 +360,7 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
     // The background of the root element or the body element could propagate up
     // to the canvas. Just dirty the entire canvas when our style changes
     // substantially.
-    if ((diff.NeedsFullPaintInvalidation() || diff.NeedsLayout()) &&
-        GetNode() &&
+    if ((diff.NeedsPaintInvalidation() || diff.NeedsLayout()) && GetNode() &&
         (IsDocumentElement() || IsA<HTMLBodyElement>(*GetNode()))) {
       View()->SetShouldDoFullPaintInvalidation();
     }

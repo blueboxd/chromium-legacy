@@ -156,7 +156,7 @@ public class ShareSheetCoordinator {
     ArrayList<PropertyModel> createBottomRowPropertyModels(
             ShareSheetBottomSheetContent bottomSheet, Activity activity, ShareParams params) {
         ArrayList<PropertyModel> models =
-                mPropertyModelBuilder.selectThirdPartyApps(activity, bottomSheet, params);
+                mPropertyModelBuilder.selectThirdPartyApps(bottomSheet, params);
         // More...
         PropertyModel morePropertyModel = mPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.sharing_more),

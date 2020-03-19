@@ -284,7 +284,6 @@ class CORE_EXPORT HTMLSelectElement final
   // list_items_ contains HTMLOptionElement, HTMLOptGroupElement, and
   // HTMLHRElement objects.
   mutable ListItems list_items_;
-  Vector<bool> last_on_change_selection_;
   TypeAhead type_ahead_;
   unsigned size_;
   Member<HTMLOptionElement> last_on_change_option_;

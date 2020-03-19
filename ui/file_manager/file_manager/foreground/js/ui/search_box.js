@@ -111,10 +111,13 @@ class SearchBox extends cr.EventTarget {
     window.requestAnimationFrame(() => {
       // If the focus is still within the search box don't hide the input.
       if (document.activeElement &&
-          this.searchWrapper.contains(document.activeElement)) {
+          this.element.contains(document.activeElement)) {
         return;
       }
-      this.removeHidePending();
+
+      if (this.element.classList.contains('hide-pending')) {
+        this.removeHidePending();
+      }
     });
   }
 
@@ -276,7 +279,6 @@ SearchBox.AutocompleteList =
    */
   handleSelectedSuggestion() {}
 
-
   /**
    * Change the selection by a mouse over instead of just changing the
    * color of moused over element with :hover in CSS. Here's why:
@@ -297,7 +299,6 @@ SearchBox.AutocompleteList =
     }
   }
 };
-
 
 /**
  * ListItem element for autocomplete.

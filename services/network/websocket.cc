@@ -211,6 +211,20 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       base::BindRepeating(&WebSocket::OnWritable, base::Unretained(impl_)));
   DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
+  mojo::ScopedDataPipeProducerHandle writable;
+  const MojoResult write_pipe_result =
+      mojo::CreateDataPipe(&data_pipe_options, &writable, &impl_->readable_);
+  if (write_pipe_result != MOJO_RESULT_OK) {
+    DVLOG(1) << "mojo::CreateDataPipe error:" << result;
+    impl_->Reset();
+    return;
+  }
+  const MojoResult mojo_readable_result = impl_->readable_watcher_.Watch(
+      impl_->readable_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+      MOJO_WATCH_CONDITION_SATISFIED,
+      base::BindRepeating(&WebSocket::OnReadable, base::Unretained(impl_)));
+  DCHECK_EQ(mojo_readable_result, MOJO_RESULT_OK);
+
   mojom::WebSocketHandshakeResponsePtr mojo_response =
       ToMojo(std::move(response), !!impl_->has_raw_headers_access_);
   mojo_response->selected_protocol = selected_protocol;
@@ -218,7 +232,7 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   impl_->handshake_client_->OnConnectionEstablished(
       impl_->receiver_.BindNewPipeAndPassRemote(),
       impl_->client_.BindNewPipeAndPassReceiver(), std::move(mojo_response),
-      std::move(readable));
+      std::move(readable), std::move(writable));
   impl_->receiver_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
   impl_->handshake_client_.reset();
@@ -386,6 +400,9 @@ WebSocket::WebSocket(
       has_raw_headers_access_(has_raw_headers_access),
       writable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                        base::ThreadTaskRunnerHandle::Get()),
+      readable_watcher_(FROM_HERE,
+                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                         base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(handshake_client_);
   if (auth_handler_) {
@@ -447,6 +464,26 @@ void WebSocket::SendFrame(bool fin,
 
   channel_->SendFrame(fin, MessageTypeToOpCode(type), std::move(data_to_pass),
                       data.size());
+}
+
+void WebSocket::SendMessage(mojom::WebSocketMessageType type,
+                            uint64_t data_length) {
+  DVLOG(3) << "WebSocket::SendMessage @" << reinterpret_cast<void*>(this)
+           << " type=" << type << " data is " << data_length << " bytes";
+
+  DCHECK(channel_) << "WebSocket::SendMessage is called but there is "
+                      "no active channel.";
+  DCHECK(handshake_succeeded_);
+
+  // This is guaranteed by mojo.
+  if (type == mojom::WebSocketMessageType::CONTINUATION) {
+    Reset();
+    return;
+  }
+  DCHECK(IsKnownEnumValue(type));
+
+  pending_send_data_frames_.push(DataFrame(type, data_length));
+  ReadAndSendFromDataPipe();
 }
 
 void WebSocket::StartReceiving() {
@@ -623,6 +660,70 @@ void WebSocket::SendDataFrame(base::span<const char>* payload) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&WebSocket::OnConnectionError,
                                   weak_ptr_factory_.GetWeakPtr(), FROM_HERE));
+  }
+  return;
+}
+
+void WebSocket::OnReadable(MojoResult result,
+                           const mojo::HandleSignalsState& state) {
+  if (result != MOJO_RESULT_OK) {
+    DVLOG(1) << "WebSocket::OnWritable mojo error=" << result;
+    Reset();
+    return;
+  }
+  wait_for_readable_ = false;
+  ReadAndSendFromDataPipe();
+}
+
+void WebSocket::ReadAndSendFromDataPipe() {
+  if (wait_for_readable_) {
+    return;
+  }
+  while (!pending_send_data_frames_.empty()) {
+    DataFrame& data_frame = pending_send_data_frames_.front();
+    DVLOG(2) << " ConsumePendingDataFrame frame=(" << data_frame.type
+             << ", (data_length = " << data_frame.data_length << "))";
+    if (data_frame.data_length == 0) {
+      auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(0);
+      channel_->SendFrame(true, MessageTypeToOpCode(data_frame.type),
+                          std::move(data_to_pass), 0);
+      pending_send_data_frames_.pop();
+      continue;
+    }
+
+    const void* buffer;
+    uint32_t readable_size;
+    const MojoResult begin_result = readable_->BeginReadData(
+        &buffer, &readable_size, MOJO_READ_DATA_FLAG_NONE);
+    if (begin_result == MOJO_RESULT_SHOULD_WAIT) {
+      wait_for_readable_ = true;
+      readable_watcher_.ArmOrNotify();
+      return;
+    }
+    if (begin_result == MOJO_RESULT_FAILED_PRECONDITION) {
+      return;
+    }
+    DCHECK_EQ(begin_result, MOJO_RESULT_OK);
+
+    const size_t size_to_send =
+        std::min(static_cast<uint64_t>(readable_size), data_frame.data_length);
+    auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(size_to_send);
+    const bool is_final = (size_to_send == data_frame.data_length);
+    memcpy(data_to_pass->data(), buffer, size_to_send);
+    channel_->SendFrame(is_final, MessageTypeToOpCode(data_frame.type),
+                        std::move(data_to_pass), size_to_send);
+
+    const MojoResult end_result = readable_->EndReadData(size_to_send);
+    DCHECK_EQ(end_result, MOJO_RESULT_OK);
+
+    if (size_to_send == data_frame.data_length) {
+      pending_send_data_frames_.pop();
+      continue;
+    }
+
+    DCHECK_GT(data_frame.data_length, size_to_send);
+    data_frame.type = mojom::WebSocketMessageType::CONTINUATION;
+    data_frame.data_length -= size_to_send;
   }
   return;
 }

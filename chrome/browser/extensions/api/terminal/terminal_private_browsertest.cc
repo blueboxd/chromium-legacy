@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(TerminalPrivateBrowserTest, OpenTerminalProcessChecks) {
   // (LOAD_COMPONENT_FAILED), but the point of the test is to see that we get
   // past the vmshell allowed checks.
   crostini_features.set_allowed(true);
-  ExpectJsResult(script, "Error starting crostini for terminal: 22");
+  ExpectJsResult(script, "Waiting for component update dialog response");
 
   // openTerminalProcess not defined.
   ExpectJsResult("typeof chrome.terminalPrivate.openTerminalProcess",

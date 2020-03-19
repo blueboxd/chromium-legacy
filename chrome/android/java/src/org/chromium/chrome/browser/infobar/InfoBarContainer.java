@@ -390,13 +390,13 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
     }
 
     /**
-     * @return Pointer to the native InfoBarAndroid object which is currently at the top of the
-     *         infobar stack, or 0 if there are no infobars.
+     * @return InfoBarIdentifier of the InfoBar which is currently at the top of the infobar stack,
+     *         or InfoBarIdentifier.INVALID if there are no infobars.
      */
     @CalledByNative
-    private long getTopNativeInfoBarPtr() {
-        if (!hasInfoBars()) return 0;
-        return mInfoBars.get(0).getNativeInfoBarPtr();
+    private @InfoBarIdentifier int getTopInfoBarIdentifier() {
+        if (!hasInfoBars()) return InfoBarIdentifier.INVALID;
+        return mInfoBars.get(0).getInfoBarIdentifier();
     }
 
     /**

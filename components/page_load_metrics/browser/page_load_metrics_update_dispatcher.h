@@ -110,7 +110,7 @@ class PageLoadMetricsUpdateDispatcher {
     virtual void OnMainFrameMetadataChanged() = 0;
     virtual void OnSubframeMetadataChanged(
         content::RenderFrameHost* rfh,
-        const mojom::PageLoadMetadata& metadata) = 0;
+        const mojom::FrameMetadata& metadata) = 0;
     virtual void OnSubFrameRenderDataChanged(
         content::RenderFrameHost* rfh,
         const mojom::FrameRenderDataUpdate& render_data) = 0;
@@ -122,6 +122,9 @@ class PageLoadMetricsUpdateDispatcher {
         const std::vector<mojom::ResourceDataUpdatePtr>& resources) = 0;
     virtual void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                                       const mojom::CpuTiming& timing) = 0;
+    virtual void OnFrameIntersectionUpdate(
+        content::RenderFrameHost* rfh,
+        const mojom::FrameIntersectionUpdate& frame_intersection_update) = 0;
     virtual void OnNewDeferredResourceCounts(
         const mojom::DeferredResourceCounts& new_deferred_resource_data) = 0;
   };
@@ -136,7 +139,7 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateMetrics(
       content::RenderFrameHost* render_frame_host,
       mojom::PageLoadTimingPtr new_timing,
-      mojom::PageLoadMetadataPtr new_metadata,
+      mojom::FrameMetadataPtr new_metadata,
       mojom::PageLoadFeaturesPtr new_features,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       mojom::FrameRenderDataUpdatePtr render_data,
@@ -158,10 +161,10 @@ class PageLoadMetricsUpdateDispatcher {
     return *(current_merged_page_timing_.get());
   }
 
-  const mojom::PageLoadMetadata& main_frame_metadata() const {
+  const mojom::FrameMetadata& main_frame_metadata() const {
     return *(main_frame_metadata_.get());
   }
-  const mojom::PageLoadMetadata& subframe_metadata() const {
+  const mojom::FrameMetadata& subframe_metadata() const {
     return *(subframe_metadata_.get());
   }
   const PageRenderData& page_render_data() const { return page_render_data_; }
@@ -178,9 +181,9 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateFrameCpuTiming(content::RenderFrameHost* render_frame_host,
                             mojom::CpuTimingPtr new_timing);
 
-  void UpdateMainFrameMetadata(mojom::PageLoadMetadataPtr new_metadata);
+  void UpdateMainFrameMetadata(mojom::FrameMetadataPtr new_metadata);
   void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
-                              mojom::PageLoadMetadataPtr subframe_metadata);
+                              mojom::FrameMetadataPtr subframe_metadata);
 
   void UpdatePageRenderData(const mojom::FrameRenderDataUpdate& render_data);
   void UpdateMainFrameRenderData(
@@ -214,11 +217,18 @@ class PageLoadMetricsUpdateDispatcher {
   mojom::PageLoadTimingPtr current_merged_page_timing_;
   mojom::PageLoadTimingPtr pending_merged_page_timing_;
 
-  mojom::PageLoadMetadataPtr main_frame_metadata_;
-  mojom::PageLoadMetadataPtr subframe_metadata_;
+  // TODO(crbug/1058393): Replace aggregate frame metadata with a separate
+  // struct instead of using mojo.
+  mojom::FrameMetadataPtr main_frame_metadata_;
+  mojom::FrameMetadataPtr subframe_metadata_;
 
   PageRenderData page_render_data_;
   PageRenderData main_frame_render_data_;
+
+  // The last main frame document intersection dispatched to page load metrics
+  // observers.
+  std::map<FrameTreeNodeId, mojom::FrameIntersectionUpdate>
+      frame_intersection_updates_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

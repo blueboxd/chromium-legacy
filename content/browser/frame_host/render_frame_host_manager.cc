@@ -162,7 +162,7 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
   }
 
   if (IsProactivelySwapBrowsingInstanceEnabled())
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ProactiveSwap;
 
   // If BackForwardCache is enabled, swap BrowsingInstances only when needed
   // for back-forward cache.
@@ -171,7 +171,7 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
       current_rfh->frame_tree_node()->navigator()->GetController());
   if (controller->GetBackForwardCache().IsAllowed(
           current_rfh->GetLastCommittedURL())) {
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ProactiveSwap;
   } else {
     return ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache;
   }
@@ -1301,7 +1301,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     bool should_swap = !destination_instance->IsRelatedSiteInstance(
         render_frame_host_->GetSiteInstance());
     if (should_swap) {
-      return ShouldSwapBrowsingInstance::kYes;
+      return ShouldSwapBrowsingInstance::kYes_ForceSwap;
     } else {
       return ShouldSwapBrowsingInstance::kNo_AlreadyHasMatchingBrowsingInstance;
     }
@@ -1319,7 +1319,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     return ShouldSwapBrowsingInstance::kNo_RendererDebugURL;
 
   if (cross_origin_opener_policy_mismatch)
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ForceSwap;
 
   // Transitions across BrowserContexts should always require a
   // BrowsingInstance swap. For example, this can happen if an extension in a
@@ -1333,7 +1333,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
             render_frame_host_->GetSiteInstance()->GetBrowserContext());
   if (browser_context !=
       render_frame_host_->GetSiteInstance()->GetBrowserContext()) {
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ForceSwap;
   }
 
   // For security, we should transition between processes when one is a Web UI
@@ -1346,7 +1346,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     // Here, data URLs are never allowed.
     if (!WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
             browser_context, destination_effective_url)) {
-      return ShouldSwapBrowsingInstance::kYes;
+      return ShouldSwapBrowsingInstance::kYes_ForceSwap;
     }
 
     // Force swap if the current WebUI type differs from the one for the
@@ -1355,13 +1355,13 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
             browser_context, current_effective_url) !=
         WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
             browser_context, destination_effective_url)) {
-      return ShouldSwapBrowsingInstance::kYes;
+      return ShouldSwapBrowsingInstance::kYes_ForceSwap;
     }
   } else {
     // Force a swap if it's a Web UI URL.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
             browser_context, destination_effective_url)) {
-      return ShouldSwapBrowsingInstance::kYes;
+      return ShouldSwapBrowsingInstance::kYes_ForceSwap;
     }
   }
 
@@ -1371,7 +1371,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (GetContentClient()->browser()->ShouldSwapBrowsingInstancesForNavigation(
           render_frame_host_->GetSiteInstance(), current_effective_url,
           destination_effective_url)) {
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ForceSwap;
   }
 
   // We can't switch a RenderView between view source and non-view source mode
@@ -1379,13 +1379,13 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // "view-source:http://foo.com/" and "http://foo.com/", Blink doesn't treat
   // it as a new navigation). So require a BrowsingInstance switch.
   if (current_is_view_source_mode != destination_is_view_source_mode)
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ForceSwap;
 
   // If we haven't used the current SiteInstance but the destination is a
   // view-source URL, we should force a BrowsingInstance swap so that we won't
   // reuse the current SiteInstance.
   if (!current_instance->HasSite() && destination_is_view_source_mode)
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ForceSwap;
 
   // If the target URL's origin was dynamically isolated, and the isolation
   // wouldn't apply in the current BrowsingInstance, see if this navigation can
@@ -1396,7 +1396,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // possible (e.g., when there are no existing script references).
   if (ShouldSwapBrowsingInstancesForDynamicIsolation(
           render_frame_host_.get(), destination_effective_url)) {
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ForceSwap;
   }
 
   // If this is a cross-site navigation, we may be able to force a
@@ -1416,7 +1416,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
       !is_for_isolated_error_page &&
       IsBrowsingInstanceSwapAllowedForPageTransition(
           transition, destination_effective_url)) {
-    return ShouldSwapBrowsingInstance::kYes;
+    return ShouldSwapBrowsingInstance::kYes_ForceSwap;
   }
 
   // Experimental mode to swap BrowsingInstances on most cross-site navigations
@@ -1484,33 +1484,37 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
                                          ? current_entry->IsViewSourceMode()
                                          : dest_is_view_source_mode;
 
-  ShouldSwapBrowsingInstance force_swap_result =
+  ShouldSwapBrowsingInstance should_swap_result =
       ShouldSwapBrowsingInstancesForNavigation(
           current_effective_url, current_is_view_source_mode, source_instance,
           static_cast<SiteInstanceImpl*>(current_instance), dest_instance,
           SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
           dest_is_view_source_mode, transition, is_failure, is_reload,
           cross_origin_opener_policy_mismatch, was_server_redirect);
-  bool force_swap = force_swap_result == ShouldSwapBrowsingInstance::kYes;
-  if (!force_swap) {
+  bool proactive_swap =
+      (should_swap_result == ShouldSwapBrowsingInstance::kYes_ProactiveSwap);
+  bool should_swap =
+      (should_swap_result == ShouldSwapBrowsingInstance::kYes_ForceSwap) ||
+      proactive_swap;
+  if (!should_swap) {
     render_frame_host_->set_browsing_instance_not_swapped_reason(
-        force_swap_result);
+        should_swap_result);
   }
   SiteInstanceDescriptor new_instance_descriptor = DetermineSiteInstanceForURL(
       dest_url, source_instance, current_instance, dest_instance, transition,
-      is_failure, dest_is_restore, dest_is_view_source_mode, force_swap,
+      is_failure, dest_is_restore, dest_is_view_source_mode, should_swap,
       was_server_redirect);
   DCHECK(new_instance_descriptor.relation != SiteInstanceRelation::UNRELATED ||
-         force_swap);
+         should_swap);
 
   scoped_refptr<SiteInstance> new_instance =
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
 
-  // If |force_swap| is true, we must use a different SiteInstance than the
+  // If |should_swap| is true, we must use a different SiteInstance than the
   // current one. If we didn't, we would have two RenderFrameHosts in the same
   // SiteInstance and the same frame, breaking lookup of RenderFrameHosts by
   // SiteInstance.
-  if (force_swap)
+  if (should_swap)
     CHECK_NE(new_instance, current_instance);
 
   if (new_instance == current_instance) {
@@ -1545,6 +1549,14 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     }
   }
 
+  // If we're doing a proactive BI swap, we should try to reuse the current
+  // SiteInstance's process for the new SiteInstance if possible.
+  if (IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled() &&
+      proactive_swap && !current_instance->RequiresDedicatedProcess()) {
+    DCHECK(frame_tree_node_->IsMainFrame());
+    new_instance_impl->ReuseCurrentProcessIfPossible(
+        current_instance->GetProcess());
+  }
   return new_instance;
 }
 

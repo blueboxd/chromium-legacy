@@ -102,15 +102,7 @@ class ScreenRotationWaiter : public ash::ScreenRotationAnimatorObserver {
 
 }  // namespace
 
-// Failing flakily on ChromeOS debug, ASAN, and MSAN.
-// https://crbug.com/1017206
-#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER) || \
-                             defined(MEMORY_SANITIZER))
-#define MAYBE_RotateInTablet DISABLED_RotateInTablet
-#else
-#define MAYBE_RotateInTablet RotateInTablet
-#endif
-IN_PROC_BROWSER_TEST_P(ScreenRotationTest, MAYBE_RotateInTablet) {
+IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTablet) {
   // Browser window is used just to identify display.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   gfx::NativeWindow browser_window =
@@ -126,8 +118,7 @@ IN_PROC_BROWSER_TEST_P(ScreenRotationTest, MAYBE_RotateInTablet) {
   waiter.Wait();
 }
 
-// Disabled: crbug.com/1060667
-IN_PROC_BROWSER_TEST_P(ScreenRotationTest, DISABLE_RotateInTabletOverview) {
+IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTabletOverview) {
   // Browser window is used just to identify display.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   gfx::NativeWindow browser_window =
@@ -143,7 +134,14 @@ IN_PROC_BROWSER_TEST_P(ScreenRotationTest, DISABLE_RotateInTabletOverview) {
   {
     auto windows = ash::ShellTestApi().GetItemWindowListInOverviewGrids();
     ASSERT_TRUE(windows.size() > 0);
-    ash::ShellTestApi().WaitForWindowFinishAnimating(windows[0]);
+    // Skipping the wait if the animation is not ongoing because it could get
+    // stuck if the window animation has already finished at this point. There
+    // might be a chance that window animation hasn't started yet, and if so
+    // the test can't measure the right performance, but not failing.
+    // TODO(mukai): Find the way to check if the animation has finished or not,
+    // and replace the waiter by CreateWaiterForFinishingWindowAnimation().
+    if (windows[0]->layer()->GetAnimator()->is_animating())
+      ash::ShellTestApi().WaitForWindowFinishAnimating(windows[0]);
   }
 
   ScreenRotationWaiter waiter(browser_window->GetRootWindow());

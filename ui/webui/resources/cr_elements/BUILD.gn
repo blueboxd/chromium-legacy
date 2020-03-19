@@ -186,9 +186,10 @@ group("polymer3_elements") {
 
   if (is_chromeos) {
     public_deps += [
+      "chromeos:polymer3_elements",
+
       # cr-searchable-drop-down is only used in smb and cups dialogs, both of
       # which are chromeos only.
-      "chromeos:cros_color_overrides_module",
       "cr_searchable_drop_down:cr_searchable_drop_down_module",
     ]
   }

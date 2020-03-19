@@ -33,14 +33,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.webapps.WebappInfo;
-import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -308,6 +304,15 @@ public class ExternalNavigationHandlerTest {
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
+    public void testOrdinary_disableExternalIntentRequestsForUrl() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+        mDelegate.setDisableExternalIntentRequests(true);
+
+        checkUrl(YOUTUBE_URL).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     @Test
@@ -1371,75 +1376,6 @@ public class ExternalNavigationHandlerTest {
     }
 
     /**
-     * Test that tapping a link which falls into the scope of the current webapp keeps the user in
-     * the webapp.
-     */
-    @Test
-    @SmallTest
-    public void testLaunchWebApp_StayInSameWebApp() {
-        final String twaScope = "https://my_twa.org";
-        final String twaPackageName = "org.my_twa";
-        mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.Type.STRICT));
-        mDelegate.setReferrerWebappPackageName(twaPackageName);
-
-        checkUrl(twaScope + "/new.html").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-    }
-
-    /**
-     * Test that when a webapp with "STRICT scope policy" is navigated outside of the webapp's scope
-     * by "tapping a link" that a Chrome Custom Tab is not launched.
-     */
-    @Test
-    @SmallTest
-    public void testLeaveStrictWebapp_LinkOutOfScope() {
-        final String twaScope = "https://my_twa.org";
-        final String twaPackageName = "org.my_twa";
-        mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.Type.STRICT));
-        mDelegate.setReferrerWebappPackageName(twaPackageName);
-
-        checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-    }
-
-    /**
-     * Test that when a webapp with "STRICT scope policy" is navigated outside of the webapp's scope
-     * via "JavaScript while the webapp is in the background" that a CCT is not launched (as not to
-     * move the webapp to the foreground and annoy the user)
-     */
-    @Test
-    @SmallTest
-    public void testLeaveStrictWebapp_JSBackgroundNavOutOfScope() {
-        final String twaScope = "https://my_twa.org";
-        final String twaPackageName = "org.my_twa";
-        mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.Type.STRICT));
-        mDelegate.setReferrerWebappPackageName(twaPackageName);
-
-        checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
-                .withIsBackgroundTabNavigation(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-    }
-
-    /**
-     * Test that when a webapp with "LEGACY scope policy" is navigated outside of the webapp's scope
-     * by "tapping a link" that a CCT is not launched.
-     */
-    @Test
-    @SmallTest
-    public void testLeaveLegacyWebapp_LinkOutOfScope() {
-        final String twaScope = "https://my_twa.org";
-        final String twaPackageName = "org.my_twa";
-        mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.Type.LEGACY));
-        mDelegate.setReferrerWebappPackageName(twaPackageName);
-
-        checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-    }
-
-    /**
      * Test that tapping a link which falls solely in the scope of a WebAPK launches a WebAPK
      * without showing the intent picker.
      */
@@ -1672,32 +1608,18 @@ public class ExternalNavigationHandlerTest {
         return info;
     }
 
-    private static WebappInfo newWebappInfoFromScope(String scope) {
-        Intent webappIntent = WebappTestHelper.createMinimalWebappIntent("" /* id */, "" /* url */);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_SCOPE, scope);
-        return WebappInfo.create(webappIntent);
-    }
-
     private static class IntentActivity {
         private String mUrlPrefix;
         private String mPackageName;
         private boolean mIsWebApk;
-        private @WebappScopePolicy.Type int mWebappScopePolicy;
 
         public IntentActivity(String urlPrefix, String packageName) {
             mUrlPrefix = urlPrefix;
             mPackageName = packageName;
-            mWebappScopePolicy = WebappScopePolicy.Type.LEGACY;
         }
 
         public IntentActivity withIsWebApk(boolean isWebApk) {
             mIsWebApk = isWebApk;
-            mWebappScopePolicy = WebappScopePolicy.Type.STRICT;
-            return this;
-        }
-
-        public IntentActivity withWebappScopePolicy(@WebappScopePolicy.Type int policy) {
-            mWebappScopePolicy = policy;
             return this;
         }
 
@@ -1711,10 +1633,6 @@ public class ExternalNavigationHandlerTest {
 
         public boolean isWebApk() {
             return mIsWebApk;
-        }
-
-        public @WebappScopePolicy.Type int webappScopePolicy() {
-            return mWebappScopePolicy;
         }
 
         public boolean isSpecialized() {
@@ -1768,21 +1686,8 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean shouldStayInWebapp(ExternalNavigationParams params) {
-            @WebappScopePolicy.NavigationDirective
-            int webappScopePolicyDirective = WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
-
-            for (IntentActivity intentActivity : mIntentActivities) {
-                if (intentActivity.packageName().equals(mReferrerWebappPackageName)) {
-                    WebappInfo info = newWebappInfoFromScope(intentActivity.urlPrefix());
-                    webappScopePolicyDirective = WebappScopePolicy.applyPolicyForNavigationToUrl(
-                            intentActivity.webappScopePolicy(), info, params.getUrl());
-                    break;
-                }
-            }
-
-            return webappScopePolicyDirective
-                    == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS;
+        public boolean shouldDisableExternalIntentRequestsForUrl(String url) {
+            return mShouldDisableExternalIntentRequests;
         }
 
         @Override
@@ -2003,6 +1908,10 @@ public class ExternalNavigationHandlerTest {
             mIsCallingAppTrusted = trusted;
         }
 
+        public void setDisableExternalIntentRequests(boolean disable) {
+            mShouldDisableExternalIntentRequests = disable;
+        }
+
         public void setIsIntentToInstantApp(boolean value) {
             mIsIntentToInstantApp = value;
         }
@@ -2027,6 +1936,7 @@ public class ExternalNavigationHandlerTest {
         public boolean mCalledWithProxy;
         public boolean mIsChromeAppInForeground = true;
         private boolean mIsCallingAppTrusted;
+        private boolean mShouldDisableExternalIntentRequests;
         private boolean mIsIntentToInstantApp;
 
         public boolean shouldRequestFileAccess;

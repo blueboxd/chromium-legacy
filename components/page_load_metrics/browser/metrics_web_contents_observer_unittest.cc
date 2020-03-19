@@ -106,7 +106,7 @@ class MetricsWebContentsObserverTest
                                content::RenderFrameHost* render_frame_host) {
     observer()->OnTimingUpdated(
         render_frame_host, previous_timing_->Clone(),
-        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::FrameMetadataPtr(base::in_place),
         mojom::PageLoadFeaturesPtr(base::in_place),
         std::vector<mojom::ResourceDataUpdatePtr>(),
         mojom::FrameRenderDataUpdatePtr(base::in_place), timing.Clone(),
@@ -130,7 +130,7 @@ class MetricsWebContentsObserverTest
     previous_timing_ = timing.Clone();
     observer()->OnTimingUpdated(
         render_frame_host, timing.Clone(),
-        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::FrameMetadataPtr(base::in_place),
         mojom::PageLoadFeaturesPtr(base::in_place),
         std::vector<mojom::ResourceDataUpdatePtr>(),
         mojom::FrameRenderDataUpdatePtr(base::in_place),

@@ -102,12 +102,16 @@ TimeZoneController::~TimeZoneController() = default;
 
 // static
 void TimeZoneController::Init() {
-  // Some unit tests may have no message loop ready, so we can't initialize the
-  // mojo stuff here. They can initialize those mojo stuff they're interested in
-  // later after they got a message loop ready.
+  // TODO(crbug.com/660274): The unit tests should not require this exception.
+  // Currently some unit tests have no message loop ready, so we can't
+  // initialize the mojo stuff here. They can initialize those mojo stuff
+  // they're interested in later after they got a message loop ready.
   if (!CanInitializeMojo())
     return;
 
+  // monitor must not use HeapMojoRemote. TimeZoneController is not managed by
+  // Oilpan. monitor is only used to bind receiver_ here and never used
+  // again.
   mojo::Remote<device::mojom::blink::TimeZoneMonitor> monitor;
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       monitor.BindNewPipeAndPassReceiver());

@@ -232,7 +232,9 @@ void CrostiniUpgrader::PowerChanged(
   // less conservative check is possible, but we can expect users to have access
   // to a charger.
   power_status_good_ = proto.battery_state() !=
-                       power_manager::PowerSupplyProperties::DISCHARGING;
+                           power_manager::PowerSupplyProperties::DISCHARGING ||
+                       proto.external_power() !=
+                           power_manager::PowerSupplyProperties::DISCONNECTED;
 
   auto* pmc = chromeos::PowerManagerClient::Get();
   pmc_observer_.Remove(pmc);

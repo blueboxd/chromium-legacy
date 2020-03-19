@@ -365,6 +365,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Returns a shared instance of the native theme for incognito UI.
   static NativeTheme* GetInstanceForDarkUI();
 
+  // Whether OS-level dark mode is available in the current OS.
+  static bool SystemDarkModeSupported();
+
   // Add or remove observers to be notified when the native theme changes.
   void AddObserver(NativeThemeObserver* observer);
   void RemoveObserver(NativeThemeObserver* observer);
@@ -380,9 +383,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // you're considering using this function to choose between two hard-coded
   // colors, you probably shouldn't. Instead, use GetSystemColor().
   virtual bool ShouldUseDarkColors() const;
-
-  // Whether OS-level dark mode is available in the current OS.
-  virtual bool SystemDarkModeSupported() const;
 
   // Returns the OS-level user preferred color scheme. See the comment for
   // CalculatePreferredColorScheme() for details on how preferred color scheme

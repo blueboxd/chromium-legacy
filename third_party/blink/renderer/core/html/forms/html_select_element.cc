@@ -803,7 +803,7 @@ void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
       ResetToDefaultSelection();
   }
   SetNeedsValidityCheck();
-  last_on_change_selection_.clear();
+  select_type_->ClearLastOnChangeSelection();
 
   if (!GetDocument().IsActive())
     return;
@@ -834,7 +834,7 @@ void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
   if (option.Selected())
     SetAutofillState(WebAutofillState::kNotFilled);
   SetNeedsValidityCheck();
-  last_on_change_selection_.clear();
+  select_type_->ClearLastOnChangeSelection();
 
   if (!GetDocument().IsActive())
     return;
@@ -850,12 +850,12 @@ void HTMLSelectElement::OptGroupInsertedOrRemoved(
     HTMLOptGroupElement& optgroup) {
   SetRecalcListItems();
   SetNeedsValidityCheck();
-  last_on_change_selection_.clear();
+  select_type_->ClearLastOnChangeSelection();
 }
 
 void HTMLSelectElement::HrInsertedOrRemoved(HTMLHRElement& hr) {
   SetRecalcListItems();
-  last_on_change_selection_.clear();
+  select_type_->ClearLastOnChangeSelection();
 }
 
 // TODO(tkent): This function is not efficient.  It contains multiple O(N)

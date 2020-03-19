@@ -61,6 +61,7 @@ class CastWebContentsImpl : public CastWebContents,
   void LoadUrl(const GURL& url) override;
   void ClosePage() override;
   void Stop(int error_code) override;
+  void SetWebVisibilityAndPaint(bool visible) override;
   void RegisterInterfaceProvider(
       const InterfaceSet& interface_set,
       service_manager::InterfaceProvider* interface_provider) override;

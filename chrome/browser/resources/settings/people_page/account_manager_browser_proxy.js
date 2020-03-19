@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * Information for an account managed by Chrome OS AccountManager.
@@ -61,7 +65,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.AccountManagerBrowserProxy}
    */
-  class AccountManagerBrowserProxyImpl {
+  /* #export */ class AccountManagerBrowserProxyImpl {
     /** @override */
     getAccounts() {
       return cr.sendWithPromise('getAccounts');

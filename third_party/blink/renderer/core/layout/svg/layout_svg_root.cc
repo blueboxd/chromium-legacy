@@ -315,7 +315,7 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
                                    const ComputedStyle* old_style) {
   if (diff.NeedsFullLayout())
     SetNeedsBoundariesUpdate();
-  if (diff.NeedsFullPaintInvalidation()) {
+  if (diff.NeedsPaintInvalidation()) {
     // Box decorations may have appeared/disappeared - recompute status.
     has_box_decoration_background_ = StyleRef().HasBoxDecorationBackground();
   }

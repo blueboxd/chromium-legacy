@@ -435,6 +435,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
   render_process_host_observer_.RemoveAll();
   all_observed_render_process_hosts_.clear();
   main_window_render_process_hosts_.clear();
+  main_window_render_view_hosts_.clear();
   accumulated_web_test_runtime_flags_changes_.Clear();
   blink_test_control_map_.clear();
   web_test_control_map_.clear();
@@ -1003,6 +1004,7 @@ void BlinkTestController::DiscardMainWindow() {
 
 void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
   RenderProcessHost* process_host = frame->GetProcess();
+  RenderViewHost* view_host = frame->GetRenderViewHost();
   bool main_window =
       WebContents::FromRenderFrameHost(frame) == main_window_->web_contents();
 
@@ -1013,9 +1015,19 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
       current_pid_ = process.Pid();
   }
 
-  // Is this the 1st time this renderer contains parts of the main test window?
+  // If this the first time this renderer contains parts of the main test
+  // window, we need to make sure that it gets configured correctly (including
+  // letting it know that it's part of the main test window).
+  // We consider the renderer as new when we see either a new RenderProcessHost
+  // or a new RenderViewHost, as it is possible that a new renderer (with a new
+  // RenderViewHost) reuses a renderer process, and it's also possible that we
+  // reuse RenderViewHosts (in some fetch tests).
+  // TODO(rakina): Understand the fetch tests to figure out if it's possible to
+  // remove RenderProcessHost tracking here.
   if (main_window &&
-      !base::Contains(main_window_render_process_hosts_, process_host)) {
+      (!base::Contains(main_window_render_view_hosts_, view_host) ||
+       !base::Contains(main_window_render_process_hosts_, process_host))) {
+    main_window_render_view_hosts_.insert(view_host);
     main_window_render_process_hosts_.insert(process_host);
 
     // Make sure the new renderer process_host has a test configuration shared

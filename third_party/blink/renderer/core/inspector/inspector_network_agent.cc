@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
@@ -1207,7 +1208,7 @@ InspectorNetworkAgent::BuildInitiatorObject(
 
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
-          SourceLocation::Capture(document ? document->ToExecutionContext()
+          SourceLocation::Capture(document ? document->GetExecutionContext()
                                            : nullptr)
               ->BuildInspectorObject(max_async_depth);
   if (current_stack_trace) {
@@ -1791,7 +1792,7 @@ ExecutionContext* InspectorNetworkAgent::GetTargetExecutionContext() const {
   if (worker_global_scope_)
     return worker_global_scope_;
   DCHECK(inspected_frames_);
-  return inspected_frames_->Root()->GetDocument()->ToExecutionContext();
+  return inspected_frames_->Root()->DomWindow();
 }
 
 }  // namespace blink

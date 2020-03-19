@@ -67,8 +67,7 @@ content::WebContents* CastBrowserTest::CreateWebView() {
   params.web_contents_params.enabled_for_dev = true;
   params.window_params.delegate = weak_factory_.GetWeakPtr();
   cast_web_view_ =
-      web_service_->CreateWebView(params, nullptr, /* site_instance */
-                                  GURL() /* initial_url */);
+      web_service_->CreateWebView(params, GURL() /* initial_url */);
 
   return cast_web_view_->web_contents();
 }
@@ -80,7 +79,7 @@ content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
   content::WaitForLoadStop(web_contents);
   content::TestNavigationObserver same_tab_observer(web_contents, 1);
 
-  cast_web_view_->LoadUrl(url);
+  cast_web_view_->cast_web_contents()->LoadUrl(url);
 
   same_tab_observer.Wait();
 

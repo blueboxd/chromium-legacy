@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
@@ -34,7 +35,9 @@ void DidGetInstalledApps(
 
 InstalledAppProviderImpl::InstalledAppProviderImpl(
     RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {
+    : content::WebContentsObserver(
+          WebContents::FromRenderFrameHost(render_frame_host)),
+      render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_);
 }
 
@@ -43,7 +46,8 @@ void InstalledAppProviderImpl::FilterInstalledApps(
     const GURL& manifest_url,
     FilterInstalledAppsCallback callback) {
   bool is_implemented = false;
-  if (base::FeatureList::IsEnabled(features::kInstalledAppProvider)) {
+  if (base::FeatureList::IsEnabled(features::kInstalledAppProvider) &&
+      render_frame_host_) {
 #if defined(OS_WIN)
     is_implemented = true;
     bool is_off_the_record =
@@ -52,13 +56,20 @@ void InstalledAppProviderImpl::FilterInstalledApps(
         std::move(related_apps),
         base::BindOnce(&DidGetInstalledApps, is_off_the_record,
                        std::move(callback)),
-        render_frame_host_);
+        render_frame_host_->GetLastCommittedURL());
 #endif
   }
 
   if (!is_implemented) {
     // Do not return any results.
     std::move(callback).Run(std::vector<blink::mojom::RelatedApplicationPtr>());
+  }
+}
+
+void InstalledAppProviderImpl::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  if (render_frame_host_ == render_frame_host) {
+    render_frame_host_ = nullptr;
   }
 }
 

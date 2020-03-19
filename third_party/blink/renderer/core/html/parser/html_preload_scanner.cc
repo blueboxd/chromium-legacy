@@ -1101,7 +1101,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
                           document->GetSettings()->GetViewportMetaEnabled();
   referrer_policy = document->GetReferrerPolicy();
   integrity_features =
-      SubresourceIntegrityHelper::GetFeatures(document->ToExecutionContext());
+      SubresourceIntegrityHelper::GetFeatures(document->GetExecutionContext());
   lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
   if (document->Loader() && document->Loader()->GetFrame()) {
     lazy_load_image_setting =

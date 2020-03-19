@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -70,6 +71,10 @@ bool ShouldAllowContainerUpgrade(Profile* profile);
 // Returns whether default Crostini container should be configured according to
 // the configuration specified by CrostiniAnsiblePlaybook user policy.
 bool ShouldConfigureDefaultContainer(Profile* profile);
+
+// Returns whether a dialog from Crostini is blocking the immediate launch.
+bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
+                                         CrostiniResult result);
 
 // Launches the Crostini app with ID of |app_id| on the display with ID of
 // |display_id|. |app_id| should be a valid Crostini app list id.
@@ -233,6 +238,8 @@ void UpdateContainerPref(Profile* profile,
                          const ContainerId& container_id,
                          const std::string& key,
                          base::Value value);
+
+const ContainerId& DefaultContainerId();
 
 }  // namespace crostini
 

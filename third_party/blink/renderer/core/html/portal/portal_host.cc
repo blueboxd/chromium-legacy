@@ -48,15 +48,11 @@ const AtomicString& PortalHost::InterfaceName() const {
 }
 
 ExecutionContext* PortalHost::GetExecutionContext() const {
-  return GetSupplementable()->document()->ToExecutionContext();
+  return GetSupplementable();
 }
 
 PortalHost* PortalHost::ToPortalHost() {
   return this;
-}
-
-Document* PortalHost::GetDocument() const {
-  return Document::From(GetExecutionContext());
 }
 
 void PortalHost::OnPortalActivated() {
@@ -87,8 +83,8 @@ void PortalHost::postMessage(ScriptState* script_state,
   }
 
   scoped_refptr<const SecurityOrigin> target_origin =
-      PostMessageHelper::GetTargetOrigin(options, *GetDocument(),
-                                         exception_state);
+      PostMessageHelper::GetTargetOrigin(
+          options, *GetSupplementable()->document(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -122,15 +118,15 @@ void PortalHost::ReceiveMessage(
     BlinkTransferableMessage message,
     scoped_refptr<const SecurityOrigin> source_origin,
     scoped_refptr<const SecurityOrigin> target_origin) {
-  DCHECK(GetDocument()->GetPage()->InsidePortal());
+  DCHECK(GetSupplementable()->GetFrame()->GetPage()->InsidePortal());
   PortalPostMessageHelper::CreateAndDispatchMessageEvent(
       this, std::move(message), source_origin, target_origin);
 }
 
 mojom::blink::PortalHost& PortalHost::GetPortalHostInterface() {
   if (!portal_host_) {
-    DCHECK(GetDocument()->GetFrame());
-    GetDocument()
+    DCHECK(GetSupplementable()->GetFrame());
+    GetSupplementable()
         ->GetFrame()
         ->GetRemoteNavigationAssociatedInterfaces()
         ->GetInterface(&portal_host_);

@@ -302,6 +302,18 @@ class CastWebContents {
   virtual void Stop(int error_code) = 0;
 
   // ===========================================================================
+  // Visibility
+  // ===========================================================================
+
+  // Specify if the WebContents should be treated as visible. This triggers a
+  // document "visibilitychange" change event, and will paint the WebContents
+  // quad if |visible| is true (otherwise it will be blank). Note that this does
+  // *not* guarantee the page is visible on the screen, as that depends on if
+  // the WebContents quad is present in the screen layout and isn't obscured by
+  // another window.
+  virtual void SetWebVisibilityAndPaint(bool visible) = 0;
+
+  // ===========================================================================
   // Media Management
   // ===========================================================================
 

@@ -117,14 +117,14 @@ bool AnchorElementMetricsSender::AssociateInterface() {
 
   document->GetBrowserInterfaceBroker().GetInterface(
       metrics_host_.BindNewPipeAndPassReceiver(
-          document->ToExecutionContext()->GetTaskRunner(
+          document->GetExecutionContext()->GetTaskRunner(
               TaskType::kInternalDefault)));
   return true;
 }
 
 AnchorElementMetricsSender::AnchorElementMetricsSender(Document& document)
     : Supplement<Document>(document),
-      metrics_host_(document.ToExecutionContext()) {
+      metrics_host_(document.GetExecutionContext()) {
   DCHECK(!document.ParentDocument());
 }
 

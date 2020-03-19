@@ -6,7 +6,6 @@
 
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
-import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 # Empty group for package discovery.
 group("fuzzer") {
@@ -160,47 +159,6 @@ fuzzer_test("appcache_fuzzer") {
     "//storage/browser:test_support",
     "//third_party/libprotobuf-mutator",
   ]
-}
-
-if (enable_ipc_fuzzer) {
-  copy("code_cache_host_mojolpm_fuzzer_proto_copy") {
-    sources = [ "code_cache_host_mojolpm_fuzzer.proto" ]
-    outputs = [ "$root_gen_dir/code_cache_host_mojolpm_fuzzer.proto" ]
-    testonly = true
-  }
-
-  proto_library("code_cache_host_mojolpm_fuzzer_proto") {
-    sources = [ "$root_gen_dir/code_cache_host_mojolpm_fuzzer.proto" ]
-    generate_python = false
-
-    # TODO(markbrand): this is kind of a hack, but it works. not sure if it's
-    # the best way to get this generated in the right place though.
-    proto_out_dir = "content/test/fuzzer/../../../"
-    proto_deps = [
-      ":code_cache_host_mojolpm_fuzzer_proto_copy",
-      "//third_party/blink/public/mojom:mojom_platform_mojolpm",
-    ]
-    link_deps = [ "//third_party/blink/public/mojom:mojom_platform_mojolpm" ]
-    testonly = true
-  }
-
-  fuzzer_test("code_cache_host_mojolpm_fuzzer") {
-    sources = [ "code_cache_host_mojolpm_fuzzer.cc" ]
-
-    deps = [
-      ":code_cache_host_mojolpm_fuzzer_proto",
-      "//base/test:test_support",
-      "//content/browser:for_content_tests",
-      "//content/public/browser:browser_sources",
-      "//content/test:test_support",
-      "//mojo/core/embedder",
-      "//mojo/public/tools/fuzzers:mojolpm",
-      "//services/network:test_support",
-      "//storage/browser:test_support",
-      "//third_party/blink/public/mojom:mojom_modules_mojolpm",
-      "//third_party/libprotobuf-mutator",
-    ]
-  }
 }
 
 # Note: this compiles and runs on Mac but may cause

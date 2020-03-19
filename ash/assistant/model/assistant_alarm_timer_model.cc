@@ -5,7 +5,8 @@
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
-#include "base/stl_util.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
+#include "base/time/time.h"
 
 namespace ash {
 
@@ -23,54 +24,89 @@ void AssistantAlarmTimerModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void AssistantAlarmTimerModel::AddAlarmTimer(const AlarmTimer& alarm_timer) {
-  DCHECK(!base::Contains(alarms_timers_, alarm_timer.id));
-  alarms_timers_[alarm_timer.id] = alarm_timer;
-  NotifyAlarmTimerAdded(alarm_timer, /*time_remaining=*/base::TimeTicks::Now() -
-                                         alarm_timer.end_time);
+void AssistantAlarmTimerModel::AddOrUpdateTimer(
+    mojom::AssistantTimerPtr timer) {
+  auto* ptr = timer.get();
+
+  auto it = timers_.find(timer->id);
+  if (it == timers_.end()) {
+    timers_[timer->id] = std::move(timer);
+    NotifyTimerAdded(*ptr);
+    return;
+  }
+
+  timers_[timer->id] = std::move(timer);
+  NotifyTimerUpdated(*ptr);
 }
 
-void AssistantAlarmTimerModel::RemoveAllAlarmsTimers() {
-  if (alarms_timers_.empty())
+void AssistantAlarmTimerModel::RemoveTimer(const std::string& id) {
+  auto it = timers_.find(id);
+  if (it == timers_.end())
     return;
 
-  alarms_timers_.clear();
-  NotifyAllAlarmsTimersRemoved();
+  mojom::AssistantTimerPtr timer = std::move(it->second);
+  timers_.erase(it);
+
+  NotifyTimerRemoved(*timer);
 }
 
-const AlarmTimer* AssistantAlarmTimerModel::GetAlarmTimerById(
+void AssistantAlarmTimerModel::RemoveAllTimers() {
+  if (timers_.empty())
+    return;
+
+  timers_.clear();
+  NotifyAllTimersRemoved();
+}
+
+std::vector<const mojom::AssistantTimer*>
+AssistantAlarmTimerModel::GetAllTimers() const {
+  std::vector<const mojom::AssistantTimer*> timers;
+  for (const auto& pair : timers_)
+    timers.push_back(pair.second.get());
+  return timers;
+}
+
+const mojom::AssistantTimer* AssistantAlarmTimerModel::GetTimerById(
     const std::string& id) const {
-  auto it = alarms_timers_.find(id);
-  return it != alarms_timers_.end() ? &it->second : nullptr;
+  auto it = timers_.find(id);
+  return it != timers_.end() ? it->second.get() : nullptr;
 }
 
 void AssistantAlarmTimerModel::Tick() {
-  const base::TimeTicks now = base::TimeTicks::Now();
+  if (timers_.empty())
+    return;
 
-  // Calculate remaining time for all tracked alarms/timers.
-  std::map<std::string, base::TimeDelta> times_remaining;
-  for (auto& alarm_timer : alarms_timers_)
-    times_remaining[alarm_timer.first] = now - alarm_timer.second.end_time;
+  for (auto& pair : timers_) {
+    mojom::AssistantTimer* timer = pair.second.get();
+    if (timer->state == mojom::AssistantTimerState::kPaused)
+      continue;
 
-  NotifyAlarmsTimersTicked(times_remaining);
+    timer->remaining_time = timer->fire_time - base::Time::Now();
+    NotifyTimerUpdated(*timer);
+  }
 }
 
-void AssistantAlarmTimerModel::NotifyAlarmTimerAdded(
-    const AlarmTimer& alarm_timer,
-    const base::TimeDelta& time_remaining) {
+void AssistantAlarmTimerModel::NotifyTimerAdded(
+    const mojom::AssistantTimer& timer) {
   for (auto& observer : observers_)
-    observer.OnAlarmTimerAdded(alarm_timer, time_remaining);
+    observer.OnTimerAdded(timer);
 }
 
-void AssistantAlarmTimerModel::NotifyAlarmsTimersTicked(
-    const std::map<std::string, base::TimeDelta>& times_remaining) {
+void AssistantAlarmTimerModel::NotifyTimerUpdated(
+    const mojom::AssistantTimer& timer) {
   for (auto& observer : observers_)
-    observer.OnAlarmsTimersTicked(times_remaining);
+    observer.OnTimerUpdated(timer);
 }
 
-void AssistantAlarmTimerModel::NotifyAllAlarmsTimersRemoved() {
+void AssistantAlarmTimerModel::NotifyTimerRemoved(
+    const mojom::AssistantTimer& timer) {
   for (auto& observer : observers_)
-    observer.OnAllAlarmsTimersRemoved();
+    observer.OnTimerRemoved(timer);
+}
+
+void AssistantAlarmTimerModel::NotifyAllTimersRemoved() {
+  for (auto& observer : observers_)
+    observer.OnAllTimersRemoved();
 }
 
 }  // namespace ash

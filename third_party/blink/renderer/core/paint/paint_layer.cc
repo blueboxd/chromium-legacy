@@ -308,12 +308,9 @@ PhysicalOffset PaintLayer::SubpixelAccumulation() const {
 }
 
 void PaintLayer::SetSubpixelAccumulation(const PhysicalOffset& accumulation) {
-  if (rare_data_ || !accumulation.IsZero()) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (rare_data_ || !accumulation.IsZero())
     EnsureRareData().subpixel_accumulation = accumulation;
-    if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
-      scrollable_area->PositionOverflowControls();
-    }
-  }
 }
 
 void PaintLayer::UpdateLayerPositionsAfterLayout() {

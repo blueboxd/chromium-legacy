@@ -176,7 +176,7 @@ void OpaqueBrowserFrameView::InitViews() {
 
   web_app::AppBrowserController* controller =
       browser_view()->browser()->app_controller();
-  if (controller && controller->HasTitlebarToolbar()) {
+  if (controller) {
     set_web_app_frame_toolbar(AddChildView(
         std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
   }

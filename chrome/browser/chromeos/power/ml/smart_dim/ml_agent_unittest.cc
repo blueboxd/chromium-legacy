@@ -20,6 +20,7 @@
 #include "chromeos/test/chromeos_test_utils.h"
 #include "components/assist_ranker/proto/example_preprocessor.pb.h"
 #include "content/public/test/browser_task_environment.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -135,6 +136,7 @@ class SmartDimMlAgentTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
  private:
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   DISALLOW_COPY_AND_ASSIGN(SmartDimMlAgentTest);
 };
 

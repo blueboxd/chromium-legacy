@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "base/trace_event/trace_event.h"
 #include "base/util/type_safety/pass_key.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_plane_manager.h"
 #include "chrome/browser/android/vr/arcore_device/type_converters.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -459,6 +458,10 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   plane_manager_->Update(arcore_frame_.get());
   TRACE_EVENT_END0("gpu", "ArCorePlaneManager Update");
 
+  TRACE_EVENT_BEGIN0("gpu", "ArCoreAnchorManager Update");
+  anchor_manager_->Update(arcore_frame_.get());
+  TRACE_EVENT_END0("gpu", "ArCoreAnchorManager Update");
+
   return GetMojomVRPoseFromArPose(arcore_session_.get(), arcore_pose.get());
 }
 
@@ -475,7 +478,7 @@ mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {
 
   TRACE_EVENT0("gpu", __func__);
 
-  return anchor_manager_->GetAnchorsData(arcore_frame_.get());
+  return anchor_manager_->GetAnchorsData();
 }
 
 mojom::XRLightEstimationDataPtr ArCoreImpl::GetLightEstimationData() {

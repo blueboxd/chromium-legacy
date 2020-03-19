@@ -687,12 +687,13 @@ class CORE_EXPORT LocalFrameView final
   void UnregisterFromLifecycleNotifications(LifecycleNotificationObserver*);
 
  protected:
+  bool ShouldReportMainFrameIntersection() const override { return true; }
   void FrameRectsChanged(const IntRect&) override;
   void SelfVisibleChanged() override;
   void ParentVisibleChanged() override;
   void NotifyFrameRectsChangedIfNeeded();
   void SetViewportIntersection(
-      const ViewportIntersectionState& intersection_state) override;
+      const ViewportIntersectionState& intersection_state) override {}
   void VisibilityForThrottlingChanged() override;
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;

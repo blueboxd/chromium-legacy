@@ -1950,8 +1950,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
 
   // Optimization: for decoration/color property changes, invalidation is only
   // needed if we have style or text affected by these properties.
-  if (diff.TextDecorationOrColorChanged() &&
-      !diff.NeedsFullPaintInvalidation()) {
+  if (diff.TextDecorationOrColorChanged() && !diff.NeedsPaintInvalidation()) {
     if (StyleRef().HasBorderColorReferencingCurrentColor() ||
         StyleRef().HasOutlineWithCurrentColor() ||
         StyleRef().HasBackgroundRelatedColorReferencingCurrentColor() ||
@@ -1962,7 +1961,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
         (IsSVG() && StyleRef().SvgStyle().IsFillColorCurrentColor()) ||
         (IsSVG() && StyleRef().SvgStyle().IsStrokeColorCurrentColor()) ||
         IsListMarker() || IsDetailsMarker())
-      diff.SetNeedsPaintInvalidationObject();
+      diff.SetNeedsPaintInvalidation();
   }
 
   // The answer to layerTypeRequired() for plugins, iframes, and canvas can
@@ -2154,22 +2153,19 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
     }
   }
 
-  if (diff.NeedsPaintInvalidationSubtree() ||
-      updated_diff.NeedsPaintInvalidationSubtree()) {
-    SetSubtreeShouldDoFullPaintInvalidation();
-  } else if (diff.NeedsPaintInvalidationObject() ||
-             updated_diff.NeedsPaintInvalidationObject()) {
-    // TODO(wangxianzhu): For now LayoutSVGRoot::localVisualRect() depends on
-    // several styles. Refactor to avoid this special case.
-    if (IsSVGRoot())
+  if (diff.NeedsPaintInvalidation() || updated_diff.NeedsPaintInvalidation()) {
+    if (IsSVGRoot()) {
+      // LayoutSVGRoot::LocalVisualRect() depends on some styles.
       SetShouldDoFullPaintInvalidation();
-    else
+    } else {
+      // We'll set needing geometry change later if the style change does cause
+      // possible layout change or visual overflow change.
       SetShouldDoFullPaintInvalidationWithoutGeometryChange();
+    }
   }
 
-  if ((diff.NeedsPaintInvalidationObject() ||
-       diff.NeedsPaintInvalidationSubtree()) &&
-      old_style && !old_style->ClipPathDataEquivalent(*style_)) {
+  if (diff.NeedsPaintInvalidation() && old_style &&
+      !old_style->ClipPathDataEquivalent(*style_)) {
     InvalidateClipPathCache();
     PaintingLayer()->SetNeedsCompositingInputsUpdate();
   }
@@ -2495,7 +2491,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (diff.NeedsFullPaintInvalidation() && old_style) {
+  if (diff.NeedsPaintInvalidation() && old_style) {
     if (ResolveColor(*old_style, GetCSSPropertyBackgroundColor()) !=
             ResolveColor(GetCSSPropertyBackgroundColor()) ||
         old_style->BackgroundLayers() != StyleRef().BackgroundLayers())
@@ -2546,12 +2542,12 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle* old_style) {
     }
   }
   if (!has_diff) {
-    diff.SetNeedsPaintInvalidationObject();
+    diff.SetNeedsPaintInvalidation();
     diff.SetNeedsFullLayout();
   }
 
-  if (BehavesLikeBlockContainer() && (diff.NeedsFullPaintInvalidation() ||
-                                      diff.TextDecorationOrColorChanged())) {
+  if (BehavesLikeBlockContainer() &&
+      (diff.NeedsPaintInvalidation() || diff.TextDecorationOrColorChanged())) {
     if (auto* first_line_container =
             To<LayoutBlock>(this)->NearestInnerBlockWithFirstLine())
       first_line_container->SetShouldDoFullPaintInvalidationForFirstLine();

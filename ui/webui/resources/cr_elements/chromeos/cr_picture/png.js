@@ -135,7 +135,7 @@ cr.define('cr.png', function() {
    * @param {!Array<string>} images The data URLs for each image.
    * @return {string} A data URL for an animated PNG image.
    */
-  function convertImageSequenceToPng(images) {
+  /* #export */ function convertImageSequenceToPng(images) {
     const png =
         /** @type {!CrPngState} */ ({frames: 0, sequences: 0, chunks: []});
 
@@ -217,7 +217,7 @@ cr.define('cr.png', function() {
    * @param {string} url An btoa encoded data URL for a PNG image.
    * @return {boolean} True if data URL is an animated PNG image.
    */
-  function isEncodedPngDataUrlAnimated(url) {
+  /* #export */ function isEncodedPngDataUrlAnimated(url) {
     const decoded = atob(url.substr('data:image/png;base64,'.length));
     return decoded.substr(37, 4) === 'acTL';
   }
@@ -510,6 +510,7 @@ cr.define('cr.png', function() {
     console.error('Unexpectedly reached end of file');
   }
 
+  // #cr_define_end
   return {
     convertImageSequenceToPng,
     isEncodedPngDataUrlAnimated,

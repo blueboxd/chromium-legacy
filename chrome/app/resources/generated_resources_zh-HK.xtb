@@ -2732,7 +2732,7 @@
 <translation id="4665446389743427678"><ph name="SITE" /> 儲存的所有資料都會被刪除。</translation>
 <translation id="4668721319092543482">按一下即可啟用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">虛擬實境</translation>
-<translation id="4672879467403304774">確保您登入使用 Chrome 及其他 Google apps 的安全</translation>
+<translation id="4672879467403304774">確保您登入使用 Chrome 及其他 Google 應用程式的安全</translation>
 <translation id="46733273239502219">系統亦會清除已安裝應用程式的離線資料。</translation>
 <translation id="4673442866648850031">拔出觸控筆後開啟觸控筆工具</translation>
 <translation id="4677772697204437347">GPU 記憶體使用量</translation>
@@ -4390,8 +4390,8 @@
 <translation id="6965382102122355670">確定</translation>
 <translation id="6965648386495488594">連接埠</translation>
 <translation id="6965978654500191972">裝置</translation>
-<translation id="6966201992886493384">網站可使用 Cookie 來改善瀏覽品質，例如讓您保持登入狀態或記住購物車中的商品</translation>
-<translation id="696780070563539690">網站不能使用 Cookie 查看您在各網站的瀏覽活動，例如放送個人化廣告</translation>
+<translation id="6966201992886493384">網站可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品</translation>
+<translation id="696780070563539690">網站不可使用 Cookie 查看您在各網站的瀏覽活動，例如放送個人化廣告</translation>
 <translation id="6968288415730398122">如要設定螢幕鎖定功能，請輸入您的密碼</translation>
 <translation id="6970480684834282392">啟動類型</translation>
 <translation id="6970856801391541997">列印特定網頁</translation>
@@ -4801,7 +4801,7 @@
 <translation id="7507207699631365376">查看此供應商的<ph name="BEGIN_LINK" />私隱權政策<ph name="END_LINK" /></translation>
 <translation id="7507930499305566459">狀態回應程式憑證</translation>
 <translation id="7508054832109420082">授予列印機存取權</translation>
-<translation id="751120035300339">網站不能使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品</translation>
+<translation id="751120035300339">網站不可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品</translation>
 <translation id="7513029293694390567">使用已儲存的憑證自動登入網站。如停用此功能，系統會在您每次登入網站前，要求您確認登入憑證。</translation>
 <translation id="7514239104543605883">複製至您的裝置</translation>
 <translation id="7514365320538308">下載</translation>

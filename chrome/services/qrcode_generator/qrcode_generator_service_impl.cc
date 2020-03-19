@@ -25,10 +25,6 @@ static const int kDinoTileSizePixels = 5;
 // Size of a QR locator, in modules.
 static const int kLocatorSizeModules = 7;
 
-// Maximum supported data length.
-// Will likely change with higher-supported versions.
-constexpr int kMaxInputLength = 512;
-
 QRCodeGeneratorServiceImpl::QRCodeGeneratorServiceImpl(
     mojo::PendingReceiver<mojom::QRCodeGeneratorService> receiver)
     : receiver_(this, std::move(receiver)) {
@@ -230,25 +226,29 @@ void QRCodeGeneratorServiceImpl::GenerateQRCode(
   mojom::GenerateQRCodeResponsePtr response =
       mojom::GenerateQRCodeResponse::New();
 
-  if (request->data.length() > kMaxInputLength) {
+  // TODO(skare): Use a higher QR code version to allow for more data.
+  // TODO(skare): cap string length with message in the UI.
+  if (request->data.length() > QRCodeGenerator::kInputBytes) {
     response->error_code = mojom::QRCodeGeneratorError::INPUT_TOO_LONG;
     std::move(callback).Run(std::move(response));
     return;
   }
 
-  // TODO(skare): Use a higher QR code vdersion. Until then, use kSize=29x29
-  // from the common encoder.
-  const gfx::Size qr_output_data_size = {29, 29};
-  // TODO(skare): cap string length with message in the UI.
-  uint8_t input[kMaxInputLength + 1] = {0};
-  base::strlcpy(reinterpret_cast<char*>(input), request->data.c_str(),
-                kMaxInputLength);
   QRCodeGenerator qr;
-  auto qr_data_span = qr.Generate(input);
+  auto qr_data_span = qr.Generate(base::span<const uint8_t>(
+      reinterpret_cast<const uint8_t*>(request->data.data()),
+      request->data.size()));
 
-  for (uint8_t i : qr_data_span) {
-    response->data.push_back(i);
+  // The least significant bit of each byte in |qr_data_span| is set if the tile
+  // should be black.
+  for (size_t i = 0; i < qr_data_span.size(); i++) {
+    qr_data_span[i] &= 1;
   }
+
+  const gfx::Size qr_output_data_size = {QRCodeGenerator::kSize,
+                                         QRCodeGenerator::kSize};
+  response->data.insert(response->data.begin(), qr_data_span.begin(),
+                        qr_data_span.end());
   response->data_size = qr_output_data_size;
   response->error_code = mojom::QRCodeGeneratorError::NONE;
   RenderBitmap(qr_data_span.data(), qr_output_data_size, request, &response);

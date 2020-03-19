@@ -99,7 +99,7 @@ void OnGetAppUrlHandlers(
 void FilterInstalledAppsForWin(
     std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
     blink::mojom::InstalledAppProvider::FilterInstalledAppsCallback callback,
-    RenderFrameHost* render_frame_host) {
+    const GURL frame_url) {
   if (!base::win::ScopedHString::ResolveCoreWinRTStringDelayload() ||
       !base::win::ResolveCoreWinRTDelayload()) {
     std::move(callback).Run(std::vector<blink::mojom::RelatedApplicationPtr>());
@@ -122,7 +122,6 @@ void FilterInstalledAppsForWin(
   }
 
   ComPtr<IUriRuntimeClass> url;
-  const GURL& frame_url = render_frame_host->GetLastCommittedURL();
   hr = url_factory->CreateUri(
       base::win::ScopedHString::Create(frame_url.spec()).get(), &url);
   if (FAILED(hr)) {

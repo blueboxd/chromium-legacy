@@ -130,8 +130,8 @@ NativeUnwinderMac::NativeUnwinderMac(ModuleCache* module_cache)
   GetSigtrampRange(&sigtramp_start_, &sigtramp_end_);
 }
 
-bool NativeUnwinderMac::CanUnwindFrom(const Frame* current_frame) const {
-  return current_frame->module && current_frame->module->IsNative();
+bool NativeUnwinderMac::CanUnwindFrom(const Frame& current_frame) const {
+  return current_frame.module && current_frame.module->IsNative();
 }
 
 UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,

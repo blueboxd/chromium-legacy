@@ -73,6 +73,7 @@ static_library("extractor") {
   ]
 
   deps = [
+    "//base",
     "//components/schema_org:generate_schema_org_code",
     "//components/schema_org:schema_org",
     "//components/schema_org:schema_org_properties",

@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -26,22 +27,14 @@ namespace {
 
 // Helpers ---------------------------------------------------------------------
 
-// Creates a timer event with a given |id| and |state|.
-mojom::AssistantAlarmTimerEventPtr CreateTimerEvent(
-    const std::string& id,
-    mojom::AssistantTimerState state) {
-  auto timer_data = mojom::AssistantTimer::New();
-  timer_data->timer_id = id;
-  timer_data->state = state;
-
-  auto alarm_timer_data = mojom::AlarmTimerData::New();
-  alarm_timer_data->set_timer_data(std::move(timer_data));
-
-  auto timer_event = mojom::AssistantAlarmTimerEvent::New();
-  timer_event->type = mojom::AssistantAlarmTimerEventType::kTimer;
-  timer_event->data = std::move(alarm_timer_data);
-
-  return timer_event;
+// Creates a timer with the specified |id| which is firing now.
+mojom::AssistantTimerPtr CreateFiringTimer(const std::string& id) {
+  mojom::AssistantTimerPtr timer = mojom::AssistantTimer::New();
+  timer->id = id;
+  timer->state = mojom::AssistantTimerState::kFired;
+  timer->fire_time = base::Time::Now();
+  timer->remaining_time = base::TimeDelta();
+  return timer;
 }
 
 // ScopedNotificationModelObserver ---------------------------------------------
@@ -165,8 +158,9 @@ TEST_F(AssistantAlarmTimerControllerTest, AddsAndUpdatesTimerNotification) {
     ScopedNotificationModelObserver notification_model_observer;
 
     // Fire a timer.
-    controller()->OnAlarmTimerStateChanged(
-        CreateTimerEvent(/*id=*/"1", mojom::AssistantTimerState::kFired));
+    std::vector<mojom::AssistantTimerPtr> timers;
+    timers.push_back(CreateFiringTimer(/*id=*/"1"));
+    controller()->OnTimerStateChanged(std::move(timers));
 
     // We expect our title to be internationalized.
     const std::string expected_title =

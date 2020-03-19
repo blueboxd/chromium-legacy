@@ -69,10 +69,14 @@ bool CrostiniUpgraderDialog::CanCloseDialog() const {
 }
 
 namespace {
-void RestartAndRunLaunchClosure(
-    base::WeakPtr<crostini::CrostiniManager> crostini_manager,
-    base::OnceClosure launch_closure) {
+void RunLaunchClosure(base::WeakPtr<crostini::CrostiniManager> crostini_manager,
+                      base::OnceClosure launch_closure,
+                      bool restart_required) {
   if (!crostini_manager) {
+    return;
+  }
+  if (!restart_required) {
+    std::move(launch_closure).Run();
     return;
   }
   crostini_manager->RestartCrostini(
@@ -102,9 +106,9 @@ void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
                             crostini::kCrostiniDefaultContainerName));
 
   upgrader_ui_ = static_cast<CrostiniUpgraderUI*>(webui->GetController());
-  upgrader_ui_->set_launch_closure(base::BindOnce(
-      &RestartAndRunLaunchClosure, crostini_manager->GetWeakPtr(),
-      std::move(launch_closure_)));
+  upgrader_ui_->set_launch_callback(
+      base::BindOnce(&RunLaunchClosure, crostini_manager->GetWeakPtr(),
+                     std::move(launch_closure_)));
   return SystemWebDialogDelegate::OnDialogShown(webui);
 }
 

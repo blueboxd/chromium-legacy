@@ -67,7 +67,7 @@ public final class ShareSheetCoordinatorTest {
 
         mThirdPartyPropertyModels =
                 new ArrayList<PropertyModel>(Arrays.asList(testModel1, testModel2));
-        Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(any(), any(), any()))
+        Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(any(), any()))
                 .thenReturn(mThirdPartyPropertyModels);
         Mockito.when(mPropertyModelBuilder.createPropertyModel(any(), any(), any(), anyBoolean()))
                 .thenCallRealMethod();

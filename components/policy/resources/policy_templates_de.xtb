@@ -4490,7 +4490,7 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="7937944288846766530">Mit dieser Richtlinie legen Sie fest, ob Nutzer Anfragen zur Installation von Erweiterungen für <ph name="PRODUCT_NAME" /> zur Bestätigung an die Google Admin-Konsole senden dürfen.
 
-      Wenn die Richtlinie "CloudReportingEnabled" deaktiviert oder nicht konfiguriert ist, wird sie ignoriert. Anfragen zur Installation von Erweiterungen können weder erstellt noch hochgeladen werden.
+      Wenn die Richtlinie "CloudReportingEnabled" deaktiviert oder nicht konfiguriert ist, wird diese Richtlinie ignoriert. Anfragen zur Installation von Erweiterungen können weder erstellt noch hochgeladen werden.
       Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, können Anfragen zur Installation von Erweiterungen weder erstellt noch hochgeladen werden.
       Wenn diese Richtlinie aktiviert ist, können Anfragen zur Installation von Erweiterungen erstellt und in der Google Admin-Konsole hochgeladen werden.
 

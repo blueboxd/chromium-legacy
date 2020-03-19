@@ -64,9 +64,8 @@ class AppBrowserController : public TabStripModelObserver,
   // Whether the browser should include the tab strip.
   virtual bool has_tab_strip() const;
 
-  // Whether the browser toolbar is present.
-  // Note: web app windows have their browser toolbar inline in their titlebar.
-  virtual bool HasTitlebarToolbar() const;
+  // Whether the browser should show the menu button in the toolbar.
+  virtual bool HasTitlebarMenuButton() const;
 
   // Whether to show app origin text in the titlebar toolbar.
   virtual bool HasTitlebarAppOriginText() const;

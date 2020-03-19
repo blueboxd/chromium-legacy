@@ -1739,6 +1739,41 @@ TEST_F(TabStripModelTest, AddWebContents_LinkOpensInSameGroupAsOpener) {
   ASSERT_TRUE(tabstrip.empty());
 }
 
+// Tests that a inserting a new ungrouped tab between two tabs in the same group
+// will add that new tab to the group.
+TEST_F(TabStripModelTest, AddWebContents_UngroupedTabDoesNotBreakContinuity) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  // Open two tabs and add them to a tab group.
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  tabstrip.AddWebContents(std::move(contents1), -1,
+                          ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                          TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  tabstrip.AddWebContents(std::move(contents2), -1,
+                          ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                          TabStripModel::ADD_ACTIVE);
+  ASSERT_EQ(2, tabstrip.count());
+  tab_groups::TabGroupId group_id = tabstrip.AddToNewGroup({0, 1});
+  ASSERT_EQ(tabstrip.GetTabGroupForTab(0), group_id);
+  ASSERT_EQ(tabstrip.GetTabGroupForTab(1), group_id);
+
+  // Open a new tab between the two tabs in a group and ensure the new tab is
+  // also in the group.
+  std::unique_ptr<WebContents> contents = CreateWebContents();
+  WebContents* raw_contents = contents.get();
+  tabstrip.AddWebContents(
+      std::move(contents), 1, ui::PAGE_TRANSITION_FIRST,
+      TabStripModel::ADD_ACTIVE | TabStripModel::ADD_FORCE_INDEX);
+  EXPECT_EQ(3, tabstrip.count());
+  ASSERT_EQ(1, tabstrip.GetIndexOfWebContents(raw_contents));
+  EXPECT_EQ(tabstrip.GetTabGroupForTab(1), group_id);
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
 // Added for http://b/issue?id=958960
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   TestTabStripModelDelegate delegate;

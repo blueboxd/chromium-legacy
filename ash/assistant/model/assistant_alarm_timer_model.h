@@ -7,7 +7,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "ash/public/mojom/assistant_controller.mojom-forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -15,20 +17,6 @@
 namespace ash {
 
 class AssistantAlarmTimerModelObserver;
-
-enum class AlarmTimerType {
-  kAlarm,
-  kTimer,
-};
-
-struct COMPONENT_EXPORT(ASSISTANT_MODEL) AlarmTimer {
-  std::string id;
-  AlarmTimerType type;
-  base::TimeTicks end_time;
-
-  // Returns true if this alarm/timer has expired.
-  bool expired() const { return base::TimeTicks::Now() >= end_time; }
-};
 
 // The model belonging to AssistantAlarmTimerController which tracks alarm/timer
 // state and notifies a pool of observers.
@@ -41,26 +29,35 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
   void AddObserver(AssistantAlarmTimerModelObserver* observer);
   void RemoveObserver(AssistantAlarmTimerModelObserver* observer);
 
-  // Adds the specified alarm/timer to the model.
-  void AddAlarmTimer(const AlarmTimer& alarm_timer);
+  // Adds or updates the timer specified by |timer.id| in the model.
+  void AddOrUpdateTimer(mojom::AssistantTimerPtr timer);
 
-  // Remove all alarms/timers from the model.
-  void RemoveAllAlarmsTimers();
+  // Removes the timer uniquely identified by |id|.
+  void RemoveTimer(const std::string& id);
 
-  // Returns the alarm/timer uniquely identified by |id|.
-  const AlarmTimer* GetAlarmTimerById(const std::string& id) const;
+  // Remove all timers from the model.
+  void RemoveAllTimers();
 
-  // Invoke to tick any alarms/timers and to notify observers of time remaining.
+  // Returns all timers from the model.
+  std::vector<const mojom::AssistantTimer*> GetAllTimers() const;
+
+  // Returns the timer uniquely identified by |id|.
+  const mojom::AssistantTimer* GetTimerById(const std::string& id) const;
+
+  // Invoke to tick any timers. Note that this will update the |remaining_time|
+  // for all timers in the model and trigger an OnTimerUpdated() event.
   void Tick();
 
- private:
-  void NotifyAlarmTimerAdded(const AlarmTimer& alarm_timer,
-                             const base::TimeDelta& time_remaining);
-  void NotifyAlarmsTimersTicked(
-      const std::map<std::string, base::TimeDelta>& times_remaining);
-  void NotifyAllAlarmsTimersRemoved();
+  // Returns |true| if the model contains no timers, |false| otherwise.
+  bool empty() const { return timers_.empty(); }
 
-  std::map<std::string, AlarmTimer> alarms_timers_;
+ private:
+  void NotifyTimerAdded(const mojom::AssistantTimer& timer);
+  void NotifyTimerUpdated(const mojom::AssistantTimer& timer);
+  void NotifyTimerRemoved(const mojom::AssistantTimer& timer);
+  void NotifyAllTimersRemoved();
+
+  std::map<std::string, mojom::AssistantTimerPtr> timers_;
 
   base::ObserverList<AssistantAlarmTimerModelObserver> observers_;
 

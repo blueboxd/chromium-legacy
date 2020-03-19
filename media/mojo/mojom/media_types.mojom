@@ -28,6 +28,10 @@ enum BufferingStateChangeReason;
 [Native]
 enum ChannelLayout;
 
+// See media/base/video_types.h for descriptions.
+[Native]
+enum ColorSpace;
+
 // See media/base/decode_status.h for descriptions.
 [Native]
 enum DecodeStatus;

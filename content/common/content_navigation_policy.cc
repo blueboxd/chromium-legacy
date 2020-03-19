@@ -39,9 +39,36 @@ bool IsBackForwardCacheEnabled() {
   return base::FeatureList::IsEnabled(features::kBackForwardCache);
 }
 
+const char kProactivelySwapBrowsingInstanceLevelParameterName[] = "level";
+
+constexpr base::FeatureParam<ProactivelySwapBrowsingInstanceLevel>::Option
+    proactively_swap_browsing_instance_levels[] = {
+        {ProactivelySwapBrowsingInstanceLevel::kDisabled, "Disabled"},
+        {ProactivelySwapBrowsingInstanceLevel::kCrossSiteSwapProcess,
+         "CrossSiteSwapProcess"},
+        {ProactivelySwapBrowsingInstanceLevel::kCrossSiteReuseProcess,
+         "CrossSiteReuseProcess"}};
+const base::FeatureParam<ProactivelySwapBrowsingInstanceLevel>
+    proactively_swap_browsing_instance_level{
+        &features::kProactivelySwapBrowsingInstance,
+        kProactivelySwapBrowsingInstanceLevelParameterName,
+        ProactivelySwapBrowsingInstanceLevel::kDisabled,
+        &proactively_swap_browsing_instance_levels};
+
+ProactivelySwapBrowsingInstanceLevel GetProactivelySwapBrowsingInstanceLevel() {
+  if (base::FeatureList::IsEnabled(features::kProactivelySwapBrowsingInstance))
+    return proactively_swap_browsing_instance_level.Get();
+  return ProactivelySwapBrowsingInstanceLevel::kDisabled;
+}
+
 bool IsProactivelySwapBrowsingInstanceEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kProactivelySwapBrowsingInstance);
+  return GetProactivelySwapBrowsingInstanceLevel() >=
+         ProactivelySwapBrowsingInstanceLevel::kCrossSiteSwapProcess;
+}
+
+bool IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled() {
+  return GetProactivelySwapBrowsingInstanceLevel() >=
+         ProactivelySwapBrowsingInstanceLevel::kCrossSiteReuseProcess;
 }
 
 bool IsRenderDocumentEnabled() {

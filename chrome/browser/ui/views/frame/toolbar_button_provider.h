@@ -52,7 +52,7 @@ class ToolbarButtonProvider {
 
   // Returns a bounding box for the find bar in widget coordinates given the
   // bottom of the contents container.
-  virtual gfx::Rect GetFindBarBoundingBox(int contents_bottom) const = 0;
+  virtual gfx::Rect GetFindBarBoundingBox(int contents_bottom) = 0;
 
   // Gives the toolbar focus.
   virtual void FocusToolbar() = 0;

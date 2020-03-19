@@ -824,7 +824,7 @@ AppMenuButton* ToolbarView::GetAppMenuButton() {
   return app_menu_button_;
 }
 
-gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_bottom) const {
+gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_bottom) {
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
     return gfx::Rect();
 

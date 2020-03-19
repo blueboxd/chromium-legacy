@@ -28,6 +28,7 @@ namespace chromecast {
 
 class CastWebViewFactory;
 class CastWindowManager;
+class LRURendererCache;
 
 // This class dispenses CastWebView objects which are used to wrap WebContents
 // in cast_shell. This class temporarily takes ownership of CastWebViews when
@@ -41,16 +42,16 @@ class CastWebService {
                  CastWindowManager* window_manager);
   ~CastWebService();
 
-  CastWebView::Scoped CreateWebView(
-      const CastWebView::CreateParams& params,
-      scoped_refptr<content::SiteInstance> site_instance,
-      const GURL& initial_url);
-
   CastWebView::Scoped CreateWebView(const CastWebView::CreateParams& params,
                                     const GURL& initial_url);
 
   std::unique_ptr<CastContentWindow> CreateWindow(
       const CastContentWindow::CreateParams& params);
+
+  content::BrowserContext* browser_context() { return browser_context_; }
+  LRURendererCache* overlay_renderer_cache() {
+    return overlay_renderer_cache_.get();
+  }
 
   void FlushDomLocalStorage();
 
@@ -67,6 +68,8 @@ class CastWebService {
   CastWebViewFactory* const web_view_factory_;
   CastWindowManager* const window_manager_;
   base::flat_set<std::unique_ptr<CastWebView>> web_views_;
+
+  const std::unique_ptr<LRURendererCache> overlay_renderer_cache_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtr<CastWebService> weak_ptr_;

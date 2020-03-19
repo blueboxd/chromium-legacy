@@ -386,7 +386,8 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
     if (extensions_container_)
       extensions_container_->OverrideIconColor(foreground_color_);
     page_action_icon_controller_->SetIconColor(foreground_color_);
-    web_app_menu_button_->SetColor(foreground_color_);
+    if (web_app_menu_button_)
+      web_app_menu_button_->SetColor(foreground_color_);
   }
 
   views::FlexRule GetFlexRule() const {
@@ -398,13 +399,16 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
     const auto* const layout =
         static_cast<views::FlexLayout*>(GetLayoutManager());
     return base::BindRepeating(
-        [](WebAppMenuButton* menu_button, views::FlexRule input_flex_rule,
-           const views::View* view, const views::SizeBounds& available_size) {
+        [](ToolbarButtonProvider* toolbar_button_provider,
+           views::FlexRule input_flex_rule, const views::View* view,
+           const views::SizeBounds& available_size) {
           const gfx::Size preferred = input_flex_rule.Run(view, available_size);
-          return gfx::Size(preferred.width(),
-                           menu_button->GetPreferredSize().height());
+          return gfx::Size(
+              preferred.width(),
+              toolbar_button_provider->GetToolbarButtonSize().height());
         },
-        base::Unretained(web_app_menu_button_), layout->GetDefaultFlexRule());
+        base::Unretained(toolbar_button_provider_),
+        layout->GetDefaultFlexRule());
   }
 
   ContentSettingsContainer* content_settings_container() {
@@ -459,7 +463,8 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
 
     if (web_app_origin_text_)
       web_app_origin_text_->StartFadeAnimation();
-    web_app_menu_button_->StartHighlightAnimation();
+    if (web_app_menu_button_)
+      web_app_menu_button_->StartHighlightAnimation();
     icon_fade_in_delay_.Start(FROM_HERE, OriginTotalDuration(), this,
                               &WebAppFrameToolbarView::ToolbarButtonContainer::
                                   FadeInContentSettingIcons);
@@ -652,24 +657,30 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
                                static_cast<int>(HTCLIENT));
   }
 
+  if (app_controller->HasTitlebarMenuButton()) {
 // TODO(crbug.com/998900): Create AppControllerUi class to contain this logic.
 #if defined(OS_CHROMEOS)
-  if (app_controller->UseTitlebarTerminalSystemAppMenu()) {
-    web_app_menu_button_ = AddChildView(
-        std::make_unique<TerminalSystemAppMenuButton>(browser_view_));
-  } else {
+    if (app_controller->UseTitlebarTerminalSystemAppMenu()) {
+      web_app_menu_button_ = AddChildView(
+          std::make_unique<TerminalSystemAppMenuButton>(browser_view_));
+    } else {
+      web_app_menu_button_ =
+          AddChildView(std::make_unique<WebAppMenuButton>(browser_view_));
+    }
+#else
     web_app_menu_button_ =
         AddChildView(std::make_unique<WebAppMenuButton>(browser_view_));
-  }
-#else
-  web_app_menu_button_ =
-      AddChildView(std::make_unique<WebAppMenuButton>(browser_view_));
 #endif
-  web_app_menu_button_->SetID(VIEW_ID_APP_MENU);
-  const bool is_browser_focus_mode = browser_view_->browser()->is_focus_mode();
-  SetInsetsForWebAppToolbarButton(web_app_menu_button_, is_browser_focus_mode);
-  web_app_menu_button_->SetProperty(views::kFlexBehaviorKey,
-                                    views::FlexSpecification());
+    web_app_menu_button_->SetID(VIEW_ID_APP_MENU);
+    const bool is_browser_focus_mode =
+        browser_view_->browser()->is_focus_mode();
+    SetInsetsForWebAppToolbarButton(web_app_menu_button_,
+                                    is_browser_focus_mode);
+    web_app_menu_button_->SetMinSize(
+        toolbar_button_provider_->GetToolbarButtonSize());
+    web_app_menu_button_->SetProperty(views::kFlexBehaviorKey,
+                                      views::FlexSpecification());
+  }
 
   browser_view_->immersive_mode_controller()->AddObserver(this);
   scoped_widget_observer_.Add(widget);
@@ -704,7 +715,6 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   DCHECK(browser_view_);
   DCHECK(web_app::AppBrowserController::IsForWebAppBrowser(
       browser_view_->browser()));
-
   SetID(VIEW_ID_WEB_APP_FRAME_TOOLBAR);
 
   {
@@ -738,7 +748,6 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
 
   right_container_ = AddChildView(
       std::make_unique<ToolbarButtonContainer>(widget, browser_view, this));
-  right_container_->web_app_menu_button()->SetMinSize(GetToolbarButtonSize());
   right_container_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(right_container_->GetFlexRule()).WithOrder(1));
@@ -844,18 +853,16 @@ AppMenuButton* WebAppFrameToolbarView::GetAppMenuButton() {
   return right_container_->web_app_menu_button();
 }
 
-gfx::Rect WebAppFrameToolbarView::GetFindBarBoundingBox(
-    int contents_bottom) const {
+gfx::Rect WebAppFrameToolbarView::GetFindBarBoundingBox(int contents_bottom) {
   if (!IsDrawn())
     return gfx::Rect();
 
   // If LTR find bar will be right aligned so align to right edge of app menu
   // button. Otherwise it will be left aligned so align to the left edge of the
   // app menu button.
-  const AppMenuButton* app_menu_button =
-      right_container_->web_app_menu_button();
+  views::View* anchor_view = GetAnchorView(PageActionIconType::kFind);
   gfx::Rect anchor_bounds =
-      app_menu_button->ConvertRectToWidget(app_menu_button->GetLocalBounds());
+      anchor_view->ConvertRectToWidget(anchor_view->GetLocalBounds());
   int x_pos = 0;
   int width = anchor_bounds.right();
   if (base::i18n::IsRTL()) {
@@ -875,7 +882,8 @@ views::AccessiblePaneView* WebAppFrameToolbarView::GetAsAccessiblePaneView() {
 }
 
 views::View* WebAppFrameToolbarView::GetAnchorView(PageActionIconType type) {
-  return GetAppMenuButton();
+  views::View* anchor = GetAppMenuButton();
+  return anchor ? anchor : this;
 }
 
 void WebAppFrameToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {

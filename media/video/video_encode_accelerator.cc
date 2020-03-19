@@ -11,6 +11,9 @@ namespace media {
 
 Vp8Metadata::Vp8Metadata()
     : non_reference(false), temporal_idx(0), layer_sync(false) {}
+Vp8Metadata::Vp8Metadata(const Vp8Metadata& other) = default;
+Vp8Metadata::Vp8Metadata(Vp8Metadata&& other) = default;
+Vp8Metadata::~Vp8Metadata() = default;
 
 BitstreamBufferMetadata::BitstreamBufferMetadata()
     : payload_size_bytes(0), key_frame(false) {}

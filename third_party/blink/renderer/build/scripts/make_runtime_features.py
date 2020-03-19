@@ -62,18 +62,6 @@ class BaseRuntimeFeatureWriter(json5_generator.Writer):
                 feature['name']) in origin_trial_set
             feature['data_member_name'] = self._data_member_name(
                 feature['name'])
-            # Most features just check their is_foo_enabled_ bool
-            # but some depend on or are implied by other bools.
-            enabled_condition = feature['data_member_name']
-            assert not feature['implied_by'] or not feature[
-                'depends_on'], 'Only one of implied_by and depends_on is allowed'
-            for implied_by_name in feature['implied_by']:
-                enabled_condition += ' || ' + self._data_member_name(
-                    implied_by_name)
-            for dependant_name in feature['depends_on']:
-                enabled_condition += ' && ' + self._data_member_name(
-                    dependant_name)
-            feature['enabled_condition'] = enabled_condition
             # If 'status' is a dict, add the values for all the not-mentioned platforms too.
             if isinstance(feature['status'], dict):
                 feature['status'] = self._status_with_all_platforms(

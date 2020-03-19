@@ -36,7 +36,7 @@ struct GlobalRequestID;
 namespace mojom {
 class FrameRenderDataUpdate;
 class PageLoadFeatures;
-class PageLoadMetadata;
+class FrameMetadata;
 class PageLoadTiming;
 }  // namespace mojom
 
@@ -92,8 +92,8 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing,
                                content::RenderFrameHost* rfh);
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
-                                       const mojom::PageLoadMetadata& metadata);
-  void SimulateMetadataUpdate(const mojom::PageLoadMetadata& metadata,
+                                       const mojom::FrameMetadata& metadata);
+  void SimulateMetadataUpdate(const mojom::FrameMetadata& metadata,
                               content::RenderFrameHost* rfh);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
   void SimulateResourceDataUseUpdate(
@@ -161,7 +161,7 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
  private:
   void SimulatePageLoadTimingUpdate(
       const mojom::PageLoadTiming& timing,
-      const mojom::PageLoadMetadata& metadata,
+      const mojom::FrameMetadata& metadata,
       const mojom::PageLoadFeatures& new_features,
       const mojom::FrameRenderDataUpdate& render_data,
       const mojom::CpuTiming& cpu_timing,

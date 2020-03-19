@@ -506,6 +506,11 @@
              "--force-high-contrast"]
   },
   {
+    "prefix": "eye-dropper",
+    "bases": ["virtual/controls-refresh/color-scheme/color"],
+    "args": ["--enable-features=FormControlsRefresh,EyeDropper"]
+  },
+  {
     "prefix": "use-common-select-popup",
     "bases": ["virtual/controls-refresh/color-scheme/select"],
     "args": ["--enable-features=UseCommonSelectPopup"]

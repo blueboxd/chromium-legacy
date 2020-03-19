@@ -395,7 +395,6 @@ void MenuListSelectType::DidBlur() {
   DispatchEventsIfSelectedOptionChanged();
   if (PopupIsVisible())
     HidePopup();
-  SelectType::DidBlur();
 }
 
 void MenuListSelectType::DidSetSuggestedOption(HTMLOptionElement*) {
@@ -551,7 +550,7 @@ class PopupUpdater : public MutationObserver::Delegate {
   }
 
   ExecutionContext* GetExecutionContext() const override {
-    return select_->GetDocument().ToExecutionContext();
+    return select_->GetExecutionContext();
   }
 
   void Deliver(const MutationRecordVector& records,
@@ -613,12 +612,14 @@ class ListBoxSelectType final : public SelectType {
  public:
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
   bool DefaultEventHandler(const Event& event) override;
+  void DidBlur() override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SaveLastSelection() override;
   void SelectAll() override;
   void SaveListboxActiveSelection() override;
   void HandleMouseRelease() override;
   void ListBoxOnChange() override;
+  void ClearLastOnChangeSelection() override;
 
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
@@ -636,6 +637,7 @@ class ListBoxSelectType final : public SelectType {
   void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
 
   Vector<bool> cached_state_for_active_selection_;
+  Vector<bool> last_on_change_selection_;
   bool is_in_non_contiguous_selection_ = false;
   bool active_selection_state_ = false;
 };
@@ -711,7 +713,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       }
     }
     // Mousedown didn't happen in this element.
-    if (select_->last_on_change_selection_.IsEmpty())
+    if (last_on_change_selection_.IsEmpty())
       return false;
 
     if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
@@ -894,17 +896,21 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   return false;
 }
 
+void ListBoxSelectType::DidBlur() {
+  ClearLastOnChangeSelection();
+}
+
 void ListBoxSelectType::DidSetSuggestedOption(HTMLOptionElement* option) {
   if (select_->GetLayoutObject())
     select_->ScrollToOption(option);
 }
 
 void ListBoxSelectType::SaveLastSelection() {
-  select_->last_on_change_selection_.clear();
+  last_on_change_selection_.clear();
   for (auto& element : select_->GetListItems()) {
     auto* option_element = DynamicTo<HTMLOptionElement>(element.Get());
-    select_->last_on_change_selection_.push_back(option_element &&
-                                                 option_element->Selected());
+    last_on_change_selection_.push_back(option_element &&
+                                        option_element->Selected());
   }
 }
 
@@ -1072,7 +1078,7 @@ void ListBoxSelectType::SaveListboxActiveSelection() {
 
 void ListBoxSelectType::HandleMouseRelease() {
   // We didn't start this click/drag on any options.
-  if (select_->last_on_change_selection_.IsEmpty())
+  if (last_on_change_selection_.IsEmpty())
     return;
   ListBoxOnChange();
 }
@@ -1083,8 +1089,8 @@ void ListBoxSelectType::ListBoxOnChange() {
   // If the cached selection list is empty, or the size has changed, then fire
   // 'change' event, and return early.
   // FIXME: Why? This looks unreasonable.
-  if (select_->last_on_change_selection_.IsEmpty() ||
-      select_->last_on_change_selection_.size() != items.size()) {
+  if (last_on_change_selection_.IsEmpty() ||
+      last_on_change_selection_.size() != items.size()) {
     select_->DispatchChangeEvent();
     return;
   }
@@ -1095,15 +1101,19 @@ void ListBoxSelectType::ListBoxOnChange() {
     HTMLElement* element = items[i];
     auto* option_element = DynamicTo<HTMLOptionElement>(element);
     bool selected = option_element && option_element->Selected();
-    if (selected != select_->last_on_change_selection_[i])
+    if (selected != last_on_change_selection_[i])
       fire_on_change = true;
-    select_->last_on_change_selection_[i] = selected;
+    last_on_change_selection_[i] = selected;
   }
 
   if (fire_on_change) {
     select_->DispatchInputEvent();
     select_->DispatchChangeEvent();
   }
+}
+
+void ListBoxSelectType::ClearLastOnChangeSelection() {
+  last_on_change_selection_.clear();
 }
 
 // ============================================================================
@@ -1130,10 +1140,6 @@ void SelectType::DidSelectOption(HTMLOptionElement*,
                                  bool) {
   select_->ScrollToSelection();
   select_->SetNeedsValidityCheck();
-}
-
-void SelectType::DidBlur() {
-  select_->last_on_change_selection_.clear();
 }
 
 void SelectType::DidDetachLayoutTree() {}
@@ -1165,6 +1171,8 @@ void SelectType::SaveListboxActiveSelection() {}
 void SelectType::HandleMouseRelease() {}
 
 void SelectType::ListBoxOnChange() {}
+
+void SelectType::ClearLastOnChangeSelection() {}
 
 void SelectType::ShowPopup() {
   NOTREACHED();

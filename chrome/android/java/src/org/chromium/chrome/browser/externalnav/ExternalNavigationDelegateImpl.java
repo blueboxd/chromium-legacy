@@ -48,8 +48,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.webapps.WebappActivity;
-import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
@@ -215,31 +213,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return willChromeHandleIntent(intent, false);
     }
 
-    /**
-     * If the current activity is a webapp, applies the webapp's scope policy and returns the
-     * result. Returns {@link WebappScopePolicy#NavigationDirective#NORMAL_BEHAVIOR} if the current
-     * activity is not a webapp.
-     * Protected to allow subclasses to customize the logic.
-     */
-    protected @WebappScopePolicy.NavigationDirective int applyWebappScopePolicyForUrl(String url) {
-        Context context = getAvailableContext();
-        if (context instanceof WebappActivity) {
-            WebappActivity webappActivity = (WebappActivity) context;
-            return WebappScopePolicy.applyPolicyForNavigationToUrl(
-                    webappActivity.scopePolicy(), webappActivity.getWebappInfo(), url);
-        }
-        return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
-    }
-
-    // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
     @Override
-    public boolean shouldStayInWebapp(ExternalNavigationParams params) {
-        @WebappScopePolicy.NavigationDirective
-        int webappScopePolicyDirective = applyWebappScopePolicyForUrl(params.getUrl());
-        if (webappScopePolicyDirective
-                == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS) {
-            return true;
-        }
+    public boolean shouldDisableExternalIntentRequestsForUrl(String url) {
         return false;
     }
 

@@ -140,6 +140,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
     return process_reuse_policy_;
   }
 
+  // Checks if |current_process| can be reused for this SiteInstance, and
+  // sets |process_| to |current_process| if so.
+  void ReuseCurrentProcessIfPossible(RenderProcessHost* current_process);
+
   // Whether the SiteInstance is created for a service worker. If this flag
   // is true, when a new process is created for this SiteInstance or a randomly
   // chosen existing process is reused because of the process limit, the process
@@ -376,6 +380,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // method should only be called by code that need to set the site and
   // lock directly without any "url to site URL" transformation.
   void SetSiteAndLockInternal(const GURL& site_url, const GURL& lock_url);
+
+  // Helper method to set the process of this SiteInstance, only in cases
+  // where it is safe. It is not generally safe to change the process of a
+  // SiteInstance, unless the RenderProcessHost itself is entirely destroyed and
+  // a new one later replaces it.
+  void SetProcessInternal(RenderProcessHost* process);
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.

@@ -37,6 +37,10 @@ luci.console_view(
             category = 'rbe|tot|win|rel',
         ),
         luci.console_view_entry(
+            builder = 'goma/Chromium iOS Goma RBE ToT',
+            category = 'rbe|tot|ios|rel',
+        ),
+        luci.console_view_entry(
             builder = 'goma/Chromium Android ARM 32-bit Goma RBE ToT',
             category = 'rbe|tot|android arm|rel',
         ),

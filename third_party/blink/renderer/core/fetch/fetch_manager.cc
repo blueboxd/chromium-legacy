@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
@@ -227,7 +228,6 @@ class FetchManager::Loader final
   void PerformDataFetch();
   void Failed(const String& message);
   void NotifyFinished();
-  Document* GetDocument() const;
   ExecutionContext* GetExecutionContext() { return execution_context_; }
 
   Member<FetchManager> fetch_manager_;
@@ -520,11 +520,11 @@ void FetchManager::Loader::DidFinishLoading(uint64_t) {
 
   finished_ = true;
 
-  if (GetDocument() && GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->GetPage() &&
+  auto* window = DynamicTo<LocalDOMWindow>(execution_context_.Get());
+  if (window && window->GetFrame() &&
       cors::IsOkStatus(response_http_status_code_)) {
-    GetDocument()->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
-        GetDocument()->GetFrame());
+    window->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
+        window->GetFrame());
   }
   NotifyFinished();
 }
@@ -535,10 +535,6 @@ void FetchManager::Loader::DidFail(const ResourceError& error) {
 
 void FetchManager::Loader::DidFailRedirectCheck() {
   Failed(String());
-}
-
-Document* FetchManager::Loader::GetDocument() const {
-  return Document::DynamicFrom(execution_context_.Get());
 }
 
 void FetchManager::Loader::Start(ExceptionState& exception_state) {

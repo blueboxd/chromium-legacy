@@ -154,6 +154,7 @@ Refer to README.md for content description and update process.
  <item id="logo_service" hash_code="35473769" type="0" content_hash_code="20271299" os_list="linux,windows" file_path="components/search_provider_logos/logo_service_impl.cc"/>
  <item id="logo_tracker" hash_code="36859107" type="0" deprecated="2018-12-07" content_hash_code="67588075" file_path=""/>
  <item id="lookup_single_password_leak" hash_code="16927377" type="0" content_hash_code="12158296" os_list="linux,windows" file_path="components/password_manager/core/browser/leak_detection/leak_detection_request.cc"/>
+ <item id="media_feeds" hash_code="116778918" type="0" content_hash_code="48909601" os_list="linux,windows" file_path="chrome/browser/media/feeds/media_feeds_fetcher.cc"/>
  <item id="media_router_global_media_controls_image" hash_code="95983790" type="0" content_hash_code="48851217" os_list="linux,windows" file_path="chrome/browser/ui/global_media_controls/cast_media_notification_item.cc"/>
  <item id="metrics_report_ukm" hash_code="727478" type="0" content_hash_code="8746987" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
  <item id="metrics_report_uma" hash_code="727528" type="0" content_hash_code="10176197" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>

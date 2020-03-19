@@ -72,6 +72,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
                  base::span<const uint8_t> data) override;
+  void SendMessage(mojom::WebSocketMessageType type,
+                   uint64_t data_length) override;
   void StartReceiving() override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
@@ -116,6 +118,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
     DISALLOW_COPY_AND_ASSIGN(UnownedPointer);
   };
 
+  struct DataFrame final {
+    DataFrame(mojom::WebSocketMessageType type, uint64_t data_length)
+        : type(type), data_length(data_length) {}
+    mojom::WebSocketMessageType type;
+    uint64_t data_length;
+  };
+
   void OnConnectionError(const base::Location& set_from);
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
@@ -149,6 +158,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void OnWritable(MojoResult result, const mojo::HandleSignalsState& state);
   void SendPendingDataFrames();
   void SendDataFrame(base::span<const char>* data_span);
+
+  // Datapipe functions to send.
+  void OnReadable(MojoResult result, const mojo::HandleSignalsState& state);
+  void ReadAndSendFromDataPipe();
 
   // |factory_| owns |this|.
   WebSocketFactory* const factory_;
@@ -188,6 +201,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::SimpleWatcher writable_watcher_;
   base::queue<base::span<const char>> pending_data_frames_;
   bool wait_for_writable_ = false;
+
+  // Datapipe fields to send.
+  mojo::ScopedDataPipeConsumerHandle readable_;
+  mojo::SimpleWatcher readable_watcher_;
+  base::queue<DataFrame> pending_send_data_frames_;
+  bool wait_for_readable_ = false;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

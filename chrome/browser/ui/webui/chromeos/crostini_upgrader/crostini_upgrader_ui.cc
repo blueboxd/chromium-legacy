@@ -144,7 +144,7 @@ void CrostiniUpgraderUI::CreatePageHandler(
       // |this|.
       base::BindOnce(&CrostiniUpgraderUI::OnWebUICloseDialog,
                      base::Unretained(this)),
-      std::move(launch_closure_));
+      std::move(launch_callback_));
 }
 
 void CrostiniUpgraderUI::OnWebUICloseDialog() {

@@ -622,7 +622,7 @@ bool NavigateToURL(WebContents* web_contents,
 }
 
 bool NavigateIframeToURL(WebContents* web_contents,
-                         std::string iframe_id,
+                         const std::string& iframe_id,
                          const GURL& url) {
   std::string script = base::StringPrintf(
       "setTimeout(\""

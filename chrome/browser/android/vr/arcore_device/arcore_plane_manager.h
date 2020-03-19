@@ -16,6 +16,7 @@
 namespace device {
 
 class ArCoreImpl;
+class ArCoreAnchorManager;
 
 using PlaneId = util::IdTypeU64<class PlaneTag>;
 
@@ -55,8 +56,9 @@ class ArCorePlaneManager {
 
   // Creates Anchor object given a plane ID. This is needed since Plane objects
   // are managed by this class in its entirety and are not accessible outside
-  // it.
+  // it. Callable only from ArCoreAnchorManager.
   device::internal::ScopedArCoreObject<ArAnchor*> CreateAnchor(
+      util::PassKey<ArCoreAnchorManager> pass_key,
       PlaneId id,
       const device::mojom::Pose& pose) const;
 

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -887,8 +888,8 @@ std::unique_ptr<TracedValue> inspector_mark_resource_cached_event::Data(
 }
 
 static LocalFrame* FrameForExecutionContext(ExecutionContext* context) {
-  if (auto* document = Document::DynamicFrom(context))
-    return document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(context))
+    return window->GetFrame();
   return nullptr;
 }
 
@@ -932,9 +933,8 @@ std::unique_ptr<TracedValue> inspector_animation_frame_event::Data(
     int callback_id) {
   auto value = std::make_unique<TracedValue>();
   value->SetInteger("id", callback_id);
-  if (auto* document = Document::DynamicFrom(context)) {
-    value->SetString("frame",
-                     IdentifiersFactory::FrameId(document->GetFrame()));
+  if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
+    value->SetString("frame", IdentifiersFactory::FrameId(window->GetFrame()));
   } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
     value->SetString("worker", ToHexString(scope));
   }

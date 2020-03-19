@@ -66,6 +66,16 @@ constexpr base::TimeDelta kNudgeShowAnimationDuration =
 constexpr base::TimeDelta kNudgeHideAnimationDuration =
     base::TimeDelta::FromMilliseconds(400);
 
+// Duration for the animation to fade out the suggestion label and circle when
+// the back nudge showing animation is interrupted and should be dismissed.
+constexpr base::TimeDelta kSuggestionDismissDuration =
+    base::TimeDelta::FromMilliseconds(100);
+
+// Duration for the animation to fade out the gradient layer when the back nudge
+// showing animation is interrupted and should be dismissed.
+constexpr base::TimeDelta kDarkGradientDismissDuration =
+    base::TimeDelta::FromMilliseconds(200);
+
 // Duration for the animation of the suggestion part of the nudge.
 constexpr base::TimeDelta kSuggestionBounceAnimationDuration =
     base::TimeDelta::FromMilliseconds(600);
@@ -109,6 +119,7 @@ class BackGestureContextualNudge::ContextualNudgeView
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
+    gradient_view_ = AddChildView(std::make_unique<GradientView>(this));
     suggestion_view_ = AddChildView(std::make_unique<SuggestionView>(this));
 
     show_timer_.Start(
@@ -141,13 +152,8 @@ class BackGestureContextualNudge::ContextualNudgeView
       suggestion_view_->layer()->GetAnimator()->AbortAllAnimations();
 
       animation_stage_ = AnimationStage::kFadingOut;
-      ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-      animation.SetTransitionDuration(kNudgeHideAnimationDuration);
-      animation.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
-      animation.SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      animation.AddObserver(this);
-      layer()->SetOpacity(0.f);
+      gradient_view_->FadeOutForDismiss();
+      suggestion_view_->FadeOutForDismiss();
     }
   }
 
@@ -211,6 +217,17 @@ class BackGestureContextualNudge::ContextualNudgeView
       layer()->SetTransform(transform);
     }
 
+    // Called when the in-progress animation is cancelled. The suggestion view
+    // will fade out.
+    void FadeOutForDismiss() {
+      ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+      animation.SetTransitionDuration(kSuggestionDismissDuration);
+      animation.SetTweenType(gfx::Tween::LINEAR);
+      animation.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      layer()->SetOpacity(0.f);
+    }
+
    private:
     // views::View:
     void Layout() override {
@@ -254,6 +271,48 @@ class BackGestureContextualNudge::ContextualNudgeView
     ContextualNudgeView* nudge_view_ = nullptr;  // Not owned.
   };
 
+  // Used to show the gradient layer of the back gesture contextual nudge.
+  class GradientView : public views::View {
+   public:
+    explicit GradientView(ContextualNudgeView* nudge_view)
+        : nudge_view_(nudge_view) {
+      SetPaintToLayer();
+      layer()->SetFillsBoundsOpaquely(false);
+    }
+    GradientView(const GradientView&) = delete;
+    GradientView& operator=(const GradientView&) = delete;
+    ~GradientView() override = default;
+
+    // This is called when the nudge animation is cancelled. The gradient
+    // view will fade out.
+    void FadeOutForDismiss() {
+      ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+      animation.SetTransitionDuration(kDarkGradientDismissDuration);
+      animation.SetTweenType(gfx::Tween::LINEAR);
+      animation.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      animation.AddObserver(nudge_view_);
+      layer()->SetOpacity(0.f);
+    }
+
+    // views::View:
+    void OnPaint(gfx::Canvas* canvas) override {
+      views::View::OnPaint(canvas);
+
+      // Draw the gradient background.
+      cc::PaintFlags flags;
+      flags.setAntiAlias(true);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      flags.setShader(gfx::CreateGradientShader(
+          gfx::Point(), gfx::Point(width(), 0), kBackgroundStartColor,
+          kBackgroundEndColor));
+      canvas->DrawRect(gfx::Rect(size()), flags);
+    }
+
+   private:
+    ContextualNudgeView* nudge_view_ = nullptr;  // Not owned
+  };
+
   // Showing contextual nudge from off screen to its start position.
   void ScheduleOffScreenToStartPositionAnimation() {
     animation_stage_ = AnimationStage::kSlidingIn;
@@ -281,23 +340,11 @@ class BackGestureContextualNudge::ContextualNudgeView
   // views::View:
   void Layout() override {
     gfx::Rect rect = GetLocalBounds();
+    gradient_view_->SetBoundsRect(rect);
+
     rect.ClampToCenteredSize(gfx::Size(kBackgroundWidth, kBackgroundWidth));
     rect.set_x(-kCircleRadius);
     suggestion_view_->SetBoundsRect(rect);
-  }
-
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    views::View::OnPaint(canvas);
-
-    // Draw the gradient background.
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setShader(
-        gfx::CreateGradientShader(gfx::Point(), gfx::Point(width(), 0),
-                                  kBackgroundStartColor, kBackgroundEndColor));
-    canvas->DrawRect(gfx::Rect(size()), flags);
   }
 
   // ui::ImplicitAnimationObserver:
@@ -317,6 +364,9 @@ class BackGestureContextualNudge::ContextualNudgeView
       suggestion_view_->ScheduleBounceAnimation();
     }
   }
+
+  // Owned by views hierarchy.
+  GradientView* gradient_view_ = nullptr;
 
   // Created by ContextualNudgeView. Owned by views hierarchy.
   SuggestionView* suggestion_view_ = nullptr;

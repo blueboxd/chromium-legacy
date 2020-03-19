@@ -1638,6 +1638,20 @@
       name: "SystemWakeLock",
       status: "experimental",
     },
+    // For unit tests.
+    {
+      name: "TestFeature",
+    },
+    // For unit tests.
+    {
+      name: "TestFeatureDependent",
+      depends_on: ["TestFeatureImplied"],
+    },
+    // For unit tests.
+    {
+      name: "TestFeatureImplied",
+      implied_by: ["TestFeature"],
+    },
     {
       name: "TextDetector",
       status: "experimental",

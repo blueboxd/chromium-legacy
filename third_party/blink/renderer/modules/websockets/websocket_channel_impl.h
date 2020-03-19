@@ -119,7 +119,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
       mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
           client_receiver,
       network::mojom::blink::WebSocketHandshakeResponsePtr,
-      mojo::ScopedDataPipeConsumerHandle readable) override;
+      mojo::ScopedDataPipeConsumerHandle readable,
+      mojo::ScopedDataPipeProducerHandle writable) override;
 
   // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
@@ -264,6 +265,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   mojo::ScopedDataPipeConsumerHandle readable_;
   mojo::SimpleWatcher readable_watcher_;
   WTF::Deque<DataFrame> pending_data_frames_;
+
+  mojo::ScopedDataPipeProducerHandle writable_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 };

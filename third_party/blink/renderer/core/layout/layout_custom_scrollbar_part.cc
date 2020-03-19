@@ -235,7 +235,7 @@ void LayoutCustomScrollbarPart::StyleDidChange(StyleDifference diff,
   SetInline(false);
   ClearPositionedState();
   SetFloating(false);
-  if (old_style && (diff.NeedsFullPaintInvalidation() || diff.NeedsLayout()))
+  if (old_style && (diff.NeedsPaintInvalidation() || diff.NeedsLayout()))
     SetNeedsPaintInvalidation();
 }
 

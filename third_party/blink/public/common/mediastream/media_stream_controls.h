@@ -24,7 +24,7 @@ BLINK_COMMON_EXPORT extern const char
 struct BLINK_COMMON_EXPORT TrackControls {
   TrackControls();
   explicit TrackControls(bool request, mojom::MediaStreamType type);
-  TrackControls(const TrackControls& other);
+  explicit TrackControls(const TrackControls& other);
   ~TrackControls();
 
   bool requested = false;

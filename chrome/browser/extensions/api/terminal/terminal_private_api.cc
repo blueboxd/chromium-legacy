@@ -284,6 +284,13 @@ void TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted(
     int tab_id,
     const std::vector<std::string>& arguments,
     crostini::CrostiniResult result) {
+  if (crostini::MaybeShowCrostiniDialogBeforeLaunch(
+          Profile::FromBrowserContext(browser_context()), result)) {
+    const std::string msg = "Waiting for component update dialog response";
+    LOG(ERROR) << msg;
+    Respond(Error(msg));
+    return;
+  }
   startup_status->OnCrostiniRestarted(result);
   if (result == crostini::CrostiniResult::SUCCESS) {
     OpenProcess(user_id_hash, tab_id, arguments);
@@ -292,14 +299,6 @@ void TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted(
         base::StringPrintf("Error starting crostini for terminal: %d", result);
     LOG(ERROR) << msg;
     Respond(Error(msg));
-
-    // Special handling to update terminal component.
-    if (result == crostini::CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED ||
-        result == crostini::CrostiniResult::LOAD_COMPONENT_FAILED) {
-      ShowCrostiniUpdateComponentView(
-          Profile::FromBrowserContext(browser_context()),
-          crostini::CrostiniUISurface::kAppList);
-    }
   }
 }
 
@@ -328,7 +327,6 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(
   chromeos::ProcessProxyRegistry* registry =
       chromeos::ProcessProxyRegistry::Get();
   const base::CommandLine cmdline{arguments};
-
   std::string terminal_id;
   bool success = registry->OpenProcess(cmdline, user_id_hash, output_callback,
                                        &terminal_id);

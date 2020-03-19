@@ -162,7 +162,7 @@ void SVGResourcesCache::ClientStyleChanged(LayoutObject& layout_object,
   // If this layoutObject is the child of ResourceContainer and it require
   // repainting that changes of CSS properties such as 'visibility',
   // request repainting.
-  needs_layout |= diff.NeedsFullPaintInvalidation() &&
+  needs_layout |= diff.NeedsPaintInvalidation() &&
                   IsLayoutObjectOfResourceContainer(layout_object);
 
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(

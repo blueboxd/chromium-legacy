@@ -129,7 +129,7 @@ String CreateShorthandValue(Document* document,
   auto* rule = To<CSSStyleRule>(style_sheet->item(0));
   CSSStyleDeclaration* style = rule->style();
   DummyExceptionStateForTesting exception_state;
-  style->setProperty(document->ToExecutionContext(), longhand, new_value,
+  style->setProperty(document->GetExecutionContext(), longhand, new_value,
                      style->getPropertyPriority(longhand), exception_state);
   return style->getPropertyValue(shorthand);
 }
@@ -1137,8 +1137,7 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
     const CSSProperty& property_class =
         CSSProperty::Get(resolveCSSPropertyID(property_id));
-    if (!property_class.IsWebExposed(
-            node->GetDocument().ToExecutionContext()) ||
+    if (!property_class.IsWebExposed(node->GetExecutionContext()) ||
         property_class.IsShorthand() || !property_class.IsProperty())
       continue;
     (*style)->emplace_back(
@@ -2082,7 +2081,7 @@ InspectorCSSAgent::BuildObjectForAttributesStyle(Element* element) {
 
   InspectorStyle* inspector_style = MakeGarbageCollected<InspectorStyle>(
       mutable_attribute_style->EnsureCSSStyleDeclaration(
-          element->GetDocument().ToExecutionContext()),
+          element->GetExecutionContext()),
       nullptr, nullptr);
   return inspector_style->BuildObjectForStyle();
 }
@@ -2207,17 +2206,16 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   if (element->GetPseudoId())
     return Response::Error("Elements is pseudo");
 
-  Document* owner_document = element->ownerDocument();
-  if (!owner_document->IsActive())
+  if (!element->ownerDocument()->IsActive())
     return Response::Error("Can't edit a node from a non-active document");
 
   CSSPropertyID property =
-      cssPropertyID(owner_document->ToExecutionContext(), property_name);
+      cssPropertyID(element->GetExecutionContext(), property_name);
   if (!isValidCSSPropertyID(property))
     return Response::Error("Invalid property name");
 
   CSSPropertyID property_id =
-      cssPropertyID(owner_document->ToExecutionContext(), property_name);
+      cssPropertyID(element->GetExecutionContext(), property_name);
   const CSSProperty& property_class = CSSProperty::Get(property_id);
   CSSStyleDeclaration* style =
       FindEffectiveDeclaration(property_class, MatchingStyles(element));

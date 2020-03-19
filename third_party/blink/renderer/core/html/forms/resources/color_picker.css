@@ -45,10 +45,31 @@ hue-slider {
 }
 
 eye-dropper {
+  border-radius: 2px;
   height: 32px;
   margin-left: 2%;
   position: relative;
   width: 32px;
+}
+
+eye-dropper.hidden {
+  visibility: hidden;
+}
+
+eye-dropper:not(.selected):hover {
+  background-color: #F7F7F7;
+}
+
+eye-dropper.selected {
+  background-color: #CECECE;
+}
+
+eye-dropper > svg {
+  height: 16px;
+  left: 25%;
+  position: absolute;
+  top: 25%;
+  width: 16px;
 }
 
 color-viewer {

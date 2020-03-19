@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 
 class IntersectionObserverController
     : public GarbageCollected<IntersectionObserverController>,
@@ -25,7 +25,7 @@ class IntersectionObserverController
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 
  public:
-  explicit IntersectionObserverController(Document*);
+  explicit IntersectionObserverController(ExecutionContext*);
   virtual ~IntersectionObserverController();
 
   void ScheduleIntersectionObserverForDelivery(IntersectionObserver&);

@@ -24,7 +24,7 @@ class V8Unwinder : public base::Unwinder {
   // Unwinder:
   void OnStackCapture() override;
   void UpdateModules(base::ModuleCache* module_cache) override;
-  bool CanUnwindFrom(const base::Frame* current_frame) const override;
+  bool CanUnwindFrom(const base::Frame& current_frame) const override;
   base::UnwindResult TryUnwind(base::RegisterContext* thread_context,
                                uintptr_t stack_top,
                                base::ModuleCache* module_cache,

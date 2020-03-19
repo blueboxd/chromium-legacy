@@ -403,8 +403,7 @@ TEST(V8UnwinderTest, CanUnwindFrom_V8Module) {
   const base::ModuleCache::Module* module = module_cache.GetModuleForAddress(1);
   ASSERT_NE(nullptr, module);
 
-  base::Frame frame{1, module};
-  EXPECT_TRUE(unwinder.CanUnwindFrom(&frame));
+  EXPECT_TRUE(unwinder.CanUnwindFrom({1, module}));
 }
 
 TEST(V8UnwinderTest, CanUnwindFrom_OtherModule) {
@@ -420,8 +419,7 @@ TEST(V8UnwinderTest, CanUnwindFrom_OtherModule) {
   const base::ModuleCache::Module* other_module_ptr = other_module.get();
   module_cache.AddCustomNativeModule(std::move(other_module));
 
-  base::Frame frame{1, other_module_ptr};
-  EXPECT_FALSE(unwinder.CanUnwindFrom(&frame));
+  EXPECT_FALSE(unwinder.CanUnwindFrom({1, other_module_ptr}));
 }
 
 TEST(V8UnwinderTest, CanUnwindFrom_NullModule) {
@@ -434,8 +432,7 @@ TEST(V8UnwinderTest, CanUnwindFrom_NullModule) {
   unwinder.OnStackCapture();
   unwinder.UpdateModules(&module_cache);
 
-  base::Frame frame{20, nullptr};
-  EXPECT_FALSE(unwinder.CanUnwindFrom(&frame));
+  EXPECT_FALSE(unwinder.CanUnwindFrom({20, nullptr}));
 }
 
 // Checks that unwinding from C++ through JavaScript and back into C++ succeeds.

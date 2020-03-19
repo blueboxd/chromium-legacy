@@ -301,8 +301,7 @@ void FtlSignalStrategy::Core::OnReceiveMessagesStreamClosed(
     const grpc::Status& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (status.error_code() == grpc::StatusCode::CANCELLED) {
-    // Stream is canceled by calling Disconnect().
-    return;
+    LOG(WARNING) << "ReceiveMessages stream closed with CANCELLED code.";
   }
   DCHECK(!status.ok());
   HandleGrpcStatusError(FROM_HERE, status);

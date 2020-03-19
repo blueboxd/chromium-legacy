@@ -52,7 +52,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlock) {
       base::TimeDelta::FromMilliseconds(3);
   PopulateRequiredTimingFields(&timing);
 
-  page_load_metrics::mojom::PageLoadMetadata metadata;
+  page_load_metrics::mojom::FrameMetadata metadata;
   metadata.behavior_flags |=
       blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock;
   NavigateAndCommit(GURL("https://www.google.com/"));
@@ -101,7 +101,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
   timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
 
-  page_load_metrics::mojom::PageLoadMetadata metadata;
+  page_load_metrics::mojom::FrameMetadata metadata;
   metadata.behavior_flags |=
       blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlockReload;
   NavigateAndCommit(GURL("https://www.google.com/"));
@@ -160,7 +160,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, NoPossibleBlock) {
   timing.paint_timing->first_contentful_paint = contentful_paint;
   PopulateRequiredTimingFields(&timing);
 
-  page_load_metrics::mojom::PageLoadMetadata metadata;
+  page_load_metrics::mojom::FrameMetadata metadata;
   NavigateAndCommit(GURL("https://www.google.com/"));
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
 

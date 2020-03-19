@@ -254,8 +254,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL},
     {"printPreviewPageLabelPlural", IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL},
     {"printPreviewPageLabelSingular", IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR},
-    {"printPreviewNewSummaryFormatShort",
-     IDS_PRINT_PREVIEW_NEW_SUMMARY_FORMAT_SHORT},
     {"printPreviewSheetsLabelPlural", IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL},
     {"printPreviewSheetsLabelSingular",
      IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR},

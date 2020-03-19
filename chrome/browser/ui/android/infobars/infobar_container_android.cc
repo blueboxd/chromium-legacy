@@ -68,13 +68,12 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
           env, weak_java_infobar_container_.get(env))) {
     base::UmaHistogramSparse("InfoBar.Shown.Hidden",
                              android_bar->delegate()->GetIdentifier());
-    uintptr_t native_ptr = Java_InfoBarContainer_getTopNativeInfoBarPtr(
-        env, weak_java_infobar_container_.get(env));
-    if (native_ptr) {
-      base::UmaHistogramSparse("InfoBar.Shown.Hiding",
-                               reinterpret_cast<InfoBarAndroid*>(native_ptr)
-                                   ->delegate()
-                                   ->GetIdentifier());
+    infobars::InfoBarDelegate::InfoBarIdentifier identifier =
+        static_cast<infobars::InfoBarDelegate::InfoBarIdentifier>(
+            Java_InfoBarContainer_getTopInfoBarIdentifier(
+                env, weak_java_infobar_container_.get(env)));
+    if (identifier != infobars::InfoBarDelegate::InfoBarIdentifier::INVALID) {
+      base::UmaHistogramSparse("InfoBar.Shown.Hiding", identifier);
     }
   } else {
     base::UmaHistogramSparse("InfoBar.Shown.Visible",

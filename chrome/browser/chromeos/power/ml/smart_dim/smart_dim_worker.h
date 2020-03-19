@@ -48,7 +48,7 @@ class SmartDimWorker {
 
   // Release the members on connection error, or when download_worker_ is ready
   // we can reset the builtin_worker_ to save memory.
-  void Reset();
+  virtual void Reset();
 
  protected:
   void OnConnectionError();

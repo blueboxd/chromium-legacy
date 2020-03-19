@@ -33,10 +33,9 @@ public interface ExternalNavigationDelegate {
     boolean willChromeHandleIntent(Intent intent);
 
     /**
-     * Returns whether the context in which the intent is occurring is a webapp in which the
-     * navigation should stay.
+     * Returns whether to disable forwarding URL requests to external intents for the passed-in URL.
      */
-    boolean shouldStayInWebapp(ExternalNavigationParams params);
+    boolean shouldDisableExternalIntentRequestsForUrl(String url);
 
     /**
      * Returns the number of specialized intent handlers in {@params infos}. Specialized intent

@@ -7,7 +7,8 @@
 
 #include "media/base/audio_processing.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "services/audio/public/mojom/audio_processing.mojom.h"
+#include "services/audio/public/mojom/audio_processing.mojom-shared.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace mojo {
 

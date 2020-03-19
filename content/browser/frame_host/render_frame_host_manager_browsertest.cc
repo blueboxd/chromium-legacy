@@ -5435,15 +5435,19 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   SetBrowserClientForTesting(old_client);
 }
 
-class RenderFrameHostManagerProactivelySwapBrowsingInstancesTest
+class ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest
     : public RenderFrameHostManagerTest {
  public:
-  RenderFrameHostManagerProactivelySwapBrowsingInstancesTest() {
-    feature_list_.InitAndEnableFeature(
-        features::kProactivelySwapBrowsingInstance);
+  ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest() {
+    std::map<std::string, std::string> parameters;
+    parameters[kProactivelySwapBrowsingInstanceLevelParameterName] =
+        "CrossSiteSwapProcess";
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kProactivelySwapBrowsingInstance, parameters);
   }
 
-  ~RenderFrameHostManagerProactivelySwapBrowsingInstancesTest() override {}
+  ~ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest() override =
+      default;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -5452,7 +5456,7 @@ class RenderFrameHostManagerProactivelySwapBrowsingInstancesTest
 // Test to ensure that the error page navigation does not change
 // BrowsingInstances when window.open is present.
 IN_PROC_BROWSER_TEST_P(
-    RenderFrameHostManagerProactivelySwapBrowsingInstancesTest,
+    ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest,
     ErrorPageNavigationWithWindowOpenDoesNotChangeBrowsingInstance) {
   StartEmbeddedServer();
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -5526,9 +5530,8 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-IN_PROC_BROWSER_TEST_P(
-    RenderFrameHostManagerProactivelySwapBrowsingInstancesTest,
-    ReloadShouldNotChangeBrowsingInstance) {
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest,
+                       ReloadShouldNotChangeBrowsingInstance) {
   StartEmbeddedServer();
   GURL url(embedded_test_server()->GetURL("/title1.html"));
 
@@ -5546,6 +5549,268 @@ IN_PROC_BROWSER_TEST_P(
   // for same-site navigations.
   EXPECT_EQ(site_instance,
             shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+}
+
+class ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest
+    : public RenderFrameHostManagerTest {
+ public:
+  ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest() {
+    std::map<std::string, std::string> parameters;
+    parameters[kProactivelySwapBrowsingInstanceLevelParameterName] =
+        "CrossSiteReuseProcess";
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kProactivelySwapBrowsingInstance, parameters);
+  }
+
+  ~ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest() override =
+      default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    RenderFrameHostManagerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableSiteIsolation);
+    if (AreAllSitesIsolatedForTesting()) {
+      LOG(WARNING)
+          << "This test should be run without strict site isolation. "
+          << "It's going to fail when  --site-per-process is specified.";
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// ProactivelySwapBrowsingInstance makes us swap BrowsingInstances for
+// renderer-initiated navigations, which we normally would've kept in the same
+// BrowsingInstance as before - which means we can keep the old process because
+// we would've continued using that process before anyways.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
+    RendererInitiatedCrossSiteNavigationReusesProcess) {
+  if (AreAllSitesIsolatedForTesting())
+    return;
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  scoped_refptr<SiteInstanceImpl> a_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Navigate to B. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
+  scoped_refptr<SiteInstanceImpl> b_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that A and B are in different SiteInstances (both are in default
+  // SiteInstances of different BrowsingInstances) but have the same renderer
+  // process.
+  EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  EXPECT_TRUE(a_site_instance->IsDefaultSiteInstance());
+  EXPECT_TRUE(b_site_instance->IsDefaultSiteInstance());
+  EXPECT_EQ(a_site_instance->GetProcess(), b_site_instance->GetProcess());
+}
+
+// Different from renderer-initiated cross-site navigations, browser-initiated
+// cross-site navigations do swap BrowsingInstances and processes without
+// ProactivelySwapBrowsingInstance. Because of that, we shouldn't reuse the
+// process for the new BrowsingInstance.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
+    BrowserInitiatedCrossSiteNavigationDoesNotReuseProcess) {
+  if (AreAllSitesIsolatedForTesting())
+    return;
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  scoped_refptr<SiteInstanceImpl> a_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Navigate to B. The navigation is browser initiated.
+  EXPECT_TRUE(NavigateToURL(shell(), b_url));
+  scoped_refptr<SiteInstanceImpl> b_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that A and B are in different SiteInstances (both are in default
+  // SiteInstances of different BrowsingInstances) and renderer processes.
+  EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  EXPECT_TRUE(a_site_instance->IsDefaultSiteInstance());
+  EXPECT_TRUE(b_site_instance->IsDefaultSiteInstance());
+  EXPECT_NE(a_site_instance->GetProcess(), b_site_instance->GetProcess());
+}
+
+// A test ContentBrowserClient implementation that enforce process-per-site mode
+// if |should_use_process_per_site_| is true. It is used to verify that we don't
+// reuse the current page's renderer process when navigating to sites that uses
+// process-per-site.
+class ProcessPerSiteContentBrowserClient : public TestContentBrowserClient {
+ public:
+  ProcessPerSiteContentBrowserClient() = default;
+
+  void SetShouldUseProcessPerSite(bool should_use_process_per_site) {
+    should_use_process_per_site_ = should_use_process_per_site;
+  }
+
+  bool ShouldUseProcessPerSite(BrowserContext* browser_context,
+                               const GURL& effective_url) override {
+    return should_use_process_per_site_;
+  }
+
+ private:
+  bool should_use_process_per_site_ = false;
+  DISALLOW_COPY_AND_ASSIGN(ProcessPerSiteContentBrowserClient);
+};
+
+// We should not reuse the current process on renderer-initiated navigations to
+// sites that needs to use process-per-site, and should create a new process for
+// the site if there isn't already a process for that site.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
+    RendererInitiatedCrossSiteNavigationToProcessPerSiteURLCreatesNewProcess) {
+  if (AreAllSitesIsolatedForTesting())
+    return;
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ProcessPerSiteContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  scoped_refptr<SiteInstanceImpl> a_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  RenderProcessHost* original_process = a_site_instance->GetProcess();
+
+  // Navigate to B. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
+  scoped_refptr<SiteInstanceImpl> b_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that A and B are in different SiteInstances (both are in default
+  // SiteInstances of different BrowsingInstances) but have the same renderer
+  // process.
+  EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  EXPECT_TRUE(a_site_instance->IsDefaultSiteInstance());
+  EXPECT_TRUE(b_site_instance->IsDefaultSiteInstance());
+  EXPECT_EQ(b_site_instance->GetProcess(), original_process);
+
+  // Make sure we will use process-per-site for C.
+  // Note this is enforcing process-per-site for all sites, which is why we turn
+  // it off right after the navigation to C. We might reconsider after
+  // crbug.com/1062211 is fixed.
+  content_browser_client.SetShouldUseProcessPerSite(true);
+
+  // Navigate to C. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), c_url));
+  scoped_refptr<SiteInstanceImpl> c_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that B and C are in different SiteInstances (both are in default
+  // SiteInstances of different BrowsingInstances) and renderer processes.
+  EXPECT_FALSE(b_site_instance->IsRelatedSiteInstance(c_site_instance.get()));
+  EXPECT_TRUE(c_site_instance->IsDefaultSiteInstance());
+  EXPECT_NE(c_site_instance->GetProcess(), original_process);
+  // C is using the process for C's site.
+  EXPECT_EQ(c_site_instance->GetProcess(),
+            RenderProcessHostImpl::GetSoleProcessHostForURL(
+                c_site_instance->GetIsolationContext(),
+                c_site_instance->GetSiteURL()));
+
+  // Make sure we will not use process-per-site for B.
+  content_browser_client.SetShouldUseProcessPerSite(false);
+
+  // Navigate to B again. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
+  scoped_refptr<SiteInstanceImpl> b2_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(b2_site_instance->IsRelatedSiteInstance(c_site_instance.get()));
+  EXPECT_FALSE(b2_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  EXPECT_TRUE(b2_site_instance->IsDefaultSiteInstance());
+  EXPECT_NE(b2_site_instance->GetProcess(), original_process);
+  // B will reuse C's process here, even though C is process-per-site, because
+  // neither of them require a dedicated process.
+  EXPECT_EQ(b2_site_instance->GetProcess(), c_site_instance->GetProcess());
+
+  SetBrowserClientForTesting(old_client);
+}
+
+// We should not reuse the current process on renderer-initiated navigations to
+// sites that needs to use process-per-site, and should use the sole process for
+// that site if it already exists.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
+    RendererInitiatedCrossSiteNavigationToProcessPerSiteURLUsesProcessForSite) {
+  if (AreAllSitesIsolatedForTesting())
+    return;
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ProcessPerSiteContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  scoped_refptr<SiteInstanceImpl> a_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  RenderProcessHost* original_process = a_site_instance->GetProcess();
+
+  // Create a new process and set it as the sole process host for B.
+  scoped_refptr<SiteInstanceImpl> placeholder_b_site_instance =
+      SiteInstanceImpl::CreateForURL(web_contents->GetBrowserContext(), b_url);
+  RenderProcessHost* process_for_b =
+      RenderProcessHostImpl::CreateRenderProcessHost(
+          web_contents->GetBrowserContext(),
+          nullptr /* storage_partition_impl */,
+          placeholder_b_site_instance.get());
+  RenderProcessHostImpl::RegisterSoleProcessHostForSite(
+      process_for_b, placeholder_b_site_instance.get());
+  EXPECT_EQ(process_for_b,
+            RenderProcessHostImpl::GetSoleProcessHostForURL(
+                placeholder_b_site_instance->GetIsolationContext(),
+                placeholder_b_site_instance->GetSiteURL()));
+  // Make sure we will use process-per-site for B.
+  content_browser_client.SetShouldUseProcessPerSite(true);
+
+  // Navigate to B. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
+  scoped_refptr<SiteInstanceImpl> b_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that A and B are in different SiteInstances (both are in default
+  // SiteInstances of different BrowsingInstances) but B should use the sole
+  // process assigned to site B.
+  EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  EXPECT_TRUE(a_site_instance->IsDefaultSiteInstance());
+  EXPECT_TRUE(b_site_instance->IsDefaultSiteInstance());
+  EXPECT_NE(b_site_instance->GetProcess(), original_process);
+  EXPECT_EQ(b_site_instance->GetProcess(), process_for_b);
+  EXPECT_EQ(b_site_instance->GetProcess(),
+            RenderProcessHostImpl::GetSoleProcessHostForURL(
+                b_site_instance->GetIsolationContext(),
+                b_site_instance->GetSiteURL()));
+
+  SetBrowserClientForTesting(old_client);
 }
 
 // Helper class to simplify testing of unload handlers.  It allows waiting for
@@ -6411,7 +6676,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Navigate to B. The navigation is document initiated. It swaps
   // BrowsingInstance only if  ProactivelySwapBrowsingInstance is enabled.
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("location.href = $1", b_url)));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
   WaitForLoadStop(web_contents);
   scoped_refptr<SiteInstance> b_site_instance =
       web_contents->GetMainFrame()->GetSiteInstance();
@@ -6698,10 +6963,15 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(is_proxy_live(c5, b_site_instance));
 }
 
+// These tests are parametrized to toggle kRenderDocumentForCrashedFrame on/off.
 INSTANTIATE_TEST_SUITE_P(All, RenderFrameHostManagerTest, ::testing::Bool());
 INSTANTIATE_TEST_SUITE_P(
     All,
-    RenderFrameHostManagerProactivelySwapBrowsingInstancesTest,
+    ProactivelySwapBrowsingInstancesCrossSiteSwapProcessTest,
+    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
     ::testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerUnloadBrowserTest,

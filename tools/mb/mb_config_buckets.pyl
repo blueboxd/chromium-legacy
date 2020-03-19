@@ -891,6 +891,7 @@
       'Chromium Android ARM 32-bit Goma RBE Staging': 'android_release_bot_minimal_symbols',
       'Chromium Android ARM 32-bit Goma RBE ToT': 'android_release_bot_minimal_symbols',
       'Chromium Android ARM 32-bit Goma RBE ToT (ATS)': 'android_release_bot_minimal_symbols',
+      'Chromium iOS Goma RBE ToT': 'ios_error',
       'Chromium Linux Goma RBE Staging': 'release_bot',
       'Chromium Linux Goma RBE Staging (clobber)': 'release_bot',
       'Chromium Linux Goma RBE Staging (dbg)': 'debug_bot',

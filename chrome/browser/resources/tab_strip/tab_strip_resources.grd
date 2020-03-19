@@ -16,7 +16,8 @@
           name="IDR_TAB_STRIP_HTML"
           file="tab_strip.html"
           type="chrome_html"
-          compress="gzip"/>
+          compress="gzip"
+          preprocess="true"/>
       <structure
           name="IDR_TAB_STRIP_TABS_API_PROXY_JS"
           file="tabs_api_proxy.js"

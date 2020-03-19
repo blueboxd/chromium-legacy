@@ -1538,11 +1538,6 @@ const char kPrivacySettingsRedesignDescription[] =
     "Redesign of the privacy settings card to make it more prominent and "
     "and easier to use.";
 
-const char kProfileCardName[] = "Profile Card";
-const char kProfileCardDescription[] =
-    "Allows users to open the profile card to see more informations about "
-    "the content creators.";
-
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
 const char kProminentDarkModeActiveTabTitleDescription[] =
@@ -2539,6 +2534,14 @@ const char kRecoverFromNeverSaveAndroidName[] =
 const char kRecoverFromNeverSaveAndroidDescription[] =
     "Enables showing UI which allows for easy reverting of the decision to "
     "never save passwords on a certain webiste";
+
+const char kRelatedSearchesName[] =
+    "Enables an experiment for Related Searches on Android";
+const char kRelatedSearchesDescription[] =
+    "Enables displaying related searches in a UI surface for experimentation "
+    "purposes.  This may have privacy implications so do not enable unless "
+    "you have no privacy worries about sending page content and URLs to "
+    "Google!";
 
 const char kSafeBrowsingUseLocalBlacklistsV2Name[] =
     "Use local Safe Browsing blacklists";

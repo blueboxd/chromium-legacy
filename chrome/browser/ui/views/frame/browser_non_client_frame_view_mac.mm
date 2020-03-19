@@ -69,7 +69,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
   }
 
   if (browser_view->IsBrowserTypeWebApp()) {
-    if (browser_view->browser()->app_controller()->HasTitlebarToolbar()) {
+    if (browser_view->browser()->app_controller()) {
       set_web_app_frame_toolbar(AddChildView(
           std::make_unique<WebAppFrameToolbarView>(frame, browser_view)));
     }

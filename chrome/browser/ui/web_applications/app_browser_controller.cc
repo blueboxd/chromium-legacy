@@ -208,7 +208,7 @@ bool AppBrowserController::has_tab_strip() const {
   return has_tab_strip_;
 }
 
-bool AppBrowserController::HasTitlebarToolbar() const {
+bool AppBrowserController::HasTitlebarMenuButton() const {
   // Show titlebar toolbar for Terminal System App, but not other system apps.
   // TODO(crbug.com/1061822): Generalise this as a SystemWebApp capability.
   if (is_for_system_web_app())

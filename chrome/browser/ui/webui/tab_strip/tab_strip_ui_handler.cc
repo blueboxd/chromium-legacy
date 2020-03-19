@@ -562,6 +562,13 @@ void TabStripUIHandler::HandleGetThemeColors(const base::ListValue* args) {
                        ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
                            ui::NativeTheme::kColorId_FocusedBorderColor)));
 
+#if !defined(OS_CHROMEOS)
+  colors.SetString(
+      "--tabstrip-scrollbar-thumb-color-rgb",
+      color_utils::SkColorToRgbString(color_utils::GetColorWithMaxContrast(
+          embedder_->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE))));
+#endif
+
   ResolveJavascriptCallback(callback_id, colors);
 }
 

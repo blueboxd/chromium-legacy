@@ -686,7 +686,8 @@
   },
   "cronet_test": {
     "label": "//components/cronet/ios/test:cronet_test",
-    "type": "raw",
+    "type": "generated_script",
+    "script": "bin/run_cronet_test"
   },
   "cronet_test_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",

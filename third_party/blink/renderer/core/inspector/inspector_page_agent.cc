@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -1391,15 +1392,15 @@ Response InspectorPageAgent::setInterceptFileChooserDialog(bool enabled) {
 
 Response InspectorPageAgent::generateTestReport(const String& message,
                                                 Maybe<String> group) {
-  Document* document = inspected_frames_->Root()->GetDocument();
+  LocalDOMWindow* window = inspected_frames_->Root()->DomWindow();
 
   // Construct the test report.
   TestReportBody* body = MakeGarbageCollected<TestReportBody>(message);
-  Report* report =
-      MakeGarbageCollected<Report>("test", document->Url().GetString(), body);
+  Report* report = MakeGarbageCollected<Report>(
+      "test", window->document()->Url().GetString(), body);
 
   // Send the test report to any ReportingObservers.
-  ReportingContext::From(document->ToExecutionContext())->QueueReport(report);
+  ReportingContext::From(window)->QueueReport(report);
 
   return Response::OK();
 }

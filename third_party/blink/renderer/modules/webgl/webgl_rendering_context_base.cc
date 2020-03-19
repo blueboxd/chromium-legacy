@@ -1412,11 +1412,11 @@ void WebGLRenderingContextBase::DidDraw() {
 }
 
 bool WebGLRenderingContextBase::PushFrame() {
-  int width = GetDrawingBuffer()->Size().Width();
-  int height = GetDrawingBuffer()->Size().Height();
   int submitted_frame = false;
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
     if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      int width = GetDrawingBuffer()->Size().Width();
+      int height = GetDrawingBuffer()->Size().Height();
       submitted_frame =
           Host()->PushFrame(Host()->ResourceProvider()->ProduceCanvasResource(),
                             SkIRect::MakeWH(width, height));

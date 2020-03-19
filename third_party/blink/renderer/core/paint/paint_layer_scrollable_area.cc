@@ -360,8 +360,7 @@ static int CornerStart(const LayoutBox& box,
   return max_x - thickness - box.StyleRef().BorderRightWidth();
 }
 
-IntRect PaintLayerScrollableArea::PaintLayerScrollableArea::CornerRect(
-    const IntRect& bounds) const {
+IntRect PaintLayerScrollableArea::CornerRect() const {
   int horizontal_thickness;
   int vertical_thickness;
   if (!VerticalScrollbar() && !HorizontalScrollbar()) {
@@ -387,9 +386,10 @@ IntRect PaintLayerScrollableArea::PaintLayerScrollableArea::CornerRect(
     horizontal_thickness = VerticalScrollbar()->ScrollbarThickness();
     vertical_thickness = HorizontalScrollbar()->ScrollbarThickness();
   }
-  return IntRect(CornerStart(*GetLayoutBox(), bounds.X(), bounds.MaxX(),
+  IntSize border_box_size = PixelSnappedBorderBoxSize();
+  return IntRect(CornerStart(*GetLayoutBox(), 0, border_box_size.Width(),
                              horizontal_thickness),
-                 bounds.MaxY() - vertical_thickness -
+                 border_box_size.Height() - vertical_thickness -
                      GetLayoutBox()->StyleRef().BorderBottomWidth(),
                  horizontal_thickness, vertical_thickness);
 }
@@ -405,8 +405,7 @@ IntRect PaintLayerScrollableArea::ScrollCornerRect() const {
   bool has_resizer = GetLayoutBox()->StyleRef().HasResize();
   if ((has_horizontal_bar && has_vertical_bar) ||
       (has_resizer && (has_horizontal_bar || has_vertical_bar))) {
-    return CornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
-        Layer()->SubpixelAccumulation()));
+    return CornerRect();
   }
   return IntRect();
 }
@@ -1379,58 +1378,51 @@ void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
   UpdateScrollableAreaSet();
 }
 
-IntRect PaintLayerScrollableArea::RectForHorizontalScrollbar(
-    const IntRect& border_box_rect) const {
+IntRect PaintLayerScrollableArea::RectForHorizontalScrollbar() const {
   if (!HasHorizontalScrollbar())
     return IntRect();
 
   const IntRect& scroll_corner = ScrollCornerRect();
-
+  IntSize border_box_size = PixelSnappedBorderBoxSize();
   return IntRect(
-      HorizontalScrollbarStart(border_box_rect.X()),
-      border_box_rect.MaxY() - GetLayoutBox()->BorderBottom().ToInt() -
+      HorizontalScrollbarStart(),
+      border_box_size.Height() - GetLayoutBox()->BorderBottom().ToInt() -
           HorizontalScrollbar()->ScrollbarThickness(),
-      border_box_rect.Width() -
+      border_box_size.Width() -
           (GetLayoutBox()->BorderLeft() + GetLayoutBox()->BorderRight())
               .ToInt() -
           scroll_corner.Width(),
       HorizontalScrollbar()->ScrollbarThickness());
 }
 
-IntRect PaintLayerScrollableArea::RectForVerticalScrollbar(
-    const IntRect& border_box_rect) const {
+IntRect PaintLayerScrollableArea::RectForVerticalScrollbar() const {
   if (!HasVerticalScrollbar())
     return IntRect();
 
   const IntRect& scroll_corner = ScrollCornerRect();
-
   return IntRect(
-      VerticalScrollbarStart(border_box_rect.X(), border_box_rect.MaxX()),
-      border_box_rect.Y() + GetLayoutBox()->BorderTop().ToInt(),
+      VerticalScrollbarStart(), GetLayoutBox()->BorderTop().ToInt(),
       VerticalScrollbar()->ScrollbarThickness(),
-      border_box_rect.Height() -
+      PixelSnappedBorderBoxSize().Height() -
           (GetLayoutBox()->BorderTop() + GetLayoutBox()->BorderBottom())
               .ToInt() -
           scroll_corner.Height());
 }
 
-int PaintLayerScrollableArea::VerticalScrollbarStart(int min_x,
-                                                     int max_x) const {
+int PaintLayerScrollableArea::VerticalScrollbarStart() const {
   if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    return min_x + GetLayoutBox()->BorderLeft().ToInt();
-  return max_x - GetLayoutBox()->BorderRight().ToInt() -
+    return GetLayoutBox()->BorderLeft().ToInt();
+  return PixelSnappedBorderBoxSize().Width() -
+         GetLayoutBox()->BorderRight().ToInt() -
          VerticalScrollbar()->ScrollbarThickness();
 }
 
-int PaintLayerScrollableArea::HorizontalScrollbarStart(int min_x) const {
-  int x = min_x + GetLayoutBox()->BorderLeft().ToInt();
-  if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    x += HasVerticalScrollbar()
-             ? VerticalScrollbar()->ScrollbarThickness()
-             : ResizerCornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
-                                     Layer()->SubpixelAccumulation()),
-                                 kResizerForPointer)
-                   .Width();
+int PaintLayerScrollableArea::HorizontalScrollbarStart() const {
+  int x = GetLayoutBox()->BorderLeft().ToInt();
+  if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+    x += HasVerticalScrollbar() ? VerticalScrollbar()->ScrollbarThickness()
+                                : ResizerCornerRect(kResizerForPointer).Width();
+  }
   return x;
 }
 
@@ -1439,13 +1431,12 @@ IntSize PaintLayerScrollableArea::ScrollbarOffset(
   // TODO(szager): Factor out vertical offset calculation into other methods,
   // for symmetry with *ScrollbarStart methods for horizontal offset.
   if (&scrollbar == VerticalScrollbar()) {
-    return IntSize(
-        VerticalScrollbarStart(0, Layer()->PixelSnappedSize().Width()),
-        GetLayoutBox()->BorderTop().ToInt());
+    return IntSize(VerticalScrollbarStart(),
+                   GetLayoutBox()->BorderTop().ToInt());
   }
 
   if (&scrollbar == HorizontalScrollbar()) {
-    return IntSize(HorizontalScrollbarStart(0),
+    return IntSize(HorizontalScrollbarStart(),
                    GetLayoutBox()->BorderTop().ToInt() +
                        VisibleContentRect(kIncludeScrollbars).Height() -
                        HorizontalScrollbar()->ScrollbarThickness());
@@ -1843,21 +1834,17 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   if (!HasOverflowControls())
     return;
 
-  const IntRect border_box =
-      GetLayoutBox()->PixelSnappedBorderBoxRect(layer_->SubpixelAccumulation());
-
   if (Scrollbar* vertical_scrollbar = VerticalScrollbar())
-    vertical_scrollbar->SetFrameRect(RectForVerticalScrollbar(border_box));
+    vertical_scrollbar->SetFrameRect(RectForVerticalScrollbar());
 
   if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar())
-    horizontal_scrollbar->SetFrameRect(RectForHorizontalScrollbar(border_box));
+    horizontal_scrollbar->SetFrameRect(RectForHorizontalScrollbar());
 
   if (scroll_corner_)
     scroll_corner_->SetFrameRect(LayoutRect(ScrollCornerRect()));
 
   if (resizer_)
-    resizer_->SetFrameRect(
-        LayoutRect(ResizerCornerRect(border_box, kResizerForPointer)));
+    resizer_->SetFrameRect(LayoutRect(ResizerCornerRect(kResizerForPointer)));
 
   // FIXME, this should eventually be removed, once we are certain that
   // composited controls get correctly positioned on a compositor update. For
@@ -1901,10 +1888,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 
   IntRect resize_control_rect;
   if (GetLayoutBox()->StyleRef().HasResize()) {
-    resize_control_rect =
-        ResizerCornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
-                              Layer()->SubpixelAccumulation()),
-                          kResizerForPointer);
+    resize_control_rect = ResizerCornerRect(kResizerForPointer);
     if (resize_control_rect.Contains(local_point))
       return true;
   }
@@ -1914,14 +1898,13 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 
   if (HasVerticalScrollbar() &&
       VerticalScrollbar()->ShouldParticipateInHitTesting()) {
-    LayoutRect v_bar_rect(
-        VerticalScrollbarStart(0, Layer()->PixelSnappedSize().Width()),
-        GetLayoutBox()->BorderTop().ToInt(),
-        VerticalScrollbar()->ScrollbarThickness(),
-        visible_rect.Height() -
-            (HasHorizontalScrollbar()
-                 ? HorizontalScrollbar()->ScrollbarThickness()
-                 : resize_control_size));
+    LayoutRect v_bar_rect(VerticalScrollbarStart(),
+                          GetLayoutBox()->BorderTop().ToInt(),
+                          VerticalScrollbar()->ScrollbarThickness(),
+                          visible_rect.Height() -
+                              (HasHorizontalScrollbar()
+                                   ? HorizontalScrollbar()->ScrollbarThickness()
+                                   : resize_control_size));
     if (v_bar_rect.Contains(local_point)) {
       result.SetScrollbar(VerticalScrollbar());
       return true;
@@ -1934,7 +1917,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
     // TODO(crbug.com/638981): Are the conversions to int intentional?
     int h_scrollbar_thickness = HorizontalScrollbar()->ScrollbarThickness();
     LayoutRect h_bar_rect(
-        HorizontalScrollbarStart(0),
+        HorizontalScrollbarStart(),
         GetLayoutBox()->BorderTop().ToInt() + visible_rect.Height() -
             h_scrollbar_thickness,
         visible_rect.Width() - (HasVerticalScrollbar()
@@ -1954,11 +1937,10 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 }
 
 IntRect PaintLayerScrollableArea::ResizerCornerRect(
-    const IntRect& bounds,
     ResizerHitTestType resizer_hit_test_type) const {
   if (!GetLayoutBox()->StyleRef().HasResize())
     return IntRect();
-  IntRect corner = CornerRect(bounds);
+  IntRect corner = CornerRect();
 
   if (resizer_hit_test_type == kResizerForTouch) {
     // We make the resizer virtually larger for touch hit testing. With the
@@ -1977,12 +1959,8 @@ IntRect PaintLayerScrollableArea::ResizerCornerRect(
 
 IntRect PaintLayerScrollableArea::ScrollCornerAndResizerRect() const {
   IntRect scroll_corner_and_resizer = ScrollCornerRect();
-  if (scroll_corner_and_resizer.IsEmpty()) {
-    scroll_corner_and_resizer =
-        ResizerCornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
-                              Layer()->SubpixelAccumulation()),
-                          kResizerForPointer);
-  }
+  if (scroll_corner_and_resizer.IsEmpty())
+    return ResizerCornerRect(kResizerForPointer);
   return scroll_corner_and_resizer;
 }
 
@@ -1994,9 +1972,7 @@ bool PaintLayerScrollableArea::IsPointInResizeControl(
 
   IntPoint local_point = RoundedIntPoint(
       GetLayoutBox()->AbsoluteToLocalPoint(PhysicalOffset(absolute_point)));
-  IntRect local_bounds(IntPoint(), Layer()->PixelSnappedSize());
-  return ResizerCornerRect(local_bounds, resizer_hit_test_type)
-      .Contains(local_point);
+  return ResizerCornerRect(resizer_hit_test_type).Contains(local_point);
 }
 
 bool PaintLayerScrollableArea::HitTestResizerInFragments(
@@ -2010,11 +1986,12 @@ bool PaintLayerScrollableArea::HitTestResizerInFragments(
 
   for (int i = layer_fragments.size() - 1; i >= 0; --i) {
     const PaintLayerFragment& fragment = layer_fragments.at(i);
-    if (fragment.background_rect.Intersects(hit_test_location) &&
-        ResizerCornerRect(PixelSnappedIntRect(fragment.layer_bounds),
-                          kResizerForPointer)
-            .Contains(hit_test_location.RoundedPoint()))
-      return true;
+    if (fragment.background_rect.Intersects(hit_test_location)) {
+      IntRect resizer_corner_rect = ResizerCornerRect(kResizerForPointer);
+      resizer_corner_rect.MoveBy(RoundedIntPoint(fragment.layer_bounds.offset));
+      if (resizer_corner_rect.Contains(hit_test_location.RoundedPoint()))
+        return true;
+    }
   }
 
   return false;
@@ -2101,7 +2078,7 @@ IntSize PaintLayerScrollableArea::OffsetFromResizeCorner(
   // left corner.
   // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be
   // the case?
-  IntSize element_size = Layer()->PixelSnappedSize();
+  IntSize element_size = PixelSnappedBorderBoxSize();
   if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     element_size.SetWidth(0);
   IntPoint resizer_point = IntPoint(element_size);
@@ -3096,6 +3073,16 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
 CompositorElementId PaintLayerScrollableArea::GetScrollElementId() const {
   return CompositorElementIdFromUniqueObjectId(
       GetLayoutBox()->UniqueId(), CompositorElementIdNamespace::kScroll);
+}
+
+IntSize PaintLayerScrollableArea::PixelSnappedBorderBoxSize() const {
+  // TODO(crbug.com/1020913): We use this method during
+  // PositionOverflowControls() even before the paint offset is updated.
+  // This can be fixed only after we support subpixels in overflow control
+  // geometry. For now we ensure correct pixel snapping of overflow controls by
+  // calling PositionOverflowControls() again when paint offset is updated.
+  return GetLayoutBox()->PixelSnappedBorderBoxSize(
+      GetLayoutBox()->FirstFragment().PaintOffset());
 }
 
 IntRect

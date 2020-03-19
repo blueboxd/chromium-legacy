@@ -315,6 +315,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
   const LayoutSize& Size() const { return size_; }
+  // TODO(crbug.com/962299): This method snaps to pixels incorrectly because
+  // Location() is not the correct paint offset. It's also incorrect in flipped
+  // blocks writing mode.
   IntSize PixelSnappedSize() const {
     LayoutPoint location = layout_object_.IsBox()
                                ? ToLayoutBox(layout_object_).Location()

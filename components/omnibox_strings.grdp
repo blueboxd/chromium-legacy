@@ -80,6 +80,9 @@
   <message name="IDS_OMNIBOX_FILE" desc="Text shown in the omnibox to indicate a user is viewing a file.">
     File
   </message>
+  <message name="IDS_OMNIBOX_READER_MODE" desc="Text shown in the omnibox to indicate a user is viewing the reader mode view of an article.">
+    Reader Mode
+  </message>
   <message name="IDS_DRIVE_SUGGESTION_DOCUMENT" desc="Google Docs product name, for use in omnibox Docs result descriptions.">
     Google Docs
   </message>

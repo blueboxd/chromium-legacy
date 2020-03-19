@@ -59,8 +59,9 @@ bool LayoutWorklet::NeedsToCreateGlobalScope() {
 WorkletGlobalScopeProxy* LayoutWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
   return MakeGarbageCollected<LayoutWorkletGlobalScopeProxy>(
-      Document::From(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
-      pending_layout_registry_, GetNumberOfGlobalScopes() + 1);
+      To<LocalDOMWindow>(GetExecutionContext())->GetFrame(),
+      ModuleResponsesMap(), pending_layout_registry_,
+      GetNumberOfGlobalScopes() + 1);
 }
 
 }  // namespace blink

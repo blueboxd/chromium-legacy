@@ -207,6 +207,8 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabLoadNoThemeChange) {
   EXPECT_EQ(GetTabColor(app_browser_), SK_ColorGREEN);
 }
 
+// App Popups are only used on Chrome OS. See https://crbug.com/1060917.
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
                        WhiteThemeForSystemAppPopup) {
   InstallAndLaunchMockPopup();
@@ -221,6 +223,7 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
   InstallAndLaunchMockPopup();
   EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
 }
+#endif
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, InitialBounds) {

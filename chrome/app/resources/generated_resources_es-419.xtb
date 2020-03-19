@@ -727,7 +727,7 @@
 <translation id="1976323404609382849">Las cookies de múltiples sitios se han bloqueado.</translation>
 <translation id="1977965994116744507">Acerca el teléfono para desbloquear tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1978006917103730774">Se instalarán automáticamente las futuras versiones del software y las actualizaciones de seguridad.</translation>
-<translation id="1979095679518582070">Desactivar esta función no afectará la capacidad de este dispositivo de enviar la información necesaria para servicios esenciales, como seguridad y actualizaciones del sistema.</translation>
+<translation id="1979095679518582070">Aunque esta función esté desactivada, este dispositivo podrá enviar la información necesaria para los servicios esenciales, como seguridad y actualizaciones del sistema.</translation>
 <translation id="1979280758666859181">Estás por cambiar a un canal que tiene una versión anterior de <ph name="PRODUCT_NAME" />. El cambio de canal se aplicará cuando la versión del canal coincida con la versión que esté instalada en ese momento en tu dispositivo.</translation>
 <translation id="197989455406964291">KDC no es compatible con el tipo de encriptación</translation>
 <translation id="1982354452682152483">No hay descripciones disponibles.</translation>
@@ -2141,7 +2141,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="383161972796689579">El propietario de este dispositivo ha inhabilitado a nuevos usuarios para evitar que se agreguen.</translation>
 <translation id="3834775135533257713">No se pudo agregar la aplicación "<ph name="TO_INSTALL_APP_NAME" />" debido a un conflicto con "<ph name="INSTALLED_APP_NAME" />".</translation>
 <translation id="3835522725882634757">¡No! Este servidor está enviando datos que <ph name="PRODUCT_NAME" /> no comprende. <ph name="BEGIN_LINK" />Informar un error<ph name="END_LINK" /> e incluir la <ph name="BEGIN2_LINK" />lista sin procesar<ph name="END2_LINK" />.</translation>
-<translation id="383669374481694771">Esta es información general sobre este dispositivo y cómo se usa (como el nivel de batería, la actividad de las apps y el sistema, y errores). Los datos se usarán para mejorar Android, y la información agregada también permitirá que las apps y los socios de Google, como los desarrolladores de Android, mejoren sus apps y productos.</translation>
+<translation id="383669374481694771">Aquí se muestra información general sobre este dispositivo y cómo se usa (por ejemplo, el nivel de batería, la actividad de las apps y el sistema, y los errores). Los datos se usarán para mejorar Android, y la información agregada también permitirá que las apps y los socios de Google, como los desarrolladores de Android, mejoren sus apps y productos.</translation>
 <translation id="3838085852053358637">Se produjo un error al cargar la extensión</translation>
 <translation id="3838486795898716504">Más <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Cookies y otros datos de sitios y de complementos</translation>
@@ -2723,7 +2723,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4660476621274971848">Se esperaba la versión "<ph name="EXPECTED_VERSION" />", pero la versión fue "<ph name="NEW_ID" />"</translation>
 <translation id="4660838440047236328">la disposición de tu habitación</translation>
 <translation id="4661407454952063730">Los datos de las apps abarcan cualquier información guardada por una app (según la configuración del desarrollador), incluidos contactos, mensajes y fotos.</translation>
-<translation id="4661931051827810091">Envía URL anónimas de algunas páginas que visitas, información limitada del sistema y parte del contenido de las páginas para ayudar a detectar y bloquear nuevas amenazas contra todos los usuarios en la Web.</translation>
+<translation id="4661931051827810091">Envía URL anónimas de algunas páginas que visitas, información limitada del sistema y parte del contenido de las páginas para ayudar a detectar y bloquear nuevas amenazas contra todos los usuarios en la Web.</translation>
 <translation id="4662788913887017617">Compartir este favorito con tu iPhone</translation>
 <translation id="4663373278480897665">Cámara permitida</translation>
 <translation id="4664482161435122549">Error en la exportación de PKCS #12</translation>
@@ -3571,7 +3571,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5841270259333717135">Configurar Ethernet</translation>
 <translation id="5842497610951477805">Activación de Bluetooth</translation>
 <translation id="5846200638699387931">Error de sintaxis relacional: <ph name="ERROR_LINE" /></translation>
-<translation id="5846807460505171493">Instala actualizaciones y apps. Al continuar, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu proveedor y el fabricante del dispositivo, posiblemente a través de datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación.</translation>
+<translation id="5846807460505171493">Instala actualizaciones y apps. Si continúas, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu proveedor y el fabricante del dispositivo usando datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación.</translation>
 <translation id="5849212445710944278">Ya se agregó</translation>
 <translation id="5849570051105887917">Código del proveedor de origen</translation>
 <translation id="5851868085455377790">Emisor</translation>
@@ -3996,7 +3996,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6410328738210026208">Cambiar canal y Powerwash</translation>
 <translation id="6410668567036790476">Agregar motor de búsqueda</translation>
 <translation id="641081527798843608">Coincidencia de asunto</translation>
-<translation id="6412673304250309937">Revisa las URL con una lista de sitios no seguros almacenados en Chrome. Si un sitio intenta robar tu contraseña, o cuando descargas un archivo dañino, es posible que Chrome también envíe las URL, con partes del contenido de la página, a la Navegación segura.</translation>
+<translation id="6412673304250309937">Revisa las URL con una lista de sitios no seguros almacenados en Chrome. Si un sitio intenta robar tu contraseña, o cuando descargas un archivo dañino, es posible que Chrome también envíe las URL, con partes del contenido de la página, a la Navegación segura.</translation>
 <translation id="6412931879992742813">Nueva ventana de incógnito</translation>
 <translation id="641469293210305670">Instalar actualizaciones y apps</translation>
 <translation id="6414888972213066896">Les preguntaste a tus padres si puedes visitar este sitio</translation>
@@ -5739,7 +5739,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8738766971144275885">Este archivo está encriptado y no se permite abrirlo.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> es tu código para <ph name="ORIGIN" /></translation>
-<translation id="8742998548129056176">Esta es información general sobre tu dispositivo y cómo lo usas (como el nivel de batería, la actividad de las apps y el sistema, y errores). Los datos se usarán para mejorar Android, y la información agregada también permitirá que las apps y los socios de Google, como los desarrolladores de Android, mejoren sus apps y productos.</translation>
+<translation id="8742998548129056176">Aquí se muestra información general sobre tu dispositivo y cómo lo usas (como el nivel de batería, la actividad de las apps y el sistema, y errores). Los datos se usarán para mejorar Android, y la información agregada también permitirá que las apps y los socios de Google, como los desarrolladores de Android, mejoren sus apps y productos.</translation>
 <translation id="8743390665131937741">Nivel de zoom en pantalla completa:</translation>
 <translation id="8743864605301774756">Se actualizó hace 1 h</translation>
 <translation id="8746654918629346731">Ya solicitaste "<ph name="EXTENSION_NAME" />"</translation>

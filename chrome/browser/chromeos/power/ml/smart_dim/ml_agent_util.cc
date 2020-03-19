@@ -4,10 +4,7 @@
 
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent_util.h"
 
-#include <string>
-
-#include "base/json/json_reader.h"
-#include "base/values.h"
+#include "base/optional.h"
 
 namespace chromeos {
 namespace power {
@@ -38,28 +35,21 @@ bool PopulateMapFromNamesAndNodes(
 
 }  // namespace
 
-bool ParseMetaInfoFromString(const std::string& metadata_json,
-                             std::string* metrics_model_name,
-                             double* dim_threshold,
-                             size_t* expected_feature_size,
-                             base::flat_map<std::string, int>* inputs,
-                             base::flat_map<std::string, int>* outputs) {
+bool ParseMetaInfoFromJsonObject(const base::Value& root,
+                                 std::string* metrics_model_name,
+                                 double* dim_threshold,
+                                 size_t* expected_feature_size,
+                                 base::flat_map<std::string, int>* inputs,
+                                 base::flat_map<std::string, int>* outputs) {
   DCHECK(metrics_model_name && dim_threshold && expected_feature_size &&
          inputs && outputs);
-  const base::Optional<base::Value> root =
-      base::JSONReader::Read(metadata_json);
-
-  if (!root || !root->is_dict()) {
-    DVLOG(1) << "Failed to read metadata_json as JSON dict.";
-    return false;
-  }
 
   const std::string* metrics_model_name_value =
-      root->FindStringKey("metrics_model_name");
+      root.FindStringKey("metrics_model_name");
   const base::Optional<double> dim_threshold_value =
-      root->FindDoubleKey("threshold");
+      root.FindDoubleKey("threshold");
   const base::Optional<int> expected_feature_size_value =
-      root->FindIntKey("expected_feature_size");
+      root.FindIntKey("expected_feature_size");
 
   if (!metrics_model_name_value || *metrics_model_name_value == "" ||
       dim_threshold_value == base::nullopt ||
@@ -73,10 +63,10 @@ bool ParseMetaInfoFromString(const std::string& metadata_json,
   *expected_feature_size =
       static_cast<size_t>(expected_feature_size_value.value());
 
-  const base::Value* input_names = root->FindListKey("input_names");
-  const base::Value* input_nodes = root->FindListKey("input_nodes");
-  const base::Value* output_names = root->FindListKey("output_names");
-  const base::Value* output_nodes = root->FindListKey("output_nodes");
+  const base::Value* input_names = root.FindListKey("input_names");
+  const base::Value* input_nodes = root.FindListKey("input_nodes");
+  const base::Value* output_names = root.FindListKey("output_names");
+  const base::Value* output_nodes = root.FindListKey("output_nodes");
 
   if (!input_names || !input_nodes || !output_names || !output_nodes ||
       !PopulateMapFromNamesAndNodes(*input_names, *input_nodes, inputs) ||

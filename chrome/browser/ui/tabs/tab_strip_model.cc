@@ -958,6 +958,8 @@ void TabStripModel::AddWebContents(
       index = base::ClampToRange(index, grouped_tabs.front(),
                                  grouped_tabs.back() + 1);
     }
+  } else if (GetTabGroupForTab(index - 1) == GetTabGroupForTab(index)) {
+    group = GetTabGroupForTab(index);
   }
 
   if (ui::PageTransitionTypeIncludingQualifiersIs(transition,

@@ -21,7 +21,7 @@ class NativeUnwinderAndroid : public Unwinder {
   NativeUnwinderAndroid& operator=(const NativeUnwinderAndroid&) = delete;
 
   // Unwinder
-  bool CanUnwindFrom(const Frame* current_frame) const override;
+  bool CanUnwindFrom(const Frame& current_frame) const override;
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,
                          ModuleCache* module_cache,

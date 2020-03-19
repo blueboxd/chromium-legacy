@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -49,7 +50,7 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       nullptr /* worker_clients */,
       frame->Client()->CreateWorkerContentSettingsClient(),
       document->GetSecurityContext().AddressSpace(),
-      OriginTrialContext::GetTokens(document->ToExecutionContext()).get(),
+      OriginTrialContext::GetTokens(frame->DomWindow()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, module_responses_map,
       mojo::NullRemote() /* browser_interface_broker */,

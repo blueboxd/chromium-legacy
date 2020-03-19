@@ -327,6 +327,7 @@ class BlinkTestController : public WebContentsObserver,
       render_process_host_observer_{this};
   std::set<RenderProcessHost*> all_observed_render_process_hosts_;
   std::set<RenderProcessHost*> main_window_render_process_hosts_;
+  std::set<RenderViewHost*> main_window_render_view_hosts_;
 
   // Changes reported by OnWebTestRuntimeFlagsChanged that have accumulated
   // since PrepareForWebTest (i.e. changes that need to be send to a fresh

@@ -1,0 +1,5 @@
+specific_include_rules = {
+  'audio_processing_mojom_traits\.h': [
+    "+third_party/webrtc/api/media_stream_interface.h",
+  ]
+}

@@ -408,8 +408,8 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       navigation_start_(navigation_handle->NavigationStart()),
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
-      main_frame_metadata_(mojom::PageLoadMetadata::New()),
-      subframe_metadata_(mojom::PageLoadMetadata::New()) {}
+      main_frame_metadata_(mojom::FrameMetadata::New()),
+      subframe_metadata_(mojom::FrameMetadata::New()) {}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
@@ -431,7 +431,7 @@ void PageLoadMetricsUpdateDispatcher::ShutDown() {
 void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     content::RenderFrameHost* render_frame_host,
     mojom::PageLoadTimingPtr new_timing,
-    mojom::PageLoadMetadataPtr new_metadata,
+    mojom::FrameMetadataPtr new_metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     mojom::FrameRenderDataUpdatePtr render_data,
@@ -543,11 +543,41 @@ void PageLoadMetricsUpdateDispatcher::UpdateFrameCpuTiming(
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
     content::RenderFrameHost* render_frame_host,
-    mojom::PageLoadMetadataPtr subframe_metadata) {
+    mojom::FrameMetadataPtr subframe_metadata) {
   // Merge the subframe loading behavior flags with any we've already observed,
   // possibly from other subframes.
   subframe_metadata_->behavior_flags |= subframe_metadata->behavior_flags;
   client_->OnSubframeMetadataChanged(render_frame_host, *subframe_metadata);
+
+  // Handle intersection updates if included in the metadata.
+  if (subframe_metadata->intersection_update.is_null()) {
+    return;
+  }
+
+  // Do not notify intersections for untracked loads,
+  // subframe_navigation_start_offset_ excludes untracked loads.
+  // TODO(crbug/1061091): Document definition of untracked loads in page load
+  // metrics.
+  const int frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
+  if (subframe_navigation_start_offset_.find(frame_tree_node_id) ==
+      subframe_navigation_start_offset_.end()) {
+    return;
+  }
+
+  auto existing_intersection_it =
+      frame_intersection_updates_.find(render_frame_host->GetFrameTreeNodeId());
+
+  // Check if we already have a frame intersection update for the frame,
+  // dispatch updates for the first frame intersection update or if
+  // the intersection has changed.
+  if (existing_intersection_it == frame_intersection_updates_.end() ||
+      !existing_intersection_it->second.Equals(
+          *subframe_metadata->intersection_update)) {
+    frame_intersection_updates_[frame_tree_node_id] =
+        *subframe_metadata->intersection_update;
+    client_->OnFrameIntersectionUpdate(render_frame_host,
+                                       *subframe_metadata->intersection_update);
+  }
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
@@ -593,7 +623,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
-    mojom::PageLoadMetadataPtr new_metadata) {
+    mojom::FrameMetadataPtr new_metadata) {
   if (main_frame_metadata_->Equals(*new_metadata))
     return;
 

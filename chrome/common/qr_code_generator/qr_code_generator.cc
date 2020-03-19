@@ -14,11 +14,13 @@ static_assert(QRCodeGenerator::kNumSegments != 0 &&
                       0,
               "invalid configuration");
 
-// Generate generates a QR code containing the given data and returns a
-// pointer to an array of kSize×kSize bytes where the least-significant bit of
-// each byte is set if that tile should be "black".
-base::span<const uint8_t, QRCodeGenerator::kTotalSize>
-QRCodeGenerator::Generate(const uint8_t in[kInputBytes]) {
+base::span<uint8_t, QRCodeGenerator::kTotalSize> QRCodeGenerator::Generate(
+    base::span<const uint8_t> in) {
+  // Can't pass a constexpr to CHECK_LE.
+  if (in.size() > kInputBytes) {
+    CHECK(false) << "input too long";
+  }
+
   memset(d_, 0, sizeof(d_));
   PutVerticalTiming(6);
   PutHorizontalTiming(6);
@@ -26,29 +28,42 @@ QRCodeGenerator::Generate(const uint8_t in[kInputBytes]) {
   PutFinder(3, kSize - 4);
   PutFinder(kSize - 4, 3);
   // See table E.1 for the location of alignment symbols.
-  PutAlignment(22, 22);
+  PutAlignment(30, 30);
 
   // kFormatInformation is the encoded formatting word for the QR code that
-  // this code generates:
-  //                  11 011
+  // this code generates. See tables 10 and 12.
+  //                  00 011
   //                  --|---
-  // error correction Q | Mask pattern 3
+  // error correction M | Mask pattern 3
   //
   // It's translated into the following, 15-bit value using the table on page
   // 80.
-  constexpr uint16_t kFormatInformation = 0x3a06;
+  constexpr uint16_t kFormatInformation = 0x5b4b;
   PutFormatBits(kFormatInformation);
 
   // QR codes require some framing of the data which requires 12 bits of
   // overhead. Since 12 is not a multiple of eight, a frame-shift of all
   // subsequent bytes is required.
   uint8_t prefixed_data[kDataBytes];
-  prefixed_data[0] = 0x42;
-  prefixed_data[1] = 0x00 | (in[0] >> 4);
-  for (size_t i = 0; i < kInputBytes - 1; i++) {
+  static_assert(kInputBytes < 256, "in too large for 8-bit length");
+  const uint8_t len8 = static_cast<uint8_t>(in.size());
+  prefixed_data[0] = 0x40 | (len8 >> 4);
+  prefixed_data[1] = (len8 << 4);
+  if (!in.empty()) {
+    prefixed_data[1] |= (in[0] >> 4);
+  }
+  for (size_t i = 0; i < in.size() - 1; i++) {
     prefixed_data[i + 2] = (in[i] << 4) | (in[i + 1] >> 4);
   }
-  prefixed_data[kDataBytes - 1] = in[kInputBytes - 1] << 4;
+  if (!in.empty()) {
+    prefixed_data[in.size() + 1] = in[in.size() - 1] << 4;
+  }
+
+  // The QR code looks a little odd with fixed padding. Thus replicate the
+  // message to fill the input.
+  for (size_t i = in.size() + 2; i < kInputBytes; i++) {
+    prefixed_data[i] = prefixed_data[i % (in.size() + 2)];
+  }
 
   // Each segment of input data is expanded with error correcting
   // information and then interleaved.
@@ -329,13 +344,13 @@ void QRCodeGenerator::AddErrorCorrection(uint8_t out[kSegmentBytes],
   //        acc *= (z - x^i)
   //    return acc
   //
-  // gen = generatorPoly(18)
+  // gen = generatorPoly(24)
   // coeffs = list(gen)
   // gen = [toByte(x) for x in coeffs]
   // print 'uint8_t kGenerator[' + str(len(gen)) + '] = {' + str(gen) + '}'
   static constexpr uint8_t kGenerator[kSegmentECBytes + 1] = {
-      146, 217, 67,  32,  75,  173, 82,  73,  220, 240,
-      215, 199, 175, 149, 113, 183, 251, 239, 1,
+      117, 144, 217, 127, 247, 237, 1,   206, 43,  61,  72,  130, 73,
+      229, 150, 115, 102, 216, 237, 178, 70,  169, 118, 122, 1,
   };
 
   // The error-correction bytes are the remainder of dividing |in| * x^k by

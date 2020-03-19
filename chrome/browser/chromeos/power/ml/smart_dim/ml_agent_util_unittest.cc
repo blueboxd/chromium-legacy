@@ -7,6 +7,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "chromeos/test/chromeos_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,9 +39,10 @@ TEST(SmartDimMlAgentUtilTest, ParseInvalidMetadata) {
   base::flat_map<std::string, int> inputs;
   base::flat_map<std::string, int> outputs;
 
-  EXPECT_FALSE(ParseMetaInfoFromString(json_string, &metrics_model_name,
-                                       &threshold, &expected_feature_size,
-                                       &inputs, &outputs));
+  const base::Optional<base::Value> root = base::JSONReader::Read(json_string);
+  EXPECT_FALSE(ParseMetaInfoFromJsonObject(root.value(), &metrics_model_name,
+                                           &threshold, &expected_feature_size,
+                                           &inputs, &outputs));
   EXPECT_EQ(expected_feature_size, 0LU);
   EXPECT_EQ(metrics_model_name, "");
   EXPECT_DOUBLE_EQ(threshold, 0.0);
@@ -59,9 +61,10 @@ TEST(SmartDimMlAgentUtilTest, ParseValidMetadata) {
   base::flat_map<std::string, int> inputs;
   base::flat_map<std::string, int> outputs;
 
-  EXPECT_TRUE(ParseMetaInfoFromString(json_string, &metrics_model_name,
-                                      &threshold, &expected_feature_size,
-                                      &inputs, &outputs));
+  const base::Optional<base::Value> root = base::JSONReader::Read(json_string);
+  EXPECT_TRUE(ParseMetaInfoFromJsonObject(root.value(), &metrics_model_name,
+                                          &threshold, &expected_feature_size,
+                                          &inputs, &outputs));
   EXPECT_EQ(expected_feature_size, 343LU);
   EXPECT_EQ(metrics_model_name, "smart_dim_model");
   EXPECT_DOUBLE_EQ(threshold, 0.7);

@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -191,7 +192,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
 
   auto result = (MakeGarbageCollected<BytesConsumerTestReader>(
                      MakeGarbageCollected<FormDataBytesConsumer>(
-                         GetDocument().ToExecutionContext(), data)))
+                         GetFrame().DomWindow(), data)))
                     ->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ("foohoge",
@@ -202,7 +203,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromComplexFormData) {
   scoped_refptr<EncodedFormData> data = ComplexFormData();
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), data, underlying);
+      GetFrame().DomWindow(), data, underlying);
   Checkpoint checkpoint;
 
   const char* buffer = nullptr;
@@ -277,7 +278,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromSimpleFormData) {
       data->EncodeMultiPartFormData();
 
   BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data);
+      GetFrame().DomWindow(), input_form_data);
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -296,7 +297,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
   BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data);
+      GetFrame().DomWindow(), input_form_data);
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -345,7 +346,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromSimpleFormData) {
       data->EncodeMultiPartFormData();
 
   BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data);
+      GetFrame().DomWindow(), input_form_data);
   EXPECT_EQ(input_form_data, consumer->DrainAsFormData());
   EXPECT_FALSE(consumer->DrainAsBlobDataHandle());
   const char* buffer = nullptr;
@@ -358,7 +359,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
   BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data);
+      GetFrame().DomWindow(), input_form_data);
   EXPECT_EQ(input_form_data, consumer->DrainAsFormData());
   EXPECT_FALSE(consumer->DrainAsBlobDataHandle());
   const char* buffer = nullptr;
@@ -385,7 +386,7 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDraining) {
 TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData) {
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), ComplexFormData(), underlying);
+      GetFrame().DomWindow(), ComplexFormData(), underlying);
 
   const char* buffer = nullptr;
   size_t available = 0;
@@ -424,7 +425,7 @@ TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData) {
 
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data, underlying);
+      GetFrame().DomWindow(), input_form_data, underlying);
   Checkpoint checkpoint;
 
   InSequence s;
@@ -446,7 +447,7 @@ TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
 
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data, underlying);
+      GetFrame().DomWindow(), input_form_data, underlying);
   Checkpoint checkpoint;
 
   InSequence s;
@@ -463,7 +464,7 @@ TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
 TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
   auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data);
+      GetFrame().DomWindow(), input_form_data);
   auto* reader = MakeGarbageCollected<BytesConsumerTestReader>(consumer);
   std::pair<BytesConsumer::Result, Vector<char>> result = reader->Run();
   EXPECT_EQ(Result::kDone, result.first);
@@ -475,7 +476,7 @@ TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
 TEST_F(FormDataBytesConsumerTest, DataPipeFormData_DrainAsFormData) {
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
   auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data);
+      GetFrame().DomWindow(), input_form_data);
   scoped_refptr<EncodedFormData> drained_form_data =
       consumer->DrainAsFormData();
   EXPECT_EQ(*input_form_data, *drained_form_data);
@@ -489,7 +490,7 @@ TEST_F(FormDataBytesConsumerTest,
   // Create the consumer and start reading.
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
   auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
-      GetDocument().ToExecutionContext(), input_form_data);
+      GetFrame().DomWindow(), input_form_data);
   const char* buffer = nullptr;
   size_t available = 0;
   EXPECT_EQ(BytesConsumer::Result::kOk,

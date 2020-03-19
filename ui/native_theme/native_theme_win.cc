@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_gdi_object.h"
@@ -136,6 +137,15 @@ class ScopedCreateDCWithBitmap {
   DISALLOW_COPY_AND_ASSIGN(ScopedCreateDCWithBitmap);
 };
 
+base::win::RegKey OpenThemeRegKey(REGSAM access) {
+  base::win::RegKey hkcu_themes_regkey;
+  hkcu_themes_regkey.Open(HKEY_CURRENT_USER,
+                          L"Software\\Microsoft\\Windows\\CurrentVersion\\"
+                          L"Themes\\Personalize",
+                          access);
+  return hkcu_themes_regkey;
+}
+
 }  // namespace
 
 namespace ui {
@@ -173,6 +183,13 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
 
 NativeTheme* NativeTheme::GetInstanceForDarkUI() {
   return NativeThemeWin::dark_instance();
+}
+
+// static
+bool NativeTheme::SystemDarkModeSupported() {
+  static bool system_supports_dark_mode =
+      ([]() { return OpenThemeRegKey(KEY_READ).Valid(); })();
+  return system_supports_dark_mode;
 }
 
 // static
@@ -272,13 +289,8 @@ NativeThemeWin::NativeThemeWin(bool configure_web_instance,
     // Dark Mode currently targets UWP apps, which means Win32 apps need to use
     // alternate, less reliable means of detecting the state. The following
     // can break in future Windows versions.
-    bool key_open_succeeded =
-        hkcu_themes_regkey_.Open(
-            HKEY_CURRENT_USER,
-            L"Software\\Microsoft\\Windows\\CurrentVersion\\"
-            L"Themes\\Personalize",
-            KEY_READ | KEY_NOTIFY) == ERROR_SUCCESS;
-    if (key_open_succeeded) {
+    hkcu_themes_regkey_ = OpenThemeRegKey(KEY_READ | KEY_NOTIFY);
+    if (hkcu_themes_regkey_.Valid()) {
       UpdateDarkModeStatus();
       RegisterThemeRegkeyObserver();
     }
@@ -715,10 +727,6 @@ bool NativeThemeWin::ShouldUseDarkColors() const {
   if (UsesHighContrastColors() && !IsForcedDarkMode())
     return false;
   return NativeTheme::ShouldUseDarkColors();
-}
-
-bool NativeThemeWin::SystemDarkModeSupported() const {
-  return hkcu_themes_regkey_.Valid();
 }
 
 NativeTheme::PreferredColorScheme

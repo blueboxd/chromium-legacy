@@ -228,7 +228,7 @@ IntersectionObserver* IntersectionObserver::Create(
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       MakeGarbageCollected<IntersectionObserverDelegateImpl>(
-          document->ToExecutionContext(), std::move(callback), behavior);
+          document->GetExecutionContext(), std::move(callback), behavior);
   return MakeGarbageCollected<IntersectionObserver>(
       *intersection_observer_delegate, nullptr, root_margin, thresholds,
       semantics, delay, track_visibility, always_report_root_bounds);
@@ -417,11 +417,9 @@ DOMHighResTimeStamp IntersectionObserver::GetEffectiveDelay() const {
 }
 
 DOMHighResTimeStamp IntersectionObserver::GetTimeStamp() const {
-  if (Document* document = Document::From(delegate_->GetExecutionContext())) {
-    if (LocalDOMWindow* dom_window = document->domWindow())
-      return DOMWindowPerformance::performance(*dom_window)->now();
-  }
-  return -1;
+  return DOMWindowPerformance::performance(
+             *To<LocalDOMWindow>(delegate_->GetExecutionContext()))
+      ->now();
 }
 
 bool IntersectionObserver::ComputeIntersections(unsigned flags) {
@@ -446,7 +444,8 @@ void IntersectionObserver::SetNeedsDelivery() {
   if (needs_delivery_)
     return;
   needs_delivery_ = 1;
-  Document::From(GetExecutionContext())
+  To<LocalDOMWindow>(GetExecutionContext())
+      ->document()
       ->EnsureIntersectionObserverController()
       .ScheduleIntersectionObserverForDelivery(*this);
 }

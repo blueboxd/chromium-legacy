@@ -16,6 +16,8 @@ class BrowserView;
 // The 'app menu' button for a web app window.
 class WebAppMenuButton : public AppMenuButton, public views::ButtonListener {
  public:
+  static int GetMenuButtonSizeForBrowser(Browser* browser);
+
   explicit WebAppMenuButton(BrowserView* browser_view);
   ~WebAppMenuButton() override;
 

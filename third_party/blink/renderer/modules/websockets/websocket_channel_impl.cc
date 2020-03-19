@@ -456,7 +456,8 @@ void WebSocketChannelImpl::OnConnectionEstablished(
     mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
         client_receiver,
     network::mojom::blink::WebSocketHandshakeResponsePtr response,
-    mojo::ScopedDataPipeConsumerHandle readable) {
+    mojo::ScopedDataPipeConsumerHandle readable,
+    mojo::ScopedDataPipeProducerHandle writable) {
   DCHECK_EQ(GetState(), State::kConnecting);
   const String& protocol = response->selected_protocol;
   const String& extensions = response->extensions;
@@ -484,6 +485,8 @@ void WebSocketChannelImpl::OnConnectionEstablished(
   websocket_.Bind(std::move(websocket),
                   execution_context_->GetTaskRunner(TaskType::kNetworking));
   readable_ = std::move(readable);
+  // TODO(suzukikeita): Implement upload via |writable_| instead of SendFrame.
+  writable_ = std::move(writable);
   const MojoResult mojo_result = readable_watcher_.Watch(
       readable_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       MOJO_WATCH_CONDITION_SATISFIED,

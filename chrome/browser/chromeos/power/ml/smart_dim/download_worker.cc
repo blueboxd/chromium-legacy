@@ -46,16 +46,14 @@ void DownloadWorker::InitializeFromComponent(
     const std::string& metadata_json,
     const std::string& preprocessor_proto,
     const std::string& model_flatbuffer) {
-  // Meta data contains necessary info to construct model_spec_, and other
-  // optional info.
-  // TODO(crbug.com/1049886) move json parsing to the sandboxed separate parser.
+  // Meta data contains necessary info to construct FlatBufferModelSpec, and
+  // other optional info.
   // TODO(crbug.com/1049888) add new UMA metrics to log the json errors.
-  if (!ParseMetaInfoFromString(std::move(metadata_json), &metrics_model_name_,
-                               &dim_threshold_, &expected_feature_size_,
-                               &inputs_, &outputs_)) {
-    DVLOG(1) << "Failed to parse metadata_json.";
-    return;
-  }
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&DownloadWorker::LoadMetaInfoFromJson,
+                     base::Unretained(this), std::move(metadata_json),
+                     std::move(model_flatbuffer)));
 
   preprocessor_config_ =
       std::make_unique<assist_ranker::ExamplePreprocessorConfig>();
@@ -64,7 +62,26 @@ void DownloadWorker::InitializeFromComponent(
     preprocessor_config_.reset();
     return;
   }
+}
 
+void DownloadWorker::LoadMetaInfoFromJson(const std::string& metadata_json,
+                                          const std::string& model_flatbuffer) {
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      std::move(metadata_json),
+      base::BindOnce(&DownloadWorker::OnJsonParsed, base::Unretained(this),
+                     std::move(model_flatbuffer)));
+}
+
+void DownloadWorker::OnJsonParsed(
+    const std::string& model_flatbuffer,
+    const data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value || !result.value->is_dict() ||
+      !ParseMetaInfoFromJsonObject(result.value.value(), &metrics_model_name_,
+                                   &dim_threshold_, &expected_feature_size_,
+                                   &inputs_, &outputs_)) {
+    DVLOG(1) << "Failed to parse meta info from metadata_json.";
+    return;
+  }
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DownloadWorker::LoadModelAndCreateGraphExecutor,

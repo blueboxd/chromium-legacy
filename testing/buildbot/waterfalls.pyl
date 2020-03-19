@@ -1865,6 +1865,18 @@
           'isolated_scripts': 'ios_code_coverage_tests',
         },
       },
+      'ios-simulator-cronet': {
+        'mixins': [
+          'ios_swarming_account',
+          'mac_10.14',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_11c29'
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_simulator_cronet_tests',
+        },
+      },
       'ios13-beta-simulator': {
         'additional_compile_targets': [
           'all',

@@ -13,10 +13,10 @@ namespace page_load_metrics {
 // timing through IPC.
 class PageTimingSender {
  public:
-  virtual ~PageTimingSender() {}
+  virtual ~PageTimingSender() = default;
   virtual void SendTiming(
       const mojom::PageLoadTimingPtr& timing,
-      const mojom::PageLoadMetadataPtr& metadata,
+      const mojom::FrameMetadataPtr& metadata,
       mojom::PageLoadFeaturesPtr new_features,
       std::vector<mojom::ResourceDataUpdatePtr> resources,
       const mojom::FrameRenderDataUpdate& render_data,

@@ -127,8 +127,8 @@ void V8Unwinder::UpdateModules(base::ModuleCache* module_cache) {
   code_ranges_.ExpandCapacityIfNecessary(required_code_ranges_capacity_);
 }
 
-bool V8Unwinder::CanUnwindFrom(const base::Frame* current_frame) const {
-  const base::ModuleCache::Module* module = current_frame->module;
+bool V8Unwinder::CanUnwindFrom(const base::Frame& current_frame) const {
+  const base::ModuleCache::Module* module = current_frame.module;
   if (!module)
     return false;
   const auto loc = modules_.find(module);

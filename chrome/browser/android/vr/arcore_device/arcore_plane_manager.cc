@@ -5,7 +5,6 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_plane_manager.h"
 
 #include "base/stl_util.h"
-#include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/vr/arcore_device/type_converters.h"
 
 namespace device {
@@ -199,8 +198,6 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
 
 mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
     const {
-  TRACE_EVENT0("gpu", __FUNCTION__);
-
   std::vector<uint64_t> all_plane_ids;
   all_plane_ids.reserve(plane_id_to_plane_object_.size());
   for (const auto& plane_id_and_object : plane_id_to_plane_object_) {
@@ -220,13 +217,8 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
     ArPlane_getType(arcore_session_, ar_plane, &plane_type);
 
     // pose
-    internal::ScopedArCoreObject<ArPose*> plane_pose;
-    ArPose_create(
-        arcore_session_, nullptr,
-        internal::ScopedArCoreObject<ArPose*>::Receiver(plane_pose).get());
-    ArPlane_getCenterPose(arcore_session_, ar_plane, plane_pose.get());
-    mojom::Pose pose =
-        GetMojomPoseFromArPose(arcore_session_, plane_pose.get());
+    ArPlane_getCenterPose(arcore_session_, ar_plane, ar_pose_.get());
+    mojom::Pose pose = GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
 
     // polygon
     int32_t polygon_size;
@@ -305,7 +297,8 @@ base::Optional<gfx::Transform> ArCorePlaneManager::GetMojoFromPlane(
 }
 
 device::internal::ScopedArCoreObject<ArAnchor*>
-ArCorePlaneManager::CreateAnchor(PlaneId id,
+ArCorePlaneManager::CreateAnchor(util::PassKey<ArCoreAnchorManager> pass_key,
+                                 PlaneId id,
                                  const device::mojom::Pose& pose) const {
   auto it = plane_id_to_plane_object_.find(id);
   if (it == plane_id_to_plane_object_.end()) {

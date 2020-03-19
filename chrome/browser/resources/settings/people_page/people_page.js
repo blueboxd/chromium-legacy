@@ -152,8 +152,10 @@ Polymer({
     }
     // </if>
     if (useProfileNameAndIcon) {
-      settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
-          this.handleProfileInfo_.bind(this));
+      /** @type {!settings.ProfileInfoBrowserProxy} */ (
+          settings.ProfileInfoBrowserProxyImpl.getInstance())
+          .getProfileInfo()
+          .then(this.handleProfileInfo_.bind(this));
       this.addWebUIListener(
           'profile-info-changed', this.handleProfileInfo_.bind(this));
     }

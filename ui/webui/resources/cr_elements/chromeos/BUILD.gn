@@ -11,6 +11,16 @@ group("closure_compile") {
   deps = [
     "cr_lottie:closure_compile",
     "cr_picture:closure_compile",
+
+    # Targets for auto-generated Polymer3/JS Modules
+    "cr_picture:closure_compile_module",
+  ]
+}
+
+group("polymer3_elements") {
+  public_deps = [
+    ":cros_color_overrides_module",
+    "cr_picture:modulize",
   ]
 }
 

@@ -109,9 +109,6 @@
       Save to Google Drive
     </message>
     <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT" desc="Print summary, explaining to the user how many pages will be printed.">
-      Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
-    </message>
-    <message name="IDS_PRINT_PREVIEW_NEW_SUMMARY_FORMAT_SHORT" desc="Print summary, explaining to the user how many pages will be printed. Same use as above, but omits the 'Total: '.">
       <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
     </message>
     <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL" desc="Label shown in the print preview summary.">

@@ -208,6 +208,7 @@ include_rules = [
   "+components/rlz",
   "+components/safe_browsing",
   "+components/safe_search_api",
+  "+components/schema_org",
   "+components/search",
   "+components/search_engines",
   "+components/search_provider_logos",

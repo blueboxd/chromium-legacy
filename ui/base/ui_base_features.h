@@ -67,6 +67,10 @@ extern const base::Feature kDirectManipulationStylus;
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kForcedColors;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsForcedColorsEnabled();
 
+// Used to enable the eye-dropper in the refresh color-picker.
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kEyeDropper;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsEyeDropperEnabled();
+
 // Used to enable the new controls UI.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kFormControlsRefresh;

@@ -840,10 +840,11 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
 
   // To clip the scrollbars correctly, overflow_controls_host_layer_ should
   // match our border box size.
-  const IntRect border_box =
-      owning_layer_.GetLayoutBox()->PixelSnappedBorderBoxRect(
-          owning_layer_.SubpixelAccumulation());
-  overflow_controls_host_layer_->SetSize(gfx::Size(border_box.Size()));
+  const IntSize border_box_size =
+      owning_layer_.GetLayoutBox()->PixelSnappedBorderBoxSize(
+          PhysicalOffset(owning_layer_.SubpixelAccumulation() +
+                         owning_layer_.GetLayoutBox()->PhysicalLocation()));
+  overflow_controls_host_layer_->SetSize(gfx::Size(border_box_size));
 }
 
 void CompositedLayerMapping::UpdateMaskLayerGeometry() {

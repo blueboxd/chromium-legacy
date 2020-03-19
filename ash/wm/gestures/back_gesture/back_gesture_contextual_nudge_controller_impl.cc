@@ -35,6 +35,11 @@ BackGestureContextualNudgeControllerImpl::
   DoCleanUp();
 }
 
+void BackGestureContextualNudgeControllerImpl::OnBackGestureStarted() {
+  if (nudge_)
+    nudge_->CancelAnimationOrFadeOutToHide();
+}
+
 void BackGestureContextualNudgeControllerImpl::OnActiveUserSessionChanged(
     const AccountId& account_id) {
   UpdateWindowMonitoring(/*can_show_nudge_immediately=*/true);

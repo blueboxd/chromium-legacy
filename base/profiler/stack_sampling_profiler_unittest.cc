@@ -550,7 +550,7 @@ class TestAuxUnwinder : public Unwinder {
   TestAuxUnwinder(const TestAuxUnwinder&) = delete;
   TestAuxUnwinder& operator=(const TestAuxUnwinder&) = delete;
 
-  bool CanUnwindFrom(const Frame* current_frame) const override { return true; }
+  bool CanUnwindFrom(const Frame& current_frame) const override { return true; }
 
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,

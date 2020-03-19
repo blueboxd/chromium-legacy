@@ -2279,8 +2279,8 @@ void StyleResolver::ComputeFont(Element& element,
 void StyleResolver::UpdateMediaType() {
   if (LocalFrameView* view = GetDocument().View()) {
     bool was_print = print_media_type_;
-    print_media_type_ = DeprecatedEqualIgnoringCase(view->MediaType(),
-                                                    media_type_names::kPrint);
+    print_media_type_ =
+        EqualIgnoringASCIICase(view->MediaType(), media_type_names::kPrint);
     if (was_print != print_media_type_)
       matched_properties_cache_.ClearViewportDependent();
   }

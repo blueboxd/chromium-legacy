@@ -37957,6 +37957,7 @@ from previous Chrome versions.
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
   <int value="-1365503870" label="enable-simplified-fullscreen-ui"/>
   <int value="-1363709707" label="MaterialDesignHistory:disabled"/>
+  <int value="-1362431915" label="RelatedSearches:disabled"/>
   <int value="-1361493814" label="FCMInvalidations:disabled"/>
   <int value="-1358669137" label="enable-supervised-user-blacklist"/>
   <int value="-1357778876" label="ExplicitLanguageAsk:enabled"/>
@@ -38565,6 +38566,7 @@ from previous Chrome versions.
   <int value="-679500267" label="UseXpsForPrinting:disabled"/>
   <int value="-674804217" label="SoleIntegration:enabled"/>
   <int value="-673804828" label="EnablePlayStoreAppSearch:disabled"/>
+  <int value="-673149604" label="RelatedSearches:enabled"/>
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
   <int value="-670188266" label="enable-zip-archiver-unpacker"/>
   <int value="-669761849" label="SplitSettings:disabled"/>
@@ -39131,7 +39133,6 @@ from previous Chrome versions.
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
   <int value="15614295" label="Portals:enabled"/>
-  <int value="19346913" label="ProfileCard:disabled"/>
   <int value="19629326" label="OmniboxExperimentalKeywordMode:enabled"/>
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
   <int value="21055794" label="OpenXR:enabled"/>
@@ -40117,7 +40118,6 @@ from previous Chrome versions.
   <int value="1222032915"
       label="kAutofillRationalizeRepeatedServerPredictions:enabled"/>
   <int value="1222808563" label="DisableInitialMostVisitedFadeIn:disabled"/>
-  <int value="1225879521" label="ProfileCard:enabled"/>
   <int value="1226624874" label="Mus:disabled"/>
   <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1229299518" label="SingleTabMode:disabled"/>

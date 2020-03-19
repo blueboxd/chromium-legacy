@@ -31,6 +31,13 @@ NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
   memcpy(this, &other, sizeof(*this));
 }
 
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+// static
+bool NativeTheme::SystemDarkModeSupported() {
+  return false;
+}
+#endif
+
 SkColor NativeTheme::GetSystemColor(ColorId color_id,
                                     ColorScheme color_scheme) const {
   // TODO(http://crbug.com/1057754): Remove the below restrictions.
@@ -101,10 +108,6 @@ NativeTheme::~NativeTheme() = default;
 
 bool NativeTheme::ShouldUseDarkColors() const {
   return should_use_dark_colors_;
-}
-
-bool NativeTheme::SystemDarkModeSupported() const {
-  return false;
 }
 
 bool NativeTheme::UsesHighContrastColors() const {

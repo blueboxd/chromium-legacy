@@ -5,7 +5,6 @@
 import("//build/config/jumbo.gni")
 import("//third_party/closure_compiler/closure_args.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//third_party/protobuf/proto_library.gni")
 import("//ui/webui/webui_features.gni")
 
 # TODO(rockot): Maybe we can factor these dependencies out of //mojo. They're
@@ -597,9 +596,9 @@ template("mojom") {
 
   write_file("$target_gen_dir/$target_name.deps_sources_list", deps_sources)
 
-  generate_fuzzing =
-      (!defined(invoker.enable_fuzzing) || invoker.enable_fuzzing) &&
-      enable_ipc_fuzzer && (!defined(invoker.testonly) || !invoker.testonly)
+  generate_fuzzing = enable_ipc_fuzzer && (!defined(invoker.enable_fuzzing) ||
+                                           invoker.enable_fuzzing) &&
+                     (!defined(invoker.testonly) || !invoker.testonly)
 
   if (sources_list != []) {
     parser_target_name = "${target_name}__parser"
@@ -935,127 +934,6 @@ template("mojom") {
     }
   }
 
-  if (generate_fuzzing) {
-    generator_mojolpm_proto_target_name =
-        "${target_name}_mojolpm_proto_generator"
-    action(generator_mojolpm_proto_target_name) {
-      #visibility = [ ":*" ]
-      script = mojom_generator_script
-      inputs = mojom_generator_sources + jinja2_sources
-      sources = invoker.sources
-      deps = [
-               ":$parsed_target_name",
-               "//mojo/public/tools/bindings:precompile_templates",
-             ] + verify_deps_target_names
-
-      outputs = []
-      args = common_generator_args
-      filelist = []
-      foreach(source, invoker.sources) {
-        filelist += [ rebase_path("$source", root_build_dir) ]
-        outputs += [ "$target_gen_dir/$source.mojolpm.proto" ]
-      }
-
-      response_file_contents = filelist
-
-      args += [
-        "--filelist={{response_file_name}}",
-        "--generate_non_variant_code",
-        "-g",
-        "mojolpm",
-      ]
-    }
-
-    mojolpm_proto_target_name = "${target_name}_mojolpm_proto"
-    if (defined(invoker.sources)) {
-      proto_library(mojolpm_proto_target_name) {
-        testonly = true
-        generate_python = false
-        sources = process_file_template(
-                invoker.sources,
-                [ "{{source_gen_dir}}/{{source_file_part}}.mojolpm.proto" ])
-        import_dirs = [ "${root_gen_dir}" ]
-        proto_in_dir = "${root_gen_dir}"
-        proto_out_dir = "."
-        proto_deps = [ "//mojo/public/tools/fuzzers:mojolpm_proto_copy" ]
-        proto_deps += [ ":$generator_mojolpm_proto_target_name" ]
-        link_deps = [ "//mojo/public/tools/fuzzers:mojolpm_proto" ]
-
-        foreach(d, all_deps) {
-          # Resolve the name, so that a target //mojo/something becomes
-          # //mojo/something:something and we can append mojoller_proto_suffix
-          # to get the proto dependency name.
-          full_name = get_label_info("$d", "label_no_toolchain")
-          proto_deps += [ "${full_name}_mojolpm_proto" ]
-          link_deps += [ "${full_name}_mojolpm_proto" ]
-        }
-      }
-
-      mojolpm_target_name = "${target_name}_mojolpm"
-      mojolpm_generator_target_name = "${target_name}__generator"
-      static_library(mojolpm_target_name) {
-        testonly = true
-        if (defined(invoker.sources)) {
-          sources = process_file_template(
-                  invoker.sources,
-                  [
-                    "{{source_gen_dir}}/{{source_file_part}}-mojolpm.cc",
-                    "{{source_gen_dir}}/{{source_file_part}}-mojolpm.h",
-                  ])
-        } else {
-          sources = []
-          deps = []
-        }
-
-        public_deps = [
-          ":$generator_shared_target_name",
-
-          # NB: hardcoded dependency on the no-variant variant generator, since
-          # mojolpm only uses the no-variant type.
-          ":$mojolpm_generator_target_name",
-          ":$mojolpm_proto_target_name",
-          "//mojo/public/tools/fuzzers:mojolpm",
-        ]
-
-        deps = [
-          # TODO(markbrand): figure out how to add these dependencies only where
-          # they are needed instead.
-          "//device/vr/buildflags:buildflags",
-          "//media:media_buildflags",
-          "//net:buildflags",
-          "//skia",
-          "//third_party/boringssl",
-          "//third_party/icu:icuuc",
-          "//third_party/perfetto:libperfetto",
-          "//third_party/webrtc_overrides:webrtc_component",
-        ]
-
-        foreach(d, all_deps) {
-          # Resolve the name, so that a target //mojo/something becomes
-          # //mojo/something:something and we can append variant_suffix to
-          # get the cpp dependency name.
-          full_name = get_label_info("$d", "label_no_toolchain")
-          public_deps += [ "${full_name}_mojolpm" ]
-        }
-      }
-    } else {
-      group(mojolpm_proto_target_name) {
-        testonly = true
-        public_deps = [ "//mojo/public/tools/fuzzers:mojolpm_proto" ]
-        if (defined(generator_shared_target_name)) {
-          public_deps += [ ":$generator_shared_target_name" ]
-        }
-        foreach(d, all_deps) {
-          # Resolve the name, so that a target //mojo/something becomes
-          # //mojo/something:something and we can append #mojoller_proto_suffix
-          # to get the proto dependency name.
-          full_name = get_label_info("$d", "label_no_toolchain")
-          public_deps += [ "${full_name}_mojolpm_proto" ]
-        }
-      }
-    }
-  }
-
   # Generate code for variants.
   if (!defined(invoker.disable_variants) || !invoker.disable_variants) {
     enabled_configurations = _bindings_configurations
@@ -1233,12 +1111,6 @@ template("mojom") {
             "$root_gen_dir/${base_path}${variant_dash_suffix}.cc",
             "$root_gen_dir/${base_path}${variant_dash_suffix}.h",
           ]
-          if (generate_fuzzing && !defined(bindings_configuration.variant)) {
-            outputs += [
-              "$root_gen_dir/${base_path}${variant_dash_suffix}-mojolpm.cc",
-              "$root_gen_dir/${base_path}${variant_dash_suffix}-mojolpm.h",
-            ]
-          }
         }
 
         response_file_contents = filelist
@@ -1246,13 +1118,8 @@ template("mojom") {
         args += [
           "--filelist={{response_file_name}}",
           "-g",
+          "c++",
         ]
-
-        if (generate_fuzzing && !defined(bindings_configuration.variant)) {
-          args += [ "c++,mojolpm" ]
-        } else {
-          args += [ "c++" ]
-        }
 
         if (defined(bindings_configuration.variant)) {
           args += [

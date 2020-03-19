@@ -148,12 +148,11 @@ TEST_F(FtlMessageReceptionChannelTest,
               const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             channel_->StopReceivingMessages();
+            run_loop.Quit();
           }));
 
-  channel_->StartReceivingMessages(
-      NotReachedClosure(),
-      test::CheckStatusThenQuitRunLoopCallback(
-          FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
+  channel_->StartReceivingMessages(NotReachedClosure(),
+                                   NotReachedStatusCallback(FROM_HERE));
 
   run_loop.Run();
 }

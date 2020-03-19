@@ -10,7 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/json/json_parser.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
@@ -49,18 +51,19 @@ using improved::mojom::PropertyPtr;
 using improved::mojom::Values;
 using improved::mojom::ValuesPtr;
 
-const std::unordered_set<std::string> kSupportedTypes{
-    entity::kVideoObject, entity::kMovie, entity::kTVEpisode, entity::kTVSeason,
-    entity::kTVSeries};
 bool IsSupportedType(const std::string& type) {
-  return kSupportedTypes.find(type) != kSupportedTypes.end();
+  static const base::NoDestructor<base::flat_set<base::StringPiece>>
+      kSupportedTypes(base::flat_set<base::StringPiece>(
+          {entity::kVideoObject, entity::kMovie, entity::kTVEpisode,
+           entity::kTVSeason, entity::kTVSeries, entity::kDataFeed}));
+  return kSupportedTypes->find(type) != kSupportedTypes->end();
 }
 
 void ExtractEntity(const base::DictionaryValue&, Entity*, int recursion_level);
 
-// Parses a string into a property value. The string may be parsed as a double,
-// date, or time, depending on the types that the property supports. If the
-// property supports text, uses the string itself.
+// Parses a string into a property value. The string may be parsed as a
+// double, date, or time, depending on the types that the property supports.
+// If the property supports text, uses the string itself.
 bool ParseStringValue(const std::string& property_type,
                       base::StringPiece value,
                       Values* values) {
@@ -238,7 +241,8 @@ void ExtractEntity(const base::DictionaryValue& val,
   }
 }
 
-// Extract a JSONObject which corresponds to a single (possibly nested) entity.
+// Extract a JSONObject which corresponds to a single (possibly nested)
+// entity.
 EntityPtr ExtractTopLevelEntity(const base::DictionaryValue& val) {
   EntityPtr entity = Entity::New();
   std::string type;

@@ -144,7 +144,7 @@ void AutoplayUmaHelper::DidMoveToNewDocument(Document& old_document) {
   if (!ShouldListenToContextDestroyed())
     return;
 
-  SetExecutionContext(element_->GetDocument().ToExecutionContext());
+  SetExecutionContext(element_->GetExecutionContext());
 }
 
 void AutoplayUmaHelper::
@@ -215,7 +215,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
               OnIntersectionChangedForMutedVideoPlayMethodBecomeVisible,
           WrapWeakPersistent(this)));
   muted_video_play_method_intersection_observer_->observe(element_);
-  SetExecutionContext(element_->GetDocument().ToExecutionContext());
+  SetExecutionContext(element_->GetExecutionContext());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(
@@ -249,7 +249,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
               WrapWeakPersistent(this)));
   muted_video_offscreen_duration_intersection_observer_->observe(element_);
   element_->addEventListener(event_type_names::kPause, this, false);
-  SetExecutionContext(element_->GetDocument().ToExecutionContext());
+  SetExecutionContext(element_->GetExecutionContext());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {

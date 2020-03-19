@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
@@ -52,15 +53,14 @@ class AssistantAlarmTimerController
   void RemoveModelObserver(AssistantAlarmTimerModelObserver* observer);
 
   // mojom::AssistantAlarmTimerController:
-  void OnAlarmTimerStateChanged(
-      mojom::AssistantAlarmTimerEventPtr event) override;
+  void OnTimerStateChanged(
+      std::vector<mojom::AssistantTimerPtr> timers) override;
 
   // AssistantAlarmTimerModelObserver:
-  void OnAlarmTimerAdded(const AlarmTimer& alarm_timer,
-                         const base::TimeDelta& time_remaining) override;
-  void OnAlarmsTimersTicked(
-      const std::map<std::string, base::TimeDelta>& times_remaining) override;
-  void OnAllAlarmsTimersRemoved() override;
+  void OnTimerAdded(const mojom::AssistantTimer& timer) override;
+  void OnTimerUpdated(const mojom::AssistantTimer& timer) override;
+  void OnTimerRemoved(const mojom::AssistantTimer& timer) override;
+  void OnAllTimersRemoved() override;
 
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
@@ -91,7 +91,7 @@ class AssistantAlarmTimerController
 
   AssistantAlarmTimerModel model_;
 
-  base::RepeatingTimer timer_;
+  base::RepeatingTimer ticker_;
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_;

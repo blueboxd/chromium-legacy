@@ -4,6 +4,7 @@
 
 module page_load_metrics.mojom;
 
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
 import "third_party/blink/public/mojom/use_counter/css_property_id.mojom";
@@ -144,9 +145,23 @@ struct PageLoadTiming {
   // If you add additional members, also be sure to update page_load_timing.h.
 };
 
-struct PageLoadMetadata {
+// FrameIntersectionUpdate contains a frame's intersections with other elements
+// in a page load.
+struct FrameIntersectionUpdate {
+  // The frame's current intersection rect with the main frame document in the
+  // coordinate system of the main frame's viewport. The intersection rect is
+  // an empty rect when there is no intersection with the main frame. No
+  // rect is returned for the main frame. This is only set the first time an
+  // intersection changes and is null otherwise.
+  gfx.mojom.Rect? main_frame_document_intersection_rect;
+};
+
+struct FrameMetadata {
   // These are packed blink::LoadingBehaviorFlag enums.
   int32 behavior_flags = 0;
+
+  // The frame's intersection with page elements.
+  FrameIntersectionUpdate? intersection_update;
 };
 
 // PageLoadFeatures contains a list of features newly observed by use counter.
@@ -262,8 +277,12 @@ struct DeferredResourceCounts {
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
+  // Called when an update is ready to be sent from renderer to browser.
+  // UpdateTiming calls are buffered, and contain all updates that have been
+  // received in the last buffer window. Some of the update data may be empty.
+  // Only called when at least one change has been observed within the frame.
   UpdateTiming(PageLoadTiming page_load_timing,
-               PageLoadMetadata page_load_metadata,
+               FrameMetadata frame_metadata,
                PageLoadFeatures new_features,
                array<ResourceDataUpdate> resources,
                FrameRenderDataUpdate render_data,

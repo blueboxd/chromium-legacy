@@ -10,7 +10,7 @@
 
 namespace base {
 
-bool NativeUnwinderAndroid::CanUnwindFrom(const Frame* current_frame) const {
+bool NativeUnwinderAndroid::CanUnwindFrom(const Frame& current_frame) const {
   return false;
 }
 

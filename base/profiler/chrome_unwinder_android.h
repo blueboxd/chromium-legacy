@@ -25,7 +25,7 @@ class BASE_EXPORT ChromeUnwinderAndroid : public Unwinder {
   ChromeUnwinderAndroid& operator=(const ChromeUnwinderAndroid&) = delete;
 
   // Unwinder:
-  bool CanUnwindFrom(const Frame* current_frame) const override;
+  bool CanUnwindFrom(const Frame& current_frame) const override;
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,
                          ModuleCache* module_cache,

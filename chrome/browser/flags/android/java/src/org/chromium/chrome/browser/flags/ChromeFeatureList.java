@@ -362,7 +362,6 @@ public abstract class ChromeFeatureList {
     public static final String PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES =
             "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
-    public static final String PROFILE_CARD = "ProfileCard";
     public static final String QUERY_TILES = "QueryTiles";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String QUIET_NOTIFICATION_PROMPTS = "QuietNotificationPrompts";
@@ -371,6 +370,7 @@ public abstract class ChromeFeatureList {
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID = "RecoverFromNeverSaveAndroid";
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String REORDER_BOOKMARKS = "ReorderBookmarks";
+    public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
     public static final String SAME_SITE_BY_DEFAULT_COOKIES = "SameSiteByDefaultCookies";
     public static final String SCROLL_TO_EXPAND_PAYMENT_HANDLER = "ScrollToExpandPaymentHandler";

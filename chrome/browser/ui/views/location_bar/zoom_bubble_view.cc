@@ -136,7 +136,8 @@ bool IsBrowserFullscreen(Browser* browser) {
 views::View* GetAnchorViewForBrowser(Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (!IsBrowserFullscreen(browser) || browser_view->IsToolbarVisible() ||
-      browser_view->immersive_mode_controller()->IsRevealed()) {
+      browser_view->immersive_mode_controller()->IsRevealed() ||
+      browser->app_controller()) {
     return browser_view->toolbar_button_provider()->GetAnchorView(
         PageActionIconType::kZoom);
   }

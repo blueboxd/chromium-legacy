@@ -78,8 +78,8 @@ Mutex& CreationMutex() {
 LocalFrame* ToFrame(ExecutionContext* context) {
   if (!context)
     return nullptr;
-  if (auto* document = Document::DynamicFrom(context))
-    return document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(context))
+    return window->GetFrame();
   if (context->IsMainThreadWorkletGlobalScope())
     return To<WorkletGlobalScope>(context)->GetFrame();
   return nullptr;
@@ -172,8 +172,8 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
                                          ErrorEvent* event) {
   LocalFrame* frame = nullptr;
   ScriptState* script_state = nullptr;
-  if (auto* document = Document::DynamicFrom(context)) {
-    frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
+    frame = window->GetFrame();
     if (!frame)
       return;
     script_state =
@@ -384,9 +384,8 @@ static Node* SecondArgumentAsNode(
     if (Node* node = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[1]))
       return node;
   }
-  ExecutionContext* execution_context =
-      ToExecutionContext(info.GetIsolate()->GetCurrentContext());
-  return Document::DynamicFrom(execution_context);
+  auto* window = CurrentDOMWindow(info.GetIsolate());
+  return window ? window->document() : nullptr;
 }
 
 void MainThreadDebugger::QuerySelectorCallback(

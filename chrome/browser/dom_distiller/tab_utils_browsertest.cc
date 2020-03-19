@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -20,6 +21,7 @@
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -124,8 +126,8 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
     if (!DistillerJavaScriptWorldIdIsSet()) {
       SetDistillerJavaScriptWorldId(content::ISOLATED_WORLD_ID_CONTENT_END);
     }
-    ASSERT_TRUE(embedded_test_server()->Start());
-    article_url_ = embedded_test_server()->GetURL(kSimpleArticlePath);
+    ASSERT_TRUE(https_server_->Start());
+    article_url_ = https_server_->GetURL(kSimpleArticlePath);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -133,6 +135,11 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  void SetUpInProcessBrowserTestFixture() override {
+    https_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  }
   const GURL& article_url() const { return article_url_; }
 
   std::string GetPageTitle(content::WebContents* web_contents) const {
@@ -140,6 +147,8 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
                                              "document.title")
         .GetString();
   }
+
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
  private:
   GURL article_url_;
@@ -239,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
   int process_id = main_frame->GetProcess()->GetID();
   int frame_routing_id = main_frame->GetRoutingID();
-  GURL url2(embedded_test_server()->GetURL("/title1.html"));
+  GURL url2(https_server_->GetURL("/title1.html"));
 
   // Navigate to the page
   ui_test_utils::NavigateToURL(browser(), url1);
@@ -252,6 +261,26 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
       process_id, frame_routing_id,
       "browser::DomDistiller_SelfDeletingRequestDelegate"));
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, SecurityStateIsNone) {
+  content::WebContents* initial_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), article_url());
+
+  // Check security state is not NONE.
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(initial_web_contents);
+  ASSERT_NE(security_state::NONE, helper->GetSecurityLevel());
+
+  DistillCurrentPageAndView(initial_web_contents);
+  content::WebContents* after_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  DistilledPageObserver(after_web_contents).WaitUntilFinishedLoading();
+
+  // Now security state should be NONE.
+  helper = SecurityStateTabHelper::FromWebContents(after_web_contents);
+  ASSERT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 }  // namespace

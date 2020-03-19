@@ -7,6 +7,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
@@ -33,7 +34,7 @@ class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
             kHTMLCanvasToBlobCallback,
             nullptr,
             base::TimeTicks(),
-            document->ToExecutionContext(),
+            document->GetExecutionContext(),
             nullptr) {
     if (fail_encoder_initialization)
       fail_encoder_initialization_for_test_ = true;
@@ -293,8 +294,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
                   source_bitmap_image, options,
                   CanvasAsyncBlobCreator::ToBlobFunctionType::
                       kHTMLCanvasConvertToBlobPromise,
-                  base::TimeTicks(), GetDocument().ToExecutionContext(),
-                  nullptr);
+                  base::TimeTicks(), GetFrame().DomWindow(), nullptr);
           ASSERT_TRUE(async_blob_creator->EncodeImageForConvertToBlobTest());
 
           sk_sp<SkData> sk_data = SkData::MakeWithCopy(

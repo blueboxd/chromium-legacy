@@ -2863,13 +2863,12 @@ class ComputedStyle : public ComputedStyleBase,
   bool DiffNeedsFullLayoutForLayoutCustomChild(
       const Document&,
       const ComputedStyle& other) const;
-  bool DiffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
-  void AdjustDiffForNeedsPaintInvalidationObject(const ComputedStyle& other,
-                                                 StyleDifference&,
-                                                 const Document&) const;
-  bool DiffNeedsPaintInvalidationObjectForPaintImage(const StyleImage&,
-                                                     const ComputedStyle& other,
-                                                     const Document&) const;
+  void AdjustDiffForNeedsPaintInvalidation(const ComputedStyle& other,
+                                           StyleDifference&,
+                                           const Document&) const;
+  bool DiffNeedsPaintInvalidationForPaintImage(const StyleImage&,
+                                               const ComputedStyle& other,
+                                               const Document&) const;
   bool DiffNeedsVisualRectUpdate(const ComputedStyle& other) const;
   CORE_EXPORT void UpdatePropertySpecificDifferences(const ComputedStyle& other,
                                                      StyleDifference&) const;

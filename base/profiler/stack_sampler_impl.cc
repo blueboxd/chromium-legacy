@@ -158,7 +158,7 @@ std::vector<Frame> StackSamplerImpl::WalkStack(ModuleCache* module_cache,
     // unwinder if it thinks it can unwind from the current frame, otherwise use
     // the native unwinder.
     Unwinder* unwinder =
-        aux_unwinder && aux_unwinder->CanUnwindFrom(&stack.back())
+        aux_unwinder && aux_unwinder->CanUnwindFrom(stack.back())
             ? aux_unwinder
             : native_unwinder;
 

@@ -1470,9 +1470,8 @@ bool FragmentPaintPropertyTreeBuilder::NeedsOverflowControlsClip() const {
     scroll_controls_bounds.Unite(scrollbar->FrameRect());
   if (const auto* scrollbar = scrollable_area->VerticalScrollbar())
     scroll_controls_bounds.Unite(scrollbar->FrameRect());
-  auto pixel_snapped_border_box_rect =
-      box.PixelSnappedBorderBoxRect(context_.current.paint_offset);
-  pixel_snapped_border_box_rect.SetLocation(IntPoint());
+  IntRect pixel_snapped_border_box_rect(
+      IntPoint(), box.PixelSnappedBorderBoxSize(context_.current.paint_offset));
   return !pixel_snapped_border_box_rect.Contains(scroll_controls_bounds);
 }
 
@@ -2426,6 +2425,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     object_.GetMutableForPainting().SetShouldCheckForPaintInvalidation();
     fragment_data_.SetPaintOffset(context_.current.paint_offset);
     fragment_data_.InvalidateClipPathCache();
+
+    if (object_.IsBox()) {
+      // See PaintLayerScrollableArea::PixelSnappedBorderBoxRect() for the
+      // reason of this.
+      if (auto* scrollable_area = ToLayoutBox(object_).GetScrollableArea())
+        scrollable_area->PositionOverflowControls();
+    }
 
     object_.GetMutableForPainting().InvalidateIntersectionObserverCachedRects();
     object_.GetFrameView()->SetIntersectionObservationState(

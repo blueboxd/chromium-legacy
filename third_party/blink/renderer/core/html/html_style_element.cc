@@ -47,8 +47,8 @@ void HTMLStyleElement::ParseAttribute(
     sheet_->SetTitle(params.new_value);
   } else if (params.name == html_names::kMediaAttr && isConnected() &&
              GetDocument().IsActive() && sheet_) {
-    sheet_->SetMediaQueries(MediaQuerySet::Create(
-        params.new_value, GetDocument().ToExecutionContext()));
+    sheet_->SetMediaQueries(
+        MediaQuerySet::Create(params.new_value, GetExecutionContext()));
     GetDocument().GetStyleEngine().MediaQueriesChangedInScope(GetTreeScope());
   } else if (params.name == html_names::kTypeAttr) {
     HTMLElement::ParseAttribute(params);

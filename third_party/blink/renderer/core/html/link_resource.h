@@ -39,6 +39,7 @@
 namespace blink {
 
 class Document;
+class ExecutionContext;
 class HTMLLinkElement;
 class LocalFrame;
 
@@ -66,6 +67,7 @@ class CORE_EXPORT LinkResource : public GarbageCollected<LinkResource> {
   Document& GetDocument();
   const Document& GetDocument() const;
   WTF::TextEncoding GetCharset() const;
+  ExecutionContext* GetExecutionContext();
 
   Member<HTMLLinkElement> owner_;
 

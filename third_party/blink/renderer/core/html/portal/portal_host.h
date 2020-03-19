@@ -14,7 +14,6 @@
 namespace blink {
 
 struct BlinkTransferableMessage;
-class Document;
 class ExecutionContext;
 class LocalDOMWindow;
 class ScriptValue;
@@ -38,8 +37,6 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
   PortalHost* ToPortalHost() override;
-
-  Document* GetDocument() const;
 
   // Called immediately before dispatching the onactivate event.
   void OnPortalActivated();

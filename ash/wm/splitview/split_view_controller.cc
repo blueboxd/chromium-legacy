@@ -373,17 +373,15 @@ SplitViewController::~SplitViewController() {
 }
 
 bool SplitViewController::InSplitViewMode() const {
-  return InClamshellSplitViewMode() || InTabletSplitViewMode();
+  return state_ != State::kNoSnap;
 }
 
 bool SplitViewController::InClamshellSplitViewMode() const {
-  return state_ != State::kNoSnap &&
-         split_view_type_ == SplitViewType::kClamshellType;
+  return InSplitViewMode() && split_view_type_ == SplitViewType::kClamshellType;
 }
 
 bool SplitViewController::InTabletSplitViewMode() const {
-  return state_ != State::kNoSnap &&
-         split_view_type_ == SplitViewType::kTabletType;
+  return InSplitViewMode() && split_view_type_ == SplitViewType::kTabletType;
 }
 
 bool SplitViewController::CanSnapWindow(aura::Window* window) const {

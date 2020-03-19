@@ -36,7 +36,7 @@ class StyleDifference {
   };
 
   StyleDifference()
-      : paint_invalidation_type_(kNoPaintInvalidation),
+      : needs_paint_invalidation_(false),
         layout_type_(kNoLayout),
         needs_collect_inlines_(false),
         needs_reshape_(false),
@@ -47,8 +47,7 @@ class StyleDifference {
         compositing_reasons_changed_(false) {}
 
   void Merge(StyleDifference other) {
-    paint_invalidation_type_ =
-        std::max(paint_invalidation_type_, other.paint_invalidation_type_);
+    needs_paint_invalidation_ |= other.needs_paint_invalidation_;
     layout_type_ = std::max(layout_type_, other.layout_type_);
     needs_collect_inlines_ |= other.needs_collect_inlines_;
     needs_reshape_ |= other.needs_reshape_;
@@ -61,39 +60,21 @@ class StyleDifference {
   }
 
   bool HasDifference() const {
-    return paint_invalidation_type_ || layout_type_ || needs_collect_inlines_ ||
-           needs_reshape_ || property_specific_differences_ ||
-           recompute_visual_overflow_ || visual_rect_update_ ||
-           scroll_anchor_disabling_property_changed_ ||
+    return needs_paint_invalidation_ || layout_type_ ||
+           needs_collect_inlines_ || needs_reshape_ ||
+           property_specific_differences_ || recompute_visual_overflow_ ||
+           visual_rect_update_ || scroll_anchor_disabling_property_changed_ ||
            compositing_reasons_changed_;
   }
 
   bool HasAtMostPropertySpecificDifferences(
       unsigned property_differences) const {
-    return !paint_invalidation_type_ && !layout_type_ &&
+    return !needs_paint_invalidation_ && !layout_type_ &&
            !(property_specific_differences_ & ~property_differences);
   }
 
-  bool NeedsFullPaintInvalidation() const {
-    return paint_invalidation_type_ != kNoPaintInvalidation;
-  }
-
-  // The object just needs to issue paint invalidations.
-  bool NeedsPaintInvalidationObject() const {
-    return paint_invalidation_type_ == kPaintInvalidationObject;
-  }
-  void SetNeedsPaintInvalidationObject() {
-    DCHECK(!NeedsPaintInvalidationSubtree());
-    paint_invalidation_type_ = kPaintInvalidationObject;
-  }
-
-  // The object and its descendants need to issue paint invalidations.
-  bool NeedsPaintInvalidationSubtree() const {
-    return paint_invalidation_type_ == kPaintInvalidationSubtree;
-  }
-  void SetNeedsPaintInvalidationSubtree() {
-    paint_invalidation_type_ = kPaintInvalidationSubtree;
-  }
+  bool NeedsPaintInvalidation() const { return needs_paint_invalidation_; }
+  void SetNeedsPaintInvalidation() { needs_paint_invalidation_ = true; }
 
   bool NeedsLayout() const { return layout_type_ != kNoLayout; }
   void ClearNeedsLayout() { layout_type_ = kNoLayout; }
@@ -205,12 +186,7 @@ class StyleDifference {
   friend CORE_EXPORT std::ostream& operator<<(std::ostream&,
                                               const StyleDifference&);
 
-  enum PaintInvalidationType {
-    kNoPaintInvalidation,
-    kPaintInvalidationObject,
-    kPaintInvalidationSubtree,
-  };
-  unsigned paint_invalidation_type_ : 2;
+  unsigned needs_paint_invalidation_ : 1;
 
   enum LayoutType { kNoLayout = 0, kPositionedMovement, kFullLayout };
   unsigned layout_type_ : 2;

@@ -667,7 +667,7 @@ void PageLoadTracker::OnMainFrameMetadataChanged() {
 
 void PageLoadTracker::OnSubframeMetadataChanged(
     content::RenderFrameHost* rfh,
-    const mojom::PageLoadMetadata& metadata) {
+    const mojom::FrameMetadata& metadata) {
   for (const auto& observer : observers_) {
     observer->OnLoadingBehaviorObserved(rfh, metadata.behavior_flags);
   }
@@ -708,6 +708,14 @@ void PageLoadTracker::UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                                            const mojom::CpuTiming& timing) {
   for (const auto& observer : observers_) {
     observer->OnCpuTimingUpdate(rfh, timing);
+  }
+}
+
+void PageLoadTracker::OnFrameIntersectionUpdate(
+    content::RenderFrameHost* rfh,
+    const mojom::FrameIntersectionUpdate& frame_intersection_update) {
+  for (const auto& observer : observers_) {
+    observer->OnFrameIntersectionUpdate(rfh, frame_intersection_update);
   }
 }
 
@@ -770,11 +778,11 @@ base::Optional<base::TimeDelta> PageLoadTracker::GetPageEndTime() const {
   return page_end_time;
 }
 
-const mojom::PageLoadMetadata& PageLoadTracker::GetMainFrameMetadata() const {
+const mojom::FrameMetadata& PageLoadTracker::GetMainFrameMetadata() const {
   return metrics_update_dispatcher_.main_frame_metadata();
 }
 
-const mojom::PageLoadMetadata& PageLoadTracker::GetSubframeMetadata() const {
+const mojom::FrameMetadata& PageLoadTracker::GetSubframeMetadata() const {
   return metrics_update_dispatcher_.subframe_metadata();
 }
 

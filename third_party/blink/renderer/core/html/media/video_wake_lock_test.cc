@@ -124,12 +124,12 @@ class VideoWakeLockTest : public PageTestBase {
   void SetFakeCcLayer(cc::Layer* layer) { video_->SetCcLayer(layer); }
 
   void SimulatePlaying() {
-    video_wake_lock_->Invoke(GetDocument().ToExecutionContext(),
+    video_wake_lock_->Invoke(GetFrame().DomWindow(),
                              Event::Create(event_type_names::kPlaying));
   }
 
   void SimulatePause() {
-    video_wake_lock_->Invoke(GetDocument().ToExecutionContext(),
+    video_wake_lock_->Invoke(GetFrame().DomWindow(),
                              Event::Create(event_type_names::kPause));
   }
 
@@ -151,12 +151,12 @@ class VideoWakeLockTest : public PageTestBase {
   }
 
   void SimulateContextPause() {
-    GetDocument().ToExecutionContext()->SetLifecycleState(
+    GetFrame().DomWindow()->SetLifecycleState(
         mojom::FrameLifecycleState::kPaused);
   }
 
   void SimulateContextRunning() {
-    GetDocument().ToExecutionContext()->SetLifecycleState(
+    GetFrame().DomWindow()->SetLifecycleState(
         mojom::FrameLifecycleState::kRunning);
   }
 

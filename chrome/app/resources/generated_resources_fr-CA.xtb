@@ -290,7 +290,7 @@
 <translation id="1398853756734560583">Agrandir</translation>
 <translation id="139911022479327130">Déverrouillez votre téléphone et confirmez qu'il s'agit bien de vous</translation>
 <translation id="1399511500114202393">Aucun certificat utilisateur</translation>
-<translation id="1401308693935339022">Utiliser la localisation. Permettez aux services et applications d'utiliser la position de cet appareil s'ils disposent de l'autorisation d'accès nécessaire. Google peut collecter périodiquement des données de localisation et les utiliser de manière anonyme afin d'améliorer la précision et les services de localisation.</translation>
+<translation id="1401308693935339022">Utiliser la localisation. Permettez aux services et aux applications d'utiliser la position de cet appareil s'ils disposent de l'autorisation d'accès nécessaire. Google peut collecter périodiquement des données de localisation et les utiliser de manière anonyme afin d'améliorer la précision et les services de localisation.</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisé)</translation>
 <translation id="1405779994569073824">Planté.</translation>
 <translation id="1406500794671479665">Vérification en cours…</translation>
@@ -2551,7 +2551,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4412698727486357573">Centre d'aide</translation>
 <translation id="44141919652824029">Autoriser « <ph name="APP_NAME" /> » à obtenir la liste de vos appareils USB connectés?</translation>
 <translation id="4414232939543644979">Nouvelle fenêtre de navigation pr&amp;ivée</translation>
-<translation id="4415213869328311284">Vous êtes prêt à utiliser votre<ph name="DEVICE_TYPE" />.</translation>
+<translation id="4415213869328311284">Vous êtes prêt à utiliser votre <ph name="DEVICE_TYPE" />.</translation>
 <translation id="4415245286584082850">Aucun appareil trouvé. Ouvrez un article du Centre d'aide dans un nouvel onglet.</translation>
 <translation id="4415276339145661267">Gérer votre compte Google</translation>
 <translation id="4415748029120993980">Courbe elliptique SECG secp384r1 (aussi appelée NIST P-384)</translation>
@@ -2727,7 +2727,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4660476621274971848">Version « <ph name="NEW_ID" /> » reçue au lieu de la version « <ph name="EXPECTED_VERSION" /> » attendue</translation>
 <translation id="4660838440047236328">la disposition de votre pièce.</translation>
 <translation id="4661407454952063730">Les données d'application correspondent à toutes les données enregistrées par une application (en fonction des paramètres définis par le concepteur), y compris les données comme les contacts, les messages et les photos.</translation>
-<translation id="4661931051827810091">Envoie des URL anonymes de certaines pages que vous visitez, certaines données système et du contenu partiel des pages en question afin d'aider à découvrir et à bloquer les nouvelles menaces envers tous les internautes.</translation>
+<translation id="4661931051827810091">Envoie des URL anonymes de certaines pages que vous visitez, certaines données système et des échantillons de contenu des pages afin d'aider à découvrir et à bloquer les nouvelles menaces envers tous les internautes.</translation>
 <translation id="4662788913887017617">Partagez ce favori avec votre iPhone</translation>
 <translation id="4663373278480897665">La caméra est autorisée</translation>
 <translation id="4664482161435122549">Erreur d'exportation de fichiers PKCS n° 12</translation>
@@ -5490,7 +5490,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8408068190360279472">Réseau <ph name="NETWORK_TYPE" />; connexion en cours…</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Demander d'abord (recommandé)</translation>
-<translation id="8417573335434189196">Ce mode ne vous protège pas contre les téléchargements, les extensions, ni les sites Web dangereux. Chrome ne recommande pas ce paramètre.</translation>
+<translation id="8417573335434189196">Ce mode ne vous protège pas contre les téléchargements, les extensions ni les sites Web dangereux. Chrome ne recommande pas ce paramètre.</translation>
 <translation id="8418445294933751433">Afficher dan&amp;s un onglet</translation>
 <translation id="8419098111404128271">Résultats de recherche pour « <ph name="SEARCH_TEXT" /> »</translation>
 <translation id="8419368276599091549">Faites la connaissance de votre <ph name="DEVICE_TYPE" />!</translation>

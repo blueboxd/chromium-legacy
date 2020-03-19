@@ -48,7 +48,7 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
     entries_.AppendVector(entries);
   }
   ExecutionContext* GetExecutionContext() const override {
-    return document_->ToExecutionContext();
+    return document_->GetExecutionContext();
   }
   int CallCount() const { return call_count_; }
   int EntryCount() const { return entries_.size(); }

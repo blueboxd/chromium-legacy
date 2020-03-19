@@ -1450,7 +1450,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2903457445916429186">Abrir elementos seleccionados</translation>
 <translation id="2903882649406874750">Bloquear sempre a <ph name="HOST" /> o acceso aos sensores</translation>
 <translation id="2904456025988372123">Preguntar cando un sitio tente descargar ficheiros automaticamente despois do primeiro ficheiro</translation>
-<translation id="2905789169763945526">Co modo de incógnito activado, os sitios web non poden utilizar cookies para ver a túa actividade de navegación en distintos sitios, por exemplo, para personalizar os anuncios. É posible que algúns sitios non funcionen correctamente.</translation>
+<translation id="2905789169763945526">Co modo de incógnito activado, os sitios web non poden utilizar cookies para ver a túa actividade de navegación en distintos sitios (por exemplo, para personalizar os anuncios). É posible que algúns sitios non funcionen correctamente.</translation>
 <translation id="2907619724991574506">URL de inicio</translation>
 <translation id="2907798539022650680">Non se puido conectar con "<ph name="NAME" />": <ph name="DETAILS" />
     Mensaxe do servidor: <ph name="SERVER_MSG" /></translation>
@@ -4660,7 +4660,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7310598146671372464">Non se puido iniciar sesión. O servidor non admite os tipos especificados de encriptación Kerberos. Ponte en contacto co teu administrador.</translation>
 <translation id="7311079019872751559">Acceso a complementos non sometidos a illamento de procesos</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="732018663949361753">Os sitios web non poden utilizar cookies para ver a túa actividade de navegación en distintos sitios, por exemplo, para personalizar os anuncios.  É posible que algúns sitios non funcionen correctamente.</translation>
+<translation id="732018663949361753">Os sitios web non poden utilizar cookies para ver a túa actividade de navegación en distintos sitios (por exemplo, para personalizar os anuncios).  É posible que algúns sitios non funcionen correctamente.</translation>
 <translation id="7321545336522791733">Non se pode acceder ao servidor</translation>
 <translation id="7324297612904500502">Foro de Chrome Beta</translation>
 <translation id="7325209047678309347">O papel está atascado</translation>

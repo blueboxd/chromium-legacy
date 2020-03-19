@@ -106,6 +106,8 @@ grit("media_app_resources") {
   ]
   output_dir = "$root_gen_dir/chromeos"
 
+  use_brotli = true
+
   grit_flags = [
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),

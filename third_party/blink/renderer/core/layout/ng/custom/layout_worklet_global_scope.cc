@@ -104,7 +104,7 @@ void LayoutWorkletGlobalScope::registerLayout(
   Vector<AtomicString> custom_invalidation_properties;
 
   if (!V8ObjectParser::ParseCSSPropertyList(
-          current_context, GetFrame()->GetDocument()->ToExecutionContext(),
+          current_context, GetFrame()->DomWindow(),
           layout_ctor->CallbackObject(), "inputProperties",
           &native_invalidation_properties, &custom_invalidation_properties,
           &exception_state))
@@ -114,7 +114,7 @@ void LayoutWorkletGlobalScope::registerLayout(
   Vector<AtomicString> child_custom_invalidation_properties;
 
   if (!V8ObjectParser::ParseCSSPropertyList(
-          current_context, GetFrame()->GetDocument()->ToExecutionContext(),
+          current_context, GetFrame()->DomWindow(),
           layout_ctor->CallbackObject(), "childInputProperties",
           &child_native_invalidation_properties,
           &child_custom_invalidation_properties, &exception_state))
@@ -145,8 +145,7 @@ void LayoutWorkletGlobalScope::registerLayout(
       child_custom_invalidation_properties);
   layout_definitions_.Set(name, definition);
 
-  LayoutWorklet* layout_worklet =
-      LayoutWorklet::From(*GetFrame()->GetDocument()->domWindow());
+  LayoutWorklet* layout_worklet = LayoutWorklet::From(*GetFrame()->DomWindow());
   LayoutWorklet::DocumentDefinitionMap* document_definition_map =
       layout_worklet->GetDocumentDefinitionMap();
   if (document_definition_map->Contains(name)) {

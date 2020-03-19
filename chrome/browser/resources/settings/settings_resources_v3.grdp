@@ -367,6 +367,26 @@
              use_base_dir="false"
              type="BINDATA" />
   </if>
+  <if expr="chromeos">
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_ACCOUNT_MANAGER_BROWSER_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/account_manager_browser_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_PEOPLE_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/people_page.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_PROFILE_INFO_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/profile_info_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_SIGNOUT_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/signout_dialog.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_PLURAL_STRING_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/plural_string_proxy.m.js"
            use_base_dir="false"

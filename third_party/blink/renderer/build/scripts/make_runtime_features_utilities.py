@@ -5,40 +5,55 @@
 from collections import defaultdict
 
 
-def _runtime_features_graph_sanity_check(features):
+def _error_message(message, feature, other_feature=None):
+    message = 'runtime_enabled_features.json5: {}: {}'.format(feature, message)
+    if other_feature:
+        message += ': {}'.format(other_feature)
+    return message
+
+
+def _validate_runtime_features_graph(features):
     """
     Raises AssertionError when sanity check failed.
-    @param features: a List[Dict]. Each Dict must have key 'depends_on' and 'name'
+    @param features: a List[Dict]. See origin_trials().
     @returns None
     """
     feature_pool = {str(f['name']) for f in features}
+    origin_trial_pool = {
+        str(f['name'])
+        for f in features if f['origin_trial_feature_name']
+    }
     for f in features:
+        assert not f['implied_by'] or not f['depends_on'], _error_message(
+            'Only one of implied_by and depends_on is allowed', f['name'])
         for d in f['depends_on']:
-            assert d in feature_pool, "{} not found in runtime_enabled_features.json5".format(
-                d)
+            assert d in feature_pool, _error_message(
+                'Depends on non-existent-feature', f['name'], d)
+        for i in f['implied_by']:
+            assert i in feature_pool, _error_message(
+                'Implied by non-existent-feature', f['name'], i)
+            assert f['origin_trial_feature_name'] or i not in origin_trial_pool, \
+                _error_message(
+                    'A feature must be in origin trial if implied by an origin trial feature',
+                    f['name'], i)
 
-    def cyclic(features):
-        """
-        Returns True if the runtime features graph contains a cycle
-        @returns bool
-        """
-        graph = {
-            str(feature['name']): feature['depends_on']
-            for feature in features
-        }
-        path = set()
+    graph = {
+        str(feature['name']): feature['depends_on'] + feature['implied_by']
+        for feature in features
+    }
+    path = set()
 
-        def visit(vertex):
-            path.add(vertex)
-            for neighbor in graph[vertex]:
-                if neighbor in path or visit(neighbor):
-                    return True
-            path.remove(vertex)
-            return False
+    def has_cycle(vertex):
+        path.add(vertex)
+        for neighbor in graph[vertex]:
+            if neighbor in path or has_cycle(neighbor):
+                return True
+        path.remove(vertex)
+        return False
 
-        return any(visit(str(f['name'])) for f in features)
-
-    assert not cyclic(features), "Cycle found in dependency graph"
+    for f in features:
+        assert not has_cycle(str(f['name'])), _error_message(
+            'Cycle found in depends_on/implied_by graph', f['name'])
 
 
 def origin_trials(features):
@@ -48,10 +63,12 @@ def origin_trials(features):
     or any of its dependencies are in origin trial. Propagate dependency
     tag use DFS can find all features that are in origin trial.
 
-    @param features: a List[Dict]. Each Dict much has key named 'depends_on'
+    @param features: a List[Dict]. Each Dict must have keys 'name',
+           'depends_on', 'implied_by' and 'origin_trial_feature_name'
+           (see runtime_enabled_features.json5).
     @returns Set[str(runtime feature name)]
     """
-    _runtime_features_graph_sanity_check(features)
+    _validate_runtime_features_graph(features)
 
     origin_trials_set = set()
 

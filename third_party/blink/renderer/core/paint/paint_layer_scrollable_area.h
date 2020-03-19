@@ -466,14 +466,14 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return needs_composited_scrolling_;
   }
 
-  IntRect ResizerCornerRect(const IntRect&, ResizerHitTestType) const;
+  IntRect ResizerCornerRect(ResizerHitTestType) const;
 
   PaintLayer* Layer() const override;
 
   LayoutCustomScrollbarPart* Resizer() const { return resizer_; }
 
-  IntRect RectForHorizontalScrollbar(const IntRect& border_box_rect) const;
-  IntRect RectForVerticalScrollbar(const IntRect& border_box_rect) const;
+  IntRect RectForHorizontalScrollbar() const;
+  IntRect RectForVerticalScrollbar() const;
 
   bool ScheduleAnimation() override;
   bool ShouldPerformScrollAnchoring() const override;
@@ -616,8 +616,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
                           mojom::blink::ScrollType) override;
   void InvalidatePaintForScrollOffsetChange();
 
-  int VerticalScrollbarStart(int min_x, int max_x) const;
-  int HorizontalScrollbarStart(int min_x) const;
+  int VerticalScrollbarStart() const;
+  int HorizontalScrollbarStart() const;
   IntSize ScrollbarOffset(const Scrollbar&) const;
 
   enum ComputeScrollbarExistenceOption { kDefault, kForbidAddingAutoBars };
@@ -659,7 +659,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return *rare_data_.get();
   }
 
-  IntRect CornerRect(const IntRect& bounds) const;
+  IntRect CornerRect() const;
 
   void ScrollControlWasSetNeedsPaintInvalidation() override;
 
@@ -668,6 +668,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void SetScrollCornerAndResizerVisualRect(const IntRect&);
 
   bool HasNonCompositedStickyDescendants() const;
+
+  IntSize PixelSnappedBorderBoxSize() const;
 
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will

@@ -928,6 +928,8 @@ void CrostiniManager::MaybeUpdateCrostini() {
     // |component_manager| may be nullptr in unit tests.
     return;
   }
+  // This is a new user session, perhaps using an old CrostiniManager.
+  container_upgrade_prompt_shown_.clear();
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(CrostiniManager::CheckPathsAndComponents),

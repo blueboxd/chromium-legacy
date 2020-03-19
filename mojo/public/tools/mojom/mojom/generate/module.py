@@ -1092,69 +1092,9 @@ def MethodPassesInterfaces(method):
   return _AnyMethodParameterRecursive(method, IsInterfaceKind)
 
 
-def MethodPassesHandles(method):
-  for param in method.parameters:
-    if ContainsHandles(param.kind):
-      return True
-  if method.response_parameters != None:
-    for param in method.response_parameters:
-      if ContainsHandles(param.kind):
-        return True
-  return False
-
-
 def HasSyncMethods(interface):
   for method in interface.methods:
     if method.sync:
-      return True
-  return False
-
-
-def ContainsHandles(kind, recurse=False):
-  """Check if the kind contains any handles.
-
-  If {recurse} is set, then this will perform a recursive check of all fields,
-  etc; otherwise it will only check the top-level types in the kind.
-
-  Args:
-    struct: {Kind} The kind to check.
-
-  Returns:
-    {bool}: True if the kind contains handles.
-  """
-  # We remember the types we already checked to avoid infinite recursion when
-  # checking recursive (or mutually recursive) types:
-  checked = set()
-
-  def Check(kind, top_level=False):
-    if kind.spec in checked:
-      return False
-    checked.add(kind.spec)
-    if IsStructKind(kind):
-      if top_level or recurse:
-        return any(Check(field.kind) for field in kind.fields)
-      else:
-        return False
-    elif IsUnionKind(kind):
-      if top_level or recurse:
-        return any(Check(field.kind) for field in kind.fields)
-      else:
-        return False
-    elif IsAnyHandleKind(kind):
-      return True
-    elif IsArrayKind(kind):
-      return Check(kind.kind)
-    elif IsMapKind(kind):
-      return Check(kind.key_kind) or Check(kind.value_kind)
-    else:
-      return False
-
-  return Check(kind, True)
-
-
-def PassesHandles(interface):
-  for method in interface.methods:
-    if MethodPassesHandles(method):
       return True
   return False
 

@@ -197,6 +197,8 @@ struct VisibleSecurityState {
   bool is_view_source;
   // True if the page is a devtools page.
   bool is_devtools;
+  // True if the page is a reader mode page.
+  bool is_reader_mode;
   // True if the page was loaded over a legacy TLS version.
   bool connection_used_legacy_tls;
   // True if the page should be excluded from a UI treatment for legacy TLS

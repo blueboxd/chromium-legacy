@@ -134,6 +134,15 @@ bool IsForcedColorsEnabled() {
   return forced_colors_enabled;
 }
 
+// Enables the eye-dropper in the refresh color-picker.
+const base::Feature kEyeDropper{"EyeDropper",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsEyeDropperEnabled() {
+  return IsFormControlsRefreshEnabled() &&
+         base::FeatureList::IsEnabled(features::kEyeDropper);
+}
+
 // Enable the FormControlsRefresh feature for Windows, ChromeOS, Linux, and Mac.
 // This feature will be released for Android in later milestones. See
 // crbug.com/1012106 for the Windows launch bug, and crbug.com/1012108 for the

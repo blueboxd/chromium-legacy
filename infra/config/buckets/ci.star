@@ -1007,7 +1007,11 @@ ci.fyi_ios_builder(
 
 ci.fyi_ios_builder(
     name = 'ios-simulator-cronet',
+    executable = 'recipe:chromium',
     notifies = ['cronet'],
+    properties = {
+        'xcode_build_version': '11c29',
+    },
 )
 
 ci.fyi_ios_builder(

@@ -515,6 +515,7 @@
 <translation id="1697686431566694143">אישור לערוך את הקובץ</translation>
 <translation id="1698122934742150150">הפעלה נוכחית בלבד במצב גלישה בסתר</translation>
 <translation id="1698650002254827833">אי אפשר לטעון את רשימת האפליקציות. צריך לנסות שוב.</translation>
+<translation id="1700079447639026019">‏אתרים שאף פעם לא יכולים להשתמש בקובצי cookie</translation>
 <translation id="1701062906490865540">הסרת משתמש זה</translation>
 <translation id="1703331064825191675">אין יותר צורך לדאוג לגבי הסיסמאות שלך</translation>
 <translation id="1704970325597567340">בדיקת הבטיחות פעלה בתאריך <ph name="DATE" /></translation>
@@ -735,6 +736,7 @@
 <translation id="1990512225220753005">לא להציג קיצורי דרך בדף הזה</translation>
 <translation id="1992397118740194946">לא מוגדר</translation>
 <translation id="1994173015038366702">כתובת אתר</translation>
+<translation id="1995916364271252349">בדף הזה אפשר לשלוט על המידע שאתרים יכולים להשתמש בו ולהציג אותו (מיקום, מצלמה, חלונות נפתחים ועוד)</translation>
 <translation id="1997484222658892567"><ph name="URL" /> רוצה לאחסן כמות גדולה של נתונים במחשב המקומי שלך באופן קבוע</translation>
 <translation id="1997616988432401742">האישורים שלך</translation>
 <translation id="1999115740519098545">בעת ההפעלה</translation>
@@ -990,6 +992,7 @@
 <translation id="2335111415680198280">{0,plural, =1{סגירת חלון אחד (#)}two{סגירת # חלונות}many{סגירת # חלונות}other{סגירת # חלונות}}</translation>
 <translation id="2335122562899522968">‏דף זה מגדיר קובצי Cookie.</translation>
 <translation id="2336228925368920074">צור סימניה לכל הכרטיסיות...</translation>
+<translation id="2336376423977300504">‏ניקוי קובצי cookie בכל פעם שחלונות נסגרים</translation>
 <translation id="2336381494582898602">שחזור הגדרות יצרן</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> רוצה לבצע התאמה עם</translation>
 <translation id="2342740338116612727">סימניות נוספו</translation>
@@ -1732,6 +1735,7 @@
 <translation id="3317459757438853210">דו-צדדי</translation>
 <translation id="3317678681329786349">לא ניתן להשתמש בדף זה במצלמה ובמיקרופון</translation>
 <translation id="3319048459796106952">חלון 'גלישה בסתר' חדש</translation>
+<translation id="3320630259304269485">גלישה בטוחה (הגנה מאתרים מסוכנים) והגדרות אבטחה אחרות</translation>
 <translation id="3323521181261657960">בונוס! קיבלת עוד זמן מסך</translation>
 <translation id="3325910708063135066">‏המצלמה והמיקרופון מושבתים בהעדפות המערכת של Mac</translation>
 <translation id="3328489342742826322">‏שחזור מגיבוי יביא למחיקת האפליקציות והנתונים הקיימים של Linux בתיקיית קובצי Linux.</translation>
@@ -1851,6 +1855,7 @@
 <translation id="3487007233252413104">פונקציה אנונימית</translation>
 <translation id="348780365869651045">‏ממתין ל-AppCache...</translation>
 <translation id="3488065109653206955">מופעל חלקית</translation>
+<translation id="3489025949017384019">ייתכן שאתרים רבים לא יפעלו כראוי</translation>
 <translation id="3492788708641132712">הסנכרון לא פועל. נסה להיכנס שוב.</translation>
 <translation id="3493486281776271508">דרוש חיבור לאינטרנט</translation>
 <translation id="3493881266323043047">תוקף</translation>
@@ -2006,6 +2011,7 @@
 <translation id="3688526734140524629">מעבר לערוץ אחר</translation>
 <translation id="3688578402379768763">מעודכן</translation>
 <translation id="3688794912214798596">שינוי שפות...</translation>
+<translation id="3690369331356918524">במצב הזה המערכת מזהירה אותך אם סיסמאות נחשפות כתוצאה מפרצה באבטחת המידע</translation>
 <translation id="3691231116639905343">אפליקציות מקלדת</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> רוצה לשתף את המסך שלך</translation>
 <translation id="369135240373237088">כניסה מחדש באמצעות חשבון בית ספרי</translation>
@@ -2144,6 +2150,7 @@
 <translation id="3841964634449506551">הסיסמה לא חוקית</translation>
 <translation id="3842552989725514455">‏גופן Serif</translation>
 <translation id="3846116211488856547">‏אפשר להוריד כלים לפיתוח אתרים, אפליקציות Android ועוד. התקנת Linux תוריד נתונים בנפח של <ph name="DOWNLOAD_SIZE" />.</translation>
+<translation id="3847319713229060696">סיוע לשיפור האבטחה באינטרנט לטובת כולם</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3850914401008572843">ל-<ph name="ORIGIN" /> אין הרשאה לפתוח את התיקייה הזו כי היא מכילה קובצי מערכת</translation>
 <translation id="3851428669031642514">טען סקריפטים לא בטוחים</translation>
@@ -2626,6 +2633,7 @@
 <translation id="4534661889221639075">יש לנסות שוב.</translation>
 <translation id="4535127706710932914">פרופיל ברירת מחדל</translation>
 <translation id="4535767533210902251">חיישן טביעת האצבע מותקן במקש הימני העליון במקלדת. יש לגעת בו בעדינות באחת האצבעות.</translation>
+<translation id="4536140153723794651">‏אתרים שתמיד יכולים להשתמש בקובצי cookie</translation>
 <translation id="4538417792467843292">מחק מילה</translation>
 <translation id="4538684596480161368">חסום תמיד יישומי פלאגין ללא ארגז חול ב-<ph name="HOST" /></translation>
 <translation id="4538792345715658285">מותקן לפי מדיניות של ארגון.</translation>
@@ -2723,6 +2731,7 @@
 <translation id="4665446389743427678">כל הנתונים שמאוחסנים על ידי <ph name="SITE" /> יימחקו.</translation>
 <translation id="4668721319092543482">לחץ כדי להפעיל את <ph name="PLUGIN_NAME" /></translation>
 <translation id="4670064810192446073">מציאות מדומה</translation>
+<translation id="4672879467403304774">‏המערכת מגינה עליך ב-Chrome ובחלק מהאפליקציות האחרות של Google. ההגנה הזו פעילה רק אם נכנסים לחשבון</translation>
 <translation id="46733273239502219">המערכת תמחק גם נתונים שנשמרו במצב אופליין באפליקציות מותקנות</translation>
 <translation id="4673442866648850031">פתח את כלי הסטיילוס לאחר שליפת הסטיילוס</translation>
 <translation id="4677772697204437347">‏זיכרון GPU</translation>
@@ -3141,6 +3150,7 @@
 <translation id="5275352920323889391">כלב</translation>
 <translation id="527605982717517565">‏אפשר תמיד JavaScript ב-<ph name="HOST" /></translation>
 <translation id="5280174558369304332">תוספים להסרה:</translation>
+<translation id="5280243692621919988">‏ניקוי קובצי cookie ונתוני אתרים כשכל החלונות נסגרים</translation>
 <translation id="5280426389926346830">ליצור קיצור דרך?</translation>
 <translation id="528208740344463258">‏צריך להתקין את העדכון הנדרש הזה כדי להוריד אפליקציות Android ולהשתמש בהן. לא יתאפשר לך להשתמש ב-<ph name="DEVICE_TYPE" /> בזמן העדכון. כשההתקנה תסתיים, ה-<ph name="DEVICE_TYPE" /> יופעל מחדש.</translation>
 <translation id="5282733140964383898">‏המשמעות של הפעלת 'לא לעקוב (DNT)' היא שבקשה תיכלל בתנועת הגלישה שלך. התוצאה בפועל תלויה בתגובה של האתר לבקשה ובפרשנות שהוא מייחס לה, אם בכלל. לדוגמה, אתרים מסוימים עשויים להגיב לבקשה זו על ידי הצגת מודעות שאינן מבוססות על אתרים אחרים שבהם ביקרת. אתרים רבים עדיין יאספו את נתוני הגלישה שלך וישתמשו בהם – לדוגמה, על מנת לשפר את האבטחה, לספק תוכן, שירותים, מודעות והמלצות באתרים שלהם, וכדי ליצור נתונים סטטיסטיים לדיווח. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
@@ -4234,6 +4244,7 @@
 <translation id="6767566652486411142">בחירת שפה אחרת...</translation>
 <translation id="6767639283522617719">לא ניתן להצטרף לדומיין. יש לוודא שההגדרות של היחידה הארגונית נכונות.</translation>
 <translation id="6769712124046837540">הוספת מדפסת...</translation>
+<translation id="6770602306803890733">רמת אבטחה משופרת עבורך ועבור כל מי שמתחבר לאינטרנט</translation>
 <translation id="6770664076092644100">‏אימות באמצעות NFC</translation>
 <translation id="6771503742377376720">הוא רשות אישורים</translation>
 <translation id="6772339735733515807">ניהול התוספים שלך</translation>
@@ -4259,6 +4270,7 @@
 <translation id="6798578729981748444">‏סגירת כל החלונות של Firefox תשלים את פעולת הייבוא.</translation>
 <translation id="6798780071646309401">‏caps lock מופעל</translation>
 <translation id="6798954102094737107">פלאגין: <ph name="PLUGIN_NAME" /></translation>
+<translation id="6801129617625983991">הגדרות כלליות</translation>
 <translation id="6801435275744557998">כייל את מסך המגע</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6805038906417219576">אישור</translation>
@@ -4377,6 +4389,8 @@
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6965648386495488594">יציאה</translation>
 <translation id="6965978654500191972">התקן</translation>
+<translation id="6966201992886493384">‏אתרים יכולים להשתמש בקובצי cookie כדי לשפר את חוויית הגלישה שלך, למשל כדי לא להוציא אותך מהחשבון או כדי לזכור את הפריטים שהוספת לעגלת הקניות</translation>
+<translation id="696780070563539690">‏אתרים לא יכולים להשתמש בקובצי ה-cookie שלך כדי לראות את פעילות הגלישה באתרים שונים, למשל לצורך התאמה אישית של מודעות</translation>
 <translation id="6968288415730398122">הזן את הסיסמה כדי להגדיר את נעילת המסך</translation>
 <translation id="6970480684834282392">סוג הפעלה</translation>
 <translation id="6970856801391541997">הדפסת דפים ספציפיים</translation>
@@ -4786,6 +4800,7 @@
 <translation id="7507207699631365376">הצגת <ph name="BEGIN_LINK" />מדיניות הפרטיות<ph name="END_LINK" /> של הספק הזה</translation>
 <translation id="7507930499305566459">אישור מגיב סטטוס</translation>
 <translation id="7508054832109420082">הענקת גישה למדפסות</translation>
+<translation id="751120035300339">‏אתרים לא יכולים להשתמש בקובצי cookie כדי לשפר את חוויית הגלישה שלך, למשל כדי לא להוציא אותך מהחשבון או כדי לזכור את הפריטים שהוספת לעגלת הקניות</translation>
 <translation id="7513029293694390567">היכנס באופן אוטומטי לאתרים באמצעות פרטי כניסה שמורים. כשהאפשרות הזו מושבתת, תתבקש לאשר לפני כל כניסה לאתר.</translation>
 <translation id="7514239104543605883">העתקה למכשיר שלך</translation>
 <translation id="7514365320538308">הורדה</translation>
@@ -5417,6 +5432,7 @@
 <translation id="8320459152843401447">כל המסך שלך</translation>
 <translation id="8322814362483282060">דף זה נחסם לגישה למיקרופון שלך.</translation>
 <translation id="8323167517179506834">הקלד כתובת אתר</translation>
+<translation id="8324784016256120271">‏אתרים יכולים להשתמש בקובצי cookie כדי לראות את פעילות הגלישה שלך באתרים שונים, למשל לצורך התאמה אישית של מודעות</translation>
 <translation id="8326478304147373412">‏PKCS #7, שרשרת אישורים</translation>
 <translation id="8327039559959785305">‏קרתה שגיאה בטעינת קובצי ה-Linux. יש לנסות שוב.</translation>
 <translation id="8327676037044516220">הגדרות תוכן והרשאות</translation>
@@ -5472,6 +5488,7 @@
 <translation id="8408068190360279472">רשת <ph name="NETWORK_TYPE" />, מתבצעת התחברות</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">שאל תחילה (מומלץ)</translation>
+<translation id="8417573335434189196">‏במצב הזה המערכת לא מגינה עליך מפני אתרים, הורדות ותוספים מסוכנים. ההגדרה הזו לא מומלצת על-ידי Chrome.</translation>
 <translation id="8418445294933751433">&amp;הצג ככרטיסייה</translation>
 <translation id="8419098111404128271">תוצאות לחיפוש "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">ה-<ph name="DEVICE_TYPE" /> שלך מוכן להגדרה.</translation>
@@ -5637,6 +5654,7 @@
 <translation id="8642947597466641025">הגדל טקסט</translation>
 <translation id="8644655801811752511">לא ניתן לאפס את מפתח האבטחה הזה. צריך לנסות לאפס אותו מיד אחרי החיבור.</translation>
 <translation id="8645354835496065562">המשך התרת הגישה לחיישנים</translation>
+<translation id="8645920082661222035">המערכת חוזה אירועים מסוכנים ומזהירה אותך לגביהם לפני שהם מתרחשים</translation>
 <translation id="8647834505253004544">כתובת האינטרנט לא חוקית</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> או <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">למרות שכבר אין לך גישה לפרופיל הישן, אפשר עדיין להסיר אותו.</translation>

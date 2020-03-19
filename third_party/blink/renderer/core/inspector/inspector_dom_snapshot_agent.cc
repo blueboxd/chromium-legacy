@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
@@ -250,8 +251,8 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   // function outside of the layout phase.
   FontCachePurgePreventer fontCachePurgePreventer;
 
-  Document* main_document = inspected_frames_->Root()->GetDocument();
-  if (!main_document)
+  auto* main_window = inspected_frames_->Root()->DomWindow();
+  if (!main_window)
     return Response::Error("Document is not available");
 
   strings_ = std::make_unique<protocol::Array<String>>();
@@ -261,8 +262,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   css_property_filter_ = std::make_unique<CSSPropertyFilter>();
   // Look up the CSSPropertyIDs for each entry in |computed_styles|.
   for (String& entry : *computed_styles) {
-    CSSPropertyID property_id =
-        cssPropertyID(main_document->ToExecutionContext(), entry);
+    CSSPropertyID property_id = cssPropertyID(main_window, entry);
     if (property_id == CSSPropertyID::kInvalid)
       continue;
     css_property_filter_->emplace_back(std::move(entry),
@@ -271,7 +271,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
 
   if (include_paint_order.fromMaybe(false)) {
     paint_order_map_ =
-        InspectorDOMSnapshotAgent::BuildPaintLayerTree(main_document);
+        InspectorDOMSnapshotAgent::BuildPaintLayerTree(main_window->document());
   }
 
   include_snapshot_dom_rects_ = include_dom_rects.fromMaybe(false);

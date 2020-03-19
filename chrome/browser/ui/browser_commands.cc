@@ -15,6 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -60,7 +62,12 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
@@ -76,6 +83,7 @@
 #include "components/find_in_page/find_types.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -103,6 +111,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -626,21 +635,41 @@ void Stop(Browser* browser) {
 }
 
 void NewWindow(Browser* browser) {
+  Profile* const profile = browser->profile();
 #if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_MACOSX)
-  // With bookmark apps enabled, hosted apps should open a window to their
-  // launch page.
+  // Web apps should open a window to their launch page.
+  if (browser->app_controller() && browser->app_controller()->HasAppId()) {
+    const web_app::AppId app_id = browser->app_controller()->GetAppId();
+
+    auto launch_container =
+        apps::mojom::LaunchContainer::kLaunchContainerWindow;
+    if (web_app::WebAppProviderBase::GetProviderBase(profile)
+            ->registrar()
+            .GetAppEffectiveDisplayMode(app_id) ==
+        blink::mojom::DisplayMode::kBrowser) {
+      launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
+    }
+    const apps::AppLaunchParams params = apps::AppLaunchParams(
+        app_id, launch_container, WindowOpenDisposition::NEW_WINDOW,
+        apps::mojom::AppLaunchSource::kSourceKeyboard);
+    apps::LaunchService::Get(profile)->OpenApplication(params);
+    return;
+  }
+
+  // Hosted apps should open a window to their launch page.
   const extensions::Extension* extension = GetExtensionForBrowser(browser);
   if (extension && extension->is_hosted_app()) {
+    DCHECK(!extension->from_bookmark());
     const auto app_launch_params = CreateAppLaunchParamsUserContainer(
-        browser->profile(), extension, WindowOpenDisposition::NEW_WINDOW,
+        profile, extension, WindowOpenDisposition::NEW_WINDOW,
         extensions::AppLaunchSource::kSourceKeyboard);
     OpenApplicationWindow(
-        browser->profile(), app_launch_params,
+        profile, app_launch_params,
         extensions::AppLaunchInfo::GetLaunchWebURL(extension));
     return;
   }
 #endif
-  NewEmptyWindow(browser->profile()->GetOriginalProfile());
+  NewEmptyWindow(profile->GetOriginalProfile());
 }
 
 void NewIncognitoWindow(Profile* profile) {

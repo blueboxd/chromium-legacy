@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
@@ -42,7 +43,6 @@
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/assistant_manager.h"
 #include "libassistant/shared/public/media_manager.h"
-#include "mojo/public/mojom/base/time.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -1356,45 +1356,44 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
   UpdateMediaState();
 }
 
+// TODO(dmblack): Handle non-firing (e.g. paused or scheduled) timers.
 void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnAlarmTimerStateChanged);
-  // Currently, we only handle ringing events here. After some AlarmTimerManager
-  // API improvement, we will be handling other alarm/timer events.
-  auto* alarm_timer_manager =
-      assistant_manager_internal_->GetAlarmTimerManager();
-  // TODO(llin): Use GetAllEvents after the AlarmTimerManager API improvement is
-  // ready (b/128701326).
-  const assistant_client::AlarmTimerEvent& ringing_event =
-      alarm_timer_manager->GetRingingEvent();
 
-  switch (ringing_event.type) {
-    case assistant_client::AlarmTimerEvent::NONE:
-      assistant_alarm_timer_controller()->OnAlarmTimerStateChanged(nullptr);
-      break;
-    case assistant_client::AlarmTimerEvent::TIMER: {
-      ash::mojom::AssistantAlarmTimerEventPtr alarm_timer_event_ptr =
-          ash::mojom::AssistantAlarmTimerEvent::New();
-      alarm_timer_event_ptr->type =
-          ash::mojom::AssistantAlarmTimerEventType::kTimer;
+  std::vector<ash::mojom::AssistantTimerPtr> timers;
 
-      if (ringing_event.type == assistant_client::AlarmTimerEvent::TIMER) {
-        alarm_timer_event_ptr->data = ash::mojom::AlarmTimerData::New();
-        ash::mojom::AssistantTimerPtr timer_data_ptr =
-            ash::mojom::AssistantTimer::New();
-        timer_data_ptr->state = GetTimerState(ringing_event.timer_data.state);
-        timer_data_ptr->timer_id = ringing_event.timer_data.timer_id;
-        alarm_timer_event_ptr->data->set_timer_data(std::move(timer_data_ptr));
-      }
-
-      assistant_alarm_timer_controller()->OnAlarmTimerStateChanged(
-          std::move(alarm_timer_event_ptr));
-      break;
+  auto* manager = assistant_manager_internal_->GetAlarmTimerManager();
+  for (const auto& event : manager->GetAllEvents()) {
+    // Note that we currently only handle timers, alarms are unsupported. Also
+    // note that we only handle timers that are fired. Non-firing (e.g. paused
+    // or scheduled) timers will be supported in the near future.
+    if (event.type != assistant_client::AlarmTimerEvent::TIMER ||
+        event.timer_data.state != assistant_client::Timer::State::FIRED) {
+      continue;
     }
-    case assistant_client::AlarmTimerEvent::ALARM:
-      // TODO(llin): Handle alarm.
-      NOTREACHED();
-      break;
+
+    ash::mojom::AssistantTimerPtr timer = ash::mojom::AssistantTimer::New();
+    timer->id = event.timer_data.timer_id;
+    timer->label = event.timer_data.label;
+    timer->state = GetTimerState(event.timer_data.state);
+
+    // LibAssistant provides |fire_time_ms| as an offset from unix epoch.
+    timer->fire_time =
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMilliseconds(event.timer_data.fire_time_ms);
+
+    // If the |timer| is paused, LibAssistant will specify the amount of time
+    // remaining. Otherwise we calculate it based on |fire_time|.
+    timer->remaining_time =
+        timer->state == ash::mojom::AssistantTimerState::kPaused
+            ? base::TimeDelta::FromMilliseconds(
+                  event.timer_data.remaining_duration_ms)
+            : timer->fire_time - base::Time::Now();
+
+    timers.push_back(std::move(timer));
   }
+
+  assistant_alarm_timer_controller()->OnTimerStateChanged(std::move(timers));
 }
 
 void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(

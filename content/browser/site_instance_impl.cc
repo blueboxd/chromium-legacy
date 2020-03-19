@@ -293,31 +293,61 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
       process_reuse_policy_ = ProcessReusePolicy::DEFAULT;
     }
 
-    process_ = RenderProcessHostImpl::GetProcessHostForSiteInstance(this);
-
-    CHECK(process_);
-    process_->AddObserver(this);
-
-    MaybeSetBrowsingInstanceDefaultProcess();
-
-    // If we are using process-per-site, we need to register this process
-    // for the current site so that we can find it again.  (If no site is set
-    // at this time, we will register it in SetSite().)
-    if (process_reuse_policy_ == ProcessReusePolicy::PROCESS_PER_SITE &&
-        has_site_) {
-      RenderProcessHostImpl::RegisterSoleProcessHostForSite(process_, this);
-    }
-
-    TRACE_EVENT2("navigation", "SiteInstanceImpl::GetProcess",
-                 "site id", id_, "process id", process_->GetID());
-    GetContentClient()->browser()->SiteInstanceGotProcess(this);
-
-    if (has_site_)
-      LockToOriginIfNeeded();
+    SetProcessInternal(
+        RenderProcessHostImpl::GetProcessHostForSiteInstance(this));
   }
   DCHECK(process_);
 
   return process_;
+}
+
+void SiteInstanceImpl::ReuseCurrentProcessIfPossible(
+    RenderProcessHost* current_process) {
+  if (IsGuest() || HasProcess() || RequiresDedicatedProcess())
+    return;
+  // We should not reuse the current process if the destination uses
+  // process-per-site. Note that this includes the case where the process for
+  // the site is not there yet (so we're going to create a new process).
+  // Note also that this does not apply for the reverse case: if the current
+  // process is used for a process-per-site site, it is ok to reuse this for the
+  // new page (regardless of the site).
+  if (HasSite() && RenderProcessHost::ShouldUseProcessPerSite(
+                       browsing_instance_->GetBrowserContext(), GetSiteURL()))
+    return;
+  if (!current_process->MayReuseHost() ||
+      !RenderProcessHostImpl::IsSuitableHost(
+          current_process, GetIsolationContext(), GetSiteURL(), lock_url(),
+          IsGuest()))
+    return;
+  SetProcessInternal(current_process);
+}
+
+void SiteInstanceImpl::SetProcessInternal(RenderProcessHost* process) {
+  //  It is never safe to change |process_| without going through
+  //  RenderProcessHostDestroyed first to set it to null. Otherwise, same-site
+  //  frames will end up in different processes and everything will get
+  //  confused.
+  CHECK(!process_);
+  CHECK(process);
+  process_ = process;
+  process_->AddObserver(this);
+
+  MaybeSetBrowsingInstanceDefaultProcess();
+
+  // If we are using process-per-site, we need to register this process
+  // for the current site so that we can find it again.  (If no site is set
+  // at this time, we will register it in SetSite().)
+  if (process_reuse_policy_ == ProcessReusePolicy::PROCESS_PER_SITE &&
+      has_site_) {
+    RenderProcessHostImpl::RegisterSoleProcessHostForSite(process_, this);
+  }
+
+  TRACE_EVENT2("navigation", "SiteInstanceImpl::SetProcessInternal", "site id",
+               id_, "process id", process_->GetID());
+  GetContentClient()->browser()->SiteInstanceGotProcess(this);
+
+  if (has_site_)
+    LockToOriginIfNeeded();
 }
 
 bool SiteInstanceImpl::CanAssociateWithSpareProcess() {

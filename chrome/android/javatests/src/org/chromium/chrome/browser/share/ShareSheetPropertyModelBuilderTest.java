@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -31,6 +32,7 @@ import org.chromium.ui.test.util.DummyUiActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 /** Tests {@link ShareSheetPropertyModelBuilder}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -72,15 +74,15 @@ public final class ShareSheetPropertyModelBuilderTest {
 
         mResolveInfo2.activityInfo =
                 mActivity.getPackageManager().getActivityInfo(mActivity.getComponentName(), 0);
-        mResolveInfo2.activityInfo.packageName = "testPackage1";
+        mResolveInfo2.activityInfo.packageName = "testPackage2";
         when(mResolveInfo2.loadLabel(any())).thenReturn("testModel2");
         when(mResolveInfo2.loadIcon(any())).thenReturn(null);
         mResolveInfo2.icon = 0;
 
-        // Should be filtered out as it comes from the same package as the test.
         mResolveInfo3.activityInfo =
                 mActivity.getPackageManager().getActivityInfo(mActivity.getComponentName(), 0);
-        mResolveInfo3.activityInfo.packageName = mActivity.getPackageName();
+        mResolveInfo3.activityInfo.packageName = "testPackage3";
+        mResolveInfo3.activityInfo.name = "com.google.android.gm.ComposeActivityGmailExternal";
         when(mResolveInfo3.loadLabel(any())).thenReturn("testModel3");
         when(mResolveInfo3.loadIcon(any())).thenReturn(null);
         mResolveInfo3.icon = 0;
@@ -90,6 +92,11 @@ public final class ShareSheetPropertyModelBuilderTest {
         when(mPackageManager.queryIntentActivities(any(), anyInt())).thenReturn(mResolveInfoList);
         when(mPackageManager.getResourcesForApplication(anyString()))
                 .thenReturn(mActivity.getResources());
+
+        // Explicitly add the test feature so the call to getFieldTrialParamByFeature returns an
+        // empty string.
+        ChromeFeatureList.setTestFeatures(
+                Collections.singletonMap(ChromeFeatureList.CHROME_SHARING_HUB, true));
     }
 
     @Test
@@ -98,12 +105,13 @@ public final class ShareSheetPropertyModelBuilderTest {
         ShareSheetPropertyModelBuilder builder =
                 new ShareSheetPropertyModelBuilder(null, mPackageManager);
 
-        ArrayList<PropertyModel> propertyModels =
-                builder.selectThirdPartyApps(mActivity, null, mParams);
-        Assert.assertEquals("Incorrect number of property models.", 2, propertyModels.size());
-        Assert.assertEquals("First property model isn't testModel1", "testModel1",
+        ArrayList<PropertyModel> propertyModels = builder.selectThirdPartyApps(null, mParams);
+        Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
+        Assert.assertEquals("First property model isn't testModel3", "testModel3",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
-        Assert.assertEquals("Second property model isn't testModel2", "testModel2",
+        Assert.assertEquals("Second property model isn't testModel1", "testModel1",
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Third property model isn't testModel2", "testModel2",
+                propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
     }
 }

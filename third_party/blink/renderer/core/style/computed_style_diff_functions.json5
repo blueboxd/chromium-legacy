@@ -245,13 +245,10 @@
         ]
     },
     {
-        name: "DiffNeedsPaintInvalidationSubtree",
-        fields_to_diff: ["mix-blend-mode", "isolation", "Mask", "MaskBoxImage"],
-    },
-    {
-        name: "DiffNeedsPaintInvalidationObject",
+        name: "DiffNeedsPaintInvalidation",
         fields_to_diff: ["-webkit-user-modify", "user-select", "image-rendering",
-                "-webkit-user-drag", "object-fit", "object-position"],
+                "-webkit-user-drag", "object-fit", "object-position",
+                "mix-blend-mode", "isolation", "Mask", "MaskBoxImage"],
         methods_to_diff: [
           {
             method: "Visibility()",

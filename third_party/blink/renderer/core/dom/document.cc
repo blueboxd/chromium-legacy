@@ -7196,7 +7196,8 @@ IntersectionObserverController&
 Document::EnsureIntersectionObserverController() {
   if (!intersection_observer_controller_) {
     intersection_observer_controller_ =
-        MakeGarbageCollected<IntersectionObserverController>(this);
+        MakeGarbageCollected<IntersectionObserverController>(
+            GetExecutionContext());
   }
   return *intersection_observer_controller_;
 }

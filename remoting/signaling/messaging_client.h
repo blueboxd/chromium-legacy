@@ -58,7 +58,8 @@ class MessagingClient {
   virtual void StartReceivingMessages(base::OnceClosure on_ready,
                                       DoneCallback on_closed) = 0;
 
-  // Stops the stream for continuously receiving new messages.
+  // Stops the stream for continuously receiving new messages. Note that
+  // |on_closed| callback will be silently dropped.
   virtual void StopReceivingMessages() = 0;
 
   // Returns true if the streaming channel is open.

@@ -65,6 +65,10 @@ WTF::TextEncoding LinkResource::GetCharset() const {
   return WTF::TextEncoding(charset);
 }
 
+ExecutionContext* LinkResource::GetExecutionContext() {
+  return owner_->GetExecutionContext();
+}
+
 void LinkResource::Trace(Visitor* visitor) {
   visitor->Trace(owner_);
 }

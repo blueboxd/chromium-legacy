@@ -284,22 +284,6 @@ module gpu.mojom;
   WriteMojomTypes(_STRUCTS, mojom_file)
 
 
-def NormalizedCamelCase(identifier):
-  result = identifier[0].upper()
-  lowercase_next = True
-  for i in range(1, len(identifier)):
-    if identifier[i].isupper():
-      if lowercase_next:
-        result += identifier[i].lower()
-      else:
-        result += identifier[i]
-      lowercase_next = True
-    else:
-      lowercase_next = False
-      result += identifier[i]
-  return result
-
-
 def WriteStructTraits(name, traits_header_file, traits_source_file):
   traits_header_file.write(
 """
@@ -366,7 +350,7 @@ bool StructTraits<gpu::mojom::%sDataView, %s>::Read(
 
     if field_type == "char":
       assert array_len
-      read_method = "Read%s" % (NormalizedCamelCase(field_name))
+      read_method = "Read%s%s" % (field_name[0].upper(), field_name[1:])
       traits_source_file.write(
 """
   base::StringPiece %s;
@@ -375,7 +359,7 @@ bool StructTraits<gpu::mojom::%sDataView, %s>::Read(
   %s.copy(out->%s, sizeof(out->%s));
 """ % (field_name, read_method, field_name, field_name, field_name, field_name))
     elif array_len:
-      read_method = "Read%s" % (NormalizedCamelCase(field_name))
+      read_method = "Read%s%s" % (field_name[0].upper(), field_name[1:])
       traits_source_file.write(
 """
   base::span<%s> %s(out->%s);
@@ -385,9 +369,9 @@ bool StructTraits<gpu::mojom::%sDataView, %s>::Read(
     elif field_type in _structs or field_type in _enums:
       traits_source_file.write(
 """
-  if (!data.Read%s(&out->%s))
+  if (!data.Read%s%s(&out->%s))
     return false;
-""" % (NormalizedCamelCase(field_name), field_name))
+""" % (field_name[0].upper(), field_name[1:], field_name))
     else:
       traits_source_file.write(
 """

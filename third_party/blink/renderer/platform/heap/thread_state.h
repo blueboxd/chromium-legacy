@@ -63,7 +63,6 @@ namespace incremental_marking_test {
 class IncrementalMarkingScope;
 }  // namespace incremental_marking_test
 
-class CancelableTaskScheduler;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -518,7 +517,7 @@ class PLATFORM_EXPORT ThreadState final {
   // terminated and the worklist is empty)
   bool ConcurrentMarkingStep();
   void ScheduleConcurrentMarking();
-  void PerformConcurrentMark();
+  void PerformConcurrentMark(base::JobDelegate* job);
 
   // Schedule helpers.
   void ScheduleIdleLazySweep();
@@ -628,11 +627,11 @@ class PLATFORM_EXPORT ThreadState final {
 
   std::unique_ptr<IncrementalMarkingScheduler> incremental_marking_scheduler_;
 
-  std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
+  base::Lock concurrent_marker_lock_;
   Vector<uint8_t> available_concurrent_marking_task_ids_;
-  uint8_t active_markers_ = 0;
-  base::Lock concurrent_marker_bootstrapping_lock_;
+  std::atomic<size_t> active_markers_{0};
   size_t concurrently_marked_bytes_ = 0;
+  base::JobHandle marker_handle_;
 
   base::JobHandle sweeper_handle_;
   std::atomic_bool has_unswept_pages_{false};

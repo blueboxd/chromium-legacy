@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/bind_helpers.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
@@ -47,8 +47,8 @@ DevToolsAgent* DevToolsAgentFromContext(ExecutionContext* execution_context) {
         ->GetWorkerInspectorController()
         ->GetDevToolsAgent();
   }
-  if (auto* document = Document::DynamicFrom(execution_context)) {
-    LocalFrame* frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    LocalFrame* frame = window->GetFrame();
     if (!frame)
       return nullptr;
     WebLocalFrameImpl* web_frame =

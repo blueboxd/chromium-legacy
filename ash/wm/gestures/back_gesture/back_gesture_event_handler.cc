@@ -227,6 +227,10 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
         break;
       back_gesture_affordance_ = std::make_unique<BackGestureAffordance>(
           screen_location, dragged_from_splitview_divider_);
+      if (features::AreContextualNudgesEnabled()) {
+        // Cancel the in-waiting or in-progress back nudge animation.
+        nudge_controller_->OnBackGestureStarted();
+      }
       return true;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (!going_back_started_)

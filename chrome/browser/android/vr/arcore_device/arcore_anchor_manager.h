@@ -31,7 +31,7 @@ class ArCoreAnchorManager {
   // anchors.
   void Update(ArFrame* ar_frame);
 
-  mojom::XRAnchorsDataPtr GetAnchorsData(ArFrame* arcore_frame);
+  mojom::XRAnchorsDataPtr GetAnchorsData() const;
 
   bool AnchorExists(AnchorId id) const;
 
@@ -50,18 +50,10 @@ class ArCoreAnchorManager {
 
  private:
   // Executes |fn| for each still tracked, anchor present in |arcore_anchors|.
-  // |fn| will receive a non-owning `ArAnchor*`.
+  // |fn| will receive a `device::internal::ScopedArCoreObject<ArAnchor*>` that
+  // can be stored.
   template <typename FunctionType>
   void ForEachArCoreAnchor(ArAnchorList* arcore_anchors, FunctionType fn);
-
-  // Returns vector containing information about all anchors updated in the
-  // current frame.
-  std::vector<mojom::XRAnchorDataPtr> GetUpdatedAnchorsData(
-      ArFrame* arcore_frame);
-
-  // The result will contain IDs of all anchors still tracked in the current
-  // frame.
-  std::vector<uint64_t> GetAllAnchorIds();
 
   // Owned by ArCoreImpl - non-owning pointer is fine since ArCoreAnchorManager
   // is also owned by ArCoreImpl.

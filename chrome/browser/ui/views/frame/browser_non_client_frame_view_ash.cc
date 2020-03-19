@@ -686,10 +686,6 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
 }
 
 void BrowserNonClientFrameViewAsh::SetUpForWebApp() {
-  Browser* browser = browser_view()->browser();
-  if (!browser->app_controller()->HasTitlebarToolbar())
-    return;
-
   // Add the container for extra web app buttons (e.g app menu button).
   set_web_app_frame_toolbar(AddChildView(
       std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));

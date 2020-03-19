@@ -496,19 +496,16 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    private boolean externalIntentRequestsDisabled() {
+    private boolean externalIntentRequestsDisabledForUrl(ExternalNavigationParams params) {
         // TODO(changwan): check if we need to handle URL even when external intent is off.
         if (CommandLine.getInstance().hasSwitch(
                     ExternalIntentsSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
             Log.w(TAG, "External intent handling is disabled by a command-line flag.");
             return true;
         }
-        return false;
-    }
 
-    private boolean shouldStayInWebapp(ExternalNavigationParams params) {
-        if (mDelegate.shouldStayInWebapp(params)) {
-            if (DEBUG) Log.i(TAG, "Stay in PWA window");
+        if (mDelegate.shouldDisableExternalIntentRequestsForUrl(params.getUrl())) {
+            if (DEBUG) Log.i(TAG, "Delegate disables external intent requests for URL.");
             return true;
         }
         return false;
@@ -797,7 +794,9 @@ public class ExternalNavigationHandler {
 
         // This should come after file intents, but before any returns of
         // OVERRIDE_WITH_EXTERNAL_INTENT.
-        if (externalIntentRequestsDisabled()) return OverrideUrlLoadingResult.NO_OVERRIDE;
+        if (externalIntentRequestsDisabledForUrl(params)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
 
         int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
         boolean isLink = pageTransitionCore == PageTransition.LINK;
@@ -844,8 +843,6 @@ public class ExternalNavigationHandler {
         }
 
         if (isYoutubePairingCode(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
-
-        if (shouldStayInWebapp(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
         if (shouldStayInIncognito(params, isExternalProtocol)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;

@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/smart_dim_worker.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace chromeos {
 namespace power {
@@ -43,6 +44,10 @@ class DownloadWorker : public SmartDimWorker {
   std::string metrics_model_name_;
 
   void LoadModelAndCreateGraphExecutor(const std::string& model_flatbuffer);
+  void LoadMetaInfoFromJson(const std::string& metadata_json,
+                            const std::string& model_flatbuffer);
+  void OnJsonParsed(const std::string& model_flatbuffer,
+                    const data_decoder::DataDecoder::ValueOrError result);
 
   DISALLOW_COPY_AND_ASSIGN(DownloadWorker);
 };

@@ -13204,6 +13204,88 @@
       }
     ]
   },
+  "ios-simulator-cronet": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "12.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}"
+        ],
+        "isolate_name": "cronet_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "cronet_test_iPhone X 12.4",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.14.6"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11c29",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//components/cronet/ios/test:cronet_test"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone X",
+          "--version",
+          "13.3",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}"
+        ],
+        "isolate_name": "cronet_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "cronet_test_iPhone X 13.3",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "os": "Mac-10.14.6"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_11c29",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//components/cronet/ios/test:cronet_test"
+      }
+    ]
+  },
   "ios13-beta-simulator": {
     "additional_compile_targets": [
       "all"

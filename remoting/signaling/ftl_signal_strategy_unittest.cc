@@ -100,7 +100,6 @@ class FakeMessagingClient : public MessagingClient {
     if (!is_receiving_messages_) {
       return;
     }
-    RejectReceivingMessages(grpc::Status::CANCELLED);
   }
 
   bool IsReceivingMessages() const override { return is_receiving_messages_; }

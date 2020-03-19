@@ -266,8 +266,6 @@ android_library("chrome_java") {
     "//chrome/browser/optimization_guide/android:java",
     "//chrome/browser/performance_hints/android:java",
     "//chrome/browser/preferences:java",
-    "//chrome/browser/profile_card/android:factory_java",
-    "//chrome/browser/profile_card/android:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/settings:java",
     "//chrome/browser/share/android:java_resources",
@@ -521,7 +519,6 @@ java_group("chrome_all_java") {
     "//chrome/android/features/media_router:java",
     "//chrome/android/features/test_dummy/internal:base_module_java",
     "//chrome/android/modules/extra_icu/provider:java",
-    "//chrome/browser/profile_card/android/internal:java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//chrome/browser/ui/android/appmenu/internal:java",
   ]

@@ -46,7 +46,8 @@ class MessageReceptionChannel {
   virtual void StartReceivingMessages(base::OnceClosure on_ready,
                                       DoneCallback on_closed) = 0;
 
-  // Closes the streaming channel.
+  // Closes the streaming channel. Note that |on_closed| callback will be
+  // silently dropped.
   virtual void StopReceivingMessages() = 0;
 
   // Returns true if the streaming channel is open.

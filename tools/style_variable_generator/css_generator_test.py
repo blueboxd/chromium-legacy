@@ -12,7 +12,11 @@ class CSSStyleGeneratorTest(unittest.TestCase):
 
     def assertEqualToFile(self, value, filename):
         with open(filename) as f:
-            self.assertEqual(value, f.read())
+            contents = f.read()
+            self.assertEqual(
+                value, contents,
+                '\n>>>>>\n%s<<<<<\n\ndoes not match\n\n>>>>>\n%s<<<<<' %
+                (value, contents))
 
     def testColorTestJSON(self):
         self.generator.AddJSONFileToModel('colors_test.json5')

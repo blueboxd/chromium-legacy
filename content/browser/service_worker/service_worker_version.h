@@ -156,9 +156,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Contains a subset of the main script's response information.
   struct CONTENT_EXPORT MainScriptResponse {
-    // TODO(crbug.com/1060076): Replace this constructor with a constructor
-    // that takes a URLResponseHead.
+    // TODO(crbug.com/1060076): Remove this constructor.
     explicit MainScriptResponse(const net::HttpResponseInfo& http_info);
+    explicit MainScriptResponse(
+        const network::mojom::URLResponseHead& response_head);
     ~MainScriptResponse();
 
     base::Time response_time;

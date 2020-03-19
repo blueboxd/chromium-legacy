@@ -1875,12 +1875,13 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
       registration.get(), kScript, blink::mojom::ScriptType::kClassic,
       kVersionId, context()->AsWeakPtr());
 
-  net::HttpResponseInfo http_info;
-  http_info.ssl_info.cert =
+  network::mojom::URLResponseHead response_head;
+  response_head.ssl_info = net::SSLInfo();
+  response_head.ssl_info->cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-  EXPECT_TRUE(http_info.ssl_info.is_valid());
+  EXPECT_TRUE(response_head.ssl_info->is_valid());
   // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-  http_info.ssl_info.connection_status = 0x300039;
+  response_head.ssl_info->connection_status = 0x300039;
 
   const std::string kHTTPHeaderLine("HTTP/1.1 200 OK\n\n");
   const std::string kOriginTrial("Origin-Trial: ");
@@ -1911,13 +1912,14 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
       "AtSAc03z4qvid34W4MHMxyRFUJKlubZ+P5cs5yg6EiBWcagVbnm5uBgJMJN34pag7D5RywGV"
       "ol2RFf+4Sdm1hQ4AAABYeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0"
       "NDMiLCAiZmVhdHVyZSI6ICJGZWF0dXJlMyIsICJleHBpcnkiOiAxMDAwMDAwMDAwfQ==");
-  http_info.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  http_info.headers->AddHeader(kOriginTrial + kFeature1Token);
-  http_info.headers->AddHeader(kOriginTrial + kFeature2Token1);
-  http_info.headers->AddHeader(kOriginTrial + kFeature2Token2);
-  http_info.headers->AddHeader(kOriginTrial + kFeature3ExpiredToken);
+  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  response_head.headers->AddHeader(kOriginTrial + kFeature1Token);
+  response_head.headers->AddHeader(kOriginTrial + kFeature2Token1);
+  response_head.headers->AddHeader(kOriginTrial + kFeature2Token2);
+  response_head.headers->AddHeader(kOriginTrial + kFeature3ExpiredToken);
   version->SetMainScriptResponse(
-      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(http_info));
+      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+          response_head));
   ASSERT_TRUE(version->origin_trial_tokens());
   const blink::TrialTokenValidator::FeatureToTokensMap& tokens =
       *version->origin_trial_tokens();
@@ -2000,16 +2002,18 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
   ServiceWorkerVersion* version = registration->waiting_version();
 
   // Give it a main script response info.
-  net::HttpResponseInfo http_info;
-  http_info.headers =
+  network::mojom::URLResponseHead response_head;
+  response_head.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  http_info.response_time = base::Time::FromJsTime(19940123);
+  response_head.response_time = base::Time::FromJsTime(19940123);
   version->SetMainScriptResponse(
-      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(http_info));
+      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+          response_head));
   EXPECT_TRUE(version->main_script_response_);
-  EXPECT_EQ(http_info.response_time,
+  EXPECT_EQ(response_head.response_time,
             version->script_response_time_for_devtools_);
-  EXPECT_EQ(http_info.response_time, version->GetInfo().script_response_time);
+  EXPECT_EQ(response_head.response_time,
+            version->GetInfo().script_response_time);
 
   // Store the registration.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
@@ -2029,9 +2033,9 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
   auto* waiting_version = found_registration->waiting_version();
   ASSERT_TRUE(waiting_version);
   EXPECT_FALSE(waiting_version->main_script_response_);
-  EXPECT_EQ(http_info.response_time,
+  EXPECT_EQ(response_head.response_time,
             waiting_version->script_response_time_for_devtools_);
-  EXPECT_EQ(http_info.response_time,
+  EXPECT_EQ(response_head.response_time,
             waiting_version->GetInfo().script_response_time);
 }
 

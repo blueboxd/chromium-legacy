@@ -520,10 +520,11 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   unsigned char data_buffer[4] = {32, 96, 160, 128};
-  DOMUint8ClampedArray* data = DOMUint8ClampedArray::Create(data_buffer, 4);
+  NotShared<DOMUint8ClampedArray> data(
+      DOMUint8ClampedArray::Create(data_buffer, 4));
   ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
-  ImageData* image_data = ImageData::Create(
-      IntSize(1, 1), NotShared<DOMUint8ClampedArray>(data), color_settings);
+  ImageData* image_data =
+      ImageData::Create(IntSize(1, 1), data, color_settings);
 
   SkImageInfo image_info =
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType,

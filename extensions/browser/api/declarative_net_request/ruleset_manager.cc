@@ -180,7 +180,9 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionType_count == 6,
+  // TODO(crbug.com/947591): Modify this method for
+  // flat::ActionType_modify_headers.
+  static_assert(flat::ActionType_count == 7,
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 

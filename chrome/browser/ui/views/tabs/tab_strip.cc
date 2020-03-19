@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/tab_groups/tab_group_color.h"
@@ -1850,6 +1851,11 @@ void TabStrip::UpdateHoverCard(Tab* tab) {
     hover_card_->UpdateAndShow(tab);
   else
     hover_card_->FadeOutToHide();
+}
+
+bool TabStrip::ShowDomainInHoverCard(const Tab* tab) const {
+  const auto* app_controller = controller_->GetBrowser()->app_controller();
+  return !app_controller || !app_controller->is_for_system_web_app();
 }
 
 bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {

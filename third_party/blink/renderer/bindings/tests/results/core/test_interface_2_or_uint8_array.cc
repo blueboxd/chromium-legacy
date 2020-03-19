@@ -43,7 +43,7 @@ NotShared<DOMUint8Array> TestInterface2OrUint8Array::GetAsUint8Array() const {
 
 void TestInterface2OrUint8Array::SetUint8Array(NotShared<DOMUint8Array> value) {
   DCHECK(IsNull());
-  uint8_array_ = Member<DOMUint8Array>(value.View());
+  uint8_array_ = value;
   type_ = SpecificType::kUint8Array;
 }
 

@@ -13,7 +13,6 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/arc/session/arc_start_params.h"
 #include "components/arc/session/arc_upgrade_params.h"
-#include "components/version_info/channel.h"
 
 namespace arc {
 
@@ -27,8 +26,7 @@ class ArcClientAdapter {
   };
 
   // Creates a default instance of ArcClientAdapter.
-  static std::unique_ptr<ArcClientAdapter> Create(
-      version_info::Channel channel);
+  static std::unique_ptr<ArcClientAdapter> Create();
   virtual ~ArcClientAdapter();
 
   // StartMiniArc starts ARC with only a handful of ARC processes for Chrome OS

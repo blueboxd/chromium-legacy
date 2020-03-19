@@ -16,8 +16,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -137,7 +139,6 @@ class ArcVmClientAdapterTest : public testing::Test,
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
     adapter_ = CreateArcVmClientAdapterForTesting(
-        version_info::Channel::STABLE,
         base::BindRepeating(&ArcVmClientAdapterTest::RewriteStatus,
                             base::Unretained(this)));
     arc_instance_stopped_called_ = false;
@@ -812,12 +813,37 @@ TEST_F(ArcVmClientAdapterTest, KernelParam_RW) {
   EXPECT_TRUE(base::Contains(request.params(), "rw"));
 }
 
-// Tests that CreateArcVmClientAdapter(), the non-testing version, doesn't
-// crash.
+// Tests that CreateArcVmClientAdapter() doesn't crash.
 TEST_F(ArcVmClientAdapterTest, TestCreateArcVmClientAdapter) {
-  CreateArcVmClientAdapter(version_info::Channel::STABLE);
-  CreateArcVmClientAdapter(version_info::Channel::BETA);
-  CreateArcVmClientAdapter(version_info::Channel::DEV);
+  CreateArcVmClientAdapter();
+}
+
+TEST_F(ArcVmClientAdapterTest, ChromeOsChannelStable) {
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_RELEASE_TRACK=stable-channel", base::Time::Now());
+
+  base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.chromeos_channel=stable"));
+}
+
+TEST_F(ArcVmClientAdapterTest, ChromeOsChannelUnknown) {
+  base::SysInfo::SetChromeOSVersionInfoForTest("CHROMEOS_RELEASE_TRACK=invalid",
+                                               base::Time::Now());
+
+  base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.chromeos_channel=unknown"));
 }
 
 // Tests that the binary translation type is set to None when no library is

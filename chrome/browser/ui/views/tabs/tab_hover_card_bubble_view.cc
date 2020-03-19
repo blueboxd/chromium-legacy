@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "components/url_formatter/url_formatter.h"
@@ -461,17 +462,12 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   constexpr int kVerticalMargin = 10;
   constexpr int kHorizontalMargin = 18;
-  constexpr int kLineSpacing = 0;
-  title_label_->SetProperty(views::kMarginsKey,
-                            gfx::Insets(kVerticalMargin, kHorizontalMargin,
-                                        kLineSpacing, kHorizontalMargin));
+  layout->SetInteriorMargin(gfx::Insets(kVerticalMargin, kHorizontalMargin));
   title_label_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kPreferred));
-  domain_label_->SetProperty(views::kMarginsKey,
-                             gfx::Insets(kLineSpacing, kHorizontalMargin,
-                                         kVerticalMargin, kHorizontalMargin));
+  domain_label_->SetVisible(tab->controller()->ShowDomainInHoverCard(tab));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);

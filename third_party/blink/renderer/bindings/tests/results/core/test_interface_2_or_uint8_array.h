@@ -57,7 +57,7 @@ class CORE_EXPORT TestInterface2OrUint8Array final {
   SpecificType type_;
 
   Member<TestInterface2> test_interface_2_;
-  Member<DOMUint8Array> uint8_array_;
+  NotShared<DOMUint8Array> uint8_array_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
 };

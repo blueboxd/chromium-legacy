@@ -170,9 +170,15 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapFromPaths(
 base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path);
 base::FilePath GetComputedHashesPath(const base::FilePath& extension_path);
 
-// Helper function to get path used for the indexed ruleset by the Declarative
-// Net Request API.
-base::FilePath GetIndexedRulesetRelativePath();
+// Helper function to get the relative path for the directory containing static
+// indexed rulesets. Path is relative to the extension path. Used by the
+// Declarative Net Request API.
+base::FilePath GetIndexedRulesetDirectoryRelativePath();
+
+// Helper function to get the relative path for a given static indexed ruleset.
+// Path is relative to the extension path. This is used by the Declarative Net
+// Request API.
+base::FilePath GetIndexedRulesetRelativePath(int static_ruleset_id);
 
 // Returns the list of file-paths reserved for use by the Extension system in
 // the kMetadataFolder.

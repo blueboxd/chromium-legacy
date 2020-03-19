@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -30,6 +32,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 
 #if defined(OS_CHROMEOS)
@@ -67,6 +70,7 @@ AppUninstallDialogView::AppUninstallDialogView(
     apps::UninstallDialog* uninstall_dialog)
     : apps::UninstallDialog::UiBase(uninstall_dialog),
       AppDialogView(app_name, image),
+      profile_(profile),
       app_type_(app_type) {
   DialogDelegate::SetCloseCallback(base::BindOnce(
       &AppUninstallDialogView::OnDialogCancelled, base::Unretained(this)));
@@ -89,21 +93,6 @@ AppUninstallDialogView::~AppUninstallDialogView() {
 // static
 AppUninstallDialogView* AppUninstallDialogView::GetActiveViewForTesting() {
   return g_app_uninstall_dialog_view;
-}
-
-void AppUninstallDialogView::OnDialogCancelled() {
-  uninstall_dialog()->OnDialogClosed(false /* uninstall */,
-                                     false /* clear_site_data */,
-                                     false /* report_abuse */);
-}
-
-void AppUninstallDialogView::OnDialogAccepted() {
-  const bool clear_site_data =
-      clear_site_data_checkbox_ && clear_site_data_checkbox_->GetChecked();
-  const bool report_abuse_checkbox =
-      report_abuse_checkbox_ && report_abuse_checkbox_->GetChecked();
-  uninstall_dialog()->OnDialogClosed(true /* uninstall */, clear_site_data,
-                                     report_abuse_checkbox);
 }
 
 ui::ModalType AppUninstallDialogView::GetModalType() const {
@@ -190,32 +179,83 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
 }
 
 void AppUninstallDialogView::InitializeCheckbox(const GURL& app_launch_url) {
-  std::unique_ptr<views::Checkbox> clear_site_data_checkbox;
+  std::unique_ptr<views::StyledLabel> checkbox_label;
+  std::vector<base::string16> replacements;
+  size_t offset;
+  base::string16 learn_more_text =
+      l10n_util::GetStringUTF16(IDS_APP_UNINSTALL_PROMPT_LEARN_MORE);
+
+  replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
+      app_launch_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+
   if (google_util::IsGoogleHostname(app_launch_url.host_piece(),
                                     google_util::ALLOW_SUBDOMAIN)) {
-    clear_site_data_checkbox =
-        std::make_unique<views::Checkbox>(l10n_util::GetStringFUTF16(
+    replacements.push_back(learn_more_text);
+
+    std::vector<size_t> offsets;
+    checkbox_label = std::make_unique<views::StyledLabel>(
+        l10n_util::GetStringFUTF16(
             IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE,
-            url_formatter::FormatUrlForSecurityDisplay(
-                app_launch_url,
-                url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC)));
+            replacements, &offsets),
+        this);
+    DCHECK_EQ(replacements.size(), offsets.size());
+    offset = offsets[offsets.size() - 1];
   } else {
     auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
         app_launch_url.host_piece(),
         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
     DCHECK(!domain.empty());
     domain[0] = base::ToUpperASCII(domain[0]);
-    clear_site_data_checkbox =
-        std::make_unique<views::Checkbox>(l10n_util::GetStringFUTF16(
+
+    replacements.push_back(base::ASCIIToUTF16(domain));
+    replacements.push_back(learn_more_text);
+
+    std::vector<size_t> offsets;
+    checkbox_label = std::make_unique<views::StyledLabel>(
+        l10n_util::GetStringFUTF16(
             IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_NON_GOOGLE,
-            url_formatter::FormatUrlForSecurityDisplay(
-                app_launch_url,
-                url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
-            base::ASCIIToUTF16(domain)));
+            replacements, &offsets),
+        this);
+    DCHECK_EQ(replacements.size(), offsets.size());
+    offset = offsets[offsets.size() - 1];
   }
 
-  clear_site_data_checkbox->SetMultiLine(true);
-  clear_site_data_checkbox_ = AddChildView(std::move(clear_site_data_checkbox));
+  checkbox_label->AddStyleRange(
+      gfx::Range(offset, offset + learn_more_text.length()),
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
+  views::StyledLabel::RangeStyleInfo checkbox_style;
+  checkbox_style.text_style = views::style::STYLE_PRIMARY;
+  gfx::Range before_link_range(0, offset);
+  checkbox_label->AddStyleRange(before_link_range, checkbox_style);
+
+  // Shift the text down to align with the checkbox.
+  checkbox_label->SetBorder(views::CreateEmptyBorder(3, 0, 0, 0));
+
+  auto clear_site_data_checkbox =
+      std::make_unique<views::Checkbox>(base::string16());
+  clear_site_data_checkbox->SetAssociatedLabel(checkbox_label.get());
+
+  // Create a view to hold the checkbox and the text.
+  auto checkbox_view = std::make_unique<views::View>();
+  views::GridLayout* checkbox_layout =
+      checkbox_view->SetLayoutManager(std::make_unique<views::GridLayout>());
+
+  const int kReportColumnSetId = 0;
+  views::ColumnSet* cs = checkbox_layout->AddColumnSet(kReportColumnSetId);
+  cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
+                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                0);
+  cs->AddPaddingColumn(views::GridLayout::kFixedSize,
+                       ChromeLayoutProvider::Get()->GetDistanceMetric(
+                           views::DISTANCE_RELATED_LABEL_HORIZONTAL));
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                views::GridLayout::USE_PREF, 0, 0);
+
+  checkbox_layout->StartRow(views::GridLayout::kFixedSize, kReportColumnSetId);
+  clear_site_data_checkbox_ =
+      checkbox_layout->AddView(std::move(clear_site_data_checkbox));
+  checkbox_layout->AddView(std::move(checkbox_label));
+  AddChildView(std::move(checkbox_view));
 }
 
 void AppUninstallDialogView::InitializeViewForExtension(
@@ -287,3 +327,27 @@ void AppUninstallDialogView::InitializeViewForCrostiniApp(
   label->SetAllowCharacterBreak(true);
 }
 #endif
+
+void AppUninstallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                    const gfx::Range& range,
+                                                    int event_flags) {
+  NavigateParams params(
+      profile_, GURL("https://support.google.com/chromebook/?p=uninstallpwa"),
+      ui::PAGE_TRANSITION_LINK);
+  Navigate(&params);
+}
+
+void AppUninstallDialogView::OnDialogCancelled() {
+  uninstall_dialog()->OnDialogClosed(false /* uninstall */,
+                                     false /* clear_site_data */,
+                                     false /* report_abuse */);
+}
+
+void AppUninstallDialogView::OnDialogAccepted() {
+  const bool clear_site_data =
+      clear_site_data_checkbox_ && clear_site_data_checkbox_->GetChecked();
+  const bool report_abuse_checkbox =
+      report_abuse_checkbox_ && report_abuse_checkbox_->GetChecked();
+  uninstall_dialog()->OnDialogClosed(true /* uninstall */, clear_site_data,
+                                     report_abuse_checkbox);
+}

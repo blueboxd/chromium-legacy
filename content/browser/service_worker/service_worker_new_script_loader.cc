@@ -226,7 +226,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
 
     version_->SetMainScriptResponse(
         std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
-            *response_info));
+            *response_head));
   }
 
   network_loader_state_ = LoaderState::kWaitingForBody;

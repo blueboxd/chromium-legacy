@@ -55,10 +55,9 @@ class PDFiumEngine : public PDFEngine,
   PDFiumEngine(PDFEngine::Client* client, bool enable_javascript);
   ~PDFiumEngine() override;
 
-  using CreateDocumentLoaderFunction =
-      std::unique_ptr<DocumentLoader> (*)(DocumentLoader::Client* client);
-  static void SetCreateDocumentLoaderFunctionForTesting(
-      CreateDocumentLoaderFunction function);
+  // Replaces the normal DocumentLoader for testing. Must be called before
+  // HandleDocumentLoad().
+  void SetDocumentLoaderForTesting(std::unique_ptr<DocumentLoader> loader);
 
   // PDFEngine implementation.
   bool New(const char* url, const char* headers) override;
@@ -589,6 +588,7 @@ class PDFiumEngine : public PDFEngine,
   double current_zoom_ = 1.0;
 
   std::unique_ptr<DocumentLoader> doc_loader_;  // Main document's loader.
+  bool doc_loader_set_for_testing_ = false;
   std::string url_;
   std::string headers_;
   pp::CompletionCallbackFactory<PDFiumEngine> find_factory_;

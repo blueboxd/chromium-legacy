@@ -62,7 +62,7 @@ class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
   SpecificType type_;
 
   Member<TestArrayBuffer> array_buffer_;
-  Member<TestArrayBufferView> array_buffer_view_;
+  NotShared<TestArrayBufferView> array_buffer_view_;
   String string_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView&, v8::Local<v8::Object>, v8::Isolate*);

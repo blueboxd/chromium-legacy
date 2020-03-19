@@ -165,15 +165,18 @@ class RuleIndexingTest : public DNRTestBase {
     // Overwrite the JSON rules file with some invalid json.
     if (persist_invalid_json_file_) {
       std::string data = "invalid json";
-      base::WriteFile(extension_dir_.Append(kJSONRulesetFilepath), data.c_str(),
-                      data.size());
+      ASSERT_EQ(static_cast<int>(data.size()),
+                base::WriteFile(extension_dir_.Append(kJSONRulesetFilepath),
+                                data.c_str(), data.size()));
     }
 
     if (persist_initial_indexed_ruleset_) {
       std::string data = "user ruleset";
-      base::WriteFile(
-          extension_dir_.Append(file_util::GetIndexedRulesetRelativePath()),
-          data.c_str(), data.size());
+      base::FilePath ruleset_path = extension_dir_.Append(
+          file_util::GetIndexedRulesetRelativePath(kMinValidStaticRulesetID));
+      ASSERT_TRUE(base::CreateDirectory(ruleset_path.DirName()));
+      ASSERT_EQ(static_cast<int>(data.size()),
+                base::WriteFile(ruleset_path, data.c_str(), data.size()));
     }
   }
 

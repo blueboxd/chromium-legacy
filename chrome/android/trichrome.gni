@@ -161,6 +161,11 @@ template("trichrome_library_apk_tmpl") {
         "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
       ]
       loadable_modules = [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
+
+      if (chromium_linker_supported) {
+        deps += [ "//base/android/linker:chromium_android_linker" ]
+        loadable_modules += [ "$root_out_dir/libchromium_android_linker.so" ]
+      }
     }
     if (_include_secondary_support) {
       _trampoline =
@@ -173,6 +178,13 @@ template("trichrome_library_apk_tmpl") {
       _secondary_out_dir = get_label_info(_trampoline, "root_out_dir")
       secondary_abi_loadable_modules =
           [ "$_secondary_out_dir/libcrashpad_handler_trampoline.so" ]
+
+      if (chromium_linker_supported) {
+        deps += [ "//base/android/linker:chromium_android_linker" +
+                  "($android_secondary_abi_toolchain)" ]
+        secondary_abi_loadable_modules +=
+            [ "$_secondary_out_dir/libchromium_android_linker.so" ]
+      }
     }
 
     # http://crbug.com/1042107.

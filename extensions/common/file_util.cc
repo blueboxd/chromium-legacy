@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -585,15 +586,21 @@ base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path) {
 base::FilePath GetComputedHashesPath(const base::FilePath& extension_path) {
   return extension_path.Append(kMetadataFolder).Append(kComputedHashesFilename);
 }
-base::FilePath GetIndexedRulesetRelativePath() {
-  return base::FilePath(kMetadataFolder).Append(kIndexedRulesetFilename);
+base::FilePath GetIndexedRulesetDirectoryRelativePath() {
+  return base::FilePath(kMetadataFolder).Append(kIndexedRulesetDirectory);
+}
+base::FilePath GetIndexedRulesetRelativePath(int static_ruleset_id) {
+  const char* kRulesetPrefix = "_ruleset";
+  std::string filename =
+      kRulesetPrefix + base::NumberToString(static_ruleset_id);
+  return GetIndexedRulesetDirectoryRelativePath().AppendASCII(filename);
 }
 
 std::vector<base::FilePath> GetReservedMetadataFilePaths(
     const base::FilePath& extension_path) {
   return {GetVerifiedContentsPath(extension_path),
           GetComputedHashesPath(extension_path),
-          extension_path.Append(GetIndexedRulesetRelativePath())};
+          extension_path.Append(GetIndexedRulesetDirectoryRelativePath())};
 }
 
 }  // namespace file_util

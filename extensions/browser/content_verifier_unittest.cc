@@ -416,9 +416,6 @@ TEST_F(ContentVerifierTest, NeverVerifiedPaths) {
       //   - locales with mixedcase lang.
       FilePathVariants(
           base::FilePath(FILE_PATH_LITERAL("_locales/en_GB/messages.json"))),
-      // Indexed ruleset is never verified.
-      FilePathVariants(base::FilePath(
-          FILE_PATH_LITERAL("_metadata/generated_indexed_ruleset"))),
   };
 
   for (const auto& test_case : kNeverVerifiedTestCases) {

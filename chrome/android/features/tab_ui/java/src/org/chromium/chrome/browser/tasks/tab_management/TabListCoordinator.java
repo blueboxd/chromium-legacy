@@ -184,6 +184,13 @@ public class TabListCoordinator implements Destroyable {
 
                 return group;
             }, TabListViewBinder::bindListTab);
+
+            mAdapter.registerType(UiType.SELECTABLE, parent -> {
+                ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
+                        R.layout.selectable_tab_list_card_item, parentView, false);
+                group.setClickable(true);
+                return group;
+            }, TabListViewBinder::bindSelectableListTab);
         } else {
             throw new IllegalArgumentException(
                     "Attempting to create a tab list UI with invalid mode");

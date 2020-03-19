@@ -297,6 +297,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
     child_process_activity_time_ = base::TimeTicks::Now();
   }
 
+  // TODO(https://crbug.com/1006814): Delete this.
+  bool GetWithinProcessDiedObserverForCrbug1006814() {
+    return within_process_died_observer_;
+  }
+
   // Used to extend the lifetime of the sessions until the render view
   // in the renderer is fully closed. This is static because its also called
   // with mock hosts as input in test cases. The RenderWidget routing associated

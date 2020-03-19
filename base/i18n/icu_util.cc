@@ -208,10 +208,10 @@ void LazyOpenIcuDataFile() {
   g_icudtl_region = pf_region->region;
 }
 
-// Loads timezone data, for configurations where it makes sense.  If the
-// timezone data directory is not set up properly, we continue, but log
+// Loads external timezone data, for configurations where it makes sense.
+// If the timezone data directory is not set up properly, we continue but log
 // appropriate information for debugging.
-void InitializeTimeZoneData() {
+void InitializeExternalTimeZoneData() {
 #if defined(OS_FUCHSIA)
   std::unique_ptr<base::Environment> env = base::Environment::Create();
 
@@ -227,8 +227,9 @@ void InitializeTimeZoneData() {
   // directory since ICU loading will return an error if the TimeZone data is
   // wrong.
   if (!base::DirectoryExists(base::FilePath(tzdata_dir))) {
-    PLOG(ERROR) << "Could not open: '" << tzdata_dir
-                << "', proceeding without loading the timezone database";
+    // TODO(https://crbug.com/1061262): Make this FATAL unless expected.
+    PLOG(WARNING) << "Could not open: '" << tzdata_dir
+                  << "'. Using built-in timezone database";
     return;
   }
 #endif  // defined(OS_FUCHSIA)
@@ -238,7 +239,7 @@ int LoadIcuData(PlatformFile data_fd,
                 const MemoryMappedFile::Region& data_region,
                 std::unique_ptr<MemoryMappedFile>* out_mapped_data_file,
                 UErrorCode* out_error_code) {
-  InitializeTimeZoneData();
+  InitializeExternalTimeZoneData();
 
   if (data_fd == kInvalidPlatformFile) {
     LOG(ERROR) << "Invalid file descriptor to ICU data received.";

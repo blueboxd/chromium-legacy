@@ -30,8 +30,8 @@ const base::FilePath::CharType kVerifiedContentsFilename[] =
     FILE_PATH_LITERAL("verified_contents.json");
 const base::FilePath::CharType kComputedHashesFilename[] =
     FILE_PATH_LITERAL("computed_hashes.json");
-const base::FilePath::CharType kIndexedRulesetFilename[] =
-    FILE_PATH_LITERAL("generated_indexed_ruleset");
+const base::FilePath::CharType kIndexedRulesetDirectory[] =
+    FILE_PATH_LITERAL("generated_indexed_rulesets");
 
 const char kInstallDirectoryName[] = "Extensions";
 

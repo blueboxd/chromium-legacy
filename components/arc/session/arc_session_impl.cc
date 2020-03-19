@@ -196,7 +196,7 @@ version_info::Channel ArcSessionDelegateImpl::GetChannel() {
 }
 
 std::unique_ptr<ArcClientAdapter> ArcSessionDelegateImpl::CreateClient() {
-  return ArcClientAdapter::Create(GetChannel());
+  return ArcClientAdapter::Create();
 }
 
 // static

@@ -27,6 +27,7 @@
 #include "extensions/browser/content_verifier/content_verifier_utils.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_file_task_runner.h"
+#include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
@@ -125,9 +126,19 @@ std::unique_ptr<ContentVerifierIOData::ExtensionData> CreateIOData(
     }
   }
 
+  auto indexed_ruleset_paths =
+      std::make_unique<std::set<CanonicalRelativePath>>();
+  using DNRManifestData = declarative_net_request::DNRManifestData;
+  if (DNRManifestData::HasRuleset(*extension)) {
+    const DNRManifestData::RulesetInfo& info =
+        DNRManifestData::GetRuleset(*extension);
+    indexed_ruleset_paths->insert(
+        canonicalize_path(file_util::GetIndexedRulesetRelativePath(info.id)));
+  }
+
   return std::make_unique<ContentVerifierIOData::ExtensionData>(
       std::move(image_paths), std::move(background_or_content_paths),
-      extension->version(), source_type);
+      std::move(indexed_ruleset_paths), extension->version(), source_type);
 }
 
 // Returns all locales, possibly with lowercasing them for case-insensitive OS.
@@ -715,6 +726,8 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
       *(data->canonical_browser_image_paths);
   const std::set<CanonicalRelativePath>& background_or_content_paths =
       *(data->canonical_background_or_content_paths);
+  const std::set<CanonicalRelativePath>& indexed_ruleset_paths =
+      *(data->canonical_indexed_ruleset_paths);
 
   base::Optional<std::set<std::string>> all_locale_candidates;
 
@@ -723,9 +736,6 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
           base::FilePath(kManifestFilename));
   const base::FilePath messages_file(kMessagesFilename);
   const base::FilePath locales_relative_dir(kLocaleFolder);
-  const CanonicalRelativePath indexed_ruleset_path =
-      content_verifier_utils::CanonicalizeRelativePath(
-          file_util::GetIndexedRulesetRelativePath());
   for (const base::FilePath& relative_unix_path : relative_unix_paths) {
     if (relative_unix_path.empty())
       continue;
@@ -750,7 +760,8 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
     if (base::Contains(browser_images, canonical_path_value))
       continue;
 
-    if (canonical_path_value == indexed_ruleset_path)
+    // Skip indexed rulesets since these are generated.
+    if (base::Contains(indexed_ruleset_paths, canonical_path_value))
       continue;
 
     const base::FilePath canonical_path(canonical_path_value.value());

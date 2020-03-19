@@ -10,13 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 
-namespace base {
-class Thread;
-}
-
 namespace content {
 
 class PipeReaderBase;
+class PipeWriterBase;
 
 class DevToolsPipeHandler : public DevToolsAgentHostClient {
  public:
@@ -45,8 +42,7 @@ class DevToolsPipeHandler : public DevToolsAgentHostClient {
   ProtocolMode mode_;
 
   std::unique_ptr<PipeReaderBase> pipe_reader_;
-  std::unique_ptr<base::Thread> read_thread_;
-  std::unique_ptr<base::Thread> write_thread_;
+  std::unique_ptr<PipeWriterBase> pipe_writer_;
   scoped_refptr<DevToolsAgentHost> browser_target_;
   int read_fd_;
   int write_fd_;

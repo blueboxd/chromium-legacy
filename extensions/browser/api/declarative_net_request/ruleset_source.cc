@@ -290,11 +290,11 @@ RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
       declarative_net_request::DNRManifestData::GetRuleset(extension);
 
   DCHECK_GE(info.id, kMinValidStaticRulesetID);
-  return RulesetSource(
-      extension.path().Append(info.relative_path),
-      extension.path().Append(file_util::GetIndexedRulesetRelativePath()),
-      info.id, dnr_api::SOURCE_TYPE_MANIFEST, dnr_api::MAX_NUMBER_OF_RULES,
-      extension.id());
+  return RulesetSource(extension.path().Append(info.relative_path),
+                       extension.path().Append(
+                           file_util::GetIndexedRulesetRelativePath(info.id)),
+                       info.id, dnr_api::SOURCE_TYPE_MANIFEST,
+                       dnr_api::MAX_NUMBER_OF_RULES, extension.id());
 }
 
 // static

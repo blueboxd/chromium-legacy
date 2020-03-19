@@ -256,12 +256,10 @@ def cpp_type(idl_type,
     if base_idl_type in TYPED_ARRAY_TYPES and 'FlexibleArrayBufferView' in extended_attributes:
         return 'Flexible' + base_idl_type
     if base_idl_type in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES or base_idl_type == 'DataView':
-        if not used_in_cpp_sequence:
-            if 'AllowShared' in extended_attributes:
-                return cpp_template_type('MaybeShared',
-                                         idl_type.implemented_as)
-            else:
-                return cpp_template_type('NotShared', idl_type.implemented_as)
+        if 'AllowShared' in extended_attributes:
+            return cpp_template_type('MaybeShared', idl_type.implemented_as)
+        else:
+            return cpp_template_type('NotShared', idl_type.implemented_as)
     if idl_type.is_interface_type or idl_type.is_dictionary:
         implemented_as_class = idl_type.implemented_as
         if raw_type or not used_in_cpp_sequence:

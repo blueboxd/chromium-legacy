@@ -1653,11 +1653,10 @@ ImageData* BaseRenderingContext2D::getImageData(
   if (PixelFormat() != CanvasColorParams::GetNativeCanvasPixelFormat()) {
     ImageDataStorageFormat storage_format =
         ImageData::GetImageDataStorageFormat(color_settings->storageFormat());
-    DOMArrayBufferView* array_buffer_view =
+    NotShared<DOMArrayBufferView> array_buffer_view =
         ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
             contents, PixelFormat(), storage_format);
-    return ImageData::Create(image_data_rect.Size(),
-                             NotShared<DOMArrayBufferView>(array_buffer_view),
+    return ImageData::Create(image_data_rect.Size(), array_buffer_view,
                              color_settings);
   }
   if (size_in_bytes > std::numeric_limits<unsigned int>::max()) {

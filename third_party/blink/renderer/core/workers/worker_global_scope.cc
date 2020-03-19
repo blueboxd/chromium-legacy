@@ -124,13 +124,6 @@ scoped_refptr<SecurityOrigin> CreateSecurityOrigin(
   scoped_refptr<SecurityOrigin> security_origin;
   if (KURL(creation_params->script_url).ProtocolIsData()) {
     security_origin = SecurityOrigin::CreateUniqueOpaque();
-  } else if (creation_params->starter_origin->Protocol() ==
-             "chrome-extension") {
-    // TODO(https://crbug.com/1059218) Whether the origin should be inherited
-    // for chrome-extension frame is under discussion. For now, the worker
-    // doesn't inherit the parent origin in this case to keep the previous
-    // behavior.
-    security_origin = SecurityOrigin::Create(creation_params->script_url);
   } else {
     security_origin = SecurityOrigin::CreateFromUrlOrigin(
         creation_params->starter_origin->ToUrlOrigin());

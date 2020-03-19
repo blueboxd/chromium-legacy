@@ -123,11 +123,10 @@ void CrostiniUpgrader::StatusTracker::SetStatusDoneUI() {
 }
 
 void CrostiniUpgrader::StatusTracker::SetStatusCancelledUI() {
-  // Successfully canceled backup/restore. Upgrade can continue but we will not
-  // use that backup to restore from.
-  if (type() == ExportImportType::EXPORT) {
-    upgrader_->OnBackup(CrostiniResult::SUCCESS, base::nullopt);
-  } else {
+  // Cancelling the restore results in "success" i.e. we successfully didn't try
+  // to restore. Cancelling the backup is a no-op that returns you to the
+  // original screen.
+  if (type() == ExportImportType::IMPORT) {
     upgrader_->OnRestore(CrostiniResult::SUCCESS);
   }
   for (auto& observer : upgrader_->upgrader_observers_) {

@@ -47,11 +47,7 @@ void {{cpp_class}}::Set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
     return;
   }
   {% endif %}
-  {% if member.is_array_buffer_view_or_typed_array %}
-  {{member.cpp_name}}_ = {{member.cpp_type}}(value.View());
-  {% else %}
   {{member.cpp_name}}_ = value;
-  {% endif %}
   type_ = SpecificType::{{member.specific_type_enum}};
 }
 

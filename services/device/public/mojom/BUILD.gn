@@ -47,6 +47,20 @@ mojom("mojom") {
     ]
   }
 
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "device.mojom.BluetoothAddress"
+          cpp = "::std::array<::uint8_t, 6>"
+        },
+      ]
+      traits_headers = [ "//services/device/public/cpp/bluetooth/bluetooth_system_mojom_traits.h" ]
+      traits_sources = [ "//services/device/public/cpp/bluetooth/bluetooth_system_mojom_traits.cc" ]
+      traits_public_deps = [ "//base" ]
+    },
+  ]
+
   # The blink variant of the Device Service mojom are depended on by the
   # blink platform target. All blink variant mojoms use WTF types, which are
   # part of the blink platform component. In order to avoid a dependency cycle,
@@ -107,6 +121,25 @@ mojom("generic_sensor") {
   # use prepackaged redistributable JS bindings. It is therefore not desirable
   # to scramble these messages.
   scramble_message_ids = false
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "device.mojom.SensorConfiguration"
+          cpp = "::device::PlatformSensorConfiguration"
+        },
+      ]
+      traits_headers = [
+        "//services/device/public/cpp/generic_sensor/sensor_mojom_traits.h",
+      ]
+      traits_sources = [
+        "//services/device/public/cpp/generic_sensor/sensor_mojom_traits.cc",
+      ]
+      traits_public_deps =
+          [ "//services/device/public/cpp/generic_sensor:sensor_configuration" ]
+    },
+  ]
 }
 
 mojom("usb") {

@@ -121,9 +121,6 @@ constexpr base::TimeDelta kMaxProgressivePaintTime =
 constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
     base::TimeDelta::FromMilliseconds(250);
 
-PDFiumEngine::CreateDocumentLoaderFunction
-    g_create_document_loader_for_testing = nullptr;
-
 template <class S>
 bool IsAboveOrDirectlyLeftOf(const S& lhs, const S& rhs) {
   return lhs.y() < rhs.y() || (lhs.y() == rhs.y() && lhs.x() < rhs.x());
@@ -432,10 +429,12 @@ PDFiumEngine::~PDFiumEngine() {
     FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_WC);
 }
 
-// static
-void PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(
-    CreateDocumentLoaderFunction function) {
-  g_create_document_loader_for_testing = function;
+void PDFiumEngine::SetDocumentLoaderForTesting(
+    std::unique_ptr<DocumentLoader> loader) {
+  DCHECK(loader);
+  DCHECK(!doc_loader_);
+  doc_loader_ = std::move(loader);
+  doc_loader_set_for_testing_ = true;
 }
 
 bool PDFiumEngine::New(const char* url, const char* headers) {
@@ -577,9 +576,7 @@ bool PDFiumEngine::HandleDocumentLoad(const pp::URLLoader& loader) {
   password_tries_remaining_ = kMaxPasswordTries;
   process_when_pending_request_complete_ = true;
 
-  if (g_create_document_loader_for_testing) {
-    doc_loader_ = g_create_document_loader_for_testing(this);
-  } else {
+  if (!doc_loader_set_for_testing_) {
     auto loader_wrapper =
         std::make_unique<URLLoaderWrapperImpl>(GetPluginInstance(), loader);
     loader_wrapper->SetResponseHeaders(headers_);
@@ -1622,7 +1619,7 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
 
   // In unit tests, PPAPI is not initialized, so just call ContinueFind()
   // directly.
-  if (g_create_document_loader_for_testing) {
+  if (doc_loader_set_for_testing_) {
     ContinueFind(case_sensitive ? 1 : 0);
   } else {
     pp::CompletionCallback callback =

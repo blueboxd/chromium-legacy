@@ -106,7 +106,7 @@ Polymer({
 
     this.listenerIds_ = [
       callbackRouter.onBackupProgress.addListener((percent) => {
-        assert(this.state_ === State.BACKUP);
+        this.state_ = State.BACKUP;
         this.backupProgress_ = percent;
       }),
       callbackRouter.onBackupSucceeded.addListener((wasCancelled) => {
@@ -256,7 +256,6 @@ Polymer({
    * @private
    */
   startBackup_(showFileChooser) {
-    this.state_ = State.BACKUP;
     BrowserProxy.getInstance().handler.backup(showFileChooser);
   },
 

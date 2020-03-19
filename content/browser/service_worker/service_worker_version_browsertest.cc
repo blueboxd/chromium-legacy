@@ -56,7 +56,6 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/http/http_response_info.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
@@ -237,14 +236,15 @@ VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
 
 std::unique_ptr<ServiceWorkerVersion::MainScriptResponse>
 CreateMainScriptResponse() {
-  net::HttpResponseInfo info;
+  network::mojom::URLResponseHead response_head;
   const char data[] =
       "HTTP/1.1 200 OK\0"
       "Content-Type: application/javascript\0"
       "\0";
-  info.headers =
+  response_head.headers =
       new net::HttpResponseHeaders(std::string(data, base::size(data)));
-  return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(info);
+  return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+      response_head);
 }
 
 // Returns a unique script for each request, to test service worker update.

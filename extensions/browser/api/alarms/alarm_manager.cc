@@ -441,8 +441,8 @@ void AlarmManager::OnExtensionLoaded(content::BrowserContext* browser_context,
     ready_actions_.insert(ReadyMap::value_type(extension->id(), ReadyQueue()));
     storage->GetExtensionValue(
         extension->id(), kRegisteredAlarms,
-        base::Bind(&AlarmManager::ReadFromStorage, AsWeakPtr(), extension->id(),
-                   is_unpacked));
+        base::BindOnce(&AlarmManager::ReadFromStorage, AsWeakPtr(),
+                       extension->id(), is_unpacked));
   }
 }
 
@@ -450,7 +450,8 @@ void AlarmManager::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  RemoveAllAlarms(extension->id(), base::Bind(RemoveAllOnUninstallCallback));
+  RemoveAllAlarms(extension->id(),
+                  base::BindOnce(RemoveAllOnUninstallCallback));
 }
 
 // AlarmManager::Alarm

@@ -76,7 +76,7 @@ public class TabUmaTest {
         BrowserControlsVisibilityDelegate visibilityDelegate =
                 new BrowserControlsVisibilityDelegate(BrowserControlsState.BOTH) {};
         return new TabbedModeTabDelegateFactory(mActivityTestRule.getActivity(), visibilityDelegate,
-                new ObservableSupplierImpl<ShareDelegate>());
+                new ObservableSupplierImpl<ShareDelegate>(), null);
     }
 
     private Tab createLazilyLoadedTab(boolean show) throws ExecutionException {

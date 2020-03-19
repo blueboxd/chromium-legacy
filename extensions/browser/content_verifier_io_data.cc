@@ -15,11 +15,15 @@ ContentVerifierIOData::ExtensionData::ExtensionData(
         canonical_browser_image_paths,
     std::unique_ptr<std::set<CanonicalRelativePath>>
         canonical_background_or_content_paths,
+    std::unique_ptr<std::set<CanonicalRelativePath>>
+        canonical_indexed_ruleset_paths,
     const base::Version& version,
     ContentVerifierDelegate::VerifierSourceType source_type)
     : canonical_browser_image_paths(std::move(canonical_browser_image_paths)),
       canonical_background_or_content_paths(
           std::move(canonical_background_or_content_paths)),
+      canonical_indexed_ruleset_paths(
+          std::move(canonical_indexed_ruleset_paths)),
       version(version),
       source_type(source_type) {}
 

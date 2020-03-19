@@ -59,6 +59,21 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
+std::string GetChromeOsChannelFromLsbRelease() {
+  constexpr const char kChromeOsReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+  constexpr const char kUnknown[] = "unknown";
+  const std::string kChannelSuffix = "-channel";
+
+  std::string value;
+  base::SysInfo::GetLsbReleaseValue(kChromeOsReleaseTrack, &value);
+
+  if (!base::EndsWith(value, kChannelSuffix, base::CompareCase::SENSITIVE)) {
+    LOG(ERROR) << "Unknown ChromeOS channel: \"" << value << "\"";
+    return kUnknown;
+  }
+  return value.erase(value.find(kChannelSuffix), kChannelSuffix.size());
+}
+
 // TODO(pliard): Export host-side /data to the VM, and remove the function.
 vm_tools::concierge::CreateDiskImageRequest CreateArcDiskRequest(
     const std::string& user_id_hash,
@@ -290,14 +305,11 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // Initializing |is_host_on_vm_| and |is_dev_mode_| is not always very fast.
   // Try to initialize them in the constructor and in StartMiniArc respectively.
   // They usually run when the system is not busy.
-  explicit ArcVmClientAdapter(version_info::Channel channel)
-      : ArcVmClientAdapter(channel, {}) {}
+  explicit ArcVmClientAdapter() : ArcVmClientAdapter({}) {}
 
   // For testing purposes and the internal use (by the other ctor) only.
-  ArcVmClientAdapter(version_info::Channel channel,
-                     const FileSystemStatusRewriter& rewriter)
-      : channel_(channel),
-        is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
+  ArcVmClientAdapter(const FileSystemStatusRewriter& rewriter)
+      : is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
                            ->IsRunningOnVm()),
         file_system_status_rewriter_for_testing_(rewriter) {
     auto* client = GetConciergeClient();
@@ -548,8 +560,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     DCHECK(is_dev_mode_);
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
         start_params_, params, file_system_status, *is_dev_mode_,
-        is_host_on_vm_, version_info::GetChannelString(channel_),
-        serial_number_);
+        is_host_on_vm_, GetChromeOsChannelFromLsbRelease(), serial_number_);
     auto start_request = CreateStartArcVmRequest(
         user_id_hash_, cpus, data_disk_path, params.demo_session_apps_path,
         file_system_status, std::move(kernel_cmdline));
@@ -614,8 +625,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     OnArcInstanceStopped();
   }
 
-  const version_info::Channel channel_;
-
   base::Optional<bool> is_dev_mode_;
   // True when the *host* is running on a VM.
   const bool is_host_on_vm_;
@@ -637,15 +646,13 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapter);
 };
 
-std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
-    version_info::Channel channel) {
-  return std::make_unique<ArcVmClientAdapter>(channel);
+std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter() {
+  return std::make_unique<ArcVmClientAdapter>();
 }
 
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
-    version_info::Channel channel,
     const FileSystemStatusRewriter& rewriter) {
-  return std::make_unique<ArcVmClientAdapter>(channel, rewriter);
+  return std::make_unique<ArcVmClientAdapter>(rewriter);
 }
 
 }  // namespace arc

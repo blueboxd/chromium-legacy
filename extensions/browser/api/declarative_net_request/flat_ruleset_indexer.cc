@@ -152,6 +152,33 @@ FlatOffset<flat::UrlTransform> BuildTransformOffset(
                                   clear_fragment, fragment, username, password);
 }
 
+FlatVectorOffset<flat::ModifyHeaderInfo> BuildModifyHeaderInfoOffset(
+    flatbuffers::FlatBufferBuilder* builder,
+    const std::vector<dnr_api::ModifyHeaderInfo>& modify_header_list) {
+  std::vector<FlatOffset<flat::ModifyHeaderInfo>> flat_modify_header_list;
+  flat_modify_header_list.reserve(modify_header_list.size());
+
+  for (const dnr_api::ModifyHeaderInfo& header_info : modify_header_list) {
+    flat::HeaderOperation operation = flat::HeaderOperation_remove;
+
+    switch (header_info.operation) {
+      case dnr_api::HeaderOperation::HEADER_OPERATION_NONE:
+        NOTREACHED();
+        break;
+      case dnr_api::HEADER_OPERATION_REMOVE:
+        operation = flat::HeaderOperation_remove;
+        break;
+    }
+
+    FlatStringOffset header_name =
+        builder->CreateSharedString(header_info.header);
+    flat_modify_header_list.push_back(
+        flat::CreateModifyHeaderInfo(*builder, operation, header_name));
+  }
+
+  return builder->CreateVector(flat_modify_header_list);
+}
+
 }  // namespace
 
 FlatRulesetIndexer::FlatRulesetIndexer()
@@ -206,10 +233,17 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
     transform_offset =
         BuildTransformOffset(&builder_, *indexed_rule.url_transform);
   }
+
+  FlatVectorOffset<flat::ModifyHeaderInfo> request_headers_offset =
+      BuildModifyHeaderInfoOffset(&builder_, indexed_rule.request_headers);
+
+  FlatVectorOffset<flat::ModifyHeaderInfo> response_headers_offset =
+      BuildModifyHeaderInfoOffset(&builder_, indexed_rule.response_headers);
+
   metadata_.push_back(flat::CreateUrlRuleMetadata(
       builder_, indexed_rule.id,
       ConvertToFlatActionType(indexed_rule.action_type), redirect_url_offset,
-      transform_offset));
+      transform_offset, request_headers_offset, response_headers_offset));
 }
 
 void FlatRulesetIndexer::Finish() {
@@ -281,6 +315,7 @@ FlatRulesetIndexer::GetBuilders(const IndexedRule& indexed_rule) {
     case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
       return GetRemoveHeaderBuilders(indexed_rule.remove_headers_set);
     case dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS:
+      return {index_builders_[flat::IndexType_modify_headers].get()};
     case dnr_api::RULE_ACTION_TYPE_NONE:
       break;
   }

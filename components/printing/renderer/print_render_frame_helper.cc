@@ -573,18 +573,6 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
   return result_params;
 }
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-bool CaptureMetafileContentInfo(const MetafileSkia& metafile,
-                                PrintHostMsg_DidPrintContent_Params* params) {
-  uint32_t buf_size = metafile.GetDataSize();
-  if (buf_size == 0)
-    return false;
-
-  params->subframe_content_info = metafile.GetSubframeContentInfo();
-  return true;
-}
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
 bool CopyMetafileDataToReadOnlySharedMem(
     const MetafileSkia& metafile,
     PrintHostMsg_DidPrintContent_Params* params) {
@@ -1467,9 +1455,12 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   const std::vector<int>& pages = print_pages_params_->pages;
 
+  bool require_document_metafile =
+      print_renderer_ ||
+      print_params.printed_doc_type != SkiaDocumentType::MSKP;
   if (!print_preview_context_.CreatePreviewDocument(
           std::move(prep_frame_view_), pages, print_params.printed_doc_type,
-          print_params.document_cookie)) {
+          print_params.document_cookie, require_document_metafile)) {
     return CREATE_FAIL;
   }
 
@@ -1562,14 +1553,23 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
 
 bool PrintRenderFrameHelper::RenderPreviewPage(int page_number) {
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
-  MetafileSkia* initial_render_metafile = print_preview_context_.metafile();
+  MetafileSkia* render_metafile = print_preview_context_.metafile();
+  std::unique_ptr<MetafileSkia> page_render_metafile;
+  if (!render_metafile) {
+    // No document metafile means using the print compositor, which will
+    // provide the document metafile by combining the individual pages.
+    page_render_metafile = std::make_unique<MetafileSkia>(
+        print_params.printed_doc_type, print_params.document_cookie);
+    CHECK(page_render_metafile->Init());
+    render_metafile = page_render_metafile.get();
+  }
   base::TimeTicks begin_time = base::TimeTicks::Now();
   double scale_factor = GetScaleFactor(print_params.scale_factor,
                                        !print_preview_context_.IsModifiable());
   PrintPageInternal(print_params, page_number,
                     print_preview_context_.total_page_count(), scale_factor,
-                    print_preview_context_.prepared_frame(),
-                    initial_render_metafile, nullptr, nullptr);
+                    print_preview_context_.prepared_frame(), render_metafile,
+                    nullptr, nullptr);
   print_preview_context_.RenderedPreviewPage(base::TimeTicks::Now() -
                                              begin_time);
 
@@ -1579,33 +1579,27 @@ bool PrintRenderFrameHelper::RenderPreviewPage(int page_number) {
   if (!print_preview_context_.IsModifiable())
     return true;
 
-  // Let the browser know this page has been rendered. Send |metafile|, which
-  // contains the rendering for just this one page. Then the browser can update
-  // the user visible print preview one page at a time, instead of waiting for
-  // the entire document to be rendered.
-  std::unique_ptr<MetafileSkia> metafile =
-      initial_render_metafile->GetMetafileForCurrentPage(
-          print_params.printed_doc_type);
-  return PreviewPageRendered(page_number, std::move(metafile));
+  // Let the browser know this page has been rendered. Send
+  // |page_render_metafile|, which contains the rendering for just this one
+  // page. Then the browser can update the user visible print preview one page
+  // at a time, instead of waiting for the entire document to be rendered.
+  page_render_metafile =
+      render_metafile->GetMetafileForCurrentPage(print_params.printed_doc_type);
+  return PreviewPageRendered(page_number, std::move(page_render_metafile));
 }
 
 bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   DCHECK(!is_print_ready_metafile_sent_);
   print_preview_context_.FinalizePrintReadyDocument();
 
-  MetafileSkia* metafile = print_preview_context_.metafile();
   PrintHostMsg_DidPreviewDocument_Params preview_params;
 
   // Modifiable content of MSKP type is collected into a document during
-  // individual page preview generation, so no need to share a separate document
-  // version for composition.
-  if (print_pages_params_->params.printed_doc_type == SkiaDocumentType::MSKP) {
-    if (!CaptureMetafileContentInfo(*metafile, &preview_params.content)) {
-      DLOG(ERROR) << "CaptureMetafileContentInfo failed";
-      print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_CAPTURE_FAILED);
-      return false;
-    }
-  } else {
+  // individual page preview generation, so only need to share a separate
+  // document version for composition when it isn't MSKP or is from a
+  // separate print renderer (e.g., not print compositor).
+  MetafileSkia* metafile = print_preview_context_.metafile();
+  if (metafile) {
     if (!CopyMetafileDataToReadOnlySharedMem(*metafile,
                                              &preview_params.content)) {
       LOG(ERROR) << "CopyMetafileDataToReadOnlySharedMem failed";
@@ -2473,7 +2467,8 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
     const std::vector<int>& pages,
     SkiaDocumentType doc_type,
-    int document_cookie) {
+    int document_cookie,
+    bool require_document_metafile) {
   DCHECK_EQ(INITIALIZED, state_);
   state_ = RENDERING;
 
@@ -2488,8 +2483,10 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
-  metafile_ = std::make_unique<MetafileSkia>(doc_type, document_cookie);
-  CHECK(metafile_->Init());
+  if (require_document_metafile) {
+    metafile_ = std::make_unique<MetafileSkia>(doc_type, document_cookie);
+    CHECK(metafile_->Init());
+  }
 
   current_page_index_ = 0;
   pages_to_render_ = pages;
@@ -2541,7 +2538,9 @@ void PrintRenderFrameHelper::PrintPreviewContext::FinalizePrintReadyDocument() {
   DCHECK(IsRendering());
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  metafile_->FinishDocument();
+
+  if (metafile_)
+    metafile_->FinishDocument();
 
   if (print_ready_metafile_page_count_ <= 0) {
     NOTREACHED();

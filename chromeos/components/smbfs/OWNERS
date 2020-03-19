@@ -1,6 +1,4 @@
-amistry@chromium.org
-dats@chromium.org
-slangley@chromium.org
+file://ui/file_manager/OWNERS
 
 per-file *_mojom_traits*.*=set noparent
 per-file *_mojom_traits*.*=file://ipc/SECURITY_OWNERS

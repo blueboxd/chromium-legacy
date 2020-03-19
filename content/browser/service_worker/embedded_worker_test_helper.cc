@@ -160,14 +160,15 @@ void EmbeddedWorkerTestHelper::ShutdownContext() {
 // static
 std::unique_ptr<ServiceWorkerVersion::MainScriptResponse>
 EmbeddedWorkerTestHelper::CreateMainScriptResponse() {
-  net::HttpResponseInfo info;
+  network::mojom::URLResponseHead response_head;
   const char data[] =
       "HTTP/1.1 200 OK\0"
       "Content-Type: application/javascript\0"
       "\0";
-  info.headers =
-      new net::HttpResponseHeaders(std::string(data, base::size(data)));
-  return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(info);
+  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      std::string(data, base::size(data)));
+  return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+      response_head);
 }
 
 void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(

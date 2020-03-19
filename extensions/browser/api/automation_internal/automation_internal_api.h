@@ -77,8 +77,8 @@ class AutomationInternalQuerySelectorFunction : public ExtensionFunction {
                              AUTOMATIONINTERNAL_QUERYSELECTOR)
 
  public:
-  typedef base::Callback<void(const std::string& error, int result_acc_obj_id)>
-      Callback;
+  using Callback =
+      base::OnceCallback<void(const std::string& error, int result_acc_obj_id)>;
 
  protected:
   ~AutomationInternalQuerySelectorFunction() override = default;

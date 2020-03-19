@@ -24,7 +24,7 @@ class ValueStoreFrontend {
   // The kind of extensions data stored in a backend.
   enum class BackendType { RULES, STATE };
 
-  typedef base::Callback<void(std::unique_ptr<base::Value>)> ReadCallback;
+  using ReadCallback = base::OnceCallback<void(std::unique_ptr<base::Value>)>;
 
   ValueStoreFrontend(
       const scoped_refptr<extensions::ValueStoreFactory>& store_factory,
@@ -33,7 +33,7 @@ class ValueStoreFrontend {
 
   // Retrieves a value from the database asynchronously, passing a copy to
   // |callback| when ready. NULL is passed if no matching entry is found.
-  void Get(const std::string& key, const ReadCallback& callback);
+  void Get(const std::string& key, ReadCallback callback);
 
   // Sets a value with the given key.
   void Set(const std::string& key, std::unique_ptr<base::Value> value);

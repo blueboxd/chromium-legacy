@@ -84,6 +84,7 @@ class FakeTabController : public TabController {
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}
   void UpdateHoverCard(Tab* tab) override {}
+  bool ShowDomainInHoverCard(const Tab* tab) const override { return true; }
   bool HoverCardIsShowingForTab(Tab* tab) override { return false; }
   int GetBackgroundOffset() const override { return 0; }
   bool ShouldPaintAsActiveFrame() const override { return true; }

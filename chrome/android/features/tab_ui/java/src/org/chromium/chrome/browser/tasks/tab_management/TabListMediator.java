@@ -1185,13 +1185,9 @@ class TabListMediator {
                                         tab.isIncognito()))
                         .with(TabProperties.IS_SELECTED, isSelected)
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
-                        .with(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener)
-                        .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .with(CARD_ALPHA, 1f)
                         .with(TabProperties.CARD_ANIMATION_STATUS,
                                 ClosableTabGridView.AnimationStatus.CARD_RESTORE)
-                        .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER,
-                                mSelectableTabOnClickListener)
                         .with(TabProperties.TAB_SELECTION_DELEGATE, getTabSelectionDelegate())
                         .with(TabProperties.IS_INCOGNITO, tab.isIncognito())
                         .with(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
@@ -1232,6 +1228,11 @@ class TabListMediator {
                     actionButtonBackgroundColorList);
             tabInfo.set(TabProperties.SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND,
                     actionbuttonSelectedBackgroundColorList);
+            tabInfo.set(
+                    TabProperties.SELECTABLE_TAB_CLICKED_LISTENER, mSelectableTabOnClickListener);
+        } else {
+            tabInfo.set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
+            tabInfo.set(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener);
         }
 
         if (index >= mModel.size()) {

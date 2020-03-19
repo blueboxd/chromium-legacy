@@ -98,14 +98,15 @@ bool DocumentLoaderImpl::Init(std::unique_ptr<URLLoaderWrapper> loader,
   loader_ = std::move(loader);
 
   if (!loader_->IsContentEncoded())
-    SetDocumentSize(std::max(0, loader_->GetContentLength()));
+    chunk_stream_.set_eof_pos(std::max(0, loader_->GetContentLength()));
 
   int64_t bytes_received = 0;
   int64_t total_bytes_to_be_received = 0;
   if (GetDocumentSize() == 0 &&
       loader_->GetDownloadProgress(&bytes_received,
                                    &total_bytes_to_be_received)) {
-    SetDocumentSize(std::max(0, static_cast<int>(total_bytes_to_be_received)));
+    chunk_stream_.set_eof_pos(
+        std::max(0, static_cast<int>(total_bytes_to_be_received)));
   }
 
   SetPartialLoadingEnabled(
@@ -120,10 +121,6 @@ bool DocumentLoaderImpl::Init(std::unique_ptr<URLLoaderWrapper> loader,
 
 bool DocumentLoaderImpl::IsDocumentComplete() const {
   return chunk_stream_.IsComplete();
-}
-
-void DocumentLoaderImpl::SetDocumentSize(uint32_t size) {
-  chunk_stream_.set_eof_pos(size);
 }
 
 uint32_t DocumentLoaderImpl::GetDocumentSize() const {
@@ -395,7 +392,7 @@ void DocumentLoaderImpl::ReadComplete() {
           chunk_stream_.filled_chunks().Last().end() * DataStream::kChunkSize,
           eof);
     }
-    SetDocumentSize(eof);
+    chunk_stream_.set_eof_pos(eof);
     if (eof == EndOfCurrentChunk())
       SaveChunkData();
   }

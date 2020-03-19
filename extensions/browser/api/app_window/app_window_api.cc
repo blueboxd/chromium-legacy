@@ -424,8 +424,8 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
           ->HadDevToolsAttached(app_window->web_contents())) {
     AppWindowClient::Get()->OpenDevToolsWindow(
         app_window->web_contents(),
-        base::Bind(&AppWindowCreateFunction::Respond, this,
-                   base::Passed(&result_arg)));
+        base::BindOnce(&AppWindowCreateFunction::Respond, this,
+                       std::move(result_arg)));
     // OpenDevToolsWindow might have already responded.
     return did_respond() ? AlreadyResponded() : RespondLater();
   }

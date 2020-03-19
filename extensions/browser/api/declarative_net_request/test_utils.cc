@@ -57,7 +57,9 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
 // with gtest. This reuses the logic used to test action equality in
 // TestRequestACtion in test_utils.h.
 bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
-  static_assert(flat::IndexType_count == 5,
+  // TODO(crbug.com/947591): Modify this method for
+  // flat::IndexType_modify_headers.
+  static_assert(flat::IndexType_count == 6,
                 "Modify this method to ensure it stays updated as new actions "
                 "are added.");
 

@@ -37,6 +37,23 @@ mojom_component("mojom") {
   if (enable_openxr) {
     enabled_features += [ "enable_openxr" ]
   }
+
+  shared_cpp_typemap = {
+    types = [
+      {
+        mojom = "device.mojom.RgbaTupleF16"
+        cpp = "::device::RgbaTupleF16"
+      },
+      {
+        mojom = "device.mojom.RgbTupleF32"
+        cpp = "::device::RgbTupleF32"
+      },
+    ]
+    traits_headers = [ "//device/vr/public/mojom/vr_service_mojom_traits.h" ]
+  }
+
+  cpp_typemaps = [ shared_cpp_typemap ]
+  blink_cpp_typemaps = [ shared_cpp_typemap ]
 }
 
 mojom_component("test_mojom") {

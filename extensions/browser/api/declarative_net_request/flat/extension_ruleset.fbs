@@ -18,6 +18,7 @@ enum ActionType : ubyte {
   redirect,
   upgrade_scheme,
   remove_headers,
+  modify_headers,
   allow_all_requests,
   /// Number of actions. Must be the last entry.
   count
@@ -74,6 +75,11 @@ table UrlRuleMetadata {
 
   /// UrlTransform for this rule.
   transform : UrlTransform;
+
+  /// A list of ModifyHeaderInfo, for both request and response headers. Valid
+  /// for "modifyHeaders" rules.
+  request_headers: [ModifyHeaderInfo];
+  response_headers: [ModifyHeaderInfo];
 }
 
 /// This provides a mapping from an index type to its index within
@@ -91,6 +97,8 @@ enum IndexType : ubyte {
   remove_referer_header,
   remove_set_cookie_header,
 
+  modify_headers,
+
   /// Number of indices. Must be the last entry.
   count
 }
@@ -101,6 +109,19 @@ enum RemoveHeaderType : ubyte (bit_flags) {
   cookie,
   referer,
   set_cookie
+}
+
+/// The type of header operation for modifyHeaders rules. Corresponds to
+/// extensions::api::declarative_net_request::HeaderOperation.
+enum HeaderOperation : ubyte {
+  remove
+}
+
+/// Describes the header to be modified and operation to be performed on it.
+/// Corresponds to extensions::api::declarative_net_request::ModifyHeaderInfo.
+table ModifyHeaderInfo {
+  operation: HeaderOperation;
+  header: string;
 }
 
 /// Completely represents a rule with a regex filter.

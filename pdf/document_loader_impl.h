@@ -30,7 +30,6 @@ class DocumentLoaderImpl : public DocumentLoader {
   bool IsDataAvailable(uint32_t position, uint32_t size) const override;
   void RequestData(uint32_t position, uint32_t size) override;
   bool IsDocumentComplete() const override;
-  void SetDocumentSize(uint32_t size) override;
   uint32_t GetDocumentSize() const override;
   uint32_t BytesReceived() const override;
   void ClearPendingRequests() override;

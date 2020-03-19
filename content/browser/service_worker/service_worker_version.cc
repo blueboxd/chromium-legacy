@@ -220,6 +220,16 @@ ServiceWorkerVersion::MainScriptResponse::MainScriptResponse(
   ssl_info = http_info.ssl_info;
 }
 
+ServiceWorkerVersion::MainScriptResponse::MainScriptResponse(
+    const network::mojom::URLResponseHead& response_head) {
+  response_time = response_head.response_time;
+  if (response_head.headers)
+    response_head.headers->GetLastModifiedValue(&last_modified);
+  headers = response_head.headers;
+  if (response_head.ssl_info.has_value())
+    ssl_info = response_head.ssl_info.value();
+}
+
 ServiceWorkerVersion::MainScriptResponse::~MainScriptResponse() = default;
 
 void ServiceWorkerVersion::RestartTick(base::TimeTicks* time) const {

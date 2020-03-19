@@ -1,4 +1,4 @@
-html {
+html:not(body) {
   --google-grey-900-rgb: 32, 33, 36;
   --google-grey-900: rgb(var(--google-grey-900-rgb));
 
@@ -11,7 +11,7 @@ html {
 }
 
 @media (prefers-color-scheme: dark) {
-  html {
+  html:not(body) {
     --cros-default-text-color-rgb: 255, 255, 255;
     --cros-default-text-color: rgb(var(--cros-default-text-color-rgb));
 

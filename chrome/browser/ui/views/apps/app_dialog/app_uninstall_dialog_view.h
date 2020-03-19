@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/apps/app_dialog/app_dialog_view.h"
 #include "chrome/services/app_service/public/mojom/types.mojom-forward.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 class Profile;
 
@@ -23,24 +24,13 @@ namespace gfx {
 class ImageSkia;
 }
 
-// Currently, app uninstallation on Chrome OS invokes a specific dialog per app
-// type:
-// - Chrome Apps / PWAs:
-// https://cs.chromium.org/chromium/src/chrome/browser/ui/app_list/extension_uninstaller.h?q=extensionuninstaller&sq=package:chromium&l=17
-// - ARC apps:
-// https://cs.chromium.org/chromium/src/chrome/browser/ui/app_list/arc/arc_app_dialog.h?q=arcappunin&sq=package:chromium&l=21
-// - Crostini:
-// https://cs.chromium.org/chromium/src/chrome/browser/chromeos/crostini/crostini_util.h?type=cs&q=crostiniuninstall&sq=package:chromium&g=0&l=131
-//
-// There are 3 separate views for app uninstalling, which are subtly different
-// from each other.
-//
-// This class combines the above three specific dialogs, and generates the
-// correct UI based on the app type. Once the user has confirmed the uninstall,
-// this class calls the parent class apps::UninstallDialog::UiBase to notify
-// AppService, which transfers control to the publisher to uninstall the app.
+// This class generates the unified uninstall dialog based on the app type. Once
+// the user has confirmed the uninstall, this class calls the parent class
+// apps::UninstallDialog::UiBase to notify AppService, which transfers control
+// to the publisher to uninstall the app.
 class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
-                               public AppDialogView {
+                               public AppDialogView,
+                               public views::StyledLabelListener {
  public:
   AppUninstallDialogView(Profile* profile,
                          apps::mojom::AppType app_type,
@@ -71,8 +61,15 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
                                     const std::string& app_id);
 #endif
 
+  // views::StyledLabelListener methods.
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
+
   void OnDialogCancelled();
   void OnDialogAccepted();
+
+  Profile* profile_;
 
   // The type of apps, e.g. Extension-backed app, Android app.
   apps::mojom::AppType app_type_;

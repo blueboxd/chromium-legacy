@@ -44,7 +44,7 @@ NotShared<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::GetAsArrayB
 
 void StringOrArrayBufferOrArrayBufferView::SetArrayBufferView(NotShared<TestArrayBufferView> value) {
   DCHECK(IsNull());
-  array_buffer_view_ = Member<TestArrayBufferView>(value.View());
+  array_buffer_view_ = value;
   type_ = SpecificType::kArrayBufferView;
 }
 

@@ -303,7 +303,7 @@ def member_impl_context(member, interfaces_info, header_includes,
         if idl_type.name == 'Object':
             return '!({0}_.IsEmpty() || {0}_.IsNull() || {0}_.IsUndefined())'.format(
                 cpp_name)
-        return '%s_' % cpp_name
+        return '!!%s_' % cpp_name
 
     cpp_default_value = None
     if member.default_value:
@@ -320,9 +320,6 @@ def member_impl_context(member, interfaces_info, header_includes,
             idl_type.impl_includes_for_type(interfaces_info))
 
     setter_value = 'value'
-    if idl_type.is_array_buffer_view_or_typed_array:
-        setter_value += '.View()'
-
     non_null_type = idl_type.inner_type if idl_type.is_nullable else idl_type
     setter_inline = 'inline ' if (non_null_type.is_basic_type
                                   or non_null_type.is_enum

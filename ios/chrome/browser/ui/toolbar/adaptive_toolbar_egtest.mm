@@ -101,8 +101,8 @@ id<GREYMatcher> CancelButton() {
 }
 
 // Returns a matcher for the search button.
-id<GREYMatcher> SearchButton() {
-  return grey_accessibilityID(kToolbarSearchButtonIdentifier);
+id<GREYMatcher> NewTabButton() {
+  return grey_accessibilityID(kToolbarNewTabButtonIdentifier);
 }
 
 // Returns a matcher for the tab grid button.
@@ -233,7 +233,7 @@ void CheckButtonsVisibilityIPhonePortrait(BOOL omniboxFocused) {
     // Those buttons are hidden by the keyboard.
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(SearchButton(), ButtonVisibilityNone);
+    CheckVisibilityInToolbar(NewTabButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ToolsMenuButton(), ButtonVisibilityNone);
   } else {
@@ -245,7 +245,7 @@ void CheckButtonsVisibilityIPhonePortrait(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilitySecondary);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilitySecondary);
-    CheckVisibilityInToolbar(SearchButton(), ButtonVisibilitySecondary);
+    CheckVisibilityInToolbar(NewTabButton(), ButtonVisibilitySecondary);
     CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilitySecondary);
     CheckVisibilityInToolbar(ToolsMenuButton(), ButtonVisibilitySecondary);
   }
@@ -263,7 +263,7 @@ void CheckButtonsVisibilityIPhoneLandscape(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityNone);
-    CheckVisibilityInToolbar(SearchButton(), ButtonVisibilityNone);
+    CheckVisibilityInToolbar(NewTabButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(ToolsMenuButton(), ButtonVisibilityNone);
   } else {
@@ -275,7 +275,7 @@ void CheckButtonsVisibilityIPhoneLandscape(BOOL omniboxFocused) {
 
     CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
     CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityPrimary);
-    CheckVisibilityInToolbar(SearchButton(), ButtonVisibilityNone);
+    CheckVisibilityInToolbar(NewTabButton(), ButtonVisibilityNone);
     CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityPrimary);
     CheckVisibilityInToolbar(ToolsMenuButton(), ButtonVisibilityPrimary);
   }
@@ -296,7 +296,7 @@ void CheckButtonsVisibilityIPad() {
 
   CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityPrimary);
-  CheckVisibilityInToolbar(SearchButton(), ButtonVisibilityNone);
+  CheckVisibilityInToolbar(NewTabButton(), ButtonVisibilityNone);
   CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityNone);
   CheckVisibilityInToolbar(ToolsMenuButton(), ButtonVisibilityPrimary);
 
@@ -586,16 +586,16 @@ UIViewController* TopPresentedViewController() {
       assertWithMatcher:grey_not(grey_enabled())];
 }
 
-// Tests that tapping the omnibox button focuses the omnibox.
-- (void)testOmniboxButton {
+// Tests that tapping the NewTab button opens a new tab.
+- (void)testNewTabButton {
   if (![ChromeEarlGrey isSplitToolbarMode]) {
-    EARL_GREY_TEST_SKIPPED(@"No omnibox button to tap.");
+    EARL_GREY_TEST_SKIPPED(@"No button to tap.");
   }
 
   [ChromeEarlGrey waitForMainTabCount:1];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kToolbarSearchButtonIdentifier)]
+                                          kToolbarNewTabButtonIdentifier)]
       performAction:grey_tap()];
 
   [ChromeEarlGrey waitForMainTabCount:2];
@@ -652,7 +652,7 @@ UIViewController* TopPresentedViewController() {
   [ChromeEarlGrey openNewTab];
 
   // Check that the bottom toolbar is visible.
-  [[EarlGrey selectElementWithMatcher:SearchButton()]
+  [[EarlGrey selectElementWithMatcher:NewTabButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

@@ -151,6 +151,12 @@ bool TestPasswordsPrivateDelegate::IsOptedInForAccountStorage() {
   return is_opted_in_for_account_storage_;
 }
 
+void TestPasswordsPrivateDelegate::SetAccountStorageOptIn(
+    bool opt_in,
+    content::WebContents* web_contents) {
+  is_opted_in_for_account_storage_ = opt_in;
+}
+
 std::vector<api::passwords_private::CompromisedCredential>
 TestPasswordsPrivateDelegate::GetCompromisedCredentials() {
   api::passwords_private::CompromisedCredential credential;

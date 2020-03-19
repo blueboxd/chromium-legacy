@@ -139,11 +139,12 @@ TEST(UserDataDowngradeTests, RemoveDataForProfile) {
   base::File::Info snapshot_info;
   ASSERT_TRUE(base::GetFileInfo(snapshot_dir, &snapshot_info));
 
-  // Test that data is deleted only if it was created after the deletion time
-  // range start.
-  RemoveDataForProfile(base::Time::Now(), profile_path_default,
+  // Nothing should be deleted from |profile_path_default| since delete_begin
+  // is after the snapshot has been created.
+  RemoveDataForProfile(base::Time::Max(), profile_path_default,
                        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS);
-  RemoveDataForProfile(snapshot_info.creation_time, profile_path_1,
+  // Only the bookmarks should be deleted.
+  RemoveDataForProfile(base::Time::Min(), profile_path_1,
                        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS);
   EXPECT_TRUE(base::PathExists(
       snapshot_profile_path_default.Append(chrome::kPreferencesFilename)));
@@ -171,8 +172,7 @@ TEST(UserDataDowngradeTests, RemoveDataForProfile) {
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
 
   // Delete some data from default profile.
-  RemoveDataForProfile(snapshot_info.creation_time, profile_path_default,
-                       remove_mask);
+  RemoveDataForProfile(base::Time::Min(), profile_path_default, remove_mask);
   for (const auto& item : profile_items) {
     EXPECT_EQ(
         (item.data_types & remove_mask) == 0,

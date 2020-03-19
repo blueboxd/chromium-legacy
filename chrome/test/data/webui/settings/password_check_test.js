@@ -310,13 +310,33 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test verifies that if no compromised credentials found than list is not
-    // shown TODO(https://crbug.com/1047726): add additional checks after
-    // UI is implemented
+    // shown
     test('testNoCompromisedCredentials', function() {
-      const checkPasswordSection = createCheckPasswordSection();
-      assertTrue(checkPasswordSection.$.passwordCheckBody.hidden);
-      assertFalse(checkPasswordSection.$.noCompromisedCredentials.hidden);
-      validateLeakedPasswordsList(checkPasswordSection, []);
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.IDLE,
+          /*checked=*/ 4,
+          /*remaining=*/ 0,
+          /*lastCheck=*/ 'Just now');
+      data.leakedCredentials = [];
+
+      const section = createCheckPasswordSection();
+      assertFalse(isElementVisible(section.$.noCompromisedCredentials));
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
+      // Initialize with dummy data breach detection settings
+      section.prefs = {
+        profile: {password_manager_leak_detection: {value: true}}
+      };
+
+      return passwordManager.whenCalled('getCompromisedCredentials')
+          .then(() => {
+            Polymer.dom.flush();
+            assertFalse(isElementVisible(section.$.passwordCheckBody));
+            assertTrue(isElementVisible(section.$.noCompromisedCredentials));
+          });
     });
 
     // Test verifies that compromised credentials are displayed in a proper way

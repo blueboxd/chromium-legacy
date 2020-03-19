@@ -264,11 +264,11 @@ void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
 
 namespace {
 
-template <typename Worklist, typename Callback, typename YieldPredicate>
-bool DrainWorklist(Worklist* worklist,
-                   Callback callback,
-                   YieldPredicate should_yield,
-                   int task_id) {
+template <typename Worklist, typename Callback>
+bool DrainWorklistWithDeadline(base::TimeTicks deadline,
+                               Worklist* worklist,
+                               Callback callback,
+                               int task_id) {
   const size_t kDeadlineCheckInterval = 1250;
 
   size_t processed_callback_count = 0;
@@ -276,32 +276,13 @@ bool DrainWorklist(Worklist* worklist,
   while (worklist->Pop(task_id, &item)) {
     callback(item);
     if (++processed_callback_count == kDeadlineCheckInterval) {
-      if (should_yield())
+      if (deadline <= base::TimeTicks::Now()) {
         return false;
+      }
       processed_callback_count = 0;
     }
   }
   return true;
-}
-
-template <typename Worklist, typename Callback>
-bool DrainWorklistWithDeadline(base::TimeTicks deadline,
-                               Worklist* worklist,
-                               Callback callback,
-                               int task_id) {
-  return DrainWorklist(
-      worklist, std::move(callback),
-      [deadline]() { return deadline <= base::TimeTicks::Now(); }, task_id);
-}
-
-template <typename Worklist, typename Callback>
-bool DrainWorklistWithYielding(base::JobDelegate* delegate,
-                               Worklist* worklist,
-                               Callback callback,
-                               int task_id) {
-  return DrainWorklist(
-      worklist, std::move(callback),
-      [delegate]() { return delegate->ShouldYield(); }, task_id);
 }
 
 }  // namespace
@@ -432,19 +413,14 @@ bool ThreadHeap::HasWorkForConcurrentMarking() const {
          !write_barrier_worklist_->IsGlobalPoolEmpty();
 }
 
-size_t ThreadHeap::ConcurrentMarkingGlobalWorkSize() const {
-  return marking_worklist_->GlobalPoolSize() +
-         write_barrier_worklist_->GlobalPoolSize();
-}
-
 bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
-                                          base::JobDelegate* delegate) {
+                                          base::TimeTicks deadline) {
   bool finished;
   do {
     // Iteratively mark all objects that are reachable from the objects
     // currently pushed onto the marking worklist.
-    finished = DrainWorklistWithYielding(
-        delegate, marking_worklist_.get(),
+    finished = DrainWorklistWithDeadline(
+        deadline, marking_worklist_.get(),
         [visitor](const MarkingItem& item) {
           HeapObjectHeader* header =
               HeapObjectHeader::FromPayload(item.base_object_payload);
@@ -456,8 +432,8 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
     if (!finished)
       break;
 
-    finished = DrainWorklistWithYielding(
-        delegate, write_barrier_worklist_.get(),
+    finished = DrainWorklistWithDeadline(
+        deadline, write_barrier_worklist_.get(),
         [visitor](HeapObjectHeader* header) {
           DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
           GCInfo::From(header->GcInfoIndex()).trace(visitor, header->Payload());

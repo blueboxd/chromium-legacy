@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -28,6 +29,7 @@
 #include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -136,6 +138,9 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
               base::Unretained(this)))),
       password_access_authenticator_(
           base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthCall,
+                              base::Unretained(this))),
+      account_storage_opt_in_reauthenticator_(
+          base::BindRepeating(&PasswordsPrivateDelegateImpl::InvokeGoogleReauth,
                               base::Unretained(this))),
       password_account_storage_opt_in_watcher_(
           std::make_unique<
@@ -309,6 +314,21 @@ bool PasswordsPrivateDelegateImpl::OsReauthCall(
 #endif
 }
 
+void PasswordsPrivateDelegateImpl::InvokeGoogleReauth(
+    content::WebContents* web_contents,
+    PasswordsPrivateDelegateImpl::GoogleReauthCallback callback) {
+  if (auto* client =
+          ChromePasswordManagerClient::FromWebContents(web_contents)) {
+    client->TriggerReauthForAccount(
+        IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId(
+            signin::ConsentLevel::kNotRequired),
+        std::move(callback));
+    return;
+  }
+  std::move(callback).Run(
+      password_manager::PasswordManagerClient::ReauthSucceeded(false));
+}
+
 Profile* PasswordsPrivateDelegateImpl::GetProfile() {
   return profile_;
 }
@@ -416,6 +436,33 @@ PasswordsPrivateDelegateImpl::GetExportProgressStatus() {
 bool PasswordsPrivateDelegateImpl::IsOptedInForAccountStorage() {
   return password_manager_util::IsOptedInForAccountStorage(
       profile_->GetPrefs(), ProfileSyncServiceFactory::GetForProfile(profile_));
+}
+
+void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
+    bool opt_in,
+    content::WebContents* web_contents) {
+  if (opt_in == IsOptedInForAccountStorage())
+    return;
+  if (!opt_in) {
+    password_manager_util::SetAccountStorageOptIn(
+        profile_->GetPrefs(),
+        ProfileSyncServiceFactory::GetForProfile(profile_), false);
+    return;
+  }
+  account_storage_opt_in_reauthenticator_.Run(
+      web_contents,
+      base::BindOnce(
+          &PasswordsPrivateDelegateImpl::SetAccountStorageOptInCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PasswordsPrivateDelegateImpl::SetAccountStorageOptInCallback(
+    password_manager::PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
+  if (reauth_succeeded) {
+    password_manager_util::SetAccountStorageOptIn(
+        profile_->GetPrefs(),
+        ProfileSyncServiceFactory::GetForProfile(profile_), true);
+  }
 }
 
 std::vector<api::passwords_private::CompromisedCredential>

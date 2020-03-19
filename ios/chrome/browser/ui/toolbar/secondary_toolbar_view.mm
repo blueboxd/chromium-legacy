@@ -47,8 +47,8 @@ const CGFloat kToolsMenuOffset = -7;
 @property(nonatomic, strong, readwrite) ToolbarToolsMenuButton* toolsMenuButton;
 // Button to display the tab grid, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarTabGridButton* tabGridButton;
-// Button to focus the omnibox, redefined as readwrite.
-@property(nonatomic, strong, readwrite) ToolbarButton* searchButton;
+// Button to create a new tab, redefined as readwrite.
+@property(nonatomic, strong, readwrite) ToolbarButton* openNewTabButton;
 
 @end
 
@@ -60,7 +60,7 @@ const CGFloat kToolsMenuOffset = -7;
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
 @synthesize toolsMenuButton = _toolsMenuButton;
-@synthesize searchButton = _searchButton;
+@synthesize openNewTabButton = _openNewTabButton;
 @synthesize tabGridButton = _tabGridButton;
 
 #pragma mark - Public
@@ -111,7 +111,7 @@ const CGFloat kToolsMenuOffset = -7;
 
   self.backButton = [self.buttonFactory backButton];
   self.forwardButton = [self.buttonFactory forwardButton];
-  self.searchButton = [self.buttonFactory searchButton];
+  self.openNewTabButton = [self.buttonFactory openNewTabButton];
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
@@ -122,8 +122,8 @@ const CGFloat kToolsMenuOffset = -7;
       CGAffineTransformMakeTranslation(textDirection * kToolsMenuOffset, 0);
 
   self.allButtons = @[
-    self.backButton, self.forwardButton, self.searchButton, self.tabGridButton,
-    self.toolsMenuButton
+    self.backButton, self.forwardButton, self.openNewTabButton,
+    self.tabGridButton, self.toolsMenuButton
   ];
 
   self.separator = [[UIView alloc] init];

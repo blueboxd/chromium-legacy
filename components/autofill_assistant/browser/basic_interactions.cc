@@ -416,7 +416,10 @@ bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
 }
 
 bool BasicInteractions::EndAction(const EndActionProto& proto) {
-  CHECK(end_action_callback_) << "Failed to EndAction: no callback set";
+  if (!end_action_callback_) {
+    DVLOG(2) << "Failed to EndAction: no callback set";
+    return false;
+  }
   std::move(end_action_callback_)
       .Run(proto.status(), delegate_->GetUserModel());
   return true;

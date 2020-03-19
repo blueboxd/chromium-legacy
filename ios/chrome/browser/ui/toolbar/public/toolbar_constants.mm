@@ -60,8 +60,8 @@ NSString* const kToolbarStackButtonIdentifier =
     @"kToolbarStackButtonIdentifier";
 NSString* const kToolbarShareButtonIdentifier =
     @"kToolbarShareButtonIdentifier";
-NSString* const kToolbarSearchButtonIdentifier =
-    @"kToolbarSearchButtonIdentifier";
+NSString* const kToolbarNewTabButtonIdentifier =
+    @"kToolbarNewTabButtonIdentifier";
 NSString* const kToolbarCancelOmniboxEditButtonIdentifier =
     @"kToolbarCancelOmniboxEditButtonIdentifier";
 

@@ -123,10 +123,10 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
             fromNamedGuide:kTabSwitcherGuide];
 }
 
-- (void)showSearchButtonPopup {
+- (void)showNewTabButtonPopup {
   base::RecordAction(base::UserMetricsAction("MobileToolbarShowNewTabMenu"));
-  [self presentPopupOfType:PopupMenuTypeSearch
-            fromNamedGuide:kSearchButtonGuide];
+  [self presentPopupOfType:PopupMenuTypeNewTab
+            fromNamedGuide:kNewTabButtonGuide];
 }
 
 - (void)showTabStripTabGridButtonPopup {

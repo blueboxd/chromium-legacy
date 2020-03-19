@@ -94,7 +94,30 @@ Polymer({
     },
 
     /** @private */
-    haveCheckedPasswordsBefore_: Boolean,
+    signedIn_: {
+      type: Boolean,
+      value: true,
+      computed: 'computeSignedIn_(syncStatus_.signedIn)',
+    },
+
+    /** @private */
+    hasNeverCheckedPasswords_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    hasStoredPasswords_: {
+      type: Boolean,
+      value: false,
+    },
+
+    shouldShowBanner_: {
+      type: Boolean,
+      value: true,
+      computed: 'computeShouldShowBanner_(' +
+          'signedIn_, hasNeverCheckedPasswords_, hasStoredPasswords_)',
+    },
 
     /** @private */
     hasLeakedCredentials_: {
@@ -234,6 +257,7 @@ Polymer({
       // given entry and is stable with regard to mutations to the list, it is
       // sufficient to just use this id to create a item uid.
       this.updateList('savedPasswords', item => item.entry.id, newList);
+      this.hasStoredPasswords_ = list.length > 0;
     };
 
     const setPasswordExceptionsListener = list => {
@@ -254,7 +278,7 @@ Polymer({
     // TODO(https://crbug.com/1047726) Remove code duplication with
     // password_check.js
     const statusChangeListener = status => {
-      this.haveCheckedPasswordsBefore_ = !!status.elapsedTimeSinceLastCheck;
+      this.hasNeverCheckedPasswords_ = !status.elapsedTimeSinceLastCheck;
     };
 
     this.setIsOptedInForAccountStorageListener_ =
@@ -406,6 +430,23 @@ Polymer({
     // Trigger a re-evaluation of the activePassword as the visibility state of
     // the password might have changed.
     this.activePassword.notifyPath('item.password');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSignedIn_() {
+    return !!this.syncStatus_ && !!this.syncStatus_.signedIn;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowBanner_() {
+    return this.signedIn_ && this.hasStoredPasswords_ &&
+        this.hasNeverCheckedPasswords_;
   },
 
   /**

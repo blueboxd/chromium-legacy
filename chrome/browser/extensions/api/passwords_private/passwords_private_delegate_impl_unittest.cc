@@ -18,12 +18,14 @@
 #include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -31,8 +33,12 @@
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/driver/test_sync_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,6 +128,16 @@ autofill::PasswordForm CreateSampleForm() {
   return form;
 }
 
+std::unique_ptr<KeyedService> BuildTestSyncService(content::BrowserContext*) {
+  auto sync_service = std::make_unique<syncer::TestSyncService>();
+  CoreAccountInfo fake_info;
+  fake_info.account_id = CoreAccountId("id");
+  fake_info.gaia = "gaia";
+  fake_info.email = "foo@bar.com";
+  sync_service->SetAuthenticatedAccountInfo(fake_info);
+  return sync_service;
+}
+
 }  // namespace
 
 class PasswordsPrivateDelegateImplTest : public testing::Test {
@@ -136,6 +152,9 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   // PasswordsPrivateEventRouter.
   void SetUpRouters();
 
+  void SetGoogleReauthResponse(PasswordsPrivateDelegateImpl* delegate,
+                               bool should_succeed);
+
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  protected:
@@ -146,6 +165,8 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
       CreateAndUseTestPasswordStore(&profile_);
   ui::TestClipboard* test_clipboard_ =
       ui::TestClipboard::CreateForCurrentThread();
+  base::MockCallback<PasswordsPrivateDelegateImpl::GoogleAccountAuthenticator>
+      mock_google_authenticator_;
 
  private:
   base::HistogramTester histogram_tester_;
@@ -176,6 +197,22 @@ void PasswordsPrivateDelegateImplTest::SetUpRouters() {
   // factory is set, resulting in nul PasswordsPrivateEventRouter.
   PasswordsPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
       &profile_, base::BindRepeating(&BuildPasswordsPrivateEventRouter));
+}
+
+void PasswordsPrivateDelegateImplTest::SetGoogleReauthResponse(
+    PasswordsPrivateDelegateImpl* delegate,
+    bool should_succeed) {
+  ON_CALL(mock_google_authenticator_, Run)
+      .WillByDefault(
+          [should_succeed](
+              content::WebContents*,
+              PasswordsPrivateDelegateImpl::GoogleReauthCallback callback) {
+            std::move(callback).Run(
+                password_manager::PasswordManagerClient::ReauthSucceeded(
+                    should_succeed));
+          });
+  delegate->set_account_storage_opt_in_reauthenticator(
+      mock_google_authenticator_.Get());
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
@@ -287,6 +324,47 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
   histogram_tester().ExpectUniqueSample(
       kHistogramName, password_manager::metrics_util::ACCESS_PASSWORD_COPIED,
       1);
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, TestShouldOptInIfReauthSucceeds) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  SetGoogleReauthResponse(&delegate, true);
+
+  auto* test_sync_service = static_cast<syncer::SyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          &profile_, base::BindRepeating(&BuildTestSyncService)));
+
+  password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
+                                                test_sync_service, false);
+  delegate.SetAccountStorageOptIn(true, nullptr);
+
+  EXPECT_TRUE(password_manager_util::IsOptedInForAccountStorage(
+      profile_.GetPrefs(), test_sync_service));
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, TestShouldOptOut) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  auto* test_sync_service = static_cast<syncer::SyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          &profile_, base::BindRepeating(&BuildTestSyncService)));
+
+  password_manager_util::SetAccountStorageOptIn(profile_.GetPrefs(),
+                                                test_sync_service, true);
+  delegate.SetAccountStorageOptIn(false, nullptr);
+
+  EXPECT_CALL(mock_google_authenticator_, Run).Times(0);
+  EXPECT_FALSE(password_manager_util::IsOptedInForAccountStorage(
+      profile_.GetPrefs(), test_sync_service));
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {

@@ -812,31 +812,88 @@ cr.define('settings_passwords_section', function() {
       assertFalse(passwordsSection.$.manageLink.hidden);
     });
 
-    test('showPasswordCheckBannerWhenNotCheckedBefore', function() {
-      // Suppose no check done initially.
-      assertEquals(
-          passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
-          undefined);
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        assertFalse(
-            passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
-        assertFalse(passwordsSection.$$('#checkPasswordsButton').hidden);
-        assertTrue(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
-      });
-    });
+    test(
+        'showPasswordCheckBannerWhenNotCheckedBeforeAndSignedInAndHavePasswords',
+        function() {
+          // Suppose no check done initially, non-empty list of passwords,
+          // signed in.
+          assertEquals(
+              passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
+              undefined);
+          const passwordList = [
+            autofill_test_util.createPasswordEntry('site1.com', 'luigi', 1),
+          ];
+          const passwordsSection = elementFactory.createPasswordsSection(
+              passwordManager, passwordList, []);
+          return passwordManager.whenCalled('getPasswordCheckStatus')
+              .then(() => {
+                Polymer.dom.flush();
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordsBannerContainer')
+                        .hidden);
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertTrue(
+                    passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+              });
+        });
+
+    test(
+        'showPasswordCheckLinkButtonWithoutWarningWhenNotSignedIn', function() {
+          // Suppose no check done initially, non-empty list of passwords,
+          // signed out.
+          assertEquals(
+              passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
+              undefined);
+          const passwordList = [
+            autofill_test_util.createPasswordEntry('site1.com', 'luigi', 1),
+          ];
+          const passwordsSection = elementFactory.createPasswordsSection(
+              passwordManager, passwordList, []);
+          sync_test_util.simulateSyncStatus({signedIn: false});
+          return passwordManager.whenCalled('getPasswordCheckStatus')
+              .then(() => {
+                Polymer.dom.flush();
+                assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
+                               .hidden);
+                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+              });
+        });
+
+    test(
+        'showPasswordCheckLinkButtonWithoutWarningWhenNoPasswords', function() {
+          // Suppose no check done initially, empty list of passwords, signed
+          // in.
+          assertEquals(
+              passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
+              undefined);
+          const passwordsSection =
+              elementFactory.createPasswordsSection(passwordManager, [], []);
+          return passwordManager.whenCalled('getPasswordCheckStatus')
+              .then(() => {
+                Polymer.dom.flush();
+                assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
+                               .hidden);
+                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+              });
+        });
 
     test(
         'showPasswordCheckLinkButtonWithoutWarningWhenNoCredentialsLeaked',
         function() {
-          // Suppose no leaks detected initially.
+          // Suppose no leaks initially, non-empty list of passwords, signed in.
           passwordManager.data.leakedCredentials = [];
           passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
               '5 min ago';
-          const passwordsSection =
-              elementFactory.createPasswordsSection(passwordManager, [], []);
+          const passwordList = [
+            autofill_test_util.createPasswordEntry('site1.com', 'luigi', 1),
+          ];
+          const passwordsSection = elementFactory.createPasswordsSection(
+              passwordManager, passwordList, []);
           return passwordManager.whenCalled('getPasswordCheckStatus')
               .then(() => {
                 Polymer.dom.flush();
@@ -857,7 +914,7 @@ cr.define('settings_passwords_section', function() {
     test(
         'showPasswordCheckLinkButtonWithWarningWhenSomeCredentialsLeaked',
         function() {
-          // Suppose two leaks detected initially.
+          // Suppose no leaks initially, non-empty list of passwords, signed in.
           passwordManager.data.leakedCredentials = [
             autofill_test_util.makeCompromisedCredential(
                 'one.com', 'test4', 'LEAKED'),
@@ -866,8 +923,11 @@ cr.define('settings_passwords_section', function() {
           ];
           passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
               '5 min ago';
-          const passwordsSection =
-              elementFactory.createPasswordsSection(passwordManager, [], []);
+          const passwordList = [
+            autofill_test_util.createPasswordEntry('site1.com', 'luigi', 1),
+          ];
+          const passwordsSection = elementFactory.createPasswordsSection(
+              passwordManager, passwordList, []);
           return passwordManager.whenCalled('getPasswordCheckStatus')
               .then(() => {
                 Polymer.dom.flush();
@@ -886,11 +946,19 @@ cr.define('settings_passwords_section', function() {
         });
 
     test('makeWarningAppearWhenLeaksDetected', function() {
-      // Suppose no leaks detected initially.
+      // Suppose no leaks detected initially, non-empty list of passwords,
+      // signed in.
+      assertEquals(
+          passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
+          undefined);
       passwordManager.data.leakedCredentials = [];
       passwordManager.data.checkStatus.elapsedTimeSinceLastCheck = '5 min ago';
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
+      const passwordList = [
+        autofill_test_util.createPasswordEntry('one.com', 'test4', 1),
+        autofill_test_util.createPasswordEntry('two.com', 'test3', 1),
+      ];
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, passwordList, []);
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         assertTrue(
@@ -928,6 +996,30 @@ cr.define('settings_passwords_section', function() {
         assertTrue(passwordsSection.$$('#checkPasswordLeakDescription').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordWarningIcon').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordLeakCount').hidden);
+      });
+    });
+
+    test('makeBannerDisappearWhenSignedOut', function() {
+      // Suppose no leaks detected initially, non-empty list of passwords,
+      // signed in.
+      const passwordList = [
+        autofill_test_util.createPasswordEntry('one.com', 'test4', 1),
+        autofill_test_util.createPasswordEntry('two.com', 'test3', 1),
+      ];
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, passwordList, []);
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertFalse(
+            passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+        sync_test_util.simulateSyncStatus({signedIn: false});
+        Polymer.dom.flush();
+        assertTrue(
+            passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
       });
     });
   });

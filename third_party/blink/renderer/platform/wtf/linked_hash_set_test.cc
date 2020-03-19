@@ -119,10 +119,11 @@ TEST(NewLinkedHashSetTest, InsertBefore) {
   using Set = NewLinkedHashSet<int>;
   Set set;
 
-  set.InsertBefore(1, 1);
+  set.InsertBefore(set.begin(), 1);
   set.InsertBefore(10, 3);
   set.InsertBefore(3, 2);
-  set.InsertBefore(10, 5);
+  set.InsertBefore(set.end(), 6);
+  set.InsertBefore(--set.end(), 5);
   set.InsertBefore(5, 4);
 
   Set::const_iterator it = set.begin();
@@ -135,6 +136,8 @@ TEST(NewLinkedHashSetTest, InsertBefore) {
   EXPECT_EQ(*it, 4);
   ++it;
   EXPECT_EQ(*it, 5);
+  ++it;
+  EXPECT_EQ(*it, 6);
   ++it;
   EXPECT_TRUE(it == set.end());
 }

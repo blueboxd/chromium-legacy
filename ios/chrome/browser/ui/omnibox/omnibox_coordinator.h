@@ -54,8 +54,6 @@ class WebOmniboxEditController;
 - (void)updateOmniboxState;
 // Use this method to make the omnibox first responder.
 - (void)focusOmnibox;
-// Marks the next omnibox focus event source as the search button.
-- (void)setNextFocusSourceAsSearchButton;
 // Use this method to resign |textField| as the first responder.
 - (void)endEditing;
 // Creates a child popup coordinator. The popup coordinator is linked to the

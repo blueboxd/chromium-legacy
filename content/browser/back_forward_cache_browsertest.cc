@@ -765,14 +765,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   EXPECT_TRUE(NavigateToURL(popup, url_b));
   EXPECT_EQ(1u, rfh_a_new->GetSiteInstance()->GetRelatedActiveContentsCount());
 
-  // 5) Navigate to B again. In theory, the current document should be able to
-  // enter the BackForwardCache. It can't, because the RenderFrameHost still
-  // "remembers" it had access to the popup. See
-  // RenderFrameHostImpl::scheduler_tracked_features().
+  // 5) Navigate to B again. As the scripting relationship with the popup is
+  // now severed, the current page (|rfh_a_new|) can enter back-forward cache.
   RenderFrameDeletedObserver delete_observer_rfh_a_new(rfh_a_new);
   EXPECT_TRUE(ExecJs(rfh_a_new, JsReplace("location = $1;", url_b.spec())));
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
-  delete_observer_rfh_a_new.WaitUntilDeleted();
+  EXPECT_FALSE(delete_observer_rfh_a_new.deleted());
+  EXPECT_TRUE(rfh_a_new->is_in_back_forward_cache());
 
   // 6) Go back to A. The current document can finally enter the
   // BackForwardCache, because it is alone in its BrowsingInstance and has never

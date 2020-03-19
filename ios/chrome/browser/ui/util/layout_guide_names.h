@@ -39,8 +39,8 @@ extern GuideName* const kOmniboxTextFieldGuide;
 extern GuideName* const kBackButtonGuide;
 // A guide that is constrained to match the frame of the forward button's image.
 extern GuideName* const kForwardButtonGuide;
-// A guide that is constrained to match the frame of the Search button.
-extern GuideName* const kSearchButtonGuide;
+// A guide that is constrained to match the frame of the NewTab button.
+extern GuideName* const kNewTabButtonGuide;
 // A guide that is constrained to match the frame of the TabSwitcher button's
 // image.
 extern GuideName* const kTabSwitcherGuide;

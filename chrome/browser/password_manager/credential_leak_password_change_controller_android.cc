@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/PasswordChangeLauncher_jni.h"
 #include "chrome/browser/ui/android/passwords/credential_leak_dialog_password_change_view_android.h"
 #include "chrome/common/url_constants.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
@@ -47,6 +48,13 @@ void CredentialLeakPasswordChangeControllerAndroid::OnAcceptDialog() {
       password_manager::GetLeakDialogType(leak_type_),
       ShouldCheckPasswords() ? LeakDialogDismissalReason::kClickedCheckPasswords
                              : LeakDialogDismissalReason::kClickedOk);
+  if (window_android_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_PasswordChangeLauncher_start(
+        env, window_android_->GetJavaObject(),
+        base::android::ConvertUTF8ToJavaString(env, origin_.spec()),
+        base::android::ConvertUTF16ToJavaString(env, username_));
+  }
   delete this;
 }
 

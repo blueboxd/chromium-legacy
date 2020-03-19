@@ -2231,6 +2231,9 @@ crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calen
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ Skip ]
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/popup-with-display-none-optgroup.html [ Skip ]
 
+crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Failure Pass ]
+crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Failure Pass ]
+
 crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
 crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
 crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphens-align.html [ Skip ]

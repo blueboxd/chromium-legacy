@@ -220,6 +220,17 @@ ResponseAction PasswordsPrivateIsOptedInForAccountStorageFunction::Run() {
       GetDelegate(browser_context())->IsOptedInForAccountStorage())));
 }
 
+// PasswordsPrivateOptInForAccountStorageFunction
+ResponseAction PasswordsPrivateOptInForAccountStorageFunction::Run() {
+  auto parameters =
+      api::passwords_private::OptInForAccountStorage::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  GetDelegate(browser_context())
+      ->SetAccountStorageOptIn(parameters->opt_in, GetSenderWebContents());
+  return RespondNow(NoArguments());
+}
+
 // PasswordsPrivateGetCompromisedCredentialsFunction:
 PasswordsPrivateGetCompromisedCredentialsFunction::
     ~PasswordsPrivateGetCompromisedCredentialsFunction() = default;

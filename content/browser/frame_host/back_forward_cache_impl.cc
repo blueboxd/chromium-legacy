@@ -118,8 +118,6 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
       FeatureToBit(
           WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
       FeatureToBit(
-          WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs) |
-      FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
       FeatureToBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
       FeatureToBit(

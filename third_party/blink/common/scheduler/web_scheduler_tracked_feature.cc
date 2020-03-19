@@ -47,8 +47,6 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "ServiceWorker-controlled page";
     case WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction:
       return "outstanding IndexedDB transaction";
-    case WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs:
-      return "has scriptable frames in multiple tabs";
     case WebSchedulerTrackedFeature::kRequestedGeolocationPermission:
       return "requested geolocation permission";
     case WebSchedulerTrackedFeature::kRequestedNotificationsPermission:

@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd99b64678d6a4a71323c3fe9693fc0a24d3fc4f4',
+  'skia_revision': 'fabad157059d7e2341bcfa8e4cdbaf576ccd5886',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '64e0899efa07a281ed44288cf6fab12e83e47f8a',
+  'devtools_frontend_revision': 'b6414c9da66278b77928e96926b80a816020a6f9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -521,7 +521,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'ecb6de8a5a229721f761f13056c584c2b9208b6c',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '65758b73af4c97551fce65ae4f8bfedd39a360b3',
       'condition': 'checkout_ios',
   },
 
@@ -1448,7 +1448,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '84ee597cdeae08bb26e578fc66a35bcf35f633f4',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '93bcaae445243cde9d4cb500f7dfc1cd7210bf56',
+    Var('webrtc_git') + '/src.git' + '@' + 'e55f0c3384954b59ddf158c3daad4f3595c067bc',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c3411c20dad7a3e9d3c968cfaccbca780e5c7f7a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@30a60eed32c2626b1398500ec85649d4429550d9',
     'condition': 'checkout_src_internal',
   },
 

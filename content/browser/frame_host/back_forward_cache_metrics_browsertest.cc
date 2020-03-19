@@ -37,10 +37,6 @@ namespace {
 constexpr uint64_t kPageShowFeature = static_cast<uint64_t>(
     blink::scheduler::WebSchedulerTrackedFeature::kPageShowEventListener);
 
-constexpr uint64_t kHasScriptableFramesInMultipleTabsFeature =
-    static_cast<uint64_t>(blink::scheduler::WebSchedulerTrackedFeature::
-                              kHasScriptableFramesInMultipleTabs);
-
 constexpr uint64_t kRequestedGeolocationPermissionFeature =
     static_cast<uint64_t>(blink::scheduler::WebSchedulerTrackedFeature::
                               kRequestedGeolocationPermission);
@@ -646,118 +642,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, MAYBE_SharedWorker) {
                 ~kFeaturesToIgnoreMask,
             1ull << static_cast<uint32_t>(
                 blink::scheduler::WebSchedulerTrackedFeature::kSharedWorker));
-}
-
-IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
-                       WindowOpen_SameOrigin) {
-  ukm::TestAutoSetUkmRecorder recorder;
-
-  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
-  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
-
-  ShellAddedObserver observer;
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.open($1, '_blank');", url2)));
-  Shell* shell2 = observer.GetShell();
-  EXPECT_TRUE(WaitForLoadStop(shell2->web_contents()));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url2));
-
-  {
-    // We emit metrics when we navigate back to the previously visited page,
-    // so navigate back to trigger the metrics.
-    TestNavigationObserver navigation_observer(shell()->web_contents());
-    shell()->GoBackOrForward(-1);
-    navigation_observer.WaitForNavigationFinished();
-  }
-
-  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
-  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
-  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
-  ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
-
-  EXPECT_THAT(GetFeatureUsageMetrics(&recorder),
-              testing::ElementsAre(FeatureUsage{
-                  id3, 1 << kHasScriptableFramesInMultipleTabsFeature, 0, 0}));
-}
-
-IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
-                       WindowOpen_CrossOrigin) {
-  ukm::TestAutoSetUkmRecorder recorder;
-
-  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
-  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
-  const GURL url3(
-      embedded_test_server()->GetURL("/cross-site/bar.com/title3.html"));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
-
-  ShellAddedObserver observer;
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.open($1, '_blank');", url3)));
-
-  Shell* shell2 = observer.GetShell();
-  EXPECT_TRUE(WaitForLoadStop(shell2->web_contents()));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url2));
-
-  {
-    // We emit metrics when we navigate back to the previously visited page,
-    // so navigate back to trigger the metrics.
-    TestNavigationObserver navigation_observer(shell()->web_contents());
-    shell()->GoBackOrForward(-1);
-    navigation_observer.WaitForNavigationFinished();
-  }
-
-  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
-  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
-  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
-  ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
-
-  // TODO(altimin): For now we don't distinguish between same-origin and
-  // cross-origin window.opens. We might want to revisit this in the future.
-  EXPECT_THAT(GetFeatureUsageMetrics(&recorder),
-              testing::ElementsAre(FeatureUsage{
-                  id3, 1 << kHasScriptableFramesInMultipleTabsFeature, 0, 0}));
-}
-
-IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
-                       WindowOpen_SameOrigin_Openee) {
-  ukm::TestAutoSetUkmRecorder recorder;
-
-  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
-  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
-  const GURL url3(embedded_test_server()->GetURL("/title3.html"));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
-
-  ShellAddedObserver observer;
-  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.open($1, '_blank');", url2)));
-  Shell* shell2 = observer.GetShell();
-  EXPECT_TRUE(WaitForLoadStop(shell2->web_contents()));
-
-  Observe(shell2->web_contents());
-
-  // Navigate the second shell and ensure that the openee doesn't get cached
-  // too.
-  EXPECT_TRUE(NavigateToURL(shell2, url3));
-
-  {
-    // We emit metrics when we navigate back to the previously visited page,
-    // so navigate back to trigger the metrics.
-    TestNavigationObserver navigation_observer(shell2->web_contents());
-    shell2->GoBackOrForward(-1);
-    navigation_observer.WaitForNavigationFinished();
-  }
-
-  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
-  // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
-  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
-  ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
-
-  EXPECT_THAT(GetFeatureUsageMetrics(&recorder),
-              testing::ElementsAre(FeatureUsage{
-                  id3, 1 << kHasScriptableFramesInMultipleTabsFeature, 0, 0}));
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Geolocation) {

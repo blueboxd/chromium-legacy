@@ -1109,6 +1109,9 @@ class NewLinkedHashSet {
                          IncomingValueType&& value);
 
   template <typename IncomingValueType>
+  AddResult InsertBefore(const_iterator it, IncomingValueType&& value);
+
+  template <typename IncomingValueType>
   AddResult AppendOrMoveToLast(IncomingValueType&&);
 
   template <typename IncomingValueType>
@@ -1212,6 +1215,15 @@ NewLinkedHashSet<T, Allocator>::InsertBefore(ValuePeekInType before_value,
                                              IncomingValueType&& value) {
   return InsertOrMoveBefore(find(before_value),
                             std::forward<IncomingValueType>(value),
+                            MoveType::kDontMove);
+}
+
+template <typename T, typename Allocator>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T, Allocator>::AddResult
+NewLinkedHashSet<T, Allocator>::InsertBefore(const_iterator it,
+                                             IncomingValueType&& value) {
+  return InsertOrMoveBefore(it, std::forward<IncomingValueType>(value),
                             MoveType::kDontMove);
 }
 

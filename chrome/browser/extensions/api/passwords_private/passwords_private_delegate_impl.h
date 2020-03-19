@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -26,6 +27,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_account_storage_opt_in_watcher.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "extensions/browser/extension_function.h"
@@ -66,6 +68,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   api::passwords_private::ExportProgressStatus GetExportProgressStatus()
       override;
   bool IsOptedInForAccountStorage() override;
+  void SetAccountStorageOptIn(bool opt_in,
+                              content::WebContents* web_contents) override;
   std::vector<api::passwords_private::CompromisedCredential>
   GetCompromisedCredentials() override;
   void GetPlaintextCompromisedPassword(
@@ -96,6 +100,14 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   IdGenerator<std::string>& GetPasswordIdGeneratorForTesting();
 
+  // TODO(crbug.com/1049141): Move the strong alias out of PasswordManagerClient
+  // to avoid leaking implementation details here.
+  using GoogleReauthCallback = base::OnceCallback<void(
+      password_manager::PasswordManagerClient::ReauthSucceeded)>;
+  using GoogleAccountAuthenticator =
+      base::RepeatingCallback<void(content::WebContents*,
+                                   GoogleReauthCallback)>;
+
 #if defined(UNIT_TEST)
   // Use this in tests to mock the OS-level reauthentication.
   void set_os_reauth_call(
@@ -103,6 +115,12 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
           os_reauth_call) {
     password_access_authenticator_.set_os_reauth_call(
         std::move(os_reauth_call));
+  }
+  // Use this in tests to mock the Google account reauthentication.
+  void set_account_storage_opt_in_reauthenticator(
+      GoogleAccountAuthenticator account_storage_opt_in_reauthenticator) {
+    account_storage_opt_in_reauthenticator_ =
+        std::move(account_storage_opt_in_reauthenticator);
   }
 #endif  // defined(UNIT_TEST)
 
@@ -129,9 +147,19 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   void OnAccountStorageOptInStateChanged();
 
+  // Callback for the reauth flow that is triggered upon the user opting in to
+  // account password storage. Will opt in the user if the reauth succeeded.
+  void SetAccountStorageOptInCallback(
+      password_manager::PasswordManagerClient::ReauthSucceeded
+          reauth_succeeded);
+
   // Triggers an OS-dependent UI to present OS account login challenge and
   // returns true if the user passed that challenge.
   bool OsReauthCall(password_manager::ReauthPurpose purpose);
+
+  // Triggers a Google account reauthentication UI.
+  void InvokeGoogleReauth(content::WebContents* web_contents,
+                          GoogleReauthCallback callback);
 
   // Not owned by this class.
   Profile* profile_;
@@ -143,6 +171,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   std::unique_ptr<PasswordManagerPorter> password_manager_porter_;
 
   password_manager::PasswordAccessAuthenticator password_access_authenticator_;
+
+  GoogleAccountAuthenticator account_storage_opt_in_reauthenticator_;
 
   std::unique_ptr<password_manager::PasswordAccountStorageOptInWatcher>
       password_account_storage_opt_in_watcher_;
@@ -177,6 +207,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // The WebContents used when invoking this API. Used to fetch the
   // NativeWindow for the window where the API was called.
   content::WebContents* web_contents_;
+
+  base::WeakPtrFactory<PasswordsPrivateDelegateImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateDelegateImpl);
 };

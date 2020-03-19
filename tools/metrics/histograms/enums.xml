@@ -22542,6 +22542,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1459" label="PASSWORDSPRIVATE_STOPPASSWORDCHECK"/>
   <int value="1460" label="PASSWORDSPRIVATE_GETPASSWORDCHECKSTATUS"/>
   <int value="1461" label="TERMINALPRIVATE_OPENVMSHELLPROCESS"/>
+  <int value="1462" label="PASSWORDSPRIVATE_OPTINFORACCOUNTSTORAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">

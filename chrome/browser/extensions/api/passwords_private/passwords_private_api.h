@@ -195,6 +195,19 @@ class PasswordsPrivateIsOptedInForAccountStorageFunction
   ResponseAction Run() override;
 };
 
+class PasswordsPrivateOptInForAccountStorageFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.optInForAccountStorage",
+                             PASSWORDSPRIVATE_OPTINFORACCOUNTSTORAGE)
+
+ protected:
+  ~PasswordsPrivateOptInForAccountStorageFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
 class PasswordsPrivateGetCompromisedCredentialsFunction
     : public ExtensionFunction {
  public:

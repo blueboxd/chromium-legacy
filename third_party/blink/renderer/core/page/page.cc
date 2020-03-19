@@ -161,11 +161,6 @@ Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
     page->prev_related_page_ = opener;
     page->next_related_page_ = next;
     next->prev_related_page_ = page;
-
-    // No need to update |prev| here as if |next| != |prev|, |prev| was already
-    // marked as having related pages.
-    next->UpdateHasRelatedPages();
-    page->UpdateHasRelatedPages();
   }
 
   OrdinaryPages().insert(page);
@@ -315,9 +310,6 @@ void Page::SetMainFrame(Frame* main_frame) {
   main_frame_ = main_frame;
 
   page_scheduler_->SetIsMainFrameLocal(main_frame->IsLocalFrame());
-  // |has_related_pages_| is only reported when the main frame is local, so make
-  // sure it's updated after the main frame changes.
-  UpdateHasRelatedPages();
 }
 
 LocalFrame* Page::DeprecatedLocalMainFrame() const {
@@ -865,8 +857,6 @@ void Page::DidCommitLoad(LocalFrame* frame) {
                                         mojom::blink::ScrollType::kProgrammatic,
                                         mojom::blink::ScrollBehavior::kInstant,
                                         ScrollableArea::ScrollCallback());
-    // Update |has_related_pages_| as features are reset after navigation.
-    UpdateHasRelatedPages();
   }
   GetLinkHighlight().ResetForPageNavigation();
 }
@@ -949,10 +939,6 @@ void Page::WillBeDestroyed() {
     prev->next_related_page_ = next;
     this->prev_related_page_ = nullptr;
     this->next_related_page_ = nullptr;
-    if (prev != this)
-      prev->UpdateHasRelatedPages();
-    if (next != this)
-      next->UpdateHasRelatedPages();
   }
 
   if (scrolling_coordinator_)
@@ -1047,22 +1033,6 @@ void Page::SetInsidePortal(bool inside_portal) {
 
 bool Page::InsidePortal() const {
   return inside_portal_;
-}
-
-void Page::UpdateHasRelatedPages() {
-  bool has_related_pages = next_related_page_ != this;
-  if (!has_related_pages) {
-    has_related_pages_.reset();
-  } else {
-    LocalFrame* local_main_frame = DynamicTo<LocalFrame>(main_frame_.Get());
-    // We want to record this only for the pages which have local main frame,
-    // which is fine as we are aggregating results across all processes.
-    if (!local_main_frame || !local_main_frame->IsAttached())
-      return;
-    has_related_pages_ = local_main_frame->GetFrameScheduler()->RegisterFeature(
-        SchedulingPolicy::Feature::kHasScriptableFramesInMultipleTabs,
-        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
-  }
 }
 
 void Page::SetMediaFeatureOverride(const AtomicString& media_feature,

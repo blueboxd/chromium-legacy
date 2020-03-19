@@ -432,7 +432,8 @@
 
 #pragma mark - AdaptiveToolbarView
 
-- (ToolbarButton*)searchButton {
+- (ToolbarButton*)openNewTabButton {
   return nil;
 }
+
 @end

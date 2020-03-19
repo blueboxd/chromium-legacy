@@ -561,12 +561,6 @@ bool ShouldShowShelfHoverPreviews() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
 }
 
-bool ShouldShowScrollableShelf() {
-  // TODO(manucornet): Remove this method and simplify conditions depending
-  // on it since it's now always true.
-  return true;
-}
-
 bool ShouldTetherHostScansIgnoreWiredConnections() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kTetherHostScansIgnoreWiredConnections);

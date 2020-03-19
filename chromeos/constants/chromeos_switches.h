@@ -230,9 +230,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfHotseat();
 // on the shelf.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfHoverPreviews();
 
-// Returns true if we should show a scrollable list of apps in the main shelf.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowScrollableShelf();
-
 // Returns true if the Chromebook should ignore its wired connections when
 // deciding whether to run scans for tethering hosts. Should be used only for
 // testing.

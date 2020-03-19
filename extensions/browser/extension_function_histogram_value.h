@@ -1522,6 +1522,7 @@ enum HistogramValue {
   PASSWORDSPRIVATE_STOPPASSWORDCHECK = 1459,
   PASSWORDSPRIVATE_GETPASSWORDCHECKSTATUS = 1460,
   TERMINALPRIVATE_OPENVMSHELLPROCESS = 1461,
+  PASSWORDSPRIVATE_OPTINFORACCOUNTSTORAGE = 1462,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

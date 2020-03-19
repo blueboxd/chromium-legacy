@@ -241,8 +241,10 @@ void VulkanFenceHelper::PerformImmediateCleanup() {
   // recover from this.
   CHECK(result == VK_SUCCESS || result == VK_ERROR_DEVICE_LOST);
   bool device_lost = result == VK_ERROR_DEVICE_LOST;
-  if (!device_lost)
-    current_generation_ = next_generation_ - 1;
+
+  // We're going to destroy all fences below, so we should consider them as
+  // passed.
+  current_generation_ = next_generation_ - 1;
 
   // Run all cleanup tasks. Create a temporary vector of tasks to run to avoid
   // reentrancy issues.

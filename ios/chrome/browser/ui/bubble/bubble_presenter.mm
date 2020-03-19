@@ -184,7 +184,7 @@ const CGFloat kBubblePresentationDelay = 1;
       IsSplitToolbarMode() ? BubbleArrowDirectionDown : BubbleArrowDirectionUp;
   NSString* text =
       l10n_util::GetNSString(IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT);
-  CGPoint searchButtonAnchor =
+  CGPoint tabGridButtonAnchor =
       IsRegularXRegularSizeClass() &&
               !base::FeatureList::IsEnabled(kChangeTabSwitcherPosition)
           ? [self anchorPointToGuide:kTabStripTabSwitcherGuide
@@ -203,7 +203,7 @@ const CGFloat kBubblePresentationDelay = 1;
         voiceOverAnnouncement:
             l10n_util::GetNSString(
                 IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_VOICE_OVER)
-                  anchorPoint:searchButtonAnchor];
+                  anchorPoint:tabGridButtonAnchor];
   if (!presenter)
     return;
 
@@ -246,8 +246,8 @@ presentBubbleForFeature:(const base::Feature&)feature
   BubbleArrowDirection arrowDirection = BubbleArrowDirectionDown;
   NSString* text = l10n_util::GetNSStringWithFixup(
       IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_TEXT);
-  CGPoint searchButtonAnchor =
-      [self anchorPointToGuide:kSearchButtonGuide direction:arrowDirection];
+  CGPoint newTabButtonAnchor = [self anchorPointToGuide:kNewTabButtonGuide
+                                              direction:arrowDirection];
 
   // If the feature engagement tracker does not consider it valid to display
   // the tip, then end early to prevent the potential reassignment of the
@@ -260,7 +260,7 @@ presentBubbleForFeature:(const base::Feature&)feature
         voiceOverAnnouncement:
             l10n_util::GetNSString(
                 IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_VOICE_OVER)
-                  anchorPoint:searchButtonAnchor];
+                  anchorPoint:newTabButtonAnchor];
   if (!presenter)
     return;
 

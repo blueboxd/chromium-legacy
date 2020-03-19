@@ -237,8 +237,7 @@ TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
 
 TEST_F(BasicInteractionsTest, EndActionWithoutCallbackFails) {
   EndActionProto proto;
-  ASSERT_DEATH(basic_interactions_.EndAction(proto),
-               "Failed to EndAction: no callback set");
+  EXPECT_FALSE(basic_interactions_.EndAction(proto));
 }
 
 TEST_F(BasicInteractionsTest, EndActionWithCallbackSucceeds) {

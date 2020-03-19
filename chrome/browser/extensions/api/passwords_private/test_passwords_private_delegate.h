@@ -40,6 +40,8 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   api::passwords_private::ExportProgressStatus GetExportProgressStatus()
       override;
   bool IsOptedInForAccountStorage() override;
+  void SetAccountStorageOptIn(bool opt_in,
+                              content::WebContents* web_contents) override;
   std::vector<api::passwords_private::CompromisedCredential>
   GetCompromisedCredentials() override;
   void GetPlaintextCompromisedPassword(

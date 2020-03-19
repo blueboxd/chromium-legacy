@@ -121,11 +121,6 @@
   _editView->UpdateAppearance();
 }
 
-- (void)setNextFocusSourceAsSearchButton {
-  OmniboxEditModel* model = _editView->model();
-  model->set_focus_source(OmniboxFocusSource::SEARCH_BUTTON);
-}
-
 - (BOOL)isOmniboxFirstResponder {
   return [self.textField isFirstResponder];
 }

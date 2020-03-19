@@ -174,7 +174,7 @@
         Block third-party cookies
       </message>
       <message name="IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox." formatter_data="android_java">
-        When on, sites can’t use your browsing activity across different sites to personalize ads. Features on some sites may break.
+        When on, sites can't use cookies that track you across the web. Features on some sites may break.
       </message>
 
 </grit-part>

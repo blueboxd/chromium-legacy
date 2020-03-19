@@ -88,8 +88,8 @@ extern NSString* const kToolbarToolsMenuButtonIdentifier;
 extern NSString* const kToolbarStackButtonIdentifier;
 // Accessibility identifier of the share button.
 extern NSString* const kToolbarShareButtonIdentifier;
-// Accessibility identifier of the omnibox button.
-extern NSString* const kToolbarSearchButtonIdentifier;
+// Accessibility identifier of the NewTab button.
+extern NSString* const kToolbarNewTabButtonIdentifier;
 // Accessibility identifier of the cancel omnibox edit button.
 extern NSString* const kToolbarCancelOmniboxEditButtonIdentifier;
 

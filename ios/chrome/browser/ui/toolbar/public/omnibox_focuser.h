@@ -12,8 +12,6 @@
 // Give focus to the omnibox, if it is visible. No-op if it is not visible.  If
 // current page is an NTP, first focus the NTP fakebox.
 - (void)focusOmnibox;
-// Set next focus source as SEARCH_BUTTON and then call -focusOmnibox.
-- (void)focusOmniboxFromSearchButton;
 // Focus the omnibox but skip the NTP check.
 - (void)focusOmniboxFromFakebox;
 // Cancel omnibox edit (from shield tap or cancel button tap).

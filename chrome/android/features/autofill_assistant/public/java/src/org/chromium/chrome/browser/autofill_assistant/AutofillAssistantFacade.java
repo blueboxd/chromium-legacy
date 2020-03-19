@@ -37,7 +37,7 @@ public class AutofillAssistantFacade {
      * <p>Intent starting with this prefix are reported to the controller as parameters, except for
      * the ones starting with {@code INTENT_SPECIAL_PREFIX}.
      */
-    private static final String INTENT_EXTRA_PREFIX =
+    public static final String INTENT_EXTRA_PREFIX =
             "org.chromium.chrome.browser.autofill_assistant.";
 
     /** Prefix for intent extras which are not parameters. */

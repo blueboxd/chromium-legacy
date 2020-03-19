@@ -44,13 +44,6 @@ enum class WebSchedulerTrackedFeature {
 
   kOutstandingIndexedDBTransaction = 17,
 
-  // Whether there are other pages which can potentially synchronously script
-  // the current one (e.g. due to window.open being used).
-  // This is a conservative estimation which doesn't take into account the
-  // origin, so it may be true if the related page is cross-origin.
-  // Recorded only for the main frame.
-  kHasScriptableFramesInMultipleTabs = 18,
-
   // Whether the page tried to request a permission regardless of the outcome.
   // TODO(altimin): Track this more accurately depending on the data.
   // See permission.mojom for more details.

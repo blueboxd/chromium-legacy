@@ -21,11 +21,6 @@ class AdditionalSuggestionsHelper;
 // Shared instance of this singleton.
 + (instancetype)sharedInstance;
 
-// Whether the @"focusOmniboxFromSearchButton" selector has been called on the
-// location bar coordinator. This is the method swizzled by the methods below.
-@property(nonatomic, assign, readonly)
-    BOOL locationBarCoordinatorSearchButtonMethodCalled;
-
 // Resets the stored additionalSuggestions helper with |URL|.
 - (void)resetAdditionalSuggestionsHelperWithURL:(const GURL&)URL;
 // Returns the stored additionalSuggestionsHelper.

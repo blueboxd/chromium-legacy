@@ -223,6 +223,12 @@ chrome.passwordsPrivate.cancelExportPasswords = function() {};
 chrome.passwordsPrivate.isOptedInForAccountStorage = function(callback) {};
 
 /**
+ * Triggers the opt-in or opt-out flow for the account storage.
+ * @param {boolean} optIn
+ */
+chrome.passwordsPrivate.optInForAccountStorage = function(optIn) {};
+
+/**
  * Requests the latest compromised credentials.
  * @param {function(!Array<!chrome.passwordsPrivate.CompromisedCredential>):void}
  *     callback

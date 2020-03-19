@@ -168,28 +168,27 @@
   return bookmarkButton;
 }
 
-// TODO(crbug.com/974751): Rename this as the button is no longer for search.
-- (ToolbarButton*)searchButton {
+- (ToolbarButton*)openNewTabButton {
   UIImage* buttonImage = [UIImage imageNamed:@"toolbar_new_tab_page"];
-  ToolbarSearchButton* searchButton =
+  ToolbarSearchButton* newTabButton =
       [ToolbarSearchButton toolbarButtonWithImage:buttonImage];
 
-  [searchButton addTarget:self.actionHandler
+  [newTabButton addTarget:self.actionHandler
                    action:@selector(searchAction:)
          forControlEvents:UIControlEventTouchUpInside];
   BOOL isIncognito = self.style == INCOGNITO;
 
-  [self configureButton:searchButton width:kAdaptiveToolbarButtonWidth];
+  [self configureButton:newTabButton width:kAdaptiveToolbarButtonWidth];
 
-  searchButton.accessibilityLabel =
+  newTabButton.accessibilityLabel =
       l10n_util::GetNSString(isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
                                          : IDS_IOS_TOOLS_MENU_NEW_TAB);
 
-  searchButton.accessibilityIdentifier = kToolbarSearchButtonIdentifier;
+  newTabButton.accessibilityIdentifier = kToolbarNewTabButtonIdentifier;
 
-  searchButton.visibilityMask =
+  newTabButton.visibilityMask =
       self.visibilityConfiguration.searchButtonVisibility;
-  return searchButton;
+  return newTabButton;
 }
 
 - (UIButton*)cancelButton {

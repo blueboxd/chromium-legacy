@@ -99,6 +99,7 @@ js_library("password_check") {
   deps = [
     ":password_manager_proxy",
     "..:plural_string_proxy",
+    "../prefs:prefs_behavior",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
@@ -291,6 +292,7 @@ js_library("password_check.m") {
   deps = [
     ":password_manager_proxy.m",
     "..:plural_string_proxy.m",
+    "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
@@ -523,12 +525,12 @@ polymer_modulizer("password_check") {
   js_file = "password_check.js"
   html_file = "password_check.html"
   html_type = "dom-module"
-  auto_imports = [
-    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
-    "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncPrefs,SyncStatus",
-    "chrome/browser/resources/settings/plural_string_proxy.html|PluralStringProxyImpl",
-    "ui/webui/resources/html/assert.html|assert",
-  ]
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncPrefs,SyncStatus",
+                   "chrome/browser/resources/settings/plural_string_proxy.html|PluralStringProxyImpl",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
   namespace_rewrites = settings_namespace_rewrites
 }
 

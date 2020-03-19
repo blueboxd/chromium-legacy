@@ -235,7 +235,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mActivity = activity;
         mUiConfig = uiConfig;
 
-        Profile profile = Profile.getLastUsedProfile();
+        Profile profile = Profile.getLastUsedRegularProfile();
         OfflinePageBridge offlinePageBridge =
                 SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile);
         TileRenderer tileRenderer =

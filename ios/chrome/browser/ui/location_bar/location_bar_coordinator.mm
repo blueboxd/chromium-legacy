@@ -306,20 +306,6 @@ const int kLocationAuthorizationStatusCount = 5;
 
 #pragma mark - OmniboxFocuser
 
-- (void)focusOmniboxFromSearchButton {
-  // TODO(crbug.com/931284): Temporary workaround for intermediate broken state
-  // in the NTP.  Remove this once crbug.com/899827 is fixed.
-  if (self.webState) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(self.webState);
-    if (NTPHelper && NTPHelper->IsActive() && NTPHelper->IgnoreLoadRequests()) {
-      return;
-    }
-  }
-  [self.omniboxCoordinator setNextFocusSourceAsSearchButton];
-  [self focusOmnibox];
-}
-
 - (void)focusOmniboxFromFakebox {
   [self.omniboxCoordinator focusOmnibox];
 }

@@ -190,8 +190,8 @@ var availableTests = [
   },
 
   function isNotOptedInForAccountStorage() {
-    var callback = function(opted_in) {
-      chrome.test.assertEq(opted_in, false);
+    var callback = function(optedIn) {
+      chrome.test.assertEq(optedIn, false);
       // Ensure that the callback is invoked.
       chrome.test.succeed();
     };
@@ -200,13 +200,29 @@ var availableTests = [
   },
 
   function isOptedInForAccountStorage() {
-    var callback = function(opted_in) {
-      chrome.test.assertEq(opted_in, true);
+    var callback = function(optedIn) {
+      chrome.test.assertEq(optedIn, true);
       // Ensure that the callback is invoked.
       chrome.test.succeed();
     };
 
     chrome.passwordsPrivate.isOptedInForAccountStorage(callback);
+  },
+
+  function optInForAccountStorage() {
+    chrome.passwordsPrivate.optInForAccountStorage(true);
+    chrome.passwordsPrivate.isOptedInForAccountStorage(function(optedIn) {
+      chrome.test.assertEq(optedIn, true);
+      chrome.test.succeed();
+    });
+  },
+
+  function optOutForAccountStorage() {
+    chrome.passwordsPrivate.optInForAccountStorage(false);
+    chrome.passwordsPrivate.isOptedInForAccountStorage(function(optedIn) {
+      chrome.test.assertEq(optedIn, false);
+      chrome.test.succeed();
+    });
   },
 
   function getCompromisedCredentials() {

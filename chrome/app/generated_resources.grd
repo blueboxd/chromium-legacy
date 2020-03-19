@@ -2729,7 +2729,7 @@ are declared in tools/grit/grit_rule.gni.
         Some sites use third-party cookies to load their pages. If a site isn't working, you can try allowing cookies.
       </message>
       <message name="IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE" desc="Text shown in the dialog that allows users to control cookie blocking.">
-        Sites can’t use your browsing activity across different sites to personalize ads
+        Sites can't use cookies that track you across the web
       </message>
       <message name="IDS_COOKIE_CONTROLS_TOOLTIP" desc="Tooltip shown on a page action icon that is shown when cookie blocking is enabled.">
         Third-party cookie blocking

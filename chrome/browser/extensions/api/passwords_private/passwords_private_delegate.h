@@ -111,6 +111,12 @@ class PasswordsPrivateDelegate : public KeyedService {
   // local/profile storage).
   virtual bool IsOptedInForAccountStorage() = 0;
 
+  // Sets whether the user is opted in to use the Google account storage for
+  // passwords. If |opt_in| is true and the user is not currently opted in,
+  // will trigger a reauth flow.
+  virtual void SetAccountStorageOptIn(bool opt_in,
+                                      content::WebContents* web_contents) = 0;
+
   // Obtains information about compromised credentials. This includes the last
   // time a check was run, as well as all compromised credentials that are
   // present in the password store.

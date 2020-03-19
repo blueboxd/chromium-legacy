@@ -92,8 +92,12 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     s_test_delegate_->SetStartPasswordCheckReturnSuccess(result);
   }
 
+  bool IsOptedInForAccountStorage() {
+    return s_test_delegate_->IsOptedInForAccountStorage();
+  }
+
   void SetOptedInForAccountStorage(bool opted_in) {
-    s_test_delegate_->SetOptedInForAccountStorage(opted_in);
+    s_test_delegate_->SetAccountStorageOptIn(opted_in, nullptr);
   }
 
   void ResetPlaintextPassword() { s_test_delegate_->ResetPlaintextPassword(); }
@@ -202,6 +206,16 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
   AddCompromisedCredential(0);
   EXPECT_TRUE(RunPasswordsSubtest("changeCompromisedCredentialSucceeds"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, OptInForAccountStorage) {
+  SetOptedInForAccountStorage(false);
+  EXPECT_TRUE(RunPasswordsSubtest("optInForAccountStorage")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, OptOutForAccountStorage) {
+  SetOptedInForAccountStorage(true);
+  EXPECT_TRUE(RunPasswordsSubtest("optOutForAccountStorage")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,

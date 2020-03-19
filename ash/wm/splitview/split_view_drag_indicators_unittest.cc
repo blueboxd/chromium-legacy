@@ -13,6 +13,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -80,19 +81,6 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
   bool IsPreviewAreaShowing() {
     return SplitViewDragIndicators::GetSnapPosition(window_dragging_state()) !=
            SplitViewController::NONE;
-  }
-
-  OverviewItem* GetOverviewItemForWindow(aura::Window* window,
-                                         int grid_index = 0) {
-    auto& windows = overview_session_->grid_list()[grid_index]->window_list();
-    auto iter =
-        std::find_if(windows.cbegin(), windows.cend(),
-                     [window](const std::unique_ptr<OverviewItem>& item) {
-                       return item->Contains(window);
-                     });
-    if (iter == windows.end())
-      return nullptr;
-    return iter->get();
   }
 
   float GetEdgeInset(int screen_width) const {
@@ -296,8 +284,7 @@ TEST_F(SplitViewDragIndicatorsTest,
   ToggleOverview();
 
   // Start dragging from overview.
-  OverviewItem* item =
-      GetOverviewItemForWindow(window1.get(), /*is_touch_dragging=*/false);
+  OverviewItem* item = GetOverviewItemForWindow(window1.get());
   gfx::PointF start_location(item->target_bounds().CenterPoint());
   overview_session_->InitiateDrag(item, start_location,
                                   /*is_touch_dragging=*/false);

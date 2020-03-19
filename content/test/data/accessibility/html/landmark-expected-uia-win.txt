@@ -147,4 +147,3 @@ Document
 ++Group
 ++++Group
 ++++++Text Name='This should NOT have footer role.'
-<-- End-of-file -->

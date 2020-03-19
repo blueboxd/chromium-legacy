@@ -19,7 +19,6 @@ sk_sp<SkTypeface> FontUniqueNameLookupLinux::MatchUniqueName(
   if (!Platform::Current()->GetSandboxSupport()) {
     LOG(ERROR) << "@font-face src: local() instantiation only available when "
                   "connected to browser process.";
-    DCHECK(Platform::Current()->GetSandboxSupport());
     return nullptr;
   }
 

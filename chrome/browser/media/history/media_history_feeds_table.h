@@ -35,7 +35,7 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   sql::InitStatus CreateTableIfNonExistent() override;
 
   // Saves a newly discovered feed in the database.
-  bool SaveFeed(const GURL& url);
+  bool DiscoverFeed(const GURL& url);
 
   // Returns the feed rows in the database.
   std::vector<media_feeds::mojom::MediaFeedPtr> GetRows();

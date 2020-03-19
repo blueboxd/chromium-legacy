@@ -101,7 +101,7 @@ class MediaHistoryStore {
       const std::vector<media_session::MediaImage>& artwork);
 
   // Saves a newly discovered media feed in the media history store.
-  void SaveMediaFeed(const GURL& url);
+  void DiscoverMediaFeed(const GURL& url);
 
   void ReplaceMediaFeedItems(
       const int64_t feed_id,

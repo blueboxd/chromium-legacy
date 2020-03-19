@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 import './edu_login_welcome.js';
+import './edu_login_parents.js';
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ParentAccount} from './edu_login_util.js';
 
 /** @enum {string} */
 const Steps = {
@@ -39,10 +42,17 @@ Polymer({
       type: Number,
       value: 0,
     },
+
+    /**
+     * Selected parent account for approving EDU login flow.
+     * @type {?ParentAccount}
+     */
+    selectedParent_: Object,
   },
 
   listeners: {
     'go-next': 'onGoNext_',
+    'go-back': 'onGoBack_',
   },
 
   /** @override */
@@ -52,9 +62,15 @@ Polymer({
 
   /** Switches to the next view. */
   onGoNext_() {
-    if (this.stepIndex_ < stepsArray.length - 1) {
-      ++this.stepIndex_;
-    }
+    assert(this.stepIndex_ < stepsArray.length - 1);
+    ++this.stepIndex_;
+    this.switchViewAtIndex_(this.stepIndex_);
+  },
+
+  /** Switches to the previous view. */
+  onGoBack_() {
+    assert(this.stepIndex_ > 0);
+    --this.stepIndex_;
     this.switchViewAtIndex_(this.stepIndex_);
   },
 

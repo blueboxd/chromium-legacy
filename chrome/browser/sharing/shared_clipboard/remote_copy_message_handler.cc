@@ -440,6 +440,11 @@ void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& image) {
   LogRemoteCopyDecodeImageTime(timer_.Elapsed());
   LogRemoteCopyReceivedImageSizeAfterDecode(image.computeByteSize());
 
+  if (!base::FeatureList::IsEnabled(kRemoteCopyImageNotification)) {
+    WriteImageAndShowNotification(image, image);
+    return;
+  }
+
   double scale = std::min(
       static_cast<double>(kNotificationImageMaxWidthPx) / image.width(),
       static_cast<double>(kNotificationImageMaxHeightPx) / image.height());
@@ -518,14 +523,18 @@ void RemoteCopyMessageHandler::ShowNotification(
     const std::string& notification_id) {
   TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::ShowNotification");
 
+  bool use_image_notification =
+      base::FeatureList::IsEnabled(kRemoteCopyImageNotification) &&
+      !image.drawsNothing();
+
   message_center::RichNotificationData rich_notification_data;
-  if (!image.drawsNothing())
+  if (use_image_notification)
     rich_notification_data.image = gfx::Image::CreateFrom1xBitmap(image);
   rich_notification_data.vector_small_image = &kSendTabToSelfIcon;
 
   message_center::NotificationType type =
-      image.drawsNothing() ? message_center::NOTIFICATION_TYPE_SIMPLE
-                           : message_center::NOTIFICATION_TYPE_IMAGE;
+      use_image_notification ? message_center::NOTIFICATION_TYPE_IMAGE
+                             : message_center::NOTIFICATION_TYPE_SIMPLE;
 
   ui::Accelerator paste_accelerator(ui::VKEY_V, ui::EF_PLATFORM_ACCELERATOR);
 

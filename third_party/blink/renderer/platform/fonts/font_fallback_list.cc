@@ -49,7 +49,7 @@ FontFallbackList::FontFallbackList(FontSelector* font_selector)
       can_shape_word_by_word_(false),
       can_shape_word_by_word_computed_(false) {}
 
-void FontFallbackList::Invalidate(FontSelector* font_selector) {
+void FontFallbackList::Invalidate() {
   ReleaseFontData();
   font_list_.clear();
   cached_primary_simple_font_data_ = nullptr;
@@ -57,8 +57,6 @@ void FontFallbackList::Invalidate(FontSelector* font_selector) {
   has_loading_fallback_ = false;
   can_shape_word_by_word_ = false;
   can_shape_word_by_word_computed_ = false;
-  if (font_selector_ != font_selector)
-    font_selector_ = font_selector;
   font_selector_version_ = font_selector_ ? font_selector_->Version() : 0;
   generation_ = FontCache::GetFontCache()->Generation();
 }
@@ -238,7 +236,7 @@ const FontData* FontFallbackList::FontDataAt(
     unsigned realized_font_index) {
   if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
     if (!IsValid())
-      Invalidate(font_selector_);
+      Invalidate();
   }
 
   // This fallback font is already in our list.
@@ -284,7 +282,7 @@ bool FontFallbackList::CanShapeWordByWord(
     const FontDescription& font_description) {
   if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
     if (!IsValid())
-      Invalidate(font_selector_);
+      Invalidate();
   }
 
   if (!can_shape_word_by_word_computed_) {

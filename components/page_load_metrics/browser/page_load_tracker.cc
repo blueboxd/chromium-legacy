@@ -415,15 +415,15 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
 }
 
 void PageLoadTracker::NotifyClientRedirectTo(
-    const PageLoadTracker& destination) {
+    content::NavigationHandle* destination) {
   if (metrics_update_dispatcher_.timing().paint_timing->first_paint) {
     base::TimeTicks first_paint_time =
         navigation_start() +
         metrics_update_dispatcher_.timing().paint_timing->first_paint.value();
     base::TimeDelta first_paint_to_navigation;
-    if (destination.navigation_start() > first_paint_time)
+    if (destination->NavigationStart() > first_paint_time)
       first_paint_to_navigation =
-          destination.navigation_start() - first_paint_time;
+          destination->NavigationStart() - first_paint_time;
     PAGE_LOAD_HISTOGRAM(internal::kClientRedirectFirstPaintToNavigation,
                         first_paint_to_navigation);
   } else {

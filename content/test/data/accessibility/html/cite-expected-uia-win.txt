@@ -3,4 +3,3 @@ Document
 ++Group IsControlElement=false
 ++++Text Name='The pipe'
 ++++Text Name=' clicked by SomeOne.'
-<-- End-of-file -->

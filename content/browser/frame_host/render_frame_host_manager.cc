@@ -829,7 +829,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   // Force using a different RenderFrameHost when RenderDocument is enabled.
   // TODO(arthursonzogni, fergal): Add support for the main frame.
-  if (IsRenderDocumentEnabled() && !frame_tree_node_->IsMainFrame() &&
+  if (CreateNewHostForSameSiteSubframe() && !frame_tree_node_->IsMainFrame() &&
       !request->IsSameDocument() &&
       render_frame_host_->has_committed_any_navigation()) {
     use_current_rfh = false;
@@ -2121,16 +2121,18 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   CHECK(new_instance);
   // This DCHECK is going to be fully removed as part of RenderDocument [1].
   //
-  // With RenderDocument: every cross-document navigation creates a new
-  // RenderFrameHost. The navigation is potentially same-SiteInstance.
+  // With RenderDocument for sub frames or main frames: cross-document
+  // navigation creates a new RenderFrameHost. The navigation is potentially
+  // same-SiteInstance.
   //
-  // With RenderDocumentForCrashedFrame: navigations from a crashed
+  // With RenderDocument for crashed frames: navigations from a crashed
   // RenderFrameHost creates a new RenderFrameHost. The navigation is
   // potentially same-SiteInstance.
   //
   // [1] http://crbug.com/936696
   DCHECK(old_instance != new_instance ||
-         render_frame_host_->must_be_replaced() || IsRenderDocumentEnabled());
+         render_frame_host_->must_be_replaced() ||
+         CreateNewHostForSameSiteSubframe());
 
   // The process for the new SiteInstance may (if we're sharing a process with
   // another host that already initialized it) or may not (we have our own
@@ -2161,16 +2163,18 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(SiteInstance* instance) {
   CHECK(instance);
   // This DCHECK is going to be fully removed as part of RenderDocument [1].
   //
-  // With RenderDocument: every cross-document navigation creates a new
-  // RenderFrameHost. The navigation is potentially same-SiteInstance.
+  // With RenderDocument for sub frames or main frames: cross-document
+  // navigation creates a new RenderFrameHost. The navigation is potentially
+  // same-SiteInstance.
   //
-  // With RenderDocumentForCrashedFrame: navigations from a crashed
+  // With RenderDocument for crashed frames: navigations from a crashed
   // RenderFrameHost creates a new RenderFrameHost. The navigation is
   // potentially same-SiteInstance.
   //
   // [1] http://crbug.com/936696
   DCHECK(render_frame_host_->GetSiteInstance() != instance ||
-         render_frame_host_->must_be_replaced() || IsRenderDocumentEnabled());
+         render_frame_host_->must_be_replaced() ||
+         CreateNewHostForSameSiteSubframe());
 
   std::unique_ptr<RenderFrameHostImpl> new_render_frame_host =
       CreateRenderFrameHost(CreateFrameCase::kCreateSpeculative, instance,
@@ -2505,7 +2509,7 @@ bool RenderFrameHostManager::InitRenderFrame(
     CHECK_NE(previous_routing_id, MSG_ROUTING_NONE);
     if (!existing_proxy->is_render_frame_proxy_live())
       existing_proxy->InitRenderFrameProxy();
-  } else if (IsRenderDocumentEnabled()) {
+  } else if (CreateNewHostForSameSiteSubframe()) {
     previous_routing_id = current_frame_host()->GetRoutingID();
   }
 

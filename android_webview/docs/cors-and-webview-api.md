@@ -53,4 +53,10 @@ TODO
 TODO
 
 ### shouldInterceptRequest
-TODO
+Custom scheme should not be permitted for CORS-enabled requests usually.
+However, when shouldInterceptRequest is used, the API allows developers to
+handle CORS-enabled requests over custom schemes.
+
+When a custom scheme is used, `*` or `null` should appear in the
+Access-Control-Allow-Origin response header as such custom scheme is processed
+as an [opaque origin](https://html.spec.whatwg.org/multipage/origin.html#concept-origin-opaque).

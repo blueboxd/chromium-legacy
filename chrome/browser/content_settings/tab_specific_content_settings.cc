@@ -18,7 +18,6 @@
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -348,7 +348,7 @@ void TabSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
   LocalSharedObjectsContainer& container = blocked_by_policy
                                                ? blocked_local_shared_objects_
                                                : allowed_local_shared_objects_;
-  CannedBrowsingDataLocalStorageHelper* helper =
+  browsing_data::CannedLocalStorageHelper* helper =
       local ? container.local_storages() : container.session_storages();
   helper->Add(url::Origin::Create(url));
 

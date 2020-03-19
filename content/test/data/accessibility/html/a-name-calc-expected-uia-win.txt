@@ -13,4 +13,3 @@ Document
 ++Hyperlink Name='Title4'
 ++Hyperlink Name='Label5'
 ++Hyperlink Name='LabelledBy6'
-<-- End-of-file -->

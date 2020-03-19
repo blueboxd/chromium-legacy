@@ -3077,7 +3077,6 @@ test("unit_tests") {
     "../browser/browsing_data/browsing_data_file_system_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_indexed_db_helper_unittest.cc",
-    "../browser/browsing_data/browsing_data_local_storage_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_media_license_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_quota_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_service_worker_helper_unittest.cc",

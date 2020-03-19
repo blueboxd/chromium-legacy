@@ -530,7 +530,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     auto container = std::make_unique<LocalDataContainer>(
         new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile),
-        new BrowsingDataLocalStorageHelper(profile),
+        new browsing_data::LocalStorageHelper(profile),
         /*session_storage_helper=*/nullptr,
         new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
         new BrowsingDataIndexedDBHelper(storage_partition),

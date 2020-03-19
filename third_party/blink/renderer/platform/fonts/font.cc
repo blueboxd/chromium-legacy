@@ -84,18 +84,6 @@ bool Font::operator==(const Font& other) const {
                   : 0);
 }
 
-void Font::Update(FontSelector* font_selector) const {
-  // FIXME: It is pretty crazy that we are willing to just poke into a RefPtr,
-  // but it ends up being reasonably safe (because inherited fonts in the render
-  // tree pick up the new style anyway. Other copies are transient, e.g., the
-  // state in the GraphicsContext, and won't stick around long enough to get you
-  // in trouble). Still, this is pretty disgusting, and could eventually be
-  // rectified by using RefPtrs for Fonts themselves.
-  if (!font_fallback_list_)
-    font_fallback_list_ = FontFallbackList::Create(nullptr);
-  font_fallback_list_->Invalidate(font_selector);
-}
-
 namespace {
 
 void DrawBlobs(cc::PaintCanvas* canvas,

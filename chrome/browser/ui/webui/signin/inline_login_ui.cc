@@ -49,6 +49,10 @@ void AddEduStrings(content::WebUIDataSource* source) {
                              IDS_EDU_LOGIN_WELCOME_REAUTH_TITLE);
   source->AddLocalizedString("welcomeReauthBody",
                              IDS_EDU_LOGIN_WELCOME_REAUTH_BODY);
+  source->AddLocalizedString("parentsListTitle",
+                             IDS_EDU_LOGIN_PARENTS_LIST_TITLE);
+  source->AddLocalizedString("parentsListBody",
+                             IDS_EDU_LOGIN_PARENTS_LIST_BODY);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -88,6 +92,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS);
   source->AddResourcePath("edu_login_welcome.js",
                           IDR_EDU_LOGIN_EDU_LOGIN_WELCOME_JS);
+  source->AddResourcePath("edu_login_parents.js",
+                          IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS);
 
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);

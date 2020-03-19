@@ -17,4 +17,3 @@ Document
 ++++++ListItem
 ++++++++Text Name='1. '
 ++++++++Text Name='Editable list item.' IsControlElement=false
-<-- End-of-file -->

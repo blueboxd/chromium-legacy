@@ -70,9 +70,34 @@ bool IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled() {
   return GetProactivelySwapBrowsingInstanceLevel() >=
          ProactivelySwapBrowsingInstanceLevel::kCrossSiteReuseProcess;
 }
+const char kRenderDocumentLevelParameterName[] = "level";
 
-bool IsRenderDocumentEnabled() {
-  return base::FeatureList::IsEnabled(features::kRenderDocument);
+constexpr base::FeatureParam<RenderDocumentLevel>::Option
+    render_document_levels[] = {
+        {RenderDocumentLevel::kDisabled, "disabled"},
+        {RenderDocumentLevel::kCrashedFrame, "crashed-frame"},
+        {RenderDocumentLevel::kSubframe, "subframe"}};
+const base::FeatureParam<RenderDocumentLevel> render_document_level{
+    &features::kRenderDocument, kRenderDocumentLevelParameterName,
+    RenderDocumentLevel::kDisabled, &render_document_levels};
+
+RenderDocumentLevel GetRenderDocumentLevel() {
+  if (base::FeatureList::IsEnabled(features::kRenderDocument))
+    return render_document_level.Get();
+  return RenderDocumentLevel::kDisabled;
+}
+
+std::string GetRenderDocumentLevelName(RenderDocumentLevel level) {
+  for (size_t i = 0; i < render_document_level.option_count; ++i) {
+    if (level == render_document_level.options[i].value)
+      return render_document_level.options[i].name;
+  }
+  NOTREACHED();
+  return "";
+}
+
+bool CreateNewHostForSameSiteSubframe() {
+  return GetRenderDocumentLevel() >= RenderDocumentLevel::kSubframe;
 }
 
 }  // namespace content

@@ -7,4 +7,3 @@ Document
 ++++Group IsControlElement=false
 ++++++Text Name='Chrome'
 ++++Text Name='!'
-<-- End-of-file -->

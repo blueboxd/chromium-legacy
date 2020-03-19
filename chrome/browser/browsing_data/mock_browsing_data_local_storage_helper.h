@@ -10,17 +10,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 
-// Mock for BrowsingDataLocalStorageHelper.
+// Mock for browsing_data::LocalStorageHelper.
 // Use AddLocalStorageSamples() or add directly to response_ list, then
 // call Notify().
 class MockBrowsingDataLocalStorageHelper
-    : public BrowsingDataLocalStorageHelper {
+    : public browsing_data::LocalStorageHelper {
  public:
-  explicit MockBrowsingDataLocalStorageHelper(Profile* profile);
+  explicit MockBrowsingDataLocalStorageHelper(content::BrowserContext* context);
 
-  // BrowsingDataLocalStorageHelper implementation.
+  // browsing_data::LocalStorageHelper implementation.
   void StartFetching(FetchCallback callback) override;
   void DeleteOrigin(const url::Origin& origin,
                     base::OnceClosure callback) override;

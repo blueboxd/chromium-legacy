@@ -10,9 +10,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "weblayer/common/features.h"
-#include "weblayer/public/common/switches.h"
 #include "weblayer/renderer/error_page_helper.h"
 #include "weblayer/renderer/weblayer_render_frame_observer.h"
 
@@ -120,14 +118,6 @@ ContentRendererClientImpl::CreateURLLoaderThrottleProvider(
   }
 
   return nullptr;
-}
-
-void ContentRendererClientImpl::
-    SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
-  const bool running_tests = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kWebLayerTestMode);
-  if (running_tests)
-    blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
 }
 
 }  // namespace weblayer

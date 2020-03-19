@@ -3753,7 +3753,6 @@ if (enable_java_templates) {
           _final_apk_path = "$root_build_dir/apks/${apk_name}.apk"
         }
         data = [ "$_final_apk_path.mapping" ]
-        data_deps += [ "//build/android/stacktrace:java_deobfuscate" ]
       }
 
       dist_ijar_path = "$root_build_dir/test.lib.java/${invoker.apk_name}.jar"
@@ -4891,6 +4890,8 @@ if (enable_java_templates) {
           "--proguard-mapping-path",
           rebase_path(_proguard_mapping_path, root_build_dir),
         ]
+
+        # Required by logcat command.
         data_deps += [ "//build/android/stacktrace:java_deobfuscate" ]
         data += [ _proguard_mapping_path ]
       }

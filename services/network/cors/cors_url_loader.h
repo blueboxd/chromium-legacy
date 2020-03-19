@@ -46,6 +46,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       DeleteCallback delete_callback,
       const ResourceRequest& resource_request,
       bool ignore_isolated_world_origin,
+      bool skip_cors_enabled_scheme_check,
       mojo::PendingRemote<mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
@@ -180,6 +181,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   const OriginAccessList* const origin_access_list_;
   const OriginAccessList* const factory_bound_origin_access_list_;
   PreflightController* preflight_controller_;
+
+  // Flag to specify if the CORS-enabled scheme check should be applied.
+  const bool skip_cors_enabled_scheme_check_;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};

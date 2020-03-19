@@ -3,4 +3,3 @@ Document
 ++++Text Name='Some '
 ++++Text Name='bold'
 ++++Text Name=' text'
-<-- End-of-file -->

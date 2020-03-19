@@ -58,10 +58,6 @@ SYSTEM_WEBVIEW_SHELL_PKG = 'org.chromium.webview_shell'
 WEBLAYER_SHELL_PKG = 'org.chromium.weblayer.shell'
 WEBLAYER_SUPPORT_PKG = 'org.chromium.weblayer.support'
 
-# This avoids having to update the hosts file on device.
-HOST_RESOLVER_ARGS = ['--host-resolver-rules=MAP nonexistent.*.test ~NOTFOUND,'
-                      ' MAP *.test 127.0.0.1']
-
 # List of supported products.
 PRODUCTS = ['android_weblayer', 'android_webview', 'chrome_android']
 
@@ -117,14 +113,7 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
       "--no-capture-stdio",
       "--no-manifest-download",
       "--no-fail-on-unexpected",
-      #TODO(aluo): Tune this as tests are stabilized
-      "--timeout-multiplier",
-      "0.25",
     ])
-
-    # Lets weblayer know it's running in test mode.
-    if self.options.product == 'android_weblayer':
-      rest_args.extend(["--binary-arg=--run-web-tests"])
 
     # Default to the apk's package name for chrome_android
     if not self.options.package_name:

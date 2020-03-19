@@ -5,4 +5,3 @@ Document PositionInSet=0 SizeOfSet=0
 ++++Group PositionInSet=0 SizeOfSet=0
 ++++TreeItem Name='card content' PositionInSet=2 SizeOfSet=2 ExpandCollapse.ExpandCollapseState='LeafNode'
 ++++++Text Name='card content' IsControlElement=false PositionInSet=0 SizeOfSet=0
-<-- End-of-file -->

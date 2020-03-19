@@ -33,7 +33,6 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/common/content_to_visible_time_reporter.h"
-#include "content/common/device_emulator.mojom.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
 #include "content/common/widget.mojom.h"
@@ -49,7 +48,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -148,7 +146,6 @@ class CONTENT_EXPORT RenderWidget
       public IPC::Sender,
       public blink::WebPagePopupClient,  // Is-a WebWidgetClient also.
       public mojom::Widget,
-      public mojom::DeviceEmulator,
       public LayerTreeViewDelegate,
       public RenderWidgetInputHandlerDelegate,
       public RenderWidgetScreenMetricsEmulatorDelegate,
@@ -357,7 +354,8 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidgetScreenMetricsEmulatorDelegate
   void SetScreenMetricsEmulationParameters(
-      const base::Optional<blink::WebDeviceEmulationParams>& params) override;
+      bool enabled,
+      const blink::WebDeviceEmulationParams& params) override;
   void SetScreenInfoAndSize(const ScreenInfo& screen_info,
                             const gfx::Size& widget_size,
                             const gfx::Size& visible_viewport_size) override;
@@ -612,9 +610,6 @@ class CONTENT_EXPORT RenderWidget
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   virtual void RequestPresentation(PresentationTimeCallback callback);
 
-  void BindDeviceEmulator(
-      mojo::PendingAssociatedReceiver<mojom::DeviceEmulator> pending_receiver);
-
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:
@@ -673,10 +668,6 @@ class CONTENT_EXPORT RenderWidget
   // is always in physical pixels.
   gfx::Rect CompositorViewportRect() const;
 
-  // DeviceEmulator mojom overrides.
-  void SetDeviceEmulation(
-      const base::Optional<::blink::WebDeviceEmulationParams>& params) override;
-
   // RenderWidget IPC message handlers.
   void OnHandleInputEvent(
       const blink::WebInputEvent* event,
@@ -686,6 +677,8 @@ class CONTENT_EXPORT RenderWidget
   void OnClose();
   void OnUpdateVisualProperties(const VisualProperties& properties);
   void OnCreatingNewAck();
+  void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
+  void OnDisableDeviceEmulation();
   void OnWasHidden();
   void OnWasShown(
       base::TimeTicks show_request_timestamp,
@@ -1064,8 +1057,6 @@ class CONTENT_EXPORT RenderWidget
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
   mojo::Receiver<mojom::Widget> widget_receiver_;
-  mojo::AssociatedReceiver<mojom::DeviceEmulator> device_emulator_receiver_{
-      this};
 
   gfx::Rect compositor_visible_rect_;
 

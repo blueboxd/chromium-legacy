@@ -466,8 +466,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // TODO(wjmaclean): Are there any attributes we can/should test with respect to
 // the extension's loaded html?
 // TODO(https://crbug.com/1034972): Re-enable. Flaky on all platforms.
+// Temporarily re-enabling on Linux to collect diagnostic data.
+#if defined(OS_LINUX)
+#define MAYBE_PdfExtensionLoadedInGuest PdfExtensionLoadedInGuest
+#else
+#define MAYBE_PdfExtensionLoadedInGuest DISABLED_PdfExtensionLoadedInGuest
+#endif
 IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
-                       DISABLED_PdfExtensionLoadedInGuest) {
+                       MAYBE_PdfExtensionLoadedInGuest) {
   // Load test HTML, and verify the text area has focus.
   GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ui_test_utils::NavigateToURL(browser(), main_url);

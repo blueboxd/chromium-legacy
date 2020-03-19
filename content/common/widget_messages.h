@@ -46,6 +46,19 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebSize)
   IPC_STRUCT_TRAITS_MEMBER(height)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
+  IPC_STRUCT_TRAITS_MEMBER(screen_position)
+  IPC_STRUCT_TRAITS_MEMBER(screen_size)
+  IPC_STRUCT_TRAITS_MEMBER(view_position)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(view_size)
+  IPC_STRUCT_TRAITS_MEMBER(scale)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_offset)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_scale)
+  IPC_STRUCT_TRAITS_MEMBER(screen_orientation_angle)
+  IPC_STRUCT_TRAITS_MEMBER(screen_orientation_type)
+IPC_STRUCT_TRAITS_END()
+
 IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
                           base::i18n::TEXT_DIRECTION_MAX)
 
@@ -92,6 +105,13 @@ IPC_MESSAGE_ROUTED2(WidgetMsg_ShowContextMenu,
 // Tells the render widget to close.
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(WidgetMsg_Close)
+
+// Enables device emulation. See WebDeviceEmulationParams for description.
+IPC_MESSAGE_ROUTED1(WidgetMsg_EnableDeviceEmulation,
+                    blink::WebDeviceEmulationParams /* params */)
+
+// Disables device emulation, enabled previously by EnableDeviceEmulation.
+IPC_MESSAGE_ROUTED0(WidgetMsg_DisableDeviceEmulation)
 
 // Sent to inform the widget that it was hidden.  This allows it to reduce its
 // resource utilization.

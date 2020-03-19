@@ -160,10 +160,16 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // store is canceled on navigation.
   void OnFaviconReady(const favicon_base::FaviconImageResult& result);
 
-  // Checks the result of the reauth triggered by UnlockAccountStoreAfterReauth
-  // and either unlocks the account store if the reauth succeeded or resets the
-  // suggestions to show the unlock button again.
-  void OnReauthCompleted(
+  // Replaces |unlock_item| with a loading symbol and triggers a reauth flow to
+  // opt in for passwords account storage, with OnUnlockReauthCompleted as
+  // callback.
+  void OnUnlockItemAccepted(autofill::PopupItemId unlock_item);
+
+  // If reauth failed, resets the suggestions to show the |unlock_item| again.
+  // Otherwise, unlocks the account store and either triggers generation or
+  // filling based on the |unlock_item| that was clicked.
+  void OnUnlockReauthCompleted(
+      autofill::PopupItemId unlock_item,
       PasswordManagerClient::ReauthSucceeded reauth_succeeded);
 
   std::unique_ptr<autofill::PasswordFormFillData> fill_data_;

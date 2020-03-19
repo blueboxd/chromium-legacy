@@ -50,8 +50,7 @@ int GetHttpStatusCode(content::NavigationHandle* navigation_handle) {
 }
 
 UserInitiatedInfo CreateUserInitiatedInfo(
-    content::NavigationHandle* navigation_handle,
-    PageLoadTracker* committed_load) {
+    content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsRendererInitiated())
     return UserInitiatedInfo::BrowserInitiated();
 
@@ -181,7 +180,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
 void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
     content::NavigationHandle* navigation_handle) {
   UserInitiatedInfo user_initiated_info(
-      CreateUserInitiatedInfo(navigation_handle, committed_load_.get()));
+      CreateUserInitiatedInfo(navigation_handle));
   std::unique_ptr<PageLoadTracker> last_aborted =
       NotifyAbortedProvisionalLoadsNewNavigation(navigation_handle,
                                                  user_initiated_info);
@@ -198,7 +197,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
     chain_size = last_aborted->aborted_chain_size() + 1;
   }
 
-  if (!ShouldTrackNavigation(navigation_handle))
+  if (!ShouldTrackMainFrameNavigation(navigation_handle))
     return;
 
   // Pass in the last committed url to the PageLoadTracker. If the MWCO has
@@ -412,15 +411,15 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   // ensure it is set consistently for all navigations.
   has_navigated_ = true;
 
-  std::unique_ptr<PageLoadTracker> finished_nav(
+  std::unique_ptr<PageLoadTracker> navigation_handle_tracker(
       std::move(provisional_loads_[navigation_handle]));
   provisional_loads_.erase(navigation_handle);
 
   // Ignore same-document navigations.
   if (navigation_handle->HasCommitted() &&
       navigation_handle->IsSameDocument()) {
-    if (finished_nav)
-      finished_nav->StopTracking();
+    if (navigation_handle_tracker)
+      navigation_handle_tracker->StopTracking();
     if (committed_load_)
       committed_load_->DidCommitSameDocumentNavigation(navigation_handle);
     return;
@@ -431,41 +430,35 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   if (!navigation_handle->HasCommitted() &&
       navigation_handle->GetNetErrorCode() == net::ERR_ABORTED &&
       navigation_handle->GetResponseHeaders()) {
-    if (finished_nav) {
-      finished_nav->DidInternalNavigationAbort(navigation_handle);
-      finished_nav->StopTracking();
+    if (navigation_handle_tracker) {
+      navigation_handle_tracker->DidInternalNavigationAbort(navigation_handle);
+      navigation_handle_tracker->StopTracking();
     }
     return;
   }
 
-  const bool should_track =
-      finished_nav && ShouldTrackNavigation(navigation_handle);
+  if (navigation_handle->HasCommitted()) {
+    // A new navigation is committing, so finalize and destroy the tracker for
+    // the currently committed navigation.
+    FinalizeCurrentlyCommittedLoad(navigation_handle,
+                                   navigation_handle_tracker.get());
+    committed_load_.reset();
+  }
 
-  if (finished_nav && !should_track)
-    finished_nav->StopTracking();
+  if (!navigation_handle_tracker)
+    return;
+
+  if (!ShouldTrackMainFrameNavigation(navigation_handle)) {
+    navigation_handle_tracker->StopTracking();
+    return;
+  }
 
   if (navigation_handle->HasCommitted()) {
-    UserInitiatedInfo user_initiated_info =
-        finished_nav
-            ? finished_nav->user_initiated_info()
-            : CreateUserInitiatedInfo(navigation_handle, committed_load_.get());
-
-    // Notify other loads that they may have been aborted by this committed
-    // load. is_certainly_browser_timestamp is set to false because
-    // NavigationStart() could be set in either the renderer or browser process.
-    NotifyPageEndAllLoadsWithTimestamp(
-        EndReasonForPageTransition(navigation_handle->GetPageTransition()),
-        user_initiated_info, navigation_handle->NavigationStart(), false);
-
-    if (should_track) {
-      HandleCommittedNavigationForTrackedLoad(navigation_handle,
-                                              std::move(finished_nav));
-    } else {
-      committed_load_.reset();
-    }
-  } else if (should_track) {
+    HandleCommittedNavigationForTrackedLoad(
+        navigation_handle, std::move(navigation_handle_tracker));
+  } else {
     HandleFailedNavigationForTrackedLoad(navigation_handle,
-                                         std::move(finished_nav));
+                                         std::move(navigation_handle_tracker));
   }
 }
 
@@ -500,21 +493,40 @@ void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
 void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
     content::NavigationHandle* navigation_handle,
     std::unique_ptr<PageLoadTracker> tracker) {
-  if (!IsNavigationUserInitiated(navigation_handle) &&
-      (navigation_handle->GetPageTransition() &
-       ui::PAGE_TRANSITION_CLIENT_REDIRECT) != 0 &&
-      committed_load_) {
-    // TODO(bmcquade): consider carrying the user_gesture bit forward to the
-    // redirected navigation.
-    committed_load_->NotifyClientRedirectTo(*tracker);
-  }
-
   committed_load_ = std::move(tracker);
   committed_load_->Commit(navigation_handle);
   DCHECK(committed_load_->did_commit());
 
   for (auto& observer : testing_observers_)
     observer.OnCommit(committed_load_.get());
+}
+
+void MetricsWebContentsObserver::FinalizeCurrentlyCommittedLoad(
+    content::NavigationHandle* newly_committed_navigation,
+    PageLoadTracker* newly_committed_navigation_tracker) {
+  UserInitiatedInfo user_initiated_info =
+      newly_committed_navigation_tracker
+          ? newly_committed_navigation_tracker->user_initiated_info()
+          : CreateUserInitiatedInfo(newly_committed_navigation);
+
+  // Notify other loads that they may have been aborted by this committed
+  // load. is_certainly_browser_timestamp is set to false because
+  // NavigationStart() could be set in either the renderer or browser process.
+  NotifyPageEndAllLoadsWithTimestamp(
+      EndReasonForPageTransition(
+          newly_committed_navigation->GetPageTransition()),
+      user_initiated_info, newly_committed_navigation->NavigationStart(),
+      /*is_certainly_browser_timestamp=*/false);
+
+  if (committed_load_) {
+    bool is_non_user_initiated_client_redirect =
+        !IsNavigationUserInitiated(newly_committed_navigation) &&
+        (newly_committed_navigation->GetPageTransition() &
+         ui::PAGE_TRANSITION_CLIENT_REDIRECT) != 0;
+    if (is_non_user_initiated_client_redirect) {
+      committed_load_->NotifyClientRedirectTo(newly_committed_navigation);
+    }
+  }
 }
 
 void MetricsWebContentsObserver::NavigationStopped() {
@@ -617,7 +629,8 @@ void MetricsWebContentsObserver::NotifyPageEndAllLoads(
     PageEndReason page_end_reason,
     UserInitiatedInfo user_initiated_info) {
   NotifyPageEndAllLoadsWithTimestamp(page_end_reason, user_initiated_info,
-                                     base::TimeTicks::Now(), true);
+                                     base::TimeTicks::Now(),
+                                     /*is_certainly_browser_timestamp=*/true);
 }
 
 void MetricsWebContentsObserver::NotifyPageEndAllLoadsWithTimestamp(
@@ -743,7 +756,7 @@ void MetricsWebContentsObserver::UpdateTiming(
                   std::move(cpu_timing), std::move(new_deferred_resource_data));
 }
 
-bool MetricsWebContentsObserver::ShouldTrackNavigation(
+bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
     content::NavigationHandle* navigation_handle) const {
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted() ||

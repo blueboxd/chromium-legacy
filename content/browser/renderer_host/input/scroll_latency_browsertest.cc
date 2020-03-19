@@ -44,7 +44,7 @@ const char kDataURL[] =
     "<title>Scroll latency histograms browsertests.</title>"
     "<style>"
     "body {"
-    "  height:3000px;"
+    "  height:9000px;"
     "}"
     "</style>"
     "</head>"
@@ -263,6 +263,51 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
       0, "Event.Latency.ScrollBegin.Touch.TimeToHandled2_Impl"));
   EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
       0, "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4"));
+}
+
+using ScrollThroughputBrowserTest = ScrollLatencyBrowserTest;
+
+// The test does a fling during the test, and it times out in slower builds
+// (e.g. when sanitizers are turned on).
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_ScrollThroughputMetrics DISABLED_ScrollThroughputMetrics
+#else
+#define MAYBE_ScrollThroughputMetrics ScrollThroughputMetrics
+#endif
+IN_PROC_BROWSER_TEST_F(ScrollThroughputBrowserTest,
+                       MAYBE_ScrollThroughputMetrics) {
+  LoadURL();
+  auto scroll_update_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.anchor = gfx::PointF(10, 10);
+  params.distances.push_back(gfx::Vector2d(0, -6000));
+  params.fling_velocity_x = 0;
+  params.fling_velocity_y = -2000;
+  params.prevent_fling = false;
+
+  run_loop_ = std::make_unique<base::RunLoop>();
+
+  auto gesture = std::make_unique<SyntheticSmoothScrollGesture>(params);
+  GetWidgetHost()->QueueSyntheticGesture(
+      std::move(gesture),
+      base::BindOnce(&ScrollLatencyBrowserTest::OnSyntheticGestureCompleted,
+                     base::Unretained(this)));
+  run_loop_->Run();
+
+  while (!GetSampleCountForHistogram(
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread."
+      "TouchScroll")) {
+    GiveItSomeTime();
+    FetchHistogramsFromChildProcesses();
+  }
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      1,
+      "Graphics.Smoothness.PercentDroppedFrames.ScrollingThread.TouchScroll"));
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      1, "Event.Latency.ScrollBegin.Touch.BrowserNotifiedToBeforeGpuSwap2"));
 }
 
 class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {

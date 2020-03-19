@@ -58,12 +58,12 @@ class WTF_EXPORT StringView {
   StringView(StringImpl&, unsigned offset);
   StringView(StringImpl&, unsigned offset, unsigned length);
 
-  // From a String, implemented in String.h
+  // From a String, implemented in wtf_string.h
   inline StringView(const String&, unsigned offset, unsigned length);
   inline StringView(const String&, unsigned offset);
   inline StringView(const String&);
 
-  // From an AtomicString, implemented in AtomicString.h
+  // From an AtomicString, implemented in atomic_string.h
   inline StringView(const AtomicString&, unsigned offset, unsigned length);
   inline StringView(const AtomicString&, unsigned offset);
   inline StringView(const AtomicString&);

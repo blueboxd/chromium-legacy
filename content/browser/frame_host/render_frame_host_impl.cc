@@ -206,7 +206,6 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
-#include "third_party/blink/public/mojom/devtools/device_emulation_params.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
@@ -557,8 +556,8 @@ const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 
 }  // namespace
 
-bool IsRenderDocumentEnabledForCrashedFrame() {
-  return base::FeatureList::IsEnabled(features::kRenderDocumentForCrashedFrame);
+bool CreateNewHostForCrashedFrame() {
+  return GetRenderDocumentLevel() >= RenderDocumentLevel::kCrashedFrame;
 }
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
@@ -1697,7 +1696,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   SetLastCommittedUrl(GURL());
   web_bundle_handle_.reset();
 
-  must_be_replaced_ = IsRenderDocumentEnabledForCrashedFrame();
+  must_be_replaced_ = CreateNewHostForCrashedFrame();
   has_committed_any_navigation_ = false;
 
 #if defined(OS_ANDROID)
@@ -2680,7 +2679,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   } else {
     // RenderDocument: After a local<->local swap, this function is called with
     // a null |proxy|.
-    CHECK(IsRenderDocumentEnabled());
+    CHECK(CreateNewHostForSameSiteSubframe());
 
     // The unload handlers already ran for this document during the
     // local<->local swap. Hence, there is no need to send
@@ -3120,12 +3119,6 @@ void RenderFrameHostImpl::ScaleFactorChanged(float scale) {
 void RenderFrameHostImpl::ContentsPreferredSizeChanged(
     const gfx::Size& pref_size) {
   render_view_host_->OnDidContentsPreferredSizeChange(pref_size);
-}
-
-void RenderFrameHostImpl::SetDeviceEmulation(
-    const base::Optional<blink::WebDeviceEmulationParams>& params) {
-  DCHECK(frame_tree_node()->IsMainFrame());
-  device_emulator_remote_->SetDeviceEmulation(params);
 }
 
 void RenderFrameHostImpl::UpdateFaviconURL(
@@ -6108,16 +6101,8 @@ void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
 void RenderFrameHostImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
-  mojo::PendingAssociatedReceiver<mojom::DeviceEmulator>
-      pending_emulator_receiver;
-  if (frame_tree_node()->IsMainFrame()) {
-    device_emulator_remote_.reset();
-    pending_emulator_receiver =
-        device_emulator_remote_.BindNewEndpointAndPassReceiver();
-  }
-  GetNavigationControl()->BindDevToolsAgent(
-      std::move(host), std::move(receiver),
-      std::move(pending_emulator_receiver));
+  GetNavigationControl()->BindDevToolsAgent(std::move(host),
+                                            std::move(receiver));
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(

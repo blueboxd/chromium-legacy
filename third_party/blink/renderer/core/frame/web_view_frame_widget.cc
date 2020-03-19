@@ -30,7 +30,7 @@ WebViewFrameWidget::WebViewFrameWidget(
                          std::move(widget)),
       web_view_(&web_view),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {
-  web_view_->SetWebFrameWidget(this);
+  web_view_->SetMainFrameWidgetBase(this);
 }
 
 WebViewFrameWidget::~WebViewFrameWidget() = default;
@@ -39,7 +39,7 @@ void WebViewFrameWidget::Close() {
   GetPage()->WillCloseAnimationHost(nullptr);
   // Closing the WebViewFrameWidget happens in response to the local main frame
   // being detached from the Page/WebViewImpl.
-  web_view_->SetWebFrameWidget(nullptr);
+  web_view_->SetMainFrameWidgetBase(nullptr);
   web_view_ = nullptr;
   WebFrameWidgetBase::Close();
   self_keep_alive_.Clear();

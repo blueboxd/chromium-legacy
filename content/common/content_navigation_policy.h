@@ -7,6 +7,8 @@
 
 #include "content/common/content_export.h"
 
+#include <string>
+
 namespace content {
 
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
@@ -26,11 +28,25 @@ enum class ProactivelySwapBrowsingInstanceLevel {
   // navigations with process reuse.
 };
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
+
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled();
 CONTENT_EXPORT extern const char
     kProactivelySwapBrowsingInstanceLevelParameterName[];
 
-CONTENT_EXPORT bool IsRenderDocumentEnabled();
+// Levels of RenderDocument support. These are additive in that features enabled
+// at lower levels remain enabled at all higher levels.
+enum class RenderDocumentLevel {
+  kDisabled = 0,
+  // Do not reused RenderFrameHosts when recovering from crashes.
+  kCrashedFrame = 1,
+  // Also do not reuse RenderFrameHosts when navigating subframes.
+  kSubframe = 2,
+};
+CONTENT_EXPORT bool CreateNewHostForSameSiteSubframe();
+CONTENT_EXPORT RenderDocumentLevel GetRenderDocumentLevel();
+CONTENT_EXPORT std::string GetRenderDocumentLevelName(
+    RenderDocumentLevel level);
+CONTENT_EXPORT extern const char kRenderDocumentLevelParameterName[];
 
 }  // namespace content
 

@@ -5424,6 +5424,22 @@ be describing additional metrics about the same event.
   <metric name="Length"/>
 </event>
 
+<event name="Media.GlobalMediaControls.ActionButtonPressed">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records when a user presses a button in the Global Media Controls. Records
+    no more than 100 actions per source per session. Records which button was
+    pressed (e.g. play, pause, next track, picture-in-picture).
+  </summary>
+  <metric name="MediaSessionAction" enum="MediaSessionAction">
+    <summary>
+      The action of the button that was pressed (e.g. play, pause, next track,
+      picture-in-picture).
+    </summary>
+  </metric>
+</event>
+
 <event name="Media.Learning.PredictionRecord">
   <owner>liberato@chromium.org</owner>
   <summary>

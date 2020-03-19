@@ -38500,6 +38500,7 @@ from previous Chrome versions.
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
   <int value="-808486493" label="NewWallpaperPicker:disabled"/>
   <int value="-806480547" label="SyncDeviceInfoInTransportMode:enabled"/>
+  <int value="-805480822" label="RemoteCopyImageNotification:disabled"/>
   <int value="-803233334" label="AutofillRefreshStyleAndroid:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-799931058" label="UseMultiloginEndpoint:disabled"/>
@@ -39586,6 +39587,7 @@ from previous Chrome versions.
   <int value="513258875" label="WinrtSensorsImplementation:disabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
+  <int value="514569020" label="RemoteCopyImageNotification:enabled"/>
   <int value="516603570" label="QuickAnswersRichUi:disabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>

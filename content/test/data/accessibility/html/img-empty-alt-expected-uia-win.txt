@@ -3,4 +3,3 @@ Document
 ++++Image IsControlElement=false
 ++++Image
 ++++Image Name='full'
-<-- End-of-file -->

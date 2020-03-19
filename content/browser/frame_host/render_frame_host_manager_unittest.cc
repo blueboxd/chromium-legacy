@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/with_feature_override.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -33,6 +32,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -56,6 +56,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_widget_input_handler.h"
 #include "content/test/navigation_simulator_impl.h"
+#include "content/test/render_document_feature.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame_host.h"
@@ -266,11 +267,48 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
 
 }  // namespace
 
-class RenderFrameHostManagerTest : public base::test::WithFeatureOverride,
-                                   public RenderViewHostImplTestHarness {
+// Test that the "level" feature param has the expected effect.
+class RenderDocumentFeatureTest : public testing::Test {
+ protected:
+  void SetLevel(const RenderDocumentLevel level) {
+    InitAndEnableRenderDocumentFeature(&feature_list_,
+                                       GetRenderDocumentLevelName(level));
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(RenderDocumentFeatureTest, FeatureDisabled) {
+  EXPECT_FALSE(CreateNewHostForCrashedFrame());
+  EXPECT_FALSE(CreateNewHostForSameSiteSubframe());
+}
+
+TEST_F(RenderDocumentFeatureTest, LevelDisabled) {
+  SetLevel(RenderDocumentLevel::kDisabled);
+  EXPECT_FALSE(CreateNewHostForCrashedFrame());
+  EXPECT_FALSE(CreateNewHostForSameSiteSubframe());
+}
+
+TEST_F(RenderDocumentFeatureTest, LevelCrashed) {
+  SetLevel(RenderDocumentLevel::kCrashedFrame);
+  EXPECT_TRUE(CreateNewHostForCrashedFrame());
+  EXPECT_FALSE(CreateNewHostForSameSiteSubframe());
+}
+
+TEST_F(RenderDocumentFeatureTest, LevelSub) {
+  SetLevel(RenderDocumentLevel::kSubframe);
+  EXPECT_TRUE(CreateNewHostForCrashedFrame());
+  EXPECT_TRUE(CreateNewHostForSameSiteSubframe());
+}
+
+class RenderFrameHostManagerTest
+    : public RenderViewHostImplTestHarness,
+      public ::testing::WithParamInterface<std::string> {
  public:
-  RenderFrameHostManagerTest()
-      : WithFeatureOverride(features::kRenderDocumentForCrashedFrame) {}
+  RenderFrameHostManagerTest() {
+    InitAndEnableRenderDocumentFeature(&feature_list_, GetParam());
+  }
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -1945,7 +1983,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
   EXPECT_EQ((bool)contents1->GetMainFrame()->GetView(),
-            IsRenderDocumentEnabledForCrashedFrame());
+            CreateNewHostForCrashedFrame());
   EXPECT_FALSE(contents2->GetMainFrame()->GetView());
 
   // |contents1| creates an out of process iframe.
@@ -3575,12 +3613,14 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
   ExpectAdSubframeSignalForFrameProxy(proxy_to_main_frame, true);
 }
 
-INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(RenderFrameHostManagerTest);
+INSTANTIATE_TEST_SUITE_P(All,
+                         RenderFrameHostManagerTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerTestWithSiteIsolation,
-                         ::testing::Bool());
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerAdTaggingSignalTest,
-                         ::testing::Bool());
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 
 }  // namespace content

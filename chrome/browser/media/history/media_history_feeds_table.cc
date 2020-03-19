@@ -29,6 +29,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                                        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                        "origin_id INTEGER NOT NULL UNIQUE,"
                                        "url TEXT NOT NULL, "
+                                       "last_discovery_time_s INTEGER, "
                                        "CONSTRAINT fk_origin "
                                        "FOREIGN KEY (origin_id) "
                                        "REFERENCES origin(id) "
@@ -55,23 +56,57 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
   return sql::INIT_OK;
 }
 
-bool MediaHistoryFeedsTable::SaveFeed(const GURL& url) {
+bool MediaHistoryFeedsTable::DiscoverFeed(const GURL& url) {
   DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
     return false;
 
-  sql::Statement statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE,
-      base::StringPrintf("INSERT OR REPLACE INTO %s "
-                         "(origin_id, url) VALUES "
-                         "((SELECT id FROM origin WHERE origin = ?), ?)",
-                         kTableName)
-          .c_str()));
-  statement.BindString(0, MediaHistoryOriginTable::GetOriginForStorage(
-                              url::Origin::Create(url)));
-  statement.BindString(1, url.spec());
+  const auto origin =
+      MediaHistoryOriginTable::GetOriginForStorage(url::Origin::Create(url));
+  const auto now = base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
 
-  return statement.Run();
+  base::Optional<GURL> feed_url;
+  base::Optional<int64_t> feed_id;
+
+  {
+    // Check if we already have a feed for the current origin;
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE,
+        "SELECT id, url FROM mediaFeed WHERE origin_id = (SELECT id FROM "
+        "origin WHERE origin = ?)"));
+    statement.BindString(0, origin);
+
+    while (statement.Step()) {
+      DCHECK(!feed_id);
+      DCHECK(!feed_url);
+
+      feed_id = statement.ColumnInt64(0);
+      feed_url = GURL(statement.ColumnString(1));
+    }
+  }
+
+  if (!feed_url || url != feed_url) {
+    // If the feed does not exist or exists and has a different URL then we
+    // should replace the feed.
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE,
+        "INSERT OR REPLACE INTO mediaFeed "
+        "(origin_id, url, last_discovery_time_s) VALUES "
+        "((SELECT id FROM origin WHERE origin = ?), ?, ?)"));
+    statement.BindString(0, origin);
+    statement.BindString(1, url.spec());
+    statement.BindInt64(2, now);
+    return statement.Run() && DB()->GetLastChangeCount() == 1;
+  } else {
+    // If the feed already exists in the database with the same URL we should
+    // just update the last discovery time so we don't delete the old entry.
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE,
+        "UPDATE mediaFeed SET last_discovery_time_s = ? WHERE id = ?"));
+    statement.BindInt64(0, now);
+    statement.BindInt64(1, *feed_id);
+    return statement.Run() && DB()->GetLastChangeCount() == 1;
+  }
 }
 
 std::vector<media_feeds::mojom::MediaFeedPtr>
@@ -80,17 +115,19 @@ MediaHistoryFeedsTable::GetRows() {
   if (!CanAccessDatabase())
     return feeds;
 
-  sql::Statement statement(
-      DB()->GetUniqueStatement(base::StringPrintf("SELECT id, url "
-                                                  "FROM %s",
-                                                  kTableName)
-                                   .c_str()));
+  sql::Statement statement(DB()->GetUniqueStatement(
+      base::StringPrintf("SELECT id, url, last_discovery_time_s "
+                         "FROM %s",
+                         kTableName)
+          .c_str()));
 
   while (statement.Step()) {
     media_feeds::mojom::MediaFeedPtr feed(media_feeds::mojom::MediaFeed::New());
 
     feed->id = statement.ColumnInt64(0);
     feed->url = GURL(statement.ColumnString(1));
+    feed->last_discovery_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromSeconds(statement.ColumnInt64(2)));
 
     feeds.push_back(std::move(feed));
   }

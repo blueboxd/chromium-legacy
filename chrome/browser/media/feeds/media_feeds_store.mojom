@@ -14,6 +14,9 @@ struct MediaFeed {
 
   // The URL for the discovered feed.
   url.mojom.Url url;
+
+  // The last time this feed was discovered.
+  mojo_base.mojom.Time last_discovery_time;
 };
 
 // The type of the feed item. This enum is committed to storage so do not

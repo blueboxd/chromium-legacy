@@ -44,13 +44,13 @@ class TestScreenWin : public ScreenWin {
  protected:
   // win::ScreenWin:
   HWND GetHWNDFromNativeView(gfx::NativeView window) const override {
-    // NativeView is only used as an identifier in this tests, so interchange
-    // NativeView with an HWND for convenience.
+    // NativeView is only used as an identifier in these tests, so interchange
+    // a NativeView for an HWND for convenience.
     return reinterpret_cast<HWND>(window);
   }
 
   gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const override {
-    // NativeWindow is only used as an identifier in this tests, so interchange
+    // NativeWindow is only used as an identifier in these tests, so interchange
     // an HWND for a NativeWindow for convenience.
     return reinterpret_cast<gfx::NativeWindow>(hwnd);
   }

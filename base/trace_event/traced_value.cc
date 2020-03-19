@@ -269,7 +269,7 @@ class PickleWriter final : public TracedValue::Writer {
           TraceEvent::TraceValue json_value;
           CHECK(it.ReadBool(&json_value.as_bool));
           maybe_append_key_name(state_stack[current_state_index], &it, out);
-          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
+          json_value.AppendAsJSON(TRACE_VALUE_TYPE_BOOL, out);
           break;
         }
 
@@ -279,7 +279,7 @@ class PickleWriter final : public TracedValue::Writer {
           maybe_append_key_name(state_stack[current_state_index], &it, out);
           TraceEvent::TraceValue json_value;
           json_value.as_int = value;
-          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
+          json_value.AppendAsJSON(TRACE_VALUE_TYPE_INT, out);
           break;
         }
 
@@ -287,8 +287,7 @@ class PickleWriter final : public TracedValue::Writer {
           TraceEvent::TraceValue json_value;
           CHECK(it.ReadDouble(&json_value.as_double));
           maybe_append_key_name(state_stack[current_state_index], &it, out);
-          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value,
-                                        out);
+          json_value.AppendAsJSON(TRACE_VALUE_TYPE_DOUBLE, out);
           break;
         }
 
@@ -298,8 +297,7 @@ class PickleWriter final : public TracedValue::Writer {
           maybe_append_key_name(state_stack[current_state_index], &it, out);
           TraceEvent::TraceValue json_value;
           json_value.as_string = value.c_str();
-          TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value,
-                                        out);
+          json_value.AppendAsJSON(TRACE_VALUE_TYPE_STRING, out);
           break;
         }
 
@@ -399,12 +397,23 @@ class PickleWriter final : public TracedValue::Writer {
         } break;
 
         case kTypeDouble: {
-          double value;
-          CHECK(it.ReadDouble(&value));
-          if (cur_dict) {
-            cur_dict->SetDoubleKey(ReadKeyName(it), value);
+          TraceEvent::TraceValue trace_value;
+          CHECK(it.ReadDouble(&trace_value.as_double));
+          Value base_value;
+          if (!std::isfinite(trace_value.as_double)) {
+            // base::Value doesn't support nan and infinity values. Use strings
+            // for them instead. This follows the same convention in
+            // AppendAsTraceFormat(), supported by TraceValue::Append*().
+            std::string value_string;
+            trace_value.AppendAsString(TRACE_VALUE_TYPE_DOUBLE, &value_string);
+            base_value = Value(value_string);
           } else {
-            cur_list->Append(value);
+            base_value = Value(trace_value.as_double);
+          }
+          if (cur_dict) {
+            cur_dict->SetKey(ReadKeyName(it), std::move(base_value));
+          } else {
+            cur_list->Append(std::move(base_value));
           }
         } break;
 

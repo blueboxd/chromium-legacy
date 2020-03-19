@@ -61,7 +61,7 @@ void MediaFeedsContentsObserver::DidFindMediaFeed(
       return;
     }
 
-    service->SaveMediaFeed(*url);
+    service->DiscoverMediaFeed(*url);
   }
 
   if (test_closure_)

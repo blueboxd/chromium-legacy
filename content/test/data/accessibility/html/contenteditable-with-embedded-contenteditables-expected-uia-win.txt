@@ -8,4 +8,3 @@ Document
 ++++++Text Name='But this one is.'
 ++++Group
 ++++++Text Name='So is this one.'
-<-- End-of-file -->

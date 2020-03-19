@@ -20,11 +20,11 @@
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 
 class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
@@ -67,8 +67,8 @@ class LocalDataContainer {
   LocalDataContainer(
       scoped_refptr<BrowsingDataCookieHelper> cookie_helper,
       scoped_refptr<BrowsingDataDatabaseHelper> database_helper,
-      scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper,
-      scoped_refptr<BrowsingDataLocalStorageHelper> session_storage_helper,
+      scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper,
+      scoped_refptr<browsing_data::LocalStorageHelper> session_storage_helper,
       scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper,
       scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper,
       scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper,
@@ -126,8 +126,8 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper_;
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper_;
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper_;
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
-  scoped_refptr<BrowsingDataLocalStorageHelper> session_storage_helper_;
+  scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper_;
+  scoped_refptr<browsing_data::LocalStorageHelper> session_storage_helper_;
   scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;

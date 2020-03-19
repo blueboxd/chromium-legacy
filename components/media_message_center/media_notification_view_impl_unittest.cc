@@ -80,7 +80,9 @@ class MockMediaNotificationController : public MediaNotificationController {
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override {
     return nullptr;
   }
-  MOCK_METHOD1(LogMediaSessionActionButtonPressed, void(const std::string& id));
+  MOCK_METHOD2(LogMediaSessionActionButtonPressed,
+               void(const std::string& id,
+                    media_session::mojom::MediaSessionAction action));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationController);
@@ -449,7 +451,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, PlayPauseButtonTooltipCheck) {
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, NextTrackButtonClick) {
-  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
+  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(
+                                _, MediaSessionAction::kNextTrack));
   EnableAction(MediaSessionAction::kNextTrack);
 
   EXPECT_EQ(0, media_controller()->next_track_count());
@@ -462,7 +465,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, NextTrackButtonClick) {
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, PlayButtonClick) {
-  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
+  EXPECT_CALL(controller(),
+              LogMediaSessionActionButtonPressed(_, MediaSessionAction::kPlay));
   EnableAction(MediaSessionAction::kPlay);
 
   EXPECT_EQ(0, media_controller()->resume_count());
@@ -475,7 +479,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, PlayButtonClick) {
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, PauseButtonClick) {
-  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
+  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(
+                                _, MediaSessionAction::kPause));
   EnableAction(MediaSessionAction::kPause);
   EXPECT_CALL(container(), OnMediaSessionInfoChanged(_));
 
@@ -496,7 +501,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, PauseButtonClick) {
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, PreviousTrackButtonClick) {
-  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
+  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(
+                                _, MediaSessionAction::kPreviousTrack));
   EnableAction(MediaSessionAction::kPreviousTrack);
 
   EXPECT_EQ(0, media_controller()->previous_track_count());
@@ -509,7 +515,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, PreviousTrackButtonClick) {
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, SeekBackwardButtonClick) {
-  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
+  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(
+                                _, MediaSessionAction::kSeekBackward));
   EnableAction(MediaSessionAction::kSeekBackward);
 
   EXPECT_EQ(0, media_controller()->seek_backward_count());
@@ -522,7 +529,8 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, SeekBackwardButtonClick) {
 }
 
 TEST_F(MAYBE_MediaNotificationViewImplTest, SeekForwardButtonClick) {
-  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
+  EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(
+                                _, MediaSessionAction::kSeekForward));
   EnableAction(MediaSessionAction::kSeekForward);
 
   EXPECT_EQ(0, media_controller()->seek_forward_count());

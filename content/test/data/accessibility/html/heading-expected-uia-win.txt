@@ -11,4 +11,3 @@ Document
 ++++Text Name='Heading 5' IsControlElement=false
 ++Text Name='Heading 6'
 ++++Text Name='Heading 6' IsControlElement=false
-<-- End-of-file -->

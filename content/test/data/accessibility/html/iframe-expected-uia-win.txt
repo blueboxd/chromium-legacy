@@ -2,4 +2,3 @@ Document
 ++Group IsControlElement=false
 ++++Document Name='Empty iframe'
 ++++++Document
-<-- End-of-file -->

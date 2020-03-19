@@ -17,7 +17,6 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "ios/web/common/features.h"
-#include "ios/web/navigation/web_kit_constants.h"
 #include "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -1001,7 +1000,8 @@ TEST_F(WebStateObserverTest, FailedNavigation) {
 // Tests navigation to a URL with /..; suffix. On iOS 12 and earlier this
 // navigation fails becasue WebKit rewrites valid URL to invalid during the
 // navigation. On iOS 13+ this navigation sucessfully completes.
-TEST_F(WebStateObserverTest, UrlWithSpecialSuffixNavigation) {
+// TODO(crbug.com/1063015): Fix and reenable.
+TEST_F(WebStateObserverTest, DISABLED_UrlWithSpecialSuffixNavigation) {
   const std::string kBadSuffix = "/..;";
   GURL url = test_server_->GetURL(kBadSuffix);
 
@@ -1070,7 +1070,7 @@ TEST_F(WebStateObserverTest, UrlWithSpecialSuffixNavigation) {
     EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
         .WillOnce(VerifyErrorFinishedContext(
             web_state(), GURL(webkit_rewritten_url_spec), &context, &nav_id,
-            /*committed=*/false, kWebKitErrorCannotShowUrl));
+            /*committed=*/false, net::ERR_FAILED));
 
     EXPECT_CALL(observer_,
                 PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));

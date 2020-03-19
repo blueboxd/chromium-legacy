@@ -6,12 +6,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -23,7 +25,11 @@ namespace {
 class RenderDocumentHostBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    feature_list_.InitWithFeatures({features::kRenderDocument}, {});
+    // RenderDocumentHost only works when RenderDocument is enabled at at least
+    // the sub-frame level.
+    InitAndEnableRenderDocumentFeature(
+        &feature_list_,
+        GetRenderDocumentLevelName(RenderDocumentLevel::kSubframe));
   }
 
   void SetUpOnMainThread() override {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 
 #include <stddef.h>
 
@@ -74,12 +74,12 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
   }
 };
 
-// This class is notified by BrowsingDataLocalStorageHelper on the UI thread
+// This class is notified by browsing_data::LocalStorageHelper on the UI thread
 // once it finishes fetching the local storage data.
 class StopTestOnCallback {
  public:
   explicit StopTestOnCallback(
-      BrowsingDataLocalStorageHelper* local_storage_helper)
+      browsing_data::LocalStorageHelper* local_storage_helper)
       : local_storage_helper_(local_storage_helper) {
     DCHECK(local_storage_helper_);
   }
@@ -107,12 +107,12 @@ class StopTestOnCallback {
   }
 
  private:
-  BrowsingDataLocalStorageHelper* local_storage_helper_;
+  browsing_data::LocalStorageHelper* local_storage_helper_;
 };
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
-      new BrowsingDataLocalStorageHelper(browser()->profile()));
+  scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper(
+      new browsing_data::LocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();
   StopTestOnCallback stop_test_on_callback(local_storage_helper.get());
   local_storage_helper->StartFetching(base::Bind(
@@ -129,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
 #endif
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
                        MAYBE_DeleteSingleFile) {
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
-      new BrowsingDataLocalStorageHelper(browser()->profile()));
+  scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper(
+      new browsing_data::LocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();
   base::RunLoop run_loop;
   local_storage_helper->DeleteOrigin(
@@ -158,8 +158,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
   const GURL origin1("http://host1:1/");
   const GURL origin2("http://host2:1/");
 
-  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
-      new CannedBrowsingDataLocalStorageHelper(browser()->profile()));
+  scoped_refptr<browsing_data::CannedLocalStorageHelper> helper(
+      new browsing_data::CannedLocalStorageHelper(browser()->profile()));
   helper->Add(url::Origin::Create(origin1));
   helper->Add(url::Origin::Create(origin2));
 
@@ -180,8 +180,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
   const GURL origin("http://host1:1/");
 
-  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
-      new CannedBrowsingDataLocalStorageHelper(browser()->profile()));
+  scoped_refptr<browsing_data::CannedLocalStorageHelper> helper(
+      new browsing_data::CannedLocalStorageHelper(browser()->profile()));
   helper->Add(url::Origin::Create(origin));
   helper->Add(url::Origin::Create(origin));
 

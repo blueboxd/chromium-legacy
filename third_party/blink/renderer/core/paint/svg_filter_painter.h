@@ -7,30 +7,31 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
 class FilterData;
+class GraphicsContext;
 class LayoutObject;
 class LayoutSVGResourceFilter;
+class PaintController;
 
 class SVGFilterRecordingContext {
   USING_FAST_MALLOC(SVGFilterRecordingContext);
 
  public:
-  explicit SVGFilterRecordingContext(GraphicsContext& initial_context)
-      : initial_context_(initial_context) {}
+  explicit SVGFilterRecordingContext(const PaintInfo&);
+  ~SVGFilterRecordingContext();
 
-  GraphicsContext* BeginContent();
-  sk_sp<PaintRecord> EndContent();
+  const PaintInfo& GetPaintInfo() const { return paint_info_; }
+  sk_sp<PaintRecord> GetPaintRecord(const PaintInfo&);
 
  private:
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
-  GraphicsContext& initial_context_;
+  PaintInfo paint_info_;
   DISALLOW_COPY_AND_ASSIGN(SVGFilterRecordingContext);
 };
 

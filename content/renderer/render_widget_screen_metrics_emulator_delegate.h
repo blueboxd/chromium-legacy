@@ -19,7 +19,8 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
  public:
   // Passes device emulation parameters to the delegate.
   virtual void SetScreenMetricsEmulationParameters(
-      const base::Optional<blink::WebDeviceEmulationParams>& params) = 0;
+      bool enabled,
+      const blink::WebDeviceEmulationParams& params) = 0;
 
   // Passes an updated ScreenInfo and sizes to the delegate.
   virtual void SetScreenInfoAndSize(const ScreenInfo& screen_info,

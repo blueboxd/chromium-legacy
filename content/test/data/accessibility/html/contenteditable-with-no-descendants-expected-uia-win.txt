@@ -4,4 +4,3 @@ Document
 ++Group Name='title'
 ++Group IsControlElement=false
 ++++Text Name='description'
-<-- End-of-file -->

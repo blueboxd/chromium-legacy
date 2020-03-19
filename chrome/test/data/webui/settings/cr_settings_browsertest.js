@@ -2069,6 +2069,7 @@ CrCollapseRadioButtonTest.prototype = {
   browsePreload: 'chrome://settings/privacy_page/collapse_radio_button.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'collapse_radio_button_tests.js',
   ]),
 };

@@ -6,4 +6,3 @@ Document
 ++++++Text Name='Description'
 ++Group
 ++++Text Name='Definition'
-<-- End-of-file -->

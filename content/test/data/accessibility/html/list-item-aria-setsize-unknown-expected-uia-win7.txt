@@ -13,4 +13,3 @@ Document
 ++++++Text Name='Level 1, item 7 of set size 2'
 ++++ListItem
 ++++++Text Name='Level 1, item 8 of set size 3'
-<-- End-of-file -->

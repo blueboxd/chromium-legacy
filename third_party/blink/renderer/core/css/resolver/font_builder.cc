@@ -422,8 +422,7 @@ void FontBuilder::CreateFont(ComputedStyle& style) {
   FontSelector* font_selector = document_->GetStyleEngine().GetFontSelector();
   UpdateAdjustedSize(description, style, font_selector);
 
-  style.SetFontDescription(description);
-  style.GetFont().Update(font_selector);
+  style.SetFontInternal(Font(description, font_selector));
   flags_ = 0;
 }
 
@@ -441,10 +440,9 @@ void FontBuilder::CreateFontForDocument(ComputedStyle& document_style) {
   UpdateComputedSize(font_description, document_style);
 
   font_description.SetOrientation(document_style.ComputeFontOrientation());
-  document_style.SetFontDescription(font_description);
 
   FontSelector* font_selector = document_->GetStyleEngine().GetFontSelector();
-  document_style.GetFont().Update(font_selector);
+  document_style.SetFontInternal(Font(font_description, font_selector));
 }
 
 }  // namespace blink

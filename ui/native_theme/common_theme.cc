@@ -5,6 +5,7 @@
 #include "ui/native_theme/common_theme.h"
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -17,182 +18,176 @@
 
 namespace ui {
 
-SkColor GetAuraColor(NativeTheme::ColorId color_id,
-                     const NativeTheme* base_theme,
-                     NativeTheme::ColorScheme color_scheme) {
-  if (color_scheme == NativeTheme::ColorScheme::kDefault)
-    color_scheme = base_theme->GetDefaultSystemColorScheme();
+namespace {
 
-  // High contrast overrides the normal colors for certain ColorIds to be much
-  // darker or lighter.
-  if (base_theme->UsesHighContrastColors()) {
-    switch (color_id) {
-      case NativeTheme::kColorId_ButtonUncheckedColor:
-      case NativeTheme::kColorId_MenuBorderColor:
-      case NativeTheme::kColorId_MenuSeparatorColor:
-      case NativeTheme::kColorId_SeparatorColor:
-      case NativeTheme::kColorId_UnfocusedBorderColor:
-      case NativeTheme::kColorId_TabBottomBorder:
-        return color_scheme == NativeTheme::ColorScheme::kDark ? SK_ColorWHITE
-                                                               : SK_ColorBLACK;
-      case NativeTheme::kColorId_ButtonEnabledColor:
-      case NativeTheme::kColorId_FocusedBorderColor:
-      case NativeTheme::kColorId_ProminentButtonColor:
-        return color_scheme == NativeTheme::ColorScheme::kDark
-                   ? gfx::kGoogleBlue100
-                   : gfx::kGoogleBlue900;
-      default:
-        break;
-    }
+base::Optional<SkColor> GetHighContrastColor(
+    NativeTheme::ColorId color_id,
+    NativeTheme::ColorScheme color_scheme) {
+  switch (color_id) {
+    case NativeTheme::kColorId_ButtonUncheckedColor:
+    case NativeTheme::kColorId_MenuBorderColor:
+    case NativeTheme::kColorId_MenuSeparatorColor:
+    case NativeTheme::kColorId_SeparatorColor:
+    case NativeTheme::kColorId_UnfocusedBorderColor:
+    case NativeTheme::kColorId_TabBottomBorder:
+      return color_scheme == NativeTheme::ColorScheme::kDark ? SK_ColorWHITE
+                                                             : SK_ColorBLACK;
+    case NativeTheme::kColorId_ButtonEnabledColor:
+    case NativeTheme::kColorId_FocusedBorderColor:
+    case NativeTheme::kColorId_ProminentButtonColor:
+      return color_scheme == NativeTheme::ColorScheme::kDark
+                 ? gfx::kGoogleBlue100
+                 : gfx::kGoogleBlue900;
+    default:
+      return base::nullopt;
   }
+}
 
-  if (color_scheme == NativeTheme::ColorScheme::kDark) {
-    switch (color_id) {
-      // Dialogs
-      case NativeTheme::kColorId_WindowBackground:
-      case NativeTheme::kColorId_DialogBackground:
-      case NativeTheme::kColorId_BubbleBackground:
-        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
-                                       0.04f);
-      case NativeTheme::kColorId_DialogForeground:
-        return gfx::kGoogleGrey500;
-      case NativeTheme::kColorId_BubbleFooterBackground:
-        return SkColorSetRGB(0x32, 0x36, 0x39);
+base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
+  switch (color_id) {
+    // Dialogs
+    case NativeTheme::kColorId_WindowBackground:
+    case NativeTheme::kColorId_DialogBackground:
+    case NativeTheme::kColorId_BubbleBackground:
+      return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0.04f);
+    case NativeTheme::kColorId_DialogForeground:
+      return gfx::kGoogleGrey500;
+    case NativeTheme::kColorId_BubbleFooterBackground:
+      return SkColorSetRGB(0x32, 0x36, 0x39);
 
-      // FocusableBorder
-      case NativeTheme::kColorId_FocusedBorderColor:
-        return SkColorSetA(gfx::kGoogleBlue300, 0x4D);
-      case NativeTheme::kColorId_UnfocusedBorderColor:
-        return gfx::kGoogleGrey800;
+    // FocusableBorder
+    case NativeTheme::kColorId_FocusedBorderColor:
+      return SkColorSetA(gfx::kGoogleBlue300, 0x4D);
+    case NativeTheme::kColorId_UnfocusedBorderColor:
+      return gfx::kGoogleGrey800;
 
-      // Button
-      case NativeTheme::kColorId_ButtonBorderColor:
-        return gfx::kGoogleGrey800;
-      case NativeTheme::kColorId_ButtonEnabledColor:
-      case NativeTheme::kColorId_ProminentButtonColor:
-        return gfx::kGoogleBlue300;
-      case NativeTheme::kColorId_ButtonHoverColor:
-        return SkColorSetA(SK_ColorBLACK, 0x0A);
-      case NativeTheme::kColorId_ButtonInkDropShadowColor:
-        return SkColorSetA(SK_ColorBLACK, 0x7F);
-      case NativeTheme::kColorId_ButtonInkDropFillColor:
-      case NativeTheme::kColorId_ProminentButtonInkDropFillColor:
-        return SkColorSetA(SK_ColorWHITE, 0x0A);
-      case NativeTheme::kColorId_ProminentButtonInkDropShadowColor:
-        return SkColorSetA(gfx::kGoogleBlue300, 0x7F);
-      case NativeTheme::kColorId_ProminentButtonHoverColor:
-        return SkColorSetA(SK_ColorWHITE, 0x0A);
-      case NativeTheme::kColorId_ButtonUncheckedColor:
-        return gfx::kGoogleGrey500;
-      case NativeTheme::kColorId_TextOnProminentButtonColor:
-        return gfx::kGoogleGrey900;
+    // Button
+    case NativeTheme::kColorId_ButtonBorderColor:
+      return gfx::kGoogleGrey800;
+    case NativeTheme::kColorId_ButtonEnabledColor:
+    case NativeTheme::kColorId_ProminentButtonColor:
+      return gfx::kGoogleBlue300;
+    case NativeTheme::kColorId_ButtonHoverColor:
+      return SkColorSetA(SK_ColorBLACK, 0x0A);
+    case NativeTheme::kColorId_ButtonInkDropShadowColor:
+      return SkColorSetA(SK_ColorBLACK, 0x7F);
+    case NativeTheme::kColorId_ButtonInkDropFillColor:
+    case NativeTheme::kColorId_ProminentButtonInkDropFillColor:
+      return SkColorSetA(SK_ColorWHITE, 0x0A);
+    case NativeTheme::kColorId_ProminentButtonInkDropShadowColor:
+      return SkColorSetA(gfx::kGoogleBlue300, 0x7F);
+    case NativeTheme::kColorId_ProminentButtonHoverColor:
+      return SkColorSetA(SK_ColorWHITE, 0x0A);
+    case NativeTheme::kColorId_ButtonUncheckedColor:
+      return gfx::kGoogleGrey500;
+    case NativeTheme::kColorId_TextOnProminentButtonColor:
+      return gfx::kGoogleGrey900;
 
-      // MenuItem
-      case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
-      case NativeTheme::kColorId_MenuDropIndicator:
-        return gfx::kGoogleGrey200;
-      case NativeTheme::kColorId_MenuBorderColor:
-      case NativeTheme::kColorId_MenuSeparatorColor:
-        return gfx::kGoogleGrey800;
-      case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
-        return SkColorSetRGB(0x32, 0x36, 0x39);
-      case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
-        return gfx::kGoogleBlue300;
-      case NativeTheme::kColorId_MenuItemMinorTextColor:
-        return gfx::kGoogleGrey500;
+    // MenuItem
+    case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
+    case NativeTheme::kColorId_MenuDropIndicator:
+      return gfx::kGoogleGrey200;
+    case NativeTheme::kColorId_MenuBorderColor:
+    case NativeTheme::kColorId_MenuSeparatorColor:
+      return gfx::kGoogleGrey800;
+    case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
+      return SkColorSetRGB(0x32, 0x36, 0x39);
+    case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
+      return gfx::kGoogleBlue300;
+    case NativeTheme::kColorId_MenuItemMinorTextColor:
+      return gfx::kGoogleGrey500;
 
-      // Dropdown
-      case NativeTheme::kColorId_DropdownBackgroundColor:
-        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
-                                       0.04f);
-      case NativeTheme::kColorId_DropdownForegroundColor:
-        return gfx::kGoogleGrey200;
-      case NativeTheme::kColorId_DropdownSelectedForegroundColor:
-        return gfx::kGoogleGrey200;
+    // Dropdown
+    case NativeTheme::kColorId_DropdownBackgroundColor:
+      return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0.04f);
+    case NativeTheme::kColorId_DropdownForegroundColor:
+      return gfx::kGoogleGrey200;
+    case NativeTheme::kColorId_DropdownSelectedForegroundColor:
+      return gfx::kGoogleGrey200;
 
-      // Label
-      case NativeTheme::kColorId_LabelEnabledColor:
-      case NativeTheme::kColorId_LabelTextSelectionColor:
-        return gfx::kGoogleGrey200;
-      case NativeTheme::kColorId_LabelSecondaryColor:
-        return gfx::kGoogleGrey500;
-      case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-        return gfx::kGoogleBlue800;
+    // Label
+    case NativeTheme::kColorId_LabelEnabledColor:
+    case NativeTheme::kColorId_LabelTextSelectionColor:
+      return gfx::kGoogleGrey200;
+    case NativeTheme::kColorId_LabelSecondaryColor:
+      return gfx::kGoogleGrey500;
+    case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
+      return gfx::kGoogleBlue800;
 
-      // Link
-      case NativeTheme::kColorId_LinkEnabled:
-      case NativeTheme::kColorId_LinkPressed:
-        return gfx::kGoogleBlue300;
+    // Link
+    case NativeTheme::kColorId_LinkEnabled:
+    case NativeTheme::kColorId_LinkPressed:
+      return gfx::kGoogleBlue300;
 
-      // Separator
-      case NativeTheme::kColorId_SeparatorColor:
-        return gfx::kGoogleGrey800;
+    // Separator
+    case NativeTheme::kColorId_SeparatorColor:
+      return gfx::kGoogleGrey800;
 
-      // TabbedPane
-      case NativeTheme::kColorId_TabTitleColorActive:
-        return gfx::kGoogleBlue300;
-      case NativeTheme::kColorId_TabTitleColorInactive:
-        return gfx::kGoogleGrey500;
-      case NativeTheme::kColorId_TabBottomBorder:
-        return gfx::kGoogleGrey800;
-      case NativeTheme::kColorId_TabHighlightBackground:
-        return gfx::kGoogleGrey800;
-      case NativeTheme::kColorId_TabHighlightFocusedBackground:
-        return SkColorSetRGB(0x32, 0x36, 0x39);
+    // TabbedPane
+    case NativeTheme::kColorId_TabTitleColorActive:
+      return gfx::kGoogleBlue300;
+    case NativeTheme::kColorId_TabTitleColorInactive:
+      return gfx::kGoogleGrey500;
+    case NativeTheme::kColorId_TabBottomBorder:
+      return gfx::kGoogleGrey800;
+    case NativeTheme::kColorId_TabHighlightBackground:
+      return gfx::kGoogleGrey800;
+    case NativeTheme::kColorId_TabHighlightFocusedBackground:
+      return SkColorSetRGB(0x32, 0x36, 0x39);
 
-      // Table
-      case NativeTheme::kColorId_TableBackground:
-      case NativeTheme::kColorId_TableBackgroundAlternate:
-        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
-                                       0.04f);
-      case NativeTheme::kColorId_TableText:
-      case NativeTheme::kColorId_TableSelectedText:
-      case NativeTheme::kColorId_TableSelectedTextUnfocused:
-        return gfx::kGoogleGrey200;
+    // Table
+    case NativeTheme::kColorId_TableBackground:
+    case NativeTheme::kColorId_TableBackgroundAlternate:
+      return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0.04f);
+    case NativeTheme::kColorId_TableText:
+    case NativeTheme::kColorId_TableSelectedText:
+    case NativeTheme::kColorId_TableSelectedTextUnfocused:
+      return gfx::kGoogleGrey200;
 
-      // Textfield
-      case NativeTheme::kColorId_TextfieldDefaultColor:
-      case NativeTheme::kColorId_TextfieldSelectionColor:
-        return gfx::kGoogleGrey200;
-      case NativeTheme::kColorId_TextfieldReadOnlyBackground: {
-        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
-                                       0.04f);
-      }
-      case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-        return gfx::kGoogleBlue800;
-
-      // Tooltip
-      case NativeTheme::kColorId_TooltipText:
-        return SkColorSetA(gfx::kGoogleGrey200, 0xDE);
-
-      // Tree
-      case NativeTheme::kColorId_TreeBackground:
-        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
-                                       0.04f);
-      case NativeTheme::kColorId_TreeText:
-      case NativeTheme::kColorId_TreeSelectedText:
-      case NativeTheme::kColorId_TreeSelectedTextUnfocused:
-        return gfx::kGoogleGrey200;
-
-      // Material spinner/throbber
-      case NativeTheme::kColorId_ThrobberSpinningColor:
-        return gfx::kGoogleBlue300;
-
-      // Alert icon colors
-      case NativeTheme::kColorId_AlertSeverityLow:
-        return gfx::kGoogleGreen300;
-      case NativeTheme::kColorId_AlertSeverityMedium:
-        return gfx::kGoogleYellow300;
-      case NativeTheme::kColorId_AlertSeverityHigh:
-        return gfx::kGoogleRed300;
-
-      case NativeTheme::kColorId_DefaultIconColor:
-        return gfx::kGoogleGrey500;
-      default:
-        break;
+    // Textfield
+    case NativeTheme::kColorId_TextfieldDefaultColor:
+    case NativeTheme::kColorId_TextfieldSelectionColor:
+      return gfx::kGoogleGrey200;
+    case NativeTheme::kColorId_TextfieldReadOnlyBackground: {
+      return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0.04f);
     }
-  }
+    case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
+      return gfx::kGoogleBlue800;
 
+    // Tooltip
+    case NativeTheme::kColorId_TooltipText:
+      return SkColorSetA(gfx::kGoogleGrey200, 0xDE);
+
+    // Tree
+    case NativeTheme::kColorId_TreeBackground:
+      return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900, 0.04f);
+    case NativeTheme::kColorId_TreeText:
+    case NativeTheme::kColorId_TreeSelectedText:
+    case NativeTheme::kColorId_TreeSelectedTextUnfocused:
+      return gfx::kGoogleGrey200;
+
+    // Material spinner/throbber
+    case NativeTheme::kColorId_ThrobberSpinningColor:
+      return gfx::kGoogleBlue300;
+
+    // Alert icon colors
+    case NativeTheme::kColorId_AlertSeverityLow:
+      return gfx::kGoogleGreen300;
+    case NativeTheme::kColorId_AlertSeverityMedium:
+      return gfx::kGoogleYellow300;
+    case NativeTheme::kColorId_AlertSeverityHigh:
+      return gfx::kGoogleRed300;
+
+    case NativeTheme::kColorId_DefaultIconColor:
+      return gfx::kGoogleGrey500;
+    default:
+      return base::nullopt;
+  }
+}
+
+SkColor GetDefaultColor(NativeTheme::ColorId color_id,
+                        const NativeTheme* base_theme,
+                        NativeTheme::ColorScheme color_scheme) {
   constexpr SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
 
 
@@ -495,11 +490,38 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
           NativeTheme::kColorId_BubbleFooterBackground);
 
     case NativeTheme::kColorId_NumColors:
-      break;
+      // Keeping the kColorId_NumColors case instead of using the default case
+      // allows ColorId additions to trigger compile error for an incomplete
+      // switch enumeration.
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
+  }
+}
+
+}  // namespace
+
+SkColor GetAuraColor(NativeTheme::ColorId color_id,
+                     const NativeTheme* base_theme,
+                     NativeTheme::ColorScheme color_scheme) {
+  if (color_scheme == NativeTheme::ColorScheme::kDefault)
+    color_scheme = base_theme->GetDefaultSystemColorScheme();
+
+  // High contrast overrides the normal colors for certain ColorIds to be much
+  // darker or lighter.
+  if (base_theme->UsesHighContrastColors()) {
+    base::Optional<SkColor> color =
+        GetHighContrastColor(color_id, color_scheme);
+    if (color.has_value())
+      return color.value();
   }
 
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
+  if (color_scheme == NativeTheme::ColorScheme::kDark) {
+    base::Optional<SkColor> color = GetDarkSchemeColor(color_id);
+    if (color.has_value())
+      return color.value();
+  }
+
+  return GetDefaultColor(color_id, base_theme, color_scheme);
 }
 
 void CommonThemePaintMenuItemBackground(

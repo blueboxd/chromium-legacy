@@ -4,4 +4,3 @@ Document
 ++++++Text Name='Coffee'
 ++++Text IsControlElement=false
 ++++++Text Name='Black hot drink'
-<-- End-of-file -->

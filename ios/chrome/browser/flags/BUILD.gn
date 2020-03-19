@@ -26,6 +26,7 @@ source_set("flags") {
     "//components/omnibox/common",
     "//components/password_manager/core/common",
     "//components/payments/core",
+    "//components/safe_browsing/core:features",
     "//components/search_provider_logos",
     "//components/security_state/core",
     "//components/send_tab_to_self",

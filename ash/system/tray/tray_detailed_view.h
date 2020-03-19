@@ -154,18 +154,18 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   void TransitionToMainView();
 
   DetailedViewDelegate* const delegate_;
-  views::BoxLayout* box_layout_;
-  views::ScrollView* scroller_;
-  views::View* scroll_content_;
-  views::ProgressBar* progress_bar_;
+  views::BoxLayout* box_layout_ = nullptr;
+  views::ScrollView* scroller_ = nullptr;
+  views::View* scroll_content_ = nullptr;
+  views::ProgressBar* progress_bar_ = nullptr;
 
-  ScrollBorder* scroll_border_;  // Weak reference
+  ScrollBorder* scroll_border_ = nullptr;  // Weak reference
 
   // The container view for the top-most title row in material design.
-  TriView* tri_view_;
+  TriView* tri_view_ = nullptr;
 
   // The back button that appears in the material design title row. Not owned.
-  views::Button* back_button_;
+  views::Button* back_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailedView);
 };

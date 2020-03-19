@@ -5,5 +5,8 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
-  sources = [ "query_tile_entry.proto" ]
+  sources = [
+    "image.proto",
+    "query_tile_entry.proto",
+  ]
 }

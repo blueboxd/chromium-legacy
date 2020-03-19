@@ -358,7 +358,7 @@ bool WillCreateURLLoaderFactory(
     // No other overrides, so just returns ours as is.
     *factory_override = network::mojom::URLLoaderFactoryOverride::New(
         std::move(devtools_override.overriding_factory),
-        std::move(devtools_override.overridden_factory_receiver));
+        std::move(devtools_override.overridden_factory_receiver), false);
   }
   // ... else things are already taken care of, as handler_override was pointing
   // to factory override and we've done all magic in-place.
@@ -410,7 +410,7 @@ bool WillCreateURLLoaderFactoryForServiceWorker(
   if (!*factory_override) {
     *factory_override = network::mojom::URLLoaderFactoryOverride::New(
         std::move(devtools_override.overriding_factory),
-        std::move(devtools_override.overridden_factory_receiver));
+        std::move(devtools_override.overridden_factory_receiver), false);
   }
   return true;
 }

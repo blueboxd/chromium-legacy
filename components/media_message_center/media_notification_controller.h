@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 template <typename T>
 class scoped_refptr;
@@ -37,7 +38,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationController {
 
   // Notifies the MediaNotificationController that a media button was pressed on
   // the MediaNotificationView.
-  virtual void LogMediaSessionActionButtonPressed(const std::string& id) = 0;
+  virtual void LogMediaSessionActionButtonPressed(
+      const std::string& id,
+      media_session::mojom::MediaSessionAction action) = 0;
 
  protected:
   virtual ~MediaNotificationController() = default;

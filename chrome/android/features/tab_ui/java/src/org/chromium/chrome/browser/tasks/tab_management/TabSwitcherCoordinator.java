@@ -103,7 +103,7 @@ public class TabSwitcherCoordinator
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, container, tabModelSelector, tabContentManager, null, mode);
+                context, container, tabModelSelector, tabContentManager, null);
 
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
                 fullscreenManager, container, mTabSelectionEditorCoordinator.getController(),

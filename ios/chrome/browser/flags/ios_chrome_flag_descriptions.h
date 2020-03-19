@@ -279,6 +279,10 @@ extern const char kPageInfoRefactoringDescription[];
 extern const char kReloadSadTabName[];
 extern const char kReloadSadTabDescription[];
 
+// Title and description for the flag that makes Safe Browsing available.
+extern const char kSafeBrowsingAvailableName[];
+extern const char kSafeBrowsingAvailableDescription[];
+
 // Title and description for the flag that enables Messages UI on
 // SaveCard Infobars.
 extern const char kSaveCardInfobarMessagesUIName[];

@@ -6,4 +6,3 @@ Document
 ++++++Text Name='Aside tag' IsControlElement=false
 ++++Group IsControlElement=false
 ++++++Text Name='The aside content should be related to the surrounding content.'
-<-- End-of-file -->

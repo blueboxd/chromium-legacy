@@ -6,7 +6,7 @@ luci.console_view(
     # TODO(gbeaty) Define the main consoles inside the respective versioned
     # directories once their contents are stablilized
     refs = ['refs/branch-heads/3987'],
-    title = 'Chromium Stable Console',
+    title = 'Chromium M80 Console',
     entries = [
         luci.console_view_entry(
             builder = 'ci-m80/Linux Builder',

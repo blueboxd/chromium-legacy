@@ -3601,7 +3601,7 @@ TYPED_TEST(GPURendererPixelTest, BlendingWithoutAntiAliasing) {
 
 // Trilinear filtering is only supported in the gl renderer.
 // TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
-TYPED_TEST(GPURendererPixelTest, DISABLED_TrilinearFiltering) {
+TYPED_TEST(GPURendererPixelTest, TrilinearFiltering) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;

@@ -39,6 +39,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -577,6 +578,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          web::features::kIOSLookalikeUrlNavigationSuggestionsUI)},
+    {"safe-browsing-available", flag_descriptions::kSafeBrowsingAvailableName,
+     flag_descriptions::kSafeBrowsingAvailableDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingAvailableOnIOS)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -490,23 +490,31 @@ void InitLogging(const std::string& process_type) {
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-void RecordMainStartupMetrics(base::TimeTicks exe_entry_point_ticks) {
-  if (!exe_entry_point_ticks.is_null())
-    startup_metric_utils::RecordExeMainEntryPointTicks(exe_entry_point_ticks);
+void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
+  const base::TimeTicks now = base::TimeTicks::Now();
+
+#if defined(OS_WIN)
+  DCHECK(!application_start_time.is_null());
+  startup_metric_utils::RecordApplicationStartTime(application_start_time);
+#elif defined(OS_ANDROID)
+  // On Android the main entry point time is the time when the Java code starts.
+  // This happens before the shared library containing this code is even loaded.
+  // The Java startup code has recorded that time, but the C++ code can't fetch
+  // it from the Java side until it has initialized the JNI. See
+  // ChromeMainDelegateAndroid.
+#else
+  // On other platforms, |application_start_time| == |now| since the application
+  // starts with ChromeMain().
+  startup_metric_utils::RecordApplicationStartTime(now);
+#endif
+
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   // Record the startup process creation time on supported platforms.
   startup_metric_utils::RecordStartupProcessCreationTime(
       base::Process::Current().CreationTime());
 #endif
 
-// On Android the main entry point time is the time when the Java code starts.
-// This happens before the shared library containing this code is even loaded.
-// The Java startup code has recorded that time, but the C++ code can't fetch it
-// from the Java side until it has initialized the JNI. See
-// ChromeMainDelegateAndroid.
-#if !defined(OS_ANDROID)
-  startup_metric_utils::RecordMainEntryPointTime(base::TimeTicks::Now());
-#endif
+  startup_metric_utils::RecordChromeMainEntryTime(now);
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 

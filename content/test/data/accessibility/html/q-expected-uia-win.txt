@@ -5,4 +5,3 @@ Document
 ++++Text Name='Chromium Blink'
 ++++Text Name='"'
 ++++Text Name=' based browser.'
-<-- End-of-file -->

@@ -89,7 +89,7 @@ const char kIcuExtraDataFileName[] = "icudtl_extra.dat";
 // only implemented for OS_FUCHSIA.
 #if defined(OS_FUCHSIA)
 // The environment variable used to point the ICU data loader to the directory
-// containing timezone data. This is available from ICU version 54. The env
+// containing time zone data. This is available from ICU version 54. The env
 // variable approach is antiquated by today's standards (2019), but is the
 // recommended way to configure ICU.
 //
@@ -119,6 +119,12 @@ MemoryMappedFile::Region g_icudtl_region;
 PlatformFile g_icudtl_extra_pf = kInvalidPlatformFile;
 MemoryMappedFile* g_icudtl_extra_mapped_file = nullptr;
 MemoryMappedFile::Region g_icudtl_extra_region;
+
+#if defined(OS_FUCHSIA)
+// The directory from which the ICU data loader will be configured to load time
+// zone data. It is only changed by SetIcuTimeZoneDataDirForTesting().
+const char* g_icu_time_zone_data_dir = kIcuTimeZoneDataDir;
+#endif  // defined(OS_FUCHSIA)
 
 struct PfRegion {
  public:
@@ -208,30 +214,20 @@ void LazyOpenIcuDataFile() {
   g_icudtl_region = pf_region->region;
 }
 
-// Loads external timezone data, for configurations where it makes sense.
-// If the timezone data directory is not set up properly, we continue but log
-// appropriate information for debugging.
+// Configures ICU to load external time zone data, if appropriate.
 void InitializeExternalTimeZoneData() {
 #if defined(OS_FUCHSIA)
-  std::unique_ptr<base::Environment> env = base::Environment::Create();
-
-  // We only set the variable if it was not already set by a test.  Fuchsia
-  // normally does not otherwise set env variables in production code.
-  if (!env->HasVar(kIcuTimeZoneEnvVariable)) {
-    env->SetVar(kIcuTimeZoneEnvVariable, kIcuTimeZoneDataDir);
-  }
-  std::string tzdata_dir;
-  env->GetVar(kIcuTimeZoneEnvVariable, &tzdata_dir);
-
-  // Try opening the path to check if present. No need to verify that it is a
-  // directory since ICU loading will return an error if the TimeZone data is
-  // wrong.
-  if (!base::DirectoryExists(base::FilePath(tzdata_dir))) {
+  if (!base::DirectoryExists(base::FilePath(g_icu_time_zone_data_dir))) {
     // TODO(https://crbug.com/1061262): Make this FATAL unless expected.
-    PLOG(WARNING) << "Could not open: '" << tzdata_dir
+    PLOG(WARNING) << "Could not open: '" << g_icu_time_zone_data_dir
                   << "'. Using built-in timezone database";
     return;
   }
+
+  // Set the environment variable to override the location used by ICU.
+  // Loading can still fail if the directory is empty or its data is invalid.
+  std::unique_ptr<base::Environment> env = base::Environment::Create();
+  env->SetVar(kIcuTimeZoneEnvVariable, g_icu_time_zone_data_dir);
 #endif  // defined(OS_FUCHSIA)
 }
 
@@ -323,10 +319,10 @@ bool InitializeICUFromDataFile() {
 // than relying on ICU's internal initialization.
 void InitializeIcuTimeZone() {
 #if defined(OS_ANDROID)
-  // On Android, we can't leave it up to ICU to set the default timezone
-  // because ICU's timezone detection does not work in many timezones (e.g.
+  // On Android, we can't leave it up to ICU to set the default time zone
+  // because ICU's time zone detection does not work in many time zones (e.g.
   // Australia/Sydney, Asia/Seoul, Europe/Paris ). Use JNI to detect the host
-  // timezone and set the ICU default timezone accordingly in advance of
+  // time zone and set the ICU default time zone accordingly in advance of
   // actual use. See crbug.com/722821 and
   // https://ssl.icu-project.org/trac/ticket/13208 .
   string16 zone_id = android::GetDefaultTimeZoneId();
@@ -334,7 +330,7 @@ void InitializeIcuTimeZone() {
       icu::UnicodeString(FALSE, zone_id.data(), zone_id.length())));
 #elif defined(OS_FUCHSIA)
   // The platform-specific mechanisms used by ICU's detectHostTimeZone() to
-  // determine the default timezone will not work on Fuchsia. Therefore,
+  // determine the default time zone will not work on Fuchsia. Therefore,
   // proactively set the default system.
   // This is also required by TimeZoneMonitorFuchsia::ProfileMayHaveChanged(),
   // which uses the current default to detect whether the time zone changed in
@@ -346,7 +342,7 @@ void InitializeIcuTimeZone() {
   icu::TimeZone::adoptDefault(
       icu::TimeZone::createTimeZone(icu::UnicodeString::fromUTF8(zone_id)));
 #elif defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST)
-  // To respond to the timezone change properly, the default timezone
+  // To respond to the time zone change properly, the default time zone
   // cache in ICU has to be populated on starting up.
   // See TimeZoneMonitorLinux::NotifyClientsFromImpl().
   std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
@@ -471,7 +467,17 @@ void ResetGlobalsForTesting() {
   g_icudtl_mapped_file = nullptr;
   g_icudtl_extra_pf = kInvalidPlatformFile;
   g_icudtl_extra_mapped_file = nullptr;
+#if defined(OS_FUCHSIA)
+  g_icu_time_zone_data_dir = kIcuTimeZoneDataDir;
+#endif  // defined(OS_FUCHSIA)
 }
+
+#if defined(OS_FUCHSIA)
+// |dir| must remain valid until ResetGlobalsForTesting() is called.
+void SetIcuTimeZoneDataDirForTesting(const char* dir) {
+  g_icu_time_zone_data_dir = dir;
+}
+#endif  // defined(OS_FUCHSIA)
 #endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
 bool InitializeICU() {

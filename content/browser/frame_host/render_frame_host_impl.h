@@ -213,7 +213,7 @@ struct SubresourceLoaderParams;
 
 // True if feature-flags indicate that we should replace crashed RFHs with new
 // instances rather than reusing them. See http://crbug.com/981339.
-CONTENT_EXPORT bool IsRenderDocumentEnabledForCrashedFrame();
+CONTENT_EXPORT bool CreateNewHostForCrashedFrame();
 
 // To be called when a RenderFrameHostImpl receives an event.
 // Provides the host, the event fired, and which node id the event was for.
@@ -1439,9 +1439,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // - Disable unload timeout monitor.
   // - Ignore any OnUnloadACK sent by the renderer process.
   void DoNotDeleteForTesting();
-
-  void SetDeviceEmulation(
-      const base::Optional<blink::WebDeviceEmulationParams>& params);
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2764,8 +2761,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true, RenderFrameHost should not be actually deleted and should be left
   // stuck in pending deletion.
   bool do_not_delete_for_testing_ = false;
-
-  mojo::AssociatedRemote<mojom::DeviceEmulator> device_emulator_remote_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

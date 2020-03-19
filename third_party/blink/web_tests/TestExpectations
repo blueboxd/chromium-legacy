@@ -6000,6 +6000,10 @@ crbug.com/1015130 external/wpt/largest-contentful-paint/first-paint-equals-lcp-t
 crbug.com/1015130 virtual/scalefactor200/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 crbug.com/1015130 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 
+crbug.com/957674 external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Failure ]
+crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Failure ]
+crbug.com/957674 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Failure ]
+
 crbug.com/1000051 media/controls/volume-slider.html [ Failure Timeout Pass ]
 crbug.com/1000051 virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
 

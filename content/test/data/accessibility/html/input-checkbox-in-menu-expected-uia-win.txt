@@ -5,4 +5,3 @@ Document
 ++Menu Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
 ++++CheckBox Name='Checkbox3' Toggle.ToggleState='On'
 ++++CheckBox Name='Checkbox4' Toggle.ToggleState='Indeterminate'
-<-- End-of-file -->

@@ -17,4 +17,3 @@ Document
 ++++Hyperlink Name='Link with image at the end'
 ++++++Text Name='Link with image at the ' IsControlElement=false
 ++++++Image Name='end'
-<-- End-of-file -->

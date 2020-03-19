@@ -3393,6 +3393,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "remote-copy-image-notification",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "remote-copy-progress-notification",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 85
@@ -3416,6 +3421,11 @@
     "name": "run-video-capture-service-in-browser",
     "owners": [ "armax", "guidou" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "safe-browsing-available",
+    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS" ],
+    "expiry_milestone": 85
   },
   {
     "name": "safety-tips",

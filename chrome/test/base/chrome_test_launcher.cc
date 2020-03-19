@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_switches.h"
+#include "base/time/time.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -135,7 +136,7 @@ ChromeTestLauncherDelegate::GetUserDataDirectoryCommandLineSwitch() {
 #if !defined(OS_ANDROID)
 content::ContentMainDelegate*
 ChromeTestLauncherDelegate::CreateContentMainDelegate() {
-  return new ChromeMainDelegate();
+  return new ChromeMainDelegate(base::TimeTicks::Now());
 }
 #endif
 

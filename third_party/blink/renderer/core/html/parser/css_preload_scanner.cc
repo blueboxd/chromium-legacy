@@ -236,7 +236,7 @@ static String ParseCSSStringOrURL(const String& string) {
 }
 
 void CSSPreloadScanner::EmitRule(const SegmentedString& source) {
-  if (DeprecatedEqualIgnoringCase(rule_, "import")) {
+  if (EqualIgnoringASCIICase(rule_, "import")) {
     String url = ParseCSSStringOrURL(rule_value_.ToString());
     TextPosition position =
         TextPosition(source.CurrentLine(), source.CurrentColumn());
@@ -250,7 +250,7 @@ void CSSPreloadScanner::EmitRule(const SegmentedString& source) {
       requests_->push_back(std::move(request));
     }
     state_ = kInitial;
-  } else if (DeprecatedEqualIgnoringCase(rule_, "charset"))
+  } else if (EqualIgnoringASCIICase(rule_, "charset"))
     state_ = kInitial;
   else
     state_ = kDoneParsingImportRules;

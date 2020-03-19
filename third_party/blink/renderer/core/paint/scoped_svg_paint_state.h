@@ -93,7 +93,8 @@ class ScopedSVGPaintState {
   ~ScopedSVGPaintState();
 
   const PaintInfo& GetPaintInfo() const {
-    return filter_paint_info_ ? *filter_paint_info_ : paint_info_;
+    return filter_recording_context_ ? filter_recording_context_->GetPaintInfo()
+                                     : paint_info_;
   }
 
   // Return true if these operations aren't necessary or if they are
@@ -112,7 +113,6 @@ class ScopedSVGPaintState {
   const LayoutObject& object_;
   PaintInfo paint_info_;
   const DisplayItemClient& display_item_client_;
-  std::unique_ptr<PaintInfo> filter_paint_info_;
   FilterData* filter_data_;
   base::Optional<ClipPathClipper> clip_path_clipper_;
   std::unique_ptr<SVGFilterRecordingContext> filter_recording_context_;

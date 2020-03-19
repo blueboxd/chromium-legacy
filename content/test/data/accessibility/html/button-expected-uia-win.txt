@@ -1,4 +1,3 @@
 Document
 ++Group IsControlElement=false
 ++++Button Name='Click me!'
-<-- End-of-file -->

@@ -34,4 +34,3 @@ Document Name='Action verbs'
 ++Button Name='ARIA button with negative tab index'
 ++Group
 ++++Button Name='ARIA button that is an active descendant'
-<-- End-of-file -->

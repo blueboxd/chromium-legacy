@@ -307,6 +307,7 @@ source_set("blink_headers") {
     "web/web_context_menu_data.h",
     "web/web_crypto_normalize.h",
     "web/web_custom_element.h",
+    "web/web_device_emulation_params.h",
     "web/web_document.h",
     "web/web_document_loader.h",
     "web/web_dom_activity_logger.h",

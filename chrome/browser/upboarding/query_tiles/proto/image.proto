@@ -1,0 +1,33 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package upboarding.query_tiles.proto;
+
+// Information of a query tile image, doesn't contain image raw bytes.
+// Next tag: 4
+message ImageInfo {
+  // Unique id of the image.
+  string id = 1;
+
+  // URL of the image.
+  string url = 2;
+
+  // The last update time in milliseconds since epoch, image will be expired
+  // after a certain amount of time.
+  int64 last_update_time_ms = 3;
+}
+
+// Contains the decoded image bytes.
+// Next tag: 3
+message ImageData {
+  // Unique id of the image.
+  string id = 1;
+
+  // Decoded image data.
+  bytes data = 2;
+}

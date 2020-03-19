@@ -68,4 +68,3 @@ Document
 ++++++++++++++++++Group IsControlElement=false
 ++++++++++++++++++++Group IsControlElement=false
 ++++++++++++++++++Button Name='Today'
-<-- End-of-file -->

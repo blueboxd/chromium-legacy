@@ -295,6 +295,8 @@ jumbo_static_library("test_support") {
     "portal/portal_created_observer.h",
     "portal/portal_interceptor_for_testing.cc",
     "portal/portal_interceptor_for_testing.h",
+    "render_document_feature.cc",
+    "render_document_feature.h",
     "storage_partition_test_utils.cc",
     "storage_partition_test_utils.h",
     "stub_layer_tree_view_delegate.cc",

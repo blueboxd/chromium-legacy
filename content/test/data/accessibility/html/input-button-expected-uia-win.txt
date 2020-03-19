@@ -1,4 +1,3 @@
 Document
 ++Group IsControlElement=false
 ++++Button Name='Button'
-<-- End-of-file -->

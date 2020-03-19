@@ -23,10 +23,10 @@ constexpr const char* kStartupMetrics[] = {
     "Startup.FirstWebContents.MainNavigationFinished",
     "Startup.FirstWebContents.MainNavigationStart",
     "Startup.FirstWebContents.NonEmptyPaint2",
+    "Startup.FirstWebContents.NonEmptyPaint3",
     "Startup.FirstWebContents.RenderProcessHostInit.ToNonEmptyPaint",
-    "Startup.LoadTime.ExeMainToDllMain2",
-    "Startup.LoadTime.ProcessCreateToDllMain2",
-    "Startup.LoadTime.ProcessCreateToExeMain2",
+    "Startup.LoadTime.ApplicationStartToChromeMain",
+    "Startup.LoadTime.ProcessCreateToApplicationStart",
 
 #if defined(OS_WIN)
     "Startup.BrowserMessageLoopStartHardFaultCount",
@@ -38,9 +38,6 @@ constexpr const char* kStartupMetrics[] = {
 
 // Verify that startup histograms are logged on browser startup.
 IN_PROC_BROWSER_TEST_F(StartupMetricsTest, ReportsValues) {
-  // This is usually done from the constructor of ChromeMainDelegate.
-  startup_metric_utils::RecordExeMainEntryPointTicks(base::TimeTicks::Now());
-
   // This is usually done from ChromeBrowserMainParts::MainMessageLoopRun().
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), false /* is_first_run */);

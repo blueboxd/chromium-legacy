@@ -3,4 +3,3 @@ Document
 ++++Text Name='This is main element.'
 ++Group
 ++++Text Name='This is an ARIA role main.'
-<-- End-of-file -->

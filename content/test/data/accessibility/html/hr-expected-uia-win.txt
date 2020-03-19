@@ -7,4 +7,3 @@ Document
 ++Separator
 ++Group IsControlElement=false
 ++++Text Name='After.'
-<-- End-of-file -->

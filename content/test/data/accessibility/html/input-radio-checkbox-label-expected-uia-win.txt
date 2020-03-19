@@ -10,4 +10,3 @@ Document
 ++++++Text Name='label exposed for checkbox '
 ++++++CheckBox Name='label exposed for checkbox' Toggle.ToggleState='Off'
 ++++++Text Name=' '
-<-- End-of-file -->

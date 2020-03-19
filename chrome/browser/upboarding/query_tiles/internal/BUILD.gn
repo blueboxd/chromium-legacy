@@ -9,8 +9,12 @@ if (is_android) {
 
 source_set("internal") {
   sources = [
+    "image_data_store.cc",
+    "image_data_store.h",
     "image_decoder.cc",
     "image_decoder.h",
+    "image_info_store.cc",
+    "image_info_store.h",
     "image_loader.cc",
     "image_loader.h",
     "proto_conversion.cc",

@@ -13,4 +13,3 @@ Document
 ++++++Document
 ++++++++Group IsControlElement=false
 ++++++++++Button Name='Scrolled Button'
-<-- End-of-file -->

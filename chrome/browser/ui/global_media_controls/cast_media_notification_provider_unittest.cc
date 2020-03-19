@@ -38,7 +38,9 @@ class MockMediaNotificationController
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override {
     return nullptr;
   }
-  MOCK_METHOD1(LogMediaSessionActionButtonPressed, void(const std::string& id));
+  MOCK_METHOD2(LogMediaSessionActionButtonPressed,
+               void(const std::string& id,
+                    media_session::mojom::MediaSessionAction action));
 };
 
 class MockMediaNotificationView

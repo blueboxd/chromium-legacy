@@ -5,4 +5,3 @@ Document LocalizedControlType='document'
 ++Text LocalizedControlType='text' Name=' '
 ++Text LocalizedControlType='emphasis' Name='include me'
 ++++Text LocalizedControlType='text' Name='element (with name)'
-<-- End-of-file -->

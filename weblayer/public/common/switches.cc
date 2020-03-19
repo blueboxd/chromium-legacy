@@ -6,10 +6,6 @@
 
 namespace switches {
 
-// Makes WebLayer turn on various test only features. This is used when running
-// wpt.
-const char kWebLayerTestMode[] = "run-web-tests";
-
 // Makes WebLayer Shell use the given path for its data directory.
 const char kWebLayerUserDataDir[] = "weblayer-user-data-dir";
 

@@ -112,13 +112,6 @@ class BASE_EXPORT TraceEvent {
       const ArgumentFilterPredicate& argument_filter_predicate) const;
   void AppendPrettyPrinted(std::ostringstream* out) const;
 
-  // TODO(898794): Remove once caller has been updated.
-  static void AppendValueAsJSON(unsigned char type,
-                                TraceValue value,
-                                std::string* out) {
-    value.AppendAsJSON(type, out);
-  }
-
   TimeTicks timestamp() const { return timestamp_; }
   ThreadTicks thread_timestamp() const { return thread_timestamp_; }
   ThreadInstructionCount thread_instruction_count() const {

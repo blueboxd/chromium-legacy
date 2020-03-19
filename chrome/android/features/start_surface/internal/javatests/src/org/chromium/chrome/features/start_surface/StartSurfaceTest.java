@@ -38,7 +38,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -231,7 +230,6 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
-    @DisabledTest(message = "crbug.com/1051643")
     public void testSearchInSingleSurface() {
         // TODO(crbug.com/1025296): Set cached flag before starting the activity and mimic clicking
         // the 'home' button to show the single start surface home page.
@@ -258,8 +256,13 @@ public class StartSurfaceTest {
         assertThat(
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
                 equalTo(2));
+    }
 
-        // Search in incognito mode.
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testSearchInIncognitoSingleSurface() {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mActivityTestRule.getActivity()
@@ -268,10 +271,12 @@ public class StartSurfaceTest {
                                    .setOverviewState(OverviewModeState.SHOWING_HOMEPAGE));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         onView(withId(org.chromium.chrome.start_surface.R.id.incognito_switch)).perform(click());
         assertTrue(mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
 
-        hideWatcher = TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
+        OverviewModeBehaviorWatcher hideWatcher =
+                TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
         onView(allOf(withId(org.chromium.chrome.start_surface.R.id.search_box_text), isDisplayed()))
                 .perform(typeText(mUrl));
         onView(withId(org.chromium.chrome.start_surface.R.id.url_bar))

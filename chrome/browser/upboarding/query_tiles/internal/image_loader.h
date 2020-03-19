@@ -20,8 +20,7 @@ namespace upboarding {
 // on disk.
 class ImageLoader {
  public:
-  using UpdateCallback = base::OnceCallback<bool>;
-  using DeleteCallback = base::OnceCallback<bool>;
+  using SuccessCallback = base::OnceCallback<bool>;
   using BitmapCallback = base::OnceCallback<std::unique_ptr<SkBitmap>>;
   using Id = std::string;
 
@@ -32,9 +31,9 @@ class ImageLoader {
   // immediately fetch the image, then invoke the callback.
   virtual void Update(const Id& id,
                       const GURL& url,
-                      UpdateCallback callback) = 0;
+                      SuccessCallback callback) = 0;
   // Deletes an image cache for a specific tile.
-  virtual void Delete(const Id& id, DeleteCallback callback) = 0;
+  virtual void Delete(const Id& id, SuccessCallback callback) = 0;
 
   // Gets the bitmap for a specific tile. Callback will be invoked after
   // reading the data from disk or the fetch is done.

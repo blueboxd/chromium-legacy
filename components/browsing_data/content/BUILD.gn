@@ -6,6 +6,8 @@ static_library("content") {
   sources = [
     "conditional_cache_counting_helper.cc",
     "conditional_cache_counting_helper.h",
+    "local_storage_helper.cc",
+    "local_storage_helper.h",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -17,5 +19,18 @@ static_library("content") {
     "//components/content_settings/core/common",
     "//content/public/browser",
     "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "local_storage_helper_unittest.cc" ]
+
+  deps = [
+    ":content",
+    "//base",
+    "//content/test:test_support",
+    "//testing/gtest",
+    "//url",
   ]
 }

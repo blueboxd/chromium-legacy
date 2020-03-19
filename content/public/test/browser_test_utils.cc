@@ -736,7 +736,18 @@ bool WaitForLoadStop(WebContents* web_contents) {
     LOG(ERROR) << "WebContents was destroyed during waiting for load stop.";
     return false;
   }
-  return IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL);
+  bool is_page_normal =
+      IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL);
+  if (!is_page_normal) {
+    NavigationEntry* last_entry =
+        web_contents->GetController().GetLastCommittedEntry();
+    if (last_entry)
+      LOG(ERROR) << "Http status code = " << last_entry->GetHttpStatusCode()
+                 << ", page type = " << last_entry->GetPageType();
+    else
+      LOG(ERROR) << "No committed entry.";
+  }
+  return is_page_normal;
 }
 
 void PrepContentsForBeforeUnloadTest(WebContents* web_contents,

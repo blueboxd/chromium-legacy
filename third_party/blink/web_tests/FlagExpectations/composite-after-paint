@@ -35,6 +35,9 @@ crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrol
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 crbug.com/1039401 virtual/scroll_customization/fast/scrolling/scrollbar-mousedown-mouseup.html [ Pass ]
 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass ]
+crbug.com/957674 external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
+crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
+crbug.com/957674 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 
 virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
 virtual/android/rootscroller/fixed-chaining-with-implicit-pointer-events-none.html [ Failure ]

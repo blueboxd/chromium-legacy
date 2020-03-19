@@ -222,8 +222,6 @@ jumbo_static_library("browser") {
     "browsing_data/browsing_data_important_sites_util.h",
     "browsing_data/browsing_data_indexed_db_helper.cc",
     "browsing_data/browsing_data_indexed_db_helper.h",
-    "browsing_data/browsing_data_local_storage_helper.cc",
-    "browsing_data/browsing_data_local_storage_helper.h",
     "browsing_data/browsing_data_media_license_helper.cc",
     "browsing_data/browsing_data_media_license_helper.h",
     "browsing_data/browsing_data_quota_helper.cc",

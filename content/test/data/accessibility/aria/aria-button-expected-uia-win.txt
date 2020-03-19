@@ -13,4 +13,3 @@ Document
 ++Button Name='Complex pop up button ' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++Text Name='Complex pop up button '
 ++++Edit
-<-- End-of-file -->

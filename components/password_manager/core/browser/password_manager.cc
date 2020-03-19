@@ -18,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -51,8 +52,10 @@ using autofill::NEW_PASSWORD;
 using autofill::NOT_USERNAME;
 using autofill::PasswordForm;
 using autofill::SINGLE_USERNAME;
+using autofill::UNKNOWN_TYPE;
 using autofill::USERNAME;
 using autofill::mojom::PasswordFormFieldPredictionType;
+using base::NumberToString;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 using password_manager::metrics_util::GaiaPasswordHashChange;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
@@ -159,7 +162,8 @@ bool HasNewPasswordVote(const FormPredictions& form) {
 // predictions for corresponding fields. Predictions from |field_info_manager|
 // have priority over server predictions.
 void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
-                                FormPredictions* predictions) {
+                                FormPredictions* predictions,
+                                BrowserSavePasswordProgressLogger* logger) {
   DCHECK(predictions);
   if (!field_info_manager)
     return;
@@ -175,6 +179,13 @@ void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
       // have data.
       if (field.type != SINGLE_USERNAME && field.type != USERNAME)
         field.type = NOT_USERNAME;
+    }
+    if (logger && local_prediction != UNKNOWN_TYPE) {
+      std::string message =
+          "form signature=" + NumberToString(predictions->form_signature) +
+          " , field signature=" + NumberToString(field.signature) + ", type=" +
+          autofill::AutofillType::ServerFieldTypeToString(local_prediction);
+      logger->LogString(Logger::STRING_LOCALLY_SAVED_PREDICTION, message);
     }
   }
 }
@@ -979,7 +990,8 @@ void PasswordManager::ProcessAutofillPredictions(
     predictions_[form->form_signature()] =
         ConvertToFormPredictions(driver_id, *form);
     AddLocallySavedPredictions(client_->GetFieldInfoManager(),
-                               &predictions_[form->form_signature()]);
+                               &predictions_[form->form_signature()],
+                               logger.get());
   }
 
   // Create form managers for non-password forms if |predictions_| has evidence

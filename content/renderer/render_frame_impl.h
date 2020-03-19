@@ -32,7 +32,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/common/buildflags.h"
-#include "content/common/device_emulator.mojom.h"
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
@@ -597,8 +596,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_loader_factories) override;
   void BindDevToolsAgent(
       mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
-      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
-      mojo::PendingAssociatedReceiver<mojom::DeviceEmulator> device_emulator)
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver)
       override;
 
   void JavaScriptExecuteRequest(

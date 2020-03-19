@@ -27,6 +27,7 @@
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
 

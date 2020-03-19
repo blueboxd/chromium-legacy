@@ -7,18 +7,38 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
-#include "components/dom_distiller/core/uma_helper.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using dom_distiller::UMAHelper;
 using dom_distiller::url_utils::IsDistilledPage;
+
+namespace {
+UMAHelper::ReaderModePageType GetPageType(content::WebContents* contents) {
+  // Determine if the current web contents is a distilled page.
+  UMAHelper::ReaderModePageType page_type =
+      UMAHelper::ReaderModePageType::kNone;
+  if (IsDistilledPage(contents->GetLastCommittedURL())) {
+    page_type = UMAHelper::ReaderModePageType::kDistilled;
+  } else {
+    base::Optional<dom_distiller::DistillabilityResult> distillability =
+        dom_distiller::GetLatestResult(contents);
+    if (distillability && distillability.value().is_distillable)
+      page_type = UMAHelper::ReaderModePageType::kDistillable;
+  }
+  return page_type;
+}
+
+}  // namespace
 
 ReaderModeIconView::ReaderModeIconView(
     CommandUpdater* command_updater,
@@ -44,14 +64,37 @@ void ReaderModeIconView::DidFinishNavigation(
     AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 }
 
+void ReaderModeIconView::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  // When navigation is about to happen, ensure timers are appropriately stopped
+  // and reset.
+  UMAHelper::UpdateTimersOnNavigation(GetWebContents(),
+                                      GetPageType(GetWebContents()));
+}
+
+void ReaderModeIconView::DocumentAvailableInMainFrame() {
+  UMAHelper::StartTimerIfNeeded(GetWebContents(),
+                                GetPageType(GetWebContents()));
+}
+
 void ReaderModeIconView::UpdateImpl() {
   content::WebContents* contents = GetWebContents();
   if (!contents) {
     SetVisible(false);
     return;
   }
+  UMAHelper::ReaderModePageType page_type = GetPageType(contents);
 
-  if (IsDistilledPage(contents->GetLastCommittedURL())) {
+  // WebContentsObserver::web_contents() is not updated until the call to
+  // Observe() below, so it should still contain the old contents. This will
+  // be used to ensure the timers for UMA are updated for the old web contents.
+  content::WebContents* old_contents = web_contents();
+  if (contents != old_contents)
+    UMAHelper::UpdateTimersOnContentsChange(contents, old_contents);
+
+  if (page_type == UMAHelper::ReaderModePageType::kDistilled) {
     SetVisible(true);
     SetActive(true);
   } else {
@@ -65,17 +108,12 @@ void ReaderModeIconView::UpdateImpl() {
     }
     // If the currently active web contents has changed since last time, stop
     // observing the old web contents and start observing the new one.
-    // (WebContentsObserver::web_contents() is not updated until the call to
-    // Observe() below, so it should still contain the old contents.)
-    content::WebContents* old_contents = web_contents();
     if (old_contents != contents) {
       if (old_contents)
         dom_distiller::RemoveObserver(old_contents, this);
       dom_distiller::AddObserver(contents, this);
     }
-    base::Optional<dom_distiller::DistillabilityResult> distillability =
-        dom_distiller::GetLatestResult(contents);
-    SetVisible(distillability && distillability.value().is_distillable);
+    SetVisible(page_type == UMAHelper::ReaderModePageType::kDistillable);
     SetActive(false);
   }
 
@@ -131,4 +169,8 @@ void ReaderModeIconView::OnResult(
         .Record(ukm::UkmRecorder::Get());
   }
   Update();
+  // Once we know the type of page we are on (distillable or not), we can
+  // update the timers.
+  UMAHelper::ReaderModePageType page_type = GetPageType(contents);
+  UMAHelper::StartTimerIfNeeded(contents, page_type);
 }

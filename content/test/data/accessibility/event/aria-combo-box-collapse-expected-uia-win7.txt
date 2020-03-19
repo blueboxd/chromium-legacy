@@ -1,0 +1,6 @@
+AriaProperties changed on role=combobox
+AutomationFocusChanged on role=combobox
+AutomationFocusChanged on role=combobox
+AutomationFocusChanged on role=option, name=Orange
+ExpandCollapseExpandCollapseState changed on role=combobox
+<-- End-of-file -->

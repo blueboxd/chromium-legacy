@@ -57,4 +57,42 @@ suite('CrCollapseRadioButton', function() {
     Polymer.dom.flush();
     assertFalse(collapse.opened);
   });
+
+  test('expansionHiddenWhenNoCollapseSet', function() {
+    assertTrue(
+        test_util.isChildVisible(collapseRadioButton, 'cr-expand-button'));
+    assertTrue(test_util.isChildVisible(collapseRadioButton, '.separator'));
+
+    collapseRadioButton.noCollapse = true;
+    Polymer.dom.flush();
+    assertFalse(
+        test_util.isChildVisible(collapseRadioButton, 'cr-expand-button'));
+    assertFalse(test_util.isChildVisible(collapseRadioButton, '.separator'));
+  });
+
+  test('openOnExpandHitWhenDisabled', function() {
+    collapseRadioButton.checked = false;
+    collapseRadioButton.disabled = true;
+    const collapse = collapseRadioButton.$$('iron-collapse');
+
+    Polymer.dom.flush();
+    assertFalse(collapse.opened);
+    collapseRadioButton.$$('cr-expand-button').click();
+
+    Polymer.dom.flush();
+    assertTrue(collapse.opened);
+  });
+
+  test('displayPolicyIndicator', function() {
+    assertFalse(
+        test_util.isChildVisible(collapseRadioButton, '#policyIndicator'));
+    assertEquals(
+        collapseRadioButton.policyIndicatorType, CrPolicyIndicatorType.NONE);
+
+    collapseRadioButton.policyIndicatorType =
+        CrPolicyIndicatorType.DEVICE_POLICY;
+    Polymer.dom.flush();
+    assertTrue(
+        test_util.isChildVisible(collapseRadioButton, '#policyIndicator'));
+  });
 });

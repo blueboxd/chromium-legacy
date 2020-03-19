@@ -983,6 +983,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
             ->overriding_factory.InitWithNewPipeAndPassReceiver();
     (*factory_override)->overridden_factory_receiver =
         target_factory_remote.InitWithNewPipeAndPassReceiver();
+    (*factory_override)->skip_cors_enabled_scheme_check = true;
   } else {
     // In this case, |factory_override| is not given. But all callers of
     // ContentBrowserClient::WillCreateURLLoaderFactory guarantee that

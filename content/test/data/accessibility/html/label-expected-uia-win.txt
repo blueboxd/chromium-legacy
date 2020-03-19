@@ -2,4 +2,3 @@ Document
 ++Group IsControlElement=false
 ++++Text
 ++++++Text Name='Label'
-<-- End-of-file -->

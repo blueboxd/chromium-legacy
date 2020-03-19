@@ -1,3 +1,7 @@
+AutomationFocusChanged on role=combobox
+AutomationFocusChanged on role=combobox
+=== Start Continuation ===
 AriaProperties changed on role=listitem, name=Apple
 SelectionItem_ElementRemovedFromSelection on role=listitem, name=Apple
 ValueValue changed on role=combobox
+<-- End-of-file -->

@@ -27,6 +27,7 @@ js_type_check("closure_compile") {
 js_library("collapse_radio_button") {
   deps = [
     "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button_behavior",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator",
   ]
 }
 

@@ -66,3 +66,32 @@ TEST_F('EduLoginButtonTest', 'NextButtonRtlIcon', function() {
 TEST_F('EduLoginButtonTest', 'BackButtonRtlIcon', function() {
   this.runMochaTest(edu_login_button_tests.TestNames.BackButtonRtlIcon);
 });
+
+// eslint-disable-next-line no-var
+var EduLoginParentsTest = class extends EduLoginTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://chrome-signin/test_loader.html?module=chromeos/edu_login/edu_login_parents_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return edu_login_parents_tests.suiteName;
+  }
+};
+
+TEST_F('EduLoginParentsTest', 'Initialize', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.Initialize);
+});
+
+TEST_F('EduLoginParentsTest', 'NextButton', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.NextButton);
+});
+
+TEST_F('EduLoginParentsTest', 'GoNext', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.GoNext);
+});
+
+TEST_F('EduLoginParentsTest', 'SelectedParent', function() {
+  this.runMochaTest(edu_login_parents_tests.TestNames.SelectedParent);
+});

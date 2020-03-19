@@ -3,4 +3,3 @@ Document
 ++++Text Name='Unfocusable div'
 ++Group Name='Focusable div'
 ++++Text Name='Focusable div'
-<-- End-of-file -->

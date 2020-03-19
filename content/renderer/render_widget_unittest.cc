@@ -40,6 +40,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_external_widget.h"
 #include "third_party/blink/public/web/web_external_widget_client.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -550,7 +551,8 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
                                 const gfx::Size& visible_viewport_size,
                                 cc::BrowserControlsParams) override {}
   void SetScreenMetricsEmulationParametersForWidget(
-      const base::Optional<blink::WebDeviceEmulationParams>& params) override {}
+      bool enabled,
+      const blink::WebDeviceEmulationParams& params) override {}
 };
 
 // Tests that the value of VisualProperties::is_pinch_gesture_active is

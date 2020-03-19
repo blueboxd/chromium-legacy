@@ -35,7 +35,9 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
     let feedHeaders =
         Array.from(document.querySelector('#feed-table-header').children);
 
-    assertDeepEquals(['ID', 'Url'], feedHeaders.map(x => x.textContent.trim()));
+    assertDeepEquals(
+        ['ID', 'Url', 'Last Discovery Time'],
+        feedHeaders.map(x => x.textContent.trim()));
   });
 
   mocha.run();

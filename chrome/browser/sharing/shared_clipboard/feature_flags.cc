@@ -15,6 +15,9 @@ const base::Feature kRemoteCopyReceiver{"RemoteCopyReceiver",
 const base::FeatureParam<std::string> kRemoteCopyAllowedOrigins = {
     &kRemoteCopyReceiver, "RemoteCopyAllowedOrigins", ""};
 
+const base::Feature kRemoteCopyImageNotification{
+    "RemoteCopyImageNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kRemoteCopyProgressNotification{
     "RemoteCopyProgressNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||

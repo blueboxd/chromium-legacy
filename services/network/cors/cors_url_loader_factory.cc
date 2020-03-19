@@ -81,16 +81,23 @@ class CorsURLLoaderFactory::FactoryOverride final {
                   std::unique_ptr<URLLoaderFactory> network_loader_factory)
       : network_loader_factory_(std::move(network_loader_factory),
                                 std::move(params->overridden_factory_receiver)),
-        overriding_factory_(std::move(params->overriding_factory)) {}
+        overriding_factory_(std::move(params->overriding_factory)),
+        skip_cors_enabled_scheme_check_(
+            params->skip_cors_enabled_scheme_check) {}
 
   FactoryOverride(const FactoryOverride&) = delete;
   FactoryOverride& operator=(const FactoryOverride&) = delete;
 
   mojom::URLLoaderFactory* get() { return overriding_factory_.get(); }
 
+  bool ShouldSkipCorsEnabledSchemeCheck() {
+    return skip_cors_enabled_scheme_check_;
+  }
+
  private:
   ExposedNetworkLoaderFactory network_loader_factory_;
   mojo::Remote<mojom::URLLoaderFactory> overriding_factory_;
+  bool skip_cors_enabled_scheme_check_;
 };
 
 bool CorsURLLoaderFactory::allow_external_preflights_for_testing_ = false;
@@ -182,9 +189,11 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         std::move(receiver), process_id_, routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
-        resource_request, ignore_isolated_world_origin_, std::move(client),
-        traffic_annotation, inner_url_loader_factory, origin_access_list_,
-        factory_bound_origin_access_list_.get(),
+        resource_request, ignore_isolated_world_origin_,
+        factory_override_ &&
+            factory_override_->ShouldSkipCorsEnabledSchemeCheck(),
+        std::move(client), traffic_annotation, inner_url_loader_factory,
+        origin_access_list_, factory_bound_origin_access_list_.get(),
         context_->cors_preflight_controller());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));

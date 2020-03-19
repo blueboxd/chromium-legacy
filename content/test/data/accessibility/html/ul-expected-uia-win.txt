@@ -12,4 +12,3 @@ Document
 ++++++Group
 ++++++++Text Name='• ' IsControlElement=false
 ++++++Text Name='Item 3' IsControlElement=false
-<-- End-of-file -->

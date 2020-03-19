@@ -5,4 +5,3 @@ Document
 ++++Image
 ++++++Hyperlink Name='Interactive fallback'
 ++++++++Text Name='Interactive fallback' IsControlElement=false
-<-- End-of-file -->

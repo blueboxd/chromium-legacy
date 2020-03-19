@@ -195,6 +195,10 @@ class MetricsWebContentsObserver
       content::NavigationHandle* navigation_handle,
       std::unique_ptr<PageLoadTracker> tracker);
 
+  void FinalizeCurrentlyCommittedLoad(
+      content::NavigationHandle* newly_committed_navigation,
+      PageLoadTracker* newly_committed_navigation_tracker);
+
   // Return a PageLoadTracker (either provisional or committed) that matches the
   // given request attributes, or nullptr if there are no matching
   // PageLoadTrackers.
@@ -225,8 +229,9 @@ class MetricsWebContentsObserver
       content::NavigationHandle* new_navigation,
       UserInitiatedInfo user_initiated_info);
 
-  // Whether metrics should be tracked for the navigation.
-  bool ShouldTrackNavigation(
+  // Whether metrics should be tracked, and a PageLoadTracker should be created,
+  // for the given main frame navigation.
+  bool ShouldTrackMainFrameNavigation(
       content::NavigationHandle* navigation_handle) const;
 
   void OnBrowserFeatureUsage(content::RenderFrameHost* render_frame_host,

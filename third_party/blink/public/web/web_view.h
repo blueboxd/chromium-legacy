@@ -354,10 +354,12 @@ class WebView {
 
   // Developer tools -----------------------------------------------------
 
-  // Enables device emulation as specified in params, or disables if params are
-  // null.
-  virtual void SetDeviceEmulation(
-      const base::Optional<WebDeviceEmulationParams>& params) = 0;
+  // Enables device emulation as specified in params.
+  virtual void EnableDeviceEmulation(const WebDeviceEmulationParams&) = 0;
+
+  // Cancel emulation started via |enableDeviceEmulation| call.
+  virtual void DisableDeviceEmulation() = 0;
+
 
   // Context menu --------------------------------------------------------
 

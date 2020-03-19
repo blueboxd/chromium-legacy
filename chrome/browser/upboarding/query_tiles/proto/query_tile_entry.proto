@@ -9,15 +9,15 @@ option optimize_for = LITE_RUNTIME;
 package upboarding.query_tiles.proto;
 
 // The QuertTileEntry is the schema to represent data in query tile entry.
-// Next tag:7
+// Next tag: 7
 message QueryTileEntry {
   // Metadata about the image.
-  // Next tag:3
+  // Next tag: 3
   message ImageMetadata {
     // Unique id of the query tile image.
     string id = 1;
 
-    // Origin URL of the image.
+    // URL of the image.
     string url = 2;
   }
 

@@ -15,7 +15,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 

@@ -11,4 +11,3 @@ Document
 ++++Group LocalizedControlType='footer'
 ++++++Group IsControlElement=false
 ++++++++Text Name='footer inside main.'
-<-- End-of-file -->

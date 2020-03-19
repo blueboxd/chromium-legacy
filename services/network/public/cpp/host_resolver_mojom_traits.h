@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
@@ -22,7 +23,8 @@
 #include "net/dns/dns_hosts.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/dns_query_type.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/host_resolver.mojom-forward.h"
+#include "services/network/public/mojom/host_resolver.mojom-shared.h"
 
 namespace mojo {
 
@@ -47,9 +49,9 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
   static base::Optional<std::vector<network::mojom::DnsHostPtr>> hosts(
       const net::DnsConfigOverrides& overrides);
 
-  static network::mojom::DnsConfigOverrides::Tristate
-  append_to_multi_label_name(const net::DnsConfigOverrides& overrides);
-  static network::mojom::DnsConfigOverrides::Tristate randomize_ports(
+  static network::mojom::DnsConfigOverrides_Tristate append_to_multi_label_name(
+      const net::DnsConfigOverrides& overrides);
+  static network::mojom::DnsConfigOverrides_Tristate randomize_ports(
       const net::DnsConfigOverrides& overrides);
 
   static int ndots(const net::DnsConfigOverrides& overrides) {
@@ -65,9 +67,9 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
     return overrides.attempts.value_or(-1);
   }
 
-  static network::mojom::DnsConfigOverrides::Tristate rotate(
+  static network::mojom::DnsConfigOverrides_Tristate rotate(
       const net::DnsConfigOverrides& overrides);
-  static network::mojom::DnsConfigOverrides::Tristate use_local_ipv6(
+  static network::mojom::DnsConfigOverrides_Tristate use_local_ipv6(
       const net::DnsConfigOverrides& overrides);
 
   static base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
@@ -76,7 +78,7 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
   static network::mojom::OptionalSecureDnsMode secure_dns_mode(
       const net::DnsConfigOverrides& overrides);
 
-  static network::mojom::DnsConfigOverrides::Tristate
+  static network::mojom::DnsConfigOverrides_Tristate
   allow_dns_over_https_upgrade(const net::DnsConfigOverrides& overrides);
 
   static const base::Optional<std::vector<std::string>>&
@@ -96,21 +98,21 @@ struct EnumTraits<network::mojom::DnsQueryType, net::DnsQueryType> {
 };
 
 template <>
-struct EnumTraits<network::mojom::ResolveHostParameters::Source,
+struct EnumTraits<network::mojom::ResolveHostParameters_Source,
                   net::HostResolverSource> {
-  static network::mojom::ResolveHostParameters::Source ToMojom(
+  static network::mojom::ResolveHostParameters_Source ToMojom(
       net::HostResolverSource input);
-  static bool FromMojom(network::mojom::ResolveHostParameters::Source input,
+  static bool FromMojom(network::mojom::ResolveHostParameters_Source input,
                         net::HostResolverSource* output);
 };
 
 template <>
-struct EnumTraits<network::mojom::MdnsListenClient::UpdateType,
+struct EnumTraits<network::mojom::MdnsListenClient_UpdateType,
                   net::HostResolver::MdnsListener::Delegate::UpdateType> {
-  static network::mojom::MdnsListenClient::UpdateType ToMojom(
+  static network::mojom::MdnsListenClient_UpdateType ToMojom(
       net::HostResolver::MdnsListener::Delegate::UpdateType input);
   static bool FromMojom(
-      network::mojom::MdnsListenClient::UpdateType input,
+      network::mojom::MdnsListenClient_UpdateType input,
       net::HostResolver::MdnsListener::Delegate::UpdateType* output);
 };
 

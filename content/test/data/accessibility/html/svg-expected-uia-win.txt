@@ -3,4 +3,3 @@ Document
 ++++Image Name='svg' HelpText='SVG Title Tag'
 ++++++Group IsControlElement=false
 ++++++++Text Name='Test'
-<-- End-of-file -->

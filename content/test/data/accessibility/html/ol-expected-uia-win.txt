@@ -25,4 +25,3 @@ Document
 ++++++Group
 ++++++++Text Name='12. ' IsControlElement=false
 ++++++Text Name='Windows' IsControlElement=false
-<-- End-of-file -->

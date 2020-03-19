@@ -11,4 +11,3 @@ Document
 ++++Group LocalizedControlType='header'
 ++++++Group IsControlElement=false
 ++++++++Text Name='Header inside main.'
-<-- End-of-file -->

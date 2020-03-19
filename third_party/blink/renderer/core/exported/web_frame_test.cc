@@ -51,7 +51,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
-#include "third_party/blink/public/common/devtools/web_device_emulation_params.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
@@ -70,6 +69,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_form_element.h"
@@ -9911,8 +9911,8 @@ class DeviceEmulationTest : public WebFrameTest {
 
 TEST_F(DeviceEmulationTest, DeviceSizeInvalidatedOnResize) {
   WebDeviceEmulationParams params;
-  params.screen_position = mojom::ScreenPosition::kMobile;
-  web_view_helper_.GetWebView()->SetDeviceEmulation(params);
+  params.screen_position = WebDeviceEmulationParams::kMobile;
+  web_view_helper_.GetWebView()->EnableDeviceEmulation(params);
 
   TestResize(WebSize(700, 500), "300x300");
   TestResize(WebSize(710, 500), "400x300");
@@ -9923,7 +9923,7 @@ TEST_F(DeviceEmulationTest, DeviceSizeInvalidatedOnResize) {
   TestResize(WebSize(690, 490), "200x200");
   TestResize(WebSize(800, 600), "400x400");
 
-  web_view_helper_.GetWebView()->SetDeviceEmulation(base::nullopt);
+  web_view_helper_.GetWebView()->DisableDeviceEmulation();
 }
 
 TEST_F(DeviceEmulationTest, PointerAndHoverTypes) {

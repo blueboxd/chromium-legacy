@@ -13,36 +13,37 @@
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
 
-GraphicsContext* SVGFilterRecordingContext::BeginContent() {
-  // Create a new context so the contents of the filter can be drawn and cached.
-  paint_controller_ = std::make_unique<PaintController>();
-  context_ = std::make_unique<GraphicsContext>(*paint_controller_);
-
-  // Use initial_context_'s current paint chunk properties so that any new
+SVGFilterRecordingContext::SVGFilterRecordingContext(
+    const PaintInfo& initial_paint_info)
+    // Create a new context so the contents of the filter can be drawn and
+    // cached.
+    : paint_controller_(std::make_unique<PaintController>()),
+      context_(std::make_unique<GraphicsContext>(*paint_controller_)),
+      paint_info_(*context_, initial_paint_info) {
+  // Use initial_paint_info's current paint chunk properties so that any new
   // chunk created during painting the content will be in the correct state.
   paint_controller_->UpdateCurrentPaintChunkProperties(
-      nullptr,
-      initial_context_.GetPaintController().CurrentPaintChunkProperties());
-
-  return context_.get();
+      nullptr, initial_paint_info.context.GetPaintController()
+                   .CurrentPaintChunkProperties());
+  // Because we cache the filter contents and do not invalidate on paint
+  // invalidation rect changes, we need to paint the entire filter region so
+  // elements outside the initial paint (due to scrolling, etc) paint.
+  paint_info_.ApplyInfiniteCullRect();
 }
 
-sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent() {
-  // Use the context that contains the filtered content.
-  DCHECK(paint_controller_);
-  DCHECK(context_);
-  paint_controller_->CommitNewDisplayItems();
-  sk_sp<PaintRecord> content =
-      paint_controller_->GetPaintArtifact().GetPaintRecord(
-          initial_context_.GetPaintController().CurrentPaintChunkProperties());
+SVGFilterRecordingContext::~SVGFilterRecordingContext() = default;
 
-  // Content is cached by the source graphic so temporaries can be freed.
-  paint_controller_ = nullptr;
-  context_ = nullptr;
-  return content;
+sk_sp<PaintRecord> SVGFilterRecordingContext::GetPaintRecord(
+    const PaintInfo& initial_paint_info) {
+  paint_controller_->CommitNewDisplayItems();
+  return paint_controller_->GetPaintArtifact().GetPaintRecord(
+      initial_paint_info.context.GetPaintController()
+          .CurrentPaintChunkProperties());
 }
 
 FilterData* SVGFilterPainter::PrepareEffect(const LayoutObject& object) {

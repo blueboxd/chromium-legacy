@@ -18,6 +18,8 @@ static_library("browser") {
     "distiller_page_web_contents.h",
     "dom_distiller_viewer_source.cc",
     "dom_distiller_viewer_source.h",
+    "uma_helper.cc",
+    "uma_helper.h",
   ]
 
   public_deps = [
@@ -50,9 +52,13 @@ static_library("browser") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "dom_distiller_viewer_source_unittest.cc" ]
+  sources = [
+    "dom_distiller_viewer_source_unittest.cc",
+    "uma_helper_unittest.cc",
+  ]
   deps = [
     ":browser",
+    "//base/test:test_support",
     "//content/test:test_support",
     "//testing/gtest",
   ]

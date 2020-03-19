@@ -104,7 +104,6 @@ CONTENT_EXPORT extern const base::Feature kReducedReferrerGranularity;
 CONTENT_EXPORT extern const base::Feature
     kRelaxIsolatedWorldCorsInFileUrlLoaderFactory;
 CONTENT_EXPORT extern const base::Feature kReloadHiddenTabsWithCrashedSubframes;
-CONTENT_EXPORT extern const base::Feature kRenderDocumentForCrashedFrame;
 CONTENT_EXPORT extern const base::Feature kRenderDocument;
 CONTENT_EXPORT extern const base::Feature kRequestUnbufferedDispatch;
 CONTENT_EXPORT extern const base::Feature kResamplingInputEvents;

@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/base/big_string_mojom_traits.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_list.h"
 #include "services/network/public/mojom/proxy_config.mojom-shared.h"
 #include "url/mojom/url_gurl_mojom_traits.h"

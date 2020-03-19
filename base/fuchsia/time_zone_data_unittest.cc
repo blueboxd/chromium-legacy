@@ -4,7 +4,6 @@
 
 #include "base/i18n/icu_util.h"
 
-#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -28,8 +27,6 @@ const char kRevisionFilePath[] = "/config/data/tzdata/revision.txt";
 
 class TimeZoneDataTest : public testing::Test {
  protected:
-  TimeZoneDataTest() : env_(base::Environment::Create()) {}
-
   void SetUp() override { ResetIcu(); }
 
   void TearDown() override { ResetIcu(); }
@@ -48,8 +45,6 @@ class TimeZoneDataTest : public testing::Test {
     *icu_version = icu::TimeZone::getTZDataVersion(err);
     ASSERT_EQ(U_ZERO_ERROR, err) << u_errorName(err);
   }
-
-  std::unique_ptr<base::Environment> env_;
 };
 
 // Loads a file revision.txt from the actual underlying filesystem, which
@@ -67,8 +62,7 @@ TEST_F(TimeZoneDataTest, CompareSystemRevisionWithExpected) {
     return;
   }
 
-  // Ensure that timezone data is loaded from the default location.
-  ASSERT_TRUE(env_->UnSetVar("ICU_TIMEZONE_FILES_DIR"));
+  // ResetIcu() ensures that time zone data is loaded from the default location.
 
   ASSERT_TRUE(InitializeICU());
   std::string expected;
@@ -87,7 +81,7 @@ TEST_F(TimeZoneDataTest, CompareSystemRevisionWithExpected) {
 // ICU library versions.
 TEST_F(TimeZoneDataTest, TestLoadingTimeZoneDataFromKnownConfigs) {
   ASSERT_TRUE(base::DirectoryExists(base::FilePath(kTzDataDirPath)));
-  ASSERT_TRUE(env_->SetVar("ICU_TIMEZONE_FILES_DIR", kTzDataDirPath));
+  SetIcuTimeZoneDataDirForTesting(kTzDataDirPath);
 
   EXPECT_TRUE(InitializeICU());
   std::string actual;
@@ -97,7 +91,7 @@ TEST_F(TimeZoneDataTest, TestLoadingTimeZoneDataFromKnownConfigs) {
 }
 
 TEST_F(TimeZoneDataTest, DoesNotCrashWithInvalidPath) {
-  ASSERT_TRUE(env_->SetVar("ICU_TIMEZONE_FILES_DIR", "/some/nonexistent/path"));
+  SetIcuTimeZoneDataDirForTesting("/some/nonexistent/path");
 
   EXPECT_TRUE(InitializeICU());
   std::string actual;

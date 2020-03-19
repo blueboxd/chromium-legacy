@@ -12,6 +12,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
+#include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -173,6 +174,8 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
       new SourcePageHandleWebContents(old_web_contents_owned.release(), true));
 
   MaybeStartDistillation(std::move(source_page_handle));
+
+  dom_distiller::UMAHelper::LogTimeOnDistillablePage(old_web_contents);
 }
 
 void DistillCurrentPage(content::WebContents* source_web_contents) {

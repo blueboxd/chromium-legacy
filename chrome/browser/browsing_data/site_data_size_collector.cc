@@ -30,7 +30,7 @@ SiteDataSizeCollector::SiteDataSizeCollector(
     const base::FilePath& default_storage_partition_path,
     BrowsingDataCookieHelper* cookie_helper,
     BrowsingDataDatabaseHelper* database_helper,
-    BrowsingDataLocalStorageHelper* local_storage_helper,
+    browsing_data::LocalStorageHelper* local_storage_helper,
     BrowsingDataAppCacheHelper* appcache_helper,
     BrowsingDataIndexedDBHelper* indexed_db_helper,
     BrowsingDataFileSystemHelper* file_system_helper,

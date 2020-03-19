@@ -735,8 +735,8 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   }
 
   // Each call to HandleGetAllSites() above added a callback to the profile's
-  // BrowsingDataLocalStorageHelper, so make sure these aren't stuck waiting to
-  // run at the end of the test.
+  // browsing_data::LocalStorageHelper, so make sure these aren't stuck waiting
+  // to run at the end of the test.
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 }

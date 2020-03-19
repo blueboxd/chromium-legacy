@@ -49,7 +49,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   ~FontFallbackList() { ReleaseFontData(); }
   bool IsValid() const;
-  void Invalidate(FontSelector*);
+  void Invalidate();
 
   bool LoadingCustomFonts() const;
   bool ShouldSkipDrawing() const;
@@ -62,7 +62,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   ShapeCache* GetShapeCache(const FontDescription& font_description) {
     if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
       if (!IsValid())
-        Invalidate(font_selector_);
+        Invalidate();
     }
 
     if (!shape_cache_) {
@@ -80,7 +80,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
       const FontDescription& font_description) {
     if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
       if (!IsValid())
-        Invalidate(font_selector_);
+        Invalidate();
     }
 
     if (!cached_primary_simple_font_data_) {
@@ -113,7 +113,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   Vector<scoped_refptr<FontData>, 1> font_list_;
   const SimpleFontData* cached_primary_simple_font_data_;
-  Persistent<FontSelector> font_selector_;
+  const Persistent<FontSelector> font_selector_;
   unsigned font_selector_version_;
   int family_index_;
   uint16_t generation_;

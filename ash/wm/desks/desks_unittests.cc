@@ -1987,7 +1987,7 @@ TEST_F(TabletModeDesksTest, NoDesksBarInTabletModeWithOneDesk) {
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window.get());
   DragItemToPoint(overview_item, window->GetBoundsInScreen().CenterPoint(),
-                  GetEventGenerator(), /*drop=*/true);
+                  GetEventGenerator(), /*by_touch_gestures=*/true);
 
   // Exit overview and add a new desk, then re-enter overview. Expect that now
   // the desks bar is visible.

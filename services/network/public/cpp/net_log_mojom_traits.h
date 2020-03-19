@@ -6,7 +6,9 @@
 #define SERVICES_NETWORK_PUBLIC_CPP_NET_LOG_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "services/network/public/mojom/net_log.mojom.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/log/net_log_event_type.h"
+#include "services/network/public/mojom/net_log.mojom-shared.h"
 
 namespace mojo {
 

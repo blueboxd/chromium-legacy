@@ -81,7 +81,7 @@ class MediaHistoryKeyedService : public KeyedService,
       const std::vector<media_session::MediaImage>& artwork);
 
   // Saves a newly discovered media feed in the media history store.
-  void SaveMediaFeed(const GURL& url);
+  void DiscoverMediaFeed(const GURL& url);
 
   // Gets the media items in |feed_id|.
   void GetItemsForMediaFeedForDebug(

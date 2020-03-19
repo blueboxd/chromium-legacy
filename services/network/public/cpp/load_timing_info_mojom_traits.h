@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/load_timing_info.h"
-#include "services/network/public/mojom/load_timing_info.mojom.h"
+#include "services/network/public/mojom/load_timing_info.mojom-shared.h"
 
 namespace mojo {
 

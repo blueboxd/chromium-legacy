@@ -327,6 +327,11 @@ const char kReloadSadTabDescription[] =
     "When enabled, the first time the renderer crashes, the page is reloaded "
     "instead of showing the SadTab";
 
+const char kSafeBrowsingAvailableName[] = "Make Safe Browsing available";
+const char kSafeBrowsingAvailableDescription[] =
+    "When enabled, navigation URLs are compared to Safe Browsing blocklists, "
+    "subject to an opt-out preference.";
+
 const char kSaveCardInfobarMessagesUIName[] = "Save Card Infobar Messages UI";
 const char kSaveCardInfobarMessagesUIDescription[] =
     "When enabled, Save Card Infobar uses the new Messages UI.";

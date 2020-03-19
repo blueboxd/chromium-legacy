@@ -97,7 +97,8 @@ def blink_type_info(idl_type):
             "double": "double",
             "unrestricted double": "double",
         }
-        return TypeInfo(cxx_type[real_type.keyword_typename])
+        return TypeInfo(
+            cxx_type[real_type.keyword_typename], const_ref_fmt="{}")
 
     if real_type.is_string:
         return TypeInfo(
@@ -129,19 +130,11 @@ def blink_type_info(idl_type):
                 has_null_value=True)
         elif "AllowShared" in real_type.extended_attributes:
             return TypeInfo(
-                "DOM{}".format(real_type.keyword_typename),
-                member_fmt="Member<{}>",
-                ref_fmt="MaybeShared<{}>",
-                const_ref_fmt="const MaybeShared<{}>",
-                value_fmt="MaybeShared<{}>",
+                "MaybeShared<DOM{}>".format(real_type.keyword_typename),
                 has_null_value=True)
         else:
             return TypeInfo(
-                "DOM{}".format(real_type.keyword_typename),
-                member_fmt="Member<{}>",
-                ref_fmt="NotShared<{}>",
-                const_ref_fmt="const NotShared<{}>",
-                value_fmt="NotShared<{}>",
+                "NotShared<DOM{}>".format(real_type.keyword_typename),
                 has_null_value=True)
 
     if real_type.is_symbol:

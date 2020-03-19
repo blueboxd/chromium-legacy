@@ -129,10 +129,26 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
     *focus = nullptr;
 
-    gfx::NativeViewAccessible focused_element = GetDelegate()->GetFocus();
-    if (focused_element != nullptr) {
+    gfx::NativeViewAccessible focused_element = nullptr;
+
+    // GetFocus() can return a node at the root of a subtree, for example when
+    // transitioning from Views into web content. In such cases we want to
+    // continue drilling to retrieve the actual focused element.
+    AXPlatformNode* node_to_test = this;
+    do {
+      gfx::NativeViewAccessible test_result =
+          node_to_test->GetDelegate()->GetFocus();
+      if (test_result != nullptr && test_result != focused_element) {
+        focused_element = test_result;
+        node_to_test =
+            AXPlatformNode::FromNativeViewAccessible(focused_element);
+      } else {
+        node_to_test = nullptr;
+      }
+    } while (node_to_test);
+
+    if (focused_element)
       focused_element->QueryInterface(IID_PPV_ARGS(focus));
-    }
 
     return S_OK;
   }

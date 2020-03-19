@@ -18,4 +18,3 @@ Document
 ++++++Text Name='Some ' IsControlElement=false
 ++++++Text Name='more' IsControlElement=false
 ++++++Text Name=' text.' IsControlElement=false
-<-- End-of-file -->

@@ -32,8 +32,29 @@ function createRow(rowInfo) {
 
   td[0].textContent = rowInfo.id;
   td[1].textContent = rowInfo.url.url;
+  td[2].textContent = convertMojoTimeToJS(rowInfo.lastDiscoveryTime).toString();
 
   return document.importNode(template.content, true);
+}
+
+/**
+ * Converts a mojo time to a JS time.
+ * @param {!mojoBase.mojom.Time} mojoTime
+ * @return {Date}
+ */
+function convertMojoTimeToJS(mojoTime) {
+  // The new Date().getTime() returns the number of milliseconds since the
+  // UNIX epoch (1970-01-01 00::00:00 UTC), while |internalValue| of the
+  // device.mojom.Geoposition represents the value of microseconds since the
+  // Windows FILETIME epoch (1601-01-01 00:00:00 UTC). So add the delta when
+  // sets the |internalValue|. See more info in //base/time/time.h.
+  const windowsEpoch = Date.UTC(1601, 0, 1, 0, 0, 0, 0);
+  const unixEpoch = Date.UTC(1970, 0, 1, 0, 0, 0, 0);
+  // |epochDeltaInMs| equals to base::Time::kTimeTToMicrosecondsOffset.
+  const epochDeltaInMs = unixEpoch - windowsEpoch;
+  const timeInMs = Number(mojoTime.internalValue) / 1000;
+
+  return new Date(timeInMs - epochDeltaInMs);
 }
 
 /**
@@ -65,6 +86,9 @@ function compareTableItem(sortKey, a, b) {
     return a.url.url > b.url.url ? 1 : -1;
   } else if (sortKey == 'id') {
     return a.id > b.id;
+  } else if (sortKey == 'lastDiscoveryTime') {
+    return (
+        a.lastDiscoveryTime.internalValue > b.lastDiscoveryTime.internalValue);
   }
 
   assertNotReached('Unsupported sort key: ' + sortKey);

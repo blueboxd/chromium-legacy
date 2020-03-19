@@ -181,25 +181,6 @@ void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
           switches::kWebLayerFakePermissions)) {
     command_line->AppendSwitch(switches::kWebLayerFakePermissions);
   }
-
-  const std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
-  if (process_type == switches::kRendererProcess) {
-    static const char* const kCommonSwitchNames[] = {
-        switches::kWebLayerTestMode,
-    };
-    command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                   kCommonSwitchNames,
-                                   base::size(kCommonSwitchNames));
-
-    const bool running_tests =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kWebLayerTestMode);
-    if (running_tests) {
-      command_line->AppendSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures);
-    }
-  }
 }
 
 std::string ContentBrowserClientImpl::GetApplicationLocale() {

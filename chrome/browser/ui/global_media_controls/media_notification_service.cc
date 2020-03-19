@@ -19,12 +19,18 @@
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/media_message_center/media_session_notification_item.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/media_session_service.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace {
+
+// The maximum number of actions we will record to UKM for a specific source.
+constexpr int kMaxActionsRecordedToUKM = 100;
 
 constexpr int kAutoDismissTimerInMinutesDefault = 60;  // minutes
 
@@ -427,7 +433,8 @@ void MediaNotificationService::RemoveItem(const std::string& id) {
 }
 
 void MediaNotificationService::LogMediaSessionActionButtonPressed(
-    const std::string& id) {
+    const std::string& id,
+    media_session::mojom::MediaSessionAction action) {
   auto it = sessions_.find(id);
   if (it == sessions_.end())
     return;
@@ -438,6 +445,17 @@ void MediaNotificationService::LogMediaSessionActionButtonPressed(
 
   base::UmaHistogramBoolean("Media.GlobalMediaControls.UserActionFocus",
                             IsWebContentsFocused(web_contents));
+
+  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
+  ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents);
+
+  if (++actions_recorded_to_ukm_[source_id] > kMaxActionsRecordedToUKM)
+    return;
+
+  ukm::builders::Media_GlobalMediaControls_ActionButtonPressed(source_id)
+      .SetMediaSessionAction(static_cast<int64_t>(action))
+      .Record(recorder);
 }
 
 void MediaNotificationService::OnContainerClicked(const std::string& id) {

@@ -7,4 +7,3 @@ Document Name='Table with role=presentation'
 ++++Text Name='4'
 ++Group IsControlElement=false
 ++++Text Name='5'
-<-- End-of-file -->

@@ -12,12 +12,21 @@
 #include "content/common/frame_messages.h"
 #include "content/common/visual_properties.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
+// Traits for VisualProperties.
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDeviceEmulationParams::ScreenPosition,
+                          blink::WebDeviceEmulationParams::kScreenPositionLast)
+
 IPC_ENUM_TRAITS_MAX_VALUE(content::ScreenOrientationValues,
                           content::SCREEN_ORIENTATION_VALUES_LAST)
+
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
+                              blink::kWebScreenOrientationUndefined,
+                              blink::WebScreenOrientationTypeLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::DisplayMode,
                           blink::mojom::DisplayMode::kMaxValue)

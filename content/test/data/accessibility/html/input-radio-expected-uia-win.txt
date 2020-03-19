@@ -11,4 +11,3 @@ Document
 ++Group IsControlElement=false
 ++++RadioButton Name='Radio5' SelectionItem.IsSelected=false
 ++++RadioButton Name='Radio6' SelectionItem.IsSelected=true
-<-- End-of-file -->

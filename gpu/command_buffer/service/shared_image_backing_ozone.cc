@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image_representation_gl_ozone.h"
+#include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
@@ -144,6 +145,23 @@ SharedImageBackingOzone::ProduceSkia(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
+  if (context_state->GrContextIsGL()) {
+    auto gl_representation = ProduceGLTexture(manager, tracker);
+    if (!gl_representation) {
+      LOG(ERROR) << "SharedImageBackingOzone::ProduceSkia failed to create GL "
+                    "representation";
+      return nullptr;
+    }
+    auto skia_representation = SharedImageRepresentationSkiaGL::Create(
+        std::move(gl_representation), std::move(context_state), manager, this,
+        tracker);
+    if (!skia_representation) {
+      LOG(ERROR) << "SharedImageBackingOzone::ProduceSkia failed to create "
+                    "Skia representation";
+      return nullptr;
+    }
+    return skia_representation;
+  }
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }

@@ -13,12 +13,11 @@
 #include "url/gurl.h"
 
 MockBrowsingDataLocalStorageHelper::MockBrowsingDataLocalStorageHelper(
-    Profile* profile)
-    : BrowsingDataLocalStorageHelper(profile) {
-}
+    content::BrowserContext* context)
+    : browsing_data::LocalStorageHelper(context) {}
 
-MockBrowsingDataLocalStorageHelper::~MockBrowsingDataLocalStorageHelper() {
-}
+MockBrowsingDataLocalStorageHelper::~MockBrowsingDataLocalStorageHelper() =
+    default;
 
 void MockBrowsingDataLocalStorageHelper::StartFetching(FetchCallback callback) {
   ASSERT_FALSE(callback.is_null());

@@ -136,7 +136,7 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
 
   // Set a callback to use to query the status of HDR. This callback will be
   // called when the status of HDR may have changed.
-  using RequestHDRStatusCallback = base::RepeatingCallback<void()>;
+  using RequestHDRStatusCallback = base::RepeatingClosure;
   static void SetRequestHDRStatusCallback(
       RequestHDRStatusCallback request_hdr_status_callback);
 
@@ -226,7 +226,7 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
 
   // Returns the result of GetSystemMetrics for |metric| scaled to the specified
   // |scale_factor|.
-  static int GetSystemMetricsForScaleFactor(float scale_factor, int metric);
+  int GetSystemMetricsForScaleFactor(float scale_factor, int metric) const;
 
   void RecordDisplayScaleFactors() const;
 

@@ -41,7 +41,6 @@ mojom("mojom_platform") {
     "crash/crash_memory_metrics_reporter.mojom",
     "credentialmanager/credential_manager.mojom",
     "devtools/console_message.mojom",
-    "devtools/device_emulation_params.mojom",
     "devtools/devtools_agent.mojom",
     "devtools/devtools_frontend.mojom",
     "devtools/inspector_issue.mojom",

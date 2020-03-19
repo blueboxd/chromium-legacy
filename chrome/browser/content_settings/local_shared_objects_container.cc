@@ -16,12 +16,12 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
 #include "chrome/browser/browsing_data/canonical_cookie_hash.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -52,7 +52,7 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
               ->GetFileSystemContext())),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile))),
-      local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
+      local_storages_(new browsing_data::CannedLocalStorageHelper(profile)),
       service_workers_(new CannedBrowsingDataServiceWorkerHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetServiceWorkerContext())),
@@ -62,10 +62,9 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
       cache_storages_(new CannedBrowsingDataCacheStorageHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetCacheStorageContext())),
-      session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {}
+      session_storages_(new browsing_data::CannedLocalStorageHelper(profile)) {}
 
-LocalSharedObjectsContainer::~LocalSharedObjectsContainer() {
-}
+LocalSharedObjectsContainer::~LocalSharedObjectsContainer() = default;
 
 size_t LocalSharedObjectsContainer::GetObjectCount() const {
   size_t count = 0;

@@ -16,4 +16,3 @@ Document
 ++++Edit Name='l5'
 ++++Edit Name='l6' Value.Value='Value'
 ++++Edit Name='Name' Value.Value='value'
-<-- End-of-file -->

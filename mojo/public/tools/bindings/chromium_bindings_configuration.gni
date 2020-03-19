@@ -30,7 +30,6 @@ _typemap_imports = [
   "//mojo/public/cpp/bindings/tests/chromium_typemaps.gni",
   "//sandbox/mac/mojom/typemaps.gni",
   "//services/media_session/public/cpp/typemaps.gni",
-  "//services/network/public/cpp/typemaps.gni",
   "//services/proxy_resolver/public/cpp/typemaps.gni",
   "//services/resource_coordinator/public/cpp/typemaps.gni",
   "//services/service_manager/public/cpp/typemaps.gni",

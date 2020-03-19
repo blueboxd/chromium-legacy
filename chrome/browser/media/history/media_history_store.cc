@@ -91,7 +91,7 @@ class MediaHistoryStoreInternal
 
   std::set<GURL> GetURLsInTableForTest(const std::string& table);
 
-  void SaveMediaFeed(const GURL& url);
+  void DiscoverMediaFeed(const GURL& url);
 
   void ReplaceMediaFeedItems(
       const int64_t feed_id,
@@ -472,7 +472,7 @@ std::set<GURL> MediaHistoryStoreInternal::GetURLsInTableForTest(
   return urls;
 }
 
-void MediaHistoryStoreInternal::SaveMediaFeed(const GURL& url) {
+void MediaHistoryStoreInternal::DiscoverMediaFeed(const GURL& url) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
     return;
@@ -486,7 +486,7 @@ void MediaHistoryStoreInternal::SaveMediaFeed(const GURL& url) {
     return;
 
   if (!(CreateOriginId(url::Origin::Create(url)) &&
-        feeds_table_->SaveFeed(url))) {
+        feeds_table_->DiscoverFeed(url))) {
     DB()->RollbackTransaction();
     return;
   }
@@ -661,10 +661,10 @@ void MediaHistoryStore::GetURLsInTableForTest(
       std::move(callback));
 }
 
-void MediaHistoryStore::SaveMediaFeed(const GURL& url) {
+void MediaHistoryStore::DiscoverMediaFeed(const GURL& url) {
   db_->db_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&MediaHistoryStoreInternal::SaveMediaFeed, db_, url));
+      base::BindOnce(&MediaHistoryStoreInternal::DiscoverMediaFeed, db_, url));
 }
 
 void MediaHistoryStore::PostTaskToDBForTest(base::OnceClosure callback) {

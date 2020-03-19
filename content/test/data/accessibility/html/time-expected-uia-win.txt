@@ -5,4 +5,3 @@ Document
 ++++Text Name=' '
 ++++Text LocalizedControlType='time'
 ++++++Text Name='Valentines day'
-<-- End-of-file -->

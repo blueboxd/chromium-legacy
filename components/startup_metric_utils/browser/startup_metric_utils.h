@@ -36,14 +36,14 @@ void SetBackgroundModeEnabled();
 void RecordStartupProcessCreationTime(base::Time time);
 
 // Call this with a time recorded as early as possible in the startup process.
-// On Android, the entry point time is the time at which the Java code starts.
-// In Mojo, the entry point time is the time at which the shell starts.
-void RecordMainEntryPointTime(base::TimeTicks ticks);
+// On Android, the application start is the time at which the Java code starts.
+// On Windows, the application start is sampled from chrome.exe:main, before
+// chrome.dll is loaded.
+void RecordApplicationStartTime(base::TimeTicks ticks);
 
-// Call this with the time when the executable is loaded and main() is entered.
-// Can be different from |RecordMainEntryPointTime| when the startup process is
-// contained in a separate dll, such as with chrome.exe / chrome.dll on Windows.
-void RecordExeMainEntryPointTicks(base::TimeTicks ticks);
+// Call this with the time when the executable is loaded and the ChromeMain()
+// function is invoked.
+void RecordChromeMainEntryTime(base::TimeTicks ticks);
 
 // Call this with the time recorded just before the message loop is started.
 // |is_first_run| - is the current launch part of a first run.

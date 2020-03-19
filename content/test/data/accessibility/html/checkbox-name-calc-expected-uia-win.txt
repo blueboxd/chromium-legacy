@@ -5,4 +5,3 @@ Document
 ++CheckBox Name='LabelledBy3' Toggle.ToggleState='Off'
 ++CheckBox Name='LabelledBy4' Toggle.ToggleState='Off'
 ++CheckBox Toggle.ToggleState='Off'
-<-- End-of-file -->

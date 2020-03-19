@@ -5,4 +5,3 @@ Document
 ++++CheckBox Name='Checkbox2' Toggle.ToggleState='On'
 ++++CheckBox Name='Checkbox3' Toggle.ToggleState='On'
 ++++CheckBox Name='Checkbox4' Toggle.ToggleState='Indeterminate'
-<-- End-of-file -->

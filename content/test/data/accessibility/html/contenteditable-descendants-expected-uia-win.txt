@@ -21,4 +21,3 @@ Document
 ++++Text Name='Non-editable paragraph.'
 ++Group
 ++++Text Name='Should keep the role but change the state.'
-<-- End-of-file -->

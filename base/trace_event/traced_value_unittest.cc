@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -124,6 +125,30 @@ TEST(TraceEventArgumentTest, PassTracedValue) {
   json = "";
   nested_dict_value->AppendAsTraceFormat(&json);
   EXPECT_EQ("{\"b\":2,\"c\":[\"foo\"],\"f\":3,\"g\":{}}", json);
+}
+
+TEST(TraceEventArgumentTest, NanAndInfinityJSON) {
+  TracedValueJSON value;
+  value.SetDouble("nan", std::nan(""));
+  value.SetDouble("infinity", INFINITY);
+  value.SetDouble("negInfinity", -INFINITY);
+  std::string json;
+  value.AppendAsTraceFormat(&json);
+  EXPECT_EQ(
+      "{\"nan\":\"NaN\",\"infinity\":\"Infinity\","
+      "\"negInfinity\":\"-Infinity\"}",
+      json);
+
+  std::string formatted_json = value.ToFormattedJSON();
+  // Remove CR and LF to make the result platform-independent.
+  ReplaceChars(formatted_json, "\n\r", "", &formatted_json);
+  EXPECT_EQ(
+      "{"
+      "   \"infinity\": \"Infinity\","
+      "   \"nan\": \"NaN\","
+      "   \"negInfinity\": \"-Infinity\""
+      "}",
+      formatted_json);
 }
 
 }  // namespace trace_event

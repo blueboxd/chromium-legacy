@@ -23,4 +23,3 @@ Document Name='Table example - focusable thead, tbody, tfoot'
 ++++++++++Text Name='12' IsControlElement=false
 ++++++++DataItem Name='3' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=3 GridItem.RowSpan=1
 ++++++++++Text Name='3' IsControlElement=false
-<-- End-of-file -->

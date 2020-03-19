@@ -3361,10 +3361,10 @@ inline bool LayoutObject::CanTraversePhysicalFragments() const {
     if (IsBox())
       return false;
     // Non-LayoutBox objects (such as LayoutInline) don't necessarily create NG
-    // LayoutObjects, even if they are laid out by an NG container. Allow their
-    // fragments to be traversed, assuming that we're contained by an NG
-    // container.
-    DCHECK(RootInlineFormattingContext());
+    // LayoutObjects. If they are laid out by an NG container, though, we may be
+    // allowed to traverse their fragments. Otherwise, bail now.
+    if (!IsInLayoutNGInlineFormattingContext())
+      return false;
   }
   // Bail if we have an NGPaintFragment. NGPaintFragment will be removed, and we
   // will not attempt to add support for them here.

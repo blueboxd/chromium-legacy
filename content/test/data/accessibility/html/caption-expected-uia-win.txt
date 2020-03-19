@@ -17,4 +17,3 @@ Document
 ++++++++Text Name='Safari' IsControlElement=false
 ++++++DataItem Name='WebKit' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=2 GridItem.RowSpan=1 GridItem.ContainingGrid='Browser and Engine'
 ++++++++Text Name='WebKit' IsControlElement=false
-<-- End-of-file -->

@@ -13,4 +13,3 @@ Document PositionInSet=0 SizeOfSet=0 Level=0
 ++++++Text Name='Level 1, item 7 of set size 2' PositionInSet=0 SizeOfSet=0 Level=0
 ++++ListItem PositionInSet=8 SizeOfSet=3 Level=1
 ++++++Text Name='Level 1, item 8 of set size 3' PositionInSet=0 SizeOfSet=0 Level=0
-<-- End-of-file -->

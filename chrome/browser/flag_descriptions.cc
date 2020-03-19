@@ -3738,6 +3738,12 @@ const char kRemoteCopyReceiverDescription[] =
     "Enables the remote copy feature to handle messages by writing content to "
     "the clipboard and showing a notification to the user.";
 
+const char kRemoteCopyImageNotificationName[] =
+    "Enables image notifications for the remote copy feature";
+const char kRemoteCopyImageNotificationDescription[] =
+    "Enables image notifications to be shown for the remote copy feature "
+    "when receiving a message.";
+
 const char kRemoteCopyProgressNotificationName[] =
     "Enables progress notifications for the remote copy feature";
 const char kRemoteCopyProgressNotificationDescription[] =

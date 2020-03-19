@@ -3,4 +3,3 @@ Document
 ++++Text Name='One word is '
 ++++Text Name='emphasized'
 ++++Text Name='.'
-<-- End-of-file -->

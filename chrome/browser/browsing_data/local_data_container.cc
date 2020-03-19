@@ -18,8 +18,8 @@
 LocalDataContainer::LocalDataContainer(
     scoped_refptr<BrowsingDataCookieHelper> cookie_helper,
     scoped_refptr<BrowsingDataDatabaseHelper> database_helper,
-    scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper,
-    scoped_refptr<BrowsingDataLocalStorageHelper> session_storage_helper,
+    scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper,
+    scoped_refptr<browsing_data::LocalStorageHelper> session_storage_helper,
     scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper,
     scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper,
     scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper,

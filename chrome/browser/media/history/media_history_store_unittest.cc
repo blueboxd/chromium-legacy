@@ -523,8 +523,8 @@ TEST_P(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
   EXPECT_EQ(origins, GetOriginRowsSync(otr_service()));
 }
 
-TEST_P(MediaHistoryStoreUnitTest, SaveMediaFeed_Noop) {
-  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+TEST_P(MediaHistoryStoreUnitTest, DiscoverMediaFeed_Noop) {
+  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   {
@@ -698,13 +698,13 @@ TEST_P(MediaHistoryStoreFeedsTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("mediaFeedItem"));
 }
 
-TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
+TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
   GURL url_a("https://www.google.com/feed");
   GURL url_b("https://www.google.co.uk/feed");
   GURL url_c("https://www.google.com/feed2");
 
-  service()->SaveMediaFeed(url_a);
-  service()->SaveMediaFeed(url_b);
+  service()->DiscoverMediaFeed(url_a);
+  service()->DiscoverMediaFeed(url_b);
   WaitForDB();
 
   {
@@ -727,7 +727,7 @@ TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
   }
 
-  service()->SaveMediaFeed(url_c);
+  service()->DiscoverMediaFeed(url_c);
   WaitForDB();
 
   {
@@ -752,7 +752,7 @@ TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems) {
-  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -796,7 +796,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_WithEmpty) {
-  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -836,8 +836,8 @@ TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_WithEmpty) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_MultipleFeeds) {
-  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
-  service()->SaveMediaFeed(GURL("https://www.google.co.uk/feed"));
+  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  service()->DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -882,7 +882,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_MultipleFeeds) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_BadType) {
-  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -913,6 +913,93 @@ TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_BadType) {
 
   {
     // The items should be skipped because of the invalid type.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+    EXPECT_TRUE(items.empty());
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
+  GURL feed_url("https://www.google.com/feed");
+  service()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  int feed_id = -1;
+  base::Time feed_last_time;
+
+  if (!IsReadOnly()) {
+    auto feeds = GetMediaFeedsSync(service());
+    feed_id = feeds[0]->id;
+    feed_last_time = feeds[0]->last_discovery_time;
+
+    EXPECT_LT(base::Time(), feed_last_time);
+    EXPECT_GT(base::Time::Now(), feed_last_time);
+    EXPECT_EQ(feed_url, feeds[0]->url);
+  }
+
+  service()->ReplaceMediaFeedItems(feed_id, GetExpectedItems());
+  WaitForDB();
+
+  {
+    // The media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+
+  // Rediscovering the same feed should not replace the feed.
+  service()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  if (!IsReadOnly()) {
+    auto feeds = GetMediaFeedsSync(service());
+
+    EXPECT_LE(feed_last_time, feeds[0]->last_discovery_time);
+    EXPECT_EQ(feed_id, feeds[0]->id);
+    EXPECT_EQ(feed_url, feeds[0]->url);
+  }
+
+  {
+    // The media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+
+  // Finding a new URL should replace the feed.
+  GURL new_url("https://www.google.com/feed2");
+  service()->DiscoverMediaFeed(new_url);
+  WaitForDB();
+
+  if (!IsReadOnly()) {
+    auto feeds = GetMediaFeedsSync(service());
+
+    EXPECT_LE(feed_last_time, feeds[0]->last_discovery_time);
+    EXPECT_LT(feed_id, feeds[0]->id);
+    EXPECT_EQ(new_url, feeds[0]->url);
+  }
+
+  {
+    // The media items should be deleted.
     auto items = GetItemsForMediaFeedSync(service(), feed_id);
     EXPECT_TRUE(items.empty());
 

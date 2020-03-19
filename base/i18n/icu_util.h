@@ -49,6 +49,11 @@ BASE_I18N_EXPORT bool InitializeExtraICUWithFileDescriptor(
     const MemoryMappedFile::Region& data_region);
 
 BASE_I18N_EXPORT void ResetGlobalsForTesting();
+
+#if defined(OS_FUCHSIA)
+// Overrides the directory used by ICU for external time zone data.
+BASE_I18N_EXPORT void SetIcuTimeZoneDataDirForTesting(const char* dir);
+#endif  // defined(OS_FUCHSIA)
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
 // In a test binary, initialize functions might be called twice.

@@ -184,9 +184,11 @@ class RemoteCopyBrowserTest : public RemoteCopyBrowserTestBase {
     EXPECT_TRUE(server_->Start());
 
     url::Origin allowlist_origin = url::Origin::Create(server_->base_url());
-    feature_list_.InitAndEnableFeatureWithParameters(
-        kRemoteCopyReceiver,
-        {{kRemoteCopyAllowedOrigins.name, allowlist_origin.Serialize()}});
+    feature_list_.InitWithFeaturesAndParameters(
+        {{kRemoteCopyReceiver,
+          {{kRemoteCopyAllowedOrigins.name, allowlist_origin.Serialize()}}},
+         {kRemoteCopyImageNotification, {}}},
+        {});
   }
 };
 

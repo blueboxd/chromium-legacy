@@ -42,9 +42,9 @@ volatile bool g_main_window_startup_interrupted = false;
 
 base::TimeTicks g_process_creation_ticks;
 
-base::TimeTicks g_browser_main_entry_point_ticks;
+base::TimeTicks g_application_start_ticks;
 
-base::TimeTicks g_browser_exe_main_entry_point_ticks;
+base::TimeTicks g_chrome_main_entry_ticks;
 
 base::TimeTicks g_message_loop_start_ticks;
 
@@ -346,13 +346,14 @@ base::TimeTicks StartupTimeToTimeTicks(base::Time time) {
   return trace_ticks_base - delta_since_base;
 }
 
-void AddStartupEventsForTelemetry()
-{
-  DCHECK(!g_browser_main_entry_point_ticks.is_null());
+void AddStartupEventsForTelemetry() {
+  // Record the event only if RecordChromeMainEntryTime() was called, which is
+  // not the case for some tests.
+  if (g_chrome_main_entry_ticks.is_null())
+    return;
 
-  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0("startup",
-                                      "Startup.BrowserMainEntryPoint", 0,
-                                      g_browser_main_entry_point_ticks);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "startup", "Startup.BrowserMainEntryPoint", 0, g_chrome_main_entry_ticks);
 }
 
 bool ShouldLogStartupHistogram() {
@@ -380,16 +381,16 @@ void RecordStartupProcessCreationTime(base::Time time) {
   DCHECK(!g_process_creation_ticks.is_null());
 }
 
-void RecordMainEntryPointTime(base::TimeTicks ticks) {
-  DCHECK(g_browser_main_entry_point_ticks.is_null());
-  g_browser_main_entry_point_ticks = ticks;
-  DCHECK(!g_browser_main_entry_point_ticks.is_null());
+void RecordApplicationStartTime(base::TimeTicks ticks) {
+  DCHECK(g_application_start_ticks.is_null());
+  g_application_start_ticks = ticks;
+  DCHECK(!g_application_start_ticks.is_null());
 }
 
-void RecordExeMainEntryPointTicks(base::TimeTicks ticks) {
-  DCHECK(g_browser_exe_main_entry_point_ticks.is_null());
-  g_browser_exe_main_entry_point_ticks = ticks;
-  DCHECK(!g_browser_exe_main_entry_point_ticks.is_null());
+void RecordChromeMainEntryTime(base::TimeTicks ticks) {
+  DCHECK(g_chrome_main_entry_ticks.is_null());
+  g_chrome_main_entry_ticks = ticks;
+  DCHECK(!g_chrome_main_entry_ticks.is_null());
 }
 
 void RecordMessageLoopStartTicks(base::TimeTicks ticks) {
@@ -434,24 +435,19 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
   if (!g_process_creation_ticks.is_null() &&
-      !g_browser_exe_main_entry_point_ticks.is_null()) {
-    // Process create to chrome.exe:main().
+      !g_application_start_ticks.is_null()) {
+    // Process create to application start.
     UmaHistogramWithTraceAndTemperature(
         &base::UmaHistogramLongTimes,
-        "Startup.LoadTime.ProcessCreateToExeMain2", g_process_creation_ticks,
-        g_browser_exe_main_entry_point_ticks);
+        "Startup.LoadTime.ProcessCreateToApplicationStart",
+        g_process_creation_ticks, g_application_start_ticks);
 
-    // chrome.exe:main() to chrome.dll:main().
+    // Application start to ChromeMain().
+    DCHECK(!g_chrome_main_entry_ticks.is_null());
     UmaHistogramWithTraceAndTemperature(
-        &base::UmaHistogramLongTimes, "Startup.LoadTime.ExeMainToDllMain2",
-        g_browser_exe_main_entry_point_ticks, g_browser_main_entry_point_ticks);
-
-    // Process create to chrome.dll:main(). Reported as a histogram only as
-    // the other two events above are sufficient for tracing purposes.
-    UmaHistogramWithTemperature(
         &base::UmaHistogramLongTimes,
-        "Startup.LoadTime.ProcessCreateToDllMain2",
-        g_browser_main_entry_point_ticks - g_process_creation_ticks);
+        "Startup.LoadTime.ApplicationStartToChromeMain",
+        g_application_start_ticks, g_chrome_main_entry_ticks);
   }
 }
 
@@ -485,6 +481,10 @@ void RecordFirstWebContentsNonEmptyPaint(
   UmaHistogramAndTraceWithTemperatureAndMaxPressure(
       &base::UmaHistogramLongTimes100,
       "Startup.FirstWebContents.NonEmptyPaint2", g_process_creation_ticks, now);
+  UmaHistogramAndTraceWithTemperatureAndMaxPressure(
+      &base::UmaHistogramLongTimes100,
+      "Startup.FirstWebContents.NonEmptyPaint3", g_application_start_ticks,
+      now);
   UmaHistogramWithTemperature(
       &base::UmaHistogramLongTimes100,
       "Startup.BrowserMessageLoopStart.To.NonEmptyPaint2",
@@ -553,7 +553,7 @@ void RecordBrowserWindowFirstPaintCompositingEnded(
 }
 
 base::TimeTicks MainEntryPointTicks() {
-  return g_browser_main_entry_point_ticks;
+  return g_chrome_main_entry_ticks;
 }
 
 void RecordWebFooterDidFirstVisuallyNonEmptyPaint(base::TimeTicks ticks) {

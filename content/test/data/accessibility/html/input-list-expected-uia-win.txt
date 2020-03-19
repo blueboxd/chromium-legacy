@@ -3,4 +3,3 @@ Document
 ++++Text
 ++++++Text Name='Choose a pokemon '
 ++++++ComboBox Name='Choose a pokemon' ExpandCollapse.ExpandCollapseState='LeafNode'
-<-- End-of-file -->

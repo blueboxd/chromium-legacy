@@ -6,4 +6,3 @@ Document
 ++++Separator Name='<newline>'
 ++++Text Name='Text line 3'
 ++Separator Name='<newline>'
-<-- End-of-file -->

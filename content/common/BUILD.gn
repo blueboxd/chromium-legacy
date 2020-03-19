@@ -443,7 +443,6 @@ mojom("mojo_bindings") {
     "ax_content_tree_data.mojom",
     "ax_content_tree_update.mojom",
     "child_process.mojom",
-    "device_emulator.mojom",
     "document_scoped_interface_bundle.mojom",
     "download/mhtml_file_writer.mojom",
     "field_trial_recorder.mojom",

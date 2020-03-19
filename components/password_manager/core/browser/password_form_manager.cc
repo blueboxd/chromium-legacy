@@ -104,6 +104,17 @@ const PasswordFieldPrediction* FindFieldPrediction(
   return nullptr;
 }
 
+void LogUsingPossibleUsername(PasswordManagerClient* client,
+                              bool is_used,
+                              const char* message) {
+  if (!password_manager_util::IsLoggingActive(client))
+    return;
+  BrowserSavePasswordProgressLogger logger(client->GetLogManager());
+  logger.LogString(is_used ? Logger::STRING_POSSIBLE_USERNAME_USED
+                           : Logger::STRING_POSSIBLE_USERNAME_NOT_USED,
+                   message);
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -901,19 +912,25 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
 
 bool PasswordFormManager::UsePossibleUsername(
     const PossibleUsernameData* possible_username) {
-  if (!possible_username)
+  if (!possible_username) {
+    LogUsingPossibleUsername(client_, /*is_used*/ false, "Null");
     return false;
+  }
 
   // The username form and password forms signon realms must be the same.
-  if (GetSignonRealm(observed_form_.url) != possible_username->signon_realm)
+  if (GetSignonRealm(observed_form_.url) != possible_username->signon_realm) {
+    LogUsingPossibleUsername(client_, /*is_used*/ false, "Different domains");
     return false;
+  }
 
   // The username candidate field should not be in |observed_form_|, otherwise
   // that is a task of FormParser to choose it from |observed_form_|.
   if (possible_username->driver_id == driver_id_) {
     for (const auto& field : observed_form_.fields) {
-      if (field.unique_renderer_id == possible_username->renderer_id)
+      if (field.unique_renderer_id == possible_username->renderer_id) {
+        LogUsingPossibleUsername(client_, /*is_used*/ false, "Same form");
         return false;
+      }
     }
   }
 
@@ -921,10 +938,15 @@ bool PasswordFormManager::UsePossibleUsername(
   const PasswordFieldPrediction* field_prediction = FindFieldPrediction(
       possible_username->form_predictions, possible_username->renderer_id);
   if (field_prediction) {
-    if (field_prediction->type == SINGLE_USERNAME)
+    if (field_prediction->type == SINGLE_USERNAME) {
+      LogUsingPossibleUsername(client_, /*is_used*/ true, "Server predictions");
       return true;
-    if (field_prediction->type == NOT_USERNAME)
+    }
+    if (field_prediction->type == NOT_USERNAME) {
+      LogUsingPossibleUsername(client_, /*is_used*/ false,
+                               "Server predictions");
       return false;
+    }
   }
 
 #if defined(OS_ANDROID)
@@ -941,15 +963,22 @@ bool PasswordFormManager::UsePossibleUsername(
     auto field_signature = field_prediction->signature;
     autofill::ServerFieldType type =
         field_info_manager->GetFieldType(form_signature, field_signature);
-    if (type == SINGLE_USERNAME)
+    if (type == SINGLE_USERNAME) {
+      LogUsingPossibleUsername(client_, /*is_used*/ true, "Local prediction");
       return true;
-    if (type == NOT_USERNAME)
+    }
+    if (type == NOT_USERNAME) {
+      LogUsingPossibleUsername(client_, /*is_used*/ false, "Local prediction");
       return false;
+    }
   }
 
-  return IsPossibleUsernameValid(*possible_username,
-                                 parsed_submitted_form_->signon_realm,
-                                 base::Time::Now());
+  bool is_possible_username_valid = IsPossibleUsernameValid(
+      *possible_username, parsed_submitted_form_->signon_realm,
+      base::Time::Now());
+  LogUsingPossibleUsername(client_, /*is_used*/ is_possible_username_valid,
+                           "Local heuristics");
+  return is_possible_username_valid;
 }
 
 }  // namespace password_manager

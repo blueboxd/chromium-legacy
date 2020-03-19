@@ -2184,6 +2184,9 @@ extern const char kClickToCallUIDescription[];
 extern const char kRemoteCopyReceiverName[];
 extern const char kRemoteCopyReceiverDescription[];
 
+extern const char kRemoteCopyImageNotificationName[];
+extern const char kRemoteCopyImageNotificationDescription[];
+
 extern const char kRemoteCopyProgressNotificationName[];
 extern const char kRemoteCopyProgressNotificationDescription[];
 

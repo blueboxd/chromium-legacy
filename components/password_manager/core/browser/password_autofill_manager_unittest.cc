@@ -64,7 +64,10 @@ using autofill::SuggestionVectorLabelsAre;
 using autofill::SuggestionVectorValuesAre;
 using favicon_base::FaviconImageCallback;
 using testing::_;
+using testing::AllOf;
 using testing::ElementsAreArray;
+using testing::Eq;
+using testing::Field;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
@@ -195,7 +198,9 @@ RespondWithTestIcon(Unused, FaviconImageCallback callback, Unused) {
   return 1;
 }
 
-std::vector<autofill::Suggestion> CreateTestSuggestions(bool has_opt_in) {
+std::vector<autofill::Suggestion> CreateTestSuggestions(
+    bool has_opt_in_and_fill,
+    bool has_opt_in_and_generate) {
   std::vector<Suggestion> suggestions;
   suggestions.push_back(
       Suggestion(/*label=*/"User1", /*value=*/"PW1", /*icon=*/"",
@@ -205,10 +210,17 @@ std::vector<autofill::Suggestion> CreateTestSuggestions(bool has_opt_in) {
         /*label=*/"Show all pwds", /*value=*/"", /*icon=*/"",
         /*fronend_id=*/autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY));
   }
-  if (has_opt_in) {
+  if (has_opt_in_and_fill) {
     suggestions.push_back(Suggestion(
-        /*label=*/"Unlock passwords", /*value=*/"", /*icon=*/"",
-        /*fronend_id=*/autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN));
+        /*label=*/"Unlock passwords and fill", /*value=*/"", /*icon=*/"",
+        /*fronend_id=*/
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN));
+  }
+  if (has_opt_in_and_generate) {
+    suggestions.push_back(Suggestion(
+        /*label=*/"Unlock passwords and generate", /*value=*/"", /*icon=*/"",
+        /*fronend_id=*/
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE));
   }
   return suggestions;
 }
@@ -383,7 +395,7 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
 }
 
 // Test that the popup is updated once remote suggestions are unlocked.
-TEST_F(PasswordAutofillManagerTest, ShowUnlockButton) {
+TEST_F(PasswordAutofillManagerTest, ShowOptInAndFillButton) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
@@ -397,15 +409,16 @@ TEST_F(PasswordAutofillManagerTest, ShowUnlockButton) {
           SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
               {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
-               autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN}))),
+               autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN}))),
           /*autoselect_first_suggestion=*/false, PopupType::kPasswords, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       base::i18n::RIGHT_TO_LEFT, base::string16(),
       autofill::SHOW_ALL | autofill::IS_PASSWORD_FIELD, gfx::RectF());
 }
 
-// Test that the popup is updated once remote suggestions are unlocked.
-TEST_F(PasswordAutofillManagerTest, ClickOnUnlockPutsPopupInWaitingState) {
+// Test that the popup is updated once "opt in and fill" is clicked.
+TEST_F(PasswordAutofillManagerTest,
+       ClickOnOptInAndFillPutsPopupInWaitingState) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
@@ -428,14 +441,47 @@ TEST_F(PasswordAutofillManagerTest, ClickOnUnlockPutsPopupInWaitingState) {
   EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
   EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
-      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/true)));
+      .WillOnce(Return(CreateTestSuggestions(
+          /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
   password_autofill_manager_->DidAcceptSuggestion(
-      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN,
+      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN,
       1);
 }
 
-// Test that the popup is updated once remote suggestions are unlocked.
-TEST_F(PasswordAutofillManagerTest, FailedUnlockUpdatesPopup) {
+// Test that the popup is updated once "opt in and generate" is clicked.
+TEST_F(PasswordAutofillManagerTest,
+       ClickOnOptInAndGeneratePutsPopupInWaitingState) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(false);
+  const CoreAccountId kAliceId = client.identity_test_env()
+                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
+                                     .account_id;
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
+
+  // Accepting a suggestion should trigger a call to update the popup. The first
+  // update removes the unlock button
+  EXPECT_CALL(
+      autofill_client,
+      UpdatePopup(
+          SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
+              {autofill::POPUP_ITEM_ID_LOADING_SPINNER,
+               autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
+               autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
+          PopupType::kPasswords));
+  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
+  EXPECT_CALL(autofill_client, GetPopupSuggestions())
+      .WillOnce(Return(CreateTestSuggestions(
+          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
+  password_autofill_manager_->DidAcceptSuggestion(
+      test_username_,
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE, 1);
+}
+
+// Test that the popup is updated once "opt in and fill" is clicked.
+TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
@@ -450,14 +496,16 @@ TEST_F(PasswordAutofillManagerTest, FailedUnlockUpdatesPopup) {
   // Accepting a suggestion should trigger a call to update the popup.
   // First the popup enters the waiting state.
   EXPECT_CALL(autofill_client, GetPopupSuggestions)
-      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/true)));
+      .WillOnce(Return(CreateTestSuggestions(
+          /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
   EXPECT_CALL(autofill_client, UpdatePopup);
 
   // As soon as the waiting state is pending, the next update resets the popup.
   EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate).WillOnce([&] {
     testing::Mock::VerifyAndClear(&autofill_client);
     EXPECT_CALL(autofill_client, GetPopupSuggestions)
-        .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/false)));
+        .WillOnce(Return(CreateTestSuggestions(
+            /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false)));
     EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
         .WillOnce([](const auto& unused, auto reauth_callback) {
           std::move(reauth_callback).Run(ReauthSucceeded(false));
@@ -468,17 +516,63 @@ TEST_F(PasswordAutofillManagerTest, FailedUnlockUpdatesPopup) {
             SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
                 {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                  autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
-                 autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN}))),
+                 autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN}))),
             PopupType::kPasswords));
   });
 
   password_autofill_manager_->DidAcceptSuggestion(
-      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN,
+      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN,
       1);
 }
 
-// Test that the popup is updated once remote suggestions are unlocked.
-TEST_F(PasswordAutofillManagerTest, SuccessfullUnlockTriggersOptIn) {
+// Test that the popup is updated once "opt in and generate" is clicked.
+TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(false);
+  const CoreAccountId kAliceId = client.identity_test_env()
+                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
+                                     .account_id;
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
+  EXPECT_CALL(*client.GetPasswordFeatureManager(), SetAccountStorageOptIn)
+      .Times(0);
+
+  // Accepting a suggestion should trigger a call to update the popup.
+  // First the popup enters the waiting state.
+  EXPECT_CALL(autofill_client, GetPopupSuggestions)
+      .WillOnce(Return(CreateTestSuggestions(
+          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
+  EXPECT_CALL(autofill_client, UpdatePopup);
+
+  // As soon as the waiting state is pending, the next update resets the popup.
+  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate).WillOnce([&] {
+    testing::Mock::VerifyAndClear(&autofill_client);
+    EXPECT_CALL(autofill_client, GetPopupSuggestions)
+        .WillOnce(Return(CreateTestSuggestions(
+            /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false)));
+    EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
+        .WillOnce([](const auto& unused, auto reauth_callback) {
+          std::move(reauth_callback).Run(ReauthSucceeded(false));
+        });
+    EXPECT_CALL(
+        autofill_client,
+        UpdatePopup(
+            SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
+                {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
+                 autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
+                 autofill::
+                     POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE}))),
+            PopupType::kPasswords));
+  });
+
+  password_autofill_manager_->DidAcceptSuggestion(
+      test_username_,
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE, 1);
+}
+
+// Test that the popup is updated once "opt in and fill" is clicked.
+TEST_F(PasswordAutofillManagerTest, SuccessfullOptInAndFillTriggersOptIn) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
@@ -490,7 +584,8 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullUnlockTriggersOptIn) {
 
   // Accepting a suggestion should trigger a call to update the popup.
   EXPECT_CALL(autofill_client, GetPopupSuggestions)
-      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/true)));
+      .WillOnce(Return(CreateTestSuggestions(
+          /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
   EXPECT_CALL(autofill_client, UpdatePopup);
   EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
 
@@ -502,12 +597,45 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullUnlockTriggersOptIn) {
               SetAccountStorageOptIn(true));
 
   password_autofill_manager_->DidAcceptSuggestion(
-      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN,
+      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN,
       1);
 }
 
-// Test that the popup is updated once remote suggestions are unlocked.
-TEST_F(PasswordAutofillManagerTest, AddOnFillDataAfterUnlockPopuplatesPopup) {
+// Test that the popup is updated once "opt in and generate" is clicked.
+TEST_F(PasswordAutofillManagerTest,
+       SuccessfullOptInAndGenerateTriggersOptInAndGeneration) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(false);
+  const CoreAccountId kAliceId = client.identity_test_env()
+                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
+                                     .account_id;
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
+
+  // Accepting a suggestion should trigger a call to update the popup.
+  EXPECT_CALL(autofill_client, GetPopupSuggestions)
+      .WillOnce(Return(CreateTestSuggestions(
+          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
+  EXPECT_CALL(autofill_client, UpdatePopup);
+  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+
+  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
+      .WillOnce([](const auto& id, auto reauth_callback) {
+        std::move(reauth_callback).Run(ReauthSucceeded(true));
+      });
+  EXPECT_CALL(*client.GetPasswordFeatureManager(),
+              SetAccountStorageOptIn(true));
+  EXPECT_CALL(client, GeneratePassword());
+
+  password_autofill_manager_->DidAcceptSuggestion(
+      test_username_,
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE, 1);
+}
+
+// Test that the popup is updated once "opt in and fill" is clicked".
+TEST_F(PasswordAutofillManagerTest,
+       AddOnFillDataAfterOptInAndFillPopulatesPopup) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
   InitializePasswordAutofillManager(&client, &autofill_client);
@@ -523,7 +651,8 @@ TEST_F(PasswordAutofillManagerTest, AddOnFillDataAfterUnlockPopuplatesPopup) {
   new_data.additional_logins[additional_username] = additional;
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .Times(2)
-      .WillRepeatedly(Return(CreateTestSuggestions(/*has_opt_in=*/false)));
+      .WillRepeatedly(Return(CreateTestSuggestions(
+          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false)));
   EXPECT_CALL(
       autofill_client,
       UpdatePopup(
@@ -1028,6 +1157,44 @@ TEST_F(PasswordAutofillManagerTest,
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
           element_bounds, base::i18n::RIGHT_TO_LEFT,
           /*show_password_suggestions=*/false));
+}
+
+// Test that if the "opt in and generate" button gets displayed, the regular
+// generation button does not.
+TEST_F(PasswordAutofillManagerTest,
+       MaybeShowPasswordSuggestionsWithAccountPasswordsEnabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+
+  TestPasswordManagerClient client;
+  client.SetAccountStorageOptIn(false);
+
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+
+  autofill::PasswordFormFillData data = CreateTestFormFillData();
+
+  favicon::MockFaviconService favicon_service;
+  EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
+  EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _));
+  password_autofill_manager_->OnAddPasswordFillData(data);
+
+  auto opt_in_and_generate_id = static_cast<int>(
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
+  auto regular_generate_id =
+      static_cast<int>(autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY);
+  EXPECT_CALL(autofill_client,
+              ShowAutofillPopup(
+                  _, _,
+                  AllOf(Contains(Field(&autofill::Suggestion::frontend_id,
+                                       Eq(opt_in_and_generate_id))),
+                        Not(Contains(Field(&autofill::Suggestion::frontend_id,
+                                           Eq(regular_generate_id))))),
+                  _, _, _));
+
+  password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
+      gfx::RectF(), base::i18n::RIGHT_TO_LEFT,
+      /*show_password_suggestions=*/true);
 }
 
 TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {

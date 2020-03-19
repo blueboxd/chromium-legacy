@@ -17,13 +17,16 @@ class CannedBrowsingDataCookieHelper;
 class CannedBrowsingDataDatabaseHelper;
 class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
-class CannedBrowsingDataLocalStorageHelper;
 class CannedBrowsingDataServiceWorkerHelper;
 class CannedBrowsingDataSharedWorkerHelper;
 class CannedBrowsingDataCacheStorageHelper;
 class CookiesTreeModel;
 class GURL;
 class Profile;
+
+namespace browsing_data {
+class CannedLocalStorageHelper;
+}
 
 class LocalSharedObjectsContainer {
  public:
@@ -59,7 +62,7 @@ class LocalSharedObjectsContainer {
   CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
     return indexed_dbs_.get();
   }
-  CannedBrowsingDataLocalStorageHelper* local_storages() const {
+  browsing_data::CannedLocalStorageHelper* local_storages() const {
     return local_storages_.get();
   }
   CannedBrowsingDataServiceWorkerHelper* service_workers() const {
@@ -71,7 +74,7 @@ class LocalSharedObjectsContainer {
   CannedBrowsingDataCacheStorageHelper* cache_storages() const {
     return cache_storages_.get();
   }
-  CannedBrowsingDataLocalStorageHelper* session_storages() const {
+  browsing_data::CannedLocalStorageHelper* session_storages() const {
     return session_storages_.get();
   }
 
@@ -81,11 +84,11 @@ class LocalSharedObjectsContainer {
   scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
   scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
-  scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
+  scoped_refptr<browsing_data::CannedLocalStorageHelper> local_storages_;
   scoped_refptr<CannedBrowsingDataServiceWorkerHelper> service_workers_;
   scoped_refptr<CannedBrowsingDataSharedWorkerHelper> shared_workers_;
   scoped_refptr<CannedBrowsingDataCacheStorageHelper> cache_storages_;
-  scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
+  scoped_refptr<browsing_data::CannedLocalStorageHelper> session_storages_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);
 };

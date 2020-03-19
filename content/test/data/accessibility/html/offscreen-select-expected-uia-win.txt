@@ -9,4 +9,3 @@ Document
 ++++++ListItem Name='Offscreen 1' SelectionItem.IsSelected=true
 ++++++ListItem Name='Offscreen 2' SelectionItem.IsSelected=false
 ++++++ListItem Name='Offscreen 3' SelectionItem.IsSelected=false
-<-- End-of-file -->

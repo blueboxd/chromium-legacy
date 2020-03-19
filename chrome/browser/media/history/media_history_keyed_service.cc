@@ -207,9 +207,9 @@ void MediaHistoryKeyedService::GetURLsInTableForTest(
   store_->GetForRead()->GetURLsInTableForTest(table, std::move(callback));
 }
 
-void MediaHistoryKeyedService::SaveMediaFeed(const GURL& url) {
+void MediaHistoryKeyedService::DiscoverMediaFeed(const GURL& url) {
   if (auto* store = store_->GetForWrite())
-    store->SaveMediaFeed(url);
+    store->DiscoverMediaFeed(url);
 }
 
 void MediaHistoryKeyedService::PostTaskToDBForTest(base::OnceClosure callback) {

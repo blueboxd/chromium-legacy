@@ -110,6 +110,13 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize&) const;
 
+  void CreateCanvasResourceProvider2D(
+      AccelerationHint hint,
+      base::WeakPtr<CanvasResourceDispatcher> dispatcher);
+  void CreateCanvasResourceProvider3D(
+      AccelerationHint hint,
+      base::WeakPtr<CanvasResourceDispatcher> dispatcher);
+
   bool did_fail_to_create_resource_provider_ = false;
   bool did_record_canvas_size_to_uma_ = false;
   HostType host_type_ = kNone;

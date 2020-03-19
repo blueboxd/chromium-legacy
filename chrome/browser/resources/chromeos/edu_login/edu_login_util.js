@@ -7,7 +7,7 @@
  * @typedef {{
  *   email: string,
  *   displayName: string,
- *   profileImageUrl: string,
+ *   profileImage: string,
  *   obfuscatedGaiaId: string
  * }}
  */

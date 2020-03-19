@@ -92,6 +92,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -548,6 +549,19 @@ void RenderWidget::Initialize(ShowCallback show_callback,
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
+  // The EnableDeviceEmulation message is sent to a provisional RenderWidget
+  // before the navigation completes. Some investigation into why is done in
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1853675/5#message-e6edc3fd708d7d267ee981ffe43cae090b37a906
+  // but it's unclear what would need to be done to delay this until after
+  // navigation.
+  bool handled = false;
+  IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
+    IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
+                        OnEnableDeviceEmulation)
+  IPC_END_MESSAGE_MAP()
+  if (handled)
+    return true;
+
   // We shouldn't receive IPC messages on provisional frames. It's possible the
   // message was destined for a RenderWidget that was destroyed and then
   // recreated since it keeps the same routing id. Just drop it here if that
@@ -560,8 +574,9 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     return text_input_client_observer_->OnMessageReceived(message);
 #endif
 
-  bool handled = false;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
+    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
+                        OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateVisualProperties,
@@ -906,6 +921,34 @@ void RenderWidget::OnUpdateVisualProperties(
   AfterUpdateVisualProperties();
 }
 
+void RenderWidget::OnEnableDeviceEmulation(
+    const blink::WebDeviceEmulationParams& params) {
+  // Device emulation can only be applied to the local main frame render widget.
+  // TODO(https://crbug.com/1006052): We should move emulation into the browser
+  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
+  // on emulation.
+  if (!delegate_)
+    return;
+
+  if (!device_emulator_) {
+    device_emulator_ = std::make_unique<RenderWidgetScreenMetricsEmulator>(
+        this, screen_info_, size_, visible_viewport_size_, widget_screen_rect_,
+        window_screen_rect_);
+  }
+  device_emulator_->ChangeEmulationParams(params);
+}
+
+void RenderWidget::OnDisableDeviceEmulation() {
+  // Device emulation can only be applied to the local main frame render widget.
+  // TODO(https://crbug.com/1006052): We should move emulation into the browser
+  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
+  // on emulation.
+  if (!delegate_ || !device_emulator_)
+    return;
+  device_emulator_->DisableAndApply();
+  device_emulator_.reset();
+}
+
 float RenderWidget::GetEmulatorScale() const {
   if (device_emulator_)
     return device_emulator_->scale();
@@ -1015,11 +1058,6 @@ void RenderWidget::OnForceRedraw(int snapshot_id) {
 void RenderWidget::RequestPresentation(PresentationTimeCallback callback) {
   layer_tree_host_->RequestPresentationTimeForNextFrame(std::move(callback));
   layer_tree_host_->SetNeedsCommitWithForcedRedraw();
-}
-
-void RenderWidget::BindDeviceEmulator(
-    mojo::PendingAssociatedReceiver<mojom::DeviceEmulator> pending_receiver) {
-  device_emulator_receiver_.Bind(std::move(pending_receiver));
 }
 
 void RenderWidget::DidPresentForceDrawFrame(
@@ -1524,29 +1562,6 @@ gfx::Rect RenderWidget::CompositorViewportRect() const {
   return layer_tree_host_->device_viewport_rect();
 }
 
-void RenderWidget::SetDeviceEmulation(
-    const base::Optional<::blink::WebDeviceEmulationParams>& params) {
-  // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should move emulation into the browser
-  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
-  // on emulation.
-  DCHECK(delegate_);
-
-  if (params) {
-    if (!device_emulator_) {
-      device_emulator_ = std::make_unique<RenderWidgetScreenMetricsEmulator>(
-          this, screen_info_, size_, visible_viewport_size_,
-          widget_screen_rect_, window_screen_rect_);
-    }
-    device_emulator_->ChangeEmulationParams(*params);
-  } else {
-    if (!device_emulator_)
-      return;
-    device_emulator_->DisableAndApply();
-    device_emulator_.reset();
-  }
-}
-
 void RenderWidget::SetScreenInfoAndSize(
     const ScreenInfo& screen_info,
     const gfx::Size& widget_size,
@@ -1583,10 +1598,11 @@ void RenderWidget::SetScreenInfoAndSize(
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
-    const base::Optional<blink::WebDeviceEmulationParams>& params) {
-  // Device emulation can only be applied to the local main frame render widget.
+    bool enabled,
+    const blink::WebDeviceEmulationParams& params) {
+  // This is only supported in RenderView, which has an delegate().
   DCHECK(delegate());
-  delegate()->SetScreenMetricsEmulationParametersForWidget(params);
+  delegate()->SetScreenMetricsEmulationParametersForWidget(enabled, params);
 }
 
 void RenderWidget::SetScreenRects(const gfx::Rect& widget_screen_rect,

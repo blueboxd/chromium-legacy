@@ -8,4 +8,3 @@ Document
 ++++++++++Text Name='Text in iframe'
 ++Group IsControlElement=false
 ++++Text Name='After frame'
-<-- End-of-file -->

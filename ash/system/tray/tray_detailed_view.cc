@@ -268,16 +268,11 @@ class ScrollContentsView : public views::View {
 // TrayDetailedView:
 
 TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
-    : delegate_(delegate),
-      box_layout_(nullptr),
-      scroller_(nullptr),
-      scroll_content_(nullptr),
-      progress_bar_(nullptr),
-      tri_view_(nullptr),
-      back_button_(nullptr) {
+    : delegate_(delegate) {
   box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  SetBackground(views::CreateSolidBackground(delegate_->GetBackgroundColor()));
+  SetBackground(views::CreateSolidBackground(
+      delegate_->GetBackgroundColor().value_or(SK_ColorTRANSPARENT)));
 }
 
 TrayDetailedView::~TrayDetailedView() = default;
@@ -314,13 +309,12 @@ void TrayDetailedView::CreateTitleRow(int string_id) {
 void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
   auto scroll_content = std::make_unique<ScrollContentsView>(delegate_);
-  scroller_ = new views::ScrollView;
+  scroller_ = AddChildView(std::make_unique<views::ScrollView>());
   scroller_->SetDrawOverflowIndicator(delegate_->IsOverflowIndicatorEnabled());
   scroll_content_ = scroller_->SetContents(std::move(scroll_content));
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetBackgroundColor(delegate_->GetBackgroundColor());
 
-  AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);
 }
 
@@ -423,7 +417,9 @@ void TrayDetailedView::Reset() {
 void TrayDetailedView::ShowProgress(double value, bool visible) {
   DCHECK(tri_view_);
   if (!progress_bar_) {
-    progress_bar_ = new views::ProgressBar(kTitleRowProgressBarHeight);
+    progress_bar_ = AddChildViewAt(
+        std::make_unique<views::ProgressBar>(kTitleRowProgressBarHeight),
+        kTitleRowSeparatorIndex + 1);
     progress_bar_->GetViewAccessibility().OverrideName(
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_NETWORK_PROGRESS_ACCESSIBLE_NAME));
@@ -432,7 +428,6 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
         AshColorProvider::Get()->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kProminentIconButton,
             AshColorProvider::AshColorMode::kDark));
-    AddChildViewAt(progress_bar_, kTitleRowSeparatorIndex + 1);
   }
 
   progress_bar_->SetValue(value);

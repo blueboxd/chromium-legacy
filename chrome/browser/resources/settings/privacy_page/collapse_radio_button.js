@@ -16,6 +16,17 @@ Polymer({
       value: false,
     },
 
+    /**
+     * Which indicator type to show (or NONE).
+     * @type {CrPolicyIndicatorType}
+     */
+    policyIndicatorType: {
+      type: String,
+      value: CrPolicyIndicatorType.NONE,
+    },
+
+    noCollapse: Boolean,
+
     label: String,
 
     subLabel: {
@@ -29,5 +40,15 @@ Polymer({
   /** @private */
   onCheckedChanged_() {
     this.expanded = this.checked;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onIndicatorClick_(e) {
+    // Prevent interacting with the indicator changing anything when disabled.
+    e.preventDefault();
+    e.stopPropagation();
   },
 });

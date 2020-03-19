@@ -199,12 +199,23 @@ autofill::Suggestion CreateGenerationEntry() {
   return suggestion;
 }
 
-autofill::Suggestion CreateAccountStorageOptInEntry() {
-  // TODO(crbug.com/1024332): Add proper (translated) string.
+// Entry for opting in to password account storage and then filling.
+autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
+  // TODO(crbug.com/1062344): Add proper (translated) string.
   autofill::Suggestion suggestion(
       base::ASCIIToUTF16("Use passwords stored in your Google account"));
   suggestion.frontend_id =
-      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN;
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN;
+  return suggestion;
+}
+
+// Entry for opting in to password account storage and then generating password.
+autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
+  // TODO(crbug.com/1062344): Add proper (translated) string.
+  autofill::Suggestion suggestion(base::ASCIIToUTF16(
+      "Use your Google account to generate a strong password"));
+  suggestion.frontend_id =
+      autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE;
   return suggestion;
 }
 
@@ -233,27 +244,42 @@ bool AreSuggestionForPasswordField(
 }
 
 std::vector<autofill::Suggestion> ReplaceUnlockButtonWithLoadingIndicator(
-    base::span<const autofill::Suggestion> suggestions) {
+    base::span<const autofill::Suggestion> suggestions,
+    autofill::PopupItemId unlock_item) {
+  DCHECK(
+      unlock_item == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      unlock_item ==
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
   std::vector<autofill::Suggestion> new_suggestions;
   new_suggestions.push_back(CreateLoadingSpinner());
   std::copy_if(suggestions.begin(), suggestions.end(),
                std::back_inserter(new_suggestions),
-               [](const autofill::Suggestion& suggestion) {
-                 return suggestion.frontend_id !=
-                        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN;
+               [unlock_item](const autofill::Suggestion& suggestion) {
+                 return suggestion.frontend_id != unlock_item;
                });
   return new_suggestions;
 }
 
 std::vector<autofill::Suggestion> ReplaceLoaderWithUnlock(
-    base::span<const autofill::Suggestion> suggestions) {
+    base::span<const autofill::Suggestion> suggestions,
+    autofill::PopupItemId unlock_item) {
   std::vector<autofill::Suggestion> new_suggestions;
   new_suggestions.reserve(suggestions.size());
   for (const auto& suggestion : suggestions) {
     if (suggestion.frontend_id != autofill::POPUP_ITEM_ID_LOADING_SPINNER)
       new_suggestions.push_back(suggestion);
   }
-  new_suggestions.push_back(CreateAccountStorageOptInEntry());
+  switch (unlock_item) {
+    case autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE:
+      new_suggestions.push_back(
+          CreateEntryToOptInToAccountStorageThenGenerate());
+      break;
+    case autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN:
+      new_suggestions.push_back(CreateEntryToOptInToAccountStorageThenFill());
+      break;
+    default:
+      NOTREACHED();
+  }
   return new_suggestions;
 }
 
@@ -286,10 +312,36 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
   ClearPreviewedForm();
   if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
       identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY ||
-      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN)
+      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      identifier ==
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE)
     return;
   bool success = PreviewSuggestion(GetUsernameFromSuggestion(value));
   DCHECK(success);
+}
+
+void PasswordAutofillManager::OnUnlockItemAccepted(
+    autofill::PopupItemId unlock_item) {
+  DCHECK(
+      unlock_item == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      unlock_item ==
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
+
+  signin::IdentityManager* identity_manager =
+      password_client_->GetIdentityManager();
+  if (!identity_manager)
+    return;
+  CoreAccountId account_id =
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+  if (account_id.empty())
+    return;
+  UpdatePopup(ReplaceUnlockButtonWithLoadingIndicator(
+      autofill_client_->GetPopupSuggestions(), unlock_item));
+  autofill_client_->PinPopupViewUntilUpdate();
+  password_client_->TriggerReauthForAccount(
+      account_id,
+      base::BindOnce(&PasswordAutofillManager::OnUnlockReauthCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), unlock_item));
 }
 
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
@@ -317,22 +369,12 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
       password_client_->GetMetricsRecorder()->RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
     }
-  } else if (identifier ==
-             autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN) {
-    signin::IdentityManager* identity_manager =
-        password_client_->GetIdentityManager();
-    if (!identity_manager)
-      return;
-    CoreAccountId account_id = identity_manager->GetPrimaryAccountId(
-        signin::ConsentLevel::kNotRequired);
-    if (account_id.empty())
-      return;
-    UpdatePopup(ReplaceUnlockButtonWithLoadingIndicator(
-        autofill_client_->GetPopupSuggestions()));
-    autofill_client_->PinPopupViewUntilUpdate();
-    password_client_->TriggerReauthForAccount(
-        account_id, base::BindOnce(&PasswordAutofillManager::OnReauthCompleted,
-                                   weak_ptr_factory_.GetWeakPtr()));
+  } else if (
+      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      identifier ==
+          autofill::
+              POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
+    OnUnlockItemAccepted(static_cast<autofill::PopupItemId>(identifier));
     return;  // Do not hide the popup while loading data.
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
@@ -472,9 +514,8 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
     ShowPasswordSuggestions show_password_suggestions) {
   std::vector<autofill::Suggestion> suggestions;
   bool show_account_storage_optin =
-      !offers_generation && password_client_ &&
-      password_client_->GetPasswordFeatureManager()
-          ->ShouldShowAccountStorageOptIn();
+      password_client_ && password_client_->GetPasswordFeatureManager()
+                              ->ShouldShowAccountStorageOptIn();
 
   if (!fill_data_ && !show_account_storage_optin) {
     // Probably the credential was deleted in the mean time.
@@ -489,15 +530,19 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   }
 
   // Add password generation entry, if available.
-  if (offers_generation)
-    suggestions.push_back(CreateGenerationEntry());
+  if (offers_generation) {
+    suggestions.push_back(show_account_storage_optin
+                              ? CreateEntryToOptInToAccountStorageThenGenerate()
+                              : CreateGenerationEntry());
+  }
 
   // Add "Manage all passwords" link to settings.
   MaybeAppendManualFallback(autofill_client_->GetSyncService(), &suggestions);
 
-  // Add button to opt into using the account storage for passwords.
+  // Add button to opt into using the account storage for passwords and then
+  // suggest.
   if (show_account_storage_optin)
-    suggestions.push_back(CreateAccountStorageOptInEntry());
+    suggestions.push_back(CreateEntryToOptInToAccountStorageThenFill());
 
   return suggestions;
 }
@@ -513,6 +558,9 @@ void PasswordAutofillManager::LogMetricsForSuggestions(
             metrics_util::ShowAllSavedPasswordsContext::kPassword);
         continue;
       case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
+        // TODO(crbug.com/1062709): Revisit metrics for the "opt in and
+        // generate" button.
+      case autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE:
         dropdown_state = metrics_util::PasswordDropdownState::kStandardGenerate;
         continue;
     }
@@ -622,13 +670,19 @@ void PasswordAutofillManager::OnFaviconReady(
     page_favicon_ = result.image;
 }
 
-void PasswordAutofillManager::OnReauthCompleted(
+void PasswordAutofillManager::OnUnlockReauthCompleted(
+    autofill::PopupItemId unlock_item,
     PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
   if (reauth_succeeded) {
     password_client_->GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
+    if (unlock_item ==
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
+      password_client_->GeneratePassword();
+    }
     return;
   }
-  UpdatePopup(ReplaceLoaderWithUnlock(autofill_client_->GetPopupSuggestions()));
+  UpdatePopup(ReplaceLoaderWithUnlock(autofill_client_->GetPopupSuggestions(),
+                                      unlock_item));
 }
 
 }  //  namespace password_manager

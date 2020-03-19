@@ -1,4 +1,3 @@
 Document
 ++Group IsControlElement=false
 ++++Button Name='Submit'
-<-- End-of-file -->

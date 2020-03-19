@@ -17,9 +17,9 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 #include "content/public/browser/storage_partition.h"
 
 class SiteDataSizeCollector {
@@ -37,7 +37,7 @@ class SiteDataSizeCollector {
   SiteDataSizeCollector(const base::FilePath& default_storage_partition_path,
                         BrowsingDataCookieHelper* cookie_helper,
                         BrowsingDataDatabaseHelper* database_helper,
-                        BrowsingDataLocalStorageHelper* local_storage_helper,
+                        browsing_data::LocalStorageHelper* local_storage_helper,
                         BrowsingDataAppCacheHelper* appcache_helper,
                         BrowsingDataIndexedDBHelper* indexed_db_helper,
                         BrowsingDataFileSystemHelper* file_system_helper,
@@ -80,7 +80,7 @@ class SiteDataSizeCollector {
   scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper_;
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper_;
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper_;
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
+  scoped_refptr<browsing_data::LocalStorageHelper> local_storage_helper_;
   scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;

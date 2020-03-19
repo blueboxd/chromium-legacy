@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "build/build_config.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -300,12 +299,6 @@ void V4GetHashProtocolManager::GetFullHashes(
     std::move(callback).Run(cached_full_hash_infos);
     return;
   }
-
-  // TODO(crbug.com/1028755): Enable full hash checks on iOS.
-#if defined(OS_IOS)
-  std::move(callback).Run(cached_full_hash_infos);
-  return;
-#endif
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("safe_browsing_v4_get_hash", R"(
@@ -778,12 +771,6 @@ void V4GetHashProtocolManager::OnURLLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(CurrentlyOnThread(ThreadID::IO));
-
-  // Ensure that full hash requests are not being sent on iOS.
-  // TODO(crbug.com/1028755): Enable full hash checks on iOS.
-#if defined(OS_IOS)
-  CHECK(false);
-#endif
 
   int response_code = 0;
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)

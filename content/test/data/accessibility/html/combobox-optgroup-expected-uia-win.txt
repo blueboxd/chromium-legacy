@@ -6,4 +6,3 @@ Document
 ++++++++ListItem Name='Saab Label' SelectionItem.IsSelected=false
 ++++++++ListItem Name='Mercedes Label' SelectionItem.IsSelected=true
 ++++++++ListItem Name='Audi Label' SelectionItem.IsSelected=false
-<-- End-of-file -->

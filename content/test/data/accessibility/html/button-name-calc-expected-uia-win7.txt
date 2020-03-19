@@ -18,4 +18,3 @@ Document
 ++++Group
 ++++++Group IsControlElement=false
 ++++++++Text Name='grandchild' IsControlElement=false
-<-- End-of-file -->

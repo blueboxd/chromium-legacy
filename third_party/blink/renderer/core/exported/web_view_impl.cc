@@ -1476,8 +1476,12 @@ void WebViewImpl::DidExitFullscreen() {
   fullscreen_controller_->DidExitFullscreen();
 }
 
-void WebViewImpl::SetWebFrameWidget(WebFrameWidget* widget) {
+void WebViewImpl::SetMainFrameWidgetBase(WebFrameWidgetBase* widget) {
   web_widget_ = widget;
+}
+
+WebFrameWidgetBase* WebViewImpl::MainFrameWidgetBase() {
+  return web_widget_;
 }
 
 void WebViewImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
@@ -2859,11 +2863,16 @@ TransformationMatrix WebViewImpl::GetDeviceEmulationTransform() const {
   return device_emulation_transform_;
 }
 
-void WebViewImpl::SetDeviceEmulation(
-    const base::Optional<WebDeviceEmulationParams>& params) {
+void WebViewImpl::EnableDeviceEmulation(
+    const WebDeviceEmulationParams& params) {
   TransformationMatrix device_emulation_transform =
-      dev_tools_emulator_->SetDeviceEmulation(params);
+      dev_tools_emulator_->EnableDeviceEmulation(params);
   SetDeviceEmulationTransform(device_emulation_transform);
+}
+
+void WebViewImpl::DisableDeviceEmulation() {
+  dev_tools_emulator_->DisableDeviceEmulation();
+  SetDeviceEmulationTransform(TransformationMatrix());
 }
 
 void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {

@@ -30,7 +30,7 @@ public class UmaUtils {
     }
 
     @CalledByNative
-    public static long getMainEntryPointTicks() {
+    public static long getApplicationStartTime() {
         return sApplicationStartTimeMs;
     }
 }

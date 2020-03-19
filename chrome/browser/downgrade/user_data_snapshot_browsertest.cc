@@ -394,15 +394,16 @@ class TabsSnapshotTest : public UserDataSnapshotBrowserTestBase {
         browser()->profile()->GetPrefs()->GetInteger(prefs::kRestoreOnStartup),
         1);
     auto* tab_strip = browser()->tab_strip_model();
-    // There are 2 tabs that need to be preserved, however in the test, there
-    // will be another about:blank tab.
-    if (IsInitialVersion()) {
-      ASSERT_EQ(tab_strip->count(), 2);
-    } else {
-      ASSERT_EQ(tab_strip->count(), 3);
+    // There are 2 tabs that need to be preserved. There might be a 3rd tab,
+    // about:blank that is opened by the test itself. That 3rd tab may or may
+    // not have been opened at this time.
+    ASSERT_GE(tab_strip->count(), 2);
+    ASSERT_LE(tab_strip->count(), 3);
+    if (tab_strip->count() == 3) {
       content::WaitForLoadStop(tab_strip->GetWebContentsAt(2));
       EXPECT_EQ(tab_strip->GetWebContentsAt(2)->GetURL(), GURL("about:blank"));
     }
+
     // embedded_test_server() might return a different hostname.
     content::WaitForLoadStop(tab_strip->GetWebContentsAt(0));
     EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetURL().path(), "/title1.html");

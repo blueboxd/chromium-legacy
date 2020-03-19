@@ -252,6 +252,7 @@ void TableView::SetColumnVisibility(int id, bool is_visible) {
         SetActiveVisibleColumnIndex(int{visible_columns_.size()} - 1);
     }
   }
+  ClearVirtualAccessibilityChildren();
   UpdateVisibleColumnSizes();
   PreferredSizeChanged();
   SchedulePaint();
@@ -334,6 +335,7 @@ void TableView::SetVisibleColumnWidth(int index, int width) {
   }
   PreferredSizeChanged();
   SchedulePaint();
+  UpdateVirtualAccessibilityChildrenBounds();
 }
 
 int TableView::ModelToView(int model_index) const {
@@ -418,6 +420,16 @@ gfx::Size TableView::CalculatePreferredSize() const {
   if (header_ && !visible_columns_.empty())
     width = visible_columns_.back().x + visible_columns_.back().width;
   return gfx::Size(width, GetRowCount() * row_height_);
+}
+
+bool TableView::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return true;
+}
+
+void TableView::OnVisibleBoundsChanged() {
+  // When our visible bounds change, we need to make sure we update the bounds
+  // of our AXVirtualView children.
+  UpdateVirtualAccessibilityChildrenBounds();
 }
 
 bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -1188,7 +1200,7 @@ GroupRange TableView::GetGroupRange(int model_index) const {
 }
 
 void TableView::UpdateVirtualAccessibilityChildren() {
-  GetViewAccessibility().RemoveAllVirtualChildViews();
+  ClearVirtualAccessibilityChildren();
   if (!GetRowCount() || visible_columns_.empty())
     return;
 
@@ -1200,8 +1212,6 @@ void TableView::UpdateVirtualAccessibilityChildren() {
     auto ax_header = std::make_unique<AXVirtualView>();
     ui::AXNodeData& header_data = ax_header->GetCustomData();
     header_data.role = ax::mojom::Role::kRow;
-    header_data.relative_bounds.bounds =
-        AdjustRectForAXRelativeBounds(header_->GetVisibleBounds());
 
     for (size_t visible_column_index = 0;
          visible_column_index < visible_columns_.size();
@@ -1213,10 +1223,6 @@ void TableView::UpdateVirtualAccessibilityChildren() {
       ui::AXNodeData& cell_data = ax_cell->GetCustomData();
       cell_data.role = ax::mojom::Role::kColumnHeader;
       cell_data.SetName(column.title);
-      gfx::Rect header_cell_bounds(visible_column.x, header_->y(),
-                                   visible_column.width, header_->height());
-      cell_data.relative_bounds.bounds =
-          AdjustRectForAXRelativeBounds(header_cell_bounds);
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                                 static_cast<int32_t>(visible_column_index));
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
@@ -1264,16 +1270,15 @@ void TableView::UpdateVirtualAccessibilityChildren() {
     row_data.SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kSelect);
     row_data.AddIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
                              static_cast<int32_t>(view_index));
-    gfx::Rect row_bounds = GetRowBounds(view_index);
-    row_data.relative_bounds.bounds = AdjustRectForAXRelativeBounds(row_bounds);
     if (!single_selection_)
       row_data.AddState(ax::mojom::State::kMultiselectable);
 
     base::RepeatingCallback<void(ui::AXNodeData*)> row_callback =
         base::BindRepeating(
-            [](TableView* table, const int model_index,
-               const gfx::Rect& row_bounds, ui::AXNodeData* data) {
+            [](TableView* table, int model_index, ui::AXNodeData* data) {
               DCHECK(table);
+              gfx::Rect row_bounds =
+                  table->GetRowBounds(table->ModelToView(model_index));
               if (!table->GetVisibleBounds().Intersects(row_bounds))
                 data->AddState(ax::mojom::State::kInvisible);
               if (table->selection_model().IsSelected(model_index)) {
@@ -1281,7 +1286,7 @@ void TableView::UpdateVirtualAccessibilityChildren() {
                                        true);
               }
             },
-            base::Unretained(this), model_index, row_bounds);
+            base::Unretained(this), model_index);
     ax_row->SetPopulateDataCallback(std::move(row_callback));
 
     for (size_t visible_column_index = 0;
@@ -1301,9 +1306,6 @@ void TableView::UpdateVirtualAccessibilityChildren() {
         cell_data.AddAction(ax::mojom::Action::kScrollToMakeVisible);
         cell_data.AddAction(ax::mojom::Action::kSetSelection);
       }
-      gfx::Rect cell_bounds = GetCellBounds(view_index, visible_column_index);
-      cell_data.relative_bounds.bounds =
-          AdjustRectForAXRelativeBounds(cell_bounds);
 
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
                                 static_cast<int32_t>(view_index));
@@ -1331,10 +1333,11 @@ void TableView::UpdateVirtualAccessibilityChildren() {
 
       base::RepeatingCallback<void(ui::AXNodeData*)> cell_callback =
           base::BindRepeating(
-              [](TableView* table, const int model_index,
-                 const size_t visible_column_index,
-                 const gfx::Rect& cell_bounds, ui::AXNodeData* data) {
+              [](TableView* table, int model_index, size_t visible_column_index,
+                 ui::AXNodeData* data) {
                 DCHECK(table);
+                gfx::Rect cell_bounds = table->GetCellBounds(
+                    table->ModelToView(model_index), visible_column_index);
                 if (!table->GetVisibleBounds().Intersects(cell_bounds))
                   data->AddState(ax::mojom::State::kInvisible);
                 if (PlatformStyle::kTableViewSupportsKeyboardNavigationByCell &&
@@ -1346,8 +1349,7 @@ void TableView::UpdateVirtualAccessibilityChildren() {
                   }
                 }
               },
-              base::Unretained(this), model_index, visible_column_index,
-              cell_bounds);
+              base::Unretained(this), model_index, visible_column_index);
       ax_cell->SetPopulateDataCallback(std::move(cell_callback));
 
       ax_row->AddChildView(std::move(ax_cell));
@@ -1355,6 +1357,89 @@ void TableView::UpdateVirtualAccessibilityChildren() {
 
     GetViewAccessibility().AddVirtualChildView(std::move(ax_row));
   }
+
+  UpdateVirtualAccessibilityChildrenBounds();
+}
+
+void TableView::ClearVirtualAccessibilityChildren() {
+  GetViewAccessibility().RemoveAllVirtualChildViews();
+}
+
+void TableView::UpdateVirtualAccessibilityChildrenBounds() {
+  // The virtual children may be empty if the |model_| is in the process of
+  // updating (e.g. showing or hiding a column) but the virtual accessibility
+  // children haven't been updated yet to reflect the new model.
+  auto& virtual_children = GetViewAccessibility().virtual_children();
+  if (virtual_children.empty())
+    return;
+
+  // Update the bounds for the header first, if applicable.
+  if (header_) {
+    auto& ax_row = virtual_children[0];
+    ui::AXNodeData& row_data = ax_row->GetCustomData();
+    DCHECK_EQ(ax_row->GetData().role, ax::mojom::Role::kRow);
+    row_data.relative_bounds.bounds =
+        gfx::RectF(CalculateHeaderRowAccessibilityBounds());
+
+    // Update the bounds for every child cell in this row.
+    for (size_t visible_column_index = 0;
+         visible_column_index < ax_row->children().size();
+         visible_column_index++) {
+      ui::AXNodeData& cell_data =
+          ax_row->children()[visible_column_index]->GetCustomData();
+
+      DCHECK_EQ(cell_data.role, ax::mojom::Role::kColumnHeader);
+      cell_data.relative_bounds.bounds = gfx::RectF(
+          CalculateHeaderCellAccessibilityBounds(visible_column_index));
+    }
+  }
+
+  // Update the bounds for the table's content rows.
+  for (int row_index = 0; row_index < GetRowCount(); row_index++) {
+    auto& ax_row = virtual_children[header_ ? row_index + 1 : row_index];
+    ui::AXNodeData& row_data = ax_row->GetCustomData();
+    DCHECK_EQ(ax_row->GetData().role, ax::mojom::Role::kRow);
+    row_data.relative_bounds.bounds =
+        gfx::RectF(CalculateTableRowAccessibilityBounds(row_index));
+
+    // Update the bounds for every child cell in this row.
+    for (size_t visible_column_index = 0;
+         visible_column_index < ax_row->children().size();
+         visible_column_index++) {
+      ui::AXNodeData& cell_data =
+          ax_row->children()[visible_column_index]->GetCustomData();
+
+      DCHECK_EQ(cell_data.role, ax::mojom::Role::kCell);
+      cell_data.relative_bounds.bounds =
+          gfx::RectF(CalculateTableCellAccessibilityBounds(
+              row_index, visible_column_index));
+    }
+  }
+}
+
+gfx::Rect TableView::CalculateHeaderRowAccessibilityBounds() const {
+  return AdjustRectForAXRelativeBounds(header_->GetVisibleBounds());
+}
+
+gfx::Rect TableView::CalculateHeaderCellAccessibilityBounds(
+    const int visible_column_index) const {
+  const VisibleColumn& visible_column = visible_columns_[visible_column_index];
+  gfx::Rect header_cell_bounds(visible_column.x, header_->y(),
+                               visible_column.width, header_->height());
+  return AdjustRectForAXRelativeBounds(header_cell_bounds);
+}
+
+gfx::Rect TableView::CalculateTableRowAccessibilityBounds(
+    const int row_index) const {
+  gfx::Rect row_bounds = GetRowBounds(row_index);
+  return AdjustRectForAXRelativeBounds(row_bounds);
+}
+
+gfx::Rect TableView::CalculateTableCellAccessibilityBounds(
+    const int row_index,
+    const int visible_column_index) const {
+  gfx::Rect cell_bounds = GetCellBounds(row_index, visible_column_index);
+  return AdjustRectForAXRelativeBounds(cell_bounds);
 }
 
 void TableView::UpdateAccessibilityFocus() {
@@ -1421,9 +1506,11 @@ AXVirtualView* TableView::GetVirtualAccessibilityCell(
   return i->get();
 }
 
-gfx::RectF TableView::AdjustRectForAXRelativeBounds(gfx::Rect rect) const {
-  View::ConvertRectToScreen(this, &rect);
-  return gfx::RectF(rect);
+gfx::Rect TableView::AdjustRectForAXRelativeBounds(
+    const gfx::Rect& rect) const {
+  gfx::Rect converted_rect = rect;
+  View::ConvertRectToScreen(this, &converted_rect);
+  return converted_rect;
 }
 
 DEFINE_ENUM_CONVERTERS(TableTypes,

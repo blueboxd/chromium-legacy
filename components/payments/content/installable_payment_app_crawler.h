@@ -19,7 +19,6 @@
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_manifest_downloader.h"
-#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "url/origin.h"
@@ -112,7 +111,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
 
   DeveloperConsoleLogger log_;
   const url::Origin merchant_origin_;
-  const content::GlobalFrameRoutingId initiator_frame_routing_id_;
+  content::RenderFrameHost* initiator_render_frame_host_;
   PaymentManifestDownloader* downloader_;
   PaymentManifestParser* parser_;
   FinishedCrawlingCallback callback_;

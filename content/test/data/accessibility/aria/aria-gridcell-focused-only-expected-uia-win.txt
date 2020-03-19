@@ -11,4 +11,3 @@ Document
 ++++++DataItem Name='Blink' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=1 GridItem.RowSpan=1
 ++++++++Text Name='Blink' IsControlElement=false
 ++Text Name='Done'
-<-- End-of-file -->

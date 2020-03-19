@@ -8,4 +8,3 @@ Document
 ++++++ListItem Name='Baz' SelectionItem.IsSelected=false SelectionItem.SelectionContainer='Choose one:'
 ++++++ListItem Name='Bar' SelectionItem.IsSelected=false SelectionItem.SelectionContainer='Choose one:'
 ++++++ListItem Name='Foo' SelectionItem.IsSelected=false SelectionItem.SelectionContainer='Choose one:'
-<-- End-of-file -->

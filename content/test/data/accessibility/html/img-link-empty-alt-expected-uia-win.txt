@@ -9,4 +9,3 @@ Document
 ++++Hyperlink Name='read'
 ++++++Image
 ++++++Text Name='read' IsControlElement=false
-<-- End-of-file -->

@@ -8,7 +8,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/devtools/web_device_emulation_params.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -116,7 +116,7 @@ TEST_P(FrameOverlayTest, AcceleratedCompositing) {
 TEST_P(FrameOverlayTest, DeviceEmulationScale) {
   WebDeviceEmulationParams params;
   params.scale = 1.5;
-  GetWebView()->SetDeviceEmulation(params);
+  GetWebView()->EnableDeviceEmulation(params);
   GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 

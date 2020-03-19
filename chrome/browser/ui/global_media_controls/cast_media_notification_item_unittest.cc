@@ -60,7 +60,8 @@ class MockMediaNotificationController
   MOCK_METHOD1(HideNotification, void(const std::string&));
   MOCK_METHOD1(RemoveItem, void(const std::string&));
   MOCK_CONST_METHOD0(GetTaskRunner, scoped_refptr<base::SequencedTaskRunner>());
-  MOCK_METHOD1(LogMediaSessionActionButtonPressed, void(const std::string&));
+  MOCK_METHOD2(LogMediaSessionActionButtonPressed,
+               void(const std::string&, MediaSessionAction));
 };
 
 class MockMediaNotificationView

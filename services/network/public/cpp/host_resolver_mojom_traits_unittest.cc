@@ -9,6 +9,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/ip_address_mojom_traits.h"
 #include "services/network/public/cpp/ip_endpoint_mojom_traits.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {

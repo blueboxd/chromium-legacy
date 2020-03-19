@@ -12,6 +12,7 @@
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
@@ -103,11 +104,53 @@ class PasswordManagerSyncTest : public SyncTest {
 
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
+
+    encryption_helper::SetKeystoreNigoriInFakeServer(GetFakeServer());
   }
 
   void TearDownOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
     SyncTest::TearDownOnMainThread();
+  }
+
+  void SetupSyncTransportWithPasswordAccountStorage() {
+    // Setup Sync for a secondary account (i.e. in transport mode).
+    secondary_account_helper::SignInSecondaryAccount(
+        GetProfile(0), &test_url_loader_factory_, "user@email.com");
+    ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+    ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+    // Let the user opt in to the passwords account storage, and wait for it to
+    // become active.
+    password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
+                                                  GetSyncService(0), true);
+    PasswordSyncActiveChecker(GetSyncService(0)).Wait();
+    ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  }
+
+  autofill::PasswordForm CreateTestPasswordForm(const std::string& username,
+                                                const std::string& password) {
+    GURL origin = embedded_test_server()->GetURL("/");
+    autofill::PasswordForm form;
+    form.signon_realm = origin.spec();
+    form.origin = origin;
+    form.username_value = base::UTF8ToUTF16(username);
+    form.password_value = base::UTF8ToUTF16(password);
+    form.date_created = base::Time::Now();
+    return form;
+  }
+
+  void AddPasswordToFakeServer(const std::string& username,
+                               const std::string& password) {
+    passwords_helper::InjectKeystoreEncryptedServerPassword(
+        CreateTestPasswordForm(username, password), GetFakeServer());
+  }
+
+  void AddLocalPassword(const std::string& username,
+                        const std::string& password) {
+    scoped_refptr<password_manager::PasswordStore> password_store =
+        passwords_helper::GetPasswordStore(0);
+    password_store->AddLogin(CreateTestPasswordForm(username, password));
   }
 
   // Synchronously reads all credentials from the profile password store and
@@ -142,6 +185,19 @@ class PasswordManagerSyncTest : public SyncTest {
     observer.Wait();
   }
 
+  void FillAndSubmitPasswordForm(content::WebContents* web_contents,
+                                 const std::string& username,
+                                 const std::string& password) {
+    NavigationObserver observer(web_contents);
+    std::string fill_and_submit = base::StringPrintf(
+        "document.getElementById('username_field').value = '%s';"
+        "document.getElementById('password_field').value = '%s';"
+        "document.getElementById('input_submit_button').click()",
+        username.c_str(), password.c_str());
+    ASSERT_TRUE(content::ExecJs(web_contents, fill_and_submit));
+    observer.Wait();
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 
@@ -159,32 +215,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
   content::WebContents* web_contents = nullptr;
   GetNewTab(GetBrowser(0), &web_contents);
 
-  // Setup Sync for a secondary account (i.e. in transport mode).
-  secondary_account_helper::SignInSecondaryAccount(
-      GetProfile(0), &test_url_loader_factory_, "user@email.com");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
-  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
-
-  // Let the user opt in to the passwords account storage, and wait for it to
-  // become active.
-  password_manager_util::SetAccountStorageOptIn(GetProfile(0)->GetPrefs(),
-                                                GetSyncService(0), true);
-  PasswordSyncActiveChecker(GetSyncService(0)).Wait();
-  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  SetupSyncTransportWithPasswordAccountStorage();
 
   // Part 1: Save a password; it should go into the account store by default.
   {
-    // Navigate to a page with a password form.
+    // Navigate to a page with a password form, fill it out, and submit it.
     NavigateToFile(web_contents, "/password/password_form.html");
-
-    // Fill out and submit the password form.
-    NavigationObserver observer(web_contents);
-    std::string fill_and_submit =
-        "document.getElementById('username_field').value = 'accountuser';"
-        "document.getElementById('password_field').value = 'accountpass';"
-        "document.getElementById('input_submit_button').click()";
-    ASSERT_TRUE(content::ExecJs(web_contents, fill_and_submit));
-    observer.Wait();
+    FillAndSubmitPasswordForm(web_contents, "accountuser", "accountpass");
 
     // Save the password and check the store.
     BubbleObserver bubble_observer(web_contents);
@@ -203,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
       GetProfile(0)->GetPrefs(), GetSyncService(0),
       autofill::PasswordForm::Store::kProfileStore);
   {
-    // Navigate to a page with a password form.
+    // Navigate to a page with a password form, fill it out, and submit it.
     // TODO(crbug.com/1058339): If we use the same URL as in part 1 here, then
     // the test fails because the *account* data gets filled and submitted
     // again. This is because the password manager is "smart" and prefers
@@ -216,15 +253,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
     // autofill on pageload, see PasswordManagerBrowserTestWithAutofillDisabled.
     // NavigateToFile(web_contents, "/password/password_form.html");
     NavigateToFile(web_contents, "/password/simple_password.html");
-
-    // Fill out and submit the password form.
-    NavigationObserver observer(web_contents);
-    std::string fill_and_submit =
-        "document.getElementById('username_field').value = 'localuser';"
-        "document.getElementById('password_field').value = 'localpass';"
-        "document.getElementById('input_submit_button').click()";
-    ASSERT_TRUE(content::ExecJs(web_contents, fill_and_submit));
-    observer.Wait();
+    FillAndSubmitPasswordForm(web_contents, "localuser", "localpass");
 
     // Save the password and check the store.
     BubbleObserver bubble_observer(web_contents);
@@ -236,6 +265,81 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
     EXPECT_THAT(profile_credentials,
                 ElementsAre(MatchesLogin("localuser", "localpass")));
   }
+}
+
+// Tests that if credentials for the same username, but with different passwords
+// exist in the two stores, and one of them is used to successfully log in, the
+// other one is silently updated to match.
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       AutoUpdateFromAccountToProfileOnSuccessfulUse) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Add credentials for the same username, but with different passwords, to the
+  // two stores.
+  AddPasswordToFakeServer("user", "accountpass");
+  AddLocalPassword("user", "localpass");
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  // Now we have credentials for the same user, but with different passwords, in
+  // the two stores.
+  ASSERT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "localpass")));
+  ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "accountpass")));
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form and submit the version of the credentials from the profile
+  // store.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "localpass");
+
+  // Now the credential should of course still be in the profile store...
+  ASSERT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "localpass")));
+  // ...but also the one in the account store should have been silently updated
+  // to match.
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "localpass")));
+}
+
+// Tests that if credentials for the same username, but with different passwords
+// exist in the two stores, and one of them is used to successfully log in, the
+// other one is silently updated to match.
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       AutoUpdateFromProfileToAccountOnSuccessfulUse) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Add credentials for the same username, but with different passwords, to the
+  // two stores.
+  AddPasswordToFakeServer("user", "accountpass");
+  AddLocalPassword("user", "localpass");
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  // Now we have credentials for the same user, but with different passwords, in
+  // the two stores.
+  ASSERT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "localpass")));
+  ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "accountpass")));
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form and submit the version of the credentials from the account
+  // store.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "accountpass");
+
+  // Now the credential should of course still be in the account store...
+  ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "accountpass")));
+  // ...but also the one in the profile store should have been updated to match.
+  EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "accountpass")));
 }
 #endif  // !defined(OS_CHROMEOS)
 

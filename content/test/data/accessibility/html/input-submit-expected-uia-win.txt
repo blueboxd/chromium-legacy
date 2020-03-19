@@ -12,4 +12,3 @@ Document
 ++++++Image
 ++++++Text Name='Second image button in a form not a valid default button' IsControlElement=false
 ++Button Name='Submit outside of form not a valid default button'
-<-- End-of-file -->

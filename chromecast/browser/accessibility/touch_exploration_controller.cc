@@ -195,6 +195,12 @@ ui::EventDispatchDetails TouchExplorationController::RewriteEvent(
   if (side_gesture_pass_through_ && type == ui::ET_TOUCH_PRESSED &&
       FindEdgesWithinInset(location, gesture_start_width_,
                            gesture_start_height_) != NO_EDGE) {
+    // If we are already in pass-through, ignore additional presses
+    // or the other fingers will clobber our initial press.
+    if (state_ == ONE_FINGER_PASSTHROUGH) {
+      return DiscardEvent(continuation);
+    }
+
     SET_STATE(ONE_FINGER_PASSTHROUGH);
     initial_press_ = std::make_unique<ui::TouchEvent>(touch_event);
     passthrough_offset_ = gfx::Vector2dF(0, 0);

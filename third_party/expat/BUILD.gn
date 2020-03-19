@@ -41,11 +41,6 @@ if (is_linux && !is_chromecast && !use_fuzzing_engine) {
     public_configs = [ ":expat_public_config" ]
     configs += [ ":expat_internal_config" ]
 
-    # TODO(thakis): Remove this once clang no longer crashes when building
-    # libexpat with -Oz.
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-
     defines = [ "_LIB" ]
     if (is_win) {
       # expat expects to define WIN32_LEAN_AND_MEAN itself

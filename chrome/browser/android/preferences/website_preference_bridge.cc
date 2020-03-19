@@ -21,7 +21,6 @@
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/uma_util.h"
@@ -787,7 +787,7 @@ static void JNI_WebsitePreferenceBridge_FetchLocalStorageInfo(
     jboolean fetch_important) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   auto local_storage_helper =
-      base::MakeRefCounted<BrowsingDataLocalStorageHelper>(profile);
+      base::MakeRefCounted<browsing_data::LocalStorageHelper>(profile);
   local_storage_helper->StartFetching(
       base::Bind(&OnLocalStorageModelInfoLoaded, profile, fetch_important,
                  ScopedJavaGlobalRef<jobject>(java_callback)));
@@ -809,7 +809,7 @@ static void JNI_WebsitePreferenceBridge_ClearLocalStorageData(
     const JavaParamRef<jobject>& java_callback) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   auto local_storage_helper =
-      base::MakeRefCounted<BrowsingDataLocalStorageHelper>(profile);
+      base::MakeRefCounted<browsing_data::LocalStorageHelper>(profile);
   auto origin =
       url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin)));
   local_storage_helper->DeleteOrigin(

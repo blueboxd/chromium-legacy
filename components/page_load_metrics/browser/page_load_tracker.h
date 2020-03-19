@@ -258,7 +258,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
     visibility_tracker_ = tracker;
   }
 
-  void NotifyClientRedirectTo(const PageLoadTracker& destination);
+  void NotifyClientRedirectTo(content::NavigationHandle* destination);
 
   void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info);

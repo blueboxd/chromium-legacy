@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "services/network/public/cpp/ip_address_mojom_traits.h"
 #include "services/network/public/cpp/ip_endpoint_mojom_traits.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 
 namespace mojo {
 

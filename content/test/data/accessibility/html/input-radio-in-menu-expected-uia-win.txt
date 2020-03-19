@@ -9,4 +9,3 @@ Document
 ++++RadioButton Name='Radio3' SelectionItem.IsSelected=false
 ++++RadioButton SelectionItem.IsSelected=false
 ++++RadioButton SelectionItem.IsSelected=true
-<-- End-of-file -->

@@ -9,10 +9,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.Card
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
+import android.view.View;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -102,7 +101,7 @@ class TabSelectionEditorCoordinator {
     }
 
     private final Context mContext;
-    private final ViewGroup mParentView;
+    private final View mParentView;
     private final TabModelSelector mTabModelSelector;
     private final TabSelectionEditorLayout mTabSelectionEditorLayout;
     private final TabListCoordinator mTabListCoordinator;
@@ -111,18 +110,19 @@ class TabSelectionEditorCoordinator {
     private final PropertyModelChangeProcessor mTabSelectionEditorLayoutChangeProcessor;
     private final TabSelectionEditorMediator mTabSelectionEditorMediator;
 
-    public TabSelectionEditorCoordinator(Context context, ViewGroup parentView,
+    public TabSelectionEditorCoordinator(Context context, View parentView,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
             @Nullable TabSelectionEditorMediator
-                    .TabSelectionEditorPositionProvider positionProvider,
-            @TabListCoordinator.TabListMode int mode) {
+                    .TabSelectionEditorPositionProvider positionProvider) {
         mContext = context;
         mParentView = parentView;
         mTabModelSelector = tabModelSelector;
 
-        mTabListCoordinator = new TabListCoordinator(mode, context, mTabModelSelector,
-                tabContentManager::getTabThumbnailWithCallback, null, false, null, null,
-                TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, mParentView, null,
+        // TODO(crbug.com/1007598): construct TabListCoordinator with List mode if it's a low end
+        // device, and TabGroupContinuation is turned on.
+        mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
+                mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
+                null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null, null,
                 false, COMPONENT_NAME);
         mTabListCoordinator.registerItemType(TabProperties.UiType.DIVIDER,
                 new LayoutViewBuilder(R.layout.divider_preference),
@@ -196,13 +196,5 @@ class TabSelectionEditorCoordinator {
         mTabSelectionEditorLayout.destroy();
         mTabSelectionEditorMediator.destroy();
         mTabSelectionEditorLayoutChangeProcessor.destroy();
-    }
-
-    /**
-     * @return The {@link TabSelectionEditorLayout} for testing.
-     */
-    @VisibleForTesting
-    public TabSelectionEditorLayout getTabSelectionEditorLayoutForTesting() {
-        return mTabSelectionEditorLayout;
     }
 }

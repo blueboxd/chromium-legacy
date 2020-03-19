@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
@@ -43,6 +44,10 @@ const char* kExpectedArticleTitle = "Test Page Title";
 #else   // Desktop. This test is in chrome/ and is not run on iOS.
 const char* kExpectedArticleTitle = "Test Page Title - Reader Mode";
 #endif  // defined(OS_ANDROID)
+const char* kDistillablePageHistogram =
+    "DomDistiller.Time.ActivelyViewingArticleBeforeDistilling";
+const char* kDistilledPageHistogram =
+    "DomDistiller.Time.ActivelyViewingReaderModePage";
 
 std::unique_ptr<content::WebContents> NewContentsWithSameParamsAs(
     content::WebContents* source_web_contents) {
@@ -175,6 +180,37 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   EXPECT_TRUE(
       after_web_contents->GetLastCommittedURL().SchemeIs(kDomDistillerScheme));
   EXPECT_EQ(kExpectedArticleTitle, GetPageTitle(after_web_contents));
+}
+
+// TODO(1061928): Make this test more robust by using a TestMockTimeTaskRunner
+// and a test TickClock. This would require having UMAHelper be an object
+// so that it can hold a TickClock reference.
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, UMATimesAreLogged) {
+  base::HistogramTester histogram_tester;
+
+  content::WebContents* initial_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // This blocks until the navigation has completely finished.
+  ui_test_utils::NavigateToURL(browser(), article_url());
+
+  // No UMA logged for distillable or distilled yet.
+  histogram_tester.ExpectTotalCount(kDistillablePageHistogram, 0);
+  histogram_tester.ExpectTotalCount(kDistilledPageHistogram, 0);
+
+  DistillCurrentPageAndView(initial_web_contents);
+
+  // UMA should now exist for the distillable page because we distilled it.
+  histogram_tester.ExpectTotalCount(kDistillablePageHistogram, 1);
+
+  // Distilled page UMA isn't logged until we leave that page.
+  histogram_tester.ExpectTotalCount(kDistilledPageHistogram, 0);
+
+  // Go back to the article, check UMA exists for distilled page now.
+  ui_test_utils::NavigateToURL(browser(), article_url());
+  histogram_tester.ExpectTotalCount(kDistilledPageHistogram, 1);
+  // However, there should not be a second distillable histogram.
+  histogram_tester.ExpectTotalCount(kDistillablePageHistogram, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,

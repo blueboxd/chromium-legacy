@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -24,6 +25,7 @@
 #include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
@@ -34,34 +36,24 @@ namespace {
 
 // TODO(robliao): http://crbug.com/615514 Remove when ScreenWin usage is
 // resolved with Desktop Aura and WindowTreeHost.
-ScreenWin* g_screen_win_instance = nullptr;
+ScreenWin* g_instance = nullptr;
 
-// Gets the DPI for a particular monitor, or 0 if per-monitor DPI is nuot
-// supported or can't be read.
+// Gets the DPI for a particular monitor.
 int GetPerMonitorDPI(HMONITOR monitor) {
-  // Most versions of Windows we will encounter are DPI-aware.
   if (!base::win::IsProcessPerMonitorDpiAware())
     return 0;
 
   static auto get_dpi_for_monitor_func = []() {
-    using GetDpiForMonitorPtr = decltype(::GetDpiForMonitor)*;
-    HMODULE shcore_dll = ::LoadLibrary(L"shcore.dll");
-    if (shcore_dll) {
-      return reinterpret_cast<GetDpiForMonitorPtr>(
-          ::GetProcAddress(shcore_dll, "GetDpiForMonitor"));
-    }
-    return static_cast<GetDpiForMonitorPtr>(nullptr);
+    const HMODULE shcore_dll = ::LoadLibrary(L"shcore.dll");
+    return reinterpret_cast<decltype(&::GetDpiForMonitor)>(
+        shcore_dll ? ::GetProcAddress(shcore_dll, "GetDpiForMonitor")
+                   : nullptr);
   }();
-
-  if (!get_dpi_for_monitor_func)
+  UINT dpi_x, dpi_y;
+  if (!get_dpi_for_monitor_func ||
+      !SUCCEEDED(
+          get_dpi_for_monitor_func(monitor, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y)))
     return 0;
-
-  UINT dpi_x;
-  UINT dpi_y;
-  if (!SUCCEEDED(get_dpi_for_monitor_func(monitor, MDT_EFFECTIVE_DPI, &dpi_x,
-                                          &dpi_y))) {
-    return 0;
-  }
 
   DCHECK_EQ(dpi_x, dpi_y);
   return int{dpi_x};
@@ -77,7 +69,7 @@ float GetMonitorScaleFactor(HMONITOR monitor,
   if (Display::HasForceDeviceScaleFactor())
     return Display::GetForcedDeviceScaleFactor();
 
-  int dpi = GetPerMonitorDPI(monitor);
+  const int dpi = GetPerMonitorDPI(monitor);
   if (!dpi)
     return GetDPIScale();
 
@@ -91,45 +83,42 @@ float GetMonitorScaleFactor(HMONITOR monitor,
 }
 
 bool GetPathInfo(HMONITOR monitor, DISPLAYCONFIG_PATH_INFO* path_info) {
-  LONG result;
-  uint32_t num_path_array_elements = 0;
-  uint32_t num_mode_info_array_elements = 0;
-  std::vector<DISPLAYCONFIG_PATH_INFO> path_infos;
-  std::vector<DISPLAYCONFIG_MODE_INFO> mode_infos;
-
   // Get the monitor name.
-  MONITORINFOEXW view_info;
-  view_info.cbSize = sizeof(view_info);
-  if (!GetMonitorInfoW(monitor, &view_info))
+  MONITORINFOEX monitor_info;
+  monitor_info.cbSize = sizeof(monitor_info);
+  if (!GetMonitorInfo(monitor, &monitor_info))
     return false;
 
   // Get all path infos.
+  LONG result;
+  std::vector<DISPLAYCONFIG_PATH_INFO> path_infos;
   do {
-    if (GetDisplayConfigBufferSizes(
-            QDC_ONLY_ACTIVE_PATHS, &num_path_array_elements,
-            &num_mode_info_array_elements) != ERROR_SUCCESS) {
+    uint32_t path_elements, mode_elements;
+    if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_elements,
+                                    &mode_elements) != ERROR_SUCCESS) {
       return false;
     }
-    path_infos.resize(num_path_array_elements);
-    mode_infos.resize(num_mode_info_array_elements);
-    result = QueryDisplayConfig(
-        QDC_ONLY_ACTIVE_PATHS, &num_path_array_elements, path_infos.data(),
-        &num_mode_info_array_elements, mode_infos.data(), nullptr);
+    path_infos.resize(path_elements);
+    std::vector<DISPLAYCONFIG_MODE_INFO> mode_infos(mode_elements);
+    result = QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &path_elements,
+                                path_infos.data(), &mode_elements,
+                                mode_infos.data(), nullptr);
+    if (result == ERROR_SUCCESS)
+      path_infos.resize(path_elements);
   } while (result == ERROR_INSUFFICIENT_BUFFER);
 
-  // Iterate of the path infos and see if we find one with a matching name.
+  // Look for a path info with a matching name.
   if (result == ERROR_SUCCESS) {
-    for (uint32_t p = 0; p < num_path_array_elements; p++) {
-      DISPLAYCONFIG_SOURCE_DEVICE_NAME device_name;
+    for (const auto& info : path_infos) {
+      DISPLAYCONFIG_SOURCE_DEVICE_NAME device_name = {};
       device_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
       device_name.header.size = sizeof(device_name);
-      device_name.header.adapterId = path_infos[p].sourceInfo.adapterId;
-      device_name.header.id = path_infos[p].sourceInfo.id;
-      if (DisplayConfigGetDeviceInfo(&device_name.header) == ERROR_SUCCESS) {
-        if (wcscmp(view_info.szDevice, device_name.viewGdiDeviceName) == 0) {
-          *path_info = path_infos[p];
-          return true;
-        }
+      device_name.header.adapterId = info.sourceInfo.adapterId;
+      device_name.header.id = info.sourceInfo.id;
+      if ((DisplayConfigGetDeviceInfo(&device_name.header) == ERROR_SUCCESS) &&
+          (wcscmp(monitor_info.szDevice, device_name.viewGdiDeviceName) == 0)) {
+        *path_info = info;
+        return true;
       }
     }
   }
@@ -137,20 +126,17 @@ bool GetPathInfo(HMONITOR monitor, DISPLAYCONFIG_PATH_INFO* path_info) {
 }
 
 float GetMonitorSDRWhiteLevel(HMONITOR monitor) {
-  float ret = 200.0;  // default value
   DISPLAYCONFIG_PATH_INFO path_info = {};
-  if (!GetPathInfo(monitor, &path_info))
-    return ret;
-
-  DISPLAYCONFIG_SDR_WHITE_LEVEL white_level = {};
-  white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
-  white_level.header.size = sizeof(white_level);
-  white_level.header.adapterId = path_info.targetInfo.adapterId;
-  white_level.header.id = path_info.targetInfo.id;
-  if (DisplayConfigGetDeviceInfo(&white_level.header) != ERROR_SUCCESS)
-    return ret;
-  ret = white_level.SDRWhiteLevel * 80.0 / 1000.0;
-  return ret;
+  if (GetPathInfo(monitor, &path_info)) {
+    DISPLAYCONFIG_SDR_WHITE_LEVEL white_level = {};
+    white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
+    white_level.header.size = sizeof(white_level);
+    white_level.header.adapterId = path_info.targetInfo.adapterId;
+    white_level.header.id = path_info.targetInfo.id;
+    if (DisplayConfigGetDeviceInfo(&white_level.header) == ERROR_SUCCESS)
+      return white_level.SDRWhiteLevel * 80.0 / 1000.0;
+  }
+  return 200.0f;
 }
 
 void GetDisplaySettingsForDevice(const wchar_t* device_name,
@@ -160,34 +146,33 @@ void GetDisplaySettingsForDevice(const wchar_t* device_name,
   *frequency = 0;
   DEVMODE mode = {};
   mode.dmSize = sizeof(mode);
-  if (::EnumDisplaySettings(device_name, ENUM_CURRENT_SETTINGS, &mode)) {
-    switch (mode.dmDisplayOrientation) {
-      case DMDO_DEFAULT:
-        *rotation = Display::ROTATE_0;
-        break;
-      case DMDO_90:
-        *rotation = Display::ROTATE_90;
-        break;
-      case DMDO_180:
-        *rotation = Display::ROTATE_180;
-        break;
-      case DMDO_270:
-        *rotation = Display::ROTATE_270;
-        break;
-      default:
-        NOTREACHED();
-    }
-    *frequency = mode.dmDisplayFrequency;
+  if (!::EnumDisplaySettings(device_name, ENUM_CURRENT_SETTINGS, &mode))
+    return;
+  switch (mode.dmDisplayOrientation) {
+    case DMDO_DEFAULT:
+      *rotation = Display::ROTATE_0;
+      break;
+    case DMDO_90:
+      *rotation = Display::ROTATE_90;
+      break;
+    case DMDO_180:
+      *rotation = Display::ROTATE_180;
+      break;
+    case DMDO_270:
+      *rotation = Display::ROTATE_270;
+      break;
+    default:
+      NOTREACHED();
   }
+  *frequency = mode.dmDisplayFrequency;
 }
 
 std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
-    const DisplayInfo& ref_display_info,
+    const DisplayInfo& parent_info,
     std::vector<DisplayInfo>* display_infos) {
   std::vector<DisplayInfo> touching_display_infos;
-  base::EraseIf(*display_infos, [&touching_display_infos, ref_display_info](
-      const DisplayInfo& display_info) {
-    if (DisplayInfosTouch(ref_display_info, display_info)) {
+  base::EraseIf(*display_infos, [&](const auto& display_info) {
+    if (DisplayInfosTouch(parent_info, display_info)) {
       touching_display_infos.push_back(display_info);
       return true;
     }
@@ -199,87 +184,77 @@ std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
 Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
                                      ColorProfileReader* color_profile_reader,
                                      bool hdr_enabled) {
-  Display display(display_info.id());
-  float scale_factor = display_info.device_scale_factor();
+  const float scale_factor = display_info.device_scale_factor();
+  const gfx::Rect bounds = gfx::ScaleToEnclosingRect(display_info.screen_rect(),
+                                                     1.0f / scale_factor);
+  Display display(display_info.id(), bounds);
   display.set_device_scale_factor(scale_factor);
-  display.set_work_area(
-      gfx::ScaleToEnclosingRect(display_info.screen_work_rect(),
-                                1.0f / scale_factor));
-  display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
-                     1.0f / scale_factor));
+  display.set_work_area(gfx::ScaleToEnclosingRect(
+      display_info.screen_work_rect(), 1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
   display.set_display_frequency(display_info.display_frequency());
 
-  // Compute the DisplayColorSpace for this configuration. Note that it is
-  // important to specify that there is no alpha channel when it is not needed,
-  // so that DXGI_ALPHA_MODE_IGNORE is specified. Not doing so regresses power
-  // usage substantially.
-  // https://crbug.com/1057163
+  // Compute the DisplayColorSpace for this configuration.
+  // When alpha is not needed, specify BGRX_8888 to get DXGI_ALPHA_MODE_IGNORE.
+  // This saves significant power (see https://crbug.com/1057163).
   gfx::DisplayColorSpaces color_spaces = display.color_spaces();
   if (Display::HasForceDisplayColorProfile()) {
     color_spaces.SetOutputBufferFormats(gfx::BufferFormat::BGRX_8888,
                                         gfx::BufferFormat::BGRA_8888);
-  } else {
-    if (hdr_enabled) {
-      // This will map to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 with
-      // DXGI_FORMAT_B8G8R8A8_UNORM.
-      const auto srgb = gfx::ColorSpace::CreateSRGB();
+  } else if (hdr_enabled) {
+    const float sdr_white_level = display_info.sdr_white_level();
+    color_spaces.SetSDRWhiteLevel(sdr_white_level);
 
-      // This will map to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709. In that
-      // space, the brightness of (1,1,1) is 80 nits. That's where the magic
-      // constant of 80 comes in.
-      const auto scrgb_linear = gfx::ColorSpace::CreateSCRGBLinear(
-          80.f / display_info.sdr_white_level());
+    // This will map to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 with
+    // DXGI_FORMAT_B8G8R8A8_UNORM.
+    const auto srgb = gfx::ColorSpace::CreateSRGB();
 
-      // This will map to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, with
-      // sRGB's (1,1,1) mapping to the specified number of nits.
-      const auto hdr10 =
-          gfx::ColorSpace::CreateHDR10(display_info.sdr_white_level());
+    // This will map to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709. In that
+    // space, the brightness of (1,1,1) is 80 nits.
+    constexpr float kScrgbWhiteLevel = 80.0f;
+    const auto scrgb_linear =
+        gfx::ColorSpace::CreateSCRGBLinear(kScrgbWhiteLevel / sdr_white_level);
 
-      // For sRGB content, use 8-bit formats.
-      color_spaces.SetOutputColorSpaceAndBufferFormat(
-          gfx::ContentColorUsage::kSRGB, /*needs_alpha=*/false, srgb,
-          gfx::BufferFormat::BGRX_8888);
-      color_spaces.SetOutputColorSpaceAndBufferFormat(
-          gfx::ContentColorUsage::kSRGB, /*needs_alpha=*/true, srgb,
-          gfx::BufferFormat::BGRA_8888);
+    // This will map to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, with
+    // sRGB's (1,1,1) mapping to the specified number of nits.
+    const auto hdr10 = gfx::ColorSpace::CreateHDR10(sdr_white_level);
 
-      // Use HDR color spaces only when there is WCG or HDR content on the
-      // screen.
-      const gfx::ContentColorUsage content_color_usages[] = {
-          gfx::ContentColorUsage::kWideColorGamut,
-          gfx::ContentColorUsage::kHDR,
-      };
-      for (const auto& usage : content_color_usages) {
-        // Using RGBA F16 backbuffers required by SCRGB linear causes
-        // stuttering on Windows RS3, but RGB10A2 with HDR10 color space works
-        // fine (see https://crbug.com/937108#c92).
-        if (base::win::GetVersion() > base::win::Version::WIN10_RS3) {
-          color_spaces.SetOutputColorSpaceAndBufferFormat(
-              usage, /*needs_alpha=*/false, scrgb_linear,
-              gfx::BufferFormat::RGBA_F16);
-        } else {
-          color_spaces.SetOutputColorSpaceAndBufferFormat(
-              usage, /*needs_alpha=*/false, hdr10,
-              gfx::BufferFormat::BGRA_1010102);
-        }
-        // Use RGBA F16 backbuffers for HDR if alpha channel is required.
+    // For sRGB content, use 8-bit formats.
+    constexpr bool kNeedsAlpha = true;
+    color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kSRGB, !kNeedsAlpha, srgb,
+        gfx::BufferFormat::BGRX_8888);
+    color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kSRGB, kNeedsAlpha, srgb,
+        gfx::BufferFormat::BGRA_8888);
+
+    // Use HDR color spaces only when there is WCG or HDR content on the
+    // screen.
+    for (const auto& usage : {gfx::ContentColorUsage::kWideColorGamut,
+                              gfx::ContentColorUsage::kHDR}) {
+      // Using RGBA F16 backbuffers required by SCRGB linear causes
+      // stuttering on Windows RS3, but RGB10A2 with HDR10 color space works
+      // fine (see https://crbug.com/937108#c92).
+      if (base::win::GetVersion() > base::win::Version::WIN10_RS3) {
         color_spaces.SetOutputColorSpaceAndBufferFormat(
-            usage, /*needs_alpha=*/true, scrgb_linear,
-            gfx::BufferFormat::RGBA_F16);
+            usage, !kNeedsAlpha, scrgb_linear, gfx::BufferFormat::RGBA_F16);
+      } else {
+        color_spaces.SetOutputColorSpaceAndBufferFormat(
+            usage, !kNeedsAlpha, hdr10, gfx::BufferFormat::BGRA_1010102);
       }
-      color_spaces.SetSDRWhiteLevel(display_info.sdr_white_level());
-
-      // We set these to 10 bpp because these are (ab)used by pages via media
-      // query APIs to detect HDR support.
-      display.set_color_depth(Display::kHDR10BitsPerPixel);
-      display.set_depth_per_component(Display::kHDR10BitsPerComponent);
-    } else {
-      color_spaces = gfx::DisplayColorSpaces(
-          color_profile_reader->GetDisplayColorSpace(display_info.id()));
-      color_spaces.SetOutputBufferFormats(gfx::BufferFormat::BGRX_8888,
-                                          gfx::BufferFormat::BGRA_8888);
+      // Use RGBA F16 backbuffers for HDR if alpha channel is required.
+      color_spaces.SetOutputColorSpaceAndBufferFormat(
+          usage, kNeedsAlpha, scrgb_linear, gfx::BufferFormat::RGBA_F16);
     }
+
+    // These are (ab)used by pages via media query APIs to detect HDR support.
+    display.set_color_depth(Display::kHDR10BitsPerPixel);
+    display.set_depth_per_component(Display::kHDR10BitsPerComponent);
+  } else {
+    color_spaces = gfx::DisplayColorSpaces(
+        color_profile_reader->GetDisplayColorSpace(display_info.id()));
+    color_spaces.SetOutputBufferFormats(gfx::BufferFormat::BGRX_8888,
+                                        gfx::BufferFormat::BGRA_8888);
   }
   display.set_color_spaces(color_spaces);
 
@@ -292,12 +267,12 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
 //
 // To do this, DisplayInfosToScreenWinDisplays reasons over monitors as a tree
 // using the primary monitor as the root. All monitors touching this root are
-// considered a children.
+// considered children.
 //
-// This also presumes that all monitors are connected components. Windows, by UI
-// construction restricts the layout of monitors to connected components except
-// when DPI virtualization is happening. When this happens, we scale relative
-// to (0, 0).
+// This also presumes that all monitors are connected components. By UI
+// construction, Windows restricts the layout of monitors to connected
+// components except when DPI virtualization is happening. When this happens, we
+// scale relative to (0, 0).
 //
 // Note that this does not handle cases where a scaled display may have
 // insufficient room to lay out its children. In these cases, a DIP point could
@@ -310,19 +285,17 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
   // Find and extract the primary display.
   std::vector<DisplayInfo> display_infos_remaining = display_infos;
   auto primary_display_iter = std::find_if(
-      display_infos_remaining.begin(), display_infos_remaining.end(), [](
-          const DisplayInfo& display_info) {
+      display_infos_remaining.begin(), display_infos_remaining.end(),
+      [](const DisplayInfo& display_info) {
         return display_info.screen_rect().origin().IsOrigin();
       });
-  DCHECK(primary_display_iter != display_infos_remaining.end()) <<
-      "Missing primary display.";
+  DCHECK(primary_display_iter != display_infos_remaining.end());
 
-  std::vector<DisplayInfo> available_parents;
-  available_parents.push_back(*primary_display_iter);
-  DisplayLayoutBuilder builder(primary_display_iter->id());
-  display_infos_remaining.erase(primary_display_iter);
   // Build the tree and determine DisplayPlacements along the way.
-  while (available_parents.size()) {
+  DisplayLayoutBuilder builder(primary_display_iter->id());
+  std::vector<DisplayInfo> available_parents = {*primary_display_iter};
+  display_infos_remaining.erase(primary_display_iter);
+  while (!available_parents.empty()) {
     const DisplayInfo parent = available_parents.back();
     available_parents.pop_back();
     for (const auto& child :
@@ -338,15 +311,11 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
     displays.push_back(CreateDisplayFromDisplayInfo(
         display_info, color_profile_reader, hdr_enabled));
   }
-
-  std::unique_ptr<DisplayLayout> layout(builder.Build());
-  layout->ApplyToDisplayList(&displays, nullptr, 0);
+  builder.Build()->ApplyToDisplayList(&displays, nullptr, 0);
 
   std::vector<ScreenWinDisplay> screen_win_displays;
-  const size_t num_displays = display_infos.size();
-  for (size_t i = 0; i < num_displays; ++i)
+  for (size_t i = 0; i < display_infos.size(); ++i)
     screen_win_displays.emplace_back(displays[i], display_infos[i]);
-
   return screen_win_displays;
 }
 
@@ -366,32 +335,27 @@ MONITORINFOEX MonitorInfoFromHMONITOR(HMONITOR monitor) {
 }
 
 gfx::Vector2dF GetPixelsPerInchForPointerDevice(HANDLE source_device) {
-  gfx::Vector2dF pixels_per_inch;
   static const auto get_pointer_device_rects =
       reinterpret_cast<decltype(&::GetPointerDeviceRects)>(
           base::win::GetUser32FunctionPointer("GetPointerDeviceRects"));
-  if (!get_pointer_device_rects)
-    return pixels_per_inch;
-
   RECT screen = {};
   RECT device = {};
-  if (get_pointer_device_rects(source_device, &device, &screen)) {
-    constexpr float kHimetricPerInch = 2540.f;
-    float himetric_to_pixel_ratio_x =
-        float{device.right - device.left} / float{screen.right - screen.left};
-    float himetric_to_pixel_ratio_y =
-        float{device.bottom - device.top} / float{screen.bottom - screen.top};
-    pixels_per_inch.set_x(kHimetricPerInch / himetric_to_pixel_ratio_x);
-    pixels_per_inch.set_y(kHimetricPerInch / himetric_to_pixel_ratio_y);
-    return pixels_per_inch;
-  }
+  if (!get_pointer_device_rects ||
+      !get_pointer_device_rects(source_device, &device, &screen))
+    return gfx::Vector2dF();
 
-  return pixels_per_inch;
+  constexpr float kHimetricPerInch = 2540.0f;
+  float himetric_per_pixel_x =
+      float{device.right - device.left} / float{screen.right - screen.left};
+  float himetric_per_pixel_y =
+      float{device.bottom - device.top} / float{screen.bottom - screen.top};
+  return gfx::Vector2dF(kHimetricPerInch / himetric_per_pixel_x,
+                        kHimetricPerInch / himetric_per_pixel_y);
 }
 
 // Returns physical pixels per inch based on 96 dpi monitor.
 gfx::Vector2dF GetDefaultMonitorPhysicalPixelsPerInch() {
-  int default_dpi = GetDPIFromScalingFactor(1.0);
+  const int default_dpi = GetDPIFromScalingFactor(1.0f);
   return gfx::Vector2dF(default_dpi, default_dpi);
 }
 
@@ -399,16 +363,13 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
                                                 HDC hdc,
                                                 LPRECT rect,
                                                 LPARAM data) {
-  std::vector<DisplayInfo>* display_infos =
-      reinterpret_cast<std::vector<DisplayInfo>*>(data);
-  DCHECK(display_infos);
-
+  const MONITORINFOEX monitor_info = MonitorInfoFromHMONITOR(monitor);
   Display::Rotation rotation;
   int display_frequency;
-  MONITORINFOEX monitor_info = MonitorInfoFromHMONITOR(monitor);
   GetDisplaySettingsForDevice(monitor_info.szDevice, &rotation,
                               &display_frequency);
-  // Get the count of pointer devices.
+
+  // Retrieve PPI for |monitor| based on touch pointer device handles.
   static const auto get_pointer_devices =
       reinterpret_cast<decltype(&::GetPointerDevices)>(
           base::win::GetUser32FunctionPointer("GetPointerDevices"));
@@ -416,28 +377,25 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
   if (get_pointer_devices)
     get_pointer_devices(&pointer_device_count, nullptr);
 
-  // Map touch pointer device to |monitor| and retrieve pixels per inch
-  // for the |monitor| based on pointer device handle.
   gfx::Vector2dF pixels_per_inch = GetDefaultMonitorPhysicalPixelsPerInch();
   if (pointer_device_count != 0) {
-    // Get all pointer devices.
     std::vector<POINTER_DEVICE_INFO> pointer_devices(pointer_device_count);
     if (get_pointer_devices(&pointer_device_count, &pointer_devices.front())) {
-      for (uint32_t i = 0; i < pointer_device_count; i++) {
-        if (pointer_devices[i].pointerDeviceType == POINTER_DEVICE_TYPE_TOUCH &&
-            pointer_devices[i].monitor == monitor) {
-          pixels_per_inch =
-              GetPixelsPerInchForPointerDevice(pointer_devices[i].device);
+      for (const auto& device : pointer_devices) {
+        if (device.pointerDeviceType == POINTER_DEVICE_TYPE_TOUCH &&
+            device.monitor == monitor) {
+          pixels_per_inch = GetPixelsPerInchForPointerDevice(device.device);
           break;
         }
       }
     }
   }
 
-  display_infos->push_back(
-      DisplayInfo(monitor_info, GetMonitorScaleFactor(monitor),
-                  GetMonitorSDRWhiteLevel(monitor), rotation, display_frequency,
-                  pixels_per_inch));
+  auto* display_infos = reinterpret_cast<std::vector<DisplayInfo>*>(data);
+  DCHECK(display_infos);
+  display_infos->emplace_back(monitor_info, GetMonitorScaleFactor(monitor),
+                              GetMonitorSDRWhiteLevel(monitor), rotation,
+                              display_frequency, pixels_per_inch);
   return TRUE;
 }
 
@@ -445,22 +403,20 @@ std::vector<DisplayInfo> GetDisplayInfosFromSystem() {
   std::vector<DisplayInfo> display_infos;
   EnumDisplayMonitors(nullptr, nullptr, EnumMonitorForDisplayInfoCallback,
                       reinterpret_cast<LPARAM>(&display_infos));
-  DCHECK_EQ(static_cast<size_t>(::GetSystemMetrics(SM_CMONITORS)),
-            display_infos.size());
+  DCHECK_EQ(::GetSystemMetrics(SM_CMONITORS), int{display_infos.size()});
   return display_infos;
 }
 
-// Returns a point in |to_origin|'s coordinates and position scaled by
-// |scale_factor|.
+// Returns |point|, transformed from |from_origin|'s to |to_origin|'s
+// coordinates, which differ by |scale_factor|.
 gfx::PointF ScalePointRelative(const gfx::Point& from_origin,
                                const gfx::Point& to_origin,
                                const float scale_factor,
                                const gfx::PointF& point) {
-  gfx::Vector2d from_origin_vector(from_origin.x(), from_origin.y());
-  gfx::Vector2d to_origin_vector(to_origin.x(), to_origin.y());
-  gfx::PointF scaled_relative_point(
-      gfx::ScalePoint(point - from_origin_vector, scale_factor));
-  return scaled_relative_point + to_origin_vector;
+  const gfx::PointF relative_point = point - from_origin.OffsetFromOrigin();
+  const gfx::PointF scaled_relative_point =
+      gfx::ScalePoint(relative_point, scale_factor);
+  return scaled_relative_point + to_origin.OffsetFromOrigin();
 }
 
 }  // namespace
@@ -468,8 +424,8 @@ gfx::PointF ScalePointRelative(const gfx::Point& from_origin,
 ScreenWin::ScreenWin() : ScreenWin(true) {}
 
 ScreenWin::~ScreenWin() {
-  DCHECK_EQ(g_screen_win_instance, this);
-  g_screen_win_instance = nullptr;
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
 }
 
 // static
@@ -485,9 +441,8 @@ gfx::PointF ScreenWin::ScreenToDIPPoint(const gfx::PointF& pixel_point) {
 
 // static
 gfx::Point ScreenWin::DIPToScreenPoint(const gfx::Point& dip_point) {
-  const ScreenWinDisplay screen_win_display =
-      GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestDIPPoint,
-                             dip_point);
+  const ScreenWinDisplay screen_win_display = GetScreenWinDisplayVia(
+      &ScreenWin::GetScreenWinDisplayNearestDIPPoint, dip_point);
   const Display display = screen_win_display.display();
   return gfx::ToFlooredPoint(ScalePointRelative(
       display.bounds().origin(), screen_win_display.pixel_bounds().origin(),
@@ -502,8 +457,7 @@ gfx::Point ScreenWin::ClientToDIPPoint(HWND hwnd,
 
 // static
 gfx::Point ScreenWin::DIPToClientPoint(HWND hwnd, const gfx::Point& dip_point) {
-  float scale_factor = GetScaleFactorForHWND(hwnd);
-  return ScaleToFlooredPoint(dip_point, scale_factor);
+  return ScaleToFlooredPoint(dip_point, GetScaleFactorForHWND(hwnd));
 }
 
 // static
@@ -512,12 +466,13 @@ gfx::Rect ScreenWin::ScreenToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
       ? GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestHWND, hwnd)
       : GetScreenWinDisplayVia(
             &ScreenWin::GetScreenWinDisplayNearestScreenRect, pixel_bounds);
-  float scale_factor = screen_win_display.display().device_scale_factor();
-  gfx::Rect dip_rect = ScaleToEnclosingRect(pixel_bounds, 1.0f / scale_factor);
+  const float scale_factor =
+      1.0f / screen_win_display.display().device_scale_factor();
+  gfx::Rect dip_rect = ScaleToEnclosingRect(pixel_bounds, scale_factor);
   const Display display = screen_win_display.display();
   dip_rect.set_origin(gfx::ToFlooredPoint(ScalePointRelative(
       screen_win_display.pixel_bounds().origin(), display.bounds().origin(),
-      1.0f / scale_factor, gfx::PointF(pixel_bounds.origin()))));
+      scale_factor, gfx::PointF(pixel_bounds.origin()))));
   return dip_rect;
 }
 
@@ -555,66 +510,53 @@ gfx::Size ScreenWin::ScreenToDIPSize(HWND hwnd,
 
 // static
 gfx::Size ScreenWin::DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size) {
-  float scale_factor = GetScaleFactorForHWND(hwnd);
   // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
-  return ScaleToCeiledSize(dip_size, scale_factor);
+  return ScaleToCeiledSize(dip_size, GetScaleFactorForHWND(hwnd));
 }
 
 // static
 int ScreenWin::GetSystemMetricsForMonitor(HMONITOR monitor, int metric) {
-  if (!g_screen_win_instance)
+  if (!g_instance)
     return ::GetSystemMetrics(metric);
+
+  // Fall back to the primary display's HMONITOR.
+  if (!monitor)
+    monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
 
   // We don't include fudge factors stemming from accessiblility features when
   // dealing with system metrics associated with window elements drawn by the
   // operating system, since we will not be doing scaling of those metrics
   // ourselves.
-  bool include_accessibility;
-  switch (metric) {
-    case SM_CXSIZEFRAME:
-    case SM_CYSIZEFRAME:
-    case SM_CXPADDEDBORDER:
-      include_accessibility = false;
-      break;
-    default:
-      include_accessibility = true;
-      break;
-  }
-
-  // We'll want to use GetSafeMonitorScaleFactor(), so if the monitor is not
-  // specified pull up the primary display's HMONITOR.
-  if (!monitor)
-    monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
-
-  float scale_factor = GetMonitorScaleFactor(monitor, include_accessibility);
+  const bool include_accessibility = (metric != SM_CXSIZEFRAME) &&
+                                     (metric != SM_CYSIZEFRAME) &&
+                                     (metric != SM_CXPADDEDBORDER);
 
   // We'll then pull up the system metrics scaled by the appropriate amount.
-  return GetSystemMetricsForScaleFactor(scale_factor, metric);
+  return g_instance->GetSystemMetricsForScaleFactor(
+      GetMonitorScaleFactor(monitor, include_accessibility), metric);
 }
 
 // static
 int ScreenWin::GetSystemMetricsInDIP(int metric) {
-  if (!g_screen_win_instance)
-    return ::GetSystemMetrics(metric);
-
-  return GetSystemMetricsForScaleFactor(1.0f, metric);
+  return g_instance ? g_instance->GetSystemMetricsForScaleFactor(1.0f, metric)
+                    : ::GetSystemMetrics(metric);
 }
 
 // static
 float ScreenWin::GetScaleFactorForHWND(HWND hwnd) {
-  if (!g_screen_win_instance)
+  if (!g_instance)
     return ScreenWinDisplay().display().device_scale_factor();
 
   DCHECK(hwnd);
-  HWND rootHwnd = g_screen_win_instance->GetRootWindow(hwnd);
+  HWND root_hwnd = g_instance->GetRootWindow(hwnd);
   ScreenWinDisplay screen_win_display =
-      g_screen_win_instance->GetScreenWinDisplayNearestHWND(rootHwnd);
+      g_instance->GetScreenWinDisplayNearestHWND(root_hwnd);
   return screen_win_display.display().device_scale_factor();
 }
 
 // static
 gfx::Vector2dF ScreenWin::GetPixelsPerInch(const gfx::PointF& point) {
-  ScreenWinDisplay screen_win_display =
+  const ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestDIPPoint,
                              gfx::ToFlooredPoint(point));
   return screen_win_display.pixels_per_inch();
@@ -625,7 +567,7 @@ int ScreenWin::GetDPIForHWND(HWND hwnd) {
   if (Display::HasForceDeviceScaleFactor())
     return GetDPIFromScalingFactor(Display::GetForcedDeviceScaleFactor());
 
-  HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+  const HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
   int dpi = GetPerMonitorDPI(monitor);
   return dpi ? dpi : display::win::internal::GetDefaultSystemDPI();
 }
@@ -644,22 +586,19 @@ float ScreenWin::GetSystemScaleFactor() {
 // static
 void ScreenWin::SetRequestHDRStatusCallback(
     RequestHDRStatusCallback request_hdr_status_callback) {
-  if (!g_screen_win_instance)
-    return;
-  g_screen_win_instance->request_hdr_status_callback_ =
-      std::move(request_hdr_status_callback);
-  g_screen_win_instance->request_hdr_status_callback_.Run();
+  if (g_instance) {
+    g_instance->request_hdr_status_callback_ =
+        std::move(request_hdr_status_callback);
+    g_instance->request_hdr_status_callback_.Run();
+  }
 }
 
 // static
 void ScreenWin::SetHDREnabled(bool hdr_enabled) {
-  if (!g_screen_win_instance)
-    return;
-
-  if (g_screen_win_instance->hdr_enabled_ == hdr_enabled)
-    return;
-  g_screen_win_instance->hdr_enabled_ = hdr_enabled;
-  g_screen_win_instance->UpdateAllDisplaysAndNotify();
+  if (g_instance && (g_instance->hdr_enabled_ != hdr_enabled)) {
+    g_instance->hdr_enabled_ = hdr_enabled;
+    g_instance->UpdateAllDisplaysAndNotify();
+  }
 }
 
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
@@ -673,8 +612,8 @@ gfx::NativeWindow ScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
 }
 
 ScreenWin::ScreenWin(bool initialize) {
-  DCHECK(!g_screen_win_instance);
-  g_screen_win_instance = this;
+  DCHECK(!g_instance);
+  g_instance = this;
   if (initialize)
     Initialize();
 }
@@ -682,8 +621,7 @@ ScreenWin::ScreenWin(bool initialize) {
 gfx::Point ScreenWin::GetCursorScreenPoint() {
   POINT pt;
   ::GetCursorPos(&pt);
-  gfx::PointF cursor_pos_pixels(pt.x, pt.y);
-  return gfx::ToFlooredPoint(ScreenToDIPPoint(cursor_pos_pixels));
+  return gfx::ToFlooredPoint(ScreenToDIPPoint(gfx::PointF(gfx::Point(pt))));
 }
 
 bool ScreenWin::IsWindowUnderCursor(gfx::NativeWindow window) {
@@ -694,12 +632,12 @@ bool ScreenWin::IsWindowUnderCursor(gfx::NativeWindow window) {
 }
 
 gfx::NativeWindow ScreenWin::GetWindowAtScreenPoint(const gfx::Point& point) {
-  gfx::Point point_in_pixels = DIPToScreenPoint(point);
-  return GetNativeWindowFromHWND(WindowFromPoint(point_in_pixels.ToPOINT()));
+  const gfx::Point screen_point = DIPToScreenPoint(point);
+  return GetNativeWindowFromHWND(WindowFromPoint(screen_point.ToPOINT()));
 }
 
 int ScreenWin::GetNumDisplays() const {
-  return static_cast<int>(screen_win_displays_.size());
+  return int{screen_win_displays_.size()};
 }
 
 const std::vector<Display>& ScreenWin::GetAllDisplays() const {
@@ -707,31 +645,20 @@ const std::vector<Display>& ScreenWin::GetAllDisplays() const {
 }
 
 Display ScreenWin::GetDisplayNearestWindow(gfx::NativeWindow window) const {
-  if (!window)
-    return GetPrimaryDisplay();
-  HWND window_hwnd = GetHWNDFromNativeView(window);
-  if (!window_hwnd) {
-    // When |window| isn't rooted to a display, we should just return the
-    // default display so we get some correct display information like the
-    // scaling factor.
-    return GetPrimaryDisplay();
-  }
-  ScreenWinDisplay screen_win_display =
-      GetScreenWinDisplayNearestHWND(window_hwnd);
-  return screen_win_display.display();
+  const HWND window_hwnd = window ? GetHWNDFromNativeView(window) : nullptr;
+  // When |window| isn't rooted to a display, we should just return the default
+  // display so we get some correct display information like the scaling factor.
+  return window_hwnd ? GetScreenWinDisplayNearestHWND(window_hwnd).display()
+                     : GetPrimaryDisplay();
 }
 
 Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
-  gfx::Point screen_point(DIPToScreenPoint(point));
-  ScreenWinDisplay screen_win_display =
-      GetScreenWinDisplayNearestScreenPoint(screen_point);
-  return screen_win_display.display();
+  const gfx::Point screen_point = DIPToScreenPoint(point);
+  return GetScreenWinDisplayNearestScreenPoint(screen_point).display();
 }
 
 Display ScreenWin::GetDisplayMatching(const gfx::Rect& match_rect) const {
-  ScreenWinDisplay screen_win_display =
-      GetScreenWinDisplayNearestScreenRect(match_rect);
-  return screen_win_display.display();
+  return GetScreenWinDisplayNearestScreenRect(match_rect).display();
 }
 
 Display ScreenWin::GetPrimaryDisplay() const {
@@ -747,14 +674,15 @@ void ScreenWin::RemoveObserver(DisplayObserver* observer) {
 }
 
 gfx::Rect ScreenWin::ScreenToDIPRectInWindow(
-    gfx::NativeView view, const gfx::Rect& screen_rect) const {
-  HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
+    gfx::NativeView view,
+    const gfx::Rect& screen_rect) const {
+  const HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
   return ScreenToDIPRect(hwnd, screen_rect);
 }
 
 gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeView view,
                                              const gfx::Rect& dip_rect) const {
-  HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
+  const HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
   return DIPToScreenRect(hwnd, dip_rect);
 }
 
@@ -767,8 +695,8 @@ void ScreenWin::UpdateFromDisplayInfos(
 
 void ScreenWin::Initialize() {
   color_profile_reader_->UpdateIfNeeded();
-  singleton_hwnd_observer_.reset(new gfx::SingletonHwndObserver(
-      base::BindRepeating(&ScreenWin::OnWndProc, base::Unretained(this))));
+  singleton_hwnd_observer_ = std::make_unique<gfx::SingletonHwndObserver>(
+      base::BindRepeating(&ScreenWin::OnWndProc, base::Unretained(this)));
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
   RecordDisplayScaleFactors();
 
@@ -780,16 +708,15 @@ void ScreenWin::Initialize() {
 
 MONITORINFOEX ScreenWin::MonitorInfoFromScreenPoint(
     const gfx::Point& screen_point) const {
-  POINT initial_loc = { screen_point.x(), screen_point.y() };
-  return MonitorInfoFromHMONITOR(::MonitorFromPoint(initial_loc,
-                                                    MONITOR_DEFAULTTONEAREST));
+  return MonitorInfoFromHMONITOR(
+      ::MonitorFromPoint(screen_point.ToPOINT(), MONITOR_DEFAULTTONEAREST));
 }
 
 MONITORINFOEX ScreenWin::MonitorInfoFromScreenRect(const gfx::Rect& screen_rect)
     const {
-  RECT win_rect = screen_rect.ToRECT();
-  return MonitorInfoFromHMONITOR(::MonitorFromRect(&win_rect,
-                                                   MONITOR_DEFAULTTONEAREST));
+  const RECT win_rect = screen_rect.ToRECT();
+  return MonitorInfoFromHMONITOR(
+      ::MonitorFromRect(&win_rect, MONITOR_DEFAULTTONEAREST));
 }
 
 MONITORINFOEX ScreenWin::MonitorInfoFromWindow(HWND hwnd,
@@ -810,10 +737,9 @@ void ScreenWin::OnWndProc(HWND hwnd,
                           WPARAM wparam,
                           LPARAM lparam) {
   if (message != WM_DISPLAYCHANGE &&
-      !(message == WM_ACTIVATEAPP && wparam == TRUE) &&
-      !(message == WM_SETTINGCHANGE && wparam == SPI_SETWORKAREA)) {
+      (message != WM_ACTIVATEAPP || wparam != TRUE) &&
+      (message != WM_SETTINGCHANGE || wparam != SPI_SETWORKAREA))
     return;
-  }
 
   color_profile_reader_->UpdateIfNeeded();
   if (request_hdr_status_callback_)
@@ -845,8 +771,7 @@ void ScreenWin::UpdateAllDisplaysAndNotify() {
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
 }
 
-ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestHWND(HWND hwnd)
-    const {
+ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestHWND(HWND hwnd) const {
   return GetScreenWinDisplay(MonitorInfoFromWindow(hwnd,
                                                    MONITOR_DEFAULTTONEAREST));
 }
@@ -865,11 +790,10 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPPoint(
     const gfx::Point& dip_point) const {
   ScreenWinDisplay primary_screen_win_display;
   for (const auto& screen_win_display : screen_win_displays_) {
-    Display display = screen_win_display.display();
-    const gfx::Rect dip_bounds = display.bounds();
+    const gfx::Rect dip_bounds = screen_win_display.display().bounds();
     if (dip_bounds.Contains(dip_point))
       return screen_win_display;
-    else if (dip_bounds.origin().IsOrigin())
+    if (dip_bounds.origin().IsOrigin())
       primary_screen_win_display = screen_win_display;
   }
   return primary_screen_win_display;
@@ -878,16 +802,15 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPPoint(
 ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPRect(
     const gfx::Rect& dip_rect) const {
   ScreenWinDisplay closest_screen_win_display;
-  int64_t closest_distance_squared = INT64_MAX;
+  int64_t closest_distance = INT64_MAX;
   for (const auto& screen_win_display : screen_win_displays_) {
     Display display = screen_win_display.display();
     gfx::Rect dip_bounds = display.bounds();
     if (dip_rect.Intersects(dip_bounds))
       return screen_win_display;
-    int64_t distance_squared = SquaredDistanceBetweenRects(dip_rect,
-                                                           dip_bounds);
-    if (distance_squared < closest_distance_squared) {
-      closest_distance_squared = distance_squared;
+    int64_t distance = SquaredDistanceBetweenRects(dip_rect, dip_bounds);
+    if (distance < closest_distance) {
+      closest_distance = distance;
       closest_screen_win_display = screen_win_display;
     }
   }
@@ -895,27 +818,24 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPRect(
 }
 
 ScreenWinDisplay ScreenWin::GetPrimaryScreenWinDisplay() const {
-  MONITORINFOEX monitor_info = MonitorInfoFromWindow(nullptr,
-                                                     MONITOR_DEFAULTTOPRIMARY);
-  ScreenWinDisplay screen_win_display = GetScreenWinDisplay(monitor_info);
-  Display display = screen_win_display.display();
+  const ScreenWinDisplay screen_win_display = GetScreenWinDisplay(
+      MonitorInfoFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY));
   // The Windows primary monitor is defined to have an origin of (0, 0).
-  DCHECK_EQ(0, display.bounds().origin().x());
-  DCHECK_EQ(0, display.bounds().origin().y());
+  DCHECK(screen_win_display.display().bounds().origin().IsOrigin());
   return screen_win_display;
 }
 
 ScreenWinDisplay ScreenWin::GetScreenWinDisplay(
     const MONITORINFOEX& monitor_info) const {
-  int64_t id = DisplayInfo::DeviceIdFromDeviceName(monitor_info.szDevice);
+  const int64_t id = DisplayInfo::DeviceIdFromDeviceName(monitor_info.szDevice);
   for (const auto& screen_win_display : screen_win_displays_) {
     if (screen_win_display.display().id() == id)
       return screen_win_display;
   }
   // There is 1:1 correspondence between MONITORINFOEX and ScreenWinDisplay.
-  // If we make it here, it means we have no displays and we should hand out the
-  // default display. [Sometimes we get here anyway: crbug.com/768845]
-  // DCHECK_EQ(screen_win_displays_.size(), 0u);
+  // If we found no screens, either there are no screens, or we're in the midst
+  // of updating our screens (see crbug.com/768845); either way, hand out the
+  // default display.
   return ScreenWinDisplay();
 }
 
@@ -923,32 +843,25 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplay(
 template <typename Getter, typename GetterType>
 ScreenWinDisplay ScreenWin::GetScreenWinDisplayVia(Getter getter,
                                                    GetterType value) {
-  if (!g_screen_win_instance)
-    return ScreenWinDisplay();
-
-  return (g_screen_win_instance->*getter)(value);
+  return g_instance ? (g_instance->*getter)(value) : ScreenWinDisplay();
 }
 
-// static
-int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor, int metric) {
+int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor,
+                                              int metric) const {
   if (base::win::IsProcessPerMonitorDpiAware()) {
-    using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
-    static const auto get_metric_for_dpi_func =
-        reinterpret_cast<GetSystemMetricsForDpiPtr>(
+    static const auto get_system_metrics_for_dpi =
+        reinterpret_cast<decltype(&::GetSystemMetricsForDpi)>(
             base::win::GetUser32FunctionPointer("GetSystemMetricsForDpi"));
-    if (get_metric_for_dpi_func) {
-      return get_metric_for_dpi_func(metric,
-                                     GetDPIFromScalingFactor(scale_factor));
+    if (get_system_metrics_for_dpi) {
+      return get_system_metrics_for_dpi(metric,
+                                        GetDPIFromScalingFactor(scale_factor));
     }
   }
 
-  // Fallback for when we're running Windows 8.1, which doesn't support
-  // GetSystemMetricsForDpi and yet does support per-process dpi awareness.
-  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
-  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
-
-  return static_cast<int>(std::round(scale_factor * system_metrics_result /
-                                     primary_display.device_scale_factor()));
+  // Windows 8.1 doesn't support GetSystemMetricsForDpi(), yet does support
+  // per-process dpi awareness.
+  return gfx::ToRoundedInt(GetSystemMetrics(metric) * scale_factor /
+                           GetPrimaryDisplay().device_scale_factor());
 }
 
 void ScreenWin::RecordDisplayScaleFactors() const {
@@ -958,8 +871,8 @@ void ScreenWin::RecordDisplayScaleFactors() const {
         screen_win_display.display().device_scale_factor();
     // Multiply the reported value by 100 to display it as a percentage. Clamp
     // it so that if it's wildly out-of-band we won't send it to the backend.
-    const int reported_scale = std::min(
-        std::max(base::checked_cast<int>(scale_factor * 100), 0), 1000);
+    const int reported_scale = base::ClampToRange(
+        base::checked_cast<int>(scale_factor * 100), 0, 1000);
     if (!base::Contains(unique_scale_factors, reported_scale)) {
       unique_scale_factors.push_back(reported_scale);
       base::UmaHistogramSparse("UI.DeviceScale", reported_scale);

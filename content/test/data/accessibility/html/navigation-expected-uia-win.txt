@@ -2,4 +2,3 @@ Document
 ++Group
 ++++Hyperlink Name='Don't click on me'
 ++++++Text Name='Don't click on me' IsControlElement=false
-<-- End-of-file -->

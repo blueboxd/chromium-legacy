@@ -9,4 +9,3 @@ rootWebArea
 ++++++++tab name='tab3' setSize=5 posInSet=4 selected=false
 ++++++listItem hierarchicalLevel=1
 ++++++++tab name='tab4' setSize=5 posInSet=5 selected=false
-<-- End-of-file -->

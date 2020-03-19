@@ -248,7 +248,6 @@ TEST_F(ProcessTest, WaitForExit) {
   Process process(SpawnChild("FastSleepyChildProcess"));
   ASSERT_TRUE(process.IsValid());
 
-  const int kDummyExitCode = 42;
   int exit_code = kDummyExitCode;
   EXPECT_TRUE(process.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
@@ -258,7 +257,6 @@ TEST_F(ProcessTest, WaitForExitWithTimeout) {
   Process process(SpawnChild("SleepyChildProcess"));
   ASSERT_TRUE(process.IsValid());
 
-  const int kDummyExitCode = 42;
   int exit_code = kDummyExitCode;
   TimeDelta timeout = TestTimeouts::tiny_timeout();
   EXPECT_FALSE(process.WaitForExitWithTimeout(timeout, &exit_code));
@@ -275,7 +273,6 @@ TEST_F(ProcessTest, WaitForExitOrEventWithProcessExit) {
   base::win::ScopedHandle stop_watching_handle(
       CreateEvent(nullptr, TRUE, FALSE, nullptr));
 
-  const int kDummyExitCode = 42;
   int exit_code = kDummyExitCode;
   EXPECT_EQ(process.WaitForExitOrEvent(stop_watching_handle, &exit_code),
             base::Process::WaitExitStatus::PROCESS_EXITED);
@@ -289,7 +286,6 @@ TEST_F(ProcessTest, WaitForExitOrEventWithEventSet) {
   base::win::ScopedHandle stop_watching_handle(
       CreateEvent(nullptr, TRUE, TRUE, nullptr));
 
-  const int kDummyExitCode = 42;
   int exit_code = kDummyExitCode;
   EXPECT_EQ(process.WaitForExitOrEvent(stop_watching_handle, &exit_code),
             base::Process::WaitExitStatus::STOP_EVENT_SIGNALED);

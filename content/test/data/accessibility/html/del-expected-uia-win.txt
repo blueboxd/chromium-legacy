@@ -3,4 +3,3 @@ Document
 ++++Text Name='I am '
 ++++Group IsControlElement=false
 ++++++Text Name='vegetarian'
-<-- End-of-file -->

@@ -478,10 +478,6 @@ const base::Feature kReloadHiddenTabsWithCrashedSubframes {
 // Design doc: https://bit.ly/renderdocument
 // Main bug tracker: https://crbug.com/936696
 
-// Enable using the RenderDocument when recovering from crashes.
-const base::Feature kRenderDocumentForCrashedFrame{
-    "RenderDocumentForCrashedFrame", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable using the RenderDocument.
 const base::Feature kRenderDocument{"RenderDocument",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

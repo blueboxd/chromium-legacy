@@ -33,6 +33,7 @@
 namespace payments {
 
 // TODO(crbug.com/782270): Use cache to accelerate crawling procedure.
+// TODO(crbug.com/782270): Add integration tests for this class.
 InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
     const url::Origin& merchant_origin,
     content::RenderFrameHost* initiator_render_frame_host,
@@ -43,13 +44,7 @@ InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
     : WebContentsObserver(web_contents),
       log_(web_contents),
       merchant_origin_(merchant_origin),
-      initiator_frame_routing_id_(
-          initiator_render_frame_host &&
-                  initiator_render_frame_host->GetProcess()
-              ? content::GlobalFrameRoutingId(
-                    initiator_render_frame_host->GetProcess()->GetID(),
-                    initiator_render_frame_host->GetRoutingID())
-              : content::GlobalFrameRoutingId()),
+      initiator_render_frame_host_(initiator_render_frame_host),
       downloader_(downloader),
       parser_(parser),
       number_of_payment_method_manifest_to_download_(0),
@@ -412,21 +407,13 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
 
   number_of_web_app_icons_to_download_and_decode_++;
 
-  // If the initiator frame doesn't exists any more, e.g. the frame has
-  // navigated away, don't download the icon.
-  // TODO(crbug.com/1058840): Move this sanity check to ManifestIconDownloader
-  // after DownloadImage refactor is done.
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(initiator_frame_routing_id_);
-  if (!render_frame_host || !render_frame_host->IsCurrent() ||
-      content::WebContents::FromRenderFrameHost(render_frame_host) !=
-          web_contents()) {
-    // Shortcircuit to the done callback with an empty bitmap.
-    OnPaymentWebAppIconDownloadAndDecoded(method_manifest_url,
-                                          web_app_manifest_url, SkBitmap());
-    return;
+  content::GlobalFrameRoutingId frame_routing_id;
+  if (initiator_render_frame_host_ &&
+      initiator_render_frame_host_->GetProcess()) {
+    frame_routing_id = content::GlobalFrameRoutingId(
+        initiator_render_frame_host_->GetProcess()->GetID(),
+        initiator_render_frame_host_->GetRoutingID());
   }
-
   bool can_download_icon = content::ManifestIconDownloader::Download(
       web_contents(), downloader_->FindTestServerURL(best_icon_url),
       IconSizeCalculator::IdealIconHeight(native_view),
@@ -436,7 +423,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
           weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
           web_app_manifest_url),
       false, /* square_only */
-      initiator_frame_routing_id_);
+      frame_routing_id);
   DCHECK(can_download_icon);
 }
 

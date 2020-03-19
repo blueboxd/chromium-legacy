@@ -6,4 +6,3 @@ Document LocalizedControlType='document'
 ++++Text LocalizedControlType='highlight'
 ++++++Text Name='highlighted'
 ++++Text Name='.'
-<-- End-of-file -->

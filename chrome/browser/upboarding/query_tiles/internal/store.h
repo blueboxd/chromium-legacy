@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_STORE_H_
 #define CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_STORE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 
 namespace upboarding {

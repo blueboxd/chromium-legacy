@@ -205,9 +205,18 @@ class VIEWS_EXPORT TableView : public views::View,
 
   TableTypes GetTableType() const;
 
+  // Updates the relative bounds of the virtual accessibility children created
+  // in UpdateVirtualAccessibilityChildren(). This function is public so that
+  // the table's |header_| can trigger an update when its visible bounds are
+  // changed, because its accessibility information is also contained in the
+  // table's virtual accessibility children.
+  void UpdateVirtualAccessibilityChildrenBounds();
+
   // View overrides:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -343,6 +352,23 @@ class VIEWS_EXPORT TableView : public views::View,
   // to assistive software.
   void UpdateVirtualAccessibilityChildren();
 
+  // Clears the set of accessibility views set up in
+  // UpdateVirtualAccessibilityChildren(). Useful when the model is in the
+  // process of changing but the virtual accessibility children haven't been
+  // updated yet, e.g. showing or hiding a column via SetColumnVisibility().
+  void ClearVirtualAccessibilityChildren();
+
+  // Helper functions used in UpdateVirtualAccessibilityChildrenBounds() for
+  // calculating the accessibility bounds for the header and table rows and
+  // cells.
+  gfx::Rect CalculateHeaderRowAccessibilityBounds() const;
+  gfx::Rect CalculateHeaderCellAccessibilityBounds(
+      const int visible_column_index) const;
+  gfx::Rect CalculateTableRowAccessibilityBounds(const int row_index) const;
+  gfx::Rect CalculateTableCellAccessibilityBounds(
+      const int row_index,
+      const int visible_column_index) const;
+
   // Updates the internal accessibility state and fires the required
   // accessibility events to indicate to assistive software which row is active
   // and which cell is focused, if any.
@@ -357,9 +383,10 @@ class VIEWS_EXPORT TableView : public views::View,
   // |visible_column_index| indexes into |visible_columns_|.
   AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
 
-  // Returns |rect|, adjusted for use in AXRelativeBounds by converting it to
-  // gfx::RectF and translating it into screen coordinates.
-  gfx::RectF AdjustRectForAXRelativeBounds(gfx::Rect rect) const;
+  // Returns |rect|, adjusted for use in AXRelativeBounds by translating it into
+  // screen coordinates. The result must be converted to gfx::RectF when setting
+  // into AXRelativeBounds.
+  gfx::Rect AdjustRectForAXRelativeBounds(const gfx::Rect& rect) const;
 
   ui::TableModel* model_ = nullptr;
 

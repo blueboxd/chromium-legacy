@@ -114,21 +114,32 @@ def make_dict_member_get_def(cg_context):
 
     member = cg_context.dict_member
     blink_member_name = _blink_member_name(member)
+    name = blink_member_name.get_api
+    blink_type = blink_type_info(member.idl_type)
 
-    func_def = CxxFuncDefNode(
-        name=blink_member_name.get_api,
+    if blink_type.ref_t != blink_type.const_ref_t:
+        func_def = CxxFuncDefNode(
+            name=name, arg_decls=[], return_type=blink_type.ref_t)
+        func_def.set_base_template_vars(cg_context.template_bindings())
+        func_def.body.extend([
+            TextNode(_format("DCHECK({}());", blink_member_name.has_api)),
+            TextNode(_format("return {};", blink_member_name.value_var)),
+        ])
+    else:
+        func_def = None
+
+    const_func_def = CxxFuncDefNode(
+        name=name,
         arg_decls=[],
-        return_type=blink_type_info(member.idl_type).ref_t,
+        return_type=blink_type.const_ref_t,
         const=True)
-    func_def.set_base_template_vars(cg_context.template_bindings())
-    body = func_def.body
-
-    body.extend([
+    const_func_def.set_base_template_vars(cg_context.template_bindings())
+    const_func_def.body.extend([
         TextNode(_format("DCHECK({}());", blink_member_name.has_api)),
         TextNode(_format("return {};", blink_member_name.value_var)),
     ])
 
-    return func_def
+    return ListNode([func_def, const_func_def])
 
 
 def make_dict_member_has_def(cg_context):
@@ -789,5 +800,5 @@ def generate_dictionary(dictionary):
 
 
 def generate_dictionaries(web_idl_database):
-    dictionary = web_idl_database.find("OriginTrialsTestDictionary")
+    dictionary = web_idl_database.find("RTCQuicStreamWriteParameters")
     generate_dictionary(dictionary)

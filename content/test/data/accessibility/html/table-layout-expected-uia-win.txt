@@ -21,4 +21,3 @@ Document Name='Table example #2'
 ++++++++Text Name='8' IsControlElement=false
 ++++++DataItem Name='9' GridItem.Column=2 GridItem.ColumnSpan=1 GridItem.Row=2 GridItem.RowSpan=1
 ++++++++Text Name='9' IsControlElement=false
-<-- End-of-file -->

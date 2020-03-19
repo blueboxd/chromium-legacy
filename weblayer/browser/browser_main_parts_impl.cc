@@ -110,7 +110,7 @@ void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 #endif
 
 #if defined(OS_ANDROID)
-  startup_metric_utils::RecordMainEntryPointTime(GetMainEntryPointTimeTicks());
+  startup_metric_utils::RecordApplicationStartTime(GetApplicationStartTime());
 #endif
 }
 

@@ -28,7 +28,6 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/storage_partition.h"
@@ -1960,7 +1960,7 @@ std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
   auto container = std::make_unique<LocalDataContainer>(
       new BrowsingDataCookieHelper(storage_partition),
       new BrowsingDataDatabaseHelper(profile),
-      new BrowsingDataLocalStorageHelper(profile),
+      new browsing_data::LocalStorageHelper(profile),
       /*session_storage_helper=*/nullptr,
       new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
       new BrowsingDataIndexedDBHelper(storage_partition),

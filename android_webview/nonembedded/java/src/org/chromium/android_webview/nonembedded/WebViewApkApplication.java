@@ -99,23 +99,18 @@ public class WebViewApkApplication extends Application {
     public static void postDeveloperUiLauncherIconTask() {
         PostTask.postTask(TaskTraits.BEST_EFFORT, () -> {
             Context context = ContextUtils.getApplicationContext();
-            try {
-                ComponentName devToolsLauncherActivity = new ComponentName(
-                        context, "org.chromium.android_webview.devui.MonochromeLauncherActivity");
-                if (WebViewPackageHelper.isCurrentSystemWebViewImplementation(context)) {
-                    // Enable the component to show the launcher icon.
-                    context.getPackageManager().setComponentEnabledSetting(devToolsLauncherActivity,
-                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                            PackageManager.DONT_KILL_APP);
-                } else {
-                    // Disable the component to hide the launcher icon.
-                    context.getPackageManager().setComponentEnabledSetting(devToolsLauncherActivity,
-                            PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
-                            PackageManager.DONT_KILL_APP);
-                }
-            } catch (IllegalArgumentException e) {
-                // If MonochromeLauncherActivity doesn't exist, Dynamically showing/hiding DevTools
-                // launcher icon is not enabled in this package; e.g when it is a stable channel.
+            ComponentName devToolsLauncherActivity = new ComponentName(
+                    context, "org.chromium.android_webview.devui.LauncherActivity");
+            if (WebViewPackageHelper.isCurrentSystemWebViewImplementation(context)) {
+                // Enable the component to show the launcher icon.
+                context.getPackageManager().setComponentEnabledSetting(devToolsLauncherActivity,
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP);
+            } else {
+                // Disable the component to hide the launcher icon.
+                context.getPackageManager().setComponentEnabledSetting(devToolsLauncherActivity,
+                        PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
+                        PackageManager.DONT_KILL_APP);
             }
         });
     }

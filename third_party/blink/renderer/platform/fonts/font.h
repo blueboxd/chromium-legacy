@@ -79,8 +79,6 @@ class PLATFORM_EXPORT Font {
     return font_description_;
   }
 
-  void Update(FontSelector*) const;
-
   enum CustomFontNotReadyAction {
     kDoNotPaintIfFontNotReady,
     kUseFallbackIfFontNotReady

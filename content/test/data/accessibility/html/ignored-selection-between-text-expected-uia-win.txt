@@ -6,4 +6,3 @@ Document
 ++Group IsControlElement=false
 ++++Text Name='after selection'
 ++Text Name='Done'
-<-- End-of-file -->

@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom-forward.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class WebContents;
@@ -63,7 +64,9 @@ class MediaNotificationService
   void HideNotification(const std::string& id) override;
   void RemoveItem(const std::string& id) override;
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
-  void LogMediaSessionActionButtonPressed(const std::string& id) override;
+  void LogMediaSessionActionButtonPressed(
+      const std::string& id,
+      media_session::mojom::MediaSessionAction action) override;
 
   // MediaNotificationContainerObserver implementation.
   void OnContainerExpanded(bool expanded) override {}
@@ -269,6 +272,10 @@ class MediaNotificationService
   std::unique_ptr<CastMediaNotificationProvider> cast_notification_provider_;
 
   base::ObserverList<MediaNotificationServiceObserver> observers_;
+
+  // Tracks the number of times we have recorded an action for a specific
+  // source. We use this to cap the number of UKM recordings per site.
+  std::map<ukm::SourceId, int> actions_recorded_to_ukm_;
 
   base::WeakPtrFactory<MediaNotificationService> weak_ptr_factory_{this};
 };

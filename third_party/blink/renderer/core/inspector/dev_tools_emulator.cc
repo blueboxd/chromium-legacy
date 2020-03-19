@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "third_party/blink/public/mojom/devtools/device_emulation_params.mojom-blink.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -63,6 +62,7 @@ namespace blink {
 
 DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
     : web_view_(web_view),
+      device_metrics_enabled_(false),
       emulate_mobile_enabled_(false),
       is_overlay_scrollbars_enabled_(false),
       is_orientation_event_enabled_(false),
@@ -110,14 +110,16 @@ void DevToolsEmulator::Trace(Visitor* visitor) {}
 
 void DevToolsEmulator::SetTextAutosizingEnabled(bool enabled) {
   embedder_text_autosizing_enabled_ = enabled;
-  bool emulate_mobile_enabled = emulation_params_ && emulate_mobile_enabled_;
+  bool emulate_mobile_enabled =
+      device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
     web_view_->GetPage()->GetSettings().SetTextAutosizingEnabled(enabled);
 }
 
 void DevToolsEmulator::SetDeviceScaleAdjustment(float device_scale_adjustment) {
   embedder_device_scale_adjustment_ = device_scale_adjustment;
-  bool emulate_mobile_enabled = emulation_params_ && emulate_mobile_enabled_;
+  bool emulate_mobile_enabled =
+      device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled) {
     web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
         device_scale_adjustment);
@@ -129,7 +131,8 @@ void DevToolsEmulator::SetPreferCompositingToLCDTextEnabled(bool enabled) {
     return;
 
   embedder_prefer_compositing_to_lcd_text_enabled_ = enabled;
-  bool emulate_mobile_enabled = emulation_params_ && emulate_mobile_enabled_;
+  bool emulate_mobile_enabled =
+      device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled) {
     web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
         enabled);
@@ -138,14 +141,16 @@ void DevToolsEmulator::SetPreferCompositingToLCDTextEnabled(bool enabled) {
 
 void DevToolsEmulator::SetViewportStyle(WebViewportStyle style) {
   embedder_viewport_style_ = style;
-  bool emulate_mobile_enabled = emulation_params_ && emulate_mobile_enabled_;
+  bool emulate_mobile_enabled =
+      device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
     web_view_->GetPage()->GetSettings().SetViewportStyle(style);
 }
 
 void DevToolsEmulator::SetPluginsEnabled(bool enabled) {
   embedder_plugins_enabled_ = enabled;
-  bool emulate_mobile_enabled = emulation_params_ && emulate_mobile_enabled_;
+  bool emulate_mobile_enabled =
+      device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled)
     web_view_->GetPage()->GetSettings().SetPluginsEnabled(enabled);
 }
@@ -178,7 +183,8 @@ bool DevToolsEmulator::DoubleTapToZoomEnabled() const {
 
 void DevToolsEmulator::SetMainFrameResizesAreOrientationChanges(bool value) {
   embedder_main_frame_resizes_are_orientation_changes_ = value;
-  bool emulate_mobile_enabled = emulation_params_ && emulate_mobile_enabled_;
+  bool emulate_mobile_enabled =
+      device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled) {
     web_view_->GetPage()
         ->GetSettings()
@@ -210,40 +216,35 @@ void DevToolsEmulator::SetPrimaryHoverType(HoverType hover_type) {
     web_view_->GetPage()->GetSettings().SetPrimaryHoverType(hover_type);
 }
 
-TransformationMatrix DevToolsEmulator::SetDeviceEmulation(
-    const base::Optional<blink::WebDeviceEmulationParams>& params) {
-  if (!params) {
-    DisableDeviceEmulation();
-    return TransformationMatrix();
-  }
-  if (emulation_params_ && emulation_params_->view_size == params->view_size &&
-      emulation_params_->screen_position == params->screen_position &&
-      emulation_params_->device_scale_factor == params->device_scale_factor &&
-      emulation_params_->scale == params->scale &&
-      emulation_params_->viewport_offset == params->viewport_offset &&
-      emulation_params_->viewport_scale == params->viewport_scale) {
+TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
+    const WebDeviceEmulationParams& params) {
+  if (device_metrics_enabled_ &&
+      emulation_params_.view_size == params.view_size &&
+      emulation_params_.screen_position == params.screen_position &&
+      emulation_params_.device_scale_factor == params.device_scale_factor &&
+      emulation_params_.scale == params.scale &&
+      emulation_params_.viewport_offset == params.viewport_offset &&
+      emulation_params_.viewport_scale == params.viewport_scale) {
     return ComputeRootLayerTransform();
   }
-  if (!emulation_params_ ||
-      emulation_params_->device_scale_factor != params->device_scale_factor) {
+  if (emulation_params_.device_scale_factor != params.device_scale_factor ||
+      !device_metrics_enabled_)
     GetMemoryCache()->EvictResources();
-  }
 
   emulation_params_ = params;
+  device_metrics_enabled_ = true;
 
   web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
-      calculateDeviceScaleAdjustment(params->view_size.width(),
-                                     params->view_size.height(),
-                                     params->device_scale_factor));
+      calculateDeviceScaleAdjustment(params.view_size.width,
+                                     params.view_size.height,
+                                     params.device_scale_factor));
 
-  if (params->screen_position == mojom::blink::ScreenPosition::kMobile) {
+  if (params.screen_position == WebDeviceEmulationParams::kMobile)
     EnableMobileEmulation();
-  } else {
+  else
     DisableMobileEmulation();
-  }
 
-  web_view_->SetCompositorDeviceScaleFactorOverride(
-      params->device_scale_factor);
+  web_view_->SetCompositorDeviceScaleFactorOverride(params.device_scale_factor);
 
   // TODO(wjmaclean): Tell all local frames in the WebView's frame tree, not
   // just a local main frame.
@@ -253,18 +254,18 @@ TransformationMatrix DevToolsEmulator::SetDeviceEmulation(
       document->MediaQueryAffectingValueChanged();
   }
 
-  if (params->viewport_offset.x() >= 0)
-    return ForceViewport(params->viewport_offset, params->viewport_scale);
-
-  return ResetViewport();
+  if (params.viewport_offset.x() >= 0)
+    return ForceViewport(params.viewport_offset, params.viewport_scale);
+  else
+    return ResetViewport();
 }
 
 void DevToolsEmulator::DisableDeviceEmulation() {
-  if (!emulation_params_)
+  if (!device_metrics_enabled_)
     return;
 
   GetMemoryCache()->EvictResources();
-  emulation_params_ = base::nullopt;
+  device_metrics_enabled_ = false;
   web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
       embedder_device_scale_adjustment_);
   DisableMobileEmulation();
@@ -415,8 +416,8 @@ TransformationMatrix DevToolsEmulator::ComputeRootLayerTransform() {
   // Apply device emulation transform first, so that it is affected by the
   // viewport override.
   ApplyViewportOverride(&transform);
-  if (emulation_params_)
-    transform.Scale(emulation_params_->scale);
+  if (device_metrics_enabled_)
+    transform.Scale(emulation_params_.scale);
   return transform;
 }
 
@@ -436,7 +437,7 @@ void DevToolsEmulator::OverrideVisibleRect(
 }
 
 float DevToolsEmulator::InputEventsScaleForEmulation() {
-  return emulation_params_ ? emulation_params_->scale : 1.0;
+  return device_metrics_enabled_ ? emulation_params_.scale : 1.0;
 }
 
 void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,

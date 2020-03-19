@@ -7,4 +7,3 @@ Document
 ++++++ListItem Name='Two' SelectionItem.IsSelected=false SelectionItem.SelectionContainer='selection_list'
 ++++++ListItem Name='Three' SelectionItem.IsSelected=false SelectionItem.SelectionContainer='selection_list'
 ++++++ListItem Name='Four' SelectionItem.IsSelected=false SelectionItem.SelectionContainer='selection_list'
-<-- End-of-file -->

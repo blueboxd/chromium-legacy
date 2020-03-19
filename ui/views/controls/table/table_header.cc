@@ -170,6 +170,22 @@ gfx::Size TableHeader::CalculatePreferredSize() const {
   return gfx::Size(1, kVerticalPadding * 2 + font_list_.GetHeight());
 }
 
+bool TableHeader::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return true;
+}
+
+void TableHeader::OnVisibleBoundsChanged() {
+  // Ensure the TableView updates its virtual children's bounds, because that
+  // includes the bounds representing this TableHeader.
+  table_->UpdateVirtualAccessibilityChildrenBounds();
+}
+
+void TableHeader::AddedToWidget() {
+  // Ensure the TableView updates its virtual children's bounds, because that
+  // includes the bounds representing this TableHeader.
+  table_->UpdateVirtualAccessibilityChildrenBounds();
+}
+
 gfx::NativeCursor TableHeader::GetCursor(const ui::MouseEvent& event) {
   return GetResizeColumn(GetMirroredXInView(event.x())) != -1
              ? GetNativeColumnResizeCursor()

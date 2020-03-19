@@ -50,7 +50,9 @@ class ASH_EXPORT MediaNotificationControllerImpl
   void HideNotification(const std::string& id) override;
   void RemoveItem(const std::string& id) override;
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
-  void LogMediaSessionActionButtonPressed(const std::string& id) override {}
+  void LogMediaSessionActionButtonPressed(
+      const std::string& id,
+      media_session::mojom::MediaSessionAction action) override {}
 
   std::unique_ptr<MediaNotificationContainerImpl> CreateMediaNotification(
       const message_center::Notification& notification);

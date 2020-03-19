@@ -333,6 +333,13 @@ void InjectEncryptedServerPassword(
 }
 
 void InjectKeystoreEncryptedServerPassword(
+    const autofill::PasswordForm& form,
+    fake_server::FakeServer* fake_server) {
+  InjectKeystoreEncryptedServerPassword(SpecificsDataFromPasswordForm(form),
+                                        fake_server);
+}
+
+void InjectKeystoreEncryptedServerPassword(
     const sync_pb::PasswordSpecificsData& password_data,
     fake_server::FakeServer* fake_server) {
   InjectEncryptedServerPassword(

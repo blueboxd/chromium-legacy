@@ -563,6 +563,10 @@ struct URLLoaderFactoryOverride {
 
   // A receiver for the replaced "internal" URLLoaderFactory.
   pending_receiver<URLLoaderFactory>? overridden_factory_receiver;
+
+  // Specifies if we should accept unknown schemes for CORS-enabled requests
+  // so that the |overriding_factory| can provide content for custom schemes.
+  bool skip_cors_enabled_scheme_check = false;
 };
 
 struct ClientSecurityState {

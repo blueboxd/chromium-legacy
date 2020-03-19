@@ -69,7 +69,6 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/devtools/web_device_emulation_params.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -84,6 +83,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -278,12 +278,20 @@ class RenderViewImplTest : public RenderViewTest {
     return GetRenderAccessibilityManager()->GetAccessibilityMode();
   }
 
-  void SetDeviceEmulation(
-      RenderViewImpl* view,
-      const base::Optional<blink::WebDeviceEmulationParams>& params) {
-    mojom::DeviceEmulator* emulator =
+  void ReceiveDisableDeviceEmulation(RenderViewImpl* view) {
+    // Emulates receiving an IPC message.
+    RenderWidget* widget =
         view->GetMainRenderFrame()->GetLocalRootRenderWidget();
-    emulator->SetDeviceEmulation(params);
+    widget->OnDisableDeviceEmulation();
+  }
+
+  void ReceiveEnableDeviceEmulation(
+      RenderViewImpl* view,
+      const blink::WebDeviceEmulationParams& params) {
+    // Emulates receiving an IPC message.
+    RenderWidget* widget =
+        view->GetMainRenderFrame()->GetLocalRootRenderWidget();
+    widget->OnEnableDeviceEmulation(params);
   }
 
   void ReceiveSetTextDirection(RenderWidget* widget,
@@ -522,12 +530,13 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     static base::string16 get_dpr =
         base::ASCIIToUTF16("Number(window.devicePixelRatio * 10)");
 
-    blink::WebDeviceEmulationParams params;
-    params.view_size = gfx::Size(width, height);
-    params.device_scale_factor = dpr;
-    SetDeviceEmulation(view(), params);
     int emulated_width, emulated_height;
     int emulated_dpr;
+    blink::WebDeviceEmulationParams params;
+    params.view_size.width = width;
+    params.view_size.height = height;
+    params.device_scale_factor = dpr;
+    ReceiveEnableDeviceEmulation(view(), params);
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &emulated_width));
     EXPECT_EQ(width, emulated_width);
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height,
@@ -694,11 +703,14 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
   gfx::Rect emulated_widget_rect(150, 160, 980, 1200);
   // In mobile emulation the WindowScreenRect and ScreenRect are both set to
   // match the WidgetScreenRect, which we set here.
-  emulation_params.screen_position = blink::mojom::ScreenPosition::kMobile;
+  emulation_params.screen_position = blink::WebDeviceEmulationParams::kMobile;
   emulation_params.view_size = emulated_widget_rect.size();
   emulation_params.view_position = emulated_widget_rect.origin();
-  mojom::DeviceEmulator* emulator = main_widget();
-  emulator->SetDeviceEmulation(emulation_params);
+  {
+    WidgetMsg_EnableDeviceEmulation msg(main_widget()->routing_id(),
+                                        emulation_params);
+    main_widget()->OnMessageReceived(msg);
+  }
 
   {
     // Make a popup again. It should inherit device emulation params.
@@ -1102,9 +1114,10 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
             main_widget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
 
-  SetDeviceEmulation(view(), base::nullopt);
+  ReceiveDisableDeviceEmulation(view());
 
-  SetDeviceEmulation(view(), blink::WebDeviceEmulationParams());
+  blink::WebDeviceEmulationParams params;
+  ReceiveEnableDeviceEmulation(view(), params);
   // Don't disable here to test that emulation is being shutdown properly.
 }
 
@@ -2763,9 +2776,10 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF1) {
     TestEmulatedSizeDprDsf(1005, 1102, 3.f, 1.f);
   }
 
-  SetDeviceEmulation(view(), base::nullopt);
+  ReceiveDisableDeviceEmulation(view());
 
-  SetDeviceEmulation(view(), blink::WebDeviceEmulationParams());
+  blink::WebDeviceEmulationParams params;
+  ReceiveEnableDeviceEmulation(view(), params);
   // Don't disable here to test that emulation is being shutdown properly.
 }
 
@@ -2791,9 +2805,10 @@ TEST_F(RenderViewImplScaleFactorTest, ScreenMetricsEmulationWithOriginalDSF2) {
     TestEmulatedSizeDprDsf(1005, 1102, 3.f, compositor_dsf);
   }
 
-  SetDeviceEmulation(view(), base::nullopt);
+  ReceiveDisableDeviceEmulation(view());
 
-  SetDeviceEmulation(view(), blink::WebDeviceEmulationParams());
+  blink::WebDeviceEmulationParams params;
+  ReceiveEnableDeviceEmulation(view(), params);
   // Don't disable here to test that emulation is being shutdown properly.
 }
 

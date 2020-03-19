@@ -3,4 +3,3 @@ Document
 ++Group IsControlElement=false
 ++++Text Name='Paragraph'
 ++Text Name='After'
-<-- End-of-file -->

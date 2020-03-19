@@ -93,6 +93,7 @@ CorsURLLoader::CorsURLLoader(
     DeleteCallback delete_callback,
     const ResourceRequest& resource_request,
     bool ignore_isolated_world_origin,
+    bool skip_cors_enabled_scheme_check,
     mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
@@ -111,7 +112,8 @@ CorsURLLoader::CorsURLLoader(
       traffic_annotation_(traffic_annotation),
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
-      preflight_controller_(preflight_controller) {
+      preflight_controller_(preflight_controller),
+      skip_cors_enabled_scheme_check_(skip_cors_enabled_scheme_check) {
   if (ignore_isolated_world_origin)
     request_.isolated_world_origin = base::nullopt;
 
@@ -422,7 +424,7 @@ void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
 }
 
 void CorsURLLoader::StartRequest() {
-  if (fetch_cors_flag_ &&
+  if (fetch_cors_flag_ && !skip_cors_enabled_scheme_check_ &&
       !base::Contains(url::GetCorsEnabledSchemes(), request_.url.scheme())) {
     HandleComplete(URLLoaderCompletionStatus(
         CorsErrorStatus(mojom::CorsError::kCorsDisabledScheme)));

@@ -2,4 +2,3 @@ Document
 ++Group IsControlElement=false
 ++++Button Name='Choose File'
 ++++++Button Name='Choose File'
-<-- End-of-file -->

@@ -116,6 +116,10 @@ void InjectEncryptedServerPassword(
     fake_server::FakeServer* fake_server);
 // As above, but using standard Keystore encryption.
 void InjectKeystoreEncryptedServerPassword(
+    const autofill::PasswordForm& form,
+    fake_server::FakeServer* fake_server);
+// As above, but using standard Keystore encryption and PasswordSpecificsData.
+void InjectKeystoreEncryptedServerPassword(
     const sync_pb::PasswordSpecificsData& password_data,
     fake_server::FakeServer* fake_server);
 

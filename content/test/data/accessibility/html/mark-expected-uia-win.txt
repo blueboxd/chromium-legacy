@@ -4,4 +4,3 @@ Document
 ++++Text LocalizedControlType='highlight' IsControlElement=false
 ++++++Text Name='mark tag'
 ++++Text Name='.'
-<-- End-of-file -->

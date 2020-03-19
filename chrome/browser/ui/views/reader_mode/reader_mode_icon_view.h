@@ -33,11 +33,16 @@ class ReaderModeIconView : public PageActionIconView,
   ~ReaderModeIconView() override;
 
  protected:
+  // content:WebContentsObserver overrides:
   // Detect when navigation to the distilled page completes. This is required to
   // correctly update the icon's inkdrop.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DocumentAvailableInMainFrame() override;
 
+  // PageActionIconView overrides:
   void UpdateImpl() override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
@@ -48,6 +53,7 @@ class ReaderModeIconView : public PageActionIconView,
   // intentionally does not display a bubble when activated.
   views::BubbleDialogDelegateView* GetBubble() const override;
 
+  // dom_distiller::DistillabilityObserver overrides:
   void OnResult(const dom_distiller::DistillabilityResult& result) override;
 
  private:

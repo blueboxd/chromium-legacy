@@ -766,7 +766,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
 TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIcon) {
   IssueOnQuery(kQueryId);
 
-  auto element_icons = testing::ElementsAre(std::string(), "googlePay");
+  auto element_icons =
+      testing::ElementsAre(std::string(), testing::StartsWith("googlePay"));
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
                                 false, PopupType::kPersonalInformation, _));

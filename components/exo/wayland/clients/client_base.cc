@@ -374,6 +374,7 @@ bool ClientBase::InitParams::FromCommandLine(
       LOG(ERROR) << "Invalid value for " << switches::kTransform;
       return false;
     }
+    has_transform = true;
   }
 
   use_drm = command_line.HasSwitch(switches::kUseDrm);
@@ -429,6 +430,7 @@ bool ClientBase::Init(const InitParams& params) {
   fullscreen_ = params.fullscreen;
   transparent_background_ = params.transparent_background;
   y_invert_ = params.y_invert;
+  has_transform_ = params.has_transform;
 
   display_.reset(wl_display_connect(nullptr));
   if (!display_) {
@@ -751,7 +753,29 @@ void ClientBase::HandleGeometry(void* data,
                                 int32_t subpixel,
                                 const char* make,
                                 const char* model,
-                                int32_t transform) {}
+                                int32_t transform) {
+  if (has_transform_)
+    return;
+  // |transform| describes the display transform. In order to take advantage of
+  // hardware overlays, content needs to be rotated in the opposite direction to
+  // show right-side up on the display.
+  switch (transform) {
+    case WL_OUTPUT_TRANSFORM_90:
+      transform_ = WL_OUTPUT_TRANSFORM_270;
+      break;
+    case WL_OUTPUT_TRANSFORM_270:
+      transform_ = WL_OUTPUT_TRANSFORM_90;
+      break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+      transform_ = WL_OUTPUT_TRANSFORM_FLIPPED_270;
+      break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+      transform_ = WL_OUTPUT_TRANSFORM_FLIPPED_90;
+      break;
+    default:
+      transform_ = transform;
+  }
+}
 
 void ClientBase::HandleMode(void* data,
                             struct wl_output* wl_output,

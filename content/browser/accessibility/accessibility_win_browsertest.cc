@@ -50,6 +50,7 @@
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_event_generator.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -4264,6 +4265,44 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   ASSERT_HRESULT_SUCCEEDED(element->get_CurrentName(name.Receive()));
   base::string16 name_str16(name.Get(), name.Length());
   EXPECT_EQ(window_text_str16, name_str16);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       GetFocusFromRootReachesWebContent) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <button>Focus target</button>
+        <script>
+          document.querySelector('button').focus();
+        </script>
+      </html>)HTML");
+
+  // Obtain the fragment root from the top-level HWND.
+  HWND hwnd = shell()->window()->GetHost()->GetAcceleratedWidget();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  ui::AXFragmentRootWin* fragment_root =
+      ui::AXFragmentRootWin::GetForAcceleratedWidget(hwnd);
+  ASSERT_NE(nullptr, fragment_root);
+  Microsoft::WRL::ComPtr<IRawElementProviderFragmentRoot> uia_fragment_root;
+  ASSERT_HRESULT_SUCCEEDED(
+      fragment_root->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(&uia_fragment_root)));
+
+  // Verify that calling GetFocus on the fragment root reaches web content.
+  Microsoft::WRL::ComPtr<IRawElementProviderFragment> focused_fragment;
+  ASSERT_HRESULT_SUCCEEDED(uia_fragment_root->GetFocus(&focused_fragment));
+
+  Microsoft::WRL::ComPtr<IRawElementProviderSimple> focused_element;
+  ASSERT_HRESULT_SUCCEEDED(focused_fragment.As(&focused_element));
+
+  base::win::ScopedVariant name_property;
+  ASSERT_HRESULT_SUCCEEDED(focused_element->GetPropertyValue(
+      UIA_NamePropertyId, name_property.Receive()));
+  ASSERT_EQ(name_property.type(), VT_BSTR);
+  BSTR name_bstr = name_property.ptr()->bstrVal;
+  base::string16 actual_name(name_bstr, ::SysStringLen(name_bstr));
+  EXPECT_EQ(L"Focus target", actual_name);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,

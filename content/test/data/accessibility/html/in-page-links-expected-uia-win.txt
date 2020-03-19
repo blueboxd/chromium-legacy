@@ -33,4 +33,3 @@ Document
 ++++++Text Name='Span with content'
 ++Group IsControlElement=false
 ++++Text Name='Paragraph with content'
-<-- End-of-file -->

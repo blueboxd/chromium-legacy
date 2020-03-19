@@ -17,7 +17,6 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -28,6 +27,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
+#include "components/browsing_data/content/local_storage_helper.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -172,7 +172,7 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
         storage_partition->GetPath(),
         new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile_),
-        new BrowsingDataLocalStorageHelper(profile_),
+        new browsing_data::LocalStorageHelper(profile_),
         new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
         new BrowsingDataIndexedDBHelper(storage_partition),
         BrowsingDataFileSystemHelper::Create(

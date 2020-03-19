@@ -37,6 +37,9 @@ class VIEWS_EXPORT TableHeader : public views::View {
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
+  void AddedToWidget() override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;

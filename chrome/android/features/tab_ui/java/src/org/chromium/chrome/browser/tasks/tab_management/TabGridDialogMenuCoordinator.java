@@ -96,7 +96,9 @@ public class TabGridDialogMenuCoordinator {
                 TabGridDialogMenuItemBinder::binder);
         // clang-format on
         listView.setOnItemClickListener((p, v, pos, id) -> {
-            mOnItemClickedCallback.onResult((int) id);
+            if (mOnItemClickedCallback != null) {
+                mOnItemClickedCallback.onResult((int) id);
+            }
             mMenuWindow.dismiss();
         });
 

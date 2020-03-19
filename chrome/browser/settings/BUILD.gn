@@ -26,7 +26,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_android_support_preference_v7_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
 
     # TODO(crbug.com/1017190): Remove the following deps once we stop linting individual targets.
     "//components/browser_ui/styles/android:java_resources",
@@ -39,7 +39,7 @@ android_resources("java_resources") {
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
-    "//third_party/android_deps:com_android_support_preference_v7_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java_resources",
   ]

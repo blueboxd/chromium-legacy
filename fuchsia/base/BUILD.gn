@@ -67,13 +67,17 @@ source_set("message_port") {
 
 source_set("legacymetrics") {
   sources = [
+    "legacymetrics_client.cc",
+    "legacymetrics_client.h",
     "legacymetrics_histogram_flattener.cc",
     "legacymetrics_histogram_flattener.h",
     "legacymetrics_user_event_recorder.cc",
     "legacymetrics_user_event_recorder.h",
   ]
+  public = [ "legacymetrics_client.h" ]
   deps = [ "//base" ]
   public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.legacymetrics" ]
+  friend = [ ":*" ]
 }
 
 # Used to propagate release-qualified package names to integration test code.
@@ -118,6 +122,7 @@ source_set("test_support") {
 test("cr_fuchsia_base_unittests") {
   sources = [
     "agent_impl_unittests.cc",
+    "legacymetrics_client_unittest.cc",
     "legacymetrics_histogram_flattener_unittest.cc",
     "legacymetrics_user_event_recorder_unittest.cc",
   ]

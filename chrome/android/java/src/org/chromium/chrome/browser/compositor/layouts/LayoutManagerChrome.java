@@ -68,6 +68,9 @@ public class LayoutManagerChrome
     private boolean mCreatingNtp;
     private final ObserverList<OverviewModeObserver> mOverviewModeObservers;
 
+    /** Whether to create an overview Layout when LayoutManagerChrome is created. */
+    private boolean mCreateOverviewLayout;
+
     /**
      * Creates the {@link LayoutManagerChrome} instance.
      * @param host         A {@link LayoutManagerHost} instance.
@@ -85,9 +88,6 @@ public class LayoutManagerChrome
         // Build Event Filter Handlers
         mToolbarSwipeHandler = createToolbarSwipeHandler(/* supportSwipeDown = */ true);
 
-        // Build Layouts
-        mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
-        mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
             if (startSurface != null) {
                 assert TabUiFeatureUtilities.isGridTabSwitcherEnabled();
@@ -107,7 +107,7 @@ public class LayoutManagerChrome
                 mOverviewLayout = tabManagementDelegate.createStartSurfaceLayout(
                         context, this, renderHost, startSurface);
             } else {
-                mOverviewLayout = new StackLayout(context, this, renderHost);
+                mCreateOverviewLayout = true;
             }
         }
     }
@@ -140,6 +140,17 @@ public class LayoutManagerChrome
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
+        Context context = mHost.getContext();
+        LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
+
+        // Build Layouts
+        mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
+        mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
+
+        if (mCreateOverviewLayout) {
+            mOverviewLayout = new StackLayout(context, this, renderHost);
+        }
+
         super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
                 dynamicResourceLoader);
 
@@ -150,7 +161,16 @@ public class LayoutManagerChrome
         mToolbarSwipeLayout.setTabModelSelector(selector, content);
         mOverviewListLayout.setTabModelSelector(selector, content);
         if (mOverviewLayout != null) {
+            mOverviewLayout.onFinishNativeInitialization();
             mOverviewLayout.setTabModelSelector(selector, content);
+        }
+    }
+
+    @Override
+    public void setTabModelSelector(TabModelSelector selector) {
+        super.setTabModelSelector(selector);
+        if (mOverviewLayout != null) {
+            mOverviewLayout.setTabModelSelector(selector, null);
         }
     }
 
@@ -173,8 +193,12 @@ public class LayoutManagerChrome
             mOverviewLayout.destroy();
             mOverviewLayout = null;
         }
-        mOverviewListLayout.destroy();
-        mToolbarSwipeLayout.destroy();
+        if (mOverviewLayout != null) {
+            mOverviewListLayout.destroy();
+        }
+        if (mToolbarSwipeLayout != null) {
+            mToolbarSwipeLayout.destroy();
+        }
     }
 
     @Override

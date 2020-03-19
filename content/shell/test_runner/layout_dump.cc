@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/test/test_runner_support.h"
+#include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -30,7 +30,8 @@ std::string DumpFrameHeaderIfNeeded(WebLocalFrame* frame) {
   // Add header for all but the main frame. Skip empty frames.
   if (frame->Parent() && !frame->GetDocument().DocumentElement().IsNull()) {
     result.append("\n--------\nFrame: '");
-    result.append(content::GetFrameNameForWebTests(frame));
+    auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame->Client());
+    result.append(frame_proxy->GetFrameNameForWebTests());
     result.append("'\n--------\n");
   }
 
@@ -42,8 +43,9 @@ std::string DumpFrameScrollPosition(WebLocalFrame* frame) {
   WebSize offset = frame->GetScrollOffset();
   if (offset.width > 0 || offset.height > 0) {
     if (frame->Parent()) {
-      result = std::string("frame '") +
-               content::GetFrameNameForWebTests(frame) + "' ";
+      auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame->Client());
+      result = std::string("frame '") + frame_proxy->GetFrameNameForWebTests() +
+               "' ";
     }
     base::StringAppendF(&result, "scrolled to %d,%d\n", offset.width,
                         offset.height);

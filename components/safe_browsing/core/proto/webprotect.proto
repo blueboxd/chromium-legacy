@@ -60,6 +60,9 @@ message DeepScanningClientRequest {
 
   // Sha256 digest of file.
   optional string digest = 7;
+
+  // Server-side only field.
+  reserved 8;
 }
 
 // Malware-specific response given back for scanned content.

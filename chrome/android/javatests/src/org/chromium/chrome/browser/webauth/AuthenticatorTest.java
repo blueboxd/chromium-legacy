@@ -84,7 +84,7 @@ public class AuthenticatorTest {
             String title = mActivityTestRule.getActivity().getActivityTab().getTitle();
 
             // Wait until the title indicates either success or failure.
-            if (!title.startsWith("Success") && !title.startsWith("Fail:")) return;
+            if (!title.startsWith("Success") && !title.startsWith("Fail")) return;
             mStatus = title;
             mCallbackHelper.notifyCalled();
         }

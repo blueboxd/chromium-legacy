@@ -36,7 +36,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -105,16 +104,12 @@ void RecordClipboardMetrics(AutocompleteMatchType::Type match_type) {
  * The prefetch occurs as a side-effect of calling OnOmniboxFocused() on
  * the AutocompleteController object.
  */
-class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
+class ZeroSuggestPrefetcher {
  public:
   explicit ZeroSuggestPrefetcher(Profile* profile);
 
  private:
-  ~ZeroSuggestPrefetcher() override = default;
   void SelfDestruct();
-
-  // AutocompleteControllerDelegate:
-  void OnResultChanged(bool default_match_changed) override;
 
   std::unique_ptr<AutocompleteController> controller_;
   base::OneShotTimer expire_timer_;
@@ -123,7 +118,7 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
 ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
     : controller_(new AutocompleteController(
           std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          this,
+          nullptr,  // We only want to warm up the cache, don't need the result.
           AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
   AutocompleteInput input(base::string16(), metrics::OmniboxEventProto::NTP,
                           ChromeAutocompleteSchemeClassifier(profile));
@@ -138,12 +133,6 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
 
 void ZeroSuggestPrefetcher::SelfDestruct() {
   delete this;
-}
-
-void ZeroSuggestPrefetcher::OnResultChanged(bool default_match_changed) {
-  // Nothing to do here, the results have been cached.
-  // We don't want to trigger deletion here because this is being called by the
-  // AutocompleteController object.
 }
 
 }  // namespace
@@ -400,7 +389,9 @@ void AutocompleteControllerAndroid::InitJNI(JNIEnv* env, jobject obj) {
 }
 
 void AutocompleteControllerAndroid::OnResultChanged(
+    AutocompleteController* controller,
     bool default_match_changed) {
+  DCHECK(controller == autocomplete_controller_.get());
   if (autocomplete_controller_ && !inside_synchronous_start_)
     NotifySuggestionsReceived(autocomplete_controller_->result());
 }

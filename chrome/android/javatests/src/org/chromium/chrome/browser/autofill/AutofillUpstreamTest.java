@@ -43,8 +43,8 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=AutofillUpstreamEditableExpirationDate"})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=AutofillUpstream"})
 public class AutofillUpstreamTest {
     private static final String TEST_SERVER_DIR = "components/test/data/autofill";
     private static final String TEST_FORM_URL = "/credit_card_upload_form_address_and_cc.html";

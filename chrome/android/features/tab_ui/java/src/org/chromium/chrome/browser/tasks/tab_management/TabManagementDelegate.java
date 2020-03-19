@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
@@ -36,13 +35,12 @@ public interface TabManagementDelegate {
      * @param activity The {@link ChromeActivity} that creates this surface.
      * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties} to
      *         communicate with this surface.
-     * @param fakeboxDelegate The delegate of the fake search box.
      * @param isTabCarousel Whether show the Tabs in carousel mode.
      * @param hasMVTiles whether has MV tiles on the surface.
      * @return The {@link TasksSurface}.
      */
     TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel, boolean hasMVTiles);
+            boolean isTabCarousel, boolean hasMVTiles);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.

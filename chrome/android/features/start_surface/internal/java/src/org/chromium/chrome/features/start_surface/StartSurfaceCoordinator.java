@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
@@ -95,9 +94,6 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? this::initializeSecondaryTasksSurface
                                                         : null,
                 mSurfaceMode,
-                mSurfaceMode != SurfaceMode.NO_START_SURFACE
-                        ? mActivity.getToolbarManager().getFakeboxDelegate()
-                        : null,
                 mActivity.getNightModeStateProvider(), mActivity.getFullscreenManager(),
                 this::isActivityFinishingOrDestroyed);
     }
@@ -137,6 +133,21 @@ public class StartSurfaceCoordinator implements StartSurface {
     }
 
     @Override
+    public void initWithNative() {
+        mStartSurfaceMediator.initWithNative(mSurfaceMode != SurfaceMode.NO_START_SURFACE
+                        ? mActivity.getToolbarManager().getFakeboxDelegate()
+                        : null);
+        if (mTabSwitcher != null) {
+            mTabSwitcher.initWithNative(mActivity, mActivity.getTabContentManager(),
+                    mActivity.getCompositorViewHolder().getDynamicResourceLoader());
+        }
+        if (mTasksSurface != null) {
+            mTasksSurface.onFinishNativeInitialization(
+                    mActivity, mActivity.getToolbarManager().getFakeboxDelegate());
+        }
+    }
+
+    @Override
     public Controller getController() {
         return mStartSurfaceMediator;
     }
@@ -163,8 +174,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         }
 
         // TODO(crbug.com/982018): use cached variation.
-        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
+        String feature = StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue();
 
         if (feature.equals("twopanes")) {
             // Do not enable two panes when the bottom bar is enabled since it will
@@ -196,9 +206,8 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         boolean hasMVTiles = mSurfaceMode == SurfaceMode.SINGLE_PANE
                 || mSurfaceMode == SurfaceMode.TWO_PANES || mSurfaceMode == SurfaceMode.TASKS_ONLY;
-        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
-                mPropertyModel, mActivity.getToolbarManager().getFakeboxDelegate(),
-                mSurfaceMode == SurfaceMode.SINGLE_PANE, hasMVTiles);
+        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
+                mActivity, mPropertyModel, mSurfaceMode == SurfaceMode.SINGLE_PANE, hasMVTiles);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
 
         mTasksSurfacePropertyModelChangeProcessor =
@@ -230,9 +239,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
         mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, propertyModel, mActivity.getToolbarManager().getFakeboxDelegate(), false,
-                false);
+                mActivity, propertyModel, false, false);
+        mSecondaryTasksSurface.onFinishNativeInitialization(
+                mActivity, mActivity.getToolbarManager().getFakeboxDelegate());
         mSecondaryTasksSurface.initialize();
+
         mSecondaryTasksSurface.getView().setId(R.id.secondary_tasks_surface_view);
         mSecondaryTasksSurfacePropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mPropertyModel,

@@ -12,6 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -23,7 +25,6 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 
-class AutocompleteControllerDelegate;
 class DocumentProvider;
 class HistoryURLProvider;
 class KeywordProvider;
@@ -57,15 +58,32 @@ class AutocompleteController : public AutocompleteProviderListener,
  public:
   typedef std::vector<scoped_refptr<AutocompleteProvider> > Providers;
 
+  class Observer : public base::CheckedObserver {
+   public:
+    // Invoked when the |controller| Start() is called with an |input| that
+    // wants asynchronous matches. This is meant to exclude text classification
+    // requests. The |controller| parameter is only useful for observers that
+    // are observing multiple AutocompleteController instances.
+    virtual void OnStart(AutocompleteController* controller,
+                         const AutocompleteInput& input) {}
+
+    // Invoked when the result set of |controller| changes. If
+    // |default_match_changed| is true, the default match of the result set has
+    // changed. The |controller| parameter is only useful for observers that
+    // are observing multiple AutocompleteController instances.
+    virtual void OnResultChanged(AutocompleteController* controller,
+                                 bool default_match_changed) {}
+  };
+
   // |provider_types| is a bitmap containing AutocompleteProvider::Type values
   // that will (potentially, depending on platform, flags, etc.) be
   // instantiated. |provider_client| is passed to all those providers, and
-  // is used to get access to the template URL service. |delegate| is a
+  // is used to get access to the template URL service. |observer| is a
   // proxy for UI elements which need to be notified when the results get
   // updated.
   AutocompleteController(
       std::unique_ptr<AutocompleteProviderClient> provider_client,
-      AutocompleteControllerDelegate* delegate,
+      Observer* observer,
       int provider_types);
   ~AutocompleteController() override;
 
@@ -76,9 +94,9 @@ class AutocompleteController : public AutocompleteProviderListener,
   // See AutocompleteInput::AutocompleteInput(...) for more details regarding
   // |input| params.
   //
-  // The controller calls AutocompleteControllerDelegate::OnResultChanged() from
-  // inside this call at least once. If matches are available later on that
-  // result in changing the result set the delegate is notified again. When the
+  // The controller calls AutocompleteController::Observer::OnResultChanged()
+  // from inside this call at least once. If matches are available later on that
+  // result in changing the result set the observers is notified again. When the
   // controller is done the notification AUTOCOMPLETE_CONTROLLER_RESULT_READY is
   // sent.
   void Start(const AutocompleteInput& input);
@@ -214,7 +232,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   // stats.
   void UpdateAssistedQueryStats(AutocompleteResult* result);
 
-  // Calls AutocompleteControllerDelegate::OnResultChanged() and if done sends
+  // Calls AutocompleteController::Observer::OnResultChanged() and if done sends
   // AUTOCOMPLETE_CONTROLLER_RESULT_READY.
   void NotifyChanged(bool notify_default_match);
 
@@ -242,7 +260,7 @@ class AutocompleteController : public AutocompleteProviderListener,
       const base::trace_event::MemoryDumpArgs& args,
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
-  AutocompleteControllerDelegate* delegate_;
+  base::ObserverList<Observer> observers_;
 
   // The client passed to the providers.
   std::unique_ptr<AutocompleteProviderClient> provider_client_;

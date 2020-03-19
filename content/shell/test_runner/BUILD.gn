@@ -99,7 +99,6 @@ jumbo_component("test_runner") {
     "//content/shell:client_hints_util",
     "//content/shell:web_test_switches",
     "//content/shell:web_test_utils",
-    "//content/test:test_runner_support",
     "//device/base/synchronization",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/mojom",

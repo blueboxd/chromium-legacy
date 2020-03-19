@@ -209,7 +209,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         final ChromeFullscreenManager fullscreenManager = mActivity.getFullscreenManager();
         Supplier<Boolean> canAnimateBrowserControls = () -> {
             final Tab tab = mActivity.getActivityTabProvider().get();
-            return tab != null && tab.isUserInteractable();
+            return tab != null && tab.isUserInteractable() && !tab.isNativePage();
         };
         mToolbarManager.setCanAnimateNativeBrowserControlsSupplier(canAnimateBrowserControls);
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,

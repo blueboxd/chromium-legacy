@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "ash/app_list/app_list_export.h"
+#include "base/scoped_observer.h"
 
 namespace aura {
 class Window;
@@ -63,7 +64,7 @@ class APP_LIST_EXPORT AppListPresenterDelegate {
   virtual void OnVisibilityWillChange(bool visible, int64_t display_id) = 0;
 
   // Whether the AppList is visible.
-  virtual bool IsVisible() = 0;
+  virtual bool IsVisible(const base::Optional<int64_t>& display_id) = 0;
 };
 
 }  // namespace ash

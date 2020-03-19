@@ -62,13 +62,12 @@ using l10n_util::GetNSString;
   // Init and start Google settings coordinator.
   GoogleServicesSettingsMode mode =
       GoogleServicesSettingsModeAdvancedSigninSettings;
-  self.googleServicesSettingsCoordinator = [[GoogleServicesSettingsCoordinator
-      alloc]
-      initWithBaseViewController:self.advancedSettingsSigninNavigationController
-                         browser:self.browser
-                            mode:mode];
-  self.googleServicesSettingsCoordinator.baseNavigationController =
-      self.advancedSettingsSigninNavigationController;
+  self.googleServicesSettingsCoordinator =
+      [[GoogleServicesSettingsCoordinator alloc]
+          initWithBaseNavigationController:
+              self.advancedSettingsSigninNavigationController
+                                   browser:self.browser
+                                      mode:mode];
   [self.googleServicesSettingsCoordinator start];
 
   // Create the mediator.

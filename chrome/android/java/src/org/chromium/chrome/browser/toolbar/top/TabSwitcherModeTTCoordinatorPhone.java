@@ -11,10 +11,8 @@ import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -25,15 +23,13 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
 /**
  * The coordinator for the tab switcher mode top toolbar shown on phones, responsible for
  * communication with other UI components and lifecycle. Lazily creates the tab
  * switcher mode top toolbar the first time it's needed.
  */
-class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
+class TabSwitcherModeTTCoordinatorPhone {
     private final ViewStub mTabSwitcherToolbarStub;
 
     // TODO(twellington): Create a model to hold all of these properties. Consider using
@@ -51,10 +47,6 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
     private TabSwitcherModeTTPhone mTabSwitcherModeToolbar;
 
     @Nullable
-    private IncognitoSwitchCoordinator mIncognitoSwitchCoordinator;
-    @Nullable
-    private View mLogo;
-    @Nullable
     private TabModelObserver mTabModelObserver;
 
     TabSwitcherModeTTCoordinatorPhone(ViewStub tabSwitcherToolbarStub) {
@@ -69,23 +61,9 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             mTabSwitcherModeToolbar.destroy();
             mTabSwitcherModeToolbar = null;
         }
-        if (mIncognitoSwitchCoordinator != null) {
-            mIncognitoSwitchCoordinator.destroy();
-            mIncognitoSwitchCoordinator = null;
-        }
-        if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
-            TemplateUrlServiceFactory.get().removeObserver(this);
-        }
         if (mTabModelSelector != null && mTabModelObserver != null) {
             mTabModelSelector.getModel(true).removeObserver(mTabModelObserver);
         }
-    }
-
-    @Override
-    public void onTemplateURLServiceChanged() {
-        mLogo.setVisibility(
-                (TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle() ? View.VISIBLE
-                                                                               : View.GONE));
     }
 
     /**
@@ -263,15 +241,6 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             TabModel incognitoTabModel = mTabModelSelector.getModel(true);
             incognitoTabModel.addObserver(mTabModelObserver);
             mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabModel.getCount());
-        }
-        if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
-            mIncognitoSwitchCoordinator =
-                    new IncognitoSwitchCoordinator(mTabSwitcherModeToolbar, mTabModelSelector);
-            mLogo = mTabSwitcherModeToolbar.findViewById(R.id.logo);
-            if (TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) {
-                mLogo.setVisibility(View.VISIBLE);
-            }
-            TemplateUrlServiceFactory.get().addObserver(this);
         }
 
         assert mIncognitoStateProvider != null;

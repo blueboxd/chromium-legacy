@@ -150,7 +150,7 @@ class APP_LIST_EXPORT AppListPresenterImpl
 
   // Returns the id of the display containing the app list, if visible. If not
   // visible returns kInvalidDisplayId.
-  int64_t GetDisplayId();
+  int64_t GetDisplayId() const;
 
   void OnVisibilityChanged(bool visible, int64_t display_id);
   void OnVisibilityWillChange(bool visible, int64_t display_id);

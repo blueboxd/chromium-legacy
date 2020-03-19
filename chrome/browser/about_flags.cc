@@ -1371,9 +1371,6 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
     {"start_surface_variation", "twopanes"}};
 
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_Toolbar[] = {
-    {"start_surface_variation", "toolbar"}};
-
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TasksOnly[] = {
     {"start_surface_variation", "tasksonly"}};
 
@@ -1385,8 +1382,6 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
     {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
      base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr},
-    {"Start Surface Toolbar", kStartSurfaceAndroid_Toolbar,
-     base::size(kStartSurfaceAndroid_Toolbar), nullptr},
     {"Tasks Only", kStartSurfaceAndroid_TasksOnly,
      base::size(kStartSurfaceAndroid_TasksOnly), nullptr},
     {"Omnibox Only", kStartSurfaceAndroid_OmniboxOnly,

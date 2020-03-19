@@ -178,6 +178,12 @@ void BaseAudioContext::Uninitialize() {
   DCHECK_EQ(resume_resolvers_.size(), 0u);
 }
 
+void BaseAudioContext::Dispose() {
+  // BaseAudioContext is going away, so remove the context from the orphan
+  // handlers.
+  GetDeferredTaskHandler().ClearContextFromOrphanHandlers();
+}
+
 void BaseAudioContext::ContextLifecycleStateChanged(
     mojom::FrameLifecycleState state) {
   // Don't need to do anything for an offline context.

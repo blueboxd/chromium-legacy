@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
@@ -76,7 +75,10 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
   SwapResults(&new_results);
 }
 
-void OmniboxProvider::OnResultChanged(bool default_match_changed) {
+void OmniboxProvider::OnResultChanged(AutocompleteController* controller,
+                                      bool default_match_changed) {
+  DCHECK(controller == controller_.get());
+
   // Record the query latency.
   RecordQueryLatencyHistogram();
 

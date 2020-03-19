@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 
 class AppListControllerDelegate;
 class AutocompleteController;
@@ -20,7 +20,7 @@ namespace app_list {
 
 // OmniboxProvider wraps AutocompleteController to provide omnibox results.
 class OmniboxProvider : public SearchProvider,
-                        public AutocompleteControllerDelegate {
+                        public AutocompleteController::Observer {
  public:
   explicit OmniboxProvider(Profile* profile,
                            AppListControllerDelegate* list_controller);
@@ -33,8 +33,9 @@ class OmniboxProvider : public SearchProvider,
   // Populates result list from AutocompleteResult.
   void PopulateFromACResult(const AutocompleteResult& result);
 
-  // AutocompleteControllerDelegate overrides:
-  void OnResultChanged(bool default_match_changed) override;
+  // AutocompleteController::Observer overrides:
+  void OnResultChanged(AutocompleteController* controller,
+                       bool default_match_changed) override;
 
   void RecordQueryLatencyHistogram();
 

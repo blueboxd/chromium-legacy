@@ -29,7 +29,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
@@ -205,23 +204,18 @@ OmniboxPageHandler::OmniboxPageHandler(
   ResetController();
 }
 
-OmniboxPageHandler::~OmniboxPageHandler() {}
+OmniboxPageHandler::~OmniboxPageHandler() = default;
 
-void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
-  OnOmniboxResultChanged(default_match_changed, controller_.get());
-}
-
-void OmniboxPageHandler::OnOmniboxQuery(AutocompleteController* controller,
-                                        const AutocompleteInput& input) {
+void OmniboxPageHandler::OnStart(AutocompleteController* controller,
+                                 const AutocompleteInput& input) {
   time_omnibox_started_ = base::Time::Now();
   input_ = input;
   page_->HandleNewAutocompleteQuery(controller == controller_.get(),
                                     base::UTF16ToUTF8(input.text()));
 }
 
-void OmniboxPageHandler::OnOmniboxResultChanged(
-    bool default_match_changed,
-    AutocompleteController* controller) {
+void OmniboxPageHandler::OnResultChanged(AutocompleteController* controller,
+                                         bool default_match_changed) {
   mojom::OmniboxResponsePtr response(mojom::OmniboxResponse::New());
   response->cursor_position = input_.cursor_position();
   response->time_since_omnibox_started_ms =
@@ -355,8 +349,7 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
     input.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
   input.set_from_omnibox_focus(zero_suggest);
 
-  OnOmniboxQuery(controller_.get(), input);
-  controller_->Start(input_);
+  controller_->Start(input);
 }
 
 void OmniboxPageHandler::ResetController() {

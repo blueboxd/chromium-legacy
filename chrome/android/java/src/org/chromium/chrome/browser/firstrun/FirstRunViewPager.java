@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.firstrun;
 import android.content.Context;
 import android.view.MotionEvent;
 
-// TODO(bjoyce): Need to convert fragment in FirstRunActivity.java before this
-// can be converted to Androidx.
 import androidx.viewpager.widget.ViewPager;
 
 /**

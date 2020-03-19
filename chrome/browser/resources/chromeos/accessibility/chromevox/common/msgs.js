@@ -79,27 +79,6 @@ Msgs = class {
   }
 
   /**
-   * Gets a localized display name for a locale.
-   * NOTE: Only a subset of locale identifiers are supported.  See the
-   * |CHROMEVOX_LOCALE_DICT| message.
-   * @param {string} locale On the form |ll| or |ll_CC|, where |ll| is
-   *     the language code and |CC| the country code.
-   * @return {string} The display name.
-   */
-  static getLocaleDisplayName(locale) {
-    if (!Msgs.localeNameDict_) {
-      Msgs.localeNameDict_ =
-          /** @type {!Object<string>} */ (
-              JSON.parse(Msgs.getMsg('locale_dict')));
-    }
-    const name = Msgs.localeNameDict_[locale];
-    if (!name) {
-      throw Error('Unsupported locale identifier: ' + locale);
-    }
-    return name;
-  }
-
-  /**
    * Applies substitions of the form $N, where N is a number from 1 to 9, to a
    * string. The numbers are one-based indices into |opt_subs|.
    * @param {string} message
@@ -124,14 +103,6 @@ Msgs = class {
  * @private
  */
 Msgs.NAMESPACE_ = 'chromevox_';
-
-/**
- * Dictionary of locale names.
- * @type {Object<string>}
- * @private
- */
-Msgs.localeNameDict_ = null;
-
 
 /**
  * Strings that are displayed in the user interface but don't need

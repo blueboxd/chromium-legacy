@@ -162,6 +162,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kFontPreloadingDelaysRenderingParam;
 
+BLINK_COMMON_EXPORT extern const base::Feature kFlexNG;
+
 }  // namespace features
 }  // namespace blink
 

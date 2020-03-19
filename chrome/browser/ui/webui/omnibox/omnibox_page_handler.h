@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
@@ -30,23 +30,19 @@ class Profile;
 // private AutocompleteController. It also listens for updates from the
 // AutocompleteController to OnResultChanged() and passes those results to
 // the OmniboxPage.
-class OmniboxPageHandler : public AutocompleteControllerDelegate,
-                           public mojom::OmniboxPageHandler,
-                           public OmniboxControllerEmitter::Observer {
+class OmniboxPageHandler : public AutocompleteController::Observer,
+                           public mojom::OmniboxPageHandler {
  public:
   // OmniboxPageHandler is deleted when the supplied pipe is destroyed.
   OmniboxPageHandler(Profile* profile,
                      mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver);
   ~OmniboxPageHandler() override;
 
-  // AutocompleteControllerDelegate overrides:
-  void OnResultChanged(bool default_match_changed) override;
-
-  // OmniboxControllerEmitter::Observer overrides:
-  void OnOmniboxQuery(AutocompleteController* controller,
-                      const AutocompleteInput& input) override;
-  void OnOmniboxResultChanged(bool default_match_changed,
-                              AutocompleteController* controller) override;
+  // AutocompleteController::Observer overrides:
+  void OnStart(AutocompleteController* controller,
+               const AutocompleteInput& input) override;
+  void OnResultChanged(AutocompleteController* controller,
+                       bool default_match_changed) override;
 
   // mojom::OmniboxPageHandler overrides:
   void SetClientPage(mojo::PendingRemote<mojom::OmniboxPage> page) override;
@@ -93,7 +89,7 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
 
   mojo::Receiver<mojom::OmniboxPageHandler> receiver_;
 
-  ScopedObserver<OmniboxControllerEmitter, OmniboxControllerEmitter::Observer>
+  ScopedObserver<OmniboxControllerEmitter, AutocompleteController::Observer>
       observer_;
 
   base::WeakPtrFactory<OmniboxPageHandler> weak_factory_{this};

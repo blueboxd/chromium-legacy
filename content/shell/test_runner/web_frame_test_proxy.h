@@ -38,6 +38,10 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
   void Initialize(WebTestInterfaces* interfaces,
                   content::RenderViewImpl* render_view_for_frame);
 
+  // Returns a frame name that can be used in the output of web tests
+  // (the name is derived from the frame's unique name).
+  std::string GetFrameNameForWebTests();
+
   // RenderFrameImpl overrides.
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
 

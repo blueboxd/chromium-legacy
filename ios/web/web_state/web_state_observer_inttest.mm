@@ -1000,8 +1000,7 @@ TEST_F(WebStateObserverTest, FailedNavigation) {
 // Tests navigation to a URL with /..; suffix. On iOS 12 and earlier this
 // navigation fails becasue WebKit rewrites valid URL to invalid during the
 // navigation. On iOS 13+ this navigation sucessfully completes.
-// TODO(crbug.com/1063015): Fix and reenable.
-TEST_F(WebStateObserverTest, DISABLED_UrlWithSpecialSuffixNavigation) {
+TEST_F(WebStateObserverTest, UrlWithSpecialSuffixNavigation) {
   const std::string kBadSuffix = "/..;";
   GURL url = test_server_->GetURL(kBadSuffix);
 

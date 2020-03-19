@@ -77,7 +77,6 @@ public class StaticLayout extends Layout {
         mHandler = new Handler();
         mUnstallRunnable = new UnstallRunnable();
         mUnstalling = false;
-        mSceneLayer = new StaticTabSceneLayer();
     }
 
     /**
@@ -86,6 +85,11 @@ public class StaticLayout extends Layout {
      */
     public void setLayoutHandlesTabLifecycles(boolean handlesTabLifecycles) {
         mHandlesTabLifecycles = handlesTabLifecycles;
+    }
+
+    @Override
+    public void onFinishNativeInitialization() {
+        mSceneLayer = new StaticTabSceneLayer();
     }
 
     @Override

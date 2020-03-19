@@ -114,9 +114,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private int mControlsShowingToken = TokenHolder.INVALID_TOKEN;
     private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mUpdateRequested;
-    private final ContextualSearchPanel mContextualSearchPanel;
+    private ContextualSearchPanel mContextualSearchPanel;
     private final OverlayPanelManager mOverlayPanelManager;
-    private final ToolbarSceneLayer mToolbarOverlay;
+    private ToolbarSceneLayer mToolbarOverlay;
     private SceneOverlay mStatusIndicatorSceneOverlay;
 
     /** A delegate for interacting with the Contextual Search manager. */
@@ -220,15 +220,10 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         mAnimationHandler = new CompositorAnimationHandler(this);
 
-        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
-
         mOverlayPanelManager = new OverlayPanelManager();
 
         // Build Layouts
         mStaticLayout = new StaticLayout(mContext, this, renderHost, null, mOverlayPanelManager);
-
-        // Contextual Search scene overlay.
-        mContextualSearchPanel = new ContextualSearchPanel(mContext, this, mOverlayPanelManager);
 
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(true);
@@ -375,6 +370,18 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
+        LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
+        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
+
+        // Initialize Layouts
+        mStaticLayout.onFinishNativeInitialization();
+        if (getActiveLayout() != null) {
+            getActiveLayout().onFinishNativeInitialization();
+        }
+
+        // Contextual Search scene overlay.
+        mContextualSearchPanel = new ContextualSearchPanel(mContext, this, mOverlayPanelManager);
+
         // Add any SceneOverlays to a layout.
         addAllSceneOverlays();
 
@@ -396,7 +403,16 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mOverlayPanelManager.setDynamicResourceLoader(dynamicResourceLoader);
         mOverlayPanelManager.setContainerView(androidContentContainer);
 
+        if (mTabModelSelector != selector) {
+            setTabModelSelector(selector);
+        }
+
+        mContentContainer = androidContentContainer;
+    }
+
+    public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
+        mStaticLayout.setTabModelSelector(selector, null);
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
@@ -423,8 +439,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
                 initLayoutTabFromHost(tab.getId());
             }
         };
-
-        mContentContainer = androidContentContainer;
 
         if (mNextActiveLayout != null) startShowing(mNextActiveLayout, true);
 

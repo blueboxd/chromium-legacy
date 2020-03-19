@@ -92,6 +92,7 @@ component("network") {
     "network_handler_callbacks.h",
     "network_ip_config.cc",
     "network_ip_config.h",
+    "network_metadata_observer.h",
     "network_metadata_store.cc",
     "network_metadata_store.h",
     "network_profile.cc",

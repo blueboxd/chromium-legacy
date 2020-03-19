@@ -709,11 +709,6 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
     it->OnOpenUrlResponse(gurl, is_background);
 }
 
-void AssistantManagerServiceImpl::OnPlaybackStateChange(
-    const MediaStatus& status) {
-  media_session_->NotifyMediaSessionMetadataChanged(status);
-}
-
 void AssistantManagerServiceImpl::OnShowNotification(
     const action::Notification& notification) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnShowNotification,
@@ -1338,10 +1333,9 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
   });
 }
 
-void AssistantManagerServiceImpl::MediaSessionChanged(
-    const base::Optional<base::UnguessableToken>& request_id) {
-  if (request_id.has_value())
-    media_session_audio_focus_id_ = std::move(request_id.value());
+void AssistantManagerServiceImpl::OnPlaybackStateChange(
+    const MediaStatus& status) {
+  media_session_->NotifyMediaSessionMetadataChanged(status);
 }
 
 void AssistantManagerServiceImpl::MediaSessionInfoChanged(
@@ -1354,6 +1348,12 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
   media_metadata_ = std::move(metadata);
   UpdateMediaState();
+}
+
+void AssistantManagerServiceImpl::MediaSessionChanged(
+    const base::Optional<base::UnguessableToken>& request_id) {
+  if (request_id.has_value())
+    media_session_audio_focus_id_ = std::move(request_id.value());
 }
 
 // TODO(dmblack): Handle non-firing (e.g. paused or scheduled) timers.

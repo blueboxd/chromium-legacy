@@ -6,6 +6,12 @@ import("//build/toolchain/win/midl.gni")
 
 midl("updater_idl_idl") {
   sources = [ "updater_idl.idl" ]
+  defines = [
+    "IUPDATER_IID=63B8FFB1-5314-48C9-9C57-93EC8BC6184B",
+    "UPDATER_LIB_UUID=69464FF0-D9EC-4037-A35F-8AE4358106CC",
+    "UPDATER_CLSID=158428A4-6014-4978-83BA-9FAD0DABE791",
+    "UPDATER_SERVICE_UUID=415FD747-D79E-42D7-93AC-1BA6E5FD4E93",
+  ]
 
   writes_tlb = true
 }

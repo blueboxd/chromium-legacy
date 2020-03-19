@@ -10,7 +10,7 @@
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
   chrome::RegisterPathProvider();
-  return base::LaunchUnitTests(
+  return base::LaunchUnitTestsSerially(
       argc, argv,
       base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

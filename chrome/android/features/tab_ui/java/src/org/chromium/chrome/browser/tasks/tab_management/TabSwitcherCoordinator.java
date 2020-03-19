@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -62,14 +63,17 @@ public class TabSwitcherCoordinator
     private final TabSwitcherMediator mMediator;
     private final MultiThumbnailCardProvider mMultiThumbnailCardProvider;
     private final TabGridDialogCoordinator mTabGridDialogCoordinator;
-    private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
-    private final UndoGroupSnackbarController mUndoGroupSnackbarController;
     private final TabModelSelector mTabModelSelector;
     private final @TabListCoordinator.TabListMode int mMode;
     private final MessageCardProviderCoordinator mMessageCardProviderCoordinator;
+
+    private TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
+    private UndoGroupSnackbarController mUndoGroupSnackbarController;
     private TabSuggestionsOrchestrator mTabSuggestionsOrchestrator;
     private NewTabTileCoordinator mNewTabTileCoordinator;
     private TabAttributeCache mTabAttributeCache;
+    private ViewGroup mContainer;
+    private SnackbarManager.SnackbarManageable mSnackbarManageable;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -91,23 +95,20 @@ public class TabSwitcherCoordinator
 
     public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            DynamicResourceLoader dynamicResourceLoader, ChromeFullscreenManager fullscreenManager,
-            TabCreatorManager tabCreatorManager,
+            ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
             MenuOrKeyboardActionController menuOrKeyboardActionController,
             SnackbarManager.SnackbarManageable snackbarManageable, ViewGroup container,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             @TabListCoordinator.TabListMode int mode) {
         mMode = mode;
         mTabModelSelector = tabModelSelector;
+        mContainer = container;
+        mSnackbarManageable = snackbarManageable;
 
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
-        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, container, tabModelSelector, tabContentManager, null);
-
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                fullscreenManager, container, mTabSelectionEditorCoordinator.getController(),
-                tabContentManager, this, mode);
+                fullscreenManager, container, tabContentManager, this, mode);
 
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
@@ -122,10 +123,9 @@ public class TabSwitcherCoordinator
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
         };
 
-        mTabListCoordinator =
-                new TabListCoordinator(mode, context, tabModelSelector, mMultiThumbnailCardProvider,
-                        titleProvider, true, mMediator, null, TabProperties.UiType.CLOSABLE, null,
-                        container, dynamicResourceLoader, true, COMPONENT_NAME);
+        mTabListCoordinator = new TabListCoordinator(mode, context, tabModelSelector,
+                mMultiThumbnailCardProvider, titleProvider, true, mMediator, null,
+                TabProperties.UiType.CLOSABLE, null, container, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
@@ -156,21 +156,7 @@ public class TabSwitcherCoordinator
                         MessageCardViewBinder::bind);
             }
 
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
-                mTabSuggestionsOrchestrator =
-                        new TabSuggestionsOrchestrator(mTabModelSelector, lifecycleDispatcher);
-                TabSuggestionMessageService tabSuggestionMessageService =
-                        new TabSuggestionMessageService(context, tabModelSelector,
-                                mTabSelectionEditorCoordinator.getController());
-                mTabSuggestionsOrchestrator.addObserver(tabSuggestionMessageService);
-                mMessageCardProviderCoordinator.subscribeMessageService(
-                        tabSuggestionMessageService);
-            }
-
-            if (ChromeFeatureList
-                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                                    "tab_grid_layout_android_new_tab_tile")
-                            .equals("NewTabTile")) {
+            if (TabUiFeatureUtilities.isTabGridLayoutAndroidNewTabTileEnabled()) {
                 mNewTabTileCoordinator =
                         new NewTabTileCoordinator(tabModelSelector, tabCreatorManager);
                 mTabListCoordinator.registerItemType(TabProperties.UiType.NEW_TAB_TILE,
@@ -203,6 +189,34 @@ public class TabSwitcherCoordinator
     @VisibleForTesting
     public static boolean hasAppendedMessagesForTesting() {
         return sAppendedMessagesForTesting;
+    }
+
+    @Override
+    public void initWithNative(Context context, TabContentManager tabContentManager,
+            DynamicResourceLoader dynamicResourceLoader) {
+        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
+                context, mContainer, mTabModelSelector, tabContentManager, null);
+        mMediator.initWithNative(mTabSelectionEditorCoordinator.getController());
+
+        if (mTabGridDialogCoordinator != null) {
+            mTabGridDialogCoordinator.initWithNative(context, mTabModelSelector, tabContentManager);
+        }
+
+        mTabListCoordinator.initWithNative(dynamicResourceLoader);
+        mMultiThumbnailCardProvider.initWithNative();
+
+        if (mMode == TabListCoordinator.TabListMode.GRID) {
+            if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
+                mTabSuggestionsOrchestrator =
+                        new TabSuggestionsOrchestrator(mTabModelSelector, mLifecycleDispatcher);
+                TabSuggestionMessageService tabSuggestionMessageService =
+                        new TabSuggestionMessageService(context, mTabModelSelector,
+                                mTabSelectionEditorCoordinator.getController());
+                mTabSuggestionsOrchestrator.addObserver(tabSuggestionMessageService);
+                mMessageCardProviderCoordinator.subscribeMessageService(
+                        tabSuggestionMessageService);
+            }
+        }
     }
 
     // TabSwitcher implementation.
@@ -379,7 +393,7 @@ public class TabSwitcherCoordinator
     }
 
     private boolean shouldRegisterMessageItemType() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
                 || (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                         && !TabSwitcherMediator.isShowingTabsInMRUOrder());
     }
@@ -410,7 +424,9 @@ public class TabSwitcherCoordinator
             mNewTabTileCoordinator.destroy();
         }
         mMultiThumbnailCardProvider.destroy();
-        mTabSelectionEditorCoordinator.destroy();
+        if (mTabSelectionEditorCoordinator != null) {
+            mTabSelectionEditorCoordinator.destroy();
+        }
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
         if (mTabAttributeCache != null) {

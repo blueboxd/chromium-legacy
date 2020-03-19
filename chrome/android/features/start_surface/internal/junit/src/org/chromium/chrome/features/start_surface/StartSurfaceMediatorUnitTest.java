@@ -1114,13 +1114,14 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     private StartSurfaceMediator createStartSurfaceMediator(@SurfaceMode int mode) {
-        return new StartSurfaceMediator(mMainTabGridController, mTabModelSelector,
-                mode == SurfaceMode.NO_START_SURFACE ? null : mPropertyModel,
+        StartSurfaceMediator mediator = new StartSurfaceMediator(mMainTabGridController,
+                mTabModelSelector, mode == SurfaceMode.NO_START_SURFACE ? null : mPropertyModel,
                 (mode == SurfaceMode.SINGLE_PANE || mode == SurfaceMode.TWO_PANES)
                         ? mFeedSurfaceCreator
                         : null,
                 mode == SurfaceMode.SINGLE_PANE ? mSecondaryTasksSurfaceInitializer : null, mode,
-                mFakeBoxDelegate, mNightModeStateProvider, mChromeFullscreenManager,
-                mActivityStateChecker);
+                mNightModeStateProvider, mChromeFullscreenManager, mActivityStateChecker);
+        mediator.initWithNative(mFakeBoxDelegate);
+        return mediator;
     }
 }

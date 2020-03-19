@@ -165,8 +165,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
   void OnOpenUrl(const std::string& url, bool in_background) override;
-  void OnPlaybackStateChange(
-      const assistant_client::MediaStatus& status) override;
   void OnShowNotification(const action::Notification& notification) override;
   void OnOpenAndroidApp(const action::AndroidAppInfo& app_info,
                         const action::InteractionInfo& interaction) override;
@@ -215,6 +213,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
     return assistant_manager_internal_;
   }
   CrosPlatformApi* platform_api() { return platform_api_.get(); }
+
+  // assistant_client::MediaManager::Listener overrides:
+  void OnPlaybackStateChange(
+      const assistant_client::MediaStatus& status) override;
 
   // media_session::mojom::MediaControllerObserver overrides:
   void MediaSessionInfoChanged(

@@ -482,8 +482,10 @@ aura::Window* AppListControllerImpl::GetWindow() {
   return presenter_.GetWindow();
 }
 
-bool AppListControllerImpl::IsVisible() {
-  return last_visible_;
+bool AppListControllerImpl::IsVisible(
+    const base::Optional<int64_t>& display_id) {
+  return last_visible_ && (!display_id.has_value() ||
+                           display_id.value() == last_visible_display_id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -571,8 +573,11 @@ void AppListControllerImpl::OnAppListStateChanged(AppListState new_state,
 ////////////////////////////////////////////////////////////////////////////////
 // Methods used in Ash
 
-bool AppListControllerImpl::GetTargetVisibility() const {
-  return last_target_visible_;
+bool AppListControllerImpl::GetTargetVisibility(
+    const base::Optional<int64_t>& display_id) const {
+  return last_target_visible_ &&
+         (!display_id.has_value() ||
+          display_id.value() == last_visible_display_id_);
 }
 
 void AppListControllerImpl::Show(int64_t display_id,
@@ -627,6 +632,8 @@ ShelfAction AppListControllerImpl::ToggleAppList(
     return SHELF_ACTION_APP_LIST_SHOWN;
   }
 
+  base::AutoReset<bool> auto_reset(&should_dismiss_immediately_,
+                                   display_id != last_visible_display_id_);
   ShelfAction action =
       presenter_.ToggleAppList(display_id, show_source, event_time_stamp);
   UpdateExpandArrowVisibility();
@@ -759,7 +766,7 @@ void AppListControllerImpl::OnTabletModeEnded() {
 }
 
 void AppListControllerImpl::OnWallpaperColorsChanged() {
-  if (IsVisible())
+  if (IsVisible(last_visible_display_id_))
     presenter_.GetView()->OnWallpaperColorsChanged();
 }
 
@@ -820,7 +827,7 @@ void AppListControllerImpl::OnUiVisibilityChanged(
     base::Optional<AssistantExitPoint> exit_point) {
   switch (new_visibility) {
     case AssistantVisibility::kVisible:
-      if (!IsVisible()) {
+      if (!IsVisible(base::nullopt)) {
         Show(GetDisplayIdToShowAppListOn(), kAssistantEntryPoint,
              base::TimeTicks());
       }
@@ -1731,7 +1738,7 @@ void AppListControllerImpl::Shutdown() {
 }
 
 bool AppListControllerImpl::IsHomeScreenVisible() {
-  return IsTabletMode() && IsVisible();
+  return IsTabletMode() && IsVisible(base::nullopt);
 }
 
 gfx::Rect AppListControllerImpl::GetInitialAppListItemScreenBoundsForWindow(

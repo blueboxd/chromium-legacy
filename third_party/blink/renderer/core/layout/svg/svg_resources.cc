@@ -58,6 +58,14 @@ SVGElementResourceClient* SVGResources::GetClient(const LayoutObject& object) {
 
 FloatRect SVGResources::ReferenceBoxForEffects(
     const LayoutObject& layout_object) {
+  // For SVG foreign objects, remove the position part of the bounding box. The
+  // position is already baked into the transform, and we don't want to re-apply
+  // the offset when, e.g., using "objectBoundingBox" for clipPathUnits.
+  if (layout_object.IsSVGForeignObject()) {
+    FloatRect rect = layout_object.ObjectBoundingBox();
+    return FloatRect(FloatPoint::Zero(), rect.Size());
+  }
+
   // Text "sub-elements" (<tspan>, <textpath>, <a>) should use the entire
   // <text>s object bounding box rather then their own.
   // https://svgwg.org/svg2-draft/text.html#ObjectBoundingBoxUnitsTextObjects
@@ -434,9 +442,7 @@ void SVGResources::BuildSetOfResources(
 }
 
 void SVGResources::SetClipper(LayoutSVGResourceClipper* clipper) {
-  if (!clipper)
-    return;
-
+  DCHECK(clipper);
   DCHECK_EQ(clipper->ResourceType(), kClipperResourceType);
 
   if (!clipper_filter_masker_data_)
@@ -446,9 +452,7 @@ void SVGResources::SetClipper(LayoutSVGResourceClipper* clipper) {
 }
 
 void SVGResources::SetFilter(LayoutSVGResourceFilter* filter) {
-  if (!filter)
-    return;
-
+  DCHECK(filter);
   DCHECK_EQ(filter->ResourceType(), kFilterResourceType);
 
   if (!clipper_filter_masker_data_)
@@ -458,9 +462,7 @@ void SVGResources::SetFilter(LayoutSVGResourceFilter* filter) {
 }
 
 void SVGResources::SetMarkerStart(LayoutSVGResourceMarker* marker_start) {
-  if (!marker_start)
-    return;
-
+  DCHECK(marker_start);
   DCHECK_EQ(marker_start->ResourceType(), kMarkerResourceType);
 
   if (!marker_data_)
@@ -470,9 +472,7 @@ void SVGResources::SetMarkerStart(LayoutSVGResourceMarker* marker_start) {
 }
 
 void SVGResources::SetMarkerMid(LayoutSVGResourceMarker* marker_mid) {
-  if (!marker_mid)
-    return;
-
+  DCHECK(marker_mid);
   DCHECK_EQ(marker_mid->ResourceType(), kMarkerResourceType);
 
   if (!marker_data_)
@@ -482,9 +482,7 @@ void SVGResources::SetMarkerMid(LayoutSVGResourceMarker* marker_mid) {
 }
 
 void SVGResources::SetMarkerEnd(LayoutSVGResourceMarker* marker_end) {
-  if (!marker_end)
-    return;
-
+  DCHECK(marker_end);
   DCHECK_EQ(marker_end->ResourceType(), kMarkerResourceType);
 
   if (!marker_data_)
@@ -494,9 +492,7 @@ void SVGResources::SetMarkerEnd(LayoutSVGResourceMarker* marker_end) {
 }
 
 void SVGResources::SetMasker(LayoutSVGResourceMasker* masker) {
-  if (!masker)
-    return;
-
+  DCHECK(masker);
   DCHECK_EQ(masker->ResourceType(), kMaskerResourceType);
 
   if (!clipper_filter_masker_data_)
@@ -506,8 +502,7 @@ void SVGResources::SetMasker(LayoutSVGResourceMasker* masker) {
 }
 
 void SVGResources::SetFill(LayoutSVGResourcePaintServer* fill) {
-  if (!fill)
-    return;
+  DCHECK(fill);
 
   if (!fill_stroke_data_)
     fill_stroke_data_ = std::make_unique<FillStrokeData>();
@@ -516,8 +511,7 @@ void SVGResources::SetFill(LayoutSVGResourcePaintServer* fill) {
 }
 
 void SVGResources::SetStroke(LayoutSVGResourcePaintServer* stroke) {
-  if (!stroke)
-    return;
+  DCHECK(stroke);
 
   if (!fill_stroke_data_)
     fill_stroke_data_ = std::make_unique<FillStrokeData>();

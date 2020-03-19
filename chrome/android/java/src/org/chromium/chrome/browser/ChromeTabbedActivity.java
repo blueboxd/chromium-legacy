@@ -651,6 +651,8 @@ public class ChromeTabbedActivity
                             TabManagementModuleProvider.getDelegate();
                     if (tabManagementDelegate != null) {
                         mStartSurface = tabManagementDelegate.createStartSurface(this);
+                        assert LibraryLoader.getInstance().isInitialized();
+                        mStartSurface.initWithNative();
                     }
                 }
 

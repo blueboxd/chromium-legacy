@@ -1,26 +1,18 @@
 Tests that vision deficiencies can be emulated.
 <p>Emulating "none":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAFRJREFUWIXt18ENACAMw8DA5N0chnCQePgGiKz+ujI5aZru3K6uPWAgZSBlIGUgZSBlIGUgZSBlILWS030iyr6/oIGUgZSBlIGUgZSBlIGUgZSB1AXNwwVLtuf+dAAAAABJRU5ErkJggg==">
-<p>Emulating "achromatomaly":
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAGFJREFUWIXt10ENwCAUBFFAATbQxBErtVNdyAARs016mCdgM/m3X8capwTtdybnSouufcBAykDKQMpAykDKQMpAykDKQKr2/kR/krTfX9BAykDKQMpAykDKQMpAykDKQOoCayUFlTeCp/sAAAAASUVORK5CYII=">
 <p>Emulating "achromatopsia":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAFpJREFUWIXt10ENADEMxMD2eARR2IfQFYS3Uh8eACsrv+zu/lfQzCTn1hddu8BAykDKQMpAykDKQMpAykDKQGpXVfQnSXv+ggZSBlIGUgZSBlIGUgZSBlIGUgcPVwX7L3bHewAAAABJRU5ErkJggg==">
 <p>Emulating "blurredVision":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAehJREFUWIXtl81u4jAURo8TN7RpASXqohKLvsG89DzXLJFm1ZZCyb89i5tAWtAQYlfqIp90FWEl1yfX186H4tdvy3wN8Qvc7CGoQVnA8n8psAqMhiqGfQrbFWye4X0FWSrjRst9qAv5zkuzWEPyBx7+QrQDXbZwAwBRUEdQPsDuSYbKOeQJFAtQZhTUZ8C7F4FbrGG2EUBlhgHaQACLhQzlCURbCAtZicOLjqueAN7spXK3G5i9jQCcyfz5TlokLI9tMp6rBxjUkjQsBU4X1wEC1GUPrOn18KUcQwCV4WwM6kF6z1hvVfsMeJA9E5d07hk/lesUeMv0TZoAXTUBumoCdFXvHFRf4pKuvX+cNDbgJIDBn7qT8AusMRqaSKKO2rmvdDPd80aDDb1CaqpY/Fy+FKZRdmspOaq4B9pV0xUwS8VsAkRLN8OapWJYmxmYEB/9qXlfCUue+LH8WQplfKyiozSbZ3nr7bb1dM0AuB6kCWVZy7nAfTxCdS9jHjaNVDBLxKh2Nl0NBOwmN1qcdRVDed/7s+ReQcXtqyWor1ja0xSHpe5OBKPbHnTfKIqwsIddqxgJ2F39n4cK1bREri5YHa+2/9s5q/UM6FdfvsU/Tz/ezUyArpoAXTUBumoCdNUE6KoJ0FX/AAow6PKlz4YvAAAAAElFTkSuQmCC">
 <p>Emulating "none":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAFRJREFUWIXt18ENACAMw8DA5N0chnCQePgGiKz+ujI5aZru3K6uPWAgZSBlIGUgZSBlIGUgZSBlILWS030iyr6/oIGUgZSBlIGUgZSBlIGUgZSB1AXNwwVLtuf+dAAAAABJRU5ErkJggg==">
-<p>Emulating "deuteranomaly":
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAGFJREFUWIXt1zENwDAQBMG3IaQ0uWAzHGNwHxoOiL1IKXYAnFbffRv3dSromSs5Vz269gEDKQMpAykDKQMpAykDKQMpA6lWtaM/SdrvL2ggZSBlIGUgZSBlIGUgZSBlIPUCZwcGA/y3590AAAAASUVORK5CYII=">
 <p>Emulating "deuteranopia":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAF9JREFUWIXt17ENwCAQBMGHYohdqKuhEsduBorYQyLYKeC0+uzbM8aqoO9/k3PVo2sHGEgZSBlIGUgZSBlIGUgZSBlItaoZ/UnSrr+ggZSBlIGUgZSBlIGUgZSBlIHUBmSnBbHzufJtAAAAAElFTkSuQmCC">
 <p>Emulating "none":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAFRJREFUWIXt18ENACAMw8DA5N0chnCQePgGiKz+ujI5aZru3K6uPWAgZSBlIGUgZSBlIGUgZSBlILWS030iyr6/oIGUgZSBlIGUgZSBlIGUgZSB1AXNwwVLtuf+dAAAAABJRU5ErkJggg==">
-<p>Emulating "protanomaly":
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAGFJREFUWIXt1zENwDAQBMG3EaQzsqA0GENwHRQOiL1IKXYAnFbffRv3dSromSs5Vz269gEDKQMpAykDKQMpAykDKQMpA6lWtaM/SdrvL2ggZSBlIGUgZSBlIGUgZSBlIPUC9+8GC+XyxMUAAAAASUVORK5CYII=">
 <p>Emulating "protanopia":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAF9JREFUWIXt10ENwCAQBdEFI5VBahcnnEhVURHzm/QwT8DPZG/bxn2dCnr2TM5Vj659wEDKQMpAykDKQMpAykDKQMpAqlWt6E+S9vsLGkgZSBlIGUgZSBlIGUgZSBlIvZuvBc8DKP+1AAAAAElFTkSuQmCC">
-<p>Emulating "tritanomaly":
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAFxJREFUWIXt18EJACEQBEEVczA78zQhoxA0iJ6De3QFMDT729rnuCXo7JWcKy269gEDKQMpAykDKQMpAykDKQMpA6me/iHSfn9BAykDKQMpAykDKQMpAykDKQOpB4zjBwAkamC5AAAAAElFTkSuQmCC">
 <p>Emulating "tritanopia":
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAF5JREFUWIXt17ENwCAQBEGwEC0RuQBaoP8qnJgi9pAIdgo4rT772sf7l6BvzeRceaJrBxhIGUgZSBlIGUgZSBlIGUgZSLX0D5F2/QUNpAykDKQMpAykDKQMpAykDKQ2h2YFBXR3unwAAAAASUVORK5CYII=">
 <p>Emulating "tritanopia":
@@ -31,6 +23,26 @@ Tests that vision deficiencies can be emulated.
   "message": "Unknown vision deficiency type"
 }
 <p>Emulating "":
+{
+  "code": -32602,
+  "message": "Unknown vision deficiency type"
+}
+<p>Emulating "achromatomaly":
+{
+  "code": -32602,
+  "message": "Unknown vision deficiency type"
+}
+<p>Emulating "deuteranomaly":
+{
+  "code": -32602,
+  "message": "Unknown vision deficiency type"
+}
+<p>Emulating "protanomaly":
+{
+  "code": -32602,
+  "message": "Unknown vision deficiency type"
+}
+<p>Emulating "tritanomaly":
 {
   "code": -32602,
   "message": "Unknown vision deficiency type"

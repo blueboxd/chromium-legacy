@@ -120,6 +120,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
 
+    private final int mTabStripAndToolbarHeight;
+
     @Override
     public void onContentOffsetChanged(int offset) {}
 
@@ -132,6 +134,11 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
+        updateMargins();
+    }
+
+    @Override
+    public void onTopControlsHeightChanged(int topControlsHeight, int topControlsMinHeight) {
         updateMargins();
     }
 
@@ -349,6 +356,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                 /*isOffTheRecord=*/false);
 
+        mTabStripAndToolbarHeight =
+                activity.getResources().getDimensionPixelSize(R.dimen.tab_strip_and_toolbar_height);
+
         NewTabPageUma.recordIsUserOnline();
         NewTabPageUma.recordLoadType(activity);
         NewTabPageUma.recordContentSuggestionsDisplayStatus();
@@ -422,6 +432,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
         layoutParams.bottomMargin = mFullscreenManager.getBottomControlsHeight()
                 - mFullscreenManager.getBottomControlOffset();
+        layoutParams.topMargin = getToolbarExtraYOffset();
 
         view.setLayoutParams(layoutParams);
 
@@ -431,6 +442,16 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                         ? view.getResources().getDimensionPixelSize(R.dimen.ntp_logo_margin_top)
                         : -view.getResources().getDimensionPixelSize(
                                 R.dimen.duet_ntp_logo_top_margin));
+    }
+
+    // TODO(sinansahin): This is the same as {@link ToolbarManager#getToolbarExtraYOffset}. So, we
+    // should look into sharing the logic.
+    /**
+     * @return The height that is included in the top controls but not in the toolbar or the tab
+     *         strip.
+     */
+    private int getToolbarExtraYOffset() {
+        return mFullscreenManager.getTopControlsHeight() - mTabStripAndToolbarHeight;
     }
 
     /** @return The view container for the new tab page. */

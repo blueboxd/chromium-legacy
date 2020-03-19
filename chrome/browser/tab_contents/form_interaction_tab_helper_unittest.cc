@@ -37,7 +37,7 @@ class FormInteractionTabHelperTest : public ChromeRenderViewHostTestHarness {
         performance_manager::PerformanceManagerImpl::Create(base::DoNothing());
     registry_ = performance_manager::PerformanceManagerRegistry::Create();
     performance_manager::testing::CreatePageAggregatorAndPassItToGraph();
-    perf_man_->CallOnGraph(
+    performance_manager::PerformanceManagerImpl::CallOnGraph(
         FROM_HERE, base::BindOnce([](performance_manager::Graph* graph) {
           graph->PassToGraph(FormInteractionTabHelper::CreateGraphObserver());
         }));

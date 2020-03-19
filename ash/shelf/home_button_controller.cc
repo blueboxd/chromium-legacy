@@ -33,9 +33,9 @@ constexpr base::TimeDelta kAssistantAnimationDelay =
     base::TimeDelta::FromMilliseconds(200);
 
 // Returns true if the button should appear activatable.
-bool CanActivate() {
+bool CanActivate(int64_t display_id) {
   return Shell::Get()->IsInTabletMode() ||
-         !Shell::Get()->app_list_controller()->IsVisible();
+         !Shell::Get()->app_list_controller()->IsVisible(display_id);
 }
 
 }  // namespace
@@ -78,7 +78,7 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
         assistant_animation_delay_timer_->Stop();
       }
 
-      if (CanActivate())
+      if (CanActivate(button_->GetDisplayId()))
         button_->AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, event);
 
       // After animating the ripple, let the button handle the event.
@@ -91,7 +91,7 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
                            base::Unretained(this)));
       }
 
-      if (CanActivate())
+      if (CanActivate(button_->GetDisplayId()))
         button_->AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
 
       return false;

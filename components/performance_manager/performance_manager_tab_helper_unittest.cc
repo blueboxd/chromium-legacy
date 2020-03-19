@@ -5,6 +5,7 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 
 #include <set>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -63,7 +64,7 @@ class PerformanceManagerTabHelperTest : public PerformanceManagerTestHarness {
 void CallOnGraphSync(PerformanceManagerImpl::GraphImplCallback callback) {
   base::RunLoop run_loop;
 
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindLambdaForTesting([&run_loop, &callback](GraphImpl* graph) {
         std::move(callback).Run(graph);
@@ -191,7 +192,7 @@ TEST_F(PerformanceManagerTabHelperTest, FrameHierarchyReflectsToGraph) {
 
   size_t num_hosts = CountAllRenderProcessHosts();
 
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindLambdaForTesting([num_hosts](GraphImpl* graph) {
         EXPECT_GE(num_hosts, graph->GetAllProcessNodeImpls().size());
         EXPECT_EQ(0u, graph->GetAllFrameNodeImpls().size());

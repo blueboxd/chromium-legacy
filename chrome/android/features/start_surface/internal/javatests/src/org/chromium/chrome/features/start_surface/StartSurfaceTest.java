@@ -50,7 +50,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.FieldTrials;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -77,15 +76,14 @@ public class StartSurfaceTest {
 
     @Before
     public void setUp() {
-        // TODO(https://crbug.com/1060622): Removes the if check block.
-        if (StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()) {
-            FieldTrials.getInstance().reset();
-        }
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
 
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mActivityTestRule.startMainActivityFromLauncher();
+
+        // TODO(crbug.com/1051226): Test start activity with startMainActivityFromLauncher, so no
+        // tab will be created, then the single start surface should be shown if it is enabled.
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
     }

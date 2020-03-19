@@ -1852,6 +1852,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webauth/AuthenticatorFactory.java",
   "java/src/org/chromium/chrome/browser/webauth/AuthenticatorImpl.java",
   "java/src/org/chromium/chrome/browser/webauth/Fido2ApiHandler.java",
+  "java/src/org/chromium/chrome/browser/webauth/Fido2CredentialRequest.java",
+  "java/src/org/chromium/chrome/browser/webauth/Fido2Helper.java",
   "java/src/org/chromium/chrome/browser/webauth/HandlerResponseCallback.java",
   "java/src/org/chromium/chrome/browser/webshare/BlobReceiver.java",
   "java/src/org/chromium/chrome/browser/webshare/ShareServiceImpl.java",

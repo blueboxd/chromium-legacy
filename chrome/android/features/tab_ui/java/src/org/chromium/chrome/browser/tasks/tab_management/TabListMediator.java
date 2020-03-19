@@ -262,7 +262,6 @@ class TabListMediator {
     private static Map<Integer, Integer> sTabClosedFromMapTabClosedFromMap = new HashMap<>();
 
     private final Context mContext;
-    private final TabListFaviconProvider mTabListFaviconProvider;
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
     private final ThumbnailProvider mThumbnailProvider;
@@ -272,6 +271,8 @@ class TabListMediator {
     private final GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
     private final TabGridDialogHandler mTabGridDialogHandler;
     private final String mComponentName;
+
+    private TabListFaviconProvider mTabListFaviconProvider;
     private boolean mActionsOnAllRelatedTabs;
     private ComponentCallbacks mComponentCallbacks;
     private TabGridItemTouchHelperCallback mTabGridItemTouchHelperCallback;
@@ -749,6 +750,13 @@ class TabListMediator {
             }
         };
 
+        mTabGridItemTouchHelperCallback =
+                new TabGridItemTouchHelperCallback(mModel, mTabModelSelector, mTabClosedListener,
+                        mTabGridDialogHandler, mComponentName, mActionsOnAllRelatedTabs);
+    }
+
+    public void initWithNative(Profile profile) {
+        mTabListFaviconProvider.initWithNative(profile);
         if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
             mTabGroupTitleEditor = new TabGroupTitleEditor(mTabModelSelector) {
                 @Override
@@ -790,10 +798,6 @@ class TabListMediator {
             };
             TemplateUrlServiceFactory.get().addObserver(mTemplateUrlObserver);
         }
-
-        mTabGridItemTouchHelperCallback =
-                new TabGridItemTouchHelperCallback(mModel, mTabModelSelector, mTabClosedListener,
-                        mTabGridDialogHandler, mComponentName, mActionsOnAllRelatedTabs);
     }
 
     private void onTabClosedFrom(int tabId, String fromComponent) {
@@ -1356,6 +1360,11 @@ class TabListMediator {
             mModel.get(modelIndex).model.set(TabProperties.FAVICON, null);
             return;
         }
+
+        if (!mTabListFaviconProvider.isInitialized()) {
+            return;
+        }
+
         // If there is an available icon, we fetch favicon synchronously; otherwise asynchronously.
         if (icon != null) {
             Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(

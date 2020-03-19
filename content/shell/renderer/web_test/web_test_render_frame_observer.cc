@@ -46,31 +46,17 @@ void WebTestRenderFrameObserver::BindReceiver(
                  blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 }
 
-void WebTestRenderFrameObserver::ReadyToCommitNavigation(
-    blink::WebDocumentLoader* document_loader) {
-  if (!render_frame()->IsMainFrame())
-    return;
-  focus_on_next_commit_ = true;
-}
-
 void WebTestRenderFrameObserver::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
   if (!render_frame()->IsMainFrame())
     return;
-  if (focus_on_next_commit_) {
-    focus_on_next_commit_ = false;
+  if (!is_same_document_navigation) {
     render_frame()->GetRenderView()->GetWebView()->SetFocusedFrame(
         render_frame()->GetWebFrame());
   }
   BlinkTestRunner::Get(render_frame()->GetRenderView())
       ->DidCommitNavigationInMainFrame();
-}
-
-void WebTestRenderFrameObserver::DidFailProvisionalLoad() {
-  if (!render_frame()->IsMainFrame())
-    return;
-  focus_on_next_commit_ = false;
 }
 
 void WebTestRenderFrameObserver::OnDestruct() {

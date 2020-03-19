@@ -4012,7 +4012,7 @@ TEST_P(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window4->IsVisible());
 
   // Home launcher should be shown because none of these windows are activated.
-  EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
+  EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible(base::nullopt));
 
   // 1) Start dragging |window1|. |window2| is the source window.
   std::unique_ptr<WindowResizer> resizer =
@@ -4027,7 +4027,7 @@ TEST_P(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_FALSE(window4->IsVisible());
 
   // Test that home launcher is not shown because a window is active.
-  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(base::nullopt));
 
   // Test that during dragging, we could not show a hidden window.
   window3->Show();
@@ -4041,7 +4041,7 @@ TEST_P(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window4->IsVisible());
 
   // Test that home launcher is still not shown, because a window is active.
-  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(base::nullopt));
 }
 
 // Tests that the dragged window should be the active and top window if overview

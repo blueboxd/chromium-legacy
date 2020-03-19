@@ -78,8 +78,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private static final int DEFAULT_SOFT_CLEANUP_DELAY_MS = 3_000;
     private static final String CLEANUP_DELAY_PARAM = "cleanup-delay";
     private static final int DEFAULT_CLEANUP_DELAY_MS = 30_000;
-    private Integer mSoftCleanupDelayMsForTesting;
-    private Integer mCleanupDelayMsForTesting;
+
     private final Handler mHandler;
     private final Runnable mSoftClearTabListRunnable;
     private final Runnable mClearTabListRunnable;
@@ -91,13 +90,15 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final ObserverList<TabSwitcher.OverviewModeObserver> mObservers = new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
-    private TabGridDialogMediator.DialogController mTabGridDialogController;
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
-
     private final ViewGroup mContainerView;
-    private final TabSelectionEditorCoordinator
-            .TabSelectionEditorController mTabSelectionEditorController;
     private final TabContentManager mTabContentManager;
+
+    private Integer mSoftCleanupDelayMsForTesting;
+    private Integer mCleanupDelayMsForTesting;
+    private TabGridDialogMediator.DialogController mTabGridDialogController;
+    private TabSelectionEditorCoordinator
+            .TabSelectionEditorController mTabSelectionEditorController;
     private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
 
     /**
@@ -176,15 +177,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      * @param tabModelSelector {@link TabModelSelector} to observer for model and selection changes.
      * @param fullscreenManager {@link FullscreenManager} to use.
      * @param containerView The container {@link ViewGroup} to use.
-     * @param tabSelectionEditorController The controller that can control the visibility of the
-     *                                     TabSelectionEditor.
      * @param tabContentManager The {@link TabContentManager} for first meaningful paint event.
      * @param mode One of the {@link TabListCoordinator.TabListMode}.
      */
     TabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
             ViewGroup containerView,
-            TabSelectionEditorCoordinator.TabSelectionEditorController tabSelectionEditorController,
             TabContentManager tabContentManager, MessageItemsController messageItemsController,
             @TabListCoordinator.TabListMode int mode) {
         mResetHandler = resetHandler;
@@ -291,10 +289,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         mContainerViewModel.set(VISIBILITY_LISTENER, this);
-        mContainerViewModel.set(IS_INCOGNITO,
-                mTabModelSelector.getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()
-                        .isIncognito());
+        TabModelFilter tabModelFilter =
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
+        mContainerViewModel.set(
+                IS_INCOGNITO, tabModelFilter == null ? false : tabModelFilter.isIncognito());
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
 
         // Container view takes care of padding and margin in start surface.
@@ -310,12 +308,21 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mClearTabListRunnable =
                 () -> mResetHandler.resetWithTabList(null, false, mShowTabsInMruOrder);
         mHandler = new Handler();
-        mTabSelectionEditorController = tabSelectionEditorController;
         mTabContentManager = tabContentManager;
 
         // TODO(crbug.com/982018): Let the start surface pass in the parameter and add unit test for
         // it. This is a temporary solution to keep this change minimum.
         mShowTabsInMruOrder = isShowingTabsInMRUOrder();
+    }
+
+    /**
+     * Called after native initialization is completed.
+     * @param tabSelectionEditorController The controller that can control the visibility of the
+     *                                     TabSelectionEditor.
+     */
+    public void initWithNative(TabSelectionEditorCoordinator
+                                       .TabSelectionEditorController tabSelectionEditorController) {
+        mTabSelectionEditorController = tabSelectionEditorController;
     }
 
     /**
@@ -499,13 +506,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
         boolean quick = false;
-        if (mTabModelSelector.getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()
-                        .isTabModelRestored()) {
+        TabModelFilter currentTabModelFilter =
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
+        if (currentTabModelFilter != null && currentTabModelFilter.isTabModelRestored()) {
             if (TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
                 quick = mResetHandler.resetWithTabList(
-                        mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                        false, mShowTabsInMruOrder);
+                        currentTabModelFilter, false, mShowTabsInMruOrder);
             }
             setInitialScrollIndexOffset();
         }
@@ -571,7 +577,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     @Override
     public boolean onBackPressed() {
         if (!mContainerViewModel.get(IS_VISIBLE)) return false;
-        if (mTabSelectionEditorController.handleBackPressed()) return true;
+        if (mTabSelectionEditorController != null
+                && mTabSelectionEditorController.handleBackPressed()) {
+            return true;
+        }
         if (mTabGridDialogController != null && mTabGridDialogController.handleBackPressed()) {
             return true;
         }

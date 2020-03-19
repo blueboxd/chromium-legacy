@@ -53,7 +53,6 @@ luci.list_view(
         'try/linux_chromium_ubsan_rel_ng',
         'try/linux_layout_tests_composite_after_paint',
         'try/linux-layout-tests-fragment-item',
-        'try/linux-layout-tests-fragment-paint',
         'try/linux_layout_tests_layout_ng_disabled',
         'try/linux_mojo',
         'try/linux_mojo_chromeos',

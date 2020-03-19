@@ -304,6 +304,7 @@ public abstract class AppHooks {
      * @return a new {@link Fido2ApiHandler} instance.
      */
     public Fido2ApiHandler createFido2ApiHandler() {
+        // TODO(nsatragno): remove after cleaning up Fido2ApiHandlerInternal.
         return new Fido2ApiHandler();
     }
 

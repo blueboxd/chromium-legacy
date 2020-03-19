@@ -17,8 +17,7 @@ import("//build_overrides/build.gni")
 assert(is_android)
 
 # These identify targets that have .build_config files (except for android_apk,
-# java_binary, android_app_bundle since we never need to
-# depend on these).
+# java_binary, android_app_bundle since we never need to depend on these).
 _java_target_patterns = [
   "*:*_java",
   "*:*_javalib",
@@ -43,6 +42,13 @@ _java_target_patterns = [
 
 # Targets that match the patterns but are not actually java targets.
 _java_target_exceptions = [ "*:*_unpack_aar" ]
+
+# Targets that should be replace by their headers during javac.
+_java_header_target_patterns = [
+  "*:*_java",
+  "*:*_javalib",
+  "*:java",
+]
 
 _r8_path = "//third_party/r8/lib/r8.jar"
 
@@ -2688,10 +2694,11 @@ if (enable_java_templates) {
   #  additional_jar_files: Optional list of files to copy into the resulting
   #    .jar file (by default, only .class files are put there). Each entry
   #    has the 'srcPath:dstPath' format.
-  #  enable_errorprone: Optional. If True, use the errorprone compiler to
-  #    check for error-prone constructs in the language. If not provided,
-  #    whether this is enabled depends on chromium_code and the global
+  #  enable_errorprone: If True, use the errorprone compiler to check for
+  #    error-prone constructs in the language. If not provided, whether this is
+  #    enabled depends on chromium_code and the global
   #    use_errorprone_java_compiler variable.
+  #  use_turbine: If True, compile headers using turbine.py.
   #  apk_name: Optional APK name. If provided, will tell compile_java.py to also
   #    generate an .apk.jar.info file under size-info/${apk_name}.apk.jar.info
   #  provider_configurations: Optional list of paths to Java service
@@ -2743,16 +2750,20 @@ if (enable_java_templates) {
     }
 
     action_with_pydeps(target_name) {
-      script = "//build/android/gyp/compile_java.py"
+      if (invoker.use_turbine) {
+        script = "//build/android/gyp/turbine.py"
+      } else {
+        script = "//build/android/gyp/compile_java.py"
+      }
       depfile = "$target_gen_dir/$target_name.d"
       deps = _srcjar_deps
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
 
-      outputs = [ invoker.javac_jar_path ]
-      if (!invoker.enable_errorprone) {
-        outputs += [ invoker.javac_jar_path + ".info" ]
+      outputs = [ invoker.output_jar_path ]
+      if (!invoker.enable_errorprone && !invoker.use_turbine) {
+        outputs += [ invoker.output_jar_path + ".info" ]
       }
       inputs = invoker.java_files + _java_srcjars + [ _build_config ]
       if (invoker.java_files != []) {
@@ -2760,8 +2771,8 @@ if (enable_java_templates) {
       }
 
       _rebased_build_config = rebase_path(_build_config, root_build_dir)
-      _rebased_javac_jar_path =
-          rebase_path(invoker.javac_jar_path, root_build_dir)
+      _rebased_output_jar_path =
+          rebase_path(invoker.output_jar_path, root_build_dir)
       _rebased_java_srcjars = rebase_path(_java_srcjars, root_build_dir)
       _rebased_depfile = rebase_path(depfile, root_build_dir)
       _rebased_generated_dir = rebase_path(
@@ -2770,13 +2781,23 @@ if (enable_java_templates) {
       args = [
         "--depfile=$_rebased_depfile",
         "--generated-dir=$_rebased_generated_dir",
-        "--jar-path=$_rebased_javac_jar_path",
+        "--jar-path=$_rebased_output_jar_path",
         "--java-srcjars=$_rebased_java_srcjars",
         "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
         "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
         "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
       ]
-      if (invoker.supports_android) {
+      if (invoker.use_turbine) {
+        _turbine_jar_path = "//third_party/turbine/turbine.jar"
+        inputs += [ _turbine_jar_path ]
+        args += [
+          "--turbine-jar-path",
+          rebase_path(_turbine_jar_path, root_build_dir),
+        ]
+      }
+
+      # Currently turbine does not support JDK11.
+      if (invoker.supports_android || invoker.use_turbine) {
         args += [ "--java-version=1.8" ]
       }
       if ((!defined(invoker.never_goma) || !invoker.never_goma) &&
@@ -2842,6 +2863,27 @@ if (enable_java_templates) {
       }
       foreach(e, _javac_args) {
         args += [ "--javac-arg=" + e ]
+      }
+    }
+  }
+
+  template("java_header_group") {
+    forward_variables_from(invoker, [ "testonly" ])
+    group(target_name) {
+      if (defined(invoker.deps)) {
+        deps = []
+        foreach(_dep, invoker.deps) {
+          set_sources_assignment_filter(_java_header_target_patterns)
+          _target_label = get_label_info(_dep, "label_no_toolchain")
+          sources = [ _target_label ]
+          if (sources == []) {
+            # This is a java dep, so replace it with its header.
+            deps += [ "${_target_label}__header" ]
+          } else {
+            deps += [ _dep ]
+          }
+          sources = []
+        }
       }
     }
   }
@@ -2935,6 +2977,9 @@ if (enable_java_templates) {
   #  testonly: True iff target should only be used for tests.
   #  no_build_hooks: Disables bytecode rewriting of asserts and android
   #    resources methods.
+  #  enable_turbine: If exists then will be used to determine whether to run
+  #    turbine or not. Useful for disabling turbine headers for problematic
+  #    targets.
   #  chromium_code: Optional. Whether this is Chromium-specific code. If not
   #    provided, this is determined automatically, based on the location of
   #    the source files (i.e. anything under third_party/ is not
@@ -3113,15 +3158,32 @@ if (enable_java_templates) {
 
     _accumulated_public_deps = []
     _accumulated_deps = []
+    _java_header_deps = []
+    _java_full_deps = []
     if (defined(invoker.deps)) {
-      _accumulated_deps = invoker.deps
+      foreach(_dep, invoker.deps) {
+        set_sources_assignment_filter(_java_header_target_patterns)
+        _target_label = get_label_info(_dep, "label_no_toolchain")
+        sources = [ _target_label ]
+        if (sources == []) {
+          # This is a java header dep, so replace it with its header.
+          _java_header_deps += [ "${_target_label}__header" ]
+          _java_full_deps += [ _dep ]
+        } else {
+          # Not a java header dep, so no need to replace it with its header.
+          _accumulated_deps += [ _dep ]
+        }
+        sources = []
+      }
     }
 
     _enable_build_hooks =
         _supports_android &&
         (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks)
     if (_enable_build_hooks) {
-      _accumulated_deps += [ "//build/android/buildhooks:build_hooks_java" ]
+      _java_full_deps += [ "//build/android/buildhooks:build_hooks_java" ]
+      _java_header_deps +=
+          [ "//build/android/buildhooks:build_hooks_java__header" ]
     }
 
     # Some testonly targets use their own resources and the code being
@@ -3131,7 +3193,9 @@ if (enable_java_templates) {
         _enable_build_hooks && _requires_android &&
         (!defined(invoker.testonly) || !invoker.testonly)
     if (_enable_build_hooks_android) {
-      _accumulated_deps +=
+      # This is only needed for the process_java_prebuilt step, so no header
+      # necessary.
+      _java_full_deps +=
           [ "//build/android/buildhooks:build_hooks_android_java" ]
     }
 
@@ -3161,7 +3225,8 @@ if (enable_java_templates) {
             !invoker.jacoco_never_instrument && _jacoco_instrument
       }
       if (_jacoco_instrument) {
-        _accumulated_deps += [ "//third_party/jacoco:jacocoagent_java" ]
+        _java_header_deps += [ "//third_party/jacoco:jacocoagent_java__header" ]
+        _java_full_deps += [ "//third_party/jacoco:jacocoagent_java" ]
       }
     }
 
@@ -3178,11 +3243,13 @@ if (enable_java_templates) {
       _include_android_sdk = invoker.include_android_sdk
     }
     if (_include_android_sdk) {
+      _sdk_java_dep = "//third_party/android_sdk:android_sdk_java"
       if (defined(invoker.alternative_android_sdk_dep)) {
-        _accumulated_deps += [ invoker.alternative_android_sdk_dep ]
-      } else {
-        _accumulated_deps += [ "//third_party/android_sdk:android_sdk_java" ]
+        _sdk_java_dep = invoker.alternative_android_sdk_dep
       }
+
+      # This is an android_system_java_prebuilt target, so no headers.
+      _accumulated_deps += [ _sdk_java_dep ]
     }
     _jetified_jar_path =
         "$target_out_dir/${target_name}__process_prebuilt-jetified.jar"
@@ -3246,7 +3313,7 @@ if (enable_java_templates) {
       build_config = _build_config
       is_prebuilt = _is_prebuilt
       jetified_jar_path = _jetified_jar_path
-      possible_config_deps = _accumulated_deps
+      possible_config_deps = _java_full_deps + _accumulated_deps
       skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
       if (defined(apk_under_test)) {
         possible_config_deps += [ apk_under_test ]
@@ -3289,12 +3356,14 @@ if (enable_java_templates) {
 
     # Don't need to depend on the apk-under-test to be packaged.
     if (defined(invoker.apk_under_test)) {
-      _accumulated_deps += [ "${invoker.apk_under_test}__java" ]
+      _java_full_deps += [ "${invoker.apk_under_test}__java" ]
+      _java_header_deps += [ "${invoker.apk_under_test}__java__header" ]
     }
     if (defined(invoker.android_manifest_dep)) {
       _accumulated_deps += [ invoker.android_manifest_dep ]
     }
     if (defined(invoker.annotation_processor_deps)) {
+      # We need the full annotation processors rather than just the headers.
       _accumulated_deps += invoker.annotation_processor_deps
     }
 
@@ -3321,8 +3390,10 @@ if (enable_java_templates) {
       template("compile_java_helper") {
         compile_java(target_name) {
           forward_variables_from(invoker, "*")
-          enable_errorprone = invoker.enable_errorprone
-          javac_jar_path = invoker.javac_jar_path
+          output_jar_path = invoker.output_jar_path
+          enable_errorprone =
+              defined(invoker.enable_errorprone) && invoker.enable_errorprone
+          use_turbine = defined(invoker.use_turbine) && invoker.use_turbine
 
           main_target_name = _main_target_name
           build_config = _build_config
@@ -3334,7 +3405,8 @@ if (enable_java_templates) {
           chromium_code = _chromium_code
           supports_android = _supports_android
           requires_android = _requires_android
-          deps = _accumulated_deps + _accumulated_public_deps
+          deps =
+              _java_header_deps + _accumulated_deps + _accumulated_public_deps
 
           # android_apk and junit_binary pass R.java srcjars via srcjar_deps.
           if (_type == "java_library" && _requires_android) {
@@ -3343,8 +3415,6 @@ if (enable_java_templates) {
           }
         }
       }
-      _analysis_public_deps = []
-      _compile_java_target = "${_main_target_name}__compile_java"
       _compile_java_forward_variables = [
         "additional_jar_files",
         "apk_name",
@@ -3354,10 +3424,11 @@ if (enable_java_templates) {
         "jar_excluded_patterns",
         "never_goma",
       ]
+      _analysis_public_deps = []
+      _compile_java_target = "${_main_target_name}__compile_java"
       compile_java_helper(_compile_java_target) {
         forward_variables_from(invoker, _compile_java_forward_variables)
-        enable_errorprone = false
-        javac_jar_path = _javac_jar_path
+        output_jar_path = _javac_jar_path
       }
       if (_enable_errorprone) {
         _compile_java_errorprone_target =
@@ -3371,7 +3442,7 @@ if (enable_java_templates) {
             }
             javac_args += invoker.errorprone_args
           }
-          javac_jar_path = _javac_jar_path + ".errorprone_stamp"
+          output_jar_path = _javac_jar_path + ".errorprone_stamp"
         }
         _analysis_public_deps += [ ":$_compile_java_errorprone_target" ]
       }
@@ -3421,6 +3492,36 @@ if (enable_java_templates) {
       _accumulated_public_deps += [ ":$_compile_java_target" ]
     }  # _has_sources
 
+    if (_is_prebuilt || _has_sources) {
+      _header_target_name = "${target_name}__header"
+      _enable_turbine = _has_sources && _chromium_code
+      if (defined(invoker.enable_turbine)) {
+        _enable_turbine = invoker.enable_turbine
+      }
+      if (_enable_turbine) {
+        compile_java_helper(_header_target_name) {
+          forward_variables_from(invoker, _compile_java_forward_variables)
+          use_turbine = true
+          output_jar_path = _final_ijar_path
+        }
+      } else {
+        generate_interface_jar(_header_target_name) {
+          # Always used the unfiltered .jar to create the interface jar so that
+          # other targets will resolve filtered classes when depending on
+          # BuildConfig, NativeLibraries, etc.
+          input_jar = _unprocessed_jar_path
+          output_jar = _final_ijar_path
+
+          # Some prebuilts have java deps (e.g. //third_party/proguard:retrace_java).
+          deps = _accumulated_deps + _java_header_deps
+          if (_has_sources) {
+            deps += [ ":$_compile_java_target" ]
+          }
+        }
+      }
+      _accumulated_public_deps += [ ":$_header_target_name" ]
+    }  # _is_prebuilt || _has_sources
+
     if (defined(_final_jar_path)) {
       if (_is_system_library) {
         _copy_system_library_target_name = "${target_name}__copy_system_library"
@@ -3456,7 +3557,20 @@ if (enable_java_templates) {
             java_sources_file = _java_sources_file
           }
           output_jar_path = _final_jar_path
-          deps = _accumulated_deps + _accumulated_public_deps
+          deps = _java_full_deps + _accumulated_deps + _accumulated_public_deps
+
+          # proguard_configs listed on java_library targets need to be marked
+          # as inputs to at least one action so that "gn analyze" will know
+          # about them. Although ijar doesn't use them, it's a convenient spot
+          # to list them.
+          # https://crbug.com/827197
+          if (defined(invoker.proguard_configs)) {
+            inputs = invoker.proguard_configs
+            if (!defined(deps)) {
+              deps = []
+            }
+            deps += _srcjar_deps  # For the aapt-generated proguard rules.
+          }
         }
         _accumulated_public_deps += [ ":$_process_prebuilt_target_name" ]
 
@@ -3480,12 +3594,7 @@ if (enable_java_templates) {
       }
 
       if (!_is_java_binary) {
-        # Export the interface jar as the main target (rather than a group)
-        # so that ninja will notice when the output is unchanged and not rebuild
-        # reverse-dependencies. Targets that should be rebuilt when the
-        # non-interface .jar changes use a depfile to indicate that they should
-        # be rebuilt even when the interface jar does not change.
-        generate_interface_jar(target_name) {
+        group(target_name) {
           forward_variables_from(invoker,
                                  [
                                    "assert_no_deps",
@@ -3499,29 +3608,11 @@ if (enable_java_templates) {
           # as inputs to other targets.
           public_deps = _accumulated_public_deps
 
-          # Always used the unfiltered .jar to create the interface jar so that
-          # other targets will resolve filtered classes when depending on
-          # BuildConfig, NativeLibraries, etc.
-          input_jar = _unprocessed_jar_path
-          output_jar = _final_ijar_path
           if (_lint_enabled || _enable_errorprone) {
             if (!defined(data_deps)) {
               data_deps = []
             }
             data_deps += [ ":${_main_target_name}__analysis" ]
-          }
-
-          # proguard_configs listed on java_library targets need to be marked
-          # as inputs to at least one action so that "gn analyze" will know
-          # about them. Although ijar doesn't use them, it's a convenient spot
-          # to list them.
-          # https://crbug.com/827197
-          if (defined(invoker.proguard_configs)) {
-            inputs = invoker.proguard_configs
-            if (!defined(deps)) {
-              deps = []
-            }
-            deps += _srcjar_deps  # For the aapt-generated proguard rules.
           }
         }
       }

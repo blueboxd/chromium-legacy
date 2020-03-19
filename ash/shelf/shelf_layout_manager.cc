@@ -829,7 +829,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
             ->GetActiveWindow());
   const bool app_list_is_visible =
       Shell::Get()->app_list_controller() &&
-      Shell::Get()->app_list_controller()->IsVisible();
+      Shell::Get()->app_list_controller()->IsVisible(display_.id());
   const bool in_overview =
       Shell::Get()->overview_controller() &&
       Shell::Get()->overview_controller()->InOverviewSession();
@@ -845,7 +845,8 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       // If the home launcher is shown or mostly shown, show the home launcher
       // background. If it is mostly hidden, show the in-app or overview
       // background.
-      if (!Shell::Get()->app_list_controller()->GetTargetVisibility()) {
+      if (!Shell::Get()->app_list_controller()->GetTargetVisibility(
+              display_.id())) {
         return in_overview ? ShelfBackgroundType::kOverview
                            : ShelfBackgroundType::kInApp;
       }
@@ -1308,7 +1309,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
        overview_mode_will_start_) &&
       !overview_controller->IsCompletingShutdownAnimations();
   const bool app_list_visible =
-      app_list_controller->GetTargetVisibility() ||
+      app_list_controller->GetTargetVisibility(display_.id()) ||
       app_list_controller->ShouldHomeLauncherBeVisible();
 
   // TODO(https://crbug.com/1058205): Test this behavior.
@@ -1969,7 +1970,7 @@ bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
   // If the non-fullscreen app list should be shown, the shelf should not be
   // hidden.
   if (!Shell::Get()->IsInTabletMode() &&
-      Shell::Get()->app_list_controller()->GetTargetVisibility()) {
+      Shell::Get()->app_list_controller()->GetTargetVisibility(display_.id())) {
     return false;
   }
 
@@ -2049,7 +2050,7 @@ bool ShelfLayoutManager::StartGestureDrag(
     drag_status_ = previous_drag_status;
   }
 
-  if (Shell::Get()->app_list_controller()->IsVisible())
+  if (Shell::Get()->app_list_controller()->IsVisible(display_.id()))
     return true;
   return StartShelfDrag(
       gesture_in_screen,
@@ -2184,7 +2185,7 @@ bool ShelfLayoutManager::StartAppListDrag(
 
   // If the app list is already open, swiping up on the shelf should keep it
   // open.
-  if (Shell::Get()->app_list_controller()->IsVisible())
+  if (Shell::Get()->app_list_controller()->IsVisible(display_.id()))
     return false;
 
   // Swipes down on shelf should hide the shelf.
@@ -2211,7 +2212,7 @@ bool ShelfLayoutManager::StartAppListDrag(
 bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
                                         const gfx::Vector2dF& scroll_hint) {
   // Disable the shelf dragging if the fullscreen app list is opened.
-  if (Shell::Get()->app_list_controller()->IsVisible() &&
+  if (Shell::Get()->app_list_controller()->IsVisible(display_.id()) &&
       !Shell::Get()->IsInTabletMode())
     return false;
 

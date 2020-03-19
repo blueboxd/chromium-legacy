@@ -30,7 +30,6 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/builtin_provider.h"
 #include "components/omnibox/browser/clipboard_provider.h"
@@ -208,10 +207,9 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
 
 AutocompleteController::AutocompleteController(
     std::unique_ptr<AutocompleteProviderClient> provider_client,
-    AutocompleteControllerDelegate* delegate,
+    Observer* observer,
     int provider_types)
-    : delegate_(delegate),
-      provider_client_(std::move(provider_client)),
+    : provider_client_(std::move(provider_client)),
       document_provider_(nullptr),
       history_url_provider_(nullptr),
       keyword_provider_(nullptr),
@@ -224,6 +222,11 @@ AutocompleteController::AutocompleteController(
       first_query_(true),
       search_service_worker_signal_sent_(false),
       template_url_service_(provider_client_->GetTemplateURLService()) {
+  // TODO(tommycli): We should make a separate AddObserver method on this class
+  // and take |observer| out of the constructor. Tests pass nullptr anyways.
+  if (observer)
+    observers_.AddObserver(observer);
+
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
     providers_.push_back(new BookmarkProvider(provider_client_.get()));
@@ -327,6 +330,14 @@ AutocompleteController::~AutocompleteController() {
 void AutocompleteController::Start(const AutocompleteInput& input) {
   TRACE_EVENT1("omnibox", "AutocompleteController::Start",
                "text", base::UTF16ToUTF8(input.text()));
+
+  // When input.want_asynchronous_matches() is false, the AutocompleteController
+  // is being used for text classification, which should not notify observers.
+  if (input.want_asynchronous_matches()) {
+    for (Observer& obs : observers_)
+      obs.OnStart(this, input);
+  }
+
   const base::string16 old_input_text(input_.text());
   const bool old_allow_exact_keyword_match = input_.allow_exact_keyword_match();
   const bool old_want_asynchronous_matches = input_.want_asynchronous_matches();
@@ -855,8 +866,8 @@ void AutocompleteController::UpdateAssistedQueryStats(
 }
 
 void AutocompleteController::NotifyChanged(bool notify_default_match) {
-  if (delegate_)
-    delegate_->OnResultChanged(notify_default_match);
+  for (Observer& obs : observers_)
+    obs.OnResultChanged(this, notify_default_match);
   if (done_)
     provider_client_->OnAutocompleteControllerResultReady(this);
 }

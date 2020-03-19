@@ -202,8 +202,8 @@ void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
     // Web tests can use a nested message loop to pump frames while inside a
     // frame, but the compositor does not support this. In this case, we only
     // run blink's lifecycle updates.
-    BeginMainFrame(base::TimeTicks::Now());
-    UpdateVisualState();
+    GetWebWidget()->UpdateAllLifecyclePhases(
+        blink::DocumentUpdateReason::kTest);
     return;
   }
 

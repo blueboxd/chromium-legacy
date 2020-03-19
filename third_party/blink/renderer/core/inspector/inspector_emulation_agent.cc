@@ -290,22 +290,14 @@ Response InspectorEmulationAgent::setEmulatedVisionDeficiency(
       protocol::Emulation::SetEmulatedVisionDeficiency::TypeEnum;
   if (type == TypeEnum::None)
     vision_deficiency = VisionDeficiency::kNoVisionDeficiency;
-  else if (type == TypeEnum::Achromatomaly)
-    vision_deficiency = VisionDeficiency::kAchromatomaly;
   else if (type == TypeEnum::Achromatopsia)
     vision_deficiency = VisionDeficiency::kAchromatopsia;
   else if (type == TypeEnum::BlurredVision)
     vision_deficiency = VisionDeficiency::kBlurredVision;
-  else if (type == TypeEnum::Deuteranomaly)
-    vision_deficiency = VisionDeficiency::kDeuteranomaly;
   else if (type == TypeEnum::Deuteranopia)
     vision_deficiency = VisionDeficiency::kDeuteranopia;
-  else if (type == TypeEnum::Protanomaly)
-    vision_deficiency = VisionDeficiency::kProtanomaly;
   else if (type == TypeEnum::Protanopia)
     vision_deficiency = VisionDeficiency::kProtanopia;
-  else if (type == TypeEnum::Tritanomaly)
-    vision_deficiency = VisionDeficiency::kTritanomaly;
   else if (type == TypeEnum::Tritanopia)
     vision_deficiency = VisionDeficiency::kTritanopia;
   else

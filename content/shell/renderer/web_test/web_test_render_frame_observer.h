@@ -19,13 +19,14 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   explicit WebTestRenderFrameObserver(RenderFrame* render_frame);
   ~WebTestRenderFrameObserver() override;
 
+  WebTestRenderFrameObserver(const WebTestRenderFrameObserver&) = delete;
+  WebTestRenderFrameObserver& operator=(const WebTestRenderFrameObserver&) =
+      delete;
+
  private:
   // RenderFrameObserver implementation.
-  void ReadyToCommitNavigation(
-      blink::WebDocumentLoader* document_loader) override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
-  void DidFailProvisionalLoad() override;
   void OnDestruct() override;
 
   // mojom::BlinkTestControl implementation.
@@ -46,8 +47,6 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
       mojo::PendingAssociatedReceiver<mojom::BlinkTestControl> receiver);
 
   mojo::AssociatedReceiver<mojom::BlinkTestControl> receiver_{this};
-  bool focus_on_next_commit_ = false;
-  DISALLOW_COPY_AND_ASSIGN(WebTestRenderFrameObserver);
 };
 
 }  // namespace content

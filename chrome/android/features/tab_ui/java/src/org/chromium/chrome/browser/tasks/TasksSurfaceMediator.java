@@ -37,19 +37,27 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class TasksSurfaceMediator {
     @Nullable
-    private final FakeboxDelegate mFakeboxDelegate;
+    private FakeboxDelegate mFakeboxDelegate;
     private final IncognitoCookieControlsManager mIncognitoCookieControlsManager;
-    private final IncognitoCookieControlsManager.Observer mIncognitoCookieControlsObserver;
+    private IncognitoCookieControlsManager.Observer mIncognitoCookieControlsObserver;
     private final PropertyModel mModel;
 
-    TasksSurfaceMediator(PropertyModel model, FakeboxDelegate fakeboxDelegate,
-            View.OnClickListener incognitoLearnMoreClickListener,
+    TasksSurfaceMediator(PropertyModel model, View.OnClickListener incognitoLearnMoreClickListener,
             IncognitoCookieControlsManager incognitoCookieControlsManager, boolean isTabCarousel) {
+        mModel = model;
+        mModel.set(IS_TAB_CAROUSEL_VISIBLE, isTabCarousel);
+
+        model.set(INCOGNITO_LEARN_MORE_CLICK_LISTENER, incognitoLearnMoreClickListener);
+
+        // Set Incognito Cookie Controls functionality
+        mIncognitoCookieControlsManager = incognitoCookieControlsManager;
+        mModel.set(INCOGNITO_COOKIE_CONTROLS_MANAGER, mIncognitoCookieControlsManager);
+    }
+
+    public void initWithNative(FakeboxDelegate fakeboxDelegate) {
         mFakeboxDelegate = fakeboxDelegate;
         assert mFakeboxDelegate != null;
 
-        mModel = model;
-        mModel.set(IS_TAB_CAROUSEL_VISIBLE, isTabCarousel);
         mModel.set(FAKE_SEARCH_BOX_CLICK_LISTENER, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,7 +84,7 @@ class TasksSurfaceMediator {
                 s.clear();
             }
         });
-        model.set(VOICE_SEARCH_BUTTON_CLICK_LISTENER, new View.OnClickListener() {
+        mModel.set(VOICE_SEARCH_BUTTON_CLICK_LISTENER, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mFakeboxDelegate.getVoiceRecognitionHandler().startVoiceRecognition(
@@ -84,11 +92,7 @@ class TasksSurfaceMediator {
                 RecordUserAction.record("TasksSurface.FakeBox.VoiceSearch");
             }
         });
-        model.set(INCOGNITO_LEARN_MORE_CLICK_LISTENER, incognitoLearnMoreClickListener);
 
-        // Set Incognito Cookie Controls functionality
-        mIncognitoCookieControlsManager = incognitoCookieControlsManager;
-        mModel.set(INCOGNITO_COOKIE_CONTROLS_MANAGER, mIncognitoCookieControlsManager);
         mIncognitoCookieControlsObserver = new IncognitoCookieControlsManager.Observer() {
             @Override
             public void onUpdate(boolean checked, @CookieControlsEnforcement int enforcement) {

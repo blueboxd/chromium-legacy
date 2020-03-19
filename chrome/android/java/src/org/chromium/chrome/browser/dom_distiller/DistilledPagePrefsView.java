@@ -25,8 +25,8 @@ import androidx.appcompat.app.AlertDialog;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
-import org.chromium.components.dom_distiller.core.FontFamily;
-import org.chromium.components.dom_distiller.core.Theme;
+import org.chromium.dom_distiller.mojom.FontFamily;
+import org.chromium.dom_distiller.mojom.Theme;
 import org.chromium.ui.UiUtils;
 
 import java.text.NumberFormat;
@@ -133,7 +133,8 @@ public class DistilledPagePrefsView extends LinearLayout
                 return overrideTypeFace(view, position);
             }
 
-            private View overrideTypeFace(View view, @FontFamily int family) {
+            private View overrideTypeFace(View view, int family) {
+                FontFamily.validate(family);
                 if (view instanceof TextView) {
                     TextView textView = (TextView) view;
                     if (family == FontFamily.MONOSPACE) {
@@ -154,7 +155,7 @@ public class DistilledPagePrefsView extends LinearLayout
         mFontFamilySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int family, long id) {
-                if (family >= 0 && family < FontFamily.NUM_ENTRIES) {
+                if (FontFamily.isKnownValue(family)) {
                     mDistilledPagePrefs.setFontFamily(family);
                 }
             }
@@ -208,7 +209,8 @@ public class DistilledPagePrefsView extends LinearLayout
     // DistilledPagePrefs.Observer
 
     @Override
-    public void onChangeFontFamily(@FontFamily int fontFamily) {
+    public void onChangeFontFamily(int fontFamily) {
+        FontFamily.validate(fontFamily);
         mFontFamilySpinner.setSelection(fontFamily);
     }
 
@@ -216,7 +218,8 @@ public class DistilledPagePrefsView extends LinearLayout
      * Changes which button is selected if the theme is changed in another tab.
      */
     @Override
-    public void onChangeTheme(@Theme int theme) {
+    public void onChangeTheme(int theme) {
+        Theme.validate(theme);
         mColorModeButtons.get(theme).setChecked(true);
     }
 
@@ -249,7 +252,8 @@ public class DistilledPagePrefsView extends LinearLayout
      * Initiatializes a Button and selects it if it corresponds to the current
      * theme.
      */
-    private RadioButton initializeAndGetButton(int id, final @Theme int theme) {
+    private RadioButton initializeAndGetButton(int id, final int theme) {
+        Theme.validate(theme);
         final RadioButton button = (RadioButton) findViewById(id);
         button.setOnClickListener(new View.OnClickListener() {
             @Override

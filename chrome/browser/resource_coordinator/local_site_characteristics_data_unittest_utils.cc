@@ -104,7 +104,7 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
       performance_manager::PerformanceManagerImpl::Create(base::DoNothing());
   registry_ = performance_manager::PerformanceManagerRegistry::Create();
 
-  performance_manager_->CallOnGraph(
+  performance_manager::PerformanceManagerImpl::CallOnGraph(
       FROM_HERE, base::BindOnce([](performance_manager::Graph* graph) {
         graph->PassToGraph(FormInteractionTabHelper::CreateGraphObserver());
       }));

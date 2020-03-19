@@ -64,10 +64,15 @@
 
 @implementation GoogleServicesSettingsCoordinator
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser
-                                      mode:(GoogleServicesSettingsMode)mode {
-  if ([super initWithBaseViewController:viewController browser:browser]) {
+@synthesize baseNavigationController = _baseNavigationController;
+
+- (instancetype)initWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                         browser:(Browser*)browser
+                                            mode:(GoogleServicesSettingsMode)
+                                                     mode {
+  if ([super initWithBaseViewController:navigationController browser:browser]) {
+    _baseNavigationController = navigationController;
     _mode = mode;
   }
   return self;
@@ -241,10 +246,8 @@
 - (void)openManageSyncSettings {
   DCHECK(!self.manageSyncSettingsCoordinator);
   self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.manageSyncSettingsCoordinator.baseNavigationController =
-      self.baseNavigationController;
+      initWithBaseNavigationController:self.baseNavigationController
+                               browser:self.browser];
   self.manageSyncSettingsCoordinator.delegate = self;
   [self.manageSyncSettingsCoordinator start];
 }

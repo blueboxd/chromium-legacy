@@ -775,27 +775,6 @@ static_library("web_test_support") {
   ]
 }
 
-static_library("test_runner_support") {
-  testonly = true
-
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  sources = [
-    "../public/test/test_runner_support.h",
-    "test_runner_support.cc",
-  ]
-
-  deps = [
-    "//content/public/renderer",
-    "//content/renderer:for_content_tests",
-    "//third_party/blink/public:blink",
-  ]
-}
-
 static_library("blink_test_browser_support") {
   testonly = true
 
@@ -1937,6 +1916,7 @@ test("content_unittests") {
     "../public/common/url_utils_unittest.cc",
     "../public/test/browser_task_environment_unittest.cc",
     "../public/test/devtools_permission_overrides_unittest.cc",
+    "../public/test/dump_accessibility_test_helper_unittest.cc",
     "../public/test/no_renderer_crashes_assertion_unittest.cc",
     "../public/test/permission_type_unittest.cc",
     "../public/test/referrer_unittest.cc",

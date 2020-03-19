@@ -12,6 +12,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_connection_handler_impl.h"
+#include "chromeos/network/network_metadata_observer.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
@@ -24,6 +25,24 @@
 namespace chromeos {
 
 namespace test {
+
+class TestNetworkMetadataObserver : public NetworkMetadataObserver {
+ public:
+  TestNetworkMetadataObserver() = default;
+  ~TestNetworkMetadataObserver() override = default;
+
+  // NetworkConnectionObserver
+  void OnFirstConnectionToNetwork(const std::string& guid) override {
+    connections_.insert(guid);
+  }
+
+  bool HasConnected(const std::string& guid) {
+    return connections_.count(guid) != 0;
+  }
+
+ private:
+  std::set<std::string> connections_;
+};
 
 class NetworkMetadataStoreTest : public ::testing::Test {
  public:
@@ -49,11 +68,14 @@ class NetworkMetadataStoreTest : public ::testing::Test {
     metadata_store_ = std::make_unique<NetworkMetadataStore>(
         network_configuration_handler_, network_connection_handler_.get(),
         network_state_handler_, user_prefs_.get(), device_prefs_.get());
+    metadata_observer_ = std::make_unique<TestNetworkMetadataObserver>();
+    metadata_store_->AddObserver(metadata_observer_.get());
   }
 
   ~NetworkMetadataStoreTest() override {
     network_state_handler_ = nullptr;
     metadata_store_.reset();
+    metadata_observer_.reset();
     user_prefs_.reset();
     device_prefs_.reset();
     network_configuration_handler_ = nullptr;
@@ -71,6 +93,9 @@ class NetworkMetadataStoreTest : public ::testing::Test {
   TestingPrefServiceSimple* device_prefs() { return device_prefs_.get(); }
 
   NetworkMetadataStore* metadata_store() { return metadata_store_.get(); }
+  TestNetworkMetadataObserver* metadata_observer() {
+    return metadata_observer_.get();
+  }
   NetworkConnectionHandler* network_connection_handler() {
     return network_connection_handler_.get();
   }
@@ -87,6 +112,7 @@ class NetworkMetadataStoreTest : public ::testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> device_prefs_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> user_prefs_;
   std::unique_ptr<NetworkMetadataStore> metadata_store_;
+  std::unique_ptr<TestNetworkMetadataObserver> metadata_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMetadataStoreTest);
 };
@@ -101,12 +127,14 @@ const char* kConfigWifi0Connectable =
 TEST_F(NetworkMetadataStoreTest, FirstConnect) {
   std::string service_path = ConfigureService(kConfigWifi0Connectable);
   ASSERT_TRUE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
+  ASSERT_FALSE(metadata_observer()->HasConnected(kGuid));
   network_connection_handler()->ConnectToNetwork(
       service_path, base::DoNothing(), base::DoNothing(),
       true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
+  ASSERT_TRUE(metadata_observer()->HasConnected(kGuid));
 }
 
 TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {

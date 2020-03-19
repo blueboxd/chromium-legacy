@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -36,6 +37,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     private Delegate mDelegate;
     private boolean mPendingSearchPromoDecision;
     private boolean mPendingBeginQuery;
+    private boolean mNativeLibraryReady;
 
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs, R.layout.location_bar_base);
@@ -72,6 +74,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     @Override
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
+        mNativeLibraryReady = true;
+
         setAutocompleteProfile(Profile.getLastUsedRegularProfile());
 
         mPendingSearchPromoDecision = LocaleManager.getInstance().needToCheckForSearchEnginePromo();
@@ -107,8 +111,9 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
      * Begins a new query.
      * @param isVoiceSearchIntent Whether this is a voice search.
      * @param optionalText Prepopulate with a query, this may be null.
-     * */
-    void beginQuery(boolean isVoiceSearchIntent, @Nullable String optionalText) {
+     */
+    @VisibleForTesting
+    public void beginQuery(boolean isVoiceSearchIntent, @Nullable String optionalText) {
         // Clear the text regardless of the promo decision.  This allows the user to enter text
         // before native has been initialized and have it not be cleared one the delayed beginQuery
         // logic is performed.
@@ -116,7 +121,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
                 UrlBarData.forNonUrlText(optionalText == null ? "" : optionalText),
                 UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
 
-        if (mPendingSearchPromoDecision) {
+        if (mPendingSearchPromoDecision || (isVoiceSearchIntent && !mNativeLibraryReady)) {
             mPendingBeginQuery = true;
             return;
         }
@@ -126,6 +131,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     private void beginQueryInternal(boolean isVoiceSearchIntent) {
         assert !mPendingSearchPromoDecision;
+        assert !isVoiceSearchIntent || mNativeLibraryReady;
 
         if (getVoiceRecognitionHandler().isVoiceSearchEnabled() && isVoiceSearchIntent) {
             getVoiceRecognitionHandler().startVoiceRecognition(

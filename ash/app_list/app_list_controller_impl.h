@@ -131,7 +131,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   void ShowAppList() override;
   aura::Window* GetWindow() override;
-  bool IsVisible() override;
+  bool IsVisible(const base::Optional<int64_t>& display_id) override;
 
   // AppListModelObserver:
   void OnAppListItemAdded(AppListItem* item) override;
@@ -145,7 +145,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // Methods used in ash:
-  bool GetTargetVisibility() const;
+  bool GetTargetVisibility(const base::Optional<int64_t>& display_id) const;
   void Show(int64_t display_id,
             base::Optional<AppListShowSource> show_source,
             base::TimeTicks event_time_stamp);

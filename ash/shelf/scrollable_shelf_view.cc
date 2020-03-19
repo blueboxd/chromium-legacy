@@ -112,6 +112,12 @@ int GetGestureDragThreshold() {
   return ShelfConfig::Get()->button_size() / 2;
 }
 
+// Returns the display id for the display that shows the shelf for |view|.
+int64_t GetDisplayIdForView(const views::View* view) {
+  aura::Window* window = view->GetWidget()->GetNativeWindow();
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -320,11 +326,13 @@ class ScrollableShelfAnimationMetricsReporter
 
   ~ScrollableShelfAnimationMetricsReporter() override = default;
 
+  void set_display_id(int64_t display_id) { display_id_ = display_id; }
+
   // ui::AnimationMetricsReporter:
   void Report(int value) override {
     base::UmaHistogramPercentage(kAnimationSmoothnessHistogram, value);
     if (Shell::Get()->IsInTabletMode()) {
-      if (Shell::Get()->app_list_controller()->IsVisible()) {
+      if (Shell::Get()->app_list_controller()->IsVisible(display_id_)) {
         base::UmaHistogramPercentage(
             kAnimationSmoothnessTabletLauncherVisibleHistogram, value);
       } else {
@@ -332,7 +340,7 @@ class ScrollableShelfAnimationMetricsReporter
             kAnimationSmoothnessTabletLauncherHiddenHistogram, value);
       }
     } else {
-      if (Shell::Get()->app_list_controller()->IsVisible()) {
+      if (Shell::Get()->app_list_controller()->IsVisible(display_id_)) {
         base::UmaHistogramPercentage(
             kAnimationSmoothnessClamshellLauncherVisibleHistogram, value);
       } else {
@@ -342,6 +350,8 @@ class ScrollableShelfAnimationMetricsReporter
     }
   }
 
+ private:
+  int64_t display_id_ = display::kInvalidDisplayId;
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfAnimationMetricsReporter);
 };
 
@@ -740,6 +750,7 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   animation_settings.SetAnimationMetricsReporter(
       animation_metrics_reporter_.get());
   animation_settings.AddObserver(this);
+  animation_metrics_reporter_->set_display_id(GetDisplayIdForView(this));
   shelf_container_view_->TranslateShelfView(scroll_offset_);
 }
 
@@ -1485,7 +1496,8 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     DCHECK(!presentation_time_recorder_);
     if (Shell::Get()->IsInTabletMode()) {
-      if (Shell::Get()->app_list_controller()->IsVisible()) {
+      if (Shell::Get()->app_list_controller()->IsVisible(
+              GetDisplayIdForView(this))) {
         presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
             GetWidget()->GetCompositor(),
             kScrollDraggingTabletLauncherVisibleHistogram,
@@ -1497,7 +1509,8 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
             kScrollDraggingTabletLauncherHiddenMaxLatencyHistogram);
       }
     } else {
-      if (Shell::Get()->app_list_controller()->IsVisible()) {
+      if (Shell::Get()->app_list_controller()->IsVisible(
+              GetDisplayIdForView(this))) {
         presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
             GetWidget()->GetCompositor(),
             kScrollDraggingClamshellLauncherVisibleHistogram,

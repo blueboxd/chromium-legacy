@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCoordinator;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -30,13 +32,15 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
     private final TasksSurfaceMediator mMediator;
     private MostVisitedListCoordinator mMostVisitedList;
+    private final PropertyModel mPropertyModel;
 
     public TasksSurfaceCoordinator(ChromeActivity activity, PropertyModel propertyModel,
-            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel, boolean hasMVTiles) {
+            boolean isTabCarousel, boolean hasMVTiles) {
         mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
         mView.initialize(activity.getLifecycleDispatcher());
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
+        mPropertyModel = propertyModel;
         if (isTabCarousel) {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
                     activity, mView.getCarouselTabSwitcherContainer());
@@ -54,13 +58,13 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         IncognitoCookieControlsManager incognitoCookieControlsManager =
                 new IncognitoCookieControlsManager();
 
-        mMediator = new TasksSurfaceMediator(propertyModel, fakeboxDelegate,
-                incognitoLearnMoreClickListener, incognitoCookieControlsManager, isTabCarousel);
+        mMediator = new TasksSurfaceMediator(propertyModel, incognitoLearnMoreClickListener,
+                incognitoCookieControlsManager, isTabCarousel);
 
         if (hasMVTiles) {
             LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
             mMostVisitedList =
-                    new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);
+                    new MostVisitedListCoordinator(activity, mvTilesLayout, mPropertyModel);
         }
     }
 
@@ -94,5 +98,15 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     @Override
     public View getView() {
         return mView;
+    }
+
+    @Override
+    public void onFinishNativeInitialization(Context context, FakeboxDelegate fakeboxDelegate) {
+        ChromeActivity activity = (ChromeActivity) context;
+        ((TabSwitcherCoordinator) mTabSwitcher)
+                .initWithNative(activity, activity.getTabContentManager(),
+                        activity.getCompositorViewHolder().getDynamicResourceLoader());
+
+        mMediator.initWithNative(fakeboxDelegate);
     }
 }

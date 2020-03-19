@@ -3820,6 +3820,8 @@ jumbo_static_library("browser") {
       "component_updater/cros_component_manager.h",
       "component_updater/metadata_table_chromeos.cc",
       "component_updater/metadata_table_chromeos.h",
+      "component_updater/smart_dim_component_installer.cc",
+      "component_updater/smart_dim_component_installer.h",
       "device_identity/chromeos/device_oauth2_token_store_chromeos.cc",
       "device_identity/chromeos/device_oauth2_token_store_chromeos.h",
       "device_identity/device_identity_provider.cc",

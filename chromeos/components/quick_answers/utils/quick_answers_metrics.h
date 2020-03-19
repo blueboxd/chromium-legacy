@@ -29,6 +29,15 @@ void RecordClick(ResultType result_type, const base::TimeDelta duration);
 // Record selected text length to learn about usage pattern.
 void RecordSelectedTextLength(int length);
 
+// Record user interaction with the consent UI with how many times the user has
+// seen the consent and impression duration.
+void RecordConsentInteraction(ConsentInteractionType type,
+                              int nth_impression,
+                              const base::TimeDelta duration);
+
+// Record consent impression with how many times the user has seen the consent.
+void RecordConsentImpression(int nth_impression);
+
 }  // namespace quick_answers
 }  // namespace chromeos
 

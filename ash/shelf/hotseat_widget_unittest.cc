@@ -409,7 +409,8 @@ TEST_P(HotseatWidgetTest, InAppShelfShowingContextMenu) {
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
-  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id()));
 
   ShelfTestUtil::AddAppShortcut("app_id", TYPE_PINNED_APP);
 
@@ -599,7 +600,8 @@ TEST_P(HotseatWidgetTest, SwipeUpOnHotseatBackgroundDoesNothing) {
                                      InAppShelfGestures::kSwipeUpToShow, 0);
 
   // Swipe up on the shelf to show the hotseat.
-  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id()));
 
   SwipeUpOnShelf();
 
@@ -623,7 +625,8 @@ TEST_P(HotseatWidgetTest, SwipeUpOnHotseatBackgroundDoesNothing) {
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                              kNumScrollSteps);
 
-  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id()));
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
   if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());

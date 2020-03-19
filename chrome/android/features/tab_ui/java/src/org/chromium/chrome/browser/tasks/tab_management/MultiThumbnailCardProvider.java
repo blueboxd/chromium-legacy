@@ -54,7 +54,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     private final List<Rect> mFaviconRects = new ArrayList<>(4);
     private final List<RectF> mThumbnailRects = new ArrayList<>(4);
     private final List<RectF> mFaviconBackgroundRects = new ArrayList<>(4);
-    private final TabListFaviconProvider mTabListFaviconProvider;
+    private TabListFaviconProvider mTabListFaviconProvider;
 
     private class MultiThumbnailFetcher {
         private final Tab mInitialTab;
@@ -208,8 +208,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
         // incognito profile) instead of always using regular profile. It works correctly now, but
         // it is not safe.
-        mTabListFaviconProvider =
-                new TabListFaviconProvider(context, Profile.getLastUsedRegularProfile());
+        mTabListFaviconProvider = new TabListFaviconProvider(context);
 
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();
@@ -292,6 +291,10 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+    }
+
+    public void initWithNative() {
+        mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
     }
 
     /**

@@ -328,7 +328,7 @@ class DeviceStatusCollector : public StatusCollector,
 
   // Returns true if data (e.g. CPU info, power status, etc.) should be fetched
   // from cros_healthd.
-  bool ShouldFetchCrosHealthData() const;
+  bool ShouldFetchCrosHealthdData() const;
 
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();

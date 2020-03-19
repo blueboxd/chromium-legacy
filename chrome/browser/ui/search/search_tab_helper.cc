@@ -449,7 +449,10 @@ void SearchTabHelper::FileSelectionCanceled(void* params) {
       ->LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL, base::TimeDelta::FromSeconds(0));
 }
 
-void SearchTabHelper::OnResultChanged(bool default_result_changed) {
+void SearchTabHelper::OnResultChanged(AutocompleteController* controller,
+                                      bool default_result_changed) {
+  DCHECK(controller == autocomplete_controller_.get());
+
   if (!autocomplete_controller_) {
     NOTREACHED();
     return;

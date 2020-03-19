@@ -22,10 +22,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
-import org.chromium.components.dom_distiller.core.FontFamily;
-import org.chromium.components.dom_distiller.core.Theme;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
+import org.chromium.dom_distiller.mojom.FontFamily;
+import org.chromium.dom_distiller.mojom.Theme;
 
 /**
  * Test class for {@link DistilledPagePrefs}.
@@ -228,27 +228,27 @@ public class DistilledPagePrefsTest {
     }
 
     private static class TestingObserver implements DistilledPagePrefs.Observer {
-        private @FontFamily int mFontFamily;
-        private @Theme int mTheme;
+        private int mFontFamily;
+        private int mTheme;
         private float mFontScaling;
 
         public TestingObserver() {}
 
-        public @FontFamily int getFontFamily() {
+        public int getFontFamily() {
             return mFontFamily;
         }
 
         @Override
-        public void onChangeFontFamily(@FontFamily int font) {
+        public void onChangeFontFamily(int font) {
             mFontFamily = font;
         }
 
-        public @Theme int getTheme() {
+        public int getTheme() {
             return mTheme;
         }
 
         @Override
-        public void onChangeTheme(@Theme int theme) {
+        public void onChangeTheme(int theme) {
             mTheme = theme;
         }
 
@@ -262,11 +262,11 @@ public class DistilledPagePrefsTest {
         }
     }
 
-    private void setFontFamily(final @FontFamily int font) {
+    private void setFontFamily(final int font) {
         TestThreadUtils.runOnUiThreadBlocking(() -> mDistilledPagePrefs.setFontFamily(font));
     }
 
-    private void setTheme(final @Theme int theme) {
+    private void setTheme(final int theme) {
         TestThreadUtils.runOnUiThreadBlocking(() -> mDistilledPagePrefs.setTheme(theme));
     }
 

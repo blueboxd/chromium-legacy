@@ -11,7 +11,6 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.content_public.browser.RenderFrameHost;
 
 /**
@@ -21,7 +20,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 public class Fido2ApiHandler {
     private static Fido2ApiHandler sInstance;
     private static final String GMSCORE_PACKAGE_NAME = "com.google.android.gms";
-    private static final int GMSCORE_MIN_VERSION = 12800000;
+    public static final int GMSCORE_MIN_VERSION = 201106000;
 
     @VisibleForTesting
     static void overrideInstanceForTesting(Fido2ApiHandler instance) {
@@ -34,24 +33,31 @@ public class Fido2ApiHandler {
     public static Fido2ApiHandler getInstance() {
         ThreadUtils.checkUiThread();
         if (sInstance == null) {
-            // The Fido2 APIs can only be used on GmsCore v19+.
+            // The Fido2 APIs can only be used on GmsCore v2020w12+.
             // This check is only if sInstance is null since some tests may
             // override sInstance for testing.
             assert PackageUtils.getPackageVersion(
                     ContextUtils.getApplicationContext(), GMSCORE_PACKAGE_NAME)
                     >= GMSCORE_MIN_VERSION;
 
-            sInstance = AppHooks.get().createFido2ApiHandler();
+            sInstance = new Fido2ApiHandler();
         }
         return sInstance;
     }
 
     protected void makeCredential(PublicKeyCredentialCreationOptions options,
-            RenderFrameHost frameHost, HandlerResponseCallback callback) {}
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {
+        new Fido2CredentialRequest().handleMakeCredentialRequest(options, frameHost, callback);
+    }
 
     protected void getAssertion(PublicKeyCredentialRequestOptions options,
-            RenderFrameHost frameHost, HandlerResponseCallback callback) {}
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {
+        new Fido2CredentialRequest().handleGetAssertionRequest(options, frameHost, callback);
+    }
 
     protected void isUserVerifyingPlatformAuthenticatorAvailable(
-            RenderFrameHost frameHost, HandlerResponseCallback callback) {}
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {
+        new Fido2CredentialRequest().handleIsUserVerifyingPlatformAuthenticatorAvailableRequest(
+                frameHost, callback);
+    }
 }

@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.searchwidget;
 
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -20,6 +24,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
@@ -37,6 +43,7 @@ import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -137,10 +144,16 @@ public class SearchActivityTest {
     @Rule
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
 
+    @Mock
+    VoiceRecognitionHandler mHandler;
+
     private TestDelegate mTestDelegate;
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        doReturn(true).when(mHandler).isVoiceSearchEnabled();
+
         mTestDelegate = new TestDelegate();
         SearchActivity.setDelegateForTests(mTestDelegate);
         DefaultSearchEnginePromoDialog.setObserverForTests(mTestDelegate);
@@ -202,6 +215,38 @@ public class SearchActivityTest {
                 return null;
             }
         }, url);
+    }
+
+    @Test
+    @SmallTest
+    public void testVoiceSearchBeforeNativeIsLoaded() throws Exception {
+        // Wait for the activity to load, but don't let it load the native library.
+        mTestDelegate.shouldDelayLoadingNative = true;
+        final SearchActivity searchActivity = startSearchActivity(0, /*isVoiceSearch=*/true);
+        final SearchActivityLocationBarLayout locationBar =
+                (SearchActivityLocationBarLayout) searchActivity.findViewById(
+                        R.id.search_location_bar);
+        locationBar.setVoiceRecognitionHandlerForTesting(mHandler);
+        locationBar.beginQuery(/* isVoiceSearchIntent= */ true, /* optionalText= */ null);
+        verify(mHandler, times(0))
+                .startVoiceRecognition(
+                        VoiceRecognitionHandler.VoiceInteractionSource.SEARCH_WIDGET);
+
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        Assert.assertEquals(0, mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());
+        Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+
+        // Start loading native, then let the activity finish initialization.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> searchActivity.startDelayedNativeInitialization());
+
+        Assert.assertEquals(
+                1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
+
+        verify(mHandler).startVoiceRecognition(
+                VoiceRecognitionHandler.VoiceInteractionSource.SEARCH_WIDGET);
     }
 
     @Test
@@ -436,7 +481,7 @@ public class SearchActivityTest {
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
 
         // Start the Activity again by firing another copy of the same Intent.
-        SearchActivity restartedActivity = startSearchActivity(1);
+        SearchActivity restartedActivity = startSearchActivity(1, /*isVoiceSearch=*/false);
         Assert.assertEquals(searchActivity, restartedActivity);
 
         // The query should be wiped.
@@ -450,10 +495,10 @@ public class SearchActivityTest {
     }
 
     private SearchActivity startSearchActivity() {
-        return startSearchActivity(0);
+        return startSearchActivity(0, /*isVoiceSearch=*/false);
     }
 
-    private SearchActivity startSearchActivity(int expectedCallCount) {
+    private SearchActivity startSearchActivity(int expectedCallCount, boolean isVoiceSearch) {
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         ActivityMonitor searchMonitor =
                 new ActivityMonitor(SearchActivity.class.getName(), null, false);
@@ -469,7 +514,7 @@ public class SearchActivityTest {
 
         // Fire the Intent to start up the SearchActivity.
         Intent intent = new Intent();
-        SearchWidgetProvider.startSearchActivity(intent, false);
+        SearchWidgetProvider.startSearchActivity(intent, isVoiceSearch);
         Activity searchActivity = instrumentation.waitForMonitorWithTimeout(
                 searchMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
         Assert.assertNotNull("Activity didn't start", searchActivity);

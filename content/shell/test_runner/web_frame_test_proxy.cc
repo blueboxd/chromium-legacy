@@ -4,6 +4,7 @@
 
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 
+#include "content/common/unique_name_helper.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -128,6 +129,10 @@ void WebFrameTestProxy::Initialize(
   test_client_ =
       interfaces->CreateWebFrameTestClient(view_proxy_for_frame, this);
   new TestRenderFrameObserver(this, view_proxy_for_frame);  // deletes itself.
+}
+
+std::string WebFrameTestProxy::GetFrameNameForWebTests() {
+  return content::UniqueNameHelper::ExtractStableNameForTesting(unique_name());
 }
 
 void WebFrameTestProxy::UpdateAllLifecyclePhasesAndCompositeForTesting() {

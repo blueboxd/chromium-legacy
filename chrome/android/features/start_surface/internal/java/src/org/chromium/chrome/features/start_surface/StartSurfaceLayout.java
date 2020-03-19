@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
@@ -63,12 +62,13 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     private AnimatorSet mTabToSwitcherAnimation;
     private boolean mIsAnimating;
 
-    private final TabListSceneLayer mSceneLayer = new TabListSceneLayer();
+    private TabListSceneLayer mSceneLayer;
     private final StartSurface mStartSurface;
     private final StartSurface.Controller mController;
     private final TabSwitcher.TabListDelegate mTabListDelegate;
     // To force Toolbar finishes its animation when this Layout finished hiding.
     private final LayoutTab mDummyLayoutTab;
+    private boolean mIsInitialized;
 
     private float mBackgroundAlpha;
 
@@ -97,10 +97,19 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         mController.addOverviewModeObserver(this);
         mTabListDelegate = mStartSurface.getTabListDelegate();
         if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
-            mThumbnailAspectRatio = (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
-                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
+            mThumbnailAspectRatio = (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
             mThumbnailAspectRatio = MathUtils.clamp(mThumbnailAspectRatio, 0.5f, 2.0f);
         }
+    }
+
+    @Override
+    public void onFinishNativeInitialization() {
+        if (mIsInitialized) return;
+
+        mIsInitialized = true;
+        mStartSurface.initWithNative();
+        mSceneLayer = new TabListSceneLayer();
+        mSceneLayer.setTabModelSelector(mTabModelSelector);
     }
 
     // StartSurface.OverviewModeObserver implementation.
@@ -144,7 +153,9 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     @Override
     public void setTabModelSelector(TabModelSelector modelSelector, TabContentManager manager) {
         super.setTabModelSelector(modelSelector, manager);
-        mSceneLayer.setTabModelSelector(modelSelector);
+        if (mSceneLayer != null) {
+            mSceneLayer.setTabModelSelector(modelSelector);
+        }
     }
 
     @Override

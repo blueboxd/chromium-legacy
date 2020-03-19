@@ -187,8 +187,9 @@ public class TabSwitcherMediatorUnitTest {
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder, null, null, mMessageItemsController,
+                mFullscreenManager, mCompositorViewHolder, null, mMessageItemsController,
                 TabListCoordinator.TabListMode.GRID);
+        mMediator.initWithNative(null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
     }

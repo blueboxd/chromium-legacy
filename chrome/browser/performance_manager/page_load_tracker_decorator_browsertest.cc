@@ -26,9 +26,8 @@ class PageIsLoadingObserver : public PageNode::ObserverDefaultImpl,
   PageIsLoadingObserver(base::WeakPtr<PageNode> page_node,
                         bool desired_is_loading)
       : page_node_(page_node), desired_is_loading_(desired_is_loading) {
-    auto* perf_manager = PerformanceManagerImpl::GetInstance();
-    DCHECK(perf_manager);
-    perf_manager->CallOnGraphImpl(
+    DCHECK(PerformanceManagerImpl::IsAvailable());
+    PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting([&](performance_manager::GraphImpl* graph) {
           EXPECT_TRUE(page_node_);

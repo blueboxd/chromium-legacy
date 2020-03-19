@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -591,8 +592,13 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL},
       {"osSyncAppsCheckboxLabel", IDS_OS_SETTINGS_SYNC_APPS_CHECKBOX_LABEL},
       {"osSyncTurnOn", IDS_OS_SETTINGS_SYNC_TURN_ON},
+      {"osSyncFeatureLabel", IDS_OS_SETTINGS_SYNC_FEATURE_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString(
+      "browserSettingsSyncSetupUrl",
+      base::StrCat({chrome::kChromeUISettingsURL, chrome::kSyncSetupSubPage}));
 }
 
 void AddCrostiniStrings(content::WebUIDataSource* html_source,

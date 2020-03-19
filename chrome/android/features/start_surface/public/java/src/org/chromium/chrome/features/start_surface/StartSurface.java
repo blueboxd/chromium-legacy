@@ -52,6 +52,11 @@ public interface StartSurface {
     void setOnTabSelectingListener(OnTabSelectingListener listener);
 
     /**
+     * Called when native initialization is completed.
+     */
+    void initWithNative();
+
+    /**
      * An observer that is notified when the StartSurface view state changes.
      */
     interface OverviewModeObserver {

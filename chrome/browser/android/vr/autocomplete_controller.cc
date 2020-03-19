@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/search_engines/util.h"
 
@@ -71,7 +70,11 @@ std::tuple<GURL, bool> AutocompleteController::GetUrlFromVoiceInput(
           false};
 }
 
-void AutocompleteController::OnResultChanged(bool default_match_changed) {
+void AutocompleteController::OnResultChanged(
+    ::AutocompleteController* controller,
+    bool default_match_changed) {
+  DCHECK(controller == autocomplete_controller_.get());
+
   std::vector<OmniboxSuggestion> suggestions;
   for (const auto& match : autocomplete_controller_->result()) {
     const gfx::VectorIcon* icon = &match.GetVectorIcon(false);

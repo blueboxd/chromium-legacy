@@ -155,11 +155,14 @@
   <message name="IDS_OS_SETTINGS_SYNC_PAGE_TITLE" desc="Settings sub-page title for sync.">
     Sync your settings
   </message>
-  <message name="IDS_OS_SETTINGS_SYNC_TURN_ON" desc="Button label for turning on sync. Sync is capitalized because it is the proper name of a feature.">
-    Turn on Sync
+  <message name="IDS_OS_SETTINGS_SYNC_TURN_ON" desc="Button label for turning on synchronization of settings across Chrome OS devices.">
+    Turn on
   </message>
-  <message name="IDS_OS_SETTINGS_SYNC_TURN_OFF" desc="Button label for turning off sync. Sync is capitalized because it is the proper name of a feature.">
-    Turn off Sync
+  <message name="IDS_OS_SETTINGS_SYNC_TURN_OFF" desc="Button label for turning off synchronization of settings across Chrome OS devices.">
+    Turn off
+  </message>
+  <message name="IDS_OS_SETTINGS_SYNC_FEATURE_LABEL" desc="Label describing the OS sync feature.">
+    Your apps and settings will sync across all Chrome OS devices where you are signed in with your Google account. For browser sync options, go to<ph name="LINK_BEGIN">&lt;a&gt;</ph>Chrome settings<ph name="LINK_END">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_OS_SETTINGS_SYNC_APPS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of apps across devices.">
     Apps

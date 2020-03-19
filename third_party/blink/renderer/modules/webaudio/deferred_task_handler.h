@@ -111,6 +111,9 @@ class MODULES_EXPORT DeferredTaskHandler final
   void RequestToDeleteHandlersOnMainThread();
   void ClearHandlersToBeDeleted();
 
+  // Clear the context from the rendering and deletable orphan handlers.
+  void ClearContextFromOrphanHandlers();
+
   bool AcceptsTailProcessing() const { return accepts_tail_processing_; }
   void StopAcceptingTailProcessing() { accepts_tail_processing_ = false; }
 

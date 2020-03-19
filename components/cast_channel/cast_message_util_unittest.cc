@@ -10,7 +10,7 @@
 #include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 using base::test::IsJson;
-using base::test::ParseJsonDeprecated;
+using base::test::ParseJson;
 
 namespace cast_channel {
 
@@ -38,8 +38,7 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseOk) {
     }
   )";
 
-  LaunchSessionResponse response =
-      GetLaunchSessionResponse(*ParseJsonDeprecated(payload));
+  LaunchSessionResponse response = GetLaunchSessionResponse(ParseJson(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kOk, response.result);
   EXPECT_TRUE(response.receiver_status);
 }
@@ -52,8 +51,7 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseError) {
     }
   )";
 
-  LaunchSessionResponse response =
-      GetLaunchSessionResponse(*ParseJsonDeprecated(payload));
+  LaunchSessionResponse response = GetLaunchSessionResponse(ParseJson(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kError, response.result);
   EXPECT_FALSE(response.receiver_status);
 }
@@ -68,8 +66,7 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseUnknown) {
     }
   )";
 
-  LaunchSessionResponse response =
-      GetLaunchSessionResponse(*ParseJsonDeprecated(payload));
+  LaunchSessionResponse response = GetLaunchSessionResponse(ParseJson(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kUnknown, response.result);
   EXPECT_FALSE(response.receiver_status);
 }
@@ -127,8 +124,8 @@ TEST(CastMessageUtilTest, CreateMediaRequest) {
        "requestId": 123,
     })";
 
-  CastMessage message = CreateMediaRequest(*ParseJsonDeprecated(body), 123,
-                                           "theSourceId", "theDestinationId");
+  CastMessage message = CreateMediaRequest(ParseJson(body), 123, "theSourceId",
+                                           "theDestinationId");
   ASSERT_TRUE(IsCastMessageValid(message));
   EXPECT_EQ(kMediaNamespace, message.namespace_());
   EXPECT_EQ("theSourceId", message.source_id());
@@ -147,7 +144,7 @@ TEST(CastMessageUtilTest, CreateVolumeRequest) {
     })";
 
   CastMessage message =
-      CreateSetVolumeRequest(*ParseJsonDeprecated(body), 123, "theSourceId");
+      CreateSetVolumeRequest(ParseJson(body), 123, "theSourceId");
   ASSERT_TRUE(IsCastMessageValid(message));
   EXPECT_EQ(kReceiverNamespace, message.namespace_());
   EXPECT_EQ("theSourceId", message.source_id());

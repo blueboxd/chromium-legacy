@@ -35,6 +35,7 @@
 namespace {
 
 using testing::ElementsAre;
+using testing::IsEmpty;
 
 MATCHER_P2(MatchesLogin, username, password, "") {
   return arg->username_value == base::UTF8ToUTF16(username) &&
@@ -265,6 +266,114 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ChooseDestinationStore) {
     EXPECT_THAT(profile_credentials,
                 ElementsAre(MatchesLogin("localuser", "localpass")));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, UpdateInProfileStore) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  AddLocalPassword("user", "localpass");
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form and submit a different password.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "newpass");
+
+  // There should be an update bubble; accept it.
+  BubbleObserver bubble_observer(web_contents);
+  ASSERT_TRUE(bubble_observer.IsUpdatePromptShownAutomatically());
+  bubble_observer.AcceptUpdatePrompt();
+
+  // The updated password should be in the profile store, while the account
+  // store should still be empty.
+  EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "newpass")));
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(), IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, UpdateInAccountStore) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  AddPasswordToFakeServer("user", "accountpass");
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form and submit a different password.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "newpass");
+
+  // There should be an update bubble; accept it.
+  BubbleObserver bubble_observer(web_contents);
+  ASSERT_TRUE(bubble_observer.IsUpdatePromptShownAutomatically());
+  bubble_observer.AcceptUpdatePrompt();
+
+  // The updated password should be in the account store, while the profile
+  // store should still be empty.
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "newpass")));
+  EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(), IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       UpdateMatchingCredentialInBothStores) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  AddPasswordToFakeServer("user", "pass");
+  AddLocalPassword("user", "pass");
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form and submit a different password.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "newpass");
+
+  // There should be an update bubble; accept it.
+  BubbleObserver bubble_observer(web_contents);
+  ASSERT_TRUE(bubble_observer.IsUpdatePromptShownAutomatically());
+  bubble_observer.AcceptUpdatePrompt();
+
+  // The updated password should be in both stores.
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "newpass")));
+  EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "newpass")));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       UpdateMismatchingCredentialInBothStores) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  AddPasswordToFakeServer("user", "accountpass");
+  AddLocalPassword("user", "localpass");
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  // Go to a form and submit a different password.
+  NavigateToFile(web_contents, "/password/simple_password.html");
+  FillAndSubmitPasswordForm(web_contents, "user", "newpass");
+
+  // There should be an update bubble; accept it.
+  BubbleObserver bubble_observer(web_contents);
+  ASSERT_TRUE(bubble_observer.IsUpdatePromptShownAutomatically());
+  bubble_observer.AcceptUpdatePrompt();
+
+  // The updated password should be in both stores.
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "newpass")));
+  EXPECT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("user", "newpass")));
 }
 
 // Tests that if credentials for the same username, but with different passwords

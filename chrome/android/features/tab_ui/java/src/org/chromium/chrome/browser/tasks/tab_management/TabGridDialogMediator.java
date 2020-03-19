@@ -99,10 +99,11 @@ public class TabGridDialogMediator {
     private final AnimationSourceViewProvider mAnimationSourceViewProvider;
     private final TabGroupTitleEditor mTabGroupTitleEditor;
     private final DialogHandler mTabGridDialogHandler;
-    private final TabSelectionEditorCoordinator
-            .TabSelectionEditorController mTabSelectionEditorController;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
     private final String mComponentName;
+
+    private TabSelectionEditorCoordinator
+            .TabSelectionEditorController mTabSelectionEditorController;
     private KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
     private boolean mIsUpdatingTitle;
@@ -113,8 +114,6 @@ public class TabGridDialogMediator {
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
             AnimationSourceViewProvider animationSourceViewProvider,
-            @Nullable TabSelectionEditorCoordinator
-                    .TabSelectionEditorController tabSelectionEditorController,
             TabGroupTitleEditor tabGroupTitleEditor,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier, String componentName) {
         mContext = context;
@@ -126,7 +125,6 @@ public class TabGridDialogMediator {
         mAnimationSourceViewProvider = animationSourceViewProvider;
         mTabGroupTitleEditor = tabGroupTitleEditor;
         mTabGridDialogHandler = new DialogHandler();
-        mTabSelectionEditorController = tabSelectionEditorController;
         mShareDelegateSupplier = shareDelegateSupplier;
         mComponentName = componentName;
 
@@ -205,6 +203,12 @@ public class TabGridDialogMediator {
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+    }
+
+    public void initWithNative(@Nullable TabSelectionEditorCoordinator
+                                       .TabSelectionEditorController tabSelectionEditorController) {
+        mTabSelectionEditorController = tabSelectionEditorController;
+
         assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;
 
@@ -212,7 +216,9 @@ public class TabGridDialogMediator {
             if (result == R.id.ungroup_tab) {
                 mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
                 List<Tab> tabs = getRelatedTabs(mCurrentTabId);
-                mTabSelectionEditorController.show(tabs);
+                if (mTabSelectionEditorController != null) {
+                    mTabSelectionEditorController.show(tabs);
+                }
             } else if (result == R.id.share_tab_group) {
                 Tab tab = mTabModelSelector.getTabById(mCurrentTabId);
                 ShareParams shareParams =

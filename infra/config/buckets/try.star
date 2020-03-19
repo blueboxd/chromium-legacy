@@ -443,10 +443,6 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
-    name = 'linux-layout-tests-fragment-paint',
-)
-
-try_.chromium_linux_builder(
     name = 'linux_mojo',
 )
 

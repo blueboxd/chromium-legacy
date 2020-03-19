@@ -128,8 +128,7 @@ class StartSurfaceMediator
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
-            @SurfaceMode int surfaceMode, @Nullable FakeboxDelegate fakeboxDelegate,
-            NightModeStateProvider nightModeStateProvider,
+            @SurfaceMode int surfaceMode, NightModeStateProvider nightModeStateProvider,
             ChromeFullscreenManager fullscreenManager, ActivityStateChecker activityStateChecker) {
         mController = controller;
         mTabModelSelector = tabModelSelector;
@@ -137,7 +136,6 @@ class StartSurfaceMediator
         mFeedSurfaceCreator = feedSurfaceCreator;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
         mSurfaceMode = surfaceMode;
-        mFakeboxDelegate = fakeboxDelegate;
         mNightModeStateProvider = nightModeStateProvider;
         mFullScreenManager = fullscreenManager;
         mActivityStateChecker = activityStateChecker;
@@ -146,7 +144,6 @@ class StartSurfaceMediator
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
                     || mSurfaceMode == SurfaceMode.TASKS_ONLY
                     || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY;
-            assert mFakeboxDelegate != null;
 
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
 
@@ -229,11 +226,6 @@ class StartSurfaceMediator
                 };
             }
 
-            // Initialize
-            // Note that isVoiceSearchEnabled will return false in incognito mode.
-            mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
-                    mFakeboxDelegate.getVoiceRecognitionHandler().isVoiceSearchEnabled());
-
             int toolbarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
@@ -257,6 +249,18 @@ class StartSurfaceMediator
         mController.addOverviewModeObserver(this);
         mPreviousOverviewModeState = OverviewModeState.NOT_SHOWN;
         mOverviewModeState = OverviewModeState.NOT_SHOWN;
+    }
+
+    public void initWithNative(@Nullable FakeboxDelegate fakeboxDelegate) {
+        mFakeboxDelegate = fakeboxDelegate;
+        if (mPropertyModel != null) {
+            assert mFakeboxDelegate != null;
+
+            // Initialize
+            // Note that isVoiceSearchEnabled will return false in incognito mode.
+            mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+                    mFakeboxDelegate.getVoiceRecognitionHandler().isVoiceSearchEnabled());
+        }
     }
 
     void setSecondaryTasksSurfacePropertyModel(PropertyModel propertyModel) {

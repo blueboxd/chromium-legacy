@@ -237,15 +237,22 @@ bool VulkanInstance::Initialize(
   }
 #endif
 
-  CollectInfo();
+  if (!CollectInfo())
+    return false;
   return true;
 }
 
-void VulkanInstance::CollectInfo() {
+bool VulkanInstance::CollectInfo() {
   uint32_t count = 0;
   VkResult result = vkEnumeratePhysicalDevices(vk_instance_, &count, nullptr);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "vkEnumeratePhysicalDevices failed: " << result;
+    return false;
+  }
+
+  if (!count) {
+    DLOG(ERROR) << "vkEnumeratePhysicalDevices returns zero device.";
+    return false;
   }
 
   std::vector<VkPhysicalDevice> physical_devices(count);
@@ -253,7 +260,7 @@ void VulkanInstance::CollectInfo() {
       vkEnumeratePhysicalDevices(vk_instance_, &count, physical_devices.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << result;
-    return;
+    return false;
   }
 
   vulkan_info_.physical_devices.reserve(count);
@@ -307,6 +314,7 @@ void VulkanInstance::CollectInfo() {
                                                info.queue_families.data());
     }
   }
+  return true;
 }
 
 void VulkanInstance::Destroy() {

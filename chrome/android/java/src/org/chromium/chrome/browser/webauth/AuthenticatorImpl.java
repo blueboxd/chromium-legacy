@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webauth;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 
 import org.chromium.base.PackageUtils;
@@ -34,8 +33,6 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
     private final WebContents mWebContents;
 
     private static final String GMSCORE_PACKAGE_NAME = "com.google.android.gms";
-    private static final int GMSCORE_MIN_VERSION = 12800000;
-    private static final int GMSCORE_MIN_VERSION_ISUVPAA = 16200000;
 
     /** Ensures only one request is processed at a time. */
     private boolean mIsOperationPending;
@@ -72,7 +69,8 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
 
         mMakeCredentialCallback = callback;
         Context context = ChromeActivity.fromWebContents(mWebContents);
-        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION) {
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
+                < Fido2ApiHandler.GMSCORE_MIN_VERSION) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
             return;
         }
@@ -91,7 +89,8 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
 
         mGetAssertionCallback = callback;
         Context context = ChromeActivity.fromWebContents(mWebContents);
-        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION) {
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
+                < Fido2ApiHandler.GMSCORE_MIN_VERSION) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
             return;
         }
@@ -117,20 +116,14 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         }
 
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
-                >= GMSCORE_MIN_VERSION_ISUVPAA) {
-            mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.add(callback);
-            Fido2ApiHandler.getInstance().isUserVerifyingPlatformAuthenticatorAvailable(
-                    mRenderFrameHost, this);
-        } else if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
-                        >= GMSCORE_MIN_VERSION
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            FingerprintManager fingerprintManager =
-                    (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
-            callback.call(
-                    fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
-        } else {
+                < Fido2ApiHandler.GMSCORE_MIN_VERSION) {
             callback.call(false);
+            return;
         }
+
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.add(callback);
+        Fido2ApiHandler.getInstance().isUserVerifyingPlatformAuthenticatorAvailable(
+                mRenderFrameHost, this);
     }
 
     @Override

@@ -1550,7 +1550,7 @@ void DeviceStatusCollector::OnProbeDataFetched(
   std::move(callback).Run(std::move(reply), sampled_data_);
 }
 
-bool DeviceStatusCollector::ShouldFetchCrosHealthData() const {
+bool DeviceStatusCollector::ShouldFetchCrosHealthdData() const {
   return report_power_status_ || report_storage_status_ || report_cpu_info_ ||
          report_timezone_info_ || report_memory_info_ || report_backlight_info_;
 }
@@ -1881,7 +1881,7 @@ bool DeviceStatusCollector::GetHardwareStatus(
   if (report_storage_status_)
     state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
 
-  if (ShouldFetchCrosHealthData()) {
+  if (ShouldFetchCrosHealthdData()) {
     state->FetchCrosHealthdData(cros_healthd_data_fetcher_);
   } else {
     // Sample CPU temperature in a background thread.

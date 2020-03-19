@@ -33,22 +33,23 @@
   }
 
   await setEmulatedVisionDeficiency('none');
-  await setEmulatedVisionDeficiency('achromatomaly');
   await setEmulatedVisionDeficiency('achromatopsia');
   await setEmulatedVisionDeficiency('blurredVision');
   await setEmulatedVisionDeficiency('none');
-  await setEmulatedVisionDeficiency('deuteranomaly');
   await setEmulatedVisionDeficiency('deuteranopia');
   await setEmulatedVisionDeficiency('none');
-  await setEmulatedVisionDeficiency('protanomaly');
   await setEmulatedVisionDeficiency('protanopia');
-  await setEmulatedVisionDeficiency('tritanomaly');
   await setEmulatedVisionDeficiency('tritanopia');
   // Test setting the already-active vision deficiency.
   await setEmulatedVisionDeficiency('tritanopia');
   // Test setting unknown vision deficiencies.
   await setEmulatedVisionDeficiency('some-invalid-deficiency');
   await setEmulatedVisionDeficiency('');
+  // Test setting no-longer-supported vision deficiencies.
+  await setEmulatedVisionDeficiency('achromatomaly');
+  await setEmulatedVisionDeficiency('deuteranomaly');
+  await setEmulatedVisionDeficiency('protanomaly');
+  await setEmulatedVisionDeficiency('tritanomaly');
 
   testRunner.log(`<p>Navigating&mldr;`);
   await session.navigate('../resources/vision-deficiency.html');

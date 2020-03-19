@@ -34,8 +34,11 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     private final TabGridDialogMediator mMediator;
     private final PropertyModel mToolbarPropertyModel;
     private final TabGridPanelToolbarCoordinator mToolbarCoordinator;
-    private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
     private final TabGridDialogParent mParentLayout;
+
+    private TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
+    private ViewGroup mContainerView;
+    private boolean mIsInitialized;
 
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, TabCreatorManager tabCreatorManager,
@@ -48,22 +51,13 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                                                              : "TabGridDialogInSwitcher";
 
         mToolbarPropertyModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
+        mContainerView = containerView;
 
         mParentLayout = new TabGridDialogParent(context, containerView);
 
-        TabSelectionEditorCoordinator.TabSelectionEditorController controller = null;
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
-            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                    context, containerView, tabModelSelector, tabContentManager, mParentLayout);
-
-            controller = mTabSelectionEditorCoordinator.getController();
-        } else {
-            mTabSelectionEditorCoordinator = null;
-        }
-
         mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
                 tabModelSelector, tabCreatorManager, resetHandler, animationSourceViewProvider,
-                controller, tabGroupTitleEditor, shareDelegateSupplier, mComponentName);
+                tabGroupTitleEditor, shareDelegateSupplier, mComponentName);
 
         // TODO(crbug.com/1031349) : Remove the inline mode logic here, make the constructor to take
         // in a mode parameter instead.
@@ -74,13 +68,29 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                         : TabListCoordinator.TabListMode.GRID,
                 context, tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null,
                 false, gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
-                TabProperties.UiType.CLOSABLE, null, containerView, null, false, mComponentName);
-
+                TabProperties.UiType.CLOSABLE, null, containerView, false, mComponentName);
         TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
         mToolbarCoordinator = new TabGridPanelToolbarCoordinator(
                 context, recyclerView, mToolbarPropertyModel, mParentLayout);
     }
 
+    public void initWithNative(Context context, TabModelSelector tabModelSelector,
+            TabContentManager tabContentManager) {
+        if (mIsInitialized) return;
+
+        TabSelectionEditorCoordinator.TabSelectionEditorController controller = null;
+        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
+                    context, mContainerView, tabModelSelector, tabContentManager, mParentLayout);
+
+            controller = mTabSelectionEditorCoordinator.getController();
+        } else {
+            mTabSelectionEditorCoordinator = null;
+        }
+
+        mMediator.initWithNative(controller);
+        mTabListCoordinator.initWithNative(null);
+    }
     /**
      * Destroy any members that needs clean up.
      */

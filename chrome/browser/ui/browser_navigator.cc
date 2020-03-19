@@ -89,6 +89,8 @@ class BrowserNavigatorWebContentsAdoption {
 
 namespace {
 
+bool allow_os_settings_in_tab = false;
+
 // Returns true if the specified Browser can open tabs. Not all Browsers support
 // multiple tabs, such as app frames and popups. This function returns false for
 // those types of Browser.
@@ -536,11 +538,9 @@ void Navigate(NavigateParams* params) {
   }
 #if defined(OS_CHROMEOS)
   if (source_browser) {
-    // If OS Settings is accessed in any means other than explicitly typing the
-    // URL into the URL bar, open OS Settings in its own standalone surface.
+    // Open OS settings in PWA, even when user types in URL bar.
     if (params->url.host() == chrome::kChromeUIOSSettingsHost &&
-        !PageTransitionCoreTypeIs(params->transition,
-                                  ui::PageTransition::PAGE_TRANSITION_TYPED)) {
+        !allow_os_settings_in_tab) {
       chrome::SettingsWindowManager* settings_window_manager =
           chrome::SettingsWindowManager::GetInstance();
       if (!settings_window_manager->IsSettingsBrowser(source_browser)) {
@@ -800,4 +800,8 @@ bool IsURLAllowedInIncognito(const GURL& url,
   }
 
   return IsHostAllowedInIncognito(url);
+}
+
+void SetAllowOsSettingsInTabForTesting(bool is_allowed) {
+  allow_os_settings_in_tab = is_allowed;
 }

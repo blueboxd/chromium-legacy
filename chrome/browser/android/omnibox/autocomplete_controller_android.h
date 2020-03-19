@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,7 +26,7 @@ class AutocompleteResult;
 class Profile;
 
 // The native part of the Java AutocompleteController class.
-class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
+class AutocompleteControllerAndroid : public AutocompleteController::Observer,
                                       public KeyedService {
  public:
   explicit AutocompleteControllerAndroid(Profile* profile);
@@ -112,8 +112,9 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
   ~AutocompleteControllerAndroid() override;
   void InitJNI(JNIEnv* env, jobject obj);
 
-  // AutocompleteControllerDelegate implementation.
-  void OnResultChanged(bool default_match_changed) override;
+  // AutocompleteController::Observer implementation.
+  void OnResultChanged(AutocompleteController* controller,
+                       bool default_match_changed) override;
 
   // Notifies the Java AutocompleteController that suggestions were received
   // based on the text the user typed in last.

@@ -1063,8 +1063,8 @@ std::string CanonicalCookie::CookieInclusionStatus::GetDebugString() const {
         &out, {"WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL, "});
   if (HasWarningReason(WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL))
     base::StrAppend(&out, {"WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL, "});
-  if (HasWarningReason(WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE))
-    base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE, "});
+  if (HasWarningReason(WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL))
+    base::StrAppend(&out, {"WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL, "});
 
   // Strip trailing comma and space.
   out.erase(out.end() - 2, out.end());

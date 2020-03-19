@@ -10,6 +10,7 @@ import("//build/config/python.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
+import("//chrome/android/chrome_java_resources.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/features/dev_ui/dev_ui_module.gni")
 import("//chrome/android/features/tab_ui/buildflags.gni")
@@ -135,9 +136,34 @@ generate_ui_locale_resources("ui_locale_string_resources") {
 }
 
 android_resources("chrome_app_java_resources") {
-  resource_dirs = [
-    "java/res",
-    "//chrome/android/java/res_chromium",
+  sources = chrome_java_resources
+  sources += [
+    "//chrome/android/java/res_chromium/drawable-hdpi/fre_product_logo.png",
+    "//chrome/android/java/res_chromium/drawable-hdpi/product_logo_name.png",
+    "//chrome/android/java/res_chromium/drawable-mdpi/fre_product_logo.png",
+    "//chrome/android/java/res_chromium/drawable-mdpi/product_logo_name.png",
+    "//chrome/android/java/res_chromium/drawable-xhdpi/fre_product_logo.png",
+    "//chrome/android/java/res_chromium/drawable-xhdpi/product_logo_name.png",
+    "//chrome/android/java/res_chromium/drawable-xxhdpi/fre_product_logo.png",
+    "//chrome/android/java/res_chromium/drawable-xxhdpi/product_logo_name.png",
+    "//chrome/android/java/res_chromium/drawable-xxxhdpi/fre_product_logo.png",
+    "//chrome/android/java/res_chromium/drawable-xxxhdpi/product_logo_name.png",
+    "//chrome/android/java/res_chromium/mipmap-hdpi/app_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-hdpi/app_shortcut_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-hdpi/app_single_page_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-mdpi/app_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-mdpi/app_shortcut_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-mdpi/app_single_page_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xhdpi/app_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xhdpi/app_shortcut_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xhdpi/app_single_page_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xxhdpi/app_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xxhdpi/app_shortcut_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xxhdpi/app_single_page_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xxxhdpi/app_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xxxhdpi/app_shortcut_icon.png",
+    "//chrome/android/java/res_chromium/mipmap-xxxhdpi/app_single_page_icon.png",
+    "//chrome/android/java/res_chromium/values/channel_constants.xml",
   ]
 
   deps = [
@@ -166,9 +192,9 @@ android_resources("chrome_app_java_resources") {
     "//third_party/android_data_chart:android_data_chart_java_resources",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:com_android_support_design_java",
-    "//third_party/android_deps:com_android_support_preference_v7_java",
   ]
   custom_package = "org.chromium.chrome"
 }
@@ -178,7 +204,13 @@ if (enable_vr) {
   # resource target may clobber some resources. Once that is fixed we should add
   # the VR resurces to chrome_app_java_resources.
   android_resources("chrome_vr_java_resources") {
-    resource_dirs = [ "//chrome/android/java/res_vr" ]
+    sources = [
+      "//chrome/android/java/res_vr/drawable-nodpi/daydream_icon_background.png",
+      "//chrome/android/java/res_vr/drawable-nodpi/daydream_icon_foreground.png",
+      "//chrome/android/java/res_vr/values-v17/styles.xml",
+      "//chrome/android/java/res_vr/values-vrheadset-v26/styles.xml",
+      "//chrome/android/java/res_vr/values/values.xml",
+    ]
     deps = [ ":chrome_app_java_resources" ]
   }
 }
@@ -186,7 +218,7 @@ if (enable_vr) {
 # TODO (crbug/1058764) Unfork credential leak dialog password change when prototype is done.
 if (enable_password_change_in_leaked_dialog) {
   android_resources("password_change_resources") {
-    resource_dirs = [ "//chrome/android/java/res_password_change" ]
+    sources = [ "//chrome/android/java/res_password_change/layout/password_manager_dialog_with_help_button_password_change.xml" ]
     deps = [ ":chrome_app_java_resources" ]
     custom_package = "org.chromium.chrome.password_change"
   }
@@ -194,7 +226,7 @@ if (enable_password_change_in_leaked_dialog) {
 
 # TODO(chouinard): Remove this wrapper target after downstream dependencies on it are replaced.
 android_resources("chrome_download_java_resources") {
-  resource_dirs = []
+  sources = []
   deps = [ "//chrome/browser/download/android:java_resources" ]
 }
 
@@ -292,6 +324,7 @@ android_library("chrome_java") {
     "//components/crash/android:java",
     "//components/dom_distiller/content/browser/android:dom_distiller_content_java",
     "//components/dom_distiller/core/android:dom_distiller_core_java",
+    "//components/dom_distiller/core/mojom:mojom_java",
     "//components/download/internal/background_service:internal_java",
     "//components/download/internal/common:internal_java",
     "//components/download/network:network_java",
@@ -352,6 +385,7 @@ android_library("chrome_java") {
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
     "//mojo/public/java/system:system_impl_java",
+    "//mojo/public/mojom/base:base_java",
     "//net/android:net_java",
     "//printing:printing_java",
     "//services/data_decoder/public/cpp/android:safe_json_java",
@@ -366,25 +400,25 @@ android_library("chrome_java") {
     "//skia/public/mojom:mojom_java",
     "//third_party/android_data_chart:android_data_chart_java",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
-    "//third_party/android_deps:android_arch_lifecycle_common_java8_java",
-    "//third_party/android_deps:android_arch_lifecycle_runtime_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:androidx_coordinatorlayout_coordinatorlayout_java",
     "//third_party/android_deps:androidx_customview_customview_java",
     "//third_party/android_deps:androidx_legacy_legacy_support_v13_java",
+    "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java8_java",
+    "//third_party/android_deps:androidx_lifecycle_lifecycle_runtime_java",
 
     # TODO(bjoyce): Change to AndroidX materials after
     # ClearBrowsingDataTabsFramgent.java is converted to AndroidX.
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
     "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:androidx_viewpager_viewpager_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_interpolator_java",
-    "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:com_google_guava_listenablefuture_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
@@ -832,6 +866,7 @@ android_library("chrome_test_java") {
     "//components/browser_ui/widget/android:test_support_java",
     "//components/crash/android:java",
     "//components/dom_distiller/core/android:dom_distiller_core_java",
+    "//components/dom_distiller/core/mojom:mojom_java",
     "//components/download/internal/background_service:internal_java",
     "//components/download/internal/common:internal_java",
     "//components/download/network:network_java",
@@ -881,6 +916,7 @@ android_library("chrome_test_java") {
     "//media/base/android:media_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
+    "//mojo/public/mojom/base:base_java",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//printing:printing_java",
@@ -894,9 +930,9 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_collection_collection_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:com_android_support_design_java",
-    "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
@@ -1133,7 +1169,34 @@ if (enable_vr || enable_arcore) {
 
 # Overrides icon / name defined in chrome_app_java_resources.
 android_resources("chrome_public_apk_resources") {
-  resource_dirs = [ "java/res_chromium" ]
+  sources = [
+    "java/res_chromium/drawable-hdpi/fre_product_logo.png",
+    "java/res_chromium/drawable-hdpi/product_logo_name.png",
+    "java/res_chromium/drawable-mdpi/fre_product_logo.png",
+    "java/res_chromium/drawable-mdpi/product_logo_name.png",
+    "java/res_chromium/drawable-xhdpi/fre_product_logo.png",
+    "java/res_chromium/drawable-xhdpi/product_logo_name.png",
+    "java/res_chromium/drawable-xxhdpi/fre_product_logo.png",
+    "java/res_chromium/drawable-xxhdpi/product_logo_name.png",
+    "java/res_chromium/drawable-xxxhdpi/fre_product_logo.png",
+    "java/res_chromium/drawable-xxxhdpi/product_logo_name.png",
+    "java/res_chromium/mipmap-hdpi/app_icon.png",
+    "java/res_chromium/mipmap-hdpi/app_shortcut_icon.png",
+    "java/res_chromium/mipmap-hdpi/app_single_page_icon.png",
+    "java/res_chromium/mipmap-mdpi/app_icon.png",
+    "java/res_chromium/mipmap-mdpi/app_shortcut_icon.png",
+    "java/res_chromium/mipmap-mdpi/app_single_page_icon.png",
+    "java/res_chromium/mipmap-xhdpi/app_icon.png",
+    "java/res_chromium/mipmap-xhdpi/app_shortcut_icon.png",
+    "java/res_chromium/mipmap-xhdpi/app_single_page_icon.png",
+    "java/res_chromium/mipmap-xxhdpi/app_icon.png",
+    "java/res_chromium/mipmap-xxhdpi/app_shortcut_icon.png",
+    "java/res_chromium/mipmap-xxhdpi/app_single_page_icon.png",
+    "java/res_chromium/mipmap-xxxhdpi/app_icon.png",
+    "java/res_chromium/mipmap-xxxhdpi/app_shortcut_icon.png",
+    "java/res_chromium/mipmap-xxxhdpi/app_single_page_icon.png",
+    "java/res_chromium/values/channel_constants.xml",
+  ]
 
   # Dep needed to ensure override works properly.
   deps = [ ":chrome_app_java_resources" ]
@@ -1894,7 +1957,7 @@ if (public_android_sdk) {
 # generate APK stubs.
 android_resources("trichrome_dummy_resources") {
   custom_package = "org.chromium.trichromelibrary"
-  resource_dirs = [ "trichrome/res_dummy" ]
+  sources = [ "trichrome/res_dummy/values/strings.xml" ]
 }
 
 chrome_public_test_apk_manifest =

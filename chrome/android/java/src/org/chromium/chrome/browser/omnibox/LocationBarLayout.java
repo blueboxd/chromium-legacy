@@ -1256,4 +1256,9 @@ public class LocationBarLayout extends FrameLayout
             mWindowDelegate.setWindowSoftInputMode(softInputMode);
         }
     }
+
+    public void setVoiceRecognitionHandlerForTesting(
+            VoiceRecognitionHandler voiceRecognitionHandler) {
+        mVoiceRecognitionHandler = voiceRecognitionHandler;
+    }
 }

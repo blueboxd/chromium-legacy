@@ -204,13 +204,12 @@ void RunOriginTrialTestOnPMSequence(
     const mojom::InterventionPolicy expected_policy,
     FrameNodeOriginTrialFreezePolicyChangedCounter* ot_change_counter,
     uint32_t expected_ot_change_count) {
-  auto* perf_manager = PerformanceManagerImpl::GetInstance();
-  ASSERT_TRUE(perf_manager);
+  ASSERT_TRUE(PerformanceManagerImpl::IsAvailable());
   for (;;) {
     bool load_complete = false;
     base::RunLoop run_loop;
     auto quit_closure = run_loop.QuitClosure();
-    perf_manager->CallOnGraphImpl(
+    PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting([&](performance_manager::GraphImpl* graph) {
           auto ot_change_count = ot_change_counter->GetCount();
@@ -227,7 +226,7 @@ void RunOriginTrialTestOnPMSequence(
 
   base::RunLoop run_loop;
   auto quit_closure = run_loop.QuitClosure();
-  perf_manager->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindLambdaForTesting([&](performance_manager::GraphImpl* graph) {
         auto page_nodes = graph->GetAllPageNodeImpls();

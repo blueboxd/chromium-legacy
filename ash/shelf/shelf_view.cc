@@ -656,7 +656,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   recorded_app_list_view_state_ =
       Shell::Get()->app_list_controller()->GetAppListViewState();
   app_list_visibility_before_app_launch_ =
-      Shell::Get()->app_list_controller()->IsVisible();
+      Shell::Get()->app_list_controller()->IsVisible(GetDisplayIdForView(this));
 
   // Run AfterItemSelected directly if the item has no delegate (ie. in tests).
   const ShelfItem& item = model_->items()[last_pressed_index_];

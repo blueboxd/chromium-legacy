@@ -31,7 +31,7 @@ interface IUpdaterObserver : IUnknown {
 [
   object,
   dual,
-  uuid(63B8FFB1-5314-48C9-9C57-93EC8BC6184B),
+  uuid(IUPDATER_IID),
   helpstring("IUpdater Interface"),
   pointer_default(unique)
 ]
@@ -47,7 +47,7 @@ interface IUpdater : IUnknown {
 };
 
 [
-  uuid(69464FF0-D9EC-4037-A35F-8AE4358106CC),
+  uuid(UPDATER_LIB_UUID),
   version(1.0),
   helpstring("Omaha 4.0 Type Library")
 ]
@@ -57,7 +57,7 @@ library UpdaterLib {
   interface IUpdater;
 
   [
-    uuid(158428A4-6014-4978-83BA-9FAD0DABE791),
+    uuid(UPDATER_CLSID),
     helpstring("Updater Class")
   ]
   coclass UpdaterClass
@@ -66,7 +66,7 @@ library UpdaterLib {
   }
 
   [
-    uuid(415FD747-D79E-42D7-93AC-1BA6E5FD4E93),
+    uuid(UPDATER_SERVICE_UUID),
     helpstring("Updater Service Class")
   ]
   coclass UpdaterServiceClass

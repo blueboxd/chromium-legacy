@@ -95,15 +95,15 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kMaxValue = kSwapChain,
   };
 
+  using RestoreMatrixClipStackCb =
+      base::RepeatingCallback<void(cc::PaintCanvas*)>;
+
   // todo(juanmihd@) Check whether SkFilterQuality is needed in all of this, or
   // just call setFilterQuality explicitly
   static std::unique_ptr<CanvasResourceProvider> CreateBitmapProvider(
       const IntSize&,
       SkFilterQuality,
       const CanvasColorParams&);
-
-  using RestoreMatrixClipStackCb =
-      base::RepeatingCallback<void(cc::PaintCanvas*)>;
 
   // Specifies whether the provider should rasterize paint commands on the CPU
   // or GPU. This is used to support software raster with GPU compositing

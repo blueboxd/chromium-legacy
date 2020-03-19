@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
 
 namespace base {
@@ -24,7 +25,7 @@ BASE_EXPORT ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(JNIEnv* env,
 
 BASE_EXPORT ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
     JNIEnv* env,
-    const std::vector<uint8_t>& bytes);
+    base::span<const uint8_t> bytes);
 
 // Returns a new Java byte array converted from the given string. No UTF-8
 // conversion is performed.
@@ -41,7 +42,8 @@ BASE_EXPORT ScopedJavaLocalRef<jintArray> ToJavaIntArray(
     JNIEnv* env, const int* ints, size_t len);
 
 BASE_EXPORT ScopedJavaLocalRef<jintArray> ToJavaIntArray(
-    JNIEnv* env, const std::vector<int>& ints);
+    JNIEnv* env,
+    base::span<const int> ints);
 
 // Returns a new Java long array converted from the given int64_t array.
 BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(JNIEnv* env,
@@ -50,7 +52,7 @@ BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(JNIEnv* env,
 
 BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
     JNIEnv* env,
-    const std::vector<int64_t>& longs);
+    base::span<const int64_t> longs);
 
 // Returns a new Java float array converted from the given C++ float array.
 BASE_EXPORT ScopedJavaLocalRef<jfloatArray> ToJavaFloatArray(
@@ -58,7 +60,7 @@ BASE_EXPORT ScopedJavaLocalRef<jfloatArray> ToJavaFloatArray(
 
 BASE_EXPORT ScopedJavaLocalRef<jfloatArray> ToJavaFloatArray(
     JNIEnv* env,
-    const std::vector<float>& floats);
+    base::span<const float> floats);
 
 // Returns a new Java double array converted from the given C++ double array.
 BASE_EXPORT ScopedJavaLocalRef<jdoubleArray>
@@ -66,21 +68,28 @@ ToJavaDoubleArray(JNIEnv* env, const double* doubles, size_t len);
 
 BASE_EXPORT ScopedJavaLocalRef<jdoubleArray> ToJavaDoubleArray(
     JNIEnv* env,
-    const std::vector<double>& doubles);
+    base::span<const double> doubles);
 
 // Returns a array of Java byte array converted from |v|.
 BASE_EXPORT ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(
-    JNIEnv* env, const std::vector<std::string>& v);
+    JNIEnv* env,
+    base::span<const std::string> v);
+
+BASE_EXPORT ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(
+    JNIEnv* env,
+    base::span<std::vector<uint8_t>> v);
 
 BASE_EXPORT ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfStrings(
-    JNIEnv* env,  const std::vector<std::string>& v);
+    JNIEnv* env,
+    base::span<const std::string> v);
 
 BASE_EXPORT ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfStrings(
-    JNIEnv* env,  const std::vector<string16>& v);
+    JNIEnv* env,
+    base::span<const string16> v);
 
 BASE_EXPORT ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfStringArray(
     JNIEnv* env,
-    const std::vector<std::vector<string16>>& v);
+    base::span<const std::vector<string16>> v);
 
 // Converts a Java string array to a native array.
 BASE_EXPORT void AppendJavaStringArrayToStringVector(

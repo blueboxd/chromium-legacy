@@ -52,11 +52,12 @@ typedef void (^SigninCoordinatorCompletionCallback)(
                                                     promoAction;
 
 // Returns a coordinator for first run sign-in workflow.
-// |viewController| presents the sign-in. Will be responsible for dismissing
-// itself upon sign-in completion.
-+ (instancetype)firstRunCoordinatorWithBaseViewController:
-                    (UINavigationController*)viewController
-                                                  browser:(Browser*)browser;
+// |navigationController| presents the sign-in. Will be responsible for
+// dismissing itself upon sign-in completion.
++ (instancetype)firstRunCoordinatorWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                                        browser:
+                                                            (Browser*)browser;
 
 // Returns a coordinator for upgrade sign-in workflow.
 // |viewController| presents the sign-in.

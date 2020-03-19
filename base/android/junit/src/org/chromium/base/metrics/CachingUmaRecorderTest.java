@@ -106,6 +106,30 @@ public final class CachingUmaRecorderTest {
     }
 
     @Test
+    public void testRecordUserActionGetsFlushed() {
+        CachingUmaRecorder cachingUmaRecorder = new CachingUmaRecorder();
+
+        cachingUmaRecorder.recordUserAction("FlushedActionTested", 72);
+        cachingUmaRecorder.setDelegate(mUmaRecorder);
+
+        verify(mUmaRecorder).recordUserAction("FlushedActionTested", 72);
+    }
+
+    @Test
+    public void testRecordUserActionGetsMultipleFlushed() {
+        CachingUmaRecorder cachingUmaRecorder = new CachingUmaRecorder();
+
+        cachingUmaRecorder.recordUserAction("FlushedActionTested.A", 111);
+        cachingUmaRecorder.recordUserAction("FlushedActionTested.B", 222);
+        cachingUmaRecorder.recordUserAction("FlushedActionTested.B", 333);
+        cachingUmaRecorder.setDelegate(mUmaRecorder);
+
+        verify(mUmaRecorder).recordUserAction("FlushedActionTested.A", 111);
+        verify(mUmaRecorder).recordUserAction("FlushedActionTested.B", 222);
+        verify(mUmaRecorder).recordUserAction("FlushedActionTested.B", 333);
+    }
+
+    @Test
     public void testRecordBooleanHistogramDelegated() {
         CachingUmaRecorder cachingUmaRecorder = new CachingUmaRecorder();
         cachingUmaRecorder.setDelegate(mUmaRecorder);
@@ -259,10 +283,10 @@ public final class CachingUmaRecorderTest {
         }
     }
 
-    private static class TestingUmaRecorder implements UmaRecorder {
+    private static class HistogramTestingUmaRecorder implements UmaRecorder {
         public final AtomicIntegerArray recordedSamples;
 
-        TestingUmaRecorder(int sampleRange) {
+        HistogramTestingUmaRecorder(int sampleRange) {
             recordedSamples = new AtomicIntegerArray(sampleRange);
         }
 
@@ -299,23 +323,24 @@ public final class CachingUmaRecorderTest {
     @Test
     @MediumTest
     @SuppressWarnings("ThreadPriorityCheck")
-    public void testStressParallel() throws Exception {
+    public void testStressParallelHistograms() throws Exception {
         final int numThreads = 16;
         final int numRecorders = 16;
         final int numSamples = CachingUmaRecorder.Histogram.MAX_SAMPLE_COUNT / numThreads;
         CachingUmaRecorder cachingRecorder = new CachingUmaRecorder();
 
-        TestingUmaRecorder[] testingRecorders = new TestingUmaRecorder[numRecorders];
+        HistogramTestingUmaRecorder[] testingRecorders =
+                new HistogramTestingUmaRecorder[numRecorders];
         for (int i = 0; i < numRecorders; i++) {
-            testingRecorders[i] = new TestingUmaRecorder(numThreads);
+            testingRecorders[i] = new HistogramTestingUmaRecorder(numThreads);
         }
         Thread[] threads = new Thread[numThreads];
         // Each thread records a different sample value.
         for (int i = 0; i < numThreads; i++) {
-            threads[i] = startRecordingThread(i, numSamples, cachingRecorder);
+            threads[i] = startHistogramRecordingThread(i, numSamples, cachingRecorder);
         }
         // Change recorders while threads are recording metrics.
-        for (TestingUmaRecorder recorder : testingRecorders) {
+        for (HistogramTestingUmaRecorder recorder : testingRecorders) {
             cachingRecorder.setDelegate(recorder);
             Thread.yield();
         }
@@ -326,7 +351,7 @@ public final class CachingUmaRecorderTest {
         verifyZeroInteractions(mUmaRecorder);
         for (int i = 0; i < numThreads; i++) {
             int actualSamples = 0;
-            for (TestingUmaRecorder recorder : testingRecorders) {
+            for (HistogramTestingUmaRecorder recorder : testingRecorders) {
                 actualSamples += recorder.recordedSamples.get(i);
             }
             assertThat(String.format("thread[%d] total samples", i), actualSamples, is(numSamples));
@@ -334,10 +359,100 @@ public final class CachingUmaRecorderTest {
     }
 
     @SuppressWarnings("ThreadPriorityCheck")
-    private static Thread startRecordingThread(int sample, int count, UmaRecorder recorder) {
+    private static Thread startHistogramRecordingThread(
+            int sample, int count, UmaRecorder recorder) {
         Thread thread = new Thread(() -> {
             for (int i = 0; i < count; i++) {
                 recorder.recordSparseHistogram("StressTest", sample);
+                // Make it more likely this thread will be preempted.
+                Thread.yield();
+            }
+        });
+        thread.start();
+        return thread;
+    }
+
+    private static class UserActionTestingUmaRecorder implements UmaRecorder {
+        public final AtomicIntegerArray recordedSamples;
+
+        UserActionTestingUmaRecorder(int sampleRange) {
+            recordedSamples = new AtomicIntegerArray(sampleRange);
+        }
+
+        @Override
+        public void recordBooleanHistogram(String name, boolean sample) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void recordExponentialHistogram(
+                String name, int sample, int min, int max, int numBuckets) {
+            // Ignore internal cache metrics.
+            if (name.startsWith("UMA.JavaCachingRecorder")) return;
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void recordLinearHistogram(
+                String name, int sample, int min, int max, int numBuckets) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void recordSparseHistogram(String name, int sample) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void recordUserAction(String name, long elapsedRealtimeMillis) {
+            recordedSamples.addAndGet((int) elapsedRealtimeMillis, 1);
+        }
+    }
+
+    @Test
+    @MediumTest
+    @SuppressWarnings("ThreadPriorityCheck")
+    public void testStressParallelUserActions() throws Exception {
+        final int numThreads = 16;
+        final int numRecorders = 16;
+        final int numSamples = CachingUmaRecorder.MAX_USER_ACTION_COUNT / numThreads;
+        CachingUmaRecorder cachingRecorder = new CachingUmaRecorder();
+
+        UserActionTestingUmaRecorder[] testingRecorders =
+                new UserActionTestingUmaRecorder[numRecorders];
+        for (int i = 0; i < numRecorders; i++) {
+            testingRecorders[i] = new UserActionTestingUmaRecorder(numThreads);
+        }
+        Thread[] threads = new Thread[numThreads];
+        // Each thread records a different timestamp value.
+        for (int i = 0; i < numThreads; i++) {
+            threads[i] = startUserActionRecordingThread(i, numSamples, cachingRecorder);
+        }
+        // Change recorders while threads are recording metrics.
+        for (UserActionTestingUmaRecorder recorder : testingRecorders) {
+            cachingRecorder.setDelegate(recorder);
+            Thread.yield();
+        }
+        for (Thread thread : threads) {
+            thread.join();
+        }
+        cachingRecorder.setDelegate(mUmaRecorder);
+        verifyZeroInteractions(mUmaRecorder);
+        for (int i = 0; i < numThreads; i++) {
+            int actualSamples = 0;
+            for (UserActionTestingUmaRecorder recorder : testingRecorders) {
+                actualSamples += recorder.recordedSamples.get(i);
+            }
+            assertThat(String.format("thread[%d] total samples", i), actualSamples, is(numSamples));
+        }
+    }
+
+    @SuppressWarnings("ThreadPriorityCheck")
+    private static Thread startUserActionRecordingThread(
+            int sample, int count, UmaRecorder recorder) {
+        Thread thread = new Thread(() -> {
+            for (int i = 0; i < count; i++) {
+                recorder.recordUserAction("StressTestUserAction." + i, sample);
                 // Make it more likely this thread will be preempted.
                 Thread.yield();
             }

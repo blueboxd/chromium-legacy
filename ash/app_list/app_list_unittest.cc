@@ -40,7 +40,7 @@ TEST_F(AppListTest, PressHomeButtonToShowAndDismiss) {
   // Click the home button to show the app list.
   auto* controller = Shell::Get()->app_list_controller();
   auto* presenter = controller->presenter();
-  EXPECT_FALSE(controller->GetTargetVisibility());
+  EXPECT_FALSE(controller->GetTargetVisibility(GetPrimaryDisplay().id()));
   EXPECT_FALSE(presenter->GetTargetVisibility());
   EXPECT_EQ(0u, app_list_container->children().size());
   EXPECT_FALSE(home_button->IsShowingAppList());
@@ -53,7 +53,7 @@ TEST_F(AppListTest, PressHomeButtonToShowAndDismiss) {
 
   // Click the button again to dismiss the app list; it will animate to close.
   generator->ClickLeftButton();
-  EXPECT_FALSE(controller->GetTargetVisibility());
+  EXPECT_FALSE(controller->GetTargetVisibility(GetPrimaryDisplay().id()));
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_FALSE(home_button->IsShowingAppList());
 }
@@ -79,20 +79,24 @@ TEST_F(AppListTest, PressHomeButtonToShowAndDismissOnSecondDisplay) {
   // Click the home button to show the app list.
   auto* controller = Shell::Get()->app_list_controller();
   auto* presenter = controller->presenter();
-  EXPECT_FALSE(controller->GetTargetVisibility());
+  EXPECT_FALSE(controller->GetTargetVisibility(GetPrimaryDisplay().id()));
+  EXPECT_FALSE(controller->GetTargetVisibility(GetSecondaryDisplay().id()));
   EXPECT_FALSE(presenter->GetTargetVisibility());
   EXPECT_EQ(0u, app_list_container->children().size());
   EXPECT_FALSE(home_button->IsShowingAppList());
 
   generator->MoveMouseTo(home_button->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
+  EXPECT_FALSE(controller->GetTargetVisibility(GetPrimaryDisplay().id()));
+  EXPECT_TRUE(controller->GetTargetVisibility(GetSecondaryDisplay().id()));
   EXPECT_TRUE(presenter->GetTargetVisibility());
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_TRUE(home_button->IsShowingAppList());
 
   // Click the button again to dismiss the app list; it will animate to close.
   generator->ClickLeftButton();
-  EXPECT_FALSE(controller->GetTargetVisibility());
+  EXPECT_FALSE(controller->GetTargetVisibility(GetPrimaryDisplay().id()));
+  EXPECT_FALSE(controller->GetTargetVisibility(GetSecondaryDisplay().id()));
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_FALSE(home_button->IsShowingAppList());
 }

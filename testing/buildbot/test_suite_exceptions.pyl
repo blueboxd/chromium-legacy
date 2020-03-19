@@ -330,11 +330,6 @@
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
         ],
       },
-      'linux-layout-tests-fragment-paint': {
-        'args': [
-          '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint',
-        ],
-      },
       'mac-rel': {
         'swarming': {
           'dimension_sets': [

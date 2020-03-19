@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "url/gurl.h"
 
 class AutocompleteController;
@@ -21,7 +21,7 @@ class Profile;
 
 namespace vr {
 
-class AutocompleteController : public AutocompleteControllerDelegate {
+class AutocompleteController : public ::AutocompleteController::Observer {
  public:
   using SuggestionCallback =
       base::RepeatingCallback<void(std::vector<OmniboxSuggestion>)>;
@@ -41,7 +41,9 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   std::tuple<GURL, bool> GetUrlFromVoiceInput(const base::string16& input);
 
  private:
-  void OnResultChanged(bool default_match_changed) override;
+  // ::AutocompleteController::Observer:
+  void OnResultChanged(::AutocompleteController* controller,
+                       bool default_match_changed) override;
 
   Profile* profile_;
   ChromeAutocompleteProviderClient* client_;

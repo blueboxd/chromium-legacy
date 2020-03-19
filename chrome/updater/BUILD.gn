@@ -181,6 +181,8 @@ if (is_win || is_mac) {
       "persisted_data_unittest.cc",
       "prefs_unittest.cc",
       "run_all_unittests.cc",
+      "test/integration_tests.cc",
+      "test/integration_tests.h",
       "updater_unittest.cc",
     ]
 
@@ -197,16 +199,25 @@ if (is_win || is_mac) {
     ]
 
     if (is_win) {
+      sources += [ "test/integration_tests_win.cc" ]
+
       deps += [ "//chrome/updater/win:updater_tests" ]
 
       data_deps = [ "//chrome/updater/win:updater" ]
     }
 
     if (is_mac) {
+      sources += [ "test/integration_tests_mac.cc" ]
+
       deps += [
         "//chrome/updater/mac:updater_bundle",
         "//chrome/updater/mac:updater_setup_tests",
         "//chrome/updater/mac:updater_tests",
+      ]
+
+      data_deps = [
+        "//chrome/updater/mac:updater_bundle",
+        "//chrome/updater/mac:updater_setup",
       ]
     }
 

@@ -144,6 +144,11 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * Called when native initialization is completed.
+     */
+    public void onFinishNativeInitialization() {}
+
+    /**
      * Adds a {@link SceneOverlay} that can be shown in this layout to the first position in the
      * scene overlay list, meaning it will be drawn behind all other overlays.
      * @param overlay The {@link SceneOverlay} to be added.

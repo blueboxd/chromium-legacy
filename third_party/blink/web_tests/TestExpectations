@@ -2987,6 +2987,8 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
+crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Timeout ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
@@ -3088,7 +3090,6 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/html/dom/idlharness.https.html?exclud
 crbug.com/626703 [ Mac10.10 ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.any.html?1001-2000 [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/mathml/relations/html5-tree/math-global-event-handlers.tentative.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/web-components-v0-disabled/external/wpt/html/dom/idlharness.https.html?include=HTML.\* [ Failure Timeout ]
-crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/content-security-policy/object-src/object-src-no-url-allowed.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/content-security-policy/plugin-types/plugintypes-nourl-allowed.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] virtual/cascade/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Failure ]
@@ -5580,6 +5581,21 @@ crbug.com/915352 [ Mac10.10 ] virtual/threaded/external/wpt/animation-worklet/wo
 crbug.com/915352 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Failure ]
 crbug.com/915352 [ Mac10.10 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
 crbug.com/915352 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
+
+# Paint Timing failures
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/border-image.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/border-image.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-video-poster.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-video-poster.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/replaced-content-image.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/replaced-content-image.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/mask-image.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/mask-image.html [ Pass Failure ]
 
 # Sheriff 2019-03-01
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]

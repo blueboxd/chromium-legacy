@@ -23,6 +23,19 @@
 // relies on GoogleServicesSettingsCoordinator to commit the sync changes.
 @interface ManageSyncSettingsCoordinator : ChromeCoordinator
 
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
+
+- (instancetype)initWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                         browser:(Browser*)browser
+    NS_DESIGNATED_INITIALIZER;
+
 // Delegate.
 @property(nonatomic, weak) id<ManageSyncSettingsCoordinatorDelegate> delegate;
 

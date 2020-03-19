@@ -23,7 +23,7 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -54,7 +54,7 @@ class SearchTabHelper : public content::WebContentsObserver,
                         public InstantServiceObserver,
                         public SearchIPCRouter::Delegate,
                         public ui::SelectFileDialog::Listener,
-                        public AutocompleteControllerDelegate,
+                        public AutocompleteController::Observer,
                         public OmniboxTabHelper::Observer {
  public:
   ~SearchTabHelper() override;
@@ -164,8 +164,9 @@ class SearchTabHelper : public content::WebContentsObserver,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  // Overridden from AutocompleteControllerDelegate:
-  void OnResultChanged(bool default_match_changed) override;
+  // Overridden from AutocompleteController::Observer:
+  void OnResultChanged(AutocompleteController* controller,
+                       bool default_match_changed) override;
 
   // Overridden from OmniboxTabHelper::Observer:
   void OnOmniboxInputStateChanged() override;

@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chromeos/components/quick_answers/quick_answers_consents.h"
 
 namespace chromeos {
 namespace quick_answers {
@@ -20,21 +21,36 @@ const char kQuickAnswerSelectedContentLength[] =
     "QuickAnswers.SelectedContent.Length";
 const char kDurationSuffix[] = ".Duration";
 
+const char kQuickAnswersConsent[] = "QuickAnswers.Consent";
+const char kQuickAnswersConsentDuration[] = "QuickAnswers.Consent.Duration";
+const char kQuickAnswersConsentImpression[] = "QuickAnswers.Consent.Impression";
+
 std::string ResultTypeToString(ResultType result_type) {
   switch (result_type) {
     case ResultType::kNoResult:
-      return ".NoResult";
+      return "NoResult";
     case ResultType::kKnowledgePanelEntityResult:
-      return ".KnowledgePanelEntity";
+      return "KnowledgePanelEntity";
     case ResultType::kDefinitionResult:
-      return ".Definition";
+      return "Definition";
     case ResultType::kTranslationResult:
-      return ".Translation";
+      return "Translation";
     case ResultType::kUnitConversionResult:
-      return ".UnitConversion";
+      return "UnitConversion";
     default:
       NOTREACHED() << "Invalid ResultType.";
       return ".Unknown";
+  }
+}
+
+std::string ConsentInteractionTypeToString(ConsentInteractionType type) {
+  switch (type) {
+    case ConsentInteractionType::kAccept:
+      return "Accept";
+    case ConsentInteractionType::kManageSettings:
+      return "ManageSettings";
+    case ConsentInteractionType::kDismiss:
+      return "Dismiss";
   }
 }
 
@@ -47,7 +63,8 @@ void RecordTypeAndDuration(const std::string& prefix,
 
   const std::string duration_histogram = prefix + kDurationSuffix;
   const std::string result_type_histogram_name =
-      duration_histogram + ResultTypeToString(result_type);
+      base::StringPrintf("%s.%s", duration_histogram.c_str(),
+                         ResultTypeToString(result_type).c_str());
   // Record sliced by duration and result type.
   if (is_medium_bucketization) {
     base::UmaHistogramMediumTimes(duration_histogram, duration);
@@ -79,5 +96,24 @@ void RecordSelectedTextLength(int length) {
   base::UmaHistogramCounts1000(kQuickAnswerSelectedContentLength, length);
 }
 
+void RecordConsentInteraction(ConsentInteractionType type,
+                              int nth_impression,
+                              const base::TimeDelta duration) {
+  std::string interaction_type = ConsentInteractionTypeToString(type);
+  base::UmaHistogramExactLinear(
+      base::StringPrintf("%s.%s", kQuickAnswersConsentImpression,
+                         interaction_type.c_str()),
+      nth_impression, kConsentImpressionCap);
+  base::UmaHistogramTimes(
+      base::StringPrintf("%s.%s", kQuickAnswersConsentDuration,
+                         interaction_type.c_str()),
+      duration);
+}
+
+void RecordConsentImpression(int nth_impression) {
+  // Record every impression event.
+  base::UmaHistogramExactLinear(kQuickAnswersConsent, nth_impression,
+                                kConsentImpressionCap);
+}
 }  // namespace quick_answers
 }  // namespace chromeos

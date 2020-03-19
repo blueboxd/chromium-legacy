@@ -130,6 +130,8 @@ extern const base::Feature kShowPlayInDemoMode;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowProgressBarInDemoModeSetup;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kSmartDimExperimentalComponent;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSmartDimNewMlAgent;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSmartDimModelV3;

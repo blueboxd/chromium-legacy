@@ -35,7 +35,7 @@ class VULKAN_EXPORT VulkanInstance {
   VkInstance vk_instance() { return vk_instance_; }
 
  private:
-  void CollectInfo();
+  bool CollectInfo();
   void Destroy();
 
   VulkanInfo vulkan_info_;

@@ -206,7 +206,7 @@ class BrowserChangeObserver : public BrowserListObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserChangeObserver);
 };
 
-class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
+class AutocompleteChangeObserver : public AutocompleteController::Observer {
  public:
   explicit AutocompleteChangeObserver(Profile* profile) {
     scoped_observer_.Add(
@@ -217,18 +217,16 @@ class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
 
   void Wait() { run_loop_.Run(); }
 
-  // OmniboxControllerEmitter::Observer:
-  void OnOmniboxQuery(AutocompleteController* controller,
-                      const AutocompleteInput& input) override {}
-  void OnOmniboxResultChanged(bool default_match_changed,
-                              AutocompleteController* controller) override {
+  // AutocompleteController::Observer:
+  void OnResultChanged(AutocompleteController* controller,
+                       bool default_match_changed) override {
     if (run_loop_.running())
       run_loop_.Quit();
   }
 
  private:
   base::RunLoop run_loop_;
-  ScopedObserver<OmniboxControllerEmitter, OmniboxControllerEmitter::Observer>
+  ScopedObserver<OmniboxControllerEmitter, AutocompleteController::Observer>
       scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteChangeObserver);

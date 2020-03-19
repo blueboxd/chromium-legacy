@@ -71,7 +71,16 @@ void NetworkMetadataStore::ConnectSucceeded(const std::string& service_path) {
     return;
   }
 
+  bool is_first_connection =
+      GetLastConnectedTimestamp(network->guid()).is_zero();
+
   UpdateLastConnectedTimestamp(network->guid());
+
+  if (is_first_connection) {
+    for (auto& observer : observers_) {
+      observer.OnFirstConnectionToNetwork(network->guid());
+    }
+  }
 }
 
 void NetworkMetadataStore::OnConfigurationModified(
@@ -194,6 +203,14 @@ const base::Value* NetworkMetadataStore::GetPref(
   const base::Value* device_dict =
       device_pref_service_->GetDictionary(kNetworkMetadataPref);
   return device_dict->FindPath(GetPath(network_guid, key));
+}
+
+void NetworkMetadataStore::AddObserver(NetworkMetadataObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void NetworkMetadataStore::RemoveObserver(NetworkMetadataObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace chromeos

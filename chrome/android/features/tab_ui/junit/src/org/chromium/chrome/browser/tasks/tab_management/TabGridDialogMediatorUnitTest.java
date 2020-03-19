@@ -197,8 +197,8 @@ public class TabGridDialogMediatorUnitTest {
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
-                mAnimationSourceViewProvider, mTabSelectionEditorController, mTabGroupTitleEditor,
-                mShareDelegateSupplier, "");
+                mAnimationSourceViewProvider, mTabGroupTitleEditor, mShareDelegateSupplier, "");
+        mMediator.initWithNative(mTabSelectionEditorController);
     }
 
     @After
@@ -875,7 +875,8 @@ public class TabGridDialogMediatorUnitTest {
         // the animationParamsProvider is null.
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
-                mTabSelectionEditorController, mTabGroupTitleEditor, mShareDelegateSupplier, "");
+                mTabGroupTitleEditor, mShareDelegateSupplier, "");
+        mMediator.initWithNative(mTabSelectionEditorController);
 
         // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -900,7 +901,8 @@ public class TabGridDialogMediatorUnitTest {
         // the animationParamsProvider is null.
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
-                mTabSelectionEditorController, mTabGroupTitleEditor, mShareDelegateSupplier, "");
+                mTabGroupTitleEditor, mShareDelegateSupplier, "");
+        mMediator.initWithNative(mTabSelectionEditorController);
         // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);

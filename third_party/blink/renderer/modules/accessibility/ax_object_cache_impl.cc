@@ -1059,9 +1059,17 @@ void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
     PostPlatformNotification(obj, event_type, event_from);
 
     if (event_type == ax::mojom::Event::kChildrenChanged &&
-        obj->CachedParentObject() &&
-        obj->LastKnownIsIgnoredValue() != obj->AccessibilityIsIgnored())
-      ChildrenChanged(obj->CachedParentObject());
+        obj->CachedParentObject()) {
+      const bool was_ignored = obj->LastKnownIsIgnoredValue();
+      const bool was_ignored_but_included_in_tree =
+          obj->LastKnownIsIgnoredButIncludedInTreeValue();
+      bool is_ignored_changed =
+          was_ignored != obj->AccessibilityIsIgnored() ||
+          was_ignored_but_included_in_tree !=
+              obj->AccessibilityIsIgnoredButIncludedInTree();
+      if (is_ignored_changed)
+        ChildrenChanged(obj->CachedParentObject());
+    }
   }
 }
 

@@ -55,7 +55,7 @@ void SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
     DCHECK(browser_context->IsOffTheRecord());
     parent_context_id = parent_context->UniqueId();
   }
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](SiteDataCacheFactory* factory,
                         const std::string& browser_context_id,
@@ -75,7 +75,7 @@ void SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(factory);
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](SiteDataCacheFactory* factory,
                         const std::string& browser_context_id,
@@ -121,7 +121,7 @@ void SiteDataCacheFactory::IsDataCacheRecordingForTesting(
     const std::string& browser_context_id,
     base::OnceCallback<void(bool)> cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
           [](SiteDataCacheFactory* factory,

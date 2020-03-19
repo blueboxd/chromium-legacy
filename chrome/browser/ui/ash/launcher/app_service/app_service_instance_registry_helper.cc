@@ -54,12 +54,21 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     return;
 
   if (old_contents) {
-    std::string app_id = launcher_controller_helper_->GetAppID(old_contents);
+    auto* window = old_contents->GetNativeView();
+
+    // Get the app_id from the existed instance first. If there is no record for
+    // the window, get the app_id from contents. Because when Chrome app open
+    // method is changed from windows to tabs, the app_id could be changed based
+    // on the URL, e.g. google photos, which might cause instance app_id
+    // inconsistent DCHECK error.
+    std::string app_id = proxy_->InstanceRegistry().GetShelfId(window).app_id;
+    if (app_id.empty())
+      app_id = launcher_controller_helper_->GetAppID(old_contents);
+
     // If app_id is empty, we should not set it as inactive because this is
     // Chrome's tab.
     if (!app_id.empty()) {
-      apps::InstanceState state =
-          proxy_->InstanceRegistry().GetState(old_contents->GetNativeView());
+      apps::InstanceState state = proxy_->InstanceRegistry().GetState(window);
       // If the app has been inactive, we don't need to update the instance.
       if ((state & apps::InstanceState::kActive) !=
           apps::InstanceState::kUnknown) {
@@ -71,12 +80,22 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
   }
 
   if (new_contents) {
+    auto* window = GetWindow(new_contents);
+
+    // Get the app_id from the existed instance first. If there is no record for
+    // the window, get the app_id from contents. Because when Chrome app open
+    // method is changed from windows to tabs, the app_id could be changed based
+    // on the URL, e.g. google photos, which might cause instance app_id
+    // inconsistent DCHECK error.
+    std::string app_id = proxy_->InstanceRegistry().GetShelfId(window).app_id;
+    if (app_id.empty())
+      app_id = GetAppId(new_contents);
+
     // If the app is active, it should be started, running, and visible.
     apps::InstanceState state = static_cast<apps::InstanceState>(
         apps::InstanceState::kStarted | apps::InstanceState::kRunning |
         apps::InstanceState::kActive | apps::InstanceState::kVisible);
-    OnInstances(GetAppId(new_contents), GetWindow(new_contents), std::string(),
-                state);
+    OnInstances(app_id, window, std::string(), state);
   }
 }
 

@@ -31,7 +31,7 @@ const GURL GetDistillerViewUrlFromEntryId(const std::string& id) {
 
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
-  ~FakeViewRequestDelegate() override {}
+  ~FakeViewRequestDelegate() override = default;
   MOCK_METHOD1(OnArticleReady, void(const DistilledArticleProto* proto));
   MOCK_METHOD1(OnArticleUpdated,
                void(ArticleDistillationUpdate article_update));
@@ -39,8 +39,8 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
 
 class TestDomDistillerService : public DomDistillerServiceInterface {
  public:
-  TestDomDistillerService() {}
-  ~TestDomDistillerService() override {}
+  TestDomDistillerService() = default;
+  ~TestDomDistillerService() override = default;
 
   MOCK_METHOD0(ViewUrlImpl, ViewerHandle*());
   std::unique_ptr<ViewerHandle> ViewUrl(
@@ -123,15 +123,14 @@ TEST_F(DomDistillerViewerTest, TestGetDistilledPageThemeJsOutput) {
   std::string kDarkJs = "useTheme('dark');";
   std::string kSepiaJs = "useTheme('sepia');";
   std::string kLightJs = "useTheme('light');";
-  EXPECT_EQ(kDarkJs.compare(viewer::GetDistilledPageThemeJs(
-                DistilledPagePrefs::THEME_DARK)),
-            0);
-  EXPECT_EQ(kLightJs.compare(viewer::GetDistilledPageThemeJs(
-                DistilledPagePrefs::THEME_LIGHT)),
-            0);
-  EXPECT_EQ(kSepiaJs.compare(viewer::GetDistilledPageThemeJs(
-                DistilledPagePrefs::THEME_SEPIA)),
-            0);
+  EXPECT_EQ(
+      kDarkJs.compare(viewer::GetDistilledPageThemeJs(mojom::Theme::kDark)), 0);
+  EXPECT_EQ(
+      kLightJs.compare(viewer::GetDistilledPageThemeJs(mojom::Theme::kLight)),
+      0);
+  EXPECT_EQ(
+      kSepiaJs.compare(viewer::GetDistilledPageThemeJs(mojom::Theme::kSepia)),
+      0);
 }
 
 TEST_F(DomDistillerViewerTest, TestGetDistilledPageFontFamilyJsOutput) {
@@ -139,13 +138,13 @@ TEST_F(DomDistillerViewerTest, TestGetDistilledPageFontFamilyJsOutput) {
   std::string kMonospaceJsFontFamily = "useFontFamily('monospace');";
   std::string kSansSerifJsFontFamily = "useFontFamily('sans-serif');";
   EXPECT_EQ(kSerifJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
-                DistilledPagePrefs::FONT_FAMILY_SERIF)),
+                mojom::FontFamily::kSerif)),
             0);
   EXPECT_EQ(kMonospaceJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
-                DistilledPagePrefs::FONT_FAMILY_MONOSPACE)),
+                mojom::FontFamily::kMonospace)),
             0);
   EXPECT_EQ(kSansSerifJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
-                DistilledPagePrefs::FONT_FAMILY_SANS_SERIF)),
+                mojom::FontFamily::kSansSerif)),
             0);
 }
 

@@ -70,7 +70,9 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   }
   void OnVisibilityChanged(bool visible, int64_t display_id) override {}
   void OnVisibilityWillChange(bool visible, int64_t display_id) override {}
-  bool IsVisible() override { return false; }
+  bool IsVisible(const base::Optional<int64_t>& display_id) override {
+    return false;
+  }
 
  private:
   aura::Window* container_;

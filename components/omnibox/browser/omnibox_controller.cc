@@ -43,7 +43,10 @@ void OmniboxController::StartAutocomplete(
   autocomplete_controller_->Start(input);
 }
 
-void OmniboxController::OnResultChanged(bool default_match_changed) {
+void OmniboxController::OnResultChanged(AutocompleteController* controller,
+                                        bool default_match_changed) {
+  DCHECK(controller == autocomplete_controller_.get());
+
   if (client_->GetOmniboxControllerEmitter())
     client_->GetOmniboxControllerEmitter()->NotifyOmniboxResultChanged(
         default_match_changed, autocomplete_controller_.get());

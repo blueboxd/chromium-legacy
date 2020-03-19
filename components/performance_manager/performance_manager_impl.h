@@ -50,7 +50,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   // only if "IsAvailable" returns true. The return value is returned as an
   // argument to the reply callback.
   template <typename TaskReturnType>
-  void CallOnGraphAndReplyWithResult(
+  static void CallOnGraphAndReplyWithResult(
       const base::Location& from_here,
       base::OnceCallback<TaskReturnType(GraphImpl*)> task,
       base::OnceCallback<void(TaskReturnType)> reply);
@@ -151,6 +151,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerImpl);
 };
 
+// static
 template <typename TaskReturnType>
 void PerformanceManagerImpl::CallOnGraphAndReplyWithResult(
     const base::Location& from_here,

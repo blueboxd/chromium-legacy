@@ -59,7 +59,24 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 @implementation UserSigninCoordinator
 
+@synthesize baseNavigationController = _baseNavigationController;
+
 #pragma mark - Public
+
+- (instancetype)initWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                         browser:(Browser*)browser
+                                    signinIntent:(UserSigninIntent)signinIntent
+                                          logger:(UserSigninLogger*)logger {
+  if (self = [self initWithBaseViewController:navigationController
+                                      browser:browser
+                                     identity:nil
+                                 signinIntent:signinIntent
+                                       logger:logger]) {
+    _baseNavigationController = navigationController;
+  }
+  return self;
+}
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser

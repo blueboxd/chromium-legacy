@@ -21,6 +21,8 @@ extern const base::Feature kWebUI;
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
 extern const base::Feature kRealbox;
 
+extern const base::Feature kSearchSuggestChips;
+
 // Returns true if either kRealbox or omnibox::kZeroSuggestionsOnNTPRealbox
 // are enabled; or omnibox::kOnFocusSuggestions is enabled and configured to
 // show suggestions of some type in the NTP Realbox.

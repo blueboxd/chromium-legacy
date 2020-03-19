@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -122,8 +123,12 @@ class TabSelectionEditorCoordinator {
         // device, and TabGroupContinuation is turned on.
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
-                null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null, null,
+                null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null,
                 false, COMPONENT_NAME);
+        // Note: The TabSelectionEditorCoordinator is always created after native is initialized.
+        assert LibraryLoader.getInstance().isInitialized();
+        mTabListCoordinator.initWithNative(null);
+
         mTabListCoordinator.registerItemType(TabProperties.UiType.DIVIDER,
                 new LayoutViewBuilder(R.layout.divider_preference),
                 (model, view, propertyKey) -> {});

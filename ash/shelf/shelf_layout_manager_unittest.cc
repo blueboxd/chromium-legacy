@@ -3610,6 +3610,39 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
   }
 }
 
+// Tests that the shelf background is opaque in both screens after app list is
+// dismissed in a secondary display. (See https://crbug.com/1060686)
+TEST_P(ShelfLayoutManagerTest, ShelfBackgroundOpaqueAfetrAppListUpdate) {
+  UpdateDisplay("800x600,800x600");
+  AppListControllerImpl* app_list_controller =
+      Shell::Get()->app_list_controller();
+  int64_t primary_display_id = display_manager()->GetDisplayAt(0).id();
+  int64_t secondary_display_id = display_manager()->GetDisplayAt(1).id();
+
+  app_list_controller->ToggleAppList(
+      secondary_display_id, AppListShowSource::kShelfButton, base::TimeTicks());
+  EXPECT_FALSE(app_list_controller->IsVisible(primary_display_id));
+  EXPECT_TRUE(app_list_controller->IsVisible(secondary_display_id));
+
+  app_list_controller->ToggleAppList(
+      secondary_display_id, AppListShowSource::kShelfButton, base::TimeTicks());
+  EXPECT_FALSE(app_list_controller->IsVisible(primary_display_id));
+  EXPECT_FALSE(app_list_controller->IsVisible(secondary_display_id));
+
+  ShelfWidget* primary_shelf_widget =
+      Shell::GetRootWindowControllerWithDisplayId(primary_display_id)
+          ->shelf()
+          ->shelf_widget();
+  ShelfWidget* secondary_shelf_widget =
+      Shell::GetRootWindowControllerWithDisplayId(secondary_display_id)
+          ->shelf()
+          ->shelf_widget();
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
+            primary_shelf_widget->GetBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
+            secondary_shelf_widget->GetBackgroundType());
+}
+
 // Test base for unit test related to shelf dimming.
 class DimShelfLayoutManagerTestBase : public ShelfLayoutManagerTestBase {
  public:

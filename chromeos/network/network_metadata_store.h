@@ -8,9 +8,11 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_connection_observer.h"
+#include "chromeos/network/network_metadata_observer.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -66,6 +68,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // Networks which were added directly from sync data will return true.
   bool GetIsConfiguredBySync(const std::string& network_guid);
 
+  // Manage observers.
+  void AddObserver(NetworkMetadataObserver* observer);
+  void RemoveObserver(NetworkMetadataObserver* observer);
+
  private:
   void RemoveNetworkFromPref(const std::string& network_guid,
                              PrefService* pref_service);
@@ -76,6 +82,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   const base::Value* GetPref(const std::string& network_guid,
                              const std::string& key);
 
+  base::ObserverList<NetworkMetadataObserver> observers_;
   NetworkConfigurationHandler* network_configuration_handler_;
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;

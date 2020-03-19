@@ -546,7 +546,7 @@ void WorkerWatcherTest::TearDown() {
 void WorkerWatcherTest::CallOnGraphAndWait(
     PerformanceManagerImpl::GraphImplCallback graph_callback) {
   base::RunLoop run_loop;
-  performance_manager_->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindLambdaForTesting(
           [graph_callback = std::move(graph_callback),

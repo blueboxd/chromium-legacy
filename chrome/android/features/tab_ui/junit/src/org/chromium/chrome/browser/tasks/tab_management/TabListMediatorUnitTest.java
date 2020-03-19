@@ -315,6 +315,7 @@ public class TabListMediatorUnitTest {
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(TAB3_URL), anyBoolean());
         doNothing().when(mTemplateUrlService).addObserver(mTemplateUrlServiceObserver.capture());
+        doReturn(true).when(mTabListFaviconProvider).isInitialized();
 
         mModel = new TabListModel();
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
@@ -323,6 +324,7 @@ public class TabListMediatorUnitTest {
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, false, null, mGridCardOnClickListenerProvider, null,
                 getClass().getSimpleName(), UiType.CLOSABLE);
+        mMediator.initWithNative(mProfile);
         mMediator.registerOrientationListener(mGridLayoutManager);
         TrackerFactory.setTrackerForTests(mTracker);
     }
@@ -1921,6 +1923,7 @@ public class TabListMediatorUnitTest {
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, true, null, null, null, getClass().getSimpleName(),
                 TabProperties.UiType.CLOSABLE);
+        mMediator.initWithNative(mProfile);
 
         initAndAssertAllProperties();
 
@@ -1944,6 +1947,7 @@ public class TabListMediatorUnitTest {
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, true, null, null, null, getClass().getSimpleName(),
                 TabProperties.UiType.CLOSABLE);
+        mMediator.initWithNative(mProfile);
 
         initAndAssertAllProperties();
 
@@ -2078,6 +2082,7 @@ public class TabListMediatorUnitTest {
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, actionOnRelatedTabs, null, null, handler,
                 getClass().getSimpleName(), uiType);
+        mMediator.initWithNative(mProfile);
 
         // There are two TabModelObserver and two TabGroupModelFilter.Observer added when
         // initializing TabListMediator, one set from TabListMediator and the other from

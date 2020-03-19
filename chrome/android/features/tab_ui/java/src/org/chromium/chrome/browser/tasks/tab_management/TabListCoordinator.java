@@ -79,6 +79,8 @@ public class TabListCoordinator implements Destroyable {
     private final Context mContext;
     private final TabListModel mModel;
 
+    private boolean mIsInitialized;
+
     /**
      * Construct a coordinator for UI that shows a list of tabs.
      * @param mode Modes of showing the list of tabs. Can be used in GRID or STRIP.
@@ -96,8 +98,6 @@ public class TabListCoordinator implements Destroyable {
      * @param selectionDelegateProvider Provider to provide selected Tabs for a selectable tab list.
      *                                  It's NULL when selection is not possible.
      * @param parentView {@link ViewGroup} The root view of the UI.
-     * @param dynamicResourceLoader The {@link DynamicResourceLoader} to register dynamic UI
-     *                              resource for compositor layer animation.
      * @param attachToParent Whether the UI should attach to root view.
      * @param componentName A unique string uses to identify different components for UMA recording.
      *                      Recommended to use the class name or make sure the string is unique
@@ -110,8 +110,7 @@ public class TabListCoordinator implements Destroyable {
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabListMediator.TabGridDialogHandler dialogHandler, @UiType int itemType,
             @Nullable TabListMediator.SelectionDelegateProvider selectionDelegateProvider,
-            @NonNull ViewGroup parentView, @Nullable DynamicResourceLoader dynamicResourceLoader,
-            boolean attachToParent, String componentName) {
+            @NonNull ViewGroup parentView, boolean attachToParent, String componentName) {
         mMode = mode;
         mContext = context;
         mModel = new TabListModel();
@@ -217,15 +216,10 @@ public class TabListCoordinator implements Destroyable {
         }
         if (recyclerListener != null) mRecyclerView.setRecyclerListener(recyclerListener);
 
-        if (dynamicResourceLoader != null) {
-            mRecyclerView.createDynamicView(dynamicResourceLoader);
-        }
-
         // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
         // incognito profile) instead of always using regular profile. It works correctly now, but
         // it is not safe.
-        TabListFaviconProvider tabListFaviconProvider =
-                new TabListFaviconProvider(context, Profile.getLastUsedRegularProfile());
+        TabListFaviconProvider tabListFaviconProvider = new TabListFaviconProvider(mContext);
 
         mMediator = new TabListMediator(context, mModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
@@ -278,6 +272,17 @@ public class TabListCoordinator implements Destroyable {
         Rect recyclerViewRect = new Rect();
         mRecyclerView.getGlobalVisibleRect(recyclerViewRect);
         return recyclerViewRect;
+    }
+
+    void initWithNative(DynamicResourceLoader dynamicResourceLoader) {
+        if (mIsInitialized) return;
+
+        mIsInitialized = true;
+
+        mMediator.initWithNative(Profile.getLastUsedRegularProfile());
+        if (dynamicResourceLoader != null) {
+            mRecyclerView.createDynamicView(dynamicResourceLoader);
+        }
     }
 
     /**

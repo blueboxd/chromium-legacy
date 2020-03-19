@@ -4,6 +4,9 @@
 
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -23,7 +26,7 @@ TEST_F(SiteDataCacheFactoryTest, EndToEnd) {
   std::unique_ptr<SiteDataCacheFactory> factory =
       std::make_unique<SiteDataCacheFactory>();
   SiteDataCacheFactory* factory_raw = factory.get();
-  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
           [](std::unique_ptr<SiteDataCacheFactory> site_data_cache_factory,
@@ -38,7 +41,7 @@ TEST_F(SiteDataCacheFactoryTest, EndToEnd) {
 
   {
     base::RunLoop run_loop;
-    PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+    PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindOnce(
             [](SiteDataCacheFactory* factory,
@@ -60,7 +63,7 @@ TEST_F(SiteDataCacheFactoryTest, EndToEnd) {
                                                             &profile);
   {
     base::RunLoop run_loop;
-    PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
+    PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindOnce(
             [](SiteDataCacheFactory* factory,

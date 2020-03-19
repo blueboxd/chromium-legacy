@@ -96,6 +96,7 @@ class MODULES_EXPORT BaseAudioContext
       public InspectorHelperMixin {
   USING_GARBAGE_COLLECTED_MIXIN(BaseAudioContext);
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(BaseAudioContext, Dispose);
 
  public:
   // The state of an audio context.  On creation, the state is Suspended. The
@@ -114,6 +115,8 @@ class MODULES_EXPORT BaseAudioContext
     AudioDestinationNode* dest = destination();
     return dest ? dest->GetAudioDestinationHandler().IsInitialized() : false;
   }
+
+  void Dispose();
 
   // Document notification
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;

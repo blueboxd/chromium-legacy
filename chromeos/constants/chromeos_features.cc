@@ -285,6 +285,10 @@ const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
 const base::Feature kShowProgressBarInDemoModeSetup{
     "ShowProgressBarInDemoModeSetup", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Uses experimental component version for smart dim.
+const base::Feature kSmartDimExperimentalComponent{
+    "SmartDimExperimentalComponent", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Uses the smart dim component updater to provide smart dim model and
 // preprocessor configuration.
 const base::Feature kSmartDimNewMlAgent{"SmartDimNewMlAgent",

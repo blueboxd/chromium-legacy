@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
@@ -23,6 +24,8 @@
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
+#include "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/font_size_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -362,4 +365,26 @@ TEST_F(PopupMenuMediatorTest, TestReadLaterDisabled) {
   // Cancel the request and verify that the "Read Later" button is enabled.
   queue->CancelAllRequests();
   EXPECT_TRUE(HasItem(consumer, kToolsMenuReadLater, /*enabled=*/YES));
+}
+
+// Tests that the "Text Zoom..." button is disabled on non-HTML pages.
+TEST_F(PopupMenuMediatorTest, TextTextZoomDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(web::kWebPageTextAccessibility);
+
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
+  mediator_.webStateList = web_state_list_.get();
+
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+  FontSizeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(0));
+  SetUpActiveWebState();
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuTextZoom, /*enabled=*/YES));
+
+  web_state_->SetContentIsHTML(false);
+  // Fake a navigationFinished to force the popup menu items to update.
+  web::FakeNavigationContext context;
+  web_state_->OnNavigationFinished(&context);
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuTextZoom, /*enabled=*/NO));
 }

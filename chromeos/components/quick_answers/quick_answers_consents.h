@@ -16,6 +16,11 @@ namespace quick_answers {
 
 enum class ConsentInteractionType;
 
+// The consent will appear up to a total of 3 times.
+constexpr int kConsentImpressionCap = 3;
+// The consent will appear until viewed for a cumulative 8 seconds.
+constexpr int kConsentDurationCap = 8;
+
 // Tracks whether quick answers consent should be shown and records impression
 // count and duration when there is a interaction with the consent (shown,
 // accepted and dismissed).
@@ -43,14 +48,20 @@ class QuickAnswersConsent {
  private:
   // Whether users have granted the consent.
   bool HasConsented() const;
-  // Whether the consent has been seen by users for |kImpressionCap| times.
+  // Whether the consent has been seen by users for |kConsentImpressionCap|
+  // times.
   bool HasReachedImpressionCap() const;
-  // Whether the consent has been seen by users for |kDurationCap| seconds.
+  // Whether the consent has been seen by users for |kConsentDurationCap|
+  // seconds.
   bool HasReachedDurationCap() const;
   // Increments the perf counter by |count|.
   void IncrementPrefCounter(const std::string& path, int count);
   // Records how long the consent has been seen by the users.
   void RecordImpressionDuration();
+  // Get how many times the consent has been seen by users.
+  int GetImpressionCount() const;
+  // Get how long the consent has been seen by users.
+  base::TimeDelta GetImpressionDuration() const;
 
   PrefService* const prefs_;
 

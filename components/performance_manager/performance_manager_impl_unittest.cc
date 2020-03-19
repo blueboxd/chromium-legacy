@@ -141,7 +141,7 @@ TEST_F(PerformanceManagerImplTest, CallOnGraphImpl) {
         std::move(quit_closure).Run();
       });
 
-  performance_manager()->CallOnGraphImpl(FROM_HERE, std::move(graph_callback));
+  PerformanceManagerImpl::CallOnGraphImpl(FROM_HERE, std::move(graph_callback));
   run_loop.Run();
 
   performance_manager()->DeleteNode(std::move(page_node));
@@ -170,7 +170,7 @@ TEST_F(PerformanceManagerImplTest, CallOnGraphAndReplyWithResult) {
     std::move(run_loop.QuitClosure()).Run();
   });
 
-  performance_manager()->CallOnGraphAndReplyWithResult(
+  PerformanceManagerImpl::CallOnGraphAndReplyWithResult(
       FROM_HERE, std::move(task), std::move(reply));
   run_loop.Run();
 

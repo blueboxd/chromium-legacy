@@ -38,6 +38,11 @@ class LegacyMetricsHistogramFlattenerTest : public testing::Test {
  public:
   LegacyMetricsHistogramFlattenerTest() = default;
   ~LegacyMetricsHistogramFlattenerTest() override = default;
+
+  void SetUp() override {
+    // Flush all histogram deltas from prior tests executed in this process.
+    GetLegacyMetricsDeltas();
+  }
 };
 
 TEST_F(LegacyMetricsHistogramFlattenerTest, NoHistogramData) {

@@ -20,7 +20,6 @@ android_library("java") {
     ":jni_headers",
     "//base:base_java",
     "//base:jni_java",
-    "//components/embedder_support/android:content_view_java",
     "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]

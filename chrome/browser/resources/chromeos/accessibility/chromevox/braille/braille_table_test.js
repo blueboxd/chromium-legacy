@@ -42,6 +42,9 @@ TEST_F('ChromeVoxBrailleTableTest', 'testGetDisplayName', function() {
     expectEquals('Arabic, Grade 1', BrailleTable.getDisplayName(table));
     table = BrailleTable.forId(tables, 'en-UEB-g1');
     expectEquals('English (UEB), Grade 1', BrailleTable.getDisplayName(table));
+    table = BrailleTable.forId(tables, 'en-US-g2');
+    expectEquals(
+        'English (United States), Grade 2', BrailleTable.getDisplayName(table));
   }));
 });
 

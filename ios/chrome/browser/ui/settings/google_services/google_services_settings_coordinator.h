@@ -43,9 +43,11 @@
 // |viewController|: navigation controller.
 // |browser|: browser.
 // |mode|: mode to display the Google services settings.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser
-                                      mode:(GoogleServicesSettingsMode)mode
+- (instancetype)initWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                         browser:(Browser*)browser
+                                            mode:
+                                                (GoogleServicesSettingsMode)mode
     NS_DESIGNATED_INITIALIZER;
 
 @end

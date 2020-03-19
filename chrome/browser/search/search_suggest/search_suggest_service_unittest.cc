@@ -10,13 +10,16 @@
 
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -139,6 +142,83 @@ class SearchSuggestServiceTest : public BrowserWithTestWindowTest {
 
   std::unique_ptr<SearchSuggestService> service_;
 };
+
+TEST_F(SearchSuggestServiceTest, IsEnabled) {
+  constexpr char kRemoteSendUrl[] = "RemoteSendUrl";
+  constexpr char kRemoteNoUrlLocal[] = "RemoteNoUrl,Local";
+  {
+    // The service is enabled by default.
+    EXPECT_TRUE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Enabling omnibox::kZeroSuggestionsOnNTP disables the service.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures({omnibox::kZeroSuggestionsOnNTP}, {});
+    EXPECT_FALSE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Enabling omnibox::kZeroSuggestionsOnNTPRealbox disables the service.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures({omnibox::kZeroSuggestionsOnNTPRealbox}, {});
+    EXPECT_FALSE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Enabling omnibox::kOnFocusSuggestions for SERP does not disable the
+    // service.
+    base::test::ScopedFeatureList feature_list;
+    std::map<std::string, std::string> feature_params;
+    // Note: ZPS variant 6 is Search Engine Results Page.
+    feature_params["ZeroSuggestVariant:6:*"] = kRemoteSendUrl;
+    feature_list.InitWithFeaturesAndParameters(
+        {{omnibox::kOnFocusSuggestions, feature_params}}, {});
+    EXPECT_TRUE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Enabling omnibox::kOnFocusSuggestions for NTP Omnibox disables the
+    // service.
+    base::test::ScopedFeatureList feature_list;
+    std::map<std::string, std::string> feature_params;
+    // Note: ZPS variant 7 is NTP with Omnibox as starting focus.
+    feature_params["ZeroSuggestVariant:7:*"] = kRemoteNoUrlLocal;
+    feature_list.InitWithFeaturesAndParameters(
+        {{omnibox::kOnFocusSuggestions, feature_params}}, {});
+    EXPECT_FALSE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Enabling omnibox::kOnFocusSuggestions for NTP Realbox disables the
+    // service.
+    base::test::ScopedFeatureList feature_list;
+    std::map<std::string, std::string> feature_params;
+    // Note: ZPS variant 15 is NTP Realbox as starting focus.
+    feature_params["ZeroSuggestVariant:15:*"] = kRemoteNoUrlLocal;
+    feature_list.InitWithFeaturesAndParameters(
+        {{omnibox::kOnFocusSuggestions, feature_params}}, {});
+    EXPECT_FALSE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Disabling ntp_features::kSearchSuggestChips does not disable the service.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeaturesAndParameters(
+        {}, {ntp_features::kSearchSuggestChips});
+    EXPECT_TRUE(SearchSuggestService::IsEnabled());
+  }
+  {
+    // Enabling ntp_features::kSearchSuggestChips enables the service despite
+    // the other config.
+    base::test::ScopedFeatureList feature_list;
+    std::map<std::string, std::string> feature_params;
+    // Note: ZPS variant 7 is NTP with Omnibox as starting focus.
+    feature_params["ZeroSuggestVariant:7:*"] = kRemoteNoUrlLocal;
+    // Note: ZPS variant 15 is NTP Realbox as starting focus.
+    feature_params["ZeroSuggestVariant:15:*"] = kRemoteNoUrlLocal;
+    feature_list.InitWithFeaturesAndParameters(
+        {{omnibox::kZeroSuggestionsOnNTP, {}},
+         {omnibox::kZeroSuggestionsOnNTPRealbox, {}},
+         {omnibox::kOnFocusSuggestions, feature_params}},
+        {ntp_features::kSearchSuggestChips});
+    EXPECT_FALSE(SearchSuggestService::IsEnabled());
+  }
+}
 
 TEST_F(SearchSuggestServiceTest, NoRefreshOnSignedOutRequest) {
   ASSERT_EQ(base::nullopt, service()->search_suggest_data());

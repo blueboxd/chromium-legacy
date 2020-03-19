@@ -19,9 +19,8 @@ namespace {
 const char kCommentToken = '#';
 const char kMarkSkipFile[] = "#<skip";
 const char kSignalDiff[] = "*";
-}  // namespace
-
 const char kMarkEndOfFile[] = "<-- End-of-file -->";
+}  // namespace
 
 DumpAccessibilityTestHelper::DumpAccessibilityTestHelper(
     AccessibilityTestExpectationsLocator* test_locator)
@@ -80,10 +79,6 @@ DumpAccessibilityTestHelper::LoadExpectationFile(
       base::SplitString(expected_contents, "\n", base::KEEP_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
 
-  // Marking the end of the file with a line of text ensures that
-  // file length differences are found.
-  expected_lines.push_back(kMarkEndOfFile);
-
   return expected_lines;
 }
 
@@ -123,6 +118,11 @@ bool DumpAccessibilityTestHelper::ValidateAgainstExpectation(
     diff += "------\n";
     diff += base::JoinString(actual_lines, "\n");
     diff += "\n";
+
+    // This is used by rebase_dump_accessibility_tree_test.py to signify
+    // the end of the file when parsing the actual output from remote logs.
+    diff += kMarkEndOfFile;
+    diff += "\n";
     LOG(ERROR) << "Diff:\n" << diff;
   } else {
     LOG(INFO) << "Test output matches expectations.";
@@ -161,6 +161,20 @@ std::vector<int> DumpAccessibilityTestHelper::DiffLines(
       diff_lines.push_back(j);
     ++i;
     ++j;
+  }
+
+  // Report a failure if there are additional expected lines or
+  // actual lines.
+  if (i < actual_lines_count) {
+    diff_lines.push_back(j);
+  } else {
+    while (j < expected_lines_count) {
+      if (expected_lines[j].size() > 0 &&
+          expected_lines[j][0] != kCommentToken) {
+        diff_lines.push_back(j);
+      }
+      j++;
+    }
   }
 
   // Actual file has been fully checked.

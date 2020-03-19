@@ -37,18 +37,18 @@ using signin_metrics::PromoAction;
                           logger:logger];
 }
 
-+ (instancetype)firstRunCoordinatorWithBaseViewController:
-                    (UINavigationController*)viewController
-                                                  browser:(Browser*)browser {
++ (instancetype)firstRunCoordinatorWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                                        browser:
+                                                            (Browser*)browser {
   UserSigninLogger* logger = [[FirstRunSigninLogger alloc]
       initWithAccessPoint:AccessPoint::ACCESS_POINT_START_PAGE
               promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO];
   return [[UserSigninCoordinator alloc]
-      initWithBaseViewController:viewController
-                         browser:browser
-                        identity:nil
-                    signinIntent:UserSigninIntentFirstRun
-                          logger:logger];
+      initWithBaseNavigationController:navigationController
+                               browser:browser
+                          signinIntent:UserSigninIntentFirstRun
+                                logger:logger];
 }
 
 + (instancetype)

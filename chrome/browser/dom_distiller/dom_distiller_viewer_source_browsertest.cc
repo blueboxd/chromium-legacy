@@ -520,7 +520,7 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
           ->GetDistilledPagePrefs();
 
   // Test theme.
-  distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
+  distilled_page_prefs->SetTheme(mojom::Theme::kDark);
   base::RunLoop().RunUntilIdle();
   ExpectBodyHasThemeAndFont(contents, "dark", "sans-serif");
 
@@ -528,8 +528,7 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
 
   // Test font family.
-  distilled_page_prefs->SetFontFamily(
-      DistilledPagePrefs::FONT_FAMILY_MONOSPACE);
+  distilled_page_prefs->SetFontFamily(mojom::FontFamily::kMonospace);
   base::RunLoop().RunUntilIdle();
   ExpectBodyHasThemeAndFont(contents, "dark", "monospace");
 
@@ -571,9 +570,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
 
   // Set preference.
   const double kScale = 1.23;
-  distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
-  distilled_page_prefs->SetFontFamily(
-      DistilledPagePrefs::FONT_FAMILY_MONOSPACE);
+  distilled_page_prefs->SetTheme(mojom::Theme::kDark);
+  distilled_page_prefs->SetFontFamily(mojom::FontFamily::kMonospace);
   distilled_page_prefs->SetFontScaling(kScale);
 
   base::RunLoop().RunUntilIdle();

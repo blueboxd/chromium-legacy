@@ -61,6 +61,18 @@
 
 @implementation ManageSyncSettingsCoordinator
 
+@synthesize baseNavigationController = _baseNavigationController;
+
+- (instancetype)initWithBaseNavigationController:
+                    (UINavigationController*)navigationController
+                                         browser:(Browser*)browser {
+  if (self = [super initWithBaseViewController:navigationController
+                                       browser:browser]) {
+    _baseNavigationController = navigationController;
+  }
+  return self;
+}
+
 - (void)start {
   DCHECK(self.baseNavigationController);
   self.mediator = [[ManageSyncSettingsMediator alloc]

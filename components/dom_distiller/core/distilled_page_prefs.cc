@@ -19,16 +19,16 @@ namespace dom_distiller {
 DistilledPagePrefs::DistilledPagePrefs(PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-DistilledPagePrefs::~DistilledPagePrefs() {}
+DistilledPagePrefs::~DistilledPagePrefs() = default;
 
 // static
 void DistilledPagePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
-      prefs::kTheme, DistilledPagePrefs::THEME_LIGHT,
+      prefs::kTheme, static_cast<int32_t>(mojom::Theme::kLight),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      prefs::kFont, DistilledPagePrefs::FONT_FAMILY_SANS_SERIF,
+      prefs::kFont, static_cast<int32_t>(mojom::FontFamily::kSansSerif),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDoublePref(prefs::kFontScale, 1.0);
   registry->RegisterBooleanPref(
@@ -36,43 +36,44 @@ void DistilledPagePrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-void DistilledPagePrefs::SetFontFamily(
-    DistilledPagePrefs::FontFamily new_font_family) {
-  pref_service_->SetInteger(prefs::kFont, new_font_family);
+void DistilledPagePrefs::SetFontFamily(mojom::FontFamily new_font_family) {
+  pref_service_->SetInteger(prefs::kFont,
+                            static_cast<int32_t>(new_font_family));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&DistilledPagePrefs::NotifyOnChangeFontFamily,
                      weak_ptr_factory_.GetWeakPtr(), new_font_family));
 }
 
-DistilledPagePrefs::FontFamily DistilledPagePrefs::GetFontFamily() {
-  int font_family = pref_service_->GetInteger(prefs::kFont);
-  if (font_family < 0 ||
-      font_family >= DistilledPagePrefs::FONT_FAMILY_NUM_ENTRIES) {
-    // Persisted data was incorrect, trying to clean it up by storing the
-    // default.
-    SetFontFamily(DistilledPagePrefs::FONT_FAMILY_SANS_SERIF);
-    return DistilledPagePrefs::FONT_FAMILY_SANS_SERIF;
-  }
-  return static_cast<FontFamily>(font_family);
+mojom::FontFamily DistilledPagePrefs::GetFontFamily() {
+  auto font_family =
+      static_cast<mojom::FontFamily>(pref_service_->GetInteger(prefs::kFont));
+  if (mojom::IsKnownEnumValue(font_family))
+    return font_family;
+
+  // Persisted data was incorrect, trying to clean it up by storing the
+  // default.
+  SetFontFamily(mojom::FontFamily::kSansSerif);
+  return mojom::FontFamily::kSansSerif;
 }
 
-void DistilledPagePrefs::SetTheme(DistilledPagePrefs::Theme new_theme) {
-  pref_service_->SetInteger(prefs::kTheme, new_theme);
+void DistilledPagePrefs::SetTheme(mojom::Theme new_theme) {
+  pref_service_->SetInteger(prefs::kTheme, static_cast<int32_t>(new_theme));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&DistilledPagePrefs::NotifyOnChangeTheme,
                                 weak_ptr_factory_.GetWeakPtr(), new_theme));
 }
 
-DistilledPagePrefs::Theme DistilledPagePrefs::GetTheme() {
-  int theme = pref_service_->GetInteger(prefs::kTheme);
-  if (theme < 0 || theme >= DistilledPagePrefs::THEME_NUM_ENTRIES) {
-    // Persisted data was incorrect, trying to clean it up by storing the
-    // default.
-    SetTheme(DistilledPagePrefs::THEME_LIGHT);
-    return DistilledPagePrefs::THEME_LIGHT;
-  }
-  return static_cast<Theme>(theme);
+mojom::Theme DistilledPagePrefs::GetTheme() {
+  auto theme =
+      static_cast<mojom::Theme>(pref_service_->GetInteger(prefs::kTheme));
+  if (mojom::IsKnownEnumValue(theme))
+    return theme;
+
+  // Persisted data was incorrect, trying to clean it up by storing the
+  // default.
+  SetTheme(mojom::Theme::kLight);
+  return mojom::Theme::kLight;
 }
 
 void DistilledPagePrefs::SetFontScaling(float scaling) {
@@ -102,13 +103,12 @@ void DistilledPagePrefs::RemoveObserver(Observer* obs) {
 }
 
 void DistilledPagePrefs::NotifyOnChangeFontFamily(
-    DistilledPagePrefs::FontFamily new_font_family) {
+    mojom::FontFamily new_font_family) {
   for (Observer& observer : observers_)
     observer.OnChangeFontFamily(new_font_family);
 }
 
-void DistilledPagePrefs::NotifyOnChangeTheme(
-    DistilledPagePrefs::Theme new_theme) {
+void DistilledPagePrefs::NotifyOnChangeTheme(mojom::Theme new_theme) {
   for (Observer& observer : observers_)
     observer.OnChangeTheme(new_theme);
 }

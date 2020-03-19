@@ -49,6 +49,10 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/component_updater/smart_dim_component_installer.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif  // BUILDFLAG(ENABLE_NACL)
@@ -179,6 +183,9 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
     component_updater::RegisterSODAComponent(cus, profile_prefs,
                                              base::OnceClosure());
+#if defined(OS_CHROMEOS)
+  RegisterSmartDimComponent(cus);
+#endif  // !defined(OS_CHROMEOS)
 }
 
 }  // namespace component_updater

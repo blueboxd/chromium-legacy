@@ -82,10 +82,11 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         TabContentManager tabContentManager = activity.getTabContentManager();
 
-        mTabStripCoordinator =
-                new TabListCoordinator(TabListCoordinator.TabListMode.STRIP, mContext,
-                        tabModelSelector, null, null, false, null, null, TabProperties.UiType.STRIP,
-                        null, mTabListContainerView, null, true, COMPONENT_NAME);
+        mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
+                mContext, tabModelSelector, null, null, false, null, null,
+                TabProperties.UiType.STRIP, null, mTabListContainerView, true, COMPONENT_NAME);
+        mTabStripCoordinator.initWithNative(
+                mActivity.getCompositorViewHolder().getDynamicResourceLoader());
 
         mModelChangeProcessor = PropertyModelChangeProcessor.create(mModel,
                 new TabGroupUiViewBinder.ViewHolder(
@@ -98,6 +99,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
                 tabContentManager, activity, activity.getCompositorViewHolder(), null, null, null,
                 mTabStripCoordinator.getTabGroupTitleEditor(),
                 mActivity.getShareDelegateSupplier());
+        mTabGridDialogCoordinator.initWithNative(mContext, tabModelSelector, tabContentManager);
 
         mMediator = new TabGroupUiMediator(visibilityController, this, mModel, tabModelSelector,
                 activity, ((ChromeTabbedActivity) activity).getOverviewModeBehavior(),

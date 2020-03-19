@@ -115,7 +115,9 @@ BrailleTable.getUncontracted = function(tables, table) {
  * @return {string} Localized display name.
  */
 BrailleTable.getDisplayName = function(table) {
-  const localeName = Msgs.getLocaleDisplayName(table.locale);
+  const localeName = chrome.accessibilityPrivate.getDisplayNameForLocale(
+      table.locale /* locale to be displayed */,
+      chrome.i18n.getUILanguage().toLowerCase() /* locale to localize into */);
   if (!table.grade && !table.variant) {
     return localeName;
   } else if (table.grade && !table.variant) {

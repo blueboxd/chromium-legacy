@@ -37,6 +37,10 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
   void Start(blink::GamepadListener* listener);
   void Stop();
 
+  GamepadSharedMemoryReader(const GamepadSharedMemoryReader&) = delete;
+  GamepadSharedMemoryReader& operator=(const GamepadSharedMemoryReader&) =
+      delete;
+
  protected:
   void SendStartMessage();
   void SendStopMessage();
@@ -59,8 +63,6 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
   mojo::Receiver<device::mojom::blink::GamepadObserver> receiver_{this};
   mojo::Remote<device::mojom::blink::GamepadMonitor> gamepad_monitor_remote_;
   blink::GamepadListener* listener_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);
 };
 
 }  // namespace blink

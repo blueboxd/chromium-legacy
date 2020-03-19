@@ -29,6 +29,7 @@ class FocusSearch;
 
 namespace ash {
 class PresentationTimeRecorder;
+class ScrollableShelfAnimationMetricsReporter;
 
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
@@ -518,7 +519,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   base::OneShotTimer page_flip_timer_;
 
   // Metric reporter for scrolling animations.
-  const std::unique_ptr<ui::AnimationMetricsReporter>
+  const std::unique_ptr<ScrollableShelfAnimationMetricsReporter>
       animation_metrics_reporter_;
 
   // Records the presentation time for the scrollable shelf dragging.

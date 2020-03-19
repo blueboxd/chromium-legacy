@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/test/test_runner_support.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
@@ -142,7 +141,8 @@ WebFrameTestClient::WebFrameTestClient(WebViewTestProxy* web_view_test_proxy,
 std::string WebFrameTestClient::PrintFrameDescription(
     WebTestDelegate* delegate,
     blink::WebLocalFrame* frame) {
-  std::string name = content::GetFrameNameForWebTests(frame);
+  auto* frame_proxy = static_cast<WebFrameTestProxy*>(frame->Client());
+  std::string name = frame_proxy->GetFrameNameForWebTests();
   if (frame == frame->View()->MainFrame()) {
     DCHECK(name.empty());
     return "main frame";

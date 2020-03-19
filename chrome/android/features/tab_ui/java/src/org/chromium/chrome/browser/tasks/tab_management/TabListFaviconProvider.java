@@ -28,24 +28,25 @@ public class TabListFaviconProvider {
     private static Drawable sRoundedGlobeDrawable;
     private static Drawable sRoundedChromeDrawable;
     private final int mFaviconSize;
-    private final Profile mProfile;
-    private final FaviconHelper mFaviconHelper;
     private final Context mContext;
     @ColorInt
     private final int mDefaultIconColor;
     @ColorInt
     private final int mIncognitoIconColor;
+    private boolean mIsInitialized;
+
+    private Profile mProfile;
+    private FaviconHelper mFaviconHelper;
 
     /**
      * Construct the provider that provides favicons for tab list.
      * @param context The context to use for accessing {@link android.content.res.Resources}
-     * @param profile The profile to use for getting favicons.
+     *
      */
-    public TabListFaviconProvider(Context context, Profile profile) {
+    public TabListFaviconProvider(Context context) {
         mContext = context;
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
-        mProfile = profile;
-        mFaviconHelper = new FaviconHelper();
+
         if (sRoundedGlobeDrawable == null) {
             Drawable globeDrawable =
                     AppCompatResources.getDrawable(context, R.drawable.ic_globe_24dp);
@@ -63,6 +64,18 @@ public class TabListFaviconProvider {
         }
         mDefaultIconColor = mContext.getResources().getColor(R.color.default_icon_color);
         mIncognitoIconColor = mContext.getResources().getColor(R.color.default_icon_color_light);
+    }
+
+    public void initWithNative(Profile profile) {
+        if (mIsInitialized) return;
+
+        mIsInitialized = true;
+        mProfile = profile;
+        mFaviconHelper = new FaviconHelper();
+    }
+
+    public boolean isInitialized() {
+        return mIsInitialized;
     }
 
     private Drawable processBitmap(Bitmap bitmap) {

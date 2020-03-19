@@ -60,7 +60,7 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   // Tests related to spell checking should enable it manually.
   bool enabled_ = false;
 
-  // The mock spellchecker used in checkSpelling().
+  // The mock spellchecker used in CheckSpelling().
   MockSpellCheck spell_check_;
 
   blink::WebString last_requested_text_check_string_;

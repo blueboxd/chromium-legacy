@@ -37,6 +37,11 @@ const base::Feature kRealboxUseGoogleGIcon{"NtpRealboxUseGoogleGIcon",
 // below the non-fake input ("realbox").
 const base::Feature kRealbox{"NtpRealbox", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, shows Vasco suggestion chips in the NTP below fakebox/realbox
+// despite other config.
+const base::Feature kSearchSuggestChips{"SearchSuggestChips",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the WebUI new tab page will load when a new tab is created
 // instead of the local NTP.
 const base::Feature kWebUI{"NtpWebUI", base::FEATURE_DISABLED_BY_DEFAULT};

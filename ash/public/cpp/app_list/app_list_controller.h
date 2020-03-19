@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/aura/window.h"
 
@@ -168,8 +169,10 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Returns the app list window or nullptr if it is not visible.
   virtual aura::Window* GetWindow() = 0;
 
-  // Returns whether the AppList is visible.
-  virtual bool IsVisible() = 0;
+  // Returns whether the AppList is visible on the provided display.
+  // If |display_id| is null, returns whether an app list is visible on any
+  // display.
+  virtual bool IsVisible(const base::Optional<int64_t>& display_id) = 0;
 
  protected:
   AppListController();

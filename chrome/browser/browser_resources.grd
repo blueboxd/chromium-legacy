@@ -444,7 +444,7 @@
         <include name="IDR_ADD_SUPERVISION_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\chromeos\add_supervision\add_supervision.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="chromeos">
-        <include name="IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\search.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_OS_SETTINGS_USER_ACTION_RECORDER_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\user_action_recorder.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="chromeos">
         <!-- OOBE / Login resources -->

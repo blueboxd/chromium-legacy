@@ -50,6 +50,10 @@ class NGInlineFragmentTraversalTest : public NGLayoutTest {
   }
 
 TEST_F(NGInlineFragmentTraversalTest, DescendantsOf) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    // NGFragmentItem doesn't use |NGInlineFragmentTraversal|.
+    return;
+  }
   SetBodyInnerHTML(
       "<style>* { border: 1px solid}</style>"
       "<div id=t>foo<b id=b>bar</b><br>baz</div>");

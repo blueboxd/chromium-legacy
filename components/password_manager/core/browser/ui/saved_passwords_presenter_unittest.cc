@@ -66,7 +66,8 @@ TEST_F(SavedPasswordsPresenterTest, NotifyObservers) {
 
   // Adding a credential should notify observers. Furthermore, the credential
   // should be present of the list that is passed along.
-  EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(form)));
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(
+                            ElementsAre(MatchesFormExceptStore(form))));
   store().AddLogin(form);
   RunUntilIdle();
   EXPECT_FALSE(store().IsEmpty());
@@ -121,6 +122,11 @@ TEST_F(SavedPasswordsPresenterTest, EditPassword) {
   store().AddLogin(form);
   RunUntilIdle();
   EXPECT_FALSE(store().IsEmpty());
+
+  // When |form| is read back from the store, its |in_store| member will be set,
+  // and SavedPasswordsPresenter::EditPassword() actually depends on that. So
+  // set it here too.
+  form.in_store = PasswordForm::Store::kProfileStore;
 
   const base::string16 new_password = base::ASCIIToUTF16("new_password");
   PasswordForm updated = form;

@@ -33043,6 +33043,56 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="20" label="Duplicate entry"/>
 </enum>
 
+<enum name="ICUDataFileCode">
+  <summary>
+    Hash values for strings of the ICU built-in data file names.
+  </summary>
+  <int value="-2111503073" label="/windows-1258-html.cnv"/>
+  <int value="-2110345586" label="/macintosh-html.cnv"/>
+  <int value="-2034479209" label="/confusables.cfu"/>
+  <int value="-1873162436" label="/x-mac-cyrillic-html.cnv"/>
+  <int value="-1780009268" label="/windows-1250-html.cnv"/>
+  <int value="-1759448336" label="brkitr/line_normal.brk"/>
+  <int value="-1697710168" label="/iso-8859-16-html.cnv"/>
+  <int value="-1504981961" label="/koi8-r-html.cnv"/>
+  <int value="-1364734694" label="/iso-8859-7-html.cnv"/>
+  <int value="-1327619847" label="/iso-8859-3-html.cnv"/>
+  <int value="-1288434136" label="/koi8-u-html.cnv"/>
+  <int value="-1224386407" label="/iso-8859-13-html.cnv"/>
+  <int value="-1078901331" label="/cnvalias.icu"/>
+  <int value="-1055927650" label="/ISO-2022-KR.cnv"/>
+  <int value="-1052227072" label="/shift_jis-html.cnv"/>
+  <int value="-1047426245" label="/ISO-2022-CN.cnv"/>
+  <int value="-834793818" label="/HZ-GB-2312.cnv"/>
+  <int value="-737609096" label="/windows-1256-html.cnv"/>
+  <int value="-524379715" label="/windows-1257-html.cnv"/>
+  <int value="17625259" label="/iso-8859-4-html.cnv"/>
+  <int value="143580007" label="/iso-8859-5-html.cnv"/>
+  <int value="335235069" label="/unames.icu"/>
+  <int value="457714494" label="/windows-936-2000.cnv"/>
+  <int value="516825216" label="/iso-8859-2-html.cnv"/>
+  <int value="521388409" label="/windows-1252-html.cnv"/>
+  <int value="638014984" label="/iso-8859-10-html.cnv"/>
+  <int value="644061783" label="/big5-html.cnv"/>
+  <int value="741606455" label="brkitr/word.brk"/>
+  <int value="803888318" label="coll/ucadata.icu"/>
+  <int value="815707934" label="/windows-1253-html.cnv"/>
+  <int value="824383969" label="/windows-1255-html.cnv"/>
+  <int value="828722545" label="/iso-8859-8-html.cnv"/>
+  <int value="1069381207" label="/windows-1251-html.cnv"/>
+  <int value="1077119420" label="/iso-8859-15-html.cnv"/>
+  <int value="1107452641" label="/iso-8859-6-html.cnv"/>
+  <int value="1110127155" label="/euc-jp-html.cnv"/>
+  <int value="1197891648" label="/windows-874-html.cnv"/>
+  <int value="1263030766" label="/euc-kr-html.cnv"/>
+  <int value="1593431589" label="/ISO-2022-CN-EXT.cnv"/>
+  <int value="1611823660" label="/windows-1254-html.cnv"/>
+  <int value="1721050252" label="/iso-8859-14-html.cnv"/>
+  <int value="1743955546" label="brkitr/char.brk"/>
+  <int value="1993636507" label="/gb18030.cnv"/>
+  <int value="1998603597" label="/ibm866-html.cnv"/>
+</enum>
+
 <enum name="IDBAction">
   <int value="0" label="BackingStoreOpenAttempt">
     Recorded when the there is an attempt to open the backing store from disk,
@@ -54521,6 +54571,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="QueryWebAndAppActivityState">
+  <obsolete>
+    Removed March 2020.
+  </obsolete>
   <int value="0" label="History recording enabled"/>
   <int value="1" label="History recording disabled"/>
   <int value="2" label="Request failed"/>
@@ -63888,6 +63941,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SyncSetupSettignsDisplayedSwaaState">
+  <obsolete>
+    Removed March 2020.
+  </obsolete>
   <int value="0" label="On"/>
   <int value="1" label="Off due to custom encryption"/>
   <int value="2" label="Off due to history sync off"/>

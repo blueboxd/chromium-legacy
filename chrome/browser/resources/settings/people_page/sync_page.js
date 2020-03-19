@@ -5,32 +5,6 @@
 (function() {
 
 /**
- * These values are persisted to logs and should not be renumbered or re-used.
- * See SyncSetupSettignsDisplayedSwaaState in
- * tools/metrics/histograms/enums.xml.
- * @enum {number}
- */
-const displayedSwaaState = {
-  ON: 0,
-  OFF_ENCRYPTION_ON: 1,
-  OFF_HISTORY_SYNC_OFF: 2,
-  OFF_WEB_AND_APP_ACTIVITY: 3,
-  NONE: 4,
-};
-
-/**
- * All possible states for the sWAA bit.
- * @enum {string}
- */
-const SwaaState = {
-  NOT_FETCHED: 'not-fetched',
-  FETCHING: 'fetching',
-  FAILED: 'failed',
-  ON: 'On',
-  OFF: 'Off',
-};
-
-/**
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
  */
@@ -40,7 +14,6 @@ Polymer({
   behaviors: [
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
-    I18nBehavior,
   ],
 
   properties: {
@@ -142,45 +115,13 @@ Polymer({
     syncSetupFriendlySettings_: {
       type: Boolean,
       value() {
-        return loadTimeData.valueExists('syncSetupFriendlySettings') &&
-            loadTimeData.getBoolean('syncSetupFriendlySettings');
+        return loadTimeData.getBoolean('syncSetupFriendlySettings');
       }
-    },
-
-    /**
-     * Whether history is not synced or data is encrypted.
-     * @private
-     */
-    historyNotSyncedOrEncrypted_: {
-      type: Boolean,
-      computed: 'computeHistoryNotSyncedOrEncrypted_(' +
-          'syncPrefs.encryptAllData, syncPrefs.typedUrlsSynced)',
-    },
-
-    /** @private */
-    hideActivityControlsUrl_: {
-      type: Boolean,
-      computed: 'computeHideActivityControlsUrl_(historyNotSyncedOrEncrypted_)',
-    },
-
-    /** @private */
-    Swaa_: {
-      type: String,
-      value: SwaaState.NOT_FETCHED,
     },
   },
 
-  observers: ['fetchSwaa_(syncSectionDisabled_, historyNotSyncedOrEncrypted_)'],
-
   /** @private {?settings.SyncBrowserProxy} */
   browserProxy_: null,
-
-  /**
-   * The visibility changed callback is used to refetch the |Swaa_| bit when
-   * the page is foregrounded.
-   * @private {?Function}
-   */
-  visibilityChangedCallback_: null,
 
   /**
    * The beforeunload callback is used to show the 'Leave site' dialog. This
@@ -282,134 +223,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Returns true if History sync is off or data is encrypted.
-   * @private
-   */
-  computeHistoryNotSyncedOrEncrypted_() {
-    return !!(this.syncPrefs) &&
-        (!this.syncPrefs.typedUrlsSynced || this.syncPrefs.encryptAllData);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeHideActivityControlsUrl_() {
-    return !!this.syncSetupFriendlySettings_ &&
-        !!this.historyNotSyncedOrEncrypted_;
-  },
-
-
-  /**
-   * Compute and fetch the sWAA bit for sync users. sWAA is 'OFF' if sync
-   * history is off or data is encrypted with custom passphrase. Otherwise,
-   * a query to |Web and App Activity| is needed.
-   * @private
-   */
-  fetchSwaa_() {
-    const router = settings.Router.getInstance();
-    if (router.getCurrentRoute() !== router.getRoutes().SYNC) {
-      return;
-    }
-
-    if (!this.syncSetupFriendlySettings_) {
-      return;
-    }
-
-    if (!this.syncPrefs || this.syncPrefs.encryptAllData === undefined ||
-        this.syncPrefs.typedUrlsSynced === undefined) {
-      return;
-    }
-
-    if (this.syncSectionDisabled_) {
-      this.Swaa_ = SwaaState.NOT_FETCHED;
-      return;
-    }
-
-    if (this.historyNotSyncedOrEncrypted_) {
-      this.Swaa_ = SwaaState.OFF;
-      this.recordDisplayedSwaa();
-      return;
-    }
-
-    if (this.Swaa_ === SwaaState.FETCHING) {
-      return;
-    }
-
-    this.Swaa_ = SwaaState.FETCHING;
-    const updateSwaa = historyRecordingEnabled => {
-      this.Swaa_ = historyRecordingEnabled.requestSucceeded ?
-          (historyRecordingEnabled.historyRecordingEnabled ? SwaaState.ON :
-                                                             SwaaState.OFF) :
-          SwaaState.FAILED;
-      this.recordDisplayedSwaa();
-    };
-    this.browserProxy_.queryIsHistoryRecordingEnabled().then(updateSwaa);
-  },
-
-  /** @private */
-  recordDisplayedSwaa() {
-    let currentDisplayedSwaa;
-    if (this.Swaa_ === SwaaState.FAILED) {
-      currentDisplayedSwaa = displayedSwaaState.NONE;
-    } else if (this.Swaa_ === SwaaState.ON) {
-      currentDisplayedSwaa = displayedSwaaState.ON;
-    } else {
-      assert(this.Swaa_ === SwaaState.OFF);
-      if (this.syncPrefs.encryptAllData) {
-        currentDisplayedSwaa = displayedSwaaState.OFF_ENCRYPTION_ON;
-      } else if (!this.syncPrefs.typedUrlsSynced) {
-        currentDisplayedSwaa = displayedSwaaState.OFF_HISTORY_SYNC_OFF;
-      } else {
-        currentDisplayedSwaa = displayedSwaaState.OFF_WEB_AND_APP_ACTIVITY;
-      }
-    }
-    chrome.metricsPrivate.recordEnumerationValue(
-        'Settings.SyncSetup.DisplayedSwaaState', currentDisplayedSwaa,
-        Object.keys(displayedSwaaState).length);
-  },
-
-  /**
-   * Refetch sWAA when the page is forgrounded, to guarantee the value shown is
-   * most up-to-date.
-   * @private
-   */
-  visibilityHandler_() {
-    if (document.visibilityState === 'visible') {
-      this.fetchSwaa_();
-    }
-  },
-
-  /**
-   * Return hint to explain the sWAA state. It is displayed as secondary text in
-   * the history usage row.
-   * @private
-   */
-  getHistoryUsageOffHint_() {
-    if (this.Swaa_ === SwaaState.OFF) {
-      if (this.syncPrefs.encryptAllData) {
-        return this.i18n('dataEncryptedHint');
-      }
-
-      if (!this.syncPrefs.typedUrlsSynced) {
-        return this.i18n('historySyncOffHint');
-      }
-      return this.i18n('SwaaOffHint');
-    }
-    return '';
-  },
-
-  /**
-   * @private
-   */
-  getSwaaStateText_() {
-    if (!this.isSwaaFetched_()) {
-      return '';
-    }
-    return this.i18n(this.Swaa_ === SwaaState.ON ? 'SwaaOn' : 'SwaaOff');
-  },
-
-  /**
    * @return {boolean}
    * @private
    */
@@ -495,36 +308,10 @@ Polymer({
     return expectedPageStatus == this.pageStatus_;
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  isSwaaFetching_() {
-    return this.Swaa_ === SwaaState.FETCHING;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  isSwaaFetched_() {
-    return this.Swaa_ === SwaaState.ON || this.Swaa_ === SwaaState.OFF;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  isSwaaOff_() {
-    return this.Swaa_ === SwaaState.OFF;
-  },
-
   /** @private */
   onNavigateToPage_() {
     const router = settings.Router.getInstance();
     assert(router.getCurrentRoute() == router.getRoutes().SYNC);
-    this.Swaa_ = SwaaState.NOT_FETCHED;
-    this.fetchSwaa_();
     if (this.beforeunloadCallback_) {
       return;
     }
@@ -551,11 +338,6 @@ Polymer({
 
     this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
     window.addEventListener('unload', this.unloadCallback_);
-
-    this.visibilityChangedCallback_ = this.visibilityHandler_.bind(this);
-    window.addEventListener('focus', this.visibilityChangedCallback_);
-    document.addEventListener(
-        'visibilitychange', this.visibilityChangedCallback_);
   },
 
   /** @private */
@@ -577,13 +359,6 @@ Polymer({
       window.removeEventListener('unload', this.unloadCallback_);
       this.unloadCallback_ = null;
     }
-
-    if (this.visibilityChangedCallback_) {
-      window.removeEventListener('focus', this.visibilityChangedCallback_);
-      document.removeEventListener(
-          'visibilitychange', this.visibilityChangedCallback_);
-      this.visibilityChangedCallback_ = null;
-    }
   },
 
   /**
@@ -594,8 +369,13 @@ Polymer({
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
-    if (this.Swaa_ === SwaaState.FAILED) {
-      this.fetchSwaa_();
+    // Hide the new passphrase box if (a) full data encryption is enabled,
+    // (b) encrypting all data is not allowed (so far, only applies to
+    // supervised accounts), or (c) the user is a supervised account.
+    if (this.syncPrefs.encryptAllData ||
+        !this.syncPrefs.encryptAllDataAllowed ||
+        (this.syncStatus && this.syncStatus.supervisedUser)) {
+      this.creatingNewPassphrase_ = false;
     }
   },
 

@@ -69,9 +69,10 @@ declare_args() {
   # Use it by default on official-optimized android and Chrome OS builds, but
   # not ARC or linux-chromeos since it's been seen to not play nicely with
   # Chrome's clang. crbug.com/1033839
-  use_thin_lto = is_cfi || (is_official_build &&
-                            (target_os == "android" ||
-                             (target_os == "chromeos" && is_chromeos_device)))
+  use_thin_lto =
+      is_cfi || (is_official_build && (target_os == "android" ||
+                                       (target_os == "chromeos" &&
+                                        is_chromeos_device && !is_android)))
 
   # Performs ThinLTO code generation on Goma.
   use_goma_thin_lto = false

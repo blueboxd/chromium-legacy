@@ -57,6 +57,10 @@ apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url);
 // level values of all existing condition types.
 int GetFilterMatchLevel(const apps::mojom::IntentFilterPtr& intent_filter);
 
+// Check if the two intent filters have overlap. i.e. they can handle same
+// intent with same match level.
+bool FiltersHaveOverlap(const apps::mojom::IntentFilterPtr& filter1,
+                        const apps::mojom::IntentFilterPtr& filter2);
 }  // namespace apps_util
 
 #endif  // CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_INTENT_FILTER_UTIL_H_

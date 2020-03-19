@@ -22,9 +22,9 @@ class VectorBackedLinkedListReverseIterator;
 template <typename VectorBackedLinkedListType>
 class VectorBackedLinkedListConstReverseIterator;
 
-template <typename ValueType>
+template <typename ValueType, typename Allocator>
 class VectorBackedLinkedListNode {
-  USING_FAST_MALLOC(VectorBackedLinkedListNode);
+  USE_ALLOCATOR(VectorBackedLinkedListNode, Allocator);
 
  public:
   VectorBackedLinkedListNode() = delete;
@@ -54,21 +54,57 @@ class VectorBackedLinkedListNode {
   VectorBackedLinkedListNode& operator=(VectorBackedLinkedListNode&& other) =
       default;
 
+  template <typename VisitorDispathcer, typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispathcer visitor) {
+    visitor->Trace(value_);
+  }
+
+  // Those indices can be initialized with |kNotFound| (not with 0), since
+  // VectorBackedLinkedList won't be initialized with memset.
   wtf_size_t prev_index_ = kNotFound;
   wtf_size_t next_index_ = kNotFound;
   ValueType value_ = HashTraits<ValueType>::EmptyValue();
+};
+
+template <typename ValueType, typename Allocator>
+struct VectorTraits<VectorBackedLinkedListNode<ValueType, Allocator>>
+    : VectorTraitsBase<VectorBackedLinkedListNode<ValueType, Allocator>> {
+  STATIC_ONLY(VectorTraits);
+
+  static const bool kNeedsDestruction =
+      VectorTraits<ValueType>::kNeedsDestruction;
+  // VectorBackedLinkedList can't be initialized with memset, because we use
+  // kNotFound as sentinel value.
+  static const bool kCanInitializeWithMemset = false;
+  static const bool kCanClearUnusedSlotsWithMemset =
+      VectorTraits<ValueType>::kCanClearUnusedSlotsWithMemset;
+  static const bool kCanCopyWithMemcpy =
+      VectorTraits<ValueType>::kCanCopyWithMemcpy;
+  static const bool kCanMoveWithMemcpy =
+      VectorTraits<ValueType>::kCanMoveWithMemcpy;
+
+  // Needs to be shadowing because |VectorTraitsBase::IsDeletedValue| uses call
+  // by value, which means we need to define copy constructor of
+  // |VectorBackedLinkedList|. We can remove this function if we change
+  // |VectorTraitsBase::IsDeletedValue| to use call by reference.
+  static bool IsDeletedValue(
+      const VectorBackedLinkedListNode<ValueType, Allocator>& node) {
+    NOTREACHED();
+    return false;
+  }
 };
 
 // VectorBackedLinkedList maintains a linked list through its contents such that
 // iterating it yields values in the order in which they were inserted.
 // The linked list is implementing in a vector (with links being indexes instead
 // of pointers), to simplify the move of backing during GC compaction.
-template <typename ValueType>
+template <typename ValueType, typename Allocator = PartitionAllocator>
 class VectorBackedLinkedList {
-  USING_FAST_MALLOC(VectorBackedLinkedList);
+  USE_ALLOCATOR(VectorBackedLinkedList, Allocator);
 
  private:
-  using Node = VectorBackedLinkedListNode<ValueType>;
+  using Node = VectorBackedLinkedListNode<ValueType, Allocator>;
+  using VectorType = Vector<Node, 0, Allocator>;
 
  public:
   using Value = ValueType;
@@ -150,6 +186,11 @@ class VectorBackedLinkedList {
     size_ = 0;
   }
 
+  template <typename VisitorDispatcher, typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
+    nodes_.Trace(visitor);
+  }
+
 #if DCHECK_IS_ON()
   int64_t Modifications() const { return modifications_; }
   void RegisterModification() { modifications_++; }
@@ -191,7 +232,7 @@ class VectorBackedLinkedList {
 
   void Unlink(const Node&);
 
-  Vector<Node> nodes_;
+  VectorType nodes_;
   static constexpr wtf_size_t anchor_index_ = 0;
   // Anchor is not included in the free list, but it serves as the list's
   // terminator.
@@ -201,7 +242,7 @@ class VectorBackedLinkedList {
   int64_t modifications_ = 0;
 #endif
 
-  template <typename T>
+  template <typename T, typename U>
   friend class NewLinkedHashSet;
 };
 
@@ -230,11 +271,11 @@ class VectorBackedLinkedListIterator {
   VectorBackedLinkedListIterator& operator++(int) = delete;
   VectorBackedLinkedListIterator& operator--(int) = delete;
 
-  bool operator==(const VectorBackedLinkedListIterator& other) {
+  bool operator==(const VectorBackedLinkedListIterator& other) const {
     return iterator_ == other.iterator_;
   }
 
-  bool operator!=(const VectorBackedLinkedListIterator& other) {
+  bool operator!=(const VectorBackedLinkedListIterator& other) const {
     return !(*this == other);
   }
 
@@ -250,7 +291,7 @@ class VectorBackedLinkedListIterator {
 
   const_iterator iterator_;
 
-  template <typename T>
+  template <typename T, typename Allocator>
   friend class VectorBackedLinkedList;
 };
 
@@ -294,12 +335,12 @@ class VectorBackedLinkedListConstIterator {
   VectorBackedLinkedListConstIterator operator++(int) = delete;
   VectorBackedLinkedListConstIterator operator--(int) = delete;
 
-  bool operator==(const VectorBackedLinkedListConstIterator& other) {
+  bool operator==(const VectorBackedLinkedListConstIterator& other) const {
     DCHECK_EQ(container_, other.container_);
     return index_ == other.index_ && container_ == other.container_;
   }
 
-  bool operator!=(const VectorBackedLinkedListConstIterator& other) {
+  bool operator!=(const VectorBackedLinkedListConstIterator& other) const {
     return !(*this == other);
   }
 
@@ -329,7 +370,7 @@ class VectorBackedLinkedListConstIterator {
   void CheckModifications() const {}
 #endif
 
-  template <typename T>
+  template <typename T, typename Allocator>
   friend class VectorBackedLinkedList;
   friend class VectorBackedLinkedListIterator<VectorBackedLinkedListType>;
 };
@@ -358,11 +399,11 @@ class VectorBackedLinkedListReverseIterator {
   VectorBackedLinkedListReverseIterator& operator++(int) = delete;
   VectorBackedLinkedListReverseIterator& operator--(int) = delete;
 
-  bool operator==(const VectorBackedLinkedListReverseIterator& other) {
+  bool operator==(const VectorBackedLinkedListReverseIterator& other) const {
     return iterator_ == other.iterator_;
   }
 
-  bool operator!=(const VectorBackedLinkedListReverseIterator& other) {
+  bool operator!=(const VectorBackedLinkedListReverseIterator& other) const {
     return !(*this == other);
   }
 
@@ -378,7 +419,7 @@ class VectorBackedLinkedListReverseIterator {
 
   const_reverse_iterator iterator_;
 
-  template <typename T>
+  template <typename T, typename Allocator>
   friend class VectorBackedLinkedList;
 };
 
@@ -408,71 +449,73 @@ class VectorBackedLinkedListConstReverseIterator
       const VectorBackedLinkedListType* container)
       : Superclass(index, container) {}
 
-  template <typename T>
+  template <typename T, typename Allocator>
   friend class VectorBackedLinkedList;
   friend class VectorBackedLinkedListReverseIterator<
       VectorBackedLinkedListType>;
 };
 
-template <typename T>
-VectorBackedLinkedList<T>::VectorBackedLinkedList() {
+template <typename T, typename Allocator>
+VectorBackedLinkedList<T, Allocator>::VectorBackedLinkedList() {
   // First inserts anchor, which serves as the beginning and the end of
   // the used list.
   nodes_.push_back(Node(anchor_index_, anchor_index_));
 }
 
-template <typename T>
-inline VectorBackedLinkedList<T>::VectorBackedLinkedList(
+template <typename T, typename Allocator>
+inline VectorBackedLinkedList<T, Allocator>::VectorBackedLinkedList(
     VectorBackedLinkedList&& other) {
   swap(other);
 }
 
-template <typename T>
-inline VectorBackedLinkedList<T>& VectorBackedLinkedList<T>::operator=(
+template <typename T, typename Allocator>
+inline VectorBackedLinkedList<T, Allocator>&
+VectorBackedLinkedList<T, Allocator>::operator=(
     VectorBackedLinkedList&& other) {
   swap(other);
   return *this;
 }
 
-template <typename T>
-inline void VectorBackedLinkedList<T>::swap(VectorBackedLinkedList& other) {
+template <typename T, typename Allocator>
+inline void VectorBackedLinkedList<T, Allocator>::swap(
+    VectorBackedLinkedList& other) {
   nodes_.swap(other.nodes_);
-  swap(free_head_index_, other.free_head_index_);
-  swap(size_, other.size_);
+  std::swap(free_head_index_, other.free_head_index_);
+  std::swap(size_, other.size_);
 #if DCHECK_IS_ON()
-  swap(modifications_, other.modificatoins_);
+  std::swap(modifications_, other.modifications_);
 #endif
 }
 
-template <typename T>
-T& VectorBackedLinkedList<T>::front() {
+template <typename T, typename Allocator>
+T& VectorBackedLinkedList<T, Allocator>::front() {
   DCHECK(!empty());
   return nodes_[UsedFirstIndex()].value_;
 }
 
-template <typename T>
-const T& VectorBackedLinkedList<T>::front() const {
+template <typename T, typename Allocator>
+const T& VectorBackedLinkedList<T, Allocator>::front() const {
   DCHECK(!empty());
   return nodes_[UsedFirstIndex()].value_;
 }
 
-template <typename T>
-T& VectorBackedLinkedList<T>::back() {
+template <typename T, typename Allocator>
+T& VectorBackedLinkedList<T, Allocator>::back() {
   DCHECK(!empty());
   return nodes_[UsedLastIndex()].value_;
 }
 
-template <typename T>
-const T& VectorBackedLinkedList<T>::back() const {
+template <typename T, typename Allocator>
+const T& VectorBackedLinkedList<T, Allocator>::back() const {
   DCHECK(!empty());
   return nodes_[UsedLastIndex()].value_;
 }
 
-template <typename T>
+template <typename T, typename Allocator>
 template <typename IncomingValueType>
-typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
-    const_iterator position,
-    IncomingValueType&& value) {
+typename VectorBackedLinkedList<T, Allocator>::iterator
+VectorBackedLinkedList<T, Allocator>::insert(const_iterator position,
+                                             IncomingValueType&& value) {
   RegisterModification();
   wtf_size_t position_index = position.GetIndex();
   wtf_size_t prev_index = nodes_[position_index].prev_index_;
@@ -495,10 +538,10 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
   return iterator(new_entry_index, this);
 }
 
-template <typename T>
-typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::MoveTo(
-    const_iterator target,
-    const_iterator new_position) {
+template <typename T, typename Allocator>
+typename VectorBackedLinkedList<T, Allocator>::iterator
+VectorBackedLinkedList<T, Allocator>::MoveTo(const_iterator target,
+                                             const_iterator new_position) {
   DCHECK(target != end());
   RegisterModification();
 
@@ -523,9 +566,9 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::MoveTo(
   return MakeIterator(target_index);
 }
 
-template <typename T>
-typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::erase(
-    const_iterator position) {
+template <typename T, typename Allocator>
+typename VectorBackedLinkedList<T, Allocator>::iterator
+VectorBackedLinkedList<T, Allocator>::erase(const_iterator position) {
   DCHECK(position != end());
   RegisterModification();
   wtf_size_t position_index = position.GetIndex();
@@ -543,8 +586,8 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::erase(
   return iterator(next_index, this);
 }
 
-template <typename T>
-void VectorBackedLinkedList<T>::Unlink(const Node& node) {
+template <typename T, typename Allocator>
+void VectorBackedLinkedList<T, Allocator>::Unlink(const Node& node) {
   wtf_size_t prev_index = node.prev_index_;
   wtf_size_t next_index = node.next_index_;
 

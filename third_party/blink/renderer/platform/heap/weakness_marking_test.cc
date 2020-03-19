@@ -198,6 +198,8 @@ TEST_F(WeaknessMarkingTest, TracableEphemeronIsRegsitered) {
   EXPECT_NE(old_ephemeron_count, ephemeron_count);
 }
 
+// TODO(keinakashima): add tests for NewLinkedHashSet after supporting
+// WeakMember
 TEST_F(WeaknessMarkingTest, SwapIntoAlreadyProcessedWeakSet) {
   // Regression test: https://crbug.com/1038623
   //

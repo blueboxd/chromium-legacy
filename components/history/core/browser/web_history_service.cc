@@ -64,19 +64,6 @@ const char kPostDataMimeType[] = "text/plain";
 
 const char kSyncProtoMimeType[] = "application/octet-stream";
 
-const char kQueryWebAndAppActivityStateHistogramName[] =
-    "WebHistory.QueryWebAndAppActivity.State";
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class QueryWebAndAppActivityState {
-  kOn = 0,
-  kOff = 1,
-  kRequestFailed = 2,
-  kUnexpectedResponse = 3,
-  kMaxValue = kUnexpectedResponse,
-};
-
 // The maximum number of retries for the SimpleURLLoader requests.
 const size_t kMaxRetries = 1;
 
@@ -540,30 +527,6 @@ void WebHistoryService::QueryWebAndAppActivity(
   request->Start();
 }
 
-// static
-std::unique_ptr<history::WebHistoryService::Request>
-WebHistoryService::CreateQueryWebAndAppActivityRequest(
-    signin::IdentityManager* identity_manager,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    QueryWebAndAppActivityWithRequestCallback callback,
-    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
-  CompletionCallback completion_callback = base::BindOnce(
-      [](QueryWebAndAppActivityWithRequestCallback callback,
-         WebHistoryService::Request* request, bool success) {
-        std::move(callback).Run(
-            request,
-            WebHistoryService::ReportQueryWebAndAppActivity(request, success));
-      },
-      std::move(callback));
-
-  GURL url(kQueryWebAndAppActivityUrl);
-  std::unique_ptr<history::WebHistoryService::Request> request =
-      base::WrapUnique(new RequestImpl(identity_manager, url_loader_factory,
-                                       url, std::move(completion_callback),
-                                       partial_traffic_annotation));
-  return request;
-}
-
 void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
     version_info::Channel channel,
     QueryOtherFormsOfBrowsingHistoryCallback callback,
@@ -666,7 +629,18 @@ void WebHistoryService::QueryWebAndAppActivityCompletionCallback(
       std::move(pending_web_and_app_activity_requests_[request]);
   pending_web_and_app_activity_requests_.erase(request);
 
-  std::move(callback).Run(ReportQueryWebAndAppActivity(request, success));
+  std::unique_ptr<base::DictionaryValue> response_value;
+  bool web_and_app_activity_enabled = false;
+
+  if (success) {
+    response_value = ReadResponse(request);
+    if (response_value) {
+      response_value->GetBoolean("history_recording_enabled",
+                                 &web_and_app_activity_enabled);
+    }
+  }
+
+  std::move(callback).Run(web_and_app_activity_enabled);
 }
 
 void WebHistoryService::QueryOtherFormsOfBrowsingHistoryCompletionCallback(
@@ -685,31 +659,6 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistoryCompletionCallback(
   }
 
   std::move(callback).Run(has_other_forms_of_browsing_history);
-}
-
-// static
-base::Optional<bool> WebHistoryService::ReportQueryWebAndAppActivity(
-    WebHistoryService::Request* request,
-    bool success) {
-  if (success) {
-    std::unique_ptr<base::DictionaryValue> response_value;
-    response_value = ReadResponse(request);
-    bool web_and_app_activity_enabled = false;
-    if (response_value &&
-        response_value->GetBoolean("history_recording_enabled",
-                                   &web_and_app_activity_enabled)) {
-      UMA_HISTOGRAM_ENUMERATION(kQueryWebAndAppActivityStateHistogramName,
-                                web_and_app_activity_enabled
-                                    ? QueryWebAndAppActivityState::kOn
-                                    : QueryWebAndAppActivityState::kOff);
-      return web_and_app_activity_enabled;
-    }
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      kQueryWebAndAppActivityStateHistogramName,
-      success ? QueryWebAndAppActivityState::kUnexpectedResponse
-              : QueryWebAndAppActivityState::kRequestFailed);
-  return base::nullopt;
 }
 
 }  // namespace history

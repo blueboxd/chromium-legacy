@@ -8,7 +8,7 @@ assert(is_chromeos)
 
 mojom("mojo_bindings") {
   sources = [
-    "search.mojom",
     "search_result_icon.mojom",
+    "user_action_recorder.mojom",
   ]
 }

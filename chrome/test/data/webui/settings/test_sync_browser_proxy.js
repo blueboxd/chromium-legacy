@@ -23,7 +23,6 @@
       'sendSyncPrefsChanged',
       'startSignIn',
       'startSyncingWithEmail',
-      'queryIsHistoryRecordingEnabled',
     ];
 
     if (cr.isChromeOS) {
@@ -34,12 +33,6 @@
 
     /** @private {number} */
     this.impressionCount_ = 0;
-
-    /** @type {!HistoryRecordingEnabled} */
-    this.historyRecordingEnabled_ = {
-      requestSucceeded: true,
-      historyRecordingEnabled: true
-    };
 
     /** @type {!settings.PageStatus} */
     this.encryptionResponse = settings.PageStatus.CONFIGURE;
@@ -117,19 +110,6 @@
   /** @override */
   sendSyncPrefsChanged() {
     this.methodCalled('sendSyncPrefsChanged');
-  }
-
-  /**
-   * @param {!HistoryRecordingEnabled} historyRecordingEnabled
-   */
-  setHistoryRecordingEnabled(historyRecordingEnabled) {
-    this.historyRecordingEnabled_ = historyRecordingEnabled;
-  }
-
-  /** @override */
-  queryIsHistoryRecordingEnabled() {
-    this.methodCalled('queryIsHistoryRecordingEnabled');
-    return Promise.resolve(this.historyRecordingEnabled_);
   }
 }
 

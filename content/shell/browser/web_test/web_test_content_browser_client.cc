@@ -26,7 +26,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "content/shell/browser/web_test/blink_test_client_impl.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser_factory.h"
@@ -39,6 +38,7 @@
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
 #include "content/shell/browser/web_test/web_test_tts_platform.h"
+#include "content/shell/common/blink_test.mojom.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/test/mock_clipboard_host.h"
@@ -48,6 +48,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "storage/browser/quota/quota_settings.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "url/origin.h"
 
 namespace content {
@@ -156,9 +157,6 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::BindRepeating(&WebTestBluetoothFakeAdapterSetterImpl::Create),
       ui_task_runner);
-
-  registry->AddInterface(base::BindRepeating(&BlinkTestClientImpl::Create),
-                         ui_task_runner);
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
   registry->AddInterface(base::BindRepeating(&WebTestClientImpl::Create,
@@ -190,6 +188,10 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
           &WebTestContentBrowserClient::BindPermissionAutomation,
           base::Unretained(this)),
       ui_task_runner);
+
+  associated_registry->AddInterface(
+      base::BindRepeating(&WebTestContentBrowserClient::BindBlinkTestController,
+                          base::Unretained(this)));
 }
 
 void WebTestContentBrowserClient::BindClientHintsControllerDelegate(
@@ -402,6 +404,12 @@ void WebTestContentBrowserClient::CreateFakeBluetoothChooserFactory(
   DCHECK(!fake_bluetooth_chooser_factory_);
   fake_bluetooth_chooser_factory_ =
       FakeBluetoothChooserFactory::Create(std::move(receiver));
+}
+
+void WebTestContentBrowserClient::BindBlinkTestController(
+    mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver) {
+  if (BlinkTestController::Get())
+    BlinkTestController::Get()->AddBlinkTestClientReceiver(std::move(receiver));
 }
 
 }  // namespace content

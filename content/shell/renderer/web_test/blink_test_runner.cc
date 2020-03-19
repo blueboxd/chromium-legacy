@@ -50,6 +50,7 @@
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
+#include "ipc/ipc_sync_channel.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capturer_source.h"
@@ -58,6 +59,7 @@
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
@@ -180,12 +182,12 @@ void BlinkTestRunner::SetEditCommand(const std::string& name,
 }
 
 void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
-  GetBlinkTestClientRemote().PrintMessageToStderr(message);
+  GetBlinkTestClientRemote()->PrintMessageToStderr(message);
 }
 
 void BlinkTestRunner::PrintMessage(const std::string& message) {
   if (!is_secondary_window_)
-    GetBlinkTestClientRemote().PrintMessage(message);
+    GetBlinkTestClientRemote()->PrintMessage(message);
 }
 
 void BlinkTestRunner::PostTask(base::OnceClosure task) {
@@ -238,11 +240,11 @@ void BlinkTestRunner::ApplyPreferences() {
   WebPreferences prefs = render_view()->GetWebkitPreferences();
   ExportWebTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
-  GetBlinkTestClientRemote().OverridePreferences(prefs);
+  GetBlinkTestClientRemote()->OverridePreferences(prefs);
 }
 
 void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  GetBlinkTestClientRemote().SetPopupBlockingEnabled(block_popups);
+  GetBlinkTestClientRemote()->SetPopupBlockingEnabled(block_popups);
 }
 
 void BlinkTestRunner::UseUnfortunateSynchronousResizeMode(bool enable) {
@@ -270,7 +272,7 @@ void BlinkTestRunner::ResetAutoResizeMode() {
 }
 
 void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
-  GetBlinkTestClientRemote().NavigateSecondaryWindow(url);
+  GetBlinkTestClientRemote()->NavigateSecondaryWindow(url);
 }
 
 void BlinkTestRunner::InspectSecondaryWindow() {
@@ -338,19 +340,19 @@ void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
 }
 
 void BlinkTestRunner::SetBluetoothManualChooser(bool enable) {
-  GetBlinkTestClientRemote().SetBluetoothManualChooser(enable);
+  GetBlinkTestClientRemote()->SetBluetoothManualChooser(enable);
 }
 
 void BlinkTestRunner::GetBluetoothManualChooserEvents(
     base::OnceCallback<void(const std::vector<std::string>&)> callback) {
   get_bluetooth_events_callbacks_.push_back(std::move(callback));
-  GetBlinkTestClientRemote().GetBluetoothManualChooserEvents();
+  GetBlinkTestClientRemote()->GetBluetoothManualChooserEvents();
 }
 
 void BlinkTestRunner::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
-  GetBlinkTestClientRemote().SendBluetoothManualChooserEvent(event, argument);
+  GetBlinkTestClientRemote()->SendBluetoothManualChooserEvent(event, argument);
 }
 
 void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
@@ -506,7 +508,7 @@ void BlinkTestRunner::CaptureLocalLayoutDump() {
     // TODO(vmpstr): Since CaptureDump is called from the browser, we can be
     // smart and move this logic directly to the browser.
     waiting_for_layout_dump_results_ = true;
-    GetBlinkTestClientRemote().InitiateLayoutDump();
+    GetBlinkTestClientRemote()->InitiateLayoutDump();
   }
 }
 
@@ -567,7 +569,7 @@ void BlinkTestRunner::CaptureDumpComplete() {
 }
 
 void BlinkTestRunner::CloseRemainingWindows() {
-  GetBlinkTestClientRemote().CloseRemainingWindows();
+  GetBlinkTestClientRemote()->CloseRemainingWindows();
 }
 
 void BlinkTestRunner::DeleteAllCookies() {
@@ -579,16 +581,16 @@ int BlinkTestRunner::NavigationEntryCount() {
 }
 
 void BlinkTestRunner::GoToOffset(int offset) {
-  GetBlinkTestClientRemote().GoToOffset(offset);
+  GetBlinkTestClientRemote()->GoToOffset(offset);
 }
 
 void BlinkTestRunner::Reload() {
-  GetBlinkTestClientRemote().Reload();
+  GetBlinkTestClientRemote()->Reload();
 }
 
 void BlinkTestRunner::LoadURLForFrame(const WebURL& url,
                                       const std::string& frame_name) {
-  GetBlinkTestClientRemote().LoadURLForFrame(url, frame_name);
+  GetBlinkTestClientRemote()->LoadURLForFrame(url, frame_name);
 }
 
 bool BlinkTestRunner::AllowExternalPages() {
@@ -654,7 +656,7 @@ void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
 }
 
 void BlinkTestRunner::SetScreenOrientationChanged() {
-  GetBlinkTestClientRemote().SetScreenOrientationChanged();
+  GetBlinkTestClientRemote()->SetScreenOrientationChanged();
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -715,7 +717,7 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
 
   waiting_for_reset_ = false;
 
-  GetBlinkTestClientRemote().ResetDone();
+  GetBlinkTestClientRemote()->ResetDone();
 }
 
 // Private methods  -----------------------------------------------------------
@@ -729,12 +731,20 @@ BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   return *bluetooth_fake_adapter_setter_;
 }
 
-mojom::BlinkTestClient& BlinkTestRunner::GetBlinkTestClientRemote() {
+mojo::AssociatedRemote<mojom::BlinkTestClient>&
+BlinkTestRunner::GetBlinkTestClientRemote() {
   if (!blink_test_client_remote_) {
-    RenderThread::Get()->BindHostReceiver(
-        blink_test_client_remote_.BindNewPipeAndPassReceiver());
+    RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+        &blink_test_client_remote_);
+    blink_test_client_remote_.set_disconnect_handler(
+        base::BindOnce(&BlinkTestRunner::HandleBlinkTestClientDisconnected,
+                       base::Unretained(this)));
   }
-  return *blink_test_client_remote_;
+  return blink_test_client_remote_;
+}
+
+void BlinkTestRunner::HandleBlinkTestClientDisconnected() {
+  blink_test_client_remote_.reset();
 }
 
 mojom::WebTestClient& BlinkTestRunner::GetWebTestClientRemote() {

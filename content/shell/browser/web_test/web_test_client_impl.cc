@@ -150,7 +150,7 @@ void WebTestClientImpl::SimulateWebContentIndexDelete(const std::string& id) {
 }
 
 void WebTestClientImpl::BlockThirdPartyCookies(bool block) {
-  BlinkTestController::Get()->OnBlockThirdPartyCookies(block);
+  BlinkTestController::Get()->BlockThirdPartyCookies(block);
 }
 
 void WebTestClientImpl::ResetPermissions() {

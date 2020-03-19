@@ -10,40 +10,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/history/core/browser/web_history_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/version_info/version_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
-constexpr net::PartialNetworkTrafficAnnotationTag
-    kHistoryRecordingEnabledAnnotation =
-        net::DefinePartialNetworkTrafficAnnotation("history_recording_enabled",
-                                                   "web_history_service",
-                                                   R"(
-        semantics {
-          description:
-            "Queries history.google.com to find out if user has the 'Include "
-            "Chrome browsing history and activity from websites and apps that "
-            "use Google services' option enabled in the Activity controls of "
-            "their Google account. This is done for users who sync their "
-            "browsing history without a custom passphrase in order to show "
-            "information about history.google.com on the history page, "
-            "the settings sync setup page and in the Clear Browsing Data "
-            "dialog."
-          trigger:
-            "This request is sent when user opens the history page or the "
-            "settings sync setup page or the Clear Browsing Data dialog and "
-            "history sync without a custom passphrase is (re)enabled."
-          data:
-            "An OAuth2 token authenticating the user."
-        }
-        policy {
-          chrome_policy {
-            SyncDisabled {
-              SyncDisabled: true
-            }
-          }
-        })");
 
 // Merges several asynchronous boolean callbacks into one that returns a boolean
 // product of their responses. Deletes itself when done.
@@ -85,51 +58,42 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
     const syncer::SyncService* sync_service,
     history::WebHistoryService* history_service,
     base::OnceCallback<void(bool)> callback) {
-  IsHistoryRecordingEnabledAndCanBeUsed(
-      sync_service, history_service,
-      base::BindOnce(
-          [](base::OnceCallback<void(bool)> callback,
-             const base::Optional<bool>& history_recording_enabled) {
-            std::move(callback).Run(history_recording_enabled.value_or(false));
-          },
-          std::move(callback)));
-}
-
-std::unique_ptr<history::WebHistoryService::Request>
-CreateQueryWebAndAppActivityRequest(
-    signin::IdentityManager* identity_manager,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    base::OnceCallback<void(history::WebHistoryService::Request*,
-                            const base::Optional<bool>&)> callback) {
-  DCHECK(identity_manager);
-  DCHECK(url_loader_factory);
-
-  return history::WebHistoryService::CreateQueryWebAndAppActivityRequest(
-      identity_manager, url_loader_factory, std::move(callback),
-      kHistoryRecordingEnabledAnnotation);
-}
-
-void IsHistoryRecordingEnabledAndCanBeUsed(
-    const syncer::SyncService* sync_service,
-    history::WebHistoryService* history_service,
-    base::OnceCallback<void(const base::Optional<bool>&)> callback) {
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       !sync_service->GetActiveDataTypes().Has(
           syncer::HISTORY_DELETE_DIRECTIVES) ||
+      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
       !history_service) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
-    // The user has a custom passphrase. The data is encrypted and can not be
-    // used.
     std::move(callback).Run(false);
     return;
   }
-
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("history_notice_utils_notice",
+                                                 "web_history_service", R"(
+      semantics {
+        description:
+          "Queries history.google.com to find out if user has the 'Include "
+          "Chrome browsing history and activity from websites and apps that "
+          "use Google services' option enabled in the Activity controls of "
+          "their Google account. This is done for users who sync their "
+          "browsing history without a custom passphrase in order to show "
+          "information about history.google.com on the history page and in "
+          "the Clear Browsing Data dialog."
+        trigger:
+          "This request is sent when user opens the history page or the "
+          "Clear Browsing Data dialog and history sync without a custom "
+          "passphrase is (re)enabled."
+        data:
+          "An OAuth2 token authenticating the user."
+      }
+      policy {
+        chrome_policy {
+          SyncDisabled {
+            SyncDisabled: true
+          }
+        }
+      })");
   history_service->QueryWebAndAppActivity(std::move(callback),
-                                          kHistoryRecordingEnabledAnnotation);
+                                          partial_traffic_annotation);
 }
 
 void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
@@ -176,13 +140,8 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
             }
           })");
   history_service->QueryWebAndAppActivity(
-      base::BindOnce(
-          [](base::OnceCallback<void(bool)> callback,
-             const base::Optional<bool>& history_recording_enabled) {
-            std::move(callback).Run(history_recording_enabled.value_or(false));
-          },
-          base::BindOnce(&MergeBooleanCallbacks::RunCallback,
-                         base::Unretained(merger))),
+      base::BindOnce(&MergeBooleanCallbacks::RunCallback,
+                     base::Unretained(merger)),
       partial_traffic_annotation);
   history_service->QueryOtherFormsOfBrowsingHistory(
       channel,

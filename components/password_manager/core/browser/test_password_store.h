@@ -17,8 +17,17 @@
 #include "base/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace password_manager {
+
+// A matcher that compares two PasswordForm instances but ignores the |in_store|
+// member.
+MATCHER_P(MatchesFormExceptStore, expected, "") {
+  autofill::PasswordForm arg_copy = arg;
+  arg_copy.in_store = expected.in_store;
+  return arg_copy == expected;
+}
 
 // A very simple PasswordStore implementation that keeps all of the passwords
 // in memory and does all its manipulations on the main thread. Since this

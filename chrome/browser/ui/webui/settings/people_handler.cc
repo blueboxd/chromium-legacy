@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -32,14 +31,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -54,9 +51,7 @@
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/unified_consent_metrics.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -300,11 +295,6 @@ void PeopleHandler::RegisterMessages() {
       "SyncPrefsDispatch",
       base::BindRepeating(&PeopleHandler::HandleSyncPrefsDispatch,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "GetIsHistoryRecordingEnabledAndCanBeUsed",
-      base::BindRepeating(
-          &PeopleHandler::HandleGetIsHistoryRecordingEnabledAndCanBeUsed,
-          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "AttemptUserExit",
@@ -468,61 +458,6 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
   ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CUSTOMIZE);
   if (!configuration.sync_everything)
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
-}
-
-void PeopleHandler::HandleGetIsHistoryRecordingEnabledAndCanBeUsed(
-    const base::ListValue* args) {
-  AllowJavascript();
-  std::string webui_callback_id;
-  CHECK(args->GetString(0, &webui_callback_id));
-
-  DCHECK(base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings));
-  syncer::SyncService* sync_service = GetSyncService();
-  if (!sync_service) {
-    OnQueryHistoryRecordingCompletion(webui_callback_id, nullptr,
-                                      base::nullopt);
-    return;
-  }
-
-  if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
-    OnQueryHistoryRecordingCompletion(webui_callback_id, nullptr, false);
-    return;
-  }
-
-  std::unique_ptr<history::WebHistoryService::Request> request =
-      browsing_data::CreateQueryWebAndAppActivityRequest(
-          IdentityManagerFactory::GetForProfile(profile_),
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess(),
-          base::BindOnce(&PeopleHandler::OnQueryHistoryRecordingCompletion,
-                         weak_factory_.GetWeakPtr(), webui_callback_id));
-  DCHECK(request);
-  auto* request_ptr = request.get();
-  web_and_app_activity_requests_.insert(std::move(request));
-  request_ptr->Start();
-}
-
-void PeopleHandler::OnQueryHistoryRecordingCompletion(
-    const std::string& webui_callback_id,
-    history::WebHistoryService::Request* request,
-    const base::Optional<bool>& history_recording_enabled) {
-  if (request) {
-    auto it =
-        std::find_if(web_and_app_activity_requests_.begin(),
-                     web_and_app_activity_requests_.end(),
-                     [request](const auto& r) { return r.get() == request; });
-    DCHECK(web_and_app_activity_requests_.end() != it);
-    web_and_app_activity_requests_.erase(it);
-  }
-
-  if (!IsJavascriptAllowed())
-    return;
-
-  std::unique_ptr<base::DictionaryValue> status(new base::DictionaryValue);
-  status->SetBoolean("requestSucceeded", history_recording_enabled.has_value());
-  status->SetBoolean("historyRecordingEnabled",
-                     history_recording_enabled.value_or(false));
-  ResolveJavascriptCallback(base::Value(webui_callback_id), *status);
 }
 
 void PeopleHandler::HandleGetStoredAccounts(const base::ListValue* args) {

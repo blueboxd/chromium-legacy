@@ -100,11 +100,6 @@ cr.define('settings', function() {
   };
 
   /**
-   * @typedef {{requestSucceeded: boolean, historyRecordingEnabled: boolean}}
-   */
-  let HistoryRecordingEnabled;
-
-  /**
    * Key to be used with localStorage.
    * @type {string}
    */
@@ -224,13 +219,6 @@ cr.define('settings', function() {
      * manager in passwords section on page load.
      */
     sendSyncPrefsChanged() {}
-
-    /**
-     * Fetches if history recording is enabled and can be used to provide
-     * personalized experience.
-     * @return {!Promise<!HistoryRecordingEnabled>}
-     */
-    queryIsHistoryRecordingEnabled() {}
   }
 
   /**
@@ -337,11 +325,6 @@ cr.define('settings', function() {
     /** @override */
     sendSyncPrefsChanged() {
       chrome.send('SyncPrefsDispatch');
-    }
-
-    /** @override */
-    queryIsHistoryRecordingEnabled() {
-      return cr.sendWithPromise('GetIsHistoryRecordingEnabledAndCanBeUsed');
     }
   }
 

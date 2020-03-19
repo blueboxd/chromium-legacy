@@ -579,6 +579,7 @@ bool BlinkTestController::ResetAfterWebTest() {
   WebTestContentBrowserClient::Get()->ResetFakeBluetoothDelegate();
   navigation_history_dump_ = "";
   pixel_dump_.reset();
+  blink_test_client_receivers_.Clear();
   actual_pixel_hash_ = "";
   main_frame_dump_ = nullptr;
   waiting_for_pixel_results_ = false;
@@ -1217,7 +1218,7 @@ void BlinkTestController::OnTextDump(const std::string& dump) {
   printer_->PrintTextFooter();
 }
 
-void BlinkTestController::OnInitiateLayoutDump() {
+void BlinkTestController::InitiateLayoutDump() {
   // There should be at most 1 layout dump in progress at any given time.
   DCHECK_EQ(0, pending_layout_dumps_);
 
@@ -1293,15 +1294,15 @@ void BlinkTestController::OnDumpFrameLayoutResponse(int frame_tree_node_id,
       ->LayoutDumpCompleted(stitched_layout_dump);
 }
 
-void BlinkTestController::OnPrintMessage(const std::string& message) {
-  printer_->AddMessageRaw(message);
-}
-
-void BlinkTestController::OnPrintMessageToStderr(const std::string& message) {
+void BlinkTestController::PrintMessageToStderr(const std::string& message) {
   printer_->AddMessageToStderr(message);
 }
 
-void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {
+void BlinkTestController::PrintMessage(const std::string& message) {
+  printer_->AddMessageRaw(message);
+}
+
+void BlinkTestController::OverridePreferences(const WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
 
@@ -1315,11 +1316,11 @@ void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {
   main_render_view_host->OnWebkitPreferencesChanged();
 }
 
-void BlinkTestController::OnSetPopupBlockingEnabled(bool block_popups) {
+void BlinkTestController::SetPopupBlockingEnabled(bool block_popups) {
   WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(block_popups);
 }
 
-void BlinkTestController::OnNavigateSecondaryWindow(const GURL& url) {
+void BlinkTestController::NavigateSecondaryWindow(const GURL& url) {
   if (secondary_window_)
     secondary_window_->LoadURL(url);
 }
@@ -1329,7 +1330,7 @@ void BlinkTestController::OnInspectSecondaryWindow() {
     devtools_bindings_->Attach();
 }
 
-void BlinkTestController::OnSetScreenOrientationChanged() {
+void BlinkTestController::SetScreenOrientationChanged() {
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(true);
 }
 
@@ -1404,30 +1405,30 @@ void BlinkTestController::SetFilePathForMockFileDialog(
   ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory(path));
 }
 
-void BlinkTestController::OnGoToOffset(int offset) {
+void BlinkTestController::GoToOffset(int offset) {
   main_window_->GoBackOrForward(offset);
 }
 
-void BlinkTestController::OnReload() {
+void BlinkTestController::Reload() {
   main_window_->Reload();
 }
 
-void BlinkTestController::OnLoadURLForFrame(const GURL& url,
-                                            const std::string& frame_name) {
+void BlinkTestController::LoadURLForFrame(const GURL& url,
+                                          const std::string& frame_name) {
   main_window_->LoadURLForFrame(url, frame_name, ui::PAGE_TRANSITION_LINK);
 }
 
-void BlinkTestController::OnCloseRemainingWindows() {
+void BlinkTestController::CloseRemainingWindows() {
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(Shell::windows());
-  for (size_t i = 0; i < open_windows.size(); ++i) {
-    if (open_windows[i] != main_window_ && open_windows[i] != secondary_window_)
-      open_windows[i]->Close();
+  for (auto* shell : open_windows) {
+    if (shell != main_window_ && shell != secondary_window_)
+      shell->Close();
   }
   base::RunLoop().RunUntilIdle();
 }
 
-void BlinkTestController::OnResetDone() {
+void BlinkTestController::ResetDone() {
   if (leak_detector_) {
     if (main_window_ && main_window_->web_contents()) {
       RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
@@ -1456,14 +1457,14 @@ void BlinkTestController::OnLeakDetectionDone(
   DiscardMainWindow();
 }
 
-void BlinkTestController::OnSetBluetoothManualChooser(bool enable) {
+void BlinkTestController::SetBluetoothManualChooser(bool enable) {
   bluetooth_chooser_factory_.reset();
   if (enable) {
     bluetooth_chooser_factory_.reset(new WebTestBluetoothChooserFactory());
   }
 }
 
-void BlinkTestController::OnGetBluetoothManualChooserEvents() {
+void BlinkTestController::GetBluetoothManualChooserEvents() {
   if (!bluetooth_chooser_factory_) {
     printer_->AddErrorMessage(
         "FAIL: Must call setBluetoothManualChooser before "
@@ -1476,7 +1477,7 @@ void BlinkTestController::OnGetBluetoothManualChooserEvents() {
           bluetooth_chooser_factory_->GetAndResetEvents());
 }
 
-void BlinkTestController::OnSendBluetoothManualChooserEvent(
+void BlinkTestController::SendBluetoothManualChooserEvent(
     const std::string& event_name,
     const std::string& argument) {
   if (!bluetooth_chooser_factory_) {
@@ -1501,12 +1502,17 @@ void BlinkTestController::OnSendBluetoothManualChooserEvent(
   bluetooth_chooser_factory_->SendEvent(event, argument);
 }
 
-void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
+void BlinkTestController::BlockThirdPartyCookies(bool block) {
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   browser_context->GetDefaultStoragePartition(browser_context)
       ->GetCookieManagerForBrowserProcess()
       ->BlockThirdPartyCookies(block);
+}
+
+void BlinkTestController::AddBlinkTestClientReceiver(
+    mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver) {
+  blink_test_client_receivers_.Add(this, std::move(receiver));
 }
 
 mojo::AssociatedRemote<mojom::BlinkTestControl>&

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -118,27 +119,6 @@ class NGInlineNodeTest : public NGLayoutTest {
     return node.ComputeMinMaxSizes(
         node.Style().GetWritingMode(),
         MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
-  }
-
-  void CreateLine(
-      NGInlineNode node,
-      Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
-    NGConstraintSpaceBuilder builder(WritingMode::kHorizontalTb,
-                                     WritingMode::kHorizontalTb,
-                                     /* is_new_fc */ false);
-    builder.SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)});
-    NGConstraintSpace constraint_space = builder.ToConstraintSpace();
-    NGInlineChildLayoutContext context;
-    scoped_refptr<const NGLayoutResult> result =
-        NGInlineLayoutAlgorithm(node, constraint_space,
-                                nullptr /* break_token */, &context)
-            .Layout();
-
-    const auto& line =
-        To<NGPhysicalLineBoxFragment>(result->PhysicalFragment());
-    for (const auto& child : line.Children()) {
-      fragments_out->push_back(To<NGPhysicalTextFragment>(child.get()));
-    }
   }
 
   const String& GetText() const {
@@ -439,27 +419,6 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   TEST_ITEM_OFFSET_DIR(items[6], 16u, 21u, TextDirection::kRtl);
   TEST_ITEM_OFFSET_DIR(items[7], 21u, 22u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::kLtr);
-}
-
-#define TEST_TEXT_FRAGMENT(fragment, start_offset, end_offset) \
-  EXPECT_EQ(start_offset, fragment->StartOffset());            \
-  EXPECT_EQ(end_offset, fragment->EndOffset());
-
-TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
-  UseLayoutObjectAndAhem();
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetLineHeight(Length::Fixed(1));
-  NGInlineNodeForTest node = CreateInlineNode();
-  node = CreateBidiIsolateNode(node, layout_object_);
-  node.ShapeText();
-  Vector<scoped_refptr<const NGPhysicalTextFragment>> fragments;
-  CreateLine(node, &fragments);
-  EXPECT_EQ(5u, fragments.size());
-  TEST_TEXT_FRAGMENT(fragments[0], 0u, 6u);
-  TEST_TEXT_FRAGMENT(fragments[1], 16u, 21u);
-  TEST_TEXT_FRAGMENT(fragments[2], 14u, 15u);
-  TEST_TEXT_FRAGMENT(fragments[3], 7u, 13u);
-  TEST_TEXT_FRAGMENT(fragments[4], 22u, 28u);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxSizes) {
@@ -880,7 +839,12 @@ TEST_F(NGInlineNodeTest, CollectInlinesShouldNotClearFirstInlineFragment) {
 
   // Running |CollectInlines| should not clear |FirstInlineFragment|.
   LayoutObject* first_child = container->firstChild()->GetLayoutObject();
-  EXPECT_NE(first_child->FirstInlineFragment(), nullptr);
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    // TODO(yosin): We should use |FirstInlineItemFragmentIndex()| once we
+    // implement it.
+  } else {
+    EXPECT_NE(first_child->FirstInlineFragment(), nullptr);
+  }
 }
 
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
@@ -1423,9 +1387,9 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   // Keep the text fragment to compare later.
   Element* inner_span = GetElementById("inner_span");
   Node* text = inner_span->firstChild();
-  scoped_refptr<NGPaintFragment> text_fragment_before_split =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_NE(text_fragment_before_split.get(), nullptr);
+  NGInlineCursor text_fragment_before_split;
+  text_fragment_before_split.MoveTo(*text->GetLayoutObject());
+  EXPECT_TRUE(text_fragment_before_split);
 
   // Append <div> to <span>. causing SplitFlow().
   Element* outer_span = GetElementById("outer_span");
@@ -1433,30 +1397,29 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   outer_span->appendChild(div);
 
   // Update tree but do NOT update layout. At this point, there's no guarantee,
-  // but there are some clients (e.g., Schroll Anchor) who try to read
+  // but there are some clients (e.g., Scroll Anchor) who try to read
   // associated fragments.
   //
   // NGPaintFragment is owned by LayoutNGBlockFlow. Because the original owner
   // no longer has an inline formatting context, the NGPaintFragment subtree is
   // destroyed, and should not be accessible.
   GetDocument().UpdateStyleAndLayoutTree();
-  scoped_refptr<NGPaintFragment> text_fragment_before_layout =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_EQ(text_fragment_before_layout, nullptr);
+  EXPECT_FALSE(text->GetLayoutObject()->IsInLayoutNGInlineFormattingContext());
 
   // Update layout. There should be a different instance of the text fragment.
   UpdateAllLifecyclePhasesForTest();
-  scoped_refptr<NGPaintFragment> text_fragment_after_layout =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_NE(text_fragment_before_split, text_fragment_after_layout);
+  NGInlineCursor text_fragment_after_layout;
+  text_fragment_after_layout.MoveTo(*text->GetLayoutObject());
+  EXPECT_NE(text_fragment_before_split.Current(),
+            text_fragment_after_layout.Current());
 
   // Check it is the one owned by the new root inline formatting context.
   LayoutBlock* anonymous_block =
       inner_span->GetLayoutObject()->ContainingBlock();
   EXPECT_TRUE(anonymous_block->IsAnonymous());
-  const NGPaintFragment* block_fragment = anonymous_block->PaintFragment();
-  const NGPaintFragment* line_box_fragment = block_fragment->FirstChild();
-  EXPECT_EQ(line_box_fragment->FirstChild(), text_fragment_after_layout);
+  EXPECT_EQ(anonymous_block, text_fragment_after_layout.Current()
+                                 .GetLayoutObject()
+                                 ->ContainingBlock());
 }
 
 TEST_F(NGInlineNodeTest, AddChildToSVGRoot) {

@@ -28,6 +28,11 @@
           --a: var(--z);
       }
 
+      #id5 {
+          --a: var(--b);
+          --b: var(--a);
+      }
+
       </style>
       <div id="id1">
       <div id="id2">
@@ -36,6 +41,8 @@
       </div>
       </div>
       <div id="id4">
+      </div>
+      <div id="id5">
       </div>
     `);
 
@@ -69,6 +76,15 @@
 
   async function step4(node) {
     TestRunner.addResult('==== Computed style for ID4 ====');
+    await ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    TestRunner.cssModel.computedStylePromise(node.id).then(function(style) {
+      TestRunner.addResult('value of --a: ' + style.get('--a'));
+      ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('id5', step5);
+    });
+  }
+
+  async function step5(node) {
+    TestRunner.addResult('==== Computed style for ID5 ====');
     await ElementsTestRunner.dumpSelectedElementStyles(false, false);
     TestRunner.cssModel.computedStylePromise(node.id).then(function(style) {
       TestRunner.addResult('value of --a: ' + style.get('--a'));

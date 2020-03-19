@@ -16,7 +16,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="sync_account_control.html">
 <link rel="import" href="sync_encryption_options.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
 <link rel="import" href="../router.html">
@@ -83,32 +82,6 @@
         text-align: center;
         width: 40px;
       }
-
-      #history-usage-state {
-        text-align: end;
-        vertical-align: middle;
-        width: 36px;
-      }
-
-      #history-usage-row[disabled] {
-        pointer-events: none;
-      }
-
-      #history-usage-row[disabled] > #history-usage-state {
-        text-align: center;
-      }
-
-      #history-usage-row > cr-icon-button.icon-external {
-        margin-inline-start: 1px;
-      }
-
-      #history-usage-state paper-spinner-lite {
-        --paper-spinner-color: var(--google-grey-500);
-        --paper-spinner-stroke-width: 2px;
-        height: var(--cr-icon-size);
-        vertical-align: middle;
-        width: var(--cr-icon-size);
-    }
 
       #toast {
         left: 0;
@@ -193,31 +166,13 @@
             </cr-icon-button>
           </div>
 
-          <a id="history-usage-row"
-              class="inherit-color no-outline list-item" tabindex="-1"
+          <a class="inherit-color no-outline list-item" tabindex="-1"
               target="_blank" href="$i18n{activityControlsUrl}"
-              on-click="onActivityControlsTap_"
-              disabled$="[[hideActivityControlsUrl_]]">
+              on-click="onActivityControlsTap_">
             <div class="start settings-box-text">
               $i18n{personalizeGoogleServicesTitle}
-              <div id="history-usage-off-hint"
-                  class="secondary" hidden$="[[!isSwaaOff_(Swaa_)]]">
-                [[getHistoryUsageOffHint_(Swaa_, syncPrefs.encryptAllData,
-                      syncPrefs.typedUrlsSynced)]]
-              </div>
             </div>
-            <div id="history-usage-state"
-                hidden$="[[!syncSetupFriendlySettings_]]">
-              <paper-spinner-lite
-                  class="last" hidden$="[[!isSwaaFetching_(Swaa_)]]" active>
-              </paper-spinner-lite>
-              <div class="secondary" hidden$="[[!isSwaaFetched_(Swaa_)]]">
-                [[getSwaaStateText_(Swaa_)]]
-              </div>
-            </div>
-            <cr-icon-button class="icon-external"
-                hidden$="[[hideActivityControlsUrl_]]">
-            </cr-icon-button>
+            <cr-icon-button class="icon-external"></cr-icon-button>
           </a>
 
           <a id="syncDashboardLink"

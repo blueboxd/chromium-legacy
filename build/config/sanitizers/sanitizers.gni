@@ -57,7 +57,7 @@ declare_args() {
   # crbug.com/1033839. Similarly, don't use this on ARC builds.
   is_cfi = is_official_build &&
            ((target_os == "linux" && !is_chromeos && target_cpu == "x64") ||
-            (target_os == "chromeos" && is_chromeos_device))
+            (target_os == "chromeos" && is_chromeos_device && !is_android))
 
   # Enable checks for indirect function calls via a function pointer.
   # TODO(pcc): remove this when we're ready to add these checks by default.

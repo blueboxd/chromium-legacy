@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
-#include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -15,45 +14,48 @@
 
 namespace blink {
 
-bool SVGMaskPainter::PrepareEffect(GraphicsContext& context) {
-  DCHECK(mask_.Style());
-  SECURITY_DCHECK(!mask_.NeedsLayout());
-
-  mask_.ClearInvalidationMask();
-  return mask_.GetElement()->HasChildren();
+SVGMaskPainter::SVGMaskPainter(GraphicsContext& context,
+                               const LayoutObject& layout_object,
+                               const DisplayItemClient& display_item_client)
+    : context_(context),
+      layout_object_(layout_object),
+      display_item_client_(display_item_client) {
+  DCHECK(layout_object_.StyleRef().SvgStyle().MaskerResource());
 }
 
-void SVGMaskPainter::FinishEffect(const LayoutObject& object,
-                                  const DisplayItemClient& display_item_client,
-                                  GraphicsContext& context) {
-  DCHECK(mask_.Style());
-  SECURITY_DCHECK(!mask_.NeedsLayout());
-
-  base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  const auto* properties = object.FirstFragment().PaintProperties();
+SVGMaskPainter::~SVGMaskPainter() {
+  const auto* properties = layout_object_.FirstFragment().PaintProperties();
   // TODO(crbug.com/814815): This condition should be a DCHECK, but for now
   // we may paint the object for filters during PrePaint before the
   // properties are ready.
-  if (properties && properties->Mask()) {
-    scoped_paint_chunk_properties.emplace(
-        context.GetPaintController(), *properties->Mask(), display_item_client,
-        DisplayItem::kSVGMask);
-  }
+  if (!properties || !properties->Mask())
+    return;
+  ScopedPaintChunkProperties scoped_paint_chunk_properties(
+      context_.GetPaintController(), *properties->Mask(), display_item_client_,
+      DisplayItem::kSVGMask);
+
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          context_, display_item_client_, DisplayItem::kSVGMask))
+    return;
+  DrawingRecorder recorder(context_, display_item_client_,
+                           DisplayItem::kSVGMask);
+
+  const SVGComputedStyle& svg_style = layout_object_.StyleRef().SvgStyle();
+  auto* masker =
+      GetSVGResourceAsType<LayoutSVGResourceMasker>(svg_style.MaskerResource());
+  DCHECK(masker);
+  SECURITY_DCHECK(!masker->NeedsLayout());
+  masker->ClearInvalidationMask();
 
   AffineTransform content_transformation;
-  sk_sp<const PaintRecord> record = mask_.CreatePaintRecord(
-      content_transformation, SVGResources::ReferenceBoxForEffects(object),
-      context);
+  sk_sp<const PaintRecord> record = masker->CreatePaintRecord(
+      content_transformation,
+      SVGResources::ReferenceBoxForEffects(layout_object_), context_);
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
-                                                  DisplayItem::kSVGMask))
-    return;
-
-  DrawingRecorder recorder(context, display_item_client, DisplayItem::kSVGMask);
-  context.Save();
-  context.ConcatCTM(content_transformation);
-  context.DrawRecord(std::move(record));
-  context.Restore();
+  context_.Save();
+  context_.ConcatCTM(content_transformation);
+  context_.DrawRecord(std::move(record));
+  context_.Restore();
 }
 
 }  // namespace blink

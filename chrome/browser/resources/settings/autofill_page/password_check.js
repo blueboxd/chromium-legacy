@@ -281,9 +281,13 @@ Polymer({
       case CheckState.CANCELED:
         return this.i18n('checkPasswordsCanceled');
       case CheckState.RUNNING:
+        // Returns the progress of a running check. Ensures that both numbers
+        // are at least 1.
         return this.i18n(
-            'checkPasswordsProgress', this.status_.alreadyProcessed || 0,
-            this.status_.remainingInQueue + this.status_.alreadyProcessed);
+            'checkPasswordsProgress', (this.status_.alreadyProcessed || 0) + 1,
+            Math.max(
+                this.status_.remainingInQueue + this.status_.alreadyProcessed,
+                1));
       case CheckState.OFFLINE:
         return this.i18n('checkPasswordsErrorOffline');
       case CheckState.SIGNED_OUT:

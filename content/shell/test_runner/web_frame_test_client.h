@@ -30,11 +30,11 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   WebFrameTestClient(WebViewTestProxy* web_view_test_proxy,
                      WebFrameTestProxy* web_frame_test_proxy);
 
-  ~WebFrameTestClient() override;
+  ~WebFrameTestClient() override = default;
   bool ShouldContinueNavigation(blink::WebNavigationInfo* info);
 
-  static void PrintFrameDescription(WebTestDelegate* delegate,
-                                    blink::WebLocalFrame* frame);
+  static std::string PrintFrameDescription(WebTestDelegate* delegate,
+                                           blink::WebLocalFrame* frame);
 
   // WebLocalFrameClient overrides needed by WebFrameTestProxy.
   void PostAccessibilityEvent(const blink::WebAXObject& object,

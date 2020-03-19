@@ -392,8 +392,8 @@ cr.define('settings_passwords_check', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
-              /*checked=*/ 1,
-              /*remaining=*/ 1);
+              /*checked=*/ 0,
+              /*remaining=*/ 2);
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -409,8 +409,8 @@ cr.define('settings_passwords_check', function() {
         passwordManager.lastCallback.addPasswordCheckStatusListener(
             autofill_test_util.makePasswordCheckStatus(
                 /*state=*/ PasswordCheckState.RUNNING,
-                /*checked=*/ 2,
-                /*remaining=*/ 0));
+                /*checked=*/ 1,
+                /*remaining=*/ 1));
 
         Polymer.dom.flush();
         assertTrue(isElementVisible(section.$.title));
@@ -537,8 +537,8 @@ cr.define('settings_passwords_check', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
-              /*checked=*/ 1,
-              /*remaining=*/ 3);
+              /*checked=*/ 0,
+              /*remaining=*/ 4);
 
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -551,13 +551,33 @@ cr.define('settings_passwords_check', function() {
       });
     });
 
+    // Verifies that in case the backend could not obtain the number of checked
+    // and remaining credentials the UI does not surface 0s to the user.
+    test('runningProgressHandlesZeroCaseFromBackend', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.RUNNING,
+              /*checked=*/ 0,
+              /*remaining=*/ 0);
+
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assertTrue(isElementVisible(title));
+        expectEquals(
+            section.i18n('checkPasswordsProgress', 1, 1), title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
+
     // While running, show progress and already found leak count.
     test('testShowProgressAndLeaksWhileRunning', function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.RUNNING,
-          /*checked=*/ 2,
-          /*remaining=*/ 3);
+          /*checked=*/ 1,
+          /*remaining=*/ 4);
       data.leakedCredentials = [
         autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'LEAKED'),

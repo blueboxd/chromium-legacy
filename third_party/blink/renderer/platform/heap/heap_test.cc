@@ -3128,6 +3128,9 @@ TEST_F(HeapTest, HeapWeakLinkedHashSet) {
   OrderedSetHelper<HeapLinkedHashSet<WeakMember<IntWrapper>>>(false);
   ClearOutOldGarbage();
   OrderedSetHelper<HeapListHashSet<Member<IntWrapper>>>(true);
+  ClearOutOldGarbage();
+  // TODO(keinakashiima): add a test case for WeakMember once it's supported
+  OrderedSetHelper<HeapNewLinkedHashSet<Member<IntWrapper>>>(true);
 }
 
 class ThingWithDestructor {
@@ -5223,6 +5226,9 @@ TEST_F(HeapTest, IsGarbageCollected) {
   static_assert(
       WTF::IsGarbageCollectedType<HeapLinkedHashSet<Member<IntWrapper>>>::value,
       "HeapLinkedHashSet");
+  static_assert(WTF::IsGarbageCollectedType<
+                    HeapNewLinkedHashSet<Member<IntWrapper>>>::value,
+                "HeapNewLinkedHashSet");
   static_assert(
       WTF::IsGarbageCollectedType<HeapListHashSet<Member<IntWrapper>>>::value,
       "HeapListHashSet");

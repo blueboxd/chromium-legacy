@@ -961,6 +961,9 @@ TEST_F(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
   Swap<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
+// TODO(keinakashima): add tests for NewLinkedHashSet after supporting
+// WeakMember
+
 // =============================================================================
 // HeapHashCountedSet support. =================================================
 // =============================================================================

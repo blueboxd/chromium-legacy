@@ -180,18 +180,15 @@ TEST_F(CSSSupportsParserTest, ConsumeSupportsInParens) {
   // <general-enclosed>
   EXPECT_EQ(Result::kUnsupported, ConsumeSupportsInParens("asdf(1)"));
 
-  // TODO(crbug.com/1053910): This is supposed to be kSupported, but there's
-  // currently a bug in Blink. This is here to hit those code paths until the
-  // bug is fixed.
-  EXPECT_EQ(Result::kParseFailure,
+  EXPECT_EQ(Result::kSupported,
             ConsumeSupportsInParens("(color:red)and (color:green)"));
-  EXPECT_EQ(Result::kParseFailure,
+  EXPECT_EQ(Result::kSupported,
             ConsumeSupportsInParens("(color:red)or (color:green)"));
   {
     ScopedCSSSupportsSelectorForTest css_supports_selector(true);
-    EXPECT_EQ(Result::kUnsupported,
+    EXPECT_EQ(Result::kSupported,
               ConsumeSupportsInParens("selector(div)or (color:green)"));
-    EXPECT_EQ(Result::kUnsupported,
+    EXPECT_EQ(Result::kSupported,
               ConsumeSupportsInParens("selector(div)and (color:green)"));
   }
 }

@@ -194,6 +194,8 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
       {"syncSetupCancelDialogTitle",
        IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_TITLE},
       {"syncSetupCancelDialogBody", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_BODY},
+      {"personalizeGoogleServicesTitle",
+       IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -228,23 +230,10 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
           base::ASCIIToUTF16(chrome::kSyncEncryptionHelpURL)));
 #endif
   if (base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings)) {
-    static constexpr webui::LocalizedString
-        kSyncSetupFriendlySettingsStrings[] = {
-            {"personalizeGoogleServicesTitle",
-             IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE},
-            {"SwaaOn", IDS_SETTINGS_SWAA_ON},
-            {"SwaaOff", IDS_SETTINGS_SWAA_OFF},
-            {"dataEncryptedHint", IDS_SETTINGS_DATA_ENCRYPTED_HINT},
-            {"historySyncOffHint", IDS_SETTINGS_HISTORY_SYNC_OFF_HINT},
-            {"SwaaOffHint", IDS_SETTINGS_SWAA_OFF_HINT},
-            {"manageSyncedDataTitle",
-             IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
-        };
-    AddLocalizedStringsBulk(html_source, kSyncSetupFriendlySettingsStrings);
-  } else {
     html_source->AddLocalizedString(
-        "personalizeGoogleServicesTitle",
-        IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE);
+        "manageSyncedDataTitle",
+        IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT);
+  } else {
     html_source->AddLocalizedString(
         "manageSyncedDataTitle",
         IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT);

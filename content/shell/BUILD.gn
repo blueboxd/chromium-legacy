@@ -124,8 +124,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/shell_web_contents_view_delegate_android.cc",
     "browser/shell_web_contents_view_delegate_creator.h",
     "browser/shell_web_contents_view_delegate_mac.mm",
-    "browser/web_test/blink_test_client_impl.cc",
-    "browser/web_test/blink_test_client_impl.h",
     "browser/web_test/blink_test_controller.cc",
     "browser/web_test/blink_test_controller.h",
     "browser/web_test/devtools_protocol_test_bindings.cc",

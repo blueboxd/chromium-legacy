@@ -61,6 +61,12 @@ class SearchBox extends cr.EventTarget {
      */
     this.clearButton_ = assert(element.querySelector('.clear'));
 
+    /** @private {boolean} */
+    this.collapsed_ = true;
+
+    /** @private {boolean} */
+    this.isClicking_ = false;
+
     // Register events.
     this.inputElement.addEventListener('input', this.onInput_.bind(this));
     this.inputElement.addEventListener('keydown', this.onKeyDown_.bind(this));
@@ -78,6 +84,21 @@ class SearchBox extends cr.EventTarget {
         cr.dispatchSimpleEvent.bind(cr, this, SearchBox.EventType.ITEM_SELECT);
     this.autocompleteList.handleEnterKeydown = dispatchItemSelect;
     this.autocompleteList.addEventListener('mousedown', dispatchItemSelect);
+
+    document.addEventListener('mousedown', () => {
+      if (this.collapsed_) {
+        return;
+      }
+      this.isClicking_ = true;
+    }, {capture: true, passive: true});
+
+    document.addEventListener('mouseup', () => {
+      if (this.collapsed_) {
+        return;
+      }
+      this.isClicking_ = false;
+      this.removeHidePending();
+    }, {passive: true});
 
     this.searchWrapper.addEventListener(
         'focusout', this.onFocusOut_.bind(this));
@@ -115,6 +136,14 @@ class SearchBox extends cr.EventTarget {
         return;
       }
 
+      // If the focus is moved due to a user click, we don't collapse the searc
+      // box here. We wait until "mouseup" to let the mouse events be processed
+      // by the button user is clickinkg, which might change position due to the
+      // search box collapse.
+      if (this.isClicking_) {
+        return;
+      }
+
       if (this.element.classList.contains('hide-pending')) {
         this.removeHidePending();
       }
@@ -139,6 +168,9 @@ class SearchBox extends cr.EventTarget {
     if (this.element.classList.contains('hide-pending')) {
       return;
     }
+
+    this.collapsed_ = false;
+    this.isClicking_ = false;
     this.element.classList.toggle('has-cursor', true);
     this.searchWrapper.classList.toggle('has-cursor', true);
     this.autocompleteList.attachToInput(this.inputElement);
@@ -168,6 +200,7 @@ class SearchBox extends cr.EventTarget {
     this.inputElement.disabled = this.inputElement.value.length == 0;
     this.element.classList.toggle('hide-pending', false);
     this.searchWrapper.classList.toggle('hide-pending', false);
+    this.collapsed_ = true;
   }
 
   /**

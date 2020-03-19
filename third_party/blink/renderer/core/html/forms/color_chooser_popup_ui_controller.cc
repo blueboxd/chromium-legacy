@@ -136,8 +136,6 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   data->Append(ChooserResourceLoader::GetColorSuggestionPickerStyleSheet());
-  if (features::IsFormControlsRefreshEnabled())
-    data->Append(ChooserResourceLoader::GetColorPickerStyleSheet());
   PagePopupClient::AddString(
       "</style></head><body>\n"
       "<div id='main'>Loading...</div><script>\n"

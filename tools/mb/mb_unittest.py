@@ -831,30 +831,31 @@ class UnitTest(unittest.TestCase):
 
   def test_run_swarmed(self):
     files = {
-      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
-          "{'base_unittests': {"
-          "  'label': '//base:base_unittests',"
-          "  'type': 'raw',"
-          "  'args': [],"
-          "}}\n"
-      ),
-      '/fake_src/out/Default/base_unittests.runtime_deps': (
-          "base_unittests\n"
-      ),
-      '/fake_src/third_party/depot_tools/cipd_manifest.txt': (
-          "# vpython\n"
-          "/some/vpython/pkg  git_revision:deadbeef\n"
-      ),
+        '/fake_src/testing/buildbot/gn_isolate_map.pyl':
+        ("{'base_unittests': {"
+         "  'label': '//base:base_unittests',"
+         "  'type': 'raw',"
+         "  'args': [],"
+         "}}\n"),
+        '/fake_src/out/Default/base_unittests.runtime_deps':
+        ("base_unittests\n"),
+        '/fake_src/out/Default/base_unittests.archive.json':
+        ("{\"base_unittests\":\"fake_hash\"}"),
+        '/fake_src/third_party/depot_tools/cipd_manifest.txt':
+        ("# vpython\n"
+         "/some/vpython/pkg  git_revision:deadbeef\n"),
     }
 
-    def run_stub(cmd, **_kwargs):
-      if os.path.join('tools', 'luci-go', 'isolate') in cmd[0]:
-        return 0, 'fake_hash base_unittests', ''
-      else:
-        return 0, '', ''
-
     mbw = self.fake_mbw(files=files)
-    mbw.Run = run_stub
+    original_impl = mbw.ToSrcRelPath
+
+    def to_src_rel_path_stub(path):
+      if path.endswith('base_unittests.archive.json'):
+        return 'base_unittests.archive.json'
+      return original_impl(path)
+
+    mbw.ToSrcRelPath = to_src_rel_path_stub
+
     self.check(['run', '-s', '-c', 'debug_goma', '//out/Default',
                 'base_unittests'], mbw=mbw, ret=0)
     self.check(['run', '-s', '-c', 'debug_goma', '-d', 'os', 'Win7',

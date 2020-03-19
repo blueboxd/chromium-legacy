@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_MASK_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_MASK_PAINTER_H_
 
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -13,21 +12,20 @@ namespace blink {
 class DisplayItemClient;
 class GraphicsContext;
 class LayoutObject;
-class LayoutSVGResourceMasker;
 
 class SVGMaskPainter {
   STACK_ALLOCATED();
 
  public:
-  SVGMaskPainter(LayoutSVGResourceMasker& mask) : mask_(mask) {}
-
-  bool PrepareEffect(GraphicsContext&);
-  void FinishEffect(const LayoutObject&,
-                    const DisplayItemClient&,
-                    GraphicsContext&);
+  SVGMaskPainter(GraphicsContext&,
+                 const LayoutObject&,
+                 const DisplayItemClient&);
+  ~SVGMaskPainter();
 
  private:
-  LayoutSVGResourceMasker& mask_;
+  GraphicsContext& context_;
+  const LayoutObject& layout_object_;
+  const DisplayItemClient& display_item_client_;
 };
 
 }  // namespace blink

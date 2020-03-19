@@ -247,7 +247,8 @@ TEST_F(CWVAutofillDataManagerTest, ReturnPassword) {
   password_store_->AddLogin(test_password);
   NSArray<CWVPassword*>* fetched_passwords = FetchPasswords();
   EXPECT_EQ(1ul, fetched_passwords.count);
-  EXPECT_EQ(test_password, *[fetched_passwords[0] internalPasswordForm]);
+  EXPECT_THAT(test_password, password_manager::MatchesFormExceptStore(
+                                 *[fetched_passwords[0] internalPasswordForm]));
 }
 
 // Tests CWVAutofillDataManager properly deletes passwords.

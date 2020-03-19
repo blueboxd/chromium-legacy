@@ -169,6 +169,8 @@ class PasswordCheckDelegate
               int,
               password_manager::PasswordCredentialLess>
       compromised_credential_id_generator_;
+
+  base::WeakPtrFactory<PasswordCheckDelegate> weak_ptr_factory_{this};
 };
 
 }  // namespace extensions

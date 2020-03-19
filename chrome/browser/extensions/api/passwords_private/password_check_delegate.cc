@@ -7,15 +7,16 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <memory>
 
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
@@ -105,7 +106,7 @@ class PasswordCheckProgress : public base::RefCounted<PasswordCheckProgress> {
   // canonicalized credential corresponds to.
   size_t already_processed_ = 0;
   size_t remaining_in_queue_ = 0;
-  base::flat_map<CanonicalizedCredential, size_t> counts_;
+  std::map<CanonicalizedCredential, size_t> counts_;
 
   base::WeakPtrFactory<PasswordCheckProgress> weak_ptr_factory_{this};
 };
@@ -466,6 +467,16 @@ void PasswordCheckDelegate::OnStateChanged(BulkLeakCheckService::State state) {
     profile_->GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
         base::Time::Now().ToDoubleT());
+
+    // In case the check run to completion delay the last Check Status update by
+    // a second. This avoids flickering of the UI if the full check ran from
+    // start to finish almost immediately.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&PasswordCheckDelegate::NotifyPasswordCheckStatusChanged,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(1));
+    return;
   }
 
   // NotifyPasswordCheckStatusChanged() invokes GetPasswordCheckStatus()
@@ -502,9 +513,12 @@ void PasswordCheckDelegate::OnCredentialDone(
   if (password_check_progress_)
     password_check_progress_->OnProcessed(credential);
 
-  // Trigger an update of the check status, considering that the progress has
-  // changed.
-  NotifyPasswordCheckStatusChanged();
+  // While the check is still running trigger an update of the check status,
+  // considering that the progress has changed.
+  if (bulk_leak_check_service_adapter_.GetBulkLeakCheckState() ==
+      BulkLeakCheckService::State::kRunning) {
+    NotifyPasswordCheckStatusChanged();
+  }
 }
 
 const CredentialWithPassword*

@@ -119,6 +119,7 @@ KURL NormalizeValue(const String& key,
         return NullURL();
       }
 
+      DCHECK(value.GetUrl().IsValid());
       return value.GetUrl();
   }
 }
@@ -295,7 +296,6 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
     if (normalized_specifier_key.IsEmpty())
       continue;
 
-    Vector<KURL> values;
     switch (entry.second->GetType()) {
       case JSONValue::ValueType::kTypeString: {
         // Steps 2.4-2.6 are implemented in NormalizeValue().
@@ -303,14 +303,13 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
         if (!imports->GetString(entry.first, &value_string)) {
           AddIgnoredValueMessage(logger, entry.first,
                                  "Internal error in GetString().");
+          normalized.Set(normalized_specifier_key, NullURL());
           break;
         }
-        KURL value =
-            NormalizeValue(entry.first, value_string, base_url, logger);
 
-        // <spec step="2.7">Set normalized[specifierKey] to addressURL.</spec>
-        if (value.IsValid())
-          values.push_back(value);
+        normalized.Set(
+            normalized_specifier_key,
+            NormalizeValue(entry.first, value_string, base_url, logger));
         break;
       }
 
@@ -327,15 +326,12 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
         AddIgnoredValueMessage(logger, entry.first, "Invalid value type.");
 
         // <spec step="2.3.2">Set normalized[specifierKey] to null.</spec>
-        //
+        normalized.Set(normalized_specifier_key, NullURL());
+
         // <spec step="2.3.3">Continue.</spec>
         break;
     }
 
-    CHECK_LE(values.size(), 1u);
-
-    // <spec step="2.7">Set normalized[specifierKey] to addressURL.</spec>
-    normalized.Set(normalized_specifier_key, values);
   }
 
   return normalized;
@@ -447,36 +443,50 @@ base::Optional<KURL> ImportMap::ResolveImportsMatch(
 }
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
-base::Optional<KURL> ImportMap::ResolveImportsMatchInternal(
-    const String& key,
-    const MatchResult& matched,
-    String* debug_message) const {
+KURL ImportMap::ResolveImportsMatchInternal(const String& key,
+                                            const MatchResult& matched,
+                                            String* debug_message) const {
   // <spec step="1.2.3">Let afterPrefix be the portion of normalizedSpecifier
   // after the initial specifierKey prefix.</spec>
   const String after_prefix = key.Substring(matched->key.length());
 
-  for (const KURL& value : matched->value) {
-    // <spec step="1.1">If specifierKey is normalizedSpecifier, then:</spec>
-    //
-    // <spec step="1.2">If specifierKey ends with U+002F (/) and
-    // normalizedSpecifier starts with specifierKey, then:</spec>
-    //
-    // <spec step="1.2.5">Let url be the result of parsing afterPrefix relative
-    // to the base URL resolutionResult.</spec>
-    const KURL url = after_prefix.IsEmpty() ? value : KURL(value, after_prefix);
-
+  // <spec step="1.1.1">If resolutionResult is null, then throw a TypeError
+  // indicating that resolution of specifierKey was blocked by a null
+  // entry.</spec>
+  //
+  // <spec step="1.2.1">If resolutionResult is null, then throw a TypeError
+  // indicating that resolution of specifierKey was blocked by a null
+  // entry.</spec>
+  if (!matched->value.IsValid()) {
     *debug_message = "Import Map: \"" + key + "\" matches with \"" +
-                     matched->key + "\" and is mapped to " + url.ElidedString();
-
-    // <spec step="1.2.6">If url is failure, then throw ...</spec>
-    //
-    // <spec step="1.2.8">Return url.</spec>
-    return url;
+                     matched->key + "\" but is blocked by a null value";
+    return NullURL();
   }
 
+  // <spec step="1.1">If specifierKey is normalizedSpecifier, then:</spec>
+  //
+  // <spec step="1.2">If specifierKey ends with U+002F (/) and
+  // normalizedSpecifier starts with specifierKey, then:</spec>
+  //
+  // <spec step="1.2.5">Let url be the result of parsing afterPrefix relative
+  // to the base URL resolutionResult.</spec>
+  const KURL url = after_prefix.IsEmpty() ? matched->value
+                                          : KURL(matched->value, after_prefix);
+
+  // <spec step="1.2.6">If url is failure, then throw a TypeError indicating
+  // that resolution of specifierKey was blocked due to a URL parse
+  // failure.</spec>
+  if (!url.IsValid()) {
+    *debug_message = "Import Map: \"" + key + "\" matches with \"" +
+                     matched->key +
+                     "\" but is blocked due to relative URL parse failure";
+    return NullURL();
+  }
+
+  // <spec step="1.2.8">Return url.</spec>
   *debug_message = "Import Map: \"" + key + "\" matches with \"" +
-                   matched->key + "\" but fails to be mapped (no viable URLs)";
-  return NullURL();
+                   matched->key + "\" and is mapped to " + url.ElidedString();
+  return url;
 }
 
 static void SpecifierMapToString(StringBuilder& builder,
@@ -489,12 +499,10 @@ static void SpecifierMapToString(StringBuilder& builder,
     is_first_key = false;
     builder.Append(it.key.EncodeForDebugging());
     builder.Append(":");
-    if (it.value.size() == 0) {
+    if (it.value.IsValid())
+      builder.Append(it.value.GetString().EncodeForDebugging());
+    else
       builder.Append("null");
-    } else {
-      DCHECK_EQ(it.value.size(), 1u);
-      builder.Append(it.value[0].GetString().EncodeForDebugging());
-    }
   }
   builder.Append("}");
 }

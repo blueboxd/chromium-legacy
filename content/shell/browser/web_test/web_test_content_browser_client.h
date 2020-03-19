@@ -11,7 +11,9 @@
 
 #include "content/public/common/client_hints.mojom.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/common/blink_test.mojom-forward.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom-forward.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -108,6 +110,9 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
   void BindPermissionAutomation(
       mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver);
+
+  void BindBlinkTestController(
+      mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver);
 
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;

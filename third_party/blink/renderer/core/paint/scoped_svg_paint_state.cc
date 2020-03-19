@@ -25,11 +25,8 @@
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
-#include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
@@ -76,15 +73,6 @@ ScopedSVGPaintState::~ScopedSVGPaintState() {
     filter_paint_info_ = nullptr;
     filter_data_ = nullptr;
   }
-
-  if (masker_) {
-    DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(object_));
-    DCHECK(
-        SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Masker() ==
-        masker_);
-    SVGMaskPainter(*masker_).FinishEffect(object_, display_item_client_,
-                                          paint_info_.context);
-  }
 }
 
 bool ScopedSVGPaintState::ApplyEffects() {
@@ -116,19 +104,14 @@ bool ScopedSVGPaintState::ApplyEffects() {
     ApplyClipIfNecessary();
   }
 
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(object_);
-
-  if (!ApplyMaskIfNecessary(resources))
-    return false;
+  ApplyMaskIfNecessary();
 
   if (is_svg_root_or_foreign_object) {
     // PaintLayerPainter takes care of filter.
     DCHECK(object_.HasLayer() || !object_.StyleRef().HasFilter());
-  } else if (!ApplyFilterIfNecessary(resources)) {
+  } else if (!ApplyFilterIfNecessary()) {
     return false;
   }
-
   return true;
 }
 
@@ -166,14 +149,9 @@ void ScopedSVGPaintState::ApplyClipIfNecessary() {
   }
 }
 
-bool ScopedSVGPaintState::ApplyMaskIfNecessary(SVGResources* resources) {
-  if (LayoutSVGResourceMasker* masker =
-          resources ? resources->Masker() : nullptr) {
-    if (!SVGMaskPainter(*masker).PrepareEffect(GetPaintInfo().context))
-      return false;
-    masker_ = masker;
-  }
-  return true;
+void ScopedSVGPaintState::ApplyMaskIfNecessary() {
+  if (object_.StyleRef().SvgStyle().MaskerResource())
+    mask_painter_.emplace(paint_info_.context, object_, display_item_client_);
 }
 
 static bool HasReferenceFilterOnly(const ComputedStyle& style) {
@@ -185,7 +163,9 @@ static bool HasReferenceFilterOnly(const ComputedStyle& style) {
   return operations.at(0)->GetType() == FilterOperation::REFERENCE;
 }
 
-bool ScopedSVGPaintState::ApplyFilterIfNecessary(SVGResources* resources) {
+bool ScopedSVGPaintState::ApplyFilterIfNecessary() {
+  SVGResources* resources =
+      SVGResourcesCache::CachedResourcesForLayoutObject(object_);
   if (!resources)
     return !HasReferenceFilterOnly(object_.StyleRef());
   LayoutSVGResourceFilter* filter = resources->Filter();

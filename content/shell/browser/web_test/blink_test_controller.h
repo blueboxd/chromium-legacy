@@ -35,6 +35,7 @@
 #include "content/shell/browser/web_test/leak_detector.h"
 #include "content/shell/common/blink_test.mojom.h"
 #include "content/shell/common/web_test.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -110,7 +111,8 @@ class BlinkTestResultPrinter {
 class BlinkTestController : public WebContentsObserver,
                             public RenderProcessHostObserver,
                             public NotificationObserver,
-                            public GpuDataManagerObserver {
+                            public GpuDataManagerObserver,
+                            public mojom::BlinkTestClient {
  public:
   static BlinkTestController* Get();
 
@@ -159,6 +161,9 @@ class BlinkTestController : public WebContentsObserver,
   // return the passed in path.
   void SetFilePathForMockFileDialog(const base::FilePath& path);
 
+  void AddBlinkTestClientReceiver(
+      mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver);
+
   // WebContentsObserver implementation.
   void PluginCrashed(const base::FilePath& plugin_path,
                      base::ProcessId plugin_pid) override;
@@ -190,23 +195,25 @@ class BlinkTestController : public WebContentsObserver,
     return accumulated_web_test_runtime_flags_changes_;
   }
 
-  void OnInitiateLayoutDump();
-  void OnResetDone();
-  void OnPrintMessageToStderr(const std::string& message);
-  void OnPrintMessage(const std::string& message);
-  void OnReload();
-  void OnOverridePreferences(const WebPreferences& prefs);
-  void OnCloseRemainingWindows();
-  void OnGoToOffset(int offset);
-  void OnSetBluetoothManualChooser(bool enable);
-  void OnGetBluetoothManualChooserEvents();
-  void OnSendBluetoothManualChooserEvent(const std::string& event,
-                                         const std::string& argument);
-  void OnSetPopupBlockingEnabled(bool block_popups);
-  void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
-  void OnNavigateSecondaryWindow(const GURL& url);
-  void OnBlockThirdPartyCookies(bool block);
-  void OnSetScreenOrientationChanged();
+  // BlinkTestClient implementation.
+  void InitiateLayoutDump() override;
+  void ResetDone() override;
+  void PrintMessageToStderr(const std::string& message) override;
+  void PrintMessage(const std::string& message) override;
+  void Reload() override;
+  void OverridePreferences(
+      const content::WebPreferences& web_preferences) override;
+  void CloseRemainingWindows() override;
+  void GoToOffset(int offset) override;
+  void SendBluetoothManualChooserEvent(const std::string& event,
+                                       const std::string& argument) override;
+  void SetBluetoothManualChooser(bool enable) override;
+  void GetBluetoothManualChooserEvents() override;
+  void SetPopupBlockingEnabled(bool block_popups) override;
+  void LoadURLForFrame(const GURL& url, const std::string& frame_name) override;
+  void NavigateSecondaryWindow(const GURL& url) override;
+  void SetScreenOrientationChanged() override;
+  void BlockThirdPartyCookies(bool block);
 
  private:
   enum TestPhase { BETWEEN_TESTS, DURING_TEST, CLEAN_UP };
@@ -351,6 +358,9 @@ class BlinkTestController : public WebContentsObserver,
 
   std::map<RenderProcessHost*, mojo::AssociatedRemote<mojom::WebTestControl>>
       web_test_control_map_;
+
+  mojo::AssociatedReceiverSet<mojom::BlinkTestClient>
+      blink_test_client_receivers_;
 
   base::ScopedTempDir writable_directory_for_tests_;
 

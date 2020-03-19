@@ -569,7 +569,18 @@ void ImageLoader::DoUpdateFromElement(
       }
     }
 
-    new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());
+    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred &&
+        was_fully_deferred_ && !ShouldLoadImmediately(url)) {
+      // TODO(rajendrant): Remove this temporary workaround of creating a 1x1
+      // placeholder to fix an intersection observer issue not firing with
+      // certain styles (https://crbug.com/992765). Instead
+      // NoImageResourceToLoad() should be skipped when the image is deferred.
+      // https://crbug.com/999209
+      new_image_content = ImageResourceContent::CreateLazyImagePlaceholder();
+    } else {
+      new_image_content =
+          ImageResourceContent::Fetch(params, document.Fetcher());
+    }
 
     // If this load is starting while navigating away, treat it as an auditing
     // keepalive request, and don't report its results back to the element.

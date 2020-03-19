@@ -221,8 +221,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("app-management/image_info.mojom-lite.js",
                                IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
 
-  html_source->AddResourcePath("search/search.mojom-lite.js",
-                               IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
+  html_source->AddResourcePath(
+      "search/user_action_recorder.mojom-lite.js",
+      IDR_OS_SETTINGS_USER_ACTION_RECORDER_MOJOM_LITE_JS);
 
   // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
   // as repeated keys used by the OS strings should override the same keys

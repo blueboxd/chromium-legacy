@@ -511,6 +511,41 @@ template <typename T, typename U, typename V>
 struct GCInfoTrait<HeapLinkedHashSet<T, U, V>>
     : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {};
 
+// This class is still experimental. Do not use this class.
+template <typename ValueArg>
+class HeapNewLinkedHashSet : public NewLinkedHashSet<ValueArg, HeapAllocator> {
+  IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
+  DISALLOW_NEW();
+
+  static void CheckType() {
+    // TODO(keinakashima): support WeakMember<T>
+    static_assert(internal::IsMember<ValueArg>,
+                  "HeapNewLinkedHashSet supports only Member.");
+    // If not trivially destructible, we have to add a destructor which will
+    // hinder performance.
+    static_assert(std::is_trivially_destructible<HeapNewLinkedHashSet>::value,
+                  "HeapNewLinkedHashSet must be trivially destructible.");
+    static_assert(
+        IsAllowedInContainer<ValueArg>::value,
+        "Not allowed to directly nest type. Use Member<> indirection instead.");
+    static_assert(WTF::IsTraceable<ValueArg>::value,
+                  "For sets without traceable elements, use NewLinkedHashSet<> "
+                  "instead of HeapNewLinkedHashSet<>.");
+  }
+
+ public:
+  template <typename>
+  static void* AllocateObject(size_t size) {
+    return ThreadHeap::Allocate<HeapNewLinkedHashSet<ValueArg>>(size);
+  }
+
+  HeapNewLinkedHashSet() { CheckType(); }
+};
+
+template <typename T>
+struct GCInfoTrait<HeapNewLinkedHashSet<T>>
+    : public GCInfoTrait<NewLinkedHashSet<T, HeapAllocator>> {};
+
 template <typename ValueArg,
           wtf_size_t inlineCapacity =
               0,  // The inlineCapacity is just a dummy to

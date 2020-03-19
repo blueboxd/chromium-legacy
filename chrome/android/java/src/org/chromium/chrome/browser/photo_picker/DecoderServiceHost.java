@@ -86,7 +86,7 @@ public class DecoderServiceHost
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             mIRemoteService = IDecoderService.Stub.asInterface(service);
-            mBound = true;
+            assert mIRemoteService != null;
             for (DecoderStatusCallback callback : mCallbacks) {
                 callback.serviceReady();
             }
@@ -96,7 +96,6 @@ public class DecoderServiceHost
         public void onServiceDisconnected(ComponentName className) {
             Log.e(TAG, "Service has unexpectedly disconnected");
             mIRemoteService = null;
-            mBound = false;
         }
     };
 
@@ -204,9 +203,6 @@ public class DecoderServiceHost
     // The callbacks used to notify the clients when the service is ready.
     private final List<DecoderStatusCallback> mCallbacks = new ArrayList<DecoderStatusCallback>();
 
-    // Flag indicating whether we are bound to the service.
-    private boolean mBound;
-
     private final Context mContext;
 
     /**
@@ -237,9 +233,9 @@ public class DecoderServiceHost
      * @param context The context to use.
      */
     public void unbind(Context context) {
-        if (mBound) {
+        if (mIRemoteService != null) {
             context.unbindService(mConnection);
-            mBound = false;
+            mIRemoteService = null;
         }
     }
 
@@ -506,6 +502,15 @@ public class DecoderServiceHost
      * @param params The information about the decoding request.
      */
     private void dispatchDecodeImageRequest(DecoderServiceParams params) {
+        if (mIRemoteService == null) {
+            // If the connection is lost, ignore the request and continue. Further still image
+            // decoding requests will likely be dropped but note that there may be video requests
+            // remaining (which don't require this connection to be open).
+            Log.e(TAG, "Connection to decoder service unexpectedly terminated.");
+            closeRequestWithError(mProcessingRequest.mUri.getPath());
+            return;
+        }
+
         // Obtain a file descriptor to send over to the sandboxed process.
         ParcelFileDescriptor pfd = null;
         Bundle bundle = new Bundle();

@@ -292,3 +292,8 @@ struct ReplacedAppPreferences {
   map<string, array<IntentFilter>> replaced_preference;
 };
 
+// The preferred app represents by |app_id| for |intent_fitler|.
+struct PreferredApp {
+  IntentFilter intent_filter;
+  string app_id;
+};

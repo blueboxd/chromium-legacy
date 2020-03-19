@@ -486,15 +486,8 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
   if (resolver.InCycle())
     return CSSInvalidVariableValue::Create();
 
-  if (!data) {
-    // TODO(crbug.com/980930): Treat custom properties as unset here,
-    // not invalid. This behavior is enforced by WPT, but violates the spec.
-    if (const auto* custom_property = DynamicTo<CustomProperty>(property)) {
-      if (!custom_property->IsRegistered())
-        return CSSInvalidVariableValue::Create();
-    }
+  if (!data)
     return cssvalue::CSSUnsetValue::Create();
-  }
 
   if (data == decl.Value())
     return &decl;

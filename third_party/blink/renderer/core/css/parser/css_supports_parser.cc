@@ -13,27 +13,6 @@ namespace blink {
 
 namespace {
 
-// TODO(crbug.com/1053910): This is not correct, but it's here to make it
-// possible to make web-facing changes separately.
-//
-// According to our (non-WPT) tests, the following is not a valid @supports
-// rule:
-//
-//   @supports (left:0)and (top:0) {}
-//                    ^^
-// The ")and" part of this is considered illegal by our tests, since there is
-// no whitespace between ")" and "and". However, it's actually perfectly legal,
-// since ")and" will tokenize into: <)-token> followed by <ident-token>. There
-// is no reason why this wouldn't match the <supports-condition> production
-// just because whitespace is missing.
-//
-// See also https://drafts.csswg.org/css-values-3/#component-whitespace
-bool ConsumeRequiredWhitespaceOrEOF(CSSParserTokenRange& range) {
-  if (range.AtEnd())
-    return true;
-  return range.ConsumeIncludingWhitespace().GetType() == kWhitespaceToken;
-}
-
 // The result kUnknown must be converted to 'false' if passed to a context
 // which requires a boolean value.
 // TODO(crbug.com/1052274): This is supposed to happen at the top-level,
@@ -141,8 +120,7 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsInParens(
   if (range.Peek().GetType() == kLeftParenthesisToken) {
     auto block = range.ConsumeBlock();
     block.ConsumeWhitespace();
-    if (!ConsumeRequiredWhitespaceOrEOF(range))
-      return Result::kParseFailure;
+    range.ConsumeWhitespace();
     Result result = ConsumeSupportsCondition(block);
     if (result != Result::kParseFailure)
       return result;
@@ -193,8 +171,7 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsSelectorFn(
     return Result::kParseFailure;
   auto block = range.ConsumeBlock();
   block.ConsumeWhitespace();
-  if (!ConsumeRequiredWhitespaceOrEOF(range))
-    return Result::kParseFailure;
+  range.ConsumeWhitespace();
   if (CSSSelectorParser::SupportsComplexSelector(block, parser_.GetContext()))
     return Result::kSupported;
   return Result::kUnsupported;
@@ -207,8 +184,7 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsDecl(
     return Result::kParseFailure;
   auto block = range.ConsumeBlock();
   block.ConsumeWhitespace();
-  if (!ConsumeRequiredWhitespaceOrEOF(range))
-    return Result::kParseFailure;
+  range.ConsumeWhitespace();
   if (block.Peek().GetType() != kIdentToken)
     return Result::kParseFailure;
   if (parser_.SupportsDeclaration(block))

@@ -131,6 +131,9 @@ TestPasswordStore::CreateBackgroundTaskRunner() const {
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
     const autofill::PasswordForm& form,
     AddLoginError* error) {
+  if (error)
+    *error = AddLoginError::kNone;
+
   PasswordStoreChangeList changes;
   auto& passwords_for_signon_realm = stored_passwords_[form.signon_realm];
   auto iter = std::find_if(
@@ -143,23 +146,35 @@ PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
     changes.emplace_back(PasswordStoreChange::REMOVE, *iter);
     changes.emplace_back(PasswordStoreChange::ADD, form);
     *iter = form;
+    iter->in_store = is_account_store_
+                         ? autofill::PasswordForm::Store::kAccountStore
+                         : autofill::PasswordForm::Store::kProfileStore;
     return changes;
   }
 
   changes.emplace_back(PasswordStoreChange::ADD, form);
   passwords_for_signon_realm.push_back(form);
+  passwords_for_signon_realm.back().in_store =
+      is_account_store_ ? autofill::PasswordForm::Store::kAccountStore
+                        : autofill::PasswordForm::Store::kProfileStore;
   return changes;
 }
 
 PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
     const autofill::PasswordForm& form,
     UpdateLoginError* error) {
+  if (error)
+    *error = UpdateLoginError::kNone;
+
   PasswordStoreChangeList changes;
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];
   for (auto it = forms.begin(); it != forms.end(); ++it) {
     if (ArePasswordFormUniqueKeysEqual(form, *it)) {
       *it = form;
+      it->in_store = is_account_store_
+                         ? autofill::PasswordForm::Store::kAccountStore
+                         : autofill::PasswordForm::Store::kProfileStore;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
   }

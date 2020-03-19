@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/referrer.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/test/test_runner_support.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
@@ -137,22 +138,19 @@ WebFrameTestClient::WebFrameTestClient(WebViewTestProxy* web_view_test_proxy,
   DCHECK(web_view_test_proxy_);
 }
 
-WebFrameTestClient::~WebFrameTestClient() {}
-
 // static
-void WebFrameTestClient::PrintFrameDescription(WebTestDelegate* delegate,
-                                               blink::WebLocalFrame* frame) {
+std::string WebFrameTestClient::PrintFrameDescription(
+    WebTestDelegate* delegate,
+    blink::WebLocalFrame* frame) {
   std::string name = content::GetFrameNameForWebTests(frame);
   if (frame == frame->View()->MainFrame()) {
     DCHECK(name.empty());
-    delegate->PrintMessage("main frame");
-    return;
+    return "main frame";
   }
   if (name.empty()) {
-    delegate->PrintMessage("frame (anonymous)");
-    return;
+    return "frame (anonymous)";
   }
-  delegate->PrintMessage(std::string("frame \"") + name + "\"");
+  return std::string("frame \"") + name + "\"";
 }
 
 void WebFrameTestClient::PostAccessibilityEvent(
@@ -440,9 +438,9 @@ bool WebFrameTestClient::ShouldContinueNavigation(
 
   if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
     GURL url = info->url_request.Url();
-    WebFrameTestClient::PrintFrameDescription(
+    std::string description = WebFrameTestClient::PrintFrameDescription(
         delegate(), web_frame_test_proxy_->GetWebFrame());
-    delegate()->PrintMessage(" - BeginNavigation request to '");
+    delegate()->PrintMessage(description + " - BeginNavigation request to '");
     delegate()->PrintMessage(
         DescriptionSuitableForTestResult(url.possibly_invalid_spec()));
     delegate()->PrintMessage("', http method ");

@@ -2424,11 +2424,12 @@ crbug.com/400829 virtual/audio-service/media/stable/video-object-fit-stable.html
 
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
 crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
-crbug.com/1032016 http/tests/devtools/sources/debugger/live-edit-breakpoints.js [ Pass Failure ]
-crbug.com/1032016 http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
-crbug.com/1032016 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
-crbug.com/1032016 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
-crbug.com/1032016 http/tests/devtools/bindings/livelocation-main-frame-navigated.js [ Pass Failure ]
+
+# Renaming front_end/protocol to front_end/protocol_client requires a 3-way change. Temporarliy disable web tests that use |Protocol|
+crbug.com/1011811 http/tests/devtools/inspector-backend-commands.js [ Pass Failure ]
+crbug.com/1011811 http/tests/devtools/report-protocol-errors.js [ Pass Failure ]
+crbug.com/1047760 http/tests/devtools/screen-orientation-override.js [ Pass Failure Timeout ]
+crbug.com/1011811 http/tests/devtools/elements/styles-1/cached-sync-computed-styles.js [ Pass Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
@@ -5990,6 +5991,8 @@ crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-
 crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope-in-files.js [ Pass Crash ]
 crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-main-thread.https.html [ Pass Failure ]
 
+crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
+
 crbug.com/1015130 external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 crbug.com/1015130 virtual/scalefactor200/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 crbug.com/1015130 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
@@ -6501,9 +6504,6 @@ crbug.com/1047208 http/tests/serviceworker/update-served-from-cache.html [ Pass 
 crbug.com/1047293 [ Mac ] editing/pasteboard/pasteboard_with_unfocused_selection.html [ Pass Failure ]
 crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
 
-# Sheriff 2020-01-31
-crbug.com/1047760 [ Win ] http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]
-
 crbug.com/1049454 external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Pass Timeout ]
 
 # Sheriff 2020-02-10
@@ -6975,9 +6975,7 @@ crbug.com/1061226 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.
 
 # Sheriff 2020-03-13
 crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Failure ]
-crbug.com/1061118 fast/loader/subframe-removes-itself.html [ Pass Failure ]
 crbug.com/1061043 fast/plugins/keypress-event.html [ Pass Failure ]
-crbug.com/1061328 http/tests/loading/onreadystatechange-detach.html [ Pass Failure ]
 crbug.com/1061097 http/tests/security/promise-access-control-allow.htm [ Pass Failure ]
 crbug.com/1061539 [ Mac ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
 crbug.com/1061539 [ Linux ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
@@ -6990,6 +6988,5 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 # Sheriff 2020-03-16
 crbug.com/1061029 [ Win ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
 crbug.com/1061029 [ Mac ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
-crbug.com/1061180 http/tests/loading/onbeforeunload-detach.html [ Pass Failure ]
 crbug.com/1060175 [ Linux ] http/tests/security/promise-access-control-allow.html [ Pass Failure Timeout ]
 crbug.com/1060175 [ Win ] http/tests/security/promise-access-control-allow.html [ Pass Failure Timeout ]

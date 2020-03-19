@@ -2997,24 +2997,6 @@
   <message name="IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE" desc="Title of the personalize Google services section. When clicked, takes the user to the Google Activity Controls.">
     Control how your browsing history is used to personalize Search, ads, and more
   </message>
-  <message name="IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE" desc="Title of the use your history to personalize Google services section. When clicked, takes the user to the Google Activity Controls.">
-    Use your Chrome browsing history to personalize Search, ads and other Google services
-  </message>
-  <message name="IDS_SETTINGS_SWAA_ON" desc="The sWAA state that shows in the use history to personalize google services row">
-    On
-  </message>
-  <message name="IDS_SETTINGS_SWAA_OFF" desc="The sWAA state that shows in the use history to personalize google services row">
-    Off
-  </message>
-  <message name="IDS_SETTINGS_DATA_ENCRYPTED_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because data is encrypted with custom passphrase">
-    Turned off because you encrypted your sync data with a passphrase
-  </message>
-   <message name="IDS_SETTINGS_HISTORY_SYNC_OFF_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because history sync is off">
-    Turned off because you disabled history sync
-  </message>
-   <message name="IDS_SETTINGS_SWAA_OFF_HINT" desc="Hint that shows when sWAA is off in the use history to personalize google services row because history recording is disabled in Web and App Activity" translateable="false">
-    The usage of Chrome history for personalization is turned off in your Activity controls
-   </message>
 
   <if expr="not chromeos">
     <!-- Import Settings Dialog -->

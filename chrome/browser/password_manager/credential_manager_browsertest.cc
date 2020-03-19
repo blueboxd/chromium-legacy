@@ -30,6 +30,8 @@
 
 namespace {
 
+using password_manager::MatchesFormExceptStore;
+
 class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
  public:
   CredentialManagerBrowserTest() {}
@@ -980,7 +982,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   // Now make them equal to be able to check the equality of other fields.
   signin_form.date_last_used =
       stored[signin_form.signon_realm][0].date_last_used;
-  EXPECT_EQ(signin_form, stored[signin_form.signon_realm][0]);
+  EXPECT_THAT(signin_form,
+              MatchesFormExceptStore(stored[signin_form.signon_realm][0]));
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, CredentialsAutofilled) {

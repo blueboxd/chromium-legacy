@@ -554,7 +554,7 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
 #if defined(OS_ANDROID)
   HideSavePasswordInfobar(web_contents());
 #if defined(ENABLE_PASSWORD_CHANGE)
-  was_leak_warning_shown_ = true;
+  was_leak_dialog_shown_ = true;
   (new CredentialLeakPasswordChangeControllerAndroid(
        leak_type, origin, username, web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();
@@ -681,6 +681,10 @@ ChromePasswordManagerClient::GetOrCreateTouchToFillController() {
     touch_to_fill_controller_ = std::make_unique<TouchToFillController>(this);
 
   return touch_to_fill_controller_.get();
+}
+
+bool ChromePasswordManagerClient::WasCredentialLeakDialogShown() const {
+  return was_leak_dialog_shown_;
 }
 #endif  // defined(OS_ANDROID)
 
@@ -832,15 +836,6 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   if (http_status_code >= 400 && http_status_code < 600)
     return true;
   return false;
-}
-
-bool ChromePasswordManagerClient::WasCredentialLeakDialogShown() const {
-#if defined(ENABLE_PASSWORD_CHANGE)
-  return was_leak_warning_shown_;
-#else
-  // Don't allow a password change flow if the feature is not enabled.
-  return false;
-#endif
 }
 
 net::CertStatus ChromePasswordManagerClient::GetMainFrameCertStatus() const {

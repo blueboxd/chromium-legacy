@@ -486,6 +486,15 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
       base::SysNSStringToUTF8(URL), base::SysNSStringToUTF8(title));
 }
 
++ (void)addFakeSyncServerLegacyBookmarkWithURL:(NSString*)URL
+                                         title:(NSString*)title
+                     originator_client_item_id:
+                         (NSString*)originator_client_item_id {
+  chrome_test_util::InjectLegacyBookmarkOnFakeSyncServer(
+      base::SysNSStringToUTF8(URL), base::SysNSStringToUTF8(title),
+      base::SysNSStringToUTF8(originator_client_item_id));
+}
+
 + (void)addFakeSyncServerTypedURL:(NSString*)URL {
   chrome_test_util::InjectTypedURLOnFakeSyncServer(
       base::SysNSStringToUTF8(URL));

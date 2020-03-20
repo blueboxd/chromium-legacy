@@ -11,6 +11,7 @@ cr.define('settings', function() {
    * @typedef {{
    *   BASIC: !settings.Route,
    *   ADVANCED: !settings.Route,
+   *   ABOUT: !settings.Route,
    * }}
    */
   /* #export */ let MinimumRoutes;

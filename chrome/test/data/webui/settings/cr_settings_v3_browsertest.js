@@ -10,6 +10,7 @@ GEN('#include "services/network/public/cpp/features.h"');
 
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
+GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
@@ -594,6 +595,12 @@ var CrSettingsPasswordsSectionV3Test = class extends CrSettingsV3BrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.m.js';
   }
+  /** @override */
+  get featureList() {
+    const list = super.featureList;
+    list.enabled.push('password_manager::features::kPasswordCheck');
+    return list;
+  }
 };
 
 TEST_F('CrSettingsPasswordsSectionV3Test', 'All', function() {
@@ -605,6 +612,13 @@ var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/password_check_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    const list = super.featureList;
+    list.enabled.push('password_manager::features::kPasswordCheck');
+    return list;
   }
 };
 
@@ -701,3 +715,16 @@ TEST_F(
       mocha.run();
     });
 GEN('#endif  // defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsChooserExceptionListEntryV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/chooser_exception_list_entry_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsChooserExceptionListEntryV3Test', 'All', function() {
+  mocha.run();
+});

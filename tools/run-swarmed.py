@@ -25,7 +25,7 @@ from __future__ import print_function
 import argparse
 import hashlib
 import json
-import multiprocessing
+import multiprocessing.dummy
 import os
 import shutil
 import subprocess
@@ -115,17 +115,15 @@ def _Spawn(args):
       vpython_native_pkg,
       '--cipd-package',
       vpython_pkg,
-      '--env-prefix',
-      'PATH=.swarming_module',
-      '--env-prefix',
-      'PATH=.swarming_module/bin',
-      '--env-prefix',
-      'VPYTHON_VIRTUALENV_ROOT=.swarming_module_cache/vpython',
-  ]
-  trigger_args += [
       '--',
-      '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',
-      '--system-log-file=${ISOLATED_OUTDIR}/system_log']
+  ]
+  if not args.no_test_flags:
+    # These flags are recognized by our test runners, but do not work
+    # when running custom scripts.
+    trigger_args += [
+        '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',
+        '--system-log-file=${ISOLATED_OUTDIR}/system_log'
+    ]
   if args.gtest_filter:
     trigger_args.append('--gtest_filter=' + args.gtest_filter)
   elif args.target_os == 'fuchsia':
@@ -143,6 +141,10 @@ def _Collect(spawn_result):
   with open(json_file) as f:
     task_json = json.load(f)
   task_ids = [task['task_id'] for task in task_json['tasks']]
+
+  for t in task_ids:
+    print('Task {}: https://chromium-swarm.appspot.com/task?id={}'.format(
+        index, t))
   p = subprocess.Popen(
       [
           'tools/luci-go/swarming',
@@ -172,10 +174,12 @@ def main():
   parser.add_argument('--target-os', default='detect', help='gn target_os')
   parser.add_argument('--arch', '-a', default='detect',
                       help='CPU architecture of the test binary.')
-  parser.add_argument( '--build', dest='build', action='store_true',
+  parser.add_argument('--build', dest='build', action='store_true',
                       help='Build before isolating (default).')
   parser.add_argument( '--no-build', dest='build', action='store_false',
                       help='Do not build, just isolate.')
+  parser.add_argument('--isolate-map-file', '-i',
+                      help='path to isolate map file if not using default')
   parser.add_argument('--copies', '-n', type=int, default=1,
                       help='Number of copies to spawn.')
   parser.add_argument('--device-os', default='M',
@@ -187,6 +191,9 @@ def main():
   parser.add_argument('--gtest_filter',
                       help='Use the given gtest_filter, rather than the '
                            'default filter file, if any.')
+  parser.add_argument('--no-test-flags', action='store_true',
+                      help='Do not add --test-launcher-summary-output and '
+                           '--system-log-file flags to the comment.')
   parser.add_argument('out_dir', type=str, help='Build directory.')
   parser.add_argument('target_name', type=str, help='Name of target to run.')
 
@@ -231,6 +238,8 @@ def main():
   mb_cmd = [sys.executable, 'tools/mb/mb.py', 'isolate']
   if not args.build:
     mb_cmd.append('--no-build')
+  if args.isolate_map_file:
+    mb_cmd += ['--isolate-map-file', args.isolate_map_file]
   mb_cmd += ['//' + args.out_dir, args.target_name]
   subprocess.check_call(mb_cmd)
 
@@ -255,7 +264,9 @@ def main():
 
   try:
     print('Triggering %d tasks...' % args.copies)
-    pool = multiprocessing.Pool()
+    # Use dummy since threadpools give better exception messages
+    # than process pools do, and threads work fine for what we're doing.
+    pool = multiprocessing.dummy.Pool()
     spawn_args = map(lambda i: (i, args, isolated_hash), range(args.copies))
     spawn_results = pool.imap_unordered(_Spawn, spawn_args)
 

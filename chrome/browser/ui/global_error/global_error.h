@@ -67,7 +67,6 @@ class GlobalErrorWithStandardBubble
   ~GlobalErrorWithStandardBubble() override;
 
   // Override these methods to customize the contents of the error bubble:
-  virtual gfx::Image GetBubbleViewIcon();
   virtual base::string16 GetBubbleViewTitle() = 0;
   virtual std::vector<base::string16> GetBubbleViewMessages() = 0;
   virtual base::string16 GetBubbleViewAcceptButtonLabel() = 0;

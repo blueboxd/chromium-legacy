@@ -1817,6 +1817,7 @@ base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
 }
 
 void Animation::cancel() {
+  double current_time_before_cancel = CurrentTimeInternal().value_or(0);
   AnimationPlayState initial_play_state = CalculateAnimationPlayState();
   if (initial_play_state != kIdle) {
     ResetPendingTasks();
@@ -1853,6 +1854,8 @@ void Animation::cancel() {
   SetOutdated();
 
   // Force dispatch of canceled event.
+  if (content_)
+    content_->SetCancelTime(current_time_before_cancel);
   Update(kTimingUpdateOnDemand);
 
   // Notify of change to canceled state.

@@ -15,6 +15,7 @@ GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/omnibox/common/omnibox_features.h"');
+GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 
 /**
  * Test fixture for Polymer Settings elements.
@@ -354,6 +355,8 @@ CrSettingsPasswordsSectionTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
 
+  featureList: {enabled: ['password_manager::features::kPasswordCheck']},
+
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../mock_timer.js',
@@ -383,7 +386,9 @@ CrSettingsPasswordsCheckTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/autofill_page/passwords_check.html',
+  browsePreload: 'chrome://settings/autofill_page/password_check.html',
+
+  featureList: {enabled: ['password_manager::features::kPasswordCheck']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

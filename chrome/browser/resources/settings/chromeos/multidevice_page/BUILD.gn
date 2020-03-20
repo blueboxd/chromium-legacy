@@ -83,7 +83,7 @@ js_library("multidevice_smartlock_subpage") {
     ":multidevice_feature_behavior",
     "..:metrics_recorder",
     "..:os_route",
-    "../..:settings_routes",
+    "..:os_settings_routes",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
     "//ui/webui/resources/js:cr",
@@ -93,8 +93,8 @@ js_library("multidevice_smartlock_subpage") {
 js_library("multidevice_subpage") {
   deps = [
     ":multidevice_constants",
-    ":multidevice_feature_behavior",
     "..:os_route",
+    "..:os_settings_routes",
     "../..:settings_routes",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
   ]
@@ -106,7 +106,7 @@ js_library("multidevice_tether_item") {
   deps = [
     ":multidevice_feature_behavior",
     "..:os_route",
-    "../..:settings_routes",
+    "..:os_settings_routes",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]

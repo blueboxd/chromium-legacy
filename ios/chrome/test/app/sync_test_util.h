@@ -42,6 +42,14 @@ BOOL VerifyNumberOfSyncEntitiesWithName(syncer::ModelType type,
 // Injects a bookmark into the fake sync server with |url| and |title|.
 void InjectBookmarkOnFakeSyncServer(std::string url, std::string title);
 
+// Injects a legacy bookmark into the fake sync server. The legacy bookmark
+// means 2015 and earlier, prior to the adoption of GUIDs for originator client
+// item ID.
+void InjectLegacyBookmarkOnFakeSyncServer(
+    std::string url,
+    std::string title,
+    std::string originator_client_item_id);
+
 // Injects an autofill profile into the fake sync server with |guid| and
 // |full_name|.
 void InjectAutofillProfileOnFakeSyncServer(std::string guid,

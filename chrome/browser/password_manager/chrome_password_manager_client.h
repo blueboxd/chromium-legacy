@@ -143,7 +143,6 @@ class ChromePasswordManagerClient
   password_manager::PasswordStore* GetAccountPasswordStore() const override;
   password_manager::SyncState GetPasswordSyncState() const override;
   bool WasLastNavigationHTTPError() const override;
-  bool WasCredentialLeakDialogShown() const override;
   net::CertStatus GetMainFrameCertStatus() const override;
   void PromptUserToEnableAutosignin() override;
   bool IsIncognito() const override;
@@ -253,6 +252,11 @@ class ChromePasswordManagerClient
   password_manager::CredentialCache* GetCredentialCacheForTesting() {
     return &credential_cache_;
   }
+
+  bool WasCredentialLeakDialogShown() const override;
+  void SetCredentialLeakDialogWasShownForTesting() {
+    was_leak_dialog_shown_ = true;
+  }
 #endif
 
  protected:
@@ -332,6 +336,10 @@ class ChromePasswordManagerClient
   // event is triggered. It is sent to password reuse detection manager and
   // reset when ime finish composing text event is triggered.
   base::string16 last_composing_text_;
+
+  // Whether a leak warning was shown. Used only for tests or when
+  // ENABLE_PASSWORD_CHANGE is defined.
+  bool was_leak_dialog_shown_ = false;
 #endif
 
   std::unique_ptr<ChromeBiometricAuthenticator> biometric_authenticator_;
@@ -373,11 +381,6 @@ class ChromePasswordManagerClient
 
   // Whether OnPaste() was called from this ChromePasswordManagerClient
   bool was_on_paste_called_ = false;
-
-#if defined(ENABLE_PASSWORD_CHANGE)
-  // Whether a leak warning was shown.
-  bool was_leak_warning_shown_ = false;
-#endif
 
   // Helper for performing logic that is common between
   // ChromePasswordManagerClient and IOSChromePasswordManagerClient.

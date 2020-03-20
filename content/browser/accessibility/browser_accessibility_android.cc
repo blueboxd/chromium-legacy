@@ -1211,7 +1211,7 @@ bool BrowserAccessibilityAndroid::CanScrollForward() const {
     float max = GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange);
     return value < max;
   } else {
-    return GetScrollX() < GetMaxScrollX() || GetScrollY() < GetMaxScrollY();
+    return CanScrollRight() || CanScrollDown();
   }
 }
 
@@ -1228,24 +1228,24 @@ bool BrowserAccessibilityAndroid::CanScrollBackward() const {
     float min = GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange);
     return value > min;
   } else {
-    return GetScrollX() > GetMinScrollX() || GetScrollY() > GetMinScrollY();
+    return CanScrollLeft() || CanScrollUp();
   }
 }
 
 bool BrowserAccessibilityAndroid::CanScrollUp() const {
-  return GetScrollY() > GetMinScrollY();
+  return GetScrollY() > GetMinScrollY() && IsScrollable();
 }
 
 bool BrowserAccessibilityAndroid::CanScrollDown() const {
-  return GetScrollY() < GetMaxScrollY();
+  return GetScrollY() < GetMaxScrollY() && IsScrollable();
 }
 
 bool BrowserAccessibilityAndroid::CanScrollLeft() const {
-  return GetScrollX() > GetMinScrollX();
+  return GetScrollX() > GetMinScrollX() && IsScrollable();
 }
 
 bool BrowserAccessibilityAndroid::CanScrollRight() const {
-  return GetScrollX() < GetMaxScrollX();
+  return GetScrollX() < GetMaxScrollX() && IsScrollable();
 }
 
 int BrowserAccessibilityAndroid::GetScrollX() const {

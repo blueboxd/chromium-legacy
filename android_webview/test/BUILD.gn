@@ -94,7 +94,12 @@ android_apk("webview_instrumentation_apk") {
 }
 
 android_resources("webview_instrumentation_apk_resources") {
-  resource_dirs = [ "shell/res" ]
+  sources = [
+    "shell/res/layout/testshell_activity.xml",
+    "shell/res/raw/resource_file.html",
+    "shell/res/raw/resource_icon.png",
+    "shell/res/values/config.xml",
+  ]
   custom_package = "org.chromium.android_webview.shell"
 }
 

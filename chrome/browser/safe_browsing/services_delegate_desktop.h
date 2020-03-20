@@ -65,10 +65,6 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   IncidentReportingService* CreateIncidentReportingService();
   ResourceRequestDetector* CreateResourceRequestDetector();
 
-  void CreateBinaryUploadService(Profile* profile) override;
-  void RemoveBinaryUploadService(Profile* profile) override;
-  BinaryUploadService* GetBinaryUploadService(Profile* profile) const override;
-
   std::string GetSafetyNetId() const override;
 
   std::unique_ptr<ClientSideDetectionService> csd_service_;
@@ -82,11 +78,6 @@ class ServicesDelegateDesktop : public ServicesDelegate {
 
   // Has the database_manager been set for tests?
   bool database_manager_set_for_tests_ = false;
-
-  // Tracks existing Profiles, and their corresponding BinaryUploadService
-  // instances. Accessed on UI thread.
-  std::map<Profile*, std::unique_ptr<BinaryUploadService>>
-      binary_upload_service_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateDesktop);
 };

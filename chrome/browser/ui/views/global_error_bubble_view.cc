@@ -120,19 +120,6 @@ base::string16 GlobalErrorBubbleView::GetWindowTitle() const {
   return error_->GetBubbleViewTitle();
 }
 
-gfx::ImageSkia GlobalErrorBubbleView::GetWindowIcon() {
-  gfx::Image image;
-  if (error_) {
-    image = error_->GetBubbleViewIcon();
-    DCHECK(!image.IsEmpty());
-  }
-  return *image.ToImageSkia();
-}
-
-bool GlobalErrorBubbleView::ShouldShowWindowIcon() const {
-  return ChromeLayoutProvider::Get()->ShouldShowWindowIcon();
-}
-
 void GlobalErrorBubbleView::WindowClosing() {
   if (error_)
     error_->BubbleViewDidClose(browser_);

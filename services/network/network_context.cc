@@ -97,6 +97,7 @@
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
+#include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/sqlite_trust_token_persister.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
@@ -1833,6 +1834,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   }
 
   if (base::FeatureList::IsEnabled(features::kTrustTokens)) {
+    trust_token_store_ = std::make_unique<PendingTrustTokenStore>();
+
     if (params_->trust_token_path) {
       SQLiteTrustTokenPersister::CreateForFilePath(
           base::ThreadPool::CreateSequencedTaskRunner(
@@ -1842,7 +1845,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
           base::BindOnce(&NetworkContext::FinishConstructingTrustTokenStore,
                          weak_factory_.GetWeakPtr()));
     } else {
-      trust_token_store_ = TrustTokenStore::CreateInMemory();
+      trust_token_store_->OnStoreReady(TrustTokenStore::CreateInMemory());
     }
   }
 
@@ -2375,8 +2378,8 @@ void NetworkContext::InitializeCorsParams() {
 
 void NetworkContext::FinishConstructingTrustTokenStore(
     std::unique_ptr<SQLiteTrustTokenPersister> persister) {
-  DCHECK(!trust_token_store_);
-  trust_token_store_ = std::make_unique<TrustTokenStore>(std::move(persister));
+  trust_token_store_->OnStoreReady(
+      std::make_unique<TrustTokenStore>(std::move(persister)));
 }
 
 void NetworkContext::GetOriginPolicyManager(

@@ -68,13 +68,6 @@ VoiceSearchProvider* ChromiumBrowserProvider::GetVoiceSearchProvider() const {
 
 id<LogoVendor> ChromiumBrowserProvider::CreateLogoVendor(
     Browser* browser,
-    web::WebState* web_state,
-    id<URLLoadingBridge> loading_bridge) const {
-  return CreateLogoVendor(browser, web_state);
-}
-
-id<LogoVendor> ChromiumBrowserProvider::CreateLogoVendor(
-    Browser* browser,
     web::WebState* web_state) const {
   return [[ChromiumLogoController alloc] init];
 }

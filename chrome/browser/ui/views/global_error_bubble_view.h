@@ -29,8 +29,6 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
 
   // views::WidgetDelegate implementation.
   base::string16 GetWindowTitle() const override;
-  gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
 
   // views::BubbleDialogDelegateView implementation.

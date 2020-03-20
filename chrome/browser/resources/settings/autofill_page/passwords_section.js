@@ -376,7 +376,8 @@ Polymer({
    * @private
    */
   onCheckPasswordsClick_() {
-    settings.Router.getInstance().navigateTo(settings.routes.CHECK_PASSWORDS);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
   },
 
   // <if expr="chromeos">

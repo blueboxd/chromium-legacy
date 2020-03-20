@@ -98,7 +98,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       use_transformed_rasterization_(false),
       can_use_lcd_text_(true),
       directly_composited_image_size_(base::nullopt),
-      directly_composited_image_raster_aspect_ratio_(0.f),
       tile_size_calculator_(this) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
@@ -242,44 +241,6 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       tilings_->num_tilings() ? MaximumTilingContentsScale() : 1.f;
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
                                 contents_opaque());
-
-  if (directly_composited_image_size_) {
-    // Directly composited images should be clipped to the layer's content rect.
-    // When a PictureLayerTiling is created for a directly composited image, the
-    // layer bounds are multiplied by the raster scale in order to compute the
-    // tile size. If the aspect ratio of the layer doesn't match that of the
-    // image, it's possible that one of the dimensions of the resulting size
-    // (layer bounds * raster scale) is a fractional number, as raster scale
-    // does not scale x and y independently.
-    // When this happens, the ToEnclosingRect() operation in
-    // |PictureLayerTiling::EnclosingContentsRectFromLayer()| will
-    // create a tiling that, when scaled by |max_contents_scale| above, is
-    // larger than the layer bounds by a fraction of a pixel.
-    gfx::Rect clip_rect = draw_properties().drawable_content_rect;
-    if (shared_quad_state->is_clipped)
-      clip_rect.Intersect(shared_quad_state->clip_rect);
-
-    shared_quad_state->is_clipped = true;
-    shared_quad_state->clip_rect = clip_rect;
-
-#if DCHECK_IS_ON()
-    // The aforementioned fraction of a pixel should only happen if the layer
-    // aspect ratio doesn't match the image's aspect ratio.
-    PictureLayerTiling* high_res =
-        tilings_->FindTilingWithResolution(HIGH_RESOLUTION);
-    if (high_res) {
-      float epsilon = IsDirectlyCompositedImageRasteredAtIntrinsicRatio()
-                          ? std::numeric_limits<float>::epsilon()
-                          : 1.f;
-      gfx::SizeF scaled_tiling_size(high_res->tiling_size());
-      scaled_tiling_size.Scale(1 / raster_contents_scale_);
-      DCHECK(std::abs(bounds().width() - scaled_tiling_size.width()) < epsilon);
-      DCHECK(std::abs(bounds().height() - scaled_tiling_size.height()) <
-             epsilon);
-    }
-#endif
-  }
-
   Occlusion scaled_occlusion =
       draw_properties()
           .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
@@ -1031,50 +992,17 @@ void PictureLayerImpl::SetDirectlyCompositedImageSize(
   if (directly_composited_image_size_ == size)
     return;
 
-  directly_composited_image_size_ =
-      ShouldDirectlyCompositeImage(size) ? size : base::nullopt;
+  directly_composited_image_size_ = size;
   NoteLayerPropertyChanged();
 }
 
-bool PictureLayerImpl::ShouldDirectlyCompositeImage(
-    base::Optional<gfx::Size> size) const {
-  if (!size)
-    return false;
-
-  // If the results of scaling the bounds by the expected raster scale
-  // would end up with a content rect whose width/height are more than one
-  // pixel different from the layer bounds, don't directly composite the image
-  // to avoid incorrect rendering.
-  float raster_scale = GetDirectlyCompositedImageRasterScale(size.value());
-  gfx::SizeF layer_bounds(bounds());
-  gfx::RectF scaled_bounds_rect(layer_bounds);
-  scaled_bounds_rect.Scale(raster_scale);
-
-  // Take the scaled bounds, get the enclosing rect then scale it back down -
-  // this is the same set of operations that will happen when using the tiling
-  // at that raster scale.
-  gfx::RectF content_rect(gfx::ToEnclosingRect(scaled_bounds_rect));
-  content_rect.Scale(1 / raster_scale);
-
-  return std::abs(layer_bounds.width() - content_rect.width()) < 1.f &&
-         std::abs(layer_bounds.height() - content_rect.height()) < 1.f;
-}
-
-bool PictureLayerImpl::IsDirectlyCompositedImageRasteredAtIntrinsicRatio()
-    const {
-  DCHECK(directly_composited_image_size_.has_value());
-  return MathUtil::IsWithinEpsilon(
-      directly_composited_image_raster_aspect_ratio_,
-      static_cast<float>(directly_composited_image_size_->width()) /
-          directly_composited_image_size_->height());
-}
-
-float PictureLayerImpl::GetDirectlyCompositedImageRasterScale(
-    gfx::Size directly_composited_image_size) const {
-  float x = static_cast<float>(directly_composited_image_size.width()) /
+float PictureLayerImpl::GetDirectlyCompositedImageRasterScale() const {
+  float x = static_cast<float>(directly_composited_image_size_->width()) /
             bounds().width();
-  float y = static_cast<float>(directly_composited_image_size.height()) /
+  float y = static_cast<float>(directly_composited_image_size_->height()) /
             bounds().height();
+  DCHECK_EQ(x, 1.f);
+  DCHECK_EQ(y, 1.f);
   return GetPreferredRasterScale(gfx::Vector2dF(x, y));
 }
 
@@ -1125,18 +1053,9 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
   }
   high_res->set_resolution(HIGH_RESOLUTION);
 
-  if (layer_tree_impl()->IsPendingTree() ||
-      (layer_tree_impl()->settings().commit_to_active_tree &&
-       directly_composited_image_size_.has_value())) {
+  if (layer_tree_impl()->IsPendingTree()) {
     // On the pending tree, drop any tilings that are non-ideal since we don't
     // need them to activate anyway.
-
-    // For DirectlyCompositedImages, if we recomputed a new raster scale, we
-    // should drop the non-ideal ones if we're committing to the active tree.
-    // Otherwise a non-ideal scale that is _larger_ than the HIGH_RESOLUTION
-    // tile will be used as the coverage scale, and we'll produce a slightly
-    // different rendering. We don't drop the tilings on the active tree if
-    // we're not committing to the active tree to prevent checkerboarding.
     tilings_->RemoveNonIdealTilings();
   }
 
@@ -1145,21 +1064,7 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
 
 bool PictureLayerImpl::ShouldAdjustRasterScale() const {
   if (directly_composited_image_size_) {
-    // Since the raster scale is only expressed as a single dimension,
-    // we may end up rasterizing a directly composited image at an aspect-ratio
-    // that doesn't match the intrinsic size. In these cases we will re-raster
-    // as the layers bounds change the aspect ratio, until we raster at the
-    // intrinsic size (or some multiple of it as enforced by the clamping and
-    // adjustments in |RecalculateRasterScales()|.
-    const bool layer_aspect_ratio_changed = !MathUtil::IsWithinEpsilon(
-        directly_composited_image_raster_aspect_ratio_,
-        static_cast<float>(bounds().width()) / bounds().height());
-    if (layer_aspect_ratio_changed &&
-        !IsDirectlyCompositedImageRasteredAtIntrinsicRatio())
-      return true;
-
-    float desired_raster_scale = GetDirectlyCompositedImageRasterScale(
-        directly_composited_image_size_.value());
+    float desired_raster_scale = GetDirectlyCompositedImageRasterScale();
     float max_scale = std::max(desired_raster_scale, MinimumContentsScale());
     if (raster_source_scale_ < std::min(ideal_source_scale_, max_scale))
       return true;
@@ -1248,12 +1153,11 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
 
 void PictureLayerImpl::RecalculateRasterScales() {
   if (directly_composited_image_size_) {
-    float desired_raster_scale = GetDirectlyCompositedImageRasterScale(
-        directly_composited_image_size_.value());
     if (!raster_source_scale_)
-      raster_source_scale_ = desired_raster_scale;
+      raster_source_scale_ = GetDirectlyCompositedImageRasterScale();
 
     float min_scale = MinimumContentsScale();
+    float desired_raster_scale = GetDirectlyCompositedImageRasterScale();
     float max_scale = std::max(desired_raster_scale, MinimumContentsScale());
     float clamped_ideal_source_scale =
         base::ClampToRange(ideal_source_scale_, min_scale, max_scale);
@@ -1270,9 +1174,6 @@ void PictureLayerImpl::RecalculateRasterScales() {
     raster_device_scale_ = 1.f;
     raster_contents_scale_ = raster_source_scale_;
     low_res_raster_contents_scale_ = raster_contents_scale_;
-
-    directly_composited_image_raster_aspect_ratio_ =
-        static_cast<float>(bounds().width()) / bounds().height();
     return;
   }
 
@@ -1477,13 +1378,7 @@ float PictureLayerImpl::MinimumContentsScale() const {
   if (!min_dimension)
     return setting_min;
 
-  // Directly composited images may result in contents scales that are
-  // less than the configured setting. We allow this lower scale so that we
-  // can raster at the intrinsic image size.
-  const float inverse_min_dimension = 1.f / min_dimension;
-  return (directly_composited_image_size_.has_value())
-             ? inverse_min_dimension
-             : std::max(inverse_min_dimension, setting_min);
+  return std::max(1.f / min_dimension, setting_min);
 }
 
 float PictureLayerImpl::MaximumContentsScale() const {

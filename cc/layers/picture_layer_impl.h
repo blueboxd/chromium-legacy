@@ -173,9 +173,7 @@ class CC_EXPORT PictureLayerImpl
   float MaximumContentsScale() const;
   void UpdateViewportRectForTilePriorityInContentSpace();
   PictureLayerImpl* GetRecycledTwinLayer() const;
-  bool ShouldDirectlyCompositeImage(base::Optional<gfx::Size> size) const;
-  bool IsDirectlyCompositedImageRasteredAtIntrinsicRatio() const;
-  float GetDirectlyCompositedImageRasterScale(gfx::Size) const;
+  float GetDirectlyCompositedImageRasterScale() const;
 
   void SanityCheckTilingState() const;
 
@@ -232,16 +230,7 @@ class CC_EXPORT PictureLayerImpl
   bool use_transformed_rasterization_ : 1;
   bool can_use_lcd_text_ : 1;
 
-  // The intrinsic size of the directly composited image. A directly composited
-  // image is an image which is the only thing drawn into a layer. In these
-  // cases we attempt to raster the image at its intrinsic size.
   base::Optional<gfx::Size> directly_composited_image_size_;
-
-  // If |directly_composited_image_size_| is set, this is the aspect ratio of
-  // the *layer* (and thus the rasterized contents) when the
-  // raster_contents_scale_ was last calculated. See comments in
-  // |ShouldAdjustRasterScale| for an explanation of how this is used.
-  float directly_composited_image_raster_aspect_ratio_;
 
   // Use this instead of |visible_layer_rect()| for tiling calculations. This
   // takes external viewport and transform for tile priority into account.

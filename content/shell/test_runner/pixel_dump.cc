@@ -17,7 +17,6 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "printing/metafile_skia.h"

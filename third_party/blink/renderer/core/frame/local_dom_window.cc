@@ -877,11 +877,12 @@ Element* LocalDOMWindow::frameElement() const {
 void LocalDOMWindow::blur() {}
 
 void LocalDOMWindow::print(ScriptState* script_state) {
-  if (!GetFrame())
-    return;
-
-  Page* page = GetFrame()->GetPage();
-  if (!page)
+  // Don't print after detach begins, even if GetFrame() hasn't been nulled out yet.
+  // TODO(crbug.com/1063150): When a frame is being detached for a swap, the document has already
+  // been Shutdown() and is no longer in a consistent state, even though GetFrame() is not yet
+  // nulled out. This is an ordering violation, and checking whether we're in the middle of detach
+  // here is probably not the right long-term fix.
+  if (!GetFrame() || !GetFrame()->IsAttached())
     return;
 
   if (script_state &&
@@ -901,7 +902,7 @@ void LocalDOMWindow::print(ScriptState* script_state) {
       WebFeature::kCrossOriginWindowPrint);
 
   should_print_when_finished_loading_ = false;
-  page->GetChromeClient().Print(GetFrame());
+  GetFrame()->GetPage()->GetChromeClient().Print(GetFrame());
 }
 
 void LocalDOMWindow::stop() {

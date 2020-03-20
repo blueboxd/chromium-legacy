@@ -139,26 +139,6 @@ bool PictureLayer::Update() {
     picture_layer_inputs_.display_list =
         picture_layer_inputs_.client->PaintContentsToDisplayList(
             ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
-
-    // Clear out previous directly composited image state - if the layer
-    // qualifies we'll set up the state below.
-    picture_layer_inputs_.directly_composited_image_size = base::nullopt;
-    picture_layer_inputs_.nearest_neighbor = false;
-    if (QualifiesForDirectlyCompositedImage()) {
-      base::Optional<DisplayItemList::DirectlyCompositedImageResult> result =
-          picture_layer_inputs_.display_list->GetDirectlyCompositedImageResult(
-              bounds());
-      if (result) {
-        // Directly composited images are not guaranteed to fully cover every
-        // pixel in the layer due to ceiling when calculating the tile content
-        // rect from the layer bounds.
-        recording_source_->SetRequiresClear(true);
-        picture_layer_inputs_.directly_composited_image_size =
-            result->intrinsic_image_size;
-        picture_layer_inputs_.nearest_neighbor = result->nearest_neighbor;
-      }
-    }
-
     picture_layer_inputs_.painter_reported_memory_usage =
         picture_layer_inputs_.client->GetApproximateUnsharedMemoryUsage();
     recording_source_->UpdateDisplayItemList(
@@ -175,21 +155,6 @@ bool PictureLayer::Update() {
   }
 
   return updated;
-}
-
-bool PictureLayer::QualifiesForDirectlyCompositedImage() const {
-  // Filters and backdrop-filters disqualify a layer from being a directly
-  // composited image.
-  // TODO(dlibby): crbug.com/875110 - remove this in an upcoming change and
-  // update baselines.
-  const EffectNode* effect_node =
-      layer_tree_host()->property_trees()->effect_tree.Node(
-          effect_tree_index());
-  if (!effect_node)
-    return true;
-
-  return (effect_node->filters.IsEmpty() &&
-          effect_node->backdrop_filters.IsEmpty());
 }
 
 sk_sp<SkPicture> PictureLayer::GetPicture() const {

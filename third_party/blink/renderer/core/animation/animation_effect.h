@@ -110,6 +110,8 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   ComputedEffectTiming* getComputedTiming() const;
   void updateTiming(OptionalEffectTiming*,
                     ExceptionState& = ASSERT_NO_EXCEPTION);
+  double GetCancelTime() const { return cancel_time_; }
+  void SetCancelTime(double cancel_time) { cancel_time_ = cancel_time; }
 
   // Attach/Detach the AnimationEffect from its owning animation.
   virtual void Attach(AnimationEffectOwner* owner) { owner_ = owner; }
@@ -162,6 +164,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   mutable Timing::CalculatedTiming calculated_;
   mutable bool needs_update_;
   mutable base::Optional<double> last_update_time_;
+  double cancel_time_;
   const Timing::CalculatedTiming& EnsureCalculated() const;
 };
 

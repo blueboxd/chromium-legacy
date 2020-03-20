@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 import("//weblayer/variables.gni")
 
 android_resources("weblayer_resources") {
-  resource_dirs = [ "res" ]
+  sources = [ "res/layout/weblayer_url_bar.xml" ]
   custom_package = "org.chromium.weblayer_private"
   deps = [ "//components/permissions/android:java_resources" ]
 }
@@ -129,7 +129,10 @@ generate_jni_registration("weblayer_jni_registration") {
 }
 
 android_resources("weblayer_test_resources") {
-  resource_dirs = [ "res_test" ]
+  sources = [
+    "res_test/layout/test_layout.xml",
+    "res_test/values/values.xml",
+  ]
   custom_package = "org.chromium.weblayer_private.test"
 }
 

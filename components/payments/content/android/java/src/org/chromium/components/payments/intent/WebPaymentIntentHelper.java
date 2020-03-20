@@ -173,8 +173,8 @@ public class WebPaymentIntentHelper {
      * @return The intent to invoke the service.
      */
     public static Intent createIsReadyToPayIntent(String packageName, String serviceName,
-            String schemelessOrigin, String schemelessIframeOrigin, byte[][] certificateChain,
-            Map<String, PaymentMethodData> methodDataMap) {
+            String schemelessOrigin, String schemelessIframeOrigin,
+            @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap) {
         Intent isReadyToPayIntent = new Intent();
         checkStringNotEmpty(serviceName, "serviceName");
         checkStringNotEmpty(packageName, "packageName");

@@ -37,7 +37,6 @@ class RecoveryInstallGlobalError : public GlobalErrorWithStandardBubble,
   bool HasShownBubbleView() override;
   void ShowBubbleView(Browser* browser) override;
   bool ShouldCloseOnDeactivate() const override;
-  gfx::Image GetBubbleViewIcon() override;
   base::string16 GetBubbleViewTitle() override;
   std::vector<base::string16> GetBubbleViewMessages() override;
   base::string16 GetBubbleViewAcceptButtonLabel() override;

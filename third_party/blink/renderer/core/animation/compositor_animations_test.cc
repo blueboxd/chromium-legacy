@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -486,7 +487,9 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
   void BeginFrame() {
-    helper_.GetWebView()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
+    helper_.GetWebView()
+        ->MainFrameWidgetBase()
+        ->SynchronouslyCompositeForTesting(base::TimeTicks::Now());
   }
 
   void ForceFullCompositingUpdate() {
@@ -1850,7 +1853,6 @@ TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimation) {
   // iterations and the other that ends after 10.
   for (int i = 0; i < 9; i++) {
     BeginFrame();
-    ForceFullCompositingUpdate();
     EXPECT_TRUE(host->CurrentFrameHadRAF());
     EXPECT_TRUE(host->NextFrameHasPendingRAF());
   }
@@ -1858,13 +1860,11 @@ TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimation) {
   // On the 10th iteration, there should be a current rAF, but no more pending
   // rAFs.
   BeginFrame();
-  ForceFullCompositingUpdate();
   EXPECT_TRUE(host->CurrentFrameHadRAF());
   EXPECT_FALSE(host->NextFrameHasPendingRAF());
 
   // On the 11th iteration, there should be no more rAFs firing.
   BeginFrame();
-  ForceFullCompositingUpdate();
   EXPECT_FALSE(host->CurrentFrameHadRAF());
   EXPECT_FALSE(host->NextFrameHasPendingRAF());
 }
@@ -1878,7 +1878,6 @@ TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimationTimeout) {
   // The test file executes a rAF, which fires a setTimeout for the next rAF.
   // Even with setTimeout(func, 0), the next rAF is not considered pending.
   BeginFrame();
-  ForceFullCompositingUpdate();
   EXPECT_TRUE(host->CurrentFrameHadRAF());
   EXPECT_FALSE(host->NextFrameHasPendingRAF());
 }
@@ -1889,7 +1888,6 @@ TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimationNoneRegistered) {
   // Run a full frame after loading the test data so that scripted animations
   // are serviced and data propagated.
   BeginFrame();
-  ForceFullCompositingUpdate();
 
   // The HTML does not have any rAFs.
   cc::AnimationHost* host =
@@ -1899,7 +1897,6 @@ TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimationNoneRegistered) {
 
   // And still shouldn't after another frame.
   BeginFrame();
-  ForceFullCompositingUpdate();
   EXPECT_FALSE(host->CurrentFrameHadRAF());
   EXPECT_FALSE(host->NextFrameHasPendingRAF());
 }

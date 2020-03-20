@@ -55,10 +55,6 @@ enum class FinishReason {
   kMaxValue = kAbandonNoInitiallyVisibleContent
 };
 
-// Per documentation in navigation_request.cc, a navigation id is guaranteed
-// nonzero.
-constexpr int64_t kInvalidNavigationId = 0;
-
 void RecordFinishReason(FinishReason finish_reason) {
   base::UmaHistogramEnumeration("Startup.FirstWebContents.FinishReason",
                                 finish_reason);
@@ -85,9 +81,6 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // Logs |finish_reason| to UMA and deletes this FirstWebContentsProfiler.
   void FinishedCollectingMetrics(FinishReason finish_reason);
 
-  // The first NavigationHandle id observed by this.
-  int64_t first_navigation_id_ = kInvalidNavigationId;
-
   // Whether a main frame navigation finished since this was created.
   bool did_finish_first_navigation_ = false;
 
@@ -103,6 +96,11 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
     : content::WebContentsObserver(web_contents),
       memory_pressure_listener_(base::BindRepeating(
           &startup_metric_utils::OnMemoryPressureBeforeFirstNonEmptyPaint)) {
+  // FirstWebContentsProfiler is created before the main MessageLoop starts
+  // running. At that time, any visible WebContents should have a pending
+  // NavigationEntry, i.e. should have dispatched DidStartNavigation() but not
+  // DidFinishNavigation().
+  DCHECK(web_contents->GetController().GetPendingEntry());
 }
 
 void FirstWebContentsProfiler::DidStartNavigation(
@@ -113,22 +111,11 @@ void FirstWebContentsProfiler::DidStartNavigation(
     return;
   }
 
-  // TODO(https://crbug.com/1035419): Ensure that all visible tabs start
-  // navigating before FirstWebContentsProfiler creation and always handle
-  // a top-level DidStartNavigation() as a new navigation.
-  // Upcoming CL: https://crrev.com/c/chromium/src/+/1976500
-
-  if (first_navigation_id_ != kInvalidNavigationId) {
-    // Abandon if this is not the first observed top-level navigation.
-    DCHECK_NE(first_navigation_id_, navigation_handle->GetNavigationId());
-    FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
-    return;
-  }
-
-  DCHECK(!did_finish_first_navigation_);
-
-  // Keep track of the first top-level navigation id observed by this.
-  first_navigation_id_ = navigation_handle->GetNavigationId();
+  // FirstWebContentsProfiler is created after DidStartNavigation() has been
+  // dispatched for the first top-level navigation. If another
+  // DidStartNavigation() is received, it means that a new navigation was
+  // initiated.
+  FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
 }
 
 void FirstWebContentsProfiler::DidFinishNavigation(
@@ -150,21 +137,10 @@ void FirstWebContentsProfiler::DidFinishNavigation(
     return;
   }
 
-  if (first_navigation_id_ == kInvalidNavigationId) {
-    // Keep track of the first top-level navigation id observed by this.
-    //
-    // Note: FirstWebContentsProfiler may be created before or after
-    // DidStartNavigation() is dispatched for the first navigation, which is why
-    // |first_navigation_id_| may be set in DidStartNavigation() or
-    // DidFinishNavigation().
-    first_navigation_id_ = navigation_handle->GetNavigationId();
-  } else if (first_navigation_id_ != navigation_handle->GetNavigationId()) {
-    // Abandon if this is not the first observed top-level navigation.
-    FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
-    return;
-  }
-
+  // It is not possible to get a second top-level DidFinishNavigation() without
+  // first having a DidStartNavigation(), which would have deleted |this|.
   DCHECK(!did_finish_first_navigation_);
+
   did_finish_first_navigation_ = true;
 
   startup_metric_utils::RecordFirstWebContentsMainNavigationStart(

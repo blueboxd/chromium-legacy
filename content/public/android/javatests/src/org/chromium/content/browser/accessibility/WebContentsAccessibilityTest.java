@@ -214,6 +214,19 @@ public class WebContentsAccessibilityTest {
     }
 
     /**
+     * Block until the tree of virtual views under |mNodeProvider| has a node whose
+     * text equals |text|. Returns the virtual view ID of the matching node, or asserts if not.
+     */
+    private int waitForNodeWithTextOnly(AccessibilityNodeProvider provider, String text) {
+        return waitForNodeMatching(provider, new AccessibilityNodeInfoMatcher() {
+            @Override
+            public boolean matches(AccessibilityNodeInfo node) {
+                return text.equals(node.getText());
+            }
+        });
+    }
+
+    /**
      * Block until the tree of virtual views under |mNodeProvider| has a node whose input type
      * is |type|. Returns the virtual view ID of the matching node, if found, and asserts if not.
      */
@@ -927,5 +940,159 @@ public class WebContentsAccessibilityTest {
                 mActivityTestRule.getWebContents().destroy();
             }
         });
+    }
+
+    /**
+     * Ensure scrolling |AccessibilityNodeInfo| actions are not added unless the node is
+     * specifically user scrollable, and not just programmatically scrollable.
+     */
+    @Test
+    @MediumTest
+    @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @TargetApi(Build.VERSION_CODES.M)
+    public void testAccessibilityNodeInfo_Actions_OverflowHidden() throws Throwable {
+        // Build a simple web page with a div and overflow:hidden
+        String htmlContent =
+                "<div title=\"1234\" style=\"overflow:hidden; width: 200px; height: 50px\">\n"
+                + "  <p>Example Paragraph 1</p>\n"
+                + "  <p>Example Paragraph 2</p>\n"
+                + "</div>";
+
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(htmlContent));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        mNodeProvider = enableAccessibilityAndWaitForNodeProvider();
+
+        // Define our root node and paragraph node IDs by looking for their text.
+        int virtualViewIdDiv = waitForNodeWithTextOnly(mNodeProvider, "1234");
+        int virtualViewIdP1 = waitForNodeWithTextOnly(mNodeProvider, "Example Paragraph 1");
+        int virtualViewIdP2 = waitForNodeWithTextOnly(mNodeProvider, "Example Paragraph 2");
+
+        // Get the |AccessibilityNodeInfo| objects for our nodes.
+        AccessibilityNodeInfo nodeInfoDiv =
+                mNodeProvider.createAccessibilityNodeInfo(virtualViewIdDiv);
+        AccessibilityNodeInfo nodeInfoP1 =
+                mNodeProvider.createAccessibilityNodeInfo(virtualViewIdP1);
+        AccessibilityNodeInfo nodeInfoP2 =
+                mNodeProvider.createAccessibilityNodeInfo(virtualViewIdP2);
+
+        // Assert we have the correct nodes.
+        Assert.assertNotEquals(nodeInfoDiv, null);
+        Assert.assertNotEquals(nodeInfoP1, null);
+        Assert.assertNotEquals(nodeInfoP2, null);
+        Assert.assertEquals(nodeInfoDiv.getText().toString(), "1234");
+        Assert.assertEquals(nodeInfoP1.getText().toString(), "Example Paragraph 1");
+        Assert.assertEquals(nodeInfoP2.getText().toString(), "Example Paragraph 2");
+
+        // Assert the scroll actions are not present in any of the objects.
+        assertActionsContainNoScrolls(nodeInfoDiv);
+        assertActionsContainNoScrolls(nodeInfoP1);
+        assertActionsContainNoScrolls(nodeInfoP2);
+
+        // Traverse to the next node, then re-assert.
+        performActionOnUiThread(
+                virtualViewIdDiv, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT, new Bundle());
+        assertActionsContainNoScrolls(nodeInfoDiv);
+        assertActionsContainNoScrolls(nodeInfoP1);
+        assertActionsContainNoScrolls(nodeInfoP2);
+
+        // Repeat.
+        performActionOnUiThread(
+                virtualViewIdP1, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT, new Bundle());
+        assertActionsContainNoScrolls(nodeInfoDiv);
+        assertActionsContainNoScrolls(nodeInfoP1);
+        assertActionsContainNoScrolls(nodeInfoP2);
+
+        tearDown();
+    }
+
+    /**
+     * Ensure scrolling |AccessibilityNodeInfo| actions are added unless if the node is user
+     * scrollable.
+     */
+    @Test
+    @MediumTest
+    @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @TargetApi(Build.VERSION_CODES.M)
+    public void testAccessibilityNodeInfo_Actions_OverflowScroll() throws Throwable {
+        // Build a simple web page with a div and overflow:scroll
+        String htmlContent =
+                "<div title=\"1234\" style=\"overflow:scroll; width: 200px; height: 50px\">\n"
+                + "  <p>Example Paragraph 1</p>\n"
+                + "  <p>Example Paragraph 2</p>\n"
+                + "</div>";
+
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(htmlContent));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        mNodeProvider = enableAccessibilityAndWaitForNodeProvider();
+
+        // Define our root node and paragraph node IDs by looking for their text.
+        int virtualViewIdDiv = waitForNodeWithTextOnly(mNodeProvider, "1234");
+        int virtualViewIdP1 = waitForNodeWithTextOnly(mNodeProvider, "Example Paragraph 1");
+        int virtualViewIdP2 = waitForNodeWithTextOnly(mNodeProvider, "Example Paragraph 2");
+
+        // Get the |AccessibilityNodeInfo| objects for our nodes.
+        AccessibilityNodeInfo nodeInfoDiv =
+                mNodeProvider.createAccessibilityNodeInfo(virtualViewIdDiv);
+        AccessibilityNodeInfo nodeInfoP1 =
+                mNodeProvider.createAccessibilityNodeInfo(virtualViewIdP1);
+        AccessibilityNodeInfo nodeInfoP2 =
+                mNodeProvider.createAccessibilityNodeInfo(virtualViewIdP2);
+
+        // Assert we have the correct nodes.
+        Assert.assertNotEquals(nodeInfoDiv, null);
+        Assert.assertNotEquals(nodeInfoP1, null);
+        Assert.assertNotEquals(nodeInfoP2, null);
+        Assert.assertEquals(nodeInfoDiv.getText().toString(), "1234");
+        Assert.assertEquals(nodeInfoP1.getText().toString(), "Example Paragraph 1");
+        Assert.assertEquals(nodeInfoP2.getText().toString(), "Example Paragraph 2");
+
+        // Assert the scroll actions ARE present for our div node, but not the others.
+        Assert.assertTrue(nodeInfoDiv.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD));
+        Assert.assertTrue(nodeInfoDiv.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN));
+        assertActionsContainNoScrolls(nodeInfoP1);
+        assertActionsContainNoScrolls(nodeInfoP2);
+
+        // Traverse to the next node, then re-assert.
+        performActionOnUiThread(
+                virtualViewIdDiv, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT, new Bundle());
+        Assert.assertTrue(nodeInfoDiv.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD));
+        Assert.assertTrue(nodeInfoDiv.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN));
+        assertActionsContainNoScrolls(nodeInfoP1);
+        assertActionsContainNoScrolls(nodeInfoP2);
+
+        // Repeat.
+        performActionOnUiThread(
+                virtualViewIdP1, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT, new Bundle());
+        Assert.assertTrue(nodeInfoDiv.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD));
+        Assert.assertTrue(nodeInfoDiv.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN));
+        assertActionsContainNoScrolls(nodeInfoP1);
+        assertActionsContainNoScrolls(nodeInfoP2);
+
+        tearDown();
+    }
+
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @TargetApi(Build.VERSION_CODES.M)
+    private void assertActionsContainNoScrolls(AccessibilityNodeInfo nodeInfo) {
+        Assert.assertFalse(nodeInfo.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_FORWARD));
+        Assert.assertFalse(nodeInfo.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_BACKWARD));
+        Assert.assertFalse(nodeInfo.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP));
+        Assert.assertFalse(nodeInfo.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN));
+        Assert.assertFalse(nodeInfo.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_LEFT));
+        Assert.assertFalse(nodeInfo.getActionList().contains(
+                AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_RIGHT));
     }
 }

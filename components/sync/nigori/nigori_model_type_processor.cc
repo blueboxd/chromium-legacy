@@ -417,7 +417,7 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  if (model_type_state_.has_cache_guid() &&
+  if (model_type_state_.initial_sync_done() &&
       model_type_state_.cache_guid() != activation_request_.cache_guid) {
     ClearMetadataAndReset();
     DCHECK(model_ready_to_sync_);

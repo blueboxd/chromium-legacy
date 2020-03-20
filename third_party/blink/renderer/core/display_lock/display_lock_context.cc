@@ -363,7 +363,7 @@ void DisplayLockContext::FireActivationEvent(Element* activated_element) {
 
 void DisplayLockContext::CommitForActivationWithSignal(
     Element* activated_element,
-    DisplayLockActivationReason reason_for_metrics) {
+    DisplayLockActivationReason reason) {
   DCHECK(activated_element);
   DCHECK(element_);
   DCHECK(ConnectedToView());
@@ -377,8 +377,15 @@ void DisplayLockContext::CommitForActivationWithSignal(
                   weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
   }
 
+  RecordActivationReason(document_, reason);
+
+  // TODO(vmpstr): This should eventually only unlock on viewport intersection,
+  // but each reason needs to be tested and considered, so this is being done in
+  // parts.
+  if (reason == DisplayLockActivationReason::kScrollIntoView)
+    return;
+
   Unlock();
-  RecordActivationReason(document_, reason_for_metrics);
   is_activated_ = true;
 }
 

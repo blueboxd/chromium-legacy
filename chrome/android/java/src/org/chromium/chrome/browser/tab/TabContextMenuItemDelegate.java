@@ -17,13 +17,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -47,16 +46,12 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     private final TabImpl mTab;
     private boolean mLoadOriginalImageRequestedForPageLoad;
     private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
-    private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
 
     /**
      * Builds a {@link TabContextMenuItemDelegate} instance.
      */
-    public TabContextMenuItemDelegate(
-            Tab tab, Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
+    public TabContextMenuItemDelegate(Tab tab) {
         mTab = (TabImpl) tab;
-        mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
-
         mDataReductionProxyContextMenuTabObserver = new EmptyTabObserver() {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
@@ -241,11 +236,10 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public void onOpenInEphemeralTab(String url, String title) {
-        if (mEphemeralTabCoordinatorSupplier == null
-                || mEphemeralTabCoordinatorSupplier.get() == null) {
-            return;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)) {
+            mTab.getActivity().getEphemeralTabCoordinator().requestOpenSheet(
+                    url, title, mTab.isIncognito());
         }
-        mEphemeralTabCoordinatorSupplier.get().requestOpenSheet(url, title, mTab.isIncognito());
     }
 
     @Override

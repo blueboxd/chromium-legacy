@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -29,16 +28,13 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     private final ChromeActivity mActivity;
     private final BrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
-    private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
 
     public TabbedModeTabDelegateFactory(ChromeActivity activity,
             BrowserControlsVisibilityDelegate appBrowserControlsVisibilityDelegate,
-            Supplier<ShareDelegate> shareDelegateSupplier,
-            Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
+            Supplier<ShareDelegate> shareDelegateSupplier) {
         mActivity = activity;
         mAppBrowserControlsVisibilityDelegate = appBrowserControlsVisibilityDelegate;
         mShareDelegateSupplier = shareDelegateSupplier;
-        mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
     }
 
     @Override
@@ -53,8 +49,7 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
 
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
-        return new ChromeContextMenuPopulator(
-                new TabContextMenuItemDelegate(tab, mEphemeralTabCoordinatorSupplier),
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
                 mShareDelegateSupplier, ChromeContextMenuPopulator.ContextMenuMode.NORMAL,
                 ExternalAuthUtils.getInstance());
     }

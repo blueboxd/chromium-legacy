@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
@@ -33,10 +34,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -62,7 +63,7 @@ public class BottomSheetControllerTest {
     private TestBottomSheetContent mPeekableContent;
     private TestBottomSheetContent mNonPeekableContent;
     private TestBottomSheetContent mBackInterceptingContent;
-    private ScrimView mScrimView;
+    private ScrimCoordinator mScrimCoordinator;
 
     @Before
     public void setUp() throws Exception {
@@ -73,7 +74,10 @@ public class BottomSheetControllerTest {
             ViewGroup coordinator = activity.findViewById(org.chromium.chrome.R.id.coordinator);
             BottomSheet.setSmallScreenForTesting(false);
 
-            mScrimView = activity.getScrim();
+            mScrimCoordinator = mActivityTestRule.getActivity()
+                                        .getRootUiCoordinatorForTesting()
+                                        .getScrimCoordinatorForTesting();
+            mScrimCoordinator.disableAnimationForTesting(true);
 
             mSheetController = activity.getBottomSheetController();
 
@@ -349,6 +353,24 @@ public class BottomSheetControllerTest {
 
     @Test
     @MediumTest
+    public void testScrim() throws ExecutionException, TimeoutException {
+        requestContentInSheet(mLowPriorityContent, true);
+
+        assertNull("There should currently be no scrim.", mScrimCoordinator.getViewForTesting());
+
+        expandSheet();
+
+        assertEquals("The scrim should be visible.", View.VISIBLE,
+                ((View) mScrimCoordinator.getViewForTesting()).getVisibility());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mSheetController.collapseSheet(false));
+
+        assertNull("There should be no scrim when the sheet is closed.",
+                mScrimCoordinator.getViewForTesting());
+    }
+
+    @Test
+    @MediumTest
     public void testCustomScrimLifecycle() throws TimeoutException {
         TestBottomSheetContent customScrimContent = new TestBottomSheetContent(
                 mActivityTestRule.getActivity(), BottomSheetContent.ContentPriority.LOW, true);
@@ -357,8 +379,8 @@ public class BottomSheetControllerTest {
 
         expandSheet();
 
-        assertEquals("The scrim should not be visible with a custom scrim lifecycle.", View.GONE,
-                mScrimView.getVisibility());
+        assertEquals("The scrim should not be visible with a custom scrim lifecycle.", null,
+                mScrimCoordinator.getViewForTesting());
     }
 
     @Test
@@ -395,7 +417,8 @@ public class BottomSheetControllerTest {
 
         expandSheet();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> mScrimView.performClick());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ((View) mScrimCoordinator.getViewForTesting()).callOnClick());
 
         observer.mClosedCallbackHelper.waitForCallback(0);
     }

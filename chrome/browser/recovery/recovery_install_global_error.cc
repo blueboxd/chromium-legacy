@@ -96,12 +96,6 @@ bool RecoveryInstallGlobalError::ShouldCloseOnDeactivate() const {
   return false;
 }
 
-gfx::Image RecoveryInstallGlobalError::GetBubbleViewIcon() {
-  // TODO(estade): there shouldn't be an icon in the bubble, but
-  // GlobalErrorBubbleView currently requires it. See crbug.com/673995
-  return MenuItemIcon();
-}
-
 base::string16 RecoveryInstallGlobalError::GetBubbleViewTitle() {
   return l10n_util::GetStringUTF16(IDS_RECOVERY_BUBBLE_TITLE);
 }

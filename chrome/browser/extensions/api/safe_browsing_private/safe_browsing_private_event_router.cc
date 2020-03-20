@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
@@ -699,7 +700,7 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
 
   if (g_browser_process) {
     binary_upload_service_ =
-        g_browser_process->safe_browsing_service()->GetBinaryUploadService(
+        safe_browsing::BinaryUploadServiceFactory::GetForProfile(
             Profile::FromBrowserContext(context_));
     IfAuthorized(base::BindOnce(
         &SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback,

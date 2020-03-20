@@ -97,9 +97,9 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         //  and the dialog here.
         mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
                 tabContentManager, activity, activity.getCompositorViewHolder(), null, null, null,
-                mTabStripCoordinator.getTabGroupTitleEditor(),
                 mActivity.getShareDelegateSupplier());
-        mTabGridDialogCoordinator.initWithNative(mContext, tabModelSelector, tabContentManager);
+        mTabGridDialogCoordinator.initWithNative(mContext, tabModelSelector, tabContentManager,
+                mTabStripCoordinator.getTabGroupTitleEditor());
 
         mMediator = new TabGroupUiMediator(visibilityController, this, mModel, tabModelSelector,
                 activity, ((ChromeTabbedActivity) activity).getOverviewModeBehavior(),

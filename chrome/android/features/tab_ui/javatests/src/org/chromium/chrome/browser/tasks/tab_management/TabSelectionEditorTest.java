@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.view.ViewGroup;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,7 +14,10 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.SysUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -23,11 +27,14 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,38 +43,59 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-// clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+@EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
 public class TabSelectionEditorTest {
-    // clang-format on
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
+    @Rule
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+
     private TabSelectionEditorTestingRobot mRobot = new TabSelectionEditorTestingRobot();
 
     private TabModelSelector mTabModelSelector;
     private TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
+    private TabSelectionEditorLayout mTabSelectionEditorLayout;
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityFromLauncher();
-        TabUiTestHelper.createTabs(mActivityTestRule.getActivity(), false, 2);
+        mActivityTestRule.startMainActivityOnBlankPage();
+        prepareBlankTab(2, false);
 
         mTabModelSelector = mActivityTestRule.getActivity().getTabModelSelector();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabSelectionEditorCoordinator tabSelectionEditorCoordinator =
                     new TabSelectionEditorCoordinator(mActivityTestRule.getActivity(),
-                            mActivityTestRule.getActivity().getCurrentFocus(), mTabModelSelector,
-                            mActivityTestRule.getActivity().getTabContentManager(), null);
+                            (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView(),
+                            mTabModelSelector,
+                            mActivityTestRule.getActivity().getTabContentManager(), null,
+                            getMode());
 
             mTabSelectionEditorController = tabSelectionEditorCoordinator.getController();
+            mTabSelectionEditorLayout =
+                    tabSelectionEditorCoordinator.getTabSelectionEditorLayoutForTesting();
         });
+    }
+
+    private @TabListCoordinator.TabListMode int getMode() {
+        return TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()
+                        && SysUtils.isLowEndDevice()
+                ? TabListCoordinator.TabListMode.LIST
+                : TabListCoordinator.TabListMode.GRID;
+    }
+
+    private void prepareBlankTab(int num, boolean isIncognito) {
+        for (int i = 0; i < num - 1; i++) {
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), isIncognito, true);
+            mActivityTestRule.loadUrl("about:blank");
+        }
     }
 
     @Test
@@ -232,6 +260,34 @@ public class TabSelectionEditorTest {
                 () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
 
         mRobot.resultRobot.verifyDividerNotClickableNotFocusable();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testListViewAppearance() throws IOException {
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+
+        mRenderTestRule.render(mTabSelectionEditorLayout, "list_view");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testListViewAppearance_oneSelectedTab() throws IOException {
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mTabSelectionEditorController.show(tabs); });
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(0);
+
+        mRenderTestRule.render(mTabSelectionEditorLayout, "list_view_one_selected_tab");
     }
 
     private List<Tab> getTabsInCurrentTabModel() {

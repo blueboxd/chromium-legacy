@@ -103,9 +103,6 @@ class ProcessorEntityTracker {
   void UpdateOrOverrideStorageKey(const ClientTagHash& client_tag_hash,
                                   const std::string& storage_key);
 
-  base::Optional<ClientTagHash> GetClientTagHash(
-      const std::string& storage_key) const;
-
  private:
   // A map of client tag hash to sync entities known to this tracker. This
   // should contain entries and metadata, although the entities may not always

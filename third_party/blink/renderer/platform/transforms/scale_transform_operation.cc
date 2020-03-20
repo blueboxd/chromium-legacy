@@ -76,9 +76,11 @@ scoped_refptr<TransformOperation> ScaleTransformOperation::Blend(
   double from_x = from_op ? from_op->x_ : 1.0;
   double from_y = from_op ? from_op->y_ : 1.0;
   double from_z = from_op ? from_op->z_ : 1.0;
+
+  bool is_3d = Is3DOperation() || (from && from->Is3DOperation());
   return ScaleTransformOperation::Create(
       blink::Blend(from_x, x_, progress), blink::Blend(from_y, y_, progress),
-      blink::Blend(from_z, z_, progress), type_);
+      blink::Blend(from_z, z_, progress), is_3d ? kScale3D : kScale);
 }
 
 bool ScaleTransformOperation::CanBlendWith(

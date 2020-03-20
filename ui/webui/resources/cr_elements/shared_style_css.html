@@ -46,9 +46,11 @@
       [scrollable].can-scroll:not(.scrolled-to-bottom) {
         border-bottom-color: var(--scrollable-border-color);
       }
-      [scrollable] iron-list > :not(.no-outline):focus {
-        @apply --cr-list-item-focus;
-        @apply --cr-selectable-focus;
+      [scrollable] iron-list > :not(.no-outline):focus,
+      [selectable]:focus,
+      [selectable] > :focus {
+        background-color: var(--cr-focused-item-color);
+        outline: none;
       }
 
       .scroll-container {
@@ -57,10 +59,6 @@
         min-height: 1px;
       }
 
-      [selectable]:focus,
-      [selectable] > :focus {
-        @apply --cr-selectable-focus;
-      }
       [selectable] > * {
         cursor: pointer;
       }

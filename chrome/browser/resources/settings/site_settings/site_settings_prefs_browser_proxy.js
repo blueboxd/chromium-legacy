@@ -119,7 +119,7 @@ let RawChooserException;
  *            object: Object,
  *            sites: Array<!SiteException>}}
  */
-let ChooserException;
+/* #export */ let ChooserException;
 
 /**
  * @typedef {{setting: !settings.ContentSetting,

@@ -27,7 +27,7 @@ Polymer({
   ],
 
   properties: {
-    /** @type {?SettingsRoutes} */
+    /** @type {?OsSettingsRoutes} */
     routes: {
       type: Object,
       value: settings.routes,

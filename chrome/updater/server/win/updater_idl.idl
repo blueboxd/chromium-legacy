@@ -8,7 +8,7 @@ import "ocidl.idl";
 [
   object,
   dual,
-  uuid(2FCD14AF-B645-4351-8359-E80A0E202A0B),
+  uuid(ICOMPLETESTATUS_IID),
   helpstring("ICompleteStatus Interface"),
   pointer_default(unique)
 ]
@@ -20,7 +20,7 @@ interface ICompleteStatus : IUnknown {
 [
   object,
   oleautomation,
-  uuid(7B416CFD-4216-4FD6-BD83-7C586054676E),
+  uuid(IUPDATEROBSERVER_IID),
   helpstring("IUpdaterObserver Interface"),
   pointer_default(unique)
 ]

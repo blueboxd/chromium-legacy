@@ -16,6 +16,10 @@ class PageInfoDelegate {
   // Whether the content setting of type |type| has changed via Page Info UI.
   virtual bool HasContentSettingChangedViaPageInfo(
       ContentSettingsType type) = 0;
+  virtual int GetFirstPartyAllowedCookiesCount(const GURL& site_url) = 0;
+  virtual int GetFirstPartyBlockedCookiesCount(const GURL& site_url) = 0;
+  virtual int GetThirdPartyAllowedCookiesCount(const GURL& site_url) = 0;
+  virtual int GetThirdPartyBlockedCookiesCount(const GURL& site_url) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_DELEGATE_H_

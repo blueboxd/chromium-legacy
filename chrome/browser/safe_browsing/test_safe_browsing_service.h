@@ -77,14 +77,12 @@ class TestSafeBrowsingService : public SafeBrowsingService,
 #endif
   bool CanCreateIncidentReportingService() override;
   bool CanCreateResourceRequestDetector() override;
-  bool CanCreateBinaryUploadService() override;
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override;
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   DownloadProtectionService* CreateDownloadProtectionService() override;
 #endif
   IncidentReportingService* CreateIncidentReportingService() override;
   ResourceRequestDetector* CreateResourceRequestDetector() override;
-  BinaryUploadService* CreateBinaryUploadService() override;
 
  private:
   std::unique_ptr<V4ProtocolConfig> v4_protocol_config_;

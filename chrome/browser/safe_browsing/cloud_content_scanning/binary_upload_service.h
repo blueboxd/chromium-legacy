@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -28,7 +29,7 @@ namespace safe_browsing {
 
 // This class encapsulates the process of uploading a file for deep scanning,
 // and asynchronously retrieving a verdict.
-class BinaryUploadService {
+class BinaryUploadService : public KeyedService {
  public:
   // The maximum size of data that can be uploaded via this service.
   constexpr static size_t kMaxUploadSizeBytes = 50 * 1024 * 1024;  // 50 MB
@@ -43,7 +44,7 @@ class BinaryUploadService {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
       std::unique_ptr<BinaryFCMService> binary_fcm_service);
-  virtual ~BinaryUploadService();
+  ~BinaryUploadService() override;
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/util/type_safety/strong_alias.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
@@ -257,10 +258,12 @@ class PasswordManagerClient {
   // Returns true if last navigation page had HTTP error i.e 5XX or 4XX
   virtual bool WasLastNavigationHTTPError() const;
 
+#if defined(OS_ANDROID)
   // Returns true if a credential leak dialog was shown. Used by Autofill
   // Assistance to verify a password change intent. TODO(b/151391231): Remove
   // when proper intent signing is implemented.
   virtual bool WasCredentialLeakDialogShown() const;
+#endif
 
   // Obtains the cert status for the main frame.
   virtual net::CertStatus GetMainFrameCertStatus() const;

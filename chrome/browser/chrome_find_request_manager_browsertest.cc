@@ -106,9 +106,12 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
   options->find_next = true;
   Find("result", options.Clone());
   Find("result", options.Clone());
+  LOG(INFO) << "Wait for final reply.";
   delegate()->WaitForFinalReply();
+  LOG(INFO) << "Wait complete.";
 
   FindResults results = delegate()->GetFindResults();
+  LOG(INFO) << "Results fetched.";
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(5, results.number_of_matches);
   EXPECT_EQ(3, results.active_match_ordinal);

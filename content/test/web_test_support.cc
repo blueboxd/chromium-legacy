@@ -49,6 +49,8 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
+#include "content/browser/sandbox_parameters_mac.h"
+#include "net/test/test_data_directory.h"
 #elif defined(OS_WIN)
 #include "content/child/font_warmup_win.h"
 #include "third_party/blink/public/web/win/web_font_rendering.h"
@@ -162,6 +164,10 @@ void EnableRendererWebTestMode() {
 void EnableBrowserWebTestMode() {
 #if defined(OS_MACOSX)
   PopupMenuHelper::DontShowPopupMenuForTesting();
+
+  // Expand the network service sandbox to allow reading the test TLS
+  // certificates.
+  SetNetworkTestCertsDirectoryForTesting(net::GetTestCertsDirectory());
 #endif
   RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 }

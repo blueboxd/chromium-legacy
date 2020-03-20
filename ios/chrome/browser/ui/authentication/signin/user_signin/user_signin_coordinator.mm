@@ -131,20 +131,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   self.viewController.unifiedConsentViewController =
       self.unifiedConsentCoordinator.viewController;
 
-  switch (self.signinIntent) {
-    case UserSigninIntentFirstRun: {
-      [self presentFirstRun];
-      break;
-    }
-    case UserSigninIntentSignin:
-    case UserSigninIntentUpgrade: {
-      [self.baseViewController presentViewController:self.viewController
-                                            animated:YES
-                                          completion:nil];
-      break;
-    }
-  }
-
+  [self presentUserSigninViewController];
   [self.logger logSigninStarted];
 }
 
@@ -360,19 +347,33 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self.advancedSettingsSigninCoordinator start];
 }
 
-// Displays the sign-in screen with transitions specific to first-run.
-- (void)presentFirstRun {
-  DCHECK(self.viewController);
-  UINavigationController* navigationController =
-      base::mac::ObjCCastStrict<UINavigationController>(
-          self.baseViewController);
+// Displays the user sign-in view controller using the available base
+// controller. First run requires an additional transitional fade animation when
+// presenting this view.
+- (void)presentUserSigninViewController {
+  switch (self.signinIntent) {
+    case UserSigninIntentFirstRun: {
+      // Displays the sign-in screen with transitions specific to first-run.
+      DCHECK(self.baseNavigationController);
 
-  CATransition* transition = [CATransition animation];
-  transition.duration = kFadeOutAnimationDuration;
-  transition.type = kCATransitionFade;
-  [navigationController.view.layer addAnimation:transition
-                                         forKey:kCATransition];
-  [navigationController pushViewController:self.viewController animated:NO];
+      CATransition* transition = [CATransition animation];
+      transition.duration = kFadeOutAnimationDuration;
+      transition.type = kCATransitionFade;
+      [self.baseNavigationController.view.layer addAnimation:transition
+                                                      forKey:kCATransition];
+      [self.baseNavigationController pushViewController:self.viewController
+                                               animated:NO];
+      break;
+    }
+    case UserSigninIntentUpgrade:
+    case UserSigninIntentSignin: {
+      DCHECK(self.baseViewController);
+      [self.baseViewController presentViewController:self.viewController
+                                            animated:YES
+                                          completion:nil];
+      break;
+    }
+  }
 }
 
 // Interrupts the sign-in when |self.viewController| is presented, by dismissing

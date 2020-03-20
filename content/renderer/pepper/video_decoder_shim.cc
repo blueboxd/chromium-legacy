@@ -711,7 +711,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
                           weak_ptr_factory_.GetWeakPtr()),
       base::NullCallback());
 #else
-  OnInitDone(media::StatusCode::kDecoderFailedConfigure));
+  OnInitDone(media::StatusCode::kDecoderFailedConfigure);
 #endif  // BUILDFLAG(ENABLE_LIBVPX) || BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 }
 

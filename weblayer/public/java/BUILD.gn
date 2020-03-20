@@ -18,7 +18,7 @@ jinja_template("weblayer_client_manifest") {
 }
 
 android_resources("client_resources") {
-  resource_dirs = [ "res" ]
+  sources = [ "res/xml/weblayer_file_paths.xml" ]
   android_manifest = weblayer_client_manifest
   android_manifest_dep = ":weblayer_client_manifest"
 }

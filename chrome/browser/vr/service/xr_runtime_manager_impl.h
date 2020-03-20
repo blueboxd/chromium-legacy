@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_H_
-#define CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_H_
+#ifndef CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_IMPL_H_
+#define CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_IMPL_H_
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
-#include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
+#include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -30,56 +30,34 @@ class VRDeviceProvider;
 }
 
 namespace vr {
-
-// class BrowserXRRuntimeImpl;
 class XRRuntimeManagerTest;
 
 // Singleton used to provide the platform's XR Runtimes to VRServiceImpl
 // instances.
-class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
+class XRRuntimeManagerImpl : public content::XRRuntimeManager,
+                             public base::RefCounted<XRRuntimeManagerImpl> {
  public:
-  friend base::RefCounted<XRRuntimeManager>;
+  friend base::RefCounted<XRRuntimeManagerImpl>;
   static constexpr auto kRefCountPreference =
       base::subtle::kStartRefCountFromOneTag;
 
   friend XRRuntimeManagerTest;
+  XRRuntimeManagerImpl(const XRRuntimeManagerImpl&) = delete;
+  XRRuntimeManagerImpl& operator=(const XRRuntimeManagerImpl&) = delete;
 
-  // Returns a pointer to the XRRuntimeManager singleton.
+  // Returns a pointer to the XRRuntimeManagerImpl singleton.
   // If The singleton is not currently instantiated, this instantiates it with
   // the built-in set of providers.
   // The singleton will persist until all pointers have been dropped.
-  static scoped_refptr<XRRuntimeManager> GetOrCreateInstance();
+  static scoped_refptr<XRRuntimeManagerImpl> GetOrCreateInstance();
 
-  // If there is no-one currently using the XRRuntimeManager, then it won't be
-  // instantiated.
-  static bool HasInstance();
-
-  // Provides access to the XRRuntimeManager singleton without causing
-  // reference count churn. This method does not extend the lifetime of the
-  // singleton, so you should be careful with the lifetime of this reference.
-  static XRRuntimeManager* GetInstanceIfCreated();
-
-  // Statics for global observers.
-  static void AddObserver(XRRuntimeManagerObserver* observer);
-  static void RemoveObserver(XRRuntimeManagerObserver* observer);
-
-  static void ExitImmersivePresentation();
-
-  // Adds a listener for runtime manager events. XRRuntimeManager does not own
-  // this object.
+  // Adds a listener for runtime manager events. XRRuntimeManagerImpl does not
+  // own this object.
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
-  BrowserXRRuntimeImpl* GetRuntime(device::mojom::XRDeviceId id);
-  bool HasRuntime(device::mojom::XRDeviceId id);
   BrowserXRRuntimeImpl* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
-
-  // Gets the system default immersive-vr runtime if available.
-  BrowserXRRuntimeImpl* GetImmersiveVrRuntime();
-
-  // Gets the system default immersive-ar runtime if available.
-  BrowserXRRuntimeImpl* GetImmersiveArRuntime();
 
   // Gets the runtime matching a currently-active immersive session, if any.
   // This is either the VR or AR runtime, or null if there's no matching
@@ -92,24 +70,22 @@ class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   // Returns true if another service is presenting. Returns false if this
   // service is presenting, or if nobody is presenting.
   bool IsOtherClientPresenting(VRServiceImpl* service);
-  bool HasAnyRuntime();
 
   void SupportsSession(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::SupportsSessionCallback callback);
 
-  template <typename Fn>
-  void ForEachRuntime(Fn&& fn) {
-    for (auto& rt : runtimes_) {
-      fn(rt.second.get());
-    }
-  }
+  // XRRuntimeManager implementation
+  BrowserXRRuntimeImpl* GetRuntime(device::mojom::XRDeviceId id) override;
+  void ForEachRuntime(
+      base::RepeatingCallback<void(content::BrowserXRRuntime*)> fn) override;
 
  private:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
 
   // Constructor also used by tests to supply an arbitrary list of providers
-  static scoped_refptr<XRRuntimeManager> CreateInstance(ProviderList providers);
+  static scoped_refptr<XRRuntimeManagerImpl> CreateInstance(
+      ProviderList providers);
 
   // Used by tests to check on runtime state.
   device::mojom::XRRuntime* GetRuntimeForTest(device::mojom::XRDeviceId id);
@@ -117,9 +93,9 @@ class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   // Used by tests
   size_t NumberOfConnectedServices();
 
-  explicit XRRuntimeManager(ProviderList providers);
+  explicit XRRuntimeManagerImpl(ProviderList providers);
 
-  ~XRRuntimeManager();
+  ~XRRuntimeManagerImpl() override;
 
   void InitializeProviders();
   void OnProviderInitialized();
@@ -130,10 +106,16 @@ class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
                   mojo::PendingRemote<device::mojom::XRRuntime> runtime);
   void RemoveRuntime(device::mojom::XRDeviceId id);
 
+  // Gets the system default immersive-vr runtime if available.
+  BrowserXRRuntimeImpl* GetImmersiveVrRuntime();
+
+  // Gets the system default immersive-ar runtime if available.
+  BrowserXRRuntimeImpl* GetImmersiveArRuntime();
+
   ProviderList providers_;
 
   // XRRuntimes are owned by their providers, each correspond to a
-  // BrowserXRRuntimeImpl that is owned by XRRuntimeManager.
+  // BrowserXRRuntimeImpl that is owned by XRRuntimeManagerImpl.
   using DeviceRuntimeMap =
       base::small_map<std::map<device::mojom::XRDeviceId,
                                std::unique_ptr<BrowserXRRuntimeImpl>>>;
@@ -145,10 +127,8 @@ class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   std::set<VRServiceImpl*> services_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(XRRuntimeManager);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_H_
+#endif  // CHROME_BROWSER_VR_SERVICE_XR_RUNTIME_MANAGER_IMPL_H_

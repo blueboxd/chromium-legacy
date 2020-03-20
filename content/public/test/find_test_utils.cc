@@ -58,6 +58,7 @@ void FindTestWebContentsDelegate::MarkNextReply() {
 
 void FindTestWebContentsDelegate::UpdateLastRequest(int request_id) {
   last_request_id_ = request_id;
+  LOG(INFO) << "last_request_id_ = " << last_request_id_;
 }
 
 void FindTestWebContentsDelegate::StartReplyRecord() {
@@ -98,8 +99,10 @@ void FindTestWebContentsDelegate::FindReply(WebContents* web_contents,
   if (!final_update)
     return;
 
-  if (request_id > last_finished_request_id_)
+  if (request_id > last_finished_request_id_) {
     last_finished_request_id_ = request_id;
+    LOG(INFO) << "last_finished_request_id_ = " << last_finished_request_id_;
+  }
   next_reply_received_ = true;
 
   // If we are waiting for this find reply, stop waiting.

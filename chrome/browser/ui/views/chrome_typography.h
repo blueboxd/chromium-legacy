@@ -55,7 +55,11 @@ enum ChromeTextContext {
 };
 
 enum ChromeTextStyle {
+#if defined(OS_CHROMEOS)
+  CHROME_TEXT_STYLE_START = ash::ASH_TEXT_STYLE_END,
+#else
   CHROME_TEXT_STYLE_START = views::style::VIEWS_TEXT_STYLE_END,
+#endif
 
   // Similar to views::style::STYLE_PRIMARY but with a monospaced typeface.
   STYLE_PRIMARY_MONOSPACED = CHROME_TEXT_STYLE_START,

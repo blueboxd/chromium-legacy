@@ -20,6 +20,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/browser/safe_browsing/download_protection/check_native_file_system_write_request.h"
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
@@ -116,15 +117,13 @@ DownloadProtectionService::DownloadProtectionService(
     SafeBrowsingService* sb_service)
     : sb_service_(sb_service),
       navigation_observer_manager_(nullptr),
-      url_loader_factory_(sb_service ? sb_service->GetURLLoaderFactory()
-                                     : nullptr),
       enabled_(false),
       binary_feature_extractor_(new BinaryFeatureExtractor()),
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(new DownloadFeedbackService(
-          url_loader_factory_,
-          base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
+          sb_service_ ? sb_service_->GetURLLoaderFactory() : nullptr,
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT})
               .get())),
       whitelist_sample_rate_(kWhitelistDownloadSampleRate),
       weak_ptr_factory_(this) {
@@ -611,6 +610,13 @@ void DownloadProtectionService::UploadForDeepScanning(
   insertion_result.first->second->Start();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+DownloadProtectionService::GetURLLoaderFactory(
+    content::BrowserContext* browser_context) {
+  return sb_service_->GetURLLoaderFactory(
+      Profile::FromBrowserContext(browser_context));
+}
+
 void DownloadProtectionService::RequestFinished(DeepScanningRequest* request) {
   auto it = deep_scanning_requests_.find(request);
   DCHECK(it != deep_scanning_requests_.end());
@@ -619,7 +625,7 @@ void DownloadProtectionService::RequestFinished(DeepScanningRequest* request) {
 
 BinaryUploadService* DownloadProtectionService::GetBinaryUploadService(
     Profile* profile) {
-  return sb_service_->GetBinaryUploadService(profile);
+  return BinaryUploadServiceFactory::GetForProfile(profile);
 }
 
 }  // namespace safe_browsing

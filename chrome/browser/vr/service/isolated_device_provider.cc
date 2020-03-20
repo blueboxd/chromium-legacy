@@ -64,7 +64,7 @@ void IsolatedVRDeviceProvider::OnServerError() {
   }
   ui_host_map_.clear();
 
-  // At this point, XRRuntimeManager may be blocked waiting for us to return
+  // At this point, XRRuntimeManagerImpl may be blocked waiting for us to return
   // that we've enumerated all runtimes/devices.  If we lost the connection to
   // the service, we'll try again.  If we've already tried too many times,
   // then just assume we won't ever get devices, so report we are done now.

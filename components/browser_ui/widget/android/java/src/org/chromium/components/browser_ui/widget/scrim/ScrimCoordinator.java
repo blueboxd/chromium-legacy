@@ -128,7 +128,7 @@ public class ScrimCoordinator {
     }
 
     @VisibleForTesting
-    ScrimView getViewForTesting() {
+    public ScrimView getViewForTesting() {
         return mView;
     }
 

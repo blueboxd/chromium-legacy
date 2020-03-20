@@ -337,7 +337,9 @@ void ClientTagBasedModelTypeProcessor::Put(
     // The bridge is creating a new entity. The bridge may or may not populate
     // |data->client_tag_hash|, so let's ask for the client tag if needed.
     if (data->client_tag_hash.value().empty()) {
-      data->client_tag_hash = GetClientTagHash(storage_key, *data);
+      DCHECK(bridge_->SupportsGetClientTag());
+      data->client_tag_hash =
+          ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(*data));
     } else if (bridge_->SupportsGetClientTag()) {
       // If the Put() call already included the client tag, let's verify that
       // it's consistent with the bridge's regular GetClientTag() function (if
@@ -416,7 +418,7 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
   DCHECK(!bridge_->SupportsGetStorageKey());
   DCHECK(entity_tracker_);
 
-  ProcessorEntity* entity =
+  const ProcessorEntity* entity =
       entity_tracker_->GetEntityForTagHash(client_tag_hash);
   DCHECK(entity);
 
@@ -832,10 +834,6 @@ void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
     return;
 
   ConsumeDataBatch(std::move(storage_keys_to_load), std::move(data_batch));
-
-  // TODO(rushans): looks like some old logic, remove ConnectIfReady() in a
-  // separate patch.
-  ConnectIfReady();
   CommitLocalChanges(max_entries, std::move(callback));
 }
 
@@ -918,18 +916,6 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
     }
   }
   std::move(callback).Run(std::move(commit_requests));
-}
-
-ClientTagHash ClientTagBasedModelTypeProcessor::GetClientTagHash(
-    const std::string& storage_key,
-    const EntityData& data) const {
-  DCHECK(entity_tracker_);
-  const base::Optional<ClientTagHash> client_tag_hash =
-      entity_tracker_->GetClientTagHash(storage_key);
-  DCHECK(bridge_->SupportsGetClientTag());
-  return client_tag_hash.has_value()
-             ? client_tag_hash.value()
-             : ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data));
 }
 
 ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
@@ -1095,26 +1081,10 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
   std::move(callback).Run(type_, std::move(all_nodes));
 }
 
-void ClientTagBasedModelTypeProcessor::InitializeCacheGuidForOldClients() {
-  DCHECK(entity_tracker_);
-
-  // TODO(rushans): remove this logic because cache GUID must have been
-  // initialized for most of clients. Clients that have not initialized yet will
-  // behave as in cache GUID mismatch situation.
-  if (!entity_tracker_->model_type_state().has_cache_guid()) {
-    sync_pb::ModelTypeState model_type_state =
-        entity_tracker_->model_type_state();
-    model_type_state.set_cache_guid(activation_request_.cache_guid);
-    entity_tracker_->set_model_type_state(model_type_state);
-  }
-}
-
 void ClientTagBasedModelTypeProcessor::CheckForInvalidPersistedMetadata() {
   if (!entity_tracker_) {
     return;
   }
-
-  InitializeCacheGuidForOldClients();
 
   const sync_pb::ModelTypeState& model_type_state =
       entity_tracker_->model_type_state();

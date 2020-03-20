@@ -5806,6 +5806,8 @@ void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
       // Need to re-evaluate time-to-effect-change for any running animations.
       View()->ScheduleAnimation();
     }
+  } else if (event_type == event_type_names::kAnimationcancel) {
+    AddListenerType(kAnimationCancelListener);
   } else if (event_type == event_type_names::kTransitioncancel) {
     AddListenerType(kTransitionCancelListener);
   } else if (event_type == event_type_names::kTransitionrun) {

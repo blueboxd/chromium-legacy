@@ -44,17 +44,13 @@ void SimTest::SetUp() {
   compositor_ = std::make_unique<SimCompositor>();
   web_frame_client_ =
       std::make_unique<frame_test_helpers::TestWebFrameClient>();
-  web_widget_client_ =
-      std::make_unique<frame_test_helpers::TestWebWidgetClient>(
-          compositor_.get());
   web_view_client_ = std::make_unique<frame_test_helpers::TestWebViewClient>();
   page_ = std::make_unique<SimPage>();
   web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
 
   web_view_helper_->Initialize(web_frame_client_.get(), web_view_client_.get(),
-                               web_widget_client_.get());
-  compositor_->SetWebView(WebView(), *web_widget_client_->layer_tree_host(),
-                          *web_view_client_, *web_widget_client_);
+                               compositor_.get());
+  compositor_->SetWebView(WebView(), *web_view_client_);
   page_->SetPage(WebView().GetPage());
 }
 
@@ -67,7 +63,6 @@ void SimTest::TearDown() {
   web_view_helper_.reset();
   page_.reset();
   web_view_client_.reset();
-  web_widget_client_.reset();
   web_frame_client_.reset();
   compositor_.reset();
   network_.reset();
@@ -109,7 +104,7 @@ frame_test_helpers::TestWebViewClient& SimTest::WebViewClient() {
 }
 
 frame_test_helpers::TestWebWidgetClient& SimTest::WebWidgetClient() {
-  return *web_widget_client_;
+  return *compositor_;
 }
 
 frame_test_helpers::TestWebFrameClient& SimTest::WebFrameClient() {

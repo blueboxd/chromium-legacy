@@ -114,6 +114,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/udp_socket_test_util.h"
@@ -6924,6 +6925,16 @@ TEST_F(NetworkContextTest, EnableTrustTokens) {
       CreateContextWithParams(mojom::NetworkContextParams::New());
 
   EXPECT_TRUE(network_context->trust_token_store());
+
+  base::RunLoop run_loop;
+  bool success = false;
+  network_context->trust_token_store()->ExecuteOrEnqueue(
+      base::BindLambdaForTesting([&](TrustTokenStore* store) {
+        success = !!store;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_TRUE(success);
 }
 
 TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
@@ -6940,12 +6951,21 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
     params->trust_token_path = temp_path;
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(params));
-    // Allow the store time to initialize asynchronously.
-    task_environment_.RunUntilIdle();
 
-    ASSERT_TRUE(network_context->trust_token_store());
-    network_context->trust_token_store()->SetBatchSize(
-        url::Origin::Create(GURL("https://trusttoken.com/")), 10);
+    base::RunLoop run_loop;
+
+    network_context->trust_token_store()->ExecuteOrEnqueue(
+        base::BindLambdaForTesting([&](TrustTokenStore* store) {
+          DCHECK(store);
+          store->SetBatchSize(
+              url::Origin::Create(GURL("https://trusttoken.com/")), 10);
+          run_loop.Quit();
+        }));
+
+    // Allow the store time to initialize asynchronously and execute the
+    // operation.
+    run_loop.Run();
+
     // Allow the write time to propagate to disk.
     task_environment_.FastForwardBy(2 * kTrustTokenWriteBufferingWindow);
   }
@@ -6957,13 +6977,22 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
     params->trust_token_path = temp_path;
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(params));
-    // Allow the store time to initialize asynchronously.
-    task_environment_.RunUntilIdle();
 
-    ASSERT_TRUE(network_context->trust_token_store());
-    EXPECT_THAT(network_context->trust_token_store()->BatchSize(
-                    url::Origin::Create(GURL("https://trusttoken.com/"))),
-                Optional(10));
+    base::RunLoop run_loop;
+    base::Optional<int> obtained_batch_size;
+    network_context->trust_token_store()->ExecuteOrEnqueue(
+        base::BindLambdaForTesting(
+            [&obtained_batch_size, &run_loop](TrustTokenStore* store) {
+              DCHECK(store);
+              obtained_batch_size = store->BatchSize(
+                  url::Origin::Create(GURL("https://trusttoken.com/")));
+              run_loop.Quit();
+            }));
+
+    // Allow the store time to initialize asynchronously.
+    run_loop.Run();
+
+    EXPECT_THAT(obtained_batch_size, Optional(10));
   }
 
   // Allow the context's backing store time to be destroyed asynchronously.

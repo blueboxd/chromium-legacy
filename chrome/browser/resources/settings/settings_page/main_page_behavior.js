@@ -6,8 +6,7 @@
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {ensureLazyLoaded} from '../ensure_lazy_loaded.m.js';
-// #import {Route, Router} from '../router.m.js';
-// #import {SettingsRoutes} from '../settings_routes.m.js';
+// #import {Route, Router, MinimumRoutes} from '../router.m.js';
 // clang-format on
 
 cr.define('settings', function() {
@@ -38,7 +37,7 @@ cr.define('settings', function() {
     if (!route) {
       return RouteState.INITIAL;
     }
-    const routes = /** @type {!SettingsRoutes} */ (
+    const routes = /** @type {!settings.MinimumRoutes} */ (
         settings.Router.getInstance().getRoutes());
     if (route === routes.BASIC || route === routes.ABOUT) {
       return RouteState.TOP_LEVEL;
@@ -146,7 +145,7 @@ cr.define('settings', function() {
      * @private
      */
     shouldExpandAdvanced_(route) {
-      const routes = /** @type {!SettingsRoutes} */ (
+      const routes = /** @type {!settings.MinimumRoutes} */ (
           settings.Router.getInstance().getRoutes());
       return (
                  this.tagName == 'SETTINGS-BASIC-PAGE'

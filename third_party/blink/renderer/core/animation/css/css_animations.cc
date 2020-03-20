@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
+#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
@@ -1190,12 +1191,23 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
                   event_type_names::kAnimationiteration, elapsed_time);
   }
 
-  if (current_phase == Timing::kPhaseAfter &&
-      previous_phase_ != Timing::kPhaseAfter) {
+  if (previous_phase_ == current_phase)
+    return;
+
+  if (current_phase == Timing::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener,
                   event_type_names::kAnimationend,
                   AnimationTimeDelta::FromSecondsD(
                       animation_node.SpecifiedTiming().ActiveDuration()));
+  }
+
+  if (current_phase == Timing::kPhaseNone) {
+    // TODO(crbug.com/1059968): Determine if animation direction or playback
+    // rate factor into the calculation of the elapsed time.
+    double cancel_time = animation_node.GetCancelTime();
+    MaybeDispatch(Document::kAnimationCancelListener,
+                  event_type_names::kAnimationcancel,
+                  AnimationTimeDelta::FromSecondsD(cancel_time));
   }
 
   previous_phase_ = current_phase;

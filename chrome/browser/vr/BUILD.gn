@@ -247,7 +247,6 @@ component("vr_common") {
     "scheduler_delegate.h",
     "service/xr_device_service.cc",
     "service/xr_device_service.h",
-    "service/xr_runtime_manager_observer.h",
     "service/xr_session_request_consent_manager.cc",
     "service/xr_session_request_consent_manager.h",
     "sounds_manager_audio_delegate.cc",

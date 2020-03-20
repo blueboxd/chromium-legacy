@@ -29,32 +29,28 @@ SimCompositor::~SimCompositor() = default;
 
 void SimCompositor::SetWebView(
     WebViewImpl& web_view,
-    cc::LayerTreeHost& layer_tree_host,
-    frame_test_helpers::TestWebViewClient& view_client,
-    frame_test_helpers::TestWebWidgetClient& widget_client) {
+    frame_test_helpers::TestWebViewClient& view_client) {
   web_view_ = &web_view;
-  layer_tree_host_ = &layer_tree_host;
   test_web_view_client_ = &view_client;
-  test_web_widget_client_ = &widget_client;
 }
 
 SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   DCHECK(web_view_);
-  DCHECK(!layer_tree_host_->defer_main_frame_update());
+  DCHECK(!layer_tree_host()->defer_main_frame_update());
   // Verify that the need for a BeginMainFrame has been registered, and would
   // have caused the compositor to schedule one if we were using its scheduler.
   DCHECK(NeedsBeginFrame());
   DCHECK_GT(time_delta_in_seconds, 0);
 
-  test_web_widget_client_->ClearAnimationScheduled();
+  ClearAnimationScheduled();
 
   last_frame_time_ += base::TimeDelta::FromSecondsD(time_delta_in_seconds);
 
   SimCanvas::Commands commands;
   paint_commands_ = &commands;
 
-  layer_tree_host_->Composite(last_frame_time_,
-                              /*raster=*/false);
+  layer_tree_host()->Composite(last_frame_time_,
+                               /*raster=*/false);
 
   paint_commands_ = nullptr;
   return commands;
@@ -77,23 +73,8 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
   return canvas.GetCommands();
 }
 
-void SimCompositor::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
-  web_view_->MainFrameWidget()->ApplyViewportChanges(args);
-}
-
-void SimCompositor::RequestNewLayerTreeFrameSink(
-    LayerTreeFrameSinkCallback callback) {
-  // Make a valid LayerTreeFrameSink so the compositor will generate begin main
-  // frames.
-  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d(), nullptr);
-}
-
-void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {
-  // There is no WebWidget like RenderWidget would have..? So go right to the
-  // WebViewImpl.
-  web_view_->MainFrameWidget()->BeginFrame(last_frame_time_);
-  web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
-      DocumentUpdateReason::kTest);
+void SimCompositor::UpdateVisualState() {
+  TestWebWidgetClient::UpdateVisualState();
   *paint_commands_ = PaintFrame();
 }
 

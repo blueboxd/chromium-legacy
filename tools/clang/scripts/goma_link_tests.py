@@ -7,7 +7,7 @@
 #
 # Usage:
 #
-# Ensure that gomacc is in your PATH.
+# Ensure that gomacc, llvm-objdump, and llvm-dwarfdump are in your PATH.
 # Then run:
 #
 # python third_party/pycoverage run tools/clang/scripts/goma_link_tests.py
@@ -392,6 +392,36 @@ class GomaLdIntegrationTest(unittest.TestCase):
       after_main_idx = disasm.index(b'\n\n', main_idx)
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertNotIn(b'foo', main_disasm)
+
+  def test_debug_params(self):
+    with NamedDirectory() as d, WorkingDirectory(d):
+      _create_inputs(d)
+      os.makedirs('obj')
+      subprocess.check_call([
+          self.clangxx(), '-c', '-g', '-gsplit-dwarf', '-flto=thin',
+          'main.cpp', '-o', 'obj/main.o',
+      ])
+      subprocess.check_call([
+          self.clangxx(), '-c', '-g', '-gsplit-dwarf', '-flto=thin',
+          'foo.cpp', '-o', 'obj/foo.o'
+      ])
+      with open('main.rsp', 'w') as f:
+        f.write('obj/main.o\n'
+                'obj/foo.o\n')
+      rc = GomaLinkUnixWhitelistMain().main([
+          'goma_ld.py',
+          self.clangxx(), '-fuse-ld=lld', '-flto=thin',
+          '-g', '-gsplit-dwarf', '-Wl,--lto-O2', '-o', 'main', '@main.rsp',
+      ])
+      # Should succeed.
+      self.assertEqual(rc, 0)
+      # Check debug info present, refers to .dwo file, and does not
+      # contain full debug info for foo.cpp.
+      dbginfo = subprocess.check_output(
+          ['llvm-dwarfdump', '-debug-info', 'main']
+      ).decode('utf-8', 'backslashreplace')
+      self.assertRegexpMatches(dbginfo, '\\bDW_AT_GNU_dwo_name\\b.*\\.dwo"')
+      self.assertNotRegexpMatches(dbginfo, '\\bDW_AT_name\\b.*foo\\.cpp"')
 
   def test_distributed_lto_params(self):
     with NamedDirectory() as d, WorkingDirectory(d):

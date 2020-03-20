@@ -2596,6 +2596,12 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
     return;
   }
 
+  if (entry_type == cc::TransferCacheEntryType::kSkottie && !is_privileged_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
+                       "Attempt to use skottie on a non privileged channel");
+    return;
+  }
+
   uint8_t* data_memory =
       GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, data_size);
   if (!data_memory) {

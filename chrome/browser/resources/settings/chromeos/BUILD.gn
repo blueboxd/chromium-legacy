@@ -71,6 +71,7 @@ group("closure_compile") {
     ":metrics_recorder",
     ":os_page_visibility",
     ":os_route",
+    ":os_settings_routes",
     ":route_origin_behavior",
     "bluetooth_page:closure_compile",
     "crostini_page:closure_compile",
@@ -109,8 +110,15 @@ js_library("os_page_visibility") {
 
 js_library("os_route") {
   deps = [
+    ":os_settings_routes",
     "..:router",
-    "..:settings_routes",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("os_settings_routes") {
+  deps = [
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
   ]

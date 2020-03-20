@@ -734,6 +734,28 @@ SkiaOutputSurfaceImplOnGpu::ReleaseCurrent::~ReleaseCurrent() {
     context_state_->ReleaseCurrent(gl_surface_.get());
 }
 
+class SkiaOutputSurfaceImplOnGpu::DisplayContext : public gpu::DisplayContext {
+ public:
+  DisplayContext(SkiaOutputSurfaceDependency* deps,
+                 SkiaOutputSurfaceImplOnGpu* owner)
+      : dependency_(deps), owner_(owner) {
+    dependency_->RegisterDisplayContext(this);
+  }
+  ~DisplayContext() override { dependency_->UnregisterDisplayContext(this); }
+
+  DisplayContext(const DisplayContext&) = delete;
+  DisplayContext& operator=(const DisplayContext&) = delete;
+
+  // gpu::DisplayContext implementation
+  void MarkContextLost() override {
+    owner_->MarkContextLost(CONTEXT_LOST_UNKNOWN);
+  }
+
+ private:
+  SkiaOutputSurfaceDependency* const dependency_;
+  SkiaOutputSurfaceImplOnGpu* const owner_;
+};
+
 // static
 std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
     SkiaOutputSurfaceDependency* deps,
@@ -790,6 +812,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       context_lost_callback_(std::move(context_lost_callback)),
       gpu_vsync_callback_(std::move(gpu_vsync_callback)),
       gpu_preferences_(dependency_->GetGpuPreferences()),
+      display_context_(std::make_unique<DisplayContext>(deps, this)),
       copier_active_url_(GURL("chrome://gpu/SkiaRendererGLRendererCopier")) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -798,14 +821,10 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       weak_ptr_, std::move(did_swap_buffer_complete_callback));
   buffer_presented_callback_ = CreateSafeRepeatingCallback(
       weak_ptr_, std::move(buffer_presented_callback));
-
-  dependency_->RegisterDisplayContext(this);
 }
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  dependency_->UnregisterDisplayContext(this);
 
   // |context_provider_| and clients want either the context to be lost or made
   // current on destruction.
@@ -847,7 +866,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(const gfx::Size& size,
   color_space_ = color_space;
   if (!output_device_->Reshape(size_, device_scale_factor, color_space, format,
                                transform)) {
-    MarkContextLost();
+    MarkContextLost(CONTEXT_LOST_RESHAPE_FAILED);
     return;
   }
 }
@@ -1597,9 +1616,9 @@ bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
     if (!context_state_->MakeCurrent(need_fbo0 ? gl_surface_.get() : nullptr)) {
       LOG(ERROR) << "Failed to make current.";
       dependency_->DidLoseContext(
-          !need_fbo0 /* offscreen */, gpu::error::kMakeCurrentFailed,
+          gpu::error::kMakeCurrentFailed,
           GURL("chrome://gpu/SkiaOutputSurfaceImplOnGpu::MakeCurrent"));
-      MarkContextLost();
+      MarkContextLost(CONTEXT_LOST_MAKECURRENT_FAILED);
       return false;
     }
     context_state_->set_need_context_state_reset(true);
@@ -1681,7 +1700,15 @@ void SkiaOutputSurfaceImplOnGpu::BufferPresented(
   // Handled by SkiaOutputDevice already.
 }
 
-void SkiaOutputSurfaceImplOnGpu::MarkContextLost() {
+void SkiaOutputSurfaceImplOnGpu::MarkContextLost(ContextLostReason reason) {
+  // This function potentially can be re-entered during from
+  // SharedContextState::MarkContextLost(). This guards against it.
+  if (context_is_lost_)
+    return;
+  context_is_lost_ = true;
+
+  UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.DisplayCompositor", reason);
+
   context_state_->MarkContextLost();
   if (context_lost_callback_) {
     PostTaskToClientThread(std::move(context_lost_callback_));

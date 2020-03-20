@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/service/xr_runtime_manager.h"
+#include "chrome/browser/vr/service/xr_runtime_manager_impl.h"
+#include "chrome/browser/vr/xr_runtime_manager_statics.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -38,10 +40,10 @@
 namespace vr {
 
 namespace {
-XRRuntimeManager* g_xr_runtime_manager = nullptr;
+XRRuntimeManagerImpl* g_xr_runtime_manager = nullptr;
 
-base::LazyInstance<base::ObserverList<XRRuntimeManagerObserver>>::Leaky
-    g_xr_runtime_manager_observers;
+base::LazyInstance<base::ObserverList<content::XRRuntimeManager::Observer>>::
+    Leaky g_xr_runtime_manager_observers;
 
 #if !defined(OS_ANDROID)
 bool IsEnabled(const base::CommandLine* command_line,
@@ -58,7 +60,38 @@ bool IsEnabled(const base::CommandLine* command_line,
 
 }  // namespace
 
-scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
+// XRRuntimeManager statics
+content::XRRuntimeManager* XRRuntimeManagerStatics::GetInstanceIfCreated() {
+  return g_xr_runtime_manager;
+}
+
+void XRRuntimeManagerStatics::AddObserver(
+    content::XRRuntimeManager::Observer* observer) {
+  g_xr_runtime_manager_observers.Get().AddObserver(observer);
+}
+
+void XRRuntimeManagerStatics::RemoveObserver(
+    content::XRRuntimeManager::Observer* observer) {
+  g_xr_runtime_manager_observers.Get().RemoveObserver(observer);
+}
+
+void XRRuntimeManagerStatics::ExitImmersivePresentation() {
+  if (!g_xr_runtime_manager) {
+    return;
+  }
+
+  auto* browser_xr_runtime =
+      g_xr_runtime_manager->GetCurrentlyPresentingImmersiveRuntime();
+  if (!browser_xr_runtime) {
+    return;
+  }
+
+  browser_xr_runtime->ExitActiveImmersiveSession();
+}
+
+// Static
+scoped_refptr<XRRuntimeManagerImpl>
+XRRuntimeManagerImpl::GetOrCreateInstance() {
   if (g_xr_runtime_manager) {
     return base::WrapRefCounted(g_xr_runtime_manager);
   }
@@ -108,38 +141,7 @@ scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
   return CreateInstance(std::move(providers));
 }
 
-bool XRRuntimeManager::HasInstance() {
-  return g_xr_runtime_manager != nullptr;
-}
-
-XRRuntimeManager* XRRuntimeManager::GetInstanceIfCreated() {
-  return g_xr_runtime_manager;
-}
-
-void XRRuntimeManager::AddObserver(XRRuntimeManagerObserver* observer) {
-  g_xr_runtime_manager_observers.Get().AddObserver(observer);
-}
-
-void XRRuntimeManager::RemoveObserver(XRRuntimeManagerObserver* observer) {
-  g_xr_runtime_manager_observers.Get().RemoveObserver(observer);
-}
-
-/* static */
-void XRRuntimeManager::ExitImmersivePresentation() {
-  if (!g_xr_runtime_manager) {
-    return;
-  }
-
-  auto* browser_xr_runtime =
-      g_xr_runtime_manager->GetCurrentlyPresentingImmersiveRuntime();
-  if (!browser_xr_runtime) {
-    return;
-  }
-
-  browser_xr_runtime->ExitActiveImmersiveSession();
-}
-
-void XRRuntimeManager::AddService(VRServiceImpl* service) {
+void XRRuntimeManagerImpl::AddService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(2) << __func__;
 
@@ -154,7 +156,7 @@ void XRRuntimeManager::AddService(VRServiceImpl* service) {
   services_.insert(service);
 }
 
-void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
+void XRRuntimeManagerImpl::RemoveService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(2) << __func__;
   services_.erase(service);
@@ -164,7 +166,7 @@ void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
   }
 }
 
-BrowserXRRuntimeImpl* XRRuntimeManager::GetRuntime(
+BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetRuntime(
     device::mojom::XRDeviceId id) {
   auto it = runtimes_.find(id);
   if (it == runtimes_.end())
@@ -173,7 +175,7 @@ BrowserXRRuntimeImpl* XRRuntimeManager::GetRuntime(
   return it->second.get();
 }
 
-BrowserXRRuntimeImpl* XRRuntimeManager::GetRuntimeForOptions(
+BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetRuntimeForOptions(
     device::mojom::XRSessionOptions* options) {
   BrowserXRRuntimeImpl* runtime = nullptr;
   switch (options->mode) {
@@ -197,7 +199,7 @@ BrowserXRRuntimeImpl* XRRuntimeManager::GetRuntimeForOptions(
              : nullptr;
 }
 
-BrowserXRRuntimeImpl* XRRuntimeManager::GetImmersiveVrRuntime() {
+BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveVrRuntime() {
 #if defined(OS_ANDROID)
   auto* gvr = GetRuntime(device::mojom::XRDeviceId::GVR_DEVICE_ID);
   if (gvr)
@@ -231,13 +233,13 @@ BrowserXRRuntimeImpl* XRRuntimeManager::GetImmersiveVrRuntime() {
   return nullptr;
 }
 
-BrowserXRRuntimeImpl* XRRuntimeManager::GetImmersiveArRuntime() {
+BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveArRuntime() {
   device::mojom::XRSessionOptions options = {};
   options.mode = device::mojom::XRSessionMode::kImmersiveAr;
   return GetRuntimeForOptions(&options);
 }
 
-device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
+device::mojom::VRDisplayInfoPtr XRRuntimeManagerImpl::GetCurrentVRDisplayInfo(
     VRServiceImpl* service) {
   // This seems to be occurring every frame on Windows
   DVLOG(3) << __func__;
@@ -286,7 +288,7 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
 }
 
 BrowserXRRuntimeImpl*
-XRRuntimeManager::GetCurrentlyPresentingImmersiveRuntime() {
+XRRuntimeManagerImpl::GetCurrentlyPresentingImmersiveRuntime() {
   auto* vr_runtime = GetImmersiveVrRuntime();
   if (vr_runtime && vr_runtime->GetServiceWithActiveImmersiveSession()) {
     return vr_runtime;
@@ -300,7 +302,7 @@ XRRuntimeManager::GetCurrentlyPresentingImmersiveRuntime() {
   return nullptr;
 }
 
-bool XRRuntimeManager::IsOtherClientPresenting(VRServiceImpl* service) {
+bool XRRuntimeManagerImpl::IsOtherClientPresenting(VRServiceImpl* service) {
   DCHECK(service);
 
   auto* runtime = GetCurrentlyPresentingImmersiveRuntime();
@@ -313,11 +315,7 @@ bool XRRuntimeManager::IsOtherClientPresenting(VRServiceImpl* service) {
   return (presenting_service != service);
 }
 
-bool XRRuntimeManager::HasAnyRuntime() {
-  return !runtimes_.empty();
-}
-
-void XRRuntimeManager::SupportsSession(
+void XRRuntimeManagerImpl::SupportsSession(
     device::mojom::XRSessionOptionsPtr options,
     device::mojom::VRService::SupportsSessionCallback callback) {
   auto* runtime = GetRuntimeForOptions(options.get());
@@ -331,27 +329,27 @@ void XRRuntimeManager::SupportsSession(
   std::move(callback).Run(true);
 }
 
-XRRuntimeManager::XRRuntimeManager(ProviderList providers)
+XRRuntimeManagerImpl::XRRuntimeManagerImpl(ProviderList providers)
     : providers_(std::move(providers)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK(!g_xr_runtime_manager);
   g_xr_runtime_manager = this;
 }
 
-XRRuntimeManager::~XRRuntimeManager() {
+XRRuntimeManagerImpl::~XRRuntimeManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK_EQ(g_xr_runtime_manager, this);
   g_xr_runtime_manager = nullptr;
 }
 
-scoped_refptr<XRRuntimeManager> XRRuntimeManager::CreateInstance(
+scoped_refptr<XRRuntimeManagerImpl> XRRuntimeManagerImpl::CreateInstance(
     ProviderList providers) {
-  auto* ptr = new XRRuntimeManager(std::move(providers));
+  auto* ptr = new XRRuntimeManagerImpl(std::move(providers));
   CHECK_EQ(ptr, g_xr_runtime_manager);
   return base::AdoptRef(ptr);
 }
 
-device::mojom::XRRuntime* XRRuntimeManager::GetRuntimeForTest(
+device::mojom::XRRuntime* XRRuntimeManagerImpl::GetRuntimeForTest(
     device::mojom::XRDeviceId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DeviceRuntimeMap::iterator iter =
@@ -362,11 +360,11 @@ device::mojom::XRRuntime* XRRuntimeManager::GetRuntimeForTest(
   return iter->second->GetRuntime();
 }
 
-size_t XRRuntimeManager::NumberOfConnectedServices() {
+size_t XRRuntimeManagerImpl::NumberOfConnectedServices() {
   return services_.size();
 }
 
-void XRRuntimeManager::InitializeProviders() {
+void XRRuntimeManagerImpl::InitializeProviders() {
   if (providers_initialized_)
     return;
 
@@ -378,18 +376,18 @@ void XRRuntimeManager::InitializeProviders() {
     }
 
     provider->Initialize(
-        base::BindRepeating(&XRRuntimeManager::AddRuntime,
+        base::BindRepeating(&XRRuntimeManagerImpl::AddRuntime,
                             base::Unretained(this)),
-        base::BindRepeating(&XRRuntimeManager::RemoveRuntime,
+        base::BindRepeating(&XRRuntimeManagerImpl::RemoveRuntime,
                             base::Unretained(this)),
-        base::BindOnce(&XRRuntimeManager::OnProviderInitialized,
+        base::BindOnce(&XRRuntimeManagerImpl::OnProviderInitialized,
                        base::Unretained(this)));
   }
 
   providers_initialized_ = true;
 }
 
-void XRRuntimeManager::OnProviderInitialized() {
+void XRRuntimeManagerImpl::OnProviderInitialized() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ++num_initialized_providers_;
   if (AreAllProvidersInitialized()) {
@@ -398,12 +396,12 @@ void XRRuntimeManager::OnProviderInitialized() {
   }
 }
 
-bool XRRuntimeManager::AreAllProvidersInitialized() {
+bool XRRuntimeManagerImpl::AreAllProvidersInitialized() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return num_initialized_providers_ == providers_.size();
 }
 
-void XRRuntimeManager::AddRuntime(
+void XRRuntimeManagerImpl::AddRuntime(
     device::mojom::XRDeviceId id,
     device::mojom::VRDisplayInfoPtr info,
     mojo::PendingRemote<device::mojom::XRRuntime> runtime) {
@@ -415,15 +413,15 @@ void XRRuntimeManager::AddRuntime(
   runtimes_[id] = std::make_unique<BrowserXRRuntimeImpl>(id, std::move(runtime),
                                                          std::move(info));
 
-  for (XRRuntimeManagerObserver& obs : g_xr_runtime_manager_observers.Get())
+  for (Observer& obs : g_xr_runtime_manager_observers.Get())
     obs.OnRuntimeAdded(runtimes_[id].get());
 
   for (VRServiceImpl* service : services_)
-    // TODO(sumankancherla): Consider combining with XRRuntimeManagerObserver.
+    // TODO(sumankancherla): Consider combining with XRRuntimeManager::Observer.
     service->RuntimesChanged();
 }
 
-void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
+void XRRuntimeManagerImpl::RemoveRuntime(device::mojom::XRDeviceId id) {
   DVLOG(1) << __func__ << " id: " << id;
   TRACE_EVENT_INSTANT1("xr", "RemoveRuntime", TRACE_EVENT_SCOPE_THREAD, "id",
                        id);
@@ -443,6 +441,13 @@ void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
 
   for (VRServiceImpl* service : services_)
     service->RuntimesChanged();
+}
+
+void XRRuntimeManagerImpl::ForEachRuntime(
+    base::RepeatingCallback<void(content::BrowserXRRuntime*)> fn) {
+  for (auto& runtime : runtimes_) {
+    fn.Run(runtime.second.get());
+  }
 }
 
 }  // namespace vr

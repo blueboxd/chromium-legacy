@@ -54,6 +54,15 @@ void NGTextPainter::PaintSelectedText(unsigned start_offset,
   if (!fragment_paint_info_.shape_result)
     return;
 
+  // Use fast path if all glyphs fit in |selection_rect|. Note |text_bounds_| is
+  // the bounds of all glyphs of this text fragment, including characters before
+  // |start_offset| or after |end_offset|. Computing exact bounds is expensive
+  // that this code only checks bounds of all glyphs.
+  if (selection_rect.Contains(text_bounds_)) {
+    Paint(start_offset, end_offset, length, selection_style, node_id);
+    return;
+  }
+
   // Adjust start/end offset when they are in the middle of a ligature. e.g.,
   // when |start_offset| is between a ligature of "fi", it needs to be adjusted
   // to before "f".

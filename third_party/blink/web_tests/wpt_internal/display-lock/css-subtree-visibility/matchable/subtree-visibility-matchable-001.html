@@ -1,15 +1,12 @@
 <!doctype HTML>
 
-<!-- TODO(vmpstr): This test needs to change expectations once hidden-matchable
-     elements only send a signal and not activate
--->
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>subtree-visibility changes after a delay, activated by script</title>
+<title>subtree-visibility changes after a delay</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="../container-with-child-ref.html">
-<meta name="assert" content="scrollIntoView unhides the element">
+<link rel="match" href="../container-ref.html">
+<meta name="assert" content="scrollIntoView has no effect on hidden-matchable">
 <script src="/common/reftest-wait.js"></script>
 
 <style>

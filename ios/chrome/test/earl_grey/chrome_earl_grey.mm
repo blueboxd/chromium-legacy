@@ -665,6 +665,20 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
                                                          title:title];
 }
 
+- (void)addFakeSyncServerLegacyBookmarkWithURL:(const GURL&)URL
+                                         title:(const std::string&)UTF8Title
+                     originator_client_item_id:
+                         (const std::string&)UTF8OriginatorClientItemId {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  NSString* title = base::SysUTF8ToNSString(UTF8Title);
+  NSString* originator_client_item_id =
+      base::SysUTF8ToNSString(UTF8OriginatorClientItemId);
+  [ChromeEarlGreyAppInterface
+      addFakeSyncServerLegacyBookmarkWithURL:spec
+                                       title:title
+                   originator_client_item_id:originator_client_item_id];
+}
+
 - (void)addFakeSyncServerTypedURL:(const GURL&)URL {
   NSString* spec = base::SysUTF8ToNSString(URL.spec());
   [ChromeEarlGreyAppInterface addFakeSyncServerTypedURL:spec];

@@ -719,8 +719,9 @@ void InProcessCommandBuffer::OnParseError() {
   if (gpu_channel_manager_delegate_) {
     // Tell the browser about this context loss so it can determine whether
     // client APIs like WebGL need to be blocked from automatically running.
+    // |offscreen| is used to determine if it's compositing context or not.
     gpu_channel_manager_delegate_->DidLoseContext(
-        is_offscreen_, state.context_lost_reason, active_url_.url());
+        /*offscreen=*/false, state.context_lost_reason, active_url_.url());
 
     // Check the error reason and robustness extension to get a better idea if
     // the GL context was lost. We might try restarting the GPU process to

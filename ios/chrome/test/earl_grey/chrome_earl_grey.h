@@ -190,6 +190,14 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (void)addFakeSyncServerBookmarkWithURL:(const GURL&)URL
                                    title:(const std::string&)title;
 
+// Injects a legacy bookmark into the fake sync server. The legacy bookmark
+// means 2015 and earlier, prior to the adoption of GUIDs for originator client
+// item ID.
+- (void)addFakeSyncServerLegacyBookmarkWithURL:(const GURL&)URL
+                                         title:(const std::string&)title
+                     originator_client_item_id:
+                         (const std::string&)originator_client_item_id;
+
 // Injects typed URL to sync FakeServer.
 - (void)addFakeSyncServerTypedURL:(const GURL&)URL;
 

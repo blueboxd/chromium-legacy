@@ -14,9 +14,11 @@
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -303,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // foreground tab.
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   ASSERT_EQ(
-      "chrome://settings/passwords/check",
+      chrome::GetSettingsUrl(chrome::kPasswordCheckSubPage),
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
 #endif

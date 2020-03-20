@@ -882,9 +882,6 @@ void BrowserAccessibilityManager::HitTest(const gfx::Point& point) const {
   if (!delegate_)
     return;
 
-  base::RecordAction(
-      base::UserMetricsAction("Accessibility.NativeApi.HitTest"));
-
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kHitTest;
   action_data.target_point = point;

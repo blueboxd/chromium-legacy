@@ -371,6 +371,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Returns true if this layer has content that needs to be displayed by
   // painting into the backing store.
   bool ContainsPaintedContent() const;
+  // Returns true if the Layer just contains an image that we can composite
+  // directly.
+  bool IsDirectlyCompositedImage() const;
+  void UpdateImageContents();
 
   Color LayoutObjectBackgroundColor() const;
   void UpdateBackgroundColor();

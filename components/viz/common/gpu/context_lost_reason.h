@@ -26,9 +26,12 @@ enum ContextLostReason {
   CONTEXT_LOST_OUT_OF_MEMORY = 10,
   CONTEXT_LOST_MAKECURRENT_FAILED = 11,
   CONTEXT_LOST_INVALID_GPU_MESSAGE = 12,
+
+  // SkiaRenderer marked context as lost because of failed Reshape call
+  CONTEXT_LOST_RESHAPE_FAILED = 13,
   // Update kMaxValue and //tools/metrics/histograms/histograms.xml when adding
   // new values.
-  kMaxValue = CONTEXT_LOST_INVALID_GPU_MESSAGE
+  kMaxValue = CONTEXT_LOST_RESHAPE_FAILED
 };
 
 VIZ_COMMON_EXPORT ContextLostReason

@@ -166,18 +166,6 @@ class CC_PAINT_EXPORT DisplayItemList
   // Called after all items are appended, to process the items.
   void Finalize();
 
-  struct DirectlyCompositedImageResult {
-    gfx::Size intrinsic_image_size;
-    bool nearest_neighbor;
-  };
-
-  // If this list represents an image that should be directly composited (i.e.
-  // rasterized at the intrinsic size of the image), return the intrinsic size
-  // of the image and whether or not to use nearest neighbor filtering when
-  // scaling the layer.
-  base::Optional<DirectlyCompositedImageResult>
-  GetDirectlyCompositedImageResult(gfx::Size containing_layer_bounds) const;
-
   int NumSlowPaths() const { return paint_op_buffer_.numSlowPaths(); }
   bool HasNonAAPaint() const { return paint_op_buffer_.HasNonAAPaint(); }
   bool HasText() const { return paint_op_buffer_.HasText(); }

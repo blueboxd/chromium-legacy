@@ -300,13 +300,14 @@ class QuicNetworkTransactionTest
         client_headers_include_h2_stream_dependency_(
             GetParam().client_headers_include_h2_stream_dependency),
         supported_versions_(quic::test::SupportedVersions(version_)),
-        client_maker_(version_,
-                      quic::QuicUtils::CreateRandomConnectionId(
-                          context_.random_generator()),
-                      context_.clock(),
-                      kDefaultServerHostName,
-                      quic::Perspective::IS_CLIENT,
-                      client_headers_include_h2_stream_dependency_),
+        client_maker_(new QuicTestPacketMaker(
+            version_,
+            quic::QuicUtils::CreateRandomConnectionId(
+                context_.random_generator()),
+            context_.clock(),
+            kDefaultServerHostName,
+            quic::Perspective::IS_CLIENT,
+            client_headers_include_h2_stream_dependency_)),
         server_maker_(version_,
                       quic::QuicUtils::CreateRandomConnectionId(
                           context_.random_generator()),
@@ -356,7 +357,7 @@ class QuicNetworkTransactionTest
 
   std::unique_ptr<quic::QuicEncryptedPacket>
   ConstructClientConnectionClosePacket(uint64_t num) {
-    return client_maker_.MakeConnectionClosePacket(
+    return client_maker_->MakeConnectionClosePacket(
         num, false, quic::QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!");
   }
 
@@ -378,8 +379,8 @@ class QuicNetworkTransactionTest
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked) {
-    return client_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received, least_unacked, true);
+    return client_maker_->MakeAckPacket(packet_number, largest_received,
+                                        smallest_received, least_unacked, true);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckAndRstPacket(
@@ -389,7 +390,7 @@ class QuicNetworkTransactionTest
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked) {
-    return client_maker_.MakeAckAndRstPacket(
+    return client_maker_->MakeAckAndRstPacket(
         num, false, stream_id, error_code, largest_received, smallest_received,
         least_unacked, true);
   }
@@ -398,8 +399,8 @@ class QuicNetworkTransactionTest
       uint64_t num,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code) {
-    return client_maker_.MakeRstPacket(num, false, stream_id, error_code,
-                                       /*include_stop_sending_if_v99=*/true);
+    return client_maker_->MakeRstPacket(num, false, stream_id, error_code,
+                                        /*include_stop_sending_if_v99=*/true);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
@@ -407,8 +408,8 @@ class QuicNetworkTransactionTest
                                              uint64_t largest_received,
                                              uint64_t smallest_received,
                                              uint64_t least_unacked) {
-    return client_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received, least_unacked, true);
+    return client_maker_->MakeAckPacket(packet_number, largest_received,
+                                        smallest_received, least_unacked, true);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
@@ -420,7 +421,7 @@ class QuicNetworkTransactionTest
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details,
       uint64_t frame_type) {
-    return client_maker_.MakeAckAndConnectionClosePacket(
+    return client_maker_->MakeAckAndConnectionClosePacket(
         num, false, largest_received, smallest_received, least_unacked,
         quic_error, quic_error_details, frame_type);
   }
@@ -436,7 +437,7 @@ class QuicNetworkTransactionTest
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket(
       uint64_t packet_number) {
-    return client_maker_.MakeInitialSettingsPacket(packet_number);
+    return client_maker_->MakeInitialSettingsPacket(packet_number);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerAckPacket(
@@ -454,7 +455,7 @@ class QuicNetworkTransactionTest
       quic::QuicStreamId id,
       quic::QuicStreamId parent_stream_id,
       RequestPriority request_priority) {
-    return client_maker_.MakePriorityPacket(
+    return client_maker_->MakePriorityPacket(
         packet_number, should_include_version, id, parent_stream_id,
         ConvertRequestPriorityToQuicPriority(request_priority));
   }
@@ -468,7 +469,7 @@ class QuicNetworkTransactionTest
       uint64_t least_unacked,
       const std::vector<QuicTestPacketMaker::Http2StreamDependency>&
           priority_frames) {
-    return client_maker_.MakeAckAndMultiplePriorityFramesPacket(
+    return client_maker_->MakeAckAndMultiplePriorityFramesPacket(
         packet_number, should_include_version, largest_received,
         smallest_received, least_unacked, priority_frames);
   }
@@ -477,7 +478,7 @@ class QuicNetworkTransactionTest
   spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                           const std::string& scheme,
                                           const std::string& path) {
-    return GetRequestHeaders(method, scheme, path, &client_maker_);
+    return GetRequestHeaders(method, scheme, path, client_maker_.get());
   }
 
   // Uses customized QuicTestPacketMaker.
@@ -489,7 +490,7 @@ class QuicNetworkTransactionTest
   }
 
   spdy::SpdyHeaderBlock ConnectRequestHeaders(const std::string& host_port) {
-    return client_maker_.ConnectRequestHeaders(host_port);
+    return client_maker_->ConnectRequestHeaders(host_port);
   }
 
   spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status) {
@@ -518,8 +519,8 @@ class QuicNetworkTransactionTest
       bool should_include_version,
       bool fin,
       quiche::QuicheStringPiece data) {
-    return client_maker_.MakeDataPacket(packet_number, stream_id,
-                                        should_include_version, fin, data);
+    return client_maker_->MakeDataPacket(packet_number, stream_id,
+                                         should_include_version, fin, data);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckAndDataPacket(
@@ -531,7 +532,7 @@ class QuicNetworkTransactionTest
       uint64_t least_unacked,
       bool fin,
       quiche::QuicheStringPiece data) {
-    return client_maker_.MakeAckAndDataPacket(
+    return client_maker_->MakeAckAndDataPacket(
         packet_number, include_version, stream_id, largest_received,
         smallest_received, least_unacked, fin, data);
   }
@@ -569,7 +570,7 @@ class QuicNetworkTransactionTest
                                       quic::QuicStreamId parent_stream_id) {
     spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
-    return client_maker_.MakeRequestHeadersPacket(
+    return client_maker_->MakeRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin, priority,
         std::move(headers), parent_stream_id, nullptr);
   }
@@ -587,7 +588,7 @@ class QuicNetworkTransactionTest
       const std::vector<std::string>& data_writes) {
     spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
-    return client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
+    return client_maker_->MakeRequestHeadersAndMultipleDataFramesPacket(
         packet_number, stream_id, should_include_version, fin, priority,
         std::move(headers), parent_stream_id, spdy_headers_frame_length,
         data_writes);
@@ -660,19 +661,25 @@ class QuicNetworkTransactionTest
   void CreateSession() { return CreateSession(supported_versions_); }
 
   void CheckWasQuicResponse(HttpNetworkTransaction* trans,
-                            const std::string& status_line) {
+                            const std::string& status_line,
+                            const quic::ParsedQuicVersion& version) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     ASSERT_TRUE(response->headers.get() != nullptr);
     EXPECT_EQ(status_line, response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_alpn_negotiated);
-    EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
+    EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version),
               response->connection_info);
   }
 
+  void CheckWasQuicResponse(HttpNetworkTransaction* trans,
+                            const std::string& status_line) {
+    CheckWasQuicResponse(trans, status_line, version_);
+  }
+
   void CheckWasQuicResponse(HttpNetworkTransaction* trans) {
-    CheckWasQuicResponse(trans, "HTTP/1.1 200 OK");
+    CheckWasQuicResponse(trans, "HTTP/1.1 200 OK", version_);
   }
 
   void CheckResponsePort(HttpNetworkTransaction* trans, uint16_t port) {
@@ -996,12 +1003,35 @@ class QuicNetworkTransactionTest
     ASSERT_TRUE(ssl_data->ssl_info.cert);
   }
 
+  void SendRequestAndExpectQuicResponseMaybeFromProxy(
+      const std::string& expected,
+      bool used_proxy,
+      uint16_t port,
+      const std::string& status_line,
+      const quic::ParsedQuicVersion& version) {
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+    HeadersHandler headers_handler;
+    trans.SetBeforeHeadersSentCallback(
+        base::Bind(&HeadersHandler::OnBeforeHeadersSent,
+                   base::Unretained(&headers_handler)));
+    RunTransaction(&trans);
+    CheckWasQuicResponse(&trans, status_line, version);
+    CheckResponsePort(&trans, port);
+    CheckResponseData(&trans, expected);
+    EXPECT_EQ(used_proxy, headers_handler.was_proxied());
+    if (used_proxy) {
+      EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_quic());
+    } else {
+      EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_direct());
+    }
+  }
+
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   quic::ParsedQuicVersionVector supported_versions_;
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   MockQuicContext context_;
-  QuicTestPacketMaker client_maker_;
+  std::unique_ptr<QuicTestPacketMaker> client_maker_;
   QuicTestPacketMaker server_maker_;
   scoped_refptr<TestTaskRunner> quic_task_runner_;
   std::unique_ptr<HttpNetworkSession> session_;
@@ -1032,21 +1062,8 @@ class QuicNetworkTransactionTest
       bool used_proxy,
       uint16_t port,
       const std::string& status_line) {
-    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-    HeadersHandler headers_handler;
-    trans.SetBeforeHeadersSentCallback(
-        base::Bind(&HeadersHandler::OnBeforeHeadersSent,
-                   base::Unretained(&headers_handler)));
-    RunTransaction(&trans);
-    CheckWasQuicResponse(&trans, status_line);
-    CheckResponsePort(&trans, port);
-    CheckResponseData(&trans, expected);
-    EXPECT_EQ(used_proxy, headers_handler.was_proxied());
-    if (used_proxy) {
-      EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_quic());
-    } else {
-      EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_direct());
-    }
+    SendRequestAndExpectQuicResponseMaybeFromProxy(expected, used_proxy, port,
+                                                   status_line, version_);
   }
 
   void SendRequestAndExpectQuicResponseMaybeFromProxy(
@@ -1054,7 +1071,7 @@ class QuicNetworkTransactionTest
       bool used_proxy,
       uint16_t port) {
     SendRequestAndExpectQuicResponseMaybeFromProxy(expected, used_proxy, port,
-                                                   "HTTP/1.1 200 OK");
+                                                   "HTTP/1.1 200 OK", version_);
   }
 };
 
@@ -1616,7 +1633,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "QUIC " + proxy_host + ":70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  client_maker_.set_hostname(origin_host);
+  client_maker_->set_hostname(origin_host);
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
@@ -1680,7 +1697,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
   verify_details.cert_verify_result.verified_cert = cert;
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  client_maker_.set_hostname(origin.host());
+  client_maker_->set_hostname(origin.host());
   MockQuicData mock_quic_data(version_);
 
   int packet_num = 1;
@@ -1927,7 +1944,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   if (VersionUsesHttp3(version_.transport_version))
     mock_quic_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   mock_quic_data1.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
-  client_maker_.Reset();
+  client_maker_->Reset();
   MockQuicData mock_quic_data2(version_);
   if (VersionUsesHttp3(version_.transport_version))
     mock_quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
@@ -2232,33 +2249,57 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
-TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
-  if (version_.handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
-    // Only QUIC_CRYPTO versions can be encoded with Google-style AltSvc.
-    // Currently client preference is not observed with IETF-style AltSvc.
-    // TODO(https://crbug.com/1044691): Fix that and add test.
-    return;
-  }
+TEST_P(QuicNetworkTransactionTest,
+       PickQuicVersionWhenMultipleVersionsAreSupported) {
+  // Client and server both support more than one QUIC_VERSION.
+  // Client prefers |version_|, and then common_version_2.
+  // Server prefers common_version_2, and then |version_|.
+  // In non-TLS version, |version_| will be picked.
+  // In TLS version, server's preference will be honored.
+  // TODO(crbug.com/1063060): fix the behavior to be consistent.
+  // The picked version is verified via checking the version used by the
+  // TestPacketMakers and the response.
 
-  // Client and server mutually support more than one QUIC_VERSION.
-  // The QuicStreamFactoy will pick the preferred QUIC_VERSION: |version_|,
-  // which is verified as the PacketMakers are using |version_|.
-
+  // Find an alternative commonly supported version other than |version_|.
   quic::ParsedQuicVersion common_version_2 = quic::UnsupportedQuicVersion();
-  for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
-    if (version == version_)
-      continue;
-    common_version_2 = version;
-    break;
+  if (version_.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
+    for (const quic::ParsedQuicVersion& version :
+         quic::AllSupportedVersions()) {
+      if (version == version_)
+        continue;
+      common_version_2 = version;
+      break;
+    }
+  } else if (version_.transport_version == quic::QUIC_VERSION_IETF_DRAFT_27) {
+    common_version_2 = quic::ParsedQuicVersion(
+        quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_IETF_DRAFT_25);
+  } else {
+    common_version_2 = quic::ParsedQuicVersion(
+        quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_IETF_DRAFT_27);
   }
   ASSERT_NE(quic::UnsupportedQuicVersion(), common_version_2);
 
-  supported_versions_.push_back(
-      common_version_2);  // Supported but unpreferred.
+  // Setting up client's preference list: {|version_|, |common_version_2|}.
+  supported_versions_.clear();
+  supported_versions_.push_back(version_);
+  supported_versions_.push_back(common_version_2);
 
-  std::string QuicAltSvcWithVersionHeader = base::StringPrintf(
-      "Alt-Svc: quic=\":443\";v=\"%d,%d\"\r\n\r\n",
-      common_version_2.transport_version, version_.transport_version);
+  // Setting up server's Alt-Svc header in the following preference order:
+  // |common_version_2|, |version_|.
+  std::string QuicAltSvcWithVersionHeader;
+  quic::ParsedQuicVersion picked_version = quic::UnsupportedQuicVersion();
+  if (version_.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
+    QuicAltSvcWithVersionHeader = base::StringPrintf(
+        "Alt-Svc: quic=\":443\";v=\"%d,%d\"\r\n\r\n",
+        common_version_2.transport_version, version_.transport_version);
+    picked_version = version_;  // Use client's preference.
+  } else {
+    QuicAltSvcWithVersionHeader =
+        "Alt-Svc: " + quic::AlpnForVersion(common_version_2) +
+        "=\":443\"; ma=3600, " + quic::AlpnForVersion(version_) +
+        "=\":443\"; ma=3600\r\n\r\n";
+    picked_version = common_version_2;  // Use server's preference.
+  }
 
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
@@ -2271,26 +2312,48 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
   AddCertificate(&ssl_data_);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  MockQuicData mock_quic_data(version_);
+  MockQuicData mock_quic_data(picked_version);
+
+  // Reset QuicTestPacket makers as the version picked may not be |version_|.
+  client_maker_.reset(new QuicTestPacketMaker(
+      picked_version,
+      quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
+      context_.clock(), kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+      client_headers_include_h2_stream_dependency_));
+  QuicTestPacketMaker server_maker(
+      picked_version,
+      quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
+      context_.clock(), kDefaultServerHostName, quic::Perspective::IS_SERVER,
+      false);
+
   int packet_num = 1;
-  if (VersionUsesHttp3(version_.transport_version)) {
+  if (VersionUsesHttp3(picked_version.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
-          true, GetRequestHeaders("GET", "https", "/")));
+
+  quic::QuicStreamId client_stream_0 =
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(
+          picked_version.transport_version, 0);
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientRequestHeadersPacket(
+                              packet_num++, client_stream_0, true, true,
+                              GetRequestHeaders("GET", "https", "/")));
   mock_quic_data.AddRead(
-      ASYNC, ConstructServerResponseHeadersPacket(
-                 1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
-                 GetResponseHeaders("200 OK")));
-  std::string header = ConstructDataHeader(6);
+      ASYNC, server_maker.MakeResponseHeadersPacket(
+                 1, client_stream_0, false, false,
+                 server_maker.GetResponseHeaders("200 OK"), nullptr));
+  std::string header("");
+  if (VersionUsesHttp3(picked_version.transport_version)) {
+    std::unique_ptr<char[]> buffer;
+    auto header_length =
+        quic::HttpEncoder::SerializeDataFrameHeader(6, &buffer);
+    header = std::string(buffer.get(), header_length);
+  }
+
   mock_quic_data.AddRead(
-      ASYNC, ConstructServerDataPacket(
-                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
-                 header + "hello!"));
+      ASYNC, server_maker.MakeDataPacket(2, client_stream_0, false, true,
+                                         header + "hello!"));
   mock_quic_data.AddWrite(SYNCHRONOUS,
                           ConstructClientAckPacket(packet_num++, 2, 1, 1));
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
@@ -2302,7 +2365,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
   CreateSession(supported_versions_);
 
   SendRequestAndExpectHttpResponse("hello world");
-  SendRequestAndExpectQuicResponse("hello!");
+  SendRequestAndExpectQuicResponseMaybeFromProxy(
+      "hello!", false, 443, "HTTP/1.1 200 OK", picked_version);
 }
 
 TEST_P(QuicNetworkTransactionTest,
@@ -2651,26 +2715,26 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
   }
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read
   int packet_num = 1;
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));  // CHLO
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));  // CHLO
   // Retranmit the handshake messages.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
+                     client_maker_->MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                          "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2760,26 +2824,26 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read
   int packet_num = 1;
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));  // CHLO
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));  // CHLO
   // Retranmit the handshake messages.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
+                     client_maker_->MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                          "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2803,9 +2867,9 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Handing read.
   quic_data2.AddWrite(SYNCHRONOUS,
-                      client_maker_.MakeDummyCHLOPacket(1));  // CHLO
+                      client_maker_->MakeDummyCHLOPacket(1));  // CHLO
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(2));
   quic_data2.AddSocketDataToFactory(&socket_factory_);
@@ -2898,26 +2962,26 @@ TEST_P(QuicNetworkTransactionTest,
 
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read
   int packet_num = 1;
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));  // CHLO
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));  // CHLO
   // Retranmit the handshake messages.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
+                     client_maker_->MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                          "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -2941,9 +3005,9 @@ TEST_P(QuicNetworkTransactionTest,
   MockQuicData quic_data2(version_);
   quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Handing read.
   quic_data2.AddWrite(SYNCHRONOUS,
-                      client_maker_.MakeDummyCHLOPacket(1));  // CHLO
+                      client_maker_->MakeDummyCHLOPacket(1));  // CHLO
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   if (VersionUsesHttp3(version_.transport_version))
     quic_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(2));
   quic_data2.AddSocketDataToFactory(&socket_factory_);
@@ -3026,26 +3090,26 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read
   int packet_num = 1;
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));  // CHLO
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));  // CHLO
   // Retranmit the handshake messages.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeDummyCHLOPacket(packet_num++));
+                     client_maker_->MakeDummyCHLOPacket(packet_num++));
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
+                     client_maker_->MakeConnectionClosePacket(
                          packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                          "No recent network activity after 4s. Timeout:4s"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -3056,13 +3120,14 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   // Quic connection will then be retried on the alternate network.
   MockQuicData quic_data2(version_);
   packet_num = 1;
-  quic_data2.AddWrite(SYNCHRONOUS,
-                      client_maker_.MakeDummyCHLOPacket(packet_num++));  // CHLO
+  quic_data2.AddWrite(
+      SYNCHRONOUS,
+      client_maker_->MakeDummyCHLOPacket(packet_num++));  // CHLO
 
   const std::string body = "hello!";
   std::string header = ConstructDataHeader(body.length());
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data2.AddWrite(SYNCHRONOUS,
                         ConstructInitialSettingsPacket(packet_num++));
@@ -3154,8 +3219,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  client_maker_.set_save_packet_frames(true);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->set_save_packet_frames(true);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
@@ -3163,60 +3228,60 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   }
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeRequestHeadersPacket(
+      client_maker_->MakeRequestHeadersPacket(
           packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
   if (VersionUsesHttp3(version_.transport_version)) {
     // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
     // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
     // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
     // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
 
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
+                       client_maker_->MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                            "No recent network activity after 4s. Timeout:4s"));
   } else {
     // Settings were sent in the request packet so there is only 1 packet to
     // retransmit.
     // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
 
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
+                       client_maker_->MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                            "No recent network activity after 4s. Timeout:4s"));
   }
@@ -3278,74 +3343,74 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  client_maker_.set_save_packet_frames(true);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->set_save_packet_frames(true);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
+        SYNCHRONOUS, client_maker_->MakeInitialSettingsPacket(packet_number++));
   }
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeRequestHeadersPacket(
+      client_maker_->MakeRequestHeadersPacket(
           packet_number++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   if (VersionUsesHttp3(version_.transport_version)) {
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 3, true));
+                       client_maker_->MakeRetransmissionPacket(1, 3, true));
     // TLP 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 4, true));
+                       client_maker_->MakeRetransmissionPacket(2, 4, true));
     // RTO 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 5, true));
+                       client_maker_->MakeRetransmissionPacket(1, 5, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 6, true));
+                       client_maker_->MakeRetransmissionPacket(2, 6, true));
     // RTO 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 7, true));
+                       client_maker_->MakeRetransmissionPacket(1, 7, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 8, true));
+                       client_maker_->MakeRetransmissionPacket(2, 8, true));
     // RTO 3
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 9, true));
+                       client_maker_->MakeRetransmissionPacket(1, 9, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 10, true));
+                       client_maker_->MakeRetransmissionPacket(2, 10, true));
     // RTO 4
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 11, true));
+                       client_maker_->MakeRetransmissionPacket(1, 11, true));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(2, 12, true));
+                       client_maker_->MakeRetransmissionPacket(2, 12, true));
     // RTO 5
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
+                       client_maker_->MakeConnectionClosePacket(
                            13, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   } else {
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 2, true));
+                       client_maker_->MakeRetransmissionPacket(1, 2, true));
     // TLP 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 3, true));
+                       client_maker_->MakeRetransmissionPacket(1, 3, true));
     // RTO 1
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 4, true));
+                       client_maker_->MakeRetransmissionPacket(1, 4, true));
     // RTO 2
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 5, true));
+                       client_maker_->MakeRetransmissionPacket(1, 5, true));
     // RTO 3
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 6, true));
+                       client_maker_->MakeRetransmissionPacket(1, 6, true));
     // RTO 4
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRetransmissionPacket(1, 7, true));
+                       client_maker_->MakeRetransmissionPacket(1, 7, true));
     // RTO 5
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
+                       client_maker_->MakeConnectionClosePacket(
                            8, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   }
@@ -3406,56 +3471,56 @@ TEST_P(QuicNetworkTransactionTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  client_maker_.set_save_packet_frames(true);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->set_save_packet_frames(true);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
+        SYNCHRONOUS, client_maker_->MakeInitialSettingsPacket(packet_number++));
   }
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeRequestHeadersPacket(
+      client_maker_->MakeRequestHeadersPacket(
           packet_number++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
   if (!VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRstPacket(
+                       client_maker_->MakeRstPacket(
                            packet_number++, true,
                            GetNthClientInitiatedBidirectionalStreamId(0),
                            quic::QUIC_STREAM_CANCELLED));
     // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_number++, true));
     // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_number++, true));
     // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_number++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_number++, true));
     // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_number++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_number++, true));
     // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_number++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_number++, true));
     // RTO 4
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_number++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_number++, true));
     // RTO 5
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
+                       client_maker_->MakeConnectionClosePacket(
                            packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   } else {
@@ -3464,44 +3529,44 @@ TEST_P(QuicNetworkTransactionTest,
                          packet_number++, GetQpackDecoderStreamId(), true,
                          false, StreamCancellationQpackDecoderInstruction(0)));
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeRstPacket(
+                       client_maker_->MakeRstPacket(
                            packet_number++, true,
                            GetNthClientInitiatedBidirectionalStreamId(0),
                            quic::QUIC_STREAM_CANCELLED));
-    client_maker_.RemoveSavedStreamFrames(
+    client_maker_->RemoveSavedStreamFrames(
         GetNthClientInitiatedBidirectionalStreamId(0));
 
-      // TLP 1
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          1, packet_number++, true));
-      // TLP 2
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          2, packet_number++, true));
-      // RTO 1
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          3, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          4, packet_number++, true));
-      // RTO 2
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          1, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          2, packet_number++, true));
-      // RTO 3
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          3, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          4, packet_number++, true));
-      // RTO 4
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          1, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          2, packet_number++, true));
-      // RTO 5
-      quic_data.AddWrite(SYNCHRONOUS,
-                         client_maker_.MakeConnectionClosePacket(
-                             packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
-                             "5 consecutive retransmission timeouts"));
+    // TLP 1
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        1, packet_number++, true));
+    // TLP 2
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        2, packet_number++, true));
+    // RTO 1
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        3, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        4, packet_number++, true));
+    // RTO 2
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        1, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        2, packet_number++, true));
+    // RTO 3
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        3, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        4, packet_number++, true));
+    // RTO 4
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        1, packet_number++, true));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
+                                        2, packet_number++, true));
+    // RTO 5
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_->MakeConnectionClosePacket(
+                           packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
   }
 
   quic_data.AddRead(ASYNC, OK);
@@ -3559,7 +3624,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
@@ -3570,7 +3635,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
       ConstructClientRequestHeadersPacket(
           packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, GetRequestHeaders("GET", "https", "/")));
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
   // Peer sending data from an non-existing stream causes this end to raise
   // error and close connection.
@@ -3638,66 +3703,66 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  client_maker_.set_save_packet_frames(true);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->set_save_packet_frames(true);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeInitialSettingsPacket(packet_num++));
+                       client_maker_->MakeInitialSettingsPacket(packet_num++));
   }
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeRequestHeadersPacket(
+      client_maker_->MakeRequestHeadersPacket(
           packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   if (VersionUsesHttp3(version_.transport_version)) {
     // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
     // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
     // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
     // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         2, packet_num++, true));
 
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
+                       client_maker_->MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                            "No recent network activity after 4s. Timeout:4s"));
   } else {
     // TLP 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // TLP 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // RTO 1
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // RTO 2
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
     // RTO 3
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeRetransmissionPacket(
                                         1, packet_num++, true));
 
     quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
+                       client_maker_->MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                            "No recent network activity after 4s. Timeout:4s"));
   }
@@ -3783,7 +3848,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
@@ -3794,7 +3859,7 @@ TEST_P(QuicNetworkTransactionTest,
       ConstructClientRequestHeadersPacket(
           packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, GetRequestHeaders("GET", "https", "/")));
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
 
   // Peer sending data from an non-existing stream causes this end to raise
@@ -3898,7 +3963,7 @@ TEST_P(QuicNetworkTransactionTest,
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   uint64_t packet_number = 1;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
@@ -3908,7 +3973,7 @@ TEST_P(QuicNetworkTransactionTest,
       ConstructClientRequestHeadersPacket(
           packet_number++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, GetRequestHeaders("GET", "https", "/")));
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
 
   // Peer sending data from an non-existing stream causes this end to raise
@@ -4013,7 +4078,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
@@ -4021,11 +4086,11 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   }
   quic_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeRequestHeadersPacket(
+      client_maker_->MakeRequestHeadersPacket(
           packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
           true, priority, GetRequestHeaders("GET", "https", "/"), 0, nullptr));
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
 
   quic_data.AddRead(ASYNC,
@@ -4809,7 +4874,7 @@ TEST_P(QuicNetworkTransactionTest,
       context_.clock(), "mail.example.org", quic::Perspective::IS_CLIENT,
       client_headers_include_h2_stream_dependency_);
   server_maker_.set_hostname("www.example.org");
-  client_maker_.set_hostname("www.example.org");
+  client_maker_->set_hostname("www.example.org");
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
@@ -5222,7 +5287,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   }
 
   MockQuicData mock_quic_data(version_);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
@@ -5269,11 +5334,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   }
 
   MockQuicData mock_quic_data(version_);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
+        SYNCHRONOUS, client_maker_->MakeInitialSettingsPacket(packet_number++));
   }
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -5348,12 +5413,12 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -5412,10 +5477,10 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
 
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
+        SYNCHRONOUS, client_maker_->MakeInitialSettingsPacket(packet_number++));
   }
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -5433,7 +5498,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
             packet_number++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
             StreamCancellationQpackDecoderInstruction(0)));
     mock_quic_data.AddWrite(SYNCHRONOUS,
-                            client_maker_.MakeRstPacket(
+                            client_maker_->MakeRstPacket(
                                 packet_number++, false,
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 quic::QUIC_STREAM_CANCELLED));
@@ -5445,7 +5510,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
             quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
   }
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -5513,10 +5578,10 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
 
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(packet_number++));
+        SYNCHRONOUS, client_maker_->MakeInitialSettingsPacket(packet_number++));
   }
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -5534,7 +5599,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
             packet_number++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
             StreamCancellationQpackDecoderInstruction(0)));
     mock_quic_data.AddWrite(SYNCHRONOUS,
-                            client_maker_.MakeRstPacket(
+                            client_maker_->MakeRstPacket(
                                 packet_number++, false,
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 quic::QUIC_STREAM_CANCELLED));
@@ -5546,7 +5611,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
             quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
   }
 
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -5565,7 +5630,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
             packet_number++, false, GetQpackDecoderStreamId(), 2, 1, 1, false,
             StreamCancellationQpackDecoderInstruction(1)));
     mock_quic_data.AddWrite(SYNCHRONOUS,
-                            client_maker_.MakeRstPacket(
+                            client_maker_->MakeRstPacket(
                                 packet_number++, false,
                                 GetNthClientInitiatedBidirectionalStreamId(1),
                                 quic::QUIC_STREAM_CANCELLED));
@@ -5632,12 +5697,12 @@ TEST_P(QuicNetworkTransactionTest,
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -5694,12 +5759,12 @@ TEST_P(QuicNetworkTransactionTest,
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -5759,12 +5824,12 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -5843,12 +5908,12 @@ TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -6049,7 +6114,7 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
       IPAddress(192, 0, 2, 33));
 
   MockQuicData mock_quic_data(version_);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
@@ -6121,12 +6186,12 @@ TEST_P(QuicNetworkTransactionTest,
 
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
   }
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -6374,7 +6439,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
 
 TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   MockQuicData mock_quic_data(version_);
-  mock_quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDummyCHLOPacket(1));
+  mock_quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeDummyCHLOPacket(1));
   mock_quic_data.AddRead(ASYNC, ConstructServerConnectionClosePacket(1));
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -6433,7 +6498,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternativeProxyAddressUnreachable) {
 
 TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
   MockQuicData mock_quic_data(version_);
-  mock_quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDummyCHLOPacket(1));
+  mock_quic_data.AddWrite(SYNCHRONOUS, client_maker_->MakeDummyCHLOPacket(1));
   mock_quic_data.AddRead(ASYNC, ConstructServerConnectionClosePacket(1));
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
@@ -6480,7 +6545,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
 }
 
 TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
-  client_maker_.set_hostname("www.example.org");
+  client_maker_->set_hostname("www.example.org");
   EXPECT_FALSE(
       test_socket_performance_watcher_factory_.rtt_notification_received());
   MockQuicData mock_quic_data(version_);
@@ -6688,10 +6753,10 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
   socket_data.AddWrite(SYNCHRONOUS,
                        ConstructClientAckPacket(packet_num++, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-    socket_data.AddWrite(SYNCHRONOUS,
-                         client_maker_.MakeAckAndConnectionClosePacket(
-                             packet_num++, false, 2, 1, 1,
-                             quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
+  socket_data.AddWrite(SYNCHRONOUS,
+                       client_maker_->MakeAckAndConnectionClosePacket(
+                           packet_num++, false, 2, 1, 1,
+                           quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -6729,10 +6794,10 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
   socket_data.AddWrite(SYNCHRONOUS,
                        ConstructClientAckPacket(packet_num++, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-    socket_data.AddWrite(SYNCHRONOUS,
-                         client_maker_.MakeAckAndConnectionClosePacket(
-                             packet_num++, false, 2, 1, 1,
-                             quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
+  socket_data.AddWrite(SYNCHRONOUS,
+                       client_maker_->MakeAckAndConnectionClosePacket(
+                           packet_num++, false, 2, 1, 1,
+                           quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -6839,7 +6904,7 @@ TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
   // Connection close packet will be sent for MSG_TOO_BIG.
   socket_data.AddWrite(
       SYNCHRONOUS,
-      client_maker_.MakeConnectionClosePacket(
+      client_maker_->MakeConnectionClosePacket(
           packet_num + 1, true, quic::QUIC_PACKET_WRITE_ERROR, error_details));
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -6858,7 +6923,7 @@ TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
 
 // Adds coverage to catch regression such as https://crbug.com/622043
 TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
-  client_maker_.set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  client_maker_->set_max_allowed_push_id(quic::kMaxQuicStreamId);
   context_.params()->max_allowed_push_id = quic::kMaxQuicStreamId;
   context_.params()->origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
@@ -6920,7 +6985,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
                                 quic::QUIC_RST_ACKNOWLEDGEMENT, 5, 5, 1));
   } else {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakeAckAndPriorityUpdatePacket(
+        SYNCHRONOUS, client_maker_->MakeAckAndPriorityUpdatePacket(
                          client_packet_number++, true, 5, 5, 1, 3,
                          GetNthServerInitiatedUnidirectionalStreamId(0)));
   }
@@ -6955,7 +7020,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
 // is closed before the pushed headers arrive, but after the connection
 // is closed and before the callbacks are executed.
 TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
-  client_maker_.set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  client_maker_->set_max_allowed_push_id(quic::kMaxQuicStreamId);
   context_.params()->max_allowed_push_id = quic::kMaxQuicStreamId;
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   context_.params()->origins_to_force_quic_on.insert(
@@ -7216,7 +7281,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
 }
 
 TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
-  client_maker_.set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  client_maker_->set_max_allowed_push_id(quic::kMaxQuicStreamId);
   context_.params()->max_allowed_push_id = quic::kMaxQuicStreamId;
   context_.params()->origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
@@ -7910,7 +7975,7 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
 // crbug.com/705109 - this confirms that matching request with a body
 // triggers a crash (pre-fix).
 TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
-  client_maker_.set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  client_maker_->set_max_allowed_push_id(quic::kMaxQuicStreamId);
   context_.params()->max_allowed_push_id = quic::kMaxQuicStreamId;
   context_.params()->origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
@@ -8033,7 +8098,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
 // valid URL with empty hostname, then X509Certificate::VerifyHostname() must
 // not be called (otherwise a DCHECK fails).
 TEST_P(QuicNetworkTransactionTest, QuicServerPushWithEmptyHostname) {
-  client_maker_.set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  client_maker_->set_max_allowed_push_id(quic::kMaxQuicStreamId);
   context_.params()->max_allowed_push_id = quic::kMaxQuicStreamId;
 
   spdy::SpdyHeaderBlock pushed_request_headers;
@@ -8118,7 +8183,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8230,7 +8295,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8348,7 +8413,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          write_packet_index++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8518,7 +8583,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8579,7 +8644,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
   // CONNECT request and response for second request
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(1), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8726,7 +8791,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectFailure) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8788,7 +8853,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyQuicConnectionError) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8839,7 +8904,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -8879,7 +8944,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
 
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(1), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -9006,7 +9071,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -9069,7 +9134,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructInitialSettingsPacket(packet_num++));
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker_.MakePriorityPacket(
+        SYNCHRONOUS, client_maker_->MakePriorityPacket(
                          packet_num++, true,
                          GetNthClientInitiatedBidirectionalStreamId(0), 0,
                          ConvertRequestPriorityToQuicPriority(
@@ -9391,7 +9456,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
-  client_maker_.set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  client_maker_->set_max_allowed_push_id(quic::kMaxQuicStreamId);
   context_.params()->max_allowed_push_id = quic::kMaxQuicStreamId;
 
   // Only run this test if HTTP/2 stream dependency info is sent by client (sent

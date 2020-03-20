@@ -767,7 +767,13 @@ android_assets("stub_assets") {
 }
 
 android_resources("resources") {
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-hdpi/ic_play_circle_outline_black_48dp.png",
+    "java/res/drawable-mdpi/ic_play_circle_outline_black_48dp.png",
+    "java/res/drawable-xhdpi/ic_play_circle_outline_black_48dp.png",
+    "java/res/drawable-xxhdpi/ic_play_circle_outline_black_48dp.png",
+    "java/res/drawable-xxxhdpi/ic_play_circle_outline_black_48dp.png",
+  ]
   custom_package = "org.chromium.android_webview"
   deps = [ ":strings_grd" ]
 }

@@ -15,6 +15,7 @@ js_modulizer("modulize") {
     "autofill_section_test.js",
     "basic_page_test.js",
     "checkbox_tests.js",
+    "chooser_exception_list_entry_tests.js",
     "clear_browsing_data_test.js",
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",

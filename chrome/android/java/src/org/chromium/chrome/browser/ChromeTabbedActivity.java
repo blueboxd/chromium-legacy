@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -282,9 +281,6 @@ public class ChromeTabbedActivity
     private long mIntentHandlingTimeMs;
 
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
-
-    private ObservableSupplierImpl<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier =
-            new ObservableSupplierImpl<>();
 
     private final IncognitoTabHost mIncognitoTabHost = new IncognitoTabHost() {
 
@@ -1487,8 +1483,7 @@ public class ChromeTabbedActivity
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
         return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged, mIntentWithEffect,
-                getShareDelegateSupplier(), getActivityTabProvider(),
-                mEphemeralTabCoordinatorSupplier);
+                getShareDelegateSupplier(), getActivityTabProvider());
     }
 
     @Override
@@ -1586,8 +1581,8 @@ public class ChromeTabbedActivity
     @Override
     protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
         Supplier<TabDelegateFactory> tabDelegateFactorySupplier = () -> {
-            return new TabbedModeTabDelegateFactory(this, getAppBrowserControlsVisibilityDelegate(),
-                    getShareDelegateSupplier(), mEphemeralTabCoordinatorSupplier);
+            return new TabbedModeTabDelegateFactory(
+                    this, getAppBrowserControlsVisibilityDelegate(), getShareDelegateSupplier());
         };
 
         ChromeTabCreator.OverviewNTPCreator overviewNTPCreator = null;

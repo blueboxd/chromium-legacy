@@ -33,6 +33,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -72,6 +74,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_visible_(true),
       hit_testable_(false),
       needs_check_raster_invalidation_(false),
+      contents_layer_is_picture_image_layer_(false),
       painted_(false),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
@@ -424,6 +427,10 @@ void GraphicsLayer::UpdateContentsLayerBounds() {
     return;
 
   IntSize contents_size = contents_rect_.Size();
+  if (contents_layer_is_picture_image_layer_) {
+    if (!contents_size.IsEmpty() && !image_size_.IsEmpty())
+      contents_size = image_size_;
+  }
   contents_layer_->SetBounds(gfx::Size(contents_size));
 }
 
@@ -432,6 +439,7 @@ void GraphicsLayer::SetContentsToCcLayer(
     bool prevent_contents_opaque_changes) {
   DCHECK_NE(contents_layer, layer_);
   SetContentsTo(std::move(contents_layer), prevent_contents_opaque_changes);
+  contents_layer_is_picture_image_layer_ = false;
 }
 
 void GraphicsLayer::SetContentsTo(scoped_refptr<cc::Layer> layer,
@@ -631,8 +639,68 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
   client_.GraphicsLayersDidChange();
 }
 
+void GraphicsLayer::SetContentsToImage(
+    Image* image,
+    Image::ImageDecodingMode decode_mode,
+    RespectImageOrientationEnum respect_image_orientation) {
+  PaintImage paint_image;
+  if (image)
+    paint_image = image->PaintImageForCurrentFrame();
+
+  ImageOrientation image_orientation = kOriginTopLeft;
+  SkMatrix matrix;
+  auto* bitmap_image = DynamicTo<BitmapImage>(image);
+  if (paint_image && bitmap_image &&
+      respect_image_orientation == kRespectImageOrientation) {
+    image_orientation = bitmap_image->CurrentFrameOrientation();
+    image_size_ = IntSize(paint_image.width(), paint_image.height());
+    if (image_orientation.UsesWidthAsHeight())
+      image_size_ = image_size_.TransposedSize();
+    auto affine =
+        image_orientation.TransformFromDefault(FloatSize(image_size_));
+    auto transform = affine.ToTransformationMatrix();
+    matrix = SkMatrix(TransformationMatrix::ToSkMatrix44(transform));
+  } else if (paint_image) {
+    matrix = SkMatrix::I();
+    image_size_ = IntSize(paint_image.width(), paint_image.height());
+  } else {
+    matrix = SkMatrix::I();
+    image_size_ = IntSize();
+  }
+
+  scoped_refptr<cc::PictureImageLayer> image_layer;
+  if (paint_image) {
+    paint_image =
+        PaintImageBuilder::WithCopy(std::move(paint_image))
+            .set_decoding_mode(Image::ToPaintImageDecodingMode(decode_mode))
+            .TakePaintImage();
+    if (!contents_layer_is_picture_image_layer_) {
+      image_layer = cc::PictureImageLayer::Create();
+      contents_layer_is_picture_image_layer_ = true;
+    } else {
+      image_layer = static_cast<cc::PictureImageLayer*>(contents_layer_.get());
+    }
+    image_layer->SetImage(std::move(paint_image), matrix,
+                          image_orientation.UsesWidthAsHeight());
+    // Image layers can not be marked as opaque due to crbug.com/870857.
+    image_layer->SetContentsOpaque(false);
+  } else {
+    contents_layer_is_picture_image_layer_ = false;
+  }
+
+  SetContentsTo(std::move(image_layer),
+                /* prevent_contents_opaque_changes=*/true);
+}
+
 cc::PictureLayer* GraphicsLayer::CcLayer() const {
   return layer_.get();
+}
+
+void GraphicsLayer::SetFilterQuality(SkFilterQuality filter_quality) {
+  if (contents_layer_is_picture_image_layer_) {
+    static_cast<cc::PictureImageLayer*>(contents_layer_.get())
+        ->SetNearestNeighbor(filter_quality == kNone_SkFilterQuality);
+  }
 }
 
 void GraphicsLayer::SetPaintingPhase(GraphicsLayerPaintingPhase phase) {

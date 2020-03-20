@@ -30,9 +30,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.TestBottomSheetContent;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
@@ -97,37 +95,6 @@ public class ScrimTest {
         ThreadUtils.runOnUiThreadBlocking(() -> mScrim.hideScrim(false));
         visibilityHelper.waitForCallback(callCount, 1);
         assertScrimVisibility(false);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Scrim"})
-    public void testBottomSheetScrim() {
-        mScrim.disableAnimationForTesting(true);
-        assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
-        assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mSheetController.requestShowContent(
-                    new TestBottomSheetContent(mActivityTestRule.getActivity(),
-                            BottomSheetContent.ContentPriority.HIGH, false),
-                    false);
-            mSheetController.setSheetStateForTesting(BottomSheetController.SheetState.HALF, false);
-        });
-
-        assertScrimVisibility(true);
-        assertTrue("A view should be obscuring the tab.", isViewObscuringAllTabs());
-        assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
-
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mSheetController.setSheetStateForTesting(
-                                BottomSheetController.SheetState.PEEK, false));
-
-        assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
-        assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
     }
 
     @Test

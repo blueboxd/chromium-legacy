@@ -2476,7 +2476,11 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadWindowTitle', function() {
 
         mockFeedback.clearPendingOutput()
             .call(clickButtonThenReadCurrentTitle)
-            .expectSpeech(/^bar - Chromium*/)
+
+            // This test may run against official builds, so match against
+            // utterances starting with 'bar'. This should exclude any other
+            // utterances that contain 'bar' e.g. data:...bar.. or the data url.
+            .expectSpeech(/^bar*/)
             .replay();
       });
 });

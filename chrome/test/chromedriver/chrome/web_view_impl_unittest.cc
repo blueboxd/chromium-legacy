@@ -122,28 +122,21 @@ TEST(EvaluateScript, CommandError) {
   ASSERT_FALSE(result);
 }
 
-TEST(EvaluateScript, MissingWasThrown) {
-  base::DictionaryValue dict;
-  ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
-}
-
 TEST(EvaluateScript, MissingResult) {
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
   ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
 }
 
 TEST(EvaluateScript, Throws) {
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", true);
-  dict.SetString("result.type", "undefined");
+  dict.SetString("exceptionDetails.exception.className", "SyntaxError");
+  dict.SetString("result.type", "object");
   ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
 }
 
 TEST(EvaluateScript, Ok) {
   std::unique_ptr<base::DictionaryValue> result;
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
   dict.SetInteger("result.key", 100);
   FakeDevToolsClient client;
   client.set_result(dict);
@@ -159,7 +152,6 @@ TEST(EvaluateScriptAndGetValue, MissingType) {
   std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
   dict.SetInteger("result.value", 1);
   client.set_result(dict);
   ASSERT_TRUE(internal::EvaluateScriptAndGetValue(
@@ -171,7 +163,6 @@ TEST(EvaluateScriptAndGetValue, Undefined) {
   std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
   dict.SetString("result.type", "undefined");
   client.set_result(dict);
   Status status = internal::EvaluateScriptAndGetValue(
@@ -184,7 +175,6 @@ TEST(EvaluateScriptAndGetValue, Ok) {
   std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
   dict.SetString("result.type", "integer");
   dict.SetInteger("result.value", 1);
   client.set_result(dict);
@@ -199,7 +189,6 @@ TEST(EvaluateScriptAndGetValue, Ok) {
 TEST(EvaluateScriptAndGetObject, NoObject) {
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
   dict.SetString("result.type", "integer");
   client.set_result(dict);
   bool got_object;
@@ -215,7 +204,6 @@ TEST(EvaluateScriptAndGetObject, NoObject) {
 TEST(EvaluateScriptAndGetObject, Ok) {
   FakeDevToolsClient client;
   base::DictionaryValue dict;
-  dict.SetBoolean("wasThrown", false);
   dict.SetString("result.objectId", "id");
   client.set_result(dict);
   bool got_object;

@@ -103,8 +103,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual void RegisterDisplayContext(gpu::DisplayContext* display_context) = 0;
   virtual void UnregisterDisplayContext(
       gpu::DisplayContext* display_context) = 0;
-  virtual void DidLoseContext(bool offscreen,
-                              gpu::error::ContextLostReason reason,
+  virtual void DidLoseContext(gpu::error::ContextLostReason reason,
                               const GURL& active_url) = 0;
 
   virtual base::TimeDelta GetGpuBlockedTimeSinceLastSwap() = 0;

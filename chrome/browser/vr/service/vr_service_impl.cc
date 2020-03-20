@@ -18,7 +18,7 @@
 #include "chrome/browser/vr/metrics/webxr_session_tracker.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
-#include "chrome/browser/vr/service/xr_runtime_manager.h"
+#include "chrome/browser/vr/service/xr_runtime_manager_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/permissions/permission_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -134,7 +134,7 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
   DCHECK(render_frame_host_);
   DVLOG(2) << __func__;
 
-  runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
+  runtime_manager_ = XRRuntimeManagerImpl::GetOrCreateInstance();
   runtime_manager_->AddService(this);
 
   magic_window_controllers_.set_disconnect_handler(base::BindRepeating(
@@ -147,7 +147,7 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
 VRServiceImpl::VRServiceImpl(util::PassKey<XRRuntimeManagerTest>)
     : render_frame_host_(nullptr) {
   DVLOG(2) << __func__;
-  runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
+  runtime_manager_ = XRRuntimeManagerImpl::GetOrCreateInstance();
   runtime_manager_->AddService(this);
 }
 

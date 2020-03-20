@@ -1037,13 +1037,14 @@ class CORE_EXPORT Document : public ContainerNode,
     kAnimationEndListener = 1 << 6,
     kAnimationStartListener = 1 << 7,
     kAnimationIterationListener = 1 << 8,
-    kTransitionRunListener = 1 << 9,
-    kTransitionStartListener = 1 << 10,
-    kTransitionEndListener = 1 << 11,
-    kTransitionCancelListener = 1 << 12,
-    kScrollListener = 1 << 13,
-    kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 14
-    // 1 bit remaining
+    kAnimationCancelListener = 1 << 9,
+    kTransitionRunListener = 1 << 10,
+    kTransitionStartListener = 1 << 11,
+    kTransitionEndListener = 1 << 12,
+    kTransitionCancelListener = 1 << 13,
+    kScrollListener = 1 << 14,
+    kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 15,
+    // 0 bits remaining
   };
 
   bool HasListenerType(ListenerType listener_type) const {

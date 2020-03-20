@@ -35,6 +35,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -71,7 +72,6 @@
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -201,6 +201,20 @@ std::string DumpFailLoad(WebContents* web_contents,
   std::string name = GetFrameNameFromBrowserForWebTests(render_frame_host);
   log += !name.empty() ? "\"" + name + "\"" : "(anonymous)";
   return log + " - DidFailLoad";
+}
+
+// Draws a selection rect into a bitmap.
+void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
+  // Render a red rectangle bounding selection rect
+  cc::SkiaPaintCanvas canvas(bitmap);
+  cc::PaintFlags flags;
+  flags.setColor(0xFFFF0000);  // Fully opaque red
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setAntiAlias(true);
+  flags.setStrokeWidth(1.0f);
+  SkIRect rect;  // Bounding rect
+  rect.setXYWH(wr.x, wr.y, wr.width, wr.height);
+  canvas.drawIRect(rect, flags);
 }
 
 }  // namespace
@@ -1143,10 +1157,8 @@ void BlinkTestController::ReportResults() {
   // dump received from the renderer contains.
   if (pixel_dump_) {
     // See if we need to draw the selection bounds rect on top of the snapshot.
-    if (!main_frame_dump_->selection_rect.IsEmpty()) {
-      content::web_test_utils::DrawSelectionRect(
-          *pixel_dump_, main_frame_dump_->selection_rect);
-    }
+    if (!main_frame_dump_->selection_rect.IsEmpty())
+      DrawSelectionRect(*pixel_dump_, main_frame_dump_->selection_rect);
     // The snapshot arrives from the GPU process via shared memory. Because MSan
     // can't track initializedness across processes, we must assure it that the
     // pixels are in fact initialized.

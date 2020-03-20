@@ -166,6 +166,8 @@ class PPAPIDownloadRequest {
   bool is_extended_reporting_;
   bool is_enhanced_protection_;
 
+  Profile* profile_;
+
   base::WeakPtrFactory<PPAPIDownloadRequest> weakptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PPAPIDownloadRequest);

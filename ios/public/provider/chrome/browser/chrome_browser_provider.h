@@ -39,7 +39,6 @@ class WebState;
 
 class GURL;
 @protocol LogoVendor;
-@protocol URLLoadingBridge;
 @class UITextField;
 @class UIView;
 class Browser;
@@ -134,11 +133,6 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the app distribution provider.
   virtual AppDistributionProvider* GetAppDistributionProvider() const;
-
-  virtual id<LogoVendor> CreateLogoVendor(
-      Browser* browser,
-      web::WebState* web_state,
-      id<URLLoadingBridge> loading_bridge) const NS_RETURNS_RETAINED;
 
   virtual id<LogoVendor> CreateLogoVendor(Browser* browser,
                                           web::WebState* web_state) const

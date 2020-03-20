@@ -11,7 +11,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
-#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,10 +38,10 @@
 
 @end  // FakeHistoryMenuController
 
-class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
+class HistoryMenuCocoaControllerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
-    CocoaProfileTest::SetUp();
+    BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(profile());
 
     bridge_ = std::make_unique<HistoryMenuBridge>(profile());
@@ -70,6 +71,7 @@ class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
   }
 
  private:
+  CocoaTestHelper cocoa_test_helper_;
   std::unique_ptr<HistoryMenuBridge> bridge_;
 };
 

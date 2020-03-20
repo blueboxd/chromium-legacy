@@ -105,23 +105,46 @@ source_set("nonembedded") {
 
 # WebView icon used by upstream SystemWebView and Trichrome.
 android_resources("icon_resources") {
-  resource_dirs = [ "java/res_icon" ]
+  sources = [
+    "java/res_icon/drawable-hdpi/icon_webview.png",
+    "java/res_icon/drawable-mdpi/icon_webview.png",
+    "java/res_icon/drawable-xhdpi/icon_webview.png",
+    "java/res_icon/drawable-xxhdpi/icon_webview.png",
+  ]
   custom_package = "org.chromium.android_webview.icon"
 }
 
 android_resources("devui_resources") {
-  resource_dirs = [ "java/res_devui" ]
+  sources = [
+    "java/res_devui/drawable/blue_circle.xml",
+    "java/res_devui/layout/activity_crashes_list.xml",
+    "java/res_devui/layout/activity_flags.xml",
+    "java/res_devui/layout/activity_main.xml",
+    "java/res_devui/layout/crashes_list_item_body.xml",
+    "java/res_devui/layout/crashes_list_item_header.xml",
+    "java/res_devui/layout/flag_states.xml",
+    "java/res_devui/layout/persistent_error_message.xml",
+    "java/res_devui/layout/toggleable_flag.xml",
+    "java/res_devui/layout/two_line_list_item.xml",
+    "java/res_devui/layout/two_line_sublist_item.xml",
+    "java/res_devui/menu/crashes_options_menu.xml",
+    "java/res_devui/menu/navigation_menu.xml",
+    "java/res_devui/values-night/styles.xml",
+    "java/res_devui/values/colors.xml",
+    "java/res_devui/values/strings.xml",
+    "java/res_devui/values/styles.xml",
+  ]
   custom_package = "org.chromium.android_webview.devui"
 }
 
 android_resources("devui_launcher_icon_resources") {
-  resource_dirs = []
+  sources = []
   custom_package = "org.chromium.android_webview.devui.icon"
   android_manifest = "java/DeveloperUiLauncherManifest.xml"
 }
 
 android_resources("monochrome_devui_launcher_icon_resources") {
-  resource_dirs = []
+  sources = []
   android_manifest = "java/MonochromeDeveloperUiLauncherManifest.xml"
   custom_package = "org.chromium.android_webview.devui.icon"
 }

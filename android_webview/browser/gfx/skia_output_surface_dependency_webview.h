@@ -48,8 +48,7 @@ class SkiaOutputSurfaceDependencyWebView
   base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) override;
   void RegisterDisplayContext(gpu::DisplayContext* display_context) override;
   void UnregisterDisplayContext(gpu::DisplayContext* display_context) override;
-  void DidLoseContext(bool offscreen,
-                      gpu::error::ContextLostReason reason,
+  void DidLoseContext(gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
 
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;

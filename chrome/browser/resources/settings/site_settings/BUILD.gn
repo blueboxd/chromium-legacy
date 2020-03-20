@@ -307,7 +307,7 @@ js_type_check("closure_compile_module") {
     #    ":category_default_setting.m",
     #    ":category_setting_exceptions.m",
     #    ":chooser_exception_list.m",
-    #    ":chooser_exception_list_entry.m",
+    ":chooser_exception_list_entry.m",
     ":constants.m",
     ":cookie_info.m",
     ":edit_exception_dialog.m",
@@ -395,8 +395,11 @@ js_library("chooser_exception_list.m") {
 js_library("chooser_exception_list_entry.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/chooser_exception_list_entry.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":site_list_entry.m",
+    ":site_settings_behavior.m",
+    ":site_settings_prefs_browser_proxy.m",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":chooser_exception_list_entry_module" ]
 }
 
@@ -653,6 +656,7 @@ polymer_modulizer("chooser_exception_list_entry") {
   js_file = "chooser_exception_list_entry.js"
   html_file = "chooser_exception_list_entry.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|ChooserException" ]
 }
 
 polymer_modulizer("clear_storage_dialog_css") {

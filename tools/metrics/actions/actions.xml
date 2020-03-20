@@ -1425,6 +1425,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accessibility.NativeApi.HitTest">
+  <obsolete>
+    Removed in March 2020 because most events were being trimmed due to the cap
+    on the number of user actions that can be reported in a single log.
+  </obsolete>
   <owner>aleventhal@chromium.org</owner>
   <owner>dmazzoni@chromium.org</owner>
   <description>

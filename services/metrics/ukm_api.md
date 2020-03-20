@@ -1,21 +1,37 @@
 # URL-Keyed Metrics API
 
-This describes how to write client code to collect UKM data. Before you add new metrics, you should file a proposal.  See [go/ukm](http://go/ukm) for more information.
+This describes how to write client code to collect UKM data. Before you add new
+metrics, you should file a proposal.  See [go/ukm](http://go/ukm) for more
+information.
 
 [TOC]
 
 ## Document your metrics in ukm.xml
 
-Any events and metrics you collect need to be documented in [//tools/metrics/ukm/ukm.xml](https://cs.chromium.org/chromium/src/tools/metrics/ukm/ukm.xml)
+Any events and metrics you collect need to be documented in
+[//tools/metrics/ukm/ukm.xml](https://cs.chromium.org/chromium/src/tools/metrics/ukm/ukm.xml)
 
 ### Required Details
 
-* Metric `owner`: the email of someone who can answer questions about how this metric is recorded, what it means, and how it should be used. Can include multiple people.
-* A `summary` of the event about which you are recording details, including a description of when the event will be recorded.
+* Metric `owner`: the email of someone who can answer questions about how this
+  metric is recorded, what it means, and how it should be used. Can include
+  multiple people.
+* A `summary` of the event about which you are recording details, including a
+  description of when the event will be recorded.
 * For each metric in the event: a `summary` of the data and what it means.
-* The `enum` type if the metric is enumerated. The enum uses the [//tools/metrics/histograms/enums.xml](https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml) file for definitions. Note this is the same file for UMA histogram definitions so these can ideally be reused.
-* If the metric is numeric then a `unit` should be included.
-* If an event will only happen once per Navigation, it can be marked `singular="true"`.
+* The `enum` type if the metric is enumerated which ensures that every value is
+  accounted independently with no attempt to "bucket" the results. The enum uses
+  the
+  [//tools/metrics/histograms/enums.xml](https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml)
+  file for definitions. Note this is the same file for UMA histogram definitions
+  so these can ideally be reused.
+* If the metric is numeric then a `unit` should be included so that bare numbers
+  aren't presented when viewing results. Units of "seconds", "us", "KiB",
+  etc. are common.
+* If an event will only happen once per Navigation, it can be marked
+  `singular="true"` so that the generated proto definition defines it as
+  "optional" instead of "repeated". If multiple such event are attempted, it's
+  undefined which one will be kept.
 
 ### Example
 ```xml
@@ -39,10 +55,13 @@ Any events and metrics you collect need to be documented in [//tools/metrics/ukm
 
 ### Controlling the Aggregation of Metrics
 
-Control of which metrics are included in the History table is done via the same
+Control of which metrics are included in the
+[History](http://go/aggregated-ukm#history-table) table (the table behind the
+main UKM dashboard) is done via the same
 [`tools/metrics/ukm/ukm.xml`](https://cs.chromium.org/chromium/src/tools/metrics/ukm/ukm.xml)
-file in the Chromium codebase. To have a metric aggregated, `<aggregation>` and
-`<history>` tags need to be added.
+file in the Chromium codebase. To have a metric aggregated, `<history>`,
+`<aggregation>` and `<statistics>` tags need to be added along with the type of
+statistic to be generated..
 
 ```xml
 <event name="Goat.Teleported">
@@ -71,12 +90,13 @@ Supported statistic types are:
     below.)
 
 There can also be one or more `index` tags which define additional aggregation
-keys. These are a comma-separated list of keys that is appended to the standard
-set. These additional keys are optional but, if present, are always present
-together. In other words, "fields=profile.county,profile.form_factor" will cause
-all the standard aggregations plus each with *both* country *and* form_factor
-but **not** with all the standard aggregations (see above) plus only one of
-them. If individual and combined versions are desired, use multiple index tags.
+keys. These are a comma-separated list of keys that is appended to the
+[standard set](http://go/aggregated-ukm#history-table). These additional keys
+are optional but, if present, are always present together. In other words,
+"fields=profile.county,profile.form_factor" will cause all the standard
+aggregations plus each with *both* country *and* form_factor but **not** with
+all the standard aggregations (see above) plus only one of them. If individual
+and combined versions are desired, use multiple index tags.
 
 Currently supported additional index fields are:
 
@@ -86,7 +106,12 @@ Currently supported additional index fields are:
 
 ### Aggregation by Metrics in the Same Event
 
-WARNING: This feature is still under development and isn't ready for use.
+Aggregation can occur against other metrics of the same event by listing
+"metrics._foo_" as an index field. That other metric must also have `history`,
+`statistics`, and `**enumeration**` tags.
+
+**NOTE:** There is currently a limitation that only _one_ (1) `index` tag can
+include such a reference.
 
 ### Enumeration Proportions
 

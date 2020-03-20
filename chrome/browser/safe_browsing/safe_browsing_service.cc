@@ -261,11 +261,6 @@ V4ProtocolConfig SafeBrowsingService::GetV4ProtocolConfig() const {
       cmdline->HasSwitch(::switches::kDisableBackgroundNetworking));
 }
 
-BinaryUploadService* SafeBrowsingService::GetBinaryUploadService(
-    Profile* profile) const {
-  return services_delegate_->GetBinaryUploadService(profile);
-}
-
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {
   std::string client_name;
   // On Windows, get the safe browsing client name from the browser
@@ -387,14 +382,12 @@ void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
   observed_profiles_.Remove(profile);
   services_delegate_->RemovePasswordProtectionService(profile);
   services_delegate_->RemoveTelemetryService(profile);
-  services_delegate_->RemoveBinaryUploadService(profile);
   services_delegate_->RemoveSafeBrowsingNetworkContext(profile);
 }
 
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
   services_delegate_->CreatePasswordProtectionService(profile);
   services_delegate_->CreateTelemetryService(profile);
-  services_delegate_->CreateBinaryUploadService(profile);
   services_delegate_->CreateSafeBrowsingNetworkContext(profile);
   observed_profiles_.Add(profile);
 }

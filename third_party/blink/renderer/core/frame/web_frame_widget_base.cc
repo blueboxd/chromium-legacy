@@ -496,6 +496,11 @@ void WebFrameWidgetBase::SetLayerTreeDebugState(
   widget_base_->LayerTreeHost()->SetDebugState(state);
 }
 
+void WebFrameWidgetBase::SynchronouslyCompositeForTesting(
+    base::TimeTicks frame_time) {
+  widget_base_->LayerTreeHost()->Composite(frame_time, false);
+}
+
 // TODO(665924): Remove direct dispatches of mouse events from
 // PointerLockController, instead passing them through EventHandler.
 void WebFrameWidgetBase::PointerLockMouseEvent(

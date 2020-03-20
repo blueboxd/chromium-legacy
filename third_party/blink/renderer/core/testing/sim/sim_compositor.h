@@ -25,13 +25,10 @@ class WebViewImpl;
 // only part of the layer was invalid.
 //
 // Note: This also does not support compositor driven animations.
-class SimCompositor final : public content::StubLayerTreeViewDelegate {
+class SimCompositor final : public frame_test_helpers::TestWebWidgetClient {
  public:
   SimCompositor();
   ~SimCompositor() override;
-
-  // This compositor should be given to the WebViewImpl passed to SetWebView.
-  cc::LayerTreeHost& layer_tree_host() { return *layer_tree_host_; }
 
   // When the compositor asks for a main frame, this WebViewImpl will have its
   // lifecycle updated and be painted.
@@ -41,10 +38,7 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // expectations around this scheduling, so receives the WebViewClient. We
   // pass it here explicitly to provide type safety, though it is the client
   // available on the WebViewImpl as well.
-  void SetWebView(WebViewImpl&,
-                  cc::LayerTreeHost&,
-                  frame_test_helpers::TestWebViewClient&,
-                  frame_test_helpers::TestWebWidgetClient&);
+  void SetWebView(WebViewImpl&, frame_test_helpers::TestWebViewClient&);
 
   // Executes the BeginMainFrame processing steps, an approximation of what
   // cc::ThreadProxy::BeginMainFrame would do.
@@ -66,36 +60,30 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // requet for BeginFrame() was made, vs an implicit one by making changes
   // to the compositor's state.
   bool NeedsBeginFrame() const {
-    return test_web_widget_client_->AnimationScheduled() ||
-           layer_tree_host_->RequestedMainFramePendingForTesting();
+    return AnimationScheduled() ||
+           layer_tree_host()->RequestedMainFramePendingForTesting();
   }
   // Returns true if commits are deferred in the compositor. Since these tests
   // use synchronous compositing through BeginFrame(), the deferred state has no
   // real effect.
   bool DeferMainFrameUpdate() const {
-    return layer_tree_host_->defer_main_frame_update();
+    return layer_tree_host()->defer_main_frame_update();
   }
   // Returns true if a selection is set on the compositor.
   bool HasSelection() const {
-    return layer_tree_host_->selection() != cc::LayerSelection();
+    return layer_tree_host()->selection() != cc::LayerSelection();
   }
   // Returns the background color set on the compositor.
-  SkColor background_color() { return layer_tree_host_->background_color(); }
+  SkColor background_color() { return layer_tree_host()->background_color(); }
 
   base::TimeTicks LastFrameTime() const { return last_frame_time_; }
 
  private:
   // content::LayerTreeViewDelegate implementation.
-  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
-  void RequestNewLayerTreeFrameSink(
-      LayerTreeFrameSinkCallback callback) override;
-  void BeginMainFrame(base::TimeTicks frame_time) override;
-  void DidBeginMainFrame() override { web_view_->DidBeginFrame(); }
+  void UpdateVisualState() override;
 
   WebViewImpl* web_view_ = nullptr;
-  cc::LayerTreeHost* layer_tree_host_ = nullptr;
   frame_test_helpers::TestWebViewClient* test_web_view_client_ = nullptr;
-  frame_test_helpers::TestWebWidgetClient* test_web_widget_client_ = nullptr;
 
   base::TimeTicks last_frame_time_;
 

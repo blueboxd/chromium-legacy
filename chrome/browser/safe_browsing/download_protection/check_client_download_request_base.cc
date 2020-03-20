@@ -631,7 +631,7 @@ void CheckClientDownloadRequestBase::SendRequest() {
   loader_->AttachStringForUpload(client_download_request_data_,
                                  "application/octet-stream");
   loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      service_->url_loader_factory_.get(),
+      service_->GetURLLoaderFactory(GetBrowserContext()).get(),
       base::BindOnce(&CheckClientDownloadRequestBase::OnURLLoaderComplete,
                      GetWeakPtr()));
   request_start_time_ = base::TimeTicks::Now();

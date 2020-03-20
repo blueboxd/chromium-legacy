@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -147,6 +148,20 @@ void InjectBookmarkOnFakeSyncServer(std::string url, std::string title) {
   fake_server::BookmarkEntityBuilder bookmark_builder =
       entity_builder_factory.NewBookmarkEntityBuilder(title);
   gSyncFakeServer->InjectEntity(bookmark_builder.BuildBookmark(GURL(url)));
+}
+
+void InjectLegacyBookmarkOnFakeSyncServer(
+    std::string url,
+    std::string title,
+    std::string originator_client_item_id) {
+  DCHECK(gSyncFakeServer);
+  DCHECK(!base::IsValidGUID(originator_client_item_id));
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          title, std::move(originator_client_item_id));
+  gSyncFakeServer->InjectEntity(
+      bookmark_builder.BuildBookmark(GURL(url), /*is_legacy=*/true));
 }
 
 bool IsSyncInitialized() {

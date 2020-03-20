@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/test_binary_upload_service.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_native_file_system_write_request.h"
@@ -62,6 +64,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
@@ -90,6 +93,7 @@
 #include "net/cert/x509_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -140,6 +144,11 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
+std::unique_ptr<KeyedService> CreateTestBinaryUploadService(
+    content::BrowserContext* browser_context) {
+  return std::make_unique<TestBinaryUploadService>();
+}
+
 class FakeSafeBrowsingService : public TestSafeBrowsingService {
  public:
   explicit FakeSafeBrowsingService(Profile* profile)
@@ -148,7 +157,8 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
                 &test_url_loader_factory_)),
         download_report_count_(0) {
     services_delegate_ = ServicesDelegate::CreateForTest(this, this);
-    services_delegate_->CreateBinaryUploadService(profile);
+    BinaryUploadServiceFactory::GetInstance()->SetTestingFactory(
+        profile, base::BindRepeating(&CreateTestBinaryUploadService));
     mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
   }
 
@@ -163,12 +173,39 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     return test_shared_loader_factory_;
   }
 
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+      Profile* profile) override {
+    if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
+      return GetURLLoaderFactory();
+    auto it = test_shared_loader_factory_map_.find(profile);
+    if (it == test_shared_loader_factory_map_.end())
+      return nullptr;
+    return it->second;
+  }
+
   void SendSerializedDownloadReport(const std::string& unused_report) override {
     download_report_count_++;
   }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
+  }
+
+  network::TestURLLoaderFactory* GetTestURLLoaderFactory(Profile* profile) {
+    if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
+      return test_url_loader_factory();
+    auto it = test_url_loader_factory_map_.find(profile);
+    if (it == test_url_loader_factory_map_.end())
+      return nullptr;
+    return it->second.get();
+  }
+
+  void CreateTestURLLoaderFactoryForProfile(Profile* profile) {
+    test_url_loader_factory_map_[profile] =
+        std::make_unique<network::TestURLLoaderFactory>();
+    test_shared_loader_factory_map_[profile] =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            test_url_loader_factory_map_[profile].get());
   }
 
   int download_report_count() { return download_report_count_; }
@@ -189,8 +226,15 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     return new IncidentReportingService(nullptr);
   }
 
+  // TODO(crbug/1049833): Remove these as we rollout separate network contexts.
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+
+  base::flat_map<Profile*, std::unique_ptr<network::TestURLLoaderFactory>>
+      test_url_loader_factory_map_;
+  base::flat_map<Profile*, scoped_refptr<network::SharedURLLoaderFactory>>
+      test_shared_loader_factory_map_;
+
   scoped_refptr<MockSafeBrowsingDatabaseManager> mock_database_manager_;
   int download_report_count_;
 
@@ -232,6 +276,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
   DownloadProtectionServiceTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -308,6 +353,8 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
     SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
+
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
 
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
@@ -2969,7 +3016,7 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          sb_service_->GetBinaryUploadService(profile()));
+          BinaryUploadServiceFactory::GetForProfile(profile()));
   test_upload_service->SetResponse(BinaryUploadService::Result::FILE_ENCRYPTED,
                                    DeepScanningClientResponse());
 
@@ -3031,7 +3078,7 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          sb_service_->GetBinaryUploadService(profile()));
+          BinaryUploadServiceFactory::GetForProfile(profile()));
   test_upload_service->SetResponse(BinaryUploadService::Result::FILE_TOO_LARGE,
                                    DeepScanningClientResponse());
 
@@ -3090,7 +3137,7 @@ TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          sb_service_->GetBinaryUploadService(profile()));
+          BinaryUploadServiceFactory::GetForProfile(profile()));
   test_upload_service->SetResponse(
       BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
       DeepScanningClientResponse());
@@ -3718,6 +3765,93 @@ TEST_F(EnhancedProtectionDownloadTest, NoAccessTokenWhileIncognito) {
   WebUIInfoSingleton::GetInstance()->ClearListenerForTesting();
 }
 
+class DownloadSeparateNetworkContextsTest
+    : public DownloadProtectionServiceTest {
+ public:
+  DownloadSeparateNetworkContextsTest() {
+    EnableFeatures({kSafeBrowsingSeparateNetworkContexts});
+  }
+};
+
+TEST_F(DownloadSeparateNetworkContextsTest,
+       DifferentProfilesUseDifferentNetworkContexts) {
+  Profile* profile1 =
+      testing_profile_manager_.CreateTestingProfile("profile 1");
+  sb_service_->CreateTestURLLoaderFactoryForProfile(profile1);
+
+  Profile* profile2 =
+      testing_profile_manager_.CreateTestingProfile("profile 2");
+  sb_service_->CreateTestURLLoaderFactoryForProfile(profile2);
+
+  {
+    RunLoop run_loop;
+
+    NiceMockDownloadItem item1;
+    PrepareBasicDownloadItem(&item1,
+                             {"http://www.evil.com/a.exe"},  // url_chain
+                             "http://www.google.com/",       // referrer
+                             FILE_PATH_LITERAL("a.tmp"),     // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));    // final_path
+    content::DownloadItemUtils::AttachInfo(&item1, profile1, nullptr);
+
+    ClientDownloadResponse response;
+    response.set_verdict(ClientDownloadResponse::SAFE);
+    sb_service_->GetTestURLLoaderFactory(profile1)->AddResponse(
+        PPAPIDownloadRequest::GetDownloadRequestUrl().spec(),
+        response.SerializeAsString());
+
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(_))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+    download_service_->CheckClientDownload(
+        &item1, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                           base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(sb_service_->GetTestURLLoaderFactory(profile2)->NumPending(), 0);
+
+  {
+    RunLoop run_loop;
+
+    NiceMockDownloadItem item2;
+    PrepareBasicDownloadItem(&item2,
+                             {"http://www.evil.com/a.exe"},  // url_chain
+                             "http://www.google.com/",       // referrer
+                             FILE_PATH_LITERAL("a.tmp"),     // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));    // final_path
+    content::DownloadItemUtils::AttachInfo(&item2, profile2, nullptr);
+
+    ClientDownloadResponse response;
+    response.set_verdict(ClientDownloadResponse::SAFE);
+    sb_service_->GetTestURLLoaderFactory(profile2)->AddResponse(
+        PPAPIDownloadRequest::GetDownloadRequestUrl().spec(),
+        response.SerializeAsString());
+
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(_))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+    download_service_->CheckClientDownload(
+        &item2, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                           base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(sb_service_->GetTestURLLoaderFactory(profile1)->NumPending(), 0);
+
+  testing_profile_manager_.DeleteTestingProfile("profile 1");
+  testing_profile_manager_.DeleteTestingProfile("profile 2");
+}
+
 TEST_P(DeepScanningDownloadTest, PolicyEnabled) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
@@ -3738,7 +3872,7 @@ TEST_P(DeepScanningDownloadTest, PolicyEnabled) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          sb_service_->GetBinaryUploadService(profile()));
+          BinaryUploadServiceFactory::GetForProfile(profile()));
 
   {
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
@@ -3785,7 +3919,7 @@ TEST_P(DeepScanningDownloadTest, PolicyDisabled) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          sb_service_->GetBinaryUploadService(profile()));
+          BinaryUploadServiceFactory::GetForProfile(profile()));
 
   {
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);

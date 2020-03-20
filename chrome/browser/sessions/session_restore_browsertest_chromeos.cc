@@ -10,12 +10,14 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -274,4 +276,24 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMinimized) {
   // users they have a browser running instead of just showing them an empty
   // desktop.
   EXPECT_NE(2u, minimized_count);
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_OmitTerminalApp) {
+  const std::string terminal_app_name =
+      web_app::GenerateApplicationNameFromAppId(crostini::GetTerminalId());
+  CreateBrowserWithParams(CreateParamsForApp(test_app_name1, true));
+  CreateBrowserWithParams(CreateParamsForApp(terminal_app_name, true));
+  TurnOnSessionRestore();
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, OmitTerminalApp) {
+  const std::string terminal_app_name =
+      web_app::GenerateApplicationNameFromAppId(crostini::GetTerminalId());
+  size_t total_count = 0;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    ++total_count;
+    EXPECT_NE(terminal_app_name, browser->app_name());
+  }
+  // We should only count browser() and test_app_name1.
+  EXPECT_EQ(2u, total_count);
 }

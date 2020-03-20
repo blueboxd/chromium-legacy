@@ -16,5 +16,8 @@ namespace switches {
 const char kSbManualDownloadBlacklist[] =
     "safebrowsing-manual-download-blacklist";
 
+// Enable Safe Browsing Enhanced Protection.
+const char kSbEnableEnhancedProtection[] =
+    "safebrowsing-enable-enhanced-protection";
 }  // namespace switches
 }  // namespace safe_browsing

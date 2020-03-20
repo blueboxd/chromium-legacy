@@ -11,7 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
-#include "chrome/browser/vr/service/xr_runtime_manager.h"
+#include "chrome/browser/vr/service/xr_runtime_manager_impl.h"
+#include "chrome/browser/vr/xr_runtime_manager_statics.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_device_provider.h"
@@ -23,7 +24,6 @@
 namespace vr {
 
 class XRRuntimeManagerTest : public testing::Test {
- public:
  protected:
   XRRuntimeManagerTest() = default;
   ~XRRuntimeManagerTest() override = default;
@@ -33,12 +33,12 @@ class XRRuntimeManagerTest : public testing::Test {
     provider_ = new device::FakeVRDeviceProvider();
     providers.emplace_back(base::WrapUnique(provider_));
     xr_runtime_manager_ =
-        XRRuntimeManager::CreateInstance(std::move(providers));
+        XRRuntimeManagerImpl::CreateInstance(std::move(providers));
   }
 
   void TearDown() override {
     DropRuntimeManagerRef();
-    EXPECT_FALSE(XRRuntimeManager::HasInstance());
+    EXPECT_EQ(XRRuntimeManagerStatics::GetInstanceIfCreated(), nullptr);
   }
 
   std::unique_ptr<VRServiceImpl> BindService() {
@@ -50,9 +50,9 @@ class XRRuntimeManagerTest : public testing::Test {
     return service;
   }
 
-  scoped_refptr<XRRuntimeManager> GetRuntimeManager() {
-    EXPECT_TRUE(XRRuntimeManager::HasInstance());
-    return XRRuntimeManager::GetOrCreateInstance();
+  scoped_refptr<XRRuntimeManagerImpl> GetRuntimeManager() {
+    EXPECT_NE(XRRuntimeManagerStatics::GetInstanceIfCreated(), nullptr);
+    return XRRuntimeManagerImpl::GetOrCreateInstance();
   }
 
   device::mojom::XRRuntime* GetRuntimeForTest(
@@ -65,17 +65,17 @@ class XRRuntimeManagerTest : public testing::Test {
   }
 
   device::FakeVRDeviceProvider* Provider() {
-    EXPECT_TRUE(XRRuntimeManager::HasInstance());
+    EXPECT_NE(XRRuntimeManagerStatics::GetInstanceIfCreated(), nullptr);
     return provider_;
   }
 
-  // Drops the internal XRRuntimeManagerRef. This is useful for testing the
-  // reference counting behavior of the XRRuntimeManager singleton.
+  // Drops the internal XRRuntimeManagerImplRef. This is useful for testing the
+  // reference counting behavior of the XRRuntimeManagerImpl singleton.
   void DropRuntimeManagerRef() { xr_runtime_manager_ = nullptr; }
 
  private:
   device::FakeVRDeviceProvider* provider_ = nullptr;
-  scoped_refptr<XRRuntimeManager> xr_runtime_manager_;
+  scoped_refptr<XRRuntimeManagerImpl> xr_runtime_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(XRRuntimeManagerTest);
 };
@@ -116,7 +116,7 @@ TEST_F(XRRuntimeManagerTest, DeviceManagerRegistration) {
   service_2.reset();
 
   DropRuntimeManagerRef();
-  EXPECT_FALSE(XRRuntimeManager::HasInstance());
+  EXPECT_EQ(XRRuntimeManagerStatics::GetInstanceIfCreated(), nullptr);
 }
 
 // Ensure that devices added and removed are reflected in calls to request

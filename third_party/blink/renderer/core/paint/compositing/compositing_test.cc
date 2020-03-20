@@ -255,7 +255,7 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
   }
 
   cc::PropertyTrees* GetPropertyTrees() {
-    return Compositor().layer_tree_host().property_trees();
+    return Compositor().layer_tree_host()->property_trees();
   }
 
   cc::TransformNode* GetTransformNode(const cc::Layer* layer) {
@@ -304,7 +304,7 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
   auto* b_layer = CcLayerByDOMElementId("b");
 
   // Initially, neither a nor b should have a layer that should push properties.
-  cc::LayerTreeHost& host = Compositor().layer_tree_host();
+  cc::LayerTreeHost& host = *Compositor().layer_tree_host();
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
 
@@ -346,7 +346,7 @@ TEST_P(CompositingSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
   auto* c_layer = CcLayerByDOMElementId("c");
 
   // Initially, no layer should need to push properties.
-  cc::LayerTreeHost& host = Compositor().layer_tree_host();
+  cc::LayerTreeHost& host = *Compositor().layer_tree_host();
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
   EXPECT_FALSE(host.LayersThatShouldPushProperties().count(c_layer));
@@ -384,7 +384,7 @@ TEST_P(CompositingSimTest,
   Compositor().BeginFrame();
 
   // Initially the host should not need to sync.
-  cc::LayerTreeHost& layer_tree_host = Compositor().layer_tree_host();
+  cc::LayerTreeHost& layer_tree_host = *Compositor().layer_tree_host();
   EXPECT_FALSE(layer_tree_host.needs_full_tree_sync());
   int sequence_number = GetPropertyTrees()->sequence_number;
   EXPECT_GT(sequence_number, 0);

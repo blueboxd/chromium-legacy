@@ -198,8 +198,8 @@ public class TabGridDialogMediatorUnitTest {
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
-                mAnimationSourceViewProvider, mTabGroupTitleEditor, mShareDelegateSupplier, "");
-        mMediator.initWithNative(mTabSelectionEditorController);
+                mAnimationSourceViewProvider, mShareDelegateSupplier, "");
+        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
     }
 
     @After
@@ -875,8 +875,8 @@ public class TabGridDialogMediatorUnitTest {
         // the animationParamsProvider is null.
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
-                mTabGroupTitleEditor, mShareDelegateSupplier, "");
-        mMediator.initWithNative(mTabSelectionEditorController);
+                mShareDelegateSupplier, "");
+        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
 
         // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -901,8 +901,8 @@ public class TabGridDialogMediatorUnitTest {
         // the animationParamsProvider is null.
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
-                mTabGroupTitleEditor, mShareDelegateSupplier, "");
-        mMediator.initWithNative(mTabSelectionEditorController);
+                mShareDelegateSupplier, "");
+        mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
         // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);

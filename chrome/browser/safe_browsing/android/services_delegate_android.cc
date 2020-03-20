@@ -117,14 +117,6 @@ void ServicesDelegateAndroid::RemoveTelemetryService(Profile* profile) {
     telemetry_service_.reset();
 }
 
-void ServicesDelegateAndroid::CreateBinaryUploadService(Profile* profile) {}
-void ServicesDelegateAndroid::RemoveBinaryUploadService(Profile* profile) {}
-BinaryUploadService* ServicesDelegateAndroid::GetBinaryUploadService(
-    Profile* profile) const {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 std::string ServicesDelegateAndroid::GetSafetyNetId() const {
   return database_manager_->GetSafetyNetId();
 }

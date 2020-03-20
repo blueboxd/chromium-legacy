@@ -24,10 +24,12 @@ namespace {
 
 // When one of these properties is animated, a window is considered non-occluded
 // and cannot occlude other windows.
+// TODO(crbug.com/1057024): Mark a window VISIBLE when COLOR animation starts.
 constexpr ui::LayerAnimationElement::AnimatableProperties
     kSkipWindowWhenPropertiesAnimated =
         ui::LayerAnimationElement::TRANSFORM |
-        ui::LayerAnimationElement::BOUNDS | ui::LayerAnimationElement::OPACITY;
+        ui::LayerAnimationElement::BOUNDS | ui::LayerAnimationElement::OPACITY |
+        ui::LayerAnimationElement::COLOR;
 
 // When an animation ends for one of these properties, occlusion states might
 // be affected. The end of an animation for a property in
@@ -433,9 +435,16 @@ bool WindowOcclusionTracker::RecomputeOcclusionImpl(
 bool WindowOcclusionTracker::VisibleWindowCanOccludeOtherWindows(
     Window* window) const {
   DCHECK(window->layer());
-  const float combined_opacity =
-      ShouldUseTargetValues() ? GetLayerCombinedTargetOpacity(window->layer())
-                              : window->layer()->GetCombinedOpacity();
+  float combined_opacity = ShouldUseTargetValues()
+                               ? GetLayerCombinedTargetOpacity(window->layer())
+                               : window->layer()->GetCombinedOpacity();
+  // Just check the alpha on this layer as an alpha on parent solid color layers
+  // will not affect children's opacity.
+  if (window->layer()->type() == ui::LAYER_SOLID_COLOR) {
+    auto color = ShouldUseTargetValues() ? window->layer()->GetTargetColor()
+                                         : window->layer()->background_color();
+    combined_opacity *= SkColorGetA(color) / 255.f;
+  }
   return (!window->transparent() && WindowHasContent(window) &&
           combined_opacity == 1.0f &&
           // For simplicity, a shaped window is not considered opaque.

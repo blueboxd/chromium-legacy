@@ -33,7 +33,7 @@ class WebContents;
 
 namespace vr {
 
-class XRRuntimeManager;
+class XRRuntimeManagerImpl;
 class XRRuntimeManagerTest;
 class BrowserXRRuntimeImpl;
 
@@ -162,7 +162,7 @@ class VRServiceImpl : public device::mojom::VRService,
       mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
           session_metrics_recorder);
 
-  scoped_refptr<XRRuntimeManager> runtime_manager_;
+  scoped_refptr<XRRuntimeManagerImpl> runtime_manager_;
   mojo::RemoteSet<device::mojom::XRSessionClient> session_clients_;
   mojo::Remote<device::mojom::VRServiceClient> service_client_;
   content::RenderFrameHost* render_frame_host_;

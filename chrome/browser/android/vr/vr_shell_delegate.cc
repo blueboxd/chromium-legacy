@@ -17,9 +17,10 @@
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
-#include "chrome/browser/vr/service/xr_runtime_manager.h"
+#include "chrome/browser/vr/xr_runtime_manager_statics.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/webvr_service_provider.h"
+#include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -35,10 +36,13 @@ namespace vr {
 
 namespace {
 
-void SetInlineVrEnabled(XRRuntimeManager& runtime_manager, bool enable) {
-  runtime_manager.ForEachRuntime([enable](content::BrowserXRRuntime* runtime) {
-    runtime->SetInlinePosesEnabled(enable);
-  });
+void SetInlineVrEnabled(content::XRRuntimeManager& runtime_manager,
+                        bool enable) {
+  runtime_manager.ForEachRuntime(base::BindRepeating(
+      [](bool enable, content::BrowserXRRuntime* runtime) {
+        runtime->SetInlinePosesEnabled(enable);
+      },
+      enable));
 }
 
 class VrShellDelegateProviderFactory
@@ -63,12 +67,12 @@ VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   j_vr_shell_delegate_.Reset(env, obj);
-  XRRuntimeManager::AddObserver(this);
+  XRRuntimeManagerStatics::AddObserver(this);
 }
 
 VrShellDelegate::~VrShellDelegate() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  XRRuntimeManager::RemoveObserver(this);
+  XRRuntimeManagerStatics::RemoveObserver(this);
   device::GvrDevice* gvr_device = GetGvrDevice();
   if (gvr_device)
     gvr_device->OnExitPresent();
@@ -98,10 +102,10 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
   // When VrShell is created, we disable magic window mode as the user is inside
   // the headset. As currently implemented, orientation-based magic window
   // doesn't make sense when the window is fixed and the user is moving.
-  auto* xr_runtime_manager = XRRuntimeManager::GetInstanceIfCreated();
+  auto* xr_runtime_manager = XRRuntimeManagerStatics::GetInstanceIfCreated();
   if (xr_runtime_manager) {
     // If the XRRuntimeManager singleton currently exists, this will disable
-    // inline VR. Otherwise, the callback for 'XRRuntimeManagerObserver'
+    // inline VR. Otherwise, the callback for 'XRRuntimeManager::Observer'
     // ('OnRuntimeAdded') will take care of it.
     SetInlineVrEnabled(*xr_runtime_manager, false);
   }
@@ -125,7 +129,7 @@ void VrShellDelegate::RemoveDelegate() {
     std::move(on_present_result_callback_).Run(false);
   }
 
-  auto* xr_runtime_manager = XRRuntimeManager::GetInstanceIfCreated();
+  auto* xr_runtime_manager = XRRuntimeManagerStatics::GetInstanceIfCreated();
   if (xr_runtime_manager) {
     SetInlineVrEnabled(*xr_runtime_manager, true);
   }

@@ -1251,14 +1251,7 @@ Status EvaluateScript(DevToolsClient* client,
   if (status.IsError())
     return status;
 
-  bool was_thrown;
-  if (!cmd_result->GetBoolean("wasThrown", &was_thrown)) {
-    // As of crrev.com/411814, Runtime.evaluate no longer returns a 'wasThrown'
-    // property in the response, so check 'exceptionDetails' instead.
-    // TODO(samuong): Ignore 'wasThrown' when we stop supporting Chrome 54.
-    was_thrown = cmd_result->HasKey("exceptionDetails");
-  }
-  if (was_thrown) {
+  if (cmd_result->HasKey("exceptionDetails")) {
     std::string description = "unknown";
     cmd_result->GetString("result.description", &description);
     return Status(kUnknownError,

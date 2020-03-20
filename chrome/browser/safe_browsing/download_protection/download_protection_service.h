@@ -202,6 +202,9 @@ class DownloadProtectionService {
       DeepScanningRequest::DeepScanTrigger trigger,
       std::vector<DeepScanningRequest::DeepScanType> allowed_scans);
 
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+      content::BrowserContext* browser_context);
+
  private:
   friend class PPAPIDownloadRequest;
   friend class DownloadUrlSBClient;
@@ -287,9 +290,6 @@ class DownloadProtectionService {
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
-
-  // The loader factory we use to issue network requests.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Set of pending server requests for DownloadManager mediated downloads.
   base::flat_map<CheckClientDownloadRequestBase*,

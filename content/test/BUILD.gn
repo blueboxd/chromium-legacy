@@ -757,6 +757,7 @@ static_library("web_test_support") {
     "//content/shell/test_runner:test_runner",
     "//device/bluetooth",
     "//device/gamepad/public/cpp:shared_with_blink",
+    "//net:test_support",
     "//services/device/public/cpp/generic_sensor",
     "//skia",
     "//ui/accessibility:ax_enums_mojo",

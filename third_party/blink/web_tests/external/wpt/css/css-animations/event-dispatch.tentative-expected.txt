@@ -3,16 +3,16 @@ PASS Idle -> Active
 PASS Idle -> After
 PASS Before -> Active
 PASS Before -> After
-FAIL Active -> Idle, display: none assert_true: Timed out waiting for animationcancel expected true got false
+PASS Active -> Idle, display: none
 FAIL Active -> Idle, setting Animation.timeline = null promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<CSSAnimation>'"
-FAIL Active -> Idle, calling Animation.cancel() assert_true: Timed out waiting for animationcancel expected true got false
+PASS Active -> Idle, calling Animation.cancel()
 FAIL Active -> Before assert_true: Timed out waiting for animationend expected true got false
 PASS Active -> After
 FAIL After -> Before assert_true: Timed out waiting for animationstart, animationend expected true got false
 FAIL After -> Active assert_true: Timed out waiting for animationstart expected true got false
 FAIL Active -> Active (forwards) assert_equals: expected 200 but got 100
 FAIL Active -> Active (backwards) assert_true: Timed out waiting for animationstart expected true got false
-FAIL Active -> Idle -> Active: animationstart is fired by restarting animation assert_true: Timed out waiting for animationcancel expected true got false
+PASS Active -> Idle -> Active: animationstart is fired by restarting animation
 FAIL Negative playbackRate sanity test(Before -> Active -> Before) assert_true: Timed out waiting for animationstart expected true got false
 PASS Redundant change, before -> active, then back
 PASS Redundant change, before -> after, then back
@@ -20,11 +20,11 @@ PASS Redundant change, active -> before, then back
 PASS Redundant change, active -> after, then back
 PASS Redundant change, after -> before, then back
 PASS Redundant change, after -> active, then back
-FAIL Call Animation.cancel after canceling animation. assert_true: Timed out waiting for animationcancel expected true got false
-FAIL Restart animation after canceling animation immediately. assert_equals: Expected animationcancel event, but got animationstart event instead expected "animationcancel" but got "animationstart"
-FAIL Call Animation.cancel after restarting animation immediately. assert_true: Timed out waiting for animationcancel expected true got false
+PASS Call Animation.cancel after canceling animation.
+PASS Restart animation after canceling animation immediately.
+PASS Call Animation.cancel after restarting animation immediately.
 FAIL Set timeline and play transition after clearing the timeline. promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<CSSAnimation>'"
-FAIL Set null target effect after canceling the animation. assert_true: Timed out waiting for animationcancel expected true got false
+PASS Set null target effect after canceling the animation.
 FAIL Cancel the animation after clearing the target effect. assert_true: Timed out waiting for animationend expected true got false
 Harness: the test ran to completion.
 

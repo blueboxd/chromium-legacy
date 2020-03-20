@@ -45,7 +45,6 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             ViewGroup containerView, TabSwitcherMediator.ResetHandler resetHandler,
             TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             TabGridDialogMediator.AnimationSourceViewProvider animationSourceViewProvider,
-            TabGroupTitleEditor tabGroupTitleEditor,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
         mComponentName = animationSourceViewProvider == null ? "TabGridDialogFromStrip"
                                                              : "TabGridDialogInSwitcher";
@@ -57,7 +56,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
 
         mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
                 tabModelSelector, tabCreatorManager, resetHandler, animationSourceViewProvider,
-                tabGroupTitleEditor, shareDelegateSupplier, mComponentName);
+                shareDelegateSupplier, mComponentName);
 
         // TODO(crbug.com/1031349) : Remove the inline mode logic here, make the constructor to take
         // in a mode parameter instead.
@@ -75,20 +74,23 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     }
 
     public void initWithNative(Context context, TabModelSelector tabModelSelector,
-            TabContentManager tabContentManager) {
+            TabContentManager tabContentManager, TabGroupTitleEditor tabGroupTitleEditor) {
         if (mIsInitialized) return;
 
         TabSelectionEditorCoordinator.TabSelectionEditorController controller = null;
         if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
-            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                    context, mContainerView, tabModelSelector, tabContentManager, mParentLayout);
+            @TabListCoordinator.TabListMode
+            int mode = SysUtils.isLowEndDevice() ? TabListCoordinator.TabListMode.LIST
+                                                 : TabListCoordinator.TabListMode.GRID;
+            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(context,
+                    mContainerView, tabModelSelector, tabContentManager, mParentLayout, mode);
 
             controller = mTabSelectionEditorCoordinator.getController();
         } else {
             mTabSelectionEditorCoordinator = null;
         }
 
-        mMediator.initWithNative(controller);
+        mMediator.initWithNative(controller, tabGroupTitleEditor);
         mTabListCoordinator.initWithNative(null);
     }
     /**

@@ -28,6 +28,7 @@ import org.chromium.components.payments.intent.WebPaymentIntentHelperType.Paymen
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +46,11 @@ public class WebPaymentIntentHelperTest {
     @Feature({"Payments"})
     public void createPayIntentTest() throws Throwable {
         Map<String, PaymentMethodData> methodDataMap = new HashMap<String, PaymentMethodData>();
-        PaymentMethodData bobPayMethodData = new PaymentMethodData("method", "{\"key\":\"value\"}");
+        PaymentMethodData bobPayMethodData =
+                new PaymentMethodData("bobPayMethod", "{\"key\":\"value\"}");
+        PaymentMethodData maxPayMethodData = new PaymentMethodData("maxPayMethod", "{}");
         methodDataMap.put("bobPay", bobPayMethodData);
+        methodDataMap.put("maxPay", maxPayMethodData);
 
         PaymentItem total = new PaymentItem(new PaymentCurrencyAmount("CAD", "200"));
 
@@ -83,18 +87,20 @@ public class WebPaymentIntentHelperTest {
                            .getByteArray(WebPaymentIntentHelper.EXTRA_CERTIFICATE))
                 .isEqualTo(new byte[] {0});
 
-        Assert.assertEquals(Arrays.asList("bobPay"),
-                bundle.getStringArrayList(WebPaymentIntentHelper.EXTRA_METHOD_NAMES));
+        Assert.assertEquals(new HashSet<>(Arrays.asList("bobPay", "maxPay")),
+                new HashSet<>(
+                        bundle.getStringArrayList(WebPaymentIntentHelper.EXTRA_METHOD_NAMES)));
 
         Bundle expectedMethodDataBundle =
                 bundle.getParcelable(WebPaymentIntentHelper.EXTRA_METHOD_DATA);
-        Assert.assertEquals(1, expectedMethodDataBundle.keySet().size());
+        Assert.assertEquals(2, expectedMethodDataBundle.keySet().size());
         Assert.assertEquals("{\"key\":\"value\"}", expectedMethodDataBundle.getString("bobPay"));
+        Assert.assertEquals("{}", expectedMethodDataBundle.getString("maxPay"));
 
         // The data field is a string because it is PaymentMethodData#stringifiedData.
         String expectedSerializedModifiers =
                 "[{\"total\":{\"label\":\"\",\"amount\":{\"currency\":\"CAD\",\"value\":\"200\"}},"
-                + "\"supportedMethods\":[\"method\"],"
+                + "\"supportedMethods\":[\"bobPayMethod\"],"
                 + "\"data\":\"{\\\"key\\\":\\\"value\\\"}\"}]";
         Assert.assertEquals(
                 expectedSerializedModifiers, bundle.get(WebPaymentIntentHelper.EXTRA_MODIFIERS));

@@ -193,9 +193,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Get the cache manager by profile.
   VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
 
-  // Get the binary upload service by profile.
-  BinaryUploadService* GetBinaryUploadService(Profile* profile) const;
-
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
   SafeBrowsingService();

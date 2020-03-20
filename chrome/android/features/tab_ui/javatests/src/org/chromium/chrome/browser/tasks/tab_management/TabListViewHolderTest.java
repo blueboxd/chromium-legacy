@@ -68,6 +68,9 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private SelectionDelegate<Integer> mSelectionDelegate;
     private int mSelectedTabBackgroundDrawableId = R.drawable.selected_tab_background;
 
+    private ViewGroup mSelectableTabListView;
+    private PropertyModelChangeProcessor mSelectableListMCP;
+
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
                 @Override
@@ -134,10 +137,13 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                     R.layout.tab_strip_item, null);
             mSelectableTabGridView = (ViewGroup) getActivity().getLayoutInflater().inflate(
                     R.layout.selectable_tab_grid_card_item, null);
+            mSelectableTabListView = (ViewGroup) getActivity().getLayoutInflater().inflate(
+                    R.layout.selectable_tab_list_card_item, null);
 
             view.addView(mTabGridView);
             view.addView(mTabStripView);
             view.addView(mSelectableTabGridView);
+            view.addView(mSelectableTabListView);
         });
 
         mSelectionDelegate = new SelectionDelegate<>();
@@ -168,6 +174,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                     mStripModel, mTabStripView, TabStripViewBinder::bind);
             mSelectableMCP = PropertyModelChangeProcessor.create(
                     mSelectableModel, mSelectableTabGridView, TabGridViewBinder::bindSelectableTab);
+            mSelectableListMCP = PropertyModelChangeProcessor.create(mSelectableModel,
+                    mSelectableTabListView, TabListViewBinder::bindSelectableListTab);
         });
     }
 
@@ -184,10 +192,26 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
             model.set(TabProperties.IS_SELECTED, false);
             Assert.assertTrue(selectedView.getVisibility() == View.GONE);
         }
-        mStripModel.set(TabProperties.IS_SELECTED, true);
-        Assert.assertTrue(((FrameLayout) mTabStripView).getForeground() != null);
-        mStripModel.set(TabProperties.IS_SELECTED, false);
-        Assert.assertFalse(((FrameLayout) mTabStripView).getForeground() != null);
+    }
+
+    private void testSelectableTabClickToSelect(
+            ViewGroup view, PropertyModel model, boolean isLongClick) {
+        Runnable clickTask = () -> {
+            if (isLongClick) {
+                view.performLongClick();
+            } else {
+                view.performClick();
+            }
+        };
+
+        model.set(TabProperties.IS_SELECTED, false);
+        clickTask.run();
+        Assert.assertTrue(mSelectClicked.get());
+        mSelectClicked.set(false);
+
+        model.set(TabProperties.IS_SELECTED, true);
+        clickTask.run();
+        Assert.assertTrue(mSelectClicked.get());
     }
 
     @Test
@@ -211,6 +235,17 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mSelectableModel.set(TabProperties.IS_SELECTED, false);
         Assert.assertTrue(actionButton.getBackground().getLevel() == 0);
         Assert.assertEquals(0, actionButton.getDrawable().getAlpha());
+
+        testGridSelected(mSelectableTabListView, mSelectableModel);
+        mSelectableModel.set(TabProperties.IS_SELECTED, true);
+        ImageView actionButtonList = mSelectableTabListView.findViewById(R.id.action_button);
+        Assert.assertTrue(actionButtonList.getBackground().getLevel() == 1);
+        Assert.assertTrue(actionButtonList.getDrawable() != null);
+        Assert.assertEquals(255, actionButton.getDrawable().getAlpha());
+
+        mSelectableModel.set(TabProperties.IS_SELECTED, false);
+        Assert.assertTrue(actionButtonList.getBackground().getLevel() == 0);
+        Assert.assertEquals(0, actionButtonList.getDrawable().getAlpha());
     }
 
     @Test
@@ -264,6 +299,9 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
 
         mSelectableModel.set(TabProperties.TITLE, title);
         textView = mSelectableTabGridView.findViewById(R.id.tab_title);
+        Assert.assertEquals(textView.getText(), title);
+
+        textView = mSelectableTabListView.findViewById(R.id.title);
         Assert.assertEquals(textView.getText(), title);
     }
 
@@ -409,14 +447,11 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertFalse(mSelectClicked.get());
         mSelectClicked.set(false);
 
-        mSelectableModel.set(TabProperties.IS_SELECTED, false);
-        mSelectableTabGridView.performClick();
-        Assert.assertTrue(mSelectClicked.get());
-        mSelectClicked.set(false);
+        testSelectableTabClickToSelect(mSelectableTabGridView, mSelectableModel, false);
+        testSelectableTabClickToSelect(mSelectableTabGridView, mSelectableModel, true);
 
-        mSelectableModel.set(TabProperties.IS_SELECTED, true);
-        mSelectableTabGridView.performClick();
-        Assert.assertTrue(mSelectClicked.get());
+        testSelectableTabClickToSelect(mSelectableTabListView, mSelectableModel, false);
+        testSelectableTabClickToSelect(mSelectableTabListView, mSelectableModel, true);
     }
 
     @Test

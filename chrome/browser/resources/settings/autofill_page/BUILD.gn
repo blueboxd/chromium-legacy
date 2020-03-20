@@ -527,6 +527,7 @@ polymer_modulizer("password_check") {
     "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
     "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncPrefs,SyncStatus",
     "chrome/browser/resources/settings/plural_string_proxy.html|PluralStringProxyImpl",
+    "chrome/browser/resources/settings/router.html|Router",
     "ui/webui/resources/html/assert.html|assert",
   ]
   namespace_rewrites = settings_namespace_rewrites

@@ -97,11 +97,11 @@ public class TabGridDialogMediator {
     private final DialogController mDialogController;
     private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     private final AnimationSourceViewProvider mAnimationSourceViewProvider;
-    private final TabGroupTitleEditor mTabGroupTitleEditor;
     private final DialogHandler mTabGridDialogHandler;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
     private final String mComponentName;
 
+    private TabGroupTitleEditor mTabGroupTitleEditor;
     private TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
     private KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
@@ -114,7 +114,6 @@ public class TabGridDialogMediator {
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
             AnimationSourceViewProvider animationSourceViewProvider,
-            TabGroupTitleEditor tabGroupTitleEditor,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier, String componentName) {
         mContext = context;
         mModel = model;
@@ -123,7 +122,6 @@ public class TabGridDialogMediator {
         mDialogController = dialogController;
         mTabSwitcherResetHandler = tabSwitcherResetHandler;
         mAnimationSourceViewProvider = animationSourceViewProvider;
-        mTabGroupTitleEditor = tabGroupTitleEditor;
         mTabGridDialogHandler = new DialogHandler();
         mShareDelegateSupplier = shareDelegateSupplier;
         mComponentName = componentName;
@@ -206,8 +204,10 @@ public class TabGridDialogMediator {
     }
 
     public void initWithNative(@Nullable TabSelectionEditorCoordinator
-                                       .TabSelectionEditorController tabSelectionEditorController) {
+                                       .TabSelectionEditorController tabSelectionEditorController,
+            TabGroupTitleEditor tabGroupTitleEditor) {
         mTabSelectionEditorController = tabSelectionEditorController;
+        mTabGroupTitleEditor = tabGroupTitleEditor;
 
         assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;

@@ -324,10 +324,14 @@ Polymer({
     settings.HatsBrowserProxyImpl.getInstance().tryShowSurvey();
 
     this.runSafetyCheck_();
+    this.focusParent_();
+  },
 
-    // TODO(crbug.com/1015841): Prevent the focus from getting lost, once it
-    // has been decided which element to focus after the safety check
-    // parent button got clicked, and, as a result, disappeared.
+  /** @private */
+  focusParent_() {
+    const parent =
+        /** @type {!Element} */ (this.$$('#safetyCheckParent'));
+    parent.focus();
   },
 
   /**
@@ -496,12 +500,21 @@ Polymer({
    * @return {boolean}
    */
   shouldShowSafeBrowsingManagedIcon_: function() {
+    return this.getSafeBrowsingManagedIcon_() != null;
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
+  getSafeBrowsingManagedIcon_: function() {
     switch (this.safeBrowsingStatus_) {
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
+        return 'cr20:domain';
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:
-        return true;
+        return 'cr:extension';
       default:
-        return false;
+        return null;
     }
   },
 

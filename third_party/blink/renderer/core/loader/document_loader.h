@@ -370,9 +370,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // opaque origin.
   void ReplaceWithEmptyDocument();
 
-  ContentSecurityPolicy* CreateCSP(
-      const ResourceResponse&,
-      const base::Optional<WebOriginPolicy>& origin_policy);
   DocumentPolicy::ParsedDocumentPolicy CreateDocumentPolicy();
 
   void StartLoadingInternal();

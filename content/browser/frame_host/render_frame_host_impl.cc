@@ -6114,6 +6114,10 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
                                                 ui::AXMode ax_mode) {
+  // TODO(https://crbug.com/859110): Remove once frame_ can no longer be null.
+  if (!IsRenderFrameLive())
+    return;
+
   frame_->SnapshotAccessibilityTree(
       ax_mode.mode(),
       base::BindOnce(&RenderFrameHostImpl::RequestAXTreeSnapshotCallback,

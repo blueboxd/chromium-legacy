@@ -741,6 +741,8 @@
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
       'android-code-coverage-native', # crbug/1018434
+      # http://crbug.com/1060245#c30: due to low utility and capacity.
+      'android-marshmallow-arm64-rel',
     ],
     'modifications': {
       'Cast Audio Linux': {

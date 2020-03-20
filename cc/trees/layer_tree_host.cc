@@ -621,7 +621,7 @@ void LayerTreeHost::SetNeedsCommit() {
   events_metrics_manager_.SaveActiveEventMetrics();
 }
 
-bool LayerTreeHost::RequestedMainFramePendingForTesting() {
+bool LayerTreeHost::RequestedMainFramePendingForTesting() const {
   return proxy_->RequestedAnimatePending();
 }
 

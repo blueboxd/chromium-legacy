@@ -240,6 +240,10 @@ class CORE_EXPORT WebFrameWidgetBase
   cc::LayerTreeDebugState GetLayerTreeDebugState();
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& state);
 
+  // Ask compositor to composite a frame for testing. This will generate a
+  // BeginMainFrame, and update the document lifecycle.
+  void SynchronouslyCompositeForTesting(base::TimeTicks frame_time);
+
  protected:
   enum DragAction { kDragEnter, kDragOver };
 

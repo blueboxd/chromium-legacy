@@ -31,7 +31,6 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
@@ -1050,21 +1049,19 @@ void PageInfo::PresentSitePermissions() {
 
 void PageInfo::PresentSiteData() {
   CookieInfoList cookie_info_list;
-  const LocalSharedObjectsContainer& allowed_objects =
-      tab_specific_content_settings_->allowed_local_shared_objects();
-  const LocalSharedObjectsContainer& blocked_objects =
-      tab_specific_content_settings_->blocked_local_shared_objects();
 
   // Add first party cookie and site data counts.
+  // TODO(crbug.com/1058597): Remove the calls to the |delegate_| once
+  // TabSpecificContentSettings has been componentized.
   PageInfoUI::CookieInfo cookie_info;
-  cookie_info.allowed = allowed_objects.GetObjectCountForDomain(site_url_);
-  cookie_info.blocked = blocked_objects.GetObjectCountForDomain(site_url_);
+  cookie_info.allowed = delegate_->GetFirstPartyAllowedCookiesCount(site_url_);
+  cookie_info.blocked = delegate_->GetFirstPartyBlockedCookiesCount(site_url_);
   cookie_info.is_first_party = true;
   cookie_info_list.push_back(cookie_info);
 
   // Add third party cookie counts.
-  cookie_info.allowed = allowed_objects.GetObjectCount() - cookie_info.allowed;
-  cookie_info.blocked = blocked_objects.GetObjectCount() - cookie_info.blocked;
+  cookie_info.allowed = delegate_->GetThirdPartyAllowedCookiesCount(site_url_);
+  cookie_info.blocked = delegate_->GetThirdPartyBlockedCookiesCount(site_url_);
   cookie_info.is_first_party = false;
   cookie_info_list.push_back(cookie_info);
 

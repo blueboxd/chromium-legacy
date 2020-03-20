@@ -514,6 +514,7 @@ jumbo_source_set("browser_sources") {
       "xr_install_helper.h",
       "xr_integration_client.cc",
       "xr_integration_client.h",
+      "xr_runtime_manager.h",
     ]
 
     public_deps += [ "//device/vr/public/mojom" ]

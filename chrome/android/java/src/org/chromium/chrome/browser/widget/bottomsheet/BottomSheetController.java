@@ -24,10 +24,12 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.vr.VrModeObserver;
 
 import java.lang.annotation.Retention;
@@ -108,9 +110,6 @@ public class BottomSheetController implements Destroyable {
     /** The offset of the toolbar shadow from the top that remains empty. */
     private int mShadowTopOffset;
 
-    /** The parameters that control how the scrim behaves while the sheet is open. */
-    private ScrimParams mScrimParams;
-
     /** A handle to the {@link BottomSheet} that this class controls. */
     private BottomSheet mBottomSheet;
 
@@ -155,7 +154,7 @@ public class BottomSheetController implements Destroyable {
      * @param fullscreenManager A fullscreen manager for access to browser controls offsets.
      */
     public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
-            final ActivityTabProvider activityTabProvider, final Supplier<ScrimView> scrim,
+            final ActivityTabProvider activityTabProvider, final Supplier<ScrimCoordinator> scrim,
             Supplier<View> bottomSheetViewSupplier, Supplier<OverlayPanelManager> overlayManager,
             ChromeFullscreenManager fullscreenManager, Window window,
             KeyboardVisibilityDelegate keyboardDelegate) {
@@ -237,8 +236,8 @@ public class BottomSheetController implements Destroyable {
      * @param bottomSheetViewSupplier A means of creating the bottom sheet.
      */
     private void initializeSheet(final ActivityLifecycleDispatcher lifecycleDispatcher,
-            final Supplier<ScrimView> scrim, Supplier<View> bottomSheetViewSupplier, Window window,
-            KeyboardVisibilityDelegate keyboardDelegate) {
+            final Supplier<ScrimCoordinator> scrim, Supplier<View> bottomSheetViewSupplier,
+            Window window, KeyboardVisibilityDelegate keyboardDelegate) {
         mBottomSheet = (BottomSheet) bottomSheetViewSupplier.get();
         mBottomSheet.init(window, keyboardDelegate);
         mToolbarShadowHeight = mBottomSheet.getResources().getDimensionPixelOffset(
@@ -300,20 +299,31 @@ public class BottomSheetController implements Destroyable {
             }
         });
 
-        ScrimObserver scrimObserver = new ScrimObserver() {
-            @Override
-            public void onScrimClick() {
-                if (!mBottomSheet.isSheetOpen()) return;
-                mBottomSheet.setSheetState(
-                        mBottomSheet.getMinSwipableSheetState(), true, StateChangeReason.TAP_SCRIM);
-            }
-
-            @Override
-            public void onScrimVisibilityChanged(boolean visible) {}
-        };
-        mScrimParams = new ScrimParams(mBottomSheet, false, true, 0, scrimObserver);
+        PropertyModel scrimProperties =
+                new PropertyModel.Builder(ScrimProperties.REQUIRED_KEYS)
+                        .with(ScrimProperties.TOP_MARGIN, 0)
+                        .with(ScrimProperties.AFFECTS_STATUS_BAR, true)
+                        .with(ScrimProperties.ANCHOR_VIEW, mBottomSheet)
+                        .with(ScrimProperties.SHOW_IN_FRONT_OF_ANCHOR_VIEW, false)
+                        .with(ScrimProperties.CLICK_DELEGATE,
+                                () -> {
+                                    if (!mBottomSheet.isSheetOpen()) return;
+                                    mBottomSheet.setSheetState(
+                                            mBottomSheet.getMinSwipableSheetState(), true,
+                                            StateChangeReason.TAP_SCRIM);
+                                })
+                        .build();
 
         mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            /**
+             * Whether the scrim was shown for the last content.
+             * TODO(mdjones): We should try to make sure the content in the sheet is not nulled
+             *                prior to the close event occurring; sheets that don't have a peek
+             *                state make this difficult since the sheet needs to be hidden before it
+             *                is closed.
+             */
+            private boolean mScrimShown;
+
             @Override
             public void onSheetOpened(@StateChangeReason int reason) {
                 if (mBottomSheet.getCurrentSheetContent() != null
@@ -321,16 +331,16 @@ public class BottomSheetController implements Destroyable {
                     return;
                 }
 
-                scrim.get().showScrim(mScrimParams);
-                scrim.get().setViewAlpha(0);
+                scrim.get().showScrim(scrimProperties);
+                mScrimShown = true;
             }
 
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
                 // Hide the scrim if the current content doesn't have a custom scrim lifecycle.
-                if (mBottomSheet.getCurrentSheetContent() == null
-                        || !mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                if (mScrimShown) {
                     scrim.get().hideScrim(true);
+                    mScrimShown = false;
                 }
 
                 // Try to swap contents unless the sheet's content has a custom lifecycle.

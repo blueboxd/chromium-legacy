@@ -5431,8 +5431,9 @@ jumbo_static_library("browser") {
       "vr/service/vr_service_impl.cc",
       "vr/service/vr_service_impl.h",
       "vr/service/xr_consent_helper.h",
-      "vr/service/xr_runtime_manager.cc",
-      "vr/service/xr_runtime_manager.h",
+      "vr/service/xr_runtime_manager_impl.cc",
+      "vr/service/xr_runtime_manager_impl.h",
+      "vr/xr_runtime_manager_statics.h",
     ]
 
     deps += [ "//chrome/browser/vr:vr_common" ]

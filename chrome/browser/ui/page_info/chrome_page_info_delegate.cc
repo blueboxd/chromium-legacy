@@ -16,3 +16,35 @@ bool ChromePageInfoDelegate::HasContentSettingChangedViaPageInfo(
   return tab_specific_content_settings()->HasContentSettingChangedViaPageInfo(
       type);
 }
+
+const LocalSharedObjectsContainer& ChromePageInfoDelegate::GetAllowedObjects(
+    const GURL& site_url) {
+  return tab_specific_content_settings()->allowed_local_shared_objects();
+}
+
+const LocalSharedObjectsContainer& ChromePageInfoDelegate::GetBlockedObjects(
+    const GURL& site_url) {
+  return tab_specific_content_settings()->blocked_local_shared_objects();
+}
+
+int ChromePageInfoDelegate::GetFirstPartyAllowedCookiesCount(
+    const GURL& site_url) {
+  return GetAllowedObjects(site_url).GetObjectCountForDomain(site_url);
+}
+
+int ChromePageInfoDelegate::GetFirstPartyBlockedCookiesCount(
+    const GURL& site_url) {
+  return GetBlockedObjects(site_url).GetObjectCountForDomain(site_url);
+}
+
+int ChromePageInfoDelegate::GetThirdPartyAllowedCookiesCount(
+    const GURL& site_url) {
+  return GetAllowedObjects(site_url).GetObjectCount() -
+         GetFirstPartyAllowedCookiesCount(site_url);
+}
+
+int ChromePageInfoDelegate::GetThirdPartyBlockedCookiesCount(
+    const GURL& site_url) {
+  return GetBlockedObjects(site_url).GetObjectCount() -
+         GetFirstPartyBlockedCookiesCount(site_url);
+}

@@ -2008,6 +2008,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityOutput) {
   RunHtmlTest(FILE_PATH_LITERAL("output.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityOverflowActions) {
+  RunHtmlTest(FILE_PATH_LITERAL("overflow-actions.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityP) {
   RunHtmlTest(FILE_PATH_LITERAL("p.html"));
 }

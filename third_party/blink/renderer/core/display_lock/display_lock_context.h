@@ -130,9 +130,8 @@ class CORE_EXPORT DisplayLockContext final
   // This issues a before activate signal with the given element as the
   // activated element.
   // The reason is specified for metrics.
-  void CommitForActivationWithSignal(
-      Element* activated_element,
-      DisplayLockActivationReason reason_for_metrics);
+  void CommitForActivationWithSignal(Element* activated_element,
+                                     DisplayLockActivationReason reason);
 
   bool ShouldCommitForActivation(DisplayLockActivationReason reason) const;
 

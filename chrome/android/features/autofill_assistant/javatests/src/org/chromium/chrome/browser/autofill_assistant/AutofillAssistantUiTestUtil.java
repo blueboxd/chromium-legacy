@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
+import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -408,10 +409,11 @@ class AutofillAssistantUiTestUtil {
             return activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
         };
 
+        RootUiCoordinator rootCoordinator = activity.getRootUiCoordinatorForTesting();
         return new BottomSheetController(activity.getLifecycleDispatcher(),
-                activity.getActivityTabProvider(), activity::getScrim, sheetSupplier,
-                panelManagerProvider, activity.getFullscreenManager(), activity.getWindow(),
-                activity.getWindowAndroid().getKeyboardDelegate());
+                activity.getActivityTabProvider(), rootCoordinator::getScrimCoordinatorForTesting,
+                sheetSupplier, panelManagerProvider, activity.getFullscreenManager(),
+                activity.getWindow(), activity.getWindowAndroid().getKeyboardDelegate());
     }
 
     /**

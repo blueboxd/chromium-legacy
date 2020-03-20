@@ -16,6 +16,7 @@
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
@@ -71,8 +72,7 @@ struct RenderPassGeometry;
 
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
-class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
-                                   public gpu::DisplayContext {
+class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
  public:
   class ScopedUseContextProvider;
 
@@ -197,9 +197,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   GpuVSyncCallback GetGpuVSyncCallback() override;
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
-  // gpu::DisplayContext implementation:
-  void MarkContextLost() override;
-
   void PostTaskToClientThread(base::OnceClosure closure) {
     dependency_->PostTaskToClientThread(std::move(closure));
   }
@@ -214,6 +211,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
  private:
   class ScopedPromiseImageAccess;
   class OffscreenSurface;
+  class DisplayContext;
 
   bool Initialize();
   bool InitializeForGL();
@@ -223,6 +221,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
   bool MakeCurrent(bool need_fbo0);
+  void MarkContextLost(ContextLostReason reason);
 
   void PullTextureUpdates(std::vector<gpu::SyncToken> sync_token);
 
@@ -303,6 +302,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   size_t max_resource_cache_bytes_ = 0u;
+
+  std::unique_ptr<DisplayContext> display_context_;
+  bool context_is_lost_ = false;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
   base::Optional<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;

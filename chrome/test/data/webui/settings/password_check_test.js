@@ -5,7 +5,7 @@
 /** @fileoverview Runs the Polymer Check Password tests. */
 
 // clang-format off
-// #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {PasswordManagerImpl, routes, Router} from 'chrome://settings/settings.js';
 // #import 'chrome://settings/lazy_load.js';
 // #import {makeCompromisedCredential,  makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {getSyncAllPrefs,simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
@@ -1004,6 +1004,13 @@ cr.define('settings_passwords_check', function() {
 
       assertEquals(
           0, passwordManager.getCallCount('changeCompromisedCredential'));
+    });
+
+    test('startEqualsTrueSearchParameterStartsCheck', function() {
+      settings.Router.getInstance().navigateTo(
+          settings.routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
+      createCheckPasswordSection();
+      return passwordManager.whenCalled('startBulkPasswordCheck');
     });
   });
   // #cr_define_end

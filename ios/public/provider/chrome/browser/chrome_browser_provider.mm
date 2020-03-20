@@ -100,13 +100,6 @@ AppDistributionProvider* ChromeBrowserProvider::GetAppDistributionProvider()
 
 id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
     Browser* browser,
-    web::WebState* web_state,
-    id<URLLoadingBridge> loading_bridge) const {
-  return nil;
-}
-
-id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
-    Browser* browser,
     web::WebState* web_state) const {
   return nil;
 }

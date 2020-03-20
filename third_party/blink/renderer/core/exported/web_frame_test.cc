@@ -10659,10 +10659,9 @@ class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
 
   void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
     MainFrame()->ExecuteScript(script);
-    MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
-    MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        DocumentUpdateReason::kTest);
-    MainFrame()->View()->MainFrameWidget()->DidBeginFrame();
+    web_view_helper_.GetWebView()
+        ->MainFrameWidgetBase()
+        ->SynchronouslyCompositeForTesting(base::TimeTicks::Now());
     RunPendingTasks();
   }
 
@@ -10753,10 +10752,9 @@ class WebLocalFrameVisibilityChangeTest
 
   void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
     MainFrame()->ExecuteScript(script);
-    MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
-    MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
-        DocumentUpdateReason::kTest);
-    MainFrame()->View()->MainFrameWidget()->DidBeginFrame();
+    web_view_helper_.GetWebView()
+        ->MainFrameWidgetBase()
+        ->SynchronouslyCompositeForTesting(base::TimeTicks::Now());
     RunPendingTasks();
   }
 

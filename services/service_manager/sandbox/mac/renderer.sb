@@ -66,6 +66,7 @@
 (allow iokit-open
   (iokit-registry-entry-class "IOSurfaceRootUserClient")
   (iokit-registry-entry-class "RootDomainUserClient")
+  (iokit-user-client-class "IOSurfaceSendRight")
 )
 
 ; POSIX IPC

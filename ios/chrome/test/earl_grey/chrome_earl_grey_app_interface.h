@@ -295,6 +295,14 @@
 // Injects a bookmark into the fake sync server with |URL| and |title|.
 + (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title;
 
+// Injects a legacy bookmark into the fake sync server. The legacy bookmark
+// means 2015 and earlier, prior to the adoption of GUIDs for originator client
+// item ID.
++ (void)addFakeSyncServerLegacyBookmarkWithURL:(NSString*)URL
+                                         title:(NSString*)title
+                     originator_client_item_id:
+                         (NSString*)originator_client_item_id;
+
 // Injects typed URL to sync FakeServer.
 + (void)addFakeSyncServerTypedURL:(NSString*)URL;
 

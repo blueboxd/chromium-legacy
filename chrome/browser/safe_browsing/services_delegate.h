@@ -34,7 +34,6 @@ class TrackedPreferenceValidationDelegate;
 
 namespace safe_browsing {
 
-class BinaryUploadService;
 class ClientSideDetectionService;
 #if !defined(OS_ANDROID)
 class DownloadProtectionService;
@@ -67,7 +66,6 @@ class ServicesDelegate {
 #endif
     virtual bool CanCreateIncidentReportingService() = 0;
     virtual bool CanCreateResourceRequestDetector() = 0;
-    virtual bool CanCreateBinaryUploadService() = 0;
 
     // Caller takes ownership of the returned object. Cannot use std::unique_ptr
     // because services may not be implemented for some build configs.
@@ -77,7 +75,6 @@ class ServicesDelegate {
 #endif
     virtual IncidentReportingService* CreateIncidentReportingService() = 0;
     virtual ResourceRequestDetector* CreateResourceRequestDetector() = 0;
-    virtual BinaryUploadService* CreateBinaryUploadService() = 0;
   };
 
   // Creates the ServicesDelegate using its's default ServicesCreator.
@@ -139,11 +136,6 @@ class ServicesDelegate {
 
   virtual void CreateTelemetryService(Profile* profile) {}
   virtual void RemoveTelemetryService(Profile* profile) {}
-
-  virtual void CreateBinaryUploadService(Profile* profile) = 0;
-  virtual void RemoveBinaryUploadService(Profile* profile) = 0;
-  virtual BinaryUploadService* GetBinaryUploadService(
-      Profile* profile) const = 0;
 
   virtual void CreateSafeBrowsingNetworkContext(Profile* profile);
   virtual void RemoveSafeBrowsingNetworkContext(Profile* profile);

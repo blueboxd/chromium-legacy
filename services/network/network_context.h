@@ -98,7 +98,7 @@ class QuicTransport;
 class ResourceScheduler;
 class ResourceSchedulerClient;
 class SQLiteTrustTokenPersister;
-class TrustTokenStore;
+class PendingTrustTokenStore;
 class WebSocketFactory;
 
 namespace cors {
@@ -481,8 +481,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // preconditions before annotating requests with protocol-related headers
   // and to store information conveyed in the corresponding responses.
   //
-  // Initialized asynchronously and may be null until initialized.
-  TrustTokenStore* trust_token_store() { return trust_token_store_.get(); }
+  // May return null if Trust Tokens support is disabled.
+  PendingTrustTokenStore* trust_token_store() {
+    return trust_token_store_.get();
+  }
 
  private:
   URLRequestContextOwner MakeURLRequestContext();
@@ -576,7 +578,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       proxy_resolving_socket_factories_;
 
   // See the comment for |trust_token_store()|.
-  std::unique_ptr<TrustTokenStore> trust_token_store_;
+  std::unique_ptr<PendingTrustTokenStore> trust_token_store_;
 
 #if !defined(OS_IOS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;

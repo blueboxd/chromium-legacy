@@ -19,7 +19,11 @@ android_assets("weblayer_shell_assets") {
 }
 
 android_resources("weblayer_shell_resources") {
-  resource_dirs = [ "shell_apk/res" ]
+  sources = [
+    "shell_apk/res/layout/shell_browser_controls.xml",
+    "shell_apk/res/menu/app_menu.xml",
+    "shell_apk/res/values/strings.xml",
+  ]
   custom_package = "org.chromium.weblayer.shell"
 }
 

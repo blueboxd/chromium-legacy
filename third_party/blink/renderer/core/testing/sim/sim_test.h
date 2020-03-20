@@ -51,7 +51,6 @@ class SimTest : public testing::Test {
   std::unique_ptr<SimNetwork> network_;
   std::unique_ptr<SimCompositor> compositor_;
   std::unique_ptr<frame_test_helpers::TestWebFrameClient> web_frame_client_;
-  std::unique_ptr<frame_test_helpers::TestWebWidgetClient> web_widget_client_;
   std::unique_ptr<frame_test_helpers::TestWebViewClient> web_view_client_;
   std::unique_ptr<SimPage> page_;
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;

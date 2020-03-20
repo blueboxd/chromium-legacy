@@ -10892,6 +10892,7 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="CONTEXT_LOST_OUT_OF_MEMORY"/>
   <int value="11" label="CONTEXT_LOST_MAKECURRENT_FAILED"/>
   <int value="12" label="CONTEXT_LOST_INVALID_GPU_MESSAGE"/>
+  <int value="13" label="CONTEXT_LOST_RESHAPE_FAILED"/>
 </enum>
 
 <enum name="ContextMenuDelayedElementDetails">

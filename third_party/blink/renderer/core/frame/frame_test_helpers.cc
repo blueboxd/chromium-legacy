@@ -35,9 +35,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/render_frame_metadata_observer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -246,6 +248,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
         CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
+    widget_client->SetFrameWidget(frame_widget);
     // The WebWidget requires the compositor to be set before it is used.
     frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
                                      widget_client->animation_host());
@@ -257,6 +260,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
         CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
+    widget_client->SetFrameWidget(frame_widget);
     // The WebWidget requires the compositor to be set before it is used.
     frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
                                      widget_client->animation_host());
@@ -303,6 +307,7 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   // The WebWidget requires the compositor to be set before it is used.
   frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
                                    widget_client->animation_host());
+  widget_client->SetFrameWidget(frame_widget);
   // Set an initial size for subframes.
   if (frame->Parent())
     frame_widget->Resize(WebSize());
@@ -370,6 +375,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // The WebWidget requires the compositor to be set before it is used.
   widget->SetCompositorHosts(test_web_widget_client_->layer_tree_host(),
                              test_web_widget_client_->animation_host());
+  test_web_widget_client_->SetFrameWidget(widget);
   // We inform the WebView when it has a local main frame attached once the
   // WebFrame it fully set up and the WebWidgetClient is initialized (which is
   // the case by this point).
@@ -643,10 +649,6 @@ void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
   self_owned_.reset();
 }
 
-content::LayerTreeView* LayerTreeViewFactory::Initialize() {
-  return Initialize(/*delegate=*/nullptr);
-}
-
 content::LayerTreeView* LayerTreeViewFactory::Initialize(
     content::LayerTreeViewDelegate* specified_delegate) {
   cc::LayerTreeSettings settings;
@@ -656,8 +658,7 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
   settings.use_layer_lists = true;
 
   layer_tree_view_ = std::make_unique<content::LayerTreeView>(
-      specified_delegate ? specified_delegate : &delegate_,
-      Thread::Current()->GetTaskRunner(),
+      specified_delegate, Thread::Current()->GetTaskRunner(),
       /*compositor_thread=*/nullptr, &test_task_graph_runner_,
       &fake_thread_scheduler_);
   layer_tree_view_->Initialize(settings,
@@ -666,10 +667,13 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
   return layer_tree_view_.get();
 }
 
-TestWebWidgetClient::TestWebWidgetClient(
-    content::LayerTreeViewDelegate* delegate) {
-  layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
+TestWebWidgetClient::TestWebWidgetClient() {
+  layer_tree_view_ = layer_tree_view_factory_.Initialize(this);
   animation_host_ = layer_tree_view_->animation_host();
+}
+
+void TestWebWidgetClient::SetFrameWidget(WebFrameWidget* widget) {
+  frame_widget_ = widget;
 }
 
 void TestWebWidgetClient::SetPageScaleStateAndLimits(
@@ -713,6 +717,30 @@ void TestWebWidgetClient::DidMeaningfulLayout(
 
 viz::FrameSinkId TestWebWidgetClient::GetFrameSinkId() {
   return viz::FrameSinkId();
+}
+
+void TestWebWidgetClient::BeginMainFrame(base::TimeTicks frame_time) {
+  frame_widget_->BeginFrame(frame_time);
+}
+
+void TestWebWidgetClient::DidBeginMainFrame() {
+  frame_widget_->DidBeginFrame();
+}
+
+void TestWebWidgetClient::UpdateVisualState() {
+  frame_widget_->UpdateVisualState();
+}
+
+void TestWebWidgetClient::ApplyViewportChanges(
+    const ApplyViewportChangesArgs& args) {
+  frame_widget_->ApplyViewportChanges(args);
+}
+
+void TestWebWidgetClient::RequestNewLayerTreeFrameSink(
+    LayerTreeFrameSinkCallback callback) {
+  // Make a valid LayerTreeFrameSink so the compositor will generate begin main
+  // frames.
+  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d(), nullptr);
 }
 
 void TestWebViewClient::DestroyChildViews() {

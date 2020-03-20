@@ -45,8 +45,8 @@ AnimationEffect::AnimationEffect(const Timing& timing,
     : owner_(nullptr),
       timing_(timing),
       event_delegate_(event_delegate),
-      calculated_(),
-      needs_update_(true) {
+      needs_update_(true),
+      cancel_time_(0) {
   timing_.AssertValid();
 }
 

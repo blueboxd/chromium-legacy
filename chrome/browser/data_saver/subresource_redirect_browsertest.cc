@@ -1030,3 +1030,66 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
 }
+
+// Tests CSS background images are redirected.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  SetUpPublicImageURLPaths("/load_image/css_background_image.html",
+                           {"/load_image/image.png"});
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), HttpsURLWithPath("/load_image/css_background_image.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      net::HTTP_TEMPORARY_REDIRECT, 1);
+
+  EXPECT_EQ(request_url().port(), compression_url().port());
+  VerifyCompressibleImageUkm(1);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+}
+
+// Tests CSS background image coverage metrics is recorded but not redirected,
+// when redirect is disabled.
+IN_PROC_BROWSER_TEST_F(
+    RedirectDisabledSubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  SetUpPublicImageURLPaths("/load_image/css_background_image.html",
+                           {"/load_image/image.png"});
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), HttpsURLWithPath("/load_image/css_background_image.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ServerResponded", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.DidCompress.CompressionPercent", 0);
+
+  VerifyCompressibleImageUkm(1);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+}

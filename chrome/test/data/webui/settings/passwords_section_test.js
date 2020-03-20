@@ -5,7 +5,7 @@
 /** @fileoverview Runs the Polymer Password Settings tests. */
 
 // clang-format off
-// #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {PasswordManagerImpl, routes, Router} from 'chrome://settings/settings.js';
 // #import {getToastManager} from 'chrome://settings/lazy_load.js';
 // #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
@@ -832,7 +832,7 @@ cr.define('settings_passwords_section', function() {
                     passwordsSection.$$('#checkPasswordsBannerContainer')
                         .hidden);
                 assertFalse(
-                    passwordsSection.$$('#checkPasswordsButton').hidden);
+                    passwordsSection.$$('#checkPasswordsButtonRow').hidden);
                 assertTrue(
                     passwordsSection.$$('#checkPasswordsLinkRow').hidden);
               });
@@ -856,7 +856,8 @@ cr.define('settings_passwords_section', function() {
                 Polymer.dom.flush();
                 assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
                                .hidden);
-                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertTrue(
+                    passwordsSection.$$('#checkPasswordsButtonRow').hidden);
                 assertFalse(
                     passwordsSection.$$('#checkPasswordsLinkRow').hidden);
               });
@@ -876,7 +877,8 @@ cr.define('settings_passwords_section', function() {
                 Polymer.dom.flush();
                 assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
                                .hidden);
-                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertTrue(
+                    passwordsSection.$$('#checkPasswordsButtonRow').hidden);
                 assertFalse(
                     passwordsSection.$$('#checkPasswordsLinkRow').hidden);
               });
@@ -899,7 +901,8 @@ cr.define('settings_passwords_section', function() {
                 Polymer.dom.flush();
                 assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
                                .hidden);
-                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertTrue(
+                    passwordsSection.$$('#checkPasswordsButtonRow').hidden);
                 assertFalse(
                     passwordsSection.$$('#checkPasswordsLinkRow').hidden);
                 assertFalse(passwordsSection.$$('#checkPasswordLeakDescription')
@@ -933,7 +936,8 @@ cr.define('settings_passwords_section', function() {
                 Polymer.dom.flush();
                 assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
                                .hidden);
-                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertTrue(
+                    passwordsSection.$$('#checkPasswordsButtonRow').hidden);
                 assertFalse(
                     passwordsSection.$$('#checkPasswordsLinkRow').hidden);
                 assertTrue(passwordsSection.$$('#checkPasswordLeakDescription')
@@ -963,7 +967,7 @@ cr.define('settings_passwords_section', function() {
         Polymer.dom.flush();
         assertTrue(
             passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
-        assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
         assertFalse(
             passwordsSection.$$('#checkPasswordLeakDescription').hidden);
@@ -991,7 +995,7 @@ cr.define('settings_passwords_section', function() {
         Polymer.dom.flush();
         assertTrue(
             passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
-        assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
         assertTrue(passwordsSection.$$('#checkPasswordLeakDescription').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordWarningIcon').hidden);
@@ -1012,15 +1016,33 @@ cr.define('settings_passwords_section', function() {
         Polymer.dom.flush();
         assertFalse(
             passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
-        assertFalse(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
         assertTrue(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
         sync_test_util.simulateSyncStatus({signedIn: false});
         Polymer.dom.flush();
         assertTrue(
             passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
-        assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
       });
+    });
+
+    test('clickingCheckPasswordsButtonStartsCheck', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      passwordsSection.$$('#checkPasswordsButton').click();
+      const router = settings.Router.getInstance();
+      assertEquals(settings.routes.CHECK_PASSWORDS, router.currentRoute);
+      assertEquals('true', router.getQueryParameters().get('start'));
+    });
+
+    test('clickingCheckPasswordsRowStartsCheck', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      passwordsSection.$$('#checkPasswordsLinkRow').click();
+      const router = settings.Router.getInstance();
+      assertEquals(settings.routes.CHECK_PASSWORDS, router.currentRoute);
+      assertEquals('true', router.getQueryParameters().get('start'));
     });
   });
   // #cr_define_end

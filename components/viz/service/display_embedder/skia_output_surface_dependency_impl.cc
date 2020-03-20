@@ -153,10 +153,11 @@ void SkiaOutputSurfaceDependencyImpl::UnregisterDisplayContext(
 }
 
 void SkiaOutputSurfaceDependencyImpl::DidLoseContext(
-    bool offscreen,
     gpu::error::ContextLostReason reason,
     const GURL& active_url) {
-  gpu_service_impl_->DidLoseContext(offscreen, reason, active_url);
+  // |offscreen| is used to determine if it's compositing context or not to
+  // decide if we need to disable webgl and canvas.
+  gpu_service_impl_->DidLoseContext(/*offscreen=*/false, reason, active_url);
 }
 
 base::TimeDelta

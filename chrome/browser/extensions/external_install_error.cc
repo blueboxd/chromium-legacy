@@ -119,7 +119,6 @@ class ExternalInstallBubbleAlert : public GlobalErrorWithStandardBubble {
   void ExecuteMenuItem(Browser* browser) override;
 
   // GlobalErrorWithStandardBubble implementation.
-  gfx::Image GetBubbleViewIcon() override;
   base::string16 GetBubbleViewTitle() override;
   std::vector<base::string16> GetBubbleViewMessages() override;
   base::string16 GetBubbleViewAcceptButtonLabel() override;
@@ -222,17 +221,6 @@ void ExternalInstallBubbleAlert::ExecuteMenuItem(Browser* browser) {
   if (browser)
     ShowBubbleView(browser);
   error_->DidOpenBubbleView();
-}
-
-gfx::Image ExternalInstallBubbleAlert::GetBubbleViewIcon() {
-  if (prompt_->icon().IsEmpty())
-    return GlobalErrorWithStandardBubble::GetBubbleViewIcon();
-  // Scale icon to a reasonable size.
-  return gfx::Image(gfx::ImageSkiaOperations::CreateResizedImage(
-      *prompt_->icon().ToImageSkia(),
-      skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                extension_misc::EXTENSION_ICON_SMALL)));
 }
 
 base::string16 ExternalInstallBubbleAlert::GetBubbleViewTitle() {

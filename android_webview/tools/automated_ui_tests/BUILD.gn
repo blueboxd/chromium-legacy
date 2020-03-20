@@ -34,7 +34,11 @@ android_library("webview_ui_test_app_java") {
 }
 
 android_resources("webview_ui_test_app_apk_resources") {
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/layout/edittext_webview.xml",
+    "java/res/layout/fullscreen_webview.xml",
+    "java/res/values/strings.xml",
+  ]
   custom_package = "org.chromium.webview_ui_test"
 }
 

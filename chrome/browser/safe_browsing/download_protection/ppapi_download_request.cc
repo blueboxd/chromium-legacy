@@ -60,7 +60,8 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
       database_manager_(database_manager),
       start_time_(base::TimeTicks::Now()),
       supported_path_(
-          GetSupportedFilePath(default_file_path, alternate_extensions)) {
+          GetSupportedFilePath(default_file_path, alternate_extensions)),
+      profile_(profile) {
   DCHECK(profile);
   is_extended_reporting_ = IsExtendedReportingEnabled(*profile->GetPrefs());
   is_enhanced_protection_ = IsEnhancedProtectionEnabled(*profile->GetPrefs());
@@ -258,7 +259,7 @@ void PPAPIDownloadRequest::SendRequest() {
   loader_->AttachStringForUpload(client_download_request_data_,
                                  "application/octet-stream");
   loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      service_->url_loader_factory_.get(),
+      service_->GetURLLoaderFactory(profile_).get(),
       base::BindOnce(&PPAPIDownloadRequest::OnURLLoaderComplete,
                      base::Unretained(this)));
 }

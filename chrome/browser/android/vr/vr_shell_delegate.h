@@ -15,7 +15,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "chrome/browser/android/vr/vr_core_info.h"
-#include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
+#include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -36,10 +36,9 @@ enum class VrSupportLevel : int {
 };
 
 class VrShell;
-class XRRuntimeManager;
 
 class VrShellDelegate : public device::GvrDelegateProvider,
-                        XRRuntimeManagerObserver {
+                        content::XRRuntimeManager::Observer {
  public:
   VrShellDelegate(JNIEnv* env, jobject obj);
   ~VrShellDelegate() override;
@@ -77,8 +76,8 @@ class VrShellDelegate : public device::GvrDelegateProvider,
       device::mojom::XRRuntimeSessionOptionsPtr options,
       base::OnceCallback<void(device::mojom::XRSessionPtr)> callback) override;
 
-  // vr::XRRuntimeManagerObserver implementation.
-  // VrShellDelegate implements XRRuntimeManagerObserver to turn off poses (by
+  // content::XRRuntimeManager::Observer implementation.
+  // VrShellDelegate implements XRRuntimeManager::Observer to turn off poses (by
   // calling SetInlinePosesEnabled) on a runtime that gets initialized and added
   // to XRRuntimeManager, while the VrShell is active (user has headset on).
   // As for the runtimes that got added to the XRRuntimeManager before the

@@ -459,7 +459,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         int contextMenuMode = getContextMenuMode(mActivityType);
         Supplier<ShareDelegate> shareDelegateSupplier =
                 mActivity == null ? null : mActivity.getShareDelegateSupplier();
-        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab, null),
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
                 shareDelegateSupplier, contextMenuMode, ExternalAuthUtils.getInstance());
     }
 

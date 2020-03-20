@@ -142,6 +142,12 @@ Polymer({
         this.leakedCredentialsListener_);
     this.addWebUIListener('sync-status-changed', syncStatusChanged);
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
+
+    // Start the check if instructed to do so.
+    const router = settings.Router.getInstance();
+    if (router.getQueryParameters().get('start') == 'true') {
+      this.passwordManager_.startBulkPasswordCheck();
+    }
   },
 
   /** @override */

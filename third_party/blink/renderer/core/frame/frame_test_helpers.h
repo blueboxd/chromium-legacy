@@ -185,13 +185,10 @@ class LayerTreeViewFactory {
   DISALLOW_NEW();
 
  public:
-  // Use this to make a LayerTreeView with a stub delegate.
-  content::LayerTreeView* Initialize();
   // Use this to specify a delegate instead of using a stub.
   content::LayerTreeView* Initialize(content::LayerTreeViewDelegate*);
 
  private:
-  content::StubLayerTreeViewDelegate delegate_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   std::unique_ptr<content::LayerTreeView> layer_tree_view_;
@@ -204,11 +201,15 @@ struct InjectedScrollGestureData {
   WebInputEvent::Type type;
 };
 
-class TestWebWidgetClient : public WebWidgetClient {
+class TestWebWidgetClient : public WebWidgetClient,
+                            public content::StubLayerTreeViewDelegate {
  public:
-  // If no delegate is given, a stub is used.
-  explicit TestWebWidgetClient(content::LayerTreeViewDelegate* = nullptr);
+  TestWebWidgetClient();
   ~TestWebWidgetClient() override = default;
+
+  // This method must be called just after the allocation of |widget| and
+  // before usage of this class occurs.
+  void SetFrameWidget(WebFrameWidget* widget);
 
   // WebWidgetClient implementation.
   void ScheduleAnimation() override { animation_scheduled_ = true; }
@@ -232,7 +233,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   }
   cc::AnimationHost* animation_host() { return animation_host_; }
 
-  bool AnimationScheduled() { return animation_scheduled_; }
+  bool AnimationScheduled() const { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }
 
   bool HaveScrollEventHandlers() const;
@@ -251,7 +252,17 @@ class TestWebWidgetClient : public WebWidgetClient {
     return injected_scroll_gesture_data_;
   }
 
+ protected:
+  // LayerTreeViewDelegate implementation.
+  void BeginMainFrame(base::TimeTicks frame_time) override;
+  void DidBeginMainFrame() override;
+  void UpdateVisualState() override;
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
+  void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) override;
+
  private:
+  WebFrameWidget* frame_widget_ = nullptr;
   content::LayerTreeView* layer_tree_view_ = nullptr;
   cc::AnimationHost* animation_host_ = nullptr;
   LayerTreeViewFactory layer_tree_view_factory_;

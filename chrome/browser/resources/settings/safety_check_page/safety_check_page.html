@@ -52,7 +52,8 @@
         }
       }
     </style>
-    <div id="safetyCheckParent" class="settings-box first two-line">
+    <div id="safetyCheckParent" class="settings-box first two-line"
+        tabindex="-1">
       <iron-icon icon="settings20:safety-check" aria-hidden="true">
       </iron-icon>
       <div class="start settings-box-text" no-search>
@@ -152,8 +153,8 @@
         <template is="dom-if"
             if="[[shouldShowSafeBrowsingManagedIcon_(safeBrowsingStatus_)]]"
             restamp>
-          <iron-icon id="safetyCheckSafeBrowsingManagedIcon" icon="cr20:domain"
-              aria-hidden="true">
+          <iron-icon id="safetyCheckSafeBrowsingManagedIcon" aria-hidden="true"
+              icon="[[getSafeBrowsingManagedIcon_(safeBrowsingStatus_)]]">
           </iron-icon>
         </template>
       </div>

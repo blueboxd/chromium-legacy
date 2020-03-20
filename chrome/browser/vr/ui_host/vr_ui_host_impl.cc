@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
-#include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
+#include "chrome/browser/vr/xr_runtime_manager_statics.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/browser/device_service.h"
@@ -128,9 +128,9 @@ VRUiHostImpl::VRUiHostImpl(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
-  auto* runtime_manager = XRRuntimeManager::GetInstanceIfCreated();
+  auto* runtime_manager = XRRuntimeManagerStatics::GetInstanceIfCreated();
   DCHECK(runtime_manager != nullptr);
-  BrowserXRRuntimeImpl* runtime = runtime_manager->GetRuntime(device_id);
+  content::BrowserXRRuntime* runtime = runtime_manager->GetRuntime(device_id);
   if (runtime) {
     runtime->AddObserver(this);
   }
@@ -143,9 +143,9 @@ VRUiHostImpl::~VRUiHostImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
-  // We don't call BrowserXRRuntimeImpl::RemoveObserver, because if we are being
+  // We don't call BrowserXRRuntime::RemoveObserver, because if we are being
   // destroyed, it means the corresponding device has been removed from
-  // XRRuntimeManager, and the BrowserXRRuntimeImpl has been destroyed.
+  // XRRuntimeManager, and the BrowserXRRuntime has been destroyed.
   if (web_contents_)
     SetWebXRWebContents(nullptr);
 }
@@ -165,7 +165,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!IsValidInfo(info_)) {
-    XRRuntimeManager::ExitImmersivePresentation();
+    XRRuntimeManagerStatics::ExitImmersivePresentation();
     return;
   }
 
@@ -252,7 +252,7 @@ void VRUiHostImpl::SetVRDisplayInfo(
   DVLOG(3) << __func__;
 
   if (!IsValidInfo(display_info)) {
-    XRRuntimeManager::ExitImmersivePresentation();
+    XRRuntimeManagerStatics::ExitImmersivePresentation();
     return;
   }
 

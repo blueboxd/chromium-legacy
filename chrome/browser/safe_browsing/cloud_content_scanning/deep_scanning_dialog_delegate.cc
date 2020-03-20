@@ -29,6 +29,7 @@
 #include "chrome/browser/file_util_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/file_source_request.h"
@@ -627,7 +628,7 @@ void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {
 }
 
 BinaryUploadService* DeepScanningDialogDelegate::GetBinaryUploadService() {
-  return g_browser_process->safe_browsing_service()->GetBinaryUploadService(
+  return BinaryUploadServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
 }
 

@@ -226,7 +226,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // Returns true after SetNeedsAnimate(), SetNeedsUpdateLayers() or
   // SetNeedsCommit(), until it is satisfied.
-  bool RequestedMainFramePendingForTesting();
+  bool RequestedMainFramePendingForTesting() const;
 
   // Requests that the next frame re-chooses crisp raster scales for all layers.
   void SetNeedsRecalculateRasterScales();

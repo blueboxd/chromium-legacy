@@ -87,9 +87,14 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
         SkSetFourByteTag('w', 'd', 't', 'h'),
         SkFloatToScalar(selection_capabilities.width.clampToRange(
             selection_request.width))};
+    // CSS and OpenType have opposite definitions of direction of slant
+    // angle. In OpenType positive values turn counter-clockwise, negative
+    // values clockwise - in CSS positive values are clockwise rotations /
+    // skew. See note in https://drafts.csswg.org/css-fonts/#font-style-prop -
+    // map value from CSS to OpenType here.
     SkFontArguments::Axis slant_axis = {
         SkSetFourByteTag('s', 'l', 'n', 't'),
-        SkFloatToScalar(selection_capabilities.slope.clampToRange(
+        SkFloatToScalar(-selection_capabilities.slope.clampToRange(
             selection_request.slope))};
 
     axes.push_back(weight_axis);

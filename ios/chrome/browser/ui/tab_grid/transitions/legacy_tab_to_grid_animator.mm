@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/legacy_tab_to_grid_animator.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation_layout_providing.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
@@ -83,13 +84,23 @@
   // view; rather it's the view of the view controller that contains the BVC.
   // Unfortunatley, the layout guide needed here is attached to the BVC's view,
   // which is the first (and only) subview of the BVCContainerViewController's
-  // view.
+  // view in most cases. However, crbug.com/1053452 shows that we cannot just
+  // blindly use the first subview. The for-loop below ensures that a layout
+  // guide is obtained from the first subview that has it.
   // TODO(crbug.com/860234) Clean up this arrangement.
-  UIView* viewWithNamedGuides = dismissingView.subviews[0];
-  CGRect initialRect = [NamedGuide guideWithName:kContentAreaGuide
-                                            view:viewWithNamedGuides]
-                           .layoutFrame;
-
+  UIView* viewWithNamedGuides = nil;
+  CGRect initialRect;
+  for (viewWithNamedGuides in dismissingView.subviews) {
+    NamedGuide* namedGuide = [NamedGuide guideWithName:kContentAreaGuide
+                                                  view:viewWithNamedGuides];
+    if (namedGuide) {
+      initialRect = namedGuide.layoutFrame;
+      break;
+    }
+  }
+  // Prefer to crash here at the root cause, rather than crashing later where
+  // the reason is more ambiguous.
+  CHECK_NE(nil, viewWithNamedGuides);
   [layout.activeItem populateWithSnapshotsFromView:viewWithNamedGuides
                                         middleRect:initialRect];
 

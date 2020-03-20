@@ -90,11 +90,14 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
   Window* CreateTrackedWindow(MockWindowDelegate* delegate,
                               const gfx::Rect& bounds,
                               Window* parent = nullptr,
-                              bool transparent = false) {
+                              bool transparent = false,
+                              ui::LayerType layer_type = ui::LAYER_TEXTURED) {
     Window* window = new Window(delegate);
     delegate->set_window(window);
     window->SetType(client::WINDOW_TYPE_NORMAL);
-    window->Init(ui::LAYER_TEXTURED);
+    window->Init(layer_type);
+    if (layer_type == ui::LAYER_SOLID_COLOR)
+      window->layer()->SetColor(SK_ColorBLACK);
     window->SetTransparent(transparent);
     window->SetBounds(bounds);
     window->Show();
@@ -105,9 +108,20 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
   }
 
   Window* CreateUntrackedWindow(const gfx::Rect& bounds,
-                                Window* parent = nullptr) {
-    Window* window = test::CreateTestWindow(SK_ColorWHITE, 1, bounds,
-                                            parent ? parent : root_window());
+                                Window* parent = nullptr,
+                                ui::LayerType layer_type = ui::LAYER_TEXTURED) {
+    if (layer_type == ui::LAYER_TEXTURED) {
+      return test::CreateTestWindow(SK_ColorWHITE, 1, bounds,
+                                    parent ? parent : root_window());
+    }
+    DCHECK_EQ(ui::LAYER_SOLID_COLOR, layer_type);
+    Window* window = new Window(nullptr);
+    window->SetType(client::WINDOW_TYPE_NORMAL);
+    window->Init(ui::LAYER_SOLID_COLOR);
+    window->layer()->SetColor(SK_ColorBLACK);
+    window->SetBounds(bounds);
+    root_window()->AddChild(window);
+    window->Show();
     return window;
   }
 
@@ -206,13 +220,45 @@ TEST_F(WindowOcclusionTrackerTest, HiddenWindowCoversWindow) {
   EXPECT_FALSE(delegate_b->is_expecting_call());
 }
 
+class WindowOcclusionTrackerOpacityTest
+    : public WindowOcclusionTrackerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  WindowOcclusionTrackerOpacityTest() = default;
+  ~WindowOcclusionTrackerOpacityTest() override = default;
+  WindowOcclusionTrackerOpacityTest(const WindowOcclusionTrackerOpacityTest&) =
+      delete;
+  WindowOcclusionTrackerOpacityTest& operator=(
+      const WindowOcclusionTrackerOpacityTest&) = delete;
+
+  // WindowOcclusionTrackerTest:
+  void SetUp() override {
+    use_solid_color_layer_ = GetParam();
+    WindowOcclusionTrackerTest::SetUp();
+  }
+
+  void SetOpacity(aura::Window* window, float opacity) {
+    if (use_solid_color_layer_)
+      window->layer()->SetColor(SkColorSetARGB(255 * opacity, 255, 255, 255));
+    else
+      window->layer()->SetOpacity(opacity);
+  }
+
+  ui::LayerType layer_type() const {
+    return use_solid_color_layer_ ? ui::LAYER_SOLID_COLOR : ui::LAYER_TEXTURED;
+  }
+
+ private:
+  bool use_solid_color_layer_;
+};
+
 // Verify that a window whose bounds are covered by a semi-transparent window is
 // not occluded. Also, verify that that when the opacity of a window changes,
 // occlusion states are updated.
 //  __....     ... = semi-transparent window
 // |__|  .
 // .......
-TEST_F(WindowOcclusionTrackerTest, SemiTransparentWindowCoversWindow) {
+TEST_P(WindowOcclusionTrackerOpacityTest, SemiTransparentWindowCoversWindow) {
   // Create window a. Expect it to be non-occluded.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
@@ -224,27 +270,28 @@ TEST_F(WindowOcclusionTrackerTest, SemiTransparentWindowCoversWindow) {
   MockWindowDelegate* delegate_b = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
   delegate_b->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  Window* window_b = CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 15, 15));
+  Window* window_b = CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 15, 15),
+                                         nullptr, false, layer_type());
   EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_b->is_expecting_call());
 
   // Change the opacity of window b to 0.5f. Expect both windows to be non-
   // occluded.
-  EXPECT_FALSE(delegate_a->is_expecting_call());
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  window_b->layer()->SetOpacity(0.5f);
+  SetOpacity(window_b, 0.5f);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   // Change the opacity of window b back to 1.0f. Expect window a to be
   // occluded.
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
-  window_b->layer()->SetOpacity(1.0f);
+  SetOpacity(window_b, 1.f);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
 // Same as previous test, but the occlusion state of the semi-transparent is not
 // tracked.
-TEST_F(WindowOcclusionTrackerTest, SemiTransparentUntrackedWindowCoversWindow) {
+TEST_P(WindowOcclusionTrackerOpacityTest,
+       SemiTransparentUntrackedWindowCoversWindow) {
   // Create window a. Expect it to be non-occluded.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
@@ -253,19 +300,20 @@ TEST_F(WindowOcclusionTrackerTest, SemiTransparentUntrackedWindowCoversWindow) {
 
   // Create untracked window b. Expect window a to be occluded.
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
-  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 15, 15));
+  Window* window_b =
+      CreateUntrackedWindow(gfx::Rect(0, 0, 15, 15), nullptr, layer_type());
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   // Change the opacity of window b to 0.5f. Expect both windows to be non-
   // occluded.
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  window_b->layer()->SetOpacity(0.5f);
+  SetOpacity(window_b, 0.5f);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   // Change the opacity of window b back to 1.0f. Expect window a to be
   // occluded.
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
-  window_b->layer()->SetOpacity(1.0f);
+  SetOpacity(window_b, 1.0f);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
@@ -1383,7 +1431,7 @@ class ObserverDestroyingWindowOnAnimationEnded
 
 // Verify that no crash occurs if a LayerAnimationObserver destroys a tracked
 // window before WindowOcclusionTracker is notified that the animation ended.
-TEST_F(WindowOcclusionTrackerTest,
+TEST_P(WindowOcclusionTrackerOpacityTest,
        DestroyTrackedWindowFromLayerAnimationObserver) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
@@ -1396,7 +1444,8 @@ TEST_F(WindowOcclusionTrackerTest,
   // Create a window. Expect it to be non-occluded.
   MockWindowDelegate* delegate = new MockWindowDelegate();
   delegate->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  Window* window = CreateTrackedWindow(delegate, gfx::Rect(0, 0, 10, 10));
+  Window* window = CreateTrackedWindow(delegate, gfx::Rect(0, 0, 10, 10),
+                                       nullptr, false, layer_type());
   EXPECT_FALSE(delegate->is_expecting_call());
   window->layer()->SetAnimator(test_controller.animator());
 
@@ -1406,7 +1455,7 @@ TEST_F(WindowOcclusionTrackerTest,
   window->layer()->GetAnimator()->AddObserver(&observer);
 
   // Start animating the opacity of the window.
-  window->layer()->SetOpacity(0.5f);
+  SetOpacity(window, 0.5f);
 
   // Complete the animation. Expect no crash.
   window->layer()->GetAnimator()->StopAnimating();
@@ -1415,6 +1464,8 @@ TEST_F(WindowOcclusionTrackerTest,
 // Verify that no crash occurs if an animation completes on a non-tracked
 // window's layer after the window has been removed from a root with a tracked
 // window and deleted.
+// TODO(crbug.com/1057024): Alpha in SOLID_COLOR layer doesn't work with
+// animation. Fix it and use WindowOcclusionTrackerOpacityTest.
 TEST_F(WindowOcclusionTrackerTest,
        DeleteNonTrackedAnimatedWindowRemovedFromTrackedRoot) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
@@ -2037,7 +2088,7 @@ TEST_F(WindowOcclusionTrackerTest, WindowCanBeOccludedByMultipleWindows) {
 }
 
 // Verify that the excluded window is indeed ignored by occlusion tracking.
-TEST_F(WindowOcclusionTrackerTest, ExcludeWindow) {
+TEST_P(WindowOcclusionTrackerOpacityTest, ExcludeWindow) {
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
   CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
@@ -2139,7 +2190,8 @@ TEST_F(WindowOcclusionTrackerTest, ExcludeWindow) {
   delegate_d->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
 
-  auto* window_d = CreateTrackedWindow(delegate_d, gfx::Rect(0, 0, 10, 10));
+  auto* window_d = CreateTrackedWindow(delegate_d, gfx::Rect(0, 0, 10, 10),
+                                       nullptr, false, layer_type());
   window_d->SetName("WindowD");
 
   EXPECT_FALSE(delegate_a->is_expecting_call());
@@ -2154,16 +2206,16 @@ TEST_F(WindowOcclusionTrackerTest, ExcludeWindow) {
     EXPECT_FALSE(delegate_a->is_expecting_call());
 
     // Changing opacity/bounds shouldn't change the occlusion state.
-    window_d->layer()->SetOpacity(0.5f);
+    SetOpacity(window_d, 0.5f);
     window_d->SetBounds(gfx::Rect(0, 0, 20, 20));
 
-    // A is now visible even if |window_d| is un-excluded becaues
+    // A is now visible even if |window_d| is un-excluded because
     // window_d is not fully opaque.
   }
 
   EXPECT_FALSE(delegate_a->is_expecting_call());
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
-  window_d->layer()->SetOpacity(1.f);
+  SetOpacity(window_d, 1.f);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
@@ -2402,7 +2454,7 @@ TEST_F(WindowOcclusionTrackerTest,
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
-TEST_F(WindowOcclusionTrackerTest,
+TEST_P(WindowOcclusionTrackerOpacityTest,
        ComputeTargetOcclusionForWindowUsesTargetOpacity) {
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
@@ -2410,11 +2462,12 @@ TEST_F(WindowOcclusionTrackerTest,
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
-  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10));
+  Window* window_b =
+      CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10), nullptr, layer_type());
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  window_b->layer()->SetOpacity(0.0f);
+  SetOpacity(window_b, 0.0f);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   // Should be visible for target occlusion.
@@ -2434,7 +2487,7 @@ TEST_F(WindowOcclusionTrackerTest,
   layer_animation_settings.SetTransitionDuration(kTransitionDuration);
 
   window_b->layer()->SetAnimator(test_controller.animator());
-  window_b->layer()->SetOpacity(1.0f);
+  SetOpacity(window_b, 1.0f);
 
   // Opacity animation uses threaded animation.
   test_controller.StartThreadedAnimationsIfNeeded();
@@ -2704,5 +2757,43 @@ TEST_F(
   window_a->SetOpaqueRegionsForOcclusion({gfx::Rect(0, 0, 5, 5)});
   window_a->SetOpaqueRegionsForOcclusion({});
 }
+
+TEST_F(WindowOcclusionTrackerTest,
+       SemiOpaqueSolidColorLayerDoesNotAffectChildOpacity) {
+  // Create window a. Expect it to be non-occluded.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Create window b. Expect it to be non-occluded and expect window a to be
+  // occluded.
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 15, 15), nullptr,
+                                           ui::LAYER_SOLID_COLOR);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Semi-opaque color on the window_b should make window a visible.
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  window_b->layer()->SetColor(SkColorSetARGB(127, 255, 255, 255));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Creating opaque layer on top of a half-opaque solid_color layer
+  // can occlude the window.
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  Window* window_c = CreateUntrackedWindow(gfx::Rect(0, 0, 15, 15), window_b);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  DCHECK(window_c);
+
+  // Removing the opaque layer should make the window_a visible.
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  delete window_c;
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+// Run tests with LAYER_TEXTURE_LAYER type or LAYER_SOLID_COLOR type.
+INSTANTIATE_TEST_SUITE_P(All,
+                         WindowOcclusionTrackerOpacityTest,
+                         testing::Bool());
 
 }  // namespace aura

@@ -46,15 +46,15 @@ TransformOperation::OperationType GetTypeForTranslate(const Length& x,
   bool x_zero = x.IsZero();
   bool y_zero = x.IsZero();
   bool z_zero = !z;
-  if (!x_zero && !y_zero && !z_zero)
-    return TransformOperation::kTranslate3D;
   if (y_zero && z_zero)
     return TransformOperation::kTranslateX;
   if (x_zero && z_zero)
     return TransformOperation::kTranslateY;
   if (x_zero && y_zero)
     return TransformOperation::kTranslateZ;
-  return TransformOperation::kTranslate;
+  if (z_zero)
+    return TransformOperation::kTranslate;
+  return TransformOperation::kTranslate3D;
 }
 }  // namespace
 
@@ -89,10 +89,12 @@ scoped_refptr<TransformOperation> TranslateTransformOperation::Blend(
   const Length& from_x = from_op ? from_op->x_ : zero_length;
   const Length& from_y = from_op ? from_op->y_ : zero_length;
   double from_z = from_op ? from_op->z_ : 0;
+
+  bool is_3d = Is3DOperation() || (from && from->Is3DOperation());
   return TranslateTransformOperation::Create(
       x_.Blend(from_x, progress, kValueRangeAll),
       y_.Blend(from_y, progress, kValueRangeAll),
-      blink::Blend(from_z, z_, progress), type_);
+      blink::Blend(from_z, z_, progress), is_3d ? kTranslate3D : kTranslate);
 }
 
 bool TranslateTransformOperation::CanBlendWith(

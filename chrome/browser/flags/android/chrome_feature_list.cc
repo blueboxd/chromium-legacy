@@ -272,7 +272,7 @@ const base::Feature kAndroidBlockIntentNonSafelistedHeaders{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidNightModeTabReparenting{
-    "AndroidNightModeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AndroidNightModeTabReparenting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this.
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",

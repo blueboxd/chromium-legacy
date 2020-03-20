@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol AppNavigation;
 @protocol BrowserLauncher;
 @class MainApplicationDelegate;
 @class MemoryWarningHelper;
@@ -54,8 +53,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // Called when the application is getting terminated. It stops all outgoing
 // requests, config updates, clears the device sharing manager and stops the
 // mainChrome instance.
-- (void)applicationWillTerminate:(UIApplication*)application
-           applicationNavigation:(id<AppNavigation>)appNavigation;
+- (void)applicationWillTerminate:(UIApplication*)application;
 
 // Resumes the session: reinitializing metrics and opening new tab if necessary.
 // User sessions are defined in terms of BecomeActive/ResignActive so that
@@ -75,8 +73,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)applicationWillEnterForeground:(UIApplication*)application
                        metricsMediator:(MetricsMediator*)metricsMediator
                           memoryHelper:(MemoryWarningHelper*)memoryHelper
-                             tabOpener:(id<TabOpening>)tabOpener
-                         appNavigation:(id<AppNavigation>)appNavigation;
+                             tabOpener:(id<TabOpening>)tabOpener;
 
 // Sets the return value for -didFinishLaunchingWithOptions that determines if
 // UIKit should make followup delegate calls such as

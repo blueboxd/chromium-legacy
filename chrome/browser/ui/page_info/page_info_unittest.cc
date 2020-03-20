@@ -21,6 +21,7 @@
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -220,8 +221,10 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   PageInfo* page_info() {
     if (!page_info_.get()) {
       page_info_ = std::make_unique<PageInfo>(
-          mock_ui(), profile(), tab_specific_content_settings(), web_contents(),
-          url(), security_level(), visible_security_state());
+          mock_ui(), profile(),
+          std::make_unique<ChromePageInfoDelegate>(web_contents()),
+          tab_specific_content_settings(), web_contents(), url(),
+          security_level(), visible_security_state());
     }
     return page_info_.get();
   }
@@ -1070,19 +1073,18 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
     histograms.ExpectTotalCount(kGenericHistogram, 0);
     histograms.ExpectTotalCount(test.histogram_name, 0);
 
-    page_info()->RecordPageInfoAction(
-        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+    page_info()->RecordPageInfoAction(PageInfo::PAGE_INFO_OPENED);
 
     // RecordPageInfoAction() is called during PageInfo
     // creation in addition to the explicit RecordPageInfoAction()
     // call, so it is called twice in total.
     histograms.ExpectTotalCount(kGenericHistogram, 2);
-    histograms.ExpectBucketCount(kGenericHistogram,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+    histograms.ExpectBucketCount(kGenericHistogram, PageInfo::PAGE_INFO_OPENED,
+                                 2);
 
     histograms.ExpectTotalCount(test.histogram_name, 2);
     histograms.ExpectBucketCount(test.histogram_name,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+                                 PageInfo::PAGE_INFO_OPENED, 2);
   }
 }
 
@@ -1183,19 +1185,18 @@ TEST_F(PageInfoTest, SafetyTipMetrics) {
     histograms.ExpectTotalCount(kGenericHistogram, 0);
     histograms.ExpectTotalCount(test.histogram_name, 0);
 
-    page_info()->RecordPageInfoAction(
-        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+    page_info()->RecordPageInfoAction(PageInfo::PAGE_INFO_OPENED);
 
     // RecordPageInfoAction() is called during PageInfo
     // creation in addition to the explicit RecordPageInfoAction()
     // call, so it is called twice in total.
     histograms.ExpectTotalCount(kGenericHistogram, 2);
-    histograms.ExpectBucketCount(kGenericHistogram,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+    histograms.ExpectBucketCount(kGenericHistogram, PageInfo::PAGE_INFO_OPENED,
+                                 2);
 
     histograms.ExpectTotalCount(test.histogram_name, 2);
     histograms.ExpectBucketCount(test.histogram_name,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+                                 PageInfo::PAGE_INFO_OPENED, 2);
   }
 }
 
@@ -1298,19 +1299,18 @@ TEST_F(PageInfoTest, LegacyTLSMetrics) {
     histograms.ExpectTotalCount(kHistogramPrefix + "." + test.histogram_suffix,
                                 0);
 
-    page_info()->RecordPageInfoAction(
-        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+    page_info()->RecordPageInfoAction(PageInfo::PAGE_INFO_OPENED);
 
     // RecordPageInfoAction() is called during PageInfo creation in addition to
     // the explicit RecordPageInfoAction() call, so it is called twice in total.
     histograms.ExpectTotalCount(kGenericHistogram, 2);
-    histograms.ExpectBucketCount(kGenericHistogram,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+    histograms.ExpectBucketCount(kGenericHistogram, PageInfo::PAGE_INFO_OPENED,
+                                 2);
 
     histograms.ExpectTotalCount(kHistogramPrefix + "." + test.histogram_suffix,
                                 2);
     histograms.ExpectBucketCount(kHistogramPrefix + "." + test.histogram_suffix,
-                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+                                 PageInfo::PAGE_INFO_OPENED, 2);
   }
 }
 

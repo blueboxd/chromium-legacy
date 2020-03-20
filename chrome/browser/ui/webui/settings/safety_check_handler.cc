@@ -144,6 +144,7 @@ void SafetyCheckHandler::HandleGetParentRanDisplayString(
 }
 
 void SafetyCheckHandler::CheckUpdates() {
+  // Usage of base::Unretained(this) is safe, because we own `version_updater_`.
   version_updater_->CheckForUpdate(
       base::Bind(&SafetyCheckHandler::OnUpdateCheckResult,
                  base::Unretained(this)),
@@ -174,13 +175,8 @@ void SafetyCheckHandler::CheckPasswords() {
   // browser should not crash.
   observed_leak_check_.RemoveAll();
   observed_leak_check_.Add(leak_service_);
-  passwords_delegate_->StartPasswordCheck();
-  // In the case of no passwords, there is no state transition and no callback.
-  // Because of that, it is necessary to check the state synchronously.
-  if (leak_service_->state() !=
-      password_manager::BulkLeakCheckService::State::kRunning) {
-    OnStateChanged(leak_service_->state());
-  }
+  passwords_delegate_->StartPasswordCheck(base::BindOnce(
+      &SafetyCheckHandler::OnStateChanged, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SafetyCheckHandler::CheckExtensions() {
@@ -533,6 +529,8 @@ void SafetyCheckHandler::OnJavascriptDisallowed() {
 }
 
 void SafetyCheckHandler::RegisterMessages() {
+  // Usage of base::Unretained(this) is safe, because web_ui() owns `this` and
+  // won't release ownership until destruction.
   web_ui()->RegisterMessageCallback(
       kPerformSafetyCheck,
       base::BindRepeating(&SafetyCheckHandler::HandlePerformSafetyCheck,

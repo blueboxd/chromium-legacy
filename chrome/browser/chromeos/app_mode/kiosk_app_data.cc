@@ -103,13 +103,13 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
   ~CrxLoader() override = default;
 
   // extensions::SandboxedUnpackerClient
-  void OnUnpackSuccess(
-      const base::FilePath& temp_dir,
-      const base::FilePath& extension_root,
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const extensions::Extension* extension,
-      const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) override {
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_root,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
+                       const extensions::Extension* extension,
+                       const SkBitmap& install_icon,
+                       extensions::declarative_net_request::RulesetChecksums
+                           ruleset_checksums) override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     const extensions::KioskModeInfo* info =

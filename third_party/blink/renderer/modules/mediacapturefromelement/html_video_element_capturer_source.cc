@@ -160,9 +160,11 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
       natural_size_, gfx::Rect(natural_size_), natural_size_,
       current_time - start_capture_time_);
 
-  const uint32_t source_pixel_format =
-      (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
-                                                   : libyuv::FOURCC_ARGB;
+#if SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
+  const uint32_t source_pixel_format = libyuv::FOURCC_ABGR;
+#else
+  const uint32_t source_pixel_format = libyuv::FOURCC_ARGB;
+#endif
 
   if (frame &&
       libyuv::ConvertToI420(

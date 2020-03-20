@@ -68,6 +68,13 @@ void RenderAccessibilityManager::FatalError() {
   CHECK(false) << "Invalid accessibility tree.";
 }
 
+void RenderAccessibilityManager::HitTest(
+    const ui::AXActionData& action_data,
+    mojom::RenderAccessibility::HitTestCallback callback) {
+  DCHECK(render_accessibility_);
+  render_accessibility_->HitTest(action_data, std::move(callback));
+}
+
 void RenderAccessibilityManager::PerformAction(const ui::AXActionData& data) {
   DCHECK(render_accessibility_);
   render_accessibility_->PerformAction(data);
@@ -85,17 +92,6 @@ void RenderAccessibilityManager::HandleAccessibilityEvents(
     mojom::RenderAccessibilityHost::HandleAXEventsCallback callback) {
   GetOrCreateRemoteRenderAccessibilityHost()->HandleAXEvents(
       updates, events, reset_token, std::move(callback));
-}
-
-void RenderAccessibilityManager::HandleChildFrameHitTestResult(
-    int action_request_id,
-    const gfx::Point& point,
-    int child_frame_routing_id,
-    int child_frame_browser_plugin_instance_id,
-    ax::mojom::Event event_to_fire) {
-  GetOrCreateRemoteRenderAccessibilityHost()->HandleAXChildFrameHitTestResult(
-      action_request_id, point, child_frame_routing_id,
-      child_frame_browser_plugin_instance_id, event_to_fire);
 }
 
 void RenderAccessibilityManager::HandleLocationChanges(

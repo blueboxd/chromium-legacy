@@ -83,16 +83,17 @@ class RulesetManagerTest : public DNRTestBase {
     ExtensionRegistry::Get(browser_context())
         ->AddEnabled(last_loaded_extension_);
 
+    RulesetSource source = RulesetSource::CreateStatic(*last_loaded_extension_);
     int expected_checksum;
     EXPECT_TRUE(ExtensionPrefs::Get(browser_context())
-                    ->GetDNRRulesetChecksum(last_loaded_extension_->id(),
-                                            &expected_checksum));
+                    ->GetDNRStaticRulesetChecksum(last_loaded_extension_->id(),
+                                                  source.id(),
+                                                  &expected_checksum));
 
     std::vector<std::unique_ptr<RulesetMatcher>> matchers(1);
     EXPECT_EQ(RulesetMatcher::kLoadSuccess,
               RulesetMatcher::CreateVerifiedMatcher(
-                  RulesetSource::CreateStatic(*last_loaded_extension_),
-                  expected_checksum, &matchers[0]));
+                  std::move(source), expected_checksum, &matchers[0]));
 
     *matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
   }

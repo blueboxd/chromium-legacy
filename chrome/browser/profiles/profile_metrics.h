@@ -140,7 +140,6 @@ class ProfileMetrics {
   static void LogProfileDeleteUser(ProfileDelete metric);
   static void LogProfileSwitchGaia(ProfileGaia metric);
   static void LogProfileSyncInfo(ProfileSync metric);
-  static void LogProfileAuthResult(ProfileAuth metric);
   static void LogProfileDelete(bool profile_was_signed_in);
   static void LogTimeToOpenUserManager(const base::TimeDelta& time_to_open);
 

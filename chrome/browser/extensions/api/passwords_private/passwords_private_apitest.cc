@@ -88,8 +88,9 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     return s_test_delegate_->StopPasswordCheckTriggered();
   }
 
-  void set_start_password_check_result(bool result) {
-    s_test_delegate_->SetStartPasswordCheckReturnSuccess(result);
+  void set_start_password_check_state(
+      password_manager::BulkLeakCheckService::State state) {
+    s_test_delegate_->SetStartPasswordCheckState(state);
   }
 
   bool IsOptedInForAccountStorage() {
@@ -232,14 +233,16 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheck) {
-  set_start_password_check_result(true);
+  set_start_password_check_state(
+      password_manager::BulkLeakCheckService::State::kRunning);
   EXPECT_FALSE(start_password_check_triggered());
   EXPECT_TRUE(RunPasswordsSubtest("startPasswordCheck")) << message_;
   EXPECT_TRUE(start_password_check_triggered());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheckFailed) {
-  set_start_password_check_result(false);
+  set_start_password_check_state(
+      password_manager::BulkLeakCheckService::State::kIdle);
   EXPECT_FALSE(start_password_check_triggered());
   EXPECT_TRUE(RunPasswordsSubtest("startPasswordCheckFailed")) << message_;
   EXPECT_TRUE(start_password_check_triggered());

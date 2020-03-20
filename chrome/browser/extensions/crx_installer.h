@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/sync/model/string_ordinal.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/preload_check.h"
@@ -281,7 +282,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
       std::unique_ptr<base::DictionaryValue> original_manifest,
       const Extension* extension,
       const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) override;
+      declarative_net_request::RulesetChecksums ruleset_checksums) override;
 
   // Called on the UI thread to start the requirements, policy and blacklist
   // checks on the extension.
@@ -482,9 +483,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The flags for ExtensionService::OnExtensionInstalled.
   int install_flags_;
 
-  // The checksum for the indexed ruleset corresponding to the Declarative Net
+  // The checksums for the indexed rulesets corresponding to the Declarative Net
   // Request API.
-  base::Optional<int> dnr_ruleset_checksum_;
+  declarative_net_request::RulesetChecksums ruleset_checksums_;
 
   // Checks that may run before installing the extension.
   std::unique_ptr<PreloadCheck> policy_check_;

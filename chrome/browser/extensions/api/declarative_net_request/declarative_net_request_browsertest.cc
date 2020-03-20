@@ -2021,11 +2021,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       declarative_net_request::RulesMonitorService::Get(profile());
   EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
 
+  const Extension* extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
+  ASSERT_TRUE(extension);
+
+  RulesetSource source = RulesetSource::CreateStatic(*extension);
   // Mimic extension prefs corruption by overwriting the indexed ruleset
   // checksum.
   const int kInvalidRulesetChecksum = -1;
-  ExtensionPrefs::Get(profile())->SetDNRRulesetChecksum(
-      extension_id, kInvalidRulesetChecksum);
+  ExtensionPrefs::Get(profile())->SetDNRStaticRulesetChecksum(
+      extension_id, source.id(), kInvalidRulesetChecksum);
 
   TestExtensionRegistryObserver registry_observer(
       ExtensionRegistry::Get(profile()), extension_id);

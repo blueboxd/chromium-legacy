@@ -38,6 +38,7 @@ namespace blink {
 
 class FilterData;
 class LayoutObject;
+class SVGResources;
 
 // Hooks up the correct paint property transform node.
 class ScopedSVGTransformState {
@@ -104,11 +105,11 @@ class ScopedSVGPaintState {
  private:
   void ApplyPaintPropertyState();
   void ApplyClipIfNecessary();
-  void ApplyMaskIfNecessary();
+  void ApplyMaskIfNecessary(SVGResources*);
 
   // Return true if no filtering is necessary or if the filter is successfully
   // applied.
-  bool ApplyFilterIfNecessary();
+  bool ApplyFilterIfNecessary(SVGResources*);
 
   const LayoutObject& object_;
   PaintInfo paint_info_;

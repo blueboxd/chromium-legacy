@@ -145,6 +145,18 @@ public class AndroidPaymentAppFinderTest
 
     // PaymentAppFactoryParams implementation.
     @Override
+    public String getTopLevelOrigin() {
+        return "https://top.level.origin";
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getPaymentRequestOrigin() {
+        return "https://payment.request.origin";
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
     public Map<String, PaymentMethodData> getMethodData() {
         return mMethodData;
     }

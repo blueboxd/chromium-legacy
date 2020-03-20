@@ -26,7 +26,7 @@ class ColorPanelCocoaTest : public CocoaTest {
     // without this step the tests will fail complaining that not all windows
     // were closed.
     [[NSColorPanel sharedColorPanel] makeKeyAndOrderFront:nil];
-    Init();
+    MarkCurrentWindowsAsInitial();
   }
   base::test::TaskEnvironment task_environment_;
 };

@@ -53,6 +53,12 @@ class BasicInteractions {
   // Clears the |end_action_callback_|.
   void ClearEndActionCallback();
 
+  // Runs |callback| if |condition_identifier| points to a single boolean set to
+  // 'true'. Returns true on success (i.e., condition was evaluated
+  // successfully), false on failure.
+  bool RunConditionalCallback(const std::string& condition_identifier,
+                              base::RepeatingCallback<void()> callback);
+
  private:
   ScriptExecutorDelegate* delegate_;
   // Only valid during a ShowGenericUiAction.

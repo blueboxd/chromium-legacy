@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <utility>
+
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,7 +15,15 @@
 #include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
-
+namespace {
+bool HasClearAll(const feedstore::StreamData& stream_data) {
+  for (const feedstore::StreamStructure& data : stream_data.structures()) {
+    if (data.operation() == feedstore::StreamStructure::CLEAR_ALL)
+      return true;
+  }
+  return false;
+}
+}  // namespace
 StreamModel::UiUpdate::UiUpdate() = default;
 StreamModel::UiUpdate::~UiUpdate() = default;
 StreamModel::UiUpdate::UiUpdate(const UiUpdate&) = default;
@@ -48,10 +57,30 @@ const feedstore::Content* StreamModel::FindContent(
     ContentRevision revision) const {
   return GetFinalFeatureTree()->FindContent(revision);
 }
+const std::string* StreamModel::FindSharedStateData(const std::string& id) {
+  auto iter = shared_states_.find(id);
+  if (iter != shared_states_.end()) {
+    return &iter->second.data;
+  }
+  return nullptr;
+}
+
+std::vector<std::string> StreamModel::GetSharedStateIds() const {
+  std::vector<std::string> ids;
+  for (auto& entry : shared_states_) {
+    ids.push_back(entry.first);
+  }
+  return ids;
+}
 
 void StreamModel::Update(
     std::unique_ptr<StreamModelUpdateRequest> update_request) {
   feedstore::StreamData& stream_data = update_request->stream_data;
+  if (HasClearAll(stream_data)) {
+    shared_states_.clear();
+  }
+
+  // Update the feature tree.
   for (const feedstore::StreamStructure& structure : stream_data.structures()) {
     base_feature_tree_.ApplyStreamStructure(structure);
   }
@@ -59,13 +88,22 @@ void StreamModel::Update(
     base_feature_tree_.AddContent(std::move(content));
   }
 
+  // Update non-tree data.
   next_page_token_ = stream_data.next_page_token();
   last_added_time_ =
       base::Time::UnixEpoch() +
       base::TimeDelta::FromMilliseconds(stream_data.last_added_time_millis());
   consistency_token_ = stream_data.consistency_token();
 
-  // TODO(harringtond): consume shared state.
+  for (feedstore::StreamSharedState& shared_state :
+       update_request->shared_states) {
+    std::string id = ContentIdString(shared_state.content_id());
+    if (!shared_states_.contains(id)) {
+      shared_states_[id].data =
+          std::move(*shared_state.mutable_shared_state_data());
+    }
+  }
+
   // TODO(harringtond): Some StreamData fields not yet used.
   //    next_action_id - do we need to load the model before uploading
   //         actions? If not, we probably will want to move this out of
@@ -137,13 +175,25 @@ void StreamModel::UpdateFlattenedTree() {
     feature_tree_after_changes_ =
         ApplyEphemeralChanges(base_feature_tree_, ephemeral_changes_);
   }
+  // Update list of visible content.
   std::vector<ContentRevision> new_state =
       GetFinalFeatureTree()->GetVisibleContent();
-
-  UiUpdate update;
-  update.content_list_changed = content_list_ != new_state;
-
+  const bool content_list_changed = content_list_ != new_state;
   content_list_ = std::move(new_state);
+
+  // Pack and send UiUpdate.
+  UiUpdate update;
+  update.content_list_changed = content_list_changed;
+  for (auto& entry : shared_states_) {
+    SharedState& shared_state = entry.second;
+    UiUpdate::SharedStateInfo info;
+    info.shared_state_id = entry.first;
+    info.updated = shared_state.updated;
+    update.shared_states.push_back(std::move(info));
+
+    shared_state.updated = false;
+  }
+
   if (observer_)
     observer_->OnUiUpdate(update);
 }

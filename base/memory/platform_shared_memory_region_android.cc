@@ -23,11 +23,6 @@ namespace subtle {
 
 namespace {
 
-// Emits UMA metrics about encountered errors.
-void LogCreateError(PlatformSharedMemoryRegion::CreateError error) {
-  UMA_HISTOGRAM_ENUMERATION("SharedMemory.CreateError", error);
-}
-
 int GetAshmemRegionProtectionMask(int fd) {
   int prot = ashmem_get_prot_region(fd);
   if (prot < 0) {
@@ -145,7 +140,6 @@ bool PlatformSharedMemoryRegion::MapAtInternal(off_t offset,
 PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
                                                               size_t size) {
   if (size == 0) {
-    LogCreateError(PlatformSharedMemoryRegion::CreateError::SIZE_ZERO);
     return {};
   }
 
@@ -154,7 +148,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   size_t rounded_size = bits::Align(size, GetPageSize());
   if (rounded_size < size ||
       rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
-    LogCreateError(PlatformSharedMemoryRegion::CreateError::SIZE_TOO_LARGE);
     return {};
   }
 
@@ -166,8 +159,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   int fd = ashmem_create_region(
       SharedMemoryTracker::GetDumpNameForTracing(guid).c_str(), rounded_size);
   if (fd < 0) {
-    LogCreateError(
-        PlatformSharedMemoryRegion::CreateError::CREATE_FILE_MAPPING_FAILURE);
     DPLOG(ERROR) << "ashmem_create_region failed";
     return {};
   }
@@ -175,13 +166,10 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   ScopedFD scoped_fd(fd);
   int err = ashmem_set_prot_region(scoped_fd.get(), PROT_READ | PROT_WRITE);
   if (err < 0) {
-    LogCreateError(
-        PlatformSharedMemoryRegion::CreateError::REDUCE_PERMISSIONS_FAILURE);
     DPLOG(ERROR) << "ashmem_set_prot_region failed";
     return {};
   }
 
-  LogCreateError(PlatformSharedMemoryRegion::CreateError::SUCCESS);
   return PlatformSharedMemoryRegion(std::move(scoped_fd), mode, size, guid);
 }
 

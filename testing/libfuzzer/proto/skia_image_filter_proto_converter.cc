@@ -1237,12 +1237,12 @@ void Converter::Visit(const ColorFilterMatrix& color_filter_matrix) {
 
 void Converter::Visit(const LayerDrawLooper& layer_draw_looper) {
   WriteNum(layer_draw_looper.layer_infos_size());
-  for (auto& layer_info : layer_draw_looper.layer_infos()) {
-    Visit(layer_info);
+  int n = layer_draw_looper.layer_infos_size();
 #ifdef AVOID_MISBEHAVIOR
-    break;  // Only write 1 to avoid timeouts.
+  n = 1;  // Only write 1 to avoid timeouts.
 #endif
-  }
+  for (int i = 0; i < n; ++i)
+    Visit(layer_draw_looper.layer_infos(i));
 }
 
 void Converter::Visit(const LayerInfo& layer_info) {

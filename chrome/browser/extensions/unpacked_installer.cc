@@ -284,7 +284,7 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
     return false;
   }
 
-  dnr_ruleset_checksum_ = result.ruleset_checksum;
+  ruleset_checksums_.emplace_back(result.ruleset_id, result.ruleset_checksum);
   if (!result.warnings.empty())
     extension_->AddInstallWarnings(std::move(result.warnings));
 
@@ -367,7 +367,7 @@ void UnpackedInstaller::InstallExtension() {
 
   service_weak_->OnExtensionInstalled(extension(), syncer::StringOrdinal(),
                                       kInstallFlagInstallImmediately,
-                                      dnr_ruleset_checksum_);
+                                      ruleset_checksums_);
 
   if (!callback_.is_null())
     std::move(callback_).Run(extension(), extension_path_, std::string());

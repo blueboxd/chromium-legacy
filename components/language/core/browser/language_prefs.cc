@@ -95,6 +95,9 @@ base::Value LanguagePrefs::GetDefaultFluentLanguages() {
   languages.insert(std::move(language));
 #else
   // Accept languages.
+#pragma GCC diagnostic push
+// See comment above the |break;| in the loop just below for why.
+#pragma GCC diagnostic ignored "-Wunreachable-code"
   for (std::string language :
        base::SplitString(l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES), ",",
                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
@@ -112,6 +115,7 @@ base::Value LanguagePrefs::GetDefaultFluentLanguages() {
     // this break should be removed to enable the Fluent Language List and the
     // Accept-Language list to be initialized to the same values.
     break;
+#pragma GCC diagnostic pop
   }
 #endif
   base::Value language_values(base::Value::Type::LIST);

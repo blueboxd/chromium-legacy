@@ -501,8 +501,9 @@ bool PasswordsPrivateDelegateImpl::RemoveCompromisedCredential(
   return password_check_delegate_.RemoveCompromisedCredential(credential);
 }
 
-bool PasswordsPrivateDelegateImpl::StartPasswordCheck() {
-  return password_check_delegate_.StartPasswordCheck();
+void PasswordsPrivateDelegateImpl::StartPasswordCheck(
+    StartPasswordCheckCallback callback) {
+  password_check_delegate_.StartPasswordCheck(std::move(callback));
 }
 
 void PasswordsPrivateDelegateImpl::StopPasswordCheck() {

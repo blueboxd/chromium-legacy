@@ -377,6 +377,10 @@ js_library("files_menu") {
   externs_list = [ "//ui/file_manager/externs/paper_elements.js" ]
 }
 
+js_library("gear_menu") {
+  deps = [ "//ui/file_manager/file_manager/common/js:util" ]
+}
+
 js_library("install_linux_package_dialog") {
   deps = [
     ":file_manager_dialog_base",
@@ -398,10 +402,6 @@ js_library("import_crostini_image_dialog") {
     "//ui/webui/resources/js/cr:ui",
     "//ui/webui/resources/js/cr/ui:dialogs",
   ]
-}
-
-js_library("gear_menu") {
-  deps = [ "//ui/file_manager/file_manager/common/js:util" ]
 }
 
 js_library("list_container") {

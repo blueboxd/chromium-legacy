@@ -3,9 +3,19 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/proto_util.h"
+
 #include <tuple>
 
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+
 namespace feed {
+
+std::string ContentIdString(const feedwire::ContentId& content_id) {
+  return base::StrCat({content_id.content_domain(), ",",
+                       base::NumberToString(content_id.type()), ",",
+                       base::NumberToString(content_id.id())});
+}
 
 bool Equal(const feedwire::ContentId& a, const feedwire::ContentId& b) {
   return a.content_domain() == b.content_domain() && a.id() == b.id() &&

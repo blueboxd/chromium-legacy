@@ -97,7 +97,9 @@ class SearchBox extends cr.EventTarget {
         return;
       }
       this.isClicking_ = false;
-      this.removeHidePending();
+      window.requestAnimationFrame(() => {
+        this.removeHidePending();
+      });
     }, {passive: true});
 
     this.searchWrapper.addEventListener(

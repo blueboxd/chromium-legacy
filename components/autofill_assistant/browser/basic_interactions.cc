@@ -385,7 +385,7 @@ bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
              << proto.enabled_model_identifier() << " not found in model";
     return false;
   }
-  if (enabled_value->booleans().values_size() != 1) {
+  if (enabled_value->booleans().values().size() != 1) {
     DVLOG(2) << "Error evaluating " << __func__
              << ": expected enabled_model_identifier to contain a single bool, "
                 "but was "
@@ -433,6 +433,28 @@ void BasicInteractions::SetEndActionCallback(
     base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
         end_action_callback) {
   end_action_callback_ = std::move(end_action_callback);
+}
+
+bool BasicInteractions::RunConditionalCallback(
+    const std::string& condition_identifier,
+    base::RepeatingCallback<void()> callback) {
+  auto condition_value =
+      delegate_->GetUserModel()->GetValue(condition_identifier);
+  if (!condition_value.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": " << condition_identifier
+             << " not found in model";
+    return false;
+  }
+  if (condition_value->booleans().values().size() != 1) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": expected "
+             << condition_identifier << " to contain a single bool, but was "
+             << *condition_value;
+    return false;
+  }
+  if (condition_value->booleans().values(0)) {
+    callback.Run();
+  }
+  return true;
 }
 
 }  // namespace autofill_assistant

@@ -86,7 +86,9 @@ TEST_F(OpenInControllerTest, TestDisplayOpenInMenu) {
   histogram_tester_.ExpectTotalCount(kOpenInDownloadResultHistogram, 0);
   id document_controller =
       [OCMockObject niceMockForClass:[UIDocumentInteractionController class]];
-  [open_in_controller_ setDocumentInteractionController:document_controller];
+  id classMock = OCMClassMock([UIDocumentInteractionController class]);
+  OCMStub([classMock interactionControllerWithURL:[OCMArg any]])
+      .andReturn(document_controller);
   [open_in_controller_ startDownload];
   [[[document_controller expect] andReturnValue:@YES]
       presentOpenInMenuFromRect:CGRectZero
@@ -109,9 +111,12 @@ TEST_F(OpenInControllerTest, TestDisplayOpenInMenu) {
 
 TEST_F(OpenInControllerTest, TestCorruptedPDFDownload) {
   histogram_tester_.ExpectTotalCount(kOpenInDownloadResultHistogram, 0);
+
   id document_controller =
       [OCMockObject niceMockForClass:[UIDocumentInteractionController class]];
-  [open_in_controller_ setDocumentInteractionController:document_controller];
+  id classMock = OCMClassMock([UIDocumentInteractionController class]);
+  OCMStub([classMock interactionControllerWithURL:[OCMArg any]])
+      .andReturn(document_controller);
   [open_in_controller_ startDownload];
   [[[document_controller reject] andReturnValue:@YES]
       presentOpenInMenuFromRect:CGRectZero

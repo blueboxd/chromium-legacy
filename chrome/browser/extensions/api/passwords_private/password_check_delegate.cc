@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
@@ -48,17 +49,18 @@
 namespace extensions {
 
 using autofill::PasswordForm;
-using password_manager::BulkLeakCheckService;
 using password_manager::CanonicalizedCredential;
 using password_manager::CanonicalizeUsername;
 using password_manager::CompromiseType;
 using password_manager::CredentialWithPassword;
 using password_manager::LeakCheckCredential;
 using ui::TimeFormat;
+
 using CompromisedCredentialsView =
     password_manager::CompromisedCredentialsProvider::CredentialsView;
 using SavedPasswordsView =
     password_manager::SavedPasswordsPresenter::SavedPasswordsView;
+using State = password_manager::BulkLeakCheckService::State;
 
 // Key used to attach UserData to a LeakCheckCredential.
 constexpr char kPasswordCheckDataKey[] = "password-check-data-key";
@@ -143,23 +145,23 @@ api::passwords_private::CompromiseType ConvertCompromiseType(
 }
 
 api::passwords_private::PasswordCheckState ConvertPasswordCheckState(
-    BulkLeakCheckService::State state) {
+    State state) {
   switch (state) {
-    case BulkLeakCheckService::State::kIdle:
+    case State::kIdle:
       return api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
-    case BulkLeakCheckService::State::kRunning:
+    case State::kRunning:
       return api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
-    case BulkLeakCheckService::State::kCanceled:
+    case State::kCanceled:
       return api::passwords_private::PASSWORD_CHECK_STATE_CANCELED;
-    case BulkLeakCheckService::State::kSignedOut:
+    case State::kSignedOut:
       return api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT;
-    case BulkLeakCheckService::State::kNetworkError:
+    case State::kNetworkError:
       return api::passwords_private::PASSWORD_CHECK_STATE_OFFLINE;
-    case BulkLeakCheckService::State::kQuotaLimit:
+    case State::kQuotaLimit:
       return api::passwords_private::PASSWORD_CHECK_STATE_QUOTA_LIMIT;
-    case BulkLeakCheckService::State::kTokenRequestFailure:
-    case BulkLeakCheckService::State::kHashingFailure:
-    case BulkLeakCheckService::State::kServiceError:
+    case State::kTokenRequestFailure:
+    case State::kHashingFailure:
+    case State::kServiceError:
       return api::passwords_private::PASSWORD_CHECK_STATE_OTHER_ERROR;
   }
 
@@ -377,10 +379,20 @@ bool PasswordCheckDelegate::RemoveCompromisedCredential(
   return !saved_passwords.empty();
 }
 
-bool PasswordCheckDelegate::StartPasswordCheck() {
+void PasswordCheckDelegate::StartPasswordCheck(
+    StartPasswordCheckCallback callback) {
+  // If the delegate isn't initialized yet, enqueue the callback and return
+  // early.
+  if (!is_initialized_) {
+    start_check_callbacks_.push_back(std::move(callback));
+    return;
+  }
+
+  // Also return early if the check is already running.
   if (bulk_leak_check_service_adapter_.GetBulkLeakCheckState() ==
-      BulkLeakCheckService::State::kRunning) {
-    return false;
+      State::kRunning) {
+    std::move(callback).Run(State::kRunning);
+    return;
   }
 
   auto progress = base::MakeRefCounted<PasswordCheckProgress>();
@@ -392,10 +404,17 @@ bool PasswordCheckDelegate::StartPasswordCheck() {
   is_check_running_ = bulk_leak_check_service_adapter_.StartBulkLeakCheck(
       kPasswordCheckDataKey, &data);
   DCHECK(is_check_running_);
-  return is_check_running_;
+  std::move(callback).Run(
+      bulk_leak_check_service_adapter_.GetBulkLeakCheckState());
 }
 
 void PasswordCheckDelegate::StopPasswordCheck() {
+  if (!is_initialized_) {
+    for (auto&& callback : std::exchange(start_check_callbacks_, {}))
+      std::move(callback).Run(State::kIdle);
+    return;
+  }
+
   bulk_leak_check_service_adapter_.StopBulkLeakCheck();
 }
 
@@ -412,13 +431,12 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
         FormatElapsedTime(base::Time::FromDoubleT(last_check_completed)));
   }
 
-  BulkLeakCheckService::State state =
-      bulk_leak_check_service_adapter_.GetBulkLeakCheckState();
+  State state = bulk_leak_check_service_adapter_.GetBulkLeakCheckState();
   SavedPasswordsView saved_passwords =
       saved_passwords_presenter_.GetSavedPasswords();
 
   // Handle the currently running case first, only then consider errors.
-  if (state == BulkLeakCheckService::State::kRunning) {
+  if (state == State::kRunning) {
     result.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
 
     if (password_check_progress_) {
@@ -444,6 +462,14 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
 }
 
 void PasswordCheckDelegate::OnSavedPasswordsChanged(SavedPasswordsView) {
+  // Getting the first notification about a change in saved passwords implies
+  // that the delegate is initialized, and start check callbacks can be invoked,
+  // if any.
+  if (!std::exchange(is_initialized_, true)) {
+    for (auto&& callback : std::exchange(start_check_callbacks_, {}))
+      StartPasswordCheck(std::move(callback));
+  }
+
   // A change in the saved passwords might result in leaving or entering the
   // NO_PASSWORDS state, thus we need to trigger a notification.
   NotifyPasswordCheckStatusChanged();
@@ -459,11 +485,10 @@ void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
   }
 }
 
-void PasswordCheckDelegate::OnStateChanged(BulkLeakCheckService::State state) {
-  if (is_check_running_ && state == BulkLeakCheckService::State::kIdle) {
+void PasswordCheckDelegate::OnStateChanged(State state) {
+  if (state == State::kIdle && std::exchange(is_check_running_, false)) {
     // When the service transitions from running into idle it has finished a
     // check.
-    is_check_running_ = false;
     profile_->GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
         base::Time::Now().ToDoubleT());
@@ -516,7 +541,7 @@ void PasswordCheckDelegate::OnCredentialDone(
   // While the check is still running trigger an update of the check status,
   // considering that the progress has changed.
   if (bulk_leak_check_service_adapter_.GetBulkLeakCheckState() ==
-      BulkLeakCheckService::State::kRunning) {
+      State::kRunning) {
     NotifyPasswordCheckStatusChanged();
   }
 }

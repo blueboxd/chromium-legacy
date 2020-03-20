@@ -561,13 +561,6 @@ void SetDefaultPasswordStore(PrefService* pref_service,
   }
   ScopedAccountStorageSettingsUpdate(pref_service, gaia_id)
       .SetDefaultStore(default_store);
-  if (gaia_id.empty()) {
-    // Maybe the account went away since the UI was shown. This should be rare,
-    // but is ultimately harmless - just do nothing here.
-    return;
-  }
-  ScopedAccountStorageSettingsUpdate(pref_service, gaia_id)
-      .SetDefaultStore(default_store);
 }
 
 void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service) {

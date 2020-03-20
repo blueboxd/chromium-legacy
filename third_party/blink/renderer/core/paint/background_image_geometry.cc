@@ -102,15 +102,17 @@ void BackgroundImageGeometry::SetNoRepeatX(const FillLayer& fill_layer,
     return;
   }
 
-  // The snapped offset may not yet be snapped, so make sure it is an integer.
-  snapped_x_offset = LayoutUnit(RoundToInt(snapped_x_offset));
-
   if (x_offset > 0) {
     DCHECK(snapped_x_offset >= LayoutUnit());
     // Move the dest rect if the offset is positive. The image "stays" where
     // it is over the dest rect, so this effectively modifies the phase.
     unsnapped_dest_rect_.Move(x_offset, LayoutUnit());
-    snapped_dest_rect_.Move(snapped_x_offset, LayoutUnit());
+
+    // For the snapped geometry, note that negative x_offsets typically
+    // arise when using positive offsets from the bottom of the background
+    // rect. We try to move the snapped dest rect to give the same offset.
+    LayoutUnit dx = snapped_dest_rect_.Width() - unsnapped_dest_rect_.Width();
+    snapped_dest_rect_.Move(x_offset + dx, LayoutUnit());
 
     // Make the dest as wide as a tile, which will reduce the dest
     // rect if the tile is too small to fill the paint_rect. If not,
@@ -146,16 +148,17 @@ void BackgroundImageGeometry::SetNoRepeatY(const FillLayer& fill_layer,
         LayoutSize(SpaceSize().Width(), unsnapped_dest_rect_.Height()));
     return;
   }
-
-  // The snapped offset may not yet be snapped, so make sure it is an integer.
-  snapped_y_offset = LayoutUnit(RoundToInt(snapped_y_offset));
-
   if (y_offset > 0) {
     DCHECK(snapped_y_offset >= LayoutUnit());
     // Move the dest rect if the offset is positive. The image "stays" where
     // it is in the paint rect, so this effectively modifies the phase.
     unsnapped_dest_rect_.Move(LayoutUnit(), y_offset);
-    snapped_dest_rect_.Move(LayoutUnit(), snapped_y_offset);
+
+    // For the snapped geometry, note that negative y_offsets typically
+    // arise when using positive offsets from the bottom of the background
+    // rect. We try to move the snapped dest rect to give the same offset.
+    LayoutUnit dy = snapped_dest_rect_.Height() - unsnapped_dest_rect_.Height();
+    snapped_dest_rect_.Move(LayoutUnit(), y_offset + dy);
 
     // Make the dest as wide as a tile, which will reduce the dest
     // rect if the tile is too small to fill the paint_rect. If not,
@@ -1034,9 +1037,13 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   if (ShouldUseFixedAttachment(fill_layer))
     UseFixedAttachment(paint_rect.Location());
 
-  // Clip the final output rect to the paint rect, maintaining snapping.
+  // Clip the final output rect to the paint rect.
   unsnapped_dest_rect_.Intersect(paint_rect);
-  snapped_dest_rect_.Intersect(LayoutRect(PixelSnappedIntRect(paint_rect)));
+
+  // Clip the snapped rect, and re-snap the dest rect as we may have
+  // adjusted it with unsnapped values.
+  snapped_dest_rect_.Intersect(paint_rect);
+  snapped_dest_rect_ = LayoutRect(PixelSnappedIntRect(snapped_dest_rect_));
 }
 
 const ImageResourceObserver& BackgroundImageGeometry::ImageClient() const {

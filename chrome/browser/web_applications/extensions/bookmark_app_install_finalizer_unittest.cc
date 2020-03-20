@@ -74,7 +74,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
         std::unique_ptr<base::DictionaryValue> original_manifest,
         const Extension* extension,
         const SkBitmap& install_icon,
-        const base::Optional<int>& dnr_ruleset_checksum) override {
+        declarative_net_request::RulesetChecksums ruleset_checksums) override {
       run_loop_.Quit();
     }
 

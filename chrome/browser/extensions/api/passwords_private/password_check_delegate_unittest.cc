@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
@@ -84,8 +85,12 @@ using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::IsNull;
+using ::testing::Mock;
 using ::testing::Pointee;
 using ::testing::UnorderedElementsAre;
+
+using MockStartPasswordCheckCallback =
+    base::MockCallback<PasswordCheckDelegate::StartPasswordCheckCallback>;
 
 PasswordsPrivateEventRouter* CreateAndUsePasswordsPrivateEventRouter(
     Profile* profile) {
@@ -853,8 +858,9 @@ TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedIsSet) {
 // in resetting the kLastTimePasswordCheckCompleted pref to the current time.
 TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedReset) {
   delegate().StartPasswordCheck();
-  service()->set_state_and_notify(BulkLeakCheckService::State::kIdle);
+  RunUntilIdle();
 
+  service()->set_state_and_notify(BulkLeakCheckService::State::kIdle);
   PasswordCheckStatus status = delegate().GetPasswordCheckStatus();
   EXPECT_THAT(status.elapsed_time_since_last_check,
               Pointee(std::string("Just now")));
@@ -907,6 +913,44 @@ TEST_F(PasswordCheckDelegateTest, OnCredentialDoneUpdatesProgress) {
             status->state);
   EXPECT_EQ(4, *status->already_processed);
   EXPECT_EQ(0, *status->remaining_in_queue);
+}
+
+// Tests that StopPasswordCheck() invokes pending callbacks before
+// initialization finishes.
+TEST_F(PasswordCheckDelegateTest,
+       StopPasswordCheckRespondsCancelsBeforeInitialization) {
+  MockStartPasswordCheckCallback callback1;
+  MockStartPasswordCheckCallback callback2;
+  delegate().StartPasswordCheck(callback1.Get());
+  delegate().StartPasswordCheck(callback2.Get());
+
+  EXPECT_CALL(callback1, Run(BulkLeakCheckService::State::kIdle));
+  EXPECT_CALL(callback2, Run(BulkLeakCheckService::State::kIdle));
+  delegate().StopPasswordCheck();
+
+  Mock::VerifyAndClearExpectations(&callback1);
+  Mock::VerifyAndClearExpectations(&callback2);
+  RunUntilIdle();
+}
+
+// Tests that pending callbacks get invoked once initialization finishes.
+TEST_F(PasswordCheckDelegateTest,
+       StartPasswordCheckRunsCallbacksAfterInitialization) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  MockStartPasswordCheckCallback callback1;
+  MockStartPasswordCheckCallback callback2;
+  EXPECT_CALL(callback1, Run(BulkLeakCheckService::State::kRunning));
+  EXPECT_CALL(callback2, Run(BulkLeakCheckService::State::kRunning));
+
+  // Use a local delegate instead of |delegate()| so that the Password Store can
+  // be set-up prior to constructing the object.
+  PasswordCheckDelegate delegate(&profile());
+  delegate.StartPasswordCheck(callback1.Get());
+  delegate.StartPasswordCheck(callback2.Get());
+  RunUntilIdle();
 }
 
 }  // namespace extensions

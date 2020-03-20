@@ -53,13 +53,13 @@ class KioskExternalUpdateValidator
 
   // SandboxedUnpackerClient overrides.
   void OnUnpackFailure(const extensions::CrxInstallError& error) override;
-  void OnUnpackSuccess(
-      const base::FilePath& temp_dir,
-      const base::FilePath& extension_dir,
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const extensions::Extension* extension,
-      const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) override;
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_dir,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
+                       const extensions::Extension* extension,
+                       const SkBitmap& install_icon,
+                       extensions::declarative_net_request::RulesetChecksums
+                           ruleset_checksums) override;
 
   // Task runner for executing file I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

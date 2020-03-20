@@ -89,7 +89,9 @@
               class="flex layout vertical center center-justified">
             <img srcset="images/1x/enrollment_error_illustration.svg 1x,
                     images/2x/enrollment_error_illustration.svg 2x"
-                 i18n-values="alt:enrollmentErrorIllustrationTitle">
+                alt$="[[i18nDynamic(locale,
+                    'enrollmentErrorIllustrationTitle')]]"
+                class="oobe-illustration">
           </div>
           <div slot="bottom-buttons" class="layout horizontal end-justified">
             <!-- BOTTOM BUTTONS: GENERIC ERROR -->
@@ -158,7 +160,8 @@
           <div slot="footer" class="flex layout vertical center end-justified">
             <img srcset="images/enrollment_success_illustration_1x.png 1x,
                     images/enrollment_success_illustration_2x.png 2x"
-                 i18n-values="alt:enrollmentSuccessIllustrationTitle"
+                 alt$="[[i18nDynamic(locale,
+                    'enrollmentSuccessIllustrationTitle')]]"
                  class="oobe-illustration">
           </div>
           <div slot="bottom-buttons" class="layout horizontal end-justified">

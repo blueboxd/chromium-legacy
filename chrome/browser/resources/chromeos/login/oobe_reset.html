@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="oobe_reset.css">
     <oobe-dialog id="resetDialog" role="dialog"
         title-key="resetWarningTitle"
-        i18n-values="aria-label:resetScreenAccessibleTitle" has-buttons
-        footer-shrinkable>
+        aria-label$="[[i18nDynamic(locale, 'resetScreenAccessibleTitle')]]"
+        has-buttons footer-shrinkable>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
@@ -54,7 +54,7 @@
         <!-- Reset screen illustration -->
         <img id="illustration" srcset="images/1x/reset_illustration_1x.svg 1x,
                                        images/2x/reset_illustration_2x.svg 2x"
-            i18n-values="alt:resetScreenIllustrationTitle">
+            alt$="[[i18nDynamic(locale, 'resetScreenIllustrationTitle')]]">
         <!-- TPM Update - Only shown during powerwash state -->
         <div id="tpmFirmwareUpdate" class="layout horizontal"
             hidden="[[!inPowerwashState_]]">

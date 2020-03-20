@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.PositionAssertions.isLeftAlignedWith;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.PickerActions.setDate;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
@@ -68,6 +69,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.GenericUserInterface
 import org.chromium.chrome.browser.autofill_assistant.proto.ImageViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.IntList;
+import org.chromium.chrome.browser.autofill_assistant.proto.IntegerSumProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InteractionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InteractionsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.LinearLayoutProto;
@@ -94,6 +96,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ToStringProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ToggleUserActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionList;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ValueComparisonProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ViewAttributesProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ViewContainerProto;
@@ -1290,5 +1293,103 @@ public class AutofillAssistantGenericUiTest {
 
         onView(withText("Click me to toggle the chip")).perform(click());
         waitUntilViewMatchesCondition(withContentDescription("Done"), not(isEnabled()));
+    }
+
+    /**
+     * Shows a simple text view that, when clicked 3 or more times, will show a popup.
+     */
+    @Test
+    @MediumTest
+    public void testShowPopupIfClickedAtLeastThreeTimes() {
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "text_view")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setResultModelIdentifier("counter")
+                                        .setIntegerSum(IntegerSumProto.newBuilder()
+                                                               .setModelIdentifierA("counter")
+                                                               .setModelIdentifierB("increment"))))
+                        .addCallbacks(CallbackProto.newBuilder()
+                                              .setConditionModelIdentifier("condition")
+                                              .setShowInfoPopup(
+                                                      ShowInfoPopupProto.newBuilder().setInfoPopup(
+                                                              InfoPopupProto.newBuilder()
+                                                                      .setTitle("Info popup title")
+                                                                      .setText("Info text"))))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "counter")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setResultModelIdentifier("condition")
+                                        .setComparison(
+                                                ValueComparisonProto.newBuilder()
+                                                        .setModelIdentifierA("counter")
+                                                        .setModelIdentifierB("target_counter")
+                                                        .setMode(ValueComparisonProto.Mode
+                                                                         .GREATER_OR_EQUAL))))
+                        .build());
+
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("counter")
+                                .setValue(ValueProto.newBuilder().setInts(
+                                        IntList.newBuilder().addValues(0)))
+                                .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("increment")
+                                .setValue(ValueProto.newBuilder().setInts(
+                                        IntList.newBuilder().addValues(1)))
+                                .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("target_counter")
+                                .setValue(ValueProto.newBuilder().setInts(
+                                        IntList.newBuilder().addValues(3)))
+                                .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("condition")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(createTextView("Click me three+ times", "text_view"))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterface))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Click me three+ times"), isCompletelyDisplayed());
+        onView(withText("Click me three+ times")).perform(click());
+        onView(withText("Info popup title")).check(doesNotExist());
+        onView(withText("Click me three+ times")).perform(click());
+        onView(withText("Info popup title")).check(doesNotExist());
+        onView(withText("Click me three+ times")).perform(click());
+        onView(withText("Info popup title")).check(matches(isDisplayed()));
     }
 }

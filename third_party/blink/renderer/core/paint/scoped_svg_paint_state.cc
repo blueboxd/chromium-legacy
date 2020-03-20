@@ -102,12 +102,15 @@ bool ScopedSVGPaintState::ApplyEffects() {
     ApplyClipIfNecessary();
   }
 
-  ApplyMaskIfNecessary();
+  SVGResources* resources =
+      SVGResourcesCache::CachedResourcesForLayoutObject(object_);
+
+  ApplyMaskIfNecessary(resources);
 
   if (is_svg_root_or_foreign_object) {
     // PaintLayerPainter takes care of filter.
     DCHECK(object_.HasLayer() || !object_.StyleRef().HasFilter());
-  } else if (!ApplyFilterIfNecessary()) {
+  } else if (!ApplyFilterIfNecessary(resources)) {
     return false;
   }
   return true;
@@ -147,8 +150,8 @@ void ScopedSVGPaintState::ApplyClipIfNecessary() {
   }
 }
 
-void ScopedSVGPaintState::ApplyMaskIfNecessary() {
-  if (object_.StyleRef().SvgStyle().MaskerResource())
+void ScopedSVGPaintState::ApplyMaskIfNecessary(SVGResources* resources) {
+  if (resources && resources->Masker())
     mask_painter_.emplace(paint_info_.context, object_, display_item_client_);
 }
 
@@ -161,9 +164,7 @@ static bool HasReferenceFilterOnly(const ComputedStyle& style) {
   return operations.at(0)->GetType() == FilterOperation::REFERENCE;
 }
 
-bool ScopedSVGPaintState::ApplyFilterIfNecessary() {
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(object_);
+bool ScopedSVGPaintState::ApplyFilterIfNecessary(SVGResources* resources) {
   if (!resources)
     return !HasReferenceFilterOnly(object_.StyleRef());
   LayoutSVGResourceFilter* filter = resources->Filter();

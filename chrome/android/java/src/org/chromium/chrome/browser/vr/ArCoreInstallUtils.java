@@ -15,7 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 
 /**
  * Installs AR DFM and ArCore runtimes.
@@ -89,7 +89,7 @@ public class ArCoreInstallUtils {
 
         @ArCoreShim.Availability
         int arCoreAvailability = getArCoreInstallStatus();
-        final Activity activity = ((TabImpl) tab).getActivity();
+        final Activity activity = TabUtils.getActivity(tab);
         String infobarText = null;
         String buttonText = null;
         switch (arCoreAvailability) {

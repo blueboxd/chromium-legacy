@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_FEED_CORE_V2_PROTO_UTIL_H_
 #define COMPONENTS_FEED_CORE_V2_PROTO_UTIL_H_
 
+#include <string>
+
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 
 // Helper functions/classes for dealing with feed proto messages.
 
 namespace feed {
 
+std::string ContentIdString(const feedwire::ContentId&);
 bool Equal(const feedwire::ContentId& a, const feedwire::ContentId& b);
 bool CompareContentId(const feedwire::ContentId& a,
                       const feedwire::ContentId& b);

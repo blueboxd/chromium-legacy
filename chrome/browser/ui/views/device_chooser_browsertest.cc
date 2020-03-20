@@ -10,19 +10,19 @@
 #include "chrome/browser/chooser_controller/fake_bluetooth_chooser_controller.h"
 #include "chrome/browser/chooser_controller/fake_usb_chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/extensions/chooser_dialog_view.h"
-#include "chrome/browser/ui/views/permission_bubble/chooser_bubble_ui.h"
 #include "components/constrained_window/constrained_window_views.h"
 
 namespace {
 
 void ShowChooserBubble(Browser* browser,
                        std::unique_ptr<ChooserController> controller) {
-  auto bubble =
-      std::make_unique<ChooserBubbleUi>(browser, std::move(controller));
-  bubble->Show(nullptr);
+  auto* contents = browser->tab_strip_model()->GetActiveWebContents();
+  chrome::ShowDeviceChooserDialog(contents->GetMainFrame(),
+                                  std::move(controller));
 }
 
 void ShowChooserModal(Browser* browser,

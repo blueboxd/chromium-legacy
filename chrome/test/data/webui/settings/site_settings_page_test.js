@@ -69,15 +69,17 @@ suite('SiteSettingsPage', function() {
             settings.ContentSetting.IMPORTANT_CONTENT, 'a', 'b', 'c'));
   });
 
-  test('CookiesLinkRowSublabel', function() {
+  test('CookiesLinkRowSublabel', async function() {
     loadTimeData.overrideValues({
       privacySettingsRedesignEnabled: false,
     });
     setupPage();
     const allSettingsList = page.$$('#allSettingsList');
+    await test_util.eventToPromise(
+        'site-settings-list-labels-updated-for-testing', allSettingsList);
     assertEquals(
-        allSettingsList.$$('#cookies').subLabel,
-        allSettingsList.i18n('siteSettingsCookiesAllowed'));
+        allSettingsList.i18n('siteSettingsCookiesAllowed'),
+        allSettingsList.$$('#cookies').subLabel);
   });
 
   test('CookiesLinkRowSublabel_Redesign', async function() {
@@ -88,9 +90,9 @@ suite('SiteSettingsPage', function() {
     await siteSettingsBrowserProxy.whenCalled('getCookieSettingDescription');
     Polymer.dom.flush();
     const cookiesLinkRow = page.$$('#basicContentList').$$('#cookies');
-    assertEquals(cookiesLinkRow.subLabel, testLabels[0]);
+    assertEquals(testLabels[0], cookiesLinkRow.subLabel);
 
     cr.webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
-    assertEquals(cookiesLinkRow.subLabel, testLabels[1]);
+    assertEquals(testLabels[1], cookiesLinkRow.subLabel);
   });
 });

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_
 
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
@@ -38,6 +41,9 @@ class PasswordCheckDelegate
       public password_manager::CompromisedCredentialsProvider::Observer,
       public password_manager::BulkLeakCheckService::Observer {
  public:
+  using StartPasswordCheckCallback =
+      PasswordsPrivateDelegate::StartPasswordCheckCallback;
+
   using CredentialPasswordsMap =
       std::map<password_manager::CredentialWithPassword,
                std::vector<autofill::PasswordForm>,
@@ -72,9 +78,10 @@ class PasswordCheckDelegate
   bool RemoveCompromisedCredential(
       const api::passwords_private::CompromisedCredential& credential);
 
-  // Starts a check for compromised passwords. Returns true if a new check was
-  // started.
-  bool StartPasswordCheck();
+  // Requests to start a check for compromised passwords. Invokes |callback|
+  // once a check is running or the request was stopped via StopPasswordCheck().
+  void StartPasswordCheck(
+      StartPasswordCheckCallback callback = base::DoNothing());
   // Stops checking for compromised passwords.
   void StopPasswordCheck();
 
@@ -133,6 +140,15 @@ class PasswordCheckDelegate
   // Adapter used to start, monitor and stop a bulk leak check.
   password_manager::BulkLeakCheckServiceAdapter
       bulk_leak_check_service_adapter_;
+
+  // Boolean that remembers whether the delegate is initialized. This is done
+  // when the delegate obtains the list of saved passwords for the first time.
+  bool is_initialized_ = false;
+
+  // List of callbacks that were passed to StartPasswordCheck() prior to the
+  // delegate being initialized. These will be run when either initialization
+  // finishes, or StopPasswordCheck() gets invoked before hand.
+  std::vector<StartPasswordCheckCallback> start_check_callbacks_;
 
   // Remembers the progress of the ongoing check. Null if no check is currently
   // running.

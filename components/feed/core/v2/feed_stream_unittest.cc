@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/feed_stream.h"
+
+#include <memory>
+#include <utility>
+
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -16,6 +20,7 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/stream_model.h"
+#include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -144,7 +149,7 @@ TEST_F(FeedStreamTest, DoNotRefreshIfArticlesListIsHidden) {
 TEST_F(FeedStreamTest, SurfaceReceivesInitialContent) {
   {
     auto model = std::make_unique<StreamModel>();
-    model->ExecuteOperations(MakeTypicalStreamOperations());
+    model->Update(MakeTypicalInitialModelState());
     stream_->LoadModelForTesting(std::move(model));
   }
   TestSurface surface;
@@ -162,6 +167,37 @@ TEST_F(FeedStreamTest, SurfaceReceivesInitialContent) {
                        .slice()
                        .xsurface_slice()
                        .xsurface_frame());
+  ASSERT_EQ(1, initial_state.new_shared_states().size());
+  EXPECT_EQ("ss:0",
+            initial_state.new_shared_states()[0].xsurface_shared_state());
+}
+
+TEST_F(FeedStreamTest, SurfaceReceivesInitialContentLoadedAfterAttach) {
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  ASSERT_FALSE(surface.initial_state);
+  {
+    auto model = std::make_unique<StreamModel>();
+    model->Update(MakeTypicalInitialModelState());
+    stream_->LoadModelForTesting(std::move(model));
+  }
+
+  ASSERT_TRUE(surface.initial_state);
+  const feedui::StreamUpdate& initial_state = surface.initial_state.value();
+  ASSERT_EQ(2, initial_state.updated_slices().size());
+  EXPECT_NE("", initial_state.updated_slices(0).slice().slice_id());
+  EXPECT_EQ("f:0", initial_state.updated_slices(0)
+                       .slice()
+                       .xsurface_slice()
+                       .xsurface_frame());
+  EXPECT_NE("", initial_state.updated_slices(1).slice().slice_id());
+  EXPECT_EQ("f:1", initial_state.updated_slices(1)
+                       .slice()
+                       .xsurface_slice()
+                       .xsurface_frame());
+  ASSERT_EQ(1, initial_state.new_shared_states().size());
+  EXPECT_EQ("ss:0",
+            initial_state.new_shared_states()[0].xsurface_shared_state());
 }
 
 TEST_F(FeedStreamTest, SurfaceReceivesUpdatedContent) {

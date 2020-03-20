@@ -257,16 +257,18 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
 
 bool HasValidIndexedRuleset(const Extension& extension,
                             content::BrowserContext* browser_context) {
+  RulesetSource source = RulesetSource::CreateStatic(extension);
   int expected_checksum;
   if (!ExtensionPrefs::Get(browser_context)
-           ->GetDNRRulesetChecksum(extension.id(), &expected_checksum)) {
+           ->GetDNRStaticRulesetChecksum(extension.id(), source.id(),
+                                         &expected_checksum)) {
     return false;
   }
 
   std::unique_ptr<RulesetMatcher> matcher;
-  return RulesetMatcher::CreateVerifiedMatcher(
-             RulesetSource::CreateStatic(extension), expected_checksum,
-             &matcher) == RulesetMatcher::kLoadSuccess;
+  return RulesetMatcher::CreateVerifiedMatcher(std::move(source),
+                                               expected_checksum, &matcher) ==
+         RulesetMatcher::kLoadSuccess;
 }
 
 bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,

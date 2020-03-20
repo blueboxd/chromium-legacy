@@ -38,6 +38,9 @@ message CallbackProto {
     SetTextProto set_text = 8;
     ToggleUserActionProto toggle_user_action = 9;
   }
+  // Optional model identifier pointing to a single boolean. If set, the
+  // callback will only be invoked if the condition is true.
+  optional string condition_model_identifier = 10;
 }
 
 message EventProto {

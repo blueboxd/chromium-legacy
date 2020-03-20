@@ -4,7 +4,10 @@
 
 #include "components/feed/core/v2/test/stream_builder.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
+#include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
 
@@ -28,6 +31,10 @@ ContentId MakeContentContentId(int id_number) {
 
 ContentId MakeRootId(int id_number) {
   return MakeContentId(ContentId::TYPE_UNDEFINED, "root", id_number);
+}
+
+ContentId MakeSharedStateId(int id_number) {
+  return MakeContentId(ContentId::TYPE_UNDEFINED, "render_data", id_number);
 }
 
 feedstore::StreamStructure MakeStream(int id_number) {
@@ -63,6 +70,19 @@ feedstore::StreamStructure MakeRemove(ContentId id) {
   return result;
 }
 
+feedstore::StreamStructure MakeClearAll() {
+  feedstore::StreamStructure result;
+  result.set_operation(feedstore::StreamStructure::CLEAR_ALL);
+  return result;
+}
+
+feedstore::StreamSharedState MakeSharedState(int id_number) {
+  feedstore::StreamSharedState shared_state;
+  *shared_state.mutable_content_id() = MakeSharedStateId(id_number);
+  shared_state.set_shared_state_data("ss:" + base::NumberToString(id_number));
+  return shared_state;
+}
+
 feedstore::Content MakeContent(int id_number) {
   feedstore::Content result;
   *result.mutable_content_id() = MakeContentContentId(id_number);
@@ -92,6 +112,25 @@ std::vector<feedstore::DataOperation> MakeTypicalStreamOperations() {
       MakeOperation(MakeContentNode(1, MakeClusterId(1))),
       MakeOperation(MakeContent(1)),
   };
+}
+
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState() {
+  auto initial_update = std::make_unique<StreamModelUpdateRequest>();
+  initial_update->source =
+      StreamModelUpdateRequest::Source::kInitialLoadFromStore;
+  initial_update->content.push_back(MakeContent(0));
+  initial_update->content.push_back(MakeContent(1));
+  *initial_update->stream_data.add_structures() = MakeClearAll();
+  *initial_update->stream_data.add_structures() = MakeStream();
+  *initial_update->stream_data.add_structures() = MakeCluster(0, MakeRootId());
+  *initial_update->stream_data.add_structures() =
+      MakeContentNode(0, MakeClusterId(0));
+  *initial_update->stream_data.add_structures() = MakeCluster(1, MakeRootId());
+  *initial_update->stream_data.add_structures() =
+      MakeContentNode(1, MakeClusterId(1));
+
+  initial_update->shared_states.push_back(MakeSharedState(0));
+  return initial_update;
 }
 
 }  // namespace feed

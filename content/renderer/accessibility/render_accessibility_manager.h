@@ -60,6 +60,8 @@ class CONTENT_EXPORT RenderAccessibilityManager
   // mojom::RenderAccessibility implementation.
   void SetMode(uint32_t ax_mode) override;
   void FatalError() override;
+  void HitTest(const ui::AXActionData& action_data,
+               mojom::RenderAccessibility::HitTestCallback callback) override;
   void PerformAction(const ui::AXActionData& data) override;
   void Reset(int32_t reset_token) override;
 
@@ -69,11 +71,6 @@ class CONTENT_EXPORT RenderAccessibilityManager
       const std::vector<ui::AXEvent>& events,
       int32_t reset_token,
       mojom::RenderAccessibilityHost::HandleAXEventsCallback callback);
-  void HandleChildFrameHitTestResult(int action_request_id,
-                                     const gfx::Point& point,
-                                     int child_frame_routing_id,
-                                     int child_frame_browser_plugin_instance_id,
-                                     ax::mojom::Event event_to_fire);
   void HandleLocationChanges(std::vector<mojom::LocationChangesPtr> changes);
 
  private:

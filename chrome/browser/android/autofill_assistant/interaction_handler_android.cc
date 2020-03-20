@@ -66,6 +66,16 @@ void TryToggleUserAction(base::WeakPtr<BasicInteractions> basic_interactions,
   basic_interactions->ToggleUserAction(proto);
 }
 
+void TryRunConditionalCallback(
+    base::WeakPtr<BasicInteractions> basic_interactions,
+    const std::string& condition_identifier,
+    InteractionHandlerAndroid::InteractionCallback callback) {
+  if (!basic_interactions) {
+    return;
+  }
+  basic_interactions->RunConditionalCallback(condition_identifier, callback);
+}
+
 void ShowInfoPopup(const InfoPopupProto& proto,
                    base::android::ScopedJavaGlobalRef<jobject> jcontext) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -447,6 +457,15 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
       if (!callback) {
         VLOG(1) << "Invalid callback for interaction";
         return false;
+      }
+      // Wrap callback in condition handler if necessary.
+      if (callback_proto.has_condition_model_identifier()) {
+        callback =
+            base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+                base::BindRepeating(&TryRunConditionalCallback,
+                                    basic_interactions->GetWeakPtr(),
+                                    callback_proto.condition_model_identifier(),
+                                    *callback));
       }
       AddInteraction(*key, *callback);
     }

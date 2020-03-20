@@ -346,7 +346,13 @@ void BreakDebugger() {
   // setting the 'go' variable above.
 #elif defined(NDEBUG)
   // Terminate the program after signaling the debug break.
+  // When DEBUG_BREAK() expands to abort(), this is unreachable code. Rather
+  // than carefully tracking in which cases DEBUG_BREAK()s is noreturn, just
+  // disable the unreachable code warning here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunreachable-code"
   _exit(1);
+#pragma GCC diagnostic pop
 #endif
 }
 

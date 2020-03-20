@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -202,10 +202,10 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileAttributesStorage* storage) {
 
 void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
   DCHECK(metric < NUM_PROFILE_ADD_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.AddNewUser", metric,
-                            NUM_PROFILE_ADD_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount",
-                            ProfileNetUserCounts::ADD_NEW_USER);
+  base::UmaHistogramEnumeration("Profile.AddNewUser", metric,
+                                NUM_PROFILE_ADD_METRICS);
+  base::UmaHistogramEnumeration("Profile.NetUserCount",
+                                ProfileNetUserCounts::ADD_NEW_USER);
 }
 
 void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
@@ -386,51 +386,46 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
     default:
       NOTREACHED();
   }
-  UMA_HISTOGRAM_ENUMERATION("Profile.Avatar", icon_name,
-                            NUM_PROFILE_AVATAR_METRICS);
+  base::UmaHistogramEnumeration("Profile.Avatar", icon_name,
+                                NUM_PROFILE_AVATAR_METRICS);
 }
 
 void ProfileMetrics::LogProfileDeleteUser(ProfileDelete metric) {
   DCHECK(metric < NUM_DELETE_PROFILE_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.DeleteProfileAction", metric,
-                            NUM_DELETE_PROFILE_METRICS);
+  base::UmaHistogramEnumeration("Profile.DeleteProfileAction", metric,
+                                NUM_DELETE_PROFILE_METRICS);
   if (metric != DELETE_PROFILE_USER_MANAGER_SHOW_WARNING &&
       metric != DELETE_PROFILE_SETTINGS_SHOW_WARNING &&
       metric != DELETE_PROFILE_ABORTED) {
     // If a user was actually deleted, update the net user count.
-    UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount",
-                              ProfileNetUserCounts::PROFILE_DELETED);
+    base::UmaHistogramEnumeration("Profile.NetUserCount",
+                                  ProfileNetUserCounts::PROFILE_DELETED);
   }
 }
 
 void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
   if (metric == GAIA_OPT_IN)
     LogProfileAvatarSelection(SIZE_MAX);
-  UMA_HISTOGRAM_ENUMERATION("Profile.SwitchGaiaPhotoSettings",
-                            metric,
-                            NUM_PROFILE_GAIA_METRICS);
+  base::UmaHistogramEnumeration("Profile.SwitchGaiaPhotoSettings", metric,
+                                NUM_PROFILE_GAIA_METRICS);
 }
 
 void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
   DCHECK(metric < NUM_PROFILE_SYNC_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.SyncCustomize", metric,
-                            NUM_PROFILE_SYNC_METRICS);
-}
-
-void ProfileMetrics::LogProfileAuthResult(ProfileAuth metric) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.AuthResult", metric,
-                            NUM_PROFILE_AUTH_METRICS);
+  base::UmaHistogramEnumeration("Profile.SyncCustomize", metric,
+                                NUM_PROFILE_SYNC_METRICS);
 }
 
 void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {
-  UMA_HISTOGRAM_BOOLEAN("Profile.Delete", profile_was_signed_in);
+  base::UmaHistogramBoolean("Profile.Delete", profile_was_signed_in);
 }
 
 void ProfileMetrics::LogTimeToOpenUserManager(
     const base::TimeDelta& time_to_open) {
-  UMA_HISTOGRAM_CUSTOM_TIMES("Profile.TimeToOpenUserManagerUpTo1min",
-                             time_to_open, base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1), 50);
+  base::UmaHistogramCustomTimes("Profile.TimeToOpenUserManagerUpTo1min",
+                                time_to_open,
+                                base::TimeDelta::FromMilliseconds(1),
+                                base::TimeDelta::FromMinutes(1), 50);
 }
 
 #if defined(OS_ANDROID)
@@ -438,43 +433,37 @@ void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
     ProfileAndroidAccountManagementMenu metric,
     signin::GAIAServiceType gaia_service) {
   // The first parameter to the histogram needs to be literal, because of the
-  // optimized implementation of |UMA_HISTOGRAM_ENUMERATION|. Do not attempt
+  // optimized implementation of |base::UmaHistogramEnumeration|. Do not attempt
   // to refactor.
   switch (gaia_service) {
     case signin::GAIA_SERVICE_TYPE_NONE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Profile.AndroidAccountManagementMenu.NonGAIA",
-          metric,
+      base::UmaHistogramEnumeration(
+          "Profile.AndroidAccountManagementMenu.NonGAIA", metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;
     case signin::GAIA_SERVICE_TYPE_SIGNOUT:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Profile.AndroidAccountManagementMenu.GAIASignout",
-          metric,
+      base::UmaHistogramEnumeration(
+          "Profile.AndroidAccountManagementMenu.GAIASignout", metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;
     case signin::GAIA_SERVICE_TYPE_INCOGNITO:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Profile.AndroidAccountManagementMenu.GAIASignoutIncognito",
-          metric,
+      base::UmaHistogramEnumeration(
+          "Profile.AndroidAccountManagementMenu.GAIASignoutIncognito", metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;
     case signin::GAIA_SERVICE_TYPE_ADDSESSION:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Profile.AndroidAccountManagementMenu.GAIAAddSession",
-          metric,
+      base::UmaHistogramEnumeration(
+          "Profile.AndroidAccountManagementMenu.GAIAAddSession", metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;
     case signin::GAIA_SERVICE_TYPE_SIGNUP:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Profile.AndroidAccountManagementMenu.GAIASignup",
-          metric,
+      base::UmaHistogramEnumeration(
+          "Profile.AndroidAccountManagementMenu.GAIASignup", metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;
     case signin::GAIA_SERVICE_TYPE_DEFAULT:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Profile.AndroidAccountManagementMenu.GAIADefault",
-          metric,
+      base::UmaHistogramEnumeration(
+          "Profile.AndroidAccountManagementMenu.GAIADefault", metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;
   }
@@ -489,5 +478,5 @@ void ProfileMetrics::LogProfileLaunch(Profile* profile) {
 }
 
 void ProfileMetrics::LogProfileUpdate(const base::FilePath& profile_path) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.Update", GetProfileType(profile_path));
+  base::UmaHistogramEnumeration("Profile.Update", GetProfileType(profile_path));
 }

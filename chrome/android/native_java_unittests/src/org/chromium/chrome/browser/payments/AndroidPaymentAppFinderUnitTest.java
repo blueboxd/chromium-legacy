@@ -69,7 +69,10 @@ public class AndroidPaymentAppFinderUnitTest {
             PackageManagerDelegate packageManagerDelegate) {
         Map<String, PaymentMethodData> methodData = new HashMap<>();
         for (String methodName : methodNames) {
-            methodData.put(methodName, null);
+            PaymentMethodData data = new PaymentMethodData();
+            data.supportedMethod = methodName;
+            data.stringifiedData = "{\"key\":\"value\"}";
+            methodData.put(methodName, data);
         }
         PaymentAppFactoryParams params = Mockito.mock(PaymentAppFactoryParams.class);
         Mockito.when(params.getWebContents()).thenReturn(Mockito.mock(WebContents.class));

@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
+
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/browser.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
-#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkModel;
@@ -53,12 +56,14 @@ using bookmarks::BookmarkNode;
 
 @end  // FakeBookmarkMenuController
 
-class BookmarkMenuCocoaControllerTest : public CocoaProfileTest {
+class BookmarkMenuCocoaControllerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
-    CocoaProfileTest::SetUp();
-    ASSERT_TRUE(profile());
+    BrowserWithTestWindowTest::SetUp();
 
+    profile()->CreateBookmarkModel(true);
+    bookmarks::test::WaitForBookmarkModelToLoad(
+        BookmarkModelFactory::GetForBrowserContext(profile()));
     controller_.reset(
         [[FakeBookmarkMenuController alloc] initWithProfile:profile()]);
   }
@@ -66,6 +71,7 @@ class BookmarkMenuCocoaControllerTest : public CocoaProfileTest {
   FakeBookmarkMenuController* controller() { return controller_.get(); }
 
  private:
+  CocoaTestHelper cocoa_test_helper_;
   base::scoped_nsobject<FakeBookmarkMenuController> controller_;
 };
 

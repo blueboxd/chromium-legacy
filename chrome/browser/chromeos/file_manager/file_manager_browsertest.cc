@@ -945,7 +945,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("searchDownloadsClearSearchKeyDown"),
                       TestCase("searchDownloadsClearSearch"),
                       TestCase("searchHidingViaTab"),
-                      TestCase("searchHidingTextEntryField")));
+                      TestCase("searchHidingTextEntryField"),
+                      TestCase("searchButtonToggles")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */

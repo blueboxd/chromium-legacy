@@ -24,15 +24,6 @@ namespace subtle {
 
 namespace {
 
-// Emits UMA metrics about encountered errors. Pass zero (0) for |winerror|
-// if there is no associated Windows error.
-void LogError(PlatformSharedMemoryRegion::CreateError error, DWORD winerror) {
-  UMA_HISTOGRAM_ENUMERATION("SharedMemory.CreateError", error);
-  static_assert(ERROR_SUCCESS == 0, "Windows error code changed!");
-  if (winerror != ERROR_SUCCESS)
-    UmaHistogramSparse("SharedMemory.CreateWinError", winerror);
-}
-
 typedef enum _SECTION_INFORMATION_CLASS {
   SectionBasicInformation,
 } SECTION_INFORMATION_CLASS;
@@ -96,9 +87,6 @@ HANDLE CreateFileMappingWithReducedPermissions(SECURITY_ATTRIBUTES* sa,
   HANDLE h = CreateFileMapping(INVALID_HANDLE_VALUE, sa, PAGE_READWRITE, 0,
                                static_cast<DWORD>(rounded_size), name);
   if (!h) {
-    LogError(
-        PlatformSharedMemoryRegion::CreateError::CREATE_FILE_MAPPING_FAILURE,
-        GetLastError());
     return nullptr;
   }
 
@@ -111,9 +99,6 @@ HANDLE CreateFileMappingWithReducedPermissions(SECURITY_ATTRIBUTES* sa,
   DCHECK(rv);
 
   if (!success) {
-    LogError(
-        PlatformSharedMemoryRegion::CreateError::REDUCE_PERMISSIONS_FAILURE,
-        GetLastError());
     return nullptr;
   }
 
@@ -237,7 +222,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   // per mapping on average.
   static const size_t kSectionSize = 65536;
   if (size == 0) {
-    LogError(CreateError::SIZE_ZERO, 0);
     return {};
   }
 
@@ -245,7 +229,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   size_t rounded_size = bits::Align(size, kSectionSize);
   if (rounded_size < size ||
       rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
-    LogError(CreateError::SIZE_TOO_LARGE, 0);
     return {};
   }
 
@@ -256,15 +239,12 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   ACL dacl;
   SECURITY_DESCRIPTOR sd;
   if (!InitializeAcl(&dacl, sizeof(dacl), ACL_REVISION)) {
-    LogError(CreateError::INITIALIZE_ACL_FAILURE, GetLastError());
     return {};
   }
   if (!InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION)) {
-    LogError(CreateError::INITIALIZE_SECURITY_DESC_FAILURE, GetLastError());
     return {};
   }
   if (!SetSecurityDescriptorDacl(&sd, TRUE, &dacl, FALSE)) {
-    LogError(CreateError::SET_SECURITY_DESC_FAILURE, GetLastError());
     return {};
   }
 
@@ -294,11 +274,9 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   win::ScopedHandle scoped_h(h);
   // Check if the shared memory pre-exists.
   if (GetLastError() == ERROR_ALREADY_EXISTS) {
-    LogError(CreateError::ALREADY_EXISTS, ERROR_ALREADY_EXISTS);
     return {};
   }
 
-  LogError(CreateError::SUCCESS, ERROR_SUCCESS);
   return PlatformSharedMemoryRegion(std::move(scoped_h), mode, size,
                                     UnguessableToken::Create());
 }

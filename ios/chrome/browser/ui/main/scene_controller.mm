@@ -253,6 +253,19 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   if (level > SceneActivationLevelBackground && !self.hasInitializedUI) {
     [self initializeUI];
   }
+
+  if (level == SceneActivationLevelForegroundActive) {
+    [self presentSignInAccountsViewControllerIfNecessary];
+  }
+}
+
+- (void)presentSignInAccountsViewControllerIfNecessary {
+  ChromeBrowserState* browserState = self.currentInterface.browserState;
+  DCHECK(browserState);
+  if ([SignedInAccountsViewController
+          shouldBePresentedForBrowserState:browserState]) {
+    [self presentSignedInAccountsViewControllerForBrowserState:browserState];
+  }
 }
 
 #pragma mark - SceneControllerGuts
@@ -1451,7 +1464,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                   self.incognitoInterface)];
 }
 
-#pragma mark - AppNavigation
+#pragma mark - Sign In UI presentation
 
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ChromeBrowserState*)browserState {

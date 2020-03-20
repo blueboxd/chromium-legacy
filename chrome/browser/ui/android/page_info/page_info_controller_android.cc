@@ -10,9 +10,11 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/PageInfoController_jni.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/common/chrome_features.h"
@@ -67,6 +69,7 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      std::make_unique<ChromePageInfoDelegate>(web_contents),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
       nav_entry->GetURL(), helper->GetSecurityLevel(),
       *helper->GetVisibleSecurityState());

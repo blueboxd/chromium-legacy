@@ -19,23 +19,21 @@ struct LocationChanges {
   ax.mojom.AXRelativeBounds new_location;
 };
 
+struct ChildFrameHitTestInfo {
+  // The routing ID of the child frame to request a hit test for.
+  int32 child_frame_routing_id;
+
+  // The coordinates that should be used for the hit test on the child frame
+  // indicated by |child_frame_routing_id|, accounting for the viewport.
+  gfx.mojom.Point transformed_point;
+
+  // The accessibility event that should be fired.
+  ax.mojom.Event event_to_fire;
+};
+
 // Interface for accessibility messages sent from the renderer to the browser,
 // implemented by RenderFrameHostImpl in the browser process.
 interface RenderAccessibilityHost {
-  // Method that might be called from the renderer as a response to the call to
-  // the method RenderAccessibility::PerformAction() with a kHitTest action when
-  // the object initially hit has a child frame, to instruct the browser to
-  // request a new hit test using such child frame as the reference point.
-  //
-  // TODO(crbug.com/1060223): Remove this method once we have a way to perform
-  // accessibility hit testing without requiring this message to be sent from an
-  // untrusted renderer to the browser process.
-  HandleAXChildFrameHitTestResult(int32 action_request_id,
-                          gfx.mojom.Point transformed_point,
-                          int32 child_frame_routing_id,
-                          int32 child_frame_plugin_instance_id,
-                          ax.mojom.Event event_to_fire);
-
   // Sent to notify the browser about renderer accessibility events.
   //
   // The browser will respond by invoking the callback specified by the renderer
@@ -71,6 +69,17 @@ interface RenderAccessibility {
   // Kills the renderer. Sent when there is a fatal error in the accessibility
   // tree and the maximum number of resets has been hit.
   FatalError();
+
+  // Relays a request from assistive technology to perform a hit test over the
+  // accessibility object at the point passed via |action_data.target_point|.
+  //
+  // If the object hit doesn't have a child frame, the accessibility event
+  // indicated via |action_data.hit_test_event_to_fire| will be emitted by the
+  // renderer and no |child_frame_hit_test_info| should be returned. Otherwise,
+  // |child_frame_hit_test_info| will provide the necessary information for the
+  // browser process to request another hit test over the child frame found.
+  HitTest(ax.mojom.AXActionData action_data)
+      => (ChildFrameHitTestInfo? child_frame_hit_test_info);
 
   // Relay a request from assistive technology to perform an action, such as
   // focusing or clicking on a node.

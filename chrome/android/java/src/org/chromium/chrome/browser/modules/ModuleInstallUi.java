@@ -10,7 +10,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -48,7 +48,7 @@ public class ModuleInstallUi {
 
     /** Show UI indicating the start of a module install. */
     public void showInstallStartUi() {
-        Context context = ((TabImpl) mTab).getActivity();
+        Context context = TabUtils.getActivity(mTab);
         if (context == null) {
             // Tab is detached. Don't show UI.
             return;
@@ -67,7 +67,7 @@ public class ModuleInstallUi {
             mInstallStartToast = null;
         }
 
-        Context context = ((TabImpl) mTab).getActivity();
+        Context context = TabUtils.getActivity(mTab);
         if (context == null) {
             // Tab is detached. Don't show UI.
             return;
@@ -85,7 +85,7 @@ public class ModuleInstallUi {
             mInstallStartToast = null;
         }
 
-        Context context = ((TabImpl) mTab).getActivity();
+        Context context = TabUtils.getActivity(mTab);
         if (context == null) {
             // Tab is detached. Cancel.
             if (mFailureUiListener != null) mFailureUiListener.onFailureUiResponse(false);

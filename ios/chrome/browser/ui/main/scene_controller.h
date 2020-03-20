@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -19,8 +18,7 @@
 @protocol MainControllerGuts;
 
 // The controller object for a scene. Reacts to scene state changes.
-@interface SceneController : NSObject <AppNavigation,
-                                       AppURLLoadingServiceDelegate,
+@interface SceneController : NSObject <AppURLLoadingServiceDelegate,
                                        SceneStateObserver,
                                        ApplicationCommands,
                                        TabSwitcherDelegate,

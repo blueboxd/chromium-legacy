@@ -37,6 +37,8 @@ class BuildConfigGenerator extends DefaultTask {
     private static final def EXISTING_LIBS = [
         'junit_junit': '//third_party/junit:junit',
         'org_hamcrest_hamcrest_core': '//third_party/hamcrest:hamcrest_core_java',
+        'org_hamcrest_hamcrest_integration': '//third_party/hamcrest:hamcrest_integration_java',
+        'org_hamcrest_hamcrest_library': '//third_party/hamcrest:hamcrest_library_java',
     ]
 
 
@@ -335,6 +337,7 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  deps += [":com_google_guava_listenablefuture_java"]\n')
                 sb.append('  jar_excluded_patterns = ["*/ListenableFuture.class"]\n')
                 break
+            case 'com_google_code_findbugs_jsr305':
             case 'com_google_guava_listenablefuture':
             case 'com_googlecode_java_diff_utils_diffutils':
                 // Needed to break dependency cycle for errorprone_plugin_java.

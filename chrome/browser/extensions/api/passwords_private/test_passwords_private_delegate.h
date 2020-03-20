@@ -58,7 +58,7 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   // delegate knows of a compromised credential with the same id.
   bool RemoveCompromisedCredential(
       const api::passwords_private::CompromisedCredential& credential) override;
-  bool StartPasswordCheck() override;
+  void StartPasswordCheck(StartPasswordCheckCallback callback) override;
   void StopPasswordCheck() override;
   api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() override;
 
@@ -78,8 +78,9 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   bool StopPasswordCheckTriggered() const {
     return stop_password_check_triggered_;
   }
-  void SetStartPasswordCheckReturnSuccess(bool value) {
-    start_password_check_return_success_ = value;
+  void SetStartPasswordCheckState(
+      password_manager::BulkLeakCheckService::State state) {
+    start_password_check_state_ = state;
   }
 
  private:
@@ -114,7 +115,8 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   // Flags for detecting whether password check operations have been invoked.
   bool start_password_check_triggered_ = false;
   bool stop_password_check_triggered_ = false;
-  bool start_password_check_return_success_ = true;
+  password_manager::BulkLeakCheckService::State start_password_check_state_ =
+      password_manager::BulkLeakCheckService::State::kRunning;
 };
 }  // namespace extensions
 

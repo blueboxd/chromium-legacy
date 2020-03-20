@@ -484,7 +484,6 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   // not needing authentication.  If it is, just ignore the "launch" request.
   if (entry->IsSigninRequired())
     return;
-  ProfileMetrics::LogProfileAuthResult(ProfileMetrics::AUTH_UNNECESSARY);
 
   profiles::SwitchToProfile(
       profile_path, false, /* reuse any existing windows */
@@ -833,7 +832,6 @@ void UserManagerScreenHandler::SendUserList() {
 void UserManagerScreenHandler::ReportAuthenticationResult(
     bool success,
     ProfileMetrics::ProfileAuth auth) {
-  ProfileMetrics::LogProfileAuthResult(auth);
   email_address_.clear();
 
   if (success) {

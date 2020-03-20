@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.ContextMenu;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -97,10 +98,8 @@ public class ContextualSearchTabHelper
             NetworkChangeNotifier.addConnectionTypeObserver(this);
         }
         float scaleFactor = 1.f;
-        if (tab != null && ((TabImpl) tab).getActivity() != null
-                && ((TabImpl) tab).getActivity().getResources() != null) {
-            scaleFactor /= ((TabImpl) tab).getActivity().getResources().getDisplayMetrics().density;
-        }
+        Context context = tab != null ? tab.getContext() : null;
+        if (context != null) scaleFactor /= context.getResources().getDisplayMetrics().density;
         mPxToDp = scaleFactor;
     }
 

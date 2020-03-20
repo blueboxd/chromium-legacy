@@ -30,11 +30,13 @@
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/location_bar_helper.h"
@@ -1205,6 +1207,7 @@ std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
       SecurityStateTabHelper::FromWebContents(web_contents_);
   return std::make_unique<PageInfo>(
       this, Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+      std::make_unique<ChromePageInfoDelegate>(web_contents_),
       TabSpecificContentSettings::FromWebContents(web_contents_), web_contents_,
       entry->GetVirtualURL(), helper->GetSecurityLevel(),
       *helper->GetVisibleSecurityState());

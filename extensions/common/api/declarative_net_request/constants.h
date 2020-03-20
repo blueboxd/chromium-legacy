@@ -22,6 +22,7 @@ constexpr int kMinValidPriority = 1;
 
 constexpr int kMinValidStaticRulesetID = 1;
 constexpr int kDynamicRulesetID = 0;
+constexpr int kInvalidRulesetID = -1;
 
 // Default priority used for rules when the priority is not explicity provided
 // by an extension.

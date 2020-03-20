@@ -173,6 +173,7 @@ class SafetyCheckHandler
   ScopedObserver<password_manager::BulkLeakCheckService,
                  password_manager::BulkLeakCheckService::Observer>
       observed_leak_check_{this};
+  base::WeakPtrFactory<SafetyCheckHandler> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_SAFETY_CHECK_HANDLER_H_

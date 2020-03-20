@@ -209,11 +209,23 @@ constexpr const char kCorruptedDisableCount[] =
 // that need to be synced. Default value is false.
 constexpr const char kPrefNeedsSync[] = "needs_sync";
 
-// The indexed ruleset checksum for the Declarative Net Request API.
-constexpr const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
+// Stores preferences corresponding to static indexed rulesets for the
+// Declarative Net Request API.
+constexpr const char kDNRStaticRulesetPref[] = "dnr_static_ruleset";
 
-constexpr const char kPrefDNRDynamicRulesetChecksum[] =
-    "dnr_dynamic_ruleset_checksum";
+// Stores preferences corresponding to dynamic indexed ruleset for the
+// Declarative Net Request API. Note: we use a separate preference key for
+// dynamic rulesets instead of using the |kDNRStaticRulesetPref| dictionary.
+// This is because the |kDNRStaticRulesetPref| dictionary is re-populated on
+// each packed extension update and also on reloads of unpacked extensions.
+// However for both of these cases, we want the dynamic ruleset preferences to
+// stay unchanged. Also, this helps provide flexibility to have the dynamic
+// ruleset preference schema diverge from the static one.
+constexpr const char kDNRDynamicRulesetPref[] = "dnr_dynamic_ruleset";
+
+// Key corresponding to which we store a ruleset's checksum for the Declarative
+// Net Request API.
+constexpr const char kDNRChecksumKey[] = "checksum";
 
 // A boolean preference that indicates whether the extension's icon should be
 // automatically badged to the matched action count for a tab. False by default.
@@ -255,8 +267,8 @@ class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
   DISALLOW_COPY_AND_ASSIGN(ScopedExtensionPrefUpdate);
 };
 
-std::string JoinPrefs(base::StringPiece parent, base::StringPiece child) {
-  return base::JoinString({parent, child}, ".");
+std::string JoinPrefs(const std::vector<base::StringPiece>& parts) {
+  return base::JoinString(parts, ".");
 }
 
 // Checks if kPrefBlacklist is set to true in the base::DictionaryValue.
@@ -575,7 +587,7 @@ std::unique_ptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
   // for api_values format.
   APIPermissionSet apis;
   const base::ListValue* api_values = NULL;
-  std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
+  std::string api_pref = JoinPrefs({pref_key, kPrefAPIs});
   if (ReadPrefAsList(extension_id, api_pref, &api_values)) {
     APIPermissionSet::ParseFromJSON(api_values,
                                     APIPermissionSet::kAllowInternalPermissions,
@@ -587,7 +599,7 @@ std::unique_ptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
   ManifestPermissionSet manifest_permissions;
   const base::ListValue* manifest_permissions_values = NULL;
   std::string manifest_permission_pref =
-      JoinPrefs(pref_key, kPrefManifestPermissions);
+      JoinPrefs({pref_key, kPrefManifestPermissions});
   if (ReadPrefAsList(extension_id, manifest_permission_pref,
                      &manifest_permissions_values)) {
     ManifestPermissionSet::ParseFromJSON(
@@ -597,13 +609,13 @@ std::unique_ptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
   // Retrieve the explicit host permissions.
   URLPatternSet explicit_hosts;
   ReadPrefAsURLPatternSet(
-      extension_id, JoinPrefs(pref_key, kPrefExplicitHosts),
-      &explicit_hosts, Extension::kValidHostPermissionSchemes);
+      extension_id, JoinPrefs({pref_key, kPrefExplicitHosts}), &explicit_hosts,
+      Extension::kValidHostPermissionSchemes);
 
   // Retrieve the scriptable host permissions.
   URLPatternSet scriptable_hosts;
   ReadPrefAsURLPatternSet(
-      extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
+      extension_id, JoinPrefs({pref_key, kPrefScriptableHosts}),
       &scriptable_hosts, UserScript::ValidUserScriptSchemes());
 
   return std::make_unique<PermissionSet>(
@@ -641,23 +653,23 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
     const std::string& extension_id,
     base::StringPiece pref_key,
     const PermissionSet& new_value) {
-  std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
+  std::string api_pref = JoinPrefs({pref_key, kPrefAPIs});
   UpdateExtensionPref(extension_id, api_pref,
                       CreatePermissionList(new_value.apis()));
 
   std::string manifest_permissions_pref =
-      JoinPrefs(pref_key, kPrefManifestPermissions);
+      JoinPrefs({pref_key, kPrefManifestPermissions});
   UpdateExtensionPref(extension_id, manifest_permissions_pref,
                       CreatePermissionList(new_value.manifest_permissions()));
 
   // Set the explicit host permissions.
   SetExtensionPrefURLPatternSet(extension_id,
-                                JoinPrefs(pref_key, kPrefExplicitHosts),
+                                JoinPrefs({pref_key, kPrefExplicitHosts}),
                                 new_value.explicit_hosts());
 
   // Set the scriptable host permissions.
   SetExtensionPrefURLPatternSet(extension_id,
-                                JoinPrefs(pref_key, kPrefScriptableHosts),
+                                JoinPrefs({pref_key, kPrefScriptableHosts}),
                                 new_value.scriptable_hosts());
 }
 
@@ -1205,7 +1217,7 @@ void ExtensionPrefs::OnExtensionInstalled(
     const syncer::StringOrdinal& page_ordinal,
     int install_flags,
     const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    const declarative_net_request::RulesetChecksums& ruleset_checksums) {
   // If the extension was previously an external extension that was uninstalled,
   // clear the external uninstall bit.
   // TODO(devlin): We previously did this because we indicated external
@@ -1224,7 +1236,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   const base::Time install_time = clock_->Now();
   PopulateExtensionInfoPrefs(extension, install_time, initial_state,
                              install_flags, install_parameter,
-                             dnr_ruleset_checksum, extension_dict.get());
+                             ruleset_checksums, extension_dict.get());
 
   FinishExtensionInfoPrefs(extension->id(), install_time,
                            extension->RequiresSortOrdinal(), page_ordinal,
@@ -1416,12 +1428,12 @@ void ExtensionPrefs::SetDelayedInstallInfo(
     DelayReason delay_reason,
     const syncer::StringOrdinal& page_ordinal,
     const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    const declarative_net_request::RulesetChecksums& ruleset_checksums) {
   ScopedDictionaryUpdate update(this, extension->id(), kDelayedInstallInfo);
   auto extension_dict = update.Create();
   PopulateExtensionInfoPrefs(extension, clock_->Now(), initial_state,
                              install_flags, install_parameter,
-                             dnr_ruleset_checksum, extension_dict.get());
+                             ruleset_checksums, extension_dict.get());
 
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
@@ -1817,28 +1829,39 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
       needs_sync ? std::make_unique<base::Value>(true) : nullptr);
 }
 
-bool ExtensionPrefs::GetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int* checksum) const {
-  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum, checksum);
+bool ExtensionPrefs::GetDNRStaticRulesetChecksum(
+    const ExtensionId& extension_id,
+    int ruleset_id,
+    int* checksum) const {
+  std::string pref =
+      JoinPrefs({kDNRStaticRulesetPref, base::NumberToString(ruleset_id),
+                 kDNRChecksumKey});
+  return ReadPrefAsInteger(extension_id, pref, checksum);
 }
 
-void ExtensionPrefs::SetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int checksum) {
-  UpdateExtensionPref(extension_id, kPrefDNRRulesetChecksum,
+void ExtensionPrefs::SetDNRStaticRulesetChecksum(
+    const ExtensionId& extension_id,
+    int ruleset_id,
+    int checksum) {
+  std::string pref =
+      JoinPrefs({kDNRStaticRulesetPref, base::NumberToString(ruleset_id),
+                 kDNRChecksumKey});
+  UpdateExtensionPref(extension_id, pref,
                       std::make_unique<base::Value>(checksum));
 }
 
 bool ExtensionPrefs::GetDNRDynamicRulesetChecksum(
     const ExtensionId& extension_id,
     int* checksum) const {
-  return ReadPrefAsInteger(extension_id, kPrefDNRDynamicRulesetChecksum,
-                           checksum);
+  std::string pref = JoinPrefs({kDNRDynamicRulesetPref, kDNRChecksumKey});
+  return ReadPrefAsInteger(extension_id, pref, checksum);
 }
 
 void ExtensionPrefs::SetDNRDynamicRulesetChecksum(
     const ExtensionId& extension_id,
     int checksum) {
-  UpdateExtensionPref(extension_id, kPrefDNRDynamicRulesetChecksum,
+  std::string pref = JoinPrefs({kDNRDynamicRulesetPref, kDNRChecksumKey});
+  UpdateExtensionPref(extension_id, pref,
                       std::make_unique<base::Value>(checksum));
 }
 
@@ -2000,7 +2023,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     Extension::State initial_state,
     int install_flags,
     const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum,
+    const declarative_net_request::RulesetChecksums& ruleset_checksums,
     prefs::DictionaryValueUpdate* extension_dict) const {
   extension_dict->SetInteger(kPrefState, initial_state);
   extension_dict->SetInteger(kPrefLocation, extension->location());
@@ -2015,8 +2038,22 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
       kPrefInstallTime, base::NumberToString(install_time.ToInternalValue()));
   if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->SetBoolean(kPrefBlacklist, true);
-  if (dnr_ruleset_checksum)
-    extension_dict->SetInteger(kPrefDNRRulesetChecksum, *dnr_ruleset_checksum);
+
+  if (!ruleset_checksums.empty()) {
+    auto ruleset_prefs = std::make_unique<base::DictionaryValue>();
+    for (const declarative_net_request::RulesetChecksum& checksum :
+         ruleset_checksums) {
+      auto ruleset_dict = std::make_unique<base::DictionaryValue>();
+      ruleset_dict->SetIntKey(kDNRChecksumKey, checksum.checksum);
+
+      std::string id_key = base::NumberToString(checksum.ruleset_id);
+      DCHECK(!ruleset_prefs->FindKey(id_key));
+      ruleset_prefs->SetDictionary(id_key, std::move(ruleset_dict));
+    }
+
+    extension_dict->SetDictionary(kDNRStaticRulesetPref,
+                                  std::move(ruleset_prefs));
+  }
 
   if (util::CanWithholdPermissionsFromExtension(*extension)) {
     // If the withhold permission creation flag is present it takes precedence
@@ -2183,6 +2220,10 @@ void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
 
       // Added 2020-01
       "dnr_whitelisted_pages",
+
+      // Added 2020-03.
+      "dnr_ruleset_checksum",
+      "dnr_dynamic_ruleset_checksum",
   };
 
   for (const auto& key_value : extensions_dictionary->DictItems()) {

@@ -438,12 +438,8 @@ class OpenInControllerBridge
   if (!_webState)
     return;
 
-  if (!_documentController) {
-    // If this is called from a unit test, |documentController_| was set
-    // already.
-    _documentController =
-        [UIDocumentInteractionController interactionControllerWithURL:fileURL];
-  }
+  _documentController =
+      [UIDocumentInteractionController interactionControllerWithURL:fileURL];
 
   // TODO(cgrigoruta): The UTI is hardcoded for now, change this when we add
   // support for other file types as well.
@@ -698,11 +694,6 @@ class OpenInControllerBridge
 }
 
 #pragma mark - TestingAditions
-
-- (void)setDocumentInteractionController:
-    (UIDocumentInteractionController*)controller {
-  _documentController = controller;
-}
 
 - (NSString*)suggestedFilename {
   return _suggestedFilename;

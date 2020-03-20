@@ -1707,12 +1707,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 
   // mojom::RenderAccessibilityHost:
-  void HandleAXChildFrameHitTestResult(
-      int action_request_id,
-      const gfx::Point& point,
-      int child_frame_routing_id,
-      int child_frame_browser_plugin_instance_id,
-      ax::mojom::Event event_to_fire) override;
   void HandleAXEvents(const std::vector<AXContentTreeUpdate>& updates,
                       const std::vector<ui::AXEvent>& events,
                       int32_t reset_token,
@@ -1812,6 +1806,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Convert the content-layer-specific AXContentTreeData to a general-purpose
   // AXTreeData structure.
   void AXContentTreeDataToAXTreeData(ui::AXTreeData* dst);
+
+  // Callback that will be called as a response to the request to perform a hit
+  // test over the accessibility object at given point.
+  void RequestAXHitTestCallback(
+      int action_request_id,
+      mojom::ChildFrameHitTestInfoPtr child_frame_hit_test_result);
 
   // Callback that will be called as a response to the call to the method
   // content::mojom::RenderAccessibility::SnapshotAccessibilityTree(). The

@@ -225,11 +225,16 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
       uint32_t i = 0;
       for (const auto& file_names : data.sensor_file_names) {
+        // TODO(thakis): Figure out if it's intentional that the lop below
+        // runs just once.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunreachable-code"
         for (const auto& name : file_names) {
           base::FilePath sensor_file = base::FilePath(sensor_dir).Append(name);
           WriteValueToFile(sensor_file, values[i++]);
           break;
         }
+#pragma GCC diagnostic pop
       }
     }
   }

@@ -1363,8 +1363,6 @@ config("default_warnings") {
       "/wd4305",  # 'identifier' : truncation from 'type1' to 'type2'
       "/wd4389",  # 'operator' : signed/unsigned mismatch
 
-      # http://crbug.com/346399 - Unreachable code suppression waiting on Clang
-      # -Wunreachable-code.
       "/wd4702",  # unreachable code
 
       # http://crbug.com/848979 - MSVC is more conservative than Clang with
@@ -1590,6 +1588,12 @@ config("chromium_code") {
       # base/compiler_specific.h
       "-Wimplicit-fallthrough",
     ]
+
+    # TODO(thakis): Enable this more often, https://crbug.com/346399
+    # use_libfuzzer: https://crbug.com/1063180
+    if (!is_nacl && target_os == "linux" && !use_libfuzzer) {
+      cflags += [ "-Wunreachable-code" ]
+    }
 
     # Thread safety analysis is broken under nacl: https://crbug.com/982423.
     if (!is_nacl) {

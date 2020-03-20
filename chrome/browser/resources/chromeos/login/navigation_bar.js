@@ -5,6 +5,8 @@
 Polymer({
   is: 'navigation-bar',
 
+  behaviors: [OobeI18nBehavior],
+
   properties: {
     backVisible: {type: Boolean, value: false},
     closeVisible: {type: Boolean, value: false},

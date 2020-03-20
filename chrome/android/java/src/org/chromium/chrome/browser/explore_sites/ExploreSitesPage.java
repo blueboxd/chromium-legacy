@@ -235,8 +235,8 @@ public class ExploreSitesPage extends BasicNativePage {
         NativePageNavigationDelegateImpl navDelegate = new NativePageNavigationDelegateImpl(
                 activity, mProfile, host, activity.getTabModelSelector(), mTab);
 
-        // Don't direct reference activity because it might change if tab is reparented.
-        Runnable closeContextMenuCallback = () -> ((TabImpl) mTab).getActivity().closeContextMenu();
+        // ExploreSitePage is recreated upon reparenting. Safe to use |activity|.
+        Runnable closeContextMenuCallback = activity::closeContextMenu;
 
         mContextMenuManager = createContextMenuManager(
                 navDelegate, closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);

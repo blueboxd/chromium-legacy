@@ -186,7 +186,7 @@ class CustomThreadWatcher : public ThreadWatcher {
         base::Unretained(this), quit_closure, expected_state);
     base::CancelableClosure timeout_closure(base::BindRepeating(
         [](base::RepeatingClosure quit_closure) {
-          FAIL() << "WaitForWaitStateChange timed out";
+          ADD_FAILURE() << "WaitForWaitStateChange timed out";
           quit_closure.Run();
         },
         quit_closure));

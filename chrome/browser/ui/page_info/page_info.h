@@ -39,6 +39,7 @@ class ChromePasswordProtectionService;
 class StatefulSSLHostStateDelegate;
 class HostContentSettingsMap;
 class Profile;
+class PageInfoDelegate;
 class PageInfoUI;
 class PageInfoBubbleViewBrowserTest;
 
@@ -152,6 +153,7 @@ class PageInfo : public content::WebContentsObserver {
   // |PageInfo| takes ownership of the |ui|.
   PageInfo(PageInfoUI* ui,
            Profile* profile,
+           std::unique_ptr<PageInfoDelegate> delegate,
            TabSpecificContentSettings* tab_specific_content_settings,
            content::WebContents* web_contents,
            const GURL& url,
@@ -255,6 +257,9 @@ class PageInfo : public content::WebContentsObserver {
   // permissions (location, pop-up, plugin, etc. permissions) and site-specific
   // information (identity, connection status, etc.).
   PageInfoUI* ui_;
+
+  // The delegate allows the embedder to customize |PageInfo|'s behavior.
+  std::unique_ptr<PageInfoDelegate> delegate_;
 
   // The flag that controls whether an infobar is displayed after the website
   // settings UI is closed or not.

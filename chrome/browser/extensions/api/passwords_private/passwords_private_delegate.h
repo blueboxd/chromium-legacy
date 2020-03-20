@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "extensions/browser/extension_function.h"
 
@@ -35,6 +36,9 @@ class PasswordsPrivateDelegate : public KeyedService {
  public:
   using PlaintextPasswordCallback =
       base::OnceCallback<void(base::Optional<base::string16>)>;
+
+  using StartPasswordCheckCallback =
+      base::OnceCallback<void(password_manager::BulkLeakCheckService::State)>;
 
   using PlaintextCompromisedPasswordCallback = base::OnceCallback<void(
       base::Optional<api::passwords_private::CompromisedCredential>)>;
@@ -143,9 +147,9 @@ class PasswordsPrivateDelegate : public KeyedService {
   virtual bool RemoveCompromisedCredential(
       const api::passwords_private::CompromisedCredential& credential) = 0;
 
-  // Starts a check for compromised passwords. Returns true if a new check was
-  // started.
-  virtual bool StartPasswordCheck() = 0;
+  // Requests to start a check for compromised passwords. Invokes |callback|
+  // once a check is running or the request was stopped via StopPasswordCheck().
+  virtual void StartPasswordCheck(StartPasswordCheckCallback callback) = 0;
   // Stops a check for compromised passwords.
   virtual void StopPasswordCheck() = 0;
 

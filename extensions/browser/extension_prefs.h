@@ -19,6 +19,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/string_ordinal.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs_scope.h"
@@ -196,21 +197,22 @@ class ExtensionPrefs : public KeyedService {
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is invalid then a page will be found for the App.
   // |install_flags| are a bitmask of extension::InstallFlags.
-  // |dnr_ruleset_checksum| is the checksum for the indexed ruleset
+  // |ruleset_checksums| are the checksum for the indexed static rulesets
   // corresponding to the Declarative Net Request API.
-  void OnExtensionInstalled(const Extension* extension,
-                            Extension::State initial_state,
-                            const syncer::StringOrdinal& page_ordinal,
-                            int install_flags,
-                            const std::string& install_parameter,
-                            const base::Optional<int>& dnr_ruleset_checksum);
-  // OnExtensionInstalled with no install flags and |dnr_ruleset_checksum|.
+  void OnExtensionInstalled(
+      const Extension* extension,
+      Extension::State initial_state,
+      const syncer::StringOrdinal& page_ordinal,
+      int install_flags,
+      const std::string& install_parameter,
+      const declarative_net_request::RulesetChecksums& ruleset_checksums);
+  // OnExtensionInstalled with no install flags and |ruleset_checksums|.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
                             const syncer::StringOrdinal& page_ordinal,
                             const std::string& install_parameter) {
     OnExtensionInstalled(extension, initial_state, page_ordinal,
-                         kInstallFlagNone, install_parameter, base::nullopt);
+                         kInstallFlagNone, install_parameter, {});
   }
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
@@ -482,7 +484,7 @@ class ExtensionPrefs : public KeyedService {
       DelayReason delay_reason,
       const syncer::StringOrdinal& page_ordinal,
       const std::string& install_parameter,
-      const base::Optional<int>& dnr_ruleset_checksum = base::nullopt);
+      const declarative_net_request::RulesetChecksums& ruleset_checksums = {});
 
   // Removes any delayed install information we have for the given
   // |extension_id|. Returns true if there was info to remove; false otherwise.
@@ -586,18 +588,18 @@ class ExtensionPrefs : public KeyedService {
   bool NeedsSync(const std::string& extension_id) const;
   void SetNeedsSync(const std::string& extension_id, bool needs_sync);
 
-  // Returns false if there is no ruleset checksum corresponding to
-  // |extension_id|. On success, returns true and populates
-  // the checksum.
-  bool GetDNRRulesetChecksum(const ExtensionId& extension_id,
-                             int* checksum) const;
-  void SetDNRRulesetChecksum(const ExtensionId& extension_id, int checksum);
+  // Returns false if there is no ruleset checksum corresponding to the given
+  // |extension_id| and |ruleset_id|. On success, returns true and populates the
+  // checksum.
+  bool GetDNRStaticRulesetChecksum(const ExtensionId& extension_id,
+                                   int ruleset_id,
+                                   int* checksum) const;
+  void SetDNRStaticRulesetChecksum(const ExtensionId& extension_id,
+                                   int ruleset_id,
+                                   int checksum);
 
   // Returns false if there is no dynamic ruleset corresponding to
   // |extension_id|. On success, returns true and populates the checksum.
-  // TODO(crbug.com/696822): Use a single dictionary to store checksums for
-  // static and dynamic rulesets. This will be more relevant if and when we do
-  // support multiple static rulesets.
   bool GetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
                                     int* checksum) const;
   void SetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
@@ -773,7 +775,7 @@ class ExtensionPrefs : public KeyedService {
       Extension::State initial_state,
       int install_flags,
       const std::string& install_parameter,
-      const base::Optional<int>& dnr_ruleset_checksum,
+      const declarative_net_request::RulesetChecksums& ruleset_checksums,
       prefs::DictionaryValueUpdate* extension_dict) const;
 
   void InitExtensionControlledPrefs(const ExtensionsInfo& extensions_info);

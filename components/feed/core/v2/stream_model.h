@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "base/containers/flat_map.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/proto_util.h"
@@ -68,7 +70,7 @@ class StreamModel {
     virtual void OnStoreChange(const StoreUpdate& update) = 0;
   };
 
-  explicit StreamModel();
+  StreamModel();
   ~StreamModel();
 
   StreamModel(const StreamModel& src) = delete;
@@ -83,11 +85,17 @@ class StreamModel {
   const std::vector<ContentRevision>& GetContentList() const {
     return content_list_;
   }
-  // Returns the content identified by |ContentRevision|.
-  const feedstore::Content* FindContent(ContentRevision revision) const;
+  // Returns a list of all shared state IDs.
+  std::vector<std::string> GetSharedStateIds() const;
 
   // Apply an update from the network or storage.
   void Update(std::unique_ptr<StreamModelUpdateRequest> update_request);
+
+  // Returns the content identified by |ContentRevision|.
+  const feedstore::Content* FindContent(ContentRevision revision) const;
+
+  // Returns the shared state data identified by |id|.
+  const std::string* FindSharedStateData(const std::string& id);
 
   // Apply |operations| to the model.
   void ExecuteOperations(std::vector<feedstore::DataOperation> operations);
@@ -101,6 +109,11 @@ class StreamModel {
   bool RejectEphemeralChange(EphemeralChangeId id);
 
  private:
+  struct SharedState {
+    // Whether the data has been changed since the last call to |OnUiUpdate()|.
+    bool updated = true;
+    std::string data;
+  };
   // The final feature tree after applying any ephemeral changes.
   // May link directly to |base_feature_tree_|.
   stream_model::FeatureTree* GetFinalFeatureTree();
@@ -123,6 +136,7 @@ class StreamModel {
   std::string next_page_token_;    // TODO(harringtond): use this value.
   std::string consistency_token_;  // TODO(harringtond): use this value.
   base::Time last_added_time_;     // TODO(harringtond): use this value.
+  base::flat_map<std::string, SharedState> shared_states_;
 
   // Current state of the flattened tree.
   // Updated after each tree change.

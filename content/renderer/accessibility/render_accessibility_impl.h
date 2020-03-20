@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
@@ -122,6 +123,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                                 ui::PageTransition transition) override;
   void AccessibilityModeChanged(const ui::AXMode& mode) override;
 
+  void HitTest(const ui::AXActionData& action_data,
+               mojom::RenderAccessibility::HitTestCallback callback);
   void PerformAction(const ui::AXActionData& data);
   void Reset(int32_t reset_token);
 
@@ -167,9 +170,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnDestruct() override;
 
   // Handlers for messages from the browser to the renderer.
-  void OnHitTest(const gfx::Point& point,
-                 ax::mojom::Event event_to_fire,
-                 int action_request_id);
   void OnLoadInlineTextBoxes(const ui::AXActionTarget* target);
   void OnGetImageData(const ui::AXActionTarget* target,
                       const gfx::Size& max_size);

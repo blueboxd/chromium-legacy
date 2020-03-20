@@ -290,6 +290,67 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
   }
 }
 
+void RenderAccessibilityImpl::HitTest(
+    const ui::AXActionData& action_data,
+    mojom::RenderAccessibility::HitTestCallback callback) {
+  // This method should be called exclusively for kHitTest actions.
+  DCHECK_EQ(action_data.action, ax::mojom::Action::kHitTest);
+  DCHECK_NE(action_data.hit_test_event_to_fire, ax::mojom::Event::kNone);
+
+  WebAXObject ax_object;
+  const WebDocument& document = GetMainDocument();
+  if (!document.IsNull()) {
+    auto root_obj = WebAXObject::FromWebDocument(document);
+    if (root_obj.UpdateLayoutAndCheckValidity())
+      ax_object = root_obj.HitTest(action_data.target_point);
+  }
+
+  // Return if no attached accessibility object was found for the main document.
+  if (ax_object.IsDetached()) {
+    std::move(callback).Run(/*child_frame_hit_test_info=*/nullptr);
+    return;
+  }
+
+  // If the object that was hit has a child frame, we have to send a message
+  // back to the browser to do the hit test in the child frame, recursively.
+  AXContentNodeData data;
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
+  tree_source_.SerializeNode(ax_object, &data);
+  if (data.child_routing_id == MSG_ROUTING_NONE) {
+    // Otherwise, send an event on the node that was hit.
+    HandleAXEvent(ax_object, action_data.hit_test_event_to_fire,
+                  ax::mojom::EventFrom::kAction, action_data.request_id);
+
+    // The mojo message still needs a reply.
+    std::move(callback).Run(/*child_frame_hit_test_info=*/nullptr);
+    return;
+  }
+
+  gfx::Point transformed_point = action_data.target_point;
+  bool is_remote_frame = RenderFrameProxy::FromRoutingID(data.child_routing_id);
+  if (is_remote_frame) {
+    // Remote frames don't have access to the information from the visual
+    // viewport regarding the visual viewport offset, so we adjust the
+    // coordinates before sending them to the remote renderer.
+    WebRect rect = ax_object.GetBoundsInFrameCoordinates();
+    // The following transformation of the input point is naive, but works
+    // fairly well. It will fail with CSS transforms that rotate or shear.
+    // https://crbug.com/981959.
+    WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+    gfx::PointF viewport_offset = web_view->VisualViewportOffset();
+    transformed_point +=
+        gfx::Vector2d(viewport_offset.x(), viewport_offset.y()) -
+        gfx::Rect(rect).OffsetFromOrigin();
+  }
+
+  // Signal to the caller that we haven't handled this hit test yet, and that
+  // a new one will need to be performed over the child frame found.
+  std::move(callback).Run(mojom::ChildFrameHitTestInfo::New(
+      data.child_routing_id, transformed_point,
+      action_data.hit_test_event_to_fire));
+  return;
+}
+
 void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
@@ -324,11 +385,6 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
       break;
     case ax::mojom::Action::kGetImageData:
       OnGetImageData(target.get(), data.target_rect.size());
-      break;
-    case ax::mojom::Action::kHitTest:
-      DCHECK(data.hit_test_event_to_fire != ax::mojom::Event::kNone);
-      OnHitTest(data.target_point, data.hit_test_event_to_fire,
-                data.request_id);
       break;
     case ax::mojom::Action::kIncrement:
       target->Increment();
@@ -378,6 +434,7 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
     case ax::mojom::Action::kCustomAction:
     case ax::mojom::Action::kCollapse:
     case ax::mojom::Action::kExpand:
+    case ax::mojom::Action::kHitTest:
     case ax::mojom::Action::kReplaceSelectedText:
     case ax::mojom::Action::kNone:
       NOTREACHED();
@@ -856,55 +913,6 @@ void RenderAccessibilityImpl::OnAccessibilityEventsHandled() {
   DCHECK(ack_pending_);
   ack_pending_ = false;
   SendPendingAccessibilityEvents();
-}
-
-void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
-                                        ax::mojom::Event event_to_fire,
-                                        int action_request_id) {
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-  auto root_obj = WebAXObject::FromWebDocument(document);
-  if (!root_obj.UpdateLayoutAndCheckValidity())
-    return;
-
-  WebAXObject obj = root_obj.HitTest(point);
-  if (obj.IsDetached())
-    return;
-
-  // If the object that was hit has a child frame, we have to send a
-  // message back to the browser to do the hit test in the child frame,
-  // recursively.
-  AXContentNodeData data;
-  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
-  tree_source_.SerializeNode(obj, &data);
-  if (data.child_routing_id != MSG_ROUTING_NONE) {
-    gfx::Point transformed_point = point;
-    bool is_remote_frame =
-        RenderFrameProxy::FromRoutingID(data.child_routing_id);
-    if (is_remote_frame) {
-      // Remote frames don't have access to the information from the visual
-      // viewport regarding the visual viewport offset, so we adjust the
-      // coordinates before sending them to the remote renderer.
-      WebRect rect = obj.GetBoundsInFrameCoordinates();
-      // The following transformation of the input point is naive, but works
-      // fairly well. It will fail with CSS transforms that rotate or shear.
-      // https://crbug.com/981959.
-      WebView* web_view = render_frame_->GetRenderView()->GetWebView();
-      gfx::PointF viewport_offset = web_view->VisualViewportOffset();
-      transformed_point +=
-          gfx::Vector2d(viewport_offset.x(), viewport_offset.y()) -
-          gfx::Rect(rect).OffsetFromOrigin();
-    }
-    render_accessibility_manager_->HandleChildFrameHitTestResult(
-        action_request_id, transformed_point, data.child_routing_id, 0,
-        event_to_fire);
-    return;
-  }
-
-  // Otherwise, send an event on the node that was hit.
-  HandleAXEvent(obj, event_to_fire, ax::mojom::EventFrom::kAction,
-                action_request_id);
 }
 
 void RenderAccessibilityImpl::OnLoadInlineTextBoxes(

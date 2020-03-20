@@ -107,9 +107,11 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     return;
   }
 
-  const uint32_t destination_pixel_format =
-      (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
-                                                   : libyuv::FOURCC_ARGB;
+#if SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
+  const uint32_t destination_pixel_format = libyuv::FOURCC_ABGR;
+#else
+  const uint32_t destination_pixel_format = libyuv::FOURCC_ARGB;
+#endif
   uint8_t* destination_plane = static_cast<uint8_t*>(pixmap.writable_addr());
   int destination_stride = pixmap.width() * 4;
   int destination_width = pixmap.width();

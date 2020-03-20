@@ -4,7 +4,11 @@
 
 #include "components/feed/core/v2/stream_model.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
@@ -362,21 +366,57 @@ TEST(StreamModelTest, InitialLoad) {
   StreamModel model;
   TestObserver observer(&model);
   TestStoreObserver store_observer(&model);
-  auto initial_update = std::make_unique<StreamModelUpdateRequest>();
-  initial_update->source =
-      StreamModelUpdateRequest::Source::kInitialLoadFromStore;
-  initial_update->content.push_back(MakeContent(0));
-  *initial_update->stream_data.add_structures() = MakeStream();
-  *initial_update->stream_data.add_structures() = MakeCluster(0, MakeRootId());
-  *initial_update->stream_data.add_structures() =
-      MakeContentNode(0, MakeClusterId(0));
-
-  model.Update(std::move(initial_update));
+  model.Update(MakeTypicalInitialModelState());
 
   // Check that content was added and the store doesn't receive its own update.
   EXPECT_TRUE(observer.ContentListChanged());
-  EXPECT_EQ(std::vector<std::string>({"f:0"}), GetContentFrames(model));
+  EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
+  ASSERT_EQ(1UL, observer.GetUiUpdate()->shared_states.size());
+  EXPECT_NE("", observer.GetUiUpdate()->shared_states[0].shared_state_id);
+  const std::string* shared_state_data = model.FindSharedStateData(
+      observer.GetUiUpdate()->shared_states[0].shared_state_id);
+  ASSERT_TRUE(shared_state_data);
+  EXPECT_EQ("ss:0", *shared_state_data);
   EXPECT_FALSE(store_observer.GetUpdate());
+}
+
+TEST(StreamModelTest, SharedStateCanBeAddedOnlyOnce) {
+  StreamModel model;
+  TestObserver observer(&model);
+  TestStoreObserver store_observer(&model);
+
+  // Update the model twice with this request. The shared state should not
+  // be added the second time.
+  StreamModelUpdateRequest update_request;
+  update_request.source =
+      StreamModelUpdateRequest::Source::kInitialLoadFromStore;
+  update_request.content.push_back(MakeContent(0));
+  *update_request.stream_data.add_structures() = MakeStream();
+  *update_request.stream_data.add_structures() = MakeCluster(0, MakeRootId());
+  *update_request.stream_data.add_structures() =
+      MakeContentNode(0, MakeClusterId(0));
+  update_request.shared_states.push_back(MakeSharedState(0));
+
+  model.Update(std::make_unique<StreamModelUpdateRequest>(update_request));
+  observer.Clear();
+  model.Update(std::make_unique<StreamModelUpdateRequest>(update_request));
+  ASSERT_EQ(1UL, observer.GetUiUpdate()->shared_states.size());
+  EXPECT_FALSE(observer.GetUiUpdate()->shared_states[0].updated);
+}
+
+TEST(StreamModelTest, ClearAllErasesSharedStates) {
+  StreamModel model;
+  TestObserver observer(&model);
+  TestStoreObserver store_observer(&model);
+  // CLEAR_ALL is the first operation in the typical initial model state.
+  // The second Update() will therefore need to remove and add the shared
+  // state.
+  model.Update(MakeTypicalInitialModelState());
+  observer.Clear();
+  model.Update(MakeTypicalInitialModelState());
+
+  ASSERT_EQ(1UL, observer.GetUiUpdate()->shared_states.size());
+  EXPECT_TRUE(observer.GetUiUpdate()->shared_states[0].updated);
 }
 
 }  // namespace

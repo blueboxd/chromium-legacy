@@ -4,7 +4,7 @@
     "target": "performance_test_suite",
     "configuration": "android-go-perf",
     "benchmark": "v8.browsing_mobile",
-    "extra_test_args": "--story-tag-filter emerging_market",
+    "story_tags": "emerging_market",
     "patch": "https://chromium-review.googlesource.com/c/v8/v8/+/1784285",
     "repository": "chromium"
   },
@@ -13,6 +13,7 @@
     "target": "performance_test_suite",
     "configuration": "android-go-perf",
     "benchmark": "speedometer2",
+    "story": "Speedometer2",
     "patch": "https://chromium-review.googlesource.com/c/v8/v8/+/1784285",
     "repository": "chromium"
   }

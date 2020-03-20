@@ -1288,7 +1288,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
     // Request to component extensions and pass the ruleset checksum here.
     AddNewOrUpdatedExtension(extension, Extension::ENABLED, kInstallFlagNone,
                              syncer::StringOrdinal(), std::string(),
-                             base::nullopt);
+                             {} /* ruleset_checksums */);
     return;
   }
 
@@ -1445,7 +1445,7 @@ void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     const syncer::StringOrdinal& page_ordinal,
     int install_flags,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    const declarative_net_request::RulesetChecksums& ruleset_checksums) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const std::string& id = extension->id();
@@ -1548,12 +1548,12 @@ void ExtensionService::OnExtensionInstalled(
     case InstallGate::INSTALL:
       AddNewOrUpdatedExtension(extension, initial_state, install_flags,
                                page_ordinal, install_parameter,
-                               dnr_ruleset_checksum);
+                               ruleset_checksums);
       return;
     case InstallGate::DELAY:
       extension_prefs_->SetDelayedInstallInfo(
           extension, initial_state, install_flags, delay_reason, page_ordinal,
-          install_parameter, dnr_ruleset_checksum);
+          install_parameter, ruleset_checksums);
 
       // Transfer ownership of |extension|.
       delayed_installs_.Insert(extension);
@@ -1602,11 +1602,11 @@ void ExtensionService::AddNewOrUpdatedExtension(
     int install_flags,
     const syncer::StringOrdinal& page_ordinal,
     const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    const declarative_net_request::RulesetChecksums& ruleset_checksums) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   extension_prefs_->OnExtensionInstalled(extension, initial_state, page_ordinal,
                                          install_flags, install_parameter,
-                                         dnr_ruleset_checksum);
+                                         ruleset_checksums);
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension))
     InstallVerifier::Get(GetBrowserContext())->VerifyExtension(extension->id());

@@ -28,7 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.chrome.browser.thinwebview.CompositorViewFactory;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
@@ -265,7 +265,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
         sNativeOverlayWindowAndroid = nativeOverlayWindowAndroid;
         sInitiatorTab = (Tab) initiatorTab;
-        sInitiatorTabTaskID = ((TabImpl) sInitiatorTab).getActivity().getTaskId();
+        sInitiatorTabTaskID = TabUtils.getActivity(sInitiatorTab).getTaskId();
 
         sTabObserver = new InitiatorTabObserver();
         sInitiatorTab.addObserver(sTabObserver);

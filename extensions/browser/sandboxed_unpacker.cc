@@ -715,7 +715,7 @@ void SandboxedUnpacker::OnJSONRulesetIndexed(
     UMA_HISTOGRAM_TIMES(
         declarative_net_request::kIndexAndPersistRulesTimeHistogram,
         result.index_and_persist_time);
-    dnr_ruleset_checksum_ = result.ruleset_checksum;
+    ruleset_checksums_.emplace_back(result.ruleset_id, result.ruleset_checksum);
     CheckComputeHashes();
     return;
   }
@@ -987,7 +987,12 @@ void SandboxedUnpacker::ReportSuccess() {
       temp_dir_.Take(), extension_root_,
       base::DictionaryValue::From(
           base::Value::ToUniquePtrValue(std::move(manifest_.value()))),
-      extension_.get(), install_icon_, dnr_ruleset_checksum_);
+      extension_.get(), install_icon_, std::move(ruleset_checksums_));
+
+  // Interestingly, the C++ standard doesn't guarantee that a moved-from vector
+  // is empty.
+  ruleset_checksums_.clear();
+
   extension_.reset();
 
   Cleanup();

@@ -190,13 +190,19 @@ void RulesMonitorService::OnExtensionLoaded(
 
   // Static ruleset.
   {
-    bool has_checksum = prefs_->GetDNRRulesetChecksum(
-        extension->id(), &expected_ruleset_checksum);
-    DCHECK(has_checksum);
-
     RulesetInfo static_ruleset(RulesetSource::CreateStatic(*extension));
-    static_ruleset.set_expected_checksum(expected_ruleset_checksum);
-    load_data.rulesets.push_back(std::move(static_ruleset));
+    bool has_checksum = prefs_->GetDNRStaticRulesetChecksum(
+        extension->id(), static_ruleset.source().id(),
+        &expected_ruleset_checksum);
+
+    if (!has_checksum) {
+      // This might happen on prefs corruption.
+      warning_service_->AddWarnings(
+          {Warning::CreateRulesetFailedToLoadWarning(load_data.extension_id)});
+    } else {
+      static_ruleset.set_expected_checksum(expected_ruleset_checksum);
+      load_data.rulesets.push_back(std::move(static_ruleset));
+    }
   }
 
   // Dynamic ruleset
@@ -207,6 +213,9 @@ void RulesMonitorService::OnExtensionLoaded(
     dynamic_ruleset.set_expected_checksum(expected_ruleset_checksum);
     load_data.rulesets.push_back(std::move(dynamic_ruleset));
   }
+
+  if (load_data.rulesets.empty())
+    return;
 
   auto load_ruleset_callback = base::BindOnce(
       &RulesMonitorService::OnRulesetLoaded, weak_factory_.GetWeakPtr());
@@ -241,8 +250,10 @@ void RulesMonitorService::OnExtensionUninstalled(
 
   // Skip if the extension doesn't have a dynamic ruleset.
   int dynamic_checksum;
-  if (!prefs_->GetDNRDynamicRulesetChecksum(extension->id(), &dynamic_checksum))
+  if (!prefs_->GetDNRDynamicRulesetChecksum(extension->id(),
+                                            &dynamic_checksum)) {
     return;
+  }
 
   // Cleanup the dynamic rules directory for the extension.
   // TODO(karandeepb): It's possible that this task fails, e.g. during shutdown.
@@ -272,13 +283,14 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
 
   // Update the ruleset checksums if needed.
   if (static_ruleset.new_checksum()) {
-    prefs_->SetDNRRulesetChecksum(load_data.extension_id,
-                                  *(static_ruleset.new_checksum()));
+    prefs_->SetDNRStaticRulesetChecksum(load_data.extension_id,
+                                        static_ruleset.source().id(),
+                                        *(static_ruleset.new_checksum()));
   }
 
   if (dynamic_ruleset && dynamic_ruleset->new_checksum()) {
-    prefs_->SetDNRRulesetChecksum(load_data.extension_id,
-                                  *(dynamic_ruleset->new_checksum()));
+    prefs_->SetDNRDynamicRulesetChecksum(load_data.extension_id,
+                                         *(dynamic_ruleset->new_checksum()));
   }
 
   // It's possible that the extension has been disabled since the initial load

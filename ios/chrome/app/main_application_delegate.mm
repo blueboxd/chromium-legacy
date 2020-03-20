@@ -6,7 +6,6 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
@@ -46,8 +45,6 @@
   id<TabOpening> _tabOpener;
   // Handles the application stage changes.
   AppState* _appState;
-  // Handles tab switcher.
-  id<AppNavigation> _appNavigation;
   // Handles tab switcher.
   id<TabSwitching> _tabSwitcherProtocol;
 }
@@ -91,7 +88,6 @@
       _mainController.sceneController = _sceneController;
       _tabSwitcherProtocol = _sceneController;
       _tabOpener = _sceneController;
-      _appNavigation = _sceneController;
     }
   }
   return self;
@@ -194,8 +190,7 @@
   [_appState applicationWillEnterForeground:application
                             metricsMediator:_metricsMediator
                                memoryHelper:_memoryHelper
-                                  tabOpener:_tabOpener
-                              appNavigation:_appNavigation];
+                                  tabOpener:_tabOpener];
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
@@ -204,8 +199,7 @@
 
   // Instead of adding code here, consider if it could be handled by listening
   // for  UIApplicationWillterminate.
-  [_appState applicationWillTerminate:application
-                applicationNavigation:_appNavigation];
+  [_appState applicationWillTerminate:application];
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication*)application {
@@ -241,7 +235,6 @@
 
     _tabSwitcherProtocol = sceneController;
     _tabOpener = sceneController;
-    _appNavigation = sceneController;
 
     // TODO(crbug.com/1060645): This should be called later, or this flow should
     // be changed completely.
@@ -249,8 +242,7 @@
       [_appState applicationWillEnterForeground:UIApplication.sharedApplication
                                 metricsMediator:_metricsMediator
                                    memoryHelper:_memoryHelper
-                                      tabOpener:_tabOpener
-                                  appNavigation:_appNavigation];
+                                      tabOpener:_tabOpener];
     }
   }
 }

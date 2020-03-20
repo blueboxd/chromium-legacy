@@ -674,6 +674,23 @@ android_aar_prebuilt("androidx_test_core_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_espresso_espresso_core_java") {
+  aar_path = "libs/androidx_test_espresso_espresso_core/espresso-core-3.1.0.aar"
+  info_path = "libs/androidx_test_espresso_espresso_core/androidx_test_espresso_espresso_core.info"
+  testonly = true
+  deps = [
+    ":androidx_test_espresso_espresso_idling_resource_java",
+    ":androidx_test_runner_java",
+    ":com_google_code_findbugs_jsr305_java",
+    ":com_squareup_javawriter_java",
+    ":javax_inject_javax_inject_java",
+    "//third_party/hamcrest:hamcrest_integration_java",
+    "//third_party/hamcrest:hamcrest_library_java",
+  ]
+  skip_jetify = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_test_ext_junit_java") {
   aar_path = "libs/androidx_test_ext_junit/junit-1.1.1.aar"
   info_path = "libs/androidx_test_ext_junit/androidx_test_ext_junit.info"
@@ -1802,6 +1819,18 @@ android_aar_prebuilt("androidx_slidingpanelayout_slidingpanelayout_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_espresso_espresso_idling_resource_java") {
+  aar_path = "libs/androidx_test_espresso_espresso_idling_resource/espresso-idling-resource-3.1.0.aar"
+  info_path = "libs/androidx_test_espresso_espresso_idling_resource/androidx_test_espresso_espresso_idling_resource.info"
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  testonly = true
+  skip_jetify = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_transition_transition_java") {
   aar_path = "libs/androidx_transition_transition/transition-1.0.0-rc02.aar"
   info_path =
@@ -2220,11 +2249,8 @@ java_prebuilt("com_google_code_findbugs_jFormatString_java") {
 java_prebuilt("com_google_code_findbugs_jsr305_java") {
   jar_path = "libs/com_google_code_findbugs_jsr305/jsr305-3.0.2.jar"
   output_name = "com_google_code_findbugs_jsr305"
-  enable_bytecode_rewriter = false
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
+  supports_android = true
+  no_build_hooks = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2390,6 +2416,17 @@ java_prebuilt("com_google_protobuf_protobuf_java_java") {
   # To remove visibility constraint, add this dependency to
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
+}
+
+java_prebuilt("com_squareup_javawriter_java") {
+  jar_path = "libs/com_squareup_javawriter/javawriter-2.1.1.jar"
+  output_name = "com_squareup_javawriter"
+  supports_android = true
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+  testonly = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

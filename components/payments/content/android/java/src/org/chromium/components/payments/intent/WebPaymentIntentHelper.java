@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.util.JsonWriter;
 
 import androidx.annotation.Nullable;
@@ -34,31 +35,31 @@ public class WebPaymentIntentHelper {
     public static final String ACTION_PAY = "org.chromium.intent.action.PAY";
 
     // Freshest parameters sent to the payment app.
-    private static final String EXTRA_CERTIFICATE = "certificate";
-    private static final String EXTRA_MERCHANT_NAME = "merchantName";
-    private static final String EXTRA_METHOD_DATA = "methodData";
-    private static final String EXTRA_METHOD_NAMES = "methodNames";
-    private static final String EXTRA_MODIFIERS = "modifiers";
-    private static final String EXTRA_PAYMENT_REQUEST_ID = "paymentRequestId";
-    private static final String EXTRA_PAYMENT_REQUEST_ORIGIN = "paymentRequestOrigin";
-    private static final String EXTRA_TOP_CERTIFICATE_CHAIN = "topLevelCertificateChain";
-    private static final String EXTRA_TOP_ORIGIN = "topLevelOrigin";
-    private static final String EXTRA_TOTAL = "total";
+    public static final String EXTRA_CERTIFICATE = "certificate";
+    public static final String EXTRA_MERCHANT_NAME = "merchantName";
+    public static final String EXTRA_METHOD_DATA = "methodData";
+    public static final String EXTRA_METHOD_NAMES = "methodNames";
+    public static final String EXTRA_MODIFIERS = "modifiers";
+    public static final String EXTRA_PAYMENT_REQUEST_ID = "paymentRequestId";
+    public static final String EXTRA_PAYMENT_REQUEST_ORIGIN = "paymentRequestOrigin";
+    public static final String EXTRA_TOP_CERTIFICATE_CHAIN = "topLevelCertificateChain";
+    public static final String EXTRA_TOP_ORIGIN = "topLevelOrigin";
+    public static final String EXTRA_TOTAL = "total";
 
     // Deprecated parameters sent to the payment app for backward compatibility.
-    private static final String EXTRA_DEPRECATED_CERTIFICATE_CHAIN = "certificateChain";
-    private static final String EXTRA_DEPRECATED_DATA = "data";
-    private static final String EXTRA_DEPRECATED_DATA_MAP = "dataMap";
-    private static final String EXTRA_DEPRECATED_DETAILS = "details";
-    private static final String EXTRA_DEPRECATED_ID = "id";
-    private static final String EXTRA_DEPRECATED_IFRAME_ORIGIN = "iframeOrigin";
-    private static final String EXTRA_DEPRECATED_METHOD_NAME = "methodName";
-    private static final String EXTRA_DEPRECATED_ORIGIN = "origin";
+    public static final String EXTRA_DEPRECATED_CERTIFICATE_CHAIN = "certificateChain";
+    public static final String EXTRA_DEPRECATED_DATA = "data";
+    public static final String EXTRA_DEPRECATED_DATA_MAP = "dataMap";
+    public static final String EXTRA_DEPRECATED_DETAILS = "details";
+    public static final String EXTRA_DEPRECATED_ID = "id";
+    public static final String EXTRA_DEPRECATED_IFRAME_ORIGIN = "iframeOrigin";
+    public static final String EXTRA_DEPRECATED_METHOD_NAME = "methodName";
+    public static final String EXTRA_DEPRECATED_ORIGIN = "origin";
 
     // Response from the payment app.
-    private static final String EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS = "instrumentDetails";
-    private static final String EXTRA_RESPONSE_DETAILS = "details";
-    private static final String EXTRA_RESPONSE_METHOD_NAME = "methodName";
+    public static final String EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS = "instrumentDetails";
+    public static final String EXTRA_RESPONSE_DETAILS = "details";
+    public static final String EXTRA_RESPONSE_METHOD_NAME = "methodName";
 
     private static final String EMPTY_JSON_DATA = "{}";
 
@@ -111,34 +112,44 @@ public class WebPaymentIntentHelper {
     }
 
     /**
-     * Create an intent to invoke a native payment app.
+     * Create an intent to invoke a native payment app. This method throws IllegalArgumentException
+     * for invalid arguments.
      *
-     * @param packageName The name of the package of the payment app.
-     * @param activityName The name of the payment activity in the payment app.
-     * @param id The unique identifier of the PaymentRequest.
-     * @param merchantName The name of the merchant.
-     * @param schemelessOrigin The schemeless origin of this merchant
-     * @param schemelessIframeOrigin The schemeless origin of the iframe that invoked PaymentRequest
-     * @param certificateChain The site certificate chain of the merchant. Can be null for localhost
-     *                         or local file, which are secure contexts without SSL.
+     * @param packageName The name of the package of the payment app. Only non-empty string is
+     *         allowed.
+     * @param activityName The name of the payment activity in the payment app. Only non-empty
+     *         string is allowed.
+     * @param id The unique identifier of the PaymentRequest. Only non-empty string is allowed.
+     * @param merchantName The name of the merchant. Cannot be null..
+     * @param schemelessOrigin The schemeless origin of this merchant. Only non-empty string is
+     *         allowed.
+     * @param schemelessIframeOrigin The schemeless origin of the iframe that invoked
+     *         PaymentRequest. Only non-empty string is allowed.
+     * @param certificateChain The site certificate chain of the merchant. Can be null for
+     *         localhost or local file, which are secure contexts without SSL. Each byte array
+     * cannot be null.
      * @param methodDataMap The payment-method specific data for all applicable payment methods,
-     *                         e.g., whether the app should be invoked in test or production, a
-     *                         merchant identifier, or a public key.
-     * @param total The total amount.
-     * @param displayItems The shopping cart items.
-     * @param modifiers The relevant payment details modifiers.
+     *         e.g., whether the app should be invoked in test or production, a merchant identifier,
+     *         or a public key. The map and its values cannot be null. The map should have at
+     *         least one entry.
+     * @param total The total amount. Cannot be null..
+     * @param displayItems The shopping cart items. OK to be null.
+     * @param modifiers The relevant payment details modifiers. OK to be null.
      * @return The intent to invoke the payment app.
      */
     public static Intent createPayIntent(String packageName, String activityName, String id,
             String merchantName, String schemelessOrigin, String schemelessIframeOrigin,
-            byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
-            PaymentItem total, List<PaymentItem> displayItems,
-            Map<String, PaymentDetailsModifier> modifiers) {
+            @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
+            PaymentItem total, @Nullable List<PaymentItem> displayItems,
+            @Nullable Map<String, PaymentDetailsModifier> modifiers) {
         Intent payIntent = new Intent();
+        checkStringNotEmpty(activityName, "activityName");
+        checkStringNotEmpty(packageName, "packageName");
         payIntent.setClassName(packageName, activityName);
         payIntent.setAction(ACTION_PAY);
-        payIntent.putExtras(buildExtras(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
-                certificateChain, methodDataMap, total, displayItems, modifiers));
+        payIntent.putExtras(
+                buildPayIntentExtras(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
+                        certificateChain, methodDataMap, total, displayItems, modifiers));
         return payIntent;
     }
 
@@ -146,28 +157,79 @@ public class WebPaymentIntentHelper {
      * Create an intent to invoke a service that can answer "is ready to pay" query, or null of
      * none.
      *
-     * @param packageName The name of the package of the payment app.
-     * @param serviceName The name of the service.
-     * @param schemelessOrigin The schemeless origin of this merchant
-     * @param schemelessIframeOrigin The schemeless origin of the iframe that invoked PaymentRequest
+     * @param packageName The name of the package of the payment app. Only non-empty string is
+     *         allowed.
+     * @param serviceName The name of the service. Only non-empty string is allowed.
+     * @param schemelessOrigin The schemeless origin of this merchant. Only non-empty string is
+     *         allowed.
+     * @param schemelessIframeOrigin The schemeless origin of the iframe that invoked
+     *         PaymentRequest. Only non-empty string is allowed.
      * @param certificateChain The site certificate chain of the merchant. Can be null for localhost
-     *                         or local file, which are secure contexts without SSL.
+     *         or local file, which are secure contexts without SSL. Each byte array
+     *         cannot be null.
      * @param methodDataMap The payment-method specific data for all applicable payment methods,
-     *                         e.g., whether the app should be invoked in test or production, a
-     *                         merchant identifier, or a public key.
+     *         e.g., whether the app should be invoked in test or production, a merchant identifier,
+     *         or a public key. The map should have at least one entry.
      * @return The intent to invoke the service.
      */
     public static Intent createIsReadyToPayIntent(String packageName, String serviceName,
             String schemelessOrigin, String schemelessIframeOrigin, byte[][] certificateChain,
             Map<String, PaymentMethodData> methodDataMap) {
         Intent isReadyToPayIntent = new Intent();
+        checkStringNotEmpty(serviceName, "serviceName");
+        checkStringNotEmpty(packageName, "packageName");
         isReadyToPayIntent.setClassName(packageName, serviceName);
+
+        checkStringNotEmpty(schemelessOrigin, "schemelessOrigin");
+        checkStringNotEmpty(schemelessIframeOrigin, "schemelessIframeOrigin");
+        // certificateChain is ok to be null, left unchecked here.
+        checkNotEmpty(methodDataMap, "methodDataMap");
         isReadyToPayIntent.putExtras(buildExtras(/*id=*/null,
                 /*merchantName=*/null, schemelessOrigin, schemelessIframeOrigin, certificateChain,
                 methodDataMap, /*total=*/null, /*displayItems=*/null, /*modifiers=*/null));
         return isReadyToPayIntent;
     }
 
+    private static void checkNotEmpty(Map map, String name) {
+        if (map == null || map.isEmpty()) {
+            throw new IllegalArgumentException(name + " should not be null or empty.");
+        }
+    }
+
+    private static void checkStringNotEmpty(String value, String name) {
+        if (TextUtils.isEmpty(value)) {
+            throw new IllegalArgumentException(name + " should not be null or empty.");
+        }
+    }
+    private static void checkNotNull(Object value, String name) {
+        if (value == null) throw new IllegalArgumentException(name + " should not be null.");
+    }
+
+    private static Bundle buildPayIntentExtras(String id, String merchantName,
+            String schemelessOrigin, String schemelessIframeOrigin,
+            @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
+            PaymentItem total, @Nullable List<PaymentItem> displayItems,
+            @Nullable Map<String, PaymentDetailsModifier> modifiers) {
+        // The following checks follow the order of the parameters.
+        checkStringNotEmpty(id, "id");
+        checkNotNull(merchantName, "merchantName");
+
+        checkStringNotEmpty(schemelessOrigin, "schemelessOrigin");
+        checkStringNotEmpty(schemelessIframeOrigin, "schemelessIframeOrigin");
+
+        // certificateChain is ok to be null, left unchecked here.
+
+        checkNotEmpty(methodDataMap, "methodDataMap");
+        checkNotNull(total, "total");
+
+        // displayItems is ok to be null, left unchecked here.
+        // modifiers is ok to be null, left unchecked here.
+
+        return buildExtras(id, merchantName, schemelessOrigin, schemelessIframeOrigin,
+                certificateChain, methodDataMap, total, displayItems, modifiers);
+    }
+
+    // id, merchantName, total are ok to be null only for {@link #createIsReadyToPayIntent}.
     private static Bundle buildExtras(@Nullable String id, @Nullable String merchantName,
             String schemelessOrigin, String schemelessIframeOrigin,
             @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
@@ -179,8 +241,10 @@ public class WebPaymentIntentHelper {
 
         if (merchantName != null) extras.putString(EXTRA_MERCHANT_NAME, merchantName);
 
+        assert !TextUtils.isEmpty(schemelessOrigin);
         extras.putString(EXTRA_TOP_ORIGIN, schemelessOrigin);
 
+        assert !TextUtils.isEmpty(schemelessIframeOrigin);
         extras.putString(EXTRA_PAYMENT_REQUEST_ORIGIN, schemelessIframeOrigin);
 
         Parcelable[] serializedCertificateChain = null;
@@ -189,13 +253,13 @@ public class WebPaymentIntentHelper {
             extras.putParcelableArray(EXTRA_TOP_CERTIFICATE_CHAIN, serializedCertificateChain);
         }
 
+        assert methodDataMap != null && !methodDataMap.isEmpty();
         extras.putStringArrayList(EXTRA_METHOD_NAMES, new ArrayList<>(methodDataMap.keySet()));
 
         Bundle methodDataBundle = new Bundle();
         for (Map.Entry<String, PaymentMethodData> methodData : methodDataMap.entrySet()) {
-            methodDataBundle.putString(methodData.getKey(),
-                    methodData.getValue() == null ? EMPTY_JSON_DATA
-                                                  : methodData.getValue().stringifiedData);
+            checkNotNull(methodData.getValue(), "methodDataMap's entry value");
+            methodDataBundle.putString(methodData.getKey(), methodData.getValue().stringifiedData);
         }
         extras.putParcelable(EXTRA_METHOD_DATA, methodDataBundle);
 
@@ -248,6 +312,7 @@ public class WebPaymentIntentHelper {
         Parcelable[] result = new Parcelable[certificateChain.length];
         for (int i = 0; i < certificateChain.length; i++) {
             Bundle bundle = new Bundle();
+            checkNotNull(certificateChain[i], "certificateChain[" + i + "]");
             bundle.putByteArray(EXTRA_CERTIFICATE, certificateChain[i]);
             result[i] = bundle;
         }
@@ -327,6 +392,7 @@ public class WebPaymentIntentHelper {
         try {
             json.beginArray();
             for (PaymentDetailsModifier modifier : modifiers) {
+                checkNotNull(modifier, "PaymentDetailsModifier");
                 serializeModifier(modifier, json);
             }
             json.endArray();

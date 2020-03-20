@@ -324,10 +324,20 @@ PasswordsPrivateStartPasswordCheckFunction::
     ~PasswordsPrivateStartPasswordCheckFunction() = default;
 
 ResponseAction PasswordsPrivateStartPasswordCheckFunction::Run() {
-  if (!GetDelegate(browser_context())->StartPasswordCheck()) {
-    return RespondNow(Error("Starting password check failed."));
-  }
-  return RespondNow(NoArguments());
+  GetDelegate(browser_context())
+      ->StartPasswordCheck(base::BindOnce(
+          &PasswordsPrivateStartPasswordCheckFunction::OnStarted, this));
+
+  // OnStarted() might respond before we reach this point.
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateStartPasswordCheckFunction::OnStarted(
+    password_manager::BulkLeakCheckService::State state) {
+  const bool is_running =
+      state == password_manager::BulkLeakCheckService::State::kRunning;
+  Respond(is_running ? NoArguments()
+                     : Error("Starting password check failed."));
 }
 
 // PasswordsPrivateStopPasswordCheckFunction:

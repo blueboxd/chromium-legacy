@@ -39,6 +39,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -172,12 +173,11 @@ bool IsPermissionFactoryDefault(HostContentSettingsMap* content_settings,
 
 // Determines whether to show permission |type| in the Page Info UI. Only
 // applies to permissions listed in |kPermissionType|.
-bool ShouldShowPermission(
-    const PageInfoUI::PermissionInfo& info,
-    const GURL& site_url,
-    HostContentSettingsMap* content_settings,
-    content::WebContents* web_contents,
-    TabSpecificContentSettings* tab_specific_content_settings) {
+bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
+                          const GURL& site_url,
+                          HostContentSettingsMap* content_settings,
+                          content::WebContents* web_contents,
+                          bool changed_since_last_page_load) {
   // Note |ContentSettingsType::ADS| will show up regardless of its default
   // value when it has been activated on the current origin.
   if (info.type == ContentSettingsType::ADS) {
@@ -232,8 +232,7 @@ bool ShouldShowPermission(
 
   // Show the content setting if it has been changed by the user since the last
   // page load.
-  if (tab_specific_content_settings->HasContentSettingChangedViaPageInfo(
-          info.type)) {
+  if (changed_since_last_page_load) {
     return true;
   }
 
@@ -358,6 +357,7 @@ const char kPageInfoTimeNoActionPrefix[] =
 PageInfo::PageInfo(
     PageInfoUI* ui,
     Profile* profile,
+    std::unique_ptr<PageInfoDelegate> delegate,
     TabSpecificContentSettings* tab_specific_content_settings,
     content::WebContents* web_contents,
     const GURL& url,
@@ -365,6 +365,7 @@ PageInfo::PageInfo(
     const security_state::VisibleSecurityState& visible_security_state)
     : content::WebContentsObserver(web_contents),
       ui_(ui),
+      delegate_(std::move(delegate)),
       show_info_bar_(false),
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
@@ -387,6 +388,7 @@ PageInfo::PageInfo(
 #endif
       show_change_password_buttons_(false),
       did_perform_action_(false) {
+  DCHECK(delegate_);
   ComputeUIInputs(url, security_level, visible_security_state);
 
   PresentSitePermissions();
@@ -640,7 +642,7 @@ void PageInfo::OpenSiteSettingsView() {
 #else
   chrome::ShowSiteSettings(chrome::FindBrowserWithWebContents(web_contents()),
                            site_url());
-  RecordPageInfoAction(PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED);
+  RecordPageInfoAction(PAGE_INFO_SITE_SETTINGS_OPENED);
 #endif
 }
 
@@ -1018,8 +1020,12 @@ void PageInfo::PresentSitePermissions() {
       }
     }
 
+    // TODO(crbug.com/1058597): Remove the call to |delegate_| once
+    // TabSpecificContentSettings has been componentized.
     if (ShouldShowPermission(permission_info, site_url_, content_settings_,
-                             web_contents(), tab_specific_content_settings_)) {
+                             web_contents(),
+                             delegate_->HasContentSettingChangedViaPageInfo(
+                                 permission_info.type))) {
       permission_info_list.push_back(permission_info);
     }
   }

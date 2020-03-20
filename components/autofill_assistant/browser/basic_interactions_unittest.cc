@@ -15,9 +15,9 @@ namespace autofill_assistant {
 
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::InSequence;
 using ::testing::Property;
 using ::testing::StrEq;
-
 namespace {
 DateProto CreateDateProto(int year, int month, int day) {
   DateProto proto;
@@ -417,6 +417,31 @@ TEST_F(BasicInteractionsTest, ToggleUserAction) {
                   AllOf(Property(&UserActionProto::identifier,
                                  StrEq("done_identifier")),
                         Property(&UserActionProto::enabled, Eq(false)))));
+}
+
+TEST_F(BasicInteractionsTest, RunConditionalCallback) {
+  InSequence seq;
+  base::MockCallback<base::RepeatingCallback<void()>> callback;
+
+  EXPECT_CALL(callback, Run()).Times(0);
+  EXPECT_FALSE(
+      basic_interactions_.RunConditionalCallback("condition", callback.Get()));
+
+  ValueProto multi_bool;
+  multi_bool.mutable_booleans()->add_values(true);
+  multi_bool.mutable_booleans()->add_values(false);
+  user_model_.SetValue("condition", multi_bool);
+  EXPECT_FALSE(
+      basic_interactions_.RunConditionalCallback("condition", callback.Get()));
+
+  user_model_.SetValue("condition", SimpleValue(false));
+  EXPECT_TRUE(
+      basic_interactions_.RunConditionalCallback("condition", callback.Get()));
+
+  EXPECT_CALL(callback, Run()).Times(1);
+  user_model_.SetValue("condition", SimpleValue(true));
+  EXPECT_TRUE(
+      basic_interactions_.RunConditionalCallback("condition", callback.Get()));
 }
 
 }  // namespace autofill_assistant

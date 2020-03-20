@@ -215,9 +215,10 @@ bool TestPasswordsPrivateDelegate::RemoveCompromisedCredential(
                        }) != 0;
 }
 
-bool TestPasswordsPrivateDelegate::StartPasswordCheck() {
+void TestPasswordsPrivateDelegate::StartPasswordCheck(
+    StartPasswordCheckCallback callback) {
   start_password_check_triggered_ = true;
-  return start_password_check_return_success_;
+  std::move(callback).Run(start_password_check_state_);
 }
 
 void TestPasswordsPrivateDelegate::StopPasswordCheck() {

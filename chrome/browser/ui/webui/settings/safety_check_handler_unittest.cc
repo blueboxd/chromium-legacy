@@ -98,14 +98,6 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     state_ = state;
   }
 
-  // When |running_state_on_start_| is set to |true|, this class simulates the
-  // behavior of the real password check by synchronously settings the state to
-  // |kRunning| once |StartPasswordCheck()| is invoked. Since that is the case
-  // for the majority of non-error password check flows, the default is |true|.
-  // In some test cases with no transitions to the |kRunning| state, such as not
-  // having any passwords, it is necessary to disable this functionality.
-  void SetRunningStateOnStart(bool value) { running_state_on_start_ = value; }
-
   std::vector<extensions::api::passwords_private::CompromisedCredential>
   GetCompromisedCredentials() override {
     std::vector<extensions::api::passwords_private::CompromisedCredential>
@@ -123,22 +115,11 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     return status;
   }
 
-  bool StartPasswordCheck() override {
-    bool ret_val =
-        extensions::TestPasswordsPrivateDelegate::StartPasswordCheck();
-    if (running_state_on_start_) {
-      leak_service_->set_state_and_notify(
-          password_manager::BulkLeakCheckService::State::kRunning);
-    }
-    return ret_val;
-  }
-
  private:
   password_manager::BulkLeakCheckService* leak_service_ = nullptr;
   int compromised_password_count_ = 0;
   extensions::api::passwords_private::PasswordCheckState state_ =
       extensions::api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
-  bool running_state_on_start_ = true;
 };
 
 class TestSafetyCheckExtensionService : public TestExtensionService {
@@ -654,9 +635,6 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
-  test_passwords_delegate_.SetPasswordCheckState(
-      extensions::api::passwords_private::PASSWORD_CHECK_STATE_RUNNING);
-  test_passwords_delegate_.SetStartPasswordCheckReturnSuccess(false);
   test_passwords_delegate_.SetNumCompromisedCredentials(1);
   safety_check_->PerformSafetyCheck();
   EXPECT_TRUE(test_passwords_delegate_.StartPasswordCheckTriggered());
@@ -674,7 +652,8 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_NoPasswords) {
-  test_passwords_delegate_.SetRunningStateOnStart(false);
+  test_passwords_delegate_.SetStartPasswordCheckState(
+      password_manager::BulkLeakCheckService::State::kIdle);
   safety_check_->PerformSafetyCheck();
   const base::DictionaryValue* event =
       GetSafetyCheckStatusChangedWithDataIfExists(

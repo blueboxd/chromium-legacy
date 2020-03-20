@@ -31,7 +31,7 @@
       <div slot="footer" class="flex layout vertical">
         <webview id="crosEulaFrame" allowTransparency
             role="document" class="flex oobe-tos-webview"
-            i18n-values="aria-label:oobeEulaIframeLabel"
+            aria-label$="[[i18nDynamic(locale, 'oobeEulaIframeLabel')]]"
             on-contentload="onFrameLoad_">
         </webview>
         <div id="footer-more" class="layout vertical">

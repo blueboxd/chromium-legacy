@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
 
 namespace content {
@@ -39,28 +40,34 @@ class ParseInfo;
 struct IndexAndPersistJSONRulesetResult {
  public:
   static IndexAndPersistJSONRulesetResult CreateSuccessResult(
+      int ruleset_id,
       int ruleset_checksum,
       std::vector<InstallWarning> warnings,
       size_t rules_count,
       base::TimeDelta index_and_persist_time);
-  static IndexAndPersistJSONRulesetResult CreateErrorResult(std::string error);
-
+  static IndexAndPersistJSONRulesetResult CreateErrorResult(int ruleset_id,
+                                                            std::string error);
   ~IndexAndPersistJSONRulesetResult();
   IndexAndPersistJSONRulesetResult(IndexAndPersistJSONRulesetResult&&);
   IndexAndPersistJSONRulesetResult& operator=(
       IndexAndPersistJSONRulesetResult&&);
 
   // Whether IndexAndPersistRules succeeded.
-  bool success;
+  bool success = false;
+
+  // ID for the ruleset.
+  int ruleset_id = kInvalidRulesetID;
 
   // Checksum of the persisted indexed ruleset file. Valid if |success| if true.
-  int ruleset_checksum;
+  // Note: there's no sane default value for this, any integer value is a valid
+  // checksum value.
+  int ruleset_checksum = 0;
 
   // Valid if |success| is true.
   std::vector<InstallWarning> warnings;
 
   // The number of indexed rules. Valid if |success| is true.
-  size_t rules_count;
+  size_t rules_count = 0;
 
   // Time taken to deserialize the JSON rules and persist them in flatbuffer
   // format. Valid if success is true.

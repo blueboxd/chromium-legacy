@@ -35,7 +35,7 @@ public final class TabParentIntent extends EmptyTabObserver implements UserData 
     }
 
     private TabParentIntent(Tab tab) {
-        mTab = (TabImpl) tab;
+        mTab = tab;
         mTab.addObserver(this);
     }
 
@@ -45,8 +45,8 @@ public final class TabParentIntent extends EmptyTabObserver implements UserData 
 
         // If the parent Tab belongs to another Activity, fire the Intent to bring it back.
         if (isSelected && mParentIntent != null
-                && ((TabImpl) tab).getActivity().getIntent() != mParentIntent) {
-            ((TabImpl) tab).getActivity().startActivity(mParentIntent);
+                && TabUtils.getActivity(tab).getIntent() != mParentIntent) {
+            TabUtils.getActivity(tab).startActivity(mParentIntent);
         }
     }
 

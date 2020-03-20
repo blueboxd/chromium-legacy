@@ -16,7 +16,6 @@
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_service.h"
-#import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
@@ -271,8 +270,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)applicationWillEnterForeground:(UIApplication*)application
                        metricsMediator:(MetricsMediator*)metricsMediator
                           memoryHelper:(MemoryWarningHelper*)memoryHelper
-                             tabOpener:(id<TabOpening>)tabOpener
-                         appNavigation:(id<AppNavigation>)appNavigation {
+                             tabOpener:(id<TabOpening>)tabOpener {
   if ([_browserLauncher browserInitializationStage] <
       INITIALIZATION_STAGE_FOREGROUND) {
     // The application has been launched in background and the initialization
@@ -311,20 +309,14 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                                                  .interfaceProvider];
   [memoryHelper resetForegroundMemoryWarningCount];
 
-  ChromeBrowserState* currentBrowserState =
-      _browserLauncher.interfaceProvider.currentInterface.browserState;
-  if ([SignedInAccountsViewController
-          shouldBePresentedForBrowserState:currentBrowserState]) {
-    [appNavigation presentSignedInAccountsViewControllerForBrowserState:
-                       currentBrowserState];
-  }
-
   // Use the mainBVC as the ContentSuggestions can only be started in non-OTR.
   ChromeBrowserState* mainBrowserState =
       _browserLauncher.interfaceProvider.mainInterface.browserState;
   [ContentSuggestionsSchedulerNotifications notifyForeground:mainBrowserState];
 
   // If the current browser state is not OTR, check for cookie loss.
+  ChromeBrowserState* currentBrowserState =
+      _browserLauncher.interfaceProvider.currentInterface.browserState;
   if (currentBrowserState && !currentBrowserState->IsOffTheRecord() &&
       currentBrowserState->GetOriginalChromeBrowserState()
               ->GetStatePath()
@@ -389,8 +381,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   [MetricsMediator logStartupDuration:_startupInformation];
 }
 
-- (void)applicationWillTerminate:(UIApplication*)application
-           applicationNavigation:(id<AppNavigation>)appNavigation {
+- (void)applicationWillTerminate:(UIApplication*)application {
   if (_appIsTerminating) {
     // Previous handling of this method spun the runloop, resulting in
     // recursive calls; this does not appear to happen with the new shutdown

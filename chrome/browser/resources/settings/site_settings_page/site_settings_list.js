@@ -64,15 +64,12 @@ cr.define('settings', function() {
       this.browserProxy_ =
           settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
 
-      for (const item of this.categoryList) {
-        // Default labels are not applicable to ZOOM_LEVELS or PDF.
-        if (item.id === settings.ContentSettingsTypes.ZOOM_LEVELS ||
-            item.id === 'pdfDocuments') {
-          continue;
-        }
-
-        this.refreshDefaultValueLabel_(item.id);
-      }
+      Promise
+          .all(this.categoryList.map(
+              item => this.refreshDefaultValueLabel_(item.id)))
+          .then(() => {
+            this.fire('site-settings-list-labels-updated-for-testing');
+          });
 
       this.addWebUIListener(
           'contentSettingCategoryChanged',
@@ -111,16 +108,25 @@ cr.define('settings', function() {
     /**
      * @param {!settings.ContentSettingsTypes} category The category to refresh
      *     (fetch current value + update UI)
+     * @return {!Promise<void>} A promise firing after the label has been
+     *     updated.
      * @private
      */
     refreshDefaultValueLabel_(category) {
+      // Default labels are not applicable to ZOOM_LEVELS or PDF.
+      if (category === settings.ContentSettingsTypes.ZOOM_LEVELS ||
+          category === 'pdfDocuments') {
+        return Promise.resolve();
+      }
+
       if (category == settings.ContentSettingsTypes.COOKIES &&
           loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
         // Updates to the cookies label are handled by the
         // cookieSettingDescriptionChanged event listener.
-        return;
+        return Promise.resolve();
       }
-      this.browserProxy_.getDefaultValueForContentType(category).then(
+
+      return this.browserProxy_.getDefaultValueForContentType(category).then(
           defaultValue => {
             this.updateDefaultValueLabel_(category, defaultValue.setting);
           });

@@ -245,7 +245,7 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
   }
 
   OnUnpackSuccess(extension->path(), extension->path(), nullptr,
-                  extension.get(), SkBitmap(), base::nullopt);
+                  extension.get(), SkBitmap(), {} /* ruleset_checksums */);
 }
 
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
@@ -314,7 +314,7 @@ void CrxInstaller::ConvertWebAppOnFileThread(
   // TODO(aa): conversion data gets lost here :(
 
   OnUnpackSuccess(extension->path(), extension->path(), nullptr,
-                  extension.get(), SkBitmap(), base::nullopt);
+                  extension.get(), SkBitmap(), {} /* ruleset_checksums */);
 }
 
 base::Optional<CrxInstallError> CrxInstaller::AllowInstall(
@@ -515,7 +515,7 @@ void CrxInstaller::OnUnpackSuccess(
     std::unique_ptr<base::DictionaryValue> original_manifest,
     const Extension* extension,
     const SkBitmap& install_icon,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    declarative_net_request::RulesetChecksums ruleset_checksums) {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallSource",
@@ -524,7 +524,7 @@ void CrxInstaller::OnUnpackSuccess(
 
   extension_ = extension;
   temp_dir_ = temp_dir;
-  dnr_ruleset_checksum_ = dnr_ruleset_checksum;
+  ruleset_checksums_ = std::move(ruleset_checksums);
 
   if (!install_icon.empty())
     install_icon_ = std::make_unique<SkBitmap>(install_icon);
@@ -983,7 +983,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   }
 
   service_weak_->OnExtensionInstalled(extension(), page_ordinal_,
-                                      install_flags_, dnr_ruleset_checksum_);
+                                      install_flags_, ruleset_checksums_);
   NotifyCrxInstallComplete(base::nullopt);
 }
 

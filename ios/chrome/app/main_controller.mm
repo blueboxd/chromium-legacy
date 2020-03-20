@@ -112,7 +112,6 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
-#import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -341,8 +340,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleMemoryDebuggingTools;
 // Asynchronously kick off regular free memory checks.
 - (void)startFreeMemoryMonitoring;
-// Asynchronously schedules the notification of the AuthenticationService.
-- (void)scheduleAuthenticationServiceNotification;
 // Asynchronously schedules the reset of the failed startup attempt counter.
 - (void)scheduleStartupAttemptReset;
 // Asynchronously schedules the cleanup of crash reports.
@@ -888,23 +885,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
-- (void)scheduleAuthenticationServiceNotification {
-  [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kAuthenticationServiceNotification
-                  block:^{
-                    // Active browser state should have been set before
-                    // scheduling any authentication service notification.
-                    DCHECK([self currentBrowserState]);
-                    if ([SignedInAccountsViewController
-                            shouldBePresentedForBrowserState:
-                                [self currentBrowserState]]) {
-                      [self.sceneController
-                          presentSignedInAccountsViewControllerForBrowserState:
-                              [self currentBrowserState]];
-                    }
-                  }];
-}
-
 - (void)scheduleStartupAttemptReset {
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kStartupAttemptReset
@@ -1047,7 +1027,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self scheduleMemoryDebuggingTools];
   [StartupTasks
       scheduleDeferredBrowserStateInitialization:self.mainBrowserState];
-  [self scheduleAuthenticationServiceNotification];
   [self sendQueuedFeedback];
   [self scheduleSpotlightResync];
   [self scheduleDeleteTempDownloadsDirectory];

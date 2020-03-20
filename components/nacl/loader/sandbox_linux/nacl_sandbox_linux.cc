@@ -67,12 +67,9 @@ bool MaybeSetProcessNonDumpable() {
 }
 
 void RestrictAddressSpaceUsage() {
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(THREAD_SANITIZER)
   // Sanitizers need to reserve huge chunks of the address space.
-  return;
-#endif
-
+#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(THREAD_SANITIZER)
   // Add a limit to the brk() heap that would prevent allocations that can't be
   // indexed by an int. This helps working around typical security bugs.
   // This could almost certainly be set to zero. GLibc's allocator and others
@@ -96,6 +93,7 @@ void RestrictAddressSpaceUsage() {
   const rlim_t kNewAddressSpaceLimit = std::numeric_limits<uint32_t>::max();
 #endif
   CHECK_EQ(0, sandbox::ResourceLimits::Lower(RLIMIT_AS, kNewAddressSpaceLimit));
+#endif
 }
 
 }  // namespace

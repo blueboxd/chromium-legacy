@@ -26,7 +26,9 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info.h"
+#include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -518,8 +520,9 @@ PageInfoBubbleView::PageInfoBubbleView(
   // |TabSpecificContentSettings| and need to create one; otherwise, noop.
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
-      this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
-      web_contents, url, security_level, visible_security_state);
+      this, profile, std::make_unique<ChromePageInfoDelegate>(web_contents),
+      TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
+      url, security_level, visible_security_state);
 }
 
 void PageInfoBubbleView::WebContentsDestroyed() {

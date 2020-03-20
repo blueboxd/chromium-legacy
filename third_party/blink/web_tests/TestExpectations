@@ -6011,7 +6011,6 @@ crbug.com/1000768 [ Linux ] external/wpt/storage/idlharness.https.any.html [ Pas
 crbug.com/1001817 external/wpt/css/css-ui/text-overflow-016.html [ Pass Failure ]
 crbug.com/1001816 external/wpt/css/css-masking/clip-path/clip-path-inline-003.html [ Pass Failure ]
 crbug.com/1001814 external/wpt/css/css-masking/clip-path/clip-path-inline-002.html [ Pass Failure ]
-crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]
 
 # Sheriff 2019-09-10
 crbug.com/1002527 [ Debug ] virtual/text-antialias/large-text-composed-char.html [ Pass Crash ]
@@ -6125,6 +6124,13 @@ crbug.com/1011466 http/tests/devtools/tracing/timeline-misc/timeline-aggregated-
 crbug.com/1011466 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
 crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Pass Failure ]
 crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
+
+# Temporarily disabled for landing a DevTools change.
+crbug.com/1056588 http/tests/devtools/elements/bidi-dom-tree.js [ Pass Failure ]
+crbug.com/1056588 http/tests/devtools/elements/edit/delete-from-document.js [ Pass Failure ]
+crbug.com/1056588 http/tests/devtools/elements/elements-panel-correct-case.js [ Pass Failure ]
+crbug.com/1056588 http/tests/devtools/elements/elements-panel-structure.js [ Pass Failure ]
+crbug.com/1056588 http/tests/devtools/elements/user-properties.js [ Pass Failure ]
 
 # Tests that json modules load correctly within the context of service workers
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
@@ -6644,8 +6650,6 @@ crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/ti
 crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface/suspended-context-messageport.https.html [ Failure ]
 
 crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]
-
-crbug.com/1062667 [ Mac ] external/wpt/server-timing/idlharness.https.any.html [ Pass Timeout ]
 
 # Sheriff 2020-03-05
 crbug.com/1058073 [ Retina ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Failure ]

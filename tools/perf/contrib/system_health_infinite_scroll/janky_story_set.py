@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from page_sets.helpers import override_online
+from page_sets.login_helpers import pinterest_login
 from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
@@ -58,6 +59,11 @@ class PinterestJankyStory(JankyStory):
   NAME = 'browse:social:pinterest_infinite_scroll:2019'
   URL = 'https://www.pinterest.co.uk'
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2019]
+
+  SKIP_LOGIN = False
+
+  def _Login(self, action_runner):
+    pinterest_login.LoginMobileAccount(action_runner, 'googletest')
 
 
 class TumblrJankyStory(JankyStory):

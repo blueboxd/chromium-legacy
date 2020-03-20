@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
-class ChromeBrowserState;
 @class BrowserViewWrangler;
 
 @protocol SceneControllerGuts <WebStateListObserving>
@@ -44,13 +43,6 @@ class ChromeBrowserState;
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;
-
-#pragma mark - AppNavigation helpers
-
-// Presents a SignedInAccountsViewController for |browserState| on the top view
-// controller.
-- (void)presentSignedInAccountsViewControllerForBrowserState:
-    (ChromeBrowserState*)browserState;
 
 #pragma mark - iOS 12 compat
 

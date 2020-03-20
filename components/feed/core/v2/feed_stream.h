@@ -6,6 +6,7 @@
 #define COMPONENTS_FEED_CORE_V2_FEED_STREAM_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"

@@ -1317,8 +1317,6 @@ bool Schema::Normalize(base::Value* value,
           if (!normalization_result) {
             // Invalid property was detected.
             return false;
-            drop_list.push_back(dict_item.first);
-            break;
           }
         }
         present_properties.insert(dict_item.first);

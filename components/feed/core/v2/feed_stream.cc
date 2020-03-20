@@ -4,6 +4,10 @@
 
 #include "components/feed/core/v2/feed_stream.h"
 
+#include <set>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
@@ -44,9 +48,16 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
     feedui::StreamUpdate stream_update;
     const std::vector<ContentRevision>& content_list = model_->GetContentList();
     for (ContentRevision content_revision : content_list) {
-      AddSliceUpdate(&stream_update, content_revision,
-                     current_content_set_.count(content_revision) == 0);
+      AddSliceUpdate(content_revision,
+                     current_content_set_.count(content_revision) == 0,
+                     &stream_update);
     }
+    for (const StreamModel::UiUpdate::SharedStateInfo& info :
+         update.shared_states) {
+      if (info.updated)
+        AddSharedState(info.shared_state_id, &stream_update);
+    }
+
     current_content_set_.clear();
     current_content_set_.insert(content_list.begin(), content_list.end());
 
@@ -67,9 +78,21 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
                        sizeof(integer_value));
   }
 
-  void AddSliceUpdate(feedui::StreamUpdate* stream_update,
-                      ContentRevision content_revision,
-                      bool is_content_new) {
+  void AddSharedState(const std::string& shared_state_id,
+                      feedui::StreamUpdate* stream_update) {
+    const std::string* shared_state_data =
+        model_->FindSharedStateData(shared_state_id);
+    if (!shared_state_data)
+      return;
+    feedui::SharedState* added_shared_state =
+        stream_update->add_new_shared_states();
+    added_shared_state->set_id(shared_state_id);
+    added_shared_state->set_xsurface_shared_state(*shared_state_data);
+  }
+
+  void AddSliceUpdate(ContentRevision content_revision,
+                      bool is_content_new,
+                      feedui::StreamUpdate* stream_update) {
     if (is_content_new) {
       feedui::Slice* slice =
           stream_update->add_updated_slices()->mutable_slice();
@@ -86,9 +109,12 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
   feedui::StreamUpdate GetUpdateForNewSurface() {
     feedui::StreamUpdate result;
     for (ContentRevision content_revision : model_->GetContentList()) {
-      AddSliceUpdate(&result, content_revision, /*is_content_new=*/true);
+      AddSliceUpdate(content_revision, /*is_content_new=*/true, &result);
     }
-    // TODO(harringtond): add shared states too.
+    for (std::string& id : model_->GetSharedStateIds()) {
+      AddSharedState(id, &result);
+    }
+
     return result;
   }
 

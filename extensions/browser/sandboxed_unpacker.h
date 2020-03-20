@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/image_sanitizer.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -73,9 +74,8 @@ class SandboxedUnpackerClient
   //
   // install_icon - The icon we will display in the installation UI, if any.
   //
-  // dnr_ruleset_checksum - Checksum for the indexed ruleset corresponding to
-  // the Declarative Net Request API. Optional since it's only valid for
-  // extensions which provide a declarative ruleset.
+  // ruleset_checksums - Checksums for the indexed rulesets corresponding to
+  // the Declarative Net Request API.
   //
   // Note: OnUnpackSuccess/Failure may be called either synchronously or
   // asynchronously from SandboxedUnpacker::StartWithCrx/Directory.
@@ -85,7 +85,7 @@ class SandboxedUnpackerClient
       std::unique_ptr<base::DictionaryValue> original_manifest,
       const Extension* extension,
       const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) = 0;
+      declarative_net_request::RulesetChecksums ruleset_checksums) = 0;
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
 
  protected:
@@ -263,9 +263,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // is called.
   base::Optional<base::Value> manifest_;
 
-  // Checksum for the indexed ruleset, see more in
+  // Checksums for the indexed rulesets, see more in
   // SandboxedUnpackerClient::OnUnpackSuccess description.
-  base::Optional<int> dnr_ruleset_checksum_;
+  declarative_net_request::RulesetChecksums ruleset_checksums_;
 
   // Represents the extension we're unpacking.
   scoped_refptr<Extension> extension_;

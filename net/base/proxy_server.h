@@ -26,7 +26,7 @@ class NET_EXPORT ProxyServer {
  public:
   // The type of proxy. These are defined as bit flags so they can be ORed
   // together to pass as the |scheme_bit_field| argument to
-  // ConfiguredProxyResolutionService::RemoveProxiesWithoutScheme().
+  // ProxyList::RemoveProxiesWithoutScheme().
   enum Scheme {
     SCHEME_INVALID = 1 << 0,
     SCHEME_DIRECT  = 1 << 1,

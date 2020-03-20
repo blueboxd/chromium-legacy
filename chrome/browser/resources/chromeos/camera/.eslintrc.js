@@ -376,6 +376,7 @@ module.exports = {
     // BigInt64Array as a defined type.
     'BigInt64Array': 'readable',
     'chromeosCamera': 'readable',
+    'blink': 'readable',
     'cca': 'readable',  // TODO(inker): remove this after resolving b/141518780.
     'cros': 'readable',
     'webkitRequestFileSystem': 'readable',

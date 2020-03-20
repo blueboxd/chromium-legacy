@@ -1693,6 +1693,12 @@ ui::AXPlatformNode* BrowserAccessibility::GetFromTreeIDAndNodeID(
 }
 
 int BrowserAccessibility::GetIndexInParent() {
+  if (manager()->GetRoot() == this && PlatformGetParent() == nullptr) {
+    // If it is a root node of WebContent, it doesn't have a parent and a
+    // valid index in parent. So it returns -1 in order to compute its
+    // index at AXPlatformNodeBase.
+    return -1;
+  }
   return node_ ? node_->GetUnignoredIndexInParent() : -1;
 }
 

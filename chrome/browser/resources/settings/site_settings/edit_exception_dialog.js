@@ -37,7 +37,7 @@ Polymer({
     },
   },
 
-  /** @private {!settings.SiteSettingsPrefsBrowserProxy} */
+  /** @private {?settings.SiteSettingsPrefsBrowserProxy} */
   browserProxy_: null,
 
   /** @override */

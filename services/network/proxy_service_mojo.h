@@ -13,12 +13,12 @@
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace net {
+class ConfiguredProxyResolutionService;
 class HostResolver;
 class NetLog;
 class NetworkDelegate;
 class ProxyConfigService;
 class PacFileFetcher;
-class ConfiguredProxyResolutionService;
 }  // namespace net
 
 namespace network {
@@ -36,6 +36,9 @@ namespace network {
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ConfiguredProxyResolutionService.
+//
+// TODO(https://crbug.com/1032820): Rename this to
+// CreateConfiguredProxyResolutionServiceUsingMojoFactory.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 std::unique_ptr<net::ConfiguredProxyResolutionService>
 CreateProxyResolutionServiceUsingMojoFactory(

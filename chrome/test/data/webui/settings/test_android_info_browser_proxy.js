@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
 cr.define('android_info', function() {
   /**
    * Test value for messages for web permissions origin.
    */
-  const TEST_ANDROID_SMS_ORIGIN = 'http://foo.com';
+  /* #export */ const TEST_ANDROID_SMS_ORIGIN = 'http://foo.com';
 
   /** @implements {settings.AndroidInfoBrowserProxy} */
-  class TestAndroidInfoBrowserProxy extends TestBrowserProxy {
+  /* #export */ class TestAndroidInfoBrowserProxy extends TestBrowserProxy {
     constructor() {
       super([
         'getAndroidSmsInfo',
@@ -24,6 +28,7 @@ cr.define('android_info', function() {
     }
   }
 
+  // #cr_define_end
   return {
     TestAndroidInfoBrowserProxy: TestAndroidInfoBrowserProxy,
     TEST_ANDROID_SMS_ORIGIN: TEST_ANDROID_SMS_ORIGIN,

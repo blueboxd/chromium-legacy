@@ -6,6 +6,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/no_destructor.h"
+#include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -37,6 +42,38 @@ void UpdateFileHandlerRegistrationInOs(const AppId& app_id, Profile* profile) {
       app_id, base::BindOnce(&OnShortcutInfoReceived));
 }
 
+void OnRegisterMimeTypes(bool registration_succeeded) {
+  if (!registration_succeeded)
+    LOG(ERROR) << "Registering MIME types failed.";
+}
+
+bool DoRegisterMimeTypes(base::FilePath filename, std::string file_contents) {
+  DCHECK(!filename.empty() && !file_contents.empty());
+
+  base::ScopedTempDir temp_dir;
+  if (!temp_dir.CreateUniqueTempDir())
+    return false;
+
+  base::FilePath temp_file_path(temp_dir.GetPath().Append(filename));
+
+  int bytes_written = base::WriteFile(temp_file_path, file_contents.data(),
+                                      file_contents.length());
+  if (bytes_written != static_cast<int>(file_contents.length()))
+    return false;
+
+  std::vector<std::string> argv{"xdg-mime", "install", "--mode", "user",
+                                temp_file_path.value()};
+
+  int exit_code;
+  shell_integration_linux::LaunchXdgUtility(argv, &exit_code);
+  return exit_code == 0;
+}
+
+RegisterMimeTypesOnLinuxCallback& GetRegisterMimeTypesCallbackForTesting() {
+  static base::NoDestructor<RegisterMimeTypesOnLinuxCallback> instance;
+  return *instance;
+}
+
 }  // namespace
 
 bool ShouldRegisterFileHandlersWithOs() {
@@ -47,6 +84,15 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
                                 const apps::FileHandlers& file_handlers) {
+  if (!file_handlers.empty()) {
+    RegisterMimeTypesOnLinuxCallback callback =
+        GetRegisterMimeTypesCallbackForTesting()
+            ? std::move(GetRegisterMimeTypesCallbackForTesting())
+            : base::BindOnce(&DoRegisterMimeTypes);
+    RegisterMimeTypesOnLinux(app_id, profile, file_handlers,
+                             std::move(callback));
+  }
+
   UpdateFileHandlerRegistrationInOs(app_id, profile);
 }
 
@@ -59,6 +105,31 @@ void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
     return;
 
   UpdateFileHandlerRegistrationInOs(app_id, profile);
+}
+
+void RegisterMimeTypesOnLinux(const AppId& app_id,
+                              Profile* profile,
+                              const apps::FileHandlers& file_handlers,
+                              RegisterMimeTypesOnLinuxCallback callback) {
+  DCHECK(!app_id.empty() && !file_handlers.empty());
+
+  base::FilePath filename =
+      shell_integration_linux::GetMimeTypesRegistrationFilename(
+          profile->GetPath(), app_id);
+  std::string file_contents =
+      shell_integration_linux::GetMimeTypesRegistrationFileContents(
+          file_handlers);
+
+  internals::GetShortcutIOTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(filename),
+                     std::move(file_contents)),
+      base::BindOnce(&OnRegisterMimeTypes));
+}
+
+void SetRegisterMimeTypesOnLinuxCallbackForTesting(
+    RegisterMimeTypesOnLinuxCallback callback) {
+  GetRegisterMimeTypesCallbackForTesting() = std::move(callback);
 }
 
 }  // namespace web_app

@@ -32,6 +32,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/net_buildflags.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
@@ -193,8 +194,7 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
 class URLRequestHttpJobWithProxy : public WithTaskEnvironment {
  public:
   explicit URLRequestHttpJobWithProxy(
-      std::unique_ptr<ConfiguredProxyResolutionService>
-          proxy_resolution_service)
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
       : proxy_resolution_service_(std::move(proxy_resolution_service)),
         context_(new TestURLRequestContext(true)) {
     context_->set_client_socket_factory(&socket_factory_);
@@ -205,7 +205,7 @@ class URLRequestHttpJobWithProxy : public WithTaskEnvironment {
 
   MockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<TestURLRequestContext> context_;
 
  private:
@@ -254,7 +254,7 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
   const ProxyServer proxy_server =
       ProxyServer::FromURI("http://origin.net:80", ProxyServer::SCHEME_HTTP);
 
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           proxy_server.ToPacString(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -295,7 +295,7 @@ TEST(URLRequestHttpJobWithProxy,
 
   // Connection to |proxy_server| would fail. Request should be fetched over
   // DIRECT.
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           proxy_server.ToPacString() + "; " +
               ProxyServer::Direct().ToPacString(),

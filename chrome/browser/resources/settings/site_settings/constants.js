@@ -115,7 +115,7 @@ cr.define('settings', function() {
    * An invalid subtype value.
    * @type {string}
    */
-  const INVALID_CATEGORY_SUBTYPE = '';
+  /* #export */ const INVALID_CATEGORY_SUBTYPE = '';
 
   /**
    * Contains the record action types logged before M82.

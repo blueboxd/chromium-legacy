@@ -24,8 +24,8 @@ class NET_EXPORT HttpNetworkLayer : public HttpTransactionFactory,
                                     public base::PowerObserver {
  public:
   // Construct a HttpNetworkLayer with an existing HttpNetworkSession which
-  // contains a valid ConfiguredProxyResolutionService. The HttpNetworkLayer
-  // must be destroyed before |session|.
+  // contains a valid ProxyResolutionService. The HttpNetworkLayer must be
+  // destroyed before |session|.
   explicit HttpNetworkLayer(HttpNetworkSession* session);
   ~HttpNetworkLayer() override;
 

@@ -17,7 +17,7 @@
 #include "content/public/common/web_preferences.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 
 namespace base {
 class FilePath;

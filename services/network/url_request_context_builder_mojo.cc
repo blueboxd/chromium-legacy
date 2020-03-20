@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/network_context.h"
@@ -50,7 +51,7 @@ URLRequestContextBuilderMojo::CreateDhcpPacFileFetcher(
 #endif
 }
 
-std::unique_ptr<net::ConfiguredProxyResolutionService>
+std::unique_ptr<net::ProxyResolutionService>
 URLRequestContextBuilderMojo::CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::URLRequestContext* url_request_context,

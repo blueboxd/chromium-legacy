@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"

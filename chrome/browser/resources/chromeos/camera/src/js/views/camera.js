@@ -181,7 +181,7 @@ export class Camera extends View {
         .forEach((btn) => btn.addEventListener('click', () => this.endTake_()));
 
     // Monitor the states to stop camera when locked/minimized.
-    browserProxy.addOnLockChangeListener((isLocked) => {
+    ChromeHelper.getInstance().addOnLockListener((isLocked) => {
       this.locked_ = isLocked;
       if (this.locked_) {
         this.start();

@@ -1539,23 +1539,52 @@ CrSettingsSiteListTest.prototype = {
     'test_util.js',
     '../test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
-    'test_android_info_browser_proxy.js',
     'site_list_tests.js',
   ]),
 };
 
 // TODO(crbug.com/929455): flaky, fix.
 TEST_F('CrSettingsSiteListTest', 'DISABLED_SiteList', function() {
-  mocha.grep('SiteList').run();
+  runMochaSuite('SiteList');
 });
 
 TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
-  mocha.grep('EditExceptionDialog').run();
+  runMochaSuite('EditExceptionDialog');
 });
 
 TEST_F('CrSettingsSiteListTest', 'AddExceptionDialog', function() {
-  mocha.grep('AddExceptionDialog').run();
+  runMochaSuite('AddExceptionDialog');
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteListChromeOSTest() {}
+
+CrSettingsSiteListChromeOSTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/site_settings/site_list.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_util.js',
+    '../test_util.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'test_android_info_browser_proxy.js',
+    'site_list_tests_cros.js',
+  ]),
+};
+
+// TODO(crbug.com/929455): flaky, fix.
+TEST_F('CrSettingsSiteListChromeOSTest', 'DISABLED_AndroidSmsInfo', function() {
+  mocha.run();
+});
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * @constructor

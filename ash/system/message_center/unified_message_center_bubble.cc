@@ -167,7 +167,8 @@ void UnifiedMessageCenterBubble::UpdatePosition() {
   gfx::Rect anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
 
   gfx::Insets tray_bubble_insets = GetTrayBubbleInsets();
-  int left_offset = tray_->shelf()->alignment() == ShelfAlignment::kLeft
+  int left_offset = (tray_->shelf()->alignment() == ShelfAlignment::kLeft ||
+                     base::i18n::IsRTL())
                         ? tray_bubble_insets.left()
                         : -tray_bubble_insets.right();
 

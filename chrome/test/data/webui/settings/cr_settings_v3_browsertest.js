@@ -662,3 +662,42 @@ var CrSettingsSiteListEntryV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsSiteListEntryV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsSiteListV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_list_tests.m.js';
+  }
+};
+
+// Copied from Polymer 2 test:
+// TODO(crbug.com/929455): flaky, fix.
+TEST_F('CrSettingsSiteListV3Test', 'DISABLED_SiteList', function() {
+  runMochaSuite('SiteList');
+});
+
+TEST_F('CrSettingsSiteListV3Test', 'EditExceptionDialog', function() {
+  runMochaSuite('EditExceptionDialog');
+});
+
+TEST_F('CrSettingsSiteListV3Test', 'AddExceptionDialog', function() {
+  runMochaSuite('AddExceptionDialog');
+});
+
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var CrSettingsSiteListChromeOSV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_list_tests_cros.m.js';
+  }
+};
+
+// Copied from Polymer 2 test:
+// TODO(crbug.com/929455): flaky, fix.
+TEST_F(
+    'CrSettingsSiteListChromeOSV3Test', 'DISABLED_AndroidSmsInfo', function() {
+      mocha.run();
+    });
+GEN('#endif  // defined(OS_CHROMEOS)');

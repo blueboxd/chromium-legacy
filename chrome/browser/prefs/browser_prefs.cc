@@ -350,7 +350,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/apps/platform_apps/app_shim_registry_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_registry_mac.h"
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #endif

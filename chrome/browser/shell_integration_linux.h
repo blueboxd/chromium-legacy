@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/buildflags.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -89,6 +91,18 @@ std::string GetDesktopFileContentsForCommand(
 // |icon_name| is empty, will use the Chrome icon.
 std::string GetDirectoryFileContents(const base::string16& title,
                                      const std::string& icon_name);
+
+// Returns the filename for a .xml file, corresponding to a given |app_id|,
+// which is passed to `xdg-mime` to register one or more custom MIME types in
+// Linux.
+base::FilePath GetMimeTypesRegistrationFilename(
+    const base::FilePath& profile_path,
+    const web_app::AppId& app_id);
+
+// Returns the contents of a .xml file as specified by |file_handlers|, which is
+// passed to `xdg-mime` to register one or more custom MIME types in Linux.
+std::string GetMimeTypesRegistrationFileContents(
+    const apps::FileHandlers& file_handlers);
 
 // Windows that correspond to web apps need to have a deterministic (and
 // different) WMClass than normal chrome windows so the window manager groups

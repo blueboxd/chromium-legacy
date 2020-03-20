@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
@@ -29,6 +28,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/multi_threaded_proxy_resolver.h"
@@ -868,6 +868,7 @@ ConfiguredProxyResolutionService::ConfiguredProxyResolutionService(
 std::unique_ptr<ConfiguredProxyResolutionService>
 ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
+    bool quick_check_enabled,
     NetLog* net_log) {
   DCHECK(proxy_config_service);
 
@@ -876,10 +877,14 @@ ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
     return CreateWithoutProxyResolver(std::move(proxy_config_service), net_log);
   }
 
-  return std::make_unique<ConfiguredProxyResolutionService>(
-      std::move(proxy_config_service),
-      std::make_unique<ProxyResolverFactoryForSystem>(kDefaultNumPacThreads),
-      net_log);
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+      std::make_unique<ConfiguredProxyResolutionService>(
+          std::move(proxy_config_service),
+          std::make_unique<ProxyResolverFactoryForSystem>(
+              kDefaultNumPacThreads),
+          net_log);
+  proxy_resolution_service->set_quick_check_enabled(quick_check_enabled);
+  return proxy_resolution_service;
 }
 
 // static
@@ -899,7 +904,8 @@ ConfiguredProxyResolutionService::CreateFixed(
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(
-      std::make_unique<ProxyConfigServiceFixed>(pc), nullptr);
+      std::make_unique<ProxyConfigServiceFixed>(pc),
+      /*quick_check_enabled=*/true, nullptr);
 }
 
 // static
@@ -1302,12 +1308,8 @@ void ConfiguredProxyResolutionService::SetPacFileFetchers(
 void ConfiguredProxyResolutionService::SetProxyDelegate(
     ProxyDelegate* delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!proxy_delegate_ || !delegate);
   proxy_delegate_ = delegate;
-}
-
-void ConfiguredProxyResolutionService::AssertNoProxyDelegate() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!proxy_delegate_);
 }
 
 void ConfiguredProxyResolutionService::OnShutdown() {
@@ -1319,6 +1321,15 @@ void ConfiguredProxyResolutionService::OnShutdown() {
     pac_file_fetcher_->OnShutdown();
   if (dhcp_pac_file_fetcher_)
     dhcp_pac_file_fetcher_->OnShutdown();
+}
+
+const ProxyRetryInfoMap& ConfiguredProxyResolutionService::proxy_retry_info()
+    const {
+  return proxy_retry_info_;
+}
+
+void ConfiguredProxyResolutionService::ClearBadProxiesCache() {
+  proxy_retry_info_.clear();
 }
 
 PacFileFetcher* ConfiguredProxyResolutionService::GetPacFileFetcher() const {
@@ -1363,6 +1374,50 @@ void ConfiguredProxyResolutionService::ForceReloadProxyConfig() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ResetProxyConfig(false);
   ApplyProxyConfigIfAvailable();
+}
+
+std::unique_ptr<base::DictionaryValue>
+ConfiguredProxyResolutionService::GetProxyNetLogValues(int info_sources) {
+  std::unique_ptr<base::DictionaryValue> net_info_dict(
+      new base::DictionaryValue());
+
+  if (info_sources & NET_INFO_PROXY_SETTINGS) {
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    if (fetched_config_)
+      dict->SetKey("original", fetched_config_->value().ToValue());
+    if (config_)
+      dict->SetKey("effective", config_->value().ToValue());
+
+    net_info_dict->Set(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS),
+                       std::move(dict));
+  }
+
+  if (info_sources & NET_INFO_BAD_PROXIES) {
+    auto list = std::make_unique<base::ListValue>();
+
+    for (auto& it : proxy_retry_info_) {
+      const std::string& proxy_uri = it.first;
+      const ProxyRetryInfo& retry_info = it.second;
+
+      auto dict = std::make_unique<base::DictionaryValue>();
+      dict->SetString("proxy_uri", proxy_uri);
+      dict->SetString("bad_until",
+                      NetLog::TickCountToString(retry_info.bad_until));
+
+      list->Append(std::move(dict));
+    }
+
+    net_info_dict->Set(NetInfoSourceToString(NET_INFO_BAD_PROXIES),
+                       std::move(list));
+  }
+
+  return net_info_dict;
+}
+
+bool ConfiguredProxyResolutionService::CastToConfiguredProxyResolutionService(
+    ConfiguredProxyResolutionService** configured_proxy_resolution_service) {
+  *configured_proxy_resolution_service = this;
+  return true;
 }
 
 // static

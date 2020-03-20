@@ -62,7 +62,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   std::string GetName() const;
   base::string16 GetNameAsString16() const;
 
-  // This needs to be implemented for each platform.
+  // This returns 0 if there's no parent.
   virtual int GetIndexInParent();
 
   // AXPlatformNode.

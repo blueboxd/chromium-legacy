@@ -11,6 +11,10 @@
 
 #include "base/containers/span.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/writable_shared_memory_region.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -142,5 +146,35 @@ TEST_F(SharedMemoryMappingTest, TooBigSpanWithExplicitElementCount) {
                   .GetMemoryAsSpan<uint32_t>(std::numeric_limits<size_t>::max())
                   .empty());
 }
+
+// TODO(dcheng): This test is temporarily disabled on iOS. iOS devices allow
+// the creation of a 1GB shared memory region, but don't allow the region to be
+// mapped.
+#if !defined(OS_IOS)
+TEST_F(SharedMemoryMappingTest, TotalMappedSizeLimit) {
+  // Nothing interesting to test if the address space isn't 64 bits, since
+  // there's no real limit enforced on 32 bits other than complete address
+  // space exhaustion.
+  // Also exclude NaCl since pointers are 32 bits on all architectures:
+  // https://bugs.chromium.org/p/nativeclient/issues/detail?id=1162
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+  base::HistogramTester histogram_tester;
+  auto region = WritableSharedMemoryRegion::Create(1024 * 1024 * 1024);
+  ASSERT_TRUE(region.IsValid());
+  // The limit is 32GB of mappings on 64-bit platforms, so the final mapping
+  // should fail.
+  std::vector<WritableSharedMemoryMapping> mappings(32);
+  for (size_t i = 0; i < mappings.size(); ++i) {
+    SCOPED_TRACE(i);
+    auto& mapping = mappings[i];
+    mapping = region.Map();
+    EXPECT_EQ(&mapping != &mappings.back(), mapping.IsValid());
+  }
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("SharedMemory.MapBlockedForSecurity"),
+      ::testing::ElementsAre(Bucket(0, 31), Bucket(1, 1)));
+#endif  // defined(ARCH_CPU_64_BITS)
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace base

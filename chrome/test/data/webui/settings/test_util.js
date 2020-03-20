@@ -18,7 +18,8 @@ cr.define('test_util', function() {
    * @param {Object} value The value to map to |contentType|.
    * @return {Object<setting: settings.ContentSettingsTypes, value: Object>}
    */
-  function createContentSettingTypeToValuePair(contentType, value) {
+  /* #export */ function createContentSettingTypeToValuePair(
+      contentType, value) {
     return {setting: contentType, value: value};
   }
 
@@ -49,7 +50,7 @@ cr.define('test_util', function() {
    *     defaults in this function's return value.
    * @return {RawSiteException}
    */
-  function createRawSiteException(origin, override) {
+  /* #export */ function createRawSiteException(origin, override) {
     if (override === undefined) {
       override = {};
     }

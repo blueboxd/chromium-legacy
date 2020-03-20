@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -16,12 +17,16 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/image/image_skia.h"
 
 class Browser;
 class BrowserThemePack;
 class CustomThemeSupplier;
+class TabMenuModelFactory;
+
+namespace gfx {
+class ImageSkia;
+class Rect;
+}  // namespace gfx
 
 namespace web_app {
 
@@ -116,6 +121,8 @@ class AppBrowserController : public TabStripModelObserver,
   // Returns whether the app is installed (uninstallation may complete within
   // the lifetime of HostedAppBrowserController).
   virtual bool IsInstalled() const;
+
+  virtual std::unique_ptr<TabMenuModelFactory> GetTabMenuModelFactory() const;
 
   // Updates the custom tab bar's visibility based on whether it should be
   // currently visible or not. If |animate| is set, the change will be

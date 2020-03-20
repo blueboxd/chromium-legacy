@@ -617,6 +617,10 @@ body.check-select .dialog-header
   position: relative;
 }
 
+.dialog-header.files-ng button.menu-button:hover {
+  background-color: rgba(0, 0, 0, 4%);
+}
+
 .dialog-header button.icon-button > iron-icon {
   margin: 8px;
 }

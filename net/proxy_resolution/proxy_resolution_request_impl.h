@@ -22,6 +22,12 @@ namespace net {
 class ProxyInfo;
 class ConfiguredProxyResolutionService;
 
+// ProxyResolutionRequestImpl is the concrete implementation of
+// ProxyResolutionRequest used by ConfiguredProxyResolutionService. Manages a
+// single asynchronous proxy resolution request.
+//
+// TODO(https://crbug.com/1032820): Rename this to
+// ConfiguredProxyResolutionRequestImpl.
 class ProxyResolutionRequestImpl final : public ProxyResolutionRequest {
  public:
   ProxyResolutionRequestImpl(ConfiguredProxyResolutionService* service,

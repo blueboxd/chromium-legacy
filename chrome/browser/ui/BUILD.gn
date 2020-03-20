@@ -1200,6 +1200,8 @@ jumbo_static_library("ui") {
       "tabs/tab_group_model.h",
       "tabs/tab_menu_model.cc",
       "tabs/tab_menu_model.h",
+      "tabs/tab_menu_model_factory.cc",
+      "tabs/tab_menu_model_factory.h",
       "tabs/tab_network_state.cc",
       "tabs/tab_network_state.h",
       "tabs/tab_renderer_data.cc",

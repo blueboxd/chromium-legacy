@@ -125,6 +125,25 @@ export class ChromeHelper {
   }
 
   /**
+   * Adds listener for screen locked event.
+   * @param {function(boolean)} callback Callback for screen locked status
+   *     changed. Called with the latest status of whether screen is locked.
+   */
+  async addOnLockListener(callback) {
+    const monitorCallbackRouter = new blink.mojom.IdleMonitorCallbackRouter();
+    monitorCallbackRouter.update.addListener((newState) => {
+      callback(newState.screen === blink.mojom.ScreenIdleState.kLocked);
+    });
+
+    const idleManager = blink.mojom.IdleManager.getRemote();
+    // Set a large threshold since we don't care about user idle.
+    const threshold = {microseconds: 86400000000};
+    const {state} = await idleManager.addMonitor(
+        threshold, monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    callback(state.screen === blink.mojom.ScreenIdleState.kLocked);
+  }
+
+  /**
    * Creates a new instance of ChromeHelper if it is not set. Returns the
    *     exist instance.
    * @return {!ChromeHelper} The singleton instance.

@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_manager_delegate_mac.h"
+#include "chrome/browser/apps/platform_apps/extension_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "components/metal_util/test_shader.h"
 

@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,6 +33,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
@@ -643,6 +645,43 @@ std::string GetDirectoryFileContents(const base::string16& title,
   NOTIMPLEMENTED();
   return std::string();
 #endif
+}
+
+base::FilePath GetMimeTypesRegistrationFilename(
+    const base::FilePath& profile_path,
+    const web_app::AppId& app_id) {
+  DCHECK(!profile_path.empty() && !app_id.empty());
+
+  // Use a prefix to clearly group files created by Chrome.
+  std::string filename = base::StringPrintf(
+      "%s-%s-%s%s", chrome::kBrowserProcessExecutableName, app_id.c_str(),
+      profile_path.BaseName().value().c_str(), ".xml");
+
+  // Replace illegal characters and spaces in |filename|.
+  base::i18n::ReplaceIllegalCharactersInPath(&filename, '_');
+  base::ReplaceChars(filename, " ", "_", &filename);
+
+  return base::FilePath(filename);
+}
+
+std::string GetMimeTypesRegistrationFileContents(
+    const apps::FileHandlers& file_handlers) {
+  std::stringstream ss;
+  ss << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<mime-info "
+        "xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n";
+
+  for (const auto& file_handler : file_handlers) {
+    for (const auto& accept_entry : file_handler.accept) {
+      ss << "  <mime-type type=\"" << accept_entry.mime_type + "\">\n";
+      for (const auto& file_extension : accept_entry.file_extensions)
+        ss << "    <glob pattern=\"*" << file_extension << "\"/>\n";
+      ss << "  </mime-type>\n";
+    }
+  }
+
+  ss << "</mime-info>\n";
+  return ss.str();
 }
 
 }  // namespace shell_integration_linux

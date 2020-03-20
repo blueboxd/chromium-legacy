@@ -2092,7 +2092,7 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
 
         for (const char* name : allocations) {
           auto it = dumps.find(base::StringPrintf(
-              "media/webmediaplayer/player_%d/%s", ctx->id, name));
+              "media/webmediaplayer/%s/player_%d", name, ctx->id));
           ASSERT_NE(dumps.end(), it) << name;
           ASSERT_GT(it->second->GetSizeInternal(), 0u) << name;
         }

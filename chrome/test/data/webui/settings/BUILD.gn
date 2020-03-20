@@ -51,6 +51,7 @@ js_modulizer("modulize") {
     "settings_ui_tests.js",
     "site_data_details_subpage_tests.js",
     "site_list_entry_tests.js",
+    "site_list_tests.js",
     "site_favicon_test.js",
     "startup_urls_page_test.js",
     "sync_test_util.js",
@@ -75,7 +76,11 @@ js_modulizer("modulize") {
     ]
   }
   if (is_chromeos) {
-    input_files += [ "passwords_section_test_cros.js" ]
+    input_files += [
+      "passwords_section_test_cros.js",
+      "site_list_tests_cros.js",
+      "test_android_info_browser_proxy.js",
+    ]
   } else {
     input_files += [
       "default_browser_browsertest.js",
@@ -85,6 +90,8 @@ js_modulizer("modulize") {
     ]
   }
   namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
+                         "android_info.TestAndroidInfoBrowserProxy|TestAndroidInfoBrowserProxy",
+                         "android_info.TEST_ANDROID_SMS_ORIGIN|TEST_ANDROID_SMS_ORIGIN",
                          "autofill_test_util.PasswordSectionElementFactory|PasswordSectionElementFactory",
                          "autofill_test_util.PasswordManagerExpectations|PasswordManagerExpectations",
                          "autofill_test_util.AutofillManagerExpectations|AutofillManagerExpectations",
@@ -111,6 +118,8 @@ js_modulizer("modulize") {
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
                          "sync_test_util.getSyncAllPrefs|getSyncAllPrefs",
                          "sync_test_util.simulateSyncStatus|simulateSyncStatus",
+                         "test_util.createContentSettingTypeToValuePair|createContentSettingTypeToValuePair",
+                         "test_util.createRawSiteException|createRawSiteException",
                          "test_util.createSiteSettingsPrefs|createSiteSettingsPrefs",
                          "test_util.setupPopstateListener|setupPopstateListener",
                        ]

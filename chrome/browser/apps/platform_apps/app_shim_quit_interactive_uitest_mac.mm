@@ -91,9 +91,8 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     // Simulate an app shim initiated launch, i.e. launch app but not browser.
-    app_path_ = test_data_dir_
-        .AppendASCII("platform_apps")
-        .AppendASCII("minimal");
+    app_path_ =
+        test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal");
     command_line->AppendSwitchNative(apps::kLoadAndLaunchApp,
                                      app_path_.value());
     command_line->AppendSwitch(switches::kSilentLaunch);
@@ -117,8 +116,7 @@ IN_PROC_BROWSER_TEST_F(AppShimQuitTest, QuitWithKeyEvent) {
   NSWindow* window = [[NSApp windows] objectAtIndex:0];
   NSEvent* event = cocoa_test_event_utils::KeyEventWithKeyCode(
       0, 'q', NSKeyDown, NSCommandKeyMask);
-  [window postEvent:event
-            atStart:NO];
+  [window postEvent:event atStart:NO];
 
   // This will time out if the event above does not terminate Chrome.
   RunUntilBrowserProcessQuits();

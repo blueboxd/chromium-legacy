@@ -150,8 +150,32 @@ base::string16 AXPlatformNodeBase::GetNameAsString16() const {
 }
 
 int AXPlatformNodeBase::GetIndexInParent() {
-  if (delegate_)
-    return delegate_->GetIndexInParent();
+  AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
+  if (!parent)
+    return 0;
+
+  int child_count = parent->GetChildCount();
+  if (child_count == 0) {
+    // |child_count| could be 0 if the node is PlatformIsLeaf.
+    return 0;
+  }
+
+  // Ask the delegate for the index in parent, and return it if it's plausible.
+  //
+  // Delegates are allowed to not implement this (ViewsAXPlatformNodeDelegate
+  // returns -1). Also, delegates may not know the correct answer if this
+  // node is the root of a tree that's embedded in another tree, in which
+  // case the delegate should return -1 and we'll compute it.
+  int index = delegate_ ? delegate_->GetIndexInParent() : -1;
+  if (index >= 0 && index < child_count)
+    return index;
+
+  // Otherwise, search the parent's children.
+  gfx::NativeViewAccessible current = GetNativeViewAccessible();
+  for (int i = 0; i < child_count; i++) {
+    if (parent->ChildAtIndex(i) == current)
+      return i;
+  }
   return -1;
 }
 

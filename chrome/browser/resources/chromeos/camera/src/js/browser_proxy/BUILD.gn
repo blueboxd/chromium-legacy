@@ -9,7 +9,10 @@ js_type_check("closure_compile") {
 }
 
 js_library("browser_proxy") {
-  deps = [ "..:chrome_util" ]
+  deps = [
+    "..:chrome_util",
+    "../mojo:chrome_helper",
+  ]
   sources = [
     "browser_proxy.js",
     "browser_proxy_interface.js",

@@ -156,6 +156,7 @@ cr-menu.chrome-menu > [checked]::before {
   min-height: 32px;
   min-width: 70px;
   padding: auto;
+  text-transform: none;
 }
 
 .cr-dialog-buttons > button.cr-dialog-ok,

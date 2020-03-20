@@ -92,7 +92,7 @@ template("ios_remoting_app_tmpl") {
       "CoreVideo.framework",
       "GLKit.framework",
       "OpenGLES.framework",
-      "Webkit.framework",
+      "WebKit.framework",
       "SafariServices.framework",
       "SystemConfiguration.framework",
     ]

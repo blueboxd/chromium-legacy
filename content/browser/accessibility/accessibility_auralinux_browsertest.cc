@@ -1662,4 +1662,26 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestGetIndexInParent) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <p>Hello world</p>
+      <p>Another paragraph.</p>
+      <p>Goodbye world.</p>
+      )HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+  EXPECT_EQ(0, atk_object_get_index_in_parent(document));
+
+  int number_of_children = atk_object_get_n_accessible_children(document);
+  for (int i = 0; i < number_of_children; i++) {
+    AtkObject* p = atk_object_ref_accessible_child(document, i);
+    EXPECT_NE(p, nullptr);
+    EXPECT_EQ(i, atk_object_get_index_in_parent(p));
+    g_object_unref(p);
+  }
+}
+
 }  // namespace content

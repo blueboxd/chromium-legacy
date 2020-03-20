@@ -26,6 +26,7 @@
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
@@ -322,7 +323,7 @@ SpdySessionDependencies::SpdySessionDependencies()
           ConfiguredProxyResolutionService::CreateDirect()) {}
 
 SpdySessionDependencies::SpdySessionDependencies(
-    std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service)
+    std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
     : host_resolver(std::make_unique<MockCachingHostResolver>()),
       cert_verifier(std::make_unique<MockCertVerifier>()),
       transport_security_state(std::make_unique<TransportSecurityState>()),

@@ -63,6 +63,7 @@ import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
 import './search_engines_page/search_engine_entry.m.js';
 import './site_settings/site_list_entry.m.js';
+import './site_settings/site_list.m.js';
 
 // <if expr="_google_chrome and is_win">
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.m.js';
@@ -81,8 +82,9 @@ export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/cl
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
-export {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './site_settings/constants.m.js';
+export {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SITE_EXCEPTION_WILDCARD} from './site_settings/constants.m.js';
 export {cookieInfo} from './site_settings/cookie_info.m.js';
+export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
 export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.m.js';
 export {SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.m.js';
 
@@ -92,5 +94,6 @@ export {ProfileShortcutStatus, ManageProfileBrowserProxyImpl} from './people_pag
 // </if>
 
 // <if expr="chromeos">
+export {AndroidInfoBrowserProxyImpl} from './site_settings/android_info_browser_proxy.m.js';
 export {BlockingRequestManager} from './autofill_page/blocking_request_manager.m.js';
 // </if>

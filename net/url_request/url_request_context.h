@@ -46,7 +46,7 @@ class NetLog;
 class NetworkDelegate;
 class NetworkQualityEstimator;
 class ProxyDelegate;
-class ConfiguredProxyResolutionService;
+class ProxyResolutionService;
 class QuicContext;
 class SSLConfigService;
 class URLRequest;
@@ -133,11 +133,11 @@ class NET_EXPORT URLRequestContext
   }
 
   // Get the proxy service for this context.
-  ConfiguredProxyResolutionService* proxy_resolution_service() const {
+  ProxyResolutionService* proxy_resolution_service() const {
     return proxy_resolution_service_;
   }
   void set_proxy_resolution_service(
-      ConfiguredProxyResolutionService* proxy_resolution_service) {
+      ProxyResolutionService* proxy_resolution_service) {
     proxy_resolution_service_ = proxy_resolution_service;
   }
 
@@ -314,7 +314,7 @@ class NET_EXPORT URLRequestContext
   HostResolver* host_resolver_;
   CertVerifier* cert_verifier_;
   HttpAuthHandlerFactory* http_auth_handler_factory_;
-  ConfiguredProxyResolutionService* proxy_resolution_service_;
+  ProxyResolutionService* proxy_resolution_service_;
   ProxyDelegate* proxy_delegate_;
   SSLConfigService* ssl_config_service_;
   NetworkDelegate* network_delegate_;

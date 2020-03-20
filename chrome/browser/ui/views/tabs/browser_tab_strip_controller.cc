@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -57,6 +58,7 @@
 #include "ipc/ipc_message.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -105,7 +107,7 @@ class BrowserTabStripController::TabContextMenuContents
  public:
   TabContextMenuContents(Tab* tab, BrowserTabStripController* controller)
       : tab_(tab), controller_(controller) {
-    model_ = std::make_unique<TabMenuModel>(
+    model_ = controller_->menu_model_factory_->Create(
         this, controller->model_, controller->tabstrip_->GetModelIndexOf(tab));
     menu_runner_ = std::make_unique<views::MenuRunner>(
         model_.get(),
@@ -145,7 +147,7 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
  private:
-  std::unique_ptr<TabMenuModel> model_;
+  std::unique_ptr<ui::SimpleMenuModel> model_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // The tab we're showing a menu for.
@@ -160,12 +162,19 @@ class BrowserTabStripController::TabContextMenuContents
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, public:
 
-BrowserTabStripController::BrowserTabStripController(TabStripModel* model,
-                                                     BrowserView* browser_view)
+BrowserTabStripController::BrowserTabStripController(
+    TabStripModel* model,
+    BrowserView* browser_view,
+    std::unique_ptr<TabMenuModelFactory> menu_model_factory_override)
     : model_(model),
       tabstrip_(nullptr),
       browser_view_(browser_view),
-      hover_tab_selector_(model) {
+      hover_tab_selector_(model),
+      menu_model_factory_(std::move(menu_model_factory_override)) {
+  if (!menu_model_factory_) {
+    // Use the default one.
+    menu_model_factory_ = std::make_unique<TabMenuModelFactory>();
+  }
   model_->SetTabStripUI(this);
 
   local_pref_registrar_.Init(g_browser_process->local_state());

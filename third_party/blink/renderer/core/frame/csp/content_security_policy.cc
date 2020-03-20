@@ -614,15 +614,8 @@ bool ContentSecurityPolicy::AllowWasmEval(
 
 String ContentSecurityPolicy::EvalDisabledErrorMessage() const {
   for (const auto& policy : policies_) {
-    // Check that the policy is non-null.
-    // TODO(clamy): Remove this DumpWithoutCrashing once
-    // https://crbug.com/1037776 is fixed.
-    if (!policy)
-      base::debug::DumpWithoutCrashing();
-
-    if (policy->ShouldDisableEval()) {
+    if (policy->ShouldDisableEval())
       return policy->EvalDisabledErrorMessage();
-    }
   }
   return String();
 }

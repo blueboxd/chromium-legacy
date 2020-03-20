@@ -20,6 +20,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/socket/server_socket.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -299,8 +300,7 @@ class TLSClientSocketTestBase {
   // SSLInfo obtained from UpgradeToTLS.
   base::Optional<net::SSLInfo> ssl_info_;
 
-  std::unique_ptr<net::ConfiguredProxyResolutionService>
-      proxy_resolution_service_;
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
   net::TestURLRequestContext url_request_context_;
   net::MockClientSocketFactory mock_client_socket_factory_;
   std::unique_ptr<SocketFactory> factory_;

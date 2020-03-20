@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_MANAGER_DELEGATE_MAC_H_
-#define CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_MANAGER_DELEGATE_MAC_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_EXTENSION_APP_SHIM_MANAGER_DELEGATE_MAC_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_EXTENSION_APP_SHIM_MANAGER_DELEGATE_MAC_H_
 
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 
@@ -51,4 +51,4 @@ class ExtensionAppShimManagerDelegate : public AppShimManager::Delegate {
 
 }  // namespace apps
 
-#endif  // CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_MANAGER_DELEGATE_MAC_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_EXTENSION_APP_SHIM_MANAGER_DELEGATE_MAC_H_

@@ -18,7 +18,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -74,8 +74,7 @@ void URLRequestContextStorage::set_network_delegate(
 }
 
 void URLRequestContextStorage::set_proxy_resolution_service(
-    std::unique_ptr<ConfiguredProxyResolutionService>
-        proxy_resolution_service) {
+    std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
   context_->set_proxy_resolution_service(proxy_resolution_service.get());
   proxy_resolution_service_ = std::move(proxy_resolution_service);
 }

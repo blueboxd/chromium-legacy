@@ -381,3 +381,8 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_create_incoming_stream_bug,
           false)
+
+// If true, quic::BandwidthSampler will start in application limited phase.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bw_sampler_app_limited_starting_value,
+          false)

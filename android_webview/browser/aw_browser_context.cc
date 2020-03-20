@@ -57,8 +57,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "media/mojo/buildflags.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 using base::FilePath;

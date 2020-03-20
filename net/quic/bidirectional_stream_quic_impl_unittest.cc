@@ -584,13 +584,6 @@ class BidirectionalStreamQuicImplTest
     TestCompletionCallback callback;
     session_->CryptoConnect(callback.callback());
     EXPECT_TRUE(session_->IsEncryptionEstablished());
-    if (VersionUsesHttp3(version_.transport_version)) {
-      // Let the stream id manager know that the fake handshake is done and
-      // outgoing streams can be created.
-      quic::test::QuicSessionPeer::v99_streamid_manager(
-          static_cast<quic::QuicSession*>(session_.get()))
-          ->OnConfigNegotiated();
-    }
   }
 
   void ConfirmHandshake() {
@@ -2526,6 +2519,8 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
 TEST_P(BidirectionalStreamQuicImplTest, ReleaseStreamFails) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   Initialize();
+
+  ConfirmHandshake();
 
   BidirectionalStreamRequestInfo request;
   request.method = "GET";

@@ -233,10 +233,9 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
       session_deps_.socket_factory->AddSocketDataProvider(tcp_data_.get());
 
     if (use_alternative_proxy_) {
-      std::unique_ptr<ConfiguredProxyResolutionService>
-          proxy_resolution_service =
-              ConfiguredProxyResolutionService::CreateFixedFromPacResult(
-                  "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+          ConfiguredProxyResolutionService::CreateFixedFromPacResult(
+              "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
       session_deps_.proxy_resolution_service =
           std::move(proxy_resolution_service);
     }
@@ -460,8 +459,8 @@ class JobControllerReconsiderProxyAfterErrorTest
     : public HttpStreamFactoryJobControllerTest,
       public ::testing::WithParamInterface<::testing::tuple<bool, int>> {
  public:
-  void Initialize(std::unique_ptr<ConfiguredProxyResolutionService>
-                      proxy_resolution_service) {
+  void Initialize(
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
     session_deps_.proxy_resolution_service =
         std::move(proxy_resolution_service);
     session_ = std::make_unique<HttpNetworkSession>(
@@ -705,7 +704,7 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest,
 TEST_F(JobControllerReconsiderProxyAfterErrorTest,
        SecondMainJobIsStartedAfterAltProxyServerJobFailed) {
   // Configure the proxies and initialize the test.
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS myproxy.org:443; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
 

@@ -663,17 +663,15 @@
       },
     },
   },
-  # TODO(https://crbug.com/1053803): Re-add once the machines are upgraded to
-  # the newer driver version.
-  # 'win10_intel_hd_630_experimental': {
-  #   'swarming': {
-  #     'dimensions': {
-  #       'gpu': '8086:5912-26.20.100.7323',
-  #       'os': 'Windows-10',
-  #       'pool': 'chromium.tests.gpu.template',
-  #     },
-  #   },
-  # },
+  'win10_intel_hd_630_experimental': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:5912-26.20.100.7870',
+        'os': 'Windows-10',
+        'pool': 'chromium.tests.gpu.template',
+      },
+    },
+  },
   'win10_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {

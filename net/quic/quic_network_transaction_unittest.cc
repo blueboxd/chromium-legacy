@@ -1015,7 +1015,7 @@ class QuicNetworkTransactionTest
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   HttpNetworkSession::Params session_params_;
@@ -7639,7 +7639,7 @@ class QuicNetworkTransactionWithDestinationTest
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   HttpServerProperties http_server_properties_;
   RecordingBoundTestNetLog net_log_;

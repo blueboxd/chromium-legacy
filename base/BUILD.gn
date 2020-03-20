@@ -344,6 +344,8 @@ jumbo_component("base") {
     "memory/shared_memory_hooks.h",
     "memory/shared_memory_mapping.cc",
     "memory/shared_memory_mapping.h",
+    "memory/shared_memory_security_policy.cc",
+    "memory/shared_memory_security_policy.h",
     "memory/shared_memory_tracker.cc",
     "memory/shared_memory_tracker.h",
     "memory/singleton.h",

@@ -89,6 +89,11 @@ PrinterSemanticCapsAndDefaults::Papers GetMacCustomPaperSizesFromFile(
     custom_paper_sizes.push_back(
         {base::SysNSStringToUTF8(name), "", size_microns});
   }
+  std::sort(custom_paper_sizes.begin(), custom_paper_sizes.end(),
+            [](const PrinterSemanticCapsAndDefaults::Paper& a,
+               const PrinterSemanticCapsAndDefaults::Paper& b) {
+              return a.display_name < b.display_name;
+            });
 
   return custom_paper_sizes;
 }

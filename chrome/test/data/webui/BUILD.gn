@@ -256,6 +256,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/test_metrics_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_data_details_subpage_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_list_entry_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/site_list_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/sync_test_util.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_extension_control_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_languages_browser_proxy.m.js",
@@ -280,7 +281,9 @@ js2gtest("browser_tests_js_webui") {
   if (is_chromeos) {
     data += [
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/site_list_tests_cros.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/passwords_section_test_cros.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/test_android_info_browser_proxy.m.js",
     ]
   } else {
     data += [

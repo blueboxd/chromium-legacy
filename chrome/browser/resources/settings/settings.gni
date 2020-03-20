@@ -11,6 +11,8 @@ settings_namespace_rewrites = [
   "settings.AboutPageBrowserProxy|AboutPageBrowserProxy",
   "settings.AccountManagerBrowserProxy|AccountManagerBrowserProxy",
   "settings.Account|Account",
+  "settings.AndroidInfoBrowserProxy|AndroidInfoBrowserProxy",
+  "settings.AndroidSmsInfo|AndroidSmsInfo",
   "settings.AppearanceBrowserProxy|AppearanceBrowserProxy",
   "settings.AutofillManager|AutofillManager",
   "settings.BlockingRequestManager|BlockingRequestManager",
@@ -33,6 +35,7 @@ settings_namespace_rewrites = [
   "settings.ImportDataBrowserProxy|ImportDataBrowserProxy",
   "settings.IncompatibleApplicationsBrowserProxy|IncompatibleApplicationsBrowserProxy",
   "settings.IncompatibleApplication|IncompatibleApplication",
+  "settings.INVALID_CATEGORY_SUBTYPE|INVALID_CATEGORY_SUBTYPE",
   "settings.LanguagesBrowserProxy|LanguagesBrowserProxy",
   "settings.LifetimeBrowserProxy|LifetimeBrowserProxy",
   "settings.LocalDataBrowserProxy|LocalDataBrowserProxy",
@@ -89,4 +92,5 @@ settings_auto_imports = [
   "chrome/browser/resources/settings/prefs/prefs_behavior.html|PrefsBehavior",
   "chrome/browser/resources/settings/prefs/prefs_types.html|CrSettingsPrefs",
   "chrome/browser/resources/settings/printing_page/printing_browser_proxy.html|PrintingBrowserProxyImpl",
+  "chrome/browser/resources/settings/site_settings/site_settings_behavior.html|SiteSettingsBehavior",
 ]

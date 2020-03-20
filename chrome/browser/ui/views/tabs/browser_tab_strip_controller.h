@@ -8,15 +8,18 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
+#include "chrome/browser/ui/tabs/tab_menu_model_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/tab_groups/tab_group_color.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class Browser;
 class BrowserNonClientFrameView;
@@ -37,7 +40,10 @@ class ListSelectionModel;
 class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver {
  public:
-  BrowserTabStripController(TabStripModel* model, BrowserView* browser_view);
+  BrowserTabStripController(TabStripModel* model,
+                            BrowserView* browser_view,
+                            std::unique_ptr<TabMenuModelFactory>
+                                menu_model_factory_override = nullptr);
   ~BrowserTabStripController() override;
 
   void InitFromModel(TabStrip* tabstrip);
@@ -157,6 +163,8 @@ class BrowserTabStripController : public TabStripController,
   std::unique_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
 
   PrefChangeRegistrar local_pref_registrar_;
+
+  std::unique_ptr<TabMenuModelFactory> menu_model_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStripController);
 };

@@ -12,8 +12,6 @@ source_set("platform_apps") {
     "app_load_service.h",
     "app_load_service_factory.cc",
     "app_load_service_factory.h",
-    "app_shim_registry_mac.cc",
-    "app_shim_registry_mac.h",
     "app_termination_observer.cc",
     "app_termination_observer.h",
     "app_window_registry_util.cc",
@@ -24,6 +22,8 @@ source_set("platform_apps") {
     "browser_context_keyed_service_factories.h",
     "chrome_apps_browser_api_provider.cc",
     "chrome_apps_browser_api_provider.h",
+    "extension_app_shim_manager_delegate_mac.cc",
+    "extension_app_shim_manager_delegate_mac.h",
     "install_chrome_app.cc",
     "install_chrome_app.h",
     "platform_app_launch.cc",
@@ -48,6 +48,7 @@ source_set("platform_apps") {
     "//chrome/app:command_ids",
     "//chrome/browser/extensions",
     "//chrome/browser/media/router/discovery",
+    "//chrome/browser/web_applications/components:components",
     "//chrome/browser/web_applications/extensions",
     "//chrome/common",
     "//components/crx_file",
@@ -63,6 +64,10 @@ source_set("platform_apps") {
     "//services/preferences/public/cpp:cpp",
     "//ui/gfx",
   ]
+
+  if (is_mac) {
+    deps += [ "//chrome/browser/apps/app_shim" ]
+  }
 
   allow_circular_includes_from = [ "//chrome/browser/extensions" ]
 }

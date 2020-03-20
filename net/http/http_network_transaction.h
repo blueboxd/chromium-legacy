@@ -30,7 +30,7 @@
 #include "net/http/http_transaction.h"
 #include "net/log/net_log_with_source.h"
 #include "net/net_buildflags.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/connection_attempts.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/websockets/websocket_handshake_stream_base.h"

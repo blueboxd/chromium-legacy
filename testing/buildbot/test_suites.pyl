@@ -1672,9 +1672,12 @@
       'angle_end2end_tests': {
         'desktop_args': [
           '--use-gpu-in-tests',
+        ],
+        'args': [
           # ANGLE test retries deliberately disabled to prevent flakiness.
           # http://crbug.com/669196
-          '--test-launcher-retry-limit=0'
+          '--test-launcher-retry-limit=0',
+          '--test-launcher-batch-limit=256',
         ],
         'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,

@@ -130,13 +130,17 @@ class ServiceWorkerTaskQueue : public KeyedService,
     // |will_register_service_worker| is true if a Service Worker will be
     // registered.
     virtual void OnActivateExtension(const ExtensionId& extension_id,
-                                     bool will_register_service_worker) = 0;
+                                     bool will_register_service_worker) {}
+    virtual void DidStartWorkerFail(const ExtensionId& extension_id,
+                                    size_t num_pending_tasks) {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TestObserver);
   };
 
   static void SetObserverForTest(TestObserver* observer);
+
+  size_t GetNumPendingTasksForTest(const LazyContextId& lazy_context_id);
 
  private:
   using SequencedContextId = std::pair<LazyContextId, ActivationSequence>;

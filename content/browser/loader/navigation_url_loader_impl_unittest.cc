@@ -35,6 +35,7 @@
 #include "content/test/test_navigation_url_loader_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"

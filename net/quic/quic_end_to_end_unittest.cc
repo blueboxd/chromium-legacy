@@ -221,7 +221,7 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   HttpServerProperties http_server_properties_;
   HttpNetworkSession::Params session_params_;

@@ -272,7 +272,7 @@ void CreateAllocation(base::trace_event::ProcessMemoryDump* pmd,
   if (bytes <= 0)
     return;
   auto full_name =
-      base::StringPrintf("media/webmediaplayer/player_%d/%s", id, name);
+      base::StringPrintf("media/webmediaplayer/%s/player_%d", name, id);
   auto* dump = pmd->CreateAllocatorDump(full_name);
 
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
@@ -3212,23 +3212,6 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   const int64_t delta = current_memory_usage - last_reported_memory_usage_;
   last_reported_memory_usage_ = current_memory_usage;
   adjust_allocated_memory_cb_.Run(delta);
-
-  if (HasAudio()) {
-    UMA_HISTOGRAM_MEMORY_KB("Media.WebMediaPlayerImpl.Memory.Audio",
-                            stats.audio_memory_usage / 1024);
-  }
-  if (HasVideo()) {
-    UMA_HISTOGRAM_MEMORY_KB("Media.WebMediaPlayerImpl.Memory.Video",
-                            video_memory_usage / 1024);
-  }
-  if (data_source_) {
-    UMA_HISTOGRAM_MEMORY_KB("Media.WebMediaPlayerImpl.Memory.DataSource",
-                            data_source_memory_usage / 1024);
-  }
-  if (demuxer_) {
-    UMA_HISTOGRAM_MEMORY_KB("Media.WebMediaPlayerImpl.Memory.Demuxer",
-                            demuxer_memory_usage / 1024);
-  }
 }
 
 void WebMediaPlayerImpl::OnMainThreadMemoryDump(
@@ -3237,13 +3220,13 @@ void WebMediaPlayerImpl::OnMainThreadMemoryDump(
   const PipelineStatistics stats = GetPipelineStatistics();
 
   bool suspended = pipeline_controller_->IsPipelineSuspended();
-  auto parent_dump_name =
+  auto state_node_name =
       base::StringPrintf("media/webmediaplayer/player_%d", id);
   auto player_state =
       base::StringPrintf("Paused: %d Ended: %d ReadyState: %d Suspended: %d",
                          paused_, ended_, GetReadyState(), suspended);
-  auto* parent_dump = pmd->CreateAllocatorDump(parent_dump_name);
-  parent_dump->AddString("player_state", "", player_state);
+  auto* state_node = pmd->CreateAllocatorDump(state_node_name);
+  state_node->AddString("player_state", "", player_state);
 
   CreateAllocation(pmd, id, "audio", stats.audio_memory_usage);
   CreateAllocation(pmd, id, "video", stats.video_memory_usage);

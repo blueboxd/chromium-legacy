@@ -18,7 +18,7 @@
  * TODO(dschuyler): Can they be unified (and this dictionary removed)?
  * @type {!Object}
  */
-const kControlledByLookup = {
+/* #export */ const kControlledByLookup = {
   'extension': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'HostedApp': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'platform_app': chrome.settingsPrivate.ControlledBy.EXTENSION,

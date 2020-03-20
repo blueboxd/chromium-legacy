@@ -173,8 +173,7 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
-  const std::unique_ptr<ConfiguredProxyResolutionService>
-      proxy_resolution_service_;
+  const std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   const std::unique_ptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   HttpServerProperties http_server_properties_;

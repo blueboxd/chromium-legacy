@@ -22,13 +22,14 @@
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/proxy_server.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_request.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_resolver.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -49,10 +50,14 @@ class ProxyResolutionRequestImpl;
 struct PacFileDataWithSource;
 
 // This class can be used to resolve the proxy server to use when loading a
-// HTTP(S) URL.  It uses the given ProxyResolver to handle the actual proxy
-// resolution.  See ProxyResolverV8 for example.
+// HTTP(S) URL.  It uses the given ProxyResolver to evaluate a PAC file, which
+// the ConfiguredProxyResolutionService then uses to resolve a proxy.  All proxy
+// resolution in this class is based on first getting proxy configurations (ex:
+// a PAC URL) from some source and then using these configurations to attempt to
+// resolve that proxy.
 class NET_EXPORT ConfiguredProxyResolutionService
-    : public NetworkChangeNotifier::IPAddressObserver,
+    : public ProxyResolutionService,
+      public NetworkChangeNotifier::IPAddressObserver,
       public NetworkChangeNotifier::DNSObserver,
       public ProxyConfigService::Observer {
  public:
@@ -106,19 +111,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
 
   ~ConfiguredProxyResolutionService() override;
 
-  // Determines the appropriate proxy for |url| for a |method| request and
-  // stores the result in |results|. If |method| is empty, the caller can expect
-  // method independent resolution.
-  //
-  // Returns ERR_IO_PENDING if the proxy information could not be provided
-  // synchronously, to indicate that the result will be available when the
-  // callback is run.  The callback is run on the thread that calls
-  // ResolveProxy.
-  //
-  // The caller is responsible for ensuring that |results| and |callback|
-  // remain valid until the callback is run or until |request| is cancelled,
-  // which occurs when the unique pointer to it is deleted (by leaving scope or
-  // otherwise).  |request| must not be nullptr.
+  // ProxyResolutionService
   //
   // We use the three possible proxy access types in the following order,
   // doing fallback if one doesn't work.  See "pac_script_decider.h"
@@ -126,34 +119,23 @@ class NET_EXPORT ConfiguredProxyResolutionService
   //   1.  WPAD auto-detection
   //   2.  PAC URL
   //   3.  named proxy
-  //
-  // Profiling information for the request is saved to |net_log| if non-nullptr.
   int ResolveProxy(const GURL& url,
                    const std::string& method,
                    const NetworkIsolationKey& network_isolation_key,
                    ProxyInfo* results,
                    CompletionOnceCallback callback,
                    std::unique_ptr<ProxyResolutionRequest>* request,
-                   const NetLogWithSource& net_log);
+                   const NetLogWithSource& net_log) override;
 
-  // Explicitly trigger proxy fallback for the given |results| by updating our
-  // list of bad proxies to include the first entry of |results|, and,
-  // additional bad proxies (can be none). Will retry after |retry_delay| if
-  // positive, and will use the default proxy retry duration otherwise. Proxies
-  // marked as bad will not be retried until |retry_delay| has passed. Returns
-  // true if there will be at least one proxy remaining in the list after
-  // fallback and false otherwise. This method should be used to add proxies to
-  // the bad proxy list only for reasons other than a network error.
+  // ProxyResolutionService
   bool MarkProxiesAsBadUntil(
       const ProxyInfo& results,
       base::TimeDelta retry_delay,
       const std::vector<ProxyServer>& additional_bad_proxies,
-      const NetLogWithSource& net_log);
+      const NetLogWithSource& net_log) override;
 
-  // Called to report that the last proxy connection succeeded.  If |proxy_info|
-  // has a non empty proxy_retry_info map, the proxies that have been tried (and
-  // failed) for this request will be marked as bad.
-  void ReportSuccess(const ProxyInfo& proxy_info);
+  // ProxyResolutionService
+  void ReportSuccess(const ProxyInfo& proxy_info) override;
 
   // Sets the PacFileFetcher and DhcpPacFileFetcher dependencies. This
   // is needed if the ProxyResolver is of type ProxyResolverWithoutFetch.
@@ -162,21 +144,11 @@ class NET_EXPORT ConfiguredProxyResolutionService
       std::unique_ptr<DhcpPacFileFetcher> dhcp_pac_file_fetcher);
   PacFileFetcher* GetPacFileFetcher() const;
 
-  // Associates a delegate that with this ConfiguredProxyResolutionService.
-  // |delegate| must outlive |this|.
-  // TODO(eroman): Specify this as a dependency at construction time rather
-  //               than making it a mutable property.
-  void SetProxyDelegate(ProxyDelegate* delegate);
+  // ProxyResolutionService
+  void SetProxyDelegate(ProxyDelegate* delegate) override;
 
-  // In builds with DCHECKs enabled, asserts that there isn't already a
-  // delegate associated with |this|.
-  void AssertNoProxyDelegate() const;
-
-  // Cancels all network requests, and prevents the service from creating new
-  // ones.  Must be called before the URLRequestContext the
-  // ConfiguredProxyResolutionService was created with is torn down, if it's
-  // torn down before th ConfiguredProxyResolutionService itself.
-  void OnShutdown();
+  // ProxyResolutionService
+  void OnShutdown() override;
 
   // Returns the last configuration fetched from ProxyConfigService.
   const base::Optional<ProxyConfigWithAnnotation>& fetched_config() const {
@@ -188,18 +160,25 @@ class NET_EXPORT ConfiguredProxyResolutionService
     return config_;
   }
 
-  // Returns the map of proxies which have been marked as "bad".
-  const ProxyRetryInfoMap& proxy_retry_info() const {
-    return proxy_retry_info_;
-  }
+  // ProxyResolutionService
+  const ProxyRetryInfoMap& proxy_retry_info() const override;
 
-  // Clears the list of bad proxy servers that has been cached.
-  void ClearBadProxiesCache() { proxy_retry_info_.clear(); }
+  // ProxyResolutionService
+  void ClearBadProxiesCache() override;
 
   // Forces refetching the proxy configuration, and applying it.
   // This re-does everything from fetching the system configuration,
   // to downloading and testing the PAC files.
   void ForceReloadProxyConfig();
+
+  // ProxyResolutionService
+  std::unique_ptr<base::DictionaryValue> GetProxyNetLogValues(
+      int info_sources) override;
+
+  // ProxyResolutionService
+  bool CastToConfiguredProxyResolutionService(
+      ConfiguredProxyResolutionService** configured_proxy_resolution_service)
+      override WARN_UNUSED_RESULT;
 
   // Same as CreateProxyResolutionServiceUsingV8ProxyResolver, except it uses
   // system libraries for evaluating the PAC script if available, otherwise
@@ -207,6 +186,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   static std::unique_ptr<ConfiguredProxyResolutionService>
   CreateUsingSystemProxyResolver(
       std::unique_ptr<ProxyConfigService> proxy_config_service,
+      bool quick_check_enabled,
       NetLog* net_log);
 
   // Creates a ConfiguredProxyResolutionService without support for proxy

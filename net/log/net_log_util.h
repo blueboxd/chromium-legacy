@@ -30,6 +30,9 @@ enum NetInfoSource {
 
 // Utility methods for creating NetLog dumps.
 
+// Returns a friendly string to use for a given NetInfoSource in the net log.
+NET_EXPORT const char* NetInfoSourceToString(NetInfoSource source);
+
 // Create a dictionary containing a legend for net/ constants.
 NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetConstants();
 

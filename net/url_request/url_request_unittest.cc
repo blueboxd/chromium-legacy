@@ -11267,7 +11267,7 @@ class URLRequestTestFTPOverHttpProxy : public URLRequestTestFTP {
   }
 
  private:
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
 };
 
 // Check that FTP is not supported over an HTTP proxy.

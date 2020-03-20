@@ -298,18 +298,19 @@ js_library("zoom_levels") {
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
-    #    ":add_site_dialog.m",
+    ":add_site_dialog.m",
+
     #    ":all_sites.m",
     #    ":all_sites_icons.m",
-    #    ":android_info_browser_proxy.m",
+    ":android_info_browser_proxy.m",
+
     #    ":category_default_setting.m",
     #    ":category_setting_exceptions.m",
     #    ":chooser_exception_list.m",
     #    ":chooser_exception_list_entry.m",
     ":constants.m",
     ":cookie_info.m",
-
-    #    ":edit_exception_dialog.m",
+    ":edit_exception_dialog.m",
     ":local_data_browser_proxy.m",
 
     #    ":media_picker.m",
@@ -322,7 +323,7 @@ js_type_check("closure_compile_module") {
     #    ":site_details.m",
     #    ":site_details_permission.m",
     #    ":site_entry.m",
-    #    ":site_list.m",
+    ":site_list.m",
     ":site_list_entry.m",
     ":site_settings_behavior.m",
     ":site_settings_prefs_browser_proxy.m",
@@ -335,7 +336,12 @@ js_type_check("closure_compile_module") {
 js_library("add_site_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/add_site_dialog.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":constants.m",
+    ":site_settings_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":add_site_dialog_module" ]
 }
@@ -358,9 +364,7 @@ js_library("all_sites_icons.m") {
 
 js_library("android_info_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/android_info_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -410,7 +414,10 @@ js_library("cookie_info.m") {
 js_library("edit_exception_dialog.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/edit_exception_dialog.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":constants.m",
+    ":site_settings_prefs_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
   ]
   extra_deps = [ ":edit_exception_dialog_module" ]
 }
@@ -505,8 +512,20 @@ js_library("site_entry.m") {
 js_library("site_list.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/site_list.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":android_info_browser_proxy.m",
+    ":constants.m",
+    ":site_list_entry.m",
+    ":site_settings_behavior.m",
+    ":site_settings_prefs_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/paper-tooltip:paper-tooltip",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:list_property_update_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":site_list_module" ]
 }
 
@@ -593,6 +612,11 @@ polymer_modulizer("add_site_dialog") {
   js_file = "add_site_dialog.js"
   html_file = "add_site_dialog.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSetting,ContentSettingsTypes,SITE_EXCEPTION_WILDCARD",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("all_sites") {
@@ -641,6 +665,11 @@ polymer_modulizer("edit_exception_dialog") {
   js_file = "edit_exception_dialog.js"
   html_file = "edit_exception_dialog.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/site_settings/constants.html|SITE_EXCEPTION_WILDCARD",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|SiteException,SiteSettingsPrefsBrowserProxy,SiteSettingsPrefsBrowserProxyImpl",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("media_picker") {
@@ -708,6 +737,13 @@ polymer_modulizer("site_list") {
   js_file = "site_list.js"
   html_file = "site_list.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/site_settings/android_info_browser_proxy.html|AndroidInfoBrowserProxyImpl,AndroidSmsInfo",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSetting,ContentSettingsTypes,INVALID_CATEGORY_SUBTYPE",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|RawSiteException,SiteException,SiteSettingsPrefsBrowserProxyImpl",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("site_list_entry") {
@@ -718,7 +754,6 @@ polymer_modulizer("site_list_entry") {
                    "chrome/browser/resources/settings/route.html|routes",
                    "chrome/browser/resources/settings/router.html|Router",
                    "chrome/browser/resources/settings/site_settings/constants.html|ChooserType,ContentSettingsTypes,SITE_EXCEPTION_WILDCARD",
-                   "chrome/browser/resources/settings/site_settings/site_settings_behavior.html|SiteSettingsBehavior",
                    "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|SiteException",
                    "ui/webui/resources/html/assert.html|assert",
                  ]

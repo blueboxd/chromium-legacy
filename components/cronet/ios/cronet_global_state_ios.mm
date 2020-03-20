@@ -12,8 +12,8 @@
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/init/ios_global_state.h"
 #include "ios/web/public/init/ios_global_state_configuration.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -72,8 +72,7 @@ std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
   return nullptr;
 }
 
-std::unique_ptr<net::ConfiguredProxyResolutionService>
-CreateProxyResolutionService(
+std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log) {
   return nullptr;

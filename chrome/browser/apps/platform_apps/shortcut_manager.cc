@@ -30,7 +30,7 @@
 #include "extensions/common/extension_set.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/apps/platform_apps/app_shim_registry_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_registry_mac.h"
 #include "chrome/common/mac/app_mode_common.h"
 #endif
 

@@ -13,7 +13,7 @@
 namespace net {
 class NetLog;
 class ProxyConfigService;
-class ConfiguredProxyResolutionService;
+class ProxyResolutionService;
 }  // namespace net
 
 namespace cronet {
@@ -42,8 +42,7 @@ std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
 // Creates a proxy resolution service appropriate for this platform that fetches
 // the system proxy settings. Cronet will call this API only after a prior call
 // to EnsureInitialized() has returned.
-std::unique_ptr<net::ConfiguredProxyResolutionService>
-CreateProxyResolutionService(
+std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log);
 

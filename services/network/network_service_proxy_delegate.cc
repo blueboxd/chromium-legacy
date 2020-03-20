@@ -6,8 +6,8 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/url_loader.h"
 #include "url/url_constants.h"
 
@@ -251,8 +251,7 @@ void NetworkServiceProxyDelegate::MarkProxiesAsBad(
   // Synthesize a suitable |ProxyInfo| to add the proxies to the
   // |ProxyRetryInfoMap| of the proxy service.
   //
-  // TODO(eroman): Support this more directly on
-  // ConfiguredProxyResolutionService.
+  // TODO(eroman): Support this more directly on ProxyResolutionService.
   net::ProxyList proxy_list;
   for (const auto& bad_proxy : bad_proxies)
     proxy_list.AddProxyServer(bad_proxy);

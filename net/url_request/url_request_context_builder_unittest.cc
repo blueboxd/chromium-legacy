@@ -18,6 +18,7 @@
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"

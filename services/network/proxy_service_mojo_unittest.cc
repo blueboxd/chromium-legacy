@@ -90,8 +90,8 @@ void TestNetworkDelegate::OnPACScriptError(int line_number,
 void CheckCapturedNetLogEntries(const std::vector<net::NetLogEntry>& entries) {
   ASSERT_GT(entries.size(), 2u);
   size_t i = 0;
-  // ConfiguredProxyResolutionService records its own NetLog entries, so skip
-  // forward until the expected event type.
+  // ProxyResolutionService records its own NetLog entries, so skip forward
+  // until the expected event type.
   while (i < entries.size() &&
          entries[i].type != net::NetLogEventType::PAC_JAVASCRIPT_ALERT) {
     i++;

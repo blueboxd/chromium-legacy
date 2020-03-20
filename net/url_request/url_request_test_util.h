@@ -37,7 +37,6 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"

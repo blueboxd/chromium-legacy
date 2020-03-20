@@ -39,7 +39,7 @@
 #include "net/base/network_interfaces.h"
 #include "net/base/proxy_server.h"
 #include "net/nqe/effective_connection_type.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)

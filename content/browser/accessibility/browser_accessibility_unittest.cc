@@ -825,4 +825,33 @@ TEST_F(BrowserAccessibilityTest, PortalName) {
   EXPECT_EQ("name2", parent_manager->GetRoot()->GetName());
 }
 
+TEST_F(BrowserAccessibilityTest, GetIndexInParent) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {2};
+
+  ui::AXNodeData static_text;
+  static_text.id = 2;
+  static_text.SetName("ABC");
+  static_text.role = ax::mojom::Role::kStaticText;
+
+  std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, static_text),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+  ASSERT_NE(nullptr, browser_accessibility_manager.get());
+
+  BrowserAccessibility* root_accessible =
+      browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  // Should be -1 for kRootWebArea since it doesn't have a calculated index.
+  EXPECT_EQ(-1, root_accessible->GetIndexInParent());
+  BrowserAccessibility* child_accessible = root_accessible->InternalGetChild(0);
+  ASSERT_NE(nullptr, child_accessible);
+  // Returns the index calculated in AXNode.
+  EXPECT_EQ(0, child_accessible->GetIndexInParent());
+}
+
 }  // namespace content

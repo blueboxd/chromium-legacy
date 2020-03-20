@@ -844,6 +844,7 @@ component("net") {
       "proxy_resolution/proxy_resolution_request.h",
       "proxy_resolution/proxy_resolution_request_impl.cc",
       "proxy_resolution/proxy_resolution_request_impl.h",
+      "proxy_resolution/proxy_resolution_service.h",
       "proxy_resolution/proxy_resolve_dns_operation.h",
       "proxy_resolution/proxy_resolver.h",
       "proxy_resolution/proxy_resolver_error_observer.h",

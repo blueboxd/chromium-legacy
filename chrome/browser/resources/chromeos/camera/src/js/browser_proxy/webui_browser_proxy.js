@@ -95,11 +95,6 @@ class WebUIBrowserProxy {
   }
 
   /** @override */
-  addOnLockChangeListener(callback) {
-    NOTIMPLEMENTED();
-  }
-
-  /** @override */
   async isCrashReportingEnabled() {
     NOTIMPLEMENTED();
     return false;

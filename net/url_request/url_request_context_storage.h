@@ -28,7 +28,7 @@ class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetworkDelegate;
 class ProxyDelegate;
-class ConfiguredProxyResolutionService;
+class ProxyResolutionService;
 class QuicContext;
 class SSLConfigService;
 class TransportSecurityState;
@@ -62,8 +62,7 @@ class NET_EXPORT URLRequestContextStorage {
   void set_proxy_delegate(std::unique_ptr<ProxyDelegate> proxy_delegate);
   void set_network_delegate(std::unique_ptr<NetworkDelegate> network_delegate);
   void set_proxy_resolution_service(
-      std::unique_ptr<ConfiguredProxyResolutionService>
-          proxy_resolution_service);
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service);
   void set_ssl_config_service(
       std::unique_ptr<SSLConfigService> ssl_config_service);
   void set_http_server_properties(
@@ -116,7 +115,7 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings_;

@@ -2338,8 +2338,11 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
 
-    net::ConfiguredProxyResolutionService* proxy_resolution_service =
-        network_context->url_request_context()->proxy_resolution_service();
+    net::ConfiguredProxyResolutionService* proxy_resolution_service = nullptr;
+    ASSERT_TRUE(network_context->url_request_context()
+                    ->proxy_resolution_service()
+                    ->CastToConfiguredProxyResolutionService(
+                        &proxy_resolution_service));
     // Need to do proxy resolutions before can check the ProxyConfig, as the
     // ProxyService doesn't start updating its config until it's first used.
     // This also gives some test coverage of LookUpProxyForURL.
@@ -2406,8 +2409,11 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
-  net::ConfiguredProxyResolutionService* proxy_resolution_service =
-      network_context->url_request_context()->proxy_resolution_service();
+  net::ConfiguredProxyResolutionService* proxy_resolution_service = nullptr;
+  ASSERT_TRUE(
+      network_context->url_request_context()
+          ->proxy_resolution_service()
+          ->CastToConfiguredProxyResolutionService(&proxy_resolution_service));
   // Kick the ConfiguredProxyResolutionService into action, as it doesn't start
   // updating its config until it's first used.
   proxy_resolution_service->ForceReloadProxyConfig();
@@ -2424,8 +2430,11 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
-  net::ConfiguredProxyResolutionService* proxy_resolution_service =
-      network_context->url_request_context()->proxy_resolution_service();
+  net::ConfiguredProxyResolutionService* proxy_resolution_service = nullptr;
+  ASSERT_TRUE(
+      network_context->url_request_context()
+          ->proxy_resolution_service()
+          ->CastToConfiguredProxyResolutionService(&proxy_resolution_service));
   EXPECT_FALSE(proxy_resolution_service->config());
   EXPECT_FALSE(proxy_resolution_service->fetched_config());
 
@@ -2563,25 +2572,34 @@ TEST_F(NetworkContextTest, PacQuickCheck) {
   // Check the default value.
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->proxy_resolution_service()
-                  ->quick_check_enabled_for_testing());
+  net::ConfiguredProxyResolutionService* proxy_resolution_service = nullptr;
+  ASSERT_TRUE(
+      network_context->url_request_context()
+          ->proxy_resolution_service()
+          ->CastToConfiguredProxyResolutionService(&proxy_resolution_service));
+  EXPECT_TRUE(proxy_resolution_service->quick_check_enabled_for_testing());
 
   // Explicitly enable.
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->pac_quick_check_enabled = true;
   network_context = CreateContextWithParams(std::move(context_params));
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->proxy_resolution_service()
-                  ->quick_check_enabled_for_testing());
+  proxy_resolution_service = nullptr;
+  ASSERT_TRUE(
+      network_context->url_request_context()
+          ->proxy_resolution_service()
+          ->CastToConfiguredProxyResolutionService(&proxy_resolution_service));
+  EXPECT_TRUE(proxy_resolution_service->quick_check_enabled_for_testing());
 
   // Explicitly disable.
   context_params = CreateContextParams();
   context_params->pac_quick_check_enabled = false;
   network_context = CreateContextWithParams(std::move(context_params));
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->proxy_resolution_service()
-                   ->quick_check_enabled_for_testing());
+  proxy_resolution_service = nullptr;
+  ASSERT_TRUE(
+      network_context->url_request_context()
+          ->proxy_resolution_service()
+          ->CastToConfiguredProxyResolutionService(&proxy_resolution_service));
+  EXPECT_FALSE(proxy_resolution_service->quick_check_enabled_for_testing());
 }
 
 net::IPEndPoint GetLocalHostWithAnyPort() {
@@ -4512,7 +4530,7 @@ TEST_F(NetworkContextTest, ClearBadProxiesCache) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  net::ConfiguredProxyResolutionService* proxy_resolution_service =
+  net::ProxyResolutionService* proxy_resolution_service =
       network_context->url_request_context()->proxy_resolution_service();
 
   // Very starting conditions: zero bad proxies.

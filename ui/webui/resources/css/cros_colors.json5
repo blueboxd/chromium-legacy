@@ -14,17 +14,17 @@
      * Recommended colors.
      */
     cros_default_text_color: "$google_grey_900",
-    cros_default_text_color_secondary: "$google_grey_refresh_700",
+    cros_default_text_color_secondary: "$google_grey_700",
 
     cros_default_bg_color: "#ffffff",
 
     cros_default_toolbar_bg_color: "#ffffff",
-    cros_default_toolbar_search_bg_color: "$google_grey_refresh_100",
+    cros_default_toolbar_search_bg_color: "$google_grey_100",
 
     cros_default_button_color: "$google_blue_600",
 
     cros_menu_button_bg_color_active: "$google_blue_50",
-    cros_menu_button_bg_color_hover: "$google_grey_refresh_100",
+    cros_menu_button_bg_color_hover: "$google_grey_100",
     cros_menu_button_outline_color_focused: "$google_blue_600",
 
     cros_toggle_color: "$cros_default_button_color",
@@ -35,7 +35,7 @@
 
     cros_radio_button_color: "$cros_default_button_color",
     cros_radio_button_ripple_color: "rgba($cros_radio_button_color_rgb, .2)",
-    cros_radio_button_color_unchecked: "$google_grey_refresh_700",
+    cros_radio_button_color_unchecked: "$google_grey_700",
     cros_radio_button_ripple_color_unchecked: "rgba($google_grey_600_rgb, .15)",
 
     cros_separator_color: "rgba(0, 0, 0, 0.12)",
@@ -52,10 +52,10 @@
 
     /* OS Settings */
     cros_error_color: "$google_red_700",
-    cros_success_color: "$google_green_refresh_700",
+    cros_success_color: "$google_green_700",
 
-    cros_search_page_question_icon_color: "$google_grey_refresh_500",
-    cros_app_management_permission_icon_color: "$paper_grey_600",
+    cros_search_page_question_icon_color: "$google_grey_500",
+    cros_app_management_permission_icon_color: "$google_grey_600",
 
     cros_user_icon_color_secondary: "rgb(210, 210, 212)",
   },

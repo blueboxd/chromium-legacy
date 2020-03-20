@@ -62,6 +62,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
@@ -1138,7 +1139,18 @@ void NetworkContext::LookUpProxyForURL(
 
 void NetworkContext::ForceReloadProxyConfig(
     ForceReloadProxyConfigCallback callback) {
-  url_request_context()->proxy_resolution_service()->ForceReloadProxyConfig();
+  net::ConfiguredProxyResolutionService* configured_proxy_resolution_service =
+      nullptr;
+  if (url_request_context()
+          ->proxy_resolution_service()
+          ->CastToConfiguredProxyResolutionService(
+              &configured_proxy_resolution_service)) {
+    configured_proxy_resolution_service->ForceReloadProxyConfig();
+  } else {
+    LOG(WARNING)
+        << "NetworkContext::ForceReloadProxyConfig() had no effect, as the "
+           "underlying ProxyResolutionService does not support that concept.";
+  }
   std::move(callback).Run();
 }
 

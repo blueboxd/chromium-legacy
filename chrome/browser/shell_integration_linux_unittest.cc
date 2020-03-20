@@ -23,7 +23,9 @@
 #include "base/test/scoped_path_override.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -529,6 +531,81 @@ TEST(ShellIntegrationTest, GetDirectoryFileContents) {
               GetDirectoryFileContents(base::ASCIIToUTF16(test_cases[i].title),
                                        test_cases[i].icon_name));
   }
+}
+
+TEST(ShellIntegrationTest, GetMimeTypesRegistrationFilename) {
+  const struct {
+    const char* const profile_path;
+    const char* const app_id;
+    const char* const expected_filename;
+  } test_cases[] = {
+      {"Default", "app-id", "-app-id-Default.xml"},
+      {"Default Profile", "app-id", "-app-id-Default_Profile.xml"},
+      {"foo/Default", "app-id", "-app-id-Default.xml"},
+      {"Default*Profile", "app-id", "-app-id-Default_Profile.xml"}};
+  std::string browser_name(chrome::kBrowserProcessExecutableName);
+
+  for (const auto& test_case : test_cases) {
+    const base::FilePath filename =
+        GetMimeTypesRegistrationFilename(base::FilePath(test_case.profile_path),
+                                         web_app::AppId(test_case.app_id));
+    EXPECT_EQ(browser_name + test_case.expected_filename, filename.value());
+  }
+}
+
+TEST(ShellIntegrationTest, GetMimeTypesRegistrationFileContents) {
+  apps::FileHandlers file_handlers;
+  {
+    apps::FileHandler file_handler;
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/foo";
+      accept_entry.file_extensions.insert(".foo");
+      file_handler.accept.push_back(accept_entry);
+    }
+    file_handlers.push_back(file_handler);
+  }
+  {
+    apps::FileHandler file_handler;
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/foobar";
+      accept_entry.file_extensions.insert(".foobar");
+      file_handler.accept.push_back(accept_entry);
+    }
+    file_handlers.push_back(file_handler);
+  }
+  {
+    apps::FileHandler file_handler;
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/bar";
+      accept_entry.file_extensions.insert(".bar");
+      accept_entry.file_extensions.insert(".baz");
+      file_handler.accept.push_back(accept_entry);
+    }
+    file_handlers.push_back(file_handler);
+  }
+
+  const std::string file_contents =
+      GetMimeTypesRegistrationFileContents(file_handlers);
+  const std::string expected_file_contents =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      "<mime-info "
+      "xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n"
+      "  <mime-type type=\"application/foo\">\n"
+      "    <glob pattern=\"*.foo\"/>\n"
+      "  </mime-type>\n"
+      "  <mime-type type=\"application/foobar\">\n"
+      "    <glob pattern=\"*.foobar\"/>\n"
+      "  </mime-type>\n"
+      "  <mime-type type=\"application/bar\">\n"
+      "    <glob pattern=\"*.bar\"/>\n"
+      "    <glob pattern=\"*.baz\"/>\n"
+      "  </mime-type>\n"
+      "</mime-info>\n";
+
+  EXPECT_EQ(file_contents, expected_file_contents);
 }
 
 TEST(ShellIntegrationTest, WmClass) {

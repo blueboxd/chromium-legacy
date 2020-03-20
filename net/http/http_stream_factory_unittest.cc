@@ -832,9 +832,8 @@ const int quic_proxy_test_mock_errors[] = {
 
 // Tests that a bad QUIC proxy is added to the list of bad proxies.
 TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
-  for (size_t i = 0; i < base::size(quic_proxy_test_mock_errors); ++i) {
-    std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service;
-    proxy_resolution_service =
+  for (int quic_proxy_test_mock_error : quic_proxy_test_mock_errors) {
+    std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
         ConfiguredProxyResolutionService::CreateFixedFromPacResult(
             "QUIC bad:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -869,7 +868,7 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
 
     StaticSocketDataProvider socket_data1;
     socket_data1.set_connect_data(
-        MockConnect(ASYNC, quic_proxy_test_mock_errors[i]));
+        MockConnect(ASYNC, quic_proxy_test_mock_error));
     socket_factory.AddSocketDataProvider(&socket_data1);
 
     // Second connection attempt succeeds.
@@ -898,11 +897,11 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
     // proxy_resolution_service as bad.
     const ProxyRetryInfoMap& retry_info =
         session->proxy_resolution_service()->proxy_retry_info();
-    EXPECT_EQ(1u, retry_info.size()) << quic_proxy_test_mock_errors[i];
+    EXPECT_EQ(1u, retry_info.size()) << quic_proxy_test_mock_error;
     EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 
     auto iter = retry_info.find("quic://bad:99");
-    EXPECT_TRUE(iter != retry_info.end()) << quic_proxy_test_mock_errors[i];
+    EXPECT_TRUE(iter != retry_info.end()) << quic_proxy_test_mock_error;
   }
 }
 
@@ -977,7 +976,7 @@ void SetupForQuicAlternativeProxyTest(
     HttpNetworkSession::Params* session_params,
     HttpNetworkSession::Context* session_context,
     MockClientSocketFactory* socket_factory,
-    ConfiguredProxyResolutionService* proxy_resolution_service,
+    ProxyResolutionService* proxy_resolution_service,
     TestProxyDelegate* test_proxy_delegate,
     HttpServerProperties* http_server_properties,
     MockCertVerifier* cert_verifier,
@@ -1025,11 +1024,10 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
       HttpNetworkSession::Params session_params;
       HttpNetworkSession::Context session_context;
       MockClientSocketFactory socket_factory;
-      std::unique_ptr<ConfiguredProxyResolutionService>
-          proxy_resolution_service =
-              ConfiguredProxyResolutionService::CreateFixedFromPacResult(
-                  "HTTPS badproxy:99; HTTPS badfallbackproxy:98; DIRECT",
-                  TRAFFIC_ANNOTATION_FOR_TESTS);
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+          ConfiguredProxyResolutionService::CreateFixedFromPacResult(
+              "HTTPS badproxy:99; HTTPS badfallbackproxy:98; DIRECT",
+              TRAFFIC_ANNOTATION_FOR_TESTS);
       TestProxyDelegate test_proxy_delegate;
       HttpServerProperties http_server_properties;
       MockCertVerifier cert_verifier;
@@ -1143,7 +1141,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
     HttpNetworkSession::Params session_params;
     HttpNetworkSession::Context session_context;
     MockClientSocketFactory socket_factory;
-    std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+    std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
         ConfiguredProxyResolutionService::CreateFixedFromPacResult(
             "HTTPS badproxy:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
     TestProxyDelegate test_proxy_delegate;
@@ -1869,7 +1867,7 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
   auto session_deps = std::make_unique<SpdySessionDependencies>(
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -1939,7 +1937,7 @@ TEST_F(HttpStreamFactoryTest,
   auto session_deps = std::make_unique<SpdySessionDependencies>(
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -2324,7 +2322,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   MockHostResolver host_resolver_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
   HttpNetworkSession::Params params_;
 };
@@ -3393,7 +3391,7 @@ class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
   QuicContext quic_context_;
 
  private:
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_ =
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_ =
       ConfiguredProxyResolutionService::CreateDirect();
   SSLConfigServiceDefaults ssl_config_service_;
   MockClientSocketFactory socket_factory_;

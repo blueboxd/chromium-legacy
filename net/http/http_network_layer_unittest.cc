@@ -271,7 +271,7 @@ class HttpNetworkLayerTest : public PlatformTest, public WithTaskEnvironment {
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   QuicContext quic_context_;
   std::unique_ptr<HttpNetworkSession> network_session_;

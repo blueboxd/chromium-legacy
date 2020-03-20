@@ -520,6 +520,49 @@ class ServiceWorkerRegistrationAtStartupTest
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationAtStartupTest);
 };
 
+// Observes ServiceWorkerTaskQueue::DidStartWorkerFail.
+class ServiceWorkerStartFailureObserver
+    : public ServiceWorkerTaskQueue::TestObserver {
+ public:
+  explicit ServiceWorkerStartFailureObserver(const ExtensionId& extension_id)
+      : extension_id_(extension_id) {
+    ServiceWorkerTaskQueue::SetObserverForTest(this);
+  }
+  ~ServiceWorkerStartFailureObserver() override {
+    ServiceWorkerTaskQueue::SetObserverForTest(nullptr);
+  }
+
+  ServiceWorkerStartFailureObserver(const ServiceWorkerStartFailureObserver&) =
+      delete;
+  ServiceWorkerStartFailureObserver& operator=(
+      const ServiceWorkerStartFailureObserver&) = delete;
+
+  size_t WaitForDidStartWorkerFailAndGetTaskCount() {
+    if (pending_tasks_count_at_worker_failure_)
+      return *pending_tasks_count_at_worker_failure_;
+
+    run_loop_.Run();
+    return *pending_tasks_count_at_worker_failure_;
+  }
+
+  // ServiceWorkerTaskQueue::TestObserver:
+  void DidStartWorkerFail(const ExtensionId& extension_id,
+                          size_t num_pending_tasks) override {
+    if (extension_id == extension_id_) {
+      pending_tasks_count_at_worker_failure_ = num_pending_tasks;
+      run_loop_.Quit();
+    }
+  }
+
+ private:
+  // Holds number of pending tasks for worker at the time DidStartWorkerFail is
+  // observed.
+  base::Optional<size_t> pending_tasks_count_at_worker_failure_;
+
+  ExtensionId extension_id_;
+  base::RunLoop run_loop_;
+};
+
 // Test extension id at
 // api_test/service_worker/worker_based_background/registration_at_startup/.
 const char ServiceWorkerRegistrationAtStartupTest::kExtensionId[] =
@@ -1581,6 +1624,64 @@ class TestRegistrationObserver : public content::ServiceWorkerContextObserver {
   content::ServiceWorkerContext* context_;
 };
 
+// Observer for an extension service worker to start and stop.
+class TestWorkerObserver : public content::ServiceWorkerContextObserver {
+ public:
+  TestWorkerObserver(content::ServiceWorkerContext* context,
+                     const ExtensionId& extension_id)
+      : context_(context),
+        extension_url_(Extension::GetBaseURLFromExtensionId(extension_id)) {
+    context_->AddObserver(this);
+  }
+  ~TestWorkerObserver() override {
+    if (context_) {
+      context_->RemoveObserver(this);
+    }
+  }
+
+  TestWorkerObserver(const TestWorkerObserver&) = delete;
+  TestWorkerObserver& operator=(const TestWorkerObserver&) = delete;
+
+  void WaitForWorkerStart() {
+    if (running_version_id_.has_value())
+      return;
+    started_run_loop_.Run();
+  }
+
+  void WaitForWorkerStop() {
+    DCHECK(running_version_id_.has_value()) << "Worker hasn't started";
+    stopped_run_loop_.Run();
+  }
+
+ private:
+  // ServiceWorkerContextObserver:
+  void OnVersionStartedRunning(
+      int64_t version_id,
+      const content::ServiceWorkerRunningInfo& running_info) override {
+    if (running_info.scope != extension_url_)
+      return;
+
+    running_version_id_ = version_id;
+    started_run_loop_.Quit();
+  }
+  void OnVersionStoppedRunning(int64_t version_id) override {
+    if (running_version_id_ == version_id)
+      stopped_run_loop_.Quit();
+  }
+  void OnDestruct(content::ServiceWorkerContext* context) override {
+    context_->RemoveObserver(this);
+    context_ = nullptr;
+  }
+
+  base::RunLoop started_run_loop_;
+  base::RunLoop stopped_run_loop_;
+  // Holds version id of an extension worker once OnVersionStartedRunning is
+  // observed.
+  base::Optional<int64_t> running_version_id_;
+  content::ServiceWorkerContext* context_ = nullptr;
+  GURL extension_url_;
+};
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        EventsToStoppedWorker) {
   content::StoragePartition* storage_partition =
@@ -1831,6 +1932,79 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   // We expect exactly one registration, which is the one specified in the
   // manifest.
   EXPECT_EQ(1, observer.GetCompletedCount(extension->url()));
+}
+
+// Tests that a worker that failed to start due to 'install' error, clears its
+// PendingTasks correctly. Also tests that subsequent tasks are properly
+// cleared.
+// Regression test for https://crbug.com/1019161.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       WorkerStartFailureClearsPendingTasks) {
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  content::ServiceWorkerContext* context =
+      storage_partition->GetServiceWorkerContext();
+
+  const ExtensionId kTestExtensionId("iegclhlplifhodhkoafiokenjoapiobj");
+  // Set up an observer to wait for worker to start and then stop.
+  TestWorkerObserver observer(context, kTestExtensionId);
+
+  TestExtensionDir test_dir;
+  // Key for extension id |kTestExtensionId|.
+  constexpr const char kKey[] =
+      "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjzv7dI7Ygyh67VHE1DdidudpYf8P"
+      "Ffv8iucWvzO+3xpF/Dm5xNo7aQhPNiEaNfHwJQ7lsp4gc+C+4bbaVewBFspTruoSJhZc5uEf"
+      "qxwovJwN+v1/SUFXTXQmQBv6gs0qZB4gBbl4caNQBlqrFwAMNisnu1V6UROna8rOJQ90D7Nv"
+      "7TCwoVPKBfVshpFjdDOTeBg4iLctO3S/06QYqaTDrwVceSyHkVkvzBY6tc6mnYX0RZu78J9i"
+      "L8bdqwfllOhs69cqoHHgrLdI6JdOyiuh6pBP6vxMlzSKWJ3YTNjaQTPwfOYaLMuzdl0v+Ydz"
+      "afIzV9zwe4Xiskk+5JNGt8b2rQIDAQAB";
+
+  test_dir.WriteManifest(base::StringPrintf(
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "key": "%s",
+           "permissions": ["tabs"],
+           "background": {"service_worker": "script.js"}
+         })",
+      kKey));
+  constexpr char kScript[] =
+      R"(self.oninstall = function(event) {
+           event.waitUntil(Promise.reject(new Error('foo')));
+         };)";
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(kTestExtensionId, extension->id());
+  LazyContextId context_id(browser()->profile(), extension->id(),
+                           extension->url());
+  ServiceWorkerStartFailureObserver worker_start_failure_observer(
+      extension->id());
+
+  // Let the worker start so it rejects 'install' event. This causes the worker
+  // to stop.
+  observer.WaitForWorkerStart();
+  observer.WaitForWorkerStop();
+
+  ServiceWorkerTaskQueue* service_worker_task_queue =
+      ServiceWorkerTaskQueue::Get(browser()->profile());
+  // Adding a pending task to ServiceWorkerTaskQueue will try to start the
+  // worker that failed during installation before. This enables us to ensure
+  // that this pending task is cleared on failure.
+  service_worker_task_queue->AddPendingTask(context_id, base::DoNothing());
+
+  // Since the worker rejects installation, it will fail to start now. Ensure
+  // that the queue sees pending tasks while the error is observed.
+  EXPECT_GT(
+      worker_start_failure_observer.WaitForDidStartWorkerFailAndGetTaskCount(),
+      0u);
+  // Ensure DidStartWorkerFail finished clearing tasks.
+  base::RunLoop().RunUntilIdle();
+
+  // And the task count will be reset to zero afterwards.
+  EXPECT_EQ(0u,
+            service_worker_task_queue->GetNumPendingTasksForTest(context_id));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,

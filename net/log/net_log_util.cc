@@ -32,8 +32,8 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
@@ -89,19 +89,6 @@ const short kNetErrors[] = {
 #undef NET_ERROR
 };
 
-const char* NetInfoSourceToString(NetInfoSource source) {
-  switch (source) {
-#define NET_INFO_SOURCE(label, string, value) \
-  case NET_INFO_##label:                      \
-    return string;
-#include "net/base/net_info_source_list.h"
-#undef NET_INFO_SOURCE
-    case NET_INFO_ALL_SOURCES:
-      return "All";
-  }
-  return "?";
-}
-
 // Returns the disk cache backend for |context| if there is one, or NULL.
 // Despite the name, can return an in memory "disk cache".
 disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
@@ -133,6 +120,19 @@ bool RequestCreatedBefore(const URLRequest* request1,
 }
 
 }  // namespace
+
+const char* NetInfoSourceToString(NetInfoSource source) {
+  switch (source) {
+#define NET_INFO_SOURCE(label, string, value) \
+  case NET_INFO_##label:                      \
+    return string;
+#include "net/base/net_info_source_list.h"
+#undef NET_INFO_SOURCE
+    case NET_INFO_ALL_SOURCES:
+      return "All";
+  }
+  return "?";
+}
 
 std::unique_ptr<base::DictionaryValue> GetNetConstants() {
   std::unique_ptr<base::DictionaryValue> constants_dict(
@@ -318,49 +318,8 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
   // May only be called on the context's thread.
   context->AssertCalledOnValidThread();
 
-  std::unique_ptr<base::DictionaryValue> net_info_dict(
-      new base::DictionaryValue());
-
-  // TODO(mmenke):  The code for most of these sources should probably be moved
-  // into the sources themselves.
-  if (info_sources & NET_INFO_PROXY_SETTINGS) {
-    ConfiguredProxyResolutionService* proxy_resolution_service =
-        context->proxy_resolution_service();
-
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    if (proxy_resolution_service->fetched_config())
-      dict->SetKey(
-          "original",
-          proxy_resolution_service->fetched_config()->value().ToValue());
-    if (proxy_resolution_service->config())
-      dict->SetKey("effective",
-                   proxy_resolution_service->config()->value().ToValue());
-
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS),
-                       std::move(dict));
-  }
-
-  if (info_sources & NET_INFO_BAD_PROXIES) {
-    const ProxyRetryInfoMap& bad_proxies_map =
-        context->proxy_resolution_service()->proxy_retry_info();
-
-    auto list = std::make_unique<base::ListValue>();
-
-    for (auto it = bad_proxies_map.begin(); it != bad_proxies_map.end(); ++it) {
-      const std::string& proxy_uri = it->first;
-      const ProxyRetryInfo& retry_info = it->second;
-
-      auto dict = std::make_unique<base::DictionaryValue>();
-      dict->SetString("proxy_uri", proxy_uri);
-      dict->SetString("bad_until",
-                      NetLog::TickCountToString(retry_info.bad_until));
-
-      list->Append(std::move(dict));
-    }
-
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_BAD_PROXIES),
-                       std::move(list));
-  }
+  std::unique_ptr<base::DictionaryValue> net_info_dict =
+      context->proxy_resolution_service()->GetProxyNetLogValues(info_sources);
 
   if (info_sources & NET_INFO_HOST_RESOLVER) {
     HostResolver* host_resolver = context->host_resolver();

@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"

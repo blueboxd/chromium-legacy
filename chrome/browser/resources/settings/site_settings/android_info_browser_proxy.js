@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /**
  * Type definition of AndroidAppsInfo entry. |playStoreEnabled| indicates that
  * Play Store is enabled. |settingsAppAvailable| indicates that Android settings
@@ -22,7 +26,7 @@ cr.define('settings', function() {
    * @typedef {{origin: string,
    *            enabled: boolean}}
    */
-  let AndroidSmsInfo;
+  /* #export */ let AndroidSmsInfo;
 
   /** @interface */
   class AndroidInfoBrowserProxy {
@@ -39,7 +43,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.AndroidInfoBrowserProxy}
    */
-  class AndroidInfoBrowserProxyImpl {
+  /* #export */ class AndroidInfoBrowserProxyImpl {
     /** @override */
     getAndroidSmsInfo() {
       return cr.sendWithPromise('getAndroidSmsInfo');

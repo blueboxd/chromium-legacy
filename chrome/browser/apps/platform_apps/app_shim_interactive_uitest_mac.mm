@@ -28,8 +28,8 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
+#include "chrome/browser/apps/platform_apps/extension_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -270,7 +270,6 @@ Browser* GetFirstHostedAppWindow() {
 const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
     AppType type,
     const char* name) {
-
   const extensions::Extension* app;
   switch (type) {
     case APP_TYPE_PACKAGED:
@@ -378,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
     listener.WaitUntilRemoved();
     int exit_code;
     ASSERT_TRUE(shim_process.WaitForExitWithTimeout(
-                    TestTimeouts::action_timeout(), &exit_code));
+        TestTimeouts::action_timeout(), &exit_code));
 
     EXPECT_FALSE(GetFirstHostedAppWindow());
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
@@ -493,10 +492,11 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
 
   // Showing the window causes the shim to launch.
   {
-    base::scoped_nsobject<WindowedNSNotificationObserver>
-    ns_observer([[WindowedNSNotificationObserver alloc]
-        initForWorkspaceNotification:NSWorkspaceDidLaunchApplicationNotification
-                            bundleId:bundle_id]);
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForWorkspaceNotification:
+                NSWorkspaceDidLaunchApplicationNotification
+                                bundleId:bundle_id]);
     WindowedAppShimLaunchObserver observer(app->id());
     window_1->Show(extensions::AppWindow::SHOW_INACTIVE);
     EXPECT_TRUE([ns_observer wait]);
@@ -535,10 +535,11 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
 
   // Showing one of the windows should launch the shim.
   {
-    base::scoped_nsobject<WindowedNSNotificationObserver>
-    ns_observer([[WindowedNSNotificationObserver alloc]
-        initForWorkspaceNotification:NSWorkspaceDidLaunchApplicationNotification
-                            bundleId:bundle_id]);
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForWorkspaceNotification:
+                NSWorkspaceDidLaunchApplicationNotification
+                                bundleId:bundle_id]);
     WindowedAppShimLaunchObserver observer(app->id());
     window_1->Show(extensions::AppWindow::SHOW_INACTIVE);
     EXPECT_TRUE([ns_observer wait]);
@@ -610,7 +611,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   base::FilePath shim_path = updated_paths.front();
   NSMutableDictionary* plist_64 = [NSMutableDictionary
       dictionaryWithContentsOfFile:base::mac::FilePathToNSString(
-          shim_path.Append("Contents").Append("Info.plist"))];
+                                       shim_path.Append("Contents")
+                                           .Append("Info.plist"))];
 
   // Copy 32 bit shim to where it's expected to be.
   // CopyDirectory doesn't seem to work when copying and renaming in one go.
@@ -630,17 +632,13 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
 
   NSArray* keys_to_copy = @[
     base::mac::CFToNSCast(kCFBundleIdentifierKey),
-    base::mac::CFToNSCast(kCFBundleNameKey),
-    app_mode::kCrAppModeShortcutIDKey,
-    app_mode::kCrAppModeUserDataDirKey,
-    app_mode::kBrowserBundleIDKey
+    base::mac::CFToNSCast(kCFBundleNameKey), app_mode::kCrAppModeShortcutIDKey,
+    app_mode::kCrAppModeUserDataDirKey, app_mode::kBrowserBundleIDKey
   ];
   for (NSString* key in keys_to_copy) {
-    [plist setObject:[plist_64 objectForKey:key]
-              forKey:key];
+    [plist setObject:[plist_64 objectForKey:key] forKey:key];
   }
-  [plist writeToFile:plist_path
-          atomically:YES];
+  [plist writeToFile:plist_path atomically:YES];
 
   base::mac::RemoveQuarantineAttribute(shim_path);
 

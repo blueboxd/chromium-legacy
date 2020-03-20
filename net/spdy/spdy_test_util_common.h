@@ -29,7 +29,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -182,8 +182,7 @@ struct SpdySessionDependencies {
 
   // Custom proxy service dependency.
   explicit SpdySessionDependencies(
-      std::unique_ptr<ConfiguredProxyResolutionService>
-          proxy_resolution_service);
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service);
 
   ~SpdySessionDependencies();
 
@@ -213,7 +212,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<TransportSecurityState> transport_security_state;
   std::unique_ptr<CTVerifier> cert_transparency_verifier;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service;
   std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings;
   std::unique_ptr<SSLConfigService> ssl_config_service;
   std::unique_ptr<MockClientSocketFactory> socket_factory;

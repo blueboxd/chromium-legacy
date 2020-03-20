@@ -98,6 +98,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual gfx::NativeViewAccessible GetParent() = 0;
 
   // Get the index in parent. Typically this is the AXNode's index_in_parent_.
+  // This should return -1 if the index in parent is unknown.
   virtual int GetIndexInParent() = 0;
 
   // Get the number of children of this node.

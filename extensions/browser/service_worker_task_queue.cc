@@ -225,8 +225,17 @@ void ServiceWorkerTaskQueue::DidStartWorkerFail(
     return;
   }
 
-  // TODO(lazyboy): Handle failure cases.
-  DCHECK(false) << "DidStartWorkerFail: " << context_id.first.extension_id();
+  WorkerState* worker_state = GetWorkerState(context_id);
+  DCHECK(worker_state);
+  if (g_test_observer) {
+    g_test_observer->DidStartWorkerFail(context_id.first.extension_id(),
+                                        worker_state->pending_tasks_.size());
+  }
+  worker_state->pending_tasks_.clear();
+  // TODO(https://crbug/1062936): Needs more thought: extension would be in
+  // perma-broken state after this as the registration wouldn't be stored if
+  // this happens.
+  LOG(ERROR) << "DidStartWorkerFail " << context_id.first.extension_id();
 }
 
 void ServiceWorkerTaskQueue::DidInitializeServiceWorkerContext(
@@ -583,6 +592,16 @@ base::Optional<ActivationSequence> ServiceWorkerTaskQueue::GetCurrentSequence(
   if (iter == activation_sequences_.end())
     return base::nullopt;
   return iter->second;
+}
+
+size_t ServiceWorkerTaskQueue::GetNumPendingTasksForTest(
+    const LazyContextId& lazy_context_id) {
+  auto current_sequence = GetCurrentSequence(lazy_context_id.extension_id());
+  if (!current_sequence)
+    return 0u;
+  const SequencedContextId context_id(lazy_context_id, *current_sequence);
+  WorkerState* worker_state = GetWorkerState(context_id);
+  return worker_state ? worker_state->pending_tasks_.size() : 0u;
 }
 
 ServiceWorkerTaskQueue::WorkerState* ServiceWorkerTaskQueue::GetWorkerState(

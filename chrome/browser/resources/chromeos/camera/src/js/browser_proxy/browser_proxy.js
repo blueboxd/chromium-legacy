@@ -76,13 +76,6 @@ class ChromeAppBrowserProxy {
   }
 
   /** @override */
-  addOnLockChangeListener(callback) {
-    chrome.idle.onStateChanged.addListener((newState) => {
-      callback(newState === 'locked');
-    });
-  }
-
-  /** @override */
   isCrashReportingEnabled() {
     return util.promisify(chrome.metricsPrivate.getIsCrashReportingEnabled)();
   }

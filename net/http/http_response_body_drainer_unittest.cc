@@ -255,7 +255,7 @@ class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
     return new HttpNetworkSession(HttpNetworkSession::Params(), context);
   }
 
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   MockCertVerifier cert_verifier_;

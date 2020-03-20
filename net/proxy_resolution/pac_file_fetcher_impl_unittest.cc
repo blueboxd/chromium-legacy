@@ -35,6 +35,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/transport_security_state.h"
 #include "net/net_buildflags.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/transport_client_socket_pool.h"

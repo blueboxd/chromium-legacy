@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_shim/extension_app_shim_manager_delegate_mac.h"
+#include "chrome/browser/apps/platform_apps/extension_app_shim_manager_delegate_mac.h"
 
 #include "apps/launcher.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"

@@ -2098,31 +2098,7 @@ gint GetIndexInParent(AtkObject* atk_object) {
   if (!obj)
     return -1;
 
-  AtkObject* parent = obj->GetParent();
-  if (!parent)
-    return -1;
-
-  int n_children = GetNChildren(parent);
-
-  // Ask the delegate for the index in parent, and return it if it's plausible.
-  //
-  // Delegates are allowed to not implement this (AXPlatformNodeDelegateBase
-  // returns -1). Also, delegates may not know the correct answer if this
-  // node is the root of a tree that's embedded in another tree, in which
-  // case the delegate should return -1 and we'll compute it.
-  int index_in_parent = obj->GetDelegate()->GetIndexInParent();
-  if (index_in_parent >= 0 && index_in_parent < n_children)
-    return index_in_parent;
-
-  // Otherwise, search the parent's children.
-  for (int i = 0; i < n_children; i++) {
-    AtkObject* child = RefChild(parent, i);
-    g_object_unref(child);
-    if (child == atk_object)
-      return i;
-  }
-
-  return -1;
+  return obj->GetIndexInParent();
 }
 
 gint AtkGetIndexInParent(AtkObject* atk_object) {
@@ -4061,13 +4037,6 @@ size_t AXPlatformNodeAuraLinux::UnicodeToUTF16OffsetInText(int unicode_offset) {
   base::OffsetAdjuster::UnadjustOffset(GetHypertextAdjustments(),
                                        &utf16_offset);
   return utf16_offset;
-}
-
-int AXPlatformNodeAuraLinux::GetIndexInParent() {
-  if (!GetParent())
-    return -1;
-
-  return delegate_->GetIndexInParent();
 }
 
 gfx::Vector2d AXPlatformNodeAuraLinux::GetParentOriginInScreenCoordinates()

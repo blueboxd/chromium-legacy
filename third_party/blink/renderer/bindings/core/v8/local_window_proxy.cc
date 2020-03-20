@@ -174,22 +174,8 @@ void LocalWindowProxy::Initialize() {
       (world_->IsIsolatedWorld() &&
        IsolatedWorldCSP::Get().HasContentSecurityPolicy(world_->GetWorldId()));
   if (evaluate_csp_for_eval) {
-    // Check that there is a document that can be used to get the
-    // ContentSecurityPolicy;
-    // TODO(clamy): Remove this DumpWithoutCrashing once
-    // https://crbug.com/1037776 is fixed.
-    if (!GetFrame()->GetDocument())
-      base::debug::DumpWithoutCrashing();
-
     ContentSecurityPolicy* csp =
         GetFrame()->GetDocument()->GetContentSecurityPolicyForWorld();
-
-    // Check that the ContentSecurityPolicy returned is not null.
-    // TODO(clamy): Remove this DumpWithoutCrashing once
-    // https://crbug.com/1037776 is fixed.
-    if (!csp)
-      base::debug::DumpWithoutCrashing();
-
     context->AllowCodeGenerationFromStrings(!csp->ShouldCheckEval());
     context->SetErrorMessageForCodeGenerationFromStrings(
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));

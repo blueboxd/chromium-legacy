@@ -17,6 +17,7 @@
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"

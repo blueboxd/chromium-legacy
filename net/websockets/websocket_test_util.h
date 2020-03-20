@@ -33,7 +33,7 @@ using WebSocketExtraHeaders = std::vector<std::pair<std::string, std::string>>;
 
 class MockClientSocketFactory;
 class WebSocketBasicHandshakeStream;
-class ConfiguredProxyResolutionService;
+class ProxyResolutionService;
 class SequencedSocketData;
 class IPEndPoint;
 struct SSLSocketDataProvider;
@@ -172,7 +172,7 @@ struct WebSocketTestURLRequestContextHost {
   WebSocketMockClientSocketFactoryMaker maker_;
   TestURLRequestContext url_request_context_;
   TestNetworkDelegate network_delegate_;
-  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   bool url_request_context_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketTestURLRequestContextHost);

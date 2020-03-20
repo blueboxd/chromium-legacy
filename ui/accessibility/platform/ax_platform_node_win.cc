@@ -648,43 +648,6 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     AddAlertTarget();
 }
 
-int AXPlatformNodeWin::GetIndexInParent() {
-  Microsoft::WRL::ComPtr<IDispatch> parent_dispatch;
-  Microsoft::WRL::ComPtr<IAccessible> parent_accessible;
-  if (S_OK != get_accParent(parent_dispatch.GetAddressOf()))
-    return -1;
-  if (S_OK != parent_dispatch.CopyTo(parent_accessible.GetAddressOf()))
-    return -1;
-
-  LONG child_count = 0;
-  if (S_OK != parent_accessible->get_accChildCount(&child_count))
-    return -1;
-
-  // Ask the delegate for the index in parent, and return it if it's plausible.
-  //
-  // Delegates are allowed to not implement this (AXPlatformNodeDelegateBase
-  // returns -1). Also, delegates may not know the correct answer if this
-  // node is the root of a tree that's embedded in another tree, in which
-  // case the delegate should return -1 and we'll compute it.
-  int index_in_parent = GetDelegate()->GetIndexInParent();
-  if (index_in_parent >= 0 && index_in_parent < child_count)
-    return index_in_parent;
-
-  // Otherwise, search the parent's children.
-  for (LONG index = 1; index <= child_count; ++index) {
-    base::win::ScopedVariant childid_index(index);
-    Microsoft::WRL::ComPtr<IDispatch> child_dispatch;
-    Microsoft::WRL::ComPtr<IAccessible> child_accessible;
-    if (S_OK == parent_accessible->get_accChild(
-                    childid_index, child_dispatch.GetAddressOf()) &&
-        S_OK == child_dispatch.CopyTo(child_accessible.GetAddressOf())) {
-      if (child_accessible.Get() == this)
-        return index - 1;
-    }
-  }
-  return -1;
-}
-
 base::string16 AXPlatformNodeWin::GetHypertext() const {
   // Special case allows us to get text even in non-HTML case, e.g. browser UI.
   if (!GetDelegate()->IsWebContent()) {

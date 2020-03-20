@@ -37,6 +37,7 @@
 #include "net/log/net_log.h"
 #include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -498,10 +499,18 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         std::move(proxy_config_service_), context.get(),
         context->host_resolver(), context->network_delegate(),
         context->net_log());
-    proxy_resolution_service_->set_quick_check_enabled(
-        pac_quick_check_enabled_);
+
+    // Although CreateProxyResolutionService() tries its best to set the PAC
+    // quick check flag, it may be overridden by a child class. We should make
+    // sure we set that value here if applicable.
+    ConfiguredProxyResolutionService* configured_proxy_resolution_service =
+        nullptr;
+    if (proxy_resolution_service_->CastToConfiguredProxyResolutionService(
+            &configured_proxy_resolution_service))
+      configured_proxy_resolution_service->set_quick_check_enabled(
+          pac_quick_check_enabled_);
   }
-  ConfiguredProxyResolutionService* proxy_resolution_service =
+  ProxyResolutionService* proxy_resolution_service =
       proxy_resolution_service_.get();
   storage->set_proxy_resolution_service(std::move(proxy_resolution_service_));
 
@@ -537,7 +546,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   if (proxy_delegate_) {
-    proxy_resolution_service->AssertNoProxyDelegate();
     proxy_resolution_service->SetProxyDelegate(proxy_delegate_.get());
     storage->set_proxy_delegate(std::move(proxy_delegate_));
   }
@@ -620,7 +628,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   return std::move(context);
 }
 
-std::unique_ptr<ConfiguredProxyResolutionService>
+std::unique_ptr<ProxyResolutionService>
 URLRequestContextBuilder::CreateProxyResolutionService(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
     URLRequestContext* url_request_context,
@@ -628,7 +636,7 @@ URLRequestContextBuilder::CreateProxyResolutionService(
     NetworkDelegate* network_delegate,
     NetLog* net_log) {
   return ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
-      std::move(proxy_config_service), net_log);
+      std::move(proxy_config_service), pac_quick_check_enabled_, net_log);
 }
 
 }  // namespace net

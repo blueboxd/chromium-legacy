@@ -64,7 +64,7 @@ class NetworkErrorLoggingService;
 #endif
 class NetworkQualityEstimator;
 class ProxyDelegate;
-class ConfiguredProxyResolutionService;
+class ProxyResolutionService;
 class ProxyServer;
 class QuicCryptoClientStreamFactory;
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -158,7 +158,7 @@ class NET_EXPORT HttpNetworkSession {
     TransportSecurityState* transport_security_state;
     CTVerifier* cert_transparency_verifier;
     CTPolicyEnforcer* ct_policy_enforcer;
-    ConfiguredProxyResolutionService* proxy_resolution_service;
+    ProxyResolutionService* proxy_resolution_service;
     ProxyDelegate* proxy_delegate;
     const HttpUserAgentSettings* http_user_agent_settings;
     SSLConfigService* ssl_config_service;
@@ -201,7 +201,7 @@ class NET_EXPORT HttpNetworkSession {
                                   const ProxyServer& proxy_server);
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
-  ConfiguredProxyResolutionService* proxy_resolution_service() {
+  ProxyResolutionService* proxy_resolution_service() {
     return proxy_resolution_service_;
   }
   SSLConfigService* ssl_config_service() { return ssl_config_service_; }
@@ -296,7 +296,7 @@ class NET_EXPORT HttpNetworkSession {
   ReportingService* const reporting_service_;
   NetworkErrorLoggingService* const network_error_logging_service_;
 #endif
-  ConfiguredProxyResolutionService* const proxy_resolution_service_;
+  ProxyResolutionService* const proxy_resolution_service_;
   SSLConfigService* const ssl_config_service_;
 
   HttpAuthCache http_auth_cache_;

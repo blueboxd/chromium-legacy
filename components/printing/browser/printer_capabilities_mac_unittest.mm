@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace printing {
@@ -192,6 +193,25 @@ TEST(PrinterCapabilitiesMacTest, GetMacCustomPaperSizesFromFile) {
     auto papers = internal::GetMacCustomPaperSizesFromFile(path);
     ASSERT_EQ(0u, papers.size());
   }
+}
+
+TEST(PrinterCapabilitiesMacTest, SortMacCustomPaperSizes) {
+  base::FilePath unsorted_plist;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &unsorted_plist);
+  unsorted_plist = unsorted_plist.AppendASCII("components")
+                       .AppendASCII("test")
+                       .AppendASCII("data")
+                       .AppendASCII("printing")
+                       .AppendASCII("unsorted_custompapers.plist");
+
+  auto papers = internal::GetMacCustomPaperSizesFromFile(unsorted_plist);
+  ASSERT_EQ(6u, papers.size());
+  EXPECT_EQ("123", papers[0].display_name);
+  EXPECT_EQ("Another Size", papers[1].display_name);
+  EXPECT_EQ("Custom 11x11", papers[2].display_name);
+  EXPECT_EQ("Size 3", papers[3].display_name);
+  EXPECT_EQ("size 3", papers[4].display_name);
+  EXPECT_EQ("\xC3\xA1nother size", papers[5].display_name);
 }
 
 }  // namespace printing

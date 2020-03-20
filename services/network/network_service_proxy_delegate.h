@@ -15,7 +15,7 @@
 
 namespace net {
 class HttpRequestHeaders;
-class ConfiguredProxyResolutionService;
+class ProxyResolutionService;
 class URLRequest;
 }  // namespace net
 
@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   ~NetworkServiceProxyDelegate() override;
 
   void SetProxyResolutionService(
-      net::ConfiguredProxyResolutionService* proxy_resolution_service) {
+      net::ProxyResolutionService* proxy_resolution_service) {
     proxy_resolution_service_ = proxy_resolution_service;
   }
 
@@ -100,7 +100,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   // the request.
   std::deque<mojom::CustomProxyConfigPtr> previous_proxy_configs_;
 
-  net::ConfiguredProxyResolutionService* proxy_resolution_service_ = nullptr;
+  net::ProxyResolutionService* proxy_resolution_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceProxyDelegate);
 };

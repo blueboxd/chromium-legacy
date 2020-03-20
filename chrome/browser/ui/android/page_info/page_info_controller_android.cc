@@ -170,8 +170,9 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   }
 
   for (const auto& chosen_object : chosen_object_info_list) {
-    base::string16 object_title =
-        PageInfoUI::ChosenObjectToUIString(*chosen_object);
+    base::string16 object_title = PageInfoUI::ChosenObjectToUIString(
+        *chosen_object,
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
 
     Java_PageInfoController_addPermissionSection(
         env, controller_jobject_, ConvertUTF16ToJavaString(env, object_title),

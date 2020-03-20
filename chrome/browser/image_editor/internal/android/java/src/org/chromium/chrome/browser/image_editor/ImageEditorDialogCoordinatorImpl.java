@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.image_editor;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 
 /**
  * Upstream implementation for ImageEditorDialogCoordinator. Does nothing. Actual implementation
@@ -12,5 +13,5 @@ import android.app.Activity;
  */
 public class ImageEditorDialogCoordinatorImpl implements ImageEditorDialogCoordinator {
     @Override
-    public void launchEditor(Activity activity) {}
+    public void launchEditor(Activity activity, Bitmap image) {}
 }

@@ -84,6 +84,15 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
   if (scrollbar->OverlayScrollbarOpacity() == 0.f)
     return InputHandlerPointerResult();
 
+  // If the scroll_node has a main_thread_scrolling_reason, don't initiate a
+  // scroll.
+  const ScrollNode* target_node =
+      layer_tree_host_impl_->active_tree()
+          ->property_trees()
+          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+  if (target_node->main_thread_scrolling_reasons)
+    return InputHandlerPointerResult();
+
   captured_scrollbar_metadata_ = CapturedScrollbarMetadata();
   captured_scrollbar_metadata_->scroll_element_id =
       scrollbar->scroll_element_id();

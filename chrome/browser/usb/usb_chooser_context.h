@@ -47,8 +47,7 @@ class UsbChooserContext : public permissions::ChooserContextBase,
   static base::Value DeviceInfoToValue(
       const device::mojom::UsbDeviceInfo& device_info);
 
-  // These methods from ChooserContextBase are overridden in order to expose
-  // ephemeral devices through the public interface.
+  // ChooserContextBase:
   std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
   GetGrantedObjects(const url::Origin& requesting_origin,
                     const url::Origin& embedding_origin) override;
@@ -57,6 +56,8 @@ class UsbChooserContext : public permissions::ChooserContextBase,
   void RevokeObjectPermission(const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin,
                               const base::Value& object) override;
+  bool IsValidObject(const base::Value& object) override;
+  base::string16 GetObjectDisplayName(const base::Value& object) override;
 
   // Grants |requesting_origin| access to the USB device.
   void GrantDevicePermission(const url::Origin& requesting_origin,
@@ -93,11 +94,6 @@ class UsbChooserContext : public permissions::ChooserContextBase,
   void SetDeviceManagerForTesting(
       mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager);
 
-  // ChooserContextBase implementation.
-  bool IsValidObject(const base::Value& object) override;
-
-  // Returns the human readable string representing the given object.
-  static std::string GetObjectName(const base::Value& object);
   void InitDeviceList(std::vector<::device::mojom::UsbDeviceInfoPtr> devices);
 
  private:

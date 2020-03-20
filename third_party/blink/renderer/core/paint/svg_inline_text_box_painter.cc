@@ -74,7 +74,7 @@ LayoutSVGInlineText& SVGInlineTextBoxPainter::InlineText() const {
 void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                     const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
-         paint_info.phase == PaintPhase::kSelection);
+         paint_info.phase == PaintPhase::kSelectionDragImage);
   DCHECK(svg_inline_text_box_.Truncation() == kCNoTruncation);
 
   if (svg_inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
@@ -87,7 +87,7 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   // very easy to refactor and reuse the code.
 
   bool have_selection = ShouldPaintSelection(paint_info);
-  if (!have_selection && paint_info.phase == PaintPhase::kSelection)
+  if (!have_selection && paint_info.phase == PaintPhase::kSelectionDragImage)
     return;
 
   LayoutSVGInlineText& text_layout_object = InlineText();
@@ -213,7 +213,7 @@ void SVGInlineTextBoxPainter::PaintSelectionBackground(
 
   DCHECK(!paint_info.IsPrinting());
 
-  if (paint_info.phase == PaintPhase::kSelection ||
+  if (paint_info.phase == PaintPhase::kSelectionDragImage ||
       !ShouldPaintSelection(paint_info))
     return;
 
@@ -507,7 +507,8 @@ void SVGInlineTextBoxPainter::PaintText(
 
   // Eventually draw text using regular style until the start position of the
   // selection.
-  bool paint_selected_text_only = paint_info.phase == PaintPhase::kSelection;
+  bool paint_selected_text_only =
+      paint_info.phase == PaintPhase::kSelectionDragImage;
   if (start_position > 0 && !paint_selected_text_only) {
     PaintFlags flags;
     if (SetupTextPaint(paint_info, style, resource_mode, flags,

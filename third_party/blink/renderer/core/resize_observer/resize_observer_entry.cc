@@ -52,10 +52,11 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
       content_rect_ = DOMRectReadOnly::FromFloatRect(
           FloatRect(FloatPoint(), FloatSize(bounding_box_size)));
       if (RuntimeEnabledFeatures::ResizeObserverUpdatesEnabled()) {
-        content_box_size_ = ResizeObserverSize::Create(
+        ResizeObserverSize* size = ResizeObserverSize::Create(
             bounding_box_size.Width(), bounding_box_size.Height());
-        border_box_size_ = content_box_size_;
-        device_pixel_content_box_size_ = content_box_size_;
+        content_box_size_.push_back(size);
+        border_box_size_.push_back(size);
+        device_pixel_content_box_size_.push_back(size);
       }
     } else if (layout_object->IsBox()) {
       LayoutBox* layout_box = target->GetLayoutBox();
@@ -71,20 +72,22 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
         LayoutSize border_box_size =
             LayoutSize(layout_box->LogicalWidth(), layout_box->LogicalHeight());
 
-        content_box_size_ = ZoomAdjustedSize(content_box_size, style);
-        border_box_size_ = ZoomAdjustedSize(border_box_size, style);
         LayoutSize paint_offset =
             layout_object->FirstFragment().PaintOffset().ToLayoutSize();
+        ResizeObserverSize* device_pixel_content_box_size =
+            ResizeObserverSize::Create(
+                SnapSizeToPixel(layout_box->ContentLogicalWidth(),
+                                style.IsHorizontalWritingMode()
+                                    ? paint_offset.Width()
+                                    : paint_offset.Height()),
+                SnapSizeToPixel(layout_box->ContentLogicalHeight(),
+                                style.IsHorizontalWritingMode()
+                                    ? paint_offset.Height()
+                                    : paint_offset.Width()));
 
-        device_pixel_content_box_size_ = ResizeObserverSize::Create(
-            SnapSizeToPixel(layout_box->ContentLogicalWidth(),
-                            style.IsHorizontalWritingMode()
-                                ? paint_offset.Width()
-                                : paint_offset.Height()),
-            SnapSizeToPixel(layout_box->ContentLogicalHeight(),
-                            style.IsHorizontalWritingMode()
-                                ? paint_offset.Height()
-                                : paint_offset.Width()));
+        content_box_size_.push_back(ZoomAdjustedSize(content_box_size, style));
+        border_box_size_.push_back(ZoomAdjustedSize(border_box_size, style));
+        device_pixel_content_box_size_.push_back(device_pixel_content_box_size);
       }
     }
   }
@@ -92,12 +95,14 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
     content_rect_ = DOMRectReadOnly::FromFloatRect(
         FloatRect(FloatPoint(LayoutPoint()), FloatSize(LayoutSize())));
   if (RuntimeEnabledFeatures::ResizeObserverUpdatesEnabled()) {
-    if (!content_box_size_)
-      content_box_size_ = ResizeObserverSize::Create(0, 0);
-    if (!border_box_size_)
-      border_box_size_ = ResizeObserverSize::Create(0, 0);
-    if (!device_pixel_content_box_size_)
-      device_pixel_content_box_size_ = ResizeObserverSize::Create(0, 0);
+    if (content_box_size_.size() == 0)
+      content_box_size_.push_back(ResizeObserverSize::Create(0, 0));
+    if (border_box_size_.size() == 0)
+      border_box_size_.push_back(ResizeObserverSize::Create(0, 0));
+    if (device_pixel_content_box_size_.size() == 0) {
+      device_pixel_content_box_size_.push_back(
+          ResizeObserverSize::Create(0, 0));
+    }
   }
 }
 

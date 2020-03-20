@@ -10,7 +10,7 @@ selection_test(
     selection.setClipboardData('<math><xss style=display:block>t<style>X<a title="</style><img src onerror=alert(1)>">.<a>.');
     selection.document.execCommand('paste');
   },
-  '<div contenteditable>tet<img src>">.<a>.|</a>st</div>',
+  '<div contenteditable>te<br>t<img src>">.<a>.|</a>st</div>',
   'Paste blocks script injection');
 
 // crbug.com/1017871
@@ -20,7 +20,7 @@ selection_test(
     selection.setClipboardData('<math><xss style=display:block>t<style>X<a title="</style><style>*{background:red}</style>">.<a>.');
     selection.document.execCommand('paste');
   },
-  '<div contenteditable>tet">.<a>.|</a>st</div>',
+  '<div contenteditable>te<br>t">.<a>.|</a>st</div>',
   'Paste blocks HTML style injection');
 
 // crbug.com/1017871
@@ -30,6 +30,6 @@ selection_test(
     selection.setClipboardData('A<math>B<a style=display:block>C<title>D<a id="</title><svg><style>*{background:red}</style>">c');
     selection.document.execCommand('paste');
   },
-  '<div contenteditable>teA<math>B</math>C|<svg></svg>st</div>',
+  '<div contenteditable>teA<math>B<br></math>C|<svg></svg>st</div>',
   'Paste blocks SVG style injection');
 </script>

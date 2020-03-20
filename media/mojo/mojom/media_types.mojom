@@ -239,6 +239,22 @@ struct AudioBuffer {
   array<uint8> data;
 };
 
+// This defines a mojo transport format for an interleaved, signed
+// 16-bit audio buffer.
+struct AudioDataS16 {
+  // Number of channels.
+  int32 channel_count;
+
+  // Sample rate of the buffer.
+  int32 sample_rate;
+
+  // Number of frames in the buffer.
+  int32 frame_count;
+
+  // Channel data.
+  array<int16> data;
+};
+
 // This defines a mojo transport format for media::VideoFrame.
 struct VideoFrame {
   // Format of the frame.

@@ -15,7 +15,7 @@ namespace blink {
 void SVGTextPainter::Paint(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
-      paint_info.phase != PaintPhase::kSelection)
+      paint_info.phase != PaintPhase::kSelectionDragImage)
     return;
 
   PaintInfo block_info(paint_info);

@@ -835,7 +835,10 @@ if (is_android) {
 
   android_resources("content_browsertests_resources") {
     testonly = true
-    resource_dirs = [ "//content/shell/android/browsertests_apk/res" ]
+    sources = [
+      "//content/shell/android/browsertests_apk/res/layout/test_activity.xml",
+      "//content/shell/android/browsertests_apk/res/xml/file_paths.xml",
+    ]
     custom_package = "org.chromium.content_browsertests_apk"
   }
 }

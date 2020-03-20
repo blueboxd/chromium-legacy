@@ -86,6 +86,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
+  void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
@@ -97,10 +98,13 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   void CreateFeatureListAndFieldTrials();
 
  private:
+#if defined(OS_ANDROID)
+  SafeBrowsingService* GetSafeBrowsingService();
+#endif
+
   MainParams* params_;
 
 #if defined(OS_ANDROID)
-  SafeBrowsingService* GetSafeBrowsingService();
   std::unique_ptr<SafeBrowsingService> safe_browsing_service_;
 #endif
 

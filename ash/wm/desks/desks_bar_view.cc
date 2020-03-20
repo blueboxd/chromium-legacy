@@ -331,8 +331,14 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
 
   // Let the highlight controller know the view is destroying before it is
   // removed from the collection because it needs to know the index of the mini
-  // view relative to other traversable views.
-  GetHighlightController()->OnViewDestroyingOrDisabling(iter->get());
+  // view, or the desk name view (if either is currently highlighted) relative
+  // to other traversable views.
+  auto* highlight_controller = GetHighlightController();
+  // The order here matters, we call it first on the desk_name_view since it
+  // comes later in the highlight order (See documentation of
+  // OnViewDestroyingOrDisabling()).
+  highlight_controller->OnViewDestroyingOrDisabling((*iter)->desk_name_view());
+  highlight_controller->OnViewDestroyingOrDisabling(iter->get());
 
   const int begin_x = GetFirstMiniViewXOffset();
   std::unique_ptr<DeskMiniView> removed_mini_view = std::move(*iter);

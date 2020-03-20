@@ -86,7 +86,7 @@ void NetworkConnectionHandler::SetTetherDelegate(
 void NetworkConnectionHandler::InvokeConnectSuccessCallback(
     const std::string& service_path,
     base::OnceClosure success_callback) {
-  NET_LOG_EVENT("Connect Request Succeeded", service_path);
+  NET_LOG(EVENT) << "Connect Request Succeeded" << NetworkPathId(service_path);
   if (!success_callback.is_null())
     std::move(success_callback).Run();
   for (auto& observer : observers_)
@@ -97,7 +97,8 @@ void NetworkConnectionHandler::InvokeConnectErrorCallback(
     const std::string& service_path,
     const network_handler::ErrorCallback& error_callback,
     const std::string& error_name) {
-  NET_LOG_ERROR("Connect Failure: " + error_name, service_path);
+  NET_LOG(ERROR) << "Connect Failure: " << error_name << " for "
+                 << NetworkPathId(service_path);
   network_handler::RunErrorCallback(error_callback, service_path, error_name,
                                     "");
   for (auto& observer : observers_)

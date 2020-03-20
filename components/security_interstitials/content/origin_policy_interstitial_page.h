@@ -28,7 +28,8 @@ class OriginPolicyInterstitialPage : public SecurityInterstitialPage {
   OriginPolicyInterstitialPage(
       content::WebContents* web_contents,
       const GURL& request_url,
-      std::unique_ptr<SecurityInterstitialControllerClient> controller);
+      std::unique_ptr<SecurityInterstitialControllerClient> controller,
+      network::OriginPolicyState error_reason);
 
   ~OriginPolicyInterstitialPage() override;
 
@@ -41,6 +42,9 @@ class OriginPolicyInterstitialPage : public SecurityInterstitialPage {
  protected:
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(base::DictionaryValue*) override;
+
+ private:
+  network::OriginPolicyState error_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyInterstitialPage);
 };

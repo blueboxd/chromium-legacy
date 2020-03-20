@@ -12,6 +12,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
@@ -311,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, NavigateWithChooserCrossOrigin) {
       )"));
 
   observer.Wait();
-  EXPECT_EQ(0u, browser()->GetBubbleManager()->GetBubbleCountForTesting());
+  EXPECT_FALSE(chrome::IsDeviceChooserShowingForTesting(browser()));
 }
 
 }  // namespace

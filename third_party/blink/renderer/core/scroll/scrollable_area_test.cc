@@ -347,7 +347,7 @@ TEST_F(ScrollableAreaTest, PopupOverlayScrollbarShouldNotFadeOut) {
   DCHECK(scrollbar->IsOverlayScrollbar());
   DCHECK(scrollbar->Enabled());
 
-  scrollable_area->ShowOverlayScrollbars();
+  scrollable_area->ShowNonMacOverlayScrollbars();
 
   // No fade out animation should be posted.
   EXPECT_FALSE(scrollable_area->fade_overlay_scrollbars_timer_);

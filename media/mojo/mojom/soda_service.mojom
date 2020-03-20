@@ -27,7 +27,10 @@ interface SodaService {
 // service. The remote lives in the renderer process and the receiver
 // lives in the SODA process.
 interface SodaRecognizer {
-  // TODO(evliu): Fill this in.
+  // Initialize the SODA instance. SODA will use the soda_recognition_client
+  // to return the recognition events containing the transcribed audio back
+  // to the originating media.
+  SendAudioToSoda(AudioDataS16 buffer);
 };
 
 // The interface used to return speech recognition events from the SODA

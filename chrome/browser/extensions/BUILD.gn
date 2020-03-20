@@ -807,7 +807,6 @@ jumbo_static_library("extensions") {
     "//components/bookmarks/managed",
     "//components/browser_sync",
     "//components/browsing_data/core",
-    "//components/bubble",
     "//components/content_settings/core/browser",
     "//components/cookie_config:cookie_config",
     "//components/crx_file",

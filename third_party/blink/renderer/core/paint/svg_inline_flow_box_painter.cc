@@ -16,7 +16,7 @@ namespace blink {
 void SVGInlineFlowBoxPainter::PaintSelectionBackground(
     const PaintInfo& paint_info) {
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
-         paint_info.phase == PaintPhase::kSelection);
+         paint_info.phase == PaintPhase::kSelectionDragImage);
 
   for (InlineBox* child = svg_inline_flow_box_.FirstChild(); child;
        child = child->NextOnLine()) {
@@ -33,7 +33,7 @@ void SVGInlineFlowBoxPainter::PaintSelectionBackground(
 void SVGInlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
                                     const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
-         paint_info.phase == PaintPhase::kSelection);
+         paint_info.phase == PaintPhase::kSelectionDragImage);
 
   ScopedSVGPaintState paint_state(*LineLayoutAPIShim::ConstLayoutObjectFrom(
                                       svg_inline_flow_box_.GetLineLayoutItem()),

@@ -80,6 +80,13 @@ class CORE_EXPORT ScrollbarTheme {
   // to prevent painting it.
   virtual bool ShouldDisableInvisibleScrollbars() const { return true; }
 
+  // If true, Blink is in charge of hiding/showing of overlay scrollbars.  As
+  // above, this option exists because on Mac the visibility is controlled by
+  // Mac painting code which Blink doesn't have an input into. In order to
+  // prevent the two from getting out of sync we disable setting the Blink-side
+  // parameter on Mac.
+  virtual bool BlinkControlsOverlayVisibility() const { return true; }
+
   virtual bool InvalidateOnMouseEnterExit() { return false; }
 
   // Returns parts of the scrollbar which must be repainted following a change

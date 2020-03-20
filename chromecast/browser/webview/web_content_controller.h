@@ -64,6 +64,10 @@ class WebContentController
   void AttachTo(aura::Window* window, int window_id);
 
  protected:
+  static void RegisterRenderWidgetInputObserverFromRenderFrameHost(
+      WebContentController* web_content_controller,
+      content::RenderFrameHost* render_frame_host);
+
   // Subclasses are expected to add/remove this as a WebContentsObserver on
   // whatever WebContents this manages.
   virtual content::WebContents* GetWebContents() = 0;

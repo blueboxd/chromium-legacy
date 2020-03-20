@@ -83,6 +83,7 @@
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/tts_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
@@ -104,6 +105,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/resources/grit/webui_resources.h"
 
@@ -127,6 +129,21 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIOSSettingsHost);
 
   InitOSWebUIHandlers(html_source);
+
+  // TODO(https://crbug.com/1063412): Move the block below to
+  // os_settings_localized_strings_provider.cc.
+  static constexpr webui::LocalizedString kScrollStrings[] = {
+      {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
+      {"mouseScrollSpeed", IDS_SETTINGS_MOUSE_SCROLL_SPEED_LABEL},
+      {"mouseScrollAccelerationLabel",
+       IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL},
+      {"touchpadScrollAccelerationLabel",
+       IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
+  };
+  AddLocalizedStringsBulk(html_source, kScrollStrings);
+  html_source->AddBoolean(
+      "allowScrollSettings",
+      base::FeatureList::IsEnabled(::features::kAllowScrollSettings));
 
   // This handler is for chrome://os-settings.
   html_source->AddBoolean("isOSSettings", true);

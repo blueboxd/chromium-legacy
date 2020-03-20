@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/bubble/bubble_reference.h"
 #include "content/public/browser/bluetooth_chooser.h"
 
 class BluetoothChooserController;

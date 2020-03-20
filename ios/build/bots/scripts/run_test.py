@@ -140,52 +140,6 @@ class UnitTest(unittest.TestCase):
                      ctx.message))
         self.assertEqual(ctx.exception.code, test_case['error'])
 
-  def test_parse_args_xcodebuild_device_runner_requirements(self):
-    """
-    xcodebuild_device_runner requires both platform and version
-    """
-    test_cases = [
-        {
-            'error':
-                2,
-            'cmd': [
-                '--xcodebuild-device-runner',
-                '--platform',
-                'iPhone X',
-
-                # Required
-                '--xcode-build-version',
-                '123abc',
-                '--out-dir',
-                'some/dir'
-            ]
-        },
-        {
-            'error':
-                2,
-            'cmd': [
-                '--xcodebuild-device-runner',
-                '--version',
-                '13.2.2',
-
-                # Required
-                '--xcode-build-version',
-                '123abc',
-                '--out-dir',
-                'some/dir'
-            ]
-        }
-    ]
-
-    runner = run.Runner()
-    for test_case in test_cases:
-      with self.assertRaises(SystemExit) as ctx:
-        runner.parse_args(test_case['cmd'])
-        self.assertTrue(
-            re.match('--xcodebuild-device-runner also requires '
-                     'both *', ctx.message))
-        self.assertEqual(ctx.exception.code, test_case['error'])
-
   def test_parse_args_from_json(self):
     json_args = {
         'test_cases': ['test1'],

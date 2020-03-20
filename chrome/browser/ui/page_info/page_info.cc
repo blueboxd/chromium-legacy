@@ -331,18 +331,17 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
     {ContentSettingsType::USB_CHOOSER_DATA, &GetUsbChooserContext,
      IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
-     IDS_PAGE_INFO_DELETE_USB_DEVICE, &UsbChooserContext::GetObjectName},
+     IDS_PAGE_INFO_DELETE_USB_DEVICE},
 #if !defined(OS_ANDROID)
     {ContentSettingsType::SERIAL_CHOOSER_DATA, &GetSerialChooserContext,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
-     IDS_PAGE_INFO_DELETE_SERIAL_PORT, &SerialChooserContext::GetObjectName},
+     IDS_PAGE_INFO_DELETE_SERIAL_PORT},
 #endif
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, &GetBluetoothChooserContext,
      IDS_PAGE_INFO_BLUETOOTH_DEVICE_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
-     IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE,
-     &BluetoothChooserContext::GetObjectName},
+     IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE},
 };
 
 // Time open histogram prefixes.

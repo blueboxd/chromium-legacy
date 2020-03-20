@@ -399,7 +399,7 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
                                          *ephemeral_device_info));
 }
 
-TEST_F(UsbChooserContextTest, GetObjectNameForNamelessDevice) {
+TEST_F(UsbChooserContextTest, GetObjectDisplayNameForNamelessDevice) {
   const GURL kGoogleUrl("https://www.google.com");
   const auto kGoogleOrigin = url::Origin::Create(kGoogleUrl);
   UsbDeviceInfoPtr device_info =
@@ -410,8 +410,8 @@ TEST_F(UsbChooserContextTest, GetObjectNameForNamelessDevice) {
 
   auto objects = store->GetAllGrantedObjects();
   ASSERT_EQ(objects.size(), 1u);
-  EXPECT_EQ(store->GetObjectName(objects[0]->value),
-            "Unknown product 0x162E from Google Inc.");
+  EXPECT_EQ(store->GetObjectDisplayName(objects[0]->value),
+            base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."));
 }
 
 namespace {
@@ -1073,7 +1073,7 @@ TEST_F(UsbChooserContextTest,
                           /*product_id=*/1357,
                           /*name=*/"Unknown product 0x054D from vendor 0x18D2");
   ASSERT_TRUE(persistent_device_info->product_name);
-  EXPECT_EQ(base::UTF8ToUTF16(store->GetObjectName(objects[2]->value)),
+  EXPECT_EQ(store->GetObjectDisplayName(objects[2]->value),
             persistent_device_info->product_name.value());
 }
 

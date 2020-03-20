@@ -343,6 +343,11 @@ gpu_win_builder(
 )
 
 gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-sk-dawn-rel-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-skgl-64',
     pool = 'luci.chromium.gpu.win10.nvidia.try',
 )

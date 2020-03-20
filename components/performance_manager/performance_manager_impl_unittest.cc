@@ -26,17 +26,16 @@ class PerformanceManagerImplTest : public testing::Test {
   ~PerformanceManagerImplTest() override {}
 
   void SetUp() override {
-    EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
+    EXPECT_FALSE(PerformanceManagerImpl::IsAvailable());
     performance_manager_ = PerformanceManagerImpl::Create(base::DoNothing());
     // Make sure creation registers the created instance.
-    EXPECT_EQ(performance_manager_.get(),
-              PerformanceManagerImpl::GetInstance());
+    EXPECT_TRUE(PerformanceManagerImpl::IsAvailable());
   }
 
   void TearDown() override {
     PerformanceManagerImpl::Destroy(std::move(performance_manager_));
     // Make sure destruction unregisters the instance.
-    EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
+    EXPECT_FALSE(PerformanceManagerImpl::IsAvailable());
 
     task_environment_.RunUntilIdle();
   }

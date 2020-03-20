@@ -23,6 +23,8 @@ enum class OriginPolicyState {
   // this could mean the server has returned a 404 when attempting to retrieve
   // the origin policy.
   kCannotLoadPolicy,
+  // There has been an error parsing the Origin-Policy header.
+  kCannotParseHeader,
   // There is no need to apply an origin policy. This could be (for example) if
   // an exception has been added for the requested origin.
   kNoPolicyApplies,

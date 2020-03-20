@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -251,7 +252,7 @@ GURL AndroidUrl() {
 void ExpectValidChooserExceptionObject(
     const base::Value& actual_exception_object,
     const std::string& chooser_type,
-    const std::string& display_name,
+    const base::string16& display_name,
     const base::Value& chooser_object) {
   const base::Value* chooser_type_value = actual_exception_object.FindKeyOfType(
       kChooserType, base::Value::Type::STRING);
@@ -261,7 +262,7 @@ void ExpectValidChooserExceptionObject(
   const base::Value* display_name_value = actual_exception_object.FindKeyOfType(
       kDisplayName, base::Value::Type::STRING);
   ASSERT_TRUE(display_name_value);
-  EXPECT_EQ(display_name_value->GetString(), display_name);
+  EXPECT_EQ(base::UTF8ToUTF16(display_name_value->GetString()), display_name);
 
   const base::Value* object_value = actual_exception_object.FindKeyOfType(
       kObject, base::Value::Type::DICTIONARY);
@@ -330,7 +331,7 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
       SiteSettingSourceToString(SiteSettingSource::kPolicy);
   const std::string& kPreferenceSource =
       SiteSettingSourceToString(SiteSettingSource::kPreference);
-  const char kObjectName[] = "Gadget";
+  const base::string16& kObjectName = base::ASCIIToUTF16("Gadget");
   ChooserExceptionDetails exception_details;
 
   // Create a chooser object for testing.

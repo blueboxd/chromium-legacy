@@ -101,10 +101,11 @@ OriginPolicyThrottle::WillProcessResponse() {
 
   switch (origin_policy->state) {
     case network::OriginPolicyState::kCannotLoadPolicy:
+    case network::OriginPolicyState::kCannotParseHeader:
       return NavigationThrottle::ThrottleCheckResult(
           NavigationThrottle::CANCEL, net::ERR_BLOCKED_BY_CLIENT,
           GetContentClient()->browser()->GetOriginPolicyErrorPage(
-              navigation_handle()));
+              origin_policy->state, navigation_handle()));
 
     case network::OriginPolicyState::kNoPolicyApplies:
     case network::OriginPolicyState::kLoaded:

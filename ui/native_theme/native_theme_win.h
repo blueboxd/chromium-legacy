@@ -77,9 +77,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
  protected:
   friend class NativeTheme;
   friend class base::NoDestructor<NativeThemeWin>;
-  // Gets our singleton instance.
-  static NativeThemeWin* instance();
-  static NativeThemeWin* dark_instance();
 
   void ConfigureWebInstance() override;
 

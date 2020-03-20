@@ -142,7 +142,7 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
     if (content_size.IsEmpty())
       return;
   } else {
-    if (paint_info.phase == PaintPhase::kSelection)
+    if (paint_info.phase == PaintPhase::kSelectionDragImage)
       return;
     if (content_size.Width() <= 2 || content_size.Height() <= 2)
       return;

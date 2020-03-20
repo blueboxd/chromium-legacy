@@ -16,9 +16,25 @@ java_strings_grd("java_strings_grd") {
 }
 
 android_resources("java_resources") {
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-hdpi/ic_explore.png",
+    "java/res/drawable-hdpi/ic_home.png",
+    "java/res/drawable-mdpi/ic_explore.png",
+    "java/res/drawable-mdpi/ic_home.png",
+    "java/res/drawable-xhdpi/ic_explore.png",
+    "java/res/drawable-xhdpi/ic_home.png",
+    "java/res/drawable-xxhdpi/ic_explore.png",
+    "java/res/drawable-xxhdpi/ic_home.png",
+    "java/res/drawable-xxxhdpi/ic_explore.png",
+    "java/res/drawable-xxxhdpi/ic_home.png",
+    "java/res/layout/ss_bottom_bar_layout.xml",
+    "java/res/layout/ss_explore_button.xml",
+    "java/res/layout/ss_home_button.xml",
+    "java/res/values/dimens.xml",
+    "java/res/values/ids.xml",
+  ]
   if (enable_feed_in_chrome) {
-    resource_dirs += [ "java/explore_res" ]
+    sources += [ "java/explore_res/layout/ss_feed_header.xml" ]
   }
   deps = [
     ":java_strings_grd",

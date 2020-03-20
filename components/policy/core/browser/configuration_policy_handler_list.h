@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/policy/core/browser/policy_conversions_client.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_export.h"
@@ -39,12 +40,15 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
   // Adds a policy handler to the list.
   void AddHandler(std::unique_ptr<ConfigurationPolicyHandler> handler);
 
-  // Translates |policies| to their corresponding preferences in |prefs|.  Any
-  // errors found while processing the policies are stored in |errors|.  |prefs|
-  // or |errors| can be nullptr, and won't be filled in that case.
+  // Translates |policies| to their corresponding preferences in |prefs|. Any
+  // errors found while processing the policies are stored in |errors|.
+  // All deprecated policies will be stored into |deprecated_policies|. |prefs|,
+  // |deprecated_policies| or |errors| can be nullptr, and won't be filled in
+  // that case.
   void ApplyPolicySettings(const PolicyMap& policies,
                            PrefValueMap* prefs,
-                           PolicyErrorMap* errors) const;
+                           PolicyErrorMap* errors,
+                           DeprecatedPoliciesSet* deprecated_policies) const;
 
   // Converts sensitive policy values to others more appropriate for displaying.
   void PrepareForDisplaying(PolicyMap* policies) const;

@@ -16,9 +16,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/values.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -138,21 +138,17 @@ std::string GetSSIDFromProperties(const base::Value& properties,
 std::string GetNetworkIdFromProperties(const base::Value& properties) {
   if (properties.DictEmpty())
     return "EmptyProperties";
-  const base::Value* result =
-      properties.FindKeyOfType(shill::kGuidProperty, base::Value::Type::STRING);
-  if (!result) {
-    result = properties.FindKeyOfType(shill::kSSIDProperty,
-                                      base::Value::Type::STRING);
+  std::string guid = GetStringFromDictionary(&properties, shill::kGuidProperty);
+  if (!guid.empty())
+    return NetworkGuidId(guid);
+  std::string type = GetStringFromDictionary(&properties, shill::kTypeProperty);
+  if (!type.empty()) {
+    std::string security =
+        GetStringFromDictionary(&properties, shill::kSecurityClassProperty);
+    if (!security.empty())
+      return type + "_" + security + "_unconfigured";
   }
-  if (!result) {
-    result = properties.FindKeyOfType(shill::kNameProperty,
-                                      base::Value::Type::STRING);
-  }
-  if (result)
-    return result->GetString();
-  result =
-      properties.FindKeyOfType(shill::kTypeProperty, base::Value::Type::STRING);
-  return result ? "Unidentified " + result->GetString() : "UnknownType";
+  return "<Unconfigured Network>";
 }
 
 std::string GetNameFromProperties(const std::string& service_path,

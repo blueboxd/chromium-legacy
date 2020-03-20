@@ -22,8 +22,6 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                            bool should_only_use_dark_colors);
   ~NativeThemeAura() override;
 
-  static NativeThemeAura* instance();
-  static NativeThemeAura* dark_instance();
   static NativeThemeAura* web_instance();
 
   // NativeThemeBase:

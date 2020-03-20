@@ -11,7 +11,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -190,11 +189,6 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   arrow_ = BubbleBorderTypeFromAnchor(
       content_view_->GetMenuItem()->GetMenuController()->GetAnchorPosition());
 
-  // The MenuScrollViewContainer is a purely presentational container so it
-  // should not appear in the AX tree. Note that its subviews still appear in
-  // the tree!
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kIgnored);
-
   CreateBorder();
 }
 
@@ -240,6 +234,12 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
   GetNativeTheme()->Paint(canvas->sk_canvas(),
                           NativeTheme::kMenuPopupBackground,
                           NativeTheme::kNormal, bounds, extra);
+}
+
+void MenuScrollViewContainer::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // Get the name from the submenu view.
+  content_view_->GetAccessibleNodeData(node_data);
+  node_data->role = ax::mojom::Role::kMenuBar;
 }
 
 void MenuScrollViewContainer::OnBoundsChanged(

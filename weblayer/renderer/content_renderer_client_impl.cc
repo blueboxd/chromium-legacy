@@ -16,6 +16,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/android_system_error_page/error_page_populator.h"
+#include "components/cdm/renderer/android_key_systems.h"
 #include "components/spellcheck/renderer/spellcheck.h"           // nogncheck
 #include "components/spellcheck/renderer/spellcheck_provider.h"  // nogncheck
 #include "content/public/renderer/render_thread.h"
@@ -118,6 +119,14 @@ ContentRendererClientImpl::CreateURLLoaderThrottleProvider(
   }
 
   return nullptr;
+}
+
+void ContentRendererClientImpl::AddSupportedKeySystems(
+    std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems) {
+#if defined(OS_ANDROID)
+  cdm::AddAndroidWidevine(key_systems);
+  cdm::AddAndroidPlatformKeySystems(key_systems);
+#endif
 }
 
 }  // namespace weblayer

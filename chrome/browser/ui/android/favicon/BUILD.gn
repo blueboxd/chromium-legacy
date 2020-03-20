@@ -38,7 +38,20 @@ generate_jni("jni_headers") {
 
 android_resources("java_resources") {
   custom_package = "org.chromium.chrome.browser.ui.favicon"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-hdpi/chromelogo16.png",
+    "java/res/drawable-hdpi/default_favicon.png",
+    "java/res/drawable-mdpi/chromelogo16.png",
+    "java/res/drawable-mdpi/default_favicon.png",
+    "java/res/drawable-xhdpi/chromelogo16.png",
+    "java/res/drawable-xhdpi/default_favicon.png",
+    "java/res/drawable-xxhdpi/chromelogo16.png",
+    "java/res/drawable-xxhdpi/default_favicon.png",
+    "java/res/drawable-xxxhdpi/chromelogo16.png",
+    "java/res/drawable-xxxhdpi/default_favicon.png",
+    "java/res/values/colors.xml",
+    "java/res/values/dimens.xml",
+  ]
 
   deps = [ "//ui/android:ui_java_resources" ]
 }

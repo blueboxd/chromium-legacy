@@ -19,7 +19,13 @@ java_strings_grd("java_strings_grd") {
 }
 
 android_resources("java_resources") {
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-hdpi/vr_services.png",
+    "java/res/drawable-mdpi/vr_services.png",
+    "java/res/drawable-xhdpi/vr_services.png",
+    "java/res/drawable-xxhdpi/vr_services.png",
+    "java/res/drawable-xxxhdpi/vr_services.png",
+  ]
 
   deps = [ ":java_strings_grd" ]
 

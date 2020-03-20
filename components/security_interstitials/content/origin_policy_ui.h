@@ -32,11 +32,13 @@ class OriginPolicyUI {
   // Create the error page for the given NavigationHandle.
   // This is intended to implement the ContentBrowserClient interface.
   static base::Optional<std::string> GetErrorPageAsHTML(
+      network::OriginPolicyState error_reason,
       content::NavigationHandle* handle);
 
   // Create the error page instance for the given WebContents + URL.
   // This is intended for use by debug functions (like chrome:://interstitials).
   static SecurityInterstitialPage* GetBlockingPage(
+      network::OriginPolicyState error_reason,
       content::WebContents* web_contents,
       const GURL& url);
 };

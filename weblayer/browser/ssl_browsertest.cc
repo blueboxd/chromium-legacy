@@ -246,6 +246,11 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Reload) {
 // Tests clicking proceed link on the interstitial page. This is a PRE_ test
 // because it also acts as setup for the test below which verifies the behavior
 // across restarts.
+// TODO(crbug.com/654704): Android does not support PRE_ tests. For Android just
+// run only the PRE_ version of this test.
+#if defined(OS_ANDROID)
+#define PRE_Proceed Proceed
+#endif
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
   NavigateToOkPage();
   NavigateToPageWithMismatchedCertExpectSSLInterstitial();
@@ -257,12 +262,14 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
   NavigateToPageWithMismatchedCertExpectNotBlocked();
 }
 
-// The proceed decision is not perpetuated across WebLayer sessions, i.e.
-// WebLayer will block again when navigating to the same bad page that was
-// previously proceeded through.
+#if !defined(OS_ANDROID)
+// The proceed decision is perpetuated across WebLayer sessions, i.e.  WebLayer
+// will not block again when navigating to the same bad page that was previously
+// proceeded through.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Proceed) {
-  NavigateToPageWithMismatchedCertExpectSSLInterstitial();
+  NavigateToPageWithMismatchedCertExpectNotBlocked();
 }
+#endif
 
 // Tests navigating away from the interstitial page.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, NavigateAway) {

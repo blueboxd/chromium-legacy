@@ -14,6 +14,7 @@
 #include "net/http/http_util.h"
 #include "services/network/network_context.h"
 #include "services/network/origin_policy/origin_policy_fetcher.h"
+#include "services/network/origin_policy/origin_policy_parsed_header.h"
 
 namespace network {
 
@@ -43,6 +44,16 @@ void OriginPolicyManager::RetrieveOriginPolicy(
                                   std::move(callback));
     return;
   }
+
+  base::Optional<OriginPolicyParsedHeader> parsed_header =
+      OriginPolicyParsedHeader::FromString(*header);
+  if (!parsed_header.has_value()) {
+    InvokeCallbackWithPolicyState(origin, OriginPolicyState::kCannotParseHeader,
+                                  std::move(callback));
+    return;
+  }
+
+  // TODO(https://crbug.com/1042049): actually used parsed_header.
 
   origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
       this, origin, url_loader_factory_.get(), std::move(callback)));

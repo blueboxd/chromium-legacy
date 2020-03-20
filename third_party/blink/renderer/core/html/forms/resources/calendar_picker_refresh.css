@@ -117,7 +117,7 @@ body {
 * Highlight-when-hovered for day cells except if this is a week picker
 */
 :not(.week-picker) > .calendar-table-view > .scroll-view > .scroll-view-content
-    > .calendar-row-cell > .day-cell:hover {
+    > .calendar-row-cell > .day-cell:not(.selected):hover {
   background-color: rgba(0, 117, 255, 0.3);
 }
 
@@ -132,7 +132,7 @@ body {
 .week-picker .calendar-row-cell:hover
     .day-cell:not(.selected):not(.disabled):not(:nth-child(2)),
 .week-picker .calendar-row-cell:hover + .calendar-row-cell
-    .day-cell:nth-child(2):not(.selected):not(.disabled),
+    .day-cell:not(.selected):not(.disabled):nth-child(2),
 .calendar-row-cell:hover .week-number-cell:not(.selected):not(.disabled) {
   background-color: rgba(0, 117, 255, 0.3);
 }
@@ -285,11 +285,39 @@ body {
     color: WindowText;
   }
 
-  .day-cell:hover,
-  .month-button:hover,
-  .week-number-cell:hover {
-    background-color: Window;
+  /*
+  * Highlight-when-hovered for cells in the month picker menu and standalone
+  * month control
+  */
+  .month-button:not(.selected):hover {
+    background-color: Window !important;
     border-color: Highlight !important;
+  }
+
+  /*
+  * Highlight-when-hovered for day cells except if this is a week picker
+  */
+  :not(.week-picker) > .calendar-table-view > .scroll-view > .scroll-view-content
+      > .calendar-row-cell > .day-cell:not(.selected):hover {
+    background-color: Window !important;
+    border-color: Highlight !important;
+  }
+
+  /*
+  * Highlight-when-hovered for week picker, in 3 parts:
+  * 1. Highlight all cells in the hovered row except for Monday, because it
+  *    belongs to the previous week.
+  * 2. Highlight Monday of the row after the hovered row, because it belongs to
+  *    this week
+  * 3. Highlight the week number cell for the hovered week
+  */
+  .week-picker .calendar-row-cell:hover
+  .day-cell:not(.selected):not(.disabled):not(:nth-child(2)),
+  .week-picker .calendar-row-cell:hover + .calendar-row-cell
+  .day-cell:not(.selected):not(.disabled):nth-child(2),
+  .calendar-row-cell:hover .week-number-cell:not(.selected):not(.disabled) {
+    border-color: Highlight !important;
+    background-color: Window !important;
   }
 
   .day-cell.selected,

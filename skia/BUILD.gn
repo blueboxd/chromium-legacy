@@ -61,11 +61,6 @@ config("skia_config") {
     "SK_CODEC_DECODES_WEBP",
     "SK_ENCODE_PNG",
     "SK_ENCODE_WEBP",
-
-    # TODO (scroggo): skbug.com/9756 Once https://skia-review.googlesource.com/c/skia/+/273768
-    # lands, these can be removed.
-    "SK_HAS_PNG_LIBRARY",
-    "SK_HAS_WEBP_LIBRARY",
     "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
   ]
 
@@ -77,10 +72,6 @@ config("skia_config") {
     defines += [
       "SK_CODEC_DECODES_JPEG",
       "SK_ENCODE_JPEG",
-
-      # TODO (scroggo): skbug.com/9756 Once https://skia-review.googlesource.com/c/skia/+/273768
-      # lands, this can be removed.
-      "SK_HAS_JPEG_LIBRARY",
     ]
     if (enable_skia_wuffs_gif) {
       defines += [ "SK_HAS_WUFFS_LIBRARY" ]

@@ -33,6 +33,7 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void TouchpadExists(DeviceExistsCallback callback) override;
   void UpdateTouchpadSettings(const TouchpadSettings& settings) override;
   void SetTouchpadSensitivity(int value) override;
+  void SetTouchpadScrollSensitivity(int value) override;
   void SetTapToClick(bool enabled) override;
   void SetThreeFingerClick(bool enabled) override;
   void SetTapDragging(bool enabled) override;
@@ -40,10 +41,13 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void MouseExists(DeviceExistsCallback callback) override;
   void UpdateMouseSettings(const MouseSettings& settings) override;
   void SetMouseSensitivity(int value) override;
+  void SetMouseScrollSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
   void SetMouseReverseScroll(bool enabled) override;
   void SetMouseAcceleration(bool enabled) override;
+  void SetMouseScrollAcceleration(bool enabled) override;
   void SetTouchpadAcceleration(bool enabled) override;
+  void SetTouchpadScrollAcceleration(bool enabled) override;
   void ReapplyTouchpadSettings() override;
   void ReapplyMouseSettings() override;
   InputDeviceSettings::FakeInterface* GetFakeInterface() override;
@@ -79,6 +83,13 @@ void InputDeviceSettingsImplOzone::SetTouchpadSensitivity(int value) {
   DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
   current_touchpad_settings_.SetSensitivity(value);
   input_controller()->SetTouchpadSensitivity(value);
+}
+
+void InputDeviceSettingsImplOzone::SetTouchpadScrollSensitivity(int value) {
+  DCHECK_GE(value, kMinPointerSensitivity);
+  DCHECK_LE(value, kMaxPointerSensitivity);
+  current_touchpad_settings_.SetScrollSensitivity(value);
+  input_controller()->SetTouchpadScrollSensitivity(value);
 }
 
 void InputDeviceSettingsImplOzone::SetNaturalScroll(bool enabled) {
@@ -119,6 +130,13 @@ void InputDeviceSettingsImplOzone::SetMouseSensitivity(int value) {
   input_controller()->SetMouseSensitivity(value);
 }
 
+void InputDeviceSettingsImplOzone::SetMouseScrollSensitivity(int value) {
+  DCHECK_GE(value, kMinPointerSensitivity);
+  DCHECK_LE(value, kMaxPointerSensitivity);
+  current_mouse_settings_.SetScrollSensitivity(value);
+  input_controller()->SetMouseScrollSensitivity(value);
+}
+
 void InputDeviceSettingsImplOzone::SetPrimaryButtonRight(bool right) {
   current_mouse_settings_.SetPrimaryButtonRight(right);
   input_controller()->SetPrimaryButtonRight(right);
@@ -134,9 +152,19 @@ void InputDeviceSettingsImplOzone::SetMouseAcceleration(bool enabled) {
   input_controller()->SetMouseAcceleration(enabled);
 }
 
+void InputDeviceSettingsImplOzone::SetMouseScrollAcceleration(bool enabled) {
+  current_mouse_settings_.SetScrollAcceleration(enabled);
+  input_controller()->SetMouseScrollAcceleration(enabled);
+}
+
 void InputDeviceSettingsImplOzone::SetTouchpadAcceleration(bool enabled) {
   current_touchpad_settings_.SetAcceleration(enabled);
   input_controller()->SetTouchpadAcceleration(enabled);
+}
+
+void InputDeviceSettingsImplOzone::SetTouchpadScrollAcceleration(bool enabled) {
+  current_touchpad_settings_.SetScrollAcceleration(enabled);
+  input_controller()->SetTouchpadScrollAcceleration(enabled);
 }
 
 void InputDeviceSettingsImplOzone::ReapplyTouchpadSettings() {

@@ -37,10 +37,9 @@ void DisconnectErrorCallback(
   else
     error_data_ss << "<none>";
 
-  NET_LOG(ERROR) << "AutoConnectHandler.Disconnect failed. "
-                 << "Path: \"" << network_path << "\", "
-                 << "Error name: \"" << error_name << "\", "
-                 << "Error data: " << error_data_ss.str();
+  NET_LOG(ERROR) << "AutoConnectHandler.Disconnect failed for: "
+                 << NetworkPathId(network_path) << " Error name: " << error_name
+                 << ", Data: " << error_data_ss.str();
 }
 
 void RemoveNetworkConfigurationErrorCallback(
@@ -51,9 +50,9 @@ void RemoveNetworkConfigurationErrorCallback(
     error_data_ss << *error_data;
   else
     error_data_ss << "<none>";
-  NET_LOG(ERROR) << "AutoConnectHandler RemoveNetworkConfiguration failed. "
-                 << "Error name: \"" << error_name << "\", "
-                 << "Error data: " << error_data_ss.str();
+  NET_LOG(ERROR) << "AutoConnectHandler RemoveNetworkConfiguration failed."
+                 << " Error name: " << error_name
+                 << ", Data: " << error_data_ss.str();
 }
 
 void ConnectToNetworkErrorCallback(
@@ -64,9 +63,9 @@ void ConnectToNetworkErrorCallback(
     error_data_ss << *error_data;
   else
     error_data_ss << "<none>";
-  NET_LOG(ERROR) << "AutoConnectHandler ConnectToNetwork failed. "
-                 << "Error name: \"" << error_name << "\", "
-                 << "Error data: " << error_data_ss.str();
+  NET_LOG(ERROR) << "AutoConnectHandler ConnectToNetwork failed."
+                 << " Error name: " << error_name
+                 << ", Data: " << error_data_ss.str();
 }
 
 void SetPropertiesErrorCallback(
@@ -77,9 +76,9 @@ void SetPropertiesErrorCallback(
     error_data_ss << *error_data;
   else
     error_data_ss << "<none>";
-  NET_LOG(ERROR) << "AutoConnectHandler SetProperties failed. "
-                 << "Error name: \"" << error_name << "\", "
-                 << "Error data: " << error_data_ss.str();
+  NET_LOG(ERROR) << "AutoConnectHandler SetProperties failed."
+                 << " Error name: " << error_name
+                 << ", Data: " << error_data_ss.str();
 }
 
 std::string AutoConnectReasonsToString(int auto_connect_reasons) {
@@ -369,8 +368,8 @@ void AutoConnectHandler::DisconnectIfPolicyRequires() {
 }
 
 void AutoConnectHandler::DisconnectNetwork(const std::string& service_path) {
-  NET_LOG_EVENT("Disconnect forced by policy", service_path);
-
+  NET_LOG(EVENT) << "Disconnect forced by policy for: "
+                 << NetworkPathId(service_path);
   network_connection_handler_->DisconnectNetwork(
       service_path, base::DoNothing(),
       base::Bind(&DisconnectErrorCallback, service_path));
@@ -378,8 +377,8 @@ void AutoConnectHandler::DisconnectNetwork(const std::string& service_path) {
 
 void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
     const std::string& service_path) {
-  NET_LOG_EVENT("Remove configuration forced by policy", service_path);
-
+  NET_LOG(EVENT) << "Remove configuration forced by policy for: "
+                 << NetworkPathId(service_path);
   managed_configuration_handler_->RemoveConfiguration(
       service_path, base::DoNothing(),
       base::Bind(&RemoveNetworkConfigurationErrorCallback));
@@ -387,8 +386,8 @@ void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
 
 void AutoConnectHandler::DisableAutoconnectForWiFiNetwork(
     const std::string& service_path) {
-  NET_LOG_EVENT("Disable auto-connect forced by policy", service_path);
-
+  NET_LOG(EVENT) << "Disable auto-connect forced by policy: "
+                 << NetworkPathId(service_path);
   base::DictionaryValue properties;
   properties.SetPath({::onc::network_config::kWiFi, ::onc::wifi::kAutoConnect},
                      base::Value(false));

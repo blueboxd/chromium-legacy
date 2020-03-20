@@ -63,8 +63,13 @@ class Launchd {
                                 CFStringRef name,
                                 CFDictionaryRef dict);
 
+  // Return true if and only if a launchd plist exists.
+  // |name| should not have an extension.
+  virtual bool PlistExists(Domain domain, Type type, CFStringRef name);
+
   // Delete a launchd plist.
   // |name| should not have an extension.
+  // Returns false on error. Returns true if the plist does not exist.
   virtual bool DeletePlist(Domain domain, Type type, CFStringRef name);
 
   // TODO(dmaclach): remove this once http://crbug.com/76925 is fixed.

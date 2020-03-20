@@ -10,13 +10,6 @@ jumbo_source_set("browser") {
     "media_drm_storage_impl.h",
   ]
 
-  if (is_android) {
-    sources += [
-      "cdm_message_filter_android.cc",
-      "cdm_message_filter_android.h",
-    ]
-  }
-
   public_deps = [
     "//base",
     "//content/public/browser",
@@ -31,6 +24,14 @@ jumbo_source_set("browser") {
     "//ipc",
     "//media",
   ]
+
+  if (is_android) {
+    sources += [
+      "cdm_message_filter_android.cc",
+      "cdm_message_filter_android.h",
+    ]
+    deps += [ "//third_party/widevine/cdm:headers" ]
+  }
 }
 
 jumbo_source_set("unit_tests") {

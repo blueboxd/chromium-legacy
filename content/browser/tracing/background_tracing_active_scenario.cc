@@ -129,7 +129,12 @@ class PerfettoTracingSession
   }
 
   void AbortScenario(const base::RepeatingClosure& on_abort_callback) override {
-    on_abort_callback.Run();
+    if (is_tracing_disabled_) {
+      on_abort_callback.Run();
+      return;
+    }
+    on_abort_callback_ = on_abort_callback;
+    tracing_session_host_->DisableTracing();
   }
 
   bool did_setup_startup_tracing() const override {
@@ -153,6 +158,12 @@ class PerfettoTracingSession
   }
 
   void OnTracingDisabled() override {
+    is_tracing_disabled_ = true;
+    if (on_abort_callback_) {
+      std::move(on_abort_callback_).Run();
+      return;
+    }
+
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
 
@@ -192,6 +203,8 @@ class PerfettoTracingSession
   bool has_finished_read_buffers_ = false;
   bool has_finished_receiving_data_ = false;
   bool did_setup_startup_tracing_ = false;
+  bool is_tracing_disabled_ = false;
+  base::OnceClosure on_abort_callback_;
 };
 
 class LegacyTracingSession

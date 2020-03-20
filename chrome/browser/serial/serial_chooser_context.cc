@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,11 +66,11 @@ bool SerialChooserContext::IsValidObject(const base::Value& object) {
          object.FindStringKey(kPortNameKey) && token && DecodeToken(*token);
 }
 
-// static
-std::string SerialChooserContext::GetObjectName(const base::Value& object) {
+base::string16 SerialChooserContext::GetObjectDisplayName(
+    const base::Value& object) {
   const std::string* name = object.FindStringKey(kPortNameKey);
   DCHECK(name);
-  return *name;
+  return base::UTF8ToUTF16(*name);
 }
 
 std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>

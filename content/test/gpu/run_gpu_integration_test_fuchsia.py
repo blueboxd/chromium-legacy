@@ -22,6 +22,12 @@ def main():
   AddCommonArgs(parser)
   args, gpu_test_args = parser.parse_known_args()
   ConfigureLogging(args)
+
+  # If output directory is not set, assume the script is being launched
+  # from the output directory.
+  if not args.output_directory:
+    args.output_directory = os.getcwd()
+
   gpu_script = [os.path.join(path_util.GetChromiumSrcDir(), 'content',
                 'test', 'gpu', 'run_gpu_integration_test.py')]
 

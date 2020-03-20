@@ -50,6 +50,13 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   // Mac queues up scrollbar paint timers.
   bool ShouldDisableInvisibleScrollbars() const override { return false; }
 
+  // On Mac, if Blink updates the visibility itself, it cannot tell the Mac
+  // painting code about the change. Allowing it to change means the two can
+  // get out of sync and can cause issues like Blink believing a scrollbar is
+  // visible while the user cannot see it; this can lead to odd hit testing
+  // behavior.
+  bool BlinkControlsOverlayVisibility() const override { return false; }
+
   base::TimeDelta InitialAutoscrollTimerDelay() override;
   base::TimeDelta AutoscrollTimerDelay() override;
 

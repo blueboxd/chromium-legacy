@@ -425,6 +425,27 @@ void UsbChooserContext::RevokeObjectPermission(
   RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED_EPHEMERAL);
 }
 
+bool UsbChooserContext::IsValidObject(const base::Value& object) {
+  return object.is_dict() && object.DictSize() == 4 &&
+         object.FindStringKey(kDeviceNameKey) &&
+         object.FindIntKey(kVendorIdKey) && object.FindIntKey(kProductIdKey) &&
+         (object.FindStringKey(kSerialNumberKey) ||
+          object.FindStringKey(kGuidKey));
+}
+
+base::string16 UsbChooserContext::GetObjectDisplayName(
+    const base::Value& object) {
+  const std::string* name = object.FindStringKey(kDeviceNameKey);
+  DCHECK(name);
+  if (!name->empty())
+    return base::UTF8ToUTF16(*name);
+
+  base::Optional<int> vendor_id = object.FindIntKey(kVendorIdKey);
+  base::Optional<int> product_id = object.FindIntKey(kProductIdKey);
+  DCHECK(vendor_id && product_id);
+  return GetDeviceNameFromIds(*vendor_id, *product_id);
+}
+
 void UsbChooserContext::GrantDevicePermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
@@ -533,27 +554,6 @@ void UsbChooserContext::RemoveObserver(DeviceObserver* observer) {
 
 base::WeakPtr<UsbChooserContext> UsbChooserContext::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-bool UsbChooserContext::IsValidObject(const base::Value& object) {
-  return object.is_dict() && object.DictSize() == 4 &&
-         object.FindStringKey(kDeviceNameKey) &&
-         object.FindIntKey(kVendorIdKey) && object.FindIntKey(kProductIdKey) &&
-         (object.FindStringKey(kSerialNumberKey) ||
-          object.FindStringKey(kGuidKey));
-}
-
-// static
-std::string UsbChooserContext::GetObjectName(const base::Value& object) {
-  const std::string* name = object.FindStringKey(kDeviceNameKey);
-  DCHECK(name);
-  if (name->empty()) {
-    base::Optional<int> vendor_id = object.FindIntKey(kVendorIdKey);
-    base::Optional<int> product_id = object.FindIntKey(kProductIdKey);
-    DCHECK(vendor_id && product_id);
-    return base::UTF16ToUTF8(GetDeviceNameFromIds(*vendor_id, *product_id));
-  }
-  return *name;
 }
 
 void UsbChooserContext::OnDeviceAdded(

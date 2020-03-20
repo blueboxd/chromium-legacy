@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.share.screenshot;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.image_editor.ImageEditorDialogCoordinator;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
+import org.chromium.chrome.browser.screenshot.EditorScreenshotTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 
@@ -23,19 +25,35 @@ public class ScreenshotCoordinator {
     private final Activity mActivity;
     private final Tab mTab;
 
+    private EditorScreenshotTask mScreenshotTask;
+    private Bitmap mScreenshot;
+
     public ScreenshotCoordinator(Activity activity, Tab tab) {
         mActivity = activity;
         mTab = tab;
     }
 
     /**
-     * Takes a screenshot of the current tab and opens the screenshot editor if the image editor
-     * is installed. If not, attempts to install the DFM a set amount of times per session. If
-     * MAX_INSTALL_ATTEMPTS is reached, directly opens the screenshot sharesheet instead.
+     * Takes a screenshot of the current tab and attempts to launch the screenshot image editor.
      */
-    public void handleScreenshot() {
-        // TODO(crbug/1024586): Implement screenshot logic.
+    public void captureScreenshot() {
+        mScreenshotTask = new EditorScreenshotTask(mActivity);
+        mScreenshotTask.capture(() -> {
+            mScreenshot = mScreenshotTask.getScreenshot();
+            if (mScreenshot == null) {
+                // TODO(crbug/1024586): Show error message
+            } else {
+                handleScreenshot();
+            }
+        });
+    }
 
+    /**
+     * Opens the editor with the captured screenshot if the editor is installed. Otherwise, attempts
+     * to install the DFM a set amount of times per session. If MAX_INSTALL_ATTEMPTS is reached,
+     * directly opens the screenshot sharesheet instead.
+     */
+    private void handleScreenshot() {
         if (ImageEditorModuleProvider.isModuleInstalled()) {
             launchEditor();
         } else if (sInstallAttempts < MAX_INSTALL_ATTEMPTS) {
@@ -52,7 +70,8 @@ public class ScreenshotCoordinator {
     private void launchEditor() {
         ImageEditorDialogCoordinator editor = ImageEditorModuleProvider.getImageEditorProvider()
                                                       .getImageEditorDialogCoordinator();
-        editor.launchEditor(mActivity);
+        editor.launchEditor(mActivity, mScreenshot);
+        mScreenshot = null;
     }
 
     /**

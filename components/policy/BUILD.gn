@@ -23,6 +23,7 @@ gen_policy_templates_linux = is_linux
 gen_policy_templates_android = is_android
 gen_policy_templates_mac = is_mac
 gen_policy_templates_chromeos = is_chromeos
+gen_policy_templates_ios = is_ios
 
 # The zip file is grabbed from the Windows build right now.
 gen_policy_templates_zip = is_win
@@ -284,6 +285,13 @@ action("policy_templates") {
         rebase_path(policy_templates_chromeos_google_admx_path, root_build_dir),
       ]
     }
+  }
+  if (gen_policy_templates_ios) {
+    outputs += policy_templates_ios_outputs
+    args += [
+      "--ios_app_config",
+      rebase_path(policy_templates_ios_app_config_path, root_build_dir),
+    ]
   }
 }
 

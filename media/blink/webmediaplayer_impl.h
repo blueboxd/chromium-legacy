@@ -481,10 +481,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void FinishMemoryUsageReport(int64_t demuxer_memory_usage);
 
   void OnMainThreadMemoryDump(int32_t id,
+                              const base::trace_event::MemoryDumpArgs& args,
                               base::trace_event::ProcessMemoryDump* pmd);
   static void OnMediaThreadMemoryDump(
       int32_t id,
       Demuxer* demuxer,
+      const base::trace_event::MemoryDumpArgs& args,
       base::trace_event::ProcessMemoryDump* pmd);
 
   void OnMemoryPressure(

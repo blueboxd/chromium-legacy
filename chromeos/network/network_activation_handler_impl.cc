@@ -28,7 +28,8 @@ void NetworkActivationHandlerImpl::Activate(
     const std::string& carrier,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("ActivateNetwork", service_path + ": '" + carrier + "'");
+  NET_LOG(USER) << "ActivateNetwork: " << NetworkPathId(service_path)
+                << ": Carrier: " << carrier;
   ShillServiceClient::Get()->ActivateCellularModem(
       dbus::ObjectPath(service_path), carrier,
       base::BindOnce(&NetworkActivationHandlerImpl::HandleShillSuccess,
@@ -41,7 +42,7 @@ void NetworkActivationHandlerImpl::CompleteActivation(
     const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("CompleteActivation", service_path);
+  NET_LOG(USER) << "CompleteActivation: " << NetworkPathId(service_path);
   ShillServiceClient::Get()->CompleteCellularActivation(
       dbus::ObjectPath(service_path),
       base::BindOnce(&NetworkActivationHandlerImpl::HandleShillSuccess,

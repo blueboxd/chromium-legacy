@@ -385,8 +385,8 @@ const char kInvalidCssList[] =
     "Required value 'content_scripts[*].css' is invalid.";
 const char kInvalidDeclarativeNetRequestKey[] = "Invalid value for '*' key";
 const char kInvalidDeclarativeRulesFileKey[] =
-    "Invalid value for '*.*' key. It must be a list containing a single "
-    "Ruleset dictionary.";
+    "Invalid value for '*.*' key. It must be a non-empty list containing "
+    "Ruleset dictionaries.";
 const char kInvalidDefaultLocale[] =
     "Invalid value for default locale - locale name must be a string.";
 const char kInvalidDescription[] =
@@ -788,6 +788,9 @@ const char kSandboxPagesCSPKeyNotAllowed[] =
     "'content_security_policy.sandbox'.";
 const char kRulesFileIsInvalid[] =
     "Invalid value for key '*.*': The provided path '*' is invalid.";
+const char kRulesetCountExceeded[] =
+    "Invalid value for key '*.*': The number of rulesets must be less than or "
+    "equal to *.";
 const char kTransientBackgroundConflictsWithPersistentBackground[] =
     "The 'transientBackground' permission cannot be used with a persistent "
     "background page.";

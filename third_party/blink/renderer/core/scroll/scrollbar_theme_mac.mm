@@ -83,7 +83,7 @@ using gfx::CocoaScrollbarPainter;
     _saved_knob_alpha = [_scrollbarPainter knobAlpha];
   } else {
     [_scrollbarPainter setKnobAlpha:_saved_knob_alpha];
-    _scrollbar->SetScrollbarsHiddenIfOverlay(_saved_knob_alpha == 0);
+    _scrollbar->SetScrollbarsHiddenFromExternalAnimator(_saved_knob_alpha == 0);
   }
 }
 
@@ -99,7 +99,7 @@ using gfx::CocoaScrollbarPainter;
   if ([keyPath isEqualToString:@"knobAlpha"]) {
     if (!_suppressSetScrollbarsHidden) {
       BOOL visible = [_scrollbarPainter knobAlpha] > 0;
-      _scrollbar->SetScrollbarsHiddenIfOverlay(!visible);
+      _scrollbar->SetScrollbarsHiddenFromExternalAnimator(!visible);
     }
   }
 }

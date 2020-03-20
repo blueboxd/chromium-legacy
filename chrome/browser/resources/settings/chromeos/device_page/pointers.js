@@ -45,6 +45,17 @@ Polymer({
         return loadTimeData.getBoolean('allowDisableMouseAcceleration');
       },
     },
+
+    /**
+     * TODO(khorimoto): Remove this conditional once the feature is launched.
+     * @private
+     */
+    allowScrollSettings_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('allowScrollSettings');
+      },
+    },
   },
 
   // Used to correctly identify when the mouse button has been released.

@@ -42,12 +42,6 @@ namespace chromeos {
 namespace {
 
 // Given a usb device, guesses the make and model for a driver lookup.
-//
-// TODO(https://crbug.com/895037): Possibly go deeper and query the IEEE1284
-// fields for make and model if we determine those are more likely to contain
-// what we want.  Strings currently come from udev.
-// TODO(https://crbug.com/895037): When above is added, parse out document
-// formats and add to DetectedPrinter
 std::string GuessEffectiveMakeAndModel(
     const device::mojom::UsbDeviceInfo& device) {
   return base::UTF16ToUTF8(GetManufacturerName(device)) + " " +

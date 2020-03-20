@@ -108,14 +108,6 @@ class PerformanceManagerTabHelper
   // PerformanceManagerRegistry.
   using WebContentsUserData<PerformanceManagerTabHelper>::CreateForWebContents;
 
-  // Post a task to run in the performance manager sequence. The |node| will be
-  // passed as unretained, and the closure will be created with BindOnce.
-  template <typename Functor, typename NodeType, typename... Args>
-  void PostToGraph(const base::Location& from_here,
-                   Functor&& functor,
-                   NodeType* node,
-                   Args&&... args);
-
   void OnMainFrameNavigation(int64_t navigation_id);
 
   std::unique_ptr<PageNodeImpl> page_node_;

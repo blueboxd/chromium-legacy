@@ -76,6 +76,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "allow-scroll-settings",
+    "owners": [ "khorimoto", "zentaro" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "allow-sxg-certs-without-extension",
     "owners": [ "//content/browser/web_package/OWNERS" ],
     // Used by developers for testing signed exchange loading using normal
@@ -489,6 +494,11 @@
     "name": "collections-card-presentation-style",
     "owners": [ "sczs" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "color-provider-redirection",
+    "owners": [ "//ui/color/OWNERS" ],
+    "expiry_milestone": 88
   },
   {
     "name": "composited-layer-borders",

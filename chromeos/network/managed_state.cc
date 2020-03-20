@@ -46,19 +46,31 @@ std::unique_ptr<ManagedState> ManagedState::Create(ManagedType type,
     case MANAGED_TYPE_DEVICE:
       return std::make_unique<DeviceState>(path);
   }
-  return NULL;
+  return nullptr;
 }
 
 NetworkState* ManagedState::AsNetworkState() {
   if (managed_type() == MANAGED_TYPE_NETWORK)
     return static_cast<NetworkState*>(this);
-  return NULL;
+  return nullptr;
+}
+
+const NetworkState* ManagedState::AsNetworkState() const {
+  if (managed_type() == MANAGED_TYPE_NETWORK)
+    return static_cast<const NetworkState*>(this);
+  return nullptr;
 }
 
 DeviceState* ManagedState::AsDeviceState() {
   if (managed_type() == MANAGED_TYPE_DEVICE)
     return static_cast<DeviceState*>(this);
-  return NULL;
+  return nullptr;
+}
+
+const DeviceState* ManagedState::AsDeviceState() const {
+  if (managed_type() == MANAGED_TYPE_DEVICE)
+    return static_cast<const DeviceState*>(this);
+  return nullptr;
 }
 
 bool ManagedState::InitialPropertiesReceived(const base::Value& properties) {
@@ -85,7 +97,8 @@ bool ManagedState::GetBooleanValue(const std::string& key,
                                    bool* out_value) {
   bool new_value;
   if (!value.GetAsBoolean(&new_value)) {
-    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
+    NET_LOG(ERROR) << "Error parsing state value: " << NetworkPathId(path_)
+                   << "." << key;
     return false;
   }
   if (*out_value == new_value)
@@ -99,7 +112,8 @@ bool ManagedState::GetIntegerValue(const std::string& key,
                                    int* out_value) {
   int new_value;
   if (!value.GetAsInteger(&new_value)) {
-    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
+    NET_LOG(ERROR) << "Error parsing state value: " << NetworkPathId(path_)
+                   << "." << key;
     return false;
   }
   if (*out_value == new_value)
@@ -113,7 +127,8 @@ bool ManagedState::GetStringValue(const std::string& key,
                                   std::string* out_value) {
   std::string new_value;
   if (!value.GetAsString(&new_value)) {
-    NET_LOG_ERROR("Error parsing state: " + key, path());
+    NET_LOG(ERROR) << "Error parsing state value: " << NetworkPathId(path_)
+                   << "." << key;
     return false;
   }
   if (*out_value == new_value)
@@ -131,7 +146,8 @@ bool ManagedState::GetUInt32Value(const std::string& key,
   uint32_t new_value;
   double double_value;
   if (!value.GetAsDouble(&double_value) || double_value < 0) {
-    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
+    NET_LOG(ERROR) << "Error parsing state value: " << NetworkPathId(path_)
+                   << "." << key;
     return false;
   }
   new_value = static_cast<uint32_t>(double_value);

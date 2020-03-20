@@ -171,13 +171,19 @@ HandshakeInitiator::HandshakeInitiator(
     base::span<const uint8_t, 32> psk_gen_key,
     base::span<const uint8_t, 8> nonce,
     base::span<const uint8_t, kCableEphemeralIdSize> eid,
-    base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity)
+    base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity,
+    base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
+        local_seed)
     : eid_(fido_parsing_utils::Materialize(eid)) {
+  DCHECK(peer_identity.has_value() ^ local_seed.has_value());
   HKDF(psk_.data(), psk_.size(), EVP_sha256(), psk_gen_key.data(),
        psk_gen_key.size(), /*salt=*/nonce.data(), nonce.size(),
        /*info=*/nullptr, 0);
   if (peer_identity) {
     peer_identity_ = fido_parsing_utils::Materialize(*peer_identity);
+  }
+  if (local_seed) {
+    local_seed_ = fido_parsing_utils::Materialize(*local_seed);
   }
 }
 
@@ -188,7 +194,7 @@ std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
     noise_.Init(Noise::HandshakeType::kNKpsk0);
     noise_.MixHash(kPairedPrologue);
   } else {
-    noise_.Init(Noise::HandshakeType::kNNpsk0);
+    noise_.Init(Noise::HandshakeType::kKNpsk0);
     noise_.MixHash(kQRPrologue);
   }
 
@@ -246,11 +252,11 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
 
   bssl::UniquePtr<EC_POINT> peer_point(
       EC_POINT_new(EC_KEY_get0_group(ephemeral_key_.get())));
-  uint8_t shared_key[32];
+  uint8_t shared_key_ee[32];
   const EC_GROUP* group = EC_KEY_get0_group(ephemeral_key_.get());
   if (!EC_POINT_oct2point(group, peer_point.get(), peer_point_bytes.data(),
                           peer_point_bytes.size(), /*ctx=*/nullptr) ||
-      !ECDH_compute_key(shared_key, sizeof(shared_key), peer_point.get(),
+      !ECDH_compute_key(shared_key_ee, sizeof(shared_key_ee), peer_point.get(),
                         ephemeral_key_.get(), /*kdf=*/nullptr)) {
     FIDO_LOG(DEBUG) << "Peer's P-256 point not on curve.";
     return base::nullopt;
@@ -258,7 +264,19 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
 
   noise_.MixHash(peer_point_bytes);
   noise_.MixKey(peer_point_bytes);
-  noise_.MixKey(shared_key);
+  noise_.MixKey(shared_key_ee);
+
+  if (local_seed_) {
+    uint8_t shared_key_se[32];
+    bssl::UniquePtr<EC_KEY> identity_key(EC_KEY_derive_from_secret(
+        group, local_seed_->data(), local_seed_->size()));
+    if (!ECDH_compute_key(shared_key_se, sizeof(shared_key_se),
+                          peer_point.get(), identity_key.get(),
+                          /*kdf=*/nullptr)) {
+      return base::nullopt;
+    }
+    noise_.MixKey(shared_key_se);
+  }
 
   auto plaintext = noise_.DecryptAndHash(ciphertext);
   if (!plaintext || plaintext->empty() != peer_identity_.has_value()) {
@@ -268,7 +286,7 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
 
   base::Optional<std::unique_ptr<CableDiscoveryData>> discovery_data;
   if (!peer_identity_) {
-    // Handshakes without a peer identity (i.e. NNpsk0 handshakes setup from a
+    // Handshakes without a peer identity (i.e. KNpsk0 handshakes setup from a
     // QR code) send a padded message in the reply. This message can,
     // optionally, contain CBOR-encoded, long-term pairing information.
     const size_t padding_length = (*plaintext)[plaintext->size() - 1];
@@ -322,10 +340,12 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
     base::span<const uint8_t, 32> psk_gen_key,
     const NonceAndEID& nonce_and_eid,
     const EC_KEY* identity,
+    const EC_POINT* peer_identity,
     const CableDiscoveryData* pairing_data,
     base::span<const uint8_t> in,
     std::vector<uint8_t>* out_response) {
   DCHECK(identity == nullptr || pairing_data == nullptr);
+  DCHECK(identity == nullptr ^ peer_identity == nullptr);
 
   CBS cbs = CBSFromSpan(in);
 
@@ -348,7 +368,7 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
     noise.Init(device::Noise::HandshakeType::kNKpsk0);
     noise.MixHash(kPairedPrologue);
   } else {
-    noise.Init(device::Noise::HandshakeType::kNNpsk0);
+    noise.Init(device::Noise::HandshakeType::kKNpsk0);
     noise.MixHash(kQRPrologue);
   }
 
@@ -398,12 +418,21 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
   noise.MixHash(ephemeral_key_public_bytes);
   noise.MixKey(ephemeral_key_public_bytes);
 
-  uint8_t shared_key[32];
-  if (!ECDH_compute_key(shared_key, sizeof(shared_key), peer_point.get(),
+  uint8_t shared_key_ee[32];
+  if (!ECDH_compute_key(shared_key_ee, sizeof(shared_key_ee), peer_point.get(),
                         ephemeral_key.get(), /*kdf=*/nullptr)) {
     return base::nullopt;
   }
-  noise.MixKey(shared_key);
+  noise.MixKey(shared_key_ee);
+
+  if (peer_identity) {
+    uint8_t shared_key_se[32];
+    if (!ECDH_compute_key(shared_key_se, sizeof(shared_key_se), peer_identity,
+                          ephemeral_key.get(), /*kdf=*/nullptr)) {
+      return base::nullopt;
+    }
+    noise.MixKey(shared_key_se);
+  }
 
   std::vector<uint8_t> my_ciphertext;
   if (!identity) {

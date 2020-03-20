@@ -162,8 +162,6 @@ void PageActionIconController::Init(const PageActionIconParams& params,
     icon->SetVisible(false);
     icon->set_ink_drop_visible_opacity(
         params.page_action_icon_delegate->GetPageActionInkDropVisibleOpacity());
-    if (params.icon_size)
-      icon->set_icon_size(*params.icon_size);
     if (params.icon_color)
       icon->SetIconColor(*params.icon_color);
     if (params.font_list)

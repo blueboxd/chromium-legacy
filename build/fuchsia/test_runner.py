@@ -28,6 +28,7 @@ TEST_FILTER_PATH = '/data/test_filter.txt'
 def main():
   parser = argparse.ArgumentParser()
   AddCommonArgs(parser)
+
   parser.add_argument('--gtest_filter',
                       help='GTest filter to use in place of any default.')
   parser.add_argument('--gtest_repeat',
@@ -71,6 +72,11 @@ def main():
   parser.add_argument('child_args', nargs='*',
                       help='Arguments for the test process.')
   args = parser.parse_args()
+
+  # Flag output_directory is required for tests launched with this script.
+  if not args.output_directory:
+    raise ValueError("output-directory must be specified.")
+
   ConfigureLogging(args)
 
   child_args = ['--test-launcher-retry-limit=0']

@@ -78,6 +78,10 @@ class ASH_EXPORT OverviewHighlightController {
 
   // Called when a |view| that might be in the focus traversal rotation is about
   // to be deleted.
+  // Note: When removing multiple highlightable views in one call, by calling
+  // this function repeatedly, make sure to call it in reverse order (i.e. on
+  // the views that come later in the highlight order first). This makes sure
+  // that traversal continues correctly from where it was left off.
   void OnViewDestroyingOrDisabling(OverviewHighlightableView* view);
 
   // Sets and gets the visibility of |highlighted_view_|.

@@ -45,6 +45,8 @@ class PageActionIconView : public IconLabelBubbleView {
 
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
 
+    virtual int GetPageActionIconSize() const;
+
     // Returns the size of the insets in which the icon should draw its inkdrop.
     virtual gfx::Insets GetPageActionIconInsets(
         const PageActionIconView* icon_view) const;
@@ -60,8 +62,6 @@ class PageActionIconView : public IconLabelBubbleView {
 
   // Updates the color of the icon, this must be set before the icon is drawn.
   void SetIconColor(SkColor icon_color);
-
-  void set_icon_size(int size) { icon_size_ = size; }
 
   // Sets the active state of the icon. An active icon will be displayed in a
   // "call to action" color.
@@ -164,9 +164,6 @@ class PageActionIconView : public IconLabelBubbleView {
 
  private:
   void UpdateBorder();
-
-  // The size of the icon image (excluding the ink drop).
-  int icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
 
   // What color to paint the icon with.
   SkColor icon_color_ = gfx::kPlaceholderColor;

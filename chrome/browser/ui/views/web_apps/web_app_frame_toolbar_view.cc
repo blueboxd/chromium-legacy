@@ -411,6 +411,22 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
         layout->GetDefaultFlexRule());
   }
 
+  // Returns the ideal size for a child view based on its preferred size and the
+  // available space. Views which are too wide to be displayed are dropped out.
+  //
+  // Because we prefer height consistency (see GetFlexRule()), we'll roll our
+  // own simple flex rule. The alternative is kPreferredSnapToZero which can
+  // drop views out for being too tall as well as too wide.
+  //
+  // TODO(crbug.com/1063455): replace with a standard flex rule when single-axis
+  // flex rules are available.
+  static gfx::Size GetChildFlexRule(const views::View* view,
+                                    const views::SizeBounds& bounds) {
+    const gfx::Size preferred = view->GetPreferredSize();
+    return (bounds.width() && *bounds.width() < preferred.width()) ? gfx::Size()
+                                                                   : preferred;
+  }
+
   ContentSettingsContainer* content_settings_container() {
     return content_settings_container_;
   }
@@ -437,6 +453,10 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   }
 
   // PageActionIconView::Delegate:
+  int GetPageActionIconSize() const override {
+    return GetLayoutConstant(WEB_APP_PAGE_ACTION_ICON_SIZE);
+  }
+
   gfx::Insets GetPageActionIconInsets(
       const PageActionIconView* icon_view) const override {
     const int icon_size =
@@ -583,11 +603,11 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
       .SetCollapseMargins(true)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetDefault(views::kFlexBehaviorKey,
-                  views::FlexSpecification(
-                      views::MinimumFlexSizeRule::kPreferredSnapToZero,
-                      views::MaximumFlexSizeRule::kPreferred)
-                      .WithWeight(0))
+      .SetDefault(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(
+              base::BindRepeating(&ToolbarButtonContainer::GetChildFlexRule))
+              .WithWeight(0))
       .SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse);
 
   const auto* app_controller = browser_view_->browser()->app_controller();
@@ -618,7 +638,6 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
   params.types_enabled.push_back(PageActionIconType::kCookieControls);
   params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
   params.types_enabled.push_back(PageActionIconType::kSaveCard);
-  params.icon_size = GetLayoutConstant(WEB_APP_PAGE_ACTION_ICON_SIZE);
   params.icon_color = gfx::kPlaceholderColor;
   params.between_icon_spacing =
       HorizontalPaddingBetweenPageActionsAndAppMenuButtons();

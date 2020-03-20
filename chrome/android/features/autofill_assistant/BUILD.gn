@@ -23,7 +23,7 @@ android_library("animated_poodle_java") {
 }
 
 android_resources("animated_poodle_resources") {
-  resource_dirs = [ "java/res_poodle" ]
+  sources = [ "java/res_poodle/drawable/ic_autofill_assistant_24dp.xml" ]
   custom_package = "org.chromium.chrome.autofill_assistant.poodle"
 }
 
@@ -282,7 +282,54 @@ android_library("test_java") {
 }
 
 android_resources("java_resources") {
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable/autofill_assistant_actions_gradient.xml",
+    "java/res/drawable/autofill_assistant_default_details.xml",
+    "java/res/drawable/autofill_assistant_details_bg.xml",
+    "java/res/drawable/autofill_assistant_lightblue_rect_bg.xml",
+    "java/res/drawable/autofill_assistant_swipe_indicator.xml",
+    "java/res/drawable/ic_add_outline_white_24dp.xml",
+    "java/res/drawable/ic_autofill_assistant_add_circle_24dp.xml",
+    "java/res/drawable/ic_clear_black_24dp.xml",
+    "java/res/drawable/ic_done_black_24dp.xml",
+    "java/res/drawable/ic_logo_assistant_24dp.xml",
+    "java/res/drawable/ic_refresh_black_24dp.xml",
+    "java/res/drawable/ic_remove_outline_white_24dp.xml",
+    "java/res/layout/autofill_assistant_address_full.xml",
+    "java/res/layout/autofill_assistant_address_summary.xml",
+    "java/res/layout/autofill_assistant_bottom_sheet_content.xml",
+    "java/res/layout/autofill_assistant_bottom_sheet_toolbar.xml",
+    "java/res/layout/autofill_assistant_button_assistive.xml",
+    "java/res/layout/autofill_assistant_button_filled.xml",
+    "java/res/layout/autofill_assistant_button_hairline.xml",
+    "java/res/layout/autofill_assistant_contact_full.xml",
+    "java/res/layout/autofill_assistant_contact_summary.xml",
+    "java/res/layout/autofill_assistant_datetime.xml",
+    "java/res/layout/autofill_assistant_details.xml",
+    "java/res/layout/autofill_assistant_form_checkbox.xml",
+    "java/res/layout/autofill_assistant_form_counter.xml",
+    "java/res/layout/autofill_assistant_form_counter_input.xml",
+    "java/res/layout/autofill_assistant_form_information.xml",
+    "java/res/layout/autofill_assistant_form_radiobutton.xml",
+    "java/res/layout/autofill_assistant_form_selection_input.xml",
+    "java/res/layout/autofill_assistant_header.xml",
+    "java/res/layout/autofill_assistant_info_box.xml",
+    "java/res/layout/autofill_assistant_login.xml",
+    "java/res/layout/autofill_assistant_onboarding.xml",
+    "java/res/layout/autofill_assistant_payment_method_full.xml",
+    "java/res/layout/autofill_assistant_payment_method_summary.xml",
+    "java/res/layout/autofill_assistant_payment_request_section_divider.xml",
+    "java/res/layout/autofill_assistant_payment_request_section_title.xml",
+    "java/res/layout/autofill_assistant_payment_request_terms_and_conditions.xml",
+    "java/res/layout/autofill_assistant_popup_list_section.xml",
+    "java/res/layout/autofill_assistant_static_text_section.xml",
+    "java/res/menu/profile_icon_menu.xml",
+    "java/res/values-night-v17/colors.xml",
+    "java/res/values-v17/attrs.xml",
+    "java/res/values-v17/colors.xml",
+    "java/res/values-v17/dimens.xml",
+    "java/res/values-v17/styles.xml",
+  ]
   deps = [
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",

@@ -243,9 +243,7 @@ OptionsPage = class {
         voices.sort(function(a, b) {
           return a.voiceName.localeCompare(b.voiceName);
         });
-        addVoiceOption(
-            chrome.i18n.getMessage('chromevox_system_voice'),
-            constants.SYSTEM_VOICE);
+        addVoiceOption(Msgs.getMsg('system_voice'), constants.SYSTEM_VOICE);
         voices.forEach((voice) => {
           addVoiceOption(voice.voiceName, voice.voiceName);
         });

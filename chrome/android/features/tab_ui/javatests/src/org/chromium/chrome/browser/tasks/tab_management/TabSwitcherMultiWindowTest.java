@@ -4,21 +4,17 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.moveActivityToFront;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForSecondChromeTabbedActivity;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 
@@ -99,7 +95,7 @@ public class TabSwitcherMultiWindowTest {
         CriteriaHelper.pollUiThread(Criteria.equals(3, recyclerView1::getChildCount));
 
         // Move 2 incognito tabs to cta2.
-        enterFirstTabFromTabSwitcher(cta1);
+        clickFirstCardFromTabSwitcher(cta1);
         moveTabsToOtherWindow(cta1, 2);
 
         // After move, there are 1 incognito tab in cta1 and 2 incognito tabs in cta2.
@@ -118,7 +114,7 @@ public class TabSwitcherMultiWindowTest {
         CriteriaHelper.pollUiThread(Criteria.equals(2, recyclerView2::getChildCount));
 
         // Move 1 incognito tab back to cta1.
-        enterFirstTabFromTabSwitcher(cta2);
+        clickFirstCardFromTabSwitcher(cta2);
         moveTabsToOtherWindow(cta2, 1);
 
         // After move, there are 2 incognito tabs in cta1 and 1 incognito tab in cta2.
@@ -143,7 +139,7 @@ public class TabSwitcherMultiWindowTest {
         assertEquals(false, cta1.getTabModelSelector().getCurrentModel().isIncognito());
 
         // Move 3 normal tabs to cta2.
-        enterFirstTabFromTabSwitcher(cta1);
+        clickFirstCardFromTabSwitcher(cta1);
         moveTabsToOtherWindow(cta1, 3);
 
         // After move, there are 1 normal tab in cta1 and 3 normal tabs in cta2.
@@ -160,7 +156,7 @@ public class TabSwitcherMultiWindowTest {
         CriteriaHelper.pollUiThread(Criteria.equals(3, recyclerView2::getChildCount));
 
         // Move 2 normal tabs back to cta1.
-        enterFirstTabFromTabSwitcher(cta2);
+        clickFirstCardFromTabSwitcher(cta2);
         moveTabsToOtherWindow(cta2, 2);
 
         // After move, there are 3 normal tabs in cta1 and 1 normal tab in cta2.
@@ -190,12 +186,6 @@ public class TabSwitcherMultiWindowTest {
                 () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
         CriteriaHelper.pollUiThread(
                 Criteria.equals(true, () -> cta.getLayoutManager().overviewVisible()));
-    }
-
-    private void enterFirstTabFromTabSwitcher(ChromeTabbedActivity cta) {
-        onView(withId(R.id.tab_list_view))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
-        CriteriaHelper.pollInstrumentationThread(() -> !cta.getLayoutManager().overviewVisible());
     }
 
     private void verifyTabModelTabCount(

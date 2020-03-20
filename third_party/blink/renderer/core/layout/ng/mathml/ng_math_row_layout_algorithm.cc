@@ -96,7 +96,8 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
 scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   DCHECK(!BreakToken());
 
-  bool is_display_math = Node().IsMathRoot() && !Style().IsDisplayInlineType();
+  bool is_display_math =
+      Node().IsMathRoot() && Style().Display() == EDisplay::kMath;
 
   LogicalSize max_row_size;
   LayoutUnit max_row_block_baseline;
@@ -111,7 +112,7 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   // Add children taking into account centering, baseline and
   // border/scrollbar/padding.
   LayoutUnit center_offset = InlineOffsetForDisplayMathCentering(
-      is_display_math, ConstraintSpace().AvailableSize().inline_size,
+      is_display_math, container_builder_.InlineSize(),
       max_row_size.inline_size);
   LogicalOffset adjust_offset(
       border_scrollbar_padding_.inline_start + center_offset,

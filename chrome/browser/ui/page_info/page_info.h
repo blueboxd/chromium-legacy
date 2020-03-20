@@ -145,7 +145,6 @@ class PageInfo : public content::WebContentsObserver {
     int description_string_id;
     int allowed_by_policy_description_string_id;
     int delete_tooltip_string_id;
-    std::string (*get_object_name)(const base::Value&);
   };
 
   // Creates a PageInfo for the passed |url| using the given |ssl| status

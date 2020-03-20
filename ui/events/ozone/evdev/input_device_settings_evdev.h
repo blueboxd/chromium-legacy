@@ -28,10 +28,14 @@ struct InputDeviceSettingsEvdev {
   bool touch_event_logging_enabled = true;
   bool mouse_reverse_scroll_enabled = false;
   bool mouse_acceleration_enabled = true;
+  bool mouse_scroll_acceleration_enabled = true;
   bool touchpad_acceleration_enabled = true;
+  bool touchpad_scroll_acceleration_enabled = true;
 
   int touchpad_sensitivity = kDefaultSensitivity;
+  int touchpad_scroll_sensitivity = kDefaultSensitivity;
   int mouse_sensitivity = kDefaultSensitivity;
+  int mouse_scroll_sensitivity = kDefaultSensitivity;
 
   bool enable_devices = true;  // If false, all input is disabled.
   bool enable_internal_touchpad = true;

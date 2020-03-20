@@ -591,7 +591,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   if (IsExplicitScrollType(scroll_type)) {
     if (scroll_type != mojom::blink::ScrollType::kCompositor)
-      ShowOverlayScrollbars();
+      ShowNonMacOverlayScrollbars();
     GetScrollAnchor()->Clear();
   }
   if (ContentCaptureManager* manager =
@@ -715,7 +715,7 @@ IntSize PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
 }
 
 void PaintLayerScrollableArea::VisibleSizeChanged() {
-  ShowOverlayScrollbars();
+  ShowNonMacOverlayScrollbars();
 }
 
 PhysicalRect PaintLayerScrollableArea::LayoutContentRect(
@@ -2043,12 +2043,10 @@ void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
 }
 
 void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
-    PaintLayer* layer,
-    bool needs_compositing_update) {
+    PaintLayer* layer) {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     d->sticky_constraints_map_.erase(layer);
-    if (needs_compositing_update &&
-        layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
+    if (layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
       layer->SetNeedsCompositingInputsUpdate();
       layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
     }

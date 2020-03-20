@@ -22,21 +22,20 @@
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/engagement/important_sites_util.h"
-#include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/storage/storage_info_fetcher.h"
-#include "chrome/browser/usb/usb_chooser_context.h"
-#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/content/local_storage_helper.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/uma_util.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_uma_util.h"
@@ -54,6 +53,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -269,25 +269,8 @@ void SetSettingForOrigin(JNIEnv* env,
 
 permissions::ChooserContextBase* GetChooserContext(ContentSettingsType type) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-
-  switch (type) {
-    case ContentSettingsType::USB_CHOOSER_DATA:
-      return UsbChooserContextFactory::GetForProfile(profile);
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
-std::string GetChooserObjectName(ContentSettingsType type,
-                                 base::Value& object) {
-  switch (type) {
-    case ContentSettingsType::USB_CHOOSER_DATA:
-      return UsbChooserContext::GetObjectName(object);
-    default:
-      NOTREACHED();
-      return std::string();
-  }
+  return permissions::PermissionsClient::Get()->GetChooserContext(profile,
+                                                                  type);
 }
 
 bool OriginMatcher(const url::Origin& origin, const GURL& other) {
@@ -636,8 +619,8 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
     if (embedder != origin)
       jembedder = ConvertUTF8ToJavaString(env, embedder);
 
-    ScopedJavaLocalRef<jstring> jname =
-        ConvertUTF8ToJavaString(env, GetChooserObjectName(type, object->value));
+    ScopedJavaLocalRef<jstring> jname = ConvertUTF16ToJavaString(
+        env, context->GetObjectDisplayName(object->value));
 
     std::string serialized;
     bool written = base::JSONWriter::Write(object->value, &serialized);
@@ -858,9 +841,9 @@ static void JNI_WebsitePreferenceBridge_ClearMediaLicenses(
   Profile* profile = ProfileManager::GetActiveUserProfile();
   url::Origin origin =
       url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin)));
-  ClearMediaDrmLicenses(profile->GetPrefs(), base::Time(), base::Time::Max(),
-                        base::BindRepeating(&OriginMatcher, origin),
-                        base::DoNothing());
+  cdm::MediaDrmStorageImpl::ClearMatchingLicenses(
+      profile->GetPrefs(), base::Time(), base::Time::Max(),
+      base::BindRepeating(&OriginMatcher, origin), base::DoNothing());
 }
 
 static jboolean JNI_WebsitePreferenceBridge_IsPermissionControlledByDSE(

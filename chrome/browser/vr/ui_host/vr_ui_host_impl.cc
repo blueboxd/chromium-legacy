@@ -183,13 +183,9 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
 
   if (web_contents_ != contents) {
     if (web_contents_) {
-      if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents_))
-        browser->GetBubbleManager()->RemoveBubbleManagerObserver(this);
       DesktopMediaPickerManager::Get()->RemoveObserver(this);
     }
     if (contents) {
-      if (Browser* browser = chrome::FindBrowserWithWebContents(contents))
-        browser->GetBubbleManager()->AddBubbleManagerObserver(this);
       DesktopMediaPickerManager::Get()->AddObserver(this);
     }
   }
@@ -300,17 +296,6 @@ void VRUiHostImpl::OnBubbleAdded() {
 
 void VRUiHostImpl::OnBubbleRemoved() {
   RemoveHeadsetNotificationPrompt();
-}
-
-void VRUiHostImpl::OnBubbleNeverShown(BubbleReference bubble) {}
-
-void VRUiHostImpl::OnBubbleClosed(BubbleReference bubble,
-                                  BubbleCloseReason reason) {
-  RemoveHeadsetNotificationPrompt();
-}
-
-void VRUiHostImpl::OnBubbleShown(BubbleReference bubble) {
-  ShowExternalNotificationPrompt();
 }
 
 void VRUiHostImpl::OnDialogOpened() {

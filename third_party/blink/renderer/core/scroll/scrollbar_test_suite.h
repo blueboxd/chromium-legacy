@@ -120,10 +120,10 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
     return ScrollbarTheme::GetTheme();
   }
 
-  using ScrollableArea::ShowOverlayScrollbars;
-  using ScrollableArea::HorizontalScrollbarNeedsPaintInvalidation;
-  using ScrollableArea::VerticalScrollbarNeedsPaintInvalidation;
   using ScrollableArea::ClearNeedsPaintInvalidationForScrollControls;
+  using ScrollableArea::HorizontalScrollbarNeedsPaintInvalidation;
+  using ScrollableArea::ShowNonMacOverlayScrollbars;
+  using ScrollableArea::VerticalScrollbarNeedsPaintInvalidation;
 
   void Trace(Visitor* visitor) override {
     visitor->Trace(chrome_client_);

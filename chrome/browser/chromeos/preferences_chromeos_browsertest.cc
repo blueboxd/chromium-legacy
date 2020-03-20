@@ -69,10 +69,14 @@ class PreferencesTest : public LoginManagerTest {
     prefs->SetBoolean(prefs::kTapToClickEnabled, variant);
     prefs->SetBoolean(prefs::kPrimaryMouseButtonRight, !variant);
     prefs->SetBoolean(prefs::kMouseAcceleration, variant);
+    prefs->SetBoolean(prefs::kMouseScrollAcceleration, variant);
     prefs->SetBoolean(prefs::kTouchpadAcceleration, variant);
+    prefs->SetBoolean(prefs::kTouchpadScrollAcceleration, variant);
     prefs->SetBoolean(prefs::kEnableTouchpadThreeFingerClick, !variant);
     prefs->SetInteger(prefs::kMouseSensitivity, !variant);
+    prefs->SetInteger(prefs::kMouseScrollSensitivity, variant ? 1 : 4);
     prefs->SetInteger(prefs::kTouchpadSensitivity, variant);
+    prefs->SetInteger(prefs::kTouchpadScrollSensitivity, variant ? 1 : 4);
     prefs->SetBoolean(prefs::kLanguageXkbAutoRepeatEnabled, variant);
     prefs->SetInteger(prefs::kLanguageXkbAutoRepeatDelay, variant ? 100 : 500);
     prefs->SetInteger(prefs::kLanguageXkbAutoRepeatInterval, variant ? 1 : 4);
@@ -91,15 +95,26 @@ class PreferencesTest : public LoginManagerTest {
               input_settings_->current_mouse_settings().GetReverseScroll());
     EXPECT_EQ(prefs->GetBoolean(prefs::kMouseAcceleration),
               input_settings_->current_mouse_settings().GetAcceleration());
+    EXPECT_EQ(
+        prefs->GetBoolean(prefs::kMouseScrollAcceleration),
+        input_settings_->current_mouse_settings().GetScrollAcceleration());
     EXPECT_EQ(prefs->GetBoolean(prefs::kTouchpadAcceleration),
               input_settings_->current_touchpad_settings().GetAcceleration());
+    EXPECT_EQ(
+        prefs->GetBoolean(prefs::kTouchpadScrollAcceleration),
+        input_settings_->current_touchpad_settings().GetScrollAcceleration());
     EXPECT_EQ(prefs->GetBoolean(prefs::kEnableTouchpadThreeFingerClick),
               input_settings_->current_touchpad_settings()
                   .GetThreeFingerClick());
     EXPECT_EQ(prefs->GetInteger(prefs::kMouseSensitivity),
               input_settings_->current_mouse_settings().GetSensitivity());
+    EXPECT_EQ(prefs->GetInteger(prefs::kMouseScrollSensitivity),
+              input_settings_->current_mouse_settings().GetScrollSensitivity());
     EXPECT_EQ(prefs->GetInteger(prefs::kTouchpadSensitivity),
               input_settings_->current_touchpad_settings().GetSensitivity());
+    EXPECT_EQ(
+        prefs->GetInteger(prefs::kTouchpadScrollSensitivity),
+        input_settings_->current_touchpad_settings().GetScrollSensitivity());
     EXPECT_EQ(prefs->GetBoolean(prefs::kLanguageXkbAutoRepeatEnabled),
               keyboard_->auto_repeat_is_enabled_);
     input_method::AutoRepeatRate rate = keyboard_->last_auto_repeat_rate_;

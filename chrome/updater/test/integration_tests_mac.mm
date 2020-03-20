@@ -9,6 +9,8 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "chrome/common/mac/launchd.h"
+#include "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,6 +38,12 @@ base::FilePath GetInstallerPath() {
   return test_executable.DirName().Append("updater_setup");
 }
 
+base::FilePath GetProductPath() {
+  return base::mac::GetUserLibraryPath()
+      .AppendASCII(COMPANY_SHORTNAME_STRING)
+      .AppendASCII(PRODUCT_FULLNAME_STRING);
+}
+
 bool Run(base::CommandLine command_line, int* exit_code) {
   auto process = base::LaunchProcess(command_line, {});
   if (!process.IsValid())
@@ -49,31 +57,35 @@ bool Run(base::CommandLine command_line, int* exit_code) {
 }  // namespace
 
 void Clean() {
-  EXPECT_TRUE(base::DeleteFile(base::mac::GetUserLibraryPath()
-                                   .AppendASCII(COMPANY_SHORTNAME_STRING)
-                                   .AppendASCII(PRODUCT_FULLNAME_STRING),
-                               true));
-  // TODO(crbug.com/1062288): Delete the service launchd entry.
-  // TODO(crbug.com/1062288): Delete the update task launchd entry.
+  EXPECT_TRUE(base::DeleteFile(GetProductPath(), true));
+  EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
+      Launchd::User, Launchd::Agent,
+      updater::CopyGoogleUpdateCheckLaunchDName()));
+  EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
+      Launchd::User, Launchd::Agent,
+      updater::CopyGoogleUpdateCheckLaunchDName()));
 }
 
 void ExpectClean() {
   // Files must not exist on the file system.
-  EXPECT_FALSE(base::PathExists(base::mac::GetUserLibraryPath()
-                                    .AppendASCII(COMPANY_SHORTNAME_STRING)
-                                    .AppendASCII(PRODUCT_FULLNAME_STRING)));
-  // TODO(crbug.com/1062288): Check that service Launchd entry does not exist.
-  // TODO(crbug.com/1062288): Check that update task Launchd entry does not
-  // exist.
+  EXPECT_FALSE(base::PathExists(GetProductPath()));
+  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
+      Launchd::User, Launchd::Agent,
+      updater::CopyGoogleUpdateCheckLaunchDName()));
+  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
+      Launchd::User, Launchd::Agent,
+      updater::CopyGoogleUpdateCheckLaunchDName()));
 }
 
 void ExpectInstalled() {
   // Files must exist on the file system.
-  EXPECT_TRUE(base::PathExists(base::mac::GetUserLibraryPath()
-                                   .AppendASCII(COMPANY_SHORTNAME_STRING)
-                                   .AppendASCII(PRODUCT_FULLNAME_STRING)));
-  // TODO(crbug.com/1062288): Check that service Launchd entry exists.
-  // TODO(crbug.com/1062288): Check that update task Launchd entry exists.
+  EXPECT_TRUE(base::PathExists(GetProductPath()));
+  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
+      Launchd::User, Launchd::Agent,
+      updater::CopyGoogleUpdateCheckLaunchDName()));
+  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
+      Launchd::User, Launchd::Agent,
+      updater::CopyGoogleUpdateCheckLaunchDName()));
 }
 
 void Install() {

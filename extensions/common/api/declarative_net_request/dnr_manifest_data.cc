@@ -5,13 +5,19 @@
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 
 #include <utility>
+
+#include "base/logging.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
 
-DNRManifestData::DNRManifestData(RulesetInfo ruleset)
-    : ruleset(std::move(ruleset)) {}
+DNRManifestData::DNRManifestData(std::vector<RulesetInfo> rulesets)
+    : rulesets(std::move(rulesets)) {
+  // TODO(crbug.com/953894): Remove this DCHECK when we support specifying 0
+  // rulesets.
+  DCHECK(!(this->rulesets.empty()));
+}
 DNRManifestData::~DNRManifestData() = default;
 
 // static
@@ -26,7 +32,9 @@ const DNRManifestData::RulesetInfo& DNRManifestData::GetRuleset(
       extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
   DCHECK(data);
 
-  return static_cast<DNRManifestData*>(data)->ruleset;
+  // TODO(crbug.com/754526): Change this to return |rulesets|. Currently we only
+  // index the first ruleset specified by the extension in its manifest.
+  return static_cast<DNRManifestData*>(data)->rulesets[0];
 }
 
 }  // namespace declarative_net_request

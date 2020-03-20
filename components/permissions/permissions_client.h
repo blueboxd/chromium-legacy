@@ -33,6 +33,7 @@ class InfoBarManager;
 }  // namespace infobars
 
 namespace permissions {
+class ChooserContextBase;
 class NotificationPermissionUiSelector;
 class PermissionDecisionAutoBlocker;
 class PermissionManager;
@@ -65,6 +66,12 @@ class PermissionsClient {
   // pointer has the same lifetime as |browser_context|.
   virtual PermissionManager* GetPermissionManager(
       content::BrowserContext* browser_context) = 0;
+
+  // Gets the ChooserContextBase for the given type and context, which must be a
+  // *_CHOOSER_DATA value. May return null if the context does not exist.
+  virtual ChooserContextBase* GetChooserContext(
+      content::BrowserContext* browser_context,
+      ContentSettingsType type) = 0;
 
   // Gets the embedder defined engagement score for this |origin|.
   virtual double GetSiteEngagementScore(

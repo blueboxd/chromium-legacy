@@ -201,10 +201,9 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_3WebTabs() throws InterruptedException, IOException {
         // clang-format on
-        prepareTabs(3, 0, mUrl);
+        prepareTabs(3, 0, "about:blank");
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
         mRenderTestRule.render(
@@ -216,10 +215,9 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_10WebTabs() throws InterruptedException, IOException {
         // clang-format on
-        prepareTabs(10, 0, mUrl);
+        prepareTabs(10, 0, "about:blank");
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
         mRenderTestRule.render(
@@ -231,10 +229,9 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_10WebTabs_InitialScroll() throws InterruptedException, IOException {
         // clang-format on
-        prepareTabs(10, 0, mUrl);
+        prepareTabs(10, 0, "about:blank");
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 9);
         enterGTSWithThumbnailChecking();
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
@@ -247,11 +244,10 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_Incognito() throws InterruptedException, IOException {
         // clang-format on
         // Prepare some incognito tabs and enter tab switcher.
-        prepareTabs(1, 3, mUrl);
+        prepareTabs(1, 3, "about:blank");
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
@@ -264,7 +260,6 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(message = "crbug.com/1023299", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_3NativeTabs() throws InterruptedException, IOException {
         // clang-format on
         // Prepare some incognito native tabs and enter tab switcher.
@@ -647,7 +642,7 @@ public class StartSurfaceLayoutTest {
                 .check(TabCountAssertion.havingTabCount(1));
 
         onView(withId(R.id.tab_list_view)).perform(actionOnItemAtPosition(0, click()));
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         enterGTSWithThumbnailChecking();
@@ -787,7 +782,7 @@ public class StartSurfaceLayoutTest {
         // TODO(meiliang): Avoid using static variable for tracking state,
         // TabSuggestionMessageService.isSuggestionAvailableForTesting(). Instead, we can add a
         // dummy MessageObserver to track the availability of the suggestions.
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 ()
                         -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
                         && mActivityTestRule.getActivity()
@@ -801,8 +796,7 @@ public class StartSurfaceLayoutTest {
         // TODO(meiliang): Avoid using static variable for tracking state,
         // TabSwitcherCoordinator::hasAppendedMessagesForTesting. Instead, we can query the number
         // of items that the inner model of the TabSwitcher has.
-        CriteriaHelper.pollInstrumentationThread(
-                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
         onView(allOf(withId(R.id.close_button), withParent(withId(R.id.tab_grid_message_item))))
                 .perform(click());
@@ -819,7 +813,7 @@ public class StartSurfaceLayoutTest {
         // clang-format on
         prepareTabs(3, 0, null);
 
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 ()
                         -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
                         && mActivityTestRule.getActivity()
@@ -830,8 +824,7 @@ public class StartSurfaceLayoutTest {
 
         enterGTSWithThumbnailChecking();
 
-        CriteriaHelper.pollInstrumentationThread(
-                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
         onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
                 .perform(click());
@@ -875,7 +868,7 @@ public class StartSurfaceLayoutTest {
     public void testTabSuggestionMessageCardDismissAfterTabClosing() throws InterruptedException {
         // clang-format on
         prepareTabs(3, 0, mUrl);
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 ()
                         -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
                         && mActivityTestRule.getActivity()
@@ -885,13 +878,12 @@ public class StartSurfaceLayoutTest {
                                 == 3);
 
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollInstrumentationThread(
-                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
         closeFirstTabInTabSwitcher();
 
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 ()
                         -> !TabSuggestionMessageService.isSuggestionAvailableForTesting()
                         && mActivityTestRule.getActivity()
@@ -972,7 +964,7 @@ public class StartSurfaceLayoutTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(3, 0, null);
 
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 ()
                         -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
                         && mActivityTestRule.getActivity()
@@ -982,8 +974,7 @@ public class StartSurfaceLayoutTest {
                                 == 3);
 
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollInstrumentationThread(
-                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
 
         onView(withId(R.id.tab_list_view))
                 .check(MessageCardWidthAssertion.checkMessageItemSpanSize(3, 2));
@@ -1632,8 +1623,10 @@ public class StartSurfaceLayoutTest {
                             : R.string.accessibility_tab_switcher_standard_stack)
         ).perform(click());
 
-        CriteriaHelper.pollInstrumentationThread(() ->
-                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected()
+        CriteriaHelper.pollUiThread(()
+                                            -> mActivityTestRule.getActivity()
+                                                       .getTabModelSelector()
+                                                       .isIncognitoSelected()
                         == isIncognito);
     }
 
@@ -1692,10 +1685,10 @@ public class StartSurfaceLayoutTest {
                 () -> { startSurface.getController().onBackPressed(); });
         // TODO(wychen): using default timeout or even converting to
         //  OverviewModeBehaviorWatcher shouldn't increase flakiness.
-        CriteriaHelper.pollInstrumentationThread(
-                () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
-                "Overview not hidden yet", DEFAULT_MAX_TIME_TO_POLL * 10,
-                DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
+                "Overview not hidden yet", DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
         assertThumbnailsAreReleased();
     }
 
@@ -1737,7 +1730,7 @@ public class StartSurfaceLayoutTest {
 
     private void assertThumbnailsAreReleased() {
         // Could not directly assert canAllBeGarbageCollected() because objects can be in Cleaner.
-        CriteriaHelper.pollInstrumentationThread(() -> canAllBeGarbageCollected(mAllBitmaps));
+        CriteriaHelper.pollUiThread(() -> canAllBeGarbageCollected(mAllBitmaps));
     }
 
     private boolean canAllBeGarbageCollected(List<WeakReference<Bitmap>> bitmaps) {
@@ -1785,7 +1778,7 @@ public class StartSurfaceLayoutTest {
         String suggestionMessage =
                 String.format(Locale.getDefault(), suggestionMessageTemplate, "3");
         prepareTabs(3, 0, mUrl);
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 ()
                         -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
                         && mActivityTestRule.getActivity()
@@ -1795,16 +1788,14 @@ public class StartSurfaceLayoutTest {
                                 == 3);
 
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollInstrumentationThread(
-                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(allOf(withText(suggestionMessage), withParent(withId(R.id.tab_grid_message_item))))
                 .check(matches(isDisplayed()));
         leaveGTSAndVerifyThumbnailsAreReleased();
 
         // With soft or hard clean up depends on the soft-cleanup-delay and cleanup-delay params.
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollInstrumentationThread(
-                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         // This will fail with error "matched multiple views" when there is more than one suggestion
         // message card.
         onView(allOf(withText(suggestionMessage), withParent(withId(R.id.tab_grid_message_item))))

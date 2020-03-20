@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,11 +40,11 @@ HidChooserContext::HidChooserContext(Profile* profile)
 
 HidChooserContext::~HidChooserContext() = default;
 
-// static
-std::string HidChooserContext::GetObjectName(const base::Value& object) {
+base::string16 HidChooserContext::GetObjectDisplayName(
+    const base::Value& object) {
   const std::string* name = object.FindStringKey(kHidDeviceNameKey);
   DCHECK(name);
-  return *name;
+  return base::UTF8ToUTF16(*name);
 }
 
 bool HidChooserContext::IsValidObject(const base::Value& object) {

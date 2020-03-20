@@ -42,7 +42,17 @@ android_resources("java_resources") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//ui/android:ui_java_resources",
   ]
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-night/touch_to_fill_header_image.xml",
+    "java/res/drawable/touch_to_fill_credential_background.xml",
+    "java/res/drawable/touch_to_fill_header_image.xml",
+    "java/res/layout/touch_to_fill_credential_item.xml",
+    "java/res/layout/touch_to_fill_fill_button.xml",
+    "java/res/layout/touch_to_fill_footer.xml",
+    "java/res/layout/touch_to_fill_header_item.xml",
+    "java/res/layout/touch_to_fill_sheet.xml",
+    "java/res/values/dimens.xml",
+  ]
   custom_package = "org.chromium.chrome.browser.touch_to_fill"
 }
 

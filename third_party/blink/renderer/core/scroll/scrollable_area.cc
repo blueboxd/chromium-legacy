@@ -458,7 +458,7 @@ void ScrollableArea::MouseMovedInContentArea() const {
 void ScrollableArea::MouseEnteredScrollbar(Scrollbar& scrollbar) {
   mouse_over_scrollbar_ = true;
   GetScrollAnimator().MouseEnteredScrollbar(scrollbar);
-  ShowOverlayScrollbars();
+  ShowNonMacOverlayScrollbars();
   if (fade_overlay_scrollbars_timer_)
     fade_overlay_scrollbars_timer_->Stop();
 }
@@ -468,13 +468,13 @@ void ScrollableArea::MouseExitedScrollbar(Scrollbar& scrollbar) {
   GetScrollAnimator().MouseExitedScrollbar(scrollbar);
   if (HasOverlayScrollbars() && !scrollbars_hidden_if_overlay_) {
     // This will kick off the fade out timer.
-    ShowOverlayScrollbars();
+    ShowNonMacOverlayScrollbars();
   }
 }
 
 void ScrollableArea::MouseCapturedScrollbar() {
   scrollbar_captured_ = true;
-  ShowOverlayScrollbars();
+  ShowNonMacOverlayScrollbars();
   if (fade_overlay_scrollbars_timer_)
     fade_overlay_scrollbars_timer_->Stop();
 }
@@ -482,7 +482,7 @@ void ScrollableArea::MouseCapturedScrollbar() {
 void ScrollableArea::MouseReleasedScrollbar() {
   scrollbar_captured_ = false;
   // This will kick off the fade out timer.
-  ShowOverlayScrollbars();
+  ShowNonMacOverlayScrollbars();
 }
 
 void ScrollableArea::ContentAreaDidShow() const {
@@ -662,12 +662,36 @@ bool ScrollableArea::ScrollbarsHiddenIfOverlay() const {
   return HasOverlayScrollbars() && scrollbars_hidden_if_overlay_;
 }
 
+void ScrollableArea::SetScrollbarsHiddenForTesting(bool hidden) {
+  // If scrollable area has been disposed, we can not get the page scrollbar
+  // theme setting. Should early return here.
+  if (HasBeenDisposed())
+    return;
+
+  SetScrollbarsHiddenIfOverlayInternal(hidden);
+}
+
+void ScrollableArea::SetScrollbarsHiddenFromExternalAnimator(bool hidden) {
+  // If scrollable area has been disposed, we can not get the page scrollbar
+  // theme setting. Should early return here.
+  if (HasBeenDisposed())
+    return;
+
+  DCHECK(!GetPageScrollbarTheme().BlinkControlsOverlayVisibility());
+  SetScrollbarsHiddenIfOverlayInternal(hidden);
+}
+
 void ScrollableArea::SetScrollbarsHiddenIfOverlay(bool hidden) {
   // If scrollable area has been disposed, we can not get the page scrollbar
   // theme setting. Should early return here.
   if (HasBeenDisposed())
     return;
 
+  DCHECK(GetPageScrollbarTheme().BlinkControlsOverlayVisibility());
+  SetScrollbarsHiddenIfOverlayInternal(hidden);
+}
+
+void ScrollableArea::SetScrollbarsHiddenIfOverlayInternal(bool hidden) {
   if (!GetPageScrollbarTheme().UsesOverlayScrollbars())
     return;
 
@@ -682,8 +706,9 @@ void ScrollableArea::FadeOverlayScrollbarsTimerFired(TimerBase*) {
   SetScrollbarsHiddenIfOverlay(true);
 }
 
-void ScrollableArea::ShowOverlayScrollbars() {
-  if (!GetPageScrollbarTheme().UsesOverlayScrollbars())
+void ScrollableArea::ShowNonMacOverlayScrollbars() {
+  if (!GetPageScrollbarTheme().UsesOverlayScrollbars() ||
+      !GetPageScrollbarTheme().BlinkControlsOverlayVisibility())
     return;
 
   SetScrollbarsHiddenIfOverlay(false);
@@ -694,9 +719,9 @@ void ScrollableArea::ShowOverlayScrollbars() {
       GetPageScrollbarTheme().OverlayScrollbarFadeOutDuration();
 
   // If the overlay scrollbars don't fade out, don't do anything. This is the
-  // case for the mock overlays used in tests and on Mac, where the fade-out is
-  // animated in ScrollAnimatorMac.
-  // We also don't fade out overlay scrollbar for popup since we don't create
+  // case for the mock overlays used in tests (and also Mac but its scrollbars
+  // are animated by OS APIs and so we've already early-out'ed above).  We also
+  // don't fade out overlay scrollbar for popup since we don't create
   // compositor for popup and thus they don't appear on hover so users without
   // a wheel can't scroll if they fade out.
   if (time_until_disable.is_zero() || GetChromeClient()->IsPopup())

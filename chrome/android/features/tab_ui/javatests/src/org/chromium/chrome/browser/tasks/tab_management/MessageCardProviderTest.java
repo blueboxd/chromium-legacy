@@ -151,7 +151,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mRecyclerView.startShowing(false); });
 
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 () -> mRecyclerView.getVisibility() == View.VISIBLE && mFinishedShowing.get());
 
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
@@ -168,7 +168,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mRecyclerView.startShowing(false); });
 
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 () -> mRecyclerView.getVisibility() == View.VISIBLE && mFinishedShowing.get());
 
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
@@ -189,7 +189,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mRecyclerView.startShowing(false); });
 
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 () -> mRecyclerView.getVisibility() == View.VISIBLE && mFinishedShowing.get());
 
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));

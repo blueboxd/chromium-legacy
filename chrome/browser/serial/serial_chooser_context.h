@@ -41,11 +41,9 @@ class SerialChooserContext : public permissions::ChooserContextBase,
   explicit SerialChooserContext(Profile* profile);
   ~SerialChooserContext() override;
 
-  // ChooserContextBase implementation.
+  // ChooserContextBase:
   bool IsValidObject(const base::Value& object) override;
-
-  // Returns the human readable string representing the given object.
-  static std::string GetObjectName(const base::Value& object);
+  base::string16 GetObjectDisplayName(const base::Value& object) override;
 
   // In addition these methods from ChooserContextBase are overridden in order
   // to expose ephemeral devices through the public interface.

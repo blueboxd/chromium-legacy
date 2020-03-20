@@ -1672,6 +1672,9 @@ void RunRequest(TestURLRequestContext* context, const GURL& url) {
   std::unique_ptr<URLRequest> request = context->CreateRequest(
       url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
+  // Make this a laxly same-site context to allow setting
+  // SameSite=Lax-by-default cookies.
+  request->set_site_for_cookies(SiteForCookies::FromUrl(url));
   request->Start();
   delegate.RunUntilComplete();
 }

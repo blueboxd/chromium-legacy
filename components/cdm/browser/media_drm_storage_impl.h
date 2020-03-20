@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -68,19 +69,28 @@ class MediaDrmStorageImpl final
       const PrefService* pref_service,
       base::Time modified_since);
 
-  // Clear licenses if:
-  // 1. The license creation time falls in [|start|, |end|], and
-  // 2. |filter| returns true on the media license's origin.
+#if defined(OS_ANDROID)
+  // Clear media licenses and related data if:
+  // 1. Creation time falls in [delete_begin, delete_end], and
+  // 2. |filter| returns true for the origin. |filter| is passed in to allow
+  // licenses under specific origins to be cleared. Empty |filter| means remove
+  // licenses for all origins.
   //
-  // Return a list of origin IDs that have no licenses remaining so that the
-  // origin can be unprovisioned.
+  // Media license session data will be removed from persist storage. Removing
+  // the actual license file needs ack response from license server, so it's
+  // hard for Chromium to do that. Since it's difficult to get the real id for
+  // the license without the session data, we can treat the licenses as cleared.
   //
+  // If all the licenses under the origin are cleared, the origin will be
+  // unprovisioned, a.k.a the cert will be removed.
   // TODO(yucliu): Add unit test.
-  static std::vector<base::UnguessableToken> ClearMatchingLicenses(
+  static void ClearMatchingLicenses(
       PrefService* pref_service,
       base::Time start,
       base::Time end,
-      const base::RepeatingCallback<bool(const GURL&)>& filter);
+      const base::RepeatingCallback<bool(const GURL&)>& filter,
+      base::OnceClosure complete_cb);
+#endif
 
   // |get_origin_id_cb| must be provided and is used to obtain an origin ID.
   // |allow_empty_origin_id_cb| is used to determine if an empty origin ID is

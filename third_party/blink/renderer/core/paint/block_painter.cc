@@ -146,7 +146,7 @@ void BlockPainter::PaintChild(const LayoutBox& child,
   // paints floats in regular tree order (the FloatingObjects list is only used
   // by legacy layout).
   if (paint_info.phase != PaintPhase::kFloat &&
-      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip)
     return;
 
@@ -182,7 +182,7 @@ void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
                                   const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
-      paint_info.phase != PaintPhase::kSelection)
+      paint_info.phase != PaintPhase::kSelectionDragImage)
     return;
 
   // Text clips are painted only for the direct inline children of the object
@@ -287,7 +287,7 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
       To<LayoutBlockFlow>(layout_block_).GetFloatingObjects();
   const PaintPhase paint_phase = paint_info.phase;
   if (!floating_objects || !(paint_phase == PaintPhase::kFloat ||
-                             paint_phase == PaintPhase::kSelection ||
+                             paint_phase == PaintPhase::kSelectionDragImage ||
                              paint_phase == PaintPhase::kTextClip)) {
     return;
   }

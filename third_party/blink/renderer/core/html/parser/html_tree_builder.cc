@@ -919,22 +919,20 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
   tree_.ActiveFormattingElements()->ClearToLastMarker();
   template_insertion_modes_.pop_back();
   ResetInsertionModeAppropriately();
+  // Check for a declarative shadow root.
   if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled() &&
-      template_stack_item && template_stack_item->IsElementNode() &&
-      shadow_host_stack_item && shadow_host_stack_item->IsElementNode()) {
-    // TODO(masonfreed): Add a use counter here.
-    HTMLTemplateElement* template_element =
-        DynamicTo<HTMLTemplateElement>(template_stack_item->GetElement());
-    DCHECK(template_element);
-    Element* shadow_host = shadow_host_stack_item->GetElement();
-    DCHECK(shadow_host);
-    const auto& shadow_mode =
-        template_element->FastGetAttribute(html_names::kShadowrootAttr);
-    if (shadow_mode != g_null_atom) {
+      template_stack_item) {
+    if (Attribute* type_attribute = template_stack_item->GetAttributeItem(
+            html_names::kShadowrootAttr)) {
+      String shadow_mode = type_attribute->Value();
       bool is_open = EqualIgnoringASCIICase(shadow_mode, "open");
       if (is_open || EqualIgnoringASCIICase(shadow_mode, "closed")) {
-        shadow_host->AttachDeclarativeShadowRoot(
-            template_element,
+        DCHECK(template_stack_item->IsElementNode());
+        DCHECK(shadow_host_stack_item);
+        DCHECK(shadow_host_stack_item->IsElementNode());
+        // TODO(masonfreed): Add a use counter here.
+        shadow_host_stack_item->GetElement()->AttachDeclarativeShadowRoot(
+            DynamicTo<HTMLTemplateElement>(template_stack_item->GetElement()),
             is_open ? ShadowRootType::kOpen : ShadowRootType::kClosed);
       } else {
         // TODO(masonfreed): eventually, console warning here.

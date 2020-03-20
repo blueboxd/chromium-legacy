@@ -31,6 +31,12 @@ void FakeInputDeviceSettings::SetTouchpadSensitivity(int value) {
   UpdateTouchpadSettings(settings);
 }
 
+void FakeInputDeviceSettings::SetTouchpadScrollSensitivity(int value) {
+  TouchpadSettings settings;
+  settings.SetScrollSensitivity(value);
+  UpdateTouchpadSettings(settings);
+}
+
 void FakeInputDeviceSettings::SetTapToClick(bool enabled) {
   TouchpadSettings settings;
   settings.SetTapToClick(enabled);
@@ -70,6 +76,12 @@ void FakeInputDeviceSettings::SetMouseSensitivity(int value) {
   UpdateMouseSettings(settings);
 }
 
+void FakeInputDeviceSettings::SetMouseScrollSensitivity(int value) {
+  MouseSettings settings;
+  settings.SetScrollSensitivity(value);
+  UpdateMouseSettings(settings);
+}
+
 void FakeInputDeviceSettings::SetPrimaryButtonRight(bool right) {
   MouseSettings settings;
   settings.SetPrimaryButtonRight(right);
@@ -88,9 +100,21 @@ void FakeInputDeviceSettings::SetMouseAcceleration(bool enabled) {
   UpdateMouseSettings(settings);
 }
 
+void FakeInputDeviceSettings::SetMouseScrollAcceleration(bool enabled) {
+  MouseSettings settings;
+  settings.SetScrollAcceleration(enabled);
+  UpdateMouseSettings(settings);
+}
+
 void FakeInputDeviceSettings::SetTouchpadAcceleration(bool enabled) {
   TouchpadSettings settings;
   settings.SetAcceleration(enabled);
+  UpdateTouchpadSettings(settings);
+}
+
+void FakeInputDeviceSettings::SetTouchpadScrollAcceleration(bool enabled) {
+  TouchpadSettings settings;
+  settings.SetScrollAcceleration(enabled);
   UpdateTouchpadSettings(settings);
 }
 

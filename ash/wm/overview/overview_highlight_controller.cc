@@ -99,17 +99,31 @@ void OverviewHighlightController::MoveHighlight(bool reverse) {
 void OverviewHighlightController::OnViewDestroyingOrDisabling(
     OverviewHighlightableView* view) {
   DCHECK(view);
-  if (view != highlighted_view_)
-    return;
 
+  // TODO(afakhry): Refactor this code.
   const std::vector<OverviewHighlightableView*> traversable_views =
       GetTraversableViews();
-  const auto it = std::find(traversable_views.begin(), traversable_views.end(),
-                            highlighted_view_);
-  DCHECK(it != traversable_views.end());
-  const int current_index = std::distance(traversable_views.begin(), it);
-  DCHECK_GE(current_index, 0);
-  deleted_index_ = base::make_optional(current_index);
+  const auto it =
+      std::find(traversable_views.begin(), traversable_views.end(), view);
+  if (it == traversable_views.end())
+    return;
+
+  const int view_index = std::distance(traversable_views.begin(), it);
+  DCHECK_GE(view_index, 0);
+
+  if (view != highlighted_view_) {
+    if (!deleted_index_)
+      return;
+
+    // We need to update the |deleted_index_| in case the destroying view
+    // resides before a previously removed highlighted view in the highlight
+    // order.
+    if (view_index < *deleted_index_)
+      deleted_index_ = std::max(0, --(*deleted_index_));
+    return;
+  }
+
+  deleted_index_ = view_index;
   highlighted_view_->SetHighlightVisibility(false);
   highlighted_view_ = nullptr;
 }

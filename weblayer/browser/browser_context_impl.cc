@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/browser_context_impl.h"
 
+#include "base/threading/thread_restrictions.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/embedder_support/pref_names.h"
@@ -11,6 +12,7 @@
 #include "components/permissions/permission_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
+#include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -206,9 +208,18 @@ void BrowserContextImpl::CreateUserPrefService() {
   RegisterPrefs(pref_registry.get());
 
   PrefServiceFactory pref_service_factory;
-  pref_service_factory.set_user_prefs(
-      base::MakeRefCounted<InMemoryPrefStore>());
-  user_pref_service_ = pref_service_factory.Create(pref_registry);
+  if (IsOffTheRecord()) {
+    pref_service_factory.set_user_prefs(
+        base::MakeRefCounted<InMemoryPrefStore>());
+  } else {
+    pref_service_factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
+        path_.Append(FILE_PATH_LITERAL("Preferences"))));
+  }
+  {
+    // Creating the prefs service may require reading the preferences from disk.
+    base::ScopedAllowBlocking allow_io;
+    user_pref_service_ = pref_service_factory.Create(pref_registry);
+  }
   // Note: UserPrefs::Set also ensures that the user_pref_service_ has not
   // been set previously.
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());

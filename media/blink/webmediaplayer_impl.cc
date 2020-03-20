@@ -272,7 +272,7 @@ void CreateAllocation(base::trace_event::ProcessMemoryDump* pmd,
   if (bytes <= 0)
     return;
   auto full_name =
-      base::StringPrintf("media/webmediaplayer/%s/player_%d", name, id);
+      base::StringPrintf("media/webmediaplayer/%s/player_0x%x", name, id);
   auto* dump = pmd->CreateAllocatorDump(full_name);
 
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
@@ -3216,17 +3216,21 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
 
 void WebMediaPlayerImpl::OnMainThreadMemoryDump(
     int32_t id,
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   const PipelineStatistics stats = GetPipelineStatistics();
 
-  bool suspended = pipeline_controller_->IsPipelineSuspended();
-  auto state_node_name =
-      base::StringPrintf("media/webmediaplayer/player_%d", id);
-  auto player_state =
-      base::StringPrintf("Paused: %d Ended: %d ReadyState: %d Suspended: %d",
-                         paused_, ended_, GetReadyState(), suspended);
-  auto* state_node = pmd->CreateAllocatorDump(state_node_name);
-  state_node->AddString("player_state", "", player_state);
+  if (args.level_of_detail !=
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    bool suspended = pipeline_controller_->IsPipelineSuspended();
+    auto state_node_name =
+        base::StringPrintf("media/webmediaplayer/player_0x%x", id);
+    auto player_state =
+        base::StringPrintf("Paused: %d Ended: %d ReadyState: %d Suspended: %d",
+                           paused_, ended_, GetReadyState(), suspended);
+    auto* state_node = pmd->CreateAllocatorDump(state_node_name);
+    state_node->AddString("player_state", "", player_state);
+  }
 
   CreateAllocation(pmd, id, "audio", stats.audio_memory_usage);
   CreateAllocation(pmd, id, "video", stats.video_memory_usage);
@@ -3239,6 +3243,7 @@ void WebMediaPlayerImpl::OnMainThreadMemoryDump(
 void WebMediaPlayerImpl::OnMediaThreadMemoryDump(
     int32_t id,
     Demuxer* demuxer,
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   if (!demuxer)
     return;

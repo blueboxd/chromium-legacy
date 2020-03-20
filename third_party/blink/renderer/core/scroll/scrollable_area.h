@@ -375,9 +375,18 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   }
   virtual bool ShouldScrollOnMainThread() const { return false; }
 
-  // Overlay scrollbars can "fade-out" when inactive.
+  // Overlay scrollbars can "fade-out" when inactive. This value should only be
+  // updated if BlinkControlsOverlayVisibility is true in the
+  // ScrollbarTheme. On Mac, where it is false, this can only be updated from
+  // the ScrollbarAnimatorMac painting code which will do so via
+  // SetScrollbarsHiddenFromExternalAnimator.
   virtual bool ScrollbarsHiddenIfOverlay() const;
-  virtual void SetScrollbarsHiddenIfOverlay(bool);
+  void SetScrollbarsHiddenIfOverlay(bool);
+
+  // This should only be called from Mac's painting code.
+  void SetScrollbarsHiddenFromExternalAnimator(bool);
+
+  void SetScrollbarsHiddenForTesting(bool);
 
   virtual bool UserInputScrollable(ScrollbarOrientation) const = 0;
   virtual bool ShouldPlaceVerticalScrollbarOnLeft() const = 0;
@@ -530,7 +539,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     vertical_scrollbar_needs_paint_invalidation_ = false;
     scroll_corner_needs_paint_invalidation_ = false;
   }
-  void ShowOverlayScrollbars();
+  void ShowNonMacOverlayScrollbars();
 
   // Called when scrollbar hides/shows for overlay scrollbars. This callback
   // shouldn't do any significant work as it can be called unexpectadly often
@@ -545,6 +554,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
                            PopupOverlayScrollbarShouldNotFadeOut);
+
+  void SetScrollbarsHiddenIfOverlayInternal(bool);
 
   void ProgrammaticScrollHelper(const ScrollOffset&,
                                 mojom::blink::ScrollBehavior,

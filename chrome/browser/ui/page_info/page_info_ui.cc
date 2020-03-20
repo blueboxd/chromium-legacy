@@ -488,9 +488,12 @@ SkColor PageInfoUI::GetSecondaryTextColor() {
 
 // static
 base::string16 PageInfoUI::ChosenObjectToUIString(
-    const ChosenObjectInfo& object) {
-  return base::UTF8ToUTF16(
-      object.ui_info.get_object_name(object.chooser_object->value));
+    const ChosenObjectInfo& object,
+    Profile* profile) {
+  permissions::ChooserContextBase* context =
+      object.ui_info.get_context(profile);
+  DCHECK(context);
+  return context->GetObjectDisplayName(object.chooser_object->value);
 }
 
 #if defined(OS_ANDROID)

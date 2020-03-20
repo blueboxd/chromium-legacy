@@ -23,7 +23,14 @@ android_library("splash_java") {
 }
 
 android_resources("splash_resources") {
-  resource_dirs = [ "res_splash" ]
+  sources = [
+    "res_splash/layout/webapp_splash_screen_large.xml",
+    "res_splash/layout/webapp_splash_screen_no_icon.xml",
+    "res_splash/values-sw600dp/common_dimens.xml",
+    "res_splash/values-v17/common_styles.xml",
+    "res_splash/values/common_colors.xml",
+    "res_splash/values/common_dimens.xml",
+  ]
   custom_package = "org.chromium.webapk.lib.common.splash"
 }
 

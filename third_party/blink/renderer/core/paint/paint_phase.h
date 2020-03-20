@@ -93,7 +93,7 @@ enum class PaintPhase {
 
   // The below are auxiliary phases which are used to paint special effects.
   kOverlayOverflowControls,
-  kSelection,
+  kSelectionDragImage,
   kTextClip,
   kMask,
 
@@ -128,7 +128,7 @@ enum GlobalPaintFlag {
   // Used when painting selection as part of a drag-image. This
   // flag disables a lot of the painting code and specifically
   // triggers a PaintPhaseSelection.
-  kGlobalPaintSelectionOnly = 1 << 0,
+  kGlobalPaintSelectionDragImageOnly = 1 << 0,
   // Used when painting a drag-image or printing in order to
   // ignore the hardware layers and paint the whole tree
   // into the topmost layer.

@@ -312,7 +312,7 @@ class CookieStoreManagerTest
     return SetCanonicalCookie(net::CanonicalCookie(
         name, /* value = */ "", domain, path, /* creation = */ base::Time(),
         /* expiration = */ base::Time::Min(), /* last_access = */ base::Time(),
-        /* secure = */ false, /* httponly = */ false,
+        /* secure = */ true, /* httponly = */ false,
         net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT));
   }
 

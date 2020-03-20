@@ -104,9 +104,7 @@ void BreadcrumbManagerBrowserAgent::WillCloseWebStateAt(
 
   int web_state_id =
       BreadcrumbManagerTabHelper::FromWebState(web_state)->GetUniqueId();
-  const char* user_action_string = user_action ? " by user action" : "";
-  LogEvent(base::StringPrintf("Tab%d will close at %d%s", web_state_id, index,
-                              user_action_string));
+  LogEvent(base::StringPrintf("Close Tab%d at %d", web_state_id, index));
 }
 void BreadcrumbManagerBrowserAgent::WebStateActivatedAt(
     WebStateList* web_state_list,

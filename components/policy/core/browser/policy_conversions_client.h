@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_POLICY_CONVERSIONS_CLIENT_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_POLICY_CONVERSIONS_CLIENT_H_
 
+#include <set>
 #include <string>
 
 #include "base/containers/flat_map.h"
@@ -24,6 +25,8 @@ class PolicyService;
 class Schema;
 class SchemaMap;
 class SchemaRegistry;
+
+using DeprecatedPoliciesSet = std::set<std::string>;
 
 // PolicyConversionsClient supplies embedder-specific information that is needed
 // by the PolicyConversions class.  It also provides common utilities and
@@ -109,11 +112,12 @@ class POLICY_EXPORT PolicyConversionsClient {
   // Creates a description of the policy |policy_name| using |policy| and the
   // optional errors in |errors| to determine the status of each policy.
   // |known_policy_schemas| contains |Schema|s for known policies in the same
-  // policy namespace of |map|. A policy without an entry in
-  // |known_policy_schemas| is an unknown policy.
+  // policy namespace of |map|. |deprecated_policies| holds deprecated policies.
+  // A policy without an entry in |known_policy_schemas| is an unknown policy.
   base::Value GetPolicyValue(
       const std::string& policy_name,
       const PolicyMap::Entry& policy,
+      const DeprecatedPoliciesSet& deprecated_policies,
       PolicyErrorMap* errors,
       const base::Optional<PolicyConversions::PolicyToSchemaMap>&
           known_policy_schemas) const;
@@ -121,11 +125,13 @@ class POLICY_EXPORT PolicyConversionsClient {
   // Returns a description of each policy in |map| as Value, using the
   // optional errors in |errors| to determine the status of each policy.
   // |known_policy_schemas| contains |Schema|s for known policies in the same
-  // policy namespace of |map|. A policy in |map| but without an entry
-  // |known_policy_schemas| is an unknown policy.
+  // policy namespace of |map|. |deprecated_policies| holds deprecated policies.
+  // A policy in |map| but without an entry |known_policy_schemas| is an unknown
+  // policy.
   base::Value GetPolicyValues(
       const PolicyMap& map,
       PolicyErrorMap* errors,
+      const DeprecatedPoliciesSet& deprecated_policies,
       const base::Optional<PolicyConversions::PolicyToSchemaMap>&
           known_policy_schemas) const;
 

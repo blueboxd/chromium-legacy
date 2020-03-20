@@ -495,7 +495,7 @@ void NGBoxFragmentPainter::PaintObject(
     }
 
     if (paint_phase == PaintPhase::kFloat ||
-        paint_phase == PaintPhase::kSelection ||
+        paint_phase == PaintPhase::kSelectionDragImage ||
         paint_phase == PaintPhase::kTextClip) {
       if (physical_box_fragment.HasFloatingDescendantsForPaint())
         PaintFloats(paint_info);
@@ -693,7 +693,7 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
     // The selection paint traversal is special. We will visit all fragments
     // (including floats) in the normal paint traversal. There isn't any point
     // performing the special float traversal here.
-    if (paint_info.phase == PaintPhase::kSelection)
+    if (paint_info.phase == PaintPhase::kSelectionDragImage)
       continue;
 
     const auto* child_container =
@@ -1126,7 +1126,8 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   // foreground paint implementation. We don't need complete painting for these
   // phases.
   PaintPhase phase = paint_info.phase;
-  if (phase == PaintPhase::kSelection || phase == PaintPhase::kTextClip)
+  if (phase == PaintPhase::kSelectionDragImage ||
+      phase == PaintPhase::kTextClip)
     return PaintInternal(paint_info);
 
   if (phase != PaintPhase::kForeground)
@@ -1210,7 +1211,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
-      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask &&
       paint_info.phase != PaintPhase::kDescendantOutlinesOnly &&
@@ -1420,7 +1421,7 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
 
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask)
     return;
@@ -1440,7 +1441,7 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
 
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask)
     return;

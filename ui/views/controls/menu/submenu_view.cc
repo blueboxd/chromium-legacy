@@ -395,8 +395,8 @@ void SubmenuView::ShowAt(Widget* parent,
     host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture);
   }
 
-  host_->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart,
-                                                 true);
+  GetScrollViewContainer()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kMenuStart, true);
   NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupStart, true);
 }
 
@@ -407,12 +407,12 @@ void SubmenuView::Reposition(const gfx::Rect& bounds) {
 
 void SubmenuView::Close() {
   if (host_) {
-    // We send the event to the MenuHostRootView first because the View
+    // We send the event to the ScrollViewContainer first because the View
     // accessibility delegate sets up a focus override when receiving the
     // kMenuStart event that we want to be disabled when we send the
     // kMenuPopupEnd event in order to access the previously focused node.
-    host_->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd,
-                                                   true);
+    GetScrollViewContainer()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kMenuEnd, true);
     NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupEnd, true);
 
     host_->DestroyMenuHost();

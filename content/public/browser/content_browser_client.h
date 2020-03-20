@@ -1647,6 +1647,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the HTML content of the error page for Origin Policy related
   // errors.
   virtual base::Optional<std::string> GetOriginPolicyErrorPage(
+      network::OriginPolicyState error_reason,
       content::NavigationHandle* navigation_handle);
 
   // Returns true if it is OK to accept untrusted exchanges, such as expired

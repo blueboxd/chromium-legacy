@@ -7,6 +7,7 @@ include_rules = [
   "+components/base32",
   "+components/browser_ui",
   "+components/captive_portal",
+  "+components/cdm/browser",
   "+components/content_settings/core/common",
   "+components/crash/content/browser",
   "+components/crash/core/common",

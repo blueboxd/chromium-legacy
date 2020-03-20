@@ -141,11 +141,11 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   }
 
   if (local_paint_info.phase != PaintPhase::kForeground &&
-      local_paint_info.phase != PaintPhase::kSelection &&
+      local_paint_info.phase != PaintPhase::kSelectionDragImage &&
       !layout_replaced_.CanHaveChildren())
     return;
 
-  if (local_paint_info.phase == PaintPhase::kSelection &&
+  if (local_paint_info.phase == PaintPhase::kSelectionDragImage &&
       !layout_replaced_.IsSelected())
     return;
 
@@ -200,7 +200,7 @@ bool ReplacedPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
       !ShouldPaintSelfOutline(paint_info.phase) &&
-      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kMask &&
       !ShouldPaintSelfBlockBackground(paint_info.phase))
     return false;

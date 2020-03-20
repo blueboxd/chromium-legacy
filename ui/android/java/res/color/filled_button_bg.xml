@@ -4,9 +4,8 @@
      found in the LICENSE file.
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TODO(crbug.com/1063302): add filled_button_bg_hover, *_focused,
+         *_pressed, once UX spec available. -->
     <item android:color="@color/filled_button_bg_color_disabled" android:state_enabled="false" />
-    <item android:color="@color/filled_button_focused" android:state_focused="true" />
-    <item android:color="@color/filled_button_hover" android:state_hovered="true" />
-    <item android:color="@color/filled_button_pressed" android:state_pressed="true" />
     <item android:color="@color/filled_button_bg_color"/>
 </selector>

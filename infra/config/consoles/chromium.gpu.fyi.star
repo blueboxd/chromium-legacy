@@ -84,6 +84,11 @@ luci.console_view(
             short_name = 'xr',
         ),
         luci.console_view_entry(
+            builder = 'ci/Win10 FYI x64 SkiaRenderer Dawn Release (NVIDIA)',
+            category = 'Windows|10|x64|Nvidia',
+            short_name = 'skd',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Win10 FYI x64 dEQP Release (Intel HD 630)',
             category = 'Windows|10|x64|Intel',
             short_name = 'dqp',

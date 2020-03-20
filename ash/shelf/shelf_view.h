@@ -286,8 +286,11 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Minimum distance before drag starts.
   static const int kMinimumDragDistance;
 
-  // Common setup done for all children views.
-  static void ConfigureChildView(views::View* view);
+  // Common setup done for all children views. |layer_type| specifies the type
+  // of layer for the |view|. Use ui::LAYER_NOT_DRAWN if the content of the view
+  // do not have to be painted (e.g. a container for views that have its own
+  // texture layer).
+  static void ConfigureChildView(views::View* view, ui::LayerType layer_type);
 
   bool dragging() const { return drag_pointer_ != NONE; }
 

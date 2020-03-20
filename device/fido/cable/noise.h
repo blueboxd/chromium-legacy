@@ -22,7 +22,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) Noise {
  public:
   // HandshakeType enumerates the supported handshake patterns.
   enum class HandshakeType {
-    kNNpsk0,  // https://noiseexplorer.com/patterns/NNpsk0/
+    kKNpsk0,  // https://noiseexplorer.com/patterns/KNpsk0/
     kNKpsk0,  // https://noiseexplorer.com/patterns/NKpsk0/
   };
 

@@ -12710,6 +12710,62 @@ TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {
   host_impl_ = nullptr;
 }
 
+TEST_F(LayerTreeHostImplTest, MainThreadFallback) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(layer_tree_impl,
+                                                        VERTICAL, false, true);
+  SetupScrollbarLayer(scroll_layer, scrollbar);
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+
+  // Set up scrollbar arrows.
+  scrollbar->SetBackButtonRect(
+      gfx::Rect(gfx::Point(345, 0), gfx::Size(15, 15)));
+  scrollbar->SetForwardButtonRect(
+      gfx::Rect(gfx::Point(345, 570), gfx::Size(15, 15)));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  // Clicking on the track should produce a scroll on the compositor thread.
+  InputHandlerPointerResult compositor_threaded_scrolling_result =
+      host_impl_->MouseDown(gfx::PointF(350, 500), /*shift_modifier*/ false);
+  host_impl_->MouseUp(gfx::PointF(350, 500));
+  EXPECT_EQ(compositor_threaded_scrolling_result.scroll_offset.y(), 525u);
+  EXPECT_FALSE(GetScrollNode(scroll_layer)->main_thread_scrolling_reasons);
+
+  // If the scroll_node has a main_thread_scrolling_reason, the
+  // InputHandlerPointerResult should return a zero offset. This will cause the
+  // main thread to handle the scroll.
+  GetScrollNode(scroll_layer)->main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
+  compositor_threaded_scrolling_result =
+      host_impl_->MouseDown(gfx::PointF(350, 500), /*shift_modifier*/ false);
+  host_impl_->MouseUp(gfx::PointF(350, 500));
+  EXPECT_EQ(compositor_threaded_scrolling_result.scroll_offset.y(), 0u);
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
 TEST_F(LayerTreeHostImplTest, SecondScrollAnimatedBeginNotIgnored) {
   const gfx::Size content_size(1000, 1000);
   const gfx::Size viewport_size(50, 100);

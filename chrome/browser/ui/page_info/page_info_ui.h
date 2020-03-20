@@ -196,7 +196,8 @@ class PageInfoUI {
   static SkColor GetSecondaryTextColor();
 
   // Returns the UI string describing the given object |info|.
-  static base::string16 ChosenObjectToUIString(const ChosenObjectInfo& info);
+  static base::string16 ChosenObjectToUIString(const ChosenObjectInfo& info,
+                                               Profile* profile);
 
 #if defined(OS_ANDROID)
   // Returns the identity icon ID for the given identity |status|.

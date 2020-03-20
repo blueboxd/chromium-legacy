@@ -163,7 +163,8 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
 }
 
 NativeTheme* NativeTheme::GetInstanceForDarkUI() {
-  return NativeThemeMac::dark_instance();
+  static base::NoDestructor<NativeThemeMac> s_native_theme(false, true);
+  return s_native_theme.get();
 }
 
 // static
@@ -177,12 +178,6 @@ bool NativeTheme::SystemDarkModeSupported() {
 // static
 NativeThemeMac* NativeThemeMac::instance() {
   static base::NoDestructor<NativeThemeMac> s_native_theme(true, false);
-  return s_native_theme.get();
-}
-
-// static
-NativeThemeMac* NativeThemeMac::dark_instance() {
-  static base::NoDestructor<NativeThemeMac> s_native_theme(false, true);
   return s_native_theme.get();
 }
 

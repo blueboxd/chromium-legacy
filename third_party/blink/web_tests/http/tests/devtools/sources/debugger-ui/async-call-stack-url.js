@@ -26,7 +26,7 @@
 
   function step4() {
     TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, '_updateButton', step5);
-    scriptFormatter._toggleFormatScriptSource();
+    scriptFormatter.toggleFormatScriptSource();
   }
 
   function step5() {

@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.image_editor;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 
 /**
  * Interface to interact with the image editor dialog.
  */
 public interface ImageEditorDialogCoordinator {
-    public void launchEditor(Activity activity);
+    public void launchEditor(Activity activity, Bitmap image);
 }

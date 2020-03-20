@@ -149,7 +149,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   bool have_selection = !is_printing &&
                         paint_info.phase != PaintPhase::kTextClip &&
                         inline_text_box_.IsSelected();
-  if (!have_selection && paint_info.phase == PaintPhase::kSelection) {
+  if (!have_selection && paint_info.phase == PaintPhase::kSelectionDragImage) {
     // When only painting the selection, don't bother to paint if there is none.
     return;
   }
@@ -264,7 +264,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       inline_text_box_.GetLineLayoutItem().GetDocument(), style_to_use,
       inline_text_box_.GetLineLayoutItem().GetNode(), have_selection,
       paint_info, text_style);
-  bool paint_selected_text_only = (paint_info.phase == PaintPhase::kSelection);
+  bool paint_selected_text_only =
+      (paint_info.phase == PaintPhase::kSelectionDragImage);
   bool paint_selected_text_separately =
       !paint_selected_text_only && text_style != selection_style;
 
@@ -280,7 +281,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
 
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
   // include selection and composition highlights.
-  if (paint_info.phase != PaintPhase::kSelection &&
+  if (paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
     PaintDocumentMarkers(markers_to_paint, paint_info, box_origin, style_to_use,
                          font, DocumentMarkerPaintPhase::kBackground);

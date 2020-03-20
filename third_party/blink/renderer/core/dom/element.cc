@@ -2929,11 +2929,6 @@ void Element::DetachLayoutTree(bool performing_reattach) {
 
     if (ElementAnimations* element_animations = data->GetElementAnimations()) {
       if (performing_reattach) {
-        // FIXME: We call detach from within style recalc, so compositingState
-        // is not up to date.
-        // https://code.google.com/p/chromium/issues/detail?id=339847
-        DisableCompositingQueryAsserts disabler;
-
         // FIXME: restart compositor animations rather than pull back to the
         // main thread
         element_animations->RestartAnimationOnCompositor();

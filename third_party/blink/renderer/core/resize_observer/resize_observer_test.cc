@@ -241,12 +241,12 @@ TEST_F(ResizeObserverUnitTest, TestNonBoxTarget) {
 
   EXPECT_EQ(entry->contentRect()->width(), 0);
   EXPECT_EQ(entry->contentRect()->height(), 0);
-  EXPECT_EQ(entry->contentBoxSize()->inlineSize(), 0);
-  EXPECT_EQ(entry->contentBoxSize()->blockSize(), 0);
-  EXPECT_EQ(entry->borderBoxSize()->inlineSize(), 0);
-  EXPECT_EQ(entry->borderBoxSize()->blockSize(), 0);
-  EXPECT_EQ(entry->devicePixelContentBoxSize()->inlineSize(), 0);
-  EXPECT_EQ(entry->devicePixelContentBoxSize()->blockSize(), 0);
+  EXPECT_EQ(entry->contentBoxSize().at(0)->inlineSize(), 0);
+  EXPECT_EQ(entry->contentBoxSize().at(0)->blockSize(), 0);
+  EXPECT_EQ(entry->borderBoxSize().at(0)->inlineSize(), 0);
+  EXPECT_EQ(entry->borderBoxSize().at(0)->blockSize(), 0);
+  EXPECT_EQ(entry->devicePixelContentBoxSize().at(0)->inlineSize(), 0);
+  EXPECT_EQ(entry->devicePixelContentBoxSize().at(0)->blockSize(), 0);
 }
 
 TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {

@@ -76,7 +76,7 @@
           TestRunner.addSniffer(
               Sources.ScriptFormatterEditorAction.prototype, '_updateButton',
               uiSourceCodeScriptFormatted);
-          scriptFormatter._toggleFormatScriptSource();
+          scriptFormatter.toggleFormatScriptSource();
         });
       }
 

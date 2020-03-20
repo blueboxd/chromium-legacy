@@ -178,11 +178,13 @@ NativeTheme::SystemThemeColor SysColorToSystemThemeColor(int system_color) {
 }
 
 NativeTheme* NativeTheme::GetInstanceForNativeUi() {
-  return NativeThemeWin::instance();
+  static base::NoDestructor<NativeThemeWin> s_native_theme(true, false);
+  return s_native_theme.get();
 }
 
 NativeTheme* NativeTheme::GetInstanceForDarkUI() {
-  return NativeThemeWin::dark_instance();
+  static base::NoDestructor<NativeThemeWin> s_dark_native_theme(false, true);
+  return s_dark_native_theme.get();
 }
 
 // static
@@ -194,19 +196,8 @@ bool NativeTheme::SystemDarkModeSupported() {
 
 // static
 void NativeThemeWin::CloseHandles() {
-  instance()->CloseHandlesInternal();
-}
-
-// static
-NativeThemeWin* NativeThemeWin::instance() {
-  static base::NoDestructor<NativeThemeWin> s_native_theme(true, false);
-  return s_native_theme.get();
-}
-
-// static
-NativeThemeWin* NativeThemeWin::dark_instance() {
-  static base::NoDestructor<NativeThemeWin> s_dark_native_theme(false, true);
-  return s_dark_native_theme.get();
+  static_cast<NativeThemeWin*>(NativeTheme::GetInstanceForNativeUi())
+      ->CloseHandlesInternal();
 }
 
 gfx::Size NativeThemeWin::GetPartSize(Part part,

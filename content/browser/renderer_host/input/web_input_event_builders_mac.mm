@@ -35,8 +35,13 @@
 
 #include <stdint.h>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -115,6 +120,64 @@ int ModifiersFromEvent(NSEvent* event) {
     modifiers |= blink::WebInputEvent::kForwardButtonDown;
 
   return modifiers;
+}
+
+// TODO(bokan) Temporary to debug crbug.com/1039833. Add some data about the
+// key event to a crash key and then dump without crashing.
+void ReportDebugDataForKeyPress(NSEvent* event, base::TimeDelta diff) {
+  using base::ByteSwap;
+
+  // Determine keyboard layout and type
+  int keyboard_type = LMGetKbdType();
+  auto layout_type = KBGetLayoutType(keyboard_type);
+  std::string layout_type_str;
+  if (layout_type == kKeyboardJIS)
+    layout_type_str = "JIS";
+  else if (layout_type == kKeyboardANSI)
+    layout_type_str = "ANS";
+  else if (layout_type == kKeyboardISO)
+    layout_type_str = "ISO";
+  else
+    layout_type_str = "???";
+
+  // Get Key and Dom Codes, formatted as hex. The bytes need to be swapped
+  // since HexEncode assumes they go from least to most significant.
+  ui::DomCode dom_code = ui::DomCodeFromNSEvent(event);
+  uint16_t key_code = ByteSwap([event keyCode]);
+  uint32_t dom_code_swapped = ByteSwap(static_cast<uint32_t>(dom_code));
+  std::string key_code_str = base::HexEncode(&key_code, sizeof(key_code));
+  std::string dom_code_str =
+      base::HexEncode(&dom_code_swapped, sizeof(dom_code_swapped));
+
+  // Modifiers
+  uint32_t modifiers = ByteSwap(
+      static_cast<uint32_t>(ModifiersFromEvent(event) |
+                            ui::DomCodeToWebInputEventModifiers(dom_code)));
+  bool is_repeat = ([event type] != NSFlagsChanged) && [event isARepeat];
+  unsigned int event_type = [event type];
+  std::string modifiers_str = base::HexEncode(&modifiers, sizeof(modifiers));
+
+  // Number of seconds difference between the OS timestamp and browser
+  // timestamp.
+  int seconds = base::saturated_cast<int>(diff.InSeconds());
+  std::string seconds_str = base::NumberToString(seconds);
+
+  // Build a single string from all the above info
+  std::string msg = base::StringPrintf(
+      "T%d;R%d;%d;%s;%s;%s:%s:%s", event_type, static_cast<int>(is_repeat),
+      keyboard_type, layout_type_str.c_str(), key_code_str.c_str(),
+      dom_code_str.c_str(), modifiers_str.c_str(), seconds_str.c_str());
+
+  // This should never happen but if the string is too long (buffer is 64
+  // bytes and needs one for null-terminating) truncate and add a character
+  // so we know it was cut short.
+  if (msg.length() > 63)
+    msg = msg.substr(0, 62) + "^";
+
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "mac-bad-key-timestamp", base::debug::CrashKeySize::Size64);
+  base::debug::ScopedCrashKeyString key_event_key(crash_key, msg);
+  base::debug::DumpWithoutCrashing();
 }
 
 void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
@@ -234,18 +297,40 @@ blink::WebMouseEvent::Button ButtonFromButtonNumber(NSEvent* event) {
 }  // namespace
 
 blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event) {
+  // TODO(bokan) Temporary to debug crbug.com/1039833.
+  // It's assumed that some clients may fall into a bad state and produce these
+  // bad timestamps on lots of subsequent events. To prevent sending an
+  // overwhelming amount of crash reports from ReportDebugDataForKeyPress
+  // below, each time we send one we'll wait for 1000 key presses before
+  // sending another.
+  static int dump_without_crashing_throttle = 0;
+
   ui::ComputeEventLatencyOS(event);
   base::TimeTicks now = ui::EventTimeForNow();
   base::TimeTicks hardware_timestamp =
       ui::EventTimeStampFromSeconds([event timestamp]);
   if (ui::EventTypeFromNative(event) == ui::ET_KEY_PRESSED) {
+    base::TimeDelta diff = now - hardware_timestamp;
     UMA_HISTOGRAM_CUSTOM_TIMES(
         now > hardware_timestamp
             ? "Event.Latency.OS_NO_VALIDATION.POSITIVE.KEY_PRESSED"
             : "Event.Latency.OS_NO_VALIDATION.NEGATIVE.KEY_PRESSED",
-        (now - hardware_timestamp).magnitude(),
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-        50);
+        diff.magnitude(), base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromSeconds(60), 50);
+
+    if (dump_without_crashing_throttle > 0)
+      --dump_without_crashing_throttle;
+
+    // TODO(bokan) Temporary to debug crbug.com/1039833. We've seen in UMA that
+    // we often receive key press events with the OS timestamp differing from
+    // the current timestamp by many seconds. Try to capture a few crash
+    // reports from the wild to see if we can find some pattern. We also add
+    // some crash keys to get some additional information.
+    if (diff.magnitude() > base::TimeDelta::FromSeconds(5) &&
+        !dump_without_crashing_throttle) {
+      ReportDebugDataForKeyPress(event, diff);
+      dump_without_crashing_throttle = 1000;
+    }
   }
   ui::DomCode dom_code = ui::DomCodeFromNSEvent(event);
   int modifiers =

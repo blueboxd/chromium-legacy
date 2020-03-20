@@ -47,7 +47,7 @@ Once you've done that, you'll be able to check out branches:
 ```
 
 To determine the appropriate branch number, you can either use
-[chromiumdash][#chromiumdash] or check [milestone.json][milestone-json] directly.
+[chromiumdash](#chromiumdash) or check [milestone.json][milestone-json] directly.
 
 ### Flaky tests
 

@@ -8,7 +8,7 @@ import("//chrome/android/modules/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 
 android_resources("java_resources") {
-  resource_dirs = [ "java/res" ]
+  sources = [ "java/res/raw/dummy_resource" ]
   custom_package = "org.chromium.chrome.features.test_dummy"
 }
 

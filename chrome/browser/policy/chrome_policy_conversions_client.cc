@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 
+#include <set>
 #include <string>
 #include <utility>
 
@@ -157,11 +158,12 @@ Value ChromePolicyConversionsClient::GetExtensionPolicies(
     PolicyNamespace policy_namespace =
         PolicyNamespace(policy_domain, extension->id());
     PolicyErrorMap empty_error_map;
-    Value extension_policies = GetPolicyValues(
-        extension_profile->GetProfilePolicyConnector()
-            ->policy_service()
-            ->GetPolicies(policy_namespace),
-        &empty_error_map, GetKnownPolicies(schema_map, policy_namespace));
+    Value extension_policies =
+        GetPolicyValues(extension_profile->GetProfilePolicyConnector()
+                            ->policy_service()
+                            ->GetPolicies(policy_namespace),
+                        &empty_error_map, DeprecatedPoliciesSet(),
+                        GetKnownPolicies(schema_map, policy_namespace));
     Value extension_policies_data(Value::Type::DICTIONARY);
     extension_policies_data.SetKey("name", Value(extension->name()));
     extension_policies_data.SetKey("id", Value(extension->id()));
@@ -231,13 +233,16 @@ Value ChromePolicyConversionsClient::GetDeviceLocalAccountPolicies() {
     const ConfigurationPolicyHandlerList* handler_list =
         connector->GetHandlerList();
     PolicyErrorMap errors;
-    handler_list->ApplyPolicySettings(map, nullptr, &errors);
+    DeprecatedPoliciesSet deprecated_policies;
+    handler_list->ApplyPolicySettings(map, nullptr, &errors,
+                                      &deprecated_policies);
 
     // Convert dictionary values to strings for display.
     handler_list->PrepareForDisplaying(&map);
 
-    Value current_account_policies = GetPolicyValues(
-        map, &errors, GetKnownPolicies(schema_map, policy_namespace));
+    Value current_account_policies =
+        GetPolicyValues(map, &errors, deprecated_policies,
+                        GetKnownPolicies(schema_map, policy_namespace));
     Value current_account_policies_data(Value::Type::DICTIONARY);
     current_account_policies_data.SetKey("id", Value(user_id));
     current_account_policies_data.SetKey("user_id", Value(user_id));

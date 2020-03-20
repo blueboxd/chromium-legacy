@@ -15,6 +15,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace em = enterprise_management;
 
@@ -78,8 +80,16 @@ void UpdatePolicyInfo(em::Policy* policy_info,
   base::JSONWriter::Write(*policy.FindKey("value"),
                           policy_info->mutable_value());
   const std::string* error = policy.FindStringKey("error");
-  if (error)
+  std::string deprecated_error;
+  if (policy.FindBoolKey("deprecated"))
+    deprecated_error = l10n_util::GetStringUTF8(IDS_POLICY_DEPRECATED);
+
+  if (error && !deprecated_error.empty())
+    policy_info->set_error(base::JoinString({*error, deprecated_error}, "\n"));
+  else if (error)
     policy_info->set_error(*error);
+  else if (!deprecated_error.empty())
+    policy_info->set_error(deprecated_error);
 }
 
 }  // namespace

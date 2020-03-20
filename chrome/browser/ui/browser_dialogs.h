@@ -317,6 +317,7 @@ void ShowExtensionInstallBlockedDialog(
 base::OnceClosure ShowDeviceChooserDialog(
     content::RenderFrameHost* owner,
     std::unique_ptr<ChooserController> controller);
+bool IsDeviceChooserShowingForTesting(Browser* browser);
 
 }  // namespace chrome
 

@@ -36,15 +36,19 @@ class StubInputController : public InputController {
     NOTIMPLEMENTED_LOG_ONCE();
   }
   void SetTouchpadSensitivity(int value) override {}
+  void SetTouchpadScrollSensitivity(int value) override {}
   void SetTapToClick(bool enabled) override {}
   void SetThreeFingerClick(bool enabled) override {}
   void SetTapDragging(bool enabled) override {}
   void SetNaturalScroll(bool enabled) override {}
   void SetMouseSensitivity(int value) override {}
+  void SetMouseScrollSensitivity(int value) override {}
   void SetPrimaryButtonRight(bool right) override {}
   void SetMouseReverseScroll(bool enabled) override {}
   void SetMouseAcceleration(bool enabled) override {}
+  void SetMouseScrollAcceleration(bool enabled) override {}
   void SetTouchpadAcceleration(bool enabled) override {}
+  void SetTouchpadScrollAcceleration(bool enabled) override {}
   void SetTapToClickPaused(bool state) override {}
   void GetTouchDeviceStatus(GetTouchDeviceStatusReply reply) override {
     std::move(reply).Run(std::string());

@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_DNR_MANIFEST_DATA_H_
 #define EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_DNR_MANIFEST_DATA_H_
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
@@ -26,7 +28,7 @@ struct DNRManifestData : Extension::ManifestData {
     int id = kInvalidRulesetID;
   };
 
-  explicit DNRManifestData(RulesetInfo ruleset);
+  explicit DNRManifestData(std::vector<RulesetInfo> ruleset);
   ~DNRManifestData() override;
 
   // Returns true if the extension specified the kDeclarativeNetRequestKey
@@ -37,7 +39,7 @@ struct DNRManifestData : Extension::ManifestData {
   // HasRuleset returns true for the |extension|.
   static const RulesetInfo& GetRuleset(const Extension& extension);
 
-  RulesetInfo ruleset;
+  std::vector<RulesetInfo> rulesets;
 
   DISALLOW_COPY_AND_ASSIGN(DNRManifestData);
 };

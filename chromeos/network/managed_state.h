@@ -44,10 +44,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedState {
   static std::unique_ptr<ManagedState> Create(ManagedType type,
                                               const std::string& path);
 
-  // Returns the specific class pointer if this is the correct type, or
-  // NULL if it is not.
+  // Returns the specific class pointer if this is the correct type, or null if
+  // it is not.
   NetworkState* AsNetworkState();
+  const NetworkState* AsNetworkState() const;
   DeviceState* AsDeviceState();
+  const DeviceState* AsDeviceState() const;
 
   // Called by NetworkStateHandler when a property was received. The return
   // value indicates if the state changed and is used to reduce the number of

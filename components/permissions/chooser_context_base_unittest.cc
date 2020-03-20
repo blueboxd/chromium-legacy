@@ -33,6 +33,10 @@ class TestChooserContext : public ChooserContextBase {
     return object.DictSize() == 2 && object.FindKey(kRequiredKey1) &&
            object.FindKey(kRequiredKey2);
   }
+
+  base::string16 GetObjectDisplayName(const base::Value& object) override {
+    return {};
+  }
 };
 
 }  // namespace

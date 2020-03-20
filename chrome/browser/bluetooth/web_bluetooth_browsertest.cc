@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -485,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, NavigateWithChooserCrossOrigin) {
       "document.location.href = \"https://google.com\";"));
 
   observer.Wait();
-  EXPECT_EQ(0u, browser()->GetBubbleManager()->GetBubbleCountForTesting());
+  EXPECT_FALSE(chrome::IsDeviceChooserShowingForTesting(browser()));
   EXPECT_EQ(GURL("https://google.com"), web_contents_->GetLastCommittedURL());
 }
 

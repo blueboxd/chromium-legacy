@@ -99,7 +99,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   ScrollbarPart HoveredPart() const { return hovered_part_; }
 
   virtual void StyleChanged() {}
-  void SetScrollbarsHiddenIfOverlay(bool);
+  void SetScrollbarsHiddenFromExternalAnimator(bool);
   bool Enabled() const { return enabled_; }
   virtual void SetEnabled(bool);
 

@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -50,12 +51,6 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
 // patterns/incognito status pair.
 using ChooserExceptionDetails =
     std::map<std::pair<GURL, std::string>, std::set<std::pair<GURL, bool>>>;
-
-// Maps from a chooser exception name/object pair to a ChooserExceptionDetails.
-// This will group and sort the exceptions by the UI string and object for
-// display.
-using AllChooserObjects =
-    std::map<std::pair<std::string, base::Value>, ChooserExceptionDetails>;
 
 constexpr char kChooserType[] = "chooserType";
 constexpr char kDisplayName[] = "displayName";
@@ -162,7 +157,6 @@ std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
 // by functions below.
 struct ChooserTypeNameEntry {
   permissions::ChooserContextBase* (*get_context)(Profile*);
-  std::string (*get_object_name)(const base::Value&);
   const char* name;
 };
 
@@ -182,7 +176,7 @@ const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name);
 // The structure of the SiteException objects is the same as the objects
 // returned by GetExceptionForPage().
 base::Value CreateChooserExceptionObject(
-    const std::string& display_name,
+    const base::string16& display_name,
     const base::Value& object,
     const std::string& chooser_type,
     const ChooserExceptionDetails& chooser_exception_details);

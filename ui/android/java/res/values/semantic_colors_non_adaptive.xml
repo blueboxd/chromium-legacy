@@ -87,9 +87,6 @@
     <color name="filled_button_bg_color_light">@color/modern_blue_300</color>
     <color name="filled_button_bg_color_disabled_dark">@color/modern_grey_800_alpha_38</color>
     <color name="filled_button_bg_color_disabled_light">@color/white_alpha_38</color>
-    <color name="filled_button_hover">@color/white_alpha_8</color>
-    <color name="filled_button_focused">@color/white_alpha_24</color>
-    <color name="filled_button_pressed">@color/white_alpha_32</color>
 
     <!--  Dropdown divier  -->
     <color name="dropdown_divider_color">@color/modern_grey_300</color>

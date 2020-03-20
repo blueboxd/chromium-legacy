@@ -143,6 +143,11 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
 const base::Feature kAllowDisableMouseAcceleration{
     "AllowDisableMouseAcceleration", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Shows settings for adjusting scroll acceleration/sensitivity for
+// mouse/touchpad.
+const base::Feature kAllowScrollSettings{"AllowScrollSettings",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 

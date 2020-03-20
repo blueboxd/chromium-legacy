@@ -99,10 +99,10 @@ void ObjectPainter::AddURLRectIfNeeded(const PaintInfo& paint_info,
 }
 
 void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info) {
-  // Pass kSelection and kTextClip to the descendants so that
+  // Pass kSelectionDragImage and kTextClip to the descendants so that
   // they will paint for selection and text clip respectively. We don't need
   // complete painting for these phases.
-  if (paint_info.phase == PaintPhase::kSelection ||
+  if (paint_info.phase == PaintPhase::kSelectionDragImage ||
       paint_info.phase == PaintPhase::kTextClip) {
     layout_object_.Paint(paint_info);
     return;

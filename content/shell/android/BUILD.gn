@@ -60,7 +60,17 @@ shared_library("libcontent_native_test") {
 
 android_resources("content_shell_java_resources") {
   testonly = true
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable/ic_refresh.png",
+    "java/res/drawable/progress.xml",
+    "java/res/layout/shell_view.xml",
+    "java/res/mipmap-hdpi/app_icon.png",
+    "java/res/mipmap-mdpi/app_icon.png",
+    "java/res/mipmap-xhdpi/app_icon.png",
+    "java/res/mipmap-xxhdpi/app_icon.png",
+    "java/res/mipmap-xxxhdpi/app_icon.png",
+    "java/res/values/strings.xml",
+  ]
   custom_package = "org.chromium.content_shell"
 }
 
@@ -110,7 +120,10 @@ jinja_template("content_shell_test_manifest") {
 
 android_resources("content_shell_apk_resources") {
   testonly = true
-  resource_dirs = [ "shell_apk/res" ]
+  sources = [
+    "shell_apk/res/layout/content_shell_activity.xml",
+    "shell_apk/res/values/strings.xml",
+  ]
   deps = [ ":content_shell_java_resources" ]
   custom_package = "org.chromium.content_shell_apk"
 }

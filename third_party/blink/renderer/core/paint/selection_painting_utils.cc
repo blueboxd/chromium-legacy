@@ -73,7 +73,7 @@ Color SelectionColor(const Document& document,
   // If the element is unselectable, or we are only painting the selection,
   // don't override the foreground color with the selection foreground color.
   if ((node && !NodeIsSelectable(style, node)) ||
-      (global_paint_flags & kGlobalPaintSelectionOnly))
+      (global_paint_flags & kGlobalPaintSelectionDragImageOnly))
     return style.VisitedDependentColor(color_property);
 
   if (scoped_refptr<ComputedStyle> pseudo_style =

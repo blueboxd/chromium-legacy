@@ -224,6 +224,8 @@ class DrmThreadProxy;
 class GpuState;
 }
 namespace weblayer {
+class BrowserContextImpl;
+class ProfileImpl;
 class WebLayerPathProvider;
 }
 namespace net {
@@ -274,10 +276,6 @@ class VrShell;
 namespace web {
 class WebMainLoop;
 class WebSubThread;
-}
-
-namespace weblayer {
-class ProfileImpl;
 }
 
 namespace webrtc {
@@ -361,9 +359,11 @@ class BASE_EXPORT ScopedAllowBlocking {
   // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
   // in unit tests to avoid the friend requirement.
   friend class AdjustOOMScoreHelper;
+  friend class StackSamplingProfiler;
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class chromeos::MojoUtils;  // http://crbug.com/1055467
   friend class content::BrowserProcessSubThread;
+  friend class content::RenderProcessHostImpl;
   friend class content::RenderWidgetHostViewMac;  // http://crbug.com/121917
   friend class content::WebContentsViewMac;
   friend class cronet::CronetPrefsManager;
@@ -374,9 +374,8 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class printing::PrintJobWorker;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class web::WebSubThread;
-  friend class StackSamplingProfiler;
+  friend class weblayer::BrowserContextImpl;
   friend class weblayer::ProfileImpl;
-  friend class content::RenderProcessHostImpl;
   friend class weblayer::WebLayerPathProvider;
 
   friend bool PathProviderWin(int, FilePath*);

@@ -17,7 +17,7 @@ namespace blink {
 
 void SVGForeignObjectPainter::PaintLayer(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection)
+      paint_info.phase != PaintPhase::kSelectionDragImage)
     return;
 
   // Early out in the case of trying to paint an image filter before

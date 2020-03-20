@@ -40,7 +40,7 @@ android_library("test_support_java") {
 
 android_resources("java_resources") {
   custom_package = "org.chromium.chrome.browser.ui.appmenu"
-  resource_dirs = [ "java/res" ]
+  sources = [ "java/res/values/styles.xml" ]
   deps = [
     "//components/browser_ui/styles/android:java_resources",
     "//third_party/android_deps:com_google_android_material_material_java",

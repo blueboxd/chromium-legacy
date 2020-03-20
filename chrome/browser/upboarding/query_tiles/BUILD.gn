@@ -92,7 +92,7 @@ if (is_android) {
   }
 
   android_resources("chrome_upboarding_query_tiles_java_resources") {
-    resource_dirs = [ "android/java/res" ]
+    sources = [ "android/java/res/layout/query_tile_view.xml" ]
     custom_package = "org.chromium.chrome.query_tiles"
   }
 

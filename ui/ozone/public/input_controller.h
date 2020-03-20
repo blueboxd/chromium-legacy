@@ -59,17 +59,21 @@ class COMPONENT_EXPORT(OZONE_BASE) InputController {
 
   // Touchpad settings.
   virtual void SetTouchpadSensitivity(int value) = 0;
+  virtual void SetTouchpadScrollSensitivity(int value) = 0;
   virtual void SetTapToClick(bool enabled) = 0;
   virtual void SetThreeFingerClick(bool enabled) = 0;
   virtual void SetTapDragging(bool enabled) = 0;
   virtual void SetNaturalScroll(bool enabled) = 0;
   virtual void SetTouchpadAcceleration(bool enabled) = 0;
+  virtual void SetTouchpadScrollAcceleration(bool enabled) = 0;
 
   // Mouse settings.
   virtual void SetMouseSensitivity(int value) = 0;
+  virtual void SetMouseScrollSensitivity(int value) = 0;
   virtual void SetPrimaryButtonRight(bool right) = 0;
   virtual void SetMouseReverseScroll(bool enabled) = 0;
   virtual void SetMouseAcceleration(bool enabled) = 0;
+  virtual void SetMouseScrollAcceleration(bool enabled) = 0;
 
   // Touch log collection.
   virtual void GetTouchDeviceStatus(GetTouchDeviceStatusReply reply) = 0;

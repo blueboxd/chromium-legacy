@@ -356,7 +356,13 @@ class CertVerifyProcInternalTest
   // Returns true if the RSA/DSA keysize will be considered invalid on the
   // current platform.
   bool IsInvalidRsaDsaKeySize(int size) const {
-#if defined(OS_MACOSX) and !defined(OS_IOS)
+#if defined(OS_IOS)
+    if (base::ios::IsRunningOnIOS12OrLater()) {
+      // On iOS using SecTrustEvaluateWithError it is not possible to
+      // distinguish between weak and invalid key sizes.
+      return IsWeakRsaDsaKeySize(size);
+    }
+#elif defined(OS_MACOSX)
     // Starting with Mac OS 10.12, certs with keys < 1024 are invalid.
     if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
         base::mac::IsAtLeastOS10_12()) {
@@ -1564,6 +1570,8 @@ TEST_P(CertVerifyProcInternalTest, PublicKeyHashes) {
 // A regression test for http://crbug.com/70293.
 // The certificate in question has a key purpose of clientAuth, and also lacks
 // the required key usage for serverAuth.
+// TODO(mattm): This cert fails for many reasons, replace with a generated one
+// that tests only the desired case.
 TEST_P(CertVerifyProcInternalTest, WrongKeyPurpose) {
   base::FilePath certs_dir = GetTestCertsDirectory();
 
@@ -1578,6 +1586,18 @@ TEST_P(CertVerifyProcInternalTest, WrongKeyPurpose) {
              CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
 
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_COMMON_NAME_INVALID);
+
+#if defined(OS_IOS)
+  if (verify_proc_type() == CERT_VERIFY_PROC_IOS) {
+    if (base::ios::IsRunningOnIOS13OrLater() ||
+        !base::ios::IsRunningOnIOS12OrLater()) {
+      EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
+    } else {
+      EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+    }
+    return;
+  }
+#endif
 
   // TODO(crbug.com/649017): Don't special-case builtin verifier.
   if (verify_proc_type() != CERT_VERIFY_PROC_BUILTIN)

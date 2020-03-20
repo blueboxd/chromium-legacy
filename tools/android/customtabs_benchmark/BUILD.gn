@@ -5,7 +5,11 @@
 import("//build/config/android/rules.gni")
 
 android_resources("customtabs_benchmark_apk_resources") {
-  resource_dirs = [ "res/" ]
+  sources = [
+    "res/layout/activity_web_view.xml",
+    "res/layout/main.xml",
+    "res/values/strings.xml",
+  ]
   custom_package = "org.chromium.customtabs.test"
 }
 

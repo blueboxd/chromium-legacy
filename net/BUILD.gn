@@ -4459,10 +4459,6 @@ test("net_unittests") {
     ]
   }
 
-  if (is_ios) {
-    sources += [ "cert/cert_verify_proc_ios_unittest.cc" ]
-  }
-
   if (is_linux) {
     sources += [
       "base/address_tracker_linux_unittest.cc",

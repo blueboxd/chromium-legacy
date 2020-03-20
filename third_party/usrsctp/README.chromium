@@ -1,8 +1,8 @@
 Name: usrsctp
 URL: http://github.com/sctplab/usrsctp
 Version: 0
-Date: Jun 22, 2018
-Revision: 7a8bc9a90ca96634aa56ee712856d97f27d903f8
+Date: Feb 2, 2020
+Revision: bee946a606752a443bd70bca1cb296527fed706d
 License: New BSD
 License File: LICENSE
 Security Critical: yes

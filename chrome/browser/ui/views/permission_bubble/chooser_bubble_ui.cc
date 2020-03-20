@@ -8,18 +8,17 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/browser/ui/views/title_origin_label.h"
-#include "components/bubble/bubble_controller.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 
 using bubble_anchor_util::AnchorConfiguration;
 
@@ -63,11 +62,12 @@ class ChooserBubbleUiViewDelegate : public LocationBarBubbleDelegateView,
   // displayed in the correct location.
   void UpdateAnchor(Browser* browser);
 
-  void set_bubble_reference(BubbleReference bubble_reference);
   void UpdateTableView() const;
 
   base::OnceClosure MakeCloseClosure();
   void Close();
+
+  static int g_num_instances_for_testing_;
 
  private:
   DeviceChooserContentView* device_chooser_content_view_ = nullptr;
@@ -77,6 +77,8 @@ class ChooserBubbleUiViewDelegate : public LocationBarBubbleDelegateView,
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUiViewDelegate);
 };
 
+int ChooserBubbleUiViewDelegate::g_num_instances_for_testing_ = 0;
+
 ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     Browser* browser,
     content::WebContents* contents,
@@ -84,6 +86,7 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     : LocationBarBubbleDelegateView(
           GetChooserAnchorConfiguration(browser).anchor_view,
           contents) {
+  g_num_instances_for_testing_++;
   // ------------------------------------
   // | Chooser bubble title             |
   // | -------------------------------- |
@@ -124,7 +127,9 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
 
-ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
+ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {
+  g_num_instances_for_testing_--;
+}
 
 void ChooserBubbleUiViewDelegate::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(CreateTitleOriginLabel(GetWindowTitle()));
@@ -199,6 +204,10 @@ base::OnceClosure ShowDeviceChooserDialog(
     widget->ShowInactive();
 
   return close_closure;
+}
+
+bool IsDeviceChooserShowingForTesting(Browser* browser) {
+  return ChooserBubbleUiViewDelegate::g_num_instances_for_testing_ > 0;
 }
 
 }  // namespace chrome

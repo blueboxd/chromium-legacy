@@ -33,10 +33,6 @@ class HidChooserContext : public permissions::ChooserContextBase {
   explicit HidChooserContext(Profile* profile);
   ~HidChooserContext() override;
 
-  // Given a chooser item |object|, returns a human-readable string
-  // representing the object.
-  static std::string GetObjectName(const base::Value& object);
-
   // ChooserContextBase:
   bool IsValidObject(const base::Value& object) override;
   // In addition these methods from ChooserContextBase are overridden in order
@@ -48,6 +44,7 @@ class HidChooserContext : public permissions::ChooserContextBase {
   void RevokeObjectPermission(const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin,
                               const base::Value& object) override;
+  base::string16 GetObjectDisplayName(const base::Value& object) override;
 
   // HID-specific interface for granting and checking permissions.
   void GrantDevicePermission(const url::Origin& requesting_origin,

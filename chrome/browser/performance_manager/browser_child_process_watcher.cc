@@ -100,9 +100,13 @@ void BrowserChildProcessWatcher::GPUProcessExited(int id, int exit_code) {
     auto* process_node = gpu_process_nodes_[id].get();
 
     DCHECK(PerformanceManagerImpl::IsAvailable());
-    PerformanceManagerImpl::GetTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcessExitStatus,
-                                  base::Unretained(process_node), exit_code));
+    PerformanceManagerImpl::CallOnGraphImpl(
+        FROM_HERE, base::BindOnce(
+                       [](ProcessNodeImpl* process_node, int32_t exit_code,
+                          GraphImpl* graph) {
+                         process_node->SetProcessExitStatus(exit_code);
+                       },
+                       process_node, exit_code));
   }
 }
 
@@ -121,10 +125,14 @@ void BrowserChildProcessWatcher::OnProcessLaunched(
 #endif
 
   DCHECK(PerformanceManagerImpl::IsAvailable());
-  PerformanceManagerImpl::GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcess,
-                                base::Unretained(process_node),
-                                process.Duplicate(), launch_time));
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(
+                     [](ProcessNodeImpl* process_node, base::Process process,
+                        base::Time launch_time, GraphImpl* graph) {
+                       process_node->SetProcess(std::move(process),
+                                                launch_time);
+                     },
+                     process_node, process.Duplicate(), launch_time));
 }
 
 }  // namespace performance_manager

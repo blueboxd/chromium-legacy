@@ -1133,14 +1133,6 @@
     'remove_from': [
       'Android FYI Release (Pixel 2)',
     ],
-    # TODO(https://crbug.com/1061094): Remove once argument is not required.
-    'modifications': {
-      'fuchsia-fyi-x64-rel': {
-        'args': [
-          '--target-cpu=x64',
-        ],
-      },
-    },
   },
   'headless_browsertests': {
     'remove_from': [

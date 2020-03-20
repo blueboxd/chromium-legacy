@@ -213,7 +213,13 @@ void Preferences::RegisterProfilePrefs(
       prefs::kMouseAcceleration, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(
+      prefs::kMouseScrollAcceleration, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
       prefs::kTouchpadAcceleration, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kTouchpadScrollAcceleration, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
@@ -224,7 +230,13 @@ void Preferences::RegisterProfilePrefs(
       prefs::kMouseSensitivity, 3,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterIntegerPref(
+      prefs::kMouseScrollSensitivity, 3,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
       prefs::kTouchpadSensitivity, 3,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kTouchpadScrollSensitivity, 3,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kUse24HourClock, base::GetHourClockType() == base::k24HourClock,
@@ -457,11 +469,19 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   mouse_reverse_scroll_.Init(ash::prefs::kMouseReverseScroll, prefs, callback);
 
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
+  mouse_scroll_sensitivity_.Init(prefs::kMouseScrollSensitivity, prefs,
+                                 callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
+  touchpad_scroll_sensitivity_.Init(prefs::kTouchpadScrollSensitivity, prefs,
+                                    callback);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
   mouse_acceleration_.Init(prefs::kMouseAcceleration, prefs, callback);
+  mouse_scroll_acceleration_.Init(prefs::kMouseScrollAcceleration, prefs,
+                                  callback);
   touchpad_acceleration_.Init(prefs::kTouchpadAcceleration, prefs, callback);
+  touchpad_scroll_acceleration_.Init(prefs::kTouchpadScrollAcceleration, prefs,
+                                     callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, callback);
   preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, callback);
@@ -673,6 +693,19 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     }
   }
   if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kMouseScrollSensitivity) {
+    const int sensitivity = mouse_scroll_sensitivity_.GetValue();
+    if (user_is_active)
+      mouse_settings.SetScrollSensitivity(sensitivity);
+    if (reason == REASON_PREF_CHANGED) {
+      UMA_HISTOGRAM_ENUMERATION("Mouse.ScrollSensitivity.Changed", sensitivity,
+                                system::kMaxPointerSensitivity + 1);
+    } else if (reason == REASON_INITIALIZATION) {
+      UMA_HISTOGRAM_ENUMERATION("Mouse.ScrollSensitivity.Started", sensitivity,
+                                system::kMaxPointerSensitivity + 1);
+    }
+  }
+  if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kTouchpadSensitivity) {
     const int sensitivity = touchpad_sensitivity_.GetValue();
     if (user_is_active)
@@ -683,6 +716,21 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                                 system::kMaxPointerSensitivity + 1);
     } else if (reason == REASON_INITIALIZATION) {
       UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Started",
+                                sensitivity,
+                                system::kMaxPointerSensitivity + 1);
+    }
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kTouchpadScrollSensitivity) {
+    const int sensitivity = touchpad_scroll_sensitivity_.GetValue();
+    if (user_is_active)
+      touchpad_settings.SetScrollSensitivity(sensitivity);
+    if (reason == REASON_PREF_CHANGED) {
+      UMA_HISTOGRAM_ENUMERATION("Touchpad.ScrollSensitivity.Changed",
+                                sensitivity,
+                                system::kMaxPointerSensitivity + 1);
+    } else if (reason == REASON_INITIALIZATION) {
+      UMA_HISTOGRAM_ENUMERATION("Touchpad.ScrollSensitivity.Started",
                                 sensitivity,
                                 system::kMaxPointerSensitivity + 1);
     }
@@ -713,6 +761,16 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       base::UmaHistogramBoolean("Mouse.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kMouseScrollAcceleration) {
+    const bool enabled = mouse_scroll_acceleration_.GetValue();
+    if (user_is_active)
+      mouse_settings.SetScrollAcceleration(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      base::UmaHistogramBoolean("Mouse.ScrollAcceleration.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      base::UmaHistogramBoolean("Mouse.ScrollAcceleration.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kTouchpadAcceleration) {
     const bool enabled = touchpad_acceleration_.GetValue();
     if (user_is_active)
@@ -721,6 +779,16 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       base::UmaHistogramBoolean("Touchpad.Acceleration.Changed", enabled);
     else if (reason == REASON_INITIALIZATION)
       base::UmaHistogramBoolean("Touchpad.Acceleration.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kTouchpadScrollAcceleration) {
+    const bool enabled = touchpad_scroll_acceleration_.GetValue();
+    if (user_is_active)
+      touchpad_settings.SetScrollAcceleration(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      base::UmaHistogramBoolean("Touchpad.ScrollAcceleration.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      base::UmaHistogramBoolean("Touchpad.ScrollAcceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kDownloadDefaultDirectory) {

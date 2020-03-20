@@ -22,10 +22,10 @@
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_device_handler.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/shill_property_util.h"
-#include "components/device_event_log/device_event_log.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -45,7 +45,7 @@ void InvokeErrorCallback(const std::string& service_path,
                          const network_handler::ErrorCallback& error_callback,
                          const std::string& error_name) {
   std::string error_msg = "Config Error: " + error_name;
-  NET_LOG(ERROR) << error_msg << ": " << service_path;
+  NET_LOG(ERROR) << error_msg << " For: " << NetworkPathId(service_path);
   network_handler::RunErrorCallback(error_callback, service_path, error_name,
                                     error_msg);
 }
@@ -248,7 +248,7 @@ void NetworkConfigurationHandler::GetShillProperties(
     const std::string& service_path,
     network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG(DEBUG) << "GetShillProperties: " << service_path;
+  NET_LOG(DEBUG) << "GetShillProperties: " << NetworkPathId(service_path);
 
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);
@@ -279,7 +279,7 @@ void NetworkConfigurationHandler::SetShillProperties(
       callback.Run();
     return;
   }
-  NET_LOG(USER) << "SetShillProperties: " << service_path;
+  NET_LOG(USER) << "SetShillProperties: " << NetworkPathId(service_path);
 
   std::unique_ptr<base::DictionaryValue> properties_to_set(
       shill_properties.DeepCopy());
@@ -321,10 +321,11 @@ void NetworkConfigurationHandler::ClearShillProperties(
       callback.Run();
     return;
   }
-  NET_LOG(USER) << "ClearShillProperties: " << service_path;
+  NET_LOG(USER) << "ClearShillProperties: " << NetworkPathId(service_path);
   for (std::vector<std::string>::const_iterator iter = names.begin();
        iter != names.end(); ++iter) {
-    NET_LOG(DEBUG) << "ClearProperty: " << service_path << "." << *iter;
+    NET_LOG(DEBUG) << "ClearProperty: " << NetworkPathId(service_path) << ": "
+                   << *iter;
   }
   ShillServiceClient::Get()->ClearProperties(
       dbus::ObjectPath(service_path), names,
@@ -345,13 +346,12 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
   shill_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
   DCHECK(!type.empty());
 
-  std::string network_id =
-      shill_property_util::GetNetworkIdFromProperties(shill_properties);
-
   std::unique_ptr<base::DictionaryValue> properties_to_set(
       shill_properties.DeepCopy());
 
-  NET_LOG(USER) << "CreateShillConfiguration: " << type << ": " << network_id;
+  NET_LOG(USER) << "CreateShillConfiguration: " << type << ": "
+                << shill_property_util::GetNetworkIdFromProperties(
+                       shill_properties);
 
   std::string profile_path;
   properties_to_set->GetStringWithoutPathExpansion(shill::kProfileProperty,
@@ -419,7 +419,7 @@ void NetworkConfigurationHandler::RemoveConfigurationFromProfile(
       network_state_handler_->GetNetworkState(service_path);
   if (network_state)
     guid = network_state->guid();
-  NET_LOG(USER) << "Remove Configuration: " << service_path
+  NET_LOG(USER) << "Remove Configuration: " << NetworkPathId(service_path)
                 << " from profiles: "
                 << (!profile_path.empty() ? profile_path : "all");
   ProfileEntryDeleter* deleter = new ProfileEntryDeleter(
@@ -435,7 +435,7 @@ void NetworkConfigurationHandler::SetNetworkProfile(
     const std::string& profile_path,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG(USER) << "SetNetworkProfile: " << service_path << ": "
+  NET_LOG(USER) << "SetNetworkProfile: " << NetworkPathId(service_path) << ": "
                 << profile_path;
   base::Value profile_path_value(profile_path);
   ShillServiceClient::Get()->SetProperty(
@@ -650,8 +650,8 @@ void NetworkConfigurationHandler::ClearPropertiesSuccessCallback(
     if (!success) {
       // If a property was cleared that has never been set, the clear will fail.
       // We do not track which properties have been set, so just log the error.
-      NET_LOG(ERROR) << "ClearProperties Failed: " << service_path << ": "
-                     << names[i];
+      NET_LOG(ERROR) << "ClearProperties Failed: "
+                     << NetworkPathId(service_path) << ": " << names[i];
     }
   }
 

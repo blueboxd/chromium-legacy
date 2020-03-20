@@ -6,10 +6,10 @@
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/bubble/bubble_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(SerialTest, NavigateWithChooserCrossOrigin) {
          document.location.href = "https://google.com";)"));
 
   observer.Wait();
-  EXPECT_EQ(0u, browser()->GetBubbleManager()->GetBubbleCountForTesting());
+  EXPECT_FALSE(chrome::IsDeviceChooserShowingForTesting(browser()));
 }
 
 }  // namespace

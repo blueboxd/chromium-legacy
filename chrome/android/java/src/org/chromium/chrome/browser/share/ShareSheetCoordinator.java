@@ -22,6 +22,9 @@ import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
@@ -35,6 +38,23 @@ public class ShareSheetCoordinator {
     private final BottomSheetController mBottomSheetController;
     private final ActivityTabProvider mActivityTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
+    private ScreenshotCoordinator mScreenshotCoordinator;
+
+    /**
+     * Used to initiate the screenshot flow once the bottom sheet is fully hidden. Removes itself
+     * from {@link BottomSheetController} afterwards.
+     */
+    private final BottomSheetObserver mSheetObserver = new EmptyBottomSheetObserver() {
+        @Override
+        public void onSheetStateChanged(int newState) {
+            if (newState == SheetState.HIDDEN) {
+                assert mScreenshotCoordinator != null;
+                mScreenshotCoordinator.captureScreenshot();
+                // Clean up the observer since the coordinator is discarded when sheet is hidden.
+                mBottomSheetController.removeObserver(mSheetObserver);
+            }
+        }
+    };
 
     /**
      * Constructs a new ShareSheetCoordinator.
@@ -83,11 +103,12 @@ public class ShareSheetCoordinator {
                     (shareParams)
                             -> {
                         RecordUserAction.record("SharingHubAndroid.ScreenshotSelected");
+                        mScreenshotCoordinator =
+                                new ScreenshotCoordinator(activity, mActivityTabProvider.get());
+                        // Capture a screenshot once the bottom sheet is fully hidden. The observer
+                        // will then remove itself.
+                        mBottomSheetController.addObserver(mSheetObserver);
                         mBottomSheetController.hideContent(bottomSheet, true);
-                        Tab tab = mActivityTabProvider.get();
-                        ScreenshotCoordinator screenshotCoordinator =
-                                new ScreenshotCoordinator(activity, tab);
-                        screenshotCoordinator.handleScreenshot();
                     },
                     /*isFirstParty=*/true);
             models.add(screenshotPropertyModel);

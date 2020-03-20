@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "components/device_event_log/device_event_log.h"
+#include "chromeos/network/network_event_log.h"
 
 namespace {
 
@@ -96,7 +96,7 @@ void GetPropertiesCallback(DictionaryResultCallback callback,
                            DBusMethodCallStatus call_status,
                            const base::DictionaryValue& value) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG(ERROR) << "GetProperties failed: " << path
+    NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(path)
                    << " Status: " << call_status;
     RunErrorCallback(
         error_callback, path, kDBusFailedError, kDBusFailedErrorMessage);

@@ -67,7 +67,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   friend class NativeTheme;
   friend class base::NoDestructor<NativeThemeMac>;
   static NativeThemeMac* instance();
-  static NativeThemeMac* dark_instance();
 
  private:
   NativeThemeMac(bool configure_web_instance, bool should_only_use_dark_colors);

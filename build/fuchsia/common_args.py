@@ -9,6 +9,8 @@ import sys
 from aemu_target import AemuTarget
 from device_target import DeviceTarget
 from qemu_target import QemuTarget
+from common import GetHostArchFromPlatform
+
 
 def AddCommonArgs(arg_parser):
   """Adds command line arguments to |arg_parser| for options which are shared
@@ -28,12 +30,16 @@ def AddCommonArgs(arg_parser):
       help='Name of the package to execute, defined in ' + 'package metadata.')
 
   common_args = arg_parser.add_argument_group('common', 'Common arguments')
-  common_args.add_argument('--output-directory',
-                           type=os.path.realpath, required=True,
-                           help=('Path to the directory in which build files '
-                                 'are located (must include build type).'))
-  common_args.add_argument('--target-cpu', required=True,
-                           help='GN target_cpu setting for the build.')
+  common_args.add_argument(
+      '--output-directory',
+      type=os.path.realpath,
+      default=None,
+      help=('Path to the directory in which build files are located. '))
+  common_args.add_argument(
+      '--target-cpu',
+      default=GetHostArchFromPlatform(),
+      help=('GN target_cpu setting for the build. Defaults to the same '
+            'architecture as host cpu.'))
   common_args.add_argument('--target-staging-path',
                            help='target path under which to stage packages '
                            'during deployment.', default='/data')

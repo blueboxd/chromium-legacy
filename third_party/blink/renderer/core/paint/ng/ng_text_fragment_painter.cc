@@ -369,7 +369,8 @@ class SelectionPaintState {
                              const TextPaintStyle& text_style) {
     selection_style_ = TextPainterBase::SelectionPaintingStyle(
         document, style, node, /*have_selection*/ true, paint_info, text_style);
-    paint_selected_text_only_ = (paint_info.phase == PaintPhase::kSelection);
+    paint_selected_text_only_ =
+        (paint_info.phase == PaintPhase::kSelectionDragImage);
     paint_selected_text_separately_ =
         !paint_selected_text_only_ && text_style != selection_style_;
   }
@@ -492,8 +493,9 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
       selection.reset();
   }
   if (!selection) {
-    // When only painting the selection, don't bother to paint if there is none.
-    if (paint_info.phase == PaintPhase::kSelection)
+    // When only painting the selection drag image, don't bother to paint if
+    // there is none.
+    if (paint_info.phase == PaintPhase::kSelectionDragImage)
       return;
 
     // Flow controls (line break, tab, <wbr>) need only selection painting.
@@ -560,7 +562,7 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
   // paint selection in same flipped dimension as NGTextPainter.
   const DocumentMarkerVector& markers_to_paint =
       ComputeMarkersToPaint(node, text_item.IsEllipsis());
-  if (paint_info.phase != PaintPhase::kSelection &&
+  if (paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
     PaintDocumentMarkers(context, text_item, cursor_.CurrentText(),
                          markers_to_paint, box_rect.offset, style,

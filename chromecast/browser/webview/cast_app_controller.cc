@@ -12,6 +12,12 @@ CastAppController::CastAppController(Client* client,
     : WebContentController(client), contents_(contents) {
   content::WebContentsObserver::Observe(contents_);
 
+  // There may be existing RenderWidgets that we need to observe.
+  contents->ForEachFrame(base::BindRepeating(
+      &WebContentController::
+          RegisterRenderWidgetInputObserverFromRenderFrameHost,
+      this));
+
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
 

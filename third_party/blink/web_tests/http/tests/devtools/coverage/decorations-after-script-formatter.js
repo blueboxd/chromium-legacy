@@ -21,7 +21,7 @@
   var editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
   for (const action of editorActions) {
     if (action instanceof Sources.ScriptFormatterEditorAction) {
-      action._toggleFormatScriptSource();
+      action.toggleFormatScriptSource();
       break;
     }
   }

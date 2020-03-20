@@ -11,12 +11,12 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
 #include "chromeos/network/tether_constants.h"
-#include "components/device_event_log/device_event_log.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -228,7 +228,7 @@ bool UIProxyConfigService::MergeEnforcedProxyConfig(
   }
 
   if (!network->IsNonProfileType() && !network->IsInProfile()) {
-    NET_LOG(ERROR) << "Network not in profile: " << network_guid;
+    NET_LOG(ERROR) << "Network not in profile: " << NetworkId(network);
     current_ui_network_guid_.clear();
     return false;
   }
@@ -256,7 +256,7 @@ bool UIProxyConfigService::MergeEnforcedProxyConfig(
     // Network is private or shared with user using shared proxies.
     NET_LOG(EVENT) << "UIProxyConfigService for "
                    << (profile_prefs_ ? "user" : "login")
-                   << ": using proxy of network: " << network->path();
+                   << ": using proxy of network: " << NetworkId(network);
     network_availability = net::ProxyConfigService::CONFIG_VALID;
   }
 

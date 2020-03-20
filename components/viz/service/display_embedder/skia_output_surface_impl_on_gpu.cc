@@ -1551,13 +1551,14 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
   } else {
 #if defined(USE_X11)
     supports_alpha_ = true;
-    if (gpu_preferences_.disable_vulkan_surface) {
+    if (!gpu_preferences_.disable_vulkan_surface) {
+      output_device_ = SkiaOutputDeviceVulkan::Create(
+          vulkan_context_provider_, dependency_->GetSurfaceHandle(),
+          memory_tracker_.get(), did_swap_buffer_complete_callback_);
+    }
+    if (!output_device_) {
       output_device_ = std::make_unique<SkiaOutputDeviceX11>(
           context_state_, dependency_->GetSurfaceHandle(),
-          memory_tracker_.get(), did_swap_buffer_complete_callback_);
-    } else {
-      output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-          vulkan_context_provider_, dependency_->GetSurfaceHandle(),
           memory_tracker_.get(), did_swap_buffer_complete_callback_);
     }
 #else
@@ -1568,14 +1569,14 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
       gl_surface_ = output_device->gl_surface();
       output_device_ = std::move(output_device);
     } else {
-      output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
+      output_device_ = SkiaOutputDeviceVulkan::Create(
           vulkan_context_provider_, dependency_->GetSurfaceHandle(),
           memory_tracker_.get(), did_swap_buffer_complete_callback_);
     }
 #endif
   }
 #endif
-  return true;
+  return !!output_device_;
 }
 
 bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {

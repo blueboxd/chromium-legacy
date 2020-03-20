@@ -497,15 +497,33 @@ const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
 // only simple linear scaling is applied based on sensitivity.
 const char kMouseAcceleration[] = "settings.mouse.acceleration";
 
+// A boolean pref set to true if mouse scroll acceleration is enabled. When
+// disabled, only simple linear scaling is applied based on sensitivity.
+const char kMouseScrollAcceleration[] = "settings.mouse.scroll_acceleration";
+
 // A boolean pref set to true if touchpad acceleration is enabled. When
 // disabled only simple linear scaling is applied based on sensitivity.
 const char kTouchpadAcceleration[] = "settings.touchpad.acceleration";
 
+// A boolean pref set to true if touchpad scroll acceleration is enabled. When
+// disabled only simple linear scaling is applied based on sensitivity.
+const char kTouchpadScrollAcceleration[] =
+    "settings.touchpad.scroll_acceleration";
+
 // A integer pref for the touchpad sensitivity.
 const char kMouseSensitivity[] = "settings.mouse.sensitivity2";
 
+// A integer pref for the touchpad scroll sensitivity, in the range
+// [kMinPointerSensitivity, kMaxPointerSensitivity].
+const char kMouseScrollSensitivity[] = "settings.mouse.scroll_sensitivity";
+
 // A integer pref for the touchpad sensitivity.
 const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
+
+// A integer pref for the touchpad scroll sensitivity, in the range
+// [kMinPointerSensitivity, kMaxPointerSensitivity].
+const char kTouchpadScrollSensitivity[] =
+    "settings.touchpad.scroll_sensitivity";
 
 // A boolean pref set to true if time should be displayed in 24-hour clock.
 const char kUse24HourClock[] = "settings.clock.use_24hour_clock";

@@ -30,17 +30,17 @@ function test() {
         assert_equals(entries[0].target, t, "target is t");
         assert_equals(entries[0].contentRect.width, 55.5, "target width");
         assert_equals(entries[0].contentRect.height, 25.25, "target height");
-        assert_equals(entries[0].contentBoxSize.inlineSize, 55.5,
+        assert_equals(entries[0].contentBoxSize[0].inlineSize, 55.5,
                       "target content-box inline size");
-        assert_equals(entries[0].contentBoxSize.blockSize, 25.25,
+        assert_equals(entries[0].contentBoxSize[0].blockSize, 25.25,
                       "target content-box block size");
-        assert_equals(entries[0].borderBoxSize.inlineSize, 55.5,
+        assert_equals(entries[0].borderBoxSize[0].inlineSize, 55.5,
                       "target border-box inline size");
-        assert_equals(entries[0].borderBoxSize.blockSize, 25.25,
+        assert_equals(entries[0].borderBoxSize[0].blockSize, 25.25,
                       "target border-box block size");
-        assert_equals(entries[0].devicePixelContentBoxSize.inlineSize, 56,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].inlineSize, 56,
                       "target device-pixel-content-box inline size");
-        assert_equals(entries[0].devicePixelContentBoxSize.blockSize, 25,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].blockSize, 25,
                       "target device-pixel-content-box block size");
       }
     },
@@ -53,17 +53,17 @@ function test() {
         assert_equals(entries[0].target, t, "target is t");
         assert_equals(entries[0].contentRect.width, 55.5, "target width");
         assert_equals(entries[0].contentRect.height, 25.25, "target height");
-        assert_equals(entries[0].contentBoxSize.inlineSize, 55.5,
+        assert_equals(entries[0].contentBoxSize[0].inlineSize, 55.5,
                       "target content-box inline size");
-        assert_equals(entries[0].contentBoxSize.blockSize, 25.25,
+        assert_equals(entries[0].contentBoxSize[0].blockSize, 25.25,
                       "target content-box block size");
-        assert_equals(entries[0].borderBoxSize.inlineSize, 55.5,
+        assert_equals(entries[0].borderBoxSize[0].inlineSize, 55.5,
                       "target border-box inline size");
-        assert_equals(entries[0].borderBoxSize.blockSize, 25.25,
+        assert_equals(entries[0].borderBoxSize[0].blockSize, 25.25,
                       "target border-box block size");
-        assert_equals(entries[0].devicePixelContentBoxSize.inlineSize, 55,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].inlineSize, 55,
                       "target device-pixel-content-box inline size");
-        assert_equals(entries[0].devicePixelContentBoxSize.blockSize, 25,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].blockSize, 25,
                       "target device-pixel-content-box block size");
       }
     },
@@ -76,17 +76,17 @@ function test() {
         assert_equals(entries[0].target, t, "target is t");
         assert_equals(entries[0].contentRect.width, 55.5, "target width");
         assert_equals(entries[0].contentRect.height, 25.25, "target height");
-        assert_equals(entries[0].contentBoxSize.inlineSize, 55.5,
+        assert_equals(entries[0].contentBoxSize[0].inlineSize, 55.5,
                       "target content-box inline size");
-        assert_equals(entries[0].contentBoxSize.blockSize, 25.25,
+        assert_equals(entries[0].contentBoxSize[0].blockSize, 25.25,
                       "target content-box block size");
-        assert_equals(entries[0].borderBoxSize.inlineSize, 55.5,
+        assert_equals(entries[0].borderBoxSize[0].inlineSize, 55.5,
                       "target content-box inline size");
-        assert_equals(entries[0].borderBoxSize.blockSize, 25.25,
+        assert_equals(entries[0].borderBoxSize[0].blockSize, 25.25,
                       "target content-box block size");
-        assert_equals(entries[0].devicePixelContentBoxSize.inlineSize, 166,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].inlineSize, 166,
                       "target content-box inline size");
-        assert_equals(entries[0].devicePixelContentBoxSize.blockSize, 76,
+        assert_equals(entries[0].devicePixelContentBoxSize[0].blockSize, 76,
                       "target content-box block size");
       }
     }
@@ -129,9 +129,9 @@ function test2() {
         assert_equals(entries[0].target, a, "target is t");
         assert_equals(entries[0].contentRect.width, 50, "target width");
         assert_equals(entries[0].contentRect.height, 10, "target height");
-        assert_equals(entries[0].borderBoxSize.inlineSize, 50,
+        assert_equals(entries[0].borderBoxSize[0].inlineSize, 50,
                       "target border-box inline size");
-        assert_equals(entries[0].borderBoxSize.blockSize, 10,
+        assert_equals(entries[0].borderBoxSize[0].blockSize, 10,
                       "target border-box block size");
       }
     },

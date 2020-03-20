@@ -91,7 +91,7 @@ additional restriction on Latin. If the component fails the check, show the
 component in punycode.
   - Latin, Cyrillic or Greek characters cannot be mixed with each other
   - Latin characters in the ASCII range can be mixed ONLY with Chinese (Han,
-    Bopomofo), Japanese (Kanji, Katakana, Hiragana), or Korean (Hangul, Hanja).
+    Bopomofo), Japanese (Kanji, Katakana, Hiragana), or Korean (Hangul, Hanja)
   - Han (CJK Ideographs) can be mixed with Bopomofo
   - Han can be mixed with Hiragana and Katakana
   - Han can be mixed with Korean Hangul
@@ -102,28 +102,43 @@ mixed, show punycode.
 7. If there are any invisible characters (e.g. a sequence of the same combining
 mark or a sequence of Kana combining marks), show punycode.
 
-8. Test the label for [mixed script confusable per UTS
+8. If there are any characters used in an unusual way, show punycode. E.g.
+[`LATIN MIDDLE DOT (·)`](https://unicode.org/cldr/utility/character.jsp?a=00B7)
+used outside [ela geminada](https://en.wiktionary.org/wiki/ela_geminada).
+
+9. Test the label for [mixed script confusable per UTS
 39](http://unicode.org/reports/tr39/#Mixed_Script_Confusables). If mixed script
 confusable is detected, show punycode.
 
-9. If a hostname belongs to an non-IDN TLD (top-level-domain) such as 'com',
-'net', or 'uk' and all the letters in a given label belong to [a set of Cyrillic
-letters that look like Latin
-letters](http://unicode.org/cldr/utility/list-unicodeset.jsp?a=%5B%D0%B0%D1%81%D4%81%D0%B5%D2%BB%D1%96%D1%98%D3%8F%D0%BE%D1%80%D4%9B%D1%95%D4%9D%D1%85%D1%83%D1%8A%D0%AC%D2%BD%D0%BF%D0%B3%D1%B5%D1%A1%5D&g=gc&i=)
-(e.g. [Cyrillic Small Letter
-IE](http://unicode.org/cldr/utility/character.jsp?a=0435) - `е`  ), show
-punycode.
+10. Test the label for [whole script
+confusables](http://unicode.org/reports/tr39/#Whole_Script_Confusables): If all
+the letters in a given label belong to a set of whole-script-confusable letters
+in one of the [whole-script-confusable
+scripts](https://cs.chromium.org/chromium/src/components/url_formatter/spoof_checks/idn_spoof_checker.cc?type=cs&q=kWholeScriptConfusables&sq=package:chromium)
+and if the hostname doesn't have a corresponding
+[allowed top-level-domain](https://cs.chromium.org/chromium/src/components/url_formatter/spoof_checks/idn_spoof_checker.h?type=cs&q=allowed_tlds)
+for that script, show punycode.
+**Example for Cyrillic:**
+The first label in hostname `аррӏе.com` (`xn--80ak6aa92e.com`) is all [Cyrillic
+letters that look like Latin letters](http://unicode.org/cldr/utility/list-unicodeset.jsp?a=%5B%D0%B0%D1%81%D4%81%D0%B5%D2%BB%D1%96%D1%98%D3%8F%D0%BE%D1%80%D4%9B%D1%95%D4%9D%D1%85%D1%83%D1%8A%D0%AC%D2%BD%D0%BF%D0%B3%D1%B5%D1%A1%5D&g=gc&i=)
+**AND** the TLD (`com`) is not Cyrillic **AND** the TLD is not one of the TLDs
+known to host a large number of Cyrillic domains (e.g. `ru`, `su`, `pyc`, `ua`).
+Show it in punycode.
 
-10. If the label matches a [dangerous
+11. If the label contains only [digits and digit
+spoofs](https://cs.chromium.org/chromium/src/components/url_formatter/spoof_checks/idn_spoof_checker.cc?type=cs&q=IsDigitLookalike),
+show punycode.
+
+12. If the label matches a [dangerous
 pattern](https://cs.chromium.org/chromium/src/components/url_formatter/spoof_checks/idn_spoof_checker.cc?type=cs&g=0&l=422),
 show punycode.
 
-11. If the [skeleton](http://unicode.org/reports/tr39/#def-skeleton) of the
+13. If the [skeleton](http://unicode.org/reports/tr39/#def-skeleton) of the
 registrable part of a hostname is identical to one of the top domains after
 removing diacritic marks and mapping each character to its spoofing skeleton
 (e.g. `www.googlé.com` with `é` in place of `e`), show punycode.
 
-13. Otherwise, show Unicode.
+Otherwise, show Unicode.
 
 This is implemented by `IDNToUnicodeOneComponent()` and `IsIDNComponentSafe()`
 in

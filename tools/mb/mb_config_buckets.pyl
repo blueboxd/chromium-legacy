@@ -174,6 +174,7 @@
       'WebKit Linux Leak': 'release_bot',
       'WebKit Linux MSAN': 'msan_release_bot',
       'WebKit Mac10.13 (retina)': 'release_bot',
+      'Win10 FYI x64 SkiaRenderer Dawn Release (NVIDIA)': 'gpu_tests_sk_dawn_release_trybot',
       'Win 10 Fast Ring': 'release_trybot',
       'Win ASan Release': 'asan_fuzzer_v8_heap_release_bot',
       'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot',
@@ -1324,6 +1325,7 @@
       'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-win10-nvidia-sk-dawn-rel-64': 'gpu_tests_sk_dawn_release_trybot',
       'gpu-fyi-try-win10-nvidia-skgl-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win7-amd-dbg-32': 'gpu_fyi_tests_debug_trybot_x86',
       'gpu-fyi-try-win7-amd-dqp-32': 'deqp_release_trybot_x86',
@@ -2446,6 +2448,11 @@
       'gpu_tests',
       'release_bot'
     ],
+    'gpu_tests_sk_dawn_release_trybot': [
+      'gpu_tests',
+      'sk_dawn',
+      'release_trybot',
+    ],
     'ios_error': [
       'error'
     ],
@@ -3191,6 +3198,10 @@
         'minimal_symbols',
         'dcheck_always_on'
       ],
+    },
+
+    'sk_dawn': {
+      'gn_args': 'skia_uses_dawn=true',
     },
 
     'stable_channel': {

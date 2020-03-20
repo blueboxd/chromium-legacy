@@ -42,7 +42,7 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
   }
 
-  if (paint_info.phase == PaintPhase::kSelection)
+  if (paint_info.phase == PaintPhase::kSelectionDragImage)
     return;
 
   GraphicsContext& context = paint_info.context;

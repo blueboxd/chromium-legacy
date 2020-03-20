@@ -42,6 +42,12 @@ PermissionManager* TestPermissionsClient::GetPermissionManager(
   return nullptr;
 }
 
+ChooserContextBase* TestPermissionsClient::GetChooserContext(
+    content::BrowserContext* browser_context,
+    ContentSettingsType type) {
+  return nullptr;
+}
+
 void TestPermissionsClient::GetUkmSourceId(
     content::BrowserContext* browser_context,
     const content::WebContents* web_contents,

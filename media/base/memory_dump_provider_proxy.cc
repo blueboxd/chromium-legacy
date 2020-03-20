@@ -27,7 +27,7 @@ MemoryDumpProviderProxy::~MemoryDumpProviderProxy() {
 bool MemoryDumpProviderProxy::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  dump_cb_.Run(pmd);
+  dump_cb_.Run(args, pmd);
   return true;
 }
 

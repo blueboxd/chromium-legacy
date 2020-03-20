@@ -46,7 +46,7 @@ NetworkTypeBitFlag ShillNetworkTypeToFlag(const std::string& shill_type) {
     if (shill_type_to_flag[i].shill_network_type == shill_type)
       return shill_type_to_flag[i].bit_flag;
   }
-  NET_LOG_ERROR("ShillNetworkTypeToFlag", "Unknown type: " + shill_type);
+  NET_LOG(ERROR) << "ShillNetworkTypeToFlag unknown type: " << shill_type;
   return kNetworkTypeNone;
 }
 

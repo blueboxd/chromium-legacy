@@ -427,7 +427,8 @@ std::unique_ptr<security_interstitials::SecurityInterstitialPage>
 CreateOriginPolicyInterstitialPage(content::WebContents* web_contents) {
   return base::WrapUnique<security_interstitials::SecurityInterstitialPage>(
       security_interstitials::OriginPolicyUI::GetBlockingPage(
-          web_contents, GURL("https://example.com/broken/origin/policy")));
+          network::OriginPolicyState::kCannotLoadPolicy, web_contents,
+          GURL("https://example.com/broken/origin/policy")));
 }
 
 }  //  namespace

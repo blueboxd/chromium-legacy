@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
-#include "components/bubble/bubble_controller.h"
 #include "content/public/browser/web_contents.h"
 
 WebUsbChooserDesktop::WebUsbChooserDesktop(

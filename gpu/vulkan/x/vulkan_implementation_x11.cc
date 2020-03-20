@@ -19,10 +19,19 @@
 #include "gpu/vulkan/x/vulkan_surface_x11.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace gpu {
 
 namespace {
+
+bool IsVulkanSurfaceSupported() {
+  auto* display = gfx::GetXDisplay();
+  int ext_code, first_event, first_error;
+  // Vulkan surface is supported via DRI3.
+  return XQueryExtension(display, "DRI3", &ext_code, &first_event,
+                         &first_error);
+}
 
 class ScopedUnsetDisplay {
  public:
@@ -53,6 +62,8 @@ VulkanImplementationX11::VulkanImplementationX11(bool use_swiftshader)
 VulkanImplementationX11::~VulkanImplementationX11() {}
 
 bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
+  if (using_surface && !use_swiftshader() && !IsVulkanSurfaceSupported())
+    using_surface = false;
   using_surface_ = using_surface;
   // Unset DISPLAY env, so the vulkan can be initialized successfully, if the X
   // server doesn't support Vulkan surface.
@@ -95,8 +106,8 @@ VulkanInstance* VulkanImplementationX11::GetVulkanInstance() {
 
 std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
     gfx::AcceleratedWidget window) {
-  DLOG_IF(FATAL, !using_surface_)
-      << "Flag --disable-vulkan-surface is provided.";
+  if (!using_surface_)
+    return nullptr;
   return VulkanSurfaceX11::Create(vulkan_instance_.vk_instance(), window);
 }
 

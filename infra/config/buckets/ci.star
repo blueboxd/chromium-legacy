@@ -1423,6 +1423,11 @@ ci.gpu_fyi_thin_tester(
     triggered_by = ['GPU FYI XR Win x64 Builder'],
 )
 
+# Builder + tester.
+ci.gpu_fyi_windows_builder(
+    name = 'Win10 FYI x64 SkiaRenderer Dawn Release (NVIDIA)',
+)
+
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 SkiaRenderer GL (NVIDIA)',
     triggered_by = ['GPU FYI Win x64 Builder'],
@@ -1509,7 +1514,6 @@ ci.gpu_fyi_windows_builder(
 ci.gpu_fyi_windows_builder(
     name = 'GPU FYI XR Win x64 Builder',
 )
-
 
 ci.linux_builder(
     name = 'Cast Audio Linux',

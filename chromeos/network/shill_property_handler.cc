@@ -20,8 +20,8 @@
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
-#include "components/device_event_log/device_event_log.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -35,7 +35,7 @@ const base::ListValue* GetListValue(const std::string& key,
                                     const base::Value& value) {
   const base::ListValue* vlist = NULL;
   if (!value.GetAsList(&vlist)) {
-    LOG(ERROR) << "Error parsing key as list: " << key;
+    NET_LOG(ERROR) << "Error parsing key as list: " << key;
     return NULL;
   }
   return vlist;
@@ -274,8 +274,7 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
   if (pending_updates_[type].find(path) != pending_updates_[type].end())
     return;  // Update already requested.
 
-  NET_LOG(DEBUG) << "Request Properties: " << ManagedState::TypeToString(type)
-                 << " For: " << path;
+  NET_LOG(DEBUG) << "Request Properties for: " << NetworkPathId(path);
   pending_updates_[type].insert(path);
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     ShillServiceClient::Get()->GetProperties(
@@ -334,7 +333,8 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
   if (key == shill::kDefaultServiceProperty) {
     std::string service_path;
     value.GetAsString(&service_path);
-    NET_LOG(EVENT) << "Manager.DefaultService = " << service_path;
+    NET_LOG(EVENT) << "Manager.DefaultService = "
+                   << NetworkPathId(service_path);
     listener_->DefaultNetworkServiceChanged(service_path);
     return;
   }
@@ -425,7 +425,7 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
     auto result =
         new_observed.insert(std::make_pair(path, std::move(observer)));
     if (!result.second) {
-      LOG(ERROR) << path << " is duplicated in the list.";
+      NET_LOG(ERROR) << path << " is duplicated in the list.";
     }
     observer_map.erase(path);
     // Limit the number of observed services.
@@ -536,8 +536,7 @@ void ShillPropertyHandler::GetPropertiesCallback(
     // has been removed.
     return;
   }
-  NET_LOG(DEBUG) << "GetProperties received for "
-                 << ManagedState::TypeToString(type) << ": " << path;
+  NET_LOG(DEBUG) << "GetProperties received for " << NetworkPathId(path);
   listener_->UpdateManagedStateProperties(type, path, properties);
 
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
@@ -614,13 +613,13 @@ void ShillPropertyHandler::GetIPConfigCallback(
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    // IP Config properties not availabe. Shill will emit a property change
+    // IP Config properties not available. Shill will emit a property change
     // when they are.
     NET_LOG(EVENT) << "Failed to get IP Config properties: " << ip_config_path
-                   << ": " << call_status << ", For: " << path;
+                   << ": " << call_status << ", For: " << NetworkPathId(path);
     return;
   }
-  NET_LOG(EVENT) << "IP Config properties received: " << path;
+  NET_LOG(EVENT) << "IP Config properties received: " << NetworkPathId(path);
   listener_->UpdateIPConfigProperties(type, path, ip_config_path, properties);
 }
 

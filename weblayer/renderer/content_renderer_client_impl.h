@@ -34,6 +34,9 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType provider_type) override;
+  void AddSupportedKeySystems(
+      std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
+      override;
 
  private:
 #if defined(OS_ANDROID)

@@ -1,10 +1,11 @@
 [document web]
-++[math]
-++++[section]
-++++++[static] name='a'
-++++++[static] name='2'
-++++[section]
-++++++[static] name='+'
-++++[section]
-++++++[static] name='b'
-++++++[static] name='2'
+++[section]
+++++[math]
+++++++[section]
+++++++++[static] name='a'
+++++++++[static] name='2'
+++++++[section]
+++++++++[static] name='+'
+++++++[section]
+++++++++[static] name='b'
+++++++++[static] name='2'

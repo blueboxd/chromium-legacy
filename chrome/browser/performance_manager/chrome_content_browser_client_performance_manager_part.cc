@@ -32,11 +32,17 @@ void BindProcessNode(
       performance_manager::RenderProcessUserData::GetForRenderProcessHost(
           render_process_host);
 
-  DCHECK(performance_manager::PerformanceManagerImpl::GetInstance());
-  performance_manager::PerformanceManagerImpl::GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
-                                base::Unretained(user_data->process_node()),
-                                std::move(receiver)));
+  DCHECK(performance_manager::PerformanceManagerImpl::IsAvailable());
+  performance_manager::PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(
+          [](performance_manager::ProcessNodeImpl* process_node,
+             mojo::PendingReceiver<
+                 performance_manager::mojom::ProcessCoordinationUnit> receiver,
+             performance_manager::GraphImpl* graph) {
+            process_node->Bind(std::move(receiver));
+          },
+          user_data->process_node(), std::move(receiver)));
 }
 
 }  // namespace

@@ -33,7 +33,6 @@ struct PageActionIconParams {
 
   // Leaving these params unset will leave the icon default values untouched.
   // TODO(crbug.com/1061634): Make these fields non-optional.
-  base::Optional<int> icon_size;
   base::Optional<SkColor> icon_color;
   const gfx::FontList* font_list = nullptr;
 

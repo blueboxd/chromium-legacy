@@ -149,6 +149,16 @@ bool Launchd::WritePlistToFile(Domain domain,
   }
 }
 
+bool Launchd::PlistExists(Domain domain, Type type, CFStringRef name) {
+  @autoreleasepool {
+    NSURL* ns_url = GetPlistURL(domain, type, name);
+    BOOL is_dir = false;
+    return [[NSFileManager defaultManager] fileExistsAtPath:[ns_url path]
+                                                isDirectory:&is_dir] &&
+           !is_dir;
+  }
+}
+
 bool Launchd::DeletePlist(Domain domain, Type type, CFStringRef name) {
   @autoreleasepool {
     NSURL* ns_url = GetPlistURL(domain, type, name);
@@ -157,8 +167,8 @@ bool Launchd::DeletePlist(Domain domain, Type type, CFStringRef name) {
                                                     error:&err]) {
       if ([err code] != NSFileNoSuchFileError) {
         DLOG(ERROR) << "DeletePlist: " << base::mac::NSToCFCast(err);
+        return false;
       }
-      return false;
     }
     return true;
   }

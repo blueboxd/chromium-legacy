@@ -4184,7 +4184,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledWithCrossSiteReuseProcess",
+                    "params": {
+                        "level": "CrossSiteReuseProcess"
+                    },
                     "enable_features": [
                         "ProactivelySwapBrowsingInstance"
                     ]
@@ -5440,7 +5443,11 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "tab_grid_layout_android_new_tab": "NewTabVariation"
+                        "allow_to_refetch": "true",
+                        "enable_search_term_chip": "true",
+                        "enable_search_term_chip_adaptive_icon": "true",
+                        "tab_grid_layout_android_new_tab": "NewTabVariation",
+                        "tab_grid_layout_android_new_tab_tile": "NewTabTile"
                     },
                     "enable_features": [
                         "TabGridLayoutAndroid"

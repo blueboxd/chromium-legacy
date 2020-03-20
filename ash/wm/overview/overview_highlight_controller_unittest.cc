@@ -689,4 +689,25 @@ TEST_F(DesksOverviewHighlightControllerTest, ActivateDeskNameView) {
   EXPECT_TRUE(desk_2->is_name_set_by_user());
 }
 
+TEST_F(DesksOverviewHighlightControllerTest, RemoveDeskWhileNameIsHighlighted) {
+  ToggleOverview();
+  const auto* desk_bar_view =
+      GetDesksBarViewForRoot(Shell::GetPrimaryRootWindow());
+  auto* desk_name_view_1 = desk_bar_view->mini_views()[0]->desk_name_view();
+
+  // Tab until the desk name view of the second desk is highlighted.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(desk_name_view_1, GetHighlightedView());
+
+  const auto* desks_controller = DesksController::Get();
+  auto* desk_1 = desks_controller->desks()[0].get();
+  RemoveDesk(desk_1);
+
+  // Tabbing again should cause no crashes.
+  EXPECT_EQ(nullptr, GetHighlightedView());
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(desk_bar_view->mini_views()[0].get(), GetHighlightedView());
+}
+
 }  // namespace ash

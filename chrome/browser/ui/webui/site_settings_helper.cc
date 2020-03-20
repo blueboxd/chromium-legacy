@@ -11,6 +11,7 @@
 
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
@@ -309,14 +310,10 @@ permissions::ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
 }
 
 const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
-    {&GetUsbChooserContext, &UsbChooserContext::GetObjectName,
-     kUsbChooserDataGroupType},
-    {&GetSerialChooserContext, &SerialChooserContext::GetObjectName,
-     kSerialChooserDataGroupType},
-    {&GetHidChooserContext, &HidChooserContext::GetObjectName,
-     kHidChooserDataGroupType},
-    {&GetBluetoothChooserContext, &BluetoothChooserContext::GetObjectName,
-     kBluetoothChooserDataGroupType}};
+    {&GetUsbChooserContext, kUsbChooserDataGroupType},
+    {&GetSerialChooserContext, kSerialChooserDataGroupType},
+    {&GetHidChooserContext, kHidChooserDataGroupType},
+    {&GetBluetoothChooserContext, kBluetoothChooserDataGroupType}};
 
 }  // namespace
 
@@ -693,7 +690,7 @@ const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name) {
 // in a chooser permission exceptions table. The chooser permission will contain
 // a list of site exceptions that correspond to the exception.
 base::Value CreateChooserExceptionObject(
-    const std::string& display_name,
+    const base::string16& display_name,
     const base::Value& object,
     const std::string& chooser_type,
     const ChooserExceptionDetails& chooser_exception_details) {
@@ -776,9 +773,13 @@ base::Value GetChooserExceptionListFromProfile(
                    std::make_move_iterator(incognito_objects.end()));
   }
 
-  AllChooserObjects all_chooser_objects;
+  // Maps from a chooser exception name/object pair to a
+  // ChooserExceptionDetails. This will group and sort the exceptions by the UI
+  // string and object for display.
+  std::map<std::pair<base::string16, base::Value>, ChooserExceptionDetails>
+      all_chooser_objects;
   for (const auto& object : objects) {
-    std::string name = chooser_type.get_object_name(object->value);
+    base::string16 name = chooser_context->GetObjectDisplayName(object->value);
     auto& chooser_exception_details =
         all_chooser_objects[std::make_pair(name, object->value.Clone())];
 
@@ -796,7 +797,7 @@ base::Value GetChooserExceptionListFromProfile(
   }
 
   for (const auto& all_chooser_objects_entry : all_chooser_objects) {
-    const std::string& name = all_chooser_objects_entry.first.first;
+    const base::string16& name = all_chooser_objects_entry.first.first;
     const base::Value& object = all_chooser_objects_entry.first.second;
     const ChooserExceptionDetails& chooser_exception_details =
         all_chooser_objects_entry.second;

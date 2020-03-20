@@ -23,35 +23,29 @@
 
 namespace viz {
 
+// static
+std::unique_ptr<SkiaOutputDeviceVulkan> SkiaOutputDeviceVulkan::Create(
+    VulkanContextProvider* context_provider,
+    gpu::SurfaceHandle surface_handle,
+    gpu::MemoryTracker* memory_tracker,
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback) {
+  auto output_device = std::make_unique<SkiaOutputDeviceVulkan>(
+      util::PassKey<SkiaOutputDeviceVulkan>(), context_provider, surface_handle,
+      memory_tracker, did_swap_buffer_complete_callback);
+  if (!output_device->Initialize())
+    return nullptr;
+  return output_device;
+}
+
 SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
+    util::PassKey<SkiaOutputDeviceVulkan>,
     VulkanContextProvider* context_provider,
     gpu::SurfaceHandle surface_handle,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
       context_provider_(context_provider),
-      surface_handle_(surface_handle) {
-  if (!CreateVulkanSurface()) {
-    LOG(ERROR) << "Failed to create vulkan surface.";
-  }
-  capabilities_.uses_default_gl_framebuffer = false;
-  capabilities_.max_frames_pending = vulkan_surface_->image_count() - 1;
-  // Vulkan FIFO swap chain should return vk images in presenting order, so set
-  // preserve_buffer_content & supports_post_sub_buffer to true to let
-  // SkiaOutputBufferImpl to manager damages.
-  capabilities_.preserve_buffer_content = true;
-  capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
-  capabilities_.supports_post_sub_buffer = true;
-  capabilities_.supports_pre_transform = true;
-
-  const auto surface_format = vulkan_surface_->surface_format().format;
-  DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
-         surface_format == VK_FORMAT_R8G8B8A8_UNORM);
-  capabilities_.sk_color_type = surface_format == VK_FORMAT_R8G8B8A8_UNORM
-                                    ? kRGBA_8888_SkColorType
-                                    : kBGRA_8888_SkColorType;
-  capabilities_.gr_backend_format = GrBackendFormat::MakeVk(surface_format);
-}
+      surface_handle_(surface_handle) {}
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   DCHECK(!scoped_write_);
@@ -222,7 +216,7 @@ void SkiaOutputDeviceVulkan::EndPaint() {
 #endif
 }
 
-bool SkiaOutputDeviceVulkan::CreateVulkanSurface() {
+bool SkiaOutputDeviceVulkan::Initialize() {
   gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
 #if defined(OS_ANDROID)
   bool can_be_used_with_surface_control = false;
@@ -245,6 +239,24 @@ bool SkiaOutputDeviceVulkan::CreateVulkanSurface() {
     return false;
   }
   vulkan_surface_ = std::move(vulkan_surface);
+
+  capabilities_.uses_default_gl_framebuffer = false;
+  capabilities_.max_frames_pending = vulkan_surface_->image_count() - 1;
+  // Vulkan FIFO swap chain should return vk images in presenting order, so set
+  // preserve_buffer_content & supports_post_sub_buffer to true to let
+  // SkiaOutputBufferImpl to manager damages.
+  capabilities_.preserve_buffer_content = true;
+  capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
+  capabilities_.supports_post_sub_buffer = true;
+  capabilities_.supports_pre_transform = true;
+
+  const auto surface_format = vulkan_surface_->surface_format().format;
+  DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
+         surface_format == VK_FORMAT_R8G8B8A8_UNORM);
+  capabilities_.sk_color_type = surface_format == VK_FORMAT_R8G8B8A8_UNORM
+                                    ? kRGBA_8888_SkColorType
+                                    : kBGRA_8888_SkColorType;
+  capabilities_.gr_backend_format = GrBackendFormat::MakeVk(surface_format);
   return true;
 }
 

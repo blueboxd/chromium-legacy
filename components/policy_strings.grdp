@@ -357,6 +357,9 @@ Additional details:
   <message name="IDS_POLICY_LABEL_ERROR" desc="Label for the error row in the policy table.">
     Error
   </message>
+  <message name="IDS_POLICY_LABEL_DEPRECATED" desc="Label for the status of a deprecated policy.">
+    Deprecated
+  </message>
   <message name="IDS_POLICY_LABEL_IGNORED" desc="Label for the ignored row in the policy table.">
     Ignored
   </message>

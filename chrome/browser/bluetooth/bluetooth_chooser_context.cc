@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -287,11 +288,6 @@ bool BluetoothChooserContext::IsAllowedToAccessService(
 }
 
 // static
-std::string BluetoothChooserContext::GetObjectName(const base::Value& object) {
-  return *object.FindStringKey(kDeviceNameKey);
-}
-
-// static
 WebBluetoothDeviceId BluetoothChooserContext::GetObjectDeviceId(
     const base::Value& object) {
   std::string device_id_str = *object.FindStringKey(kWebBluetoothDeviceIdKey);
@@ -305,4 +301,9 @@ bool BluetoothChooserContext::IsValidObject(const base::Value& object) {
          WebBluetoothDeviceId::IsValid(
              *object.FindStringKey(kWebBluetoothDeviceIdKey)) &&
          object.FindDictKey(kServicesKey);
+}
+
+base::string16 BluetoothChooserContext::GetObjectDisplayName(
+    const base::Value& object) {
+  return base::UTF8ToUTF16(*object.FindStringKey(kDeviceNameKey));
 }

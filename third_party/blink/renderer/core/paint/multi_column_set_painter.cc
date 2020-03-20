@@ -29,7 +29,7 @@ void MultiColumnSetPainter::PaintObject(const PaintInfo& paint_info,
   // It's also really unlikely that the columns would overlap another block.
   if (!layout_multi_column_set_.FlowThread() ||
       (paint_info.phase != PaintPhase::kForeground &&
-       paint_info.phase != PaintPhase::kSelection))
+       paint_info.phase != PaintPhase::kSelectionDragImage))
     return;
 
   PaintColumnRules(paint_info, paint_offset);

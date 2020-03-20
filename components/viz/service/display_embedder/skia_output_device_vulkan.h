@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -25,11 +26,18 @@ class VulkanContextProvider;
 class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceVulkan(
+      util::PassKey<SkiaOutputDeviceVulkan>,
       VulkanContextProvider* context_provider,
       gpu::SurfaceHandle surface_handle,
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceVulkan() override;
+
+  static std::unique_ptr<SkiaOutputDeviceVulkan> Create(
+      VulkanContextProvider* context_provider,
+      gpu::SurfaceHandle surface_handle,
+      gpu::MemoryTracker* memory_tracker,
+      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
 
   // SkiaOutputDevice implementation:
   bool Reshape(const gfx::Size& size,
@@ -56,7 +64,7 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
     uint64_t bytes_allocated = 0u;
   };
 
-  bool CreateVulkanSurface();
+  bool Initialize();
   void CreateSkSurface();
 
   VulkanContextProvider* const context_provider_;

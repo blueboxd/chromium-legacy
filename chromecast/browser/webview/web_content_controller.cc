@@ -278,6 +278,13 @@ void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
   }
 }
 
+void WebContentController::RegisterRenderWidgetInputObserverFromRenderFrameHost(
+    WebContentController* web_content_controller,
+    content::RenderFrameHost* render_frame_host) {
+  web_content_controller->RegisterRenderWidgetInputObserver(
+      render_frame_host->GetView()->GetRenderWidgetHost());
+}
+
 void WebContentController::RegisterRenderWidgetInputObserver(
     content::RenderWidgetHost* render_widget_host) {
   auto insertion = current_render_widget_set_.insert(render_widget_host);

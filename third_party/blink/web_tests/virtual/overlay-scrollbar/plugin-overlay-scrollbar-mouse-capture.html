@@ -26,6 +26,8 @@
     var eventHistory = [];
 
     function runTest() {
+        internals.setScrollbarVisibilityInScrollableArea(document, true);
+
         // Mouse down on the scrollbar thumb which is over the plugin.
         eventSender.mouseMoveTo(window.innerWidth - 1, 50);
         eventSender.mouseDown();
@@ -51,9 +53,6 @@
             finishJSTest();
             return;
         }
-        
-        var d = document.getElementById('container');
-        internals.setScrollbarVisibilityInScrollableArea(d, true);
 
         var plugin = document.createElement('object');
         plugin.type = 'application/x-blink-test-plugin';
@@ -71,6 +70,8 @@
             if (startLogging)
                 eventHistory.push('plugin.mousemove');
         });
+
+        var d = document.getElementById('container');
         d.appendChild(plugin);
 
         runTest();

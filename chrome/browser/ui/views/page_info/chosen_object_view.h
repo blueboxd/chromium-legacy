@@ -16,13 +16,15 @@ class ImageView;
 }  // namespace views
 
 class ChosenObjectViewObserver;
+class Profile;
 
 // A ChosenObjectView is a row in the Page Info bubble that shows an individual
 // object (e.g. a Bluetooth device, a USB device) that the current site has
 // access to.
 class ChosenObjectView : public views::View, public views::ButtonListener {
  public:
-  explicit ChosenObjectView(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info);
+  ChosenObjectView(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info,
+                   Profile* profile);
   ~ChosenObjectView() override;
 
   void AddObserver(ChosenObjectViewObserver* observer);

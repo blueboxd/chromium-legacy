@@ -59,11 +59,11 @@ Noise::~Noise() = default;
 
 void Noise::Init(Noise::HandshakeType type) {
   // See https://www.noiseprotocol.org/noise.html#the-handshakestate-object
-  static const char kNNProtocolName[] = "Noise_NNpsk0_P256_AESGCM_SHA256";
+  static const char kKNProtocolName[] = "Noise_KNpsk0_P256_AESGCM_SHA256";
   static const char kNKProtocolName[] = "Noise_NKpsk0_P256_AESGCM_SHA256";
-  static_assert(sizeof(kNKProtocolName) == sizeof(kNNProtocolName),
+  static_assert(sizeof(kNKProtocolName) == sizeof(kKNProtocolName),
                 "protocol names are different lengths");
-  static_assert(sizeof(kNNProtocolName) == crypto::kSHA256Length,
+  static_assert(sizeof(kKNProtocolName) == crypto::kSHA256Length,
                 "name may need padding if not HASHLEN bytes long");
   static_assert(
       std::tuple_size<decltype(chaining_key_)>::value == crypto::kSHA256Length,
@@ -76,8 +76,8 @@ void Noise::Init(Noise::HandshakeType type) {
       memcpy(chaining_key_.data(), kNKProtocolName, sizeof(kNKProtocolName));
       break;
 
-    case HandshakeType::kNNpsk0:
-      memcpy(chaining_key_.data(), kNNProtocolName, sizeof(kNNProtocolName));
+    case HandshakeType::kKNpsk0:
+      memcpy(chaining_key_.data(), kKNProtocolName, sizeof(kKNProtocolName));
       break;
   }
 

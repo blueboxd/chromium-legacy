@@ -387,7 +387,6 @@ class Runner():
         '--xcodebuild-device-runner',
         help='Run tests using xcodebuild\'s on real device.',
         action='store_true',
-        default=False,
     )
     parser.add_argument(
         '--xctest',
@@ -435,13 +434,9 @@ class Runner():
         parser.error('--xcode-parallelization also requires '
                      'both -p/--platform and -v/--version')
 
-      if args.xcodebuild_device_runner and not (args.platform and args.version):
-        parser.error('--xcodebuild-device-runner also requires '
-                     'both -p/--platform and -v/--version')
-
     args, test_args = parser.parse_known_args(args)
-    validate(args)
     load_from_json(args)
+    validate(args)
     self.args = args
     self.test_args = test_args
 

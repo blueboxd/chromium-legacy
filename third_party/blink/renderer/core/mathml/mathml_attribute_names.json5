@@ -9,6 +9,7 @@
   data: [
     "definitionURL",
     "depth",
+    "display",
     "encoding",
     "height",
     "linethickness",

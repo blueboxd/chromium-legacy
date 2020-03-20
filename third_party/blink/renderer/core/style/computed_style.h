@@ -2684,6 +2684,7 @@ class ComputedStyle : public ComputedStyleBase,
            display == EDisplay::kInlineFlex ||
            display == EDisplay::kInlineTable ||
            display == EDisplay::kInlineGrid ||
+           display == EDisplay::kInlineMath ||
            display == EDisplay::kInlineLayoutCustom;
   }
 

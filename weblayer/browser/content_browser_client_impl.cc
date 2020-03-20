@@ -30,6 +30,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -70,6 +71,7 @@
 #include "base/android/path_utils.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
@@ -459,6 +461,15 @@ void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   PopulateWebLayerFrameBinders(render_frame_host, map);
+}
+
+void ContentBrowserClientImpl::RenderProcessWillLaunch(
+    content::RenderProcessHost* host) {
+#if defined(OS_ANDROID)
+  host->AddFilter(new cdm::CdmMessageFilterAndroid(
+      /*can_persist_data*/ true,
+      /*force_to_support_secure_codecs*/ false));
+#endif
 }
 
 void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {

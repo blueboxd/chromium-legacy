@@ -21,12 +21,18 @@
       :host {
         box-sizing: border-box;
         display: block;
-        padding-bottom: 2px;
+        padding-bottom: 5px; /* Prevents focus outlines from being cropped. */
         padding-top: 8px;
       }
 
       :host * {
         -webkit-tap-highlight-color: transparent;
+      }
+
+      #topMenu {
+        display: flex;
+        flex-direction: column;
+        min-width: fit-content;
       }
 
       a[href],

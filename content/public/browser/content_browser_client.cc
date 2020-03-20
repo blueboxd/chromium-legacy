@@ -932,6 +932,7 @@ void ContentBrowserClient::RegisterRendererPreferenceWatcher(
 }
 
 base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
+    network::OriginPolicyState error_reason,
     content::NavigationHandle* handle) {
   return base::nullopt;
 }

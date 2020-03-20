@@ -56,11 +56,13 @@ NativeTheme* NativeTheme::GetInstanceForWeb() {
 #if !defined(OS_WIN)
 // static
 NativeTheme* NativeTheme::GetInstanceForNativeUi() {
-  return NativeThemeAura::instance();
+  static base::NoDestructor<NativeThemeAura> s_native_theme(false, false);
+  return s_native_theme.get();
 }
 
 NativeTheme* NativeTheme::GetInstanceForDarkUI() {
-  return NativeThemeAura::dark_instance();
+  static base::NoDestructor<NativeThemeAura> s_native_theme(false, true);
+  return s_native_theme.get();
 }
 #endif  // OS_WIN
 #endif  // !OS_MACOSX
@@ -90,17 +92,6 @@ NativeThemeAura::NativeThemeAura(bool use_overlay_scrollbars,
 }
 
 NativeThemeAura::~NativeThemeAura() {}
-
-// static
-NativeThemeAura* NativeThemeAura::instance() {
-  static base::NoDestructor<NativeThemeAura> s_native_theme(false, false);
-  return s_native_theme.get();
-}
-
-NativeThemeAura* NativeThemeAura::dark_instance() {
-  static base::NoDestructor<NativeThemeAura> s_native_theme(false, true);
-  return s_native_theme.get();
-}
 
 // static
 NativeThemeAura* NativeThemeAura::web_instance() {

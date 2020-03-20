@@ -34,8 +34,8 @@
 
 const char* GetPortProtectionMessage() {
   static std::string kPortProtectionMessage = base::StringPrintf(
-      "Please protect ports used by %s and related test frameworks to "
-      "prevent access by malicious code.",
+      "Please see https://chromedriver.chromium.org/security-considerations "
+      "for suggestions on keeping %s safe.",
       kChromeDriverProductShortName);
   return kPortProtectionMessage.c_str();
 }

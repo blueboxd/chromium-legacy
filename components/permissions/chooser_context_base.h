@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -120,6 +121,9 @@ class ChooserContextBase : public KeyedService {
   // Validates the structure of an object read from
   // |host_content_settings_map_|.
   virtual bool IsValidObject(const base::Value& object) = 0;
+
+  // Gets the human-readable name for a given object.
+  virtual base::string16 GetObjectDisplayName(const base::Value& object) = 0;
 
  protected:
   // TODO(odejesush): Use this method in all derived classes instead of using a

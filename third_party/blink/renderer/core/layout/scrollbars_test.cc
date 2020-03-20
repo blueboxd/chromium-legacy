@@ -638,8 +638,8 @@ TEST_F(ScrollbarsTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
   ScrollableArea* frame_scroller_area = frame_view->LayoutViewport();
 
   // Scrollbars are hidden at start.
-  scroller_area->SetScrollbarsHiddenIfOverlay(true);
-  frame_scroller_area->SetScrollbarsHiddenIfOverlay(true);
+  scroller_area->SetScrollbarsHiddenForTesting(true);
+  frame_scroller_area->SetScrollbarsHiddenForTesting(true);
   ASSERT_TRUE(scroller_area->HorizontalScrollbar());
   ASSERT_TRUE(scroller_area->VerticalScrollbar());
   ASSERT_TRUE(frame_scroller_area->HorizontalScrollbar());
@@ -657,23 +657,23 @@ TEST_F(ScrollbarsTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
   EXPECT_FALSE(
       scroller_area->VerticalScrollbar()->ShouldParticipateInHitTesting());
 
-  frame_scroller_area->SetScrollbarsHiddenIfOverlay(false);
+  frame_scroller_area->SetScrollbarsHiddenForTesting(false);
   EXPECT_TRUE(frame_scroller_area->HorizontalScrollbar()
                   ->ShouldParticipateInHitTesting());
   EXPECT_TRUE(frame_scroller_area->VerticalScrollbar()
                   ->ShouldParticipateInHitTesting());
-  frame_scroller_area->SetScrollbarsHiddenIfOverlay(true);
+  frame_scroller_area->SetScrollbarsHiddenForTesting(true);
   EXPECT_FALSE(frame_scroller_area->HorizontalScrollbar()
                    ->ShouldParticipateInHitTesting());
   EXPECT_FALSE(frame_scroller_area->VerticalScrollbar()
                    ->ShouldParticipateInHitTesting());
 
-  scroller_area->SetScrollbarsHiddenIfOverlay(false);
+  scroller_area->SetScrollbarsHiddenForTesting(false);
   EXPECT_TRUE(
       scroller_area->HorizontalScrollbar()->ShouldParticipateInHitTesting());
   EXPECT_TRUE(
       scroller_area->VerticalScrollbar()->ShouldParticipateInHitTesting());
-  scroller_area->SetScrollbarsHiddenIfOverlay(true);
+  scroller_area->SetScrollbarsHiddenForTesting(true);
   EXPECT_FALSE(
       scroller_area->HorizontalScrollbar()->ShouldParticipateInHitTesting());
   EXPECT_FALSE(
@@ -815,7 +815,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
       .MainFrameImpl()
       ->GetFrameView()
       ->LayoutViewport()
-      ->SetScrollbarsHiddenIfOverlay(false);
+      ->SetScrollbarsHiddenForTesting(false);
 
   Document& document = GetDocument();
   Element* a_tag = document.getElementById("a");
@@ -856,7 +856,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
       .MainFrameImpl()
       ->GetFrameView()
       ->LayoutViewport()
-      ->SetScrollbarsHiddenIfOverlay(true);
+      ->SetScrollbarsHiddenForTesting(true);
 
   // Ensure hittest only has link
   hit_test_result = HitTest(x, y);
@@ -979,7 +979,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
       .MainFrameImpl()
       ->GetFrameView()
       ->LayoutViewport()
-      ->SetScrollbarsHiddenIfOverlay(false);
+      ->SetScrollbarsHiddenForTesting(false);
 
   frame_resource.Complete("<!DOCTYPE html>");
   Compositor().BeginFrame();
@@ -1017,7 +1017,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
       .MainFrameImpl()
       ->GetFrameView()
       ->LayoutViewport()
-      ->SetScrollbarsHiddenIfOverlay(true);
+      ->SetScrollbarsHiddenForTesting(true);
 
   // Ensure hittest has IFRAME and no scrollbar.
   hit_test_result = HitTest(196, 5);
@@ -2117,7 +2117,7 @@ TEST_F(ScrollbarsTest,
   PaintLayerScrollableArea* scrollable_div =
       ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
 
-  scrollable_div->SetScrollbarsHiddenIfOverlay(false);
+  scrollable_div->SetScrollbarsHiddenForTesting(false);
   ASSERT_TRUE(scrollable_div);
   ASSERT_TRUE(scrollable_div->GetPageScrollbarTheme().UsesOverlayScrollbars());
   ASSERT_TRUE(scrollable_div->VerticalScrollbar());
@@ -2130,7 +2130,7 @@ TEST_F(ScrollbarsTest,
 
   // After paint layer in scrollable dispose, we can still call scrollbar hidden
   // just not change scrollbar.
-  scrollable_div->SetScrollbarsHiddenIfOverlay(true);
+  scrollable_div->SetScrollbarsHiddenForTesting(true);
 
   EXPECT_FALSE(scrollable_div->ScrollbarsHiddenIfOverlay());
 }
@@ -2212,7 +2212,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
       .MainFrameImpl()
       ->GetFrameView()
       ->LayoutViewport()
-      ->SetScrollbarsHiddenIfOverlay(false);
+      ->SetScrollbarsHiddenForTesting(false);
 
   frame_resource.Complete("<!DOCTYPE html><body style='height: 999px'></body>");
   Compositor().BeginFrame();
@@ -2223,7 +2223,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
   iframe_element->contentDocument()
       ->View()
       ->LayoutViewport()
-      ->SetScrollbarsHiddenIfOverlay(false);
+      ->SetScrollbarsHiddenForTesting(false);
 
   // Hit test on and off the main frame scrollbar.
   HitTestResult hit_test_result = HitTest(295, 5);

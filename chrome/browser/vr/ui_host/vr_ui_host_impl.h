@@ -12,7 +12,6 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
-#include "components/bubble/bubble_manager.h"
 #include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/web_contents.h"
@@ -31,7 +30,6 @@ class VRBrowserRendererThreadWin;
 class VRUiHostImpl : public content::VrUiHost,
                      public permissions::PermissionRequestManager::Observer,
                      public content::BrowserXRRuntime::Observer,
-                     public BubbleManager::BubbleManagerObserver,
                      public DesktopMediaPickerManager::DialogObserver {
  public:
   VRUiHostImpl(device::mojom::XRDeviceId device_id,
@@ -80,12 +78,6 @@ class VRUiHostImpl : public content::VrUiHost,
   // PermissionRequestManager::Observer
   void OnBubbleAdded() override;
   void OnBubbleRemoved() override;
-
-  // content::BubbleManager::BubbleManagerObserver
-  void OnBubbleNeverShown(BubbleReference bubble) override;
-  void OnBubbleClosed(BubbleReference bubble,
-                      BubbleCloseReason reason) override;
-  void OnBubbleShown(BubbleReference bubble) override;
 
   // DesktopMediaPickerManager::DialogObserver
   // These are dialogs displayed in response to getDisplayMedia()

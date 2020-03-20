@@ -31,7 +31,13 @@ android_library("java") {
 
 android_resources("java_resources") {
   custom_package = "org.chromium.chrome.browser.ui.appmenu.internal"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/layout/icon_row_menu_item.xml",
+    "java/res/layout/menu_item.xml",
+    "java/res/layout/title_button_menu_item.xml",
+    "java/res/values/dimens.xml",
+    "java/res/values/ids.xml",
+  ]
 
   # Include resource dependencies needed by :java so that resources may
   # all be accessed through the same custom_package.
@@ -75,7 +81,19 @@ android_resources("test_java_resources") {
   testonly = true
 
   custom_package = "org.chromium.chrome.browser.ui.appmenu.test"
-  resource_dirs = [ "test/java/res" ]
+  sources = [
+    "test/java/res/drawable/test_ic_arrow_downward_black_24dp.xml",
+    "test/java/res/drawable/test_ic_arrow_forward_black_24dp.xml",
+    "test/java/res/drawable/test_ic_info_outline_black_24dp.xml",
+    "test/java/res/drawable/test_ic_more_vert_black_24dp.xml",
+    "test/java/res/drawable/test_ic_refresh_black_24dp.xml",
+    "test/java/res/drawable/test_ic_star_border_black_24dp.xml",
+    "test/java/res/drawable/test_ic_vintage_filter.xml",
+    "test/java/res/layout/test_app_menu_activity_layout.xml",
+    "test/java/res/layout/test_menu_footer.xml",
+    "test/java/res/layout/test_menu_header.xml",
+    "test/java/res/menu/test_menu.xml",
+  ]
   deps = [ ":java_resources" ]
 }
 

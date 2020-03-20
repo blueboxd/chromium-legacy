@@ -292,8 +292,18 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: true,
           },
+          scroll_acceleration: {
+            key: 'settings.touchpad.scroll_acceleration',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
           sensitivity2: {
             key: 'settings.touchpad.sensitivity2',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 3,
+          },
+          scroll_sensitivity: {
+            key: 'settings.touchpad.scroll_sensitivity',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 3,
           },
@@ -314,8 +324,18 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: true,
           },
+          scroll_acceleration: {
+            key: 'settings.mouse.scroll_acceleration',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
           sensitivity2: {
             key: 'settings.mouse.sensitivity2',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 4,
+          },
+          scroll_sensitivity: {
+            key: 'settings.mouse.scroll_sensitivity',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 4,
           },

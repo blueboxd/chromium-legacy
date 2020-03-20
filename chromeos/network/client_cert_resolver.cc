@@ -554,7 +554,7 @@ void ClientCertResolver::NetworkConnectionStateChanged(
     return;
   if (!network->IsConnectingOrConnected()) {
     NET_LOG(EVENT) << "ClientCertResolver: ConnectionStateChanged: "
-                   << network->name();
+                   << NetworkId(network);
     ResolveNetworks(NetworkStateHandler::NetworkStateList(1, network));
   }
 }
@@ -591,7 +591,7 @@ void ClientCertResolver::PolicyAppliedToNetwork(
     return;
   }
   NET_LOG(EVENT) << "ClientCertResolver: PolicyAppliedToNetwork: "
-                 << network->name();
+                 << NetworkId(network);
   NetworkStateHandler::NetworkStateList networks;
   networks.push_back(network);
   ResolveNetworks(networks);
@@ -706,7 +706,7 @@ void ClientCertResolver::ConfigureCertificates(
     network_properties_changed_ = true;
 
     NET_LOG(EVENT) << "Configuring certificate for network: "
-                   << match.service_path;
+                   << NetworkPathId(match.service_path);
 
     base::DictionaryValue shill_properties;
     if (match.matching_cert.has_value()) {

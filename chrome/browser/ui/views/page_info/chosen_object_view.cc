@@ -23,7 +23,8 @@
 #include "ui/views/layout/grid_layout.h"
 
 ChosenObjectView::ChosenObjectView(
-    std::unique_ptr<PageInfoUI::ChosenObjectInfo> info)
+    std::unique_ptr<PageInfoUI::ChosenObjectInfo> info,
+    Profile* profile)
     : info_(std::move(info)) {
   // |ChosenObjectView| layout (fills parent):
   // *------------------------------------*
@@ -69,7 +70,8 @@ ChosenObjectView::ChosenObjectView(
 
   // Create the label that displays the chosen object name.
   auto label = std::make_unique<views::Label>(
-      PageInfoUI::ChosenObjectToUIString(*info_), CONTEXT_BODY_TEXT_LARGE);
+      PageInfoUI::ChosenObjectToUIString(*info_, profile),
+      CONTEXT_BODY_TEXT_LARGE);
   icon_->SetImage(
       PageInfoUI::GetChosenObjectIcon(*info_, false, label->GetEnabledColor()));
   layout->AddView(std::move(label));

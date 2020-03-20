@@ -207,12 +207,14 @@ if (is_win || is_mac) {
     }
 
     if (is_mac) {
-      sources += [ "test/integration_tests_mac.cc" ]
+      sources += [ "test/integration_tests_mac.mm" ]
 
       deps += [
+        "//chrome/common/mac:launchd",
         "//chrome/updater/mac:updater_bundle",
         "//chrome/updater/mac:updater_setup_tests",
         "//chrome/updater/mac:updater_tests",
+        "//chrome/updater/mac:xpc_names",
       ]
 
       data_deps = [

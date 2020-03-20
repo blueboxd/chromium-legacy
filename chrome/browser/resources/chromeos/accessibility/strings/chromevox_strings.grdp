@@ -15,9 +15,6 @@
   <message desc="The description of the toggleStickyMode key. Displayed in the Options page." name="IDS_CHROMEVOX_TOGGLE_STICKY_MODE">
     Enable/Disable sticky mode
   </message>
-  <message desc="The description of the prefix key. Displayed in the Options page." name="IDS_CHROMEVOX_PREFIX_KEY">
-    Prefix key
-  </message>
   <message desc="The description of the handleTab key. Displayed in the Options page." name="IDS_CHROMEVOX_HANDLE_TAB_NEXT">
     Jump to next focusable item
   </message>
@@ -36,12 +33,6 @@
   <message desc="The description of the right key. Displayed in the Options page." name="IDS_CHROMEVOX_RIGHT">
     Move right
   </message>
-  <message desc="The description of the skip backward key that functions only during continuous reading (when ChromeVox is speaking the entire page without pausing). The skip backward key allows the user to skip backward without pausing the continuous reading. Displayed in the Options page." name="IDS_CHROMEVOX_SKIP_BACKWARD">
-    Skip backward during continuous reading
-  </message>
-  <message desc="The description of the skip forward key that functions only during continuous reading (when ChromeVox is speaking the entire page without pausing). The skip forward key allows the user to skip forward without pausing the continuous reading. Displayed in the Options page." name="IDS_CHROMEVOX_SKIP_FORWARD">
-    Skip forward during continuous reading
-  </message>
   <message desc="The description of the previousGranularity key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_GRANULARITY">
     Decrease navigation granularity
   </message>
@@ -53,9 +44,6 @@
   </message>
   <message desc="The description of the nextGranularity gesture.  Navigation granularity can be e.g. &quot;word level&quot;.  Granularity is also referred as &quot;level of detail&quot;.  c.f. http://chromevox.com/tutorial/text_navigation.html Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_AT_GRANULARITY">
     Move to next at granularity
-  </message>
-  <message desc="The description of the actOnCurrentItem key. The current item is the HTML element which has focus.  Taking action is similar to using the mouse to click on the element. Displayed in the Options page." name="IDS_CHROMEVOX_ACT_ON_CURRENT_ITEM">
-    Take action on current item
   </message>
   <message desc="The description of the forceClickOnCurrentItem key. Displayed in the Options page." name="IDS_CHROMEVOX_FORCE_CLICK_ON_CURRENT_ITEM">
     Click on current item
@@ -74,12 +62,6 @@
   </message>
   <message desc="The description of the command to show the ChromeVox menu. This menu is the application menu for ChromeVox and contains commands, as well as other useful menu items such as help." name="IDS_CHROMEVOX_SHOW_PANEL_MENU">
     Open ChromeVox menus
-  </message>
-  <message desc="The description of the hidePowerKey key. Displayed in the Options page." name="IDS_CHROMEVOX_HIDE_POWER_KEY">
-    Hide ChromeVox help
-  </message>
-  <message desc="Spoken instruction on navigating power key." name="IDS_CHROMEVOX_POWER_KEY_HELP">
-    Press up or down to review commands, press enter to activate
   </message>
   <message desc="The description of the help key. Displayed in the Options page." name="IDS_CHROMEVOX_HELP">
     Open ChromeVox tutorial
@@ -129,29 +111,11 @@
   <message desc="The description of the showLandmarksList key. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_LANDMARKS_LIST">
     Show landmarks list
   </message>
-  <message desc="The description of the previousRow key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_ROW">
-    Previous table row
-  </message>
-  <message desc="The description of the nextRow key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_ROW">
-    Next table row
-  </message>
-  <message desc="The description of the previousCol key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_COL">
-    Previous table column
-  </message>
-  <message desc="The description of the nextCol key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_COL">
-    Next table column
-  </message>
   <message desc="The description of the announceHeaders key. Displayed in the Options page." name="IDS_CHROMEVOX_ANNOUNCE_HEADERS">
     Announce the headers of the current cell
   </message>
   <message desc="The description of the speakTableLocation key.  This key's action will describe where in the table the focus currently is. Displayed in the Options page." name="IDS_CHROMEVOX_SPEAK_TABLE_LOCATION">
     Announce current cell coordinates
-  </message>
-  <message desc="The description of the guessRowHeader key. In a table, attempt to determine the header for the row containing the current cell, even if uncertain. Displayed in the Options page." name="IDS_CHROMEVOX_GUESS_ROW_HEADER">
-    Make a guess at the row header of the current cell
-  </message>
-  <message desc="The description of the guessColHeader key. Displayed in the Options page." name="IDS_CHROMEVOX_GUESS_COL_HEADER">
-    Make a guess at the column header of the current cell
   </message>
   <message desc="The description of the skipToBeginning key. Displayed in the Options page." name="IDS_CHROMEVOX_SKIP_TO_BEGINNING">
     Go to beginning of table
@@ -255,12 +219,6 @@
   <message desc="The description of the previousListItem key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_LIST_ITEM">
     Previous list item
   </message>
-  <message desc="The description of the nextJump key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_JUMP">
-    Next jump
-  </message>
-  <message desc="The description of the previousJump key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_JUMP">
-    Previous jump
-  </message>
   <message desc="The description of the nextLink key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_LINK">
     Next link
   </message>
@@ -285,23 +243,11 @@
   <message desc="The description of the previousMedia key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_MEDIA">
     Previous media
   </message>
-  <message desc="The description of the nextBlockquote key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_BLOCKQUOTE">
-    Next block quote
-  </message>
-  <message desc="The description of the previousBlockquote key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_BLOCKQUOTE">
-    Previous block quote
-  </message>
   <message desc="The description of the nextRadio key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_RADIO">
     Next radio button
   </message>
   <message desc="The description of the previousRadio key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_RADIO">
     Previous radio button
-  </message>
-  <message desc="The description of the nextSlider key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_SLIDER">
-    Next slider
-  </message>
-  <message desc="The description of the previousSlider key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_SLIDER">
-    Previous slider
   </message>
   <message desc="The description of the nextTable key. Displayed in the Options page." name="IDS_CHROMEVOX_NEXT_TABLE">
     Next table
@@ -332,12 +278,6 @@
   </message>
   <message desc="The description of the previousLandmark key. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_LANDMARK">
     Previous landmark
-  </message>
-  <message desc="The description of the benchmark key.  Launches a benchmark tool useful for debugging. Displayed in the Options page." name="IDS_CHROMEVOX_BENCHMARK">
-    Debug benchmark
-  </message>
-  <message desc="The description of the announcePosition key. Displayed in the Options page." name="IDS_CHROMEVOX_ANNOUNCE_POSITION">
-    Announces a brief description of the current position
   </message>
   <message desc="The description of the fullyDescribe key. Displayed in the Options page." name="IDS_CHROMEVOX_FULLY_DESCRIBE">
     Announces a complete description of the current position
@@ -370,18 +310,6 @@
   <message desc="Labels the change display style button when the display style is interleave. Pressing the button would put all the text on the left side and all the braille cells on the right." name="IDS_CHROMEVOX_OPTIONS_CHANGE_CURRENT_DISPLAY_STYLE_SIDE_BY_SIDE">
     Change display style to side by side
   </message>
-  <message desc="The summary of the extension's options.  Shown at the top of the options page." name="IDS_CHROMEVOX_OPTIONS_PAGE_SUMMARY">
-    Use the options below to customize ChromeVox. Changes take effect immediately.
-  </message>
-  <message desc="An option to enable the page focus following the mouse.  Focus represents the current HTML element or group of elements that are being spoken and can be acted upon.  There is also a visual UI which highlights the focused elements. * This key's action allows the user to change focus with the mouse.  Focus can also be changed using the ChromeVox navigation keys and an API." name="IDS_CHROMEVOX_OPTIONS_MOUSE_FOCUS_FOLLOWS">
-    Use the mouse to change focus
-  </message>
-  <message desc="An option to have an item's context placed at the beginning of its description. For example, reload button, toolbar would become, toolbar, reload button" name="IDS_CHROMEVOX_OPTIONS_OUTPUT_CONTEXT_FIRST">
-    Display an item's context before other information (such as its name)
-  </message>
-  <message desc="An option to enhance the experience of specific sites such as Google Search." name="IDS_CHROMEVOX_OPTIONS_SITE_SPECIFIC_ENHANCEMENTS">
-    Enhance specific sites (like Google Search)
-  </message>
   <message desc="An option to use more verbose feedback for the user." name="IDS_CHROMEVOX_OPTIONS_VERBOSITY_VERBOSE">
     Enable verbose descriptions
   </message>
@@ -399,9 +327,6 @@
   </message>
   <message desc="An option to use audio suspension while text to speech is speaking." name="IDS_CHROMEVOX_OPTIONS_AUDIO_suspend">
     Pause playback when ChromeVox is speaking
-  </message>
-  <message desc="An option to show the cursor between characters." name="IDS_CHROMEVOX_OPTIONS_CURSOR_BETWEEN_CHARACTERS">
-    Place cursor between characters when editing text (like Mac OS X)
   </message>
   <message desc="An option to speak text under the mouse." name="IDS_CHROMEVOX_OPTIONS_SPEAK_MOUSE">
     Speak text under the mouse
@@ -438,24 +363,6 @@
   </message>
   <message desc="Labels the checkbox that enables wrapping of words if a whole line doesn't fit on a braille display. When this option is enabled, an effort is made to keep the characters of words together on the display. Otherwise, as many characters as possible are put on each braille display line, possible splitting words between lines." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_WORD_WRAP">
     Enable word wrap
-  </message>
-  <message desc="An options page section header for options about key shortcuts. This section lets users change the key bindings for ChromeVox actions. The section has a list of actions and a text field to change the binding (e.g. Ctrl-B) for each action." name="IDS_CHROMEVOX_OPTIONS_KEYBOARD_SHORTCUTS">
-    Keyboard shortcuts
-  </message>
-  <message desc="Labels the key map selection combo box. Key maps describe a pairing of keys users use to invoke a command." name="IDS_CHROMEVOX_OPTIONS_KEYMAP_DESCRIPTION">
-    Change the current keymap by selecting an option from the list below
-  </message>
-  <message desc="A button to reset the key assignments in the options page." name="IDS_CHROMEVOX_OPTIONS_SELECT_KEYS">
-    Reset current keymap
-  </message>
-  <message desc="Labels the keyboard shortcut section." name="IDS_CHROMEVOX_OPTIONS_SHORTCUTS_DESCRIPTION">
-    Customize keyboard shortcuts for frequently used commands by typing them into the corresponding fields below
-  </message>
-  <message desc="An options page section header for the modifier key section." name="IDS_CHROMEVOX_OPTIONS_MODIFIER_KEYS">
-    Modifier keys
-  </message>
-  <message desc="An option for setting the key combination that will be used as the ChromeVox modifier key (aka, the 'Cvox' key)." name="IDS_CHROMEVOX_OPTIONS_CVOX_MODIFIER_KEY">
-    ChromeVox modifier key
   </message>
   <message desc="Labels the checkbox that enables developer options for ChromeVox." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_OPTIONS">
     Enable Developer Options
@@ -505,29 +412,11 @@
   <message desc="Spoken when the user changes to different tab showing the 'title' page." name="IDS_CHROMEVOX_CHROME_TAB_SELECTED">
     <ph name="title">$1</ph>, tab
   </message>
-  <message desc="Spoken when the user changes to a different normal window showing the 'title' page." name="IDS_CHROMEVOX_CHROME_NORMAL_WINDOW_SELECTED">
-    window <ph name="title">$1</ph> tab
-  </message>
-  <message desc="Spoken when the user changes to a different incognito window showing the 'title' page in the current (displayed) tab." name="IDS_CHROMEVOX_CHROME_INCOGNITO_WINDOW_SELECTED">
-    incognito window <ph name="title">$1</ph> tab
-  </message>
   <message desc="Spoken when the user opens a Chrome menu named 'title'." name="IDS_CHROMEVOX_CHROME_MENU_OPENED">
     <ph name="title">$1</ph> menu opened
   </message>
   <message desc="Spoken when the user closes any Chrome menu." name="IDS_CHROMEVOX_CHROME_MENU_CLOSED">
     menu closed
-  </message>
-  <message desc="Describes a HTML checkbox named 'name' in the checked state." name="IDS_CHROMEVOX_DESCRIBE_CHECKBOX_CHECKED">
-    <ph name="name">$1</ph> checkbox checked
-  </message>
-  <message desc="The checked state for a checkbox." name="IDS_CHROMEVOX_CHECKBOX_CHECKED_STATE">
-    checked
-  </message>
-  <message desc="Describes a HTML checkbox named 'name' in the unchecked state." name="IDS_CHROMEVOX_DESCRIBE_CHECKBOX_UNCHECKED">
-    <ph name="name">$1</ph>, checkbox not checked
-  </message>
-  <message desc="The unchecked state for a checkbox." name="IDS_CHROMEVOX_CHECKBOX_UNCHECKED_STATE">
-    not checked
   </message>
   <message desc="Describes a switch named 'name' in the on/checked state." name="IDS_CHROMEVOX_DESCRIBE_SWITCH_ON">
     <ph name="name">$1</ph>, switch on
@@ -538,68 +427,14 @@
   <message desc="Describes a HTML radio button named 'name' in the selected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_SELECTED">
     <ph name="name">$1</ph>, radio button selected
   </message>
-  <message desc="The selected state for a radio button." name="IDS_CHROMEVOX_RADIO_SELECTED_STATE">
-    selected
-  </message>
   <message desc="Describes a HTML radio button named 'name' in the unselected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_UNSELECTED">
     <ph name="name">$1</ph>, radio button unselected
-  </message>
-  <message desc="The unselected state for a radio button." name="IDS_CHROMEVOX_RADIO_UNSELECTED_STATE">
-    unselected
-  </message>
-  <message desc="Describes a menu named 'name'." name="IDS_CHROMEVOX_DESCRIBE_MENU">
-    <ph name="name">$1</ph>, menu
-  </message>
-  <message desc="Describes a menu item named 'name'." name="IDS_CHROMEVOX_DESCRIBE_MENU_ITEM">
-    <ph name="name">$1</ph>, menu item
-  </message>
-  <message desc="Describes a menu item named 'name' with a submenu." name="IDS_CHROMEVOX_DESCRIBE_MENU_ITEM_WITH_SUBMENU">
-    <ph name="name">$1</ph>, menu item, with submenu
   </message>
   <message desc="Describes a window named 'name'." name="IDS_CHROMEVOX_DESCRIBE_WINDOW">
     <ph name="name">$1</ph>, window
   </message>
-  <message desc="Describes a HTML textbox named 'name' with value 'value'." name="IDS_CHROMEVOX_DESCRIBE_TEXTBOX">
-    <ph name="value">$1</ph>, <ph name="name">$2</ph>, text box
-  </message>
-  <message desc="Describes an unnamed HTML textbox with value 'value'." name="IDS_CHROMEVOX_DESCRIBE_UNNAMED_TEXTBOX">
-    <ph name="value">$1</ph>, text box
-  </message>
-  <message desc="Describes a HTML password textbox named 'name' with value 'value'." name="IDS_CHROMEVOX_DESCRIBE_PASSWORD">
-    <ph name="value">$1</ph>, <ph name="name">$2</ph>, password text box
-  </message>
-  <message desc="Describes an unnamed HTML password textbox with value 'value'." name="IDS_CHROMEVOX_DESCRIBE_UNNAMED_PASSWORD">
-    <ph name="value">$1</ph>, password text box
-  </message>
-  <message desc="Describes a HTML button named 'name'." name="IDS_CHROMEVOX_DESCRIBE_BUTTON">
-    <ph name="name">$1</ph>, button
-  </message>
-  <message desc="Describes a HTML combo box named 'name'." name="IDS_CHROMEVOX_DESCRIBE_COMBOBOX">
-    <ph name="value">$1</ph>, <ph name="name">$2</ph>, combo box
-  </message>
-  <message desc="Describes an unnamed HTML combo box." name="IDS_CHROMEVOX_DESCRIBE_UNNAMED_COMBOBOX">
-    <ph name="value">$1</ph>, combo box
-  </message>
-  <message desc="Describes a HTML listbox named 'name'." name="IDS_CHROMEVOX_DESCRIBE_LISTBOX">
-    <ph name="value">$1</ph>, <ph name="name">$2</ph>, list box
-  </message>
-  <message desc="Describes an unnamed HTML list box." name="IDS_CHROMEVOX_DESCRIBE_UNNAMED_LISTBOX">
-    <ph name="value">$1</ph>, list box
-  </message>
-  <message desc="Describes a HTML link named 'name'." name="IDS_CHROMEVOX_DESCRIBE_LINK">
-    <ph name="name">$1</ph>, link
-  </message>
   <message desc="Describes a Chrome tab named 'name'." name="IDS_CHROMEVOX_DESCRIBE_TAB">
     <ph name="name">$1</ph>, tab
-  </message>
-  <message desc="Describes a slider with name 'name' and value 'value'." name="IDS_CHROMEVOX_DESCRIBE_SLIDER">
-    <ph name="value">$1</ph> <ph name="name">$2</ph> slider
-  </message>
-  <message desc="Spoken through the a11y api after describing an element if it is selected." name="IDS_CHROMEVOX_DESCRIBE_SELECTED">
-    , selected
-  </message>
-  <message desc="Spoken through the a11y api after describing an element if it is unselected." name="IDS_CHROMEVOX_DESCRIBE_UNSELECTED">
-    , unselected
   </message>
   <message desc="Spoken through the a11y api after describing an element if it is part of a group." name="IDS_CHROMEVOX_DESCRIBE_INDEX">
     ''' <ph name="index">$1</ph> of <ph name="total">$2</ph> '''
@@ -619,14 +454,8 @@
   <message desc="Describes the volume of synthesized speech as a percentage where 100% is full volume." name="IDS_CHROMEVOX_ANNOUNCE_VOLUME">
     Volume <ph name="percent">$1</ph> percent
   </message>
-  <message desc="Spoken when the user exits a dialog.  For example an alert dialog." name="IDS_CHROMEVOX_EXITING_DIALOG">
-    Exited dialog
-  </message>
   <message desc="Spoken when the user exits a container." name="IDS_CHROMEVOX_EXITED_CONTAINER">
     Exited <ph name="type">$1</ph>.
-  </message>
-  <message desc="Spoken when the user enters a dialog with the text 'text'." name="IDS_CHROMEVOX_ENTERING_DIALOG">
-    Entered dialog
   </message>
   <message desc="Spoken before the list of elements when a live region of a page is removed." name="IDS_CHROMEVOX_LIVE_REGIONS_REMOVED">
     removed:
@@ -637,44 +466,8 @@
   <message desc="Tells the user that sticky mode is disabled.  Sticky mode allows the user to navigate without pressing the modifier keys." name="IDS_CHROMEVOX_STICKY_MODE_DISABLED">
     Sticky mode disabled
   </message>
-  <message desc="Prompt spoken when the user first opens the Keyboard Help Widget." name="IDS_CHROMEVOX_KEYBOARD_HELP_INTRO">
-    Keyboard Help
-  </message>
-  <message desc="Prompt spoken when user opens the Context Menu Widget." name="IDS_CHROMEVOX_CONTEXT_MENU_INTRO">
-    Context Menu
-  </message>
-  <message desc="Prompt spoken as a generic name for any choice widget of some type." name="IDS_CHROMEVOX_CHOICE_WIDGET_NAME">
-    <ph name="type">$1</ph> list.
-  </message>
-  <message desc="Prompt spoken as a help message when any choice widget is opened." name="IDS_CHROMEVOX_CHOICE_WIDGET_HELP">
-    Use up and down arrow keys to browse, or type to search
-  </message>
-  <message desc="Prompt spoken when any ChoiceWidget exits." name="IDS_CHROMEVOX_CHOICE_WIDGET_EXITED">
-    Exited
-  </message>
-  <message desc="Spoken when table mode reachs the end of a cell." name="IDS_CHROMEVOX_END_OF_CELL">
-    End of cell
-  </message>
   <message desc="Spoken when the user reads a link without a URL." name="IDS_CHROMEVOX_NO_URL_FOUND">
     No URL found
-  </message>
-  <message desc="Spoken, in table mode, when the user leaves an HTML table." name="IDS_CHROMEVOX_LEAVING_TABLE">
-    Leaving table
-  </message>
-  <message desc="Spoken, in table mode, when the user leaves a grid." name="IDS_CHROMEVOX_LEAVING_GRID">
-    Leaving grid
-  </message>
-  <message desc="Spoken, in table mode, when the user is inside an HTML table." name="IDS_CHROMEVOX_INSIDE_TABLE">
-    Inside table
-  </message>
-  <message desc="Spoken when the user attempts to enter table mode, but there is no HTML tables." name="IDS_CHROMEVOX_NO_TABLES">
-    No table found
-  </message>
-  <message desc="Spoken when the user attempts a table mode command, but is not in a table." name="IDS_CHROMEVOX_NOT_INSIDE_TABLE">
-    Not inside table
-  </message>
-  <message desc="Spoken when the user attempts to use a table command inside a table, but without using table mode." name="IDS_CHROMEVOX_NOT_IN_TABLE_MODE">
-    Not in table mode
   </message>
   <message desc="Spoken, in table mode, when the user attempts to navigate to a non-existant next row." name="IDS_CHROMEVOX_NO_CELL_BELOW">
     No cell below
@@ -687,33 +480,6 @@
   </message>
   <message desc="Spoken, in table mode, when the user attempts to navigate to a non-existant row to the left." name="IDS_CHROMEVOX_NO_CELL_LEFT">
     No cell left
-  </message>
-  <message desc="Spoken, in table mode, when the user moves to an empty cell." name="IDS_CHROMEVOX_EMPTY_CELL">
-    Empty cell
-  </message>
-  <message desc="Spoken, in table mode, when the user moves to a cell that has rowspan or colspan &gt; 1." name="IDS_CHROMEVOX_SPANNED">
-    Spanned
-  </message>
-  <message desc="Describes a row header in an HTML table." name="IDS_CHROMEVOX_ROW_HEADER">
-    Row header:
-  </message>
-  <message desc="Describes an empty row header in an HTML table." name="IDS_CHROMEVOX_EMPTY_ROW_HEADER">
-    Empty row header
-  </message>
-  <message desc="Describes a column header in an HTML table." name="IDS_CHROMEVOX_COLUMN_HEADER">
-    Column header:
-  </message>
-  <message desc="Describes an empty column header in an HTML table." name="IDS_CHROMEVOX_EMPTY_COLUMN_HEADER">
-    Empty column header
-  </message>
-  <message desc="Describes the headers on a table with no headers." name="IDS_CHROMEVOX_NO_HEADERS">
-    No headers
-  </message>
-  <message desc="Describes the headers on a table with empty headers." name="IDS_CHROMEVOX_EMPTY_HEADERS">
-    Empty headers
-  </message>
-  <message desc="Descibes the user's location within a table." name="IDS_CHROMEVOX_TABLE_LOCATION">
-    Row <ph name="rowIndex">$1</ph> of <ph name="rowTotal">$2</ph>, Column <ph name="colIndex">$3</ph> of <ph name="colTotal">$4</ph>
   </message>
   <message desc="summarizes a table." name="IDS_CHROMEVOX_TABLE_SUMMARY">
     Table <ph name="tableName">$1</ph>, <ph name="tableRows">$2</ph> by <ph name="tableCols">$3</ph>
@@ -781,18 +547,6 @@
   <message desc="Spoken if the user attempts to jump to the previous level 6 heading when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_HEADING_6">
     No previous level 6 heading
   </message>
-  <message desc="Spoken if the user attempts to jump to the next item that isn\'t a link when none exists." name="IDS_CHROMEVOX_NO_NEXT_NOT_LINK">
-    No next item that isn't a link
-  </message>
-  <message desc="Spoken if the user attempts to jump to the previous item that isn\'t a link when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_NOT_LINK">
-    No previous item that isn't a link
-  </message>
-  <message desc="Spoken if the user attempts to jump to the next anchor when none exists." name="IDS_CHROMEVOX_NO_NEXT_ANCHOR">
-    No next anchor
-  </message>
-  <message desc="Spoken if the user attempts to jump to the previous anchor when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_ANCHOR">
-    No previous anchor
-  </message>
   <message desc="Spoken if the user attempts to jump to the next link when none exists." name="IDS_CHROMEVOX_NO_NEXT_LINK">
     No next link
   </message>
@@ -835,23 +589,11 @@
   <message desc="Spoken if the user attempts to jump to the previous list item when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_LIST_ITEM">
     No previous list item
   </message>
-  <message desc="Spoken if the user attempts to jump to the next blockquote when none exists." name="IDS_CHROMEVOX_NO_NEXT_BLOCKQUOTE">
-    No next blockquote
-  </message>
-  <message desc="Spoken if the user attempts to jump to the previous blockquote when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_BLOCKQUOTE">
-    No previous blockquote
-  </message>
   <message desc="Spoken if the user attempts to jump to the next form field when none exists." name="IDS_CHROMEVOX_NO_NEXT_FORM_FIELD">
     No next form field
   </message>
   <message desc="Spoken if the user attempts to jump to the previous form field when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_FORM_FIELD">
     No previous form field
-  </message>
-  <message desc="Spoken if the user attempts to jump to the next jump point when none exists." name="IDS_CHROMEVOX_NO_NEXT_JUMP">
-    No next jump point
-  </message>
-  <message desc="Spoken if the user attempts to jump to the previous jump point when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_JUMP">
-    No previous jump point
   </message>
   <message desc="Spoken if the user attempts to jump to the next ARIA landmark when none exists." name="IDS_CHROMEVOX_NO_NEXT_LANDMARK">
     No next ARIA landmark
@@ -901,38 +643,8 @@
   <message desc="Spoken if the user attempts to jump to the previous control when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_CONTROL">
     No previous control
   </message>
-  <message desc="Spoken when the current HTML element is clicked." name="IDS_CHROMEVOX_ELEMENT_CLICKED">
-    Clicked
-  </message>
-  <message desc="Spoken when the current HTML element is double clicked." name="IDS_CHROMEVOX_ELEMENT_DOUBLE_CLICKED">
-    double clicked
-  </message>
-  <message desc="Spoken in PowerKey if there are no headings to display." name="IDS_CHROMEVOX_POWERKEY_NO_HEADINGS">
-    No headings
-  </message>
-  <message desc="Spoken in PowerKey if there are no links to display." name="IDS_CHROMEVOX_POWERKEY_NO_LINKS">
-    No links
-  </message>
-  <message desc="Spoken in PowerKey if there are no forms to display." name="IDS_CHROMEVOX_POWERKEY_NO_FORMS">
-    No forms
-  </message>
-  <message desc="Spoken in PowerKey if there are no tables to display." name="IDS_CHROMEVOX_POWERKEY_NO_TABLES">
-    No tables
-  </message>
   <message desc="Spoken in PowerKey if there are no ARIA landmarks to display." name="IDS_CHROMEVOX_POWERKEY_NO_LANDMARKS">
     No ARIA landmarks
-  </message>
-  <message desc="Spoken in PowerKey if there are no jumps to display." name="IDS_CHROMEVOX_POWERKEY_NO_JUMPS">
-    No jumps
-  </message>
-  <message desc="Describes the list position of a list item in spoken feedback." name="IDS_CHROMEVOX_LIST_POSITION">
-    <ph name="index">$1</ph> of <ph name="total">$2</ph>
-  </message>
-  <message desc="Describes the list position of a list item in braille." name="IDS_CHROMEVOX_LIST_POSITION_BRL">
-    <ph name="index">$1</ph>/<ph name="total">$2</ph>
-  </message>
-  <message desc="Spoken after a menu is spoken if the menu has a submenu. For example &quot;Menu Options has submenu&quot;" name="IDS_CHROMEVOX_ARIA_HAS_SUBMENU">
-    has submenu
   </message>
   <message desc="Spoken after an element is spoken if the element has a pop up. For example &quot;Button Add friends has pop up&quot;" name="IDS_CHROMEVOX_ARIA_HAS_POPUP">
     has pop up
@@ -1549,12 +1261,6 @@
   <message desc="Describes an element with the ARIA attribute aria-selected=false." name="IDS_CHROMEVOX_ARIA_SELECTED_FALSE">
     Not selected
   </message>
-  <message desc="Spoken to describe a visited link." name="IDS_CHROMEVOX_VISITED_LINK">
-    Visited link
-  </message>
-  <message desc="Shown on a braille display as a suffix to visited links in a document. When translating, try to find a contracted form of the translation for 'visited link' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_VISITED_LINK_BRL">
-    vlnk
-  </message>
   <message desc="Spoken to describe the visited state (e.g. for links)." name="IDS_CHROMEVOX_VISITED_STATE">
     Visited
   </message>
@@ -1696,29 +1402,11 @@
   <message desc="Brailled to describe a &lt;audio&gt; tag." name="IDS_CHROMEVOX_TAG_AUDIO_BRL">
     audio
   </message>
-  <message desc="Describes an &lt;input&gt; element with type=color." name="IDS_CHROMEVOX_INPUT_TYPE_COLOR">
-    Color picker
-  </message>
-  <message desc="Brailles an &lt;input&gt; element with type=color." name="IDS_CHROMEVOX_INPUT_TYPE_COLOR_BRL">
-    color picker
-  </message>
-  <message desc="Describes an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_DATETIME">
-    Date time control
-  </message>
-  <message desc="Brailles an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_DATETIME_BRL">
-    date time
-  </message>
   <message desc="Describes an &lt;input&gt; element with type=time." name="IDS_CHROMEVOX_INPUT_TYPE_TIME">
     Time control
   </message>
   <message desc="Brailles an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_TIME_BRL">
     time
-  </message>
-  <message desc="Describes an &lt;input&gt; element with type=datetime-local." name="IDS_CHROMEVOX_INPUT_TYPE_DATETIME_LOCAL">
-    Date time control
-  </message>
-  <message desc="Brailles an &lt;input&gt; element with type=datetime-local." name="IDS_CHROMEVOX_INPUT_TYPE_DATETIME_LOCAL_BRL">
-    date time
   </message>
   <message desc="Describes an &lt;input&gt; element with type=date." name="IDS_CHROMEVOX_INPUT_TYPE_DATE">
     Date control
@@ -1732,18 +1420,6 @@
   <message desc="Shown on a braille display for a text field that accept an email address as input. When translating, keep the @ sign and try to find an abbreviation for 'edit field 8 dot' according to local conventions; 8 dot refers to the braille table chosen by the user that includes 8 dots in a braille cell appropriate for writing computer symbols. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL_BRL">
     @ed 8dot
   </message>
-  <message desc="Describes an &lt;input&gt; element with type=file." name="IDS_CHROMEVOX_INPUT_TYPE_FILE">
-    File selection
-  </message>
-  <message desc="Brailles an &lt;input&gt; element with type=file." name="IDS_CHROMEVOX_INPUT_TYPE_FILE_BRL">
-    file
-  </message>
-  <message desc="Describes an &lt;input&gt; element with type=month." name="IDS_CHROMEVOX_INPUT_TYPE_MONTH">
-    Month control
-  </message>
-  <message desc="Shown on a braille display for a control allowing the user to input a month value. When translating, stick to lowercase." name="IDS_CHROMEVOX_INPUT_TYPE_MONTH_BRL">
-    month
-  </message>
   <message desc="Describes an &lt;input&gt; element with type=number." name="IDS_CHROMEVOX_INPUT_TYPE_NUMBER">
     Edit text numeric only
   </message>
@@ -1755,12 +1431,6 @@
   </message>
   <message desc="Shown on a braille display for a password text field. When translating, try to find a contracted form of the translation of 'password edit' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_PASSWORD_BRL">
     pwded
-  </message>
-  <message desc="Describes an &lt;input&gt; element with type=reset." name="IDS_CHROMEVOX_INPUT_TYPE_RESET">
-    Reset
-  </message>
-  <message desc="Shown on a braille display for a reset button. When translating, stick to lowercase." name="IDS_CHROMEVOX_INPUT_TYPE_RESET_BRL">
-    reset
   </message>
   <message desc="Describes an &lt;input&gt; element with type=search." name="IDS_CHROMEVOX_INPUT_TYPE_SEARCH">
     Edit text, search entry
@@ -1780,12 +1450,6 @@
   <message desc="Shown on a braille display to describe a text field for entering a URL. When translating, try to find a contracted form of the translation for 'url edit field 8 dot' according to local conventions; 8 dot refers to the braille table chosen by the user that includes 8 dots in a braille cell appropriate for writing computer symbols. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_URL_BRL">
     urled 8dot
   </message>
-  <message desc="Describes an &lt;input&gt; element with type=week." name="IDS_CHROMEVOX_INPUT_TYPE_WEEK">
-    Week of the year control
-  </message>
-  <message desc="Shown on a braille display to describe a widget for entering a week number. When translating, stick to lowercase." name="IDS_CHROMEVOX_INPUT_TYPE_WEEK_BRL">
-    week
-  </message>
   <message desc="Spoken to describe a &lt;a&gt; tag with a link to an internal anchor." name="IDS_CHROMEVOX_INTERNAL_LINK">
     Internal link
   </message>
@@ -1798,122 +1462,26 @@
   <message desc="In an editable text box, describes a line with only whitespace." meaning="UI element" name="IDS_CHROMEVOX_TEXT_BOX_WHITESPACE">
     Space
   </message>
-  <!-- TODO(crbug.com/999781): The following 3 messages are combined with other message fragments. -->
-  <!-- Combining message fragments is a I18N code-smell.  Combine fragments into a single message. -->
-  <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_NOT_PLURALIZED">
-    with <ph name="num">$1</ph> items
-  </message>
-  <message desc="Further describes a list-like element with a number of items for braille. e.g. This will be combined with other messages to produce: lst +3." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_NOT_PLURALIZED_BRL">
-    +<ph name="num">$1</ph>
-  </message>
   <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS">
     {COUNT, plural, =1{with # item} other{with # items}}
   </message>
-  <!-- TODO(crbug.com/999781): This should not need ICU msg format. Fix where the message is used. -->
-  <message desc="Further describes a list-like element with a number of items in braille." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_BRL">
+  <!-- TODO(crbug.com/999781): This should not need ICU msg format. Fix where the message is used. -->  <message desc="Further describes a list-like element with a number of items in braille." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_BRL">
     {COUNT, plural, =1{+#} other{+#}}
-  </message>
-  <message desc="Describes the state of a progress bar, in percent." name="IDS_CHROMEVOX_STATE_PERCENT">
-    <ph name="num">$1</ph>%
-  </message>
-  <message desc="Brailles the state of a progress bar, in percent." name="IDS_CHROMEVOX_STATE_PERCENT_BRL">
-    <ph name="num">$1</ph>%
   </message>
   <message desc="Phrase indicating a menu item has a submenu." name="IDS_CHROMEVOX_HAS_SUBMENU">
     with submenu
   </message>
-  <message desc="Phrase indicating a control has a pop-up component to it." name="IDS_CHROMEVOX_HAS_POPUP">
-    has popup
-  </message>
-  <message desc="Brailled phrase indicating a control has a pop-up component to it." name="IDS_CHROMEVOX_HAS_POPUP_BRL">
-    has popup
-  </message>
   <message desc="Describes a collection of tags. e.g. A 'link collection'." name="IDS_CHROMEVOX_COLLECTION">
     <ph name="tag">$1</ph> collection with <ph name="num">$2</ph> items
-  </message>
-  <message desc="The &quot;Enter&quot; key on the keyboard." name="IDS_CHROMEVOX_ENTER_KEY">
-    Enter
-  </message>
-  <message desc="The &quot;Space&quot; key on the keyboard." name="IDS_CHROMEVOX_SPACE_KEY">
-    Space
-  </message>
-  <message desc="The &quot;Backspace&quot; key on the keyboard." name="IDS_CHROMEVOX_BACKSPACE_KEY">
-    Backspace
-  </message>
-  <message desc="The &quot;Tab&quot; key on the keyboard." name="IDS_CHROMEVOX_TAB_KEY">
-    Tab
-  </message>
-  <message desc="The &quot;Left&quot; key on the keyboard." name="IDS_CHROMEVOX_LEFT_KEY">
-    Left
-  </message>
-  <message desc="The &quot;Up&quot; key on the keyboard." name="IDS_CHROMEVOX_UP_KEY">
-    Up
-  </message>
-  <message desc="The &quot;Right&quot; key on the keyboard." name="IDS_CHROMEVOX_RIGHT_KEY">
-    Right
-  </message>
-  <message desc="The &quot;Down&quot; key on the keyboard." name="IDS_CHROMEVOX_DOWN_KEY">
-    Down
-  </message>
-  <message desc="Describes an element with a link that has no known URL." name="IDS_CHROMEVOX_UNKNOWN_LINK">
-    Unknown link
-  </message>
-  <message desc="The spoken feedback for the command to toggle ChromeVox between active and inactive states." name="IDS_CHROMEVOX_TOGGLE_CHROMEVOX_ACTIVE">
-    Toggle ChromeVox active or inactive
-  </message>
-  <message desc="The spoken feedback when ChromeVox becomes inactive." name="IDS_CHROMEVOX_CHROMEVOX_INACTIVE">
-    ChromeVox is now inactive
-  </message>
-  <message desc="The description of the command to toggle ChromeVox classic." name="IDS_CHROMEVOX_TOGGLE_CHROMEVOX">
-    Toggle ChromeVox classic
   </message>
   <message desc="The indicator of a pause to tts." name="IDS_CHROMEVOX_PAUSE">
     , '''
   </message>
-  <message desc="Description of the previous different element command displayed in the options page." name="IDS_CHROMEVOX_PREVIOUS_DIFFERENT_ELEMENT">
-    Previous different element
-  </message>
-  <message desc="Description of the next different element command displayed in the options page." name="IDS_CHROMEVOX_NEXT_DIFFERENT_ELEMENT">
-    Next different element
-  </message>
-  <message desc="Description of the previous similar element command displayed in the options page." name="IDS_CHROMEVOX_PREVIOUS_SIMILAR_ELEMENT">
-    Previous similar element
-  </message>
-  <message desc="Description of the next similar element command." name="IDS_CHROMEVOX_NEXT_SIMILAR_ELEMENT">
-    Next similar element
-  </message>
-  <message desc="Verbal indication of no more similar elements." name="IDS_CHROMEVOX_NO_MORE_SIMILAR_ELEMENTS">
-    No more similar elements
-  </message>
-  <message desc="Verbal indication of no more different elements." name="IDS_CHROMEVOX_NO_MORE_DIFFERENT_ELEMENTS">
-    No more different elements
-  </message>
-  <message desc="Description of the enter group exploration user command. Displayed in the Options page." name="IDS_CHROMEVOX_ENTER_CSS_SPACE">
-    Enter group exploration
-  </message>
-  <message desc="Spoken when entering group exploration." name="IDS_CHROMEVOX_ENTER_GROUP_EXPLORATION">
-    Exploring groups
-  </message>
-  <message desc="A message spoken when the user switches to the object granularity, which allows users to navigate the page by objects." name="IDS_CHROMEVOX_OBJECT_STRATEGY">
-    Object
-  </message>
-  <message desc="A message spoken when the user switches to the group granularity, which allows users to navigate the page by groups." name="IDS_CHROMEVOX_GROUP_STRATEGY">
-    Group
-  </message>
   <message desc="A message spoken when the user switches to the table granularity, which allows users to navigate within a group." name="IDS_CHROMEVOX_TABLE_STRATEGY">
     Table
   </message>
-  <message desc="A message spoken when the user switches to the row granularity, which allows users to navigate within a table." name="IDS_CHROMEVOX_ROW_GRANULARITY">
-    Row
-  </message>
-  <message desc="A message spoken when the user switches to the column granularity, which allows users to navigate within a column." name="IDS_CHROMEVOX_COLUMN_GRANULARITY">
-    Column
-  </message>
   <message desc="Describes rows within tables on the web." name="IDS_CHROMEVOX_ROLE_ROW">
     Row
-  </message>
-  <message desc="Describes row groups within tables on the web." name="IDS_CHROMEVOX_ROLE_ROW_GROUP">
-    Row group
   </message>
   <message desc="Describes columns within tables on the web." name="IDS_CHROMEVOX_ROLE_COLUMN">
     Column
@@ -1924,29 +1492,8 @@
   <message desc="Describes columns within tables on the web." name="IDS_CHROMEVOX_ROLE_COLUMN_BRL">
     col
   </message>
-  <message desc="A message spoken when the user switches to the MathMl tree granularity, which allows users to navigate within a math expression." name="IDS_CHROMEVOX_MATHML_TREE_GRANULARITY">
-    Math ML Tree
-  </message>
-  <message desc="A message spoken when the user switches to the MathMl layout granularity, which allows users to navigate within a math expression." name="IDS_CHROMEVOX_MATHML_LAYOUT_GRANULARITY">
-    Math ML Layout
-  </message>
-  <message desc="A message spoken when the user switches to the MathMl token granularity, which allows users to navigate within a math expression." name="IDS_CHROMEVOX_MATHML_TOKEN_GRANULARITY">
-    Math ML Token
-  </message>
-  <message desc="A message spoken when the user switches to the MathMl leaf granularity, which allows users to navigate within a math expression." name="IDS_CHROMEVOX_MATHML_LEAF_GRANULARITY">
-    Math ML Leaf
-  </message>
-  <message desc="A message spoken when the user switches to the visual granularity, which allows users to navigate the page by visual regions." name="IDS_CHROMEVOX_VISUAL_STRATEGY">
-    Visual
-  </message>
-  <message desc="A message spoken when the user switches to a custom granularity, which allows users to navigate in a yet-to-be-defined manner." name="IDS_CHROMEVOX_CUSTOM_STRATEGY">
-    Custom
-  </message>
   <message desc="A message spoken when the user switches to the line granularity, which allows users to navigate the page one line at a time." name="IDS_CHROMEVOX_LINE_GRANULARITY">
     Line
-  </message>
-  <message desc="A message spoken when the user switches to the sentence granularity, which allows users to navigate the page one sentence at a time." name="IDS_CHROMEVOX_SENTENCE_GRANULARITY">
-    Sentence
   </message>
   <message desc="A message spoken when the user switches to the word granularity, which allows users to navigate the page one word at a time." name="IDS_CHROMEVOX_WORD_GRANULARITY">
     Word
@@ -1956,15 +1503,6 @@
   </message>
   <message desc="Spoken when the search widget first shows." name="IDS_CHROMEVOX_SEARCH_WIDGET_INTRO">
     Find in page
-  </message>
-  <message desc="Spoken help message when the search widget shows." name="IDS_CHROMEVOX_SEARCH_WIDGET_INTRO_HELP">
-    Enter a search query
-  </message>
-  <message desc="Spoken message when the search widget hides." name="IDS_CHROMEVOX_SEARCH_WIDGET_OUTRO">
-    Exited find in page
-  </message>
-  <message desc="Spoken message when the search widget has no more search results." name="IDS_CHROMEVOX_SEARCH_WIDGET_NO_RESULTS">
-    No more results
   </message>
   <message desc="Category displayed in the options page under keyboard commands." name="IDS_CHROMEVOX_MODIFIER_KEYS">
     Modifier Keys
@@ -1996,29 +1534,11 @@
   <message desc="Category displayed in the options page under keyboard commands." name="IDS_CHROMEVOX_DEVELOPER">
     Developer
   </message>
-  <message desc="Name of the classic key map." name="IDS_CHROMEVOX_KEYMAP_CLASSIC">
-    Classic keymap
-  </message>
-  <message desc="Name of the key map for release of ChromeVox named Next." name="IDS_CHROMEVOX_KEYMAP_NEXT">
-    Next keymap
-  </message>
-  <message desc="Name of the flat key map." name="IDS_CHROMEVOX_KEYMAP_FLAT">
-    Flat keymap
-  </message>
-  <message desc="Name of the experimental key map." name="IDS_CHROMEVOX_KEYMAP_EXPERIMENTAL">
-    Experimental keymap
-  </message>
   <message desc="Description of the TTS console logging command. Displayed in the options page." name="IDS_CHROMEVOX_ENABLE_TTS_LOG">
     Enable TTS logging
   </message>
-  <message desc="Spoken when a user begins a selection on a webpage." name="IDS_CHROMEVOX_BEGIN_SELECTION">
-    Start selection
-  </message>
   <message desc="Spoken when a user ends a selection on a webpage." name="IDS_CHROMEVOX_END_SELECTION">
     End selection
-  </message>
-  <message desc="Spoken to describe the current selection." name="IDS_CHROMEVOX_SELECTION_IS">
-    Selection is '''
   </message>
   <message desc="Describes the toggle selection command. Displayed in the options page." name="IDS_CHROMEVOX_TOGGLE_SELECTION">
     Start or end selection
@@ -2047,14 +1567,8 @@
   <message desc="Spoken as the conjunction between hotkey combinations like ctrl then alt followed by a." name="IDS_CHROMEVOX_THEN">
     then
   </message>
-  <message desc="Spoken as the conjunction between hotkey combinations like ctrl then alt followed by a." name="IDS_CHROMEVOX_FOLLOWED_BY">
-    followed by
-  </message>
   <message desc="Spoken to describe the ChromeVox modifier keys when describing a key combination." name="IDS_CHROMEVOX_MODIFIER_KEY">
     ChromeVox modifier
-  </message>
-  <message desc="Spoken when a key conflict occurs in the options page." name="IDS_CHROMEVOX_KEY_CONFLICT">
-    <ph name="key">$1</ph> is already assigned to a command.
   </message>
   <message desc="Spoken to describe the current selection is a Math object." name="IDS_CHROMEVOX_MATH_EXPR">
     Math
@@ -2065,66 +1579,6 @@
   <message desc="Describes an element with the ARIA role math." name="IDS_CHROMEVOX_NOT_INSIDE_MATH">
     Not inside math
   </message>
-  <message desc="Time widget. Indicates the user is on the AM/PM field." name="IDS_CHROMEVOX_TIMEWIDGET_AMPM">
-    AM PM
-  </message>
-  <message desc="Time widget. Indicates the user is on the hours field." name="IDS_CHROMEVOX_TIMEWIDGET_HOURS">
-    hours
-  </message>
-  <message desc="Time widget. Indicates the user is on the minutes field." name="IDS_CHROMEVOX_TIMEWIDGET_MINUTES">
-    minutes
-  </message>
-  <message desc="Time widget. Indicates the user is on the seconds field." name="IDS_CHROMEVOX_TIMEWIDGET_SECONDS">
-    seconds
-  </message>
-  <message desc="Time widget. Indicates the user is on the milliseconds field." name="IDS_CHROMEVOX_TIMEWIDGET_MILLISECONDS">
-    milliseconds
-  </message>
-  <message desc="Time widget. Indicates the AM/PM is set to AM." name="IDS_CHROMEVOX_TIMEWIDGET_AM">
-    AM
-  </message>
-  <message desc="Time widget. Indicates the AM/PM is set to PM." name="IDS_CHROMEVOX_TIMEWIDGET_PM">
-    PM
-  </message>
-  <message desc="Date widget. Indicates the user is on the week field." name="IDS_CHROMEVOX_DATEWIDGET_WEEK">
-    week
-  </message>
-  <message desc="Date widget. Indicates that the month is January." name="IDS_CHROMEVOX_DATEWIDGET_JANUARY">
-    January
-  </message>
-  <message desc="Date widget. Indicates that the month is February." name="IDS_CHROMEVOX_DATEWIDGET_FEBRUARY">
-    February
-  </message>
-  <message desc="Date widget. Indicates that the month is March." name="IDS_CHROMEVOX_DATEWIDGET_MARCH">
-    March
-  </message>
-  <message desc="Date widget. Indicates that the month is April." name="IDS_CHROMEVOX_DATEWIDGET_APRIL">
-    April
-  </message>
-  <message desc="Date widget. Indicates that the month is May." name="IDS_CHROMEVOX_DATEWIDGET_MAY">
-    May
-  </message>
-  <message desc="Date widget. Indicates that the month is June." name="IDS_CHROMEVOX_DATEWIDGET_JUNE">
-    June
-  </message>
-  <message desc="Date widget. Indicates that the month is July." name="IDS_CHROMEVOX_DATEWIDGET_JULY">
-    July
-  </message>
-  <message desc="Date widget. Indicates that the month is August." name="IDS_CHROMEVOX_DATEWIDGET_AUGUST">
-    August
-  </message>
-  <message desc="Date widget. Indicates that the month is September." name="IDS_CHROMEVOX_DATEWIDGET_SEPTEMBER">
-    September
-  </message>
-  <message desc="Date widget. Indicates that the month is October." name="IDS_CHROMEVOX_DATEWIDGET_OCTOBER">
-    October
-  </message>
-  <message desc="Date widget. Indicates that the month is November." name="IDS_CHROMEVOX_DATEWIDGET_NOVEMBER">
-    November
-  </message>
-  <message desc="Date widget. Indicates that the month is December." name="IDS_CHROMEVOX_DATEWIDGET_DECEMBER">
-    December
-  </message>
   <message desc="Spoken when a user switches to a mode announcing no punctuation." name="IDS_CHROMEVOX_NO_PUNCTUATION">
     No punctuation
   </message>
@@ -2133,9 +1587,6 @@
   </message>
   <message desc="Spoken when a user switches to a mode announcing all punctuation." name="IDS_CHROMEVOX_ALL_PUNCTUATION">
     All punctuation
-  </message>
-  <message desc="Spoken as help after every search result in search widget." name="IDS_CHROMEVOX_SEARCH_HELP_ITEM">
-    Press enter to accept or escape to cancel, down for next and up for previous
   </message>
   <message desc="Spoken to describe a clickable element." name="IDS_CHROMEVOX_CLICKABLE">
     clickable
@@ -2194,29 +1645,11 @@
   <message desc="Brailles a button that can be pressed/toggled." name="IDS_CHROMEVOX_ROLE_TOGGLE_BUTTON_BRL">
     tgl btn
   </message>
-  <message desc="Spoken when user types invalid keys into the modifier selection field." name="IDS_CHROMEVOX_MODIFIER_ENTRY_ERROR">
-    No modifier pressed; please press and hold one or more modifiers; lift your fingers once done and you will hear the keys set. Tab to exit.
-  </message>
-  <message desc="Spoken when a modifier key becomes successfully set." name="IDS_CHROMEVOX_MODIFIER_ENTRY_SET">
-    <ph name="key">$1</ph> is now the new ChromeVox modifier.
-  </message>
-  <message desc="Spoken when resetting the current keymap to defaults." name="IDS_CHROMEVOX_KEYMAP_RESET">
-    <ph name="key">$1</ph> has been reset.
-  </message>
-  <message desc="Spoken when switched to a keymap different from the current one." name="IDS_CHROMEVOX_KEYMAP_SWITCH">
-    Switched to <ph name="key">$1</ph>.
-  </message>
   <message desc="The description of the key to move to the beginning of the page. Displayed in the Options page." name="IDS_CHROMEVOX_JUMP_TO_TOP">
     Jump to the top of the page
   </message>
   <message desc="The description of the key to move to the end of the page. Displayed in the Options page." name="IDS_CHROMEVOX_JUMP_TO_BOTTOM">
     Jump to the bottom of the page
-  </message>
-  <message desc="Message telling the user that they will wrap to the top of the page." name="IDS_CHROMEVOX_WRAPPED_TO_TOP">
-    Wrapped to top
-  </message>
-  <message desc="Message telling the user that they will wrap to the bottom of the page." name="IDS_CHROMEVOX_WRAPPED_TO_BOTTOM">
-    Wrapped to bottom
   </message>
   <message desc="Description of the cycle punctuation echo key. Shown in options page." name="IDS_CHROMEVOX_CYCLE_PUNCTUATION_ECHO">
     Cycle punctuation echo
@@ -2229,27 +1662,6 @@
   </message>
   <message desc="The description of the openLongDesc key. Shown in options page." name="IDS_CHROMEVOX_OPEN_LONG_DESC">
     Open long description in a new tab
-  </message>
-  <message desc="Message telling the user that there is no long description if they try to open the long description for an element which does not have one." name="IDS_CHROMEVOX_NO_LONG_DESC">
-    No long description
-  </message>
-  <message desc="Message telling the user that the current image has a long description." name="IDS_CHROMEVOX_IMAGE_WITH_LONG_DESC">
-    Image with long description
-  </message>
-  <message desc="Describes the value of a selection of items within a listbox. For example, 'Mercury to Jupiter, selected 5 items'." name="IDS_CHROMEVOX_SELECTED_OPTIONS_VALUE">
-    <ph name="v1">$1</ph> to <ph name="v2">$2</ph>
-  </message>
-  <message desc="Brailles the value of a selection of items within a listbox. For example, 'Mercury-Jupiter, sld 5'." name="IDS_CHROMEVOX_SELECTED_OPTIONS_VALUE_BRL">
-    <ph name="v1">$1</ph>-<ph name="v2">$2</ph>
-  </message>
-  <message desc="Describes the count of a selection of items within a listbox. For example, 'Mercury to Jupiter, selected 5 items'." name="IDS_CHROMEVOX_SELECTED_OPTIONS_STATE">
-    selected <ph name="count">$1</ph> items
-  </message>
-  <message desc="Brailles the count of a selection of items within a listbox. For example, 'Mercury-Jupiter, sld 5'." name="IDS_CHROMEVOX_SELECTED_OPTIONS_STATE_BRL">
-    sld <ph name="count">$1</ph>
-  </message>
-  <message desc="Spoken when a selection on a page is cleared." name="IDS_CHROMEVOX_CLEAR_PAGE_SELECTION">
-    cleared selection
   </message>
   <message desc="Spoken to describe character echo (a setting to speak characters while typing into editable text fields)." name="IDS_CHROMEVOX_CHARACTER_ECHO">
     character echo
@@ -2269,47 +1681,11 @@
   <message desc="Describes the exit content command in the options page. Content refers to any special structure on the page such as tables or math." name="IDS_CHROMEVOX_EXIT_CONTENT">
     exit structured content, such as tables
   </message>
-  <message desc="Announced when user enters special content such as tables." name="IDS_CHROMEVOX_ENTER_CONTENT_SAY">
-    entered <ph name="type">$1</ph>
-  </message>
-  <message desc="Spoken to describe structural lines." name="IDS_CHROMEVOX_STRUCTURAL_LINE">
-    structural line
-  </message>
-  <message desc="Spoken to describe layout lines." name="IDS_CHROMEVOX_LAYOUT_LINE">
-    line
-  </message>
-  <message desc="Displayed to describe the toggle line type (structural or layout). Shown in the options page." name="IDS_CHROMEVOX_TOGGLE_LINE_TYPE">
-    Toggle line type between structural or layout
-  </message>
-  <message desc="Describes the collection of navigation strategies for a table." name="IDS_CHROMEVOX_TABLE_SHIFTER">
-    table
-  </message>
-  <message desc="Describes the defaultset of navigation strategies." name="IDS_CHROMEVOX_NAVIGATION_SHIFTER">
-    default navigation
-  </message>
-  <message desc="Describes the collection of navigation strategies for math." name="IDS_CHROMEVOX_MATH_SHIFTER">
-    math
-  </message>
   <message desc="Displayed to describes the key that toggles semantic interpretation of mathematical formulas." name="IDS_CHROMEVOX_TOGGLE_SEMANTICS">
     Toggle interpretation of math expressions between structural and semantic
   </message>
-  <message desc="Spoken when semantics interpretation is switched on." name="IDS_CHROMEVOX_SEMANTICS_ON">
-    Semantics on
-  </message>
-  <message desc="Spoken when semantics interpretation is switched off." name="IDS_CHROMEVOX_SEMANTICS_OFF">
-    Semantics off
-  </message>
   <message desc="Used as a phonetic word hint for a particular letter. The word is used to clarify similarly sounding letters like m and n.  This mapping is taken directly from the NATO phonetic standard: https://en.wikipedia.org/wiki/NATO_phonetic_alphabet Please retain the structure of this string.  The structure is of the form {&quot;letter&quot;: &quot;phonetic word equivalent&quot;, ..., &quot;letter&quot;: &quot;phonetic word equivalent&quot;}.  The first part of the mapping (letter) should be all letters of the localization in lower case. The second part (phonetic word equivalent) should be the word that describes the letter." name="IDS_CHROMEVOX_PHONETIC_MAP">
     {"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}
-  </message>
-  <message desc="Describes a key sequence that will let the user review (examine and make a decision on) all of the alerts on the page." name="IDS_CHROMEVOX_REVIEW_ALERTS">
-    Press Alt+Shift+A to review alerts
-  </message>
-  <message desc="Spoken if the user attempts to jump to the next article when none exists." name="IDS_CHROMEVOX_NO_NEXT_ARTICLE">
-    No next article
-  </message>
-  <message desc="Spoken if the user attempts to jump to the previous article when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_ARTICLE">
-    No previous article
   </message>
   <message desc="Spoken when the browser first starts and ChromeVox is active." name="IDS_CHROMEVOX_CHROMEVOX_INTRO">
     ChromeVox spoken feedback is ready
@@ -2512,14 +1888,6 @@
   <message desc="Spoken and brailled when the braille captions feature is disabled. This feature shows the braille output in a small overlay on the screen for development and demonstration purposes." name="IDS_CHROMEVOX_BRAILLE_CAPTIONS_DISABLED">
     Braille captions disabled
   </message>
-  <message desc="Message spoken to user when switching to a mode where searching is not case-sensitive." name="IDS_CHROMEVOX_IGNORING_CASE">
-    Ignoring case
-  </message>
-  <message desc="Message spoken to user when switching to a mode where searching is case-sensitive." name="IDS_CHROMEVOX_CASE_SENSITIVE">
-    Case sensitive
-  </message>
-
-  <!-- Keyboard Explorer -->
   <message desc="Describes the back key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_BACK_KEY">
     back
   </message>
@@ -2554,7 +1922,7 @@
     Google Assistant
   </message>
 
-  <!-- Panel -->
+  
   <message desc="Title of the ChromeVox panel, a window that displays the text ChromeVox is speaking and contains controls to manipulate ChromeVox." name="IDS_CHROMEVOX_PANEL_TITLE">
     ChromeVox Panel
   </message>
@@ -2602,9 +1970,6 @@
   </message>
   <message desc="Message text for a notification that ChromeVox has been updated for a new release." name="IDS_CHROMEVOX_UPDATE_MESSAGE_NEW">
     Press ChromeVox o, n to find out what's new
-  </message>
-  <message desc="Options page description for the command to show ChromeVox's update page." name="IDS_CHROMEVOX_SHOW_NEXT_UPDATE_DESCRIPTION">
-    Show update notes
   </message>
   <message desc="Description of button that closes the ChromeVox Tutorial" name="IDS_CHROMEVOX_CLOSE_TUTORIAL">
     Close ChromeVox Tutorial
@@ -2709,9 +2074,6 @@
   <message desc="Part of the ChromeVox update notes for m63, new items 3." name="IDS_CHROMEVOX_UPDATE_63_ITEM_3">
     Android apps for Chrome. If you have Play Store on your device, get a sneak peek at ChromeVox with Android apps. Try the experimental support by downloading Google Chrome Canary from the Play Store.
   </message>
-  <message desc="Part of the ChromeVox update notes for m63, closing paragraph." name="IDS_CHROMEVOX_UPDATE_63_OUTTRO">
-    As always, you can send us feedback directly by pressing Search+a then i. We're eager to hear from you.
-  </message>
   <message desc="Title of an article on the command reference for 'ChromeVox'" name="IDS_CHROMEVOX_NEXT_COMMAND_REFERENCE">
     ChromeVox Command Reference
   </message>
@@ -2720,12 +2082,6 @@
   </message>
   <message desc="Title of an article on how to use accessibility features of the Chromebook touch screen" name="IDS_CHROMEVOX_TOUCHSCREEN_ACCESSIBILITY">
     Use Chromebook touch screen accessibility features
-  </message>
-  <message desc="Describes a UI element that is busy" name="IDS_CHROMEVOX_BUSY_STATE">
-    busy
-  </message>
-  <message desc="Brailled for a UI element that is busy" name="IDS_CHROMEVOX_BUSY_STATE_BRL">
-    busy
   </message>
   <message desc="Describes a UI element invoked after pressing enter such as an ok button in a dialog" name="IDS_CHROMEVOX_DEFAULT_STATE">
     default
@@ -2862,14 +2218,8 @@
   <message desc="Spoken when a user navigates to text and the font color changes, e.g. 'Red, 100% opacity'" name="IDS_CHROMEVOX_FONT_COLOR">
     <ph name="font_color">$1<ex>Red, 100% opacity</ex></ph>
   </message>
-  <message desc="Shown to a user when they press a braille keyboard command that requires on screen keyboard to be enabled." name="IDS_CHROMEVOX_ENABLE_VIRTUAL_KEYBOARD">
-    Please enable the on screen keyboard under status tray, accessibility to use extended braille commands
-  </message>
   <message desc="Shown to a user when they invoke the read current title command in a context without a title." name="IDS_CHROMEVOX_NO_TITLE">
     No title
-  </message>
-  <message desc="Spoken when a user issues a command when nothing is focused." name="IDS_CHROMEVOX_WARNING_NO_CURRENT_RANGE">
-    No focus. Press Ctrl+T to open a new tab.
   </message>
   <message desc="A hint to the user that the current control is checkable." name="IDS_CHROMEVOX_HINT_CHECKABLE">
     Press Search+Space to toggle
@@ -2936,42 +2286,6 @@
   </message>
   <message desc="Hint for how to start editing a text field while exploring the screen using touch exploration." name="IDS_CHROMEVOX_HINT_DOUBLE_TAP_TO_EDIT">
     Double tap to start editing
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP1_GESTURE">
-    Swipe one finger up
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN1_GESTURE">
-    Swipe one finger down
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT1_GESTURE">
-    Swipe one finger left
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT1_GESTURE">
-    Swipe one finger right
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP2_GESTURE">
-    Swipe two fingers up
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN2_GESTURE">
-    Swipe two fingers down
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT2_GESTURE">
-    Swipe two fingers left
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT2_GESTURE">
-    Swipe two fingers right
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP3_GESTURE">
-    Swipe three fingers up
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN3_GESTURE">
-    Swipe three fingers down
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT3_GESTURE">
-    Swipe three fingers left
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT3_GESTURE">
-    Swipe three fingers right
   </message>
   <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_TAP2_GESTURE">
     Tap with two fingers
@@ -3054,7 +2368,7 @@
     <ph name="font_family_string">$7<ex>Arial</ex></ph>
   </message>
 
-  <!-- Colors -->
+  
   <message desc="Spoken to describe color and opacity of text" name="IDS_CHROMEVOX_COLOR_DESCRIPTION">
     <ph name="color">$1<ex>Red</ex></ph>, <ph name="opacity_percentage">$2<ex>50</ex></ph>% opacity.
   </message>
@@ -3481,25 +2795,6 @@
   <message desc="The text label for ChromeVox automatic rich text indication checkbox." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_CHECKBOX_LABEL">
     Announce text styling
   </message>
-  <message desc="Labels the misspell list box." name="IDS_CHROMEVOX_OPTIONS_MISSPELL_DESCRIPTION">
-    Indicate misspell:
-  </message>
-  <message desc="Labels the bold list box." name="IDS_CHROMEVOX_OPTIONS_BOLD_DESCRIPTION">
-    Indicate bold:
-  </message>
-  <message desc="Labels the italic list box." name="IDS_CHROMEVOX_OPTIONS_ITALIC_DESCRIPTION">
-    Indicate italic:
-  </message>
-  <message desc="Labels the underline list box." name="IDS_CHROMEVOX_OPTIONS_UNDERLINE_DESCRIPTION">
-    Indicate underline:
-  </message>
-  <message desc="A menulist option in ChromeVox rich text settings to do nothing to indicate rich text" name="IDS_CHROMEVOX_RICH_TEXT_DO_NOTHING">
-    Do nothing
-  </message>
-  <message desc="A menulist option in ChromeVox rich text settings to announce rich text" name="IDS_CHROMEVOX_RICH_TEXT_ANNOUNCE">
-    Announce
-  </message>
-
   <message desc="An option to announce download notifications." name="IDS_CHROMEVOX_OPTIONS_ANNOUNCE_DOWNLOAD">
     Announce download notifications
   </message>

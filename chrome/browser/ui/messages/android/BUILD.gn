@@ -5,7 +5,28 @@ import("//build/config/android/rules.gni")
 
 android_resources("java_resources") {
   custom_package = "org.chromium.chrome.ui.messages"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-hdpi/infobar_shadow_left.9.png",
+    "java/res/drawable-hdpi/infobar_shadow_top.png",
+    "java/res/drawable-mdpi/infobar_shadow_left.9.png",
+    "java/res/drawable-mdpi/infobar_shadow_top.png",
+    "java/res/drawable-xhdpi/infobar_shadow_left.9.png",
+    "java/res/drawable-xhdpi/infobar_shadow_top.png",
+    "java/res/drawable-xxhdpi/infobar_shadow_left.9.png",
+    "java/res/drawable-xxhdpi/infobar_shadow_top.png",
+    "java/res/drawable-xxxhdpi/infobar_shadow_left.9.png",
+    "java/res/drawable-xxxhdpi/infobar_shadow_top.png",
+    "java/res/drawable/snackbar_background_tablet.xml",
+    "java/res/layout/infobar_control_icon_with_description.xml",
+    "java/res/layout/infobar_control_message.xml",
+    "java/res/layout/infobar_control_spinner.xml",
+    "java/res/layout/infobar_control_spinner_drop_down.xml",
+    "java/res/layout/infobar_control_spinner_view.xml",
+    "java/res/layout/infobar_control_toggle.xml",
+    "java/res/layout/snackbar.xml",
+    "java/res/values/dimens.xml",
+    "java/res/values/ids.xml",
+  ]
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",

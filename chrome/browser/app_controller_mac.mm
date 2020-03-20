@@ -203,6 +203,15 @@ bool IsProfileSignedOut(Profile* profile) {
   return has_entry && entry->IsSigninRequired();
 }
 
+void ConfigureNSAppForKioskMode() {
+  NSApp.presentationOptions =
+      NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar |
+      NSApplicationPresentationDisableProcessSwitching |
+      NSApplicationPresentationDisableSessionTermination |
+      NSApplicationPresentationDisableForceQuit |
+      NSApplicationPresentationFullScreen;
+}
+
 }  // namespace
 
 @interface AppController () <HandoffActiveURLObserverBridgeDelegate>
@@ -775,6 +784,15 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   [self registerServicesMenuTypesTo:[notify object]];
 
   _startupComplete = YES;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode)) {
+    ConfigureNSAppForKioskMode();
+
+    // Leak a fullscreen request to hide all UI surfaces. This ensures that any
+    // other attempts to manipulate the fullscreen state via web APIs, etc will
+    // not unhide these UI elements.
+    base::mac::RequestFullScreen(base::mac::kFullScreenModeHideAll);
+  }
 
   Browser* browser = chrome::FindLastActive();
   content::WebContents* activeWebContents = nullptr;

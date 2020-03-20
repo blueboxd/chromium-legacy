@@ -30,6 +30,10 @@ float PageActionIconView::Delegate::GetPageActionInkDropVisibleOpacity() const {
   return GetOmniboxStateOpacity(OmniboxPartState::SELECTED);
 }
 
+int PageActionIconView::Delegate::GetPageActionIconSize() const {
+  return GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+}
+
 gfx::Insets PageActionIconView::Delegate::GetPageActionIconInsets(
     const PageActionIconView* icon_view) const {
   return GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING);
@@ -173,7 +177,6 @@ const gfx::VectorIcon& PageActionIconView::GetVectorIconBadge() const {
 }
 
 void PageActionIconView::OnTouchUiChanged() {
-  icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   UpdateIconImage();
   IconLabelBubbleView::OnTouchUiChanged();
 }
@@ -206,12 +209,13 @@ void PageActionIconView::Update() {
 
 void PageActionIconView::UpdateIconImage() {
   const ui::NativeTheme* theme = GetNativeTheme();
-  SkColor icon_color = active_
-                           ? theme->GetSystemColor(
-                                 ui::NativeTheme::kColorId_ProminentButtonColor)
-                           : icon_color_;
-  gfx::ImageSkia image = gfx::CreateVectorIconWithBadge(
-      GetVectorIcon(), icon_size_, icon_color, GetVectorIconBadge());
+  const SkColor icon_color =
+      active_ ? theme->GetSystemColor(
+                    ui::NativeTheme::kColorId_ProminentButtonColor)
+              : icon_color_;
+  const int icon_size = delegate_->GetPageActionIconSize();
+  const gfx::ImageSkia image = gfx::CreateVectorIconWithBadge(
+      GetVectorIcon(), icon_size, icon_color, GetVectorIconBadge());
   if (!image.isNull())
     SetImage(image);
 }

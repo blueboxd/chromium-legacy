@@ -43,6 +43,29 @@ android_resources("java_resources") {
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java_resources",
   ]
-  resource_dirs = [ "android/java/res" ]
+  sources = [
+    "android/java/res/drawable-hdpi/controlled_setting_mandatory.png",
+    "android/java/res/drawable-hdpi/ic_account_child_grey600_36dp.png",
+    "android/java/res/drawable-mdpi/controlled_setting_mandatory.png",
+    "android/java/res/drawable-mdpi/ic_account_child_grey600_36dp.png",
+    "android/java/res/drawable-xhdpi/controlled_setting_mandatory.png",
+    "android/java/res/drawable-xhdpi/ic_account_child_grey600_36dp.png",
+    "android/java/res/drawable-xxhdpi/controlled_setting_mandatory.png",
+    "android/java/res/drawable-xxhdpi/ic_account_child_grey600_36dp.png",
+    "android/java/res/drawable-xxxhdpi/ic_account_child_grey600_36dp.png",
+    "android/java/res/layout/button_preference_button.xml",
+    "android/java/res/layout/button_preference_layout.xml",
+    "android/java/res/layout/checkable_image_view_widget.xml",
+    "android/java/res/layout/preference_chrome_image_view.xml",
+    "android/java/res/layout/preference_compat.xml",
+    "android/java/res/layout/preference_spinner.xml",
+    "android/java/res/layout/preference_spinner_single_line.xml",
+    "android/java/res/layout/preference_spinner_single_line_item.xml",
+    "android/java/res/values-sw720dp-v17/styles.xml",
+    "android/java/res/values-sw720dp-v21/styles.xml",
+    "android/java/res/values-v21/styles.xml",
+    "android/java/res/values/attrs.xml",
+    "android/java/res/values/styles.xml",
+  ]
   custom_package = "org.chromium.chrome.browser.settings"
 }

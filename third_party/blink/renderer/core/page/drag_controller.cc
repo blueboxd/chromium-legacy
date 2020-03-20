@@ -1148,7 +1148,7 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
 
   FloatRect painting_rect = ClippedSelection(frame);
   GlobalPaintFlags paint_flags =
-      kGlobalPaintSelectionOnly | kGlobalPaintFlattenCompositingLayers;
+      kGlobalPaintSelectionDragImageOnly | kGlobalPaintFlattenCompositingLayers;
 
   PaintRecordBuilder builder;
   frame.View()->PaintContentsOutsideOfLifecycle(

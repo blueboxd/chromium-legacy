@@ -37,6 +37,12 @@ permissions::PermissionManager* WebLayerPermissionsClient::GetPermissionManager(
   return PermissionManagerFactory::GetForBrowserContext(browser_context);
 }
 
+permissions::ChooserContextBase* WebLayerPermissionsClient::GetChooserContext(
+    content::BrowserContext* browser_context,
+    ContentSettingsType type) {
+  return nullptr;
+}
+
 #if defined(OS_ANDROID)
 int WebLayerPermissionsClient::MapToJavaDrawableId(int resource_id) {
   return weblayer::MapToJavaDrawableId(resource_id);

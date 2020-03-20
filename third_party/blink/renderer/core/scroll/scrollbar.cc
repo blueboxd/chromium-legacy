@@ -687,9 +687,9 @@ bool Scrollbar::DeltaWillScroll(ScrollOffset delta) const {
   return clamped_offset != current_offset;
 }
 
-void Scrollbar::SetScrollbarsHiddenIfOverlay(bool hidden) {
+void Scrollbar::SetScrollbarsHiddenFromExternalAnimator(bool hidden) {
   if (scrollable_area_)
-    scrollable_area_->SetScrollbarsHiddenIfOverlay(hidden);
+    scrollable_area_->SetScrollbarsHiddenFromExternalAnimator(hidden);
 }
 
 void Scrollbar::SetEnabled(bool e) {

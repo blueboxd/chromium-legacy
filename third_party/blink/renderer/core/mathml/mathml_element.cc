@@ -34,11 +34,11 @@ static inline bool IsDisallowedMathSizeAttribute(const AtomicString& value) {
 }
 
 bool MathMLElement::IsPresentationAttribute(const QualifiedName& name) const {
-  // TODO(crbug.com/1023292, crbug.com/1023296): add support for display,
-  // displaystyle and scriptlevel.
+  // TODO(crbug.com/1023292): add support for displaystyle and scriptlevel.
   if (name == html_names::kDirAttr || name == mathml_names::kMathsizeAttr ||
       name == mathml_names::kMathcolorAttr ||
-      name == mathml_names::kMathbackgroundAttr)
+      name == mathml_names::kMathbackgroundAttr ||
+      name == mathml_names::kDisplayAttr)
     return true;
   return Element::IsPresentationAttribute(name);
 }
@@ -65,6 +65,19 @@ void MathMLElement::CollectStyleForPresentationAttribute(
   } else if (name == mathml_names::kMathcolorAttr) {
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kColor,
                                             value);
+  } else if (name == mathml_names::kDisplayAttr &&
+             HasTagName(mathml_names::kMathTag)) {
+    if (EqualIgnoringASCIICase(value, "inline")) {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kDisplay,
+                                              CSSValueID::kInlineMath);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMathStyle,
+                                              CSSValueID::kInline);
+    } else if (EqualIgnoringASCIICase(value, "block")) {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kDisplay,
+                                              CSSValueID::kMath);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMathStyle,
+                                              CSSValueID::kDisplay);
+    }
   } else {
     Element::CollectStyleForPresentationAttribute(name, value, style);
   }

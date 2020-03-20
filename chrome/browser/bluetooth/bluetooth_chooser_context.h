@@ -77,14 +77,12 @@ class BluetoothChooserContext : public permissions::ChooserContextBase {
                                 const blink::WebBluetoothDeviceId& device_id,
                                 device::BluetoothUUID service);
 
-  // Returns the human readable string representing the given object.
-  static std::string GetObjectName(const base::Value& object);
   static blink::WebBluetoothDeviceId GetObjectDeviceId(
       const base::Value& object);
 
- protected:
-  // ChooserContextBase implementation;
+  // ChooserContextBase;
   bool IsValidObject(const base::Value& object) override;
+  base::string16 GetObjectDisplayName(const base::Value& object) override;
 
  private:
   // This map records the generated Web Bluetooth IDs for devices discovered via

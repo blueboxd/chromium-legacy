@@ -21,6 +21,11 @@ config("usrsctp_warnings") {
       # what they did in configure.ac. We can remove this once
       # https://github.com/sctplab/usrsctp/issues/177 is fixed.
       "-Wno-deprecated-declarations",
+
+      # usrsctp uses timingsafe_bcmp which is not available in all
+      # versions of OS X, however this isn't actually an issue since
+      # usrsctp provides its own implementation.
+      "-Wno-unguarded-availability",
     ]
   }
 }

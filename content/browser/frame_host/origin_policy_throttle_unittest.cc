@@ -106,6 +106,8 @@ TEST_P(OriginPolicyThrottleTest, WillProcessResponse) {
        NavigationThrottle::ThrottleAction::PROCEED},
       {network::OriginPolicyState::kCannotLoadPolicy,
        NavigationThrottle::ThrottleAction::CANCEL},
+      {network::OriginPolicyState::kCannotParseHeader,
+       NavigationThrottle::ThrottleAction::CANCEL},
   };
 
   for (const auto& test : test_cases) {

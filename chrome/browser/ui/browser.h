@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/chrome_bubble_manager.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
@@ -360,9 +359,6 @@ class Browser : public TabStripModelObserver,
   SigninViewController* signin_view_controller() {
     return &signin_view_controller_;
   }
-
-  // Will lazy create the bubble manager.
-  ChromeBubbleManager* GetBubbleManager();
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.
@@ -1158,8 +1154,6 @@ class Browser : public TabStripModelObserver,
   base::TimeTicks focus_mode_start_time_;
 
   UnloadController unload_controller_;
-
-  std::unique_ptr<ChromeBubbleManager> bubble_manager_;
 
   // The Find Bar. This may be NULL if there is no Find Bar, and if it is
   // non-NULL, it may or may not be visible.

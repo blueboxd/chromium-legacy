@@ -34,9 +34,9 @@ def GetConfigurationForBuild(defines):
         'win_config': {
             'win': {
                 'reg_mandatory_key_name':
-                    'Software\\Policies\\Chromium',
+                'Software\\Policies\\Chromium',
                 'reg_recommended_key_name':
-                    'Software\\Policies\\Chromium\\Recommended',
+                'Software\\Policies\\Chromium\\Recommended',
                 'mandatory_category_path': ['chromium'],
                 'recommended_category_path': ['chromium_recommended'],
                 'category_path_strings': {
@@ -44,27 +44,28 @@ def GetConfigurationForBuild(defines):
                     'chromium_recommended': 'Chromium - {doc_recommended}',
                 },
                 'namespace':
-                    'Chromium.Policies.Chromium',
+                'Chromium.Policies.Chromium',
             },
             'chrome_os': {
                 'reg_mandatory_key_name':
-                    'Software\\Policies\\ChromiumOS',
+                'Software\\Policies\\ChromiumOS',
                 'reg_recommended_key_name':
-                    'Software\\Policies\\ChromiumOS\\Recommended',
+                'Software\\Policies\\ChromiumOS\\Recommended',
                 'mandatory_category_path': ['chromium_os'],
                 'recommended_category_path': ['chromium_os_recommended'],
                 'category_path_strings': {
                     'chromium_os':
                         'Chromium OS',
                     'chromium_os_recommended':
-                        'Chromium OS - {doc_recommended}',
+                    'Chromium OS - {doc_recommended}',
                 },
                 'namespace':
-                    'Chromium.Policies.ChromiumOS'
+                'Chromium.Policies.ChromiumOS'
             },
         },
         'admx_prefix': 'chromium',
         'linux_policy_path': '/etc/chromium/policies/',
+        'ios_bundle_id': 'org.chromium',
     }
   elif '_google_chrome' in defines:
     config = {
@@ -76,9 +77,9 @@ def GetConfigurationForBuild(defines):
         'win_config': {
             'win': {
                 'reg_mandatory_key_name':
-                    'Software\\Policies\\Google\\Chrome',
+                'Software\\Policies\\Google\\Chrome',
                 'reg_recommended_key_name':
-                    'Software\\Policies\\Google\\Chrome\\Recommended',
+                'Software\\Policies\\Google\\Chrome\\Recommended',
                 'mandatory_category_path': [
                     'Google:Cat_Google', 'googlechrome'
                 ],
@@ -89,16 +90,16 @@ def GetConfigurationForBuild(defines):
                     'googlechrome':
                         'Google Chrome',
                     'googlechrome_recommended':
-                        'Google Chrome - {doc_recommended}'
+                    'Google Chrome - {doc_recommended}'
                 },
                 'namespace':
-                    'Google.Policies.Chrome',
+                'Google.Policies.Chrome',
             },
             'chrome_os': {
                 'reg_mandatory_key_name':
-                    'Software\\Policies\\Google\\ChromeOS',
+                'Software\\Policies\\Google\\ChromeOS',
                 'reg_recommended_key_name':
-                    'Software\\Policies\\Google\\ChromeOS\\Recommended',
+                'Software\\Policies\\Google\\ChromeOS\\Recommended',
                 'mandatory_category_path': [
                     'Google:Cat_Google', 'googlechromeos'
                 ],
@@ -107,12 +108,12 @@ def GetConfigurationForBuild(defines):
                 ],
                 'category_path_strings': {
                     'googlechromeos':
-                        'Google Chrome OS',
+                    'Google Chrome OS',
                     'googlechromeos_recommended':
-                        'Google Chrome OS - {doc_recommended}'
+                    'Google Chrome OS - {doc_recommended}'
                 },
                 'namespace':
-                    'Google.Policies.ChromeOS',
+                'Google.Policies.ChromeOS',
             },
         },
         # The string 'Google' is defined in google.adml for ADMX, but ADM
@@ -125,6 +126,7 @@ def GetConfigurationForBuild(defines):
             'Google': 'Google.Policies'  # prefix: namespace
         },
         'linux_policy_path': '/etc/opt/chrome/policies/',
+        'ios_bundle_id': 'com.google.chrome',
     }
   else:
     raise Exception('Unknown build')

@@ -334,7 +334,7 @@ void ShelfView::Init() {
   separator_->SetColor(kSeparatorColor);
   separator_->SetPreferredHeight(kSeparatorSize);
   separator_->SetVisible(false);
-  ConfigureChildView(separator_);
+  ConfigureChildView(separator_, ui::LAYER_TEXTURED);
   AddChildView(separator_);
 
   model()->AddObserver(this);
@@ -871,8 +871,9 @@ bool ShelfView::ShouldShowTooltipForChildView(
 }
 
 // static
-void ShelfView::ConfigureChildView(views::View* view) {
-  view->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+void ShelfView::ConfigureChildView(views::View* view,
+                                   ui::LayerType layer_type) {
+  view->SetPaintToLayer(layer_type);
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 
@@ -955,7 +956,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
 
   view->set_context_menu_controller(this);
 
-  ConfigureChildView(view);
+  ConfigureChildView(view, ui::LAYER_NOT_DRAWN);
   return view;
 }
 

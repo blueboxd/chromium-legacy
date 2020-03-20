@@ -84,19 +84,26 @@ void RenderProcessUserData::RenderProcessReady(
       host->GetProcess().CreationTime();
 #endif
 
-  PerformanceManagerImpl::GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcess,
-                                base::Unretained(process_node_.get()),
-                                host->GetProcess().Duplicate(), launch_time));
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(
+          [](ProcessNodeImpl* process_node, base::Process process,
+             base::Time launch_time, GraphImpl* graph) {
+            process_node->SetProcess(std::move(process), launch_time);
+          },
+          process_node_.get(), host->GetProcess().Duplicate(), launch_time));
 }
 
 void RenderProcessUserData::RenderProcessExited(
     content::RenderProcessHost* host,
     const content::ChildProcessTerminationInfo& info) {
-  PerformanceManagerImpl::GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ProcessNodeImpl::SetProcessExitStatus,
-                     base::Unretained(process_node_.get()), info.exit_code));
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(
+                     [](ProcessNodeImpl* process_node, int32_t exit_code,
+                        GraphImpl* graph) {
+                       process_node->SetProcessExitStatus(exit_code);
+                     },
+                     process_node_.get(), info.exit_code));
 }
 
 void RenderProcessUserData::RenderProcessHostDestroyed(

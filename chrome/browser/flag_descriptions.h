@@ -332,6 +332,9 @@ extern const char kEnableDataReductionProxyNetworkServiceDescription[];
 extern const char kEnableDataReductionProxyServerExperimentName[];
 extern const char kEnableDataReductionProxyServerExperimentDescription[];
 
+extern const char kColorProviderRedirectionName[];
+extern const char kColorProviderRedirectionDescription[];
+
 extern const char kDesktopMinimalUIName[];
 extern const char kDesktopMinimalUIDescription[];
 
@@ -1701,6 +1704,9 @@ extern const char kAggregatedMlSearchRankingDescription[];
 
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
+
+extern const char kAllowScrollSettingsName[];
+extern const char kAllowScrollSettingsDescription[];
 
 extern const char kAppServiceInstanceRegistryName[];
 extern const char kAppServiceInstanceRegistryDescription[];

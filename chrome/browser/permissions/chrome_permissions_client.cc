@@ -15,6 +15,8 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/permissions/features.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -48,6 +50,19 @@ HostContentSettingsMap* ChromePermissionsClient::GetSettingsMap(
     content::BrowserContext* browser_context) {
   return HostContentSettingsMapFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
+}
+
+permissions::ChooserContextBase* ChromePermissionsClient::GetChooserContext(
+    content::BrowserContext* browser_context,
+    ContentSettingsType type) {
+  switch (type) {
+    case ContentSettingsType::USB_CHOOSER_DATA:
+      return UsbChooserContextFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 permissions::PermissionDecisionAutoBlocker*

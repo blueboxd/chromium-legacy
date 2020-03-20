@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -2073,17 +2074,14 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
 
   base::trace_event::MemoryDumpRequestArgs args = {
       1 /* dump_guid*/, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-      base::trace_event::MemoryDumpLevelOfDetail::LIGHT};
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
-  struct TestContext {
-    int32_t id = 0;
-    bool dump_was_created = false;
-  } ctx;
-  ctx.id = GetMediaLogId();
+  int32_t id = GetMediaLogId();
+  int dump_count = 0;
 
-  auto on_memory_dump_done =
-      [](struct TestContext* ctx, bool success, uint64_t dump_guid,
-         std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd) {
+  auto on_memory_dump_done = base::BindLambdaForTesting(
+      [&](bool success, uint64_t dump_guid,
+          std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd) {
         ASSERT_TRUE(success);
         const auto& dumps = pmd->allocator_dumps();
 
@@ -2092,28 +2090,40 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
 
         for (const char* name : allocations) {
           auto it = dumps.find(base::StringPrintf(
-              "media/webmediaplayer/%s/player_%d", name, ctx->id));
+              "media/webmediaplayer/%s/player_0x%x", name, id));
           ASSERT_NE(dumps.end(), it) << name;
           ASSERT_GT(it->second->GetSizeInternal(), 0u) << name;
         }
 
-        auto it = dumps.find(
-            base::StringPrintf("media/webmediaplayer/player_%d", ctx->id));
-        ASSERT_NE(dumps.end(), it);
-        const auto& entries = it->second->entries();
-        auto player_state_id =
-            find_if(entries.begin(), entries.end(), [](const auto& e) {
-              return e.name == "player_state" && !e.value_string.empty();
-            });
-        ASSERT_NE(entries.end(), player_state_id);
+        if (args.level_of_detail ==
+            base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
+          auto it = dumps.find(
+              base::StringPrintf("media/webmediaplayer/player_0x%x", id));
+          ASSERT_NE(dumps.end(), it);
+          const auto& entries = it->second->entries();
+          auto player_state_it =
+              std::find_if(entries.begin(), entries.end(), [](const auto& e) {
+                return e.name == "player_state" && !e.value_string.empty();
+              });
+          ASSERT_NE(entries.end(), player_state_it);
+        }
+        dump_count++;
+      });
 
-        ctx->dump_was_created = true;
-      };
-  base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, base::BindOnce(on_memory_dump_done, base::Unretained(&ctx)));
+  auto* dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
+
+  dump_manager->CreateProcessDump(args, on_memory_dump_done);
+
+  args.level_of_detail = base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND;
+  args.dump_guid++;
+  dump_manager->CreateProcessDump(args, on_memory_dump_done);
+
+  args.level_of_detail = base::trace_event::MemoryDumpLevelOfDetail::LIGHT;
+  args.dump_guid++;
+  dump_manager->CreateProcessDump(args, on_memory_dump_done);
 
   CycleThreads();
-  EXPECT_TRUE(ctx.dump_was_created);
+  EXPECT_EQ(dump_count, 3);
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

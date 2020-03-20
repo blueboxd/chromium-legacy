@@ -22,7 +22,7 @@ from writers import adm_writer, adml_writer, admx_writer, \
                     google_admx_writer, google_adml_writer, \
                     android_policy_writer, reg_writer, doc_writer, \
                     doc_atomic_groups_writer , json_writer, plist_writer, \
-                    plist_strings_writer
+                    plist_strings_writer, ios_app_config_writer
 
 
 def MacLanguageMap(lang):
@@ -64,7 +64,8 @@ _WRITER_DESCS = [
     WriterDesc('doc_atomic_groups', True, 'utf-8', None, False),
     WriterDesc('json', False, 'utf-8', None, False),
     WriterDesc('plist', False, 'utf-8', None, False),
-    WriterDesc('plist_strings', True, 'utf-8', MacLanguageMap, False)
+    WriterDesc('plist_strings', True, 'utf-8', MacLanguageMap, False),
+    WriterDesc('ios_app_config', False, 'utf-8', None, False),
 ]
 
 # Template writers that are not per-language use policy_templates.json from
@@ -97,19 +98,28 @@ def _GetWriterConfiguration(grit_defines):
 
 
 def _ParseVersionFile(version_path):
-  '''Parse version file, return major version if it exists.
+  '''Parse version file, return the version if it exists.
 
   Args:
     version_path: The path of Chrome VERSION file containing the major version
                   number.
   '''
-
+  version = {}
   with open(version_path) as fp:
     for line in fp:
-      key, _, major_version = line.partition('=')
+      key, _, value = line.partition('=')
       if key.strip() == 'MAJOR':
-        return int(major_version.strip())
-  return None
+        version['major'] = value.strip()
+      elif key.strip() == 'MINOR':
+        version['minor'] = value.strip()
+      elif key.strip() == 'BUILD':
+        version['build'] = value.strip()
+      elif key.strip() == 'PATCH':
+        version['patch'] = value.strip()
+
+    version_found = version.has_key('major') and version.has_key(
+        'minor') and version.has_key('build') and version.has_key('patch')
+  return version if version_found else None
 
 
 def _JsonToUtf8Encoding(data, ignore_dicts=False):
@@ -176,6 +186,8 @@ def main():
   parser.add_argument('--plist_strings', action='append', dest='plist_strings')
   parser.add_argument(
       '--android_policy', action='append', dest='android_policy')
+  parser.add_argument(
+      '--ios_app_config', action='append', dest='ios_app_config')
   parser.add_argument('-D', action='append', dest='grit_defines')
   parser.add_argument('-E', action='append', dest='grit_build_env')
   parser.add_argument('-t', action='append', dest='grit_target')
@@ -188,7 +200,13 @@ def main():
   assert _DEFAULT_LANGUAGE in languages
 
   config = _GetWriterConfiguration(args.grit_defines)
-  config['major_version'] = _ParseVersionFile(args.version_path)
+
+  version = _ParseVersionFile(args.version_path)
+  if version != None:
+    config['major_version'] = int(version['major'])
+    config['version'] = '.'.join([
+        version['major'], version['minor'], version['build'], version['patch']
+    ])
   config['local'] = args.local
 
   # For each language, load policy data once and run all writers on it.

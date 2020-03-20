@@ -117,7 +117,7 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
                                const PhysicalOffset& paint_offset) const {
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask)
     return;

@@ -1381,6 +1381,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/rlz/RlzPingHandler.java",
   "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingBridge.java",
   "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingPasswordReuseDialogBridge.java",
+  "java/src/org/chromium/chrome/browser/screenshot/EditorScreenshotSource.java",
+  "java/src/org/chromium/chrome/browser/screenshot/EditorScreenshotTask.java",
   "java/src/org/chromium/chrome/browser/search_engines/SearchEngineChoiceMetrics.java",
   "java/src/org/chromium/chrome/browser/search_engines/SearchEngineChoiceNotification.java",
   "java/src/org/chromium/chrome/browser/search_engines/TemplateUrlServiceFactory.java",

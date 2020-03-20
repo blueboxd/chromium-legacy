@@ -73,8 +73,10 @@ bool VulkanDeviceQueue::Initialize(
     }
   }
 
-  if (queue_index == -1)
+  if (queue_index == -1) {
+    DLOG(ERROR) << "Cannot find capable device queue.";
     return false;
+  }
 
   const auto& physical_device_info = info.physical_devices[device_index];
   vk_physical_device_ = physical_device_info.device;
@@ -174,8 +176,10 @@ bool VulkanDeviceQueue::Initialize(
 
   result = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
                           &owned_vk_device_);
-  if (VK_SUCCESS != result)
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkCreateDevice failed. result:" << result;
     return false;
+  }
 
   enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
                                           std::end(enabled_extensions));

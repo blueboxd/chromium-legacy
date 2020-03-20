@@ -23,7 +23,8 @@
 namespace media {
 
 using MemoryDumpCB =
-    base::RepeatingCallback<void(base::trace_event::ProcessMemoryDump* pmd)>;
+    base::RepeatingCallback<void(const base::trace_event::MemoryDumpArgs& args,
+                                 base::trace_event::ProcessMemoryDump* pmd)>;
 
 class MEDIA_EXPORT MemoryDumpProviderProxy final
     : public base::trace_event::MemoryDumpProvider {

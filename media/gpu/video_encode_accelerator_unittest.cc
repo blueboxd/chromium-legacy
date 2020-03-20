@@ -1055,7 +1055,7 @@ class VideoFrameQualityValidator
   void Flush();
 
  private:
-  void InitializeCB(bool success);
+  void InitializeCB(Status status);
   void DecodeDone(DecodeStatus status);
   void FlushDone(DecodeStatus status);
   void VerifyOutputFrame(scoped_refptr<VideoFrame> output_frame);
@@ -1143,10 +1143,10 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
       base::NullCallback());
 }
 
-void VideoFrameQualityValidator::InitializeCB(bool success) {
+void VideoFrameQualityValidator::InitializeCB(Status status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (success) {
+  if (status.is_ok()) {
     decoder_state_ = INITIALIZED;
     Decode();
   } else {

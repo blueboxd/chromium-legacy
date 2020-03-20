@@ -677,7 +677,7 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
       return cdm::kInitializationError;
   }
 
-  if (!video_decoder_->Initialize(video_decoder_config))
+  if (!video_decoder_->Initialize(video_decoder_config).is_ok())
     return cdm::kInitializationError;
 
   return cdm::kSuccess;

@@ -107,7 +107,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Callback for |video_decoder_stream_| to deliver decoded video frames and
   // report video decoding status.
-  void FrameReady(VideoDecoderStream::Status status,
+  void FrameReady(VideoDecoderStream::ReadStatus status,
                   scoped_refptr<VideoFrame> frame);
 
   // Helper method for enqueueing a frame to |alogorithm_|.

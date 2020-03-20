@@ -40,12 +40,12 @@ class StatusDataView;
 // successful returns.
 class MEDIA_EXPORT Status {
  public:
-  // Default constructor can be used for Status::Ok();
+  // Default constructor can be used for OkStatus();
   Status();
 
   // Constructor to create a new Status from a numeric code & message.
   // These are immutable; if you'd like to change them, then you likely should
-  // create a new Status. {} or Status::Ok() should be used to create a
+  // create a new Status. {} or OkStatus() should be used to create a
   // success status.
   // NOTE: This should never be given a location parameter when called - It is
   // defaulted in order to grab the caller location.
@@ -136,7 +136,6 @@ class MEDIA_EXPORT Status {
   friend struct internal::MediaSerializer<Status>;
 
   // Allow mojo-serialization
-  friend struct std::allocator<Status>;
   friend struct mojo::StructTraits<media::mojom::StatusDataView, Status>;
 
   // A null internals is an implicit OK.
@@ -147,14 +146,6 @@ class MEDIA_EXPORT Status {
 // OK won't have a message, trace, or data associated with them, and DCHECK
 // if they are added.
 MEDIA_EXPORT Status OkStatus();
-
-// We need this two step macro to allow calling with no extra args - in a single
-// step macro we would have no way of removing the trailing comma after the
-// code.
-#define STATUS(CODE_TRUNC, ...) \
-  STATUS_INTERNAL(::media::StatusCode::CODE_TRUNC, ##__VA_ARGS__)
-
-#define STATUS_INTERNAL(...) ::media::Status(__VA_ARGS__)
 
 // Helper class to allow returning a |T| or a Status.  Typical usage:
 //

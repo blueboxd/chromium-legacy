@@ -201,8 +201,8 @@ class FuchsiaVideoDecoderTest : public testing::Test {
     decoder_->Initialize(
         config, true, /*cdm_context=*/nullptr,
         base::BindRepeating(
-            [](bool* init_cb_result, base::RunLoop* run_loop, bool result) {
-              *init_cb_result = result;
+            [](bool* init_cb_result, base::RunLoop* run_loop, Status status) {
+              *init_cb_result = status.is_ok();
               run_loop->Quit();
             },
             &init_cb_result, &run_loop),

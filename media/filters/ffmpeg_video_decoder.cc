@@ -214,12 +214,12 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
 
   if (config.is_encrypted()) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kEncryptedContentUnsupported);
     return;
   }
 
   if (!ConfigureDecoder(config, low_delay)) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
     return;
   }
 
@@ -227,7 +227,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
   output_cb_ = output_cb;
   state_ = kNormal;
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

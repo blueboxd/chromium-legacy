@@ -16,6 +16,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/status.h"
 #include "media/base/waiting.h"
 
 namespace media {
@@ -26,7 +27,7 @@ class CdmContext;
 class MEDIA_EXPORT AudioDecoder {
  public:
   // Callback for VideoDecoder initialization.
-  using InitCB = base::OnceCallback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(Status)>;
 
   // Callback for AudioDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.

@@ -133,7 +133,7 @@ class MEDIA_EXPORT AudioRendererImpl
                             OutputDeviceInfo output_device_info);
 
   // Callback from the audio decoder delivering decoded audio samples.
-  void DecodedAudioReady(AudioDecoderStream::Status status,
+  void DecodedAudioReady(AudioDecoderStream::ReadStatus status,
                          scoped_refptr<AudioBuffer> buffer);
 
   // Handles buffers that come out of decoder (MSE: after passing through

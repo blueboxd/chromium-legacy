@@ -342,7 +342,8 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
     if (os_version.IsSpecified() && !os_version.Contains(target_os_version))
       return false;
   }
-  if (vendor_id != 0 || gpu_series_list_size > 0 || intel_gpu_generation.IsSpecified()) {
+  if (vendor_id != 0 || intel_gpu_series_list_size > 0 ||
+      intel_gpu_generation.IsSpecified()) {
     std::vector<GPUInfo::GPUDevice> candidates;
     switch (multi_gpu_category) {
       case kMultiGpuCategoryPrimary:
@@ -369,14 +370,14 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
     }
 
     bool found = false;
-    if (gpu_series_list_size > 0) {
+    if (intel_gpu_series_list_size > 0) {
       for (size_t ii = 0; !found && ii < candidates.size(); ++ii) {
-        GpuSeriesType candidate_series = GetGpuSeriesType(
+        IntelGpuSeriesType candidate_series = GetIntelGpuSeriesType(
             candidates[ii].vendor_id, candidates[ii].device_id);
-        if (candidate_series == GpuSeriesType::kUnknown)
+        if (candidate_series == IntelGpuSeriesType::kUnknown)
           continue;
-        for (size_t jj = 0; jj < gpu_series_list_size; ++jj) {
-          if (candidate_series == gpu_series_list[jj]) {
+        for (size_t jj = 0; jj < intel_gpu_series_list_size; ++jj) {
+          if (candidate_series == intel_gpu_series_list[jj]) {
             found = true;
             break;
           }

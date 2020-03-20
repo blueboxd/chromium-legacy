@@ -155,8 +155,15 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(std::move(init_cb))
                                          : std::move(init_cb);
-  if (config.is_encrypted() || config.codec() != kCodecAV1) {
-    std::move(bound_init_cb).Run(false);
+  if (config.is_encrypted()) {
+    std::move(bound_init_cb).Run(StatusCode::kEncryptedContentUnsupported);
+    return;
+  }
+
+  if (config.codec() != kCodecAV1) {
+    std::move(bound_init_cb)
+        .Run(Status(StatusCode::kDecoderUnsupportedCodec)
+                 .WithData("codec", config.codec()));
     return;
   }
 
@@ -213,15 +220,16 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Set a maximum frame size limit to avoid OOM'ing fuzzers.
   s.frame_size_limit = limits::kMaxCanvas;
 
+  // TODO(tmathmeyer) write the dav1d error into the data for the media error.
   if (dav1d_open(&dav1d_decoder_, &s) < 0) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
     return;
   }
 
   config_ = config;
   state_ = DecoderState::kNormal;
   output_cb_ = output_cb;
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void Dav1dVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

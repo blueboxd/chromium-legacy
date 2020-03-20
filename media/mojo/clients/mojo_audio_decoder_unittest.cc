@@ -82,7 +82,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
   }
 
   // Completion callbacks.
-  MOCK_METHOD1(OnInitialized, void(bool));
+  MOCK_METHOD1(OnInitialized, void(Status));
   MOCK_METHOD1(OnOutput, void(scoped_refptr<AudioBuffer>));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnDecoded, void(DecodeStatus));
@@ -117,7 +117,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
 
     EXPECT_CALL(*mock_audio_decoder_, Initialize_(_, _, _, _, _))
         .WillRepeatedly(DoAll(SaveArg<3>(&output_cb_), SaveArg<4>(&waiting_cb_),
-                              RunOnceCallback<2>(true)));
+                              RunOnceCallback<2>(OkStatus())));
     EXPECT_CALL(*mock_audio_decoder_, Decode(_, _))
         .WillRepeatedly(
             DoAll(InvokeWithoutArgs(this, &MojoAudioDecoderTest::ReturnOutput),
@@ -135,9 +135,9 @@ class MojoAudioDecoderTest : public ::testing::Test {
     mojo_audio_decoder_->set_writer_capacity_for_testing(capacity);
   }
 
-  void InitializeAndExpect(bool success) {
-    DVLOG(1) << __func__ << ": success=" << success;
-    EXPECT_CALL(*this, OnInitialized(success))
+  void InitializeAndExpect(Status status) {
+    DVLOG(1) << __func__ << ": success=" << status.code();
+    EXPECT_CALL(*this, OnInitialized(SameStatusCode(status)))
         .WillOnce(InvokeWithoutArgs(this, &MojoAudioDecoderTest::QuitLoop));
 
     AudioDecoderConfig audio_config(kCodecVorbis, kSampleFormat, kChannelLayout,
@@ -156,7 +156,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
     RunLoop();
   }
 
-  void Initialize() { InitializeAndExpect(true); }
+  void Initialize() { InitializeAndExpect(OkStatus()); }
 
   void Decode() {
     scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));

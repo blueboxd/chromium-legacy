@@ -177,7 +177,7 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
   ~VideoDecoderAdapter() final = default;
 
   // CdmVideoDecoder implementation.
-  bool Initialize(const cdm::VideoDecoderConfig_3& config) final {
+  Status Initialize(const cdm::VideoDecoderConfig_3& config) final {
     auto clear_config = ToClearMediaVideoDecoderConfig(config);
     DVLOG(1) << __func__ << ": " << clear_config.AsHumanReadableString();
     DCHECK(!last_init_result_.has_value());
@@ -195,7 +195,7 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
         /* waiting_cb = */ base::DoNothing());
     run_loop.Run();
 
-    auto result = last_init_result_.value();
+    auto result = std::move(last_init_result_.value());
     last_init_result_.reset();
 
     return result;
@@ -251,10 +251,10 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
   }
 
  private:
-  void OnInitialized(base::OnceClosure quit_closure, bool success) {
-    DVLOG(1) << __func__ << " success = " << success;
+  void OnInitialized(base::OnceClosure quit_closure, Status status) {
+    DVLOG(1) << __func__ << " success = " << status.is_ok();
     DCHECK(!last_init_result_.has_value());
-    last_init_result_ = success;
+    last_init_result_ = std::move(status);
     std::move(quit_closure).Run();
   }
 
@@ -283,7 +283,7 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
 
   // Results of |video_decoder_| operations. Set iff the callback of the
   // operation has been called.
-  base::Optional<bool> last_init_result_;
+  base::Optional<Status> last_init_result_;
   base::Optional<DecodeStatus> last_decode_status_;
 
   // Queue of decoded video frames.

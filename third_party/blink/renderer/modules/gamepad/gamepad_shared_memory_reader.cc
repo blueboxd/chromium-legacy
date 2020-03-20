@@ -25,6 +25,8 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame) {
       receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
+void GamepadSharedMemoryReader::Trace(Visitor* visitor) {}
+
 void GamepadSharedMemoryReader::SendStartMessage() {
   if (gamepad_monitor_remote_) {
     gamepad_monitor_remote_->GamepadStartPolling(

@@ -89,7 +89,10 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     if (!enter_pending_decoder_init_) {
       EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
           .WillOnce(DoAll(SaveArg<3>(&output_cb_),
-                          RunOnceCallback<2>(expected_init_result_)));
+                          RunOnceCallback<2>(
+                              expected_init_result_
+                                  ? OkStatus()
+                                  : Status(StatusCode::kCodeOnlyForTesting))));
     } else {
       EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
           .WillOnce(EnterPendingDecoderInitStateAction(this));

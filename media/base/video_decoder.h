@@ -13,6 +13,7 @@
 #include "media/base/decode_status.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/status.h"
 #include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -26,7 +27,7 @@ class VideoFrame;
 class MEDIA_EXPORT VideoDecoder {
  public:
   // Callback for VideoDecoder initialization.
-  using InitCB = base::OnceCallback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(Status status)>;
 
   // Callback for VideoDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.

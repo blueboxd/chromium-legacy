@@ -247,7 +247,12 @@ class AudioDecoderTest
   void InitializeDecoderWithResult(const AudioDecoderConfig& config,
                                    bool success) {
     decoder_->Initialize(
-        config, nullptr, NewExpectedBoolCB(success),
+        config, nullptr,
+        base::BindOnce(
+            [](bool success, Status status) {
+              EXPECT_EQ(status.is_ok(), success);
+            },
+            success),
         base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)),
         base::DoNothing());
     base::RunLoop().RunUntilIdle();

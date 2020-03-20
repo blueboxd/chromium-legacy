@@ -31,31 +31,31 @@ namespace gpu {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class GpuSeriesType {
+enum class IntelGpuSeriesType {
   kUnknown = 0,
   // Intel 6th gen
-  kIntelSandybridge = 1,
+  kSandybridge = 1,
   // Intel 7th gen
-  kIntelBaytrail = 2,
-  kIntelIvybridge = 3,
-  kIntelHaswell = 4,
+  kBaytrail = 2,
+  kIvybridge = 3,
+  kHaswell = 4,
   // Intel 8th gen
-  kIntelCherrytrail = 5,
-  kIntelBroadwell = 6,
+  kCherrytrail = 5,
+  kBroadwell = 6,
   // Intel 9th gen
-  kIntelApollolake = 7,
-  kIntelSkylake = 8,
-  kIntelGeminilake = 9,
-  kIntelKabylake = 10,
-  kIntelCoffeelake = 11,
-  kIntelWhiskeylake = 12,
-  kIntelCometlake = 13,
+  kApollolake = 7,
+  kSkylake = 8,
+  kGeminilake = 9,
+  kKabylake = 10,
+  kCoffeelake = 11,
+  kWhiskeylake = 12,
+  kCometlake = 13,
   // Intel 10th gen
-  kIntelCannonlake = 14,
+  kCannonlake = 14,
   // Intel 11th gen
-  kIntelIcelake = 15,
+  kIcelake = 15,
   // Please also update |gpu_series_map| in process_json.py.
-  kMaxValue = kIntelIcelake,
+  kMaxValue = kIcelake,
 };
 
 // Video profile.  This *must* match media::VideoCodecProfile.

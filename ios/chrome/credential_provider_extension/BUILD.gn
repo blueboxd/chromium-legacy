@@ -42,13 +42,17 @@ ios_appex_bundle("credential_provider_extension") {
   sources = [
     "credential_provider_view_controller.h",
     "credential_provider_view_controller.mm",
+    "reauthentication_handler.h",
+    "reauthentication_handler.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     ":system_strings",
+    "//base",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/credential_provider_extension/resources",
     "//ios/chrome/credential_provider_extension/ui",
     ios_account_verification_provider_target,

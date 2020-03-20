@@ -66,8 +66,11 @@ class VideoRendererImplTest : public testing::Test {
     std::vector<std::unique_ptr<VideoDecoder>> decoders;
     decoders.push_back(base::WrapUnique(decoder_));
     ON_CALL(*decoder_, Initialize_(_, _, _, _, _, _))
-        .WillByDefault(DoAll(SaveArg<4>(&output_cb_),
-                             RunOnceCallback<3>(expect_init_success_)));
+        .WillByDefault(DoAll(
+            SaveArg<4>(&output_cb_),
+            RunOnceCallback<3>(expect_init_success_
+                                   ? OkStatus()
+                                   : Status(StatusCode::kCodeOnlyForTesting))));
     // Monitor decodes from the decoder.
     ON_CALL(*decoder_, Decode_(_, _))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::DecodeRequested));

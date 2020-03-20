@@ -79,7 +79,8 @@ const char* GetPrepareTraceString<DemuxerStream::AUDIO>() {
 }
 
 template <DemuxerStream::Type StreamType>
-const char* GetStatusString(typename DecoderStream<StreamType>::Status status) {
+const char* GetStatusString(
+    typename DecoderStream<StreamType>::ReadStatus status) {
   switch (status) {
     case DecoderStream<StreamType>::OK:
       return "okay";
@@ -420,7 +421,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::SatisfyRead(Status status,
+void DecoderStream<StreamType>::SatisfyRead(ReadStatus status,
                                             scoped_refptr<Output> output) {
   DCHECK(read_cb_);
   TRACE_EVENT_ASYNC_END1("media", GetReadTraceString<StreamType>(), this,
@@ -835,8 +836,8 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
-  FUNCTION_DVLOG(2) << ": success = " << success;
+void DecoderStream<StreamType>::OnDecoderReinitialized(Status status) {
+  FUNCTION_DVLOG(2) << ": success = " << status.is_ok();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
 
@@ -846,7 +847,7 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
   // Also, Reset() can be called during pending ReinitializeDecoder().
   // This function needs to handle them all!
 
-  if (!success) {
+  if (!status.is_ok()) {
     // Reinitialization failed. Try to fall back to one of the remaining
     // decoders. This will consume at least one decoder so doing it more than
     // once is safe.

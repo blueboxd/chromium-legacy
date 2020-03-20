@@ -5,10 +5,18 @@
 #ifndef MEDIA_BASE_STATUS_CODES_H_
 #define MEDIA_BASE_STATUS_CODES_H_
 
+#include <cstdint>
+#include <limits>
+#include <ostream>
+
+#include "media/base/media_export.h"
+
 namespace media {
 
-// NOTE: These numbers are still subject to change.  Do not use for things like
-// UMA yet!
+using StatusCodeType = int32_t;
+// TODO(tmathmeyer, liberato, xhwang) These numbers are not yet finalized:
+// DO NOT use them for reporting statistics, and DO NOT report them to any
+// user-facing feature, including media log.
 
 // Codes are grouped with a bitmask:
 // 0xFFFFFFFF
@@ -16,7 +24,7 @@ namespace media {
 //     │ └─ group code
 //     └─ reserved for now
 // 256 groups is more than anyone will ever need on a computer.
-enum class StatusCode : int32_t {
+enum class StatusCode : StatusCodeType {
   kOk = 0,
 
   // Decoder Errors: 0x01
@@ -24,20 +32,49 @@ enum class StatusCode : int32_t {
   kDecoderFailedDecode = 0x00000102,
   kDecoderUnsupportedProfile = 0x00000103,
   kDecoderUnsupportedCodec = 0x00000104,
+  kDecoderUnsupportedConfig = 0x00000105,
+  kEncryptedContentUnsupported = 0x00000106,
+  kClearContentUnsupported = 0x00000107,
+  kDecoderMissingCdmForEncryptedContent = 0x00000108,
+  kDecoderFailedConfigure = 0x00000109,
+  kDecoderCantChangeCodec = 0x0000010A,
+  kDecoderFailedCreation = 0x0000010B,
+  kInitializationUnspecifiedFailure = 0x0000010C,
 
   // Windows Errors: 0x02
   kWindowsWrappedHresult = 0x00000201,
   kWindowsApiNotAvailible = 0x00000202,
 
   // D3D11VideoDecoder Errors: 0x03
-  kCannotMakeContextCurrent = 0x00000301,
-  kCouldNotPostTexture = 0x00000302,
-  kCouldNotPostAcquireStream = 0x00000303,
+  kCantMakeContextCurrent = 0x00000301,
+  kCantPostTexture = 0x00000302,
+  kCantPostAcquireStream = 0x00000303,
 
-  // Reserved errors
-  kCodeOnlyForTesting = std::numeric_limits<int32_t>::max(),
+  // MojoDecoder Errors: 0x04
+  kMojoDecoderNoWrappedDecoder = 0x00000401,
+  kMojoDecoderStoppedBeforeInitDone = 0x00000402,
+  kMojoDecoderUnsupported = 0x00000403,
+  kMojoDecoderNoConnection = 0x00000404,
+  kMojoDecoderDeletedWithoutInitialization = 0x00000405,
+
+  // Chromeos Errors: 0x05
+  kChromeOSVideoDecoderNoDecoders = 0x00000501,
+  kV4l2NoDevice = 0x00000502,
+  kV4l2FailedToStopStreamQueue = 0x00000503,
+  kV4l2NoDecoder = 0x00000504,
+  kV4l2FailedFileCapabilitiesCheck = 0x00000505,
+  kV4l2FailedResourceAllocation = 0x00000506,
+  kV4l2BadFormat = 0x00000507,
+  kVaapiReinitializedDuringDecode = 0x00000508,
+  kVaapiFailedAcceleratorCreation = 0x00000509,
+
+  // Special codes
+  kGenericErrorPleaseRemove = 0x99999999,
+  kCodeOnlyForTesting = std::numeric_limits<StatusCodeType>::max(),
   kMaxValue = kCodeOnlyForTesting,
 };
+
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& os, const StatusCode& code);
 
 }  // namespace media
 

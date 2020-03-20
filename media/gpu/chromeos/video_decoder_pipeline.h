@@ -42,7 +42,7 @@ class DmabufVideoFramePool;
 // Note: All methods and callbacks should be called on the same sequence.
 class MEDIA_GPU_EXPORT DecoderInterface {
  public:
-  using InitCB = base::OnceCallback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(::media::Status status)>;
   // TODO(crbug.com/998413): Replace VideoFrame to GpuMemoryBuffer-based
   // instance.
   using OutputCB = base::RepeatingCallback<void(scoped_refptr<VideoFrame>)>;
@@ -194,10 +194,12 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   void DecodeTask(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
 
   void CreateAndInitializeVD(base::queue<CreateVDFunc> create_vd_funcs,
-                             VideoDecoderConfig config);
+                             VideoDecoderConfig config,
+                             ::media::Status parent_error);
   void OnInitializeDone(base::queue<CreateVDFunc> create_vd_funcs,
                         VideoDecoderConfig config,
-                        bool success);
+                        ::media::Status parent_error,
+                        ::media::Status success);
 
   void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, DecodeStatus status);
   void OnResetDone();

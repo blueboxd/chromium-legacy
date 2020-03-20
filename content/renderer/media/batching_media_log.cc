@@ -31,7 +31,7 @@ std::string ToJSON(const media::MediaLogRecord* event) {
 // Print an event to the chromium log.
 // TODO(tmathmeyer) replace this with a log-only EventHandler.
 void Log(media::MediaLogRecord* event) {
-  if (event->type == media::MediaLogRecord::Type::kMediaError) {
+  if (event->type == media::MediaLogRecord::Type::kMediaStatus) {
     LOG(ERROR) << "MediaEvent: " << ToJSON(event);
   } else if (event->type == media::MediaLogRecord::Type::kMessage &&
              event->params.HasKey("error")) {
@@ -96,7 +96,7 @@ void BatchingMediaLog::AddLogRecordLocked(
     switch (event->type) {
       // Hold onto the most recent PIPELINE_ERROR and the first, if any,
       // MEDIA_LOG_ERROR_ENTRY for use in GetErrorMessage().
-      case media::MediaLogRecord::Type::kMediaError:
+      case media::MediaLogRecord::Type::kMediaStatus:
         queued_media_events_.push_back(*event);
         last_pipeline_error_.swap(event);
         break;
@@ -174,9 +174,9 @@ std::string BatchingMediaLog::GetErrorMessageLocked() {
 std::string BatchingMediaLog::MediaEventToMessageString(
     const media::MediaLogRecord& event) {
   switch (event.type) {
-    case media::MediaLogRecord::Type::kMediaError: {
+    case media::MediaLogRecord::Type::kMediaStatus: {
       int error_code = 0;
-      event.params.GetInteger(media::MediaLog::kMediaErrorText, &error_code);
+      event.params.GetInteger(media::MediaLog::kStatusText, &error_code);
       DCHECK_NE(error_code, 0);
       return PipelineStatusToString(
           static_cast<media::PipelineStatus>(error_code));

@@ -113,7 +113,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_factory) {
     ASSERT_TRUE(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kCodeOnlyForTesting);
     return;
   }
 
@@ -145,21 +145,21 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (!decoder_) {
     ASSERT_TRUE(decoder_) << "Failed to create VideoDecodeAccelerator factory";
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kCodeOnlyForTesting);
     return;
   }
 
   if (!vda_config.is_deferred_initialization_allowed)
-    std::move(init_cb).Run(true);
+    std::move(init_cb).Run(OkStatus());
   else
     init_cb_ = std::move(init_cb);
 }
 
-void TestVDAVideoDecoder::NotifyInitializationComplete(bool success) {
+void TestVDAVideoDecoder::NotifyInitializationComplete(Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DCHECK(init_cb_);
 
-  std::move(init_cb_).Run(success);
+  std::move(init_cb_).Run(status);
 }
 
 void TestVDAVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

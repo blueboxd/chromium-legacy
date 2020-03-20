@@ -22,10 +22,10 @@ std::string MockMediaLog::MediaEventToLogString(const MediaLogRecord& event) {
   // event for figuring out media pipeline failures, and just reporting
   // pipeline status as numeric code is not very helpful/user-friendly.
   int error_code = 0;
-  if (event.type == MediaLogRecord::Type::kMediaError &&
-      event.params.GetInteger(media::MediaLog::kMediaErrorText, &error_code)) {
+  if (event.type == MediaLogRecord::Type::kMediaStatus &&
+      event.params.GetInteger(media::MediaLog::kStatusText, &error_code)) {
     PipelineStatus status = static_cast<PipelineStatus>(error_code);
-    return std::string(media::MediaLog::kMediaErrorText) + " " +
+    return std::string(media::MediaLog::kStatusText) + " " +
            PipelineStatusToString(status);
   }
 

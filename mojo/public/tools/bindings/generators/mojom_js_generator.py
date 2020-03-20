@@ -236,7 +236,7 @@ def GetRelativeUrl(module, base_module):
 
 class JavaScriptStylizer(generator.Stylizer):
   def StylizeConstant(self, mojom_name):
-    return generator.ToConstantCase(mojom_name)
+    return generator.ToUpperSnakeCase(mojom_name)
 
   def StylizeField(self, mojom_name):
     return generator.ToCamel(mojom_name, lower_initial=True)
@@ -280,7 +280,7 @@ class Generator(generator.Generator):
       "generate_fuzzing": self.generate_fuzzing,
       "generate_closure_exports": for_compile,
       "generate_struct_deserializers": self.js_generate_struct_deserializers,
-   }
+    }
 
   @staticmethod
   def GetTemplatePrefix():

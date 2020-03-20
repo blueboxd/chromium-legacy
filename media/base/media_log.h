@@ -42,7 +42,7 @@ namespace media {
 class MEDIA_EXPORT MediaLog {
  public:
   static const char kEventKey[];
-  static const char kMediaErrorText[];
+  static const char kStatusText[];
 
   // Constructor is protected, see below.
   virtual ~MediaLog();
@@ -78,7 +78,7 @@ class MEDIA_EXPORT MediaLog {
     AddLogRecord(std::move(record));
   }
 
-  // TODO(tmathmeyer) replace with MediaError when that's ready.
+  // TODO(tmathmeyer) replace with Status when that's ready.
   void NotifyError(PipelineStatus status);
 
   // Notify the media log that the player is destroyed. Some implementations
@@ -91,7 +91,7 @@ class MEDIA_EXPORT MediaLog {
   // Note: The base class definition only produces empty messages. See
   // RenderMediaLog for where this method is meaningful.
   // Inheritors should override GetErrorMessageLocked().
-  // TODO(tmathmeyer) Use a MediaError when that is ready.
+  // TODO(tmathmeyer) Use a media::Status when that is ready.
   std::string GetErrorMessage();
 
   // Getter for |id_|. Used by MojoMediaLogService to construct MediaLogRecords

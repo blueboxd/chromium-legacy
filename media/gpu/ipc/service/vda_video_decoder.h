@@ -120,7 +120,7 @@ class VdaVideoDecoder : public VideoDecoder,
 
  private:
   // media::VideoDecodeAccelerator::Client implementation.
-  void NotifyInitializationComplete(bool success) override;
+  void NotifyInitializationComplete(Status status) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              VideoPixelFormat format,
                              uint32_t textures_per_buffer,
@@ -137,7 +137,7 @@ class VdaVideoDecoder : public VideoDecoder,
   void DestroyOnGpuThread();
   void InitializeOnGpuThread();
   void ReinitializeOnGpuThread();
-  void InitializeDone(bool status);
+  void InitializeDone(Status status);
   void DecodeOnGpuThread(scoped_refptr<DecoderBuffer> buffer,
                          int32_t bitstream_id);
   void DismissPictureBufferOnParentThread(int32_t picture_buffer_id);

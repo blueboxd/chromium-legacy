@@ -316,7 +316,7 @@ class VideoDecoderStreamTest
   }
 
   // Callback for VideoDecoderStream::Read().
-  void FrameReady(VideoDecoderStream::Status status,
+  void FrameReady(VideoDecoderStream::ReadStatus status,
                   scoped_refptr<VideoFrame> frame) {
     DCHECK(pending_read_);
     frame_read_ = frame;
@@ -507,7 +507,7 @@ class VideoDecoderStreamTest
   bool pending_stop_;
   int num_decoded_bytes_unreported_;
   scoped_refptr<VideoFrame> frame_read_;
-  VideoDecoderStream::Status last_read_status_;
+  VideoDecoderStream::ReadStatus last_read_status_;
 
   // Decryptor has no key to decrypt a frame.
   bool has_no_key_;

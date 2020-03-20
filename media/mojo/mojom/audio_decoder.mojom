@@ -18,7 +18,7 @@ interface AudioDecoder {
   // with whether the initialization succeeded, and whether the pipeline needs
   // bitstream conversion.
   Initialize(AudioDecoderConfig config, int32 cdm_id)
-    => (bool success, bool needs_bitstream_conversion);
+    => (Status success, bool needs_bitstream_conversion);
 
   // Establishes data connection. Should be called before Decode().
   SetDataSource(handle<data_pipe_consumer> receive_pipe);

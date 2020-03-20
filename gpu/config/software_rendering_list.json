@@ -894,8 +894,8 @@
           "value": "3.19.1"
         }
       },
-      "gpu_series": [
-        "intel_haswell"
+      "intel_gpu_series": [
+        "haswell"
       ],
       "features": [
         "all"
@@ -1616,16 +1616,16 @@
          }
       },
       "vendor_id": "0x8086",
-      "gpu_series": [
-        "intel_sandybridge",
-        "intel_baytrail",
-        "intel_ivybridge",
-        "intel_haswell",
-        "intel_cherrytrail",
-        "intel_broadwell",
-        "intel_apollolake",
-        "intel_skylake",
-        "intel_geminilake"
+      "intel_gpu_series": [
+        "sandybridge",
+        "baytrail",
+        "ivybridge",
+        "haswell",
+        "cherrytrail",
+        "broadwell",
+        "apollolake",
+        "skylake",
+        "geminilake"
       ]
     },
     {

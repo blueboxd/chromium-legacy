@@ -19,6 +19,7 @@
 #include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/sample_format.h"
+#include "media/base/status.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size.h"
@@ -198,6 +199,20 @@ bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
 // Create a MockDemuxerStream for testing purposes.
 std::unique_ptr<::testing::StrictMock<MockDemuxerStream>>
 CreateMockDemuxerStream(DemuxerStream::Type type, bool encrypted);
+
+// Compares two media::Status by StatusCode only.
+MATCHER_P(SameStatusCode, status, "") {
+  return arg.code() == status.code();
+}
+
+// Compares two an |arg| Status to a StatusCode provided
+MATCHER_P(HasStatusCode, statusCode, "") {
+  return arg.code() == statusCode;
+}
+
+MATCHER(IsOkStatus, "") {
+  return arg.is_ok();
+}
 
 // Compares two {Audio|Video}DecoderConfigs
 MATCHER_P(DecoderConfigEq, config, "") {

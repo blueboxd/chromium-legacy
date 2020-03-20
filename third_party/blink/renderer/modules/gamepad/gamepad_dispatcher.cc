@@ -53,6 +53,7 @@ void GamepadDispatcher::InitializeHaptics() {
 }
 
 void GamepadDispatcher::Trace(Visitor* visitor) {
+  visitor->Trace(reader_);
   PlatformEventDispatcher::Trace(visitor);
 }
 
@@ -85,7 +86,7 @@ void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
 void GamepadDispatcher::StartListening(LocalFrame* frame) {
   if (!reader_) {
     DCHECK(frame);
-    reader_ = std::make_unique<GamepadSharedMemoryReader>(*frame);
+    reader_ = MakeGarbageCollected<GamepadSharedMemoryReader>(*frame);
   }
   reader_->Start(this);
 }

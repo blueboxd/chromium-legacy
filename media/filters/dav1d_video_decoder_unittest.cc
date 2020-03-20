@@ -51,7 +51,12 @@ class Dav1dVideoDecoderTest : public testing::Test {
                                       bool success) {
     decoder_->Initialize(
         config, true,  // Use low delay so we get 1 frame out for each frame in.
-        nullptr, NewExpectedBoolCB(success),
+        nullptr,
+        base::BindOnce(
+            [](bool success, Status status) {
+              EXPECT_EQ(status.is_ok(), success);
+            },
+            success),
         base::BindRepeating(&Dav1dVideoDecoderTest::FrameReady,
                             base::Unretained(this)),
         base::NullCallback());

@@ -37,10 +37,10 @@ struct MediaLogRecord {
     // See media/base/media_log_events.h for info.
     kMediaEventTriggered,
 
-    // TODO(tmathmeyer) use MediaError eventually instead of PipelineStatus
-    kMediaError,
+    // TODO(tmathmeyer) use media::Status eventually instead of PipelineStatus
+    kMediaStatus,
 
-    kMaxValue = kMediaError,
+    kMaxValue = kMediaStatus,
   };
 
   int32_t id;

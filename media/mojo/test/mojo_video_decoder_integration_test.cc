@@ -244,9 +244,10 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   bool Initialize() {
     CreateClient();
 
-    EXPECT_CALL(*decoder_, DoInitialize(_)).WillOnce(RunOnceCallback<0>(true));
+    EXPECT_CALL(*decoder_, DoInitialize(_))
+        .WillOnce(RunOnceCallback<0>(OkStatus()));
 
-    bool result = false;
+    Status result = OkStatus();
     StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb;
     EXPECT_CALL(init_cb, Run(_)).WillOnce(SaveArg<0>(&result));
 
@@ -254,7 +255,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
                         init_cb.Get(), output_cb_.Get(), waiting_cb_.Get());
     RunUntilIdle();
 
-    return result;
+    return result.is_ok();
   }
 
   DecodeStatus Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -390,7 +391,8 @@ TEST_F(MojoVideoDecoderIntegrationTest, InitializeFailNoDecoder) {
   CreateClient();
 
   StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb;
-  EXPECT_CALL(init_cb, Run(false));
+  EXPECT_CALL(init_cb,
+              Run(HasStatusCode(StatusCode::kMojoDecoderNoWrappedDecoder)));
 
   // Clear |decoder_| so that Initialize() should fail.
   decoder_.reset();
@@ -403,7 +405,9 @@ TEST_F(MojoVideoDecoderIntegrationTest, InitializeFailNoCdm) {
   CreateClient();
 
   StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb;
-  EXPECT_CALL(init_cb, Run(false));
+  EXPECT_CALL(
+      init_cb,
+      Run(HasStatusCode(StatusCode::kDecoderMissingCdmForEncryptedContent)));
 
   // CdmContext* (3rd parameter) is not provided but the VideoDecoderConfig
   // specifies encrypted video, so Initialize() should fail.

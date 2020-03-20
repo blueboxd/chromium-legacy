@@ -182,8 +182,8 @@ class GPU_EXPORT GpuControlList {
     const DriverInfo* driver_info;
     const GLStrings* gl_strings;
     const MachineModelInfo* machine_model_info;
-    size_t gpu_series_list_size;
-    const GpuSeriesType* gpu_series_list;
+    size_t intel_gpu_series_list_size;
+    const IntelGpuSeriesType* intel_gpu_series_list;
     Version intel_gpu_generation;
     const More* more;
 

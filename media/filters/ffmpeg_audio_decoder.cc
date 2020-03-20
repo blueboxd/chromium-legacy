@@ -77,16 +77,25 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
 
-  if (config.is_encrypted() ||
-      // TODO(dalecurtis): Remove this if ffmpeg ever gets xHE-AAC support.
-      config.profile() == AudioCodecProfile::kXHE_AAC) {
-    std::move(bound_init_cb).Run(false);
+  if (config.is_encrypted()) {
+    std::move(bound_init_cb)
+        .Run(Status(StatusCode::kEncryptedContentUnsupported,
+                    "FFmpegAudioDecoder does not support encrypted content"));
+    return;
+  }
+
+  // TODO(dalecurtis): Remove this if ffmpeg ever gets xHE-AAC support.
+  if (config.profile() == AudioCodecProfile::kXHE_AAC) {
+    std::move(bound_init_cb)
+        .Run(Status(StatusCode::kDecoderUnsupportedProfile)
+                 .WithData("decoder", "FFmpegAudioDecoder")
+                 .WithData("profile", config.profile()));
     return;
   }
 
   if (!ConfigureDecoder(config)) {
     av_sample_format_ = 0;
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
     return;
   }
 
@@ -94,7 +103,7 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
   state_ = kNormal;
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void FFmpegAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

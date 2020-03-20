@@ -38,7 +38,7 @@ class MEDIA_EXPORT VideoThumbnailDecoder {
   void Start(VideoFrameCallback video_frame_callback);
 
  private:
-  void OnVideoDecoderInitialized(bool success);
+  void OnVideoDecoderInitialized(Status status);
   void OnVideoBufferDecoded(DecodeStatus status);
   void OnEosBufferDecoded(DecodeStatus status);
 

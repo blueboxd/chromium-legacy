@@ -37,8 +37,8 @@ void OnDecodeComplete(const base::Closure& quit_closure,
 
 void OnInitDone(const base::Closure& quit_closure,
                 bool* success_dest,
-                bool success) {
-  *success_dest = success;
+                media::Status status) {
+  *success_dest = status.is_ok();
   quit_closure.Run();
 }
 

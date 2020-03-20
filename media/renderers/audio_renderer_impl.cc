@@ -721,7 +721,7 @@ void AudioRendererImpl::SetPlayDelayCBForTesting(PlayDelayCBForTesting cb) {
   play_delay_cb_for_testing_ = std::move(cb);
 }
 
-void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::Status status,
+void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::ReadStatus status,
                                           scoped_refptr<AudioBuffer> buffer) {
   DVLOG(2) << __func__ << "(" << status << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());

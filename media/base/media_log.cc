@@ -15,7 +15,7 @@
 namespace media {
 
 const char MediaLog::kEventKey[] = "event";
-const char MediaLog::kMediaErrorText[] = "pipeline_error";
+const char MediaLog::kStatusText[] = "pipeline_error";
 
 // A count of all MediaLogs created in the current process. Used to generate
 // unique IDs.
@@ -60,8 +60,8 @@ void MediaLog::AddMessage(MediaLogMessageLevel level, std::string message) {
 
 void MediaLog::NotifyError(PipelineStatus status) {
   std::unique_ptr<MediaLogRecord> record(
-      CreateRecord(MediaLogRecord::Type::kMediaError));
-  record->params.SetIntPath(MediaLog::kMediaErrorText, status);
+      CreateRecord(MediaLogRecord::Type::kMediaStatus));
+  record->params.SetIntPath(MediaLog::kStatusText, status);
   AddLogRecord(std::move(record));
 }
 

@@ -79,7 +79,11 @@ class DecryptingVideoDecoderTest : public testing::Test {
   void InitializeAndExpectResult(const VideoDecoderConfig& config,
                                  bool success) {
     decoder_->Initialize(config, false, cdm_context_.get(),
-                         NewExpectedBoolCB(success),
+                         base::BindOnce(
+                             [](bool success, Status status) {
+                               EXPECT_EQ(status.is_ok(), success);
+                             },
+                             success),
                          base::Bind(&DecryptingVideoDecoderTest::FrameReady,
                                     base::Unretained(this)),
                          base::Bind(&DecryptingVideoDecoderTest::OnWaiting,

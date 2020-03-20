@@ -58,7 +58,7 @@ class GpuVideoDecodeAccelerator
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // VideoDecodeAccelerator::Client implementation.
-  void NotifyInitializationComplete(bool success) override;
+  void NotifyInitializationComplete(Status status) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              VideoPixelFormat format,
                              uint32_t textures_per_buffer,

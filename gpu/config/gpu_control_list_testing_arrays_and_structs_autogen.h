@@ -1620,9 +1620,9 @@ const int kFeatureListForGpuControlTestingEntry60[1] = {
     TEST_FEATURE_0,
 };
 
-const GpuSeriesType kGpuSeriesForEntry60[2] = {
-    GpuSeriesType::kIntelSkylake,
-    GpuSeriesType::kIntelKabylake,
+const IntelGpuSeriesType kIntelGpuSeriesForEntry60[2] = {
+    IntelGpuSeriesType::kSkylake,
+    IntelGpuSeriesType::kKabylake,
 };
 
 const GpuControlList::More kMoreForEntry60_1440601243 = {
@@ -1646,8 +1646,8 @@ const int kFeatureListForGpuControlTestingEntry61[1] = {
     TEST_FEATURE_0,
 };
 
-const GpuSeriesType kGpuSeriesForEntry61[1] = {
-    GpuSeriesType::kIntelKabylake,
+const IntelGpuSeriesType kIntelGpuSeriesForEntry61[1] = {
+    IntelGpuSeriesType::kKabylake,
 };
 
 const GpuControlList::More kMoreForEntry61_1440601243 = {
@@ -1671,8 +1671,8 @@ const int kFeatureListForGpuControlTestingEntry62[1] = {
     TEST_FEATURE_0,
 };
 
-const GpuSeriesType kGpuSeriesForEntry62[1] = {
-    GpuSeriesType::kIntelKabylake,
+const IntelGpuSeriesType kIntelGpuSeriesForEntry62[1] = {
+    IntelGpuSeriesType::kKabylake,
 };
 
 const GpuControlList::More kMoreForEntry62_1440601243 = {
@@ -1696,8 +1696,8 @@ const int kFeatureListForGpuControlTestingEntry63[1] = {
     TEST_FEATURE_0,
 };
 
-const GpuSeriesType kGpuSeriesForEntry63[1] = {
-    GpuSeriesType::kIntelKabylake,
+const IntelGpuSeriesType kIntelGpuSeriesForEntry63[1] = {
+    IntelGpuSeriesType::kKabylake,
 };
 
 const GpuControlList::More kMoreForEntry63_1440601243 = {
@@ -1721,8 +1721,8 @@ const int kFeatureListForGpuControlTestingEntry64[1] = {
     TEST_FEATURE_0,
 };
 
-const GpuSeriesType kGpuSeriesForEntry64[1] = {
-    GpuSeriesType::kIntelKabylake,
+const IntelGpuSeriesType kIntelGpuSeriesForEntry64[1] = {
+    IntelGpuSeriesType::kKabylake,
 };
 
 const GpuControlList::More kMoreForEntry64_1440601243 = {
@@ -1763,8 +1763,8 @@ const GpuControlList::More kMoreForEntry65_1440601243 = {
     GpuControlList::kDontCare,  // subpixel_font_rendering
 };
 
-const GpuSeriesType kGpuSeriesForEntry65Exception0[1] = {
-    GpuSeriesType::kIntelKabylake,
+const IntelGpuSeriesType kIntelGpuSeriesForEntry65Exception0[1] = {
+    IntelGpuSeriesType::kKabylake,
 };
 
 const GpuControlList::More kMoreForEntry65_1440601243Exception0 = {

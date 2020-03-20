@@ -8,8 +8,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import androidx.preference.CheckBoxPreference;
@@ -46,7 +44,7 @@ import java.util.Set;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ClearBrowsingDataFragmentBasicTest {
     @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private static final String GOOGLE_ACCOUNT = "Google Account";
@@ -81,7 +79,6 @@ public class ClearBrowsingDataFragmentBasicTest {
     }
 
     private void setSyncable(final boolean syncable) {
-        Context context = InstrumentationRegistry.getTargetContext();
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         delegate.setMasterSyncAutomatically(syncable);
         AndroidSyncSettings.overrideForTests(delegate, null);

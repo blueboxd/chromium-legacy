@@ -162,8 +162,12 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
 
   bool CreateAndInitialize(bool init_cb_result = true) {
     EXPECT_CALL(*video_decoder_, Initialize_(_, _, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<0>(&vda_config_), SaveArg<4>(&output_cb_),
-                        base::test::RunOnceCallback<3>(init_cb_result)));
+        .WillOnce(DoAll(
+            SaveArg<0>(&vda_config_), SaveArg<4>(&output_cb_),
+            base::test::RunOnceCallback<3>(
+                init_cb_result
+                    ? media::OkStatus()
+                    : media::Status(media::StatusCode::kCodeOnlyForTesting))));
     rtc_video_decoder_adapter_ =
         RTCVideoDecoderAdapter::Create(&gpu_factories_, sdp_format_);
     return !!rtc_video_decoder_adapter_;
@@ -363,7 +367,7 @@ TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
   // First Decode() should cause a reinitialize as new color space is given.
   EXPECT_CALL(*video_decoder_, Initialize_(_, _, _, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&vda_config_),
-                      base::test::RunOnceCallback<3>(true)));
+                      base::test::RunOnceCallback<3>(media::OkStatus())));
   webrtc::EncodedImage first_input_image = GetEncodedImageWithColorSpace(0);
   ASSERT_EQ(rtc_video_decoder_adapter_->Decode(first_input_image, false, 0),
             WEBRTC_VIDEO_CODEC_OK);
@@ -395,7 +399,8 @@ TEST_F(RTCVideoDecoderAdapterTest, HandlesReinitializeFailure) {
 
   // Set Initialize() to fail.
   EXPECT_CALL(*video_decoder_, Initialize_(_, _, _, _, _, _))
-      .WillOnce(base::test::RunOnceCallback<3>(false));
+      .WillOnce(base::test::RunOnceCallback<3>(
+          media::Status(media::StatusCode::kCodeOnlyForTesting)));
   ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, 0),
             WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
 }

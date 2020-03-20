@@ -35,23 +35,36 @@ def SplitCamelCase(identifier):
   return [x.lower() for x in identifier.split('_')]
 
 
-def ToCamel(identifier, lower_initial=False, dilimiter='_'):
-  """Splits |identifier| using |dilimiter|, makes the first character of each
+def ToCamel(identifier, lower_initial=False, digits_split=False, delimiter='_'):
+  """Splits |identifier| using |delimiter|, makes the first character of each
   word uppercased (but makes the first character of the first word lowercased
   if |lower_initial| is set to True), and joins the words. Please note that for
   each word, all the characters except the first one are untouched.
   """
-  result = ''.join(word[0].upper() + word[1:]
-                   for word in identifier.split(dilimiter) if word)
+  result = ''
+  capitalize_next = True
+  for i in range(len(identifier)):
+    if identifier[i] == delimiter:
+      capitalize_next = True
+    elif digits_split and identifier[i].isdigit():
+      capitalize_next = True
+      result += identifier[i]
+    elif capitalize_next:
+      capitalize_next = False
+      result += identifier[i].upper()
+    else:
+      result += identifier[i]
+
   if lower_initial and result:
     result = result[0].lower() + result[1:]
+
   return result
 
 
-def ToConstantCase(identifier):
+def _ToSnakeCase(identifier, upper=False):
   """Splits camel-cased |identifier| into lower case words, removes the first
   word if it's "k" and joins them using "_" e.g. for "URLLoaderFactory", returns
-  "URL_LOADER_FACTORY".
+  "URL_LOADER_FACTORY" if upper, otherwise "url_loader_factory".
   """
   words = SplitCamelCase(identifier)
   if words[0] == 'k' and len(words) > 1:
@@ -61,7 +74,27 @@ def ToConstantCase(identifier):
   if (words[0][0].isdigit()):
     words[0] = '_' + words[0]
 
-  return '_'.join([word.upper() for word in words])
+
+  if upper:
+    words = map(lambda x: x.upper(), words)
+
+  return '_'.join(words)
+
+
+def ToUpperSnakeCase(identifier):
+  """Splits camel-cased |identifier| into lower case words, removes the first
+  word if it's "k" and joins them using "_" e.g. for "URLLoaderFactory", returns
+  "URL_LOADER_FACTORY".
+  """
+  return _ToSnakeCase(identifier, upper=True)
+
+
+def ToLowerSnakeCase(identifier):
+  """Splits camel-cased |identifier| into lower case words, removes the first
+  word if it's "k" and joins them using "_" e.g. for "URLLoaderFactory", returns
+  "url_loader_factory".
+  """
+  return _ToSnakeCase(identifier, upper=False)
 
 
 class Stylizer(object):

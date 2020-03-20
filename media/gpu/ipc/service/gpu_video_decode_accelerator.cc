@@ -226,9 +226,10 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void GpuVideoDecodeAccelerator::NotifyInitializationComplete(bool success) {
+void GpuVideoDecodeAccelerator::NotifyInitializationComplete(Status status) {
+  // TODO(tmathmeyer) convert the IPC send to a Status.
   if (!Send(new AcceleratedVideoDecoderHostMsg_InitializationComplete(
-          host_route_id_, success)))
+          host_route_id_, status.is_ok())))
     DLOG(ERROR)
         << "Send(AcceleratedVideoDecoderHostMsg_InitializationComplete) failed";
 }

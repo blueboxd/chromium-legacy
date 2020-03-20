@@ -13,7 +13,6 @@ source_set("deprecated") {
     "//url",
   ]
   sources = [
-    "crw_context_menu_delegate.h",
     "crw_js_injection_evaluator.h",
     "crw_js_injection_manager.h",
     "crw_js_injection_receiver.h",

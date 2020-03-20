@@ -43,7 +43,7 @@ class MEDIA_EXPORT FallbackVideoDecoder : public VideoDecoder {
                           InitCB init_cb,
                           const OutputCB& output_cb,
                           const WaitingCB& waiting_cb,
-                          bool success);
+                          Status status);
 
   std::unique_ptr<media::VideoDecoder> preferred_decoder_;
   std::unique_ptr<media::VideoDecoder> fallback_decoder_;

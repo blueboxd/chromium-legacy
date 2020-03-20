@@ -159,12 +159,12 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::OnDecoderInitializeDone(bool success) {
+void DecoderSelector<StreamType>::OnDecoderInitializeDone(Status status) {
   DVLOG(2) << __func__ << ": " << decoder_->GetDisplayName()
-           << " success=" << success;
+           << " success=" << std::hex << status.code();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!success) {
+  if (!status.is_ok()) {
     // Try the next decoder on the list.
     decoder_.reset();
     InitializeDecoder();

@@ -360,7 +360,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   bool have_decryptor = decryptor_ != nullptr;
   if (decoder_ && current_codec_ == config.codec() &&
       have_decryptor == config.is_encrypted()) {
-    std::move(done_callback).Run(true);
+    std::move(done_callback).Run(OkStatus());
     return;
   }
 
@@ -369,7 +369,8 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Initialize decryptor for encrypted streams.
   if (config.is_encrypted() && !InitializeDecryptor(cdm_context)) {
-    std::move(done_callback).Run(false);
+    std::move(done_callback)
+        .Run(StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
@@ -398,7 +399,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       break;
 
     default:
-      std::move(done_callback).Run(false);
+      std::move(done_callback).Run(StatusCode::kDecoderUnsupportedCodec);
       return;
   }
 
@@ -449,7 +450,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   current_codec_ = config.codec();
 
-  std::move(done_callback).Run(true);
+  std::move(done_callback).Run(OkStatus());
 }
 
 void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

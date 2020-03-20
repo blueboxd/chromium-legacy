@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "media/base/decode_status.h"
+#include "media/base/status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -99,6 +100,8 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
                                InitCB init_cb);
+  void OnInitializeDone(base::OnceCallback<void(bool)> cb,
+                        media::Status status);
   void DecodeOnMediaThread();
   void OnDecodeDone(media::DecodeStatus status);
   void OnOutput(scoped_refptr<media::VideoFrame> frame);

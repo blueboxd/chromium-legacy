@@ -186,7 +186,7 @@ bool SVGPreserveAspectRatio::Parse(const UChar*& ptr,
 }
 
 void SVGPreserveAspectRatio::TransformRect(FloatRect& dest_rect,
-                                           FloatRect& src_rect) {
+                                           FloatRect& src_rect) const {
   if (align_ == kSvgPreserveaspectratioNone)
     return;
 

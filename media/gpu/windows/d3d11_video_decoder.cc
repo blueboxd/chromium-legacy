@@ -465,7 +465,7 @@ void D3D11VideoDecoder::OnGpuInitComplete(bool success) {
   }
 
   state_ = State::kRunning;
-  std::move(init_cb_).Run(true);
+  std::move(init_cb_).Run(OkStatus());
 }
 
 void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -808,14 +808,20 @@ void D3D11VideoDecoder::OnCdmContextEvent(CdmContext::Event event) {
   }
 }
 
+// TODO(tmathmeyer) eventually have this take a Status and pass it through
+// to each of the callbacks.
 void D3D11VideoDecoder::NotifyError(const char* reason) {
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::NotifyError");
   state_ = State::kError;
   DLOG(ERROR) << reason;
+
+  // TODO(tmathmeyer) - Remove this after plumbing Status through the
+  // decode_cb and input_buffer_queue cb's.
   MEDIA_LOG(ERROR, media_log_) << reason;
 
   if (init_cb_)
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(
+        Status(StatusCode::kDecoderInitializeNeverCompleted, reason));
 
   current_buffer_ = nullptr;
   if (current_decode_cb_)

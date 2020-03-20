@@ -105,6 +105,7 @@ source_set("crw_context_menu_controller") {
   sources = [
     "crw_context_menu_controller.h",
     "crw_context_menu_controller.mm",
+    "crw_context_menu_delegate.h",
     "html_element_fetch_request.h",
     "html_element_fetch_request.mm",
   ]

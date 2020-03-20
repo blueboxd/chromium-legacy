@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace base {
 class ReadOnlySharedMemoryRegion;
@@ -28,10 +29,13 @@ namespace blink {
 class GamepadListener;
 class LocalFrame;
 
-class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
+class GamepadSharedMemoryReader
+    : public GarbageCollected<GamepadSharedMemoryReader>,
+      public device::mojom::blink::GamepadObserver {
  public:
   explicit GamepadSharedMemoryReader(LocalFrame& frame);
   ~GamepadSharedMemoryReader() override;
+  void Trace(Visitor*);
 
   void SampleGamepads(device::Gamepads& gamepads);
   void Start(blink::GamepadListener* listener);

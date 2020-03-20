@@ -356,64 +356,118 @@ class Generator(generator.Generator):
 
   def GetFilters(self):
     cpp_filters = {
-      "all_enum_values": AllEnumValues,
-      "constant_value": self._ConstantValue,
-      "contains_handles_or_interfaces": mojom.ContainsHandlesOrInterfaces,
-      "contains_move_only_members": self._ContainsMoveOnlyMembers,
-      "cpp_data_view_type": self._GetCppDataViewType,
-      "cpp_field_type": self._GetCppFieldType,
-      "cpp_union_field_type": self._GetCppUnionFieldType,
-      "cpp_pod_type": GetCppPodType,
-      "cpp_union_getter_return_type": self._GetUnionGetterReturnType,
-      "cpp_union_trait_getter_return_type": self._GetUnionTraitGetterReturnType,
-      "cpp_wrapper_call_type": self._GetCppWrapperCallType,
-      "cpp_wrapper_param_type": self._GetCppWrapperParamType,
-      "cpp_wrapper_param_type_new": self._GetCppWrapperParamTypeNew,
-      "cpp_wrapper_type": self._GetCppWrapperType,
-      "cpp_enum_without_namespace": GetEnumNameWithoutNamespace,
-      "default_value": self._DefaultValue,
-      "expression_to_text": self._ExpressionToText,
-      "format_constant_declaration": self._FormatConstantDeclaration,
-      "get_container_validate_params_ctor_args":
-          self._GetContainerValidateParamsCtorArgs,
-      "get_full_mojom_name_for_kind": self._GetFullMojomNameForKind,
-      "get_name_for_kind": self._GetNameForKind,
-      "get_pad": pack.GetPad,
-      "get_qualified_name_for_kind": self._GetQualifiedNameForKind,
-      "has_callbacks": mojom.HasCallbacks,
-      "has_packed_method_ordinals": HasPackedMethodOrdinals,
-      "has_sync_methods": mojom.HasSyncMethods,
-      "method_supports_lazy_serialization":
-          self._MethodSupportsLazySerialization,
-      "requires_context_for_data_view": RequiresContextForDataView,
-      "should_inline": ShouldInlineStruct,
-      "should_inline_union": ShouldInlineUnion,
-      "is_array_kind": mojom.IsArrayKind,
-      "is_enum_kind": mojom.IsEnumKind,
-      "is_integral_kind": mojom.IsIntegralKind,
-      "is_interface_kind": mojom.IsInterfaceKind,
-      "is_receiver_kind": self._IsReceiverKind,
-      "is_native_only_kind": IsNativeOnlyKind,
-      "is_any_handle_kind": mojom.IsAnyHandleKind,
-      "is_any_interface_kind": mojom.IsAnyInterfaceKind,
-      "is_any_handle_or_interface_kind": mojom.IsAnyHandleOrInterfaceKind,
-      "is_associated_kind": mojom.IsAssociatedKind,
-      "is_float_kind": mojom.IsFloatKind,
-      "is_hashable": self._IsHashableKind,
-      "is_map_kind": mojom.IsMapKind,
-      "is_nullable_kind": mojom.IsNullableKind,
-      "is_object_kind": mojom.IsObjectKind,
-      "is_reference_kind": mojom.IsReferenceKind,
-      "is_string_kind": mojom.IsStringKind,
-      "is_struct_kind": mojom.IsStructKind,
-      "is_typemapped_kind": self._IsTypemappedKind,
-      "is_union_kind": mojom.IsUnionKind,
-      "passes_associated_kinds": mojom.PassesAssociatedKinds,
-      "struct_constructors": self._GetStructConstructors,
-      "under_to_camel": generator.ToCamel,
-      "unmapped_type_for_serializer": self._GetUnmappedTypeForSerializer,
-      "use_custom_serializer": UseCustomSerializer,
-      "wtf_hash_fn_name_for_enum": GetWtfHashFnNameForEnum,
+        "all_enum_values":
+        AllEnumValues,
+        "constant_value":
+        self._ConstantValue,
+        "contains_handles_or_interfaces":
+        mojom.ContainsHandlesOrInterfaces,
+        "contains_move_only_members":
+        self._ContainsMoveOnlyMembers,
+        "cpp_data_view_type":
+        self._GetCppDataViewType,
+        "cpp_field_type":
+        self._GetCppFieldType,
+        "cpp_union_field_type":
+        self._GetCppUnionFieldType,
+        "cpp_pod_type":
+        GetCppPodType,
+        "cpp_union_getter_return_type":
+        self._GetUnionGetterReturnType,
+        "cpp_union_trait_getter_return_type":
+        self._GetUnionTraitGetterReturnType,
+        "cpp_wrapper_call_type":
+        self._GetCppWrapperCallType,
+        "cpp_wrapper_param_type":
+        self._GetCppWrapperParamType,
+        "cpp_wrapper_param_type_new":
+        self._GetCppWrapperParamTypeNew,
+        "cpp_wrapper_type":
+        self._GetCppWrapperType,
+        "cpp_enum_without_namespace":
+        GetEnumNameWithoutNamespace,
+        "default_value":
+        self._DefaultValue,
+        "expression_to_text":
+        self._ExpressionToText,
+        "format_constant_declaration":
+        self._FormatConstantDeclaration,
+        "get_container_validate_params_ctor_args":
+        self._GetContainerValidateParamsCtorArgs,
+        "get_full_mojom_name_for_kind":
+        self._GetFullMojomNameForKind,
+        "get_name_for_kind":
+        self._GetNameForKind,
+        "get_pad":
+        pack.GetPad,
+        "get_qualified_name_for_kind":
+        self._GetQualifiedNameForKind,
+        "has_callbacks":
+        mojom.HasCallbacks,
+        "has_packed_method_ordinals":
+        HasPackedMethodOrdinals,
+        "has_sync_methods":
+        mojom.HasSyncMethods,
+        "method_supports_lazy_serialization":
+        self._MethodSupportsLazySerialization,
+        "requires_context_for_data_view":
+        RequiresContextForDataView,
+        "should_inline":
+        ShouldInlineStruct,
+        "should_inline_union":
+        ShouldInlineUnion,
+        "is_array_kind":
+        mojom.IsArrayKind,
+        "is_enum_kind":
+        mojom.IsEnumKind,
+        "is_integral_kind":
+        mojom.IsIntegralKind,
+        "is_interface_kind":
+        mojom.IsInterfaceKind,
+        "is_receiver_kind":
+        self._IsReceiverKind,
+        "is_native_only_kind":
+        IsNativeOnlyKind,
+        "is_any_handle_kind":
+        mojom.IsAnyHandleKind,
+        "is_any_interface_kind":
+        mojom.IsAnyInterfaceKind,
+        "is_any_handle_or_interface_kind":
+        mojom.IsAnyHandleOrInterfaceKind,
+        "is_associated_kind":
+        mojom.IsAssociatedKind,
+        "is_float_kind":
+        mojom.IsFloatKind,
+        "is_hashable":
+        self._IsHashableKind,
+        "is_map_kind":
+        mojom.IsMapKind,
+        "is_nullable_kind":
+        mojom.IsNullableKind,
+        "is_object_kind":
+        mojom.IsObjectKind,
+        "is_reference_kind":
+        mojom.IsReferenceKind,
+        "is_string_kind":
+        mojom.IsStringKind,
+        "is_struct_kind":
+        mojom.IsStructKind,
+        "is_typemapped_kind":
+        self._IsTypemappedKind,
+        "is_union_kind":
+        mojom.IsUnionKind,
+        "passes_associated_kinds":
+        mojom.PassesAssociatedKinds,
+        "struct_constructors":
+        self._GetStructConstructors,
+        "under_to_camel":
+        self._UnderToCamel,
+        "unmapped_type_for_serializer":
+        self._GetUnmappedTypeForSerializer,
+        "use_custom_serializer":
+        UseCustomSerializer,
+        "wtf_hash_fn_name_for_enum":
+        GetWtfHashFnNameForEnum,
     }
     return cpp_filters
 
@@ -979,6 +1033,12 @@ class Generator(generator.Generator):
     if mojom.IsPlatformHandleKind(kind):
       return "mojo::PlatformHandle"
     return _kind_to_cpp_type[kind]
+
+  def _UnderToCamel(self, value, digits_split=False):
+    # There are some mojom files that don't use snake_cased names, so we try to
+    # fix that to get more consistent output.
+    return generator.ToCamel(
+        generator.ToLowerSnakeCase(value), digits_split=digits_split)
 
   def _GetUnmappedTypeForSerializer(self, kind):
     return self._GetCppDataViewType(kind, qualified=True)

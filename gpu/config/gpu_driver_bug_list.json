@@ -1851,8 +1851,8 @@
           "value": "10.13.2"
         }
       },
-      "gpu_series" : [
-        "intel_skylake"
+      "intel_gpu_series" : [
+        "skylake"
       ],
       "features" : [
         "emulate_isnan_on_float"
@@ -2283,10 +2283,10 @@
       "os": {
         "type": "win"
       },
-      "gpu_series": [
-        "intel_broadwell",
-        "intel_skylake",
-        "intel_cherrytrail"
+      "intel_gpu_series": [
+        "broadwell",
+        "skylake",
+        "cherrytrail"
       ],
       "features": [
         "disable_accelerated_vpx_decode"
@@ -2518,10 +2518,10 @@
       "os": {
         "type": "macosx"
       },
-      "gpu_series": [
-        "intel_skylake",
-        "intel_kabylake",
-        "intel_coffeelake"
+      "intel_gpu_series": [
+        "skylake",
+        "kabylake",
+        "coffeelake"
       ],
       "multi_gpu_category": "any",
       "features": [
@@ -3149,9 +3149,9 @@
       "os": {
         "type" : "win"
       },
-      "gpu_series": [
-        "intel_sandybridge",
-        "intel_ivybridge"
+      "intel_gpu_series": [
+        "sandybridge",
+        "ivybridge"
       ],
       "features": [
         "disable_direct_composition"

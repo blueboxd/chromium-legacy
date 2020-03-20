@@ -25,6 +25,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/scoped_async_trace.h"
+#include "media/base/status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -293,7 +294,8 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
     MEDIA_LOG(INFO, media_log_) << "Video configuration is not valid: "
                                 << config.AsHumanReadableString();
     DVLOG(1) << "Invalid configuration.";
-    BindToCurrentLoop(std::move(init_cb)).Run(false);
+    BindToCurrentLoop(std::move(init_cb))
+        .Run(StatusCode::kDecoderUnsupportedConfig);
     return;
   }
 
@@ -307,7 +309,8 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
     DVLOG(1) << "Unsupported configuration.";
     MEDIA_LOG(INFO, media_log_) << "Video configuration is not valid: "
                                 << config.AsHumanReadableString();
-    BindToCurrentLoop(std::move(init_cb)).Run(false);
+    BindToCurrentLoop(std::move(init_cb))
+        .Run(StatusCode::kDecoderUnsupportedConfig);
     return;
   }
 
@@ -317,7 +320,8 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
     MEDIA_LOG(INFO, media_log_) << "Cannot change codec during re-init: "
                                 << decoder_config_.AsHumanReadableString()
                                 << " -> " << config.AsHumanReadableString();
-    BindToCurrentLoop(std::move(init_cb)).Run(false);
+    BindToCurrentLoop(std::move(init_cb))
+        .Run(StatusCode::kDecoderCantChangeCodec);
     return;
   }
   decoder_config_ = config;
@@ -345,12 +349,13 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (config.is_encrypted() && media_crypto_.is_null()) {
     DVLOG(1) << "No MediaCrypto to handle encrypted config";
     MEDIA_LOG(INFO, media_log_) << "No MediaCrypto to handle encrypted config";
-    BindToCurrentLoop(std::move(init_cb)).Run(false);
+    BindToCurrentLoop(std::move(init_cb))
+        .Run(StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
   // Do the rest of the initialization lazily on the first decode.
-  BindToCurrentLoop(std::move(init_cb)).Run(true);
+  BindToCurrentLoop(std::move(init_cb)).Run(OkStatus());
 
   const int width = config.coded_size().width();
   // On re-init, reallocate the codec if the size has changed too much.
@@ -402,14 +407,14 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
     if (decoder_config_.is_encrypted()) {
       LOG(ERROR) << "MediaCrypto is not available";
       EnterTerminalState(State::kError, "MediaCrypto is not available");
-      std::move(init_cb).Run(false);
+      std::move(init_cb).Run(StatusCode::kDecoderMissingCdmForEncryptedContent);
       return;
     }
 
     // MediaCrypto is not available, but the stream is clear. So we can still
     // play the current stream. But if we switch to an encrypted stream playback
     // will fail.
-    std::move(init_cb).Run(true);
+    std::move(init_cb).Run(OkStatus());
     return;
   }
 
@@ -434,7 +439,7 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
           : SurfaceChooserHelper::SecureSurfaceMode::kRequested);
 
   // Signal success, and create the codec lazily on the first decode.
-  std::move(init_cb).Run(true);
+  std::move(init_cb).Run(OkStatus());
 }
 
 void MediaCodecVideoDecoder::OnKeyAdded() {

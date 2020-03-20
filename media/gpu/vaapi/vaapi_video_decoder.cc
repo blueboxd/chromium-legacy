@@ -110,7 +110,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (current_decode_task_ || !decode_task_queue_.empty()) {
     LOG(ERROR)
         << "Don't call Initialize() while there are pending decode tasks";
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kVaapiReinitializedDuringDecode);
     return;
   }
 
@@ -135,14 +135,14 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (!vaapi_wrapper_.get()) {
     VLOGF(1) << "Failed initializing VAAPI for profile "
              << GetProfileName(profile);
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kDecoderUnsupportedProfile);
     return;
   }
 
   profile_ = profile;
   color_space_ = config.color_space_info();
   if (!CreateAcceleratedVideoDecoder()) {
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kVaapiFailedAcceleratorCreation);
     return;
   }
 
@@ -156,7 +156,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   SetState(State::kWaitingForInput);
 
   // Notify client initialization was successful.
-  std::move(init_cb).Run(true);
+  std::move(init_cb).Run(OkStatus());
 }
 
 void VaapiVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

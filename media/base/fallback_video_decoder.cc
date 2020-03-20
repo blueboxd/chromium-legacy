@@ -48,11 +48,11 @@ void FallbackVideoDecoder::FallbackInitialize(const VideoDecoderConfig& config,
                                               InitCB init_cb,
                                               const OutputCB& output_cb,
                                               const WaitingCB& waiting_cb,
-                                              bool success) {
+                                              Status status) {
   // The preferred decoder was successfully initialized.
-  if (success) {
+  if (status.is_ok()) {
     selected_decoder_ = preferred_decoder_.get();
-    std::move(init_cb).Run(true);
+    std::move(init_cb).Run(OkStatus());
     return;
   }
 

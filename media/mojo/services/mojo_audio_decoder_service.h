@@ -45,7 +45,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
 
  private:
   // Called by |decoder_| upon finishing initialization.
-  void OnInitialized(InitializeCallback callback, bool success);
+  void OnInitialized(InitializeCallback callback, Status status);
 
   // Called by |mojo_decoder_buffer_reader_| when read is finished.
   void OnReadDone(DecodeCallback callback, scoped_refptr<DecoderBuffer> buffer);

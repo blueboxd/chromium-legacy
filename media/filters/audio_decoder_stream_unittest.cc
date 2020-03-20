@@ -98,8 +98,8 @@ class AudioDecoderStreamTest : public testing::Test {
   std::vector<std::unique_ptr<AudioDecoder>> CreateMockAudioDecoder() {
     auto decoder = std::make_unique<MockAudioDecoder>();
     EXPECT_CALL(*decoder, Initialize_(_, _, _, _, _))
-        .WillOnce(
-            DoAll(SaveArg<3>(&decoder_output_cb_), RunOnceCallback<2>(true)));
+        .WillOnce(DoAll(SaveArg<3>(&decoder_output_cb_),
+                        RunOnceCallback<2>(OkStatus())));
     decoder_ = decoder.get();
 
     std::vector<std::unique_ptr<AudioDecoder>> result;
@@ -108,7 +108,7 @@ class AudioDecoderStreamTest : public testing::Test {
   }
 
   void OnAudioBufferReadDone(base::OnceClosure closure,
-                             AudioDecoderStream::Status status,
+                             AudioDecoderStream::ReadStatus status,
                              scoped_refptr<AudioBuffer> audio_buffer) {
     std::move(closure).Run();
   }

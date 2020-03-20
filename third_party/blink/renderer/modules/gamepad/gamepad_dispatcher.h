@@ -62,7 +62,7 @@ class GamepadDispatcher final : public GarbageCollected<GamepadDispatcher>,
                                              bool connected);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<GamepadSharedMemoryReader> reader_;
+  Member<GamepadSharedMemoryReader> reader_;
   mojo::Remote<device::mojom::blink::GamepadHapticsManager>
       gamepad_haptics_manager_remote_;
 };

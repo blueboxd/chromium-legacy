@@ -38,7 +38,9 @@ class StatusTest : public testing::Test {
  public:
   Status DontFail() { return OkStatus(); }
 
-  Status FailEasily() { return STATUS(kCodeOnlyForTesting, "Message"); }
+  Status FailEasily() {
+    return Status(StatusCode::kCodeOnlyForTesting, "Message");
+  }
 
   Status FailRecursively(unsigned int count) {
     if (!count) {
@@ -92,7 +94,7 @@ TEST_F(StatusTest, SingleLayerError) {
   ASSERT_EQ(stack[0].DictSize(), 2ul);  // line and file
 
   // This is a bit fragile, since it's dependent on the file layout.
-  ASSERT_EQ(stack[0].FindIntPath("line").value_or(-1), 41);
+  ASSERT_EQ(stack[0].FindIntPath("line").value_or(-1), 42);
   ASSERT_THAT(*stack[0].FindStringPath("file"),
               HasSubstr("status_unittest.cc"));
 }

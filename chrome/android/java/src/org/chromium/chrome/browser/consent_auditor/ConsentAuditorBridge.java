@@ -32,7 +32,7 @@ public final class ConsentAuditorBridge {
             consentDescriptionArray[i] = consentDescription.get(i);
         }
         ConsentAuditorBridgeJni.get().recordConsent(ConsentAuditorBridge.this,
-                Profile.getLastUsedProfile(), accountId, feature, consentDescriptionArray,
+                Profile.getLastUsedRegularProfile(), accountId, feature, consentDescriptionArray,
                 consentConfirmation);
     }
 

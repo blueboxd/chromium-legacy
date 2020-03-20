@@ -125,7 +125,7 @@ interface VideoDecoder {
   // |cdm_id| must refer to a valid CDM if |config.is_encrypted()|.  It is not
   // used for unencrypted streams.
   Initialize(VideoDecoderConfig config, bool low_delay, int32 cdm_id) =>
-      (bool success, bool needs_bitstream_conversion,
+      (Status status, bool needs_bitstream_conversion,
        int32 max_decode_requests);
 
   // Request decoding of exactly one frame or an EOS buffer. This must not be

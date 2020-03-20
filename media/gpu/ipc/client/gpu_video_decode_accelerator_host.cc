@@ -213,10 +213,12 @@ void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   }
 }
 
+// TODO(tmathmeyer) This needs to accept a Status at some point
 void GpuVideoDecodeAcceleratorHost::OnInitializationComplete(bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (client_)
-    client_->NotifyInitializationComplete(success);
+    client_->NotifyInitializationComplete(
+        success ? OkStatus() : StatusCode::kInitializationUnspecifiedFailure);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(

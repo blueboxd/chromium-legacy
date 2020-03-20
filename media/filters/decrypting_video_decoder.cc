@@ -50,12 +50,12 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (!cdm_context) {
     // Once we have a CDM context, one should always be present.
     DCHECK(!support_clear_content_);
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
   if (!config.is_encrypted() && !support_clear_content_) {
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kClearContentUnsupported);
     return;
   }
 
@@ -73,7 +73,7 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (state_ == kUninitialized) {
     if (!cdm_context->GetDecryptor()) {
       DVLOG(1) << __func__ << ": no decryptor";
-      std::move(init_cb_).Run(false);
+      std::move(init_cb_).Run(StatusCode::kDecoderFailedConfigure);
       return;
     }
 
@@ -164,11 +164,11 @@ DecryptingVideoDecoder::~DecryptingVideoDecoder() {
 
   if (decryptor_) {
     decryptor_->DeinitializeDecoder(Decryptor::kVideo);
-    decryptor_ = NULL;
+    decryptor_ = nullptr;
   }
   pending_buffer_to_decode_.reset();
   if (init_cb_)
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kDecoderInitializeNeverCompleted);
   if (decode_cb_)
     std::move(decode_cb_).Run(DecodeStatus::ABORTED);
   if (reset_cb_)
@@ -185,8 +185,8 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
 
   if (!success) {
     DVLOG(1) << __func__ << ": failed to init video decoder on decryptor";
-    std::move(init_cb_).Run(false);
-    decryptor_ = NULL;
+    std::move(init_cb_).Run(StatusCode::kDecoderInitializeNeverCompleted);
+    decryptor_ = nullptr;
     state_ = kError;
     return;
   }
@@ -197,7 +197,7 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
 
   // Success!
   state_ = kIdle;
-  std::move(init_cb_).Run(true);
+  std::move(init_cb_).Run(OkStatus());
 }
 
 void DecryptingVideoDecoder::DecodePendingBuffer() {
@@ -241,7 +241,7 @@ void DecryptingVideoDecoder::DeliverFrame(Decryptor::Status status,
     return;
   }
 
-  DCHECK_EQ(status == Decryptor::kSuccess, frame.get() != NULL);
+  DCHECK_EQ(status == Decryptor::kSuccess, frame.get() != nullptr);
 
   if (status == Decryptor::kError) {
     DVLOG(2) << "DeliverFrame() - kError";

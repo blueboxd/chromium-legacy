@@ -30,6 +30,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
 #include "media/base/sample_format.h"
+#include "media/base/status.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 
 namespace chromecast {
@@ -155,10 +156,10 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
                                          weak_this_, timestamp));
   }
 
-  void OnInitialized(bool success) {
+  void OnInitialized(::media::Status status) {
     DCHECK(!initialized_);
     initialized_ = true;
-    if (success) {
+    if (status.is_ok()) {
       if (!decode_queue_.empty()) {
         auto& d = decode_queue_.front();
         DecodeNow(std::move(d.first), std::move(d.second));

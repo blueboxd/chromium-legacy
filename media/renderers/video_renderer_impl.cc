@@ -487,7 +487,7 @@ void VideoRendererImpl::OnTimeStopped() {
   }
 }
 
-void VideoRendererImpl::FrameReady(VideoDecoderStream::Status status,
+void VideoRendererImpl::FrameReady(VideoDecoderStream::ReadStatus status,
                                    scoped_refptr<VideoFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);

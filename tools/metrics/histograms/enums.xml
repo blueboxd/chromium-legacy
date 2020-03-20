@@ -3880,6 +3880,9 @@ Unknown properties are collapsed to zero. -->
       label="Domain join failed because KDC does not support encryption
              types."/>
   <int value="37" label="kpasswd exited with unspecified error."/>
+  <int value="38"
+      label="Setting computer organizational unit failed with constraint
+             violation"/>
 </enum>
 
 <enum name="AutocheckoutBubble">
@@ -31872,28 +31875,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Software"/>
 </enum>
 
-<enum name="GpuSeriesType">
-  <summary>
-    User device GPU generation. Currently only meaningful with Intel GPUs.
-  </summary>
-  <int value="0" label="Unknown (mostly Non-Intel)"/>
-  <int value="1" label="Intel SandyBridge"/>
-  <int value="2" label="Intel BayTrail"/>
-  <int value="3" label="Intel IvyBridge"/>
-  <int value="4" label="Intel Haswell"/>
-  <int value="5" label="Intel CherryTrail"/>
-  <int value="6" label="Intel Broadwell"/>
-  <int value="7" label="Intel ApolloLake"/>
-  <int value="8" label="Intel SkyLake"/>
-  <int value="9" label="Intel GeminiLake"/>
-  <int value="10" label="Intel KabyLake"/>
-  <int value="11" label="Intel CoffeeLake"/>
-  <int value="12" label="Intel WhiskeyLake"/>
-  <int value="13" label="Intel CometLake"/>
-  <int value="14" label="Intel CannonLake"/>
-  <int value="15" label="Intel IceLake"/>
-</enum>
-
 <enum name="GPUsetIsAcceleratedCompositingActive">
   <summary>
     Combinations of input parameter active and previous active state set in
@@ -34750,6 +34731,28 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="10" label="10th Gen"/>
   <int value="11" label="11th Gen"/>
   <int value="12" label="12th Gen"/>
+</enum>
+
+<enum name="IntelGpuSeriesType">
+  <summary>
+    User device GPU series type. Only meaningful with Intel GPUs.
+  </summary>
+  <int value="0" label="Unknown (mostly Non-Intel)"/>
+  <int value="1" label="Intel SandyBridge"/>
+  <int value="2" label="Intel BayTrail"/>
+  <int value="3" label="Intel IvyBridge"/>
+  <int value="4" label="Intel Haswell"/>
+  <int value="5" label="Intel CherryTrail"/>
+  <int value="6" label="Intel Broadwell"/>
+  <int value="7" label="Intel ApolloLake"/>
+  <int value="8" label="Intel SkyLake"/>
+  <int value="9" label="Intel GeminiLake"/>
+  <int value="10" label="Intel KabyLake"/>
+  <int value="11" label="Intel CoffeeLake"/>
+  <int value="12" label="Intel WhiskeyLake"/>
+  <int value="13" label="Intel CometLake"/>
+  <int value="14" label="Intel CannonLake"/>
+  <int value="15" label="Intel IceLake"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture">

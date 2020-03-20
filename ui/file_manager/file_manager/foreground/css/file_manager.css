@@ -554,6 +554,15 @@ body.check-select .dialog-header:not(.files-ng) cr-button {
   background-color: rgba(0, 0, 0, 12%);
 }
 
+.dialog-header.files-ng button:not([menu-shown]):not(:active):hover {
+  background-color: rgba(0, 0, 0, 4%);
+}
+
+.dialog-header.files-ng button:active {
+  background-color: rgba(0, 0, 0, 12%);
+}
+
+/* TODO(adanilo): put the :focus at the end for consistency. */
 .dialog-header.files-ng cr-button:focus:not(:active),
 .dialog-header.files-ng button:focus:not(:active) {
   border: 1px solid var(--google-blue-600);
@@ -615,10 +624,6 @@ body.check-select .dialog-header
   box-shadow: none;
   outline: none;
   position: relative;
-}
-
-.dialog-header.files-ng button.menu-button:hover {
-  background-color: rgba(0, 0, 0, 4%);
 }
 
 .dialog-header button.icon-button > iron-icon {

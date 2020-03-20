@@ -148,7 +148,7 @@ class VideoDecoderClient {
   // The below functions are callbacks provided to the video decoder. They are
   // all executed on the |decoder_client_thread_|.
   // Called by the decoder when initialization has completed.
-  void DecoderInitializedTask(bool status);
+  void DecoderInitializedTask(Status status);
   // Called by the decoder when a fragment has been decoded.
   void DecodeDoneTask(media::DecodeStatus status);
   // Called by the decoder when a video frame is ready.

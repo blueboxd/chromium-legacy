@@ -26,7 +26,7 @@ const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContainedBVC{"ContainedBVC",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTestFeature{"TestFeature",
                                  base::FEATURE_DISABLED_BY_DEFAULT};

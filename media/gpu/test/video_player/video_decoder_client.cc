@@ -234,7 +234,7 @@ void VideoDecoderClient::InitializeDecoderTask(const Video* video,
 
   VideoDecoder::InitCB init_cb = base::BindOnce(
       CallbackThunk<decltype(&VideoDecoderClient::DecoderInitializedTask),
-                    bool>,
+                    Status>,
       weak_this_, decoder_client_thread_.task_runner(),
       &VideoDecoderClient::DecoderInitializedTask);
   VideoDecoder::OutputCB output_cb = base::BindRepeating(
@@ -360,11 +360,11 @@ void VideoDecoderClient::ResetTask() {
   FireEvent(VideoPlayerEvent::kResetting);
 }
 
-void VideoDecoderClient::DecoderInitializedTask(bool status) {
+void VideoDecoderClient::DecoderInitializedTask(Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
          decoder_client_state_ == VideoDecoderClientState::kIdle);
-  ASSERT_TRUE(status) << "Initializing decoder failed";
+  ASSERT_TRUE(status.is_ok()) << "Initializing decoder failed";
 
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   FireEvent(VideoPlayerEvent::kInitialized);

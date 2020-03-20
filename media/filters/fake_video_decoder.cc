@@ -83,18 +83,18 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (config.is_encrypted() && (!supports_encrypted_config_ || !cdm_context)) {
     DVLOG(1) << "Encrypted config not supported.";
     state_ = STATE_NORMAL;
-    init_cb_.RunOrHold(false);
+    init_cb_.RunOrHold(StatusCode::kEncryptedContentUnsupported);
     return;
   }
 
   if (fail_to_initialize_) {
     DVLOG(1) << decoder_name_ << ": Initialization failed.";
     state_ = STATE_ERROR;
-    init_cb_.RunOrHold(false);
+    init_cb_.RunOrHold(StatusCode::kDecoderInitializeNeverCompleted);
   } else {
     DVLOG(1) << decoder_name_ << ": Initialization succeeded.";
     state_ = STATE_NORMAL;
-    init_cb_.RunOrHold(true);
+    init_cb_.RunOrHold(OkStatus());
   }
 }
 

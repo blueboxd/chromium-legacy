@@ -4,4 +4,3 @@ AutomationFocusChanged on role=option, name=Apple
 AutomationFocusChanged on role=option, name=Orange
 AutomationFocusChanged on role=option, name=Orange
 SelectionItem_ElementSelected on role=option, name=Orange
-<-- End-of-file -->

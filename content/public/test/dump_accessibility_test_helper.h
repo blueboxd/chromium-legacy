@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_DUMP_ACCESSIBILITY_TEST_HELPER_H_
 #define CONTENT_PUBLIC_TEST_DUMP_ACCESSIBILITY_TEST_HELPER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/optional.h"
 
 namespace base {
@@ -12,9 +13,6 @@ class FilePath;
 }
 
 namespace content {
-
-// Sentinal value to mark end of actual/expected results.
-extern const char kMarkEndOfFile[];
 
 class AccessibilityTestExpectationsLocator;
 
@@ -46,6 +44,8 @@ class DumpAccessibilityTestHelper {
       const std::vector<std::string>& expected_lines);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DumpAccessibilityTestHelperTest, TestDiffLines);
+
   // Utility helper that does a comment-aware equality check.
   // Returns array of lines from expected file which are different.
   static std::vector<int> DiffLines(

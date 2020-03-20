@@ -365,7 +365,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
   }
 
   // VideoDecodeAccelerator::Client methods.
-  MOCK_METHOD1(NotifyInitializationComplete, void(bool));
+  MOCK_METHOD1(NotifyInitializationComplete, void(Status));
   MOCK_METHOD5(
       ProvidePictureBuffers,
       void(uint32_t, VideoPixelFormat, uint32_t, const gfx::Size&, uint32_t));

@@ -99,8 +99,12 @@ MojoVideoDecoderService::MojoVideoDecoderService(
 MojoVideoDecoderService::~MojoVideoDecoderService() {
   DVLOG(1) << __func__;
 
-  if (init_cb_)
-    OnDecoderInitialized(false);
+  if (init_cb_) {
+    OnDecoderInitialized(
+        Status(StatusCode::kMojoDecoderDeletedWithoutInitialization)
+            .WithData("decoder", "MojoVideoDecoder"));
+  }
+
   if (reset_cb_)
     OnDecoderReset();
 
@@ -172,7 +176,7 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
   init_cb_ = std::move(callback);
 
   if (!decoder_) {
-    OnDecoderInitialized(false);
+    OnDecoderInitialized(StatusCode::kMojoDecoderNoWrappedDecoder);
     return;
   }
 
@@ -191,7 +195,7 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
 
   if (config.is_encrypted() && !cdm_context) {
     DVLOG(1) << "CdmContext for " << cdm_id << " not found for encrypted video";
-    OnDecoderInitialized(false);
+    OnDecoderInitialized(StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
@@ -254,19 +258,19 @@ void MojoVideoDecoderService::Reset(ResetCallback callback) {
       base::BindOnce(&MojoVideoDecoderService::OnReaderFlushed, weak_this_));
 }
 
-void MojoVideoDecoderService::OnDecoderInitialized(bool success) {
+void MojoVideoDecoderService::OnDecoderInitialized(Status status) {
   DVLOG(1) << __func__;
-  DCHECK(!success || decoder_);
+  DCHECK(!status.is_ok() || decoder_);
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", kInitializeTraceName, this, "success",
-                         success);
+                         status.code());
 
-  if (!success)
+  if (!status.is_ok())
     cdm_context_ref_.reset();
 
   std::move(init_cb_).Run(
-      success, success ? decoder_->NeedsBitstreamConversion() : false,
-      success ? decoder_->GetMaxDecodeRequests() : 1);
+      status, status.is_ok() ? decoder_->NeedsBitstreamConversion() : false,
+      status.is_ok() ? decoder_->GetMaxDecodeRequests() : 1);
 }
 
 void MojoVideoDecoderService::OnReaderRead(

@@ -11,4 +11,3 @@ AutomationFocusChanged on role=option, name=Banana
 AutomationFocusChanged on role=option, name=Banana
 AutomationFocusChanged on role=option, name=Orange
 SelectionItem_ElementSelected on role=option, name=Banana
-<-- End-of-file -->

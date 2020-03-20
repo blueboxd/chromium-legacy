@@ -60,8 +60,8 @@ namespace cast {
 // See comment in end2end_unittest.cc for details on this value.
 const double kVideoAcceptedPSNR = 38.0;
 
-void SaveDecoderInitResult(bool* out_result, bool in_result) {
-  *out_result = in_result;
+void SaveDecoderInitResult(bool* out_result, ::media::Status in_result) {
+  *out_result = in_result.is_ok();
 }
 
 void SaveOperationalStatus(OperationalStatus* out_status,

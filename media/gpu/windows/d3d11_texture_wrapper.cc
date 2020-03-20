@@ -232,7 +232,7 @@ Status DefaultTexture2DWrapper::GpuResources::PushNewTexture(
     ComD3D11Texture2D texture,
     size_t array_slice) {
   if (!helper_ || !helper_->MakeContextCurrent())
-    return Status(StatusCode::kCannotMakeContextCurrent);
+    return Status(StatusCode::kCantMakeContextCurrent);
 
   // Notify |gl_image_| that it has a new texture.
   gl_image_->SetTexture(texture, array_slice);
@@ -248,11 +248,11 @@ Status DefaultTexture2DWrapper::GpuResources::PushNewTexture(
   if (!eglStreamPostD3DTextureANGLE(egl_display, stream_,
                                     static_cast<void*>(texture.Get()),
                                     frame_attributes)) {
-    return Status(StatusCode::kCouldNotPostTexture);
+    return Status(StatusCode::kCantPostTexture);
   }
 
   if (!eglStreamConsumerAcquireKHR(egl_display, stream_))
-    return Status(StatusCode::kCouldNotPostAcquireStream);
+    return Status(StatusCode::kCantPostAcquireStream);
 
   return OkStatus();
 }

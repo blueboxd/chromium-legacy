@@ -126,8 +126,13 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(std::move(init_cb))
                                          : std::move(init_cb);
-  if (config.is_encrypted() || !ConfigureDecoder(config)) {
-    std::move(bound_init_cb).Run(false);
+  if (config.is_encrypted()) {
+    std::move(bound_init_cb).Run(StatusCode::kEncryptedContentUnsupported);
+    return;
+  }
+
+  if (!ConfigureDecoder(config)) {
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
     return;
   }
 
@@ -135,7 +140,7 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
   state_ = kNormal;
   output_cb_ = output_cb;
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

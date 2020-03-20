@@ -57,12 +57,12 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
   if (!cdm_context) {
     // Once we have a CDM context, one should always be present.
     DCHECK(!support_clear_content_);
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
   if (!config.is_encrypted() && !support_clear_content_) {
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kClearContentUnsupported);
     return;
   }
 
@@ -79,7 +79,7 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
   // TODO(xhwang): We should be able to DCHECK config.IsValidConfig().
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid audio stream config.";
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kDecoderUnsupportedCodec);
     return;
   }
 
@@ -88,7 +88,7 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
   if (state_ == kUninitialized) {
     if (!cdm_context->GetDecryptor()) {
       DVLOG(1) << __func__ << ": no decryptor";
-      std::move(init_cb_).Run(false);
+      std::move(init_cb_).Run(StatusCode::kDecoderFailedConfigure);
       return;
     }
 
@@ -172,11 +172,11 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
 
   if (decryptor_) {
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
-    decryptor_ = NULL;
+    decryptor_ = nullptr;
   }
   pending_buffer_to_decode_.reset();
   if (init_cb_)
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kDecoderInitializeNeverCompleted);
   if (decode_cb_)
     std::move(decode_cb_).Run(DecodeStatus::ABORTED);
   if (reset_cb_)
@@ -200,8 +200,8 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
 
   if (!success) {
     DVLOG(1) << __func__ << ": failed to init audio decoder on decryptor";
-    std::move(init_cb_).Run(false);
-    decryptor_ = NULL;
+    std::move(init_cb_).Run(StatusCode::kDecoderInitializeNeverCompleted);
+    decryptor_ = nullptr;
     state_ = kError;
     return;
   }
@@ -215,7 +215,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
                              &DecryptingAudioDecoder::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;
-  std::move(init_cb_).Run(true);
+  std::move(init_cb_).Run(OkStatus());
 }
 
 void DecryptingAudioDecoder::DecodePendingBuffer() {

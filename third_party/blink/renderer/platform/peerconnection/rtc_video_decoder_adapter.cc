@@ -388,9 +388,16 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
 
   media::VideoDecoder::OutputCB output_cb = ConvertToBaseRepeatingCallback(
       CrossThreadBindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_));
-  video_decoder_->Initialize(config, low_delay, cdm_context,
-                             ConvertToBaseOnceCallback(std::move(init_cb)),
-                             output_cb, base::DoNothing());
+  video_decoder_->Initialize(
+      config, low_delay, cdm_context,
+      base::BindOnce(&RTCVideoDecoderAdapter::OnInitializeDone, weak_this_,
+                     ConvertToBaseOnceCallback(std::move(init_cb))),
+      output_cb, base::DoNothing());
+}
+
+void RTCVideoDecoderAdapter::OnInitializeDone(base::OnceCallback<void(bool)> cb,
+                                              media::Status status) {
+  std::move(cb).Run(status.is_ok());
 }
 
 void RTCVideoDecoderAdapter::DecodeOnMediaThread() {

@@ -222,8 +222,10 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(decode_cbs_.empty());
 
   if (has_error_) {
-    parent_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    // TODO(tmathmeyer) generic error, please remove.
+    parent_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(init_cb),
+                                  StatusCode::kGenericErrorPleaseRemove));
     return;
   }
 
@@ -295,7 +297,7 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
     } else {
       parent_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
-                                    parent_weak_this_, true));
+                                    parent_weak_this_, OkStatus()));
     }
     return;
   }
@@ -330,8 +332,9 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
     command_buffer_helper_ = std::move(create_command_buffer_helper_cb_).Run();
     if (!command_buffer_helper_) {
       parent_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
-                                    parent_weak_this_, false));
+          FROM_HERE,
+          base::BindOnce(&VdaVideoDecoder::InitializeDone, parent_weak_this_,
+                         StatusCode::kDecoderInitializeNeverCompleted));
       return;
     }
 
@@ -360,8 +363,9 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
                                            media_log_.get(), vda_config);
   if (!vda_) {
     parent_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
-                                  parent_weak_this_, false));
+        FROM_HERE,
+        base::BindOnce(&VdaVideoDecoder::InitializeDone, parent_weak_this_,
+                       StatusCode::kDecoderInitializeNeverCompleted));
     return;
   }
 
@@ -375,24 +379,24 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
 
   parent_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(&VdaVideoDecoder::InitializeDone,
-                                               parent_weak_this_, true));
+                                               parent_weak_this_, OkStatus()));
 }
 
-void VdaVideoDecoder::InitializeDone(bool status) {
-  DVLOG(1) << __func__ << "(" << status << ")";
+void VdaVideoDecoder::InitializeDone(Status status) {
+  DVLOG(1) << __func__ << " success = (" << status.code() << ")";
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
 
   if (has_error_)
     return;
 
-  if (!status) {
+  if (!status.is_ok()) {
     // TODO(sandersd): This adds an unnecessary PostTask().
     EnterErrorState();
     return;
   }
 
   reinitializing_ = false;
-  std::move(init_cb_).Run(true);
+  std::move(init_cb_).Run(std::move(status));
 }
 
 void VdaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -488,8 +492,8 @@ int VdaVideoDecoder::GetMaxDecodeRequests() const {
   return 4;
 }
 
-void VdaVideoDecoder::NotifyInitializationComplete(bool success) {
-  DVLOG(2) << __func__ << "(" << success << ")";
+void VdaVideoDecoder::NotifyInitializationComplete(Status status) {
+  DVLOG(2) << __func__ << "(" << status.code() << ")";
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(vda_initialized_);
 
@@ -816,7 +820,7 @@ void VdaVideoDecoder::DestroyCallbacks() {
     std::move(reset_cb_).Run();
 
   if (weak_this && init_cb_)
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kDecoderInitializeNeverCompleted);
 }
 
 }  // namespace media

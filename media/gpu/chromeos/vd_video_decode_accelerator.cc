@@ -160,12 +160,12 @@ bool VdVideoDecodeAccelerator::Initialize(const Config& config,
   return true;
 }
 
-void VdVideoDecodeAccelerator::OnInitializeDone(bool success) {
-  DVLOGF(3) << "success: " << success;
+void VdVideoDecodeAccelerator::OnInitializeDone(Status status) {
+  DVLOGF(3) << "success: " << status.is_ok();
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK(client_);
 
-  client_->NotifyInitializationComplete(success);
+  client_->NotifyInitializationComplete(status);
 }
 
 void VdVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {

@@ -58,8 +58,11 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   // Callback for connection error on |remote_decoder_|.
   void OnConnectionError();
 
+  // Fail an initialization with a Status.
+  void FailInit(InitCB init_cb, Status err);
+
   // Called when |remote_decoder_| finished initialization.
-  void OnInitialized(bool success, bool needs_bitstream_conversion);
+  void OnInitialized(const Status& status, bool needs_bitstream_conversion);
 
   // Called when |remote_decoder_| accepted or rejected DecoderBuffer.
   void OnDecodeStatus(DecodeStatus decode_status);

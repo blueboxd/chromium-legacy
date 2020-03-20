@@ -52,16 +52,16 @@ enum DecoderCapability {
   kAlwaysSucceed,
 };
 
-bool IsConfigSupported(DecoderCapability capability, bool is_encrypted) {
+Status IsConfigSupported(DecoderCapability capability, bool is_encrypted) {
   switch (capability) {
     case kAlwaysFail:
-      return false;
+      return StatusCode::kCodeOnlyForTesting;
     case kClearOnly:
-      return !is_encrypted;
+      return is_encrypted ? StatusCode::kCodeOnlyForTesting : OkStatus();
     case kEncryptedOnly:
-      return is_encrypted;
+      return is_encrypted ? OkStatus() : StatusCode::kCodeOnlyForTesting;
     case kAlwaysSucceed:
-      return true;
+      return OkStatus();
   }
 }
 

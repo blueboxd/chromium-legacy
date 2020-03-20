@@ -75,7 +75,12 @@ class FFmpegVideoDecoderTest : public testing::Test {
   void InitializeWithConfigWithResult(const VideoDecoderConfig& config,
                                       bool success) {
     decoder_->Initialize(
-        config, false, nullptr, NewExpectedBoolCB(success),
+        config, false, nullptr,
+        base::BindOnce(
+            [](bool success, Status status) {
+              EXPECT_EQ(status.is_ok(), success);
+            },
+            success),
         base::Bind(&FFmpegVideoDecoderTest::FrameReady, base::Unretained(this)),
         base::NullCallback());
     base::RunLoop().RunUntilIdle();

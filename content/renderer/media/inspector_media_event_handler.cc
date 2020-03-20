@@ -67,7 +67,7 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
         events.emplace_back(std::move(ev));
         break;
       }
-      case media::MediaLogRecord::Type::kMediaError: {
+      case media::MediaLogRecord::Type::kMediaStatus: {
         // TODO(tmathmeyer) Make a new type in the browser protocol instead
         // of overloading InspectorPlayerEvent.
         blink::InspectorPlayerEvent ev = {

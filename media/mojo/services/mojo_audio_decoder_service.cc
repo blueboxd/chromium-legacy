@@ -52,7 +52,8 @@ void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
 
   if (config.is_encrypted() && !cdm_context) {
     DVLOG(1) << "CdmContext for " << cdm_id << " not found for encrypted audio";
-    OnInitialized(std::move(callback), false);
+    OnInitialized(std::move(callback),
+                  StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
@@ -90,17 +91,18 @@ void MojoAudioDecoderService::Reset(ResetCallback callback) {
 }
 
 void MojoAudioDecoderService::OnInitialized(InitializeCallback callback,
-                                            bool success) {
-  DVLOG(1) << __func__ << " success:" << success;
+                                            Status status) {
+  DVLOG(1) << __func__ << " success:" << status.is_ok();
 
-  if (!success) {
+  if (!status.is_ok()) {
     cdm_context_ref_.reset();
     // Do not call decoder_->NeedsBitstreamConversion() if init failed.
-    std::move(callback).Run(false, false);
+    std::move(callback).Run(std::move(status), false);
     return;
   }
 
-  std::move(callback).Run(success, decoder_->NeedsBitstreamConversion());
+  std::move(callback).Run(std::move(status),
+                          decoder_->NeedsBitstreamConversion());
 }
 
 // The following methods are needed so that we can bind them with a weak pointer

@@ -357,7 +357,7 @@ class FailingVideoDecoder : public VideoDecoder {
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override {
-    std::move(init_cb).Run(true);
+    std::move(init_cb).Run(OkStatus());
   }
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               DecodeCB decode_cb) override {

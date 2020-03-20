@@ -137,6 +137,11 @@ std::string MojoVideoDecoder::GetDisplayName() const {
   return "MojoVideoDecoder";
 }
 
+void MojoVideoDecoder::FailInit(InitCB init_cb, Status err) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(init_cb), std::move(err)));
+}
+
 void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
                                   CdmContext* cdm_context,
@@ -150,8 +155,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (gpu_factories_ && gpu_factories_->IsDecoderConfigSupported(
                             video_decoder_implementation_, config) ==
                             GpuVideoAcceleratorFactories::Supported::kFalse) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(init_cb), false));
+    FailInit(std::move(init_cb), StatusCode::kDecoderUnsupportedConfig);
     return;
   }
 
@@ -165,8 +169,8 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // is passed for reinitialization.
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(init_cb), false));
+    FailInit(std::move(init_cb),
+             StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
@@ -176,8 +180,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (has_connection_error_) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(init_cb), false));
+    FailInit(std::move(init_cb), StatusCode::kMojoDecoderNoConnection);
     return;
   }
 
@@ -192,12 +195,12 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
                      base::Unretained(this)));
 }
 
-void MojoVideoDecoder::OnInitializeDone(bool status,
+void MojoVideoDecoder::OnInitializeDone(const Status& status,
                                         bool needs_bitstream_conversion,
                                         int32_t max_decode_requests) {
-  DVLOG(1) << __func__ << ": status = " << status;
+  DVLOG(1) << __func__ << ": status = " << std::hex << status.code();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  initialized_ = status;
+  initialized_ = status.is_ok();
   needs_bitstream_conversion_ = needs_bitstream_conversion;
   max_decode_requests_ = max_decode_requests;
   std::move(init_cb_).Run(status);
@@ -427,7 +430,8 @@ void MojoVideoDecoder::Stop() {
   base::WeakPtr<MojoVideoDecoder> weak_this = weak_this_;
 
   if (init_cb_)
-    std::move(init_cb_).Run(false);
+    std::move(init_cb_).Run(StatusCode::kMojoDecoderStoppedBeforeInitDone);
+
   if (!weak_this)
     return;
 

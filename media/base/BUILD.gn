@@ -269,6 +269,7 @@ jumbo_source_set("base") {
     "sinc_resampler.h",
     "status.cc",
     "status.h",
+    "status_codes.cc",
     "status_codes.h",
     "stream_parser.cc",
     "stream_parser.h",

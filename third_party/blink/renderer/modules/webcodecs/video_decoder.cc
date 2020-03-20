@@ -206,11 +206,13 @@ WritableStream* VideoDecoder::writable() const {
   return writable_;
 }
 
-void VideoDecoder::OnInitializeDone(bool success) {
+void VideoDecoder::OnInitializeDone(media::Status status) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!success) {
+  if (!status.is_ok()) {
+    // TODO(tmathmeyer) this drops the media error - should we consider logging
+    // it or converting it to the DOMException type somehow?
     configure_resolver_.Release()->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, "Codec initialization failed."));
     HandleError();

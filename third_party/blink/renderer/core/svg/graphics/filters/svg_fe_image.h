@@ -24,19 +24,23 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_FILTERS_SVG_FE_IMAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_FILTERS_SVG_FE_IMAGE_H_
 
-#include "third_party/blink/renderer/core/dom/tree_scope.h"
-#include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class Image;
 class LayoutObject;
+class SVGPreserveAspectRatio;
+class TreeScope;
 
 class FEImage final : public FilterEffect {
  public:
-  FEImage(Filter*, scoped_refptr<Image>, SVGPreserveAspectRatio*);
-  FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
+  FEImage(Filter*, scoped_refptr<Image>, const SVGPreserveAspectRatio*);
+  FEImage(Filter*,
+          const TreeScope&,
+          const String&,
+          const SVGPreserveAspectRatio*);
 
   // feImage does not perform color interpolation of any kind, so doesn't
   // depend on the value of color-interpolation-filters.
@@ -49,7 +53,7 @@ class FEImage final : public FilterEffect {
 
  private:
   ~FEImage() override = default;
-  LayoutObject* ReferencedLayoutObject() const;
+  const LayoutObject* ReferencedLayoutObject() const;
 
   FilterEffectType GetFilterEffectType() const override {
     return kFilterEffectTypeImage;
@@ -62,11 +66,9 @@ class FEImage final : public FilterEffect {
 
   scoped_refptr<Image> image_;
 
-  // m_treeScope will never be a dangling reference. See
-  // https://bugs.webkit.org/show_bug.cgi?id=99243
-  Member<TreeScope> tree_scope_;
+  Member<const TreeScope> tree_scope_;
   String href_;
-  Member<SVGPreserveAspectRatio> preserve_aspect_ratio_;
+  Member<const SVGPreserveAspectRatio> preserve_aspect_ratio_;
 };
 
 }  // namespace blink

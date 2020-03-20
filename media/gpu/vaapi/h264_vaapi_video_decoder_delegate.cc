@@ -15,7 +15,7 @@
 
 namespace media {
 
-using Status = H264Decoder::H264Accelerator::Status;
+using DecodeStatus = H264Decoder::H264Accelerator::Status;
 
 namespace {
 
@@ -58,7 +58,7 @@ static void InitVAPicture(VAPictureH264* va_pic) {
   va_pic->flags = VA_PICTURE_H264_INVALID;
 }
 
-Status H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
+DecodeStatus H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
     const H264SPS* sps,
     const H264PPS* pps,
     const H264DPB& dpb,
@@ -137,7 +137,7 @@ Status H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
   pic_param.num_ref_frames = sps->max_num_ref_frames;
 
   if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param))
-    return Status::kFail;
+    return DecodeStatus::kFail;
 
   VAIQMatrixBufferH264 iq_matrix_buf;
   memset(&iq_matrix_buf, 0, sizeof(iq_matrix_buf));
@@ -169,11 +169,11 @@ Status H264VaapiVideoDecoderDelegate::SubmitFrameMetadata(
   }
 
   return vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix_buf)
-             ? Status::kOk
-             : Status::kFail;
+             ? DecodeStatus::kOk
+             : DecodeStatus::kFail;
 }
 
-Status H264VaapiVideoDecoderDelegate::SubmitSlice(
+DecodeStatus H264VaapiVideoDecoderDelegate::SubmitSlice(
     const H264PPS* pps,
     const H264SliceHeader* slice_hdr,
     const H264Picture::Vector& ref_pic_list0,
@@ -272,20 +272,20 @@ Status H264VaapiVideoDecoderDelegate::SubmitSlice(
   }
 
   if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param))
-    return Status::kFail;
+    return DecodeStatus::kFail;
 
   return vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType, size, data)
-             ? Status::kOk
-             : Status::kFail;
+             ? DecodeStatus::kOk
+             : DecodeStatus::kFail;
 }
 
-Status H264VaapiVideoDecoderDelegate::SubmitDecode(
+DecodeStatus H264VaapiVideoDecoderDelegate::SubmitDecode(
     scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const bool success = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
       pic->AsVaapiH264Picture()->va_surface()->id());
-  return success ? Status::kOk : Status::kFail;
+  return success ? DecodeStatus::kOk : DecodeStatus::kFail;
 }
 
 bool H264VaapiVideoDecoderDelegate::OutputPicture(

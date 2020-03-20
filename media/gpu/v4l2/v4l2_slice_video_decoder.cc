@@ -117,7 +117,7 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Reset V4L2 device and queue if reinitializing decoder.
   if (state_ != State::kUninitialized) {
     if (!StopStreamV4L2Queue()) {
-      std::move(init_cb).Run(false);
+      std::move(init_cb).Run(StatusCode::kV4l2FailedToStopStreamQueue);
       return;
     }
 
@@ -129,7 +129,7 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
     device_ = V4L2Device::Create();
     if (!device_) {
       VLOGF(1) << "Failed to create V4L2 device.";
-      std::move(init_cb).Run(false);
+      std::move(init_cb).Run(StatusCode::kV4l2NoDevice);
       return;
     }
 
@@ -147,7 +147,7 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
       !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc)) {
     VLOGF(1) << "Failed to open device for profile: " << profile
              << " fourcc: " << FourccToString(input_format_fourcc);
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kV4l2NoDecoder);
     return;
   }
 
@@ -157,7 +157,7 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
       (caps.capabilities & kCapsRequired) != kCapsRequired) {
     VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP, "
              << "caps check failed: 0x" << std::hex << caps.capabilities;
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kV4l2FailedFileCapabilitiesCheck);
     return;
   }
 
@@ -168,7 +168,7 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
   if (!input_queue_ || !output_queue_) {
     VLOGF(1) << "Failed to create V4L2 queue.";
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kV4l2FailedResourceAllocation);
     return;
   }
 
@@ -176,27 +176,27 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
   backend_ = std::make_unique<V4L2StatelessVideoDecoderBackend>(
       this, device_, profile, decoder_task_runner_);
   if (!backend_->Initialize()) {
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kV4l2FailedResourceAllocation);
     return;
   }
 
   // Setup input format.
   if (!SetupInputFormat(input_format_fourcc)) {
     VLOGF(1) << "Failed to setup input format.";
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kV4l2BadFormat);
     return;
   }
 
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) == 0) {
     VLOGF(1) << "Failed to allocate input buffer.";
-    std::move(init_cb).Run(false);
+    std::move(init_cb).Run(StatusCode::kV4l2FailedResourceAllocation);
     return;
   }
 
   // Call init_cb
   output_cb_ = output_cb;
   SetState(State::kDecoding);
-  std::move(init_cb).Run(true);
+  std::move(init_cb).Run(::media::OkStatus());
 }
 
 bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {

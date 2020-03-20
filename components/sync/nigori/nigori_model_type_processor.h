@@ -59,6 +59,7 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   bool IsTrackingMetadata() override;
 
   bool IsConnectedForTest() const;
+  const sync_pb::ModelTypeState& GetModelTypeStateForTest();
 
  private:
   // Returns true if the handshake with sync thread is complete.

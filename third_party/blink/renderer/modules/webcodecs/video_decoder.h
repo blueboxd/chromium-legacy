@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "media/base/status.h"
 #include "media/base/video_decoder.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -55,7 +56,7 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
   void HandleError();
 
   // Called by |decoder_|.
-  void OnInitializeDone(bool success);
+  void OnInitializeDone(media::Status status);
   void OnDecodeDone(media::DecodeStatus);
   void OnOutput(scoped_refptr<media::VideoFrame>);
 

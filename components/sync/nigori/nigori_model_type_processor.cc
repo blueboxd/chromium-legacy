@@ -390,6 +390,11 @@ bool NigoriModelTypeProcessor::IsConnectedForTest() const {
   return IsConnected();
 }
 
+const sync_pb::ModelTypeState&
+NigoriModelTypeProcessor::GetModelTypeStateForTest() {
+  return model_type_state_;
+}
+
 bool NigoriModelTypeProcessor::IsTrackingMetadata() {
   return model_type_state_.initial_sync_done();
 }
@@ -412,12 +417,13 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  if (!model_type_state_.has_cache_guid()) {
-    model_type_state_.set_cache_guid(activation_request_.cache_guid);
-  } else if (model_type_state_.cache_guid() != activation_request_.cache_guid) {
+  if (model_type_state_.has_cache_guid() &&
+      model_type_state_.cache_guid() != activation_request_.cache_guid) {
     ClearMetadataAndReset();
     DCHECK(model_ready_to_sync_);
   }
+
+  model_type_state_.set_cache_guid(activation_request_.cache_guid);
 
   // Cache GUID verification earlier above guarantees the user is the same.
   model_type_state_.set_authenticated_account_id(

@@ -40,7 +40,8 @@ class TypescriptStylizer(generator.Stylizer):
                         for word in mojom_namespace.split('.'))
 
   def StylizeConstant(self, mojom_name):
-    return generator.ToConstantCase(mojom_name)
+    return generator.ToUpperSnakeCase(mojom_name)
+
 
 class Generator(generator.Generator):
   def _GetParameters(self, use_es_modules=False):
@@ -48,7 +49,7 @@ class Generator(generator.Generator):
       "module": self.module,
       "use_es_modules": use_es_modules,
       "enums": self.module.enums,
-   }
+    }
 
   @staticmethod
   def GetTemplatePrefix():

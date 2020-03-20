@@ -189,7 +189,9 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     if (!mcvd_)
       CreateMcvd();
     bool result = false;
-    auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
+    auto init_cb = [](bool* result_out, Status result) {
+      *result_out = result.is_ok();
+    };
     mcvd_->Initialize(
         config, false, cdm_.get(), base::BindOnce(init_cb, &result),
         base::BindRepeating(&OutputCb, &most_recent_frame_), base::DoNothing());

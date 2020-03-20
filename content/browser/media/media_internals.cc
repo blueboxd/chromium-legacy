@@ -387,13 +387,13 @@ static bool ConvertEventToUpdate(int render_process_id,
       dict.SetKey("type", std::move(exists.value()));
       break;
     }
-    case media::MediaLogRecord::Type::kMediaError:
+    case media::MediaLogRecord::Type::kMediaStatus:
       dict.SetString("type", "PIPELINE_ERROR");
       break;
   }
 
   // Convert PipelineStatus to human readable string
-  if (event.type == media::MediaLogRecord::Type::kMediaError) {
+  if (event.type == media::MediaLogRecord::Type::kMediaStatus) {
     int status;
     if (!event.params.GetInteger("pipeline_error", &status) ||
         status < static_cast<int>(media::PIPELINE_OK) ||

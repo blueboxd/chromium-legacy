@@ -36,8 +36,8 @@ void VideoThumbnailDecoder::Start(VideoFrameCallback video_frame_callback) {
       base::DoNothing());
 }
 
-void VideoThumbnailDecoder::OnVideoDecoderInitialized(bool success) {
-  if (!success) {
+void VideoThumbnailDecoder::OnVideoDecoderInitialized(Status status) {
+  if (!status.is_ok()) {
     NotifyComplete(nullptr);
     return;
   }

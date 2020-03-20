@@ -83,7 +83,12 @@ class DecryptingAudioDecoderTest : public testing::Test {
         kNoTimestamp);
     decoded_frame_list_.push_back(decoded_frame_);
 
-    decoder_->Initialize(config, cdm_context_.get(), NewExpectedBoolCB(success),
+    decoder_->Initialize(config, cdm_context_.get(),
+                         base::BindOnce(
+                             [](bool success, Status status) {
+                               EXPECT_EQ(status.is_ok(), success);
+                             },
+                             success),
                          base::Bind(&DecryptingAudioDecoderTest::FrameReady,
                                     base::Unretained(this)),
                          base::Bind(&DecryptingAudioDecoderTest::OnWaiting,
@@ -121,12 +126,13 @@ class DecryptingAudioDecoderTest : public testing::Test {
         .WillOnce(RunOnceCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
-    decoder_->Initialize(new_config, cdm_context_.get(),
-                         NewExpectedBoolCB(true),
-                         base::Bind(&DecryptingAudioDecoderTest::FrameReady,
-                                    base::Unretained(this)),
-                         base::Bind(&DecryptingAudioDecoderTest::OnWaiting,
-                                    base::Unretained(this)));
+    decoder_->Initialize(
+        new_config, cdm_context_.get(),
+        base::BindOnce([](Status status) { EXPECT_TRUE(status.is_ok()); }),
+        base::Bind(&DecryptingAudioDecoderTest::FrameReady,
+                   base::Unretained(this)),
+        base::Bind(&DecryptingAudioDecoderTest::OnWaiting,
+                   base::Unretained(this)));
   }
 
   // Decode |buffer| and expect DecodeDone to get called with |status|.

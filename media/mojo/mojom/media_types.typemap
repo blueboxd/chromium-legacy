@@ -50,7 +50,6 @@ type_mappings = [
   "media.mojom.BufferingState=::media::BufferingState",
   "media.mojom.BufferingStateChangeReason=::media::BufferingStateChangeReason",
   "media.mojom.ChannelLayout=::media::ChannelLayout",
-  "media.mojom.ColorSpace=::media::ColorSpace",
   "media.mojom.DecodeStatus=::media::DecodeStatus",
   "media.mojom.EncryptionScheme=::media::EncryptionScheme",
   "media.mojom.MediaContainerName=::media::container_names::MediaContainerName",

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/status.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/clients/mojo_media_log_service.h"
@@ -83,7 +84,8 @@ class MojoVideoDecoder final : public VideoDecoder,
   }
 
  private:
-  void OnInitializeDone(bool status,
+  void FailInit(InitCB init_cb, Status err);
+  void OnInitializeDone(const Status& status,
                         bool needs_bitstream_conversion,
                         int32_t max_decode_requests);
   void OnDecodeDone(uint64_t decode_id, DecodeStatus status);

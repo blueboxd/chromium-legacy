@@ -2268,6 +2268,11 @@
     Automatic updates don't download on this network type, but you can check for updates manually.
   </message>
 
+  <!-- About flags page -->
+  <message name="IDS_FLAGS_IGNORED_DUE_TO_CRASHY_CHROME" desc="Text on an info bar added when user flags are dropped when chrome crashed too many times in short time." translateable="false">
+    Flags are ignored because of too many consecutive startup crashes.
+  </message>
+
   <!-- EOL Notification Strings -->
   <message name="IDS_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device is no longer supported.">
     Final software update

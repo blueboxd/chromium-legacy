@@ -47,6 +47,7 @@ def _CommonChecks(input_api, output_api):
   result.extend(_CheckColorReferences(input_api, output_api))
   result.extend(_CheckDuplicateColors(input_api, output_api))
   result.extend(_CheckSemanticColorsReferences(input_api, output_api))
+  result.extend(_CheckColorPaletteReferences(input_api, output_api))
   result.extend(_CheckXmlNamespacePrefixes(input_api, output_api))
   result.extend(_CheckTextAppearance(input_api, output_api))
   result.extend(_CheckButtonCompatWidgetUsage(input_api, output_api))
@@ -191,16 +192,56 @@ def _CheckDuplicateColors(input_api, output_api):
   return []
 
 
+def _CheckColorPaletteReferences(input_api, output_api):
+  """
+  Checks colors defined in color_palette.xml are not references in colors.xml.
+  """
+  warnings = []
+  color_palette = None
+
+  for f in IncludedFiles(input_api):
+    if not f.LocalPath().endswith('/colors.xml'):
+      continue
+
+    if color_palette is None:
+      color_palette = _colorXml2Dict(
+          input_api.ReadFile(helpers.COLOR_PALETTE_PATH))
+    for line_number, line in f.ChangedContents():
+      r = helpers.COLOR_REFERENCE_PATTERN.search(line)
+      if not r:
+        continue
+      color = r.group()
+      if _removePrefix(color) in color_palette:
+        warnings.append(
+            '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
+
+  if warnings:
+    return [
+        output_api.PresubmitPromptWarning(
+            '''
+  Android Color Palette Reference Check warning:
+    Your new color values added in colors.xml are defined in color_palette.xml.
+
+    We can recommend using semantic colors already defined in
+    ui/android/java/res/values/semantic_colors_non_adaptive.xml
+    or ui/android/java/res/values/semantic_colors_adaptive.xml if possible.
+
+    See https://crbug.com/775198 for more information.
+  ''', warnings)
+    ]
+  return []
+
+
 def _CheckSemanticColorsReferences(input_api, output_api):
   """
-  Checks colors defined in semantic_colors.xml only referencing
+  Checks colors defined in semantic_colors_non_adaptive.xml only referencing
   resources in color_palette.xml.
   """
   errors = []
   color_palette = None
 
   for f in IncludedFiles(input_api):
-    if not f.LocalPath().endswith('/semantic_colors.xml'):
+    if not f.LocalPath().endswith('/semantic_colors_non_adaptive.xml'):
       continue
 
     if color_palette is None:
@@ -220,8 +261,8 @@ def _CheckSemanticColorsReferences(input_api, output_api):
         output_api.PresubmitError(
             '''
   Android Semantic Color Reference Check failed:
-    Your new color values added in semantic_colors are not defined in
-    ui/android/java/res/values/color_palette.xml, listed below.
+    Your new color values added in semantic_colors_non_adaptive.xml are not
+    defined in ui/android/java/res/values/color_palette.xml, listed below.
 
     This is banned. Colors in semantic colors can only reference
     the existing color resource from color_palette.xml.

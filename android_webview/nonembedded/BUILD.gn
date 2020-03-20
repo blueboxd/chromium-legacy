@@ -114,34 +114,16 @@ android_resources("devui_resources") {
   custom_package = "org.chromium.android_webview.devui"
 }
 
-template("webview_devui_launcher") {
-  forward_variables_from(invoker, "*")
-
-  _manifest_file = "$root_gen_dir/android_webview/DeveloperUiLauncherManifest__${target_name}.xml"
-
-  jinja_template("${target_name}__manifest") {
-    input = "java/DeveloperUiLauncherManifest.xml"
-    output = _manifest_file
-    variables = [ "icon_enabled=$default_enabled_state" ]
-  }
-
-  # Define an android resources target with an AndroidManifest and no actual resources to merge
-  # the activity alias defined in DeveloperUiLauncherManifest.xml to the final APK mainfest of the
-  # target that depends on it.
-  android_resources(target_name) {
-    resource_dirs = []
-    custom_package = "org.chromium.android_webview.devui.icon"
-    android_manifest = _manifest_file
-    android_manifest_dep = ":${target_name}__manifest"
-  }
+android_resources("devui_launcher_icon_resources") {
+  resource_dirs = []
+  custom_package = "org.chromium.android_webview.devui.icon"
+  android_manifest = "java/DeveloperUiLauncherManifest.xml"
 }
 
-webview_devui_launcher("system_webview_devui_launcher_icon_resources") {
-  default_enabled_state = standalone_or_trichrome_icon_default_enabled_state
-}
-
-webview_devui_launcher("monochrome_devui_launcher_icon_resources") {
-  default_enabled_state = monochrome_launcher_icon_default_enabled_state
+android_resources("monochrome_devui_launcher_icon_resources") {
+  resource_dirs = []
+  android_manifest = "java/MonochromeDeveloperUiLauncherManifest.xml"
+  custom_package = "org.chromium.android_webview.devui.icon"
 }
 
 jinja_template("system_webview_manifest") {

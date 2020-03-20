@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -39,6 +38,7 @@ SerialChooserController::SerialChooserController(
 
   chooser_context_->GetPortManager()->GetDevices(base::BindOnce(
       &SerialChooserController::OnGetDevices, weak_factory_.GetWeakPtr()));
+  observer_.Add(chooser_context_.get());
 }
 
 SerialChooserController::~SerialChooserController() {
@@ -108,6 +108,30 @@ void SerialChooserController::Close() {}
 
 void SerialChooserController::OpenHelpCenterUrl() const {
   NOTIMPLEMENTED();
+}
+
+void SerialChooserController::OnPortAdded(
+    const device::mojom::SerialPortInfo& port) {
+  ports_.push_back(port.Clone());
+  if (view())
+    view()->OnOptionAdded(ports_.size() - 1);
+}
+
+void SerialChooserController::OnPortRemoved(
+    const device::mojom::SerialPortInfo& port) {
+  const auto it = std::find_if(
+      ports_.begin(), ports_.end(),
+      [&port](const auto& ptr) { return ptr->token == port.token; });
+  if (it != ports_.end()) {
+    const size_t index = it - ports_.begin();
+    ports_.erase(it);
+    if (view())
+      view()->OnOptionRemoved(index);
+  }
+}
+
+void SerialChooserController::OnPortManagerConnectionError() {
+  observer_.RemoveAll();
 }
 
 void SerialChooserController::OnGetDevices(

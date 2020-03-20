@@ -20,10 +20,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -217,6 +213,14 @@ class TopControlsSlideTabObserver
     UpdateBrowserControlsStateShown(/*animate=*/true);
   }
 
+  void OnFocusChangedInPage(content::FocusedNodeDetails* details) override {
+    // Even if a non-editable node gets focused, if top-chrome is fully shown,
+    // we should also update the browser controls state constraints so that
+    // top-chrome is able to be hidden again.
+    if (details->is_editable_node || shown_ratio_ == 1.f)
+      UpdateBrowserControlsStateShown(/*animate=*/true);
+  }
+
   // PermissionRequestManager::Observer:
   void OnBubbleAdded() override {
     UpdateBrowserControlsStateShown(/*animate=*/true);
@@ -282,9 +286,6 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
 
   observed_omni_box_ = browser_view->GetLocationBarView()->omnibox_view();
   observed_omni_box_->AddObserver(this);
-
-  registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                 content::NotificationService::AllSources());
 
   if (ash::TabletMode::Get())
     ash::TabletMode::Get()->AddObserver(this);
@@ -508,33 +509,6 @@ void TopControlsSlideControllerChromeOS::SetTabNeedsAttentionAt(
     int index,
     bool attention) {
   UpdateBrowserControlsStateShown(/*web_contents=*/nullptr, /*animate=*/true);
-}
-
-void TopControlsSlideControllerChromeOS::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  // TODO(afakhry): It would be nice to add a WebContentsObserver method that
-  // broadcasts this event.
-  if (type != content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE)
-    return;
-
-  // Make sure this notification is meant for us.
-  content::WebContents* active_contents = browser_view_->GetActiveWebContents();
-  content::RenderViewHost* render_view_host =
-      content::Source<content::RenderViewHost>(source).ptr();
-  if (!active_contents || content::WebContents::FromRenderViewHost(
-                              render_view_host) != active_contents) {
-    return;
-  }
-
-  content::FocusedNodeDetails* node_details =
-      content::Details<content::FocusedNodeDetails>(details).ptr();
-  // If a non-editable node gets focused and top-chrome is fully shown, we
-  // should also update the browser controls state constraints so that
-  // top-chrome is able to be hidden again.
-  if (node_details->is_editable_node || shown_ratio_ == 1.f)
-    UpdateBrowserControlsStateShown(active_contents, /*animate=*/true);
 }
 
 void TopControlsSlideControllerChromeOS::OnDisplayMetricsChanged(

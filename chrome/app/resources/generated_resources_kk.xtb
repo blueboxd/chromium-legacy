@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Шақырылған кезде ағымдағы вебсайттағы барлық деректерді оқу және өзгерту</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> параметрлеріңізді бастапқы қалпына келтіргісі келеді.</translation>
 <translation id="1243314992276662751">Жүктеп салу</translation>
-<translation id="1243398753772016127">Сайттар жарнамаларды жекелендіру үшін браузерді қолдану мәліметіңізді пайдалана алмайды.</translation>
 <translation id="1244265436519979884">Linux жүйесі қалпына келтірілуде.</translation>
 <translation id="1244303850296295656">Кеңейтім қатесі</translation>
 <translation id="1246905108078336582">Ұсыныс буферден өшірілсін бе?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Қосу – пайдаланушылық параметрлер</translation>
 <translation id="1489664337021920575">Басқа опция қолданып көріңіз</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> күту…</translation>
-<translation id="1494438840282430403">Браузерді пайдалану деректерін де (<ph name="URL" />) өшіріңіз (Google.com сайтында есептік жазбаңыздан шығарылуыңыз мүмкін).</translation>
 <translation id="1495486559005647033">Басқа <ph name="NUM_PRINTERS" /> қолжетімді құрылғы бар.</translation>
 <translation id="1495677929897281669">Қойындыға оралу</translation>
 <translation id="1499271269825557605">Егер кеңейтімді анықтай алмасаңыз немесе браузер дұрыс жұмыс істемей тұрса, кеңейтімдерді осы жерден өшіруіңізге немесе реттеуіңізге болады.</translation>
@@ -1187,7 +1185,6 @@
 <translation id="2575247648642144396">Бұл бетбелгі кеңейтім ағымдағы бетте әрекет еткенде ғана көрінеді. Бұл кеңейтімді белгішені басу арқылы немесе <ph name="EXTENSION_SHORTCUT" /> басу арқылы пайдаланыңыз.</translation>
 <translation id="257779572837908839">Кездесулерге арналған Chromebox құрылғысы ретінде реттеу</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> хостына әрқашан бірнеше файлды жүктеуге рұқсат беру</translation>
-<translation id="2580924999637585241">Барлығы: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Ұзақ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (<ph name="PLATFORM_VERSION" /> платформасы) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos билетін алу мүмкін болмады. Қайталап көріңіз немесе ұйымыңыздың құрылғы әкімшісіне хабарласыңыз. (Қате коды: <ph name="ERROR_CODE" />)</translation>
@@ -1714,7 +1711,7 @@
 <translation id="3293644607209440645">Осы бетті жіберу</translation>
 <translation id="32939749466444286">Linux контейнері іске қосылмады. Қайталап көріңіз.</translation>
 <translation id="3294437725009624529">Қонақ</translation>
-<translation id="3296193636298964625">Құпия сөз көп болғандықтан Chrome сіздің барлық құпия сөзіңізді тексере алмайды.</translation>
+<translation id="3296193636298964625">Құпия сөз көп болғандықтан, Chrome сіздің барлық құпия сөзіңізді тексере алмайды.</translation>
 <translation id="329703603001918157">Таңбаша өзгертілмейді</translation>
 <translation id="329838636886466101">Жөндеу</translation>
 <translation id="3298789223962368867">Жарамсыз URL енгізілді.</translation>
@@ -2816,7 +2813,6 @@
 <translation id="4808667324955055115">Қалқымалы терезелерге тыйым салынған</translation>
 <translation id="480990236307250886">Негізгі бетті ашу</translation>
 <translation id="4811503964269049987">Таңдалған қойындыны жаңа топқа енгізу</translation>
-<translation id="4811818760963189951">Өшірулі, себебі тарихты синхрондау ажыратылған.</translation>
 <translation id="4813136279048157860">Суреттерім</translation>
 <translation id="4813512666221746211">Желі қатесі</translation>
 <translation id="4814378367953456825">Осы саусақ ізінің атауын енгізіңіз.</translation>
@@ -2985,7 +2981,6 @@
 <translation id="5040823038948176460">Қосымша мазмұн параметрлері</translation>
 <translation id="5042282098504489593"><ph name="USB_DEVICE_NAME" /> құрылғысын Linux жүйесіне жалғау үшін "Параметрлер" бөлімін ашыңыз.</translation>
 <translation id="5043913660911154449">Немесе принтер үшін PPD файлын көрсетіңіз <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Өшірулі, себебі синхрондалатын деректерді құпия фразамен шифрладыңыз.</translation>
 <translation id="5045550434625856497">Құпия сөз дұрыс емес</translation>
 <translation id="504561833207953641">Бұрыннан бар браузер сеансында ашылуда.</translation>
 <translation id="5047421709274785093">Сайттардың қозғалыс және жарық датчиктерін пайдалануына тыйым салу</translation>
@@ -3491,7 +3486,7 @@
 <translation id="5722930212736070253">Қап! Zip Archiver жұмысында қате шықты.</translation>
 <translation id="572328651809341494">Соңғы қойындылар</translation>
 <translation id="5723508132121499792">Фонда орындалып жатқан қолданбалар жоқ</translation>
-<translation id="5723967018671998714">Үшінші тараптың cookie файлдары Инкогнито режимінде бөгелген.</translation>
+<translation id="5723967018671998714">Үшінші тараптың cookie файлдары инкогнито режимінде бөгелген.</translation>
 <translation id="5727728807527375859">Кеңейтімдер, қолданбалар және тақырыптар компьютеріңізді зақымдауы мүмкін. Жалғастыру қажет пе?</translation>
 <translation id="5729712731028706266">&amp;Көру</translation>
 <translation id="5732392974455271431">Ата-анаңыз оны сіз үшін бөгеуден шығара алады</translation>
@@ -3962,7 +3957,6 @@
 <translation id="63566973648609420">Тек құпия фразаны білетін адам ғана шифрланған деректерді оқи алады. Құпия фраза Google қызметіне жіберілмейді және онда сақталмайды. Құпия фразаны ұмытып қалған жағдайда немесе бұл параметрді өзгерткіңіз келгенде, <ph name="BEGIN_LINK" />синхрондауды бастапқы күйіне қайтару<ph name="END_LINK" /> қажет болады.</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> өнімдер тобына қош келдіңіз. Бұл қарапайым компьютер емес.</translation>
 <translation id="6358884629796491903">Айдаһар</translation>
-<translation id="6360719647236334056">Search, жарнамалар және басқа да Google қызметтерін жеке қажеттіліктерге бейімдеу үшін Chrome браузерін қолдану тарихын пайдаланыңыз.</translation>
 <translation id="6361850914223837199">Қате мәліметтері:</translation>
 <translation id="6362853299801475928">&amp;Мәселе туралы хабарлау…</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4240,7 +4234,6 @@
 <translation id="6758056191028427665">Қал-жағдайыңызды айтып беріңіз.</translation>
 <translation id="6759193508432371551">Зауыттық параметрлерге қайта орнату</translation>
 <translation id="6762833852331690540">Қосулы</translation>
-<translation id="6764693078871405569">Браузерді пайдалану деректерін де (<ph name="URL" />) өшіріңіз (<ph name="DOMAIN" /> сайтында есептік жазбаңыздан шығарыласыз).</translation>
 <translation id="6767566652486411142">Басқа тіл таңдау...</translation>
 <translation id="6767639283522617719">Құрылғыны доменге қосу мүмкін емес. Бұл ұйымдық бірлік үшін дұрыс параметрлер орнатылғанын тексеріңіз.</translation>
 <translation id="6769712124046837540">Принтер қосылуда…</translation>

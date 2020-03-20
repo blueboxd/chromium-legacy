@@ -219,14 +219,9 @@ void LayoutShiftTracker::ObjectShifted(
   region_.AddRect(visible_old_rect);
   region_.AddRect(visible_new_rect);
 
-  bool should_trace_nodes;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("layout_shift.debug"), &should_trace_nodes);
-  if (should_trace_nodes) {
-    if (Node* node = source.GetNode()) {
-      MaybeRecordAttribution(
-          {DOMNodeIds::IdForNode(node), visible_old_rect, visible_new_rect});
-    }
+  if (Node* node = source.GetNode()) {
+    MaybeRecordAttribution(
+        {DOMNodeIds::IdForNode(node), visible_old_rect, visible_new_rect});
   }
 }
 
@@ -501,12 +496,20 @@ void LayoutShiftTracker::AttributionsToTracedValue(TracedValue& value) const {
   if (!*it)
     return;
 
+  bool should_include_names;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("layout_shift.debug"), &should_include_names);
+
   value.BeginArray("impacted_nodes");
   while (it != attributions_.end() && it->node_id != kInvalidDOMNodeId) {
     value.BeginDictionary();
     value.SetInteger("node_id", it->node_id);
     RectToTracedValue(it->old_visual_rect, value, "old_rect");
     RectToTracedValue(it->new_visual_rect, value, "new_rect");
+    if (should_include_names) {
+      Node* node = DOMNodeIds::NodeForId(it->node_id);
+      value.SetString("debug_name", node ? node->DebugName() : "");
+    }
     value.EndDictionary();
     it++;
   }

@@ -17,21 +17,21 @@ import './search_engines_page/search_engines_page.m.js';
 // import './privacy_page/security_page.m.js';
 // import './site_settings/all_sites.m.js';
 import './site_settings/site_data_details_subpage.m.js';
-// import 'site_settings_page/site_settings_page.m.js';
-// import 'site_settings/category_default_setting.m.js';
-// import 'site_settings/category_setting_exceptions.m.js';
-// import 'site_settings/chooser_exception_list.m.js';
-// import 'site_settings/media_picker.m.js';
-// import 'site_settings/pdf_documents.m.js';
-// import 'site_settings/protocol_handlers.m.js';
-// import 'site_settings/site_data.m.js';
-// import 'site_settings/site_details.m.js';
-// import 'site_settings/zoom_levels.m.js';
+// import './site_settings_page/site_settings_page.m.js';
+// import './site_settings/category_default_setting.m.js';
+// import './site_settings/category_setting_exceptions.m.js';
+// import './site_settings/chooser_exception_list.m.js';
+// import './site_settings/media_picker.m.js';
+// import './site_settings/pdf_documents.m.js';
+// import './site_settings/protocol_handlers.m.js';
+// import './site_settings/site_data.m.js';
+// import './site_settings/site_details.m.js';
+// import './site_settings/zoom_levels.m.js';
 
 // <if expr="not chromeos">
-// import 'people_page/manage_profile.m.js';
+import './people_page/manage_profile.m.js';
 // </if>
-// import 'people_page/sync_account_control.m.js';
+// import './people_page/sync_account_control.m.js';
 
 // <if expr="use_nss_certs">
 import 'chrome://resources/cr_components/certificate_manager/certificate_manager.m.js';
@@ -88,6 +88,7 @@ export {SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_p
 
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';
+export {ProfileShortcutStatus, ManageProfileBrowserProxyImpl} from './people_page/manage_profile_browser_proxy.m.js';
 // </if>
 
 // <if expr="chromeos">

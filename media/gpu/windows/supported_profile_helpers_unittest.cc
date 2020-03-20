@@ -10,7 +10,9 @@
 #include <map>
 #include <utility>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/win/windows_version.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_helpers.h"
 #include "media/base/win/d3d11_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -137,13 +139,15 @@ TEST_F(SupportedResolutionResolverTest, NoDeviceAllDefault) {
 
   ResolutionPair h264_res_expected = {{1, 2}, {3, 4}};
   ResolutionPair h264_res = {{1, 2}, {3, 4}};
+  ResolutionPair vp8_res;
   ResolutionPair vp9_0_res;
   ResolutionPair vp9_2_res;
   GetResolutionsForDecoders({D3D11_DECODER_PROFILE_H264_VLD_NOFGT}, nullptr,
-                            gpu_workarounds_, &h264_res, &vp9_0_res,
+                            gpu_workarounds_, &h264_res, &vp8_res, &vp9_0_res,
                             &vp9_2_res);
 
   ASSERT_EQ(h264_res, h264_res_expected);
+  ASSERT_EQ(vp8_res, zero);
   ASSERT_EQ(vp9_0_res, zero);
   ASSERT_EQ(vp9_0_res, zero);
 }
@@ -155,13 +159,15 @@ TEST_F(SupportedResolutionResolverTest, LegacyGPUAllDefault) {
 
   ResolutionPair h264_res_expected = {{1, 2}, {3, 4}};
   ResolutionPair h264_res = {{1, 2}, {3, 4}};
+  ResolutionPair vp8_res;
   ResolutionPair vp9_0_res;
   ResolutionPair vp9_2_res;
   GetResolutionsForDecoders({D3D11_DECODER_PROFILE_H264_VLD_NOFGT},
                             mock_d3d11_device_, gpu_workarounds_, &h264_res,
-                            &vp9_0_res, &vp9_2_res);
+                            &vp8_res, &vp9_0_res, &vp9_2_res);
 
   ASSERT_EQ(h264_res, h264_res_expected);
+  ASSERT_EQ(vp8_res, zero);
   ASSERT_EQ(vp9_2_res, zero);
   ASSERT_EQ(vp9_0_res, zero);
 }
@@ -173,13 +179,41 @@ TEST_F(SupportedResolutionResolverTest, WorkaroundsDisableVpx) {
   EnableDecoders({D3D11_DECODER_PROFILE_H264_VLD_NOFGT});
 
   ResolutionPair h264_res;
+  ResolutionPair vp8_res;
   ResolutionPair vp9_0_res;
   ResolutionPair vp9_2_res;
   GetResolutionsForDecoders({D3D11_DECODER_PROFILE_H264_VLD_NOFGT},
                             mock_d3d11_device_, gpu_workarounds_, &h264_res,
-                            &vp9_0_res, &vp9_2_res);
+                            &vp8_res, &vp9_0_res, &vp9_2_res);
 
   ASSERT_EQ(h264_res, tall4k);
+
+  ASSERT_EQ(vp8_res, zero);
+  ASSERT_EQ(vp9_0_res, zero);
+  ASSERT_EQ(vp9_2_res, zero);
+}
+
+TEST_F(SupportedResolutionResolverTest, VP8_Supports4k) {
+  DONT_RUN_ON_WIN_7();
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kMediaFoundationVP8Decoding);
+
+  EnableDecoders(
+      {D3D11_DECODER_PROFILE_H264_VLD_NOFGT, D3D11_DECODER_PROFILE_VP8_VLD});
+  SetMaxResolutionForGUID(D3D11_DECODER_PROFILE_VP8_VLD, {4096, 4096});
+
+  ResolutionPair h264_res;
+  ResolutionPair vp8_res;
+  ResolutionPair vp9_0_res;
+  ResolutionPair vp9_2_res;
+  GetResolutionsForDecoders({D3D11_DECODER_PROFILE_H264_VLD_NOFGT},
+                            mock_d3d11_device_, gpu_workarounds_, &h264_res,
+                            &vp8_res, &vp9_0_res, &vp9_2_res);
+
+  ASSERT_EQ(h264_res, tall4k);
+
+  ASSERT_EQ(vp8_res, tall4k);
 
   ASSERT_EQ(vp9_0_res, zero);
 
@@ -194,13 +228,16 @@ TEST_F(SupportedResolutionResolverTest, VP9_0Supports8k) {
   SetMaxResolutionForGUID(D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0, {8192, 8192});
 
   ResolutionPair h264_res;
+  ResolutionPair vp8_res;
   ResolutionPair vp9_0_res;
   ResolutionPair vp9_2_res;
   GetResolutionsForDecoders({D3D11_DECODER_PROFILE_H264_VLD_NOFGT},
                             mock_d3d11_device_, gpu_workarounds_, &h264_res,
-                            &vp9_0_res, &vp9_2_res);
+                            &vp8_res, &vp9_0_res, &vp9_2_res);
 
   ASSERT_EQ(h264_res, tall4k);
+
+  ASSERT_EQ(vp8_res, zero);
 
   ASSERT_EQ(vp9_0_res, eightKsquare);
 
@@ -218,13 +255,16 @@ TEST_F(SupportedResolutionResolverTest, BothVP9ProfilesSupported) {
                           {8192, 8192});
 
   ResolutionPair h264_res;
+  ResolutionPair vp8_res;
   ResolutionPair vp9_0_res;
   ResolutionPair vp9_2_res;
   GetResolutionsForDecoders({D3D11_DECODER_PROFILE_H264_VLD_NOFGT},
                             mock_d3d11_device_, gpu_workarounds_, &h264_res,
-                            &vp9_0_res, &vp9_2_res);
+                            &vp8_res, &vp9_0_res, &vp9_2_res);
 
   ASSERT_EQ(h264_res, tall4k);
+
+  ASSERT_EQ(vp8_res, zero);
 
   ASSERT_EQ(vp9_0_res, eightKsquare);
 

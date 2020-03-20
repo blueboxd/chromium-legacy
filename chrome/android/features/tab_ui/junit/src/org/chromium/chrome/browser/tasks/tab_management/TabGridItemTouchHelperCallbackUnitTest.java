@@ -42,7 +42,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -67,6 +66,7 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
 public class TabGridItemTouchHelperCallbackUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -167,7 +167,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
         doReturn(mTab3).when(mTabGroupModelFilter).getTabAt(POSITION3);
         doReturn(mTab4).when(mTabGroupModelFilter).getTabAt(POSITION4);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         setupRecyclerView();
 
         mModel = new TabListModel();
@@ -209,7 +208,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     @After
     public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test
@@ -314,8 +312,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void onReleaseTab_MergeBackward_WithoutGroup() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -340,8 +338,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void onReleaseTab_MergeForward_WithoutGroup() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -604,8 +602,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void onDragTab_Hovered_GTS_WithoutGroup() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 

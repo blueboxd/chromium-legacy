@@ -220,7 +220,7 @@ MockFeedback = class {
    * @param {...(string)} rest One or more utterances to add as expectations.
    * @return {MockFeedback} |this| for chaining
    */
-  expectSpeechWithLanguage(language, ...rest) {
+  expectSpeechWithLocale(language, ...rest) {
     return this.expectSpeechWithProperties.apply(
         this, [{lang: language}].concat(rest));
   }

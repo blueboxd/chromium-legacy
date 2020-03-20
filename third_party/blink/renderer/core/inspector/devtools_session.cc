@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
+#include "third_party/inspector_protocol/crdtp/dispatch.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace blink {
@@ -182,10 +183,6 @@ void DevToolsSession::Detach() {
   agent_->client_->DebuggerTaskFinished();
 }
 
-void DevToolsSession::FlushProtocolNotifications() {
-  flushProtocolNotifications();
-}
-
 void DevToolsSession::DispatchProtocolCommand(
     int call_id,
     const String& method,
@@ -202,7 +199,6 @@ void DevToolsSession::DispatchProtocolCommandImpl(
     base::span<const uint8_t> data) {
   DCHECK(crdtp::cbor::IsCBORMessage(
       crdtp::span<uint8_t>(data.data(), data.size())));
-
   TRACE_EVENT_WITH_FLOW1(
       "devtools", "DevToolsSession::DispatchProtocolCommandImpl", call_id,
       TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
@@ -226,11 +222,10 @@ void DevToolsSession::DispatchProtocolCommandImpl(
     v8_session_->dispatchProtocolMessage(
         v8_inspector::StringView(data.data(), data.size()));
   } else {
-    std::unique_ptr<protocol::Value> value =
-        protocol::Value::parseBinary(data.data(), data.size());
-    // Don't pass protocol message further - there is no passthrough.
-    inspector_backend_dispatcher_->dispatch(call_id, method, std::move(value),
-                                            crdtp::span<uint8_t>());
+    crdtp::Dispatchable dispatchable(crdtp::SpanFrom(data));
+    // This message has already been checked by content::DevToolsSession.
+    DCHECK(dispatchable.ok());
+    inspector_backend_dispatcher_->Dispatch(dispatchable).Run();
   }
   agent_->client_->DebuggerTaskFinished();
 }
@@ -271,14 +266,14 @@ void DevToolsSession::DomContentLoadedEventFired(LocalFrame* local_frame) {
   }
 }
 
-void DevToolsSession::sendProtocolResponse(
+void DevToolsSession::SendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
   SendProtocolResponse(call_id, message->Serialize());
 }
 
-void DevToolsSession::fallThrough(int call_id,
-                                  const String& method,
+void DevToolsSession::FallThrough(int call_id,
+                                  crdtp::span<uint8_t> method,
                                   crdtp::span<uint8_t> message) {
   // There's no other layer to handle the command.
   NOTREACHED();
@@ -309,7 +304,7 @@ void DevToolsSession::SendProtocolResponse(int call_id,
                                          call_id, session_state_.TakeUpdates());
 }
 
-void DevToolsSession::sendProtocolNotification(
+void DevToolsSession::SendProtocolNotification(
     std::unique_ptr<protocol::Serializable> notification) {
   if (IsDetached())
     return;
@@ -332,6 +327,10 @@ void DevToolsSession::sendNotification(
 }
 
 void DevToolsSession::flushProtocolNotifications() {
+  FlushProtocolNotifications();
+}
+
+void DevToolsSession::FlushProtocolNotifications() {
   if (IsDetached())
     return;
   for (wtf_size_t i = 0; i < agents_.size(); i++)

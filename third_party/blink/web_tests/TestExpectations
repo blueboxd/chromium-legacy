@@ -541,8 +541,6 @@ crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-left-a
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-left.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top-absolute-child.html [ Failure ]
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top.html [ Failure ]
-crbug.com/845235 external/wpt/css/css-position/position-absolute-center-001.tentative.html [ Failure ]
-crbug.com/845235 external/wpt/css/css-position/position-absolute-center-002.tentative.html [ Failure ]
 
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-002.html [ Failure ]
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-003.html [ Failure ]
@@ -792,10 +790,7 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 # [css-flexbox]
 
-crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html [ Failure ]
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
-crbug.com/1025630 [ Mac ] external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
-crbug.com/1025630 [ Mac ] external/wpt/css/css-flexbox/select-element-zero-height-002.html [ Failure ]
 crbug.com/762679 external/wpt/css/css-flexbox/flexbox-gap-position-absolute.html [ Failure ]
 crbug.com/762679 external/wpt/css/css-flexbox/gap-001-lr.html [ Failure ]
 crbug.com/762679 external/wpt/css/css-flexbox/gap-001-ltr.html [ Failure ]
@@ -1516,7 +1511,9 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/cascade/* [ Skip ]
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 
 # Flexbox in NG
-#
+
+crbug.com/1060408 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-fallback-justify-content-001.html [ Failure ]
+
 # Fail in NG flex, pass in legacy flex.
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/846557 [ Mac ] virtual/layout_ng_flex_box/css3/flexbox/button.html [ Failure ]
@@ -1598,8 +1595,6 @@ crbug.com/626703 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozi
 crbug.com/807497 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/898186 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 crbug.com/1003506 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
-crbug.com/1025630 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
-crbug.com/1025630 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-002.html [ Failure ]
 crbug.com/782948 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/table-as-item-fixed-min-width.html [ Failure ]
 crbug.com/782948 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/table-as-item-wide-content.html [ Failure ]
 crbug.com/762679 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-001-lr.html [ Failure ]
@@ -2551,9 +2546,6 @@ crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [
 crbug.com/782948 external/wpt/css/css-flexbox/table-as-item-fixed-min-width.html [ Failure ]
 crbug.com/782948 external/wpt/css/css-flexbox/table-as-item-wide-content.html [ Failure ]
 
-# Requires support for hit-testing based on flex order.
-crbug.com/844505 external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
-
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
@@ -2996,9 +2988,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-strict-
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-015.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-015.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-015.xht [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size/absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size/absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/edges/all.https.html [ Failure ]
@@ -3133,9 +3122,6 @@ crbug.com/626703 [ Mac ] external/wpt/offscreen-canvas/text/2d.text.measure.base
 crbug.com/626703 [ Win ] external/wpt/offscreen-canvas/text/2d.text.measure.baselines.worker.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-left-css_touch.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/screen-capture/getdisplaymedia.https.html [ Timeout ]
@@ -3277,7 +3263,6 @@ crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/css-
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/css-module/css-module-worker-test.html [ Failure ]
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/css-module/utf8.tentative.html [ Failure ]
 crbug.com/967018 virtual/web-components-v0-disabled/external/wpt/html/semantics/scripting-1/the-script-element/css-module/utf8.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-ui/webkit-appearance-auto-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-004-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onload-event.html [ Failure Timeout ]
@@ -4184,6 +4169,11 @@ crbug.com/888470 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integ
 crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
 
 crbug.com/666993 [ Debug ] external/wpt/requestidlecallback/callback-idle-periods.html [ Pass Timeout ]
+
+# Doesn't match the new spec
+crbug.com/1055943 [ Linux ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
+crbug.com/1055943 [ Mac ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
+crbug.com/1055943 [ Win ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/809935 external/wpt/css/css-fonts/variations/font-style-interpolation.html [ Timeout ]

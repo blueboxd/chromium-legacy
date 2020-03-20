@@ -37,11 +37,13 @@ ResolutionPair GetMaxResolutionsForGUIDs(
     const std::vector<gfx::Size>& resolutions_to_test,
     DXGI_FORMAT format = DXGI_FORMAT_NV12);
 
+// TODO(dalecurtis): This function should be changed to use return values.
 MEDIA_GPU_EXPORT
 void GetResolutionsForDecoders(std::vector<GUID> h264_guids,
                                ComD3D11Device device,
                                const gpu::GpuDriverBugWorkarounds& workarounds,
                                ResolutionPair* h264_resolutions,
+                               ResolutionPair* vp8_resolutions,
                                ResolutionPair* vp9_0_resolutions,
                                ResolutionPair* vp9_2_resolutions);
 

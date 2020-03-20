@@ -30,12 +30,12 @@ RenderProcessUserData::RenderProcessUserData(
     content::RenderProcessHost* render_process_host)
     : host_(render_process_host) {
   host_->AddObserver(this);
-  process_node_ = PerformanceManagerImpl::GetInstance()->CreateProcessNode(
+  process_node_ = PerformanceManagerImpl::CreateProcessNode(
       RenderProcessHostProxy(host_->GetID()));
 }
 
 RenderProcessUserData::~RenderProcessUserData() {
-  PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(process_node_));
+  PerformanceManagerImpl::DeleteNode(std::move(process_node_));
   host_->RemoveObserver(this);
 
   if (destruction_observer_) {

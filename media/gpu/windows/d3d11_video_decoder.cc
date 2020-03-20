@@ -912,14 +912,15 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
   std::vector<SupportedVideoDecoderConfig> configs;
   // VP9 has no default resolutions since it may not even be supported.
   ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
+  ResolutionPair max_vp8_resolutions;
   ResolutionPair max_vp9_profile0_resolutions;
   ResolutionPair max_vp9_profile2_resolutions;
   const gfx::Size min_resolution(64, 64);
 
   GetResolutionsForDecoders(
       {D3D11_DECODER_PROFILE_H264_VLD_NOFGT}, d3d11_device, gpu_workarounds,
-      &max_h264_resolutions, &max_vp9_profile0_resolutions,
-      &max_vp9_profile2_resolutions);
+      &max_h264_resolutions, &max_vp8_resolutions,
+      &max_vp9_profile0_resolutions, &max_vp9_profile2_resolutions);
 
   if (max_h264_resolutions.first.width() > 0) {
     // Push H264 configs, except HIGH10.
@@ -959,6 +960,8 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
         allow_encrypted,                    // allow_encrypted
         false));                            // require_encrypted
   }
+
+  // TODO(liberato): Fill this in for VP8.
 
   if (max_vp9_profile0_resolutions.first.width()) {
     // landscape

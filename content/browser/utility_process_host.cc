@@ -92,6 +92,9 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == service_manager::SandboxType::kIme ||
 #endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SandboxType::kAudio ||
+#if !defined(OS_MACOSX)
+        sandbox_type_ == service_manager::SandboxType::kSharingService ||
+#endif
         sandbox_type_ == service_manager::SandboxType::kSoda;
     DCHECK(supported_sandbox_type);
 #endif  // DCHECK_IS_ON()
@@ -173,6 +176,22 @@ class UtilitySandboxedProcessLauncherDelegate
       service_manager::SandboxWin::SetJobLevel(
           cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
     }
+
+    if (sandbox_type_ == service_manager::SandboxType::kSharingService) {
+      if (service_manager::IsWin32kLockdownEnabled()) {
+        auto result =
+            service_manager::SandboxWin::AddWin32kLockdownPolicy(policy, false);
+        if (result != sandbox::SBOX_ALL_OK)
+          return false;
+      }
+
+      auto delayed_flags = policy->GetDelayedProcessMitigations();
+      delayed_flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
+      auto result = policy->SetDelayedProcessMitigations(delayed_flags);
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
+    }
+
     return true;
   }
 #endif  // OS_WIN

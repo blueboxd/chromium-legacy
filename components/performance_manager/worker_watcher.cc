@@ -112,7 +112,7 @@ void WorkerWatcher::TearDown() {
     nodes.push_back(std::move(node.second));
   shared_worker_nodes_.clear();
 
-  PerformanceManagerImpl::GetInstance()->BatchDeleteNodes(std::move(nodes));
+  PerformanceManagerImpl::BatchDeleteNodes(std::move(nodes));
 
   dedicated_worker_service_observer_.RemoveAll();
   shared_worker_service_observer_.RemoveAll();
@@ -124,7 +124,7 @@ void WorkerWatcher::OnWorkerStarted(
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   // TODO(https://crbug.com/993029): Plumb through the URL and the DevTools
   // token.
-  auto worker_node = PerformanceManagerImpl::GetInstance()->CreateWorkerNode(
+  auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
       base::UnguessableToken::Create());
@@ -147,7 +147,7 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
 #if DCHECK_IS_ON()
   DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
 #endif  // DCHECK_IS_ON()
-  PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(worker_node));
+  PerformanceManagerImpl::DeleteNode(std::move(worker_node));
 
   dedicated_worker_nodes_.erase(it);
 }
@@ -162,7 +162,7 @@ void WorkerWatcher::OnWorkerStarted(
     content::SharedWorkerId shared_worker_id,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
-  auto worker_node = PerformanceManagerImpl::GetInstance()->CreateWorkerNode(
+  auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kShared,
       process_node_source_->GetProcessNode(worker_process_id), dev_tools_token);
   bool inserted =
@@ -180,7 +180,7 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
 #if DCHECK_IS_ON()
   DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
 #endif  // DCHECK_IS_ON()
-  PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(worker_node));
+  PerformanceManagerImpl::DeleteNode(std::move(worker_node));
 
   shared_worker_nodes_.erase(it);
 }

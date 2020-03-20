@@ -73,7 +73,7 @@ const gfx::SizeF HighlighterView::kPenTipSize(kPenTipWidth, kPenTipHeight);
 
 HighlighterView::HighlighterView(base::TimeDelta presentation_delay,
                                  aura::Window* container)
-    : FastInkView(container, PresentationCallback()),
+    : FastInkView(container, fast_ink::FastInkHost::PresentationCallback()),
       points_(base::TimeDelta()),
       predicted_points_(base::TimeDelta()),
       presentation_delay_(presentation_delay) {}
@@ -187,8 +187,7 @@ void HighlighterView::UpdateBuffer() {
   pending_update_buffer_ = false;
 
   {
-    ScopedPaint paint(gpu_memory_buffer_.get(), screen_to_buffer_transform_,
-                      highlighter_damage_rect_);
+    ScopedPaint paint(this, highlighter_damage_rect_);
 
     Draw(paint.canvas());
   }

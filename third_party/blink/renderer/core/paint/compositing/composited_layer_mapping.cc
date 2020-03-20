@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
-#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -48,12 +47,10 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
-#include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -72,7 +69,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
-#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -443,14 +439,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   }
 
   UpdateBackgroundColor();
-
-  if (layout_object.IsImage()) {
-    if (IsDirectlyCompositedImage()) {
-      UpdateImageContents();
-    } else if (graphics_layer_->HasContentsLayer()) {
-      graphics_layer_->SetContentsToImage(nullptr, Image::kUnspecifiedDecode);
-    }
-  }
 
   if (layout_object.IsLayoutEmbeddedContent()) {
     if (WebPluginContainerImpl* plugin = GetPluginContainer(layout_object)) {
@@ -1533,9 +1521,6 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
   if (CompositedBounds().IsEmpty())
     return false;
 
-  if (GetLayoutObject().IsImage() && IsDirectlyCompositedImage())
-    return false;
-
   LayoutObject& layout_object = GetLayoutObject();
   // FIXME: we could optimize cases where the image, video or canvas is known to
   // fill the border box entirely, and set background color on the layer in that
@@ -1584,91 +1569,12 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
   return PaintsChildren();
 }
 
-// An image can be directly composited if it's the sole content of the layer,
-// and has no box decorations or clipping that require painting. Direct
-// compositing saves a backing store.
-bool CompositedLayerMapping::IsDirectlyCompositedImage() const {
-  DCHECK(GetLayoutObject().IsImage());
-
-  LayoutImage& image_layout_object = ToLayoutImage(GetLayoutObject());
-
-  if (owning_layer_.HasBoxDecorationsOrBackground() ||
-      image_layout_object.HasClip() || image_layout_object.HasClipPath() ||
-      image_layout_object.HasObjectFit())
-    return false;
-
-  if (ImageResourceContent* cached_image = image_layout_object.CachedImage()) {
-    if (!cached_image->HasImage())
-      return false;
-
-    if (!IsA<BitmapImage>(cached_image->GetImage()))
-      return false;
-
-    UseCounter::Count(GetLayoutObject().GetDocument(),
-                      WebFeature::kDirectlyCompositedImage);
-    return true;
-  }
-
-  return false;
-}
-
 void CompositedLayerMapping::ContentChanged(ContentChangeType change_type) {
-  if ((change_type == kImageChanged) && GetLayoutObject().IsImage() &&
-      IsDirectlyCompositedImage()) {
-    SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateLocal);
-    Compositor()->SetNeedsCompositingUpdate(
-        kCompositingUpdateAfterGeometryChange);
-    return;
-  }
-
   if (change_type == kCanvasChanged &&
       IsTextureLayerCanvas(GetLayoutObject())) {
     graphics_layer_->SetContentsNeedsDisplay();
     return;
   }
-}
-
-void CompositedLayerMapping::UpdateImageContents() {
-  DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
-            DocumentLifecycle::kInCompositingUpdate);
-
-  DCHECK(GetLayoutObject().IsImage());
-  LayoutImage& image_layout_object = ToLayoutImage(GetLayoutObject());
-
-  ImageResourceContent* cached_image = image_layout_object.CachedImage();
-  if (!cached_image)
-    return;
-
-  Image* image = cached_image->GetImage();
-  if (!image)
-    return;
-
-  auto* html_image_element =
-      DynamicTo<HTMLImageElement>(image_layout_object.GetNode());
-  Image::ImageDecodingMode decode_mode =
-      html_image_element ? html_image_element->GetDecodingModeForPainting(
-                               image->paint_image_id())
-                         : Image::kUnspecifiedDecode;
-
-  // This is a no-op if the layer doesn't have an inner layer for the image.
-  graphics_layer_->SetContentsToImage(
-      image, decode_mode,
-      LayoutObject::ShouldRespectImageOrientation(&image_layout_object));
-
-  graphics_layer_->SetFilterQuality(
-      GetLayoutObject().StyleRef().ImageRendering() ==
-              EImageRendering::kPixelated
-          ? kNone_SkFilterQuality
-          : kLow_SkFilterQuality);
-
-  // Prevent double-drawing: https://bugs.webkit.org/show_bug.cgi?id=58632
-  UpdateDrawsContentAndPaintsHitTest();
-
-  // Image animation is "lazy", in that it automatically stops unless someone is
-  // drawing the image. So we have to kick the animation each time; this has the
-  // downside that the image will keep animating, even if its layer is not
-  // visible.
-  image->StartAnimation();
 }
 
 FloatPoint3D CompositedLayerMapping::ComputeTransformOrigin(

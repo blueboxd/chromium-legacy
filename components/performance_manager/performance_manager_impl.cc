@@ -96,6 +96,7 @@ void PerformanceManagerImpl::Destroy(
   GetTaskRunner()->DeleteSoon(FROM_HERE, instance.release());
 }
 
+// static
 std::unique_ptr<FrameNodeImpl> PerformanceManagerImpl::CreateFrameNode(
     ProcessNodeImpl* process_node,
     PageNodeImpl* page_node,
@@ -112,6 +113,7 @@ std::unique_ptr<FrameNodeImpl> PerformanceManagerImpl::CreateFrameNode(
       browsing_instance_id, site_instance_id);
 }
 
+// static
 std::unique_ptr<PageNodeImpl> PerformanceManagerImpl::CreatePageNode(
     const WebContentsProxy& contents_proxy,
     const std::string& browser_context_id,
@@ -123,12 +125,14 @@ std::unique_ptr<PageNodeImpl> PerformanceManagerImpl::CreatePageNode(
                                       visible_url, is_visible, is_audible);
 }
 
+// static
 std::unique_ptr<ProcessNodeImpl> PerformanceManagerImpl::CreateProcessNode(
     RenderProcessHostProxy proxy) {
   return CreateNodeImpl<ProcessNodeImpl>(
       base::OnceCallback<void(ProcessNodeImpl*)>(), proxy);
 }
 
+// static
 std::unique_ptr<WorkerNodeImpl> PerformanceManagerImpl::CreateWorkerNode(
     const std::string& browser_context_id,
     WorkerNode::WorkerType worker_type,
@@ -139,20 +143,22 @@ std::unique_ptr<WorkerNodeImpl> PerformanceManagerImpl::CreateWorkerNode(
       worker_type, process_node, dev_tools_token);
 }
 
+// static
 void PerformanceManagerImpl::DeleteNode(std::unique_ptr<NodeBase> node) {
-  GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&PerformanceManagerImpl::DeleteNodeImpl,
-                                base::Unretained(this), node.release()));
+  CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&PerformanceManagerImpl::DeleteNodeImpl, node.release()));
 }
 
+// static
 void PerformanceManagerImpl::BatchDeleteNodes(
     std::vector<std::unique_ptr<NodeBase>> nodes) {
   // Move the nodes vector to the heap.
   auto nodes_ptr = std::make_unique<std::vector<std::unique_ptr<NodeBase>>>(
       std::move(nodes));
-  GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&PerformanceManagerImpl::BatchDeleteNodesImpl,
-                                base::Unretained(this), nodes_ptr.release()));
+  CallOnGraphImpl(FROM_HERE,
+                  base::BindOnce(&PerformanceManagerImpl::BatchDeleteNodesImpl,
+                                 nodes_ptr.release()));
 }
 
 PerformanceManagerImpl::PerformanceManagerImpl() {
@@ -175,6 +181,7 @@ void AddNodeAndInvokeCreationCallback(
 
 }  // namespace
 
+// static
 template <typename NodeType, typename... Args>
 std::unique_ptr<NodeType> PerformanceManagerImpl::CreateNodeImpl(
     base::OnceCallback<void(NodeType*)> creation_callback,
@@ -188,32 +195,35 @@ std::unique_ptr<NodeType> PerformanceManagerImpl::CreateNodeImpl(
   return new_node;
 }
 
-void PerformanceManagerImpl::DeleteNodeImpl(NodeBase* node_ptr) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
+// static
+void PerformanceManagerImpl::DeleteNodeImpl(NodeBase* node_ptr,
+                                            GraphImpl* graph) {
   // Must be done first to avoid leaking |node_ptr|.
   std::unique_ptr<NodeBase> node(node_ptr);
 
-  graph_.RemoveNode(node.get());
+  graph->RemoveNode(node.get());
 }
 
 namespace {
 
-void RemoveFrameAndChildrenFromGraph(FrameNodeImpl* frame_node) {
+void RemoveFrameAndChildrenFromGraph(FrameNodeImpl* frame_node,
+                                     GraphImpl* graph) {
   // Recurse on the first child while there is one.
-  while (!frame_node->child_frame_nodes().empty())
-    RemoveFrameAndChildrenFromGraph(*(frame_node->child_frame_nodes().begin()));
+  while (!frame_node->child_frame_nodes().empty()) {
+    RemoveFrameAndChildrenFromGraph(*(frame_node->child_frame_nodes().begin()),
+                                    graph);
+  }
 
   // Now that all children are deleted, delete this frame.
-  frame_node->graph()->RemoveNode(frame_node);
+  graph->RemoveNode(frame_node);
 }
 
 }  // namespace
 
+// static
 void PerformanceManagerImpl::BatchDeleteNodesImpl(
-    std::vector<std::unique_ptr<NodeBase>>* nodes_ptr) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
+    std::vector<std::unique_ptr<NodeBase>>* nodes_ptr,
+    GraphImpl* graph) {
   // Must be done first to avoid leaking |nodes_ptr|.
   std::unique_ptr<std::vector<std::unique_ptr<NodeBase>>> nodes(nodes_ptr);
 
@@ -225,11 +235,12 @@ void PerformanceManagerImpl::BatchDeleteNodesImpl(
         auto* page_node = PageNodeImpl::FromNodeBase(node.get());
 
         // Delete the main frame nodes until no more exist.
-        while (!page_node->main_frame_nodes().empty())
+        while (!page_node->main_frame_nodes().empty()) {
           RemoveFrameAndChildrenFromGraph(
-              *(page_node->main_frame_nodes().begin()));
+              *(page_node->main_frame_nodes().begin()), graph);
+        }
 
-        graph_.RemoveNode(page_node);
+        graph->RemoveNode(page_node);
         break;
       }
       case ProcessNodeImpl::Type(): {
@@ -243,7 +254,7 @@ void PerformanceManagerImpl::BatchDeleteNodesImpl(
         break;
       case WorkerNodeImpl::Type(): {
         auto* worker_node = WorkerNodeImpl::FromNodeBase(node.get());
-        graph_.RemoveNode(worker_node);
+        graph->RemoveNode(worker_node);
         break;
       }
       case SystemNodeImpl::Type():
@@ -257,7 +268,7 @@ void PerformanceManagerImpl::BatchDeleteNodesImpl(
 
   // Remove the process nodes from the graph.
   for (auto* process_node : process_nodes)
-    graph_.RemoveNode(process_node);
+    graph->RemoveNode(process_node);
 
   // When |nodes| goes out of scope, all nodes are deleted.
 }

@@ -459,6 +459,11 @@ const char kRedirectLibassistantLogging[] = "redirect-libassistant-logging";
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 
+// The switch added by session_manager daemon when chrome crashes 3 times or
+// more within the first 60 seconds on start.
+// See BrowserJob::ExportArgv in platform2/login_manager/browser_job.cc.
+const char kSafeMode[] = "safe-mode";
+
 // Password change url for SAML users.
 // TODO(941489): Remove when the bug is fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";

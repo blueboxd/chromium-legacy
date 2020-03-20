@@ -230,6 +230,7 @@ LayoutUnit LayoutListMarker::GetWidthOfText(ListStyleCategory category) const {
 }
 
 MinMaxSizes LayoutListMarker::ComputeIntrinsicLogicalWidths() const {
+  DCHECK(IntrinsicLogicalWidthsDirty());
   const_cast<LayoutListMarker*>(this)->UpdateContent();
 
   MinMaxSizes sizes;
@@ -256,12 +257,8 @@ MinMaxSizes LayoutListMarker::ComputeIntrinsicLogicalWidths() const {
   return sizes;
 }
 
-void LayoutListMarker::ComputePreferredLogicalWidths() {
-  DCHECK(IntrinsicLogicalWidthsDirty());
-  MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
-  min_preferred_logical_width_ = sizes.min_size;
-  max_preferred_logical_width_ = sizes.max_size;
-  ClearIntrinsicLogicalWidthsDirty();
+MinMaxSizes LayoutListMarker::PreferredLogicalWidths() const {
+  return IntrinsicLogicalWidths();
 }
 
 LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {

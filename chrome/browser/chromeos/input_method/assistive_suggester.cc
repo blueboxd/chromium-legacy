@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,10 +65,10 @@ AssistiveType ProposeAssistiveAction(const std::string& text) {
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
                                        Profile* profile)
-    : engine_(engine), profile_(profile) {
-  personal_data_manager_ =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile_);
-}
+    : engine_(engine),
+      profile_(profile),
+      personal_data_manager_(
+          autofill::PersonalDataManagerFactory::GetForProfile(profile)) {}
 
 void AssistiveSuggester::OnFocus(int context_id) {
   context_id_ = context_id;
@@ -94,10 +94,9 @@ bool AssistiveSuggester::OnKeyEvent(
     if (event.key == "Tab" || event.key == "Right") {
       engine_->ConfirmCompositionText(false, false);
       return true;
-    } else {
-      DismissSuggestion();
-      suggestion_dismissed_ = true;
     }
+    DismissSuggestion();
+    suggestion_dismissed_ = true;
   }
 
   return false;
@@ -126,15 +125,10 @@ bool AssistiveSuggester::OnSurroundingTextChanged(const std::string& text,
     return false;
   }
 
-  if (context_id_ == -1)
+  if (context_id_ == -1 || suggestion_shown_)
     return false;
-
-  bool surrounding_text_changed = false;
-  if (!suggestion_shown_) {
-    Suggest(text, cursor_pos, anchor_pos);
-    surrounding_text_changed = suggestion_shown_;
-  }
-  return surrounding_text_changed;
+  Suggest(text, cursor_pos, anchor_pos);
+  return suggestion_shown_;
 }
 
 void AssistiveSuggester::Suggest(const std::string& text,
@@ -164,36 +158,34 @@ std::string AssistiveSuggester::GetPersonalInfoSuggestion(
   if (action == AssistiveType::kGenericAction)
     return "";
 
-  if (action == AssistiveType::kPersonalEmail) {
-    std::string email = profile_->GetProfileUserName();
-    return email;
-  } else {
-    auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
-    if (autofill_profiles.size() > 0) {
-      // Currently, we are just picking the first candidate, will improve the
-      // strategy in the future.
-      auto* data = autofill_profiles[0];
-      base::string16 suggestion;
-      switch (action) {
-        case AssistiveType::kPersonalName:
-          suggestion = data->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
-          break;
-        case AssistiveType::kPersonalAddress:
-          suggestion = data->GetRawInfo(
-              autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
-          break;
-        case AssistiveType::kPersonalPhoneNumber:
-          suggestion = data->GetRawInfo(
-              autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-      return base::UTF16ToUTF8(suggestion);
-    }
+  if (action == AssistiveType::kPersonalEmail)
+    return profile_->GetProfileUserName();
+
+  auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
+  if (autofill_profiles.empty())
+    return "";
+
+  // Currently, we are just picking the first candidate, will improve the
+  // strategy in the future.
+  auto* data = autofill_profiles[0];
+  base::string16 suggestion;
+  switch (action) {
+    case AssistiveType::kPersonalName:
+      suggestion = data->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
+      break;
+    case AssistiveType::kPersonalAddress:
+      suggestion = data->GetRawInfo(
+          autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
+      break;
+    case AssistiveType::kPersonalPhoneNumber:
+      suggestion =
+          data->GetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-  return "";
+  return base::UTF16ToUTF8(suggestion);
 }
 
 void AssistiveSuggester::ShowSuggestion(const std::string& text) {

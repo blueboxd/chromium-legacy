@@ -86,7 +86,15 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
     return type == kLayoutObjectLayoutTableCol || LayoutBox::IsOfType(type);
   }
   void UpdateFromElement() override;
-  void ComputePreferredLogicalWidths() override { NOTREACHED(); }
+
+  MinMaxSizes PreferredLogicalWidths() const override {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
 
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;

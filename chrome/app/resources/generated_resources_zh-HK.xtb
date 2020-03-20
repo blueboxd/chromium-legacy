@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">調用時讀取及變更您在目前網站上的所有資料</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> 要求重設您的設定。</translation>
 <translation id="1243314992276662751">上載</translation>
-<translation id="1243398753772016127">網站不能使用您在其他網站的瀏覽活動放送個人化廣告</translation>
 <translation id="1244265436519979884">正在執行 Linux 還原</translation>
 <translation id="1244303850296295656">擴充功能錯誤</translation>
 <translation id="1246905108078336582">要從剪貼簿中移除建議嗎？</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">開啟 - 自訂設定</translation>
 <translation id="1489664337021920575">選擇其他選項</translation>
 <translation id="1493892686965953381">正在等待 <ph name="LOAD_STATE_PARAMETER" />…</translation>
-<translation id="1494438840282430403">一併清除瀏覽資料 (<ph name="URL" />)，此操作可能會將您登出 Google.com。</translation>
 <translation id="1495486559005647033">還有 <ph name="NUM_PRINTERS" /> 個可用裝置。</translation>
 <translation id="1495677929897281669">返回分頁</translation>
 <translation id="1499271269825557605">如果您無法識別任何擴充程式，或瀏覽器無法預期運作，您可以在這裡關閉或自訂擴充程式。</translation>
@@ -1189,7 +1187,6 @@
 <translation id="2575247648642144396">畫面上顯示這個圖示時，表示擴充功能可在目前網頁上運作。如要啟用這項擴充功能，請按一下圖示或按下 <ph name="EXTENSION_SHORTCUT" />。</translation>
 <translation id="257779572837908839">設定為 Chromebox 視像會議</translation>
 <translation id="2580889980133367162">永遠允許 <ph name="HOST" /> 下載多個檔案</translation>
-<translation id="2580924999637585241">總計：<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">長</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (平台：<ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">無法取得 Kerberos 票證。請再試一次，或與您機構的裝置管理員聯絡。(錯誤代碼 <ph name="ERROR_CODE" />)。</translation>
@@ -2817,7 +2814,6 @@
 <translation id="4808667324955055115">已封鎖彈出式視窗：</translation>
 <translation id="480990236307250886">開啟首頁</translation>
 <translation id="4811503964269049987">將所選分頁分組</translation>
-<translation id="4811818760963189951">由於您已停用記錄同步處理功能，因此系統已關閉此功能</translation>
 <translation id="4813136279048157860">我的圖片</translation>
 <translation id="4813512666221746211">網絡錯誤</translation>
 <translation id="4814378367953456825">請輸入此指紋的名稱</translation>
@@ -2986,7 +2982,6 @@
 <translation id="5040823038948176460">其他內容設定</translation>
 <translation id="5042282098504489593">開啟「設定」以將 <ph name="USB_DEVICE_NAME" /> 連線至 Linux</translation>
 <translation id="5043913660911154449">或指定打印機的 PPD <ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">由於您已使用密碼短語將同步資料加密，因此系統已停用此功能</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
 <translation id="504561833207953641">正在現有的瀏覽器工作階段中開啟。</translation>
 <translation id="5047421709274785093">禁止網站使用動態和光線感應器</translation>
@@ -3963,7 +3958,6 @@
 <translation id="63566973648609420">只有知道密碼短語的使用者才能讀取您的加密資料。系統不會將密碼短語傳送給 Google，Google 也不會儲存密碼短語。如果您忘記自己的密碼短語，或希望變更這項設定，則必須<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" />。</translation>
 <translation id="6357619544108132570">歡迎使用 <ph name="SHORT_PRODUCT_NAME" /> 系列機種，體驗不同凡響的新世代電腦。</translation>
 <translation id="6358884629796491903">龍</translation>
-<translation id="6360719647236334056">使用您的 Chrome 瀏覽記錄，為您提供個人化的搜尋服務、廣告和其他 Google 服務</translation>
 <translation id="6361850914223837199">錯誤詳情：</translation>
 <translation id="6362853299801475928">報告問題(&amp;R)…</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4241,7 +4235,6 @@
 <translation id="6758056191028427665">請讓我們瞭解您的滿意度。</translation>
 <translation id="6759193508432371551">恢復原廠設定</translation>
 <translation id="6762833852331690540">開啟</translation>
-<translation id="6764693078871405569">一併清除瀏覽資料 (<ph name="URL" />)，此操作可能會將您登出 <ph name="DOMAIN" />。</translation>
 <translation id="6767566652486411142">選擇其他語言…</translation>
 <translation id="6767639283522617719">無法加入網域。請確定機構單位的設定正確。</translation>
 <translation id="6769712124046837540">新增打印機…</translation>

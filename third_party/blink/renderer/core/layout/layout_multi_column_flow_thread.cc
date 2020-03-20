@@ -1332,7 +1332,7 @@ void LayoutMultiColumnFlowThread::ToggleSpannersInSubtree(
   }
 }
 
-void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
+MinMaxSizes LayoutMultiColumnFlowThread::PreferredLogicalWidths() const {
   // The min/max intrinsic widths calculated really tell how much space elements
   // need when laid out inside the columns. In order to eventually end up with
   // the desired column width, we need to convert them to values pertaining to
@@ -1343,28 +1343,22 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
       multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
   LayoutUnit gap_extra((column_count - 1) *
                        ColumnGap(*multicol_style, LayoutUnit()));
+  MinMaxSizes sizes;
 
   if (flow->HasOverrideIntrinsicContentLogicalWidth()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        flow->OverrideIntrinsicContentLogicalWidth();
-    ClearIntrinsicLogicalWidthsDirty();
+    sizes = flow->OverrideIntrinsicContentLogicalWidth();
   } else if (flow->ShouldApplySizeContainment()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
-    ClearIntrinsicLogicalWidthsDirty();
+    sizes = LayoutUnit();
   } else {
-    // Calculate and set new min_preferred_logical_width_ and
-    // max_preferred_logical_width_.
-    LayoutFlowThread::ComputePreferredLogicalWidths();
+    sizes = LayoutFlowThread::PreferredLogicalWidths();
   }
 
   LayoutUnit column_width;
   if (multicol_style->HasAutoColumnWidth()) {
-    min_preferred_logical_width_ =
-        min_preferred_logical_width_ * column_count + gap_extra;
+    sizes.min_size = sizes.min_size * column_count + gap_extra;
   } else {
     column_width = LayoutUnit(multicol_style->ColumnWidth());
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_, column_width);
+    sizes.min_size = std::min(sizes.min_size, column_width);
   }
   // Note that if column-count is auto here, we should resolve it to calculate
   // the maximum intrinsic width, instead of pretending that it's 1. The only
@@ -1372,9 +1366,9 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   // appropriate time or place for layout. The good news is that if height is
   // unconstrained and there are no explicit breaks, the resolved column-count
   // really should be 1.
-  max_preferred_logical_width_ =
-      std::max(max_preferred_logical_width_, column_width) * column_count +
-      gap_extra;
+  sizes.max_size =
+      std::max(sizes.max_size, column_width) * column_count + gap_extra;
+  return sizes;
 }
 
 void LayoutMultiColumnFlowThread::ComputeLogicalHeight(

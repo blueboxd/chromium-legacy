@@ -13,7 +13,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
-#include "base/debug/stack_trace.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

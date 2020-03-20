@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 // Returns true if the Isolated Prerender feature is enabled.
@@ -21,5 +22,8 @@ bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy();
 // Google SRP. nullopt is returned for unlimited. Negative values given by the
 // field trial return nullopt.
 base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches();
+
+// The amount of time to allow before timing out an origin probe.
+base::TimeDelta IsolatedPrerenderProbeTimeout();
 
 #endif  // CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_PARAMS_H_

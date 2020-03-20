@@ -116,7 +116,8 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutSize previous_size;
   LayoutUnit intrinsic_content_logical_height;
   LayoutRectOutsets margin_box_outsets;
-  LayoutUnit preferred_logical_width[2];
+  MinMaxSizes intrinsic_logical_widths;
+  LayoutUnit intrinsic_logical_widths_percentage_resolution_block_size;
   void* pointers[4];
   Persistent<void*> rare_data;
   Vector<scoped_refptr<const NGLayoutResult>, 1> layout_results;
@@ -254,8 +255,8 @@ void LayoutBoxRareData::Trace(Visitor* visitor) {
 LayoutBox::LayoutBox(ContainerNode* node)
     : LayoutBoxModelObject(node),
       intrinsic_content_logical_height_(-1),
-      min_preferred_logical_width_(-1),
-      max_preferred_logical_width_(-1),
+      intrinsic_logical_widths_percentage_resolution_block_size_(
+          LayoutUnit::Min()),
       inline_box_wrapper_(nullptr) {
   SetIsBox();
   if (blink::IsA<HTMLLegendElement>(node))
@@ -1488,22 +1489,23 @@ bool LayoutBox::ApplyBoxClips(
   return does_intersect;
 }
 
-MinMaxSizes LayoutBox::ComputeIntrinsicLogicalWidths() const {
-  return PreferredLogicalWidths();
+MinMaxSizes LayoutBox::PreferredLogicalWidths() const {
+  NOTREACHED();
+  return MinMaxSizes();
 }
 
-DISABLE_CFI_PERF
-MinMaxSizes LayoutBox::PreferredLogicalWidths() const {
-  if (IntrinsicLogicalWidthsDirty()) {
-#if DCHECK_IS_ON()
-    SetLayoutNeededForbiddenScope layout_forbidden_scope(
-        const_cast<LayoutBox&>(*this));
-#endif
-    const_cast<LayoutBox*>(this)->ComputePreferredLogicalWidths();
-    DCHECK(!IntrinsicLogicalWidthsDirty());
-  }
+void LayoutBox::UpdateCachedIntrinsicLogicalWidthsIfNeeded() {
+  if (!IntrinsicLogicalWidthsDirty())
+    return;
 
-  return {min_preferred_logical_width_, max_preferred_logical_width_};
+#if DCHECK_IS_ON()
+  SetLayoutNeededForbiddenScope layout_forbidden_scope(*this);
+#endif
+
+  intrinsic_logical_widths_ = ComputeIntrinsicLogicalWidths();
+  intrinsic_logical_widths_percentage_resolution_block_size_ =
+      LayoutUnit::Min();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 LayoutUnit LayoutBox::OverrideLogicalWidth() const {
@@ -3127,10 +3129,10 @@ void LayoutBox::UpdateLogicalWidth() {
 
       // Since all this takes place during actual layout, instead of being part
       // of min/max the width calculation machinery, we need to enter said
-      // machinery here, to make sure that what was dirtied is actualy
+      // machinery here, to make sure that what was dirtied is actually
       // recalculated. Leaving things dirty would mean that any subsequent
       // dirtying of descendants would fail.
-      ComputePreferredLogicalWidths();
+      UpdateCachedIntrinsicLogicalWidthsIfNeeded();
     }
   }
 
@@ -3340,7 +3342,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
                     FillAvailableMeasure(available_logical_width));
   }
 
-  MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
+  MinMaxSizes sizes = IntrinsicLogicalWidths();
 
   if (logical_width_length.IsMinContent())
     return sizes.min_size;

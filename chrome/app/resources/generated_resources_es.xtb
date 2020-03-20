@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Leer y modificar todos los datos del sitio web actual cuando se ejecute</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
 <translation id="1243314992276662751">Subir</translation>
-<translation id="1243398753772016127">Los sitios web no podrán utilizar tu actividad de navegación para personalizar anuncios</translation>
 <translation id="1244265436519979884">Hay una restauración de Linux en curso</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
 <translation id="1246905108078336582">¿Quieres quitar la sugerencia del portapapeles?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Activada: configuración personalizada</translation>
 <translation id="1489664337021920575">Elegir otra opción</translation>
 <translation id="1493892686965953381">Esperando <ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">Borrar también los datos de navegación (<ph name="URL" />); esto puede causar que se cierre tu sesión en Google.com</translation>
 <translation id="1495486559005647033">Otros <ph name="NUM_PRINTERS" /> dispositivos disponibles.</translation>
 <translation id="1495677929897281669">Volver a la pestaña</translation>
 <translation id="1499271269825557605">Si no reconoces una extensión o el navegador no funciona correctamente, aquí puedes desactivar o personalizar las extensiones.</translation>
@@ -1052,7 +1050,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
 <translation id="2413749388954403953">Cambiar la interfaz de usuario de marcadores</translation>
-<translation id="2417206894320497232">Ya puedes usar Plugin VM</translation>
+<translation id="2417206894320497232">Ya puedes usar Plugin VM.</translation>
 <translation id="241727068219398187">Se han cifrado los datos con tu contraseña de Google desde el
           <ph name="TIME" />. El cifrado no incluye los métodos de pago ni las direcciones de Google Pay.</translation>
 <translation id="2419706071571366386">Por motivos de seguridad, cierra la sesión cuando termines de utilizar tu ordenador.</translation>
@@ -1190,7 +1188,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2575247648642144396">Este icono estará visible cuando la extensión se pueda utilizar en la página actual. Para utilizar la extensión, haz clic en el icono o pulsa <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reuniones</translation>
 <translation id="2580889980133367162">Permitir siempre a <ph name="HOST" /> descargar varios archivos</translation>
-<translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Largo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No se ha podido obtener el ticket de Kerberos. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
@@ -1717,7 +1714,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3293644607209440645">Enviar esta página</translation>
 <translation id="32939749466444286">El contenedor de Linux no se ha iniciado. Inténtalo de nuevo.</translation>
 <translation id="3294437725009624529">Invitado</translation>
-<translation id="3296193636298964625">Chrome no ha podido comprobar todas tus contraseñas porque son demasiadas.</translation>
+<translation id="3296193636298964625">Chrome no ha podido comprobar todas tus contraseñas porque hay demasiadas.</translation>
 <translation id="329703603001918157">No se puede editar el acceso directo</translation>
 <translation id="329838636886466101">Reparar</translation>
 <translation id="3298789223962368867">URL introducida no válida</translation>
@@ -2017,7 +2014,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3690369331356918524">Te avisa si tus contraseñas se ven expuestas en una quiebra de seguridad de datos</translation>
 <translation id="3691231116639905343">Aplicaciones de teclados</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> quiere compartir tu pantalla</translation>
-<translation id="369135240373237088">Iniciar sesión con una cuenta de centro educativo</translation>
+<translation id="369135240373237088">Inicia sesión de nuevo con una cuenta de centro educativo</translation>
 <translation id="3693415264595406141">Contraseña:</translation>
 <translation id="3694027410380121301">Seleccionar pestaña anterior</translation>
 <translation id="369489984217678710">Contraseñas y otros datos de inicio de sesión</translation>
@@ -2818,7 +2815,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4808667324955055115">Pop-ups bloqueados</translation>
 <translation id="480990236307250886">Abrir página de inicio</translation>
 <translation id="4811503964269049987">Agrupar pestañas seleccionadas</translation>
-<translation id="4811818760963189951">Se ha desactivado porque has inhabilitado la sincronización del historial</translation>
 <translation id="4813136279048157860">Mis imágenes</translation>
 <translation id="4813512666221746211">Error de red</translation>
 <translation id="4814378367953456825">Escribe un nombre para esta huella digital</translation>
@@ -2987,7 +2983,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5040823038948176460">Configuración de contenido adicional</translation>
 <translation id="5042282098504489593">Abrir Ajustes para conectar <ph name="USB_DEVICE_NAME" /> a Linux</translation>
 <translation id="5043913660911154449">O especifica el archivo PPD de tu impresora. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Se ha desactivado porque cifraste tu sincronización de datos con una frase de contraseña</translation>
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="504561833207953641">Se está abriendo en una sesión de navegador existente.</translation>
 <translation id="5047421709274785093">Evitar que los sitios web usen los sensores de luz y movimiento</translation>
@@ -2997,7 +2992,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5052499409147950210">Editar sitio web</translation>
 <translation id="5053604404986157245">La contraseña de TPM generada de forma aleatoria no está disponible. Esto es normal después de un Powerwash.</translation>
 <translation id="5057110919553308744">Al hacer clic en la extensión</translation>
-<translation id="5057403786441168405">Gestiona las cuentas con las que hayas iniciado sesión. Los sitios web, las aplicaciones y las extensiones de Chrome y Google Play pueden usar estas cuentas para personalizar tu experiencia si has concedido los permisos correspondientes. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
+<translation id="5057403786441168405">Gestiona las cuentas con las que hayas iniciado sesión. Los sitios web, las aplicaciones y las extensiones de Chrome y Google Play pueden usar estas cuentas para personalizar tu experiencia en función de los permisos existentes. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5060332552815861872">Hay 1 impresora que se puede guardar.</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Esta carpeta contiene un marcador. ¿Seguro que quieres eliminarla?}other{Esta carpeta contiene # marcadores. ¿Seguro que quieres eliminarla?}}</translation>
 <translation id="5062930723426326933">Se ha producido un error al iniciar sesión. Conéctate a Internet y vuelve a intentarlo.</translation>
@@ -3964,7 +3959,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="63566973648609420">Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar estos ajustes, debes <ph name="BEGIN_LINK" />restablecer la sincronización<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Te damos la bienvenida a la familia <ph name="SHORT_PRODUCT_NAME" />. Este no es un ordenador convencional.</translation>
 <translation id="6358884629796491903">Dragón</translation>
-<translation id="6360719647236334056">Utiliza tu historial de navegación de Chrome para personalizar la Búsqueda, los anuncios y otros Servicios de Google</translation>
 <translation id="6361850914223837199">Detalles del error:</translation>
 <translation id="6362853299801475928">&amp;Notificar un error...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4242,7 +4236,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6758056191028427665">Envíanos tu opinión sobre nuestro servicio.</translation>
 <translation id="6759193508432371551">Restablecer estado de fábrica</translation>
 <translation id="6762833852331690540">Activado</translation>
-<translation id="6764693078871405569">Borrar también los datos de navegación (<ph name="URL" />), lo que cerrará tu sesión en <ph name="DOMAIN" /></translation>
 <translation id="6767566652486411142">Elegir otro idioma...</translation>
 <translation id="6767639283522617719">No se puede vincular el dominio. Comprueba que la configuración de la unidad organizativa sea correcta.</translation>
 <translation id="6769712124046837540">Añadiendo impresora...</translation>

@@ -30,6 +30,14 @@ favicon_base::FaviconImageResult GetDummyFaviconResult() {
   return result;
 }
 
+favicon_base::FaviconRawBitmapResult GetDummyRawFaviconResult() {
+  favicon_base::FaviconRawBitmapResult result;
+
+  result.bitmap_data = GetDummyFaviconResult().image.As1xPNGBytes();
+
+  return result;
+}
+
 void VerifyFetchedFaviconAndCount(int* count, const gfx::Image& favicon) {
   DCHECK(count);
   EXPECT_FALSE(favicon.IsEmpty());
@@ -83,6 +91,39 @@ class FaviconCacheTest : public testing::Test {
     }
   }
 
+  void ExpectFaviconServiceForLargestFaviconPageUrlCalls(int a_site_calls,
+                                                         int b_site_calls) {
+    if (a_site_calls > 0) {
+      EXPECT_CALL(favicon_service_,
+                  GetRawFaviconForPageURL(kUrlA, _ /*icon_types */,
+                                          0 /* desired_size_in_pixel */,
+                                          false /* fallback_to_host */,
+                                          _ /* callback */, _ /* tracker */))
+          .Times(a_site_calls)
+          .WillRepeatedly([&](auto, auto, auto, auto,
+                              favicon_base::FaviconRawBitmapCallback callback,
+                              auto) {
+            favicon_service_a_site_raw_favicon_response_ = std::move(callback);
+            return base::CancelableTaskTracker::kBadTaskId;
+          });
+    }
+
+    if (b_site_calls > 0) {
+      EXPECT_CALL(favicon_service_,
+                  GetRawFaviconForPageURL(kUrlB, _ /*icon_types */,
+                                          0 /* desired_size_in_pixel */,
+                                          false /* fallback_to_host */,
+                                          _ /* callback */, _ /* tracker */))
+          .Times(b_site_calls)
+          .WillRepeatedly([&](auto, auto, auto, auto,
+                              favicon_base::FaviconRawBitmapCallback callback,
+                              auto) {
+            favicon_service_b_site_raw_favicon_response_ = std::move(callback);
+            return base::CancelableTaskTracker::kBadTaskId;
+          });
+    }
+  }
+
   void ExpectFaviconServiceForIconUrlCalls(int calls) {
     EXPECT_CALL(favicon_service_,
                 GetFaviconImage(kIconUrl, _ /* callback */, _ /* tracker */))
@@ -91,6 +132,10 @@ class FaviconCacheTest : public testing::Test {
 
   favicon_base::FaviconImageCallback favicon_service_a_site_response_;
   favicon_base::FaviconImageCallback favicon_service_b_site_response_;
+  favicon_base::FaviconRawBitmapCallback
+      favicon_service_a_site_raw_favicon_response_;
+  favicon_base::FaviconRawBitmapCallback
+      favicon_service_b_site_raw_favicon_response_;
 
   FaviconCache cache_;
 };
@@ -112,6 +157,29 @@ TEST_F(FaviconCacheTest, Basic) {
   // cache is populated. The above EXPECT_CALL will also verify that the
   // backing FaviconService is not hit again.
   result = cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail));
+
+  EXPECT_FALSE(result.IsEmpty());
+  EXPECT_EQ(1, response_count);
+}
+
+TEST_F(FaviconCacheTest, Largest) {
+  ExpectFaviconServiceForLargestFaviconPageUrlCalls(1, 0);
+  ExpectFaviconServiceForIconUrlCalls(0);
+
+  int response_count = 0;
+  gfx::Image result = cache_.GetLargestFaviconForPageUrl(
+      kUrlA, base::BindOnce(&VerifyFetchedFaviconAndCount, &response_count));
+
+  // Expect the synchronous result to be empty.
+  EXPECT_TRUE(result.IsEmpty());
+
+  std::move(favicon_service_a_site_raw_favicon_response_)
+      .Run(GetDummyRawFaviconResult());
+
+  // Re-request the same favicon and expect a non-empty result now that the
+  // cache is populated. The above EXPECT_CALL will also verify that the
+  // backing FaviconService is not hit again.
+  result = cache_.GetLargestFaviconForPageUrl(kUrlA, base::BindOnce(&Fail));
 
   EXPECT_FALSE(result.IsEmpty());
   EXPECT_EQ(1, response_count);

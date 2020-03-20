@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
  * {@link WebappActivityComponent}.
  */
 public interface BaseCustomTabActivityComponent extends ChromeActivityComponent {
+    CurrentPageVerifier resolveCurrentPageVerifier();
     CustomTabActivityNavigationController resolveNavigationController();
     CustomTabActivityTabFactory resolveTabFactory();
     CustomTabActivityTabProvider resolveTabProvider();

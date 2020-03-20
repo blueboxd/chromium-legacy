@@ -86,9 +86,9 @@ CursorView::CursorView(aura::Window* container,
 
   // Create transform used to convert cursor controller coordinates to screen
   // coordinates.
-  bool rv =
-      screen_to_buffer_transform_.GetInverse(&buffer_to_screen_transform_);
-  DCHECK(rv);
+  bool inversible = host()->window_to_buffer_transform().GetInverse(
+      &buffer_to_screen_transform_);
+  DCHECK(inversible);
 
   ui::CursorController::GetInstance()->AddCursorObserver(this);
 }
@@ -226,8 +226,7 @@ void CursorView::OnTimerTick() {
     TRACE_EVENT1("ui", "CursorView::Paint", "damage_rect",
                  damage_rect.ToString());
 
-    ScopedPaint paint(gpu_memory_buffer_.get(), screen_to_buffer_transform_,
-                      damage_rect);
+    ScopedPaint paint(this, damage_rect);
     cc::PaintCanvas* sk_canvas = paint.canvas().sk_canvas();
     sk_canvas->translate(SkIntToScalar(location_.x() - cursor_hotspot_.x()),
                          SkIntToScalar(location_.y() - cursor_hotspot_.y()));

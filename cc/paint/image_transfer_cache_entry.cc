@@ -107,24 +107,19 @@ sk_sp<SkImage> MakeTextureImage(GrContext* context,
   bool add_mips_after_color_conversion =
       target_color_space && mip_mapped == GrMipMapped::kYes;
   sk_sp<SkImage> uploaded_image = source_image->makeTextureImage(
-      context, add_mips_after_color_conversion ? GrMipMapped::kNo : mip_mapped);
+      context, add_mips_after_color_conversion ? GrMipMapped::kNo : mip_mapped,
+      SkBudgeted::kNo);
 
   // Step 2: Apply a color-space conversion if necessary.
   if (uploaded_image && target_color_space) {
-    // TODO(ericrk): consider adding in the DeleteSkImageAndPreventCaching
-    // optimization from GpuImageDecodeCache where we forcefully remove the
-    // intermediate from Skia's cache.
     uploaded_image = uploaded_image->makeColorSpace(target_color_space);
   }
 
   // Step 3: If we had a colorspace conversion, we couldn't mipmap in step 1, so
   // add mips here.
   if (uploaded_image && add_mips_after_color_conversion) {
-    // TODO(ericrk): consider adding in the DeleteSkImageAndPreventCaching
-    // optimization from GpuImageDecodeCache where we forcefully remove the
-    // intermediate from Skia's cache.
-    uploaded_image =
-        uploaded_image->makeTextureImage(context, GrMipMapped::kYes);
+    uploaded_image = uploaded_image->makeTextureImage(
+        context, GrMipMapped::kYes, SkBudgeted::kNo);
   }
 
   return uploaded_image;
@@ -339,8 +334,8 @@ bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
     DCHECK(plane_sizes_.empty());
     base::CheckedNumeric<size_t> safe_total_size(0u);
     for (size_t plane = 0; plane < plane_images.size(); plane++) {
-      plane_images[plane] =
-          plane_images[plane]->makeTextureImage(context_, GrMipMapped::kYes);
+      plane_images[plane] = plane_images[plane]->makeTextureImage(
+          context_, GrMipMapped::kYes, SkBudgeted::kNo);
       if (!plane_images[plane]) {
         DLOG(ERROR) << "Could not generate mipmap chain for plane " << plane;
         return false;
@@ -611,7 +606,7 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
     for (size_t plane = 0; plane < plane_images_.size(); plane++) {
       DCHECK(plane_images_.at(plane));
       sk_sp<SkImage> mipped_plane = plane_images_.at(plane)->makeTextureImage(
-          context_, GrMipMapped::kYes);
+          context_, GrMipMapped::kYes, SkBudgeted::kNo);
       if (!mipped_plane)
         return;
       mipped_planes.push_back(std::move(mipped_plane));
@@ -633,11 +628,8 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
     return;
   }
 
-  // TODO(ericrk): consider adding in the DeleteSkImageAndPreventCaching
-  // optimization from GpuImageDecodeCache where we forcefully remove the
-  // intermediate from Skia's cache.
   sk_sp<SkImage> mipped_image =
-      image_->makeTextureImage(context_, GrMipMapped::kYes);
+      image_->makeTextureImage(context_, GrMipMapped::kYes, SkBudgeted::kNo);
   if (!mipped_image)
     return;
   image_ = std::move(mipped_image);

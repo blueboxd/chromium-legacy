@@ -182,6 +182,7 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
 
     // Aliases of 'auto'.
     // https://drafts.csswg.org/css-ui-4/#typedef-appearance-compat-auto
+    case kAutoPart:
     case kCheckboxPart:
     case kRadioPart:
     case kPushButtonPart:
@@ -258,6 +259,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
   ControlPart part = AdjustAppearanceWithAuthorStyle(
       AdjustAppearanceWithElementType(style, e), style);
   style.SetEffectiveAppearance(part);
+  DCHECK_NE(part, kAutoPart);
   if (part == kNoControlPart)
     return;
 

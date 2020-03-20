@@ -21,6 +21,22 @@ DEVICE_BASE_EXPORT extern const base::Feature kNewBLEWinImplementation;
 DEVICE_BASE_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
 #endif  // BUILDFLAG(ENABLE_VR)
 
+// New features should be added to the device::features namespace.
+
+namespace features {
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+DEVICE_BASE_EXPORT extern const base::Feature kOculusVR;
+#endif  // ENABLE_OCULUS_VR
+#if BUILDFLAG(ENABLE_OPENVR)
+DEVICE_BASE_EXPORT extern const base::Feature kOpenVR;
+#endif  // ENABLE_OPENVR
+#if BUILDFLAG(ENABLE_OPENXR)
+DEVICE_BASE_EXPORT extern const base::Feature kOpenXR;
+#endif  // ENABLE_OPENXR
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+DEVICE_BASE_EXPORT extern const base::Feature kWindowsMixedReality;
+#endif  // ENABLE_WINDOWS_MR
+}  // namespace features
 }  // namespace device
 
 #endif  // DEVICE_BASE_FEATURES_H_

@@ -23,6 +23,8 @@ class TestPermissionsClient : public PermissionsClient {
       content::BrowserContext* browser_context) override;
   PermissionDecisionAutoBlocker* GetPermissionDecisionAutoBlocker(
       content::BrowserContext* browser_context) override;
+  PermissionManager* GetPermissionManager(
+      content::BrowserContext* browser_context) override;
   void GetUkmSourceId(content::BrowserContext* browser_context,
                       const content::WebContents* web_contents,
                       const GURL& requesting_origin,

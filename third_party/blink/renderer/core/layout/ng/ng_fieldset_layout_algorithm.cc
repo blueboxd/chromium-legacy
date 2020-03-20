@@ -89,17 +89,12 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // contents, with the conjecture being that legend is part of the contents.
   // Thus, only do this adjustment if we do not contain size.
   if (!Node().ShouldApplySizeContainment()) {
-    LayoutUnit minimum_border_box_block_size;
-    if (legend_needs_layout_) {
-      minimum_border_box_block_size =
-          borders_with_legend_.BlockSum() + padding_.BlockSum();
-    }
     // Similar to how we add the consumed block size to the intrinsic
     // block size when calculating border_box_size_.block_size, we also need to
     // do so when the fieldset is adjusted to encompass the legend.
     border_box_size_.block_size =
         std::max(border_box_size_.block_size,
-                 minimum_border_box_block_size + consumed_block_size);
+                 minimum_border_box_block_size_ + consumed_block_size);
   }
 
   // TODO(almaher): end border and padding may overflow the parent
@@ -150,10 +145,10 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
   }
 
   NGBlockNode legend = Node().GetRenderedLegend();
-  legend_needs_layout_ =
+  bool legend_needs_layout =
       legend && (legend_break_token || !IsResumingLayout(BreakToken()));
 
-  if (legend_needs_layout_) {
+  if (legend_needs_layout) {
     // TODO(almaher): Handle all break status cases.
     NGBreakStatus break_status = LayoutLegend(legend, legend_break_token);
     DCHECK_EQ(break_status, NGBreakStatus::kContinue);
@@ -161,6 +156,20 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
 
   borders_with_legend_ = borders_;
   borders_with_legend_.block_start = block_start_padding_edge_;
+
+  // The legend may eat from the available content box block size. If the
+  // border_box_size_ is expanded to encompass the legend, then update the
+  // border_box_size_ here, as well, to ensure the fieldset content gets the
+  // correct size.
+  if (!Node().ShouldApplySizeContainment() && legend_needs_layout) {
+    minimum_border_box_block_size_ =
+        borders_with_legend_.BlockSum() + padding_.BlockSum();
+    if (border_box_size_.block_size != kIndefiniteSize) {
+      border_box_size_.block_size =
+          std::max(border_box_size_.block_size, minimum_border_box_block_size_);
+    }
+  }
+
   LogicalSize adjusted_padding_box_size =
       ShrinkAvailableSize(border_box_size_, borders_with_legend_);
   if ((IsResumingLayout(content_break_token.get())) ||

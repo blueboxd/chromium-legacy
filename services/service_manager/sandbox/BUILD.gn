@@ -50,6 +50,8 @@ component("sandbox") {
       "linux/bpf_print_compositor_policy_linux.h",
       "linux/bpf_renderer_policy_linux.cc",
       "linux/bpf_renderer_policy_linux.h",
+      "linux/bpf_sharing_service_policy_linux.cc",
+      "linux/bpf_sharing_service_policy_linux.h",
       "linux/bpf_soda_policy_linux.cc",
       "linux/bpf_soda_policy_linux.h",
       "linux/bpf_utility_policy_linux.cc",

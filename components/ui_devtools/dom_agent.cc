@@ -105,21 +105,21 @@ DOMAgent::~DOMAgent() {
 
 Response DOMAgent::disable() {
   Reset();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response DOMAgent::getDocument(std::unique_ptr<Node>* out_root) {
   element_root_->ResetNodeId();
   *out_root = BuildInitialTree();
   is_document_created_ = true;
-  return Response::OK();
+  return Response::Success();
 }
 
 Response DOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {
   *result = std::move(backend_node_ids);
-  return Response::OK();
+  return Response::Success();
 }
 
 void DOMAgent::OnUIElementAdded(UIElement* parent, UIElement* child) {
@@ -351,7 +351,7 @@ Response DOMAgent::performSearch(
     int* result_count) {
   Query query_data = PreprocessQuery(whitespace_trimmed_query);
   if (!query_data.query_.length())
-    return Response::OK();
+    return Response::Success();
 
   std::vector<int> result_collector;
   SearchDomTree(query_data, &result_collector);
@@ -360,7 +360,7 @@ Response DOMAgent::performSearch(
   *result_count = result_collector.size();
   search_results_.insert(
       std::make_pair(*search_id, std::move(result_collector)));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response DOMAgent::getSearchResults(
@@ -370,21 +370,21 @@ Response DOMAgent::getSearchResults(
     std::unique_ptr<protocol::Array<int>>* node_ids) {
   SearchResults::iterator it = search_results_.find(search_id);
   if (it == search_results_.end())
-    return Response::Error("No search session with given id found");
+    return Response::ServerError("No search session with given id found");
 
   int size = it->second.size();
   if (from_index < 0 || to_index > size || from_index >= to_index)
-    return Response::Error("Invalid search result range");
+    return Response::ServerError("Invalid search result range");
 
   *node_ids = std::make_unique<protocol::Array<int>>();
   for (int i = from_index; i < to_index; ++i)
     (*node_ids)->emplace_back((it->second)[i]);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response DOMAgent::discardSearchResults(const protocol::String& search_id) {
   search_results_.erase(search_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 }  // namespace ui_devtools

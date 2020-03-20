@@ -19,7 +19,6 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #if defined(OS_WIN)
     case SandboxType::kNoSandboxAndElevatedPrivileges:
       return true;
-
     case SandboxType::kXrCompositing:
       return !base::FeatureList::IsEnabled(
           service_manager::features::kXRSandbox);
@@ -51,6 +50,9 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #endif
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
+#endif
+#if !defined(OS_MACOSX)
+    case SandboxType::kSharingService:
 #endif
     case SandboxType::kSoda:
       return false;
@@ -99,6 +101,9 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
 #endif  // defined(OS_CHROMEOS)
+#if !defined(OS_MACOSX)
+    case SandboxType::kSharingService:
+#endif
     case SandboxType::kSoda:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
@@ -175,6 +180,10 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kUtilitySandbox;
     case SandboxType::kAudio:
       return switches::kAudioSandbox;
+#if !defined(OS_MACOSX)
+    case SandboxType::kSharingService:
+      return switches::kSharingServiceSandbox;
+#endif
     case SandboxType::kSoda:
       return switches::kSodaSandbox;
 #if defined(OS_WIN)

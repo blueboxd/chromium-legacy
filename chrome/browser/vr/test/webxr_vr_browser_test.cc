@@ -130,10 +130,10 @@ void WebXrVrBrowserTestBase::SetupFakeConsentManager(
 
 WebXrVrRuntimelessBrowserTest::WebXrVrRuntimelessBrowserTest() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
-  disable_features_.push_back(features::kWindowsMixedReality);
+  disable_features_.push_back(device::features::kWindowsMixedReality);
 #endif
 #if BUILDFLAG(ENABLE_OPENXR)
-  disable_features_.push_back(features::kOpenXR);
+  disable_features_.push_back(device::features::kOpenXR);
 #endif
 }
 
@@ -149,12 +149,12 @@ WebXrVrRuntimelessBrowserTestSensorless::
 #if defined(OS_WIN)
 
 WebXrVrOpenVrBrowserTestBase::WebXrVrOpenVrBrowserTestBase() {
-  enable_features_.push_back(features::kOpenVR);
+  enable_features_.push_back(device::features::kOpenVR);
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
-  disable_features_.push_back(features::kWindowsMixedReality);
+  disable_features_.push_back(device::features::kWindowsMixedReality);
 #endif
 #if BUILDFLAG(ENABLE_OPENXR)
-  disable_features_.push_back(features::kOpenXR);
+  disable_features_.push_back(device::features::kOpenXR);
 #endif
 }
 
@@ -172,7 +172,7 @@ gfx::Vector3dF WebXrVrOpenVrBrowserTestBase::GetControllerOffset() const {
 
 WebXrVrWmrBrowserTestBase::WebXrVrWmrBrowserTestBase() {
 #if BUILDFLAG(ENABLE_OPENXR)
-  disable_features_.push_back(features::kOpenXR);
+  disable_features_.push_back(device::features::kOpenXR);
 #endif
 }
 
@@ -191,9 +191,9 @@ XrBrowserTestBase::RuntimeType WebXrVrWmrBrowserTestBase::GetRuntimeType()
 #if BUILDFLAG(ENABLE_OPENXR)
 
 WebXrVrOpenXrBrowserTestBase::WebXrVrOpenXrBrowserTestBase() {
-  enable_features_.push_back(features::kOpenXR);
+  enable_features_.push_back(device::features::kOpenXR);
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
-  disable_features_.push_back(features::kWindowsMixedReality);
+  disable_features_.push_back(device::features::kWindowsMixedReality);
 #endif
 }
 

@@ -73,7 +73,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   // May be called from any sequence. If a |creation_callback| is provided it
   // will be run on the performance manager sequence immediately after creating
   // the node.
-  std::unique_ptr<FrameNodeImpl> CreateFrameNode(
+  static std::unique_ptr<FrameNodeImpl> CreateFrameNode(
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node,
@@ -84,15 +84,15 @@ class PerformanceManagerImpl : public PerformanceManager {
       int32_t site_instance_id,
       FrameNodeCreationCallback creation_callback =
           FrameNodeCreationCallback());
-  std::unique_ptr<PageNodeImpl> CreatePageNode(
+  static std::unique_ptr<PageNodeImpl> CreatePageNode(
       const WebContentsProxy& contents_proxy,
       const std::string& browser_context_id,
       const GURL& visible_url,
       bool is_visible,
       bool is_audible);
-  std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
+  static std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
       RenderProcessHostProxy proxy);
-  std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
+  static std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
       const std::string& browser_context_id,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
@@ -100,12 +100,12 @@ class PerformanceManagerImpl : public PerformanceManager {
 
   // Destroys a node returned from the creation functions above.
   // May be called from any sequence.
-  void DeleteNode(std::unique_ptr<NodeBase> node);
+  static void DeleteNode(std::unique_ptr<NodeBase> node);
 
   // Each node in |nodes| must have been returned from one of the creation
   // functions above. This function takes care of removing them from the graph
   // in topological order and destroying them.
-  void BatchDeleteNodes(std::vector<std::unique_ptr<NodeBase>> nodes);
+  static void BatchDeleteNodes(std::vector<std::unique_ptr<NodeBase>> nodes);
 
   // Returns the performance manager TaskRunner.
   // TODO(chrisha): Hide this after the last consumer stops using it!
@@ -113,7 +113,7 @@ class PerformanceManagerImpl : public PerformanceManager {
 
   // Indicates whether or not the caller is currently running on the PM task
   // runner.
-  bool OnPMTaskRunnerForTesting() const {
+  static bool OnPMTaskRunnerForTesting() {
     return GetTaskRunner()->RunsTasksInCurrentSequence();
   }
 
@@ -123,7 +123,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   PerformanceManagerImpl();
 
   template <typename NodeType, typename... Args>
-  std::unique_ptr<NodeType> CreateNodeImpl(
+  static std::unique_ptr<NodeType> CreateNodeImpl(
       base::OnceCallback<void(NodeType*)> creation_callback,
       Args&&... constructor_args);
 
@@ -133,8 +133,10 @@ class PerformanceManagerImpl : public PerformanceManager {
   // Note that this function has similar semantics to
   // SequencedTaskRunner::DeleteSoon(). The node/vector of nodes is passed via a
   // regular pointer so that they are not deleted if the task is not executed.
-  void DeleteNodeImpl(NodeBase* node_ptr);
-  void BatchDeleteNodesImpl(std::vector<std::unique_ptr<NodeBase>>* nodes_ptr);
+  static void DeleteNodeImpl(NodeBase* node_ptr, GraphImpl* graph);
+  static void BatchDeleteNodesImpl(
+      std::vector<std::unique_ptr<NodeBase>>* nodes_ptr,
+      GraphImpl* graph);
 
   void OnStartImpl(GraphImplCallback graph_callback);
   static void RunCallbackWithGraphImpl(GraphImplCallback graph_callback);

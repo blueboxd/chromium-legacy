@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/base64url.h"
 #include "base/memory/singleton.h"
@@ -21,6 +22,7 @@
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/v2_handshake.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/ec_public_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -39,15 +41,26 @@
 // only be included once across Chromium.
 #include "chrome/android/features/cablev2_authenticator/internal/jni_headers/BLEHandler_jni.h"
 
+using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaByteArrayToByteVector;
+using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfByteArray;
+using base::android::ToJavaByteArray;
+using base::android::ToJavaIntArray;
+
 using device::AttestationObject;
 using device::AttestedCredentialData;
 using device::AuthenticatorData;
 using device::AuthenticatorMakeCredentialResponse;
 using device::CtapDeviceResponseCode;
+using device::CtapMakeCredentialRequest;
 using device::CtapRequestCommand;
 using device::ECPublicKey;
 using device::FidoTransportProtocol;
 using device::NoneAttestationStatement;
+using device::PublicKeyCredentialDescriptor;
 using device::fido_parsing_utils::CopyCBORBytestring;
 
 namespace {
@@ -170,7 +183,8 @@ class Client {
   class Delegate {
    public:
     virtual ~Delegate() = default;
-    virtual void OnMakeCredential(uint64_t client_addr) = 0;
+    virtual void OnMakeCredential(uint64_t client_addr,
+                                  CtapMakeCredentialRequest request) = 0;
   };
 
   Client(uint64_t addr,
@@ -338,11 +352,17 @@ class Client {
 
           case static_cast<uint8_t>(
               device::CtapRequestCommand::kAuthenticatorMakeCredential): {
-            if (!payload) {
+            if (!payload || !payload->is_map()) {
+              FIDO_LOG(ERROR) << "Invalid makeCredential payload";
               return false;
             }
-
-            delegate_->OnMakeCredential(addr_);
+            base::Optional<CtapMakeCredentialRequest> request =
+                CtapMakeCredentialRequest::Parse(payload->GetMap());
+            if (!request) {
+              FIDO_LOG(ERROR) << "CtapMakeCredentialRequest::Parse() failed";
+              return false;
+            }
+            delegate_->OnMakeCredential(addr_, std::move(*request));
             return true;
           }
 
@@ -432,8 +452,8 @@ class CableInterface : public Client::Delegate {
   }
 
   void Start(JNIEnv* env,
-             const base::android::JavaParamRef<jobject>& ble_handler,
-             const base::android::JavaParamRef<jbyteArray>& state_bytes) {
+             const JavaParamRef<jobject>& ble_handler,
+             const JavaParamRef<jbyteArray>& state_bytes) {
     ble_handler_.Reset(ble_handler);
     env_ = env;
 
@@ -489,9 +509,8 @@ class CableInterface : public Client::Delegate {
     known_mtus_.emplace(client_adr, mtu_bytes);
   }
 
-  base::android::ScopedJavaLocalRef<jobjectArray> Write(
-      jlong client_addr,
-      const base::android::JavaParamRef<jbyteArray>& data) {
+  ScopedJavaLocalRef<jobjectArray> Write(jlong client_addr,
+                                         const JavaParamRef<jbyteArray>& data) {
     auto it = clients_.find(client_addr);
     if (it == clients_.end()) {
       DCHECK(known_mtus_.find(client_addr) != known_mtus_.end());
@@ -506,46 +525,53 @@ class CableInterface : public Client::Delegate {
     }
     Client* const client = it->second.get();
 
-    size_t data_len = env_->GetArrayLength(data);
-    jbyte* data_bytes = env_->GetByteArrayElements(data, nullptr);
-
+    const size_t data_len = env_->GetArrayLength(data);
+    jbyte* data_bytes = env_->GetByteArrayElements(data, /*iscopy=*/nullptr);
     base::Optional<std::vector<std::vector<uint8_t>>> response_fragments;
-    if (!client->Process(base::span<const uint8_t>(
-                             reinterpret_cast<uint8_t*>(data_bytes), data_len),
-                         &response_fragments)) {
+    const bool process_ok =
+        client->Process(base::span<const uint8_t>(
+                            reinterpret_cast<uint8_t*>(data_bytes), data_len),
+                        &response_fragments);
+    env_->ReleaseByteArrayElements(data, data_bytes, JNI_ABORT);
+    if (!process_ok) {
       return nullptr;
     }
 
-    base::android::ScopedJavaLocalRef<jclass> byte_array_class(
-        env_, env_->FindClass("[B"));
-    if (!response_fragments) {
-      base::android::ScopedJavaLocalRef<jobjectArray> ret(
-          env_, env_->NewObjectArray(0, byte_array_class.obj(), nullptr));
-      return ret;
-    }
-
-    base::android::ScopedJavaLocalRef<jobjectArray> ret(
-        env_, env_->NewObjectArray(response_fragments->size(),
-                                   byte_array_class.obj(), nullptr));
-    for (size_t i = 0; i < response_fragments->size(); i++) {
-      const std::vector<uint8_t>& fragment = response_fragments->at(i);
-
-      base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
-          env_, env_->NewByteArray(fragment.size()));
-      env_->SetByteArrayRegion(jbytes.obj(), 0, fragment.size(),
-                               reinterpret_cast<const jbyte*>(fragment.data()));
-      env_->SetObjectArrayElement(ret.obj(), i, jbytes.obj());
-    }
-
-    return ret;
+    static std::vector<std::vector<uint8_t>> kEmptyFragments;
+    return ToJavaArrayOfByteArray(
+        env_, response_fragments ? *response_fragments : kEmptyFragments);
   }
 
-  void OnMakeCredential(uint64_t client_addr) override {
-    // TODO: pass request parameters to the Java side
-    Java_BLEHandler_makeCredential(env_, ble_handler_, client_addr);
+  void OnMakeCredential(uint64_t client_addr,
+                        CtapMakeCredentialRequest request) override {
+    std::vector<int> algorithms;
+    for (const auto& cred_info :
+         request.public_key_credential_params.public_key_credential_params()) {
+      if (cred_info.type == device::CredentialType::kPublicKey) {
+        algorithms.push_back(cred_info.algorithm);
+      }
+    }
+    std::vector<std::vector<uint8_t>> excluded_credential_ids;
+    for (const PublicKeyCredentialDescriptor& desc : request.exclude_list) {
+      if (desc.credential_type() == device::CredentialType::kPublicKey) {
+        excluded_credential_ids.emplace_back(desc.id());
+      }
+    }
+    // TODO: Add extension support if necessary.
+    Java_BLEHandler_makeCredential(
+        env_, ble_handler_, client_addr,
+        ToJavaByteArray(env_, request.client_data_hash),
+        ConvertUTF8ToJavaString(env_, request.rp.id),
+        // TODO: Pass full user entity once resident key support is added.
+        ToJavaByteArray(env_, request.user.id),
+        ToJavaIntArray(env_, algorithms),
+        ToJavaArrayOfByteArray(env_, excluded_credential_ids),
+        request.resident_key_required);
   }
 
-  void OnMakeCredentialResponse(uint64_t client_addr, uint32_t ctap_status) {
+  void OnMakeCredentialResponse(uint64_t client_addr,
+                                uint32_t ctap_status,
+                                base::span<const uint8_t> attestation_object) {
     DCHECK_LE(ctap_status, 0xFFu);
     auto it = clients_.find(client_addr);
     if (it == clients_.end()) {
@@ -556,27 +582,22 @@ class CableInterface : public Client::Delegate {
     std::vector<uint8_t> response = {base::checked_cast<uint8_t>(ctap_status)};
     if (ctap_status == static_cast<uint8_t>(CtapDeviceResponseCode::kSuccess)) {
       // TODO: pass response parameters from the Java side.
-      AuthenticatorMakeCredentialResponse dummy_response(
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
-          AttestationObject(
-              AuthenticatorData(
-                  device::fido_parsing_utils::CreateSHA256Hash("example.com"),
-                  static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation) |
-                      static_cast<uint8_t>(
-                          AuthenticatorData::Flag::kTestOfUserPresence) |
-                      static_cast<uint8_t>(
-                          AuthenticatorData::Flag::kTestOfUserVerification),
-                  std::array<uint8_t, 4>{0},
-                  AttestedCredentialData(
-                      std::array<uint8_t, device::kAaguidLength>{0},
-                      /*credential_id_length=*/std::array<uint8_t, 2>{0, 16},
-                      std::vector<uint8_t>(16, 'a'),
-                      ECPublicKey::ExtractFromU2fRegistrationResponse(
-                          device::fido_parsing_utils::kEs256,
-                          device::test_data::kTestU2fRegisterResponse))),
-              std::make_unique<NoneAttestationStatement>()));
-
-      std::vector<uint8_t> ctap_response = AsCTAPStyleCBORBytes(dummy_response);
+      base::Optional<cbor::Value> cbor_attestation_object =
+          cbor::Reader::Read(attestation_object);
+      if (!cbor_attestation_object) {
+        FIDO_LOG(ERROR) << "invalid CBOR attestation object";
+        return;
+      }
+      base::Optional<AttestationObject> attestation_object =
+          AttestationObject::Parse(std::move(*cbor_attestation_object));
+      if (!attestation_object) {
+        FIDO_LOG(ERROR) << "AttestationObject::Parse() failed";
+        return;
+      }
+      std::vector<uint8_t> ctap_response =
+          AsCTAPStyleCBORBytes(AuthenticatorMakeCredentialResponse(
+              FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+              std::move(*attestation_object)));
       response.insert(response.end(), ctap_response.begin(),
                       ctap_response.end());
     }
@@ -588,30 +609,9 @@ class CableInterface : public Client::Delegate {
       return;
     }
 
-    base::android::ScopedJavaLocalRef<jclass> byte_array_class(
-        env_, env_->FindClass("[B"));
-    if (!response_fragments) {
-      base::android::ScopedJavaLocalRef<jobjectArray> ret(
-          env_, env_->NewObjectArray(0, byte_array_class.obj(), nullptr));
-      NOTREACHED();
-      return;
-    }
-
-    base::android::ScopedJavaLocalRef<jobjectArray> jresponse_fragments(
-        env_, env_->NewObjectArray(response_fragments->size(),
-                                   byte_array_class.obj(), nullptr));
-    for (size_t i = 0; i < response_fragments->size(); i++) {
-      const std::vector<uint8_t>& fragment = response_fragments->at(i);
-
-      base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
-          env_, env_->NewByteArray(fragment.size()));
-      env_->SetByteArrayRegion(jbytes.obj(), 0, fragment.size(),
-                               reinterpret_cast<const jbyte*>(fragment.data()));
-      env_->SetObjectArrayElement(jresponse_fragments.obj(), i, jbytes.obj());
-    }
-
-    Java_BLEHandler_sendNotification(env_, ble_handler_, client_addr,
-                                     jresponse_fragments);
+    Java_BLEHandler_sendNotification(
+        env_, ble_handler_, client_addr,
+        ToJavaArrayOfByteArray(env_, *response_fragments));
   }
 
  private:
@@ -640,13 +640,11 @@ class CableInterface : public Client::Delegate {
     out_nonce_and_eid->first = nonce;
     out_nonce_and_eid->second = eid;
 
-    base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
-        env_, env_->NewByteArray(sizeof(eid)));
-    env_->SetByteArrayRegion(jbytes.obj(), 0, eid.size(), (jbyte*)eid.data());
-    Java_BLEHandler_sendBLEAdvert(env_, ble_handler_, jbytes);
+    Java_BLEHandler_sendBLEAdvert(env_, ble_handler_,
+                                  ToJavaByteArray(env_, eid));
   }
 
-  bool ParseState(const base::android::JavaParamRef<jbyteArray>& state_bytes) {
+  bool ParseState(const JavaParamRef<jbyteArray>& state_bytes) {
     if (!state_bytes) {
       return false;
     }
@@ -699,11 +697,7 @@ class CableInterface : public Client::Delegate {
         cbor::Writer::Write(cbor::Value(std::move(map)));
     CHECK(bytes.has_value());
 
-    base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
-        env_, env_->NewByteArray(bytes->size()));
-    env_->SetByteArrayRegion(jbytes.obj(), 0, bytes->size(),
-                             (jbyte*)bytes->data());
-    Java_BLEHandler_setState(env_, ble_handler_, jbytes);
+    Java_BLEHandler_setState(env_, ble_handler_, ToJavaByteArray(env_, *bytes));
   }
 
   static bssl::UniquePtr<EC_KEY> P256KeyFromSeed(
@@ -736,10 +730,9 @@ class CableInterface : public Client::Delegate {
 
 // These functions are the entry points for BLEHandler.java calling into C++.
 
-static void JNI_BLEHandler_Start(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& ble_handler,
-    const base::android::JavaParamRef<jbyteArray>& state_bytes) {
+static void JNI_BLEHandler_Start(JNIEnv* env,
+                                 const JavaParamRef<jobject>& ble_handler,
+                                 const JavaParamRef<jbyteArray>& state_bytes) {
   CableInterface::GetInstance()->Start(env, ble_handler, state_bytes);
 }
 
@@ -747,11 +740,9 @@ static void JNI_BLEHandler_Stop(JNIEnv* env) {
   CableInterface::GetInstance()->Stop();
 }
 
-static void JNI_BLEHandler_OnQRScanned(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& jvalue) {
-  CableInterface::GetInstance()->OnQRScanned(
-      base::android::ConvertJavaStringToUTF8(jvalue));
+static void JNI_BLEHandler_OnQRScanned(JNIEnv* env,
+                                       const JavaParamRef<jstring>& jvalue) {
+  CableInterface::GetInstance()->OnQRScanned(ConvertJavaStringToUTF8(jvalue));
 }
 
 static void JNI_BLEHandler_RecordClientMtu(JNIEnv* env,
@@ -763,17 +754,22 @@ static void JNI_BLEHandler_RecordClientMtu(JNIEnv* env,
   CableInterface::GetInstance()->RecordClientMTU(client, mtu_bytes);
 }
 
-static base::android::ScopedJavaLocalRef<jobjectArray> JNI_BLEHandler_Write(
+static ScopedJavaLocalRef<jobjectArray> JNI_BLEHandler_Write(
     JNIEnv* env,
     jlong client,
-    const base::android::JavaParamRef<jbyteArray>& data) {
+    const JavaParamRef<jbyteArray>& data) {
   return CableInterface::GetInstance()->Write(client, data);
 }
 
 static void JNI_BLEHandler_OnAuthenticatorAttestationResponse(
     JNIEnv* env,
     jlong client,
-    jint ctap_status) {
-  return CableInterface::GetInstance()->OnMakeCredentialResponse(client,
-                                                                 ctap_status);
+    jint ctap_status,
+    const JavaParamRef<jbyteArray>& jattestation_object) {
+  std::vector<uint8_t> attestation_object;
+  if (jattestation_object) {
+    JavaByteArrayToByteVector(env, jattestation_object, &attestation_object);
+  }
+  return CableInterface::GetInstance()->OnMakeCredentialResponse(
+      client, ctap_status, attestation_object);
 }

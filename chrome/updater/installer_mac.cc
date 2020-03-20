@@ -5,6 +5,7 @@
 #include "chrome/updater/installer.h"
 
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "chrome/updater/mac/installer.h"
 
 namespace updater {
@@ -12,9 +13,12 @@ namespace updater {
 int Installer::RunApplicationInstaller(const base::FilePath& app_installer,
                                        const std::string& arguments) {
   DVLOG(1) << "Running application install from DMG";
-  // InstallFromDMG() returns true when it succeeds while callers of
-  // RunApplicationInstaller() expect a return value of 0.
-  return !InstallFromDMG(app_installer, arguments);
+  // InstallFromDMG() returns the exit code of the script. 0 is success and
+  // anything else should be an error.
+  return InstallFromDMG(
+      app_installer,
+      base::StrCat({persisted_data_->GetExistenceCheckerPath(app_id_).value(),
+                    " ", arguments}));
 }
 
 }  // namespace updater

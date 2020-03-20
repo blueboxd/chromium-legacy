@@ -34,6 +34,11 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
  public:
   using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
 
+  // Decodes a CTAP2 authenticatorMakeCredential request message. The request's
+  // |client_data_json| will be empty and |client_data_hash| will be set.
+  static base::Optional<CtapMakeCredentialRequest> Parse(
+      const cbor::Value::MapValue& request_map);
+
   CtapMakeCredentialRequest(
       std::string client_data_json,
       PublicKeyCredentialRpEntity rp,

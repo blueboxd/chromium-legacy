@@ -156,13 +156,16 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
 #if defined(OS_WIN)
   // Start with the configurations supported by D3D11VideoDecoder.
   // VdaVideoDecoder is still used as a fallback.
-  if (!d3d11_supported_configs_) {
-    d3d11_supported_configs_ =
-        D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
-            gpu_preferences_, gpu_workarounds_, GetD3D11DeviceCallback());
+
+  if (base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
+    if (!d3d11_supported_configs_) {
+      d3d11_supported_configs_ =
+          D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
+              gpu_preferences_, gpu_workarounds_, GetD3D11DeviceCallback());
+    }
+    supported_config_map[VideoDecoderImplementation::kAlternate] =
+        *d3d11_supported_configs_;
   }
-  supported_config_map[VideoDecoderImplementation::kAlternate] =
-      *d3d11_supported_configs_;
 
 #elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   if (IsNewAcceleratedVideoDecoderUsed(gpu_preferences_)) {
@@ -175,6 +178,14 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
     return supported_config_map;
   }
 #endif
+
+#if defined(OS_WIN)
+  if (gpu_workarounds_.disable_dxva_video_decoder) {
+    // If DXVA isn't supported, then return without any supported configs for
+    // the |kDefault| decoder.
+    return supported_config_map;
+  }
+#endif  // defined(OS_WIN)
 
   auto& default_configs =
       supported_config_map[VideoDecoderImplementation::kDefault];
@@ -269,6 +280,11 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       }
 
 #elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
+      // Don't instantiate the DXVA decoder if it's not supported.
+      if (gpu_workarounds_.disable_dxva_video_decoder)
+        return nullptr;
+#endif  // defined(OS_WIN)
       video_decoder = VdaVideoDecoder::Create(
           task_runner, gpu_task_runner_, media_log->Clone(), target_color_space,
           gpu_preferences_, gpu_workarounds_,

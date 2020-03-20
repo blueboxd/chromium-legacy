@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Учурдагы вебсайт ачылганда, андагы бардык дайын-даректериңизди окуп, өзгөртүңүз</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> жөндөөлөрдү баштапкы абалга келтиргени жатат.</translation>
 <translation id="1243314992276662751">Жүктөп берүү</translation>
-<translation id="1243398753772016127">Сайттар жарнамаларды жекелештирүү үчүн башка сайттардагы серептөө аракеттериңизди колдоно алышпайт</translation>
 <translation id="1244265436519979884">Учурда Linux калыбына келтирилүүдө</translation>
 <translation id="1244303850296295656">Кеңейтүү катасы</translation>
 <translation id="1246905108078336582">Сунуш алмашуу буферинен өчүрүлсүнбү?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Күйүк – ыңгайлаштырылган жөндөөлөр</translation>
 <translation id="1489664337021920575">Башка параметрди тандоо</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> күтүүдө…</translation>
-<translation id="1494438840282430403">Google.com сайтынан чыгарып сала турган серептөө маалыматы да (<ph name="URL" />) тазалансын.</translation>
 <translation id="1495486559005647033">Мүмкүн болгон башка <ph name="NUM_PRINTERS" /> түзмөк.</translation>
 <translation id="1495677929897281669">Өтмөккө кайтуу</translation>
 <translation id="1499271269825557605">Эгер кеңейтүү тааныш көрүнбөсө же серепчиңиз ойдогудай иштебей жатса, кеңейтүүлөрдү бул жерден өчүрүп же ыңгайлаштырып алсаңыз болот.</translation>
@@ -1190,7 +1188,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2575247648642144396">Бул сүрөтчө ушул беттеги кеңейтүү иштеп баштаганда көрүнөт. Бул кеңейтүүнү колдонуу үчүн, сүрөтчөнү чыкылдатыңыз же <ph name="EXTENSION_SHORTCUT" /> басып коюңуз.</translation>
 <translation id="257779572837908839">Жыйналыштар үчүн Chromebox'ту жөндөө</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> бир нече файлды жүктөп алууга ар дайым уруксат берилсин</translation>
-<translation id="2580924999637585241">Бардыгы: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Узак</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos билети алынган жок. Кайталап көрүңүз же уюмуңуздун түзмөгүнүн администраторуна кайрылыңыз. (Ката коду: <ph name="ERROR_CODE" />).</translation>
@@ -2819,7 +2816,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4808667324955055115">Калкыма терезелер бөгөттөлгөн:</translation>
 <translation id="480990236307250886">Башкы бетти ачуу</translation>
 <translation id="4811503964269049987">Тандалган топтун өтмөгү</translation>
-<translation id="4811818760963189951">Таржымалды шайкештирүүнү өчүргөнүңүзгө байланыштуу өчүрүлдү</translation>
 <translation id="4813136279048157860">Менин сүрөттөрүм</translation>
 <translation id="4813512666221746211">Тармактык ката</translation>
 <translation id="4814378367953456825">Бул манжа изине ат коюңуз</translation>
@@ -2988,7 +2984,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5040823038948176460">Кошумча мазмун жөндөөлөрү</translation>
 <translation id="5042282098504489593"><ph name="USB_DEVICE_NAME" /> түзмөгүн Linux менен байланыштыруу үчүн, Жөндөөлөрдү ачыңыз</translation>
 <translation id="5043913660911154449">Же принтериңиздин PPD файлын көрсөтүңүз <ph name="LINK_BEGIN" />Кеңири маалымат<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Шайкештирүү маалыматын өткөрүүчү сүйлөм менен шифрлегениңизге байланыштуу өчүрүлдү</translation>
 <translation id="5045550434625856497">Сырсөз туура эмес</translation>
 <translation id="504561833207953641">Терезе же өтмөк серепчинин учурдагы сеансында ачылат.</translation>
 <translation id="5047421709274785093">Сайттарда кыймыл жана жарык сенсорлорун колдонуу бөгөттөлсүн</translation>
@@ -3965,7 +3960,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="63566973648609420">Шифрленген дайын-даректериңизди купуя сөз айкашын билген адам гана окуй алат. Бул купуя сөз айкашы Google'га жөнөтүлбөйт же анда сакталбайт. Эгер купуя сөз айкашыңызды унутуп калсаңыз, <ph name="BEGIN_LINK" />шайкештирүүнү баштапкы абалга келтиришиңиз<ph name="END_LINK" /> керек болот.</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> үй-бүлөсүнө кош келиңиз. Бул кадимки компьютер эмес.</translation>
 <translation id="6358884629796491903">Ажыдаар</translation>
-<translation id="6360719647236334056">Издөө, жарнама жана башка Google кызматтарын жекечелештирүү үчүн Chrome'догу серептөө таржымалын колдонуу</translation>
 <translation id="6361850914223837199">Катанын чоо-жайы:</translation>
 <translation id="6362853299801475928">Маселе жөнүндө &amp;кабар берүү…</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4243,7 +4237,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6758056191028427665">Биздин ишибиз тууралуу билдирип коюңуз.</translation>
 <translation id="6759193508432371551">Демейки жөндөөлөргө кайтаруу</translation>
 <translation id="6762833852331690540">Күйүк</translation>
-<translation id="6764693078871405569"><ph name="DOMAIN" /> сайтынан чыгарып сала турган серептөө маалыматы да (<ph name="URL" />) тазалансын.</translation>
 <translation id="6767566652486411142">Башка тилди тандоо...</translation>
 <translation id="6767639283522617719">Доменге туташпай жатат. Уюмдук бөлүм үчүн коюлган жөндөөлөр туура экенин текшериңиз.</translation>
 <translation id="6769712124046837540">Принтер кошуу…</translation>

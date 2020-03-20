@@ -24,7 +24,6 @@ namespace performance_manager {
 
 class FrameNodeImpl;
 class PageNodeImpl;
-class PerformanceManagerImpl;
 
 // This tab helper maintains a page node, and its associated tree of frame nodes
 // in the performance manager graph. It also sources a smattering of attributes
@@ -119,8 +118,6 @@ class PerformanceManagerTabHelper
 
   void OnMainFrameNavigation(int64_t navigation_id);
 
-  // The performance manager for this process, if any.
-  PerformanceManagerImpl* const performance_manager_;
   std::unique_ptr<PageNodeImpl> page_node_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 

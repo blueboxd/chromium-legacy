@@ -60,6 +60,8 @@ std::string GetSandboxTypeInEnglish(content::SandboxType sandbox_type) {
       return "Proxy Resolver";
     case content::SandboxType::kPdfConversion:
       return "PDF Conversion";
+    case content::SandboxType::kSharingService:
+      return "Sharing";
   }
 }
 

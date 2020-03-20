@@ -28,7 +28,6 @@ import android.content.res.Configuration;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -56,6 +55,7 @@ import org.chromium.ui.test.util.UiRestriction;
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+@Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
 public class AdaptiveToolbarTest {
     // Params to turn off new tab variation in GTS.
     private static final String NO_NEW_TAB_VARIATION_PARAMS = "force-fieldtrial-params=" +
@@ -69,11 +69,6 @@ public class AdaptiveToolbarTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
-
-    @Before
-    public void setUp() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
-    }
 
     @After
     public void tearDown() {

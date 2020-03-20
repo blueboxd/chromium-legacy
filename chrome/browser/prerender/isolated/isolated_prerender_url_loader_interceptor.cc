@@ -176,7 +176,7 @@ void IsolatedPrerenderURLLoaderInterceptor::StartProbe(
         })");
 
   AvailabilityProber::TimeoutPolicy timeout_policy;
-  timeout_policy.base_timeout = base::TimeDelta::FromSeconds(10);
+  timeout_policy.base_timeout = IsolatedPrerenderProbeTimeout();
   AvailabilityProber::RetryPolicy retry_policy;
   retry_policy.max_retries = 0;
 

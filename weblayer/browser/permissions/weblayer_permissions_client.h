@@ -24,6 +24,8 @@ class WebLayerPermissionsClient : public permissions::PermissionsClient {
       content::BrowserContext* browser_context) override;
   permissions::PermissionDecisionAutoBlocker* GetPermissionDecisionAutoBlocker(
       content::BrowserContext* browser_context) override;
+  permissions::PermissionManager* GetPermissionManager(
+      content::BrowserContext* browser_context) override;
 #if defined(OS_ANDROID)
   int MapToJavaDrawableId(int resource_id) override;
 #endif

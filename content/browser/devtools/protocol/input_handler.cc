@@ -245,7 +245,7 @@ void SendSynthesizePinchGestureResponse(
   if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
     callback->sendSuccess();
   } else {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Synthetic pinch failed, result was %d", result)));
   }
 }
@@ -268,7 +268,7 @@ class TapGestureResponse {
       if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
         callback_->sendSuccess();
       } else {
-        callback_->sendFailure(Response::Error(
+        callback_->sendFailure(Response::ServerError(
             base::StringPrintf("Synthetic tap failed, result was %d", result)));
       }
       callback_.reset();
@@ -288,7 +288,7 @@ void SendSynthesizeScrollGestureResponse(
   if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
     callback->sendSuccess();
   } else {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Synthetic scroll failed, result was %d", result)));
   }
 }
@@ -299,7 +299,7 @@ void DispatchPointerActionsResponse(
   if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
     callback->sendSuccess();
   } else {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Action sequence failed, result was %d", result)));
   }
 }
@@ -519,7 +519,7 @@ Response InputHandler::Disable() {
   ignore_input_events_ = false;
   pointer_ids_.clear();
   touch_points_.clear();
-  return Response::OK();
+  return Response::Success();
 }
 
 void InputHandler::DispatchKeyEvent(
@@ -829,7 +829,7 @@ void InputHandler::DispatchWebTouchEvent(
     }
   }
   if (!ok) {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         base::StringPrintf("Exceeded maximum touch points limit of %d",
                            blink::WebTouchEvent::kTouchesLengthCap)));
     return;
@@ -1135,7 +1135,7 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
   } else {
     host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InputHandler::SetIgnoreInputEvents(bool ignore) {
@@ -1143,7 +1143,7 @@ Response InputHandler::SetIgnoreInputEvents(bool ignore) {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (web_contents)
     web_contents->SetIgnoreInputEvents(ignore);
-  return Response::OK();
+  return Response::Success();
 }
 
 void InputHandler::SynthesizePinchGesture(
@@ -1258,7 +1258,7 @@ void InputHandler::SynthesizeRepeatingScroll(
     std::unique_ptr<SynthesizeScrollGestureCallback> callback) {
   RenderWidgetHostViewBase* root_view = GetRootView();
   if (!root_view) {
-    callback->sendFailure(Response::Error("Frame was detached"));
+    callback->sendFailure(Response::ServerError("Frame was detached"));
     return;
   }
 

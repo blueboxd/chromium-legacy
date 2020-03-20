@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Прагляд і змяненне любых вашых даных на бягучым вэб-сайце (пры выкліку)</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> запытвае дазвол скінуць налады.</translation>
 <translation id="1243314992276662751">Запампаваць</translation>
-<translation id="1243398753772016127">Сайты не могуць выкарыстоўваць вашы дзеянні ў браўзеры на розных сайтах, каб персаналізаваць рэкламу</translation>
 <translation id="1244265436519979884">Ідзе аднаўленне кантэйнера Linux</translation>
 <translation id="1244303850296295656">Памылка пашырэння</translation>
 <translation id="1246905108078336582">Выдаліць прапанову з буфера абмену?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Уключана – карыстальніцкія налады</translation>
 <translation id="1489664337021920575">Выбраць іншы варыянт</translation>
 <translation id="1493892686965953381">Чакаецца <ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />). (Гэта можа прывесці да выхаду з уліковага запісу на дамене Google.com.)</translation>
 <translation id="1495486559005647033">Іншых даступных прылад: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="1495677929897281669">Вярнуцца на ўкладку</translation>
 <translation id="1499271269825557605">Тут вы можаце наладжваць пашырэнні або выключаць іх – у тым выпадку, калі вы не пазнаяце нейкае пашырэнне або калі браўзер перастае працаваць належным чынам.</translation>
@@ -1190,7 +1188,6 @@
 <translation id="2575247648642144396">Гэты значок будзе бачным, калі пашырэнне можа працаваць на бягучай старонцы. Каб выкарыстаць гэта пашырэнне, націсніце на значок або націсніце клавішы <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Задаць як Chromebox для сустрэч</translation>
 <translation id="2580889980133367162">Заўсёды дазваляць хосту <ph name="HOST" /> спампоўваць некалькі файлаў</translation>
-<translation id="2580924999637585241">Усяго: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Доўгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не ўдалося атрымаць білет Kerberos. Паўтарыце спробу або звярніцеся да адміністратара прылад сваёй арганізацыі. (Код памылкі: <ph name="ERROR_CODE" />.)</translation>
@@ -2017,7 +2014,7 @@
 <translation id="3690369331356918524">Папярэджвае вас у выпадку, калі пры ўцечцы даных былі раскрыты паролі</translation>
 <translation id="3691231116639905343">Праграмы для клавіятуры</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> просіць вас абагуліць экран</translation>
-<translation id="369135240373237088">Увайдзіце з дапамогай школьнага ўліковага запісу</translation>
+<translation id="369135240373237088">Увайдзіце з дапамогай навучальнага ўліковага запісу</translation>
 <translation id="3693415264595406141">Пароль:</translation>
 <translation id="3694027410380121301">Выбраць папярэднюю ўкладку</translation>
 <translation id="369489984217678710">Паролі і іншыя даныя для ўваходу ў сістэму</translation>
@@ -2819,7 +2816,6 @@
 <translation id="4808667324955055115">Заблакіраваны выплыўныя вокны:</translation>
 <translation id="480990236307250886">Адкрыць галоўную старонку</translation>
 <translation id="4811503964269049987">Дадаць выбраную ўкладку ў групу</translation>
-<translation id="4811818760963189951">Выключана, паколькі вы адключылі сінхранізацыю гісторыі</translation>
 <translation id="4813136279048157860">Мае відарысы</translation>
 <translation id="4813512666221746211">Памылка сеткі</translation>
 <translation id="4814378367953456825">Увядзіце назву для гэтага адбітка пальца</translation>
@@ -2988,7 +2984,6 @@
 <translation id="5040823038948176460">Дадатковыя налады змесціва</translation>
 <translation id="5042282098504489593">Каб падключыць прыладу "<ph name="USB_DEVICE_NAME" />" да сістэмы Linux, адкрыйце Налады</translation>
 <translation id="5043913660911154449">Або ўкажыце файл PPD прынтара <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Выключана, паколькі вы зашыфравалі даныя сінхранізацыі з дапамогай фразы-пароля</translation>
 <translation id="5045550434625856497">Няправільны пароль</translation>
 <translation id="504561833207953641">Ідзе адкрыццё ў бягучым сеансе браўзера.</translation>
 <translation id="5047421709274785093">Заблакіраваць сайтам выкарыстанне датчыкаў руху і святла</translation>
@@ -3127,7 +3122,7 @@
 <translation id="5242724311594467048">Уключыць пашырэнне "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Паўтарыце спробу праз некалькі секунд</translation>
 <translation id="5244474230056479698">Сінхранізуецца з <ph name="EMAIL" /></translation>
-<translation id="5245610266855777041">Пачатак працы са школьным уліковым запісам</translation>
+<translation id="5245610266855777041">Пачатак працы з навучальным уліковым запісам</translation>
 <translation id="5246282308050205996">Збой праграмы "<ph name="APP_NAME" />". Націсніце на гэта ўсплывальнае папярэджанне, каб перазапусціць праграму.</translation>
 <translation id="5247051749037287028">Бачная назва (неабавязкова)</translation>
 <translation id="5249624017678798539">У браўзеры адбыўся збой пры незавершанай спампоўцы.</translation>
@@ -3965,7 +3960,6 @@
 <translation id="63566973648609420">Толькі карыстальнікі, якія ведаюць фразу-пароль, могуць чытаць вашы зашыфраваныя даныя. Google не адпраўляе і не захоўвае фразу-пароль. Калі вы не памятаеце фразу-пароль або хочаце змяніць гэту наладу, вам трэба <ph name="BEGIN_LINK" />скінуць сінхранізацыю<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Вітаем у сямействе <ph name="SHORT_PRODUCT_NAME" />. Гэта – не звычайны камп'ютар.</translation>
 <translation id="6358884629796491903">Дракон</translation>
-<translation id="6360719647236334056">Выкарыстоўвайце гісторыю прагляду сайтаў у Chrome, каб персаналізаваць Пошук, рэкламу і іншыя сэрвісы Google</translation>
 <translation id="6361850914223837199">Падрабязныя звесткі аб памылцы:</translation>
 <translation id="6362853299801475928">&amp;Паведаміць аб праблеме...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4243,7 +4237,6 @@
 <translation id="6758056191028427665">Паведаміце нам, што вы думаеце пра наш прадукт.</translation>
 <translation id="6759193508432371551">Скід да заводскіх налад</translation>
 <translation id="6762833852331690540">Уключана</translation>
-<translation id="6764693078871405569">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />). (Гэта прывядзе да выхаду з уліковага запісу на дамене <ph name="DOMAIN" />.)</translation>
 <translation id="6767566652486411142">Выбраць іншую мову...</translation>
 <translation id="6767639283522617719">Не ўдаецца далучыцца да дамена. Праверце правільнасць налад арганізацыйнай адзінкі.</translation>
 <translation id="6769712124046837540">Дадаецца прынтар...</translation>
@@ -4869,7 +4862,7 @@
 <translation id="761530003705945209">Рэзервовае капіраванне на Google Дыск. Лёгка аднаўляйце даныя і пераносьце іх на іншыя прылады. У рэзервовую копію ўваходзяць даныя праграм. Рэзервовыя копіі запампоўваюцца ў Google і шыфруюцца пад паролем ад вашага Уліковага запісу Google.</translation>
 <translation id="7616214729753637086">Прылада рэгіструецца...</translation>
 <translation id="7617366389578322136">Ідзе падключэнне да прылады "<ph name="DEVICE_NAME" />"</translation>
-<translation id="762068974690945752">Тут можна дадаць школьны ўліковы запіс або кіраваць уліковымі запісамі дзяцей. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
+<translation id="762068974690945752">Тут можна дадаць навучальны ўліковы запіс або кіраваць уліковымі запісамі дзяцей. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Сістэме не ўдалося захаваць канфігурацыю прылады.</translation>
 <translation id="7622114377921274169">Ідзе зарадка.</translation>
 <translation id="7624337243375417909">Caps Lock выключаны</translation>

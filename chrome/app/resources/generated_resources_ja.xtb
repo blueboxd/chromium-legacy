@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">呼び出しの時点でアクセスしているウェブサイト上の全データの読み取りと変更</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> が設定のリセットを求めています。</translation>
 <translation id="1243314992276662751">アップロード</translation>
-<translation id="1243398753772016127">サイトはあなたが別のサイトで閲覧した内容に基づいて広告をカスタマイズできなくなります</translation>
 <translation id="1244265436519979884">現在、Linux の復元が進行中です</translation>
 <translation id="1244303850296295656">拡張機能のエラー</translation>
 <translation id="1246905108078336582">クリップボードから候補を削除してもよろしいですか？</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">オン - カスタム設定</translation>
 <translation id="1489664337021920575">別の方法を選択</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> を待機しています...</translation>
-<translation id="1494438840282430403">閲覧履歴（<ph name="URL" />）も削除します。これにより、Google.com からログアウトします。</translation>
 <translation id="1495486559005647033">利用可能なデバイスが <ph name="NUM_PRINTERS" /> 個あります。</translation>
 <translation id="1495677929897281669">タブに戻る</translation>
 <translation id="1499271269825557605">拡張機能が認識されないかブラウザが想定どおり動作しない場合は、ここで拡張機能を無効にするかカスタマイズできます。</translation>
@@ -1187,7 +1185,6 @@
 <translation id="2575247648642144396">このアイコンは、表示中のページで拡張機能が使用できる場合に表示されます。この拡張機能を使用するには、アイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
 <translation id="257779572837908839">Chromebox for meetings として設定</translation>
 <translation id="2580889980133367162">複数のファイルをダウンロードすることを <ph name="HOST" /> に常に許可する</translation>
-<translation id="2580924999637585241">印刷総数: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">長い</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />（プラットフォーム <ph name="PLATFORM_VERSION" />）<ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos チケットを取得できませんでした。もう一度お試しいただくか、組織のデバイス管理者にお問い合わせください。（エラーコード <ph name="ERROR_CODE" />）。</translation>
@@ -1714,7 +1711,7 @@
 <translation id="3293644607209440645">このページを送信</translation>
 <translation id="32939749466444286">Linux コンテナを起動できませんでした。もう一度お試しください。</translation>
 <translation id="3294437725009624529">ゲスト</translation>
-<translation id="3296193636298964625">パスワードの数が多すぎるため、Chrome で一部のパスワードを確認できませんでした。</translation>
+<translation id="3296193636298964625">保存されているパスワードの数が多すぎるため、Chrome で一部のパスワードを確認できませんでした。</translation>
 <translation id="329703603001918157">ショートカットの編集はできません</translation>
 <translation id="329838636886466101">修復</translation>
 <translation id="3298789223962368867">入力された URL が無効です。</translation>
@@ -2810,7 +2807,6 @@
 <translation id="4808667324955055115">ポップアップがブロックされました:</translation>
 <translation id="480990236307250886">ホームページを開く</translation>
 <translation id="4811503964269049987">選択したタブをグループ化する</translation>
-<translation id="4811818760963189951">履歴の同期を無効にしたため、オフになりました</translation>
 <translation id="4813136279048157860">自分の画像</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="4814378367953456825">このフィンガープリントの名前を入力してください</translation>
@@ -2979,7 +2975,6 @@
 <translation id="5040823038948176460">その他のコンテンツの設定</translation>
 <translation id="5042282098504489593"><ph name="USB_DEVICE_NAME" /> を Linux に接続する設定を開きます</translation>
 <translation id="5043913660911154449">または、プリンタの PPD を指定してください（<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" />）</translation>
-<translation id="5044314273978194362">パスフレーズを設定して同期データを暗号化したため、オフになりました</translation>
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="504561833207953641">既存のブラウザ セッションで開いています。</translation>
 <translation id="5047421709274785093">サイトによるモーション センサーと光センサーの使用をブロックする</translation>
@@ -3955,7 +3950,6 @@
 <translation id="63566973648609420">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />する必要があります。</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> ファミリーへようこそ。これは新しいタイプのパソコンです。</translation>
 <translation id="6358884629796491903">ドラゴン</translation>
-<translation id="6360719647236334056">Chrome の閲覧履歴を使用して、検索結果、広告、その他の Google サービスをカスタマイズする</translation>
 <translation id="6361850914223837199">エラーの詳細:</translation>
 <translation id="6362853299801475928">問題の報告(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4233,7 +4227,6 @@
 <translation id="6758056191028427665">アンケートにご協力ください。</translation>
 <translation id="6759193508432371551">初期状態へのリセット</translation>
 <translation id="6762833852331690540">オン</translation>
-<translation id="6764693078871405569">閲覧履歴（<ph name="URL" />）も削除します。これにより、<ph name="DOMAIN" /> からログアウトします。</translation>
 <translation id="6767566652486411142">別の言語を選択...</translation>
 <translation id="6767639283522617719">ドメインを追加できません。組織部門の設定が正しいことをご確認ください。</translation>
 <translation id="6769712124046837540">プリンタの追加...</translation>

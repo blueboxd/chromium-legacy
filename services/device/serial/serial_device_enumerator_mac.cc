@@ -137,23 +137,7 @@ SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {
   RemoveDevices();
 }
 
-SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
-
-std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
-  std::vector<mojom::SerialPortInfoPtr> ports;
-  ports.reserve(ports_.size());
-  for (const auto& map_entry : ports_)
-    ports.push_back(map_entry.second->Clone());
-  return ports;
-}
-
-base::Optional<base::FilePath> SerialDeviceEnumeratorMac::GetPathFromToken(
-    const base::UnguessableToken& token) {
-  auto it = ports_.find(token);
-  if (it == ports_.end())
-    return base::nullopt;
-  return it->second->path;
-}
+SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() = default;
 
 // static
 void SerialDeviceEnumeratorMac::FirstMatchCallback(void* context,
@@ -211,8 +195,9 @@ void SerialDeviceEnumeratorMac::AddDevices() {
       mojom::SerialPortInfoPtr dialin_info = callout_info.Clone();
       dialin_info->path = base::FilePath(dialin_device);
       dialin_info->token = token;
-      ports_.insert(std::make_pair(token, std::move(dialin_info)));
+
       entries_[entry_id].first = token;
+      AddPort(std::move(dialin_info));
     }
 
     std::string callout_device;
@@ -221,8 +206,9 @@ void SerialDeviceEnumeratorMac::AddDevices() {
       auto token = base::UnguessableToken::Create();
       callout_info->path = base::FilePath(callout_device);
       callout_info->token = token;
-      ports_.insert(std::make_pair(token, std::move(callout_info)));
+
       entries_[entry_id].second = token;
+      AddPort(std::move(callout_info));
     }
   }
 }
@@ -241,11 +227,14 @@ void SerialDeviceEnumeratorMac::RemoveDevices() {
     if (it == entries_.end())
       continue;
 
-    if (it->second.first)
-      ports_.erase(it->second.first);
-    if (it->second.second)
-      ports_.erase(it->second.second);
+    std::pair<base::UnguessableToken, base::UnguessableToken> tokens =
+        it->second;
     entries_.erase(it);
+
+    if (tokens.first)
+      RemovePort(tokens.first);
+    if (tokens.second)
+      RemovePort(tokens.second);
   }
 }
 

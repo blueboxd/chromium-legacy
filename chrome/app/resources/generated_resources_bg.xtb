@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Четене и промяна на всичките ви данни в текущия уебсайт (при извикване)</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> иска да нулира настройките ви.</translation>
 <translation id="1243314992276662751">Качване</translation>
-<translation id="1243398753772016127">Сайтовете не могат да използват активността ви при сърфиране на различните сайтове, за да персонализират рекламите</translation>
 <translation id="1244265436519979884">В момента се извършва възстановяване на Linux</translation>
 <translation id="1244303850296295656">Грешка в разширението</translation>
 <translation id="1246905108078336582">Искате ли да премахнете предложението от буферната памет?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Включено – персонализирани настройки</translation>
 <translation id="1489664337021920575">Изберете друга опция</translation>
 <translation id="1493892686965953381">Изчаква се <ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">Също така изчистване на данните за сърфирането (<ph name="URL" />), което може да прекрати сесията ви в Google.com.</translation>
 <translation id="1495486559005647033">Още <ph name="NUM_PRINTERS" /> налични устройства.</translation>
 <translation id="1495677929897281669">Назад към раздела</translation>
 <translation id="1499271269825557605">Ако не разпознавате дадено разширение или браузърът ви не работи правилно, оттук можете да изключите или да персонализирате разширенията.</translation>
@@ -1187,7 +1185,6 @@
 <translation id="2575247648642144396">Тази икона ще бъде видима, когато разширението може да изпълнява действия върху текущата страница. Използвайте го, като кликнете върху иконата или натиснете „<ph name="EXTENSION_SHORTCUT" />“.</translation>
 <translation id="257779572837908839">Настройване като Chromebox за срещи</translation>
 <translation id="2580889980133367162">Винаги да е разрешено на <ph name="HOST" /> да изтегля няколко файла</translation>
-<translation id="2580924999637585241">Общо: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Дълго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Пропускът за Kerberos не можа да бъде получен. Опитайте отново или се обърнете към администратора на устройства за организацията си. (Код на грешката: <ph name="ERROR_CODE" />)</translation>
@@ -2818,7 +2815,6 @@
 <translation id="4808667324955055115">Изскачащите прозорци са блокирани:</translation>
 <translation id="480990236307250886">Отваряне на началната страница</translation>
 <translation id="4811503964269049987">Добавяне на избрания раздел към група</translation>
-<translation id="4811818760963189951">Изключена, защото сте деактивирали синхронизирането на историята</translation>
 <translation id="4813136279048157860">Моите изображения</translation>
 <translation id="4813512666221746211">Грешка в мрежата</translation>
 <translation id="4814378367953456825">Въведете име за този отпечатък</translation>
@@ -2987,7 +2983,6 @@
 <translation id="5040823038948176460">Допълнителни настройки за съдържанието</translation>
 <translation id="5042282098504489593">Отворете настройките, за да свържете <ph name="USB_DEVICE_NAME" /> с Linux</translation>
 <translation id="5043913660911154449">Или посочете PPD файла за принтера си. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Изключена, защото шифровате синхронизираните си данни посредством пропуск</translation>
 <translation id="5045550434625856497">Грешна парола</translation>
 <translation id="504561833207953641">Отваря се в съществуваща сесия на браузъра.</translation>
 <translation id="5047421709274785093">Забраняване на сайтовете да използват сензори за движение и светлина</translation>
@@ -3965,7 +3960,6 @@
 <translation id="63566973648609420">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи <ph name="BEGIN_LINK" />да нулирате синхронизирането<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Добре дошли в семейството на <ph name="SHORT_PRODUCT_NAME" />. Това не е обикновен компютър.</translation>
 <translation id="6358884629796491903">Дракон</translation>
-<translation id="6360719647236334056">Използване на историята ви на сърфиране в Chrome за персонализиране на търсенето, рекламите и други услуги на Google</translation>
 <translation id="6361850914223837199">Подробности за грешката:</translation>
 <translation id="6362853299801475928">&amp;Подаване на сигнал за проблем...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4243,7 +4237,6 @@
 <translation id="6758056191028427665">Уведомете ни как се справяме.</translation>
 <translation id="6759193508432371551">Възстановяване на фабричните настройки</translation>
 <translation id="6762833852331690540">Включено</translation>
-<translation id="6764693078871405569">Също така изчистване на данните за сърфирането (<ph name="URL" />), при което ще излезете от <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Избор на друг език...</translation>
 <translation id="6767639283522617719">Присъединяването към домейна не успя. Проверете дали настройките за организационната единица са правилни.</translation>
 <translation id="6769712124046837540">Добавяне на принтер...</translation>

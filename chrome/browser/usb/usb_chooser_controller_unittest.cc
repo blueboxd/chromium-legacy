@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
@@ -25,25 +26,7 @@
 #include "url/gurl.h"
 
 namespace {
-
 const char kDefaultTestUrl[] = "https://www.google.com/";
-
-class MockUsbChooserView : public ChooserController::View {
- public:
-  MockUsbChooserView() {}
-
-  // ChooserController::View:
-  MOCK_METHOD1(OnOptionAdded, void(size_t index));
-  MOCK_METHOD1(OnOptionRemoved, void(size_t index));
-  void OnOptionsInitialized() override {}
-  void OnOptionUpdated(size_t index) override {}
-  void OnAdapterEnabledChanged(bool enabled) override {}
-  void OnRefreshStateChanged(bool enabled) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockUsbChooserView);
-};
-
 }  //  namespace
 
 class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
@@ -66,9 +49,9 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
     UsbChooserContextFactory::GetForProfile(profile())
         ->SetDeviceManagerForTesting(std::move(device_manager));
 
-    usb_chooser_controller_.reset(new UsbChooserController(
-        main_rfh(), std::move(device_filters), std::move(callback)));
-    mock_usb_chooser_view_.reset(new MockUsbChooserView());
+    usb_chooser_controller_ = std::make_unique<UsbChooserController>(
+        main_rfh(), std::move(device_filters), std::move(callback));
+    mock_usb_chooser_view_ = std::make_unique<MockChooserControllerView>();
     usb_chooser_controller_->set_view(mock_usb_chooser_view_.get());
     // Make sure the device::mojom::UsbDeviceManager::SetClient() call has
     // been received.
@@ -85,7 +68,7 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
 
   device::FakeUsbDeviceManager device_manager_;
   std::unique_ptr<UsbChooserController> usb_chooser_controller_;
-  std::unique_ptr<MockUsbChooserView> mock_usb_chooser_view_;
+  std::unique_ptr<MockChooserControllerView> mock_usb_chooser_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UsbChooserControllerTest);

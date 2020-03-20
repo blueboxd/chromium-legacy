@@ -39,3 +39,10 @@ base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches() {
   }
   return max;
 }
+
+base::TimeDelta IsolatedPrerenderProbeTimeout() {
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kIsolatePrerendersMustProbeOrigin, "probe_timeout_ms",
+          10 * 1000 /* 10 seconds */));
+}

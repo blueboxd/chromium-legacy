@@ -23,6 +23,7 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -355,6 +356,36 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
   if (frame->format() == media::PIXEL_FORMAT_I420A)
     frame = media::WrapAsI420VideoFrame(std::move(video_frame));
   PP_VideoFrame_Format ppformat = ToPpapiFormat(frame->format());
+  if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    // NV12 is the only supported GMB pixel format at the moment, and there is
+    // no corresponding PP_VideoFrame_Format. Convert the video frame to I420.
+    DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_NV12);
+    ppformat = PP_VIDEOFRAME_FORMAT_I420;
+    auto* gmb = video_frame->GetGpuMemoryBuffer();
+    if (!gmb->Map()) {
+      DLOG(WARNING) << "Failed to map GpuMemoryBuffer";
+      return;
+    }
+    frame = media::VideoFrame::CreateFrame(
+        media::PIXEL_FORMAT_I420, video_frame->coded_size(),
+        video_frame->visible_rect(), video_frame->natural_size(),
+        video_frame->timestamp());
+    int ret = libyuv::NV12ToI420(
+        static_cast<const uint8_t*>(gmb->memory(0)), gmb->stride(0),
+        static_cast<const uint8_t*>(gmb->memory(1)), gmb->stride(1),
+        frame->data(media::VideoFrame::kYPlane),
+        frame->stride(media::VideoFrame::kYPlane),
+        frame->data(media::VideoFrame::kUPlane),
+        frame->stride(media::VideoFrame::kUPlane),
+        frame->data(media::VideoFrame::kVPlane),
+        frame->stride(media::VideoFrame::kVPlane),
+        video_frame->coded_size().width(), video_frame->coded_size().height());
+    gmb->Unmap();
+    if (ret != 0) {
+      DLOG(WARNING) << "Failed to convert NV12 to I420";
+      return;
+    }
+  }
   if (ppformat == PP_VIDEOFRAME_FORMAT_UNKNOWN)
     return;
 

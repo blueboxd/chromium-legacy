@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,8 +36,11 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+// clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
 public class TabSelectionEditorTest {
+    // clang-format on
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -54,8 +55,6 @@ public class TabSelectionEditorTest {
 
     @Before
     public void setUp() throws Exception {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
-
         mActivityTestRule.startMainActivityFromLauncher();
         TabUiTestHelper.createTabs(mActivityTestRule.getActivity(), false, 2);
 
@@ -69,11 +68,6 @@ public class TabSelectionEditorTest {
 
             mTabSelectionEditorController = tabSelectionEditorCoordinator.getController();
         });
-    }
-
-    @After
-    public void tearDown() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test

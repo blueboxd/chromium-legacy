@@ -49,12 +49,9 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
 
   // UnPackArchive takes care of logging.
   base::FilePath output_file;
-  base::Optional<DWORD> error_code;
-  base::Optional<int32_t> ntstatus;
   UnPackStatus unpack_status =
-      UnPackArchive(compressed_archive_, working_directory_, &output_file,
-                    &error_code, &ntstatus);
-  RecordUnPackMetrics(unpack_status, ntstatus, error_code, consumer_);
+      UnPackArchive(compressed_archive_, working_directory_, &output_file);
+  RecordUnPackMetrics(unpack_status, consumer_);
   if (unpack_status != UNPACK_NO_ERROR)
     return false;
 

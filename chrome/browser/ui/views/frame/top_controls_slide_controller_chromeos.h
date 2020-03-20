@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/view_observer.h"
 
@@ -41,7 +39,6 @@ class TopControlsSlideTabObserver;
 class TopControlsSlideControllerChromeOS : public TopControlsSlideController,
                                            public ash::TabletModeObserver,
                                            public TabStripModelObserver,
-                                           public content::NotificationObserver,
                                            public display::DisplayObserver,
                                            public views::ViewObserver {
  public:
@@ -69,11 +66,6 @@ class TopControlsSlideControllerChromeOS : public TopControlsSlideController,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
   void SetTabNeedsAttentionAt(int index, bool attention) override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -190,8 +182,6 @@ class TopControlsSlideControllerChromeOS : public TopControlsSlideController,
   base::flat_map<content::WebContents*,
                  std::unique_ptr<TopControlsSlideTabObserver>>
       observed_tabs_;
-
-  content::NotificationRegistrar registrar_;
 
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;

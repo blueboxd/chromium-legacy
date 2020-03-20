@@ -11,6 +11,9 @@
 #include "device/base/device_monitor_win.h"
 #include "services/device/serial/serial_device_enumerator.h"
 
+typedef void* HDEVINFO;
+typedef struct _SP_DEVINFO_DATA SP_DEVINFO_DATA;
+
 namespace device {
 
 // Discovers and enumerates serial devices available to the host.
@@ -26,11 +29,6 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
   static base::Optional<base::FilePath> GetPath(
       const std::string& friendly_name);
 
-  // SerialDeviceEnumerator
-  std::vector<mojom::SerialPortInfoPtr> GetDevices() override;
-  base::Optional<base::FilePath> GetPathFromToken(
-      const base::UnguessableToken& token) override;
-
   void OnPathAdded(const base::string16& device_path);
   void OnPathRemoved(const base::string16& device_path);
 
@@ -40,7 +38,6 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
   void DoInitialEnumeration();
   void EnumeratePort(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data);
 
-  std::map<base::UnguessableToken, mojom::SerialPortInfoPtr> ports_;
   std::map<base::FilePath, base::UnguessableToken> paths_;
 
   std::unique_ptr<UiThreadHelper, base::OnTaskRunnerDeleter> helper_;

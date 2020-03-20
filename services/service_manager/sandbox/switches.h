@@ -27,6 +27,7 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilitySandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCdmSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPrintCompositorSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAudioSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kSharingServiceSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kSodaSandbox[];
 
 #if defined(OS_WIN)

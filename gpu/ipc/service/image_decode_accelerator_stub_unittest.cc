@@ -1010,15 +1010,10 @@ TEST_P(ImageDecodeAcceleratorStubTest, MemoryReportBackgroundForMippedDecode) {
   base::CheckedNumeric<uint64_t> safe_expected_total_transfer_cache_size =
       GetExpectedTotalMippedSizeForPlanarImage(decode_entry);
   ASSERT_TRUE(safe_expected_total_transfer_cache_size.IsValid());
-  // In a background memory dump, we have double counting: Skia will also count
-  // the size of the mipped textures.
-  base::CheckedNumeric<uint64_t> safe_expected_total_skia_gpu_resources_size =
-      safe_expected_total_transfer_cache_size + kSkiaBufferObjectSize;
-  ASSERT_TRUE(safe_expected_total_skia_gpu_resources_size.IsValid());
   ExpectProcessMemoryDump(
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
       safe_expected_total_transfer_cache_size.ValueOrDie(),
-      safe_expected_total_skia_gpu_resources_size.ValueOrDie(),
+      kSkiaBufferObjectSize,
       safe_expected_total_transfer_cache_size
           .ValueOrDie() /* expected_avg_image_size */);
 }
@@ -1049,19 +1044,13 @@ TEST_P(ImageDecodeAcceleratorStubTest,
   decode_entry->EnsureMips();
   ASSERT_EQ(gfx::NumberOfPlanesForLinearBufferFormat(GetParam()),
             decode_entry->plane_images().size());
-  // In a background memory dump, we have double counting: Skia will also count
-  // the size of the mipped textures.
-  base::CheckedNumeric<uint64_t> safe_expected_total_skia_gpu_resources_size =
-      GetExpectedTotalMippedSizeForPlanarImage(decode_entry) +
-      kSkiaBufferObjectSize;
-  ASSERT_TRUE(safe_expected_total_skia_gpu_resources_size.IsValid());
   // For a deferred mip request, the transfer cache doesn't update its size
   // computation, so it reports memory as if no mips had been generated.
   ExpectProcessMemoryDump(
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
       base::strict_cast<uint64_t>(
           kDecodedBufferByteSize) /* expected_total_transfer_cache_size */,
-      safe_expected_total_skia_gpu_resources_size.ValueOrDie(),
+      kSkiaBufferObjectSize,
       base::strict_cast<uint64_t>(
           kDecodedBufferByteSize) /* expected_avg_image_size */);
 }

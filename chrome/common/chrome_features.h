@@ -213,24 +213,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kVrBrowsingExperimentalFeatures;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kVrBrowsingExperimentalRendering;
-
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOculusVR;
-#endif  // ENABLE_OCULUS_VR
-
-#if BUILDFLAG(ENABLE_OPENVR)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOpenVR;
-#endif  // ENABLE_OPENVR
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kWindowsMixedReality;
-#endif  // ENABLE_WINDOWS_MR
-
-#if BUILDFLAG(ENABLE_OPENXR)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOpenXR;
-#endif  // ENABLE_OPENXR
-
 #endif  // ENABLE_VR
 
 #if defined(OS_WIN)

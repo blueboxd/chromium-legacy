@@ -35,6 +35,7 @@ class InfoBarManager;
 namespace permissions {
 class NotificationPermissionUiSelector;
 class PermissionDecisionAutoBlocker;
+class PermissionManager;
 class PermissionPromptAndroid;
 
 // Interface to be implemented by permissions embedder to access embedder
@@ -58,6 +59,11 @@ class PermissionsClient {
   // Retrieves the PermissionDecisionAutoBlocker for this context. The returned
   // pointer has the same lifetime as |browser_context|.
   virtual PermissionDecisionAutoBlocker* GetPermissionDecisionAutoBlocker(
+      content::BrowserContext* browser_context) = 0;
+
+  // Retrieves the PermissionManager for this context. The returned
+  // pointer has the same lifetime as |browser_context|.
+  virtual PermissionManager* GetPermissionManager(
       content::BrowserContext* browser_context) = 0;
 
   // Gets the embedder defined engagement score for this |origin|.

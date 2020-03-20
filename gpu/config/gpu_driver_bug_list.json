@@ -3571,14 +3571,37 @@
     {
       "id": 336,
       "cr_bugs": [625785],
-      "description": "Hardware overlays caused crash spike on certain AMD GPUs",
+      "description": "DXVA video decoder crashes on some AMD GPUs",
       "os": {
         "type": "win"
       },
       "vendor_id": "0x1002",
       "device_id": ["0x15d8", "0x15dd"],
+      "exceptions": [
+        {
+          "driver_version": {
+            "op": "between",
+            "value": "26.20.11030.2",
+            "value2": "26.20.11999.99999"
+          },
+          "driver_version": {
+            "op": "between",
+            "value": "26.20.12020.15",
+            "value2": "26.20.12999.99999"
+          },
+          "driver_version": {
+            "op": "between",
+            "value": "26.20.13001.27002",
+            "value2": "26.20.13999.99999"
+          },
+          "driver_version": {
+            "op": ">=",
+            "value": "26.20.14001.7001"
+          }
+        }
+      ],
       "features": [
-        "disable_direct_composition_video_overlays"
+        "disable_dxva_video_decoder"
       ]
     }
   ]

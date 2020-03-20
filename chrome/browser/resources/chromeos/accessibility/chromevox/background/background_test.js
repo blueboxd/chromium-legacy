@@ -2457,7 +2457,6 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadWindowTitle', function() {
     <p>start</p>
     <button id="click"></button>
     <script>
-      document.title = 'foo';
       const button = document.getElementById('click');
       button.addEventListener('click', _ => document.title = 'bar');
     </script>
@@ -2476,10 +2475,8 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadWindowTitle', function() {
         };
 
         mockFeedback.clearPendingOutput()
-            .call(doCmd('readCurrentTitle'))
-            .expectSpeech(/^foo/)
             .call(clickButtonThenReadCurrentTitle)
-            .expectSpeech(/^bar/)
+            .expectSpeech(/^bar - Chromium*/)
             .replay();
       });
 });

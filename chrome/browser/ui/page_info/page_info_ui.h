@@ -23,8 +23,8 @@
 #endif
 
 class GURL;
-class Profile;
 class PageInfo;
+class PageInfoUiDelegate;
 
 namespace net {
 class X509Certificate;
@@ -97,7 +97,7 @@ class PageInfoUI {
     ContentSetting default_setting;
     // The settings source e.g. user, extensions, policy, ... .
     content_settings::SettingSource source;
-    // Whether the profile is off the record.
+    // Whether we're in incognito mode.
     bool is_incognito;
   };
 
@@ -179,7 +179,7 @@ class PageInfoUI {
   // "Blocked by default". If |setting| is default, specify the actual default
   // setting using |default_setting|.
   static base::string16 PermissionActionToUIString(
-      Profile* profile,
+      PageInfoUiDelegate* delegate,
       ContentSettingsType type,
       ContentSetting setting,
       ContentSetting default_setting,
@@ -188,7 +188,7 @@ class PageInfoUI {
   // Returns a string indicating whether the permission was blocked via an
   // extension, enterprise policy, or embargo.
   static base::string16 PermissionDecisionReasonToUIString(
-      Profile* profile,
+      PageInfoUiDelegate* delegate,
       const PermissionInfo& permission,
       const GURL& url);
 

@@ -366,6 +366,14 @@
              file="${root_gen_dir}/chrome/browser/resources/settings/people_page/import_data_browser_proxy.m.js"
              use_base_dir="false"
              type="BINDATA" />
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/manage_profile.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_BROWSER_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/manage_profile_browser_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
   </if>
   <if expr="chromeos">
     <include name="IDR_SETTINGS_PEOPLE_PAGE_ACCOUNT_MANAGER_BROWSER_PROXY_M_JS"

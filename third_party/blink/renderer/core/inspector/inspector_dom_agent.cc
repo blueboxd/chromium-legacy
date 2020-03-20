@@ -155,9 +155,10 @@ Response InspectorDOMAgent::ToResponse(ExceptionState& exception_state) {
                                    exception_state.CodeAs<DOMExceptionCode>()) +
                                    " "
                              : g_empty_string;
-    return Response::Error(name_prefix + exception_state.Message());
+    String msg = name_prefix + exception_state.Message();
+    return Response::ServerError(msg.Utf8());
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
@@ -351,8 +352,8 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
 Response InspectorDOMAgent::AssertNode(int node_id, Node*& node) {
   node = NodeForId(node_id);
   if (!node)
-    return Response::Error("Could not find node with given id");
-  return Response::OK();
+    return Response::ServerError("Could not find node with given id");
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::AssertNode(
@@ -365,27 +366,27 @@ Response InspectorDOMAgent::AssertNode(
 
   if (backend_node_id.isJust()) {
     node = DOMNodeIds::NodeForId(backend_node_id.fromJust());
-    return !node ? Response::Error("No node found for given backend id")
-                 : Response::OK();
+    return !node ? Response::ServerError("No node found for given backend id")
+                 : Response::Success();
   }
 
   if (object_id.isJust())
     return NodeForRemoteObjectId(object_id.fromJust(), node);
 
-  return Response::Error(
+  return Response::ServerError(
       "Either nodeId, backendNodeId or objectId must be specified");
 }
 
 Response InspectorDOMAgent::AssertElement(int node_id, Element*& element) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   element = DynamicTo<Element>(node);
   if (!element)
-    return Response::Error("Node is not an Element");
-  return Response::OK();
+    return Response::ServerError("Node is not an Element");
+  return Response::Success();
 }
 
 // static
@@ -404,45 +405,49 @@ ShadowRoot* InspectorDOMAgent::UserAgentShadowRoot(Node* node) {
 
 Response InspectorDOMAgent::AssertEditableNode(int node_id, Node*& node) {
   Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   if (node->IsInShadowTree()) {
     if (IsA<ShadowRoot>(node))
-      return Response::Error("Cannot edit shadow roots");
-    if (UserAgentShadowRoot(node))
-      return Response::Error("Cannot edit nodes from user-agent shadow trees");
+      return Response::ServerError("Cannot edit shadow roots");
+    if (UserAgentShadowRoot(node)) {
+      return Response::ServerError(
+          "Cannot edit nodes from user-agent shadow trees");
+    }
   }
 
   if (node->IsPseudoElement())
-    return Response::Error("Cannot edit pseudo elements");
-  return Response::OK();
+    return Response::ServerError("Cannot edit pseudo elements");
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::AssertEditableChildNode(Element* parent_element,
                                                     int node_id,
                                                     Node*& node) {
   Response response = AssertEditableNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
-  if (node->parentNode() != parent_element)
-    return Response::Error("Anchor node must be child of the target element");
-  return Response::OK();
+  if (node->parentNode() != parent_element) {
+    return Response::ServerError(
+        "Anchor node must be child of the target element");
+  }
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::AssertEditableElement(int node_id,
                                                   Element*& element) {
   Response response = AssertElement(node_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
-
-  if (element->IsInShadowTree() && UserAgentShadowRoot(element))
-    return Response::Error("Cannot edit elements from user-agent shadow trees");
-
+  if (element->IsInShadowTree() && UserAgentShadowRoot(element)) {
+    return Response::ServerError(
+        "Cannot edit elements from user-agent shadow trees");
+  }
   if (element->IsPseudoElement())
-    return Response::Error("Cannot edit pseudo elements");
+    return Response::ServerError("Cannot edit pseudo elements");
 
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorDOMAgent::EnableAndReset() {
@@ -456,18 +461,18 @@ void InspectorDOMAgent::EnableAndReset() {
 Response InspectorDOMAgent::enable() {
   if (!enabled_.Get())
     EnableAndReset();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::disable() {
   if (!enabled_.Get())
-    return Response::Error("DOM agent hasn't been enabled");
+    return Response::ServerError("DOM agent hasn't been enabled");
   enabled_.Clear();
   instrumenting_agents_->RemoveInspectorDOMAgent(this);
   history_.Clear();
   dom_editor_.Clear();
   SetDocument(nullptr);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getDocument(
@@ -478,7 +483,7 @@ Response InspectorDOMAgent::getDocument(
   enable();
 
   if (!document_)
-    return Response::Error("Document is not available");
+    return Response::ServerError("Document is not available");
 
   DiscardFrontendBindings();
 
@@ -489,7 +494,7 @@ Response InspectorDOMAgent::getDocument(
   *root = BuildObjectForNode(document_.Get(), sanitized_depth,
                              pierce.fromMaybe(false),
                              document_node_to_id_map_.Get());
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getFlattenedDocument(
@@ -497,10 +502,10 @@ Response InspectorDOMAgent::getFlattenedDocument(
     Maybe<bool> pierce,
     std::unique_ptr<protocol::Array<protocol::DOM::Node>>* nodes) {
   if (!enabled_.Get())
-    return Response::Error("DOM agent hasn't been enabled");
+    return Response::ServerError("DOM agent hasn't been enabled");
 
   if (!document_)
-    return Response::Error("Document is not available");
+    return Response::ServerError("Document is not available");
 
   DiscardFrontendBindings();
 
@@ -512,7 +517,7 @@ Response InspectorDOMAgent::getFlattenedDocument(
   (*nodes)->emplace_back(BuildObjectForNode(
       document_.Get(), sanitized_depth, pierce.fromMaybe(false),
       document_node_to_id_map_.Get(), nodes->get()));
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorDOMAgent::PushChildNodesToFrontend(int node_id,
@@ -578,7 +583,7 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
   auto* parent_element = DynamicTo<Element>(parent_node);
   if (!parent_element && !parent_node->IsDocumentNode() &&
       !parent_node->IsDocumentFragment())
-    return Response::Error("No suitable node with given id found");
+    return Response::ServerError("No suitable node with given id found");
 
   for (Node* node = parent_node; node;
        node = FlatTreeTraversal::Next(*node, parent_node)) {
@@ -592,7 +597,7 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
   }
   for (const String& class_name : unique_names)
     (*class_names)->emplace_back(class_name);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::requestChildNodes(
@@ -601,7 +606,7 @@ Response InspectorDOMAgent::requestChildNodes(
     Maybe<bool> maybe_taverse_frames) {
   int sanitized_depth = depth.fromMaybe(1);
   if (sanitized_depth == 0 || sanitized_depth < -1) {
-    return Response::Error(
+    return Response::ServerError(
         "Please provide a positive integer as a depth or -1 for entire "
         "subtree");
   }
@@ -610,7 +615,7 @@ Response InspectorDOMAgent::requestChildNodes(
 
   PushChildNodesToFrontend(node_id, sanitized_depth,
                            maybe_taverse_frames.fromMaybe(false));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::querySelector(int node_id,
@@ -619,21 +624,21 @@ Response InspectorDOMAgent::querySelector(int node_id,
   *element_id = 0;
   Node* node = nullptr;
   Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   auto* container_node = DynamicTo<ContainerNode>(node);
   if (!container_node)
-    return Response::Error("Not a container node");
+    return Response::ServerError("Not a container node");
 
   DummyExceptionStateForTesting exception_state;
   Element* element =
       container_node->QuerySelector(AtomicString(selectors), exception_state);
   if (exception_state.HadException())
-    return Response::Error("DOM Error while querying");
+    return Response::ServerError("DOM Error while querying");
 
   if (element)
     *element_id = PushNodePathToFrontend(element);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::querySelectorAll(
@@ -642,23 +647,23 @@ Response InspectorDOMAgent::querySelectorAll(
     std::unique_ptr<protocol::Array<int>>* result) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   auto* container_node = DynamicTo<ContainerNode>(node);
   if (!container_node)
-    return Response::Error("Not a container node");
+    return Response::ServerError("Not a container node");
 
   DummyExceptionStateForTesting exception_state;
   StaticElementList* elements = container_node->QuerySelectorAll(
       AtomicString(selectors), exception_state);
   if (exception_state.HadException())
-    return Response::Error("DOM Error while querying");
+    return Response::ServerError("DOM Error while querying");
 
   *result = std::make_unique<protocol::Array<int>>();
 
   for (unsigned i = 0; i < elements->length(); ++i)
     (*result)->emplace_back(PushNodePathToFrontend(elements->item(i)));
-  return Response::OK();
+  return Response::Success();
 }
 
 int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
@@ -729,7 +734,7 @@ Response InspectorDOMAgent::setAttributeValue(int element_id,
                                               const String& value) {
   Element* element = nullptr;
   Response response = AssertEditableElement(element_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   return dom_editor_->SetAttribute(element, name, value);
 }
@@ -739,7 +744,7 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
                                                 Maybe<String> name) {
   Element* element = nullptr;
   Response response = AssertEditableElement(element_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   String markup = "<span " + text + "></span>";
@@ -761,7 +766,7 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
 
   Element* parsed_element = DynamicTo<Element>(fragment->firstChild());
   if (!parsed_element)
-    return Response::Error("Could not parse value as attributes");
+    return Response::ServerError("Could not parse value as attributes");
 
   String case_adjusted_name = should_ignore_case
                                   ? name.fromMaybe("").DeprecatedLower()
@@ -781,7 +786,7 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
         name.isJust() && attribute_name == case_adjusted_name;
     Response response =
         dom_editor_->SetAttribute(element, attribute_name, attribute.Value());
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
   }
 
@@ -789,14 +794,14 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
       !name.fromJust().StripWhiteSpace().IsEmpty()) {
     return dom_editor_->RemoveAttribute(element, case_adjusted_name);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::removeAttribute(int element_id,
                                             const String& name) {
   Element* element = nullptr;
   Response response = AssertEditableElement(element_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   return dom_editor_->RemoveAttribute(element, name);
@@ -805,12 +810,12 @@ Response InspectorDOMAgent::removeAttribute(int element_id,
 Response InspectorDOMAgent::removeNode(int node_id) {
   Node* node = nullptr;
   Response response = AssertEditableNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   ContainerNode* parent_node = node->parentNode();
   if (!parent_node)
-    return Response::Error("Cannot remove detached node");
+    return Response::ServerError("Cannot remove detached node");
 
   return dom_editor_->RemoveChild(parent_node, node);
 }
@@ -822,7 +827,7 @@ Response InspectorDOMAgent::setNodeName(int node_id,
 
   Element* old_element = nullptr;
   Response response = AssertElement(node_id, old_element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   DummyExceptionStateForTesting exception_state;
@@ -838,7 +843,7 @@ Response InspectorDOMAgent::setNodeName(int node_id,
   for (Node* child = old_element->firstChild(); child;
        child = old_element->firstChild()) {
     response = dom_editor_->InsertBefore(new_elem, child, nullptr);
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
   }
 
@@ -846,16 +851,16 @@ Response InspectorDOMAgent::setNodeName(int node_id,
   ContainerNode* parent = old_element->parentNode();
   response =
       dom_editor_->InsertBefore(parent, new_elem, old_element->nextSibling());
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   response = dom_editor_->RemoveChild(parent, old_element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   *new_id = PushNodePathToFrontend(new_elem);
   if (children_requested_.Contains(node_id))
     PushChildNodesToFrontend(*new_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getOuterHTML(Maybe<int> node_id,
@@ -864,11 +869,11 @@ Response InspectorDOMAgent::getOuterHTML(Maybe<int> node_id,
                                          WTF::String* outer_html) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   *outer_html = CreateMarkup(node);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::setOuterHTML(int node_id,
@@ -877,28 +882,28 @@ Response InspectorDOMAgent::setOuterHTML(int node_id,
     DCHECK(document_);
     DOMPatchSupport dom_patch_support(dom_editor_.Get(), *document_.Get());
     dom_patch_support.PatchDocument(outer_html);
-    return Response::OK();
+    return Response::Success();
   }
 
   Node* node = nullptr;
   Response response = AssertEditableNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Document* document =
       IsA<Document>(node) ? To<Document>(node) : node->ownerDocument();
   if (!document ||
       (!IsA<HTMLDocument>(document) && !IsA<XMLDocument>(document)))
-    return Response::Error("Not an HTML/XML document");
+    return Response::ServerError("Not an HTML/XML document");
 
   Node* new_node = nullptr;
   response = dom_editor_->SetOuterHTML(node, outer_html, &new_node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   if (!new_node) {
     // The only child node has been deleted.
-    return Response::OK();
+    return Response::Success();
   }
 
   int new_id = PushNodePathToFrontend(new_node);
@@ -906,17 +911,17 @@ Response InspectorDOMAgent::setOuterHTML(int node_id,
   bool children_requested = children_requested_.Contains(node_id);
   if (children_requested)
     PushChildNodesToFrontend(new_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::setNodeValue(int node_id, const String& value) {
   Node* node = nullptr;
   Response response = AssertEditableNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   if (node->getNodeType() != Node::kTextNode)
-    return Response::Error("Can only set value of text nodes");
+    return Response::ServerError("Can only set value of text nodes");
 
   return dom_editor_->ReplaceWholeText(To<Text>(node), value);
 }
@@ -958,7 +963,7 @@ Response InspectorDOMAgent::performSearch(
     String* search_id,
     int* result_count) {
   if (!enabled_.Get())
-    return Response::Error("DOM agent is not enabled");
+    return Response::ServerError("DOM agent is not enabled");
 
   // FIXME: Few things are missing here:
   // 1) Search works with node granularity - number of matches within node is
@@ -1100,7 +1105,7 @@ Response InspectorDOMAgent::performSearch(
     results_it->push_back(result);
 
   *result_count = results_it->size();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getSearchResults(
@@ -1110,21 +1115,21 @@ Response InspectorDOMAgent::getSearchResults(
     std::unique_ptr<protocol::Array<int>>* node_ids) {
   SearchResults::iterator it = search_results_.find(search_id);
   if (it == search_results_.end())
-    return Response::Error("No search session with given id found");
+    return Response::ServerError("No search session with given id found");
 
   int size = it->value.size();
   if (from_index < 0 || to_index > size || from_index >= to_index)
-    return Response::Error("Invalid search result range");
+    return Response::ServerError("Invalid search result range");
 
   *node_ids = std::make_unique<protocol::Array<int>>();
   for (int i = from_index; i < to_index; ++i)
     (*node_ids)->emplace_back(PushNodePathToFrontend((it->value)[i].Get()));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::discardSearchResults(const String& search_id) {
   search_results_.erase(search_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::NodeForRemoteObjectId(const String& object_id,
@@ -1135,15 +1140,15 @@ Response InspectorDOMAgent::NodeForRemoteObjectId(const String& object_id,
   std::unique_ptr<v8_inspector::StringBuffer> error;
   if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
                                  &value, &context, nullptr))
-    return Response::Error(ToCoreString(std::move(error)));
+    return Response::ServerError(ToCoreString(std::move(error)).Utf8());
   if (!V8Node::HasInstance(value, isolate_))
-    return Response::Error("Object id doesn't reference a Node");
+    return Response::ServerError("Object id doesn't reference a Node");
   node = V8Node::ToImpl(v8::Local<v8::Object>::Cast(value));
   if (!node) {
-    return Response::Error(
+    return Response::ServerError(
         "Couldn't convert object with given objectId to Node");
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::copyTo(int node_id,
@@ -1152,33 +1157,33 @@ Response InspectorDOMAgent::copyTo(int node_id,
                                    int* new_node_id) {
   Node* node = nullptr;
   Response response = AssertEditableNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Element* target_element = nullptr;
   response = AssertEditableElement(target_element_id, target_element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Node* anchor_node = nullptr;
   if (anchor_node_id.isJust() && anchor_node_id.fromJust()) {
     response = AssertEditableChildNode(target_element,
                                        anchor_node_id.fromJust(), anchor_node);
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
   }
 
   // The clone is deep by default.
   Node* cloned_node = node->cloneNode(true);
   if (!cloned_node)
-    return Response::Error("Failed to clone node");
+    return Response::ServerError("Failed to clone node");
   response =
       dom_editor_->InsertBefore(target_element, cloned_node, anchor_node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   *new_node_id = PushNodePathToFrontend(cloned_node);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::moveTo(int node_id,
@@ -1187,18 +1192,20 @@ Response InspectorDOMAgent::moveTo(int node_id,
                                    int* new_node_id) {
   Node* node = nullptr;
   Response response = AssertEditableNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Element* target_element = nullptr;
   response = AssertEditableElement(target_element_id, target_element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Node* current = target_element;
   while (current) {
-    if (current == node)
-      return Response::Error("Unable to move node into self or descendant");
+    if (current == node) {
+      return Response::ServerError(
+          "Unable to move node into self or descendant");
+    }
     current = current->parentNode();
   }
 
@@ -1206,21 +1213,21 @@ Response InspectorDOMAgent::moveTo(int node_id,
   if (anchor_node_id.isJust() && anchor_node_id.fromJust()) {
     response = AssertEditableChildNode(target_element,
                                        anchor_node_id.fromJust(), anchor_node);
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
   }
 
   response = dom_editor_->InsertBefore(target_element, node, anchor_node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   *new_node_id = PushNodePathToFrontend(node);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::undo() {
   if (!enabled_.Get())
-    return Response::Error("DOM agent is not enabled");
+    return Response::ServerError("DOM agent is not enabled");
   DummyExceptionStateForTesting exception_state;
   history_->Undo(exception_state);
   return InspectorDOMAgent::ToResponse(exception_state);
@@ -1228,7 +1235,7 @@ Response InspectorDOMAgent::undo() {
 
 Response InspectorDOMAgent::redo() {
   if (!enabled_.Get())
-    return Response::Error("DOM agent is not enabled");
+    return Response::ServerError("DOM agent is not enabled");
   DummyExceptionStateForTesting exception_state;
   history_->Redo(exception_state);
   return InspectorDOMAgent::ToResponse(exception_state);
@@ -1236,7 +1243,7 @@ Response InspectorDOMAgent::redo() {
 
 Response InspectorDOMAgent::markUndoableState() {
   history_->MarkUndoableState();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::focus(Maybe<int> node_id,
@@ -1244,16 +1251,16 @@ Response InspectorDOMAgent::focus(Maybe<int> node_id,
                                   Maybe<String> object_id) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   auto* element = DynamicTo<Element>(node);
   if (!element)
-    return Response::Error("Node is not an Element");
+    return Response::ServerError("Node is not an Element");
   element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
   if (!element->IsFocusable())
-    return Response::Error("Element is not focusable");
+    return Response::ServerError("Element is not focusable");
   element->focus();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::setFileInputFiles(
@@ -1263,24 +1270,24 @@ Response InspectorDOMAgent::setFileInputFiles(
     Maybe<String> object_id) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   auto* html_input_element = DynamicTo<HTMLInputElement>(node);
   if (!html_input_element ||
       html_input_element->type() != input_type_names::kFile)
-    return Response::Error("Node is not a file input element");
+    return Response::ServerError("Node is not a file input element");
 
   Vector<String> paths;
   for (const String& file : *files)
     paths.push_back(file);
   To<HTMLInputElement>(node)->SetFilesFromPaths(paths);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::setNodeStackTracesEnabled(bool enable) {
   capture_node_stack_traces_.Set(enable);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getNodeStackTraces(
@@ -1289,7 +1296,7 @@ Response InspectorDOMAgent::getNodeStackTraces(
         creation) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   InspectorSourceLocation* creation_inspector_source_location =
@@ -1299,7 +1306,7 @@ Response InspectorDOMAgent::getNodeStackTraces(
         creation_inspector_source_location->GetSourceLocation();
     *creation = source_location.BuildInspectorObject();
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getBoxModel(
@@ -1309,13 +1316,13 @@ Response InspectorDOMAgent::getBoxModel(
     std::unique_ptr<protocol::DOM::BoxModel>* model) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   bool result = InspectorHighlight::GetBoxModel(node, model, true);
   if (!result)
-    return Response::Error("Could not compute box model.");
-  return Response::OK();
+    return Response::ServerError("Could not compute box model.");
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getContentQuads(
@@ -1325,12 +1332,12 @@ Response InspectorDOMAgent::getContentQuads(
     std::unique_ptr<protocol::Array<protocol::Array<double>>>* quads) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   bool result = InspectorHighlight::GetContentQuads(node, quads);
   if (!result)
-    return Response::Error("Could not compute content quads.");
-  return Response::OK();
+    return Response::ServerError("Could not compute content quads.");
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getNodeForLocation(
@@ -1362,7 +1369,7 @@ Response InspectorDOMAgent::getNodeForLocation(
   while (node && node->getNodeType() == Node::kTextNode)
     node = node->parentNode();
   if (!node)
-    return Response::Error("No node found at given location");
+    return Response::ServerError("No node found at given location");
   *backend_node_id = IdentifiersFactory::IntIdForNode(node);
   LocalFrame* frame = node->GetDocument().GetFrame();
   *frame_id = IdentifiersFactory::FrameId(frame);
@@ -1370,7 +1377,7 @@ Response InspectorDOMAgent::getNodeForLocation(
       document_node_to_id_map_->Contains(document_)) {
     *node_id = PushNodePathToFrontend(node);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::resolveNode(
@@ -1383,8 +1390,10 @@ Response InspectorDOMAgent::resolveNode(
   String object_group_name = object_group.fromMaybe("");
   Node* node = nullptr;
 
-  if (node_id.isJust() == backend_node_id.isJust())
-    return Response::Error("Either nodeId or backendNodeId must be specified.");
+  if (node_id.isJust() == backend_node_id.isJust()) {
+    return Response::ServerError(
+        "Either nodeId or backendNodeId must be specified.");
+  }
 
   if (node_id.isJust())
     node = NodeForId(node_id.fromJust());
@@ -1392,14 +1401,14 @@ Response InspectorDOMAgent::resolveNode(
     node = DOMNodeIds::NodeForId(backend_node_id.fromJust());
 
   if (!node)
-    return Response::Error("No node with given id found");
+    return Response::ServerError("No node with given id found");
   *result = ResolveNode(v8_session_, node, object_group_name,
                         std::move(execution_context_id));
   if (!*result) {
-    return Response::Error(
+    return Response::ServerError(
         "Node with given id does not belong to the document");
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getAttributes(
@@ -1407,20 +1416,20 @@ Response InspectorDOMAgent::getAttributes(
     std::unique_ptr<protocol::Array<String>>* result) {
   Element* element = nullptr;
   Response response = AssertElement(node_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   *result = BuildArrayForElementAttributes(element);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::requestNode(const String& object_id, int* node_id) {
   Node* node = nullptr;
   Response response = NodeForRemoteObjectId(object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   *node_id = PushNodePathToFrontend(node);
-  return Response::OK();
+  return Response::Success();
 }
 
 // static
@@ -2185,19 +2194,19 @@ Node* InspectorDOMAgent::NodeForPath(const String& path) {
 Response InspectorDOMAgent::pushNodeByPathToFrontend(const String& path,
                                                      int* node_id) {
   if (!enabled_.Get())
-    return Response::Error("DOM agent is not enabled");
+    return Response::ServerError("DOM agent is not enabled");
   if (Node* node = NodeForPath(path))
     *node_id = PushNodePathToFrontend(node);
   else
-    return Response::Error("No node with given path found");
-  return Response::OK();
+    return Response::ServerError("No node with given path found");
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {
   if (!document_ || !document_node_to_id_map_->Contains(document_))
-    return Response::Error("Document needs to be requested first");
+    return Response::ServerError("Document needs to be requested first");
 
   *result = std::make_unique<protocol::Array<int>>();
   for (int id : *backend_node_ids) {
@@ -2208,7 +2217,7 @@ Response InspectorDOMAgent::pushNodesByBackendIdsToFrontend(
     else
       (*result)->emplace_back(0);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 class InspectableNode final
@@ -2228,10 +2237,10 @@ class InspectableNode final
 Response InspectorDOMAgent::setInspectedNode(int node_id) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   v8_session_->addInspectedObject(std::make_unique<InspectableNode>(node));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getRelayoutBoundary(
@@ -2239,11 +2248,11 @@ Response InspectorDOMAgent::getRelayoutBoundary(
     int* relayout_boundary_node_id) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object) {
-    return Response::Error(
+    return Response::ServerError(
         "No layout object for node, perhaps orphan or hidden node");
   }
   while (layout_object && !layout_object->IsDocumentElement() &&
@@ -2252,7 +2261,7 @@ Response InspectorDOMAgent::getRelayoutBoundary(
   Node* result_node =
       layout_object ? layout_object->GeneratingNode() : node->ownerDocument();
   *relayout_boundary_node_id = PushNodePathToFrontend(result_node);
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::Response InspectorDOMAgent::describeNode(
@@ -2264,13 +2273,13 @@ protocol::Response InspectorDOMAgent::describeNode(
     std::unique_ptr<protocol::DOM::Node>* result) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   if (!node)
-    return Response::Error("Node not found");
+    return Response::ServerError("Node not found");
   *result = BuildObjectForNode(node, depth.fromMaybe(0),
                                pierce.fromMaybe(false), nullptr, nullptr);
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::Response InspectorDOMAgent::scrollIntoViewIfNeeded(
@@ -2280,15 +2289,15 @@ protocol::Response InspectorDOMAgent::scrollIntoViewIfNeeded(
     protocol::Maybe<protocol::DOM::Rect> rect) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   node->GetDocument().EnsurePaintLocationDataValidForNode(
       node, DocumentUpdateReason::kInspector);
   if (!node->isConnected())
-    return Response::Error("Node is detached from document");
+    return Response::ServerError("Node is detached from document");
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
-    return Response::Error("Node does not have a layout object");
+    return Response::ServerError("Node does not have a layout object");
   PhysicalRect rect_to_scroll = PhysicalRect::EnclosingRect(
       layout_object->AbsoluteBoundingBoxFloatRect());
   if (rect.isJust()) {
@@ -2307,7 +2316,7 @@ protocol::Response InspectorDOMAgent::scrollIntoViewIfNeeded(
           true /* make_visible_in_visual_viewport */,
           mojom::blink::ScrollBehavior::kInstant,
           true /* is_for_scroll_sequence */, false /* zoom_into_rect */));
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::Response InspectorDOMAgent::getFrameOwner(
@@ -2329,10 +2338,10 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
     }
   }
   if (!frame)
-    return Response::Error("Frame with the given id was not found.");
+    return Response::ServerError("Frame with the given id was not found.");
   auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(frame->Owner());
   if (!frame_owner) {
-    return Response::Error(
+    return Response::ServerError(
         "Frame with the given id does not belong to the target.");
   }
 
@@ -2342,7 +2351,7 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
       document_node_to_id_map_->Contains(document_)) {
     *node_id = PushNodePathToFrontend(frame_owner);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMAgent::getFileInfo(const String& object_id, String* path) {
@@ -2352,18 +2361,18 @@ Response InspectorDOMAgent::getFileInfo(const String& object_id, String* path) {
   std::unique_ptr<v8_inspector::StringBuffer> error;
   if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
                                  &value, &context, nullptr))
-    return Response::Error(ToCoreString(std::move(error)));
+    return Response::ServerError(ToCoreString(std::move(error)).Utf8());
 
   if (!V8File::HasInstance(value, isolate_))
-    return Response::Error("Object id doesn't reference a File");
+    return Response::ServerError("Object id doesn't reference a File");
   File* file = V8File::ToImpl(v8::Local<v8::Object>::Cast(value));
   if (!file) {
-    return Response::Error(
+    return Response::ServerError(
         "Couldn't convert object with given objectId to File");
   }
 
   *path = file->GetPath();
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorDOMAgent::Trace(Visitor* visitor) {

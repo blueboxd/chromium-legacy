@@ -410,6 +410,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       base::FeatureList::IsEnabled(
           chromeos::features::kVirtualKeyboardFloatingResizable)));
   features->AppendString(GenerateFeatureFlag(
+      "assistiveAutoCorrect",
+      base::FeatureList::IsEnabled(chromeos::features::kAssistAutoCorrect)));
+  features->AppendString(GenerateFeatureFlag(
       "nativerulebased", base::FeatureList::IsEnabled(
                              chromeos::features::kNativeRuleBasedTyping)));
 

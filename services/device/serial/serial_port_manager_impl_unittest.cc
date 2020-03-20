@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -22,7 +21,11 @@
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "services/device/serial/fake_serial_device_enumerator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::Invoke;
 
 namespace device {
 
@@ -31,36 +34,53 @@ namespace {
 const base::FilePath kFakeDevicePath1(FILE_PATH_LITERAL("/dev/fakeserialmojo"));
 const base::FilePath kFakeDevicePath2(FILE_PATH_LITERAL("\\\\COM800\\"));
 
-void CreateAndBindOnBlockableRunner(
-    mojo::PendingReceiver<mojom::SerialPortManager> receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  auto manager = std::make_unique<SerialPortManagerImpl>(
-      std::move(io_task_runner), std::move(ui_task_runner));
-  auto fake_enumerator = std::make_unique<FakeSerialEnumerator>();
-  fake_enumerator->AddDevicePath(kFakeDevicePath1);
-  fake_enumerator->AddDevicePath(kFakeDevicePath2);
-  manager->SetSerialEnumeratorForTesting(std::move(fake_enumerator));
-  mojo::MakeSelfOwnedReceiver(std::move(manager), std::move(receiver));
-}
+class MockSerialPortManagerClient : public mojom::SerialPortManagerClient {
+ public:
+  MockSerialPortManagerClient() = default;
+  MockSerialPortManagerClient(const MockSerialPortManagerClient&) = delete;
+  MockSerialPortManagerClient& operator=(const MockSerialPortManagerClient&) =
+      delete;
+  ~MockSerialPortManagerClient() override = default;
+
+  mojo::PendingRemote<mojom::SerialPortManagerClient>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+  // mojom::SerialPortManagerClient
+  MOCK_METHOD1(OnPortAdded, void(mojom::SerialPortInfoPtr));
+  MOCK_METHOD1(OnPortRemoved, void(mojom::SerialPortInfoPtr));
+
+ private:
+  mojo::Receiver<mojom::SerialPortManagerClient> receiver_{this};
+};
 
 }  // namespace
 
 class SerialPortManagerImplTest : public DeviceServiceTestBase {
  public:
-  SerialPortManagerImplTest() = default;
+  SerialPortManagerImplTest() {
+    auto enumerator = std::make_unique<FakeSerialEnumerator>();
+    enumerator_ = enumerator.get();
+    enumerator_->AddDevicePath(kFakeDevicePath1);
+    enumerator_->AddDevicePath(kFakeDevicePath2);
+
+    manager_ = std::make_unique<SerialPortManagerImpl>(
+        io_task_runner_, base::ThreadTaskRunnerHandle::Get());
+    manager_->SetSerialEnumeratorForTesting(std::move(enumerator));
+  }
+
   ~SerialPortManagerImplTest() override = default;
 
  protected:
-  void SetUp() override { DeviceServiceTestBase::SetUp(); }
+  FakeSerialEnumerator* enumerator_;
 
-  void BindSerialPortManager(
-      mojo::PendingReceiver<mojom::SerialPortManager> receiver) {
-    file_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CreateAndBindOnBlockableRunner, std::move(receiver),
-                       io_task_runner_, base::ThreadTaskRunnerHandle::Get()));
+  void Bind(mojo::PendingReceiver<mojom::SerialPortManager> receiver) {
+    manager_->Bind(std::move(receiver));
   }
+
+ private:
+  std::unique_ptr<SerialPortManagerImpl> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortManagerImplTest);
 };
@@ -92,7 +112,7 @@ TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
 
 TEST_F(SerialPortManagerImplTest, GetDevices) {
   mojo::Remote<mojom::SerialPortManager> port_manager;
-  BindSerialPortManager(port_manager.BindNewPipeAndPassReceiver());
+  Bind(port_manager.BindNewPipeAndPassReceiver());
   const std::set<base::FilePath> expected_paths = {kFakeDevicePath1,
                                                    kFakeDevicePath2};
 
@@ -109,9 +129,58 @@ TEST_F(SerialPortManagerImplTest, GetDevices) {
   loop.Run();
 }
 
+TEST_F(SerialPortManagerImplTest, PortRemovedAndAdded) {
+  mojo::Remote<mojom::SerialPortManager> port_manager;
+  Bind(port_manager.BindNewPipeAndPassReceiver());
+
+  MockSerialPortManagerClient client;
+  port_manager->SetClient(client.BindNewPipeAndPassRemote());
+
+  base::UnguessableToken port1_token;
+  {
+    base::RunLoop run_loop;
+    port_manager->GetDevices(base::BindLambdaForTesting(
+        [&](std::vector<mojom::SerialPortInfoPtr> results) {
+          for (const auto& port : results) {
+            if (port->path == kFakeDevicePath1) {
+              port1_token = port->token;
+              break;
+            }
+          }
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+  ASSERT_FALSE(port1_token.is_empty());
+
+  enumerator_->RemoveDevicePath(kFakeDevicePath1);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(client, OnPortRemoved(_))
+        .WillOnce(Invoke([&](mojom::SerialPortInfoPtr port) {
+          EXPECT_EQ(port1_token, port->token);
+          EXPECT_EQ(kFakeDevicePath1, port->path);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  enumerator_->AddDevicePath(kFakeDevicePath1);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(client, OnPortAdded(_))
+        .WillOnce(Invoke([&](mojom::SerialPortInfoPtr port) {
+          EXPECT_NE(port1_token, port->token);
+          EXPECT_EQ(kFakeDevicePath1, port->path);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+}
+
 TEST_F(SerialPortManagerImplTest, GetPort) {
   mojo::Remote<mojom::SerialPortManager> port_manager;
-  BindSerialPortManager(port_manager.BindNewPipeAndPassReceiver());
+  Bind(port_manager.BindNewPipeAndPassReceiver());
 
   base::RunLoop loop;
   port_manager->GetDevices(base::BindLambdaForTesting(

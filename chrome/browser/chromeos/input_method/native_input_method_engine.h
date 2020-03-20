@@ -48,9 +48,8 @@ class NativeInputMethodEngine : public InputMethodEngine {
    public:
     // |base_observer| is to forward events to extension during this migration.
     // It will be removed when the official extension is completely migrated.
-    explicit ImeObserver(
-        std::unique_ptr<InputMethodEngineBase::Observer> base_observer,
-        std::unique_ptr<AssistiveSuggester> assistive_suggester);
+    ImeObserver(std::unique_ptr<InputMethodEngineBase::Observer> base_observer,
+                std::unique_ptr<AssistiveSuggester> assistive_suggester);
     ~ImeObserver() override;
 
     // InputMethodEngineBase::Observer:

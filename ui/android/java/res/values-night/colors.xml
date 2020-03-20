@@ -10,14 +10,12 @@
     <color name="default_text_color_secondary">@color/default_text_color_secondary_light</color>
     <color name="default_text_color_tertiary">@color/default_text_color_tertiary_light</color>
     <color name="default_text_color_link">@color/default_text_color_link_light</color>
-    <color name="disabled_text_color_link">@color/modern_grey_300_alpha_38</color>
+    <color name="default_text_color_link_disabled">@color/default_text_color_link_disabled_light</color>
     <color name="default_text_color_error">@color/default_text_color_error_light</color>
 
     <!-- Common icon colors for drawables. -->
     <color name="default_icon_color">@color/default_icon_color_light</color>
-    <color name="default_icon_color_disabled">@color/default_icon_color_disabled_light</color>
     <color name="default_icon_color_inverse">@color/default_icon_color_dark</color>
-    <color name="default_icon_color_inverse_disabled">@color/default_icon_color_disabled_dark</color>
     <color name="default_icon_color_blue">@color/default_icon_color_blue_light</color>
     <color name="default_icon_color_secondary">@color/default_icon_color_secondary_light</color>
     <color name="hairline_stroke_color">@color/hairline_stroke_color_dark</color>
@@ -30,7 +28,7 @@
     <color name="default_bg_color_elev_2">@color/default_bg_color_dark_elev_2</color>
     <color name="default_bg_color_elev_3">@color/default_bg_color_dark_elev_3</color>
     <color name="default_bg_color_elev_4">@color/default_bg_color_dark_elev_4</color>
-    <color name="default_bg_color_blue">@color/modern_blue_300</color>
+    <color name="default_bg_color_blue">@color/default_bg_color_blue_light</color>
 
     <!-- Bottom sheet colors -->
     <color name="sheet_bg_color">@color/default_bg_color_dark_elev_4</color>
@@ -39,24 +37,36 @@
     <color name="snackbar_background_color">@color/default_bg_color_dark_elev_4</color>
 
     <!-- Ripple colors for clickable widgets -->
-    <color name="ripple_color_blue">@color/modern_blue_300</color>
+    <color name="ripple_color_blue">@color/ripple_color_blue_light</color>
 
     <!-- Chip colors -->
-    <color name="chip_text_color_selected">@color/default_text_color_dark</color>
-    <color name="chip_background_color_disabled">@color/modern_grey_300_alpha_38</color>
-    <color name="chip_ripple_color_default">@android:color/white</color>
+    <color name="chip_text_color_selected">@color/chip_text_color_selected_dark</color>
+    <color name="chip_background_color_disabled">@color/chip_background_color_disabled_light</color>
+    <color name="default_chip_ripple_color">@color/default_chip_ripple_color_light</color>
     <color name="default_chip_outline_color">@color/default_chip_outline_color_dark</color>
+    <color name="chip_selected_hover">@color/chip_selected_hover_light</color>
+    <color name="chip_selected_focused">@color/chip_selected_focused_light</color>
+    <color name="chip_selected_hover_and_focused">@color/chip_selected_hover_and_focused_light</color>
 
     <!-- CircularProgressView colors -->
-    <color name="circular_progress_inner_background_color_small">@color/modern_blue_300</color>
-    <color name="circular_progress_outer_circle_background_color_small">@color/modern_grey_800</color>
-    <color name="circular_progress_outer_circle_progress_color_small">@color/modern_blue_300</color>
-    <color name="circular_progress_icon_color_small_large">@color/modern_grey_800</color>
+    <color name="circular_progress_inner_background_color_small">
+        @color/circular_progress_inner_background_color_small_dark
+    </color>
+    <color name="circular_progress_outer_circle_background_color_small">
+        @color/circular_progress_outer_circle_background_color_small_dark
+    </color>
+    <color name="circular_progress_outer_circle_progress_color_small">
+        @color/circular_progress_outer_circle_progress_color_small_dark
+    </color>
+    <color name="circular_progress_icon_color_small_large">
+        @color/circular_progress_icon_color_small_large_dark
+    </color>
 
     <!-- Other colors -->
     <color name="default_red">@color/default_red_light</color>
     <color name="default_green">@color/default_green_light</color>
     <color name="filled_button_bg_color">@color/filled_button_bg_color_light</color>
-    <color name="filled_button_bg_color_disabled">@color/modern_grey_300_alpha_38</color>
-    <color name="divider_bg_color">@color/divider_bg_color_light</color>
+    <color name="filled_button_bg_color_disabled">@color/filled_button_bg_color_disabled_light</color>
+    <color name="divider_line_bg_color">@color/divider_line_bg_color_light</color>
+    <color name="omnibox_bg_color">@color/omnibox_bg_color_dark</color>
 </resources>

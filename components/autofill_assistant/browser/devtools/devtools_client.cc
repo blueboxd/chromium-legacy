@@ -104,9 +104,8 @@ void DevtoolsClient::SendMessageWithParams(
   std::string json_message;
   base::JSONWriter::Write(message, &json_message);
 
-  bool success = agent_host_->DispatchProtocolMessage(
+  agent_host_->DispatchProtocolMessage(
       this, base::as_bytes(base::make_span(json_message)));
-  DCHECK(success);
 }
 
 void DevtoolsClient::RegisterEventHandler(

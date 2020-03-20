@@ -32,8 +32,8 @@ button {
 button:disabled,
 .menu-item.disabled,
 .menu-bar-item.disabled {
-  background-color: grey;
-  color: white;
+  background-color: rgb(60, 64, 67);
+  color: rgb(207, 216, 220);
 }
 
 #menus_button {
@@ -230,7 +230,7 @@ button:disabled,
 
 .menu-bar-item.active {
   background-color: rgb(246, 145, 57);
-  color: #fff;
+  color: black;
 }
 
 .menu-container {

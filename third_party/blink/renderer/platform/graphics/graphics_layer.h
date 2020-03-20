@@ -63,7 +63,6 @@ class PictureLayer;
 
 namespace blink {
 
-class Image;
 class PaintController;
 class RasterInvalidationTracking;
 class RasterInvalidator;
@@ -170,11 +169,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   // Set that the position/size of the contents (image or video).
   void SetContentsRect(const IntRect&);
 
-  // Layer contents
-  void SetContentsToImage(
-      Image*,
-      Image::ImageDecodingMode decode_mode,
-      RespectImageOrientationEnum = kRespectImageOrientation);
   // If |prevent_contents_opaque_changes| is set to true, then calls to
   // SetContentsOpaque() will not be passed on to |contents_layer|. Use when
   // the client wants to have control of the opaqueness of |contents_layer|
@@ -301,7 +295,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool contents_visible_ : 1;
   bool hit_testable_ : 1;
   bool needs_check_raster_invalidation_ : 1;
-  bool contents_layer_is_picture_image_layer_ : 1;
 
   bool painted_ : 1;
 

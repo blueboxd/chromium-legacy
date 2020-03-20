@@ -52,6 +52,7 @@
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "media/gpu/windows/dxva_picture_buffer_win.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
+#include "media/parsers/vp8_parser.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
@@ -68,7 +69,14 @@
 
 namespace {
 
-const wchar_t kMSVP9DecoderDLLName[] = L"MSVP9DEC.dll";
+// Note: Despite the name this is for both vp8 and vp9 decoding.
+const wchar_t kMSVPxDecoderDLLName[] = L"MSVP9DEC.dll";
+
+const CLSID MEDIASUBTYPE_VP80 = {
+    0x30385056,
+    0x0000,
+    0x0010,
+    {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
 
 const CLSID MEDIASUBTYPE_VP90 = {
     0x30395056,
@@ -154,8 +162,8 @@ HRESULT g_last_device_removed_reason;
 namespace media {
 
 static const VideoCodecProfile kSupportedProfiles[] = {
-    H264PROFILE_BASELINE, H264PROFILE_MAIN, H264PROFILE_HIGH,
-    VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2};
+    H264PROFILE_BASELINE, H264PROFILE_MAIN,    H264PROFILE_HIGH,
+    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2};
 
 CreateDXGIDeviceManager
     DXVAVideoDecodeAccelerator::create_dxgi_device_manager_ = NULL;
@@ -465,11 +473,8 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
 
   VideoColorSpace current_color_space(
       const VideoColorSpace& container_color_space) const override {
-    // For VP9, container color spaces override video stream color spaces.
-    if (container_color_space.IsSpecified()) {
-      return container_color_space;
-    }
-    return color_space_;
+    return container_color_space.IsSpecified() ? container_color_space
+                                               : color_space_;
   }
 
  private:
@@ -478,6 +483,65 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
   gfx::Rect visible_rect_;
   VideoColorSpace color_space_;
   Vp9Parser parser_;
+};
+
+// Doesn't actually detect config changes, only stream metadata.
+class VP8ConfigChangeDetector : public ConfigChangeDetector {
+ public:
+  VP8ConfigChangeDetector() = default;
+  ~VP8ConfigChangeDetector() override = default;
+
+  // Detects stream configuration changes.
+  // Returns false on failure.
+  bool DetectConfig(const uint8_t* stream, unsigned int size) override {
+    Vp8FrameHeader fhdr;
+    if (!parser_.ParseFrame(stream, size, &fhdr))
+      return false;
+
+    if (fhdr.IsKeyframe() && fhdr.is_full_range) {
+      // VP8 has no color space information, only the range. We will always
+      // prefer the config color space if set, but indicate JPEG when the full
+      // range flag is set on the frame header.
+      color_space_ = VideoColorSpace::JPEG();
+    }
+
+    // Does VP8 need a separate visible rect?
+    gfx::Size new_size(fhdr.width, fhdr.height);
+    if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
+        size_ != new_size) {
+      pending_config_changed_ = true;
+      DVLOG(1) << "Configuration changed from " << size_.ToString() << " to "
+               << new_size.ToString();
+    }
+    size_ = new_size;
+
+    // Resolution changes can happen on any frame technically, so wait for a
+    // keyframe before signaling the config change.
+    if (fhdr.IsKeyframe() && pending_config_changed_) {
+      config_changed_ = true;
+      pending_config_changed_ = false;
+    }
+    if (pending_config_changed_)
+      DVLOG(3) << "Deferring config change until next keyframe...";
+    return true;
+  }
+
+  gfx::Rect current_visible_rect(
+      const gfx::Rect& container_visible_rect) const override {
+    return size_.IsEmpty() ? container_visible_rect : gfx::Rect(size_);
+  }
+
+  VideoColorSpace current_color_space(
+      const VideoColorSpace& container_color_space) const override {
+    return container_color_space.IsSpecified() ? container_color_space
+                                               : color_space_;
+  }
+
+ private:
+  gfx::Size size_;
+  bool pending_config_changed_ = false;
+  VideoColorSpace color_space_;
+  Vp8Parser parser_;
 };
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
@@ -585,7 +649,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       break;
     }
   }
-  RETURN_ON_FAILURE(profile_supported, "Unsupported h.264 or vp9 profile",
+  RETURN_ON_FAILURE(profile_supported, "Unsupported h.264, vp8, or vp9 profile",
                     false);
 
   if (config.profile == VP9PROFILE_PROFILE2 ||
@@ -672,9 +736,11 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed", false);
 
   if (codec_ == kCodecH264)
-    config_change_detector_.reset(new H264ConfigChangeDetector);
+    config_change_detector_.reset(new H264ConfigChangeDetector());
+  if (codec_ == kCodecVP8)
+    config_change_detector_.reset(new VP8ConfigChangeDetector());
   if (codec_ == kCodecVP9)
-    config_change_detector_.reset(new VP9ConfigChangeDetector);
+    config_change_detector_.reset(new VP9ConfigChangeDetector());
 
   SetState(kNormal);
 
@@ -1260,21 +1326,24 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
   // 1920 x 1088. We use 1088 to account for 16x16 macroblocks.
   ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
 
-  // VP9 has no default resolutions since it may not even be supported.
+  // VP8/VP9 has no default resolutions since it may not even be supported.
+  ResolutionPair max_vp8_resolutions;
   ResolutionPair max_vp9_profile0_resolutions;
   ResolutionPair max_vp9_profile2_resolutions;
 
-  GetResolutionsForDecoders(
-      {DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
-      gl::QueryD3D11DeviceObjectFromANGLE(), workarounds, &max_h264_resolutions,
-      &max_vp9_profile0_resolutions, &max_vp9_profile2_resolutions);
+  GetResolutionsForDecoders({DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
+                            gl::QueryD3D11DeviceObjectFromANGLE(), workarounds,
+                            &max_h264_resolutions, &max_vp8_resolutions,
+                            &max_vp9_profile0_resolutions,
+                            &max_vp9_profile2_resolutions);
 
   for (const auto& supported_profile : kSupportedProfiles) {
     const bool is_h264 = supported_profile >= H264PROFILE_MIN &&
                          supported_profile <= H264PROFILE_MAX;
     const bool is_vp9 = supported_profile >= VP9PROFILE_MIN &&
                         supported_profile <= VP9PROFILE_MAX;
-    DCHECK(is_h264 || is_vp9);
+    const bool is_vp8 = supported_profile == VP8PROFILE_ANY;
+    DCHECK(is_h264 || is_vp9 || is_vp8);
 
     ResolutionPair max_resolutions;
     if (is_h264) {
@@ -1283,10 +1352,12 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
       max_resolutions = max_vp9_profile0_resolutions;
     } else if (supported_profile == VP9PROFILE_PROFILE2) {
       max_resolutions = max_vp9_profile2_resolutions;
+    } else if (is_vp8) {
+      max_resolutions = max_vp8_resolutions;
     }
 
-    // Skip adding VP9 profiles if it's not supported or disabled.
-    if (is_vp9 && max_resolutions.first.IsEmpty())
+    // Skip adding VPx profiles if it's not supported or disabled.
+    if ((is_vp9 || is_vp8) && max_resolutions.first.IsEmpty())
       continue;
 
     // Windows Media Foundation H.264 decoding does not support decoding videos
@@ -1371,13 +1442,14 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     codec_ = kCodecH264;
     clsid = __uuidof(CMSH264DecoderMFT);
   } else if (enable_accelerated_vpx_decode_ &&
-             (profile >= VP9PROFILE_PROFILE0 &&
-              profile <= VP9PROFILE_PROFILE3)) {
-    codec_ = kCodecVP9;
+             ((profile >= VP9PROFILE_PROFILE0 &&
+               profile <= VP9PROFILE_PROFILE3) ||
+              profile == VP8PROFILE_ANY)) {
+    codec_ = profile == VP8PROFILE_ANY ? kCodecVP8 : kCodecVP9;
     clsid = CLSID_MSVPxDecoder;
-    decoder_dll = ::LoadLibrary(kMSVP9DecoderDLLName);
+    decoder_dll = ::LoadLibrary(kMSVPxDecoderDLLName);
     if (decoder_dll)
-      using_ms_vp9_mft_ = true;
+      using_ms_vpx_mft_ = true;
   }
 
   if (!decoder_dll) {
@@ -1561,13 +1633,15 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
   } else if (codec_ == kCodecVP9) {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP90);
+  } else if (codec_ == kCodecVP8) {
+    hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP80);
   } else {
     NOTREACHED();
     RETURN_ON_FAILURE(false, "Unsupported codec on input media type.", false);
   }
   RETURN_ON_HR_FAILURE(hr, "Failed to set subtype", false);
 
-  if (using_ms_vp9_mft_) {
+  if (using_ms_vpx_mft_) {
     hr = MFSetAttributeSize(media_type.Get(), MF_MT_FRAME_SIZE,
                             config_.initial_expected_coded_size.width(),
                             config_.initial_expected_coded_size.height());

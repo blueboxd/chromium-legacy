@@ -222,7 +222,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         mThumbnailFramePaint.setStrokeWidth(
                 resource.getDimension(R.dimen.tab_list_mini_card_frame_size));
         mThumbnailFramePaint.setColor(
-                ApiCompatibilityUtils.getColor(resource, R.color.divider_bg_color));
+                ApiCompatibilityUtils.getColor(resource, R.color.divider_line_bg_color));
         mThumbnailFramePaint.setAntiAlias(true);
 
         // TODO(996048): Use pre-defined styles to avoid style out of sync if any text/color styles

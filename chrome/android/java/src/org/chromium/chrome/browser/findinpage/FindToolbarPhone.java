@@ -61,7 +61,7 @@ public class FindToolbarPhone extends FindToolbar {
             ApiCompatibilityUtils.setImageTintList(mCloseFindButton, dark);
             queryTextColorId = R.color.default_text_color;
             queryHintTextColorId = R.color.find_in_page_query_default_hint_color;
-            dividerColorId = R.color.divider_bg_color;
+            dividerColorId = R.color.divider_line_bg_color;
         }
         mFindQuery.setTextColor(
                 ApiCompatibilityUtils.getColor(getContext().getResources(), queryTextColorId));

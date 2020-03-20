@@ -801,6 +801,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
+  // This function calculates the preferred widths for an object.
+  //
+  // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS in layout_object.h for more
+  // details about those widths.
   MinMaxSizes PreferredLogicalWidths() const override;
 
   LayoutUnit OverrideLogicalHeight() const;
@@ -1578,33 +1582,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                : PhysicalRect(PhysicalOffset(), PreviousSize());
   }
 
-  // This function calculates the preferred widths for an object.
-  //
-  // This function is only expected to be called if
-  // the boolean preferredLogicalWidthsDirty is true. It also MUST clear the
-  // boolean before returning.
-  //
-  // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS in layout_object.h for more
-  // details about those widths.
-  //
-  // This function is public only for use by LayoutNG. Other callers should go
-  // through PreferredLogicalWidths.
-  virtual void ComputePreferredLogicalWidths() {
-    ClearIntrinsicLogicalWidthsDirty();
-  }
-
-  // LayoutNG can use this function to update our cache of preferred logical
-  // widths when the layout object is managed by NG. Should not be called by
-  // regular code.
-  // Also clears the "dirty" flag for preferred widths.
-  void SetPreferredLogicalWidthsFromNG(MinMaxSizes sizes) {
-    min_preferred_logical_width_ = sizes.min_size;
-    max_preferred_logical_width_ = sizes.max_size;
-    ClearIntrinsicLogicalWidthsDirty();
-  }
-
-  // Calculates the intrinsic(https://drafts.csswg.org/css-sizing-3/#intrinsic)
-  // logical widths for this layout box.
+  // Calculates the intrinsic logical widths for this layout box.
+  // https://drafts.csswg.org/css-sizing-3/#intrinsic
   //
   // intrinsicWidth is defined as:
   //     intrinsic size of content (with our border and padding) +
@@ -1615,7 +1594,41 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   //     Note: fixedWidth includes border and padding and scrollbarWidth.
   //
   // This is public only for use by LayoutNG. Do not call this elsewhere.
-  virtual MinMaxSizes ComputeIntrinsicLogicalWidths() const;
+  virtual MinMaxSizes ComputeIntrinsicLogicalWidths() const = 0;
+
+  // Returns the (maybe cached) intrinsic logical widths for this layout box.
+  MinMaxSizes IntrinsicLogicalWidths() const {
+    const_cast<LayoutBox*>(this)->UpdateCachedIntrinsicLogicalWidthsIfNeeded();
+    return intrinsic_logical_widths_;
+  }
+
+  // If |IntrinsicLogicalWidthsDirty()| is true, recalculates the intrinsic
+  // logical widths.
+  void UpdateCachedIntrinsicLogicalWidthsIfNeeded();
+
+  // LayoutNG can use this function to update our cache of intrinsic logical
+  // widths when the layout object is managed by NG. Should not be called by
+  // regular code.
+  //
+  // Also clears the "dirty" flag for the intrinsic logical widths.
+  void SetIntrinsicLogicalWidthsFromNG(
+      const MinMaxSizes& sizes,
+      LayoutUnit intrinsic_logical_widths_percentage_resolution_block_size) {
+    intrinsic_logical_widths_ = sizes;
+    intrinsic_logical_widths_percentage_resolution_block_size_ =
+        intrinsic_logical_widths_percentage_resolution_block_size;
+
+    ClearIntrinsicLogicalWidthsDirty();
+  }
+
+  // Returns what %-resolution-block-size was used in the intrinsic logical
+  // widths phase.
+  //
+  // For non-LayoutNG code this is always LayoutUnit::Min(), and should not be
+  // used for caching purposes.
+  LayoutUnit IntrinsicLogicalWidthsPercentageResolutionBlockSize() const {
+    return intrinsic_logical_widths_percentage_resolution_block_size_;
+  }
 
   // Make it public.
   using LayoutObject::BackgroundIsKnownToBeObscured;
@@ -1858,16 +1871,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   mutable LayoutUnit intrinsic_content_logical_height_;
 
  protected:
-  // The logical width of the element if it were to break its lines at every
-  // possible opportunity.
-  //
-  // See LayoutObject::PreferredLogicalWidths() for more details.
-  LayoutUnit min_preferred_logical_width_;
-
-  // The logical width of the element if it never breaks any lines at all.
-  //
-  // See LayoutObject::PreferredLogicalWidths() for more details.
-  LayoutUnit max_preferred_logical_width_;
+  MinMaxSizes intrinsic_logical_widths_;
+  LayoutUnit intrinsic_logical_widths_percentage_resolution_block_size_;
 
   // LayoutBoxUtils is used for the LayoutNG code querying protected methods on
   // this class, e.g. determining the static-position of OOF elements.

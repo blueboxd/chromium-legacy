@@ -58,7 +58,28 @@ except NotImplementedError:
   THREAD_COUNT = 4
 
 
+def is_file_of_interest(f):
+  if not f.endswith('.png'):
+    return False
+  for combo in ALLOWED_DEVICE_SDK_COMBINATIONS:
+    if combo in f:
+      return True
+  return False
+
+
 def download(directory):
+  # If someone removes a SHA1 file, we want to remove the associated PNG file
+  # the next time images are updated.
+  images_to_delete = []
+  for f in os.listdir(directory):
+    if not is_file_of_interest(f):
+      continue
+    sha1_path = os.path.join(directory, f + '.sha1')
+    if not os.path.exists(sha1_path):
+      images_to_delete.append(os.path.join(directory, f))
+  for image_path in images_to_delete:
+    os.remove(image_path)
+
   # Downloading the files can be very spammy, so only show the output if
   # something actually goes wrong.
   try:
@@ -74,14 +95,6 @@ def download(directory):
 
 
 def upload(directory):
-  def is_file_of_interest(f):
-    if not f.endswith('.png'):
-      return False
-    for combo in ALLOWED_DEVICE_SDK_COMBINATIONS:
-      if combo in f:
-        return True
-    return False
-
   files_to_upload = []
   for f in os.listdir(directory):
     # Skip any files that we don't care about.

@@ -143,46 +143,6 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
   return AsCTAPStyleCBORBytes(make_credential_response);
 }
 
-bool IsMakeCredentialOptionMapFormatCorrect(
-    const cbor::Value::MapValue& option_map) {
-  return std::all_of(
-      option_map.begin(), option_map.end(), [](const auto& param) {
-        return param.first.is_string() &&
-               (param.first.GetString() == kResidentKeyMapKey ||
-                param.first.GetString() == kUserVerificationMapKey) &&
-               param.second.is_bool();
-      });
-}
-
-bool AreMakeCredentialRequestMapKeysCorrect(
-    const cbor::Value::MapValue& request_map) {
-  return std::all_of(
-      request_map.begin(), request_map.end(), [](const auto& param) {
-        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
-                param.first.GetInteger() <= 9u);
-      });
-}
-
-bool IsGetAssertionOptionMapFormatCorrect(
-    const cbor::Value::MapValue& option_map) {
-  return std::all_of(
-      option_map.begin(), option_map.end(), [](const auto& param) {
-        return param.first.is_string() &&
-               (param.first.GetString() == kUserPresenceMapKey ||
-                param.first.GetString() == kUserVerificationMapKey) &&
-               param.second.is_bool();
-      });
-}
-
-bool AreGetAssertionRequestMapKeysCorrect(
-    const cbor::Value::MapValue& request_map) {
-  return std::all_of(
-      request_map.begin(), request_map.end(), [](const auto& param) {
-        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
-                param.first.GetInteger() <= 7u);
-      });
-}
-
 base::Optional<std::vector<uint8_t>> GetPINBytestring(
     const cbor::Value::MapValue& request,
     pin::RequestKey key) {
@@ -720,22 +680,19 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     return CtapDeviceResponseCode::kCtap2ErrOther;
   }
 
-  auto request_and_hash =
-      ParseCtapMakeCredentialRequest(cbor_request->GetMap());
-  if (!request_and_hash) {
+  auto opt_request = CtapMakeCredentialRequest::Parse(cbor_request->GetMap());
+  if (!opt_request) {
     DLOG(ERROR) << "Incorrectly formatted MakeCredential request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
   }
-  CtapMakeCredentialRequest request = std::get<0>(*request_and_hash);
-  CtapMakeCredentialRequest::ClientDataHash client_data_hash =
-      std::get<1>(*request_and_hash);
+  CtapMakeCredentialRequest request = std::move(*opt_request);
   const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
   const base::Optional<CtapDeviceResponseCode> uv_error = CheckUserVerification(
       true /* is makeCredential */, options, request.pin_auth,
-      request.pin_protocol, mutable_state()->pin_token, client_data_hash,
-      request.user_verification, &user_verified);
+      request.pin_protocol, mutable_state()->pin_token,
+      request.client_data_hash, request.user_verification, &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
@@ -834,7 +791,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
                                       ConstructECPublicKey(public_key)),
       std::move(extensions));
   auto sign_buffer =
-      ConstructSignatureBuffer(authenticator_data, client_data_hash);
+      ConstructSignatureBuffer(authenticator_data, request.client_data_hash);
 
   // Sign with attestation key.
   // Note: Non-deterministic, you need to mock this out if you rely on
@@ -904,21 +861,19 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
   }
 
   const auto& request_map = cbor_request->GetMap();
-  auto request_and_hash = ParseCtapGetAssertionRequest(request_map);
-  if (!request_and_hash) {
+  auto opt_request = CtapGetAssertionRequest::Parse(request_map);
+  if (!opt_request) {
     DLOG(ERROR) << "Incorrectly formatted GetAssertion request.";
     return CtapDeviceResponseCode::kCtap2ErrOther;
   }
-  CtapGetAssertionRequest request = std::get<0>(*request_and_hash);
-  CtapGetAssertionRequest::ClientDataHash client_data_hash =
-      std::get<1>(*request_and_hash);
+  CtapGetAssertionRequest request = std::move(*opt_request);
   const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
   const base::Optional<CtapDeviceResponseCode> uv_error = CheckUserVerification(
       false /* not makeCredential */, options, request.pin_auth,
-      request.pin_protocol, mutable_state()->pin_token, client_data_hash,
-      request.user_verification, &user_verified);
+      request.pin_protocol, mutable_state()->pin_token,
+      request.client_data_hash, request.user_verification, &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
@@ -1044,7 +999,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
         std::move(opt_attested_cred_data),
         extensions ? base::make_optional(extensions->Clone()) : base::nullopt);
     auto signature_buffer =
-        ConstructSignatureBuffer(authenticator_data, client_data_hash);
+        ConstructSignatureBuffer(authenticator_data, request.client_data_hash);
 
     std::vector<uint8_t> signature;
     status = Sign(private_key, std::move(signature_buffer), &signature);
@@ -1849,236 +1804,4 @@ AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
                            std::move(attested_credential_data),
                            std::move(extensions));
 }
-
-base::Optional<std::pair<CtapMakeCredentialRequest,
-                         CtapMakeCredentialRequest::ClientDataHash>>
-ParseCtapMakeCredentialRequest(const cbor::Value::MapValue& request_map) {
-  if (!AreMakeCredentialRequestMapKeysCorrect(request_map))
-    return base::nullopt;
-
-  const auto client_data_hash_it = request_map.find(cbor::Value(1));
-  if (client_data_hash_it == request_map.end() ||
-      !client_data_hash_it->second.is_bytestring())
-    return base::nullopt;
-
-  const auto client_data_hash =
-      base::make_span(client_data_hash_it->second.GetBytestring())
-          .subspan<0, kClientDataHashLength>();
-
-  const auto rp_entity_it = request_map.find(cbor::Value(2));
-  if (rp_entity_it == request_map.end() || !rp_entity_it->second.is_map())
-    return base::nullopt;
-
-  auto rp_entity =
-      PublicKeyCredentialRpEntity::CreateFromCBORValue(rp_entity_it->second);
-  if (!rp_entity)
-    return base::nullopt;
-
-  const auto user_entity_it = request_map.find(cbor::Value(3));
-  if (user_entity_it == request_map.end() || !user_entity_it->second.is_map())
-    return base::nullopt;
-
-  auto user_entity = PublicKeyCredentialUserEntity::CreateFromCBORValue(
-      user_entity_it->second);
-  if (!user_entity)
-    return base::nullopt;
-
-  const auto credential_params_it = request_map.find(cbor::Value(4));
-  if (credential_params_it == request_map.end())
-    return base::nullopt;
-
-  auto credential_params = PublicKeyCredentialParams::CreateFromCBORValue(
-      credential_params_it->second);
-  if (!credential_params)
-    return base::nullopt;
-
-  CtapMakeCredentialRequest request(
-      std::string() /* client_data_json */, std::move(*rp_entity),
-      std::move(*user_entity), std::move(*credential_params));
-
-  const auto exclude_list_it = request_map.find(cbor::Value(5));
-  if (exclude_list_it != request_map.end()) {
-    if (!exclude_list_it->second.is_array())
-      return base::nullopt;
-
-    const auto& credential_descriptors = exclude_list_it->second.GetArray();
-    std::vector<PublicKeyCredentialDescriptor> exclude_list;
-    for (const auto& credential_descriptor : credential_descriptors) {
-      auto excluded_credential =
-          PublicKeyCredentialDescriptor::CreateFromCBORValue(
-              credential_descriptor);
-      if (!excluded_credential)
-        return base::nullopt;
-
-      exclude_list.push_back(std::move(*excluded_credential));
-    }
-    request.exclude_list = std::move(exclude_list);
-  }
-
-  const auto extensions_it = request_map.find(cbor::Value(6));
-  if (extensions_it != request_map.end()) {
-    if (!extensions_it->second.is_map()) {
-      return base::nullopt;
-    }
-
-    const auto& extensions = extensions_it->second.GetMap();
-    const auto hmac_secret_it =
-        extensions.find(cbor::Value(kExtensionHmacSecret));
-    if (hmac_secret_it != extensions.end()) {
-      if (!hmac_secret_it->second.is_bool()) {
-        return base::nullopt;
-      }
-      request.hmac_secret = hmac_secret_it->second.GetBool();
-    }
-
-    const auto cred_protect_it =
-        extensions.find(cbor::Value(device::kExtensionCredProtect));
-    if (cred_protect_it != extensions.end()) {
-      if (!cred_protect_it->second.is_unsigned()) {
-        return base::nullopt;
-      }
-      switch (cred_protect_it->second.GetUnsigned()) {
-        case 1:
-          // Default behaviour.
-          break;
-        case 2:
-          request.cred_protect =
-              std::make_pair(device::CredProtect::kUVOrCredIDRequired, false);
-          break;
-        case 3:
-          request.cred_protect =
-              std::make_pair(device::CredProtect::kUVRequired, false);
-          break;
-        default:
-          return base::nullopt;
-      }
-    }
-  }
-
-  const auto option_it = request_map.find(cbor::Value(7));
-  if (option_it != request_map.end()) {
-    if (!option_it->second.is_map())
-      return base::nullopt;
-
-    const auto& option_map = option_it->second.GetMap();
-    if (!IsMakeCredentialOptionMapFormatCorrect(option_map))
-      return base::nullopt;
-
-    const auto resident_key_option =
-        option_map.find(cbor::Value(kResidentKeyMapKey));
-    if (resident_key_option != option_map.end())
-      request.resident_key_required = resident_key_option->second.GetBool();
-
-    const auto uv_option =
-        option_map.find(cbor::Value(kUserVerificationMapKey));
-    if (uv_option != option_map.end())
-      request.user_verification =
-          uv_option->second.GetBool()
-              ? UserVerificationRequirement::kRequired
-              : UserVerificationRequirement::kDiscouraged;
-  }
-
-  const auto pin_auth_it = request_map.find(cbor::Value(8));
-  if (pin_auth_it != request_map.end()) {
-    if (!pin_auth_it->second.is_bytestring())
-      return base::nullopt;
-    request.pin_auth = pin_auth_it->second.GetBytestring();
-  }
-
-  const auto pin_protocol_it = request_map.find(cbor::Value(9));
-  if (pin_protocol_it != request_map.end()) {
-    if (!pin_protocol_it->second.is_unsigned() ||
-        pin_protocol_it->second.GetUnsigned() >
-            std::numeric_limits<uint8_t>::max())
-      return base::nullopt;
-    request.pin_protocol = pin_protocol_it->second.GetUnsigned();
-  }
-
-  return std::make_pair(std::move(request),
-                        fido_parsing_utils::Materialize(client_data_hash));
-}
-
-base::Optional<
-    std::pair<CtapGetAssertionRequest, CtapGetAssertionRequest::ClientDataHash>>
-ParseCtapGetAssertionRequest(const cbor::Value::MapValue& request_map) {
-  if (!AreGetAssertionRequestMapKeysCorrect(request_map))
-    return base::nullopt;
-
-  const auto rp_id_it = request_map.find(cbor::Value(1));
-  if (rp_id_it == request_map.end() || !rp_id_it->second.is_string())
-    return base::nullopt;
-
-  const auto client_data_hash_it = request_map.find(cbor::Value(2));
-  if (client_data_hash_it == request_map.end() ||
-      !client_data_hash_it->second.is_bytestring())
-    return base::nullopt;
-
-  const auto client_data_hash =
-      base::make_span(client_data_hash_it->second.GetBytestring())
-          .subspan<0, kClientDataHashLength>();
-
-  CtapGetAssertionRequest request(rp_id_it->second.GetString(),
-                                  std::string() /* client_data_json */);
-
-  const auto allow_list_it = request_map.find(cbor::Value(3));
-  if (allow_list_it != request_map.end()) {
-    if (!allow_list_it->second.is_array())
-      return base::nullopt;
-
-    const auto& credential_descriptors = allow_list_it->second.GetArray();
-    std::vector<PublicKeyCredentialDescriptor> allow_list;
-    for (const auto& credential_descriptor : credential_descriptors) {
-      auto allowed_credential =
-          PublicKeyCredentialDescriptor::CreateFromCBORValue(
-              credential_descriptor);
-      if (!allowed_credential)
-        return base::nullopt;
-
-      allow_list.push_back(std::move(*allowed_credential));
-    }
-    request.allow_list = std::move(allow_list);
-  }
-
-  const auto option_it = request_map.find(cbor::Value(5));
-  if (option_it != request_map.end()) {
-    if (!option_it->second.is_map())
-      return base::nullopt;
-
-    const auto& option_map = option_it->second.GetMap();
-    if (!IsGetAssertionOptionMapFormatCorrect(option_map))
-      return base::nullopt;
-
-    const auto user_presence_option =
-        option_map.find(cbor::Value(kUserPresenceMapKey));
-    if (user_presence_option != option_map.end())
-      request.user_presence_required = user_presence_option->second.GetBool();
-
-    const auto uv_option =
-        option_map.find(cbor::Value(kUserVerificationMapKey));
-    if (uv_option != option_map.end())
-      request.user_verification = uv_option->second.GetBool()
-                                      ? UserVerificationRequirement::kRequired
-                                      : UserVerificationRequirement::kPreferred;
-  }
-
-  const auto pin_auth_it = request_map.find(cbor::Value(6));
-  if (pin_auth_it != request_map.end()) {
-    if (!pin_auth_it->second.is_bytestring())
-      return base::nullopt;
-    request.pin_auth = pin_auth_it->second.GetBytestring();
-  }
-
-  const auto pin_protocol_it = request_map.find(cbor::Value(7));
-  if (pin_protocol_it != request_map.end()) {
-    if (!pin_protocol_it->second.is_unsigned() ||
-        pin_protocol_it->second.GetUnsigned() >
-            std::numeric_limits<uint8_t>::max())
-      return base::nullopt;
-    request.pin_protocol = pin_protocol_it->second.GetUnsigned();
-  }
-
-  return std::make_pair(std::move(request),
-                        fido_parsing_utils::Materialize(client_data_hash));
-}
-
 }  // namespace device

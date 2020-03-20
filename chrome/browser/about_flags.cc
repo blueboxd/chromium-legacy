@@ -2727,7 +2727,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-cros-ime-assist-autocorrect",
      flag_descriptions::kImeAssistAutocorrectName,
      flag_descriptions::kImeAssistAutocorrectDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAssistPersonalInfo)},
+     FEATURE_VALUE_TYPE(chromeos::features::kAssistAutoCorrect)},
     {"enable-cros-ime-assist-personal-info",
      flag_descriptions::kImeAssistPersonalInfoName,
      flag_descriptions::kImeAssistPersonalInfoDescription, kOsCrOS,
@@ -4814,10 +4814,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "BackForwardCache")},
 
 #if defined(OS_ANDROID)
-    {"android-setup-search-engine",
-     flag_descriptions::kAndroidSetupSearchEngineName,
-     flag_descriptions::kAndroidSetupSearchEngineDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidSetupSearchEngine)},
     {"omnibox-remove-suggestions-from-clipboard",
      flag_descriptions::kOmniboxRemoveSuggestionsFromClipboardName,
      flag_descriptions::kOmniboxRemoveSuggestionsFromClipboardDescription,

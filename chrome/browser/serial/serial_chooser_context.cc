@@ -174,13 +174,52 @@ device::mojom::SerialPortManager* SerialChooserContext::GetPortManager() {
   return port_manager_.get();
 }
 
+void SerialChooserContext::AddPortObserver(PortObserver* observer) {
+  port_observer_list_.AddObserver(observer);
+}
+
+void SerialChooserContext::RemovePortObserver(PortObserver* observer) {
+  port_observer_list_.RemoveObserver(observer);
+}
+
 void SerialChooserContext::SetPortManagerForTesting(
     mojo::PendingRemote<device::mojom::SerialPortManager> manager) {
   SetUpPortManagerConnection(std::move(manager));
 }
 
+void SerialChooserContext::FlushPortManagerConnectionForTesting() {
+  port_manager_.FlushForTesting();
+}
+
 base::WeakPtr<SerialChooserContext> SerialChooserContext::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void SerialChooserContext::OnPortAdded(device::mojom::SerialPortInfoPtr port) {
+  for (auto& observer : port_observer_list_)
+    observer.OnPortAdded(*port);
+}
+
+void SerialChooserContext::OnPortRemoved(
+    device::mojom::SerialPortInfoPtr port) {
+  for (auto& observer : port_observer_list_)
+    observer.OnPortRemoved(*port);
+
+  std::vector<std::pair<url::Origin, url::Origin>> revoked_url_pairs;
+  for (auto& map_entry : ephemeral_ports_) {
+    std::set<base::UnguessableToken>& ports = map_entry.second;
+    if (ports.erase(port->token) > 0)
+      revoked_url_pairs.push_back(map_entry.first);
+  }
+
+  port_info_.erase(port->token);
+
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+    for (const auto& url_pair : revoked_url_pairs)
+      observer.OnPermissionRevoked(url_pair.first, url_pair.second);
+  }
 }
 
 void SerialChooserContext::EnsurePortManagerConnection() {
@@ -199,9 +238,14 @@ void SerialChooserContext::SetUpPortManagerConnection(
   port_manager_.set_disconnect_handler(
       base::BindOnce(&SerialChooserContext::OnPortManagerConnectionError,
                      base::Unretained(this)));
+
+  port_manager_->SetClient(client_receiver_.BindNewPipeAndPassRemote());
 }
 
 void SerialChooserContext::OnPortManagerConnectionError() {
+  port_manager_.reset();
+  client_receiver_.reset();
+
   port_info_.clear();
 
   std::vector<std::pair<url::Origin, url::Origin>> revoked_origins;

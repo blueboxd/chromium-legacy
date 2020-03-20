@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">გამოძახებისას მიმდინარე ვებსაიტზე არსებული თქვენი ყველა მონაცემების წაკითხვა და შეცვლა</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />-ს თქვენი პარამეტრების გადაყენება სურს.</translation>
 <translation id="1243314992276662751">ატვირთვა</translation>
-<translation id="1243398753772016127">ვებსაიტები ვერ გამოიყენებს თქვენი დათვალიერების აქტივობას სხვადასხვა ვებსაიტზე რეკლამის პერსონალიზებისთვის</translation>
 <translation id="1244265436519979884">ამჟამად მიმდინარეობს Linux აღდგენა</translation>
 <translation id="1244303850296295656">გაფართოების შეცდომა</translation>
 <translation id="1246905108078336582">გსურთ შემოთავაზების გაცვლის ბუფერიდან ამოშლა?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">ჩართულია — მორგებული პარამეტრები</translation>
 <translation id="1489664337021920575">სხვა ვარიანტის არჩევა</translation>
 <translation id="1493892686965953381">ელოდება <ph name="LOAD_STATE_PARAMETER" />-ს…</translation>
-<translation id="1494438840282430403">დათვალიერების მონაცემების (<ph name="URL" />) გასუფთავებაც (შესაძლოა, გამოხვიდეთ Google.com-დან).</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> სხვა ხელმისაწვდომი მოწყობილობა.</translation>
 <translation id="1495677929897281669">ჩანართზე დაბრუნება</translation>
 <translation id="1499271269825557605">თუ გაფართოებას ვერ ცნობთ ან ბრაუზერი მოლოდინისამებრ არ მუშაობს, აქ შეგიძლიათ გამორთოთ ან მოირგოთ გაფართოებები.</translation>
@@ -521,7 +519,7 @@
 <translation id="1700079447639026019">საიტები, რომლებსაც არასოდეს შეუძლია ქუქი-ჩანაწერების გამოყენება</translation>
 <translation id="1701062906490865540">ამ მომხმარებლის ამოშლა</translation>
 <translation id="1703331064825191675">ნუღარ ინერვიულებთ თქვენს პაროლებზე</translation>
-<translation id="1704970325597567340">უსაფრთხოების შემოწმება შესრულდა <ph name="DATE" />-ს</translation>
+<translation id="1704970325597567340">უსაფრთხოების შემოწმება შესრულდა <ph name="DATE" />-ში</translation>
 <translation id="1706586824377653884">დამატებულია თქვენი ადმინისტრატორის მიერ</translation>
 <translation id="1706625117072057435">მასშტაბირების დონეები</translation>
 <translation id="1708338024780164500">(არააქტიური)</translation>
@@ -1189,7 +1187,6 @@
 <translation id="2575247648642144396">ეს ხატულა ხილული იქნება, როდესაც გაფართოება შეძლებს მიმდინარე გვერდზე მოქმედებას. გამოიყენეთ ეს გაფართოება ხატულაზე დაწკაპუნებით ან <ph name="EXTENSION_SHORTCUT" />-ზე დაჭერით.</translation>
 <translation id="257779572837908839">დაყენდეს, როგორც Chromebox შეხვედრებისთვის</translation>
 <translation id="2580889980133367162">ყოველთვის დართეთ ნება <ph name="HOST" />-ს ჩამოტვირთოს რამოდენიმე ფაილი</translation>
-<translation id="2580924999637585241">სულ: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">ხანგრძლივი</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (პლატფორმა <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos ბილეთის მიღება ვერ მოხერხდა. ცადეთ ხელახლა, ან დაუკავშირდით თქვენი ორგანიზაციის მოწყობილობის ადმინისტრატორს. (შეცდომის კოდი: <ph name="ERROR_CODE" />).</translation>
@@ -2818,7 +2815,6 @@
 <translation id="4808667324955055115">ამომხტარი ფანჯრები დაბლოკილია:</translation>
 <translation id="480990236307250886">გახსენით საწყისი გვერდი</translation>
 <translation id="4811503964269049987">არჩეული ჩანართის დაჯგუფება</translation>
-<translation id="4811818760963189951">გამორთულია, რადგან გათიშული გაქვთ ისტორიის სინქრონიზაცია</translation>
 <translation id="4813136279048157860">ჩემი სურათები</translation>
 <translation id="4813512666221746211">ქსელის შეცდომა</translation>
 <translation id="4814378367953456825">შეიყვანეთ თითის ამ ანაბეჭდის სახელი</translation>
@@ -2987,7 +2983,6 @@
 <translation id="5040823038948176460">კონტენტის დამატებითი პარამეტრები</translation>
 <translation id="5042282098504489593"><ph name="USB_DEVICE_NAME" /> რომ დაუკავშიროთ Linux-ს, გახსენით პარამეტრები</translation>
 <translation id="5043913660911154449">ან მიუთითეთ პრინტერის PPD. <ph name="LINK_BEGIN" />შეიტყვეთ მეტი<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">გამორთულია, რადგან სინქრონიზაციის მონაცემები საიდუმლო ფრაზით დაშიფრეთ</translation>
 <translation id="5045550434625856497">არასწორი პაროლი</translation>
 <translation id="504561833207953641">მიმდინარეობს ბრაუზერის არსებულ სესიაში გახსნა.</translation>
 <translation id="5047421709274785093">საიტებისთვის მოძრაობისა და განათების სენსორების გამოყენების აკრძალვა</translation>
@@ -3964,7 +3959,6 @@
 <translation id="63566973648609420">თქვენი დაშიფრული მონაცემების წაკითხვა შეუძლია მხოლოდ იმ ადამიანს, რომელმაც იცის თქვენი საიდუმლო ფრაზა. საიდუმლო ფრაზა არ იგზავნება Google-ში და არ ინახება მის მიერ. საიდუმლო ფრაზის დავიწყების ან ამ პარამეტრის შეცვლის სურვილის შემთხვევაში, <ph name="BEGIN_LINK" />სინქრონიზაციის გადაყენება<ph name="END_LINK" /> მოგიწევთ.</translation>
 <translation id="6357619544108132570">მოგესალმებათ <ph name="SHORT_PRODUCT_NAME" />-ის გუნდი. ეს არ არის ჩვეულებრივი კომპიუტერი.</translation>
 <translation id="6358884629796491903">დრაკონი</translation>
-<translation id="6360719647236334056">Chrome-ში თქვენი დათვალიერების ისტორიის გამოყენება Search-ის, რეკლამისა და Google-ის სხვა სერვისების თქვენზე მოსარგებად</translation>
 <translation id="6361850914223837199">შეცდომის დეტალები:</translation>
 <translation id="6362853299801475928">&amp;მოხსენება პრობლემის შესახებ…</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4242,7 +4236,6 @@
 <translation id="6758056191028427665">შეგვატყობინეთ, როგორ ვმუშაობთ.</translation>
 <translation id="6759193508432371551">ქარხნული პარამეტრების დაბრუნება</translation>
 <translation id="6762833852331690540">ჩართული</translation>
-<translation id="6764693078871405569">დათვალიერების მონაცემების (<ph name="URL" />) გასუფთავებაც (შესაძლოა, გამოხვიდეთ <ph name="DOMAIN" />-დან).</translation>
 <translation id="6767566652486411142">სხვა ენის არჩევა...</translation>
 <translation id="6767639283522617719">დომენში გაწევრიანება ვერ ხერხდება. დარწმუნდით, რომ ორგანიზაციული ერთეულის პარამეტრები სწორია.</translation>
 <translation id="6769712124046837540">პრინტერის დამატება…</translation>

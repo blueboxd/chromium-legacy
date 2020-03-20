@@ -15,6 +15,23 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
   /** @type {SettingsPersonalizationOptionsElement} */
   let testElement;
 
+  /** @type {String} */
+  let signedInSubLabel;
+
+  /** @type {String} */
+  let signedOutSubLabel;
+
+  suiteSetup(function() {
+    signedInSubLabel =
+        loadTimeData.getString('passwordsLeakDetectionGeneralDescription');
+    signedOutSubLabel =
+        loadTimeData.getString('passwordsLeakDetectionGeneralDescription') +
+        ' ' +
+        loadTimeData.getString(
+            'passwordsLeakDetectionSignedOutEnabledDescription') +
+        loadTimeData.getString('sentenceEnd');
+  });
+
   setup(function() {
     privacyPageBrowserProxy = new TestPrivacyPageBrowserProxy();
     settings.PrivacyPageBrowserProxyImpl.instance_ = privacyPageBrowserProxy;
@@ -63,7 +80,9 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
     assertTrue(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
-    assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
+    assertEquals(
+        signedInSubLabel,
+        testElement.$.passwordsLeakDetectionCheckbox.subLabel);
   });
 
   test('leakDetectionToggleSignedOutWithTruePref', function() {
@@ -73,8 +92,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
     assertTrue(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
     assertEquals(
-        loadTimeData.getString(
-            'passwordsLeakDetectionSignedOutEnabledDescription'),
+        signedOutSubLabel,
         testElement.$.passwordsLeakDetectionCheckbox.subLabel);
   });
 
@@ -94,7 +112,9 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
       assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
       assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
+      assertEquals(
+          signedInSubLabel,
+          testElement.$.passwordsLeakDetectionCheckbox.subLabel);
     });
 
     test('leakDetectionToggleSignedInNotSyncingWithTruePref', function() {
@@ -110,7 +130,9 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
       assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
       assertTrue(testElement.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
+      assertEquals(
+          signedInSubLabel,
+          testElement.$.passwordsLeakDetectionCheckbox.subLabel);
     });
   }
 
@@ -122,7 +144,9 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
-    assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
+    assertEquals(
+        signedInSubLabel,
+        testElement.$.passwordsLeakDetectionCheckbox.subLabel);
   });
 
   test('leakDetectionToggleSignedInAndSyncingWithTruePref', function() {
@@ -131,6 +155,8 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertTrue(testElement.$.passwordsLeakDetectionCheckbox.checked);
-    assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
+    assertEquals(
+        signedInSubLabel,
+        testElement.$.passwordsLeakDetectionCheckbox.subLabel);
   });
 });

@@ -56,6 +56,13 @@ void FillTextContentByOffsets(const PaintOpBuffer* buffer,
   }
 }
 
+bool RotationEquivalentToAxisFlip(const SkMatrix& matrix) {
+  float skew_x = matrix.getSkewX();
+  float skew_y = matrix.getSkewY();
+  return ((skew_x == 1.f || skew_x == -1.f) &&
+          (skew_y == 1.f || skew_y == -1.f));
+}
+
 }  // namespace
 
 DisplayItemList::DisplayItemList(UsageHint usage_hint)
@@ -271,6 +278,116 @@ bool DisplayItemList::GetColorIfSolidInRect(const gfx::Rect& rect,
     return true;
   }
   return false;
+}
+
+base::Optional<DisplayItemList::DirectlyCompositedImageResult>
+DisplayItemList::GetDirectlyCompositedImageResult(
+    gfx::Size containing_layer_bounds) const {
+  const PaintOpBuffer* op_buffer = nullptr;
+  if (paint_op_buffer_.size() == 1) {
+    // The actual ops are wrapped in DrawRecord if they were previously
+    // recorded.
+    if (paint_op_buffer_.GetFirstOp()->GetType() == PaintOpType::DrawRecord) {
+      const DrawRecordOp* draw_record =
+          static_cast<const DrawRecordOp*>(paint_op_buffer_.GetFirstOp());
+      op_buffer = draw_record->record.get();
+    } else {
+      op_buffer = &paint_op_buffer_;
+    }
+  } else {
+    return base::nullopt;
+  }
+
+  const DrawImageRectOp* draw_image_rect_op = nullptr;
+  bool transpose_image_size = false;
+  constexpr size_t kNumDrawImageForOrientationOps = 10;
+  if (op_buffer->size() == 1 &&
+      op_buffer->GetFirstOp()->GetType() == PaintOpType::DrawImageRect) {
+    draw_image_rect_op =
+        static_cast<const DrawImageRectOp*>(op_buffer->GetFirstOp());
+  } else if (op_buffer->size() < kNumDrawImageForOrientationOps) {
+    // Images that respect orientation will have 5 paint operations:
+    //  (1) Save
+    //  (2) Translate
+    //  (3) Concat (rotation matrix)
+    //  (4) DrawImageRect
+    //  (5) Restore
+    // Detect these the paint op buffer and disqualify the layer as a directly
+    // composited image if any other paint op is detected.
+    for (auto* op : PaintOpBuffer::Iterator(op_buffer)) {
+      switch (op->GetType()) {
+        case PaintOpType::Save:
+        case PaintOpType::Restore:
+          break;
+        case PaintOpType::Translate: {
+          const TranslateOp* translate = static_cast<const TranslateOp*>(op);
+          if (translate->dx != 0 || translate->dy != 0)
+            return base::nullopt;
+          break;
+        }
+        case PaintOpType::Concat: {
+          // We only expect a single rotation. If we see another one, then this
+          // image won't be eligible for directly compositing.
+          if (transpose_image_size)
+            return base::nullopt;
+
+          const ConcatOp* concat_op = static_cast<const ConcatOp*>(op);
+          if (concat_op->matrix.hasPerspective() ||
+              !concat_op->matrix.preservesAxisAlignment())
+            return base::nullopt;
+
+          // If the rotation is not an axis flip, we'll need to transpose the
+          // width and height dimensions to account for the same transform
+          // applying when the layer bounds were calculated.
+          transpose_image_size =
+              RotationEquivalentToAxisFlip(concat_op->matrix);
+          break;
+        }
+        case PaintOpType::DrawImageRect:
+          if (draw_image_rect_op)
+            return base::nullopt;
+          draw_image_rect_op = static_cast<const DrawImageRectOp*>(op);
+          break;
+        default:
+          return base::nullopt;
+      }
+    }
+  }
+
+  if (!draw_image_rect_op)
+    return base::nullopt;
+
+  // The src rect must match the image size exactly, i.e. the entire image
+  // must be drawn.
+  const SkRect& src = draw_image_rect_op->src;
+  if (src.fLeft != 0 || src.fTop != 0 ||
+      src.fRight != draw_image_rect_op->image.width() ||
+      src.fBottom != draw_image_rect_op->image.height())
+    return base::nullopt;
+
+  // The DrawImageRect op's destination rect must match the layer bounds
+  // exactly. Note that the layer bounds have already taken into account image
+  // orientation so transpose the dst width/height before comparing, if
+  // appropriate.
+  const SkRect& dst = draw_image_rect_op->dst;
+  int dst_width = transpose_image_size ? dst.fBottom : dst.fRight;
+  int dst_height = transpose_image_size ? dst.fRight : dst.fBottom;
+  if (dst.fLeft != 0 || dst.fTop != 0 ||
+      dst_width != containing_layer_bounds.width() ||
+      dst_height != containing_layer_bounds.height())
+    return base::nullopt;
+
+  int width = transpose_image_size ? draw_image_rect_op->image.height()
+                                   : draw_image_rect_op->image.width();
+  int height = transpose_image_size ? draw_image_rect_op->image.width()
+                                    : draw_image_rect_op->image.height();
+  DirectlyCompositedImageResult result;
+  result.intrinsic_image_size = gfx::Size(width, height);
+  // Ensure the layer will use nearest neighbor when drawn by the display
+  // compositor, if required.
+  result.nearest_neighbor =
+      draw_image_rect_op->flags.getFilterQuality() == kNone_SkFilterQuality;
+  return result;
 }
 
 }  // namespace cc

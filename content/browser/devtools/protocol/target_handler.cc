@@ -548,7 +548,7 @@ Response TargetHandler::Disable() {
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
-    return Response::OK();
+    return Response::Success();
 
   if (dispose_on_detach_context_ids_.size()) {
     for (auto* context : delegate->GetBrowserContexts()) {
@@ -560,7 +560,7 @@ Response TargetHandler::Disable() {
     }
     dispose_on_detach_context_ids_.clear();
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 void TargetHandler::DidFinishNavigation() {
@@ -672,19 +672,20 @@ Response TargetHandler::FindSession(Maybe<std::string> session_id,
     if (it == attached_sessions_.end())
       return Response::InvalidParams("No session with given id");
     *session = it->second.get();
-    return Response::OK();
+    return Response::Success();
   }
   if (target_id.isJust()) {
     for (auto& it : attached_sessions_) {
       if (it.second->IsAttachedTo(target_id.fromJust())) {
         if (*session)
-          return Response::Error("Multiple sessions attached, specify id.");
+          return Response::ServerError(
+              "Multiple sessions attached, specify id.");
         *session = it.second.get();
       }
     }
     if (!*session)
       return Response::InvalidParams("No session for given target id");
-    return Response::OK();
+    return Response::Success();
   }
   return Response::InvalidParams("Session id must be specified");
 }
@@ -693,14 +694,14 @@ Response TargetHandler::FindSession(Maybe<std::string> session_id,
 
 Response TargetHandler::SetDiscoverTargets(bool discover) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   if (discover_ == discover)
-    return Response::OK();
+    return Response::Success();
   discover_ = discover;
   UpdateAgentHostObserver();
   if (!discover_)
     reported_hosts_.clear();
-  return Response::OK();
+  return Response::Success();
 }
 
 void TargetHandler::SetAutoAttach(
@@ -720,14 +721,14 @@ void TargetHandler::SetAutoAttach(
 
 Response TargetHandler::SetRemoteLocations(
     std::unique_ptr<protocol::Array<Target::RemoteLocation>>) {
-  return Response::Error("Not supported");
+  return Response::ServerError("Not supported");
 }
 
 Response TargetHandler::AttachToTarget(const std::string& target_id,
                                        Maybe<bool> flatten,
                                        std::string* out_session_id) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
@@ -735,30 +736,30 @@ Response TargetHandler::AttachToTarget(const std::string& target_id,
     return Response::InvalidParams("No target with given id found");
   *out_session_id =
       Session::Attach(this, agent_host.get(), false, flatten.fromMaybe(false));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::AttachToBrowserTarget(std::string* out_session_id) {
   if (access_mode_ != AccessMode::kBrowser)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::CreateForBrowser(
           nullptr, DevToolsAgentHost::CreateServerSocketCallback());
   *out_session_id = Session::Attach(this, agent_host.get(), false, true);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::DetachFromTarget(Maybe<std::string> session_id,
                                          Maybe<std::string> target_id) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   Session* session = nullptr;
   Response response =
       FindSession(std::move(session_id), std::move(target_id), &session);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   session->Detach(false);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::SendMessageToTarget(const std::string& message,
@@ -767,22 +768,22 @@ Response TargetHandler::SendMessageToTarget(const std::string& message,
   Session* session = nullptr;
   Response response =
       FindSession(std::move(session_id), std::move(target_id), &session);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   if (session->flatten_protocol_) {
-    return Response::Error(
+    return Response::ServerError(
         "When using flat protocol, messages are routed to the target "
         "via the sessionId attribute.");
   }
   session->SendMessageToAgentHost(base::as_bytes(base::make_span(message)));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::GetTargetInfo(
     Maybe<std::string> maybe_target_id,
     std::unique_ptr<Target::TargetInfo>* target_info) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   const std::string& target_id =
       maybe_target_id.isJust() ? maybe_target_id.fromJust() : owner_target_id_;
   // TODO(dgozman): only allow reported hosts.
@@ -791,31 +792,31 @@ Response TargetHandler::GetTargetInfo(
   if (!agent_host)
     return Response::InvalidParams("No target with given id found");
   *target_info = CreateInfo(agent_host.get());
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::ActivateTarget(const std::string& target_id) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForId(target_id));
   if (!agent_host)
     return Response::InvalidParams("No target with given id found");
   agent_host->Activate();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::CloseTarget(const std::string& target_id,
                                     bool* out_success) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
     return Response::InvalidParams("No target with given id found");
   *out_success = agent_host->Close();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::ExposeDevToolsProtocol(
@@ -829,17 +830,17 @@ Response TargetHandler::ExposeDevToolsProtocol(
     return Response::InvalidParams("No target with given id found");
 
   if (g_browser_to_page_connectors.Get()[agent_host.get()]) {
-    return Response::Error(base::StringPrintf(
+    return Response::ServerError(base::StringPrintf(
         "Target with id %s is already granted remote debugging bindings.",
         target_id.c_str()));
   }
   if (!agent_host->GetWebContents()) {
-    return Response::Error(
+    return Response::ServerError(
         "RemoteDebuggingBinding can be granted only to page targets");
   }
 
   new BrowserToPageConnector(binding_name.fromMaybe("cdp"), agent_host.get());
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::CreateTarget(const std::string& url,
@@ -851,27 +852,27 @@ Response TargetHandler::CreateTarget(const std::string& url,
                                      Maybe<bool> background,
                                      std::string* out_target_id) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
-    return Response::Error("Not supported");
+    return Response::ServerError("Not supported");
   scoped_refptr<content::DevToolsAgentHost> agent_host =
       delegate->CreateNewTarget(GURL(url));
   if (!agent_host)
-    return Response::Error("Not supported");
+    return Response::ServerError("Not supported");
   *out_target_id = agent_host->GetId();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response TargetHandler::GetTargets(
     std::unique_ptr<protocol::Array<Target::TargetInfo>>* target_infos) {
   if (access_mode_ == AccessMode::kAutoAttachOnly)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   *target_infos = std::make_unique<protocol::Array<Target::TargetInfo>>();
   for (const auto& host : DevToolsAgentHost::GetOrCreateAll())
     (*target_infos)->emplace_back(CreateInfo(host.get()));
-  return Response::OK();
+  return Response::Success();
 }
 
 // -------------- DevToolsAgentHostObserver -----------------
@@ -951,48 +952,50 @@ protocol::Response TargetHandler::CreateBrowserContext(
     Maybe<bool> dispose_on_detach,
     std::string* out_context_id) {
   if (access_mode_ != AccessMode::kBrowser)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
-    return Response::Error("Browser context management is not supported.");
+    return Response::ServerError(
+        "Browser context management is not supported.");
   BrowserContext* context = delegate->CreateBrowserContext();
   if (!context)
-    return Response::Error("Failed to create browser context.");
+    return Response::ServerError("Failed to create browser context.");
   *out_context_id = context->UniqueId();
   if (dispose_on_detach.fromMaybe(false))
     dispose_on_detach_context_ids_.insert(*out_context_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::Response TargetHandler::GetBrowserContexts(
     std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids) {
   if (access_mode_ != AccessMode::kBrowser)
-    return Response::Error(kNotAllowedError);
+    return Response::ServerError(kNotAllowedError);
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
-    return Response::Error("Browser context management is not supported.");
+    return Response::ServerError(
+        "Browser context management is not supported.");
   std::vector<content::BrowserContext*> contexts =
       delegate->GetBrowserContexts();
   *browser_context_ids = std::make_unique<protocol::Array<protocol::String>>();
   for (auto* context : contexts)
     (*browser_context_ids)->emplace_back(context->UniqueId());
-  return Response::OK();
+  return Response::Success();
 }
 
 void TargetHandler::DisposeBrowserContext(
     const std::string& context_id,
     std::unique_ptr<DisposeBrowserContextCallback> callback) {
   if (access_mode_ != AccessMode::kBrowser) {
-    callback->sendFailure(Response::Error(kNotAllowedError));
+    callback->sendFailure(Response::ServerError(kNotAllowedError));
     return;
   }
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate) {
     callback->sendFailure(
-        Response::Error("Browser context management is not supported."));
+        Response::ServerError("Browser context management is not supported."));
     return;
   }
   std::vector<content::BrowserContext*> contexts =
@@ -1004,7 +1007,7 @@ void TargetHandler::DisposeBrowserContext(
                    });
   if (context_it == contexts.end()) {
     callback->sendFailure(
-        Response::Error("Failed to find context with id " + context_id));
+        Response::ServerError("Failed to find context with id " + context_id));
     return;
   }
   dispose_on_detach_context_ids_.erase(context_id);
@@ -1016,7 +1019,7 @@ void TargetHandler::DisposeBrowserContext(
             if (success)
               callback->sendSuccess();
             else
-              callback->sendFailure(Response::Error(error));
+              callback->sendFailure(Response::ServerError(error));
           },
           std::move(callback)));
 }

@@ -208,6 +208,7 @@ component("gpu") {
     ]
     public_deps += [ "//media/base/win:media_foundation_util" ]
     deps += [
+      "//media/parsers",
       "//third_party/angle:includes",
       "//ui/display",
     ]

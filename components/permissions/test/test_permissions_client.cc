@@ -37,6 +37,11 @@ TestPermissionsClient::GetPermissionDecisionAutoBlocker(
   return &autoblocker_;
 }
 
+PermissionManager* TestPermissionsClient::GetPermissionManager(
+    content::BrowserContext* browser_context) {
+  return nullptr;
+}
+
 void TestPermissionsClient::GetUkmSourceId(
     content::BrowserContext* browser_context,
     const content::WebContents* web_contents,

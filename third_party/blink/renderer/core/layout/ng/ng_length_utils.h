@@ -41,15 +41,6 @@ inline bool NeedMinMaxSize(const ComputedStyle& style) {
          style.LogicalMaxWidth().IsIntrinsic();
 }
 
-// Whether the caller needs to compute min-content and max-content sizes to
-// pass them to ResolveMainInlineLength / ComputeInlineSizeForFragment.
-// If this function returns false, it is safe to pass an empty
-// MinMaxSizes struct to those functions.
-inline bool NeedMinMaxSize(const NGConstraintSpace& constraint_space,
-                           const ComputedStyle& style) {
-  return constraint_space.IsShrinkToFit() || NeedMinMaxSize(style);
-}
-
 // Like NeedMinMaxSize, but for use when calling
 // ComputeMinAndMaxContentContribution.
 // Because content contributions are commonly needed by a block's parent,
@@ -304,15 +295,6 @@ ComputeMinAndMaxContentContribution(WritingMode writing_mode,
 MinMaxSizes ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
     NGLayoutInputNode child,
-    const MinMaxSizesInput&);
-
-// Computes the min/max-content size for an out-of-flow positioned node and
-// returns it, using the cache where possible. ALways computes it in the writing
-// mode of the node itself.
-MinMaxSizes ComputeMinAndMaxContentSizeForOutOfFlow(
-    const NGConstraintSpace&,
-    NGLayoutInputNode,
-    const NGBoxStrut& border_padding,
     const MinMaxSizesInput&);
 
 // Returns inline size of the node's border box by resolving the computed value

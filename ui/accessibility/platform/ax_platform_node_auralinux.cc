@@ -2488,7 +2488,7 @@ AtkObject* AXPlatformNodeAuraLinux::FindFirstWebContentDocument() {
 
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   if (GetData().role != ax::mojom::Role::kApplication &&
-      !GetAccessibilityMode().has_mode(AXMode::kWebContents))
+      !GetAccessibilityMode().has_mode(AXMode::kNativeAPIs))
     return nullptr;
   EnsureGTypeInit();
   interface_mask_ = GetGTypeInterfaceMask(GetData());
@@ -3046,8 +3046,11 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     }
   }
 
-  DCHECK(GetOrCreateAtkObject());
-  if (delegate_->GetFocus() == GetOrCreateAtkObject())
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
+  if (delegate_->GetFocus() == atk_object)
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
 
   // It is insufficient to compare with g_current_activedescendant due to both
@@ -3055,7 +3058,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   // have an active descendant. For instance, if we check the state set of a
   // selectable child, it will only have ATK_STATE_FOCUSED if we've processed
   // the activedescendant change.
-  if (GetActiveDescendantOfCurrentFocused() == GetOrCreateAtkObject())
+  if (GetActiveDescendantOfCurrentFocused() == atk_object)
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
 }
 
@@ -3125,11 +3128,14 @@ void AXPlatformNodeAuraLinux::AddRelationToSet(AtkRelationSet* relation_set,
 }
 
 AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
-  DCHECK(GetOrCreateAtkObject());
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return nullptr;
+
   AtkRelationSet* relation_set = atk_relation_set_new();
 
   if (GetDelegate()->IsWebContent() && GetAtkRole() == ATK_ROLE_DOCUMENT_WEB) {
-    AtkObject* parent_frame = FindAtkObjectParentFrame(GetOrCreateAtkObject());
+    AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object);
     if (parent_frame) {
       atk_relation_set_add_relation_by_type(
           relation_set, ATK_RELATION_EMBEDDED_BY, parent_frame);
@@ -3239,9 +3245,13 @@ gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetOrCreateAtkObject() {
 }
 
 void AXPlatformNodeAuraLinux::OnActiveDescendantChanged() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   // Active-descendant-changed notifications are typically only relevant when
   // the change is within the focused widget.
-  if (GetOrCreateAtkObject() != g_current_focused)
+  if (atk_object != g_current_focused)
     return;
 
   AtkObject* descendant = GetActiveDescendantOfCurrentFocused();
@@ -3276,8 +3286,12 @@ void AXPlatformNodeAuraLinux::OnActiveDescendantChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnCheckedStateChanged() {
+  AtkObject* obj = GetOrCreateAtkObject();
+  if (!obj)
+    return;
+
   atk_object_notify_state_change(
-      ATK_OBJECT(GetOrCreateAtkObject()), GetAtkStateTypeForCheckableNode(),
+      ATK_OBJECT(obj), GetAtkStateTypeForCheckableNode(),
       GetData().GetCheckedState() != ax::mojom::CheckedState::kFalse);
 }
 
@@ -3288,8 +3302,11 @@ void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
   // might imply a change in ATK interfaces implemented.
   EnsureAtkObjectIsValid();
 
-  atk_object_notify_state_change(ATK_OBJECT(GetOrCreateAtkObject()),
-                                 ATK_STATE_EXPANDED, is_expanded);
+  AtkObject* obj = GetOrCreateAtkObject();
+  if (!obj)
+    return;
+
+  atk_object_notify_state_change(obj, ATK_STATE_EXPANDED, is_expanded);
 }
 
 void AXPlatformNodeAuraLinux::OnMenuPopupStart() {
@@ -3427,6 +3444,8 @@ void AXPlatformNodeAuraLinux::OnWindowDeactivated() {
 
 void AXPlatformNodeAuraLinux::OnWindowVisibilityChanged() {
   AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
 
   if (GetAtkRole() != ATK_ROLE_FRAME)
     return;
@@ -3445,6 +3464,8 @@ void AXPlatformNodeAuraLinux::OnWindowVisibilityChanged() {
 
 void AXPlatformNodeAuraLinux::OnScrolledToAnchor() {
   AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
   DCHECK(ATK_IS_TEXT(atk_object));
   g_signal_emit_by_name(atk_object, "text-caret-moved", 0);
 }
@@ -3454,6 +3475,9 @@ void AXPlatformNodeAuraLinux::SetActiveViewsDialog() {
   AtkObject* new_views_dialog = nullptr;
 
   AtkObject* parent = GetOrCreateAtkObject();
+  if (!parent)
+    return;
+
   if (!GetDelegate()->IsWebContent()) {
     while (parent) {
       if (atk_object::GetRole(parent) == ATK_ROLE_DIALOG) {
@@ -3476,6 +3500,8 @@ void AXPlatformNodeAuraLinux::SetActiveViewsDialog() {
 
 void AXPlatformNodeAuraLinux::OnFocused() {
   AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
 
   if (atk_object::GetRole(atk_object) == ATK_ROLE_FRAME) {
     OnWindowActivated();
@@ -3501,6 +3527,8 @@ void AXPlatformNodeAuraLinux::OnFocused() {
 
 void AXPlatformNodeAuraLinux::OnSelected() {
   AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
   if (g_current_selected && !g_current_selected->GetData().GetBoolAttribute(
                                 ax::mojom::BoolAttribute::kSelected)) {
     atk_object_notify_state_change(
@@ -3519,7 +3547,11 @@ void AXPlatformNodeAuraLinux::OnSelected() {
 }
 
 void AXPlatformNodeAuraLinux::OnSelectedChildrenChanged() {
-  g_signal_emit_by_name(GetOrCreateAtkObject(), "selection-changed", true);
+  AtkObject* obj = GetOrCreateAtkObject();
+  if (!obj)
+    return;
+
+  g_signal_emit_by_name(obj, "selection-changed", true);
 }
 
 bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
@@ -3649,6 +3681,9 @@ void AXPlatformNodeAuraLinux::EmitCaretChangedSignal() {
   std::pair<int, int> selection = GetSelectionOffsetsForAtk();
 
   AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   DCHECK(ATK_IS_TEXT(atk_object));
   g_signal_emit_by_name(atk_object, "text-caret-moved",
                         UTF16ToUnicodeOffsetInText(selection.second));
@@ -3693,6 +3728,10 @@ bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
 }
 
 void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   std::string description;
   GetStringAttribute(ax::mojom::StringAttribute::kDescription, &description);
 
@@ -3701,7 +3740,7 @@ void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
   property_values.new_value = G_VALUE_INIT;
   g_value_init(&property_values.new_value, G_TYPE_STRING);
   g_value_set_string(&property_values.new_value, description.c_str());
-  g_signal_emit_by_name(G_OBJECT(GetOrCreateAtkObject()),
+  g_signal_emit_by_name(G_OBJECT(atk_object),
                         "property-change::accessible-description",
                         &property_values, nullptr);
   g_value_unset(&property_values.new_value);
@@ -3721,6 +3760,10 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
   if (!GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, &float_val))
     return;
 
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   AtkPropertyValues property_values;
   property_values.property_name = "accessible-value";
 
@@ -3728,13 +3771,17 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
   g_value_init(&property_values.new_value, G_TYPE_DOUBLE);
   g_value_set_double(&property_values.new_value,
                      static_cast<double>(float_val));
-  g_signal_emit_by_name(G_OBJECT(GetOrCreateAtkObject()),
+  g_signal_emit_by_name(G_OBJECT(atk_object),
                         "property-change::accessible-value", &property_values,
                         nullptr);
 }
 
 void AXPlatformNodeAuraLinux::OnNameChanged() {
   AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object) {
+    CHECK(false);
+    return;
+  }
   std::string previous_accessible_name = accessible_name_;
   // Calling atk_object_get_name will update the value of accessible_name_.
   if (!g_strcmp0(atk_object::GetName(atk_object),
@@ -3760,8 +3807,13 @@ void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
   // We also don't want to notify if this is an ignored node
   if (!GetParent() || GetData().IsIgnored())
     return;
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   g_signal_emit_by_name(GetParent(), "children-changed::add",
-                        GetIndexInParent(), GetOrCreateAtkObject());
+                        GetIndexInParent(), atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
@@ -3770,8 +3822,12 @@ void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
   if (!GetParent() || GetData().IsIgnored())
     return;
 
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   g_signal_emit_by_name(GetParent(), "children-changed::remove",
-                        GetIndexInParent(), GetOrCreateAtkObject());
+                        GetIndexInParent(), atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnParentChanged() {
@@ -3790,8 +3846,12 @@ void AXPlatformNodeAuraLinux::OnParentChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   atk_object_notify_state_change(
-      ATK_OBJECT(GetOrCreateAtkObject()), ATK_STATE_INVALID_ENTRY,
+      ATK_OBJECT(atk_object), ATK_STATE_INVALID_ENTRY,
       GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse);
 }
 
@@ -3904,10 +3964,11 @@ AXPlatformNodeAuraLinux::GetEmbeddedObjectIndices() {
 }
 
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
-  if (!GetOrCreateAtkObject())
+  EnsureAtkObjectIsValid();
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
     return;
 
-  EnsureAtkObjectIsValid();
   AXHypertext old_hypertext = hypertext_;
   base::OffsetAdjuster::Adjustments old_adjustments = GetHypertextAdjustments();
 
@@ -3927,7 +3988,6 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   size_t shared_prefix, old_len, new_len;
   ComputeHypertextRemovedAndInserted(old_hypertext, &shared_prefix, &old_len,
                                      &new_len);
-  AtkObject* atk_object = GetOrCreateAtkObject();
   if (old_len > 0) {
     base::string16 removed_substring =
         old_hypertext.hypertext.substr(shared_prefix, old_len);
@@ -4124,9 +4184,13 @@ bool AXPlatformNodeAuraLinux::FocusFirstFocusableAncestorInWebContent() {
   if (GetAtkRole() == ATK_ROLE_DOCUMENT_WEB)
     return false;
 
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return false;
+
   if (GetData().HasState(ax::mojom::State::kFocusable) ||
       SelectionAndFocusAreTheSame()) {
-    if (g_current_focused != GetOrCreateAtkObject())
+    if (g_current_focused != atk_object)
       GrabFocus();
     return true;
   }
@@ -4333,6 +4397,8 @@ int AXPlatformNodeAuraLinux::GetCaretOffset() {
     base::Optional<FindInPageResultInfo> result =
         GetSelectionOffsetsFromFindInPage();
     AtkObject* atk_object = GetOrCreateAtkObject();
+    if (!atk_object)
+      return -1;
     if (result.has_value() && result->node == atk_object)
       return UTF16ToUnicodeOffsetInText(result->end_offset);
     return -1;
@@ -4343,9 +4409,11 @@ int AXPlatformNodeAuraLinux::GetCaretOffset() {
 }
 
 bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
-  DCHECK(GetOrCreateAtkObject());
-  int character_count =
-      atk_text_get_character_count(ATK_TEXT(GetOrCreateAtkObject()));
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return false;
+
+  int character_count = atk_text_get_character_count(ATK_TEXT(atk_object));
   if (offset < 0 || offset > character_count)
     offset = character_count;
 
@@ -4431,7 +4499,9 @@ gchar* AXPlatformNodeAuraLinux::GetSelectionWithText(int* start_offset,
   GetSelectionExtents(&selection_start, &selection_end);
 
   AtkObject* atk_object = GetOrCreateAtkObject();
-  DCHECK(atk_object);
+  if (!atk_object)
+    return nullptr;
+
   if (selection_start < 0 || selection_end < 0 ||
       selection_start == selection_end) {
     base::Optional<FindInPageResultInfo> find_in_page_result =
@@ -4458,7 +4528,7 @@ gchar* AXPlatformNodeAuraLinux::GetSelectionWithText(int* start_offset,
     *start_offset = selection_start;
   if (end_offset)
     *end_offset = selection_end;
-  return atk_text::GetText(ATK_TEXT(GetOrCreateAtkObject()), selection_start,
+  return atk_text::GetText(ATK_TEXT(atk_object), selection_start,
                            selection_end);
 }
 
@@ -4675,6 +4745,9 @@ void AXPlatformNodeAuraLinux::TerminateFindInPage() {
 void AXPlatformNodeAuraLinux::ActivateFindInPageResult(int start_offset,
                                                        int end_offset) {
   AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
   DCHECK(ATK_IS_TEXT(atk_object));
 
   if (!EmitsAtkTextEvents()) {
@@ -4741,7 +4814,9 @@ void AXPlatformNodeAuraLinux::ActivateFindInPageInParent(int start_offset,
 
 void AXPlatformNodeAuraLinux::ForgetCurrentFindInPageResult() {
   AtkObject* atk_object = GetOrCreateAtkObject();
-  DCHECK(atk_object);
+  if (!atk_object)
+    return;
+
   AtkObject* parent_doc = FindAtkObjectToplevelParentDocument(atk_object);
   if (parent_doc)
     GetActiveFindInPageResults().erase(parent_doc);
@@ -4750,7 +4825,9 @@ void AXPlatformNodeAuraLinux::ForgetCurrentFindInPageResult() {
 base::Optional<FindInPageResultInfo>
 AXPlatformNodeAuraLinux::GetSelectionOffsetsFromFindInPage() {
   AtkObject* atk_object = GetOrCreateAtkObject();
-  DCHECK(atk_object);
+  if (!atk_object)
+    return base::nullopt;
+
   AtkObject* parent_doc = FindAtkObjectToplevelParentDocument(atk_object);
   if (!parent_doc)
     return base::nullopt;

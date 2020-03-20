@@ -2120,6 +2120,10 @@ input.rename {
   flex: auto;
 }
 
+body.files-ng #list-container input.rename {
+  margin-inline-end: 4px;
+}
+
 li[renaming=''] .filename-label,
 li[renaming=''] .badge {
   display: none;

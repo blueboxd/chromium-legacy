@@ -569,7 +569,7 @@ void TracingHandler::Wire(UberDispatcher* dispatcher) {
 Response TracingHandler::Disable() {
   if (session_)
     StopTracing(nullptr, "");
-  return Response::OK();
+  return Response::Success();
 }
 
 namespace {
@@ -710,7 +710,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
       transfer_format.fromMaybe("") == Tracing::StreamFormatEnum::Proto;
 
   if (proto_format && !return_as_stream) {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         "Proto format is only supported when using stream transfer mode."));
     return;
   }
@@ -724,7 +724,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
       gzip_compression_ = gzip_compression;
       proto_format_ = proto_format;
     }
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         "Tracing has already been started (possibly in another tab)."));
     return;
   }
@@ -774,7 +774,7 @@ void TracingHandler::StartTracingWithGpuPid(
     base::ProcessId gpu_pid) {
   // Check if tracing was stopped in mid-air.
   if (!did_initiate_recording_) {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         "Tracing was stopped before start has been completed."));
     return;
   }
@@ -841,10 +841,10 @@ void TracingHandler::OnProcessReady(RenderProcessHost* process_host) {
 
 Response TracingHandler::End() {
   if (!session_)
-    return Response::Error("Tracing is not started");
+    return Response::ServerError("Tracing is not started");
 
   if (session_->HasTracingFailed())
-    return Response::Error("Tracing failed");
+    return Response::ServerError("Tracing failed");
 
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint;
   if (return_as_stream_) {
@@ -864,7 +864,7 @@ Response TracingHandler::End() {
     StopTracing(endpoint, tracing::mojom::kChromeTraceEventLabel);
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 void TracingHandler::GetCategories(
@@ -878,7 +878,7 @@ void TracingHandler::GetCategories(
 void TracingHandler::OnRecordingEnabled(
     std::unique_ptr<StartCallback> callback) {
   if (!did_initiate_recording_) {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         "Tracing was stopped before start has been completed."));
     return;
   }
@@ -921,7 +921,7 @@ void TracingHandler::RequestMemoryDump(
     Maybe<bool> deterministic,
     std::unique_ptr<RequestMemoryDumpCallback> callback) {
   if (!IsTracing()) {
-    callback->sendFailure(Response::Error("Tracing is not started"));
+    callback->sendFailure(Response::ServerError("Tracing is not started"));
     return;
   }
 
@@ -970,9 +970,9 @@ void TracingHandler::OnFrameFromVideoConsumer(
 
 Response TracingHandler::RecordClockSyncMarker(const std::string& sync_id) {
   if (!IsTracing())
-    return Response::Error("Tracing is not started");
+    return Response::ServerError("Tracing is not started");
   TRACE_EVENT_CLOCK_SYNC_RECEIVER(sync_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 void TracingHandler::SetupTimer(double usage_reporting_interval) {

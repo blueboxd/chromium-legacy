@@ -60,6 +60,11 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                    const HitTestLocation& hit_test_location,
                    const PhysicalOffset& physical_offset,
                    HitTestAction);
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& hit_test_location,
+                   const PhysicalOffset& physical_offset,
+                   const PhysicalOffset& inline_root_offset,
+                   HitTestAction);
 
   bool HitTestAllPhases(HitTestResult&,
                         const HitTestLocation&,

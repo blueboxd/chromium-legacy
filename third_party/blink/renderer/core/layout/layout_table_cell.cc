@@ -175,7 +175,7 @@ Length LayoutTableCell::LogicalWidthFromColumns(
   return Length::Fixed(col_width_sum);
 }
 
-void LayoutTableCell::ComputePreferredLogicalWidths() {
+MinMaxSizes LayoutTableCell::PreferredLogicalWidths() const {
   // The child cells rely on the grids up in the sections to do their
   // computePreferredLogicalWidths work.  Normally the sections are set up
   // early, as table cells are added, but relayout can cause the cells to be
@@ -187,13 +187,14 @@ void LayoutTableCell::ComputePreferredLogicalWidths() {
   // notional height on the cell, such as can happen when a percent sized image
   // scales up its width to match the available height. Setting a zero override
   // height prevents this from happening.
+  auto* mutable_this = const_cast<LayoutTableCell*>(this);
   LayoutUnit logical_height =
       HasOverrideLogicalHeight() ? OverrideLogicalHeight() : LayoutUnit(-1);
   if (logical_height > -1)
-    SetOverrideLogicalHeight(LayoutUnit());
-  LayoutBlockFlow::ComputePreferredLogicalWidths();
+    mutable_this->SetOverrideLogicalHeight(LayoutUnit());
+  MinMaxSizes sizes = LayoutBlockFlow::PreferredLogicalWidths();
   if (logical_height > -1)
-    SetOverrideLogicalHeight(logical_height);
+    mutable_this->SetOverrideLogicalHeight(logical_height);
 
   if (GetNode() && StyleRef().AutoWrap()) {
     // See if nowrap was set.
@@ -205,10 +206,11 @@ void LayoutTableCell::ComputePreferredLogicalWidths() {
       // set on the cell. Even so, it is a WinIE/Moz trait to make the minwidth
       // of the cell into the fixed width. They do this even in strict mode, so
       // do not make this a quirk. Affected the top of hiptop.com.
-      min_preferred_logical_width_ =
-          std::max(LayoutUnit(w.Value()), min_preferred_logical_width_);
+      sizes.min_size = std::max(sizes.min_size, LayoutUnit(w.Value()));
     }
   }
+
+  return sizes;
 }
 
 void LayoutTableCell::ComputeIntrinsicPadding(int collapsed_height,

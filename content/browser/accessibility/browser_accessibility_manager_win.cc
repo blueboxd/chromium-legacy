@@ -601,10 +601,16 @@ void BrowserAccessibilityManagerWin::OnSubtreeWillBeDeleted(ui::AXTree* tree,
   if (obj) {
     FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, obj);
     FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, obj);
-    if (obj->GetRole() == ax::mojom::Role::kMenu) {
-      FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, obj);
-      FireUiaAccessibilityEvent(UIA_MenuClosedEventId, obj);
-    }
+  }
+}
+
+void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
+                                                         ui::AXNode* node) {
+  if (node->data().role == ax::mojom::Role::kMenu) {
+    BrowserAccessibility* obj = GetFromAXNode(node);
+    DCHECK(obj);
+    FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, obj);
+    FireUiaAccessibilityEvent(UIA_MenuClosedEventId, obj);
   }
 }
 

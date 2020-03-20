@@ -33,8 +33,6 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -44,7 +42,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.FullscreenManagerTestUtils;
@@ -59,6 +56,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.UiSwitches;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.List;
@@ -66,8 +64,13 @@ import java.util.List;
 /** End-to-end tests for TabGroupPopupUi component. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 // clang-format off
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+// TODO(crbug.com/1058231): ENABLE_SCREENSHOT_UI_MODE is to disable IPHs for TabGroups.
+//  We should make this test more robust so that it's agnostic of IPHs.
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        UiSwitches.ENABLE_SCREENSHOT_UI_MODE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+@Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID, ChromeFeatureList.CHROME_DUET,
+        ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID})
 public class TabGroupPopupUiTest {
     // clang-format on
 
@@ -76,20 +79,6 @@ public class TabGroupPopupUiTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
-
-    @Before
-    public void setUp() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, true);
-    }
-
-    @After
-    public void tearDown() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, null);
-    }
 
     @Test
     @MediumTest

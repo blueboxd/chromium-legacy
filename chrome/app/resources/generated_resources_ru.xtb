@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Просмотр и изменение всех ваших данных на текущем сайте</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> предлагает сбросить настройки</translation>
 <translation id="1243314992276662751">Загрузить</translation>
-<translation id="1243398753772016127">Сайты не могут отслеживать ваши действия в браузере для показа персонализированной рекламы.</translation>
 <translation id="1244265436519979884">Выполняется восстановление Linux.</translation>
 <translation id="1244303850296295656">Ошибка расширения</translation>
 <translation id="1246905108078336582">Удалить подсказку из буфера обмена?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Вкл. – пользовательские настройки</translation>
 <translation id="1489664337021920575">Выбрать другой вариант</translation>
 <translation id="1493892686965953381">Ожидание загрузки <ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">Также удалить данные о работе в браузере (<ph name="URL" />). Возможно, при этом вы выйдете из аккаунта на сайте google.com.</translation>
 <translation id="1495486559005647033">Количество других доступных устройств: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="1495677929897281669">Вернуться на вкладку</translation>
 <translation id="1499271269825557605">Если вы обнаружили незнакомое расширение или заметили сбои в работе браузера, вы можете отключить расширение или изменить его настройки.</translation>
@@ -1188,7 +1186,6 @@
 <translation id="2575247648642144396">Значок будет отображаться, если расширение может работать на загруженной странице. Активируйте его, нажав на значок или с помощью комбинации клавиш <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Использовать в качестве Chromebox для видеоконференций</translation>
 <translation id="2580889980133367162">Всегда разрешать <ph name="HOST" /> скачивать несколько файлов</translation>
-<translation id="2580924999637585241">Всего: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">долгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не удалось загрузить билет Kerberos. Повторите попытку или обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
@@ -2015,7 +2012,7 @@
 <translation id="3690369331356918524">Сообщает, если пароли были раскрыты в результате утечки данных.</translation>
 <translation id="3691231116639905343">Клавиатуры</translation>
 <translation id="3691267899302886494">Сайт <ph name="HOST" /> запрашивает доступ к вашему экрану.</translation>
-<translation id="369135240373237088">Снова войдите в учебный аккаунт</translation>
+<translation id="369135240373237088">Войдите снова, используя учебный аккаунт</translation>
 <translation id="3693415264595406141">Пароль:</translation>
 <translation id="3694027410380121301">Выбрать предыдущую вкладку</translation>
 <translation id="369489984217678710">Пароли и другие данные для входа</translation>
@@ -2495,7 +2492,7 @@
 <translation id="4336434711095810371">Удалить все данные</translation>
 <translation id="4336979451636460645">Просмотреть сетевые журналы можно на странице <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> запрашивает доступ к приложению "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="434404122609091467">Использовать текущего поставщика услуг.</translation>
+<translation id="434404122609091467">Использовать текущего поставщика услуг</translation>
 <translation id="4345587454538109430">Настройка...</translation>
 <translation id="4345732373643853732">Серверу неизвестно это имя пользователя.</translation>
 <translation id="4348766275249686434">Собирать данные об ошибках</translation>
@@ -2534,7 +2531,7 @@
 <translation id="439266289085815679">Конфигурацию Bluetooth контролирует пользователь <ph name="USER_EMAIL" />.</translation>
 <translation id="4392896746540753732">Изменение файла конфигурации.</translation>
 <translation id="4394049700291259645">Отключить</translation>
-<translation id="439817266247065935">Вы неправильно завершили работу устройства. Чтобы использовать приложения для Linux, перезагрузите эту операционную систему.</translation>
+<translation id="439817266247065935">Работа устройства была завершена неправильно. Чтобы использовать приложения для Linux, перезагрузите эту операционную систему.</translation>
 <translation id="4400367121200150367">Здесь появятся сайты, которые никогда не сохраняют пароли</translation>
 <translation id="4400632832271803360">Чтобы сменить функции клавиш верхнего ряда, удерживайте клавишу Launcher</translation>
 <translation id="4400963414856942668">Чтобы добавить страницу в закладки, нажмите на значок звездочки.</translation>
@@ -2817,7 +2814,6 @@
 <translation id="4808667324955055115">Всплывающие окна заблокированы</translation>
 <translation id="480990236307250886">Перейти на главную страницу</translation>
 <translation id="4811503964269049987">Добавить выбранную вкладку в группу</translation>
-<translation id="4811818760963189951">Отключено, поскольку вы отключили синхронизацию истории</translation>
 <translation id="4813136279048157860">Мои изображения</translation>
 <translation id="4813512666221746211">Ошибка сети</translation>
 <translation id="4814378367953456825">Введите название для этого отпечатка пальца.</translation>
@@ -2986,7 +2982,6 @@
 <translation id="5040823038948176460">Дополнительные настройки контента</translation>
 <translation id="5042282098504489593">Откройте настройки, чтобы подключить устройство <ph name="USB_DEVICE_NAME" /> к Linux</translation>
 <translation id="5043913660911154449">Или укажите PPD-файл для принтера. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Отключено, поскольку синхронизируемые данные зашифрованы с помощью кодовой фразы</translation>
 <translation id="5045550434625856497">Неправильный пароль</translation>
 <translation id="504561833207953641">Окно или вкладка откроются в текущем сеансе браузера.</translation>
 <translation id="5047421709274785093">Запретить сайтам использовать датчики движения и освещенности</translation>
@@ -3963,7 +3958,6 @@
 <translation id="63566973648609420">Ваши зашифрованные данные может прочитать только тот, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется <ph name="BEGIN_LINK" />сбросить параметры синхронизации<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Поздравляем с приобретением продукта семейства <ph name="SHORT_PRODUCT_NAME" />! Это больше, чем просто компьютер.</translation>
 <translation id="6358884629796491903">Дракон</translation>
-<translation id="6360719647236334056">Используйте историю браузера Chrome для персонализации результатов поиска, рекламы и сервисов Google</translation>
 <translation id="6361850914223837199">Сведения об ошибке:</translation>
 <translation id="6362853299801475928">&amp;Сообщить о проблеме...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4241,7 +4235,6 @@
 <translation id="6758056191028427665">Расскажите, как у вас дела.</translation>
 <translation id="6759193508432371551">Сброс настроек</translation>
 <translation id="6762833852331690540">Включено</translation>
-<translation id="6764693078871405569">Также удалить данные о работе в браузере (<ph name="URL" />). При этом вы выйдете из аккаунта на сайте <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Выбрать другой язык…</translation>
 <translation id="6767639283522617719">Не удалось подключить устройство к домену. Проверьте настройки организационного подразделения.</translation>
 <translation id="6769712124046837540">Добавление принтера...</translation>
@@ -5696,7 +5689,7 @@
 <translation id="8688672835843460752">Свободно</translation>
 <translation id="8691418731028620688">Подключиться к сети Wi-Fi</translation>
 <translation id="8695825812785969222">Открыть &amp;адрес...</translation>
-<translation id="8698269656364382265">Чтобы вернуться на предыдущий экран, проведите по экрану слева направо.</translation>
+<translation id="8698269656364382265">Чтобы вернуться на предыдущий экран, проведите слева направо.</translation>
 <translation id="869884720829132584">Меню приложений</translation>
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8703346390800944767">Пропустить</translation>

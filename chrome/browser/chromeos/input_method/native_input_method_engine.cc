@@ -205,8 +205,9 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     // If |assistive_suggester_| changes the surrounding text, no longer need
     // to call the following function, as the information is out-dated.
     if (assistive_suggester_->OnSurroundingTextChanged(text, cursor_pos,
-                                                       anchor_pos))
+                                                       anchor_pos)) {
       return;
+    }
   }
   base_observer_->OnSurroundingTextChanged(engine_id, text, cursor_pos,
                                            anchor_pos, offset_pos);

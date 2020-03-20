@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Lesa og breyta öllum gögnum á núverandi vefsvæði þegar þetta er virkjað</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vill endurstilla stillingarnar þínar.</translation>
 <translation id="1243314992276662751">Hlaða inn</translation>
-<translation id="1243398753772016127">Vefsvæði geta ekki notfært sér vafravirkni þína á mismunandi vefsvæðum til að sérsníða auglýsingar</translation>
 <translation id="1244265436519979884">Endurheimt Linux stendur yfir</translation>
 <translation id="1244303850296295656">Villa í viðbót</translation>
 <translation id="1246905108078336582">Fjarlægja tillögu af klippiborði?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Kveikt – sérsniðnar stillingar</translation>
 <translation id="1489664337021920575">Velja annan valkost</translation>
 <translation id="1493892686965953381">Beðið eftir <ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">Hreinsa einnig vefskoðunargögn (<ph name="URL" />) sem gæti skráð þig út af Google.com.</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> önnur tiltæk tæki</translation>
 <translation id="1495677929897281669">Aftur á flipa</translation>
 <translation id="1499271269825557605">Ef þú þekkir ekki viðbót eða ef vafrinn virkar ekki eins og hann á að gera geturðu slökkt á viðbótum eða sérsniðið þær hér.</translation>
@@ -483,7 +481,7 @@
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Bættu prentaranum við Google skýjaprentun til að prenta hvaðan sem er.}one{Bættu # prentara við Google skýjaprentun til að prenta hvaðan sem er.}other{Bættu # prenturum við Google skýjaprentun til að prenta hvaðan sem er.}}</translation>
 <translation id="1656528038316521561">Gagnsæi bakgrunns</translation>
 <translation id="1657406563541664238">Hjálpa til við að bæta <ph name="PRODUCT_NAME" /> með því að senda sjálfkrafa talnagögn um notkun og tilkynningar um hrun til Google</translation>
-<translation id="1657937299377480641">Til að skrá þig inn aftur fyrir aðgang að menntunarleiðum skaltu biðja foreldri um að veita þér þá heimild</translation>
+<translation id="1657937299377480641">Til að skrá þig inn aftur og fá aðgang að menntabrunnum skaltu biðja foreldri um að gefa þér leyfi</translation>
 <translation id="1658424621194652532">Þessi síða hefur aðgang að hljóðnemanum.</translation>
 <translation id="1660204651932907780">Leyfa vefsvæðum að spila hljóð (mælt með)</translation>
 <translation id="1660763353352708040">Vandamál í straumbreyti</translation>
@@ -1190,7 +1188,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2575247648642144396">Þetta tákn verður sýnilegt þegar hægt er að nota viðbótina á síðunni sem er opin. Notaðu viðbótina með því að smella á táknið eða ýta á <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Setja upp Chromebox fyrir fundi</translation>
 <translation id="2580889980133367162">Leyfa <ph name="HOST" /> alltaf að sækja margar skrár</translation>
-<translation id="2580924999637585241">Samtals: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Löng</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (kerfi <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Ekki var hægt að sækja Kerberos-miða. Reyndu aftur eða hafðu samband við tækjastjóra fyrirtækisins. (Villukóði <ph name="ERROR_CODE" />).</translation>
@@ -2457,7 +2454,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4263223596040212967">Athugaðu lyklaskipanina og reyndu aftur.</translation>
 <translation id="4263757076580287579">Hætt var við skráningu prentara.</translation>
 <translation id="426564820080660648">Notaðu Ethernet, Wi-Fi eða farsímagögn til að leita að uppfærslum.</translation>
-<translation id="4267455501101322486">Til að bæta við reikningi fyrir aðgang að menntunarleiðum skaltu biðja foreldri um að veita þér þá heimild</translation>
+<translation id="4267455501101322486">Til að bæta við reikningi og fá aðgang að menntabrunnum skaltu biðja foreldri um að gefa þér leyfi</translation>
 <translation id="4267953847983678297">Tengjast sjálfkrafa við farsímanet</translation>
 <translation id="4268025649754414643">Lykladulritun</translation>
 <translation id="4270393598798225102">Útgáfa <ph name="NUMBER" /></translation>
@@ -2819,7 +2816,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4808667324955055115">Lokað á sprettiglugga:</translation>
 <translation id="480990236307250886">Opna heimasíðuna</translation>
 <translation id="4811503964269049987">Setja valinn flipa í hóp</translation>
-<translation id="4811818760963189951">Slökkt er á þessu vegna þess að þú slökktir á samstillingu ferils</translation>
 <translation id="4813136279048157860">Myndirnar mínar</translation>
 <translation id="4813512666221746211">Netvilla</translation>
 <translation id="4814378367953456825">Veldu fingrafarinu heiti</translation>
@@ -2988,7 +2984,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5040823038948176460">Fleiri efnisstillingar</translation>
 <translation id="5042282098504489593">Opnaðu „Stillingar“ til að tengja <ph name="USB_DEVICE_NAME" /> við Linux</translation>
 <translation id="5043913660911154449">Eða tilgreindu PPD prentarans <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Slökkt vegna þess að þú dulkóðaðir samstillingargögn með aðgangsorði</translation>
 <translation id="5045550434625856497">Rangt aðgangsorð</translation>
 <translation id="504561833207953641">Opnast í núverandi vafralotu.</translation>
 <translation id="5047421709274785093">Ekki leyfa vefsvæðum að nota hreyfi- og birtuskynjara</translation>
@@ -3965,7 +3960,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="63566973648609420">Aðeins þeir sem vita aðgangsorðið geta lesið dulkóðuðu gögnin þín. Aðgangsorðið er ekki sent til Google eða vistað þar. Ef þú gleymir aðgangsorðinu eða þig langar að breyta þessari stillingu þarftu að <ph name="BEGIN_LINK" />endurstilla samstillingu<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Komdu fagnandi í <ph name="SHORT_PRODUCT_NAME" /> fjölskylduna. Þetta er engin venjuleg tölva.</translation>
 <translation id="6358884629796491903">Dreki</translation>
-<translation id="6360719647236334056">Nota vafraferil Chrome til að sérsníða leitina, auglýsingar og aðra þjónustu Google</translation>
 <translation id="6361850914223837199">Villuupplýsingar:</translation>
 <translation id="6362853299801475928">Tilkynna um vandamál...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4243,7 +4237,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6758056191028427665">Láttu okkur vita hvernig við stöndum okkur.</translation>
 <translation id="6759193508432371551">Núllstilling</translation>
 <translation id="6762833852331690540">Kveikt</translation>
-<translation id="6764693078871405569">Hreinsa einnig vefskoðunargögn (<ph name="URL" />) sem mun skrá þig út af <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Velja annað tungumál...</translation>
 <translation id="6767639283522617719">Ekki tókst að tengjast léninu. Gakktu úr skugga um að stillingarnar séu réttar fyrir skipulagseininguna.</translation>
 <translation id="6769712124046837540">Bætir prentara við...</translation>

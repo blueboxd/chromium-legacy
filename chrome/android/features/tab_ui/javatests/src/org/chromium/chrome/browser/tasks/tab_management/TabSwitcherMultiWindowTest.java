@@ -24,7 +24,6 @@ import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,7 +36,6 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout;
@@ -60,6 +58,7 @@ import org.chromium.ui.test.util.UiRestriction;
                 ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @MinAndroidSdkLevel(Build.VERSION_CODES.N)
+@Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
 public class TabSwitcherMultiWindowTest {
     // clang-format on
     @Rule
@@ -70,7 +69,6 @@ public class TabSwitcherMultiWindowTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
@@ -79,11 +77,6 @@ public class TabSwitcherMultiWindowTest {
                         .getTabModelSelector()
                         .getTabModelFilterProvider()
                         .getCurrentTabModelFilter()::isTabModelRestored));
-    }
-
-    @After
-    public void tearDown() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
     }
 
     @Test

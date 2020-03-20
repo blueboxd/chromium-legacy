@@ -736,7 +736,8 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
   }
   const NGFragmentItem* container = CurrentItem();
   DCHECK(container);
-  DCHECK_EQ(container->Type(), NGFragmentItem::kLine);
+  DCHECK(container->Type() == NGFragmentItem::kLine ||
+         container->Type() == NGFragmentItem::kBox);
   const ComputedStyle& container_style = container->Style();
   const WritingMode writing_mode = container_style.GetWritingMode();
   const TextDirection direction = container_style.Direction();
@@ -802,6 +803,8 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
     if (const PositionWithAffinity child_position =
             descendants.PositionForPointInChild(point, *closest_child_after))
       return child_position;
+    // TODO(yosin): we should do like "closest_child_before" once we have a
+    // case.
   }
 
   if (closest_child_before) {
@@ -809,6 +812,11 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
     if (const PositionWithAffinity child_position =
             descendants.PositionForPointInChild(point, *closest_child_before))
       return child_position;
+    if (closest_child_before->BoxFragment()) {
+      // LayoutViewHitTest.HitTestHorizontal "Top-right corner (outside) of div"
+      // reach here.
+      return descendants.PositionForPointInInlineBox(point);
+    }
   }
 
   return PositionWithAffinity();

@@ -27,7 +27,7 @@ goog.require('TtsCategory');
 goog.require('ValueSelectionSpan');
 goog.require('ValueSpan');
 goog.require('goog.i18n.MessageFormat');
-goog.require('LanguageSwitching');
+goog.require('LocaleOutputHelper');
 goog.require('UserAnnotationHandler');
 
 goog.scope(function() {
@@ -767,7 +767,7 @@ Output = class {
                 buff[buff.length - 1].setSpan(speechProps, 0, 0);
               }
             };
-            LanguageSwitching.instance.assignLocalesAndAppend(
+            LocaleOutputHelper.instance.assignLocalesAndAppend(
                 node, 'name', appendStringWithLocale.bind(this, buff, options));
           } else {
             const nameOrAnnotation =

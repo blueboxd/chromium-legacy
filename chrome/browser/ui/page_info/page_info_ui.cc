@@ -12,10 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/ui/page_info/page_info_ui_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -34,8 +31,6 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "ui/gfx/color_palette.h"
@@ -225,8 +220,7 @@ CreateSecurityDescriptionForLookalikeSafetyTip(const GURL& safe_url) {
 
 // Gets the actual setting for a ContentSettingType, taking into account what
 // the default setting value is and whether Html5ByDefault is enabled.
-ContentSetting GetEffectiveSetting(Profile* profile,
-                                   ContentSettingsType type,
+ContentSetting GetEffectiveSetting(ContentSettingsType type,
                                    ContentSetting setting,
                                    ContentSetting default_setting) {
   ContentSetting effective_setting = setting;
@@ -388,13 +382,13 @@ base::string16 PageInfoUI::PermissionTypeToUIString(ContentSettingsType type) {
 
 // static
 base::string16 PageInfoUI::PermissionActionToUIString(
-    Profile* profile,
+    PageInfoUiDelegate* delegate,
     ContentSettingsType type,
     ContentSetting setting,
     ContentSetting default_setting,
     content_settings::SettingSource source) {
   ContentSetting effective_setting =
-      GetEffectiveSetting(profile, type, setting, default_setting);
+      GetEffectiveSetting(type, setting, default_setting);
   const int* button_text_ids = NULL;
   switch (source) {
     case content_settings::SETTING_SOURCE_USER:
@@ -406,7 +400,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
           // sound default setting is ALLOW, we will return a custom string
           // indicating that Chrome is controlling autoplay and sound
           // automatically.
-          if (profile->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled) &&
+          if (delegate->IsBlockAutoPlayEnabled() &&
               effective_setting == ContentSetting::CONTENT_SETTING_ALLOW) {
             return l10n_util::GetStringUTF16(
                 IDS_PAGE_INFO_BUTTON_TEXT_AUTOMATIC_BY_DEFAULT);
@@ -446,11 +440,11 @@ base::string16 PageInfoUI::PermissionActionToUIString(
 
 // static
 base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
-    Profile* profile,
+    PageInfoUiDelegate* delegate,
     const PageInfoUI::PermissionInfo& permission,
     const GURL& url) {
   ContentSetting effective_setting = GetEffectiveSetting(
-      profile, permission.type, permission.setting, permission.default_setting);
+      permission.type, permission.setting, permission.default_setting);
   int message_id = kInvalidResourceID;
   switch (permission.source) {
     case content_settings::SettingSource::SETTING_SOURCE_POLICY:
@@ -466,8 +460,7 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
   if (permission.setting == CONTENT_SETTING_BLOCK &&
       permissions::PermissionUtil::IsPermission(permission.type)) {
     permissions::PermissionResult permission_result =
-        PermissionManagerFactory::GetForProfile(profile)->GetPermissionStatus(
-            permission.type, url, url);
+        delegate->GetPermissionStatus(permission.type, url);
     switch (permission_result.source) {
       case permissions::PermissionStatusSource::MULTIPLE_DISMISSALS:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;

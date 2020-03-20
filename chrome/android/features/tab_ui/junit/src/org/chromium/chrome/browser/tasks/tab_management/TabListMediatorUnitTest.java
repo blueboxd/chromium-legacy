@@ -130,7 +130,7 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 // clang-format off
 @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-@Features.DisableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+@Features.DisableFeatures({TAB_GROUPS_ANDROID, TAB_GROUPS_CONTINUATION_ANDROID})
 public class TabListMediatorUnitTest {
     // clang-format on
     @Rule
@@ -251,7 +251,6 @@ public class TabListMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
 
-        CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, false);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
         TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(true);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE, TAB1_URL);
@@ -332,7 +331,6 @@ public class TabListMediatorUnitTest {
     @After
     public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
-        CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, null);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, null);
         TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(null);
         TabAttributeCache.clearAllForTesting();
@@ -1411,7 +1409,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @Features.DisableFeatures({TAB_GROUPS_ANDROID})
     public void testUrlUpdated_forSingleTab_GTS_GroupNotEnabled() {
         initAndAssertAllProperties();
         assertNotEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
@@ -2075,7 +2073,8 @@ public class TabListMediatorUnitTest {
         } else if (type == TabListMediatorType.TAB_STRIP) {
             uiType = TabProperties.UiType.STRIP;
         }
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
+        // TODO(crbug.com/1058196): avoid re-instanciate TabListMediator by using annotation.
+        CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, true);
 
         TabListMediator.SearchTermChipUtils.setIsSearchChipAdaptiveIconEnabledForTesting(false);
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,

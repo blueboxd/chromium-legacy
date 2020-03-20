@@ -505,17 +505,21 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      * Called by native code to process a makeCredential request.
      */
     @CalledByNative
-    void makeCredential(long client) {
-        mAuthenticator.makeCredential(client);
+    void makeCredential(long client, byte[] clientDataHash, String rpId, byte[] userId,
+            int[] algorithms, byte[][] excludedCredentialIds, boolean residentKeyRequired) {
+        mAuthenticator.makeCredential(client, clientDataHash, rpId, userId, algorithms,
+                excludedCredentialIds, residentKeyRequired);
     }
 
     /**
      * Called by CableAuthenticator to notify native code of an attestation response to a
      * makeCredential request.
      */
-    public void onAuthenticatorAttestationResponse(long client, int ctapStatus) {
-        mTaskRunner.postTask(
-                () -> BLEHandlerJni.get().onAuthenticatorAttestationResponse(client, ctapStatus));
+    public void onAuthenticatorAttestationResponse(
+            long client, int ctapStatus, byte[] attestationObject) {
+        mTaskRunner.postTask(()
+                                     -> BLEHandlerJni.get().onAuthenticatorAttestationResponse(
+                                             client, ctapStatus, attestationObject));
     }
 
     @NativeMethods
@@ -544,6 +548,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
         /**
          * Called to alert native code of a response to a makeCredential request.
          */
-        void onAuthenticatorAttestationResponse(long client, int ctapStatus);
+        void onAuthenticatorAttestationResponse(
+                long client, int ctapStatus, byte[] attestationObject);
     }
 }

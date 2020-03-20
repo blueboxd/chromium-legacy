@@ -56,6 +56,14 @@ constexpr int kTrustTokenPerIssuerTokenCapacity = 500;
 // tokens issued by a given issuer reveals one bit of identifying information).
 constexpr int kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers = 2;
 
+// The default Trust Tokens batch size (i.e., number of tokens to request from
+// an issuer), used when issuers do not themselves provide batch sizes.
+constexpr int kDefaultTrustTokenIssuanceBatchSize = 100;
+
+// The maximum Trust Tokens batch size (i.e., number of tokens to request from
+// an issuer).
+constexpr int kMaximumTrustTokenIssuanceBatchSize = 100;
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PARAMETERIZATION_H_

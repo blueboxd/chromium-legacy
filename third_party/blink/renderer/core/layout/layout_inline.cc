@@ -1081,7 +1081,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
           accumulated_offset + item.OffsetInContainerBlock();
       if (NGBoxFragmentPainter(cursor, item, *box_fragment)
               .NodeAtPoint(result, hit_test_location, child_offset,
-                           hit_test_action))
+                           accumulated_offset, hit_test_action))
         return true;
     }
     return false;

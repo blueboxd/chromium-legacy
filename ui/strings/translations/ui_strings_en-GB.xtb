@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installed app</translation>
 <translation id="1450753235335490080">Can't share <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> swapped with <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">You searched for this before. Deleting '<ph name="QUERY" />' from your history will permanently remove it from your account across all your devices.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute and }other{# minutes and }}</translation>
 <translation id="1643823602425662293">Notification</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Right to Left</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MOST LIKELY</translation>
+<translation id="7170202025028120564">Your application's display settings will take effect when it is next restarted.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min left}other{# mins left}}</translation>
 <translation id="7319740667687257810">Launcher, partial view</translation>

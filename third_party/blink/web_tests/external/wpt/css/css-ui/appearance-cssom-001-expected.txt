@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-Found 342 tests; 169 PASS, 173 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 342 tests; 170 PASS, 172 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS -webkit-appearance: none
-FAIL -webkit-appearance: auto assert_equals: style.WebkitAppearance (uppercase W) expected "auto" but got ""
+PASS -webkit-appearance: auto
 PASS -webkit-appearance: button
 PASS -webkit-appearance: checkbox
 PASS -webkit-appearance: listbox

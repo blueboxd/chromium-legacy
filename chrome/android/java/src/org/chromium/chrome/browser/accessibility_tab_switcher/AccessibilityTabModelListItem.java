@@ -325,7 +325,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         }
 
         if (mTab.isIncognito()) {
-            setBackgroundResource(R.color.dark_primary_color);
+            setBackgroundResource(R.color.default_bg_color_dark);
             mFaviconView.getBackground().setLevel(mIncognitoLevel);
             ApiCompatibilityUtils.setTextAppearance(
                     mTitleView, R.style.TextAppearance_TextLarge_Primary_Light);

@@ -1659,6 +1659,16 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
   return NodeAtPoint(hit_test, physical_offset);
 }
 
+bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
+                                       const HitTestLocation& hit_test_location,
+                                       const PhysicalOffset& physical_offset,
+                                       const PhysicalOffset& inline_root_offset,
+                                       HitTestAction action) {
+  HitTestContext hit_test(action, hit_test_location, inline_root_offset,
+                          &result);
+  return NodeAtPoint(hit_test, physical_offset);
+}
+
 bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
                                        const PhysicalOffset& physical_offset) {
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();

@@ -161,6 +161,9 @@ struct MEDIA_PARSERS_EXPORT Vp8FrameHeader {
   uint8_t bool_dec_range;
   uint8_t bool_dec_value;
   uint8_t bool_dec_count;
+
+  // Color range information.
+  bool is_full_range;
 };
 
 // A parser for raw VP8 streams as specified in RFC 6386.

@@ -333,6 +333,8 @@ component("ash") {
     "events/switch_access_event_handler.h",
     "fast_ink/cursor/cursor_view.cc",
     "fast_ink/cursor/cursor_view.h",
+    "fast_ink/fast_ink_host.cc",
+    "fast_ink/fast_ink_host.h",
     "fast_ink/fast_ink_pointer_controller.cc",
     "fast_ink/fast_ink_pointer_controller.h",
     "fast_ink/fast_ink_points.cc",

@@ -49,7 +49,7 @@ class LayoutFieldset final : public LayoutBlockFlow {
   LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
 
-  void ComputePreferredLogicalWidths() override;
+  MinMaxSizes PreferredLogicalWidths() const override;
 
   void PaintBoxDecorationBackground(
       const PaintInfo&,

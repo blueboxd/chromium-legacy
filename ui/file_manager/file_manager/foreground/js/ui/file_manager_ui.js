@@ -429,8 +429,16 @@ class FileManagerUI {
     cr.ui.contextMenuHandler.setContextMenu(
         queryRequiredElement('.drive-welcome.page'), this.fileContextMenu);
 
-    // Add handlers.
+    // Add window resize handler.
     document.defaultView.addEventListener('resize', this.relayout.bind(this));
+
+    // Add global pointer-active handler.
+    const rootElement = document.documentElement;
+    ['pointerdown', 'pointerup'].forEach((eventType) => {
+      document.addEventListener(eventType, (e) => {
+        rootElement.classList.toggle('pointer-active', /down$/.test(e.type));
+      }, true);
+    });
   }
 
   /**

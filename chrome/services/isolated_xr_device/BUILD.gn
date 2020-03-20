@@ -22,7 +22,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//chrome/common",
+    "//device/base",
     "//device/vr:vr",
     "//device/vr/public/mojom",
     "//device/vr/public/mojom:test_mojom",

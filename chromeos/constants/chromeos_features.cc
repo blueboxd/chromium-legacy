@@ -34,6 +34,10 @@ const base::Feature kArcManagedAdbSideloadingSupport{
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to enable assistive autocorrect.
+const base::Feature kAssistAutoCorrect{"AssistAutoCorrect",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable assist personal information.
 const base::Feature kAssistPersonalInfo{"AssistPersonalInfo",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -95,7 +99,7 @@ const base::Feature kCrostiniUsbAllowUnsupported{
 
 // Enables or disables the new WebUI Crostini upgrader.
 const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables using Cryptauth's GetDevicesActivityStatus API.
 const base::Feature kCryptAuthV2DeviceActivityStatus{

@@ -351,7 +351,7 @@ void TracingAgent::start(
     protocol::Maybe<double> buffer_usage_reporting_interval,
     std::unique_ptr<StartCallback> callback) {
   if (g_any_agent_tracing) {
-    callback->sendFailure(Response::Error("Tracing is already started"));
+    callback->sendFailure(Response::ServerError("Tracing is already started"));
     return;
   }
 
@@ -378,10 +378,10 @@ void TracingAgent::start(
 
 Response TracingAgent::end() {
   if (!perfetto_session_)
-    return Response::Error("Tracing is not started");
+    return Response::ServerError("Tracing is not started");
 
   if (perfetto_session_->HasTracingFailed())
-    return Response::Error("Tracing failed");
+    return Response::ServerError("Tracing failed");
 
   scoped_refptr<DevToolsTraceEndpointProxy> endpoint;
   // Reset the trace data buffer state.
@@ -389,7 +389,7 @@ Response TracingAgent::end() {
   endpoint = new DevToolsTraceEndpointProxy(weak_factory_.GetWeakPtr());
   StopTracing(endpoint, tracing::mojom::kChromeTraceEventLabel);
 
-  return Response::OK();
+  return Response::Success();
 }
 
 void TracingAgent::StartTracing(std::unique_ptr<StartCallback> callback) {

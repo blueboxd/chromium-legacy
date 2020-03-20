@@ -4,8 +4,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
 -->
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Chips default measures -->
-    <item name="chip_background_selected_focused_alpha" format="float" type="dimen">1</item>
-    <item name="chip_background_selected_alpha" format="float" type="dimen">1</item>
+    <dimen name="chip_background_selected_alpha">@dimen/chip_background_selected_alpha_dark</dimen>
 </resources>

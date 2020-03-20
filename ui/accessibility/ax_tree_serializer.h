@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_source.h"
@@ -341,7 +342,10 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
         // This child is already in the client tree and valid, we won't
         // recursively serialize it so we don't need to check this
         // subtree recursively for reparenting.
-        continue;
+        // However, if the child is ignored, the children may now be
+        // considered as reparented, so continue recursion in that case.
+        if (!client_child->ignored)
+          continue;
       }
     }
 
@@ -548,6 +552,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
     ClientTreeNode* client_child = ClientTreeNodeById(new_child_id);
     if (client_child && client_child->parent != client_node) {
       DVLOG(1) << "Reparenting detected";
+      base::debug::DumpWithoutCrashing();
       Reset();
       return false;
     }

@@ -556,8 +556,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
             ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
     public void testStartSurfaceLayout_Disabled_HighEndPhone() throws Exception {
         // clang-format on
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
         verifyStackLayoutEnabled();
 
         // Verify accessibility
@@ -573,10 +571,9 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
     @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testStartSurfaceLayout_Disabled_AllPhone_Accessibility_WithoutContinuationFlag() {
         // clang-format on
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         AccessibilityUtil.setAccessibilityEnabledForTesting(true);
         verifyOverviewListLayoutEnabled();
     }
@@ -587,7 +584,8 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Feature({"Android-TabSwitcher"})
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testStartSurfaceLayout_Enabled_HighEndPhone() throws Exception {
         // clang-format on
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
@@ -595,7 +593,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.GRID);
 
         // Verify accessibility
@@ -615,7 +612,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testStartSurfaceLayout_Enabled_LowEndPhone() throws Exception {
         // clang-format on
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.LIST);
 
         // Test Accessibility

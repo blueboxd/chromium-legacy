@@ -45,8 +45,10 @@ enum ControlState {
 typedef unsigned ControlStates;
 
 // Must follow css_value_keywords.json5 order
+// kAutoPart is never returned by ComputedStyle::EffectiveAppearance()
 enum ControlPart {
   kNoControlPart,
+  kAutoPart,
   kCheckboxPart,
   kRadioPart,
   kPushButtonPart,

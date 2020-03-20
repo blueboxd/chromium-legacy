@@ -18,11 +18,11 @@
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
-#include "chrome/common/chrome_features.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/navigation_entry.h"
+#include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -34,7 +34,7 @@ static constexpr base::TimeDelta kPermissionPromptTimeout =
 
 base::TimeDelta GetPermissionPromptTimeout(bool first_time) {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
-  if (base::FeatureList::IsEnabled(features::kWindowsMixedReality) &&
+  if (base::FeatureList::IsEnabled(device::features::kWindowsMixedReality) &&
       first_time)
     return base::TimeDelta::FromSeconds(10);
 #endif

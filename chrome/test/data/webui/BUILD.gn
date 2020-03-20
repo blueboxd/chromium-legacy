@@ -286,6 +286,7 @@ js2gtest("browser_tests_js_webui") {
     data += [
       "$root_gen_dir/chrome/test/data/webui/settings/default_browser_browsertest.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/import_data_dialog_test.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/people_page_manage_profile_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/system_page_tests.m.js",
     ]
   }

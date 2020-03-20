@@ -53,8 +53,10 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
 
   void Append(InspectorAgent*);
   void Detach();
-  void FlushProtocolNotifications();
   void Trace(Visitor*);
+
+  // protocol::FrontendChannel implementation.
+  void FlushProtocolNotifications() override;
 
   // Core probes.
   void DidStartProvisionalLoad(LocalFrame*);
@@ -75,15 +77,14 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
                                    base::span<const uint8_t> message);
 
   // protocol::FrontendChannel implementation.
-  void sendProtocolResponse(
+  void SendProtocolResponse(
       int call_id,
       std::unique_ptr<protocol::Serializable> message) override;
-  void sendProtocolNotification(
+  void SendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
-  void fallThrough(int call_id,
-                   const String& method,
+  void FallThrough(int call_id,
+                   crdtp::span<uint8_t> method,
                    crdtp::span<uint8_t> message) override;
-  void flushProtocolNotifications() override;
 
   // v8_inspector::V8Inspector::Channel implementation.
   void sendResponse(
@@ -91,6 +92,7 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
   void sendNotification(
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
+  void flushProtocolNotifications() override;
 
   bool IsDetached();
   void SendProtocolResponse(int call_id, std::vector<uint8_t> message);

@@ -363,9 +363,10 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow,
 
   // LayoutNGTableCellInterface implementation end.
 
+  MinMaxSizes PreferredLogicalWidths() const override;
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  void ComputePreferredLogicalWidths() override;
 
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
 

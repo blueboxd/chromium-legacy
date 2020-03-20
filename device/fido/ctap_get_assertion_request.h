@@ -33,6 +33,13 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
  public:
   using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
 
+  // Decodes a CTAP2 authenticatorGetAssertion request message. The request's
+  // |client_data_json| will be empty and |client_data_hash| will be set.
+  //
+  // A |uv| bit of 0 is mapped to UserVerificationRequirement::kDiscouraged.
+  static base::Optional<CtapGetAssertionRequest> Parse(
+      const cbor::Value::MapValue& request_map);
+
   CtapGetAssertionRequest(std::string rp_id, std::string client_data_json);
   CtapGetAssertionRequest(const CtapGetAssertionRequest& that);
   CtapGetAssertionRequest(CtapGetAssertionRequest&& that);
@@ -59,8 +66,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   bool is_u2f_only = false;
 };
 
-struct CtapGetNextAssertionRequest {
-};
+struct CtapGetNextAssertionRequest {};
 
 // Serializes GetAssertion request parameter into CBOR encoded map with
 // integer keys and CBOR encoded values as defined by the CTAP spec.

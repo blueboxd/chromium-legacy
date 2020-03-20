@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -53,10 +54,10 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testAllMenuItemsWithoutStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -87,11 +88,11 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testIncognitoAllMenuItemsWithoutStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -122,10 +123,10 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testAllMenuItemsWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -158,11 +159,11 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testIncognitoAllMenuItemsWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -195,10 +196,10 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testGroupTabsIsDisabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -218,10 +219,10 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testGroupTabsIsEnabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -247,10 +248,10 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testGroupTabsIsDisabledWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
@@ -270,10 +271,10 @@ public class OverviewAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testGroupTabsIsEnabledWithStartSurface() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
-            CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });

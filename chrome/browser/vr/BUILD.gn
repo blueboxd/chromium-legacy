@@ -189,6 +189,7 @@ component("vr_ui") {
     "//components/omnibox/browser:vector_icons",
     "//components/url_formatter",
     "//components/vector_icons",
+    "//device/base",
     "//device/vr/buildflags:buildflags",
     "//media",
     "//net",

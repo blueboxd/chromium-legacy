@@ -177,22 +177,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   DISALLOW_COPY_AND_ASSIGN(VirtualCtap2Device);
 };
 
-// Decodes a CBOR-encoded CTAP2 authenticatorMakeCredential request message. The
-// request's client_data_json() value will be empty, and the hashed client data
-// is returned separately.
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::pair<CtapMakeCredentialRequest,
-                         CtapMakeCredentialRequest::ClientDataHash>>
-ParseCtapMakeCredentialRequest(const cbor::Value::MapValue& request_map);
-
-// Decodes a CBOR-encoded CTAP2 authenticatorGetAssertion request message. The
-// request's client_data_json() value will be empty, and the hashed client data
-// is returned separately.
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<
-    std::pair<CtapGetAssertionRequest, CtapGetAssertionRequest::ClientDataHash>>
-ParseCtapGetAssertionRequest(const cbor::Value::MapValue& request_map);
-
 }  // namespace device
 
 #endif  // DEVICE_FIDO_VIRTUAL_CTAP2_DEVICE_H_

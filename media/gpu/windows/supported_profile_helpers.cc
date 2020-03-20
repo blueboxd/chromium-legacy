@@ -9,10 +9,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "media/base/media_switches.h"
 
 #if !defined(OS_WIN)
 #error This file should only be built on Windows.
@@ -189,8 +191,8 @@ ResolutionPair GetMaxResolutionsForGUIDs(
                         }));
 
   for (const auto& res : resolutions_to_test) {
-    if (!media::IsResolutionSupportedForDevice(res, decoder_guid, video_device,
-                                               format)) {
+    if (!IsResolutionSupportedForDevice(res, decoder_guid, video_device,
+                                        format)) {
       break;
     }
     result.first = res;
@@ -199,8 +201,8 @@ ResolutionPair GetMaxResolutionsForGUIDs(
   // The max supported portrait resolution should be just be a w/h flip of the
   // max supported landscape resolution.
   gfx::Size flipped(result.first.height(), result.first.width());
-  if (media::IsResolutionSupportedForDevice(flipped, decoder_guid, video_device,
-                                            format)) {
+  if (IsResolutionSupportedForDevice(flipped, decoder_guid, video_device,
+                                     format)) {
     result.second = flipped;
   }
 
@@ -213,45 +215,56 @@ void GetResolutionsForDecoders(std::vector<GUID> h264_guids,
                                ComD3D11Device device,
                                const gpu::GpuDriverBugWorkarounds& workarounds,
                                ResolutionPair* h264_resolutions,
+                               ResolutionPair* vp8_resolutions,
                                ResolutionPair* vp9_0_resolutions,
                                ResolutionPair* vp9_2_resolutions) {
   TRACE_EVENT0("gpu,startup", "GetResolutionsForDecoders");
-  if (base::win::GetVersion() > base::win::Version::WIN7) {
-    // To detect if a driver supports the desired resolutions, we try and create
-    // a DXVA decoder instance for that resolution and profile. If that succeeds
-    // we assume that the driver supports decoding for that resolution.
-    // Legacy AMD drivers with UVD3 or earlier and some Intel GPU's crash while
-    // creating surfaces larger than 1920 x 1088.
-    if (device && !IsLegacyGPU(device.Get())) {
-      ComD3D11VideoDevice video_device;
-      if (SUCCEEDED(device.As(&video_device))) {
-        *h264_resolutions = GetMaxResolutionsForGUIDs(
-            h264_resolutions->first, video_device.Get(), h264_guids,
-            {gfx::Size(2560, 1440), gfx::Size(3840, 2160),
-             gfx::Size(4096, 2160), gfx::Size(4096, 2304)});
+  if (base::win::GetVersion() <= base::win::Version::WIN7)
+    return;
 
-        if (!workarounds.disable_accelerated_vpx_decode) {
-          *vp9_0_resolutions = GetMaxResolutionsForGUIDs(
-              vp9_0_resolutions->first, video_device.Get(),
-              {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
-              {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
-               gfx::Size(7680, 4320), gfx::Size(8192, 4320),
-               gfx::Size(8192, 8192)});
+  // To detect if a driver supports the desired resolutions, we try and create
+  // a DXVA decoder instance for that resolution and profile. If that succeeds
+  // we assume that the driver supports decoding for that resolution.
+  // Legacy AMD drivers with UVD3 or earlier and some Intel GPU's crash while
+  // creating surfaces larger than 1920 x 1088.
+  if (!device || IsLegacyGPU(device.Get()))
+    return;
 
-          // RS3 has issues with VP9.2 decoding. See https://crbug.com/937108.
-          if (base::win::GetVersion() != base::win::Version::WIN10_RS3) {
-            *vp9_2_resolutions = GetMaxResolutionsForGUIDs(
-                vp9_2_resolutions->first, video_device.Get(),
-                {D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2},
-                {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
-                 gfx::Size(7680, 4320), gfx::Size(8192, 4320),
-                 gfx::Size(8192, 8192)},
-                DXGI_FORMAT_P010);
-          }
-        }
-      }
-    }
+  ComD3D11VideoDevice video_device;
+  if (FAILED(device.As(&video_device)))
+    return;
+
+  *h264_resolutions = GetMaxResolutionsForGUIDs(
+      h264_resolutions->first, video_device.Get(), h264_guids,
+      {gfx::Size(2560, 1440), gfx::Size(3840, 2160), gfx::Size(4096, 2160),
+       gfx::Size(4096, 2304)});
+
+  if (workarounds.disable_accelerated_vpx_decode)
+    return;
+
+  if (base::FeatureList::IsEnabled(kMediaFoundationVP8Decoding)) {
+    *vp8_resolutions = GetMaxResolutionsForGUIDs(
+        vp8_resolutions->first, video_device.Get(),
+        {D3D11_DECODER_PROFILE_VP8_VLD},
+        {gfx::Size(4096, 2160), gfx::Size(4096, 2304)});
   }
+
+  *vp9_0_resolutions = GetMaxResolutionsForGUIDs(
+      vp9_0_resolutions->first, video_device.Get(),
+      {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
+      {gfx::Size(4096, 2160), gfx::Size(4096, 2304), gfx::Size(7680, 4320),
+       gfx::Size(8192, 4320), gfx::Size(8192, 8192)});
+
+  // RS3 has issues with VP9.2 decoding. See https://crbug.com/937108.
+  if (base::win::GetVersion() == base::win::Version::WIN10_RS3)
+    return;
+
+  *vp9_2_resolutions = GetMaxResolutionsForGUIDs(
+      vp9_2_resolutions->first, video_device.Get(),
+      {D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2},
+      {gfx::Size(4096, 2160), gfx::Size(4096, 2304), gfx::Size(7680, 4320),
+       gfx::Size(8192, 4320), gfx::Size(8192, 8192)},
+      DXGI_FORMAT_P010);
 }
 
 }  // namespace media

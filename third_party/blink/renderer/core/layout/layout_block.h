@@ -399,6 +399,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual void PaintChildren(const PaintInfo&,
                              const PhysicalOffset& paint_offset) const;
   void UpdateAfterLayout() override;
+  MinMaxSizes PreferredLogicalWidths() const override;
 
  protected:
   virtual void AdjustInlineDirectionLineBounds(
@@ -407,7 +408,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
       LayoutUnit& /* logicalWidth */) const {}
 
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
-  void ComputePreferredLogicalWidths() override;
   void ComputeChildPreferredLogicalWidths(
       LayoutObject& child,
       LayoutUnit& min_preferred_logical_width,

@@ -17,14 +17,12 @@ import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -33,7 +31,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
@@ -43,7 +40,6 @@ import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -71,7 +67,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
-    private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
 
     protected static final String BUNDLE_TAB_ID = "tabId";
@@ -79,7 +74,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private WebappInfo mWebappInfo;
 
     private BrowserServicesIntentDataProvider mIntentDataProvider;
-    private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
@@ -340,7 +334,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         onComponentCreated(component);
 
         mTabController = component.resolveTabController();
-        mBrowserControlsVisibilityManager = component.resolveBrowserControlsVisibilityManager();
         mSplashController = component.resolveSplashController();
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mDelegateFactory = component.resolveTabDelegateFactory();
@@ -349,8 +342,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
-        mNavigationController.setLandingPageOnCloseCriterion(
-                url -> WebappScopePolicy.isUrlInScope(scopePolicy(), getWebappInfo(), url));
 
         return component;
     }
@@ -408,13 +399,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return mWebappInfo;
     }
 
-    /**
-     * @return A string containing the scope of the webapp opened in this activity.
-     */
-    public String getWebappScope() {
-        return mWebappInfo.scopeUrl();
-    }
-
     WebContentsDelegateAndroid getWebContentsDelegate() {
         assert mDelegateFactory != null;
         return mDelegateFactory.getWebContentsDelegate();
@@ -438,17 +422,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                     // not apply to fullscreen content views.
                     TabBrowserControlsConstraintsHelper.update(
                             tab, TabBrowserControlsConstraintsHelper.getConstraints(tab), true);
-
-                    RecordHistogram.recordBooleanHistogram(
-                            HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());
-
-                    boolean isNavigationInScope = WebappScopePolicy.isUrlInScope(
-                            scopePolicy(), mWebappInfo, navigation.getUrl());
-                    mBrowserControlsVisibilityManager.updateIsInTwaMode(isNavigationInScope);
-                    if (mWebappInfo.isForWebApk()) {
-                        boolean isChildTab = (tab.getParentId() != Tab.INVALID_TAB_ID);
-                        WebApkUma.recordNavigation(isChildTab, isNavigationInScope);
-                    }
                 }
             }
 
@@ -480,18 +453,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                     }
                 }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
             }
-
-            @Override
-            public void onObservingDifferentTab(@NonNull Tab tab) {
-                boolean isNavigationInScope = WebappScopePolicy.isUrlInScope(
-                        scopePolicy(), mWebappInfo, tab.getUrlString());
-                mBrowserControlsVisibilityManager.updateIsInTwaMode(isNavigationInScope);
-            }
         };
-    }
-
-    public @WebappScopePolicy.Type int scopePolicy() {
-        return WebappScopePolicy.Type.LEGACY;
     }
 
     @Override

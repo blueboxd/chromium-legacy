@@ -178,22 +178,6 @@ base::Optional<base::FilePath> SerialDeviceEnumeratorWin::GetPath(
   return FixUpPortName(com_port);
 }
 
-std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
-  std::vector<mojom::SerialPortInfoPtr> ports;
-  ports.reserve(ports_.size());
-  for (const auto& map_entry : ports_)
-    ports.push_back(map_entry.second->Clone());
-  return ports;
-}
-
-base::Optional<base::FilePath> SerialDeviceEnumeratorWin::GetPathFromToken(
-    const base::UnguessableToken& token) {
-  auto it = ports_.find(token);
-  if (it == ports_.end())
-    return base::nullopt;
-  return it->second->path;
-}
-
 void SerialDeviceEnumeratorWin::OnPathAdded(const base::string16& device_path) {
   ScopedDevInfo dev_info(SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid())
@@ -245,8 +229,10 @@ void SerialDeviceEnumeratorWin::OnPathRemoved(
   if (it == paths_.end())
     return;
 
-  ports_.erase(it->second);
+  base::UnguessableToken token = it->second;
+
   paths_.erase(it);
+  RemovePort(token);
 }
 
 void SerialDeviceEnumeratorWin::DoInitialEnumeration() {
@@ -305,8 +291,8 @@ void SerialDeviceEnumeratorWin::EnumeratePort(HDEVINFO dev_info,
     }
   }
 
-  ports_[token] = std::move(info);
   paths_.insert(std::make_pair(*path, token));
+  AddPort(std::move(info));
 }
 
 }  // namespace device

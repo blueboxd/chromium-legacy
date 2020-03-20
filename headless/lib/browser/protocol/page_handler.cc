@@ -37,7 +37,7 @@ void PageHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 Response PageHandler::Disable() {
-  return Response::OK();
+  return Response::Success();
 }
 
 void PageHandler::PrintToPDF(Maybe<bool> landscape,
@@ -138,7 +138,7 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
           base::BindOnce(&PageHandler::PDFCreated, weak_factory_.GetWeakPtr(),
                          return_as_stream, std::move(callback)));
 #else
-  callback->sendFailure(Response::Error("Printing is not enabled"));
+  callback->sendFailure(Response::ServerError("Printing is not enabled"));
   return;
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 }
@@ -151,7 +151,7 @@ void PageHandler::PDFCreated(
     scoped_refptr<base::RefCountedMemory> data) {
   std::unique_ptr<base::DictionaryValue> response;
   if (print_result != HeadlessPrintManager::PRINT_SUCCESS) {
-    callback->sendFailure(Response::Error(
+    callback->sendFailure(Response::ServerError(
         HeadlessPrintManager::PrintResultToString(print_result)));
     return;
   }

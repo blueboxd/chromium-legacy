@@ -14,6 +14,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
@@ -25,11 +26,6 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
  * whether NTP is shown).
  */
 public class ShareButtonController implements ButtonDataProvider {
-    /**
-     * Default minimum width to show share button.
-     */
-    private static final int MIN_WIDTH = 360;
-
     // Context is used for fetching resources and launching preferences page.
     private final Context mContext;
 
@@ -44,8 +40,6 @@ public class ShareButtonController implements ButtonDataProvider {
     private ObserverList<ButtonDataObserver> mObservers = new ObserverList<>();
     private final ObservableSupplier<Boolean> mBottomToolbarVisibilitySupplier;
     private OnClickListener mOnClickListener;
-
-    private Integer mMinimumWidthDp;
 
     /**
      * Creates ShareButtonController object.
@@ -105,26 +99,11 @@ public class ShareButtonController implements ButtonDataProvider {
     }
 
     private void updateButtonState(Tab tab) {
-        if (tab == null || tab.getWebContents() == null
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR)) {
-            mButtonData.canShow = false;
-            return;
-        }
-
-        if (mMinimumWidthDp == null) {
-            mMinimumWidthDp = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                    ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, "minimum_width", MIN_WIDTH);
-        }
-
-        float deviceWidthPX = mContext.getResources().getDisplayMetrics().widthPixels;
-        int deviceWidth =
-                (int) (deviceWidthPX / (mContext.getResources().getDisplayMetrics().density));
-
-        boolean isDeviceWideEnough = deviceWidth > mMinimumWidthDp;
-
-        if ((mBottomToolbarVisibilitySupplier.get()
-                    && BottomToolbarVariationManager.isShareButtonOnBottom())
-                || mShareDelegateSupplier.get() == null || !isDeviceWideEnough) {
+        // TODO(crbug.com/1036023) add width constraints.
+        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR)
+                || (mBottomToolbarVisibilitySupplier.get()
+                        && BottomToolbarVariationManager.isShareButtonOnBottom())
+                || mShareDelegateSupplier.get() == null) {
             mButtonData.canShow = false;
             return;
         }

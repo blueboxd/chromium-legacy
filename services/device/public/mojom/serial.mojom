@@ -92,6 +92,11 @@ struct SerialPortControlSignals {
 
 // Discovers and enumerates serial devices available to the host.
 interface SerialPortManager {
+  // Associates an interface the port manager can used to notify the client of
+  // events such as the addition or removal of serial ports from the host.
+  SetClient(pending_remote<SerialPortManagerClient> client);
+
+  // Returns the list of serial ports currently available on the host.
   GetDevices() => (array<SerialPortInfo> devices);
 
   // Creates a SerialPort instance attached to the port represented by |token|.
@@ -100,6 +105,15 @@ interface SerialPortManager {
   GetPort(mojo_base.mojom.UnguessableToken token,
           pending_receiver<SerialPort> port_receiver,
           pending_remote<SerialPortConnectionWatcher>? watcher);
+};
+
+// Client interface for SerialPortManager.
+interface SerialPortManagerClient {
+  // This message indicates that a port has been added to the host.
+  OnPortAdded(SerialPortInfo port_info);
+
+  // This message indicates that a port has been removed from the host.
+  OnPortRemoved(SerialPortInfo port_info);
 };
 
 // Performs asynchronous I/O on serial devices.

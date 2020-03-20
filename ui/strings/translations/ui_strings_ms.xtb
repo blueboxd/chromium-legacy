@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maksimumkan</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Apl yang Dipasang</translation>
 <translation id="1450753235335490080">Tidak dapat berkongsi <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> Ditukar dengan <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Anda pernah mencari perkara ini. Tindakan memadamkan "<ph name="QUERY" />" daripada sejarah anda akan mengalihkannya keluar daripada akaun anda pada semua peranti anda.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minit dan }other{# minit dan }}</translation>
 <translation id="1643823602425662293">Pemberitahuan</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Kanan ke Kiri</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">KEMUNGKINAN BESAR</translation>
+<translation id="7170202025028120564">Tetapan paparan aplikasi anda akan berkuat kuasa apabila aplikasi ini dimulakan semula selepas ini.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 minit lagi}other{# minit lagi}}</translation>
 <translation id="7319740667687257810">Pelancar, paparan separa</translation>

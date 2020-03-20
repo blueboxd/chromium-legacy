@@ -1058,7 +1058,7 @@
         android:exported="true"
         android:label="WebView
         DevTools"
-        android:name="org.chromium.android_webview.devui.LauncherActivity"
+        android:name="org.chromium.android_webview.devui.MonochromeLauncherActivity"
         android:targetActivity="org.chromium.android_webview.devui.MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

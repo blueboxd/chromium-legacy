@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, app installata</translation>
 <translation id="1450753235335490080">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> è stato scambiato con <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Hai eseguito questa ricerca in precedenza. Se elimini "<ph name="QUERY" />" dalla cronologia, la query verrà rimossa in modo permanente dal tuo account su tutti i tuoi dispositivi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto e }other{# minuti e }}</translation>
 <translation id="1643823602425662293">Notifica</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Da destra a sinistra</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">PIÙ PROBABILI</translation>
+<translation id="7170202025028120564">Le impostazioni di visualizzazione dell'applicazione verranno applicate dopo il prossimo riavvio.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min rimanente}other{# min rimanenti}}</translation>
 <translation id="7319740667687257810">Avvio applicazioni, visualizzazione parziale</translation>

@@ -24,7 +24,6 @@
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -228,8 +227,8 @@ ContentSetting GetSettingForOrigin(JNIEnv* env,
     embedder_url = url;
   else
     embedder_url = GURL(embedder_str);
-  return PermissionManagerFactory::GetForProfile(
-             GetActiveUserProfile(is_incognito))
+  return permissions::PermissionsClient::Get()
+      ->GetPermissionManager(GetActiveUserProfile(is_incognito))
       ->GetPermissionStatus(content_type, url, embedder_url)
       .content_setting;
 }
@@ -470,8 +469,8 @@ static jboolean JNI_WebsitePreferenceBridge_IsNotificationEmbargoedForOrigin(
     const JavaParamRef<jstring>& origin) {
   GURL origin_url(ConvertJavaStringToUTF8(env, origin));
   permissions::PermissionResult status =
-      PermissionManagerFactory::GetForProfile(
-          ProfileAndroid::FromProfileAndroid(jprofile))
+      permissions::PermissionsClient::Get()
+          ->GetPermissionManager(ProfileAndroid::FromProfileAndroid(jprofile))
           ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS, origin_url,
                                 origin_url);
   return status.content_setting == ContentSetting::CONTENT_SETTING_BLOCK &&

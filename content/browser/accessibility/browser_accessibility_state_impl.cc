@@ -125,7 +125,7 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   accessibility_mode_ = ui::AXMode();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
-    accessibility_mode_ = ui::kAXModeComplete;
+    AddAccessibilityModeFlags(ui::kAXModeComplete);
   }
 }
 

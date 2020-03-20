@@ -382,7 +382,7 @@ class StatusMediator {
     private void updateColorTheme() {
         @ColorRes
         int separatorColor =
-                mDarkTheme ? R.color.divider_bg_color_dark : R.color.divider_bg_color_light;
+                mDarkTheme ? R.color.divider_line_bg_color_dark : R.color.divider_line_bg_color_light;
 
         @ColorRes
         int textColor = 0;

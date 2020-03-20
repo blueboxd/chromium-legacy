@@ -46,6 +46,7 @@
 <translation id="2886012850691518054">လိုချင်မှ လုပ်ရန်: Google ထံသို့ သုံးစွဲမှု စာရင်းအင်းများ နှင့် ပျက်စီးမှု အစီရင်ခံစာများကို အလိုအလျောက် ပို့ပေးခြင်းဖြင့် Chromium ကို ပိုကောင်းလာအေင် ကူညီပေးပါ။</translation>
 <translation id="2910007522516064972">Chromium အကြောင်း</translation>
 <translation id="2977470724722393594">Chroumium ကို အပ်ဒိတ်လုပ်ထားပြီးပါပြီ</translation>
+<translation id="2983934633046890458">Chromium သည် စကားဝှက်များကို တည်းဖြတ်ရန်ကြိုးပမ်းနေသည်။</translation>
 <translation id="3032706164202344641">Chromium က သင့်စကားဝှက်များကို စစ်ဆေး၍မရပါ။ နောက်မှ ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="3032787606318309379">Chromium သို့ ထပ်ထည့်နေခြင်း...</translation>
 <translation id="3068515742935458733"><ph name="UMA_LINK" /> နှင့် ပျက်စီးမှု အစီရင်ခံချက်များကို Google သို့ပို့ခြင်းဖြင့် Chromium အားကူညီကာ ပိုမိုကောင်းမွန်စေပါ။</translation>
@@ -114,6 +115,7 @@
 <translation id="5479196819031988440">Chromium OS သည် ဤစာမျက်နှာကို ဖွင့်၍မရပါ။</translation>
 <translation id="5480860683791598150">သင်၏တည်နေရာကို ဤဝဘ်ဆိုက်နှင့် မျှဝေနိုင်ရန် Chromium သည် သင့်တည်နေရာကို အသုံးပြုခွင့်ရရန် လိုအပ်ပါသည်</translation>
 <translation id="549669000822060376">​​ကျေးဇူးပြုပြီး Chromium က စနစ်၏ နောက်ဆုံး မွမ်းမံမှုများကို တပ်ဆင်ပေးနေတာကို စောင့်ပါ။</translation>
+<translation id="5496810170689441661">Chromium သည် စကားဝှက်များ တည်းဖြတ်ရန် ကြိုးပမ်းနေသည်။ ၎င်းကို ခွင့်ပြုရန် သင်၏ Windows စကားဝှက်ကို ထည့်ပါ။</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium အပ်ဒိတ်တစ်ခု ရနိုင်ပါသည်}=1{Chromium အပ်ဒိတ်တစ်ခု ရနိုင်ပါသည်}other{Chromium အပ်ဒိတ်တစ်ခု ရနိုင်သည်မှာ # ရက် ရှိပါပြီ}}</translation>
 <translation id="5631814766731275228">Chromium အမည်နှင့် ဓာတ်ပုံ</translation>
 <translation id="5634636535844844681">Chromium ကိုထည့်သွင်းရန် Windows 7 နှင့်အထက်လိုအပ်ပါသည်။</translation>

@@ -28,6 +28,7 @@ const char kUtilitySandbox[] = "utility";
 const char kCdmSandbox[] = "cdm";
 const char kPrintCompositorSandbox[] = "print_compositor";
 const char kAudioSandbox[] = "audio";
+const char kSharingServiceSandbox[] = "sharing_service";
 const char kSodaSandbox[] = "soda";
 
 #if defined(OS_WIN)

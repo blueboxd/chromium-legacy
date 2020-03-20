@@ -160,7 +160,7 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
                                    base::TimeDelta presentation_delay,
                                    base::TimeDelta stationary_point_delay,
                                    aura::Window* container)
-    : FastInkView(container, PresentationCallback()),
+    : FastInkView(container, fast_ink::FastInkHost::PresentationCallback()),
       laser_points_(life_duration),
       predicted_laser_points_(life_duration),
       presentation_delay_(presentation_delay),
@@ -231,8 +231,7 @@ void LaserPointerView::UpdateBuffer() {
     TRACE_EVENT1("ui", "LaserPointerView::UpdateBuffer::Paint", "damage",
                  damage_rect.ToString());
 
-    ScopedPaint paint(gpu_memory_buffer_.get(), screen_to_buffer_transform_,
-                      damage_rect);
+    ScopedPaint paint(this, damage_rect);
     Draw(paint.canvas());
   }
 

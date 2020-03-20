@@ -12,6 +12,7 @@
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/url_constants.h"
@@ -53,6 +54,12 @@ permissions::PermissionDecisionAutoBlocker*
 ChromePermissionsClient::GetPermissionDecisionAutoBlocker(
     content::BrowserContext* browser_context) {
   return PermissionDecisionAutoBlockerFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+}
+
+permissions::PermissionManager* ChromePermissionsClient::GetPermissionManager(
+    content::BrowserContext* browser_context) {
+  return PermissionManagerFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
 }
 

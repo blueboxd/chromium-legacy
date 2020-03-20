@@ -6,6 +6,7 @@
 
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/permissions/permission_decision_auto_blocker_factory.h"
+#include "weblayer/browser/permissions/permission_manager_factory.h"
 
 #if defined(OS_ANDROID)
 #include "weblayer/browser/android/resource_mapper.h"
@@ -29,6 +30,11 @@ WebLayerPermissionsClient::GetPermissionDecisionAutoBlocker(
     content::BrowserContext* browser_context) {
   return PermissionDecisionAutoBlockerFactory::GetForBrowserContext(
       browser_context);
+}
+
+permissions::PermissionManager* WebLayerPermissionsClient::GetPermissionManager(
+    content::BrowserContext* browser_context) {
+  return PermissionManagerFactory::GetForBrowserContext(browser_context);
 }
 
 #if defined(OS_ANDROID)

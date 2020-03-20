@@ -80,6 +80,7 @@ js_modulizer("modulize") {
     input_files += [
       "default_browser_browsertest.js",
       "import_data_dialog_test.js",
+      "people_page_manage_profile_test.js",
       "system_page_tests.js",
     ]
   }

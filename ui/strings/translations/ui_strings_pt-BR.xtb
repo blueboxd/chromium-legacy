@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, app instalado</translation>
 <translation id="1450753235335490080">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Troca de <ph name="FIRST_ITEM_TITLE" /> por <ph name="SECOND_ITEM_TITLE" /> realizada</translation>
 <translation id="1498028757988366001">Você já pesquisou isso. Se você excluir "<ph name="QUERY" />" do seu histórico, essa consulta será permanentemente removida da sua conta em todos os seus dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
 <translation id="1643823602425662293">Notificação</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Da direita para a esquerda</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MUITO PROVAVELMENTE</translation>
+<translation id="7170202025028120564">As configurações de exibição do aplicativo entrarão em vigor quando ele for reiniciado.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>
 <translation id="7319740667687257810">Iniciador, visualização parcial</translation>

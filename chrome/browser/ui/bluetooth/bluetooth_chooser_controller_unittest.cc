@@ -7,31 +7,12 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-class MockBluetoothChooserView : public ChooserController::View {
- public:
-  MockBluetoothChooserView() {}
-
-  // ChooserController::View:
-  MOCK_METHOD0(OnOptionsInitialized, void());
-  MOCK_METHOD1(OnOptionAdded, void(size_t index));
-  MOCK_METHOD1(OnOptionRemoved, void(size_t index));
-  MOCK_METHOD1(OnOptionUpdated, void(size_t index));
-  MOCK_METHOD1(OnAdapterEnabledChanged, void(bool enabled));
-  MOCK_METHOD1(OnRefreshStateChanged, void(bool enabled));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBluetoothChooserView);
-};
-
-}  // namespace
 
 class BluetoothChooserControllerTest : public testing::Test {
  public:
@@ -51,7 +32,7 @@ class BluetoothChooserControllerTest : public testing::Test {
   }
 
   BluetoothChooserController bluetooth_chooser_controller_;
-  MockBluetoothChooserView mock_bluetooth_chooser_view_;
+  MockChooserControllerView mock_bluetooth_chooser_view_;
   content::BluetoothChooser::Event last_event_;
   std::string last_device_id_;
 

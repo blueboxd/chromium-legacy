@@ -21,6 +21,7 @@
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -1435,14 +1436,16 @@ class UnifiedAutoplaySoundSettingsPageInfoTest
   }
 
   base::string16 GetDefaultSoundSettingString() {
+    auto delegate = ChromePageInfoUiDelegate(profile());
     return PageInfoUI::PermissionActionToUIString(
-        profile(), ContentSettingsType::SOUND, CONTENT_SETTING_DEFAULT,
+        &delegate, ContentSettingsType::SOUND, CONTENT_SETTING_DEFAULT,
         default_setting_, content_settings::SettingSource::SETTING_SOURCE_USER);
   }
 
   base::string16 GetSoundSettingString(ContentSetting setting) {
+    auto delegate = ChromePageInfoUiDelegate(profile());
     return PageInfoUI::PermissionActionToUIString(
-        profile(), ContentSettingsType::SOUND, setting, default_setting_,
+        &delegate, ContentSettingsType::SOUND, setting, default_setting_,
         content_settings::SettingSource::SETTING_SOURCE_USER);
   }
 
@@ -1530,10 +1533,11 @@ TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultBlock_PrefOff) {
 // This test checks that the string for a permission dropdown that is not the
 // sound setting is unaffected.
 TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, NotSoundSetting_Noop) {
+  auto delegate = ChromePageInfoUiDelegate(profile());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT),
       PageInfoUI::PermissionActionToUIString(
-          profile(), ContentSettingsType::ADS, CONTENT_SETTING_DEFAULT,
+          &delegate, ContentSettingsType::ADS, CONTENT_SETTING_DEFAULT,
           CONTENT_SETTING_ALLOW,
           content_settings::SettingSource::SETTING_SOURCE_USER));
 }

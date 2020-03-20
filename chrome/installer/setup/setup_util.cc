@@ -185,8 +185,6 @@ void RemoveLegacyChromeAppCommands(const InstallerState& installer_state) {
 
 }  // namespace
 
-const char kUnPackNTSTATUSMetricsName[] = "Setup.Install.LzmaUnPackNTSTATUS";
-const char kUnPackResultMetricsName[] = "Setup.Install.LzmaUnPackResult";
 const char kUnPackStatusMetricsName[] = "Setup.Install.LzmaUnPackStatus";
 
 int CourgettePatchFiles(const base::FilePath& src,
@@ -606,8 +604,6 @@ int GetInstallAge(const InstallerState& installer_state) {
 }
 
 void RecordUnPackMetrics(UnPackStatus unpack_status,
-                         base::Optional<int32_t> ntstatus,
-                         base::Optional<DWORD> error_code,
                          UnPackConsumer consumer) {
   std::string consumer_name = "";
 
@@ -629,17 +625,6 @@ void RecordUnPackMetrics(UnPackStatus unpack_status,
   base::UmaHistogramExactLinear(
       std::string(std::string(kUnPackStatusMetricsName) + "_" + consumer_name),
       unpack_status, UNPACK_STATUS_COUNT);
-
-  if (error_code.has_value()) {
-    base::UmaHistogramSparse(
-        std::string(kUnPackResultMetricsName) + "_" + consumer_name,
-        *error_code);
-  }
-  if (ntstatus.has_value()) {
-    base::UmaHistogramSparse(
-        std::string(kUnPackNTSTATUSMetricsName) + "_" + consumer_name,
-        *ntstatus);
-  }
 }
 
 void RegisterEventLogProvider(const base::FilePath& install_directory,

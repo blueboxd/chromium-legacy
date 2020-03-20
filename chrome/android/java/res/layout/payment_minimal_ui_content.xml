@@ -44,7 +44,7 @@
 
     <!-- Line item separator. -->
     <View
-        android:background="@color/divider_bg_color"
+        android:background="@color/divider_line_bg_color"
         android:id="@+id/line_item_separator"
         android:layout_below="@id/payment_label"
         android:layout_height="@dimen/payment_minimal_ui_separator_width"

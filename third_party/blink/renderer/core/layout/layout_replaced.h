@@ -158,7 +158,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   }
 
  private:
-  void ComputePreferredLogicalWidths() final;
+  MinMaxSizes PreferredLogicalWidths() const final;
 
   void ComputeIntrinsicSizingInfoForReplacedContent(IntrinsicSizingInfo&) const;
   FloatSize ConstrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;

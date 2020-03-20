@@ -7,20 +7,25 @@
  * the People section to interact with the browser. Chrome Browser only.
  */
 
-/**
- * Contains the possible profile shortcut statuses. These strings must be kept
- * in sync with the C++ Manage Profile handler.
- * @enum {string}
- */
-const ProfileShortcutStatus = {
-  PROFILE_SHORTCUT_SETTING_HIDDEN: 'profileShortcutSettingHidden',
-  PROFILE_SHORTCUT_NOT_FOUND: 'profileShortcutNotFound',
-  PROFILE_SHORTCUT_FOUND: 'profileShortcutFound',
-};
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// #import {AvatarIcon} from 'chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.m.js';
+// clang-format on
 
 cr.define('settings', function() {
+  /**
+   * Contains the possible profile shortcut statuses. These strings must be kept
+   * in sync with the C++ Manage Profile handler.
+   * @enum {string}
+   */
+  /* #export */ const ProfileShortcutStatus = {
+    PROFILE_SHORTCUT_SETTING_HIDDEN: 'profileShortcutSettingHidden',
+    PROFILE_SHORTCUT_NOT_FOUND: 'profileShortcutNotFound',
+    PROFILE_SHORTCUT_FOUND: 'profileShortcutFound',
+  };
+
   /** @interface */
-  class ManageProfileBrowserProxy {
+  /* #export */ class ManageProfileBrowserProxy {
     /**
      * Gets the available profile icons to choose from.
      * @return {!Promise<!Array<!AvatarIcon>>}
@@ -46,7 +51,7 @@ cr.define('settings', function() {
 
     /**
      * Returns whether the current profile has a shortcut.
-     * @return {!Promise<ProfileShortcutStatus>}
+     * @return {!Promise<settings.ProfileShortcutStatus>}
      */
     getProfileShortcutStatus() {}
 
@@ -64,7 +69,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.ManageProfileBrowserProxy}
    */
-  class ManageProfileBrowserProxyImpl {
+  /* #export */ class ManageProfileBrowserProxyImpl {
     /** @override */
     getAvailableIcons() {
       return cr.sendWithPromise('getAvailableIcons');
@@ -107,7 +112,8 @@ cr.define('settings', function() {
 
   // #cr_define_end
   return {
-    ManageProfileBrowserProxy: ManageProfileBrowserProxy,
-    ManageProfileBrowserProxyImpl: ManageProfileBrowserProxyImpl,
+    ManageProfileBrowserProxy,
+    ManageProfileBrowserProxyImpl,
+    ProfileShortcutStatus
   };
 });

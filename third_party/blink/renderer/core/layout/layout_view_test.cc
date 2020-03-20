@@ -74,11 +74,11 @@ class LayoutViewHitTestTest : public testing::WithParamInterface<HitTestConfig>,
                               public RenderingTest {
  public:
   LayoutViewHitTestTest()
-      : ScopedLayoutNGForTest(LayoutNG()),
+      : ScopedLayoutNGForTest(GetParam().layout_ng),
         RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
-  bool LayoutNG() { return GetParam().layout_ng; }
+  bool LayoutNG() { return RuntimeEnabledFeatures::LayoutNGEnabled(); }
   bool IsAndroidOrWindowsEditingBehavior() {
     // TODO(crbug.com/971414): For now LayoutNG always uses Android/Windows
     // behavior for ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom().

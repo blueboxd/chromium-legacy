@@ -32,11 +32,11 @@ namespace blink {
 
 LayoutFieldset::LayoutFieldset(Element* element) : LayoutBlockFlow(element) {}
 
-void LayoutFieldset::ComputePreferredLogicalWidths() {
-  LayoutBlockFlow::ComputePreferredLogicalWidths();
+MinMaxSizes LayoutFieldset::PreferredLogicalWidths() const {
+  MinMaxSizes sizes = LayoutBlockFlow::PreferredLogicalWidths();
   // Size-contained elements don't consider their contents for preferred sizing.
   if (ShouldApplySizeContainment())
-    return;
+    return sizes;
 
   if (LayoutBox* legend = FindInFlowLegend()) {
     int legend_min_width = legend->PreferredLogicalWidths().min_size.ToInt();
@@ -50,10 +50,11 @@ void LayoutFieldset::ComputePreferredLogicalWidths() {
     if (legend_margin_right.IsFixed())
       legend_min_width += legend_margin_right.Value();
 
-    min_preferred_logical_width_ =
-        max(min_preferred_logical_width_,
-            legend_min_width + BorderAndPaddingWidth());
+    sizes.min_size =
+        max(sizes.min_size, legend_min_width + BorderAndPaddingWidth());
   }
+
+  return sizes;
 }
 
 LayoutObject* LayoutFieldset::LayoutSpecialExcludedChild(bool relayout_children,

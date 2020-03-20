@@ -331,7 +331,7 @@
 
       Politika ayarlanmadan bırakılırsa, varsayılan değer kurumsal olarak yönetilen kullanıcılar için "MultiProfileUserBehaviorMustBePrimary" ve yönetilmeyen kullanıcılar için "MultiProfileUserBehaviorUnrestricted" olur.</translation>
 <translation id="1465619815762735808">Tıklandığında oynat</translation>
-<translation id="1467633031685836974">Bu özellik, köprülerin ve adres çubuğu URL gezinmelerinin web sayfasındaki belirli bir metni hedeflemesine olanak tanıyarak, yüklenmesi tamamlandığında web sayfasını hedeflenen konuma kaydırır.
+<translation id="1467633031685836974">Bu özellik, köprülerin ve URL'lerin web sayfasındaki belirli bir metni hedeflemesine olanak tanıyarak, yüklenmesi tamamlandığında web sayfasını hedeflenen konuma kaydırır.
 
 Bu politikayı etkinleştirir veya yapılandırmazsanız web sayfasını URL yoluyla belirli metin parçalarına kaydırma işlevi etkinleştirilir.
 

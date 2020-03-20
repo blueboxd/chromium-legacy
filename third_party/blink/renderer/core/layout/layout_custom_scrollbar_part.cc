@@ -211,13 +211,8 @@ void LayoutCustomScrollbarPart::UpdateScrollbarHeight() {
           .Round()));
 }
 
-void LayoutCustomScrollbarPart::ComputePreferredLogicalWidths() {
-  if (!IntrinsicLogicalWidthsDirty())
-    return;
-
-  min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
-
-  ClearIntrinsicLogicalWidthsDirty();
+MinMaxSizes LayoutCustomScrollbarPart::PreferredLogicalWidths() const {
+  return MinMaxSizes();
 }
 
 void LayoutCustomScrollbarPart::StyleWillChange(

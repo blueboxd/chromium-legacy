@@ -244,9 +244,8 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
                 mContext.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_choice_list_padding_end),
                 verticalPadding);
-        // TODO(b/144417635): Change to omnibox_bg_color once available.
         list.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                mContext.getResources(), R.color.default_bg_color_elev_0));
+                mContext.getResources(), R.color.omnibox_bg_color));
         list.setTag(AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST);
         if (addButtonText != null) {
             list.setOnAddButtonClickedListener(() -> createOrEditItem(null));

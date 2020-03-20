@@ -20,11 +20,6 @@ public class WebApkActivity extends WebappActivity {
     private static final String TAG = "WebApkActivity";
 
     @Override
-    public @WebappScopePolicy.Type int scopePolicy() {
-        return WebappScopePolicy.Type.STRICT;
-    }
-
-    @Override
     protected WebappInfo createWebappInfo(Intent intent) {
         return (intent == null) ? WebApkInfo.createEmpty() : WebApkInfo.create(intent);
     }

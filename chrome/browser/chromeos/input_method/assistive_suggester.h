@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,16 +59,16 @@ class AssistiveSuggester {
   void ShowSuggestion(const std::string& text);
   void DismissSuggestion();
 
-  InputMethodEngine* engine_;
+  InputMethodEngine* const engine_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;
 
   // User's Chrome user profile.
-  Profile* profile_;
+  Profile* const profile_;
 
   // Personal data manager provided by autofill service.
-  autofill::PersonalDataManager* personal_data_manager_;
+  autofill::PersonalDataManager* const personal_data_manager_;
 
   // If we are showing a suggestion right now.
   bool suggestion_shown_ = false;

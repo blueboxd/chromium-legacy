@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">调用时可读取和更改您在当前网站上的所有数据</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />要重置您的设置。</translation>
 <translation id="1243314992276662751">上传</translation>
-<translation id="1243398753772016127">网站无法根据您在各个不同网站上的浏览活动为您展示个性化广告</translation>
 <translation id="1244265436519979884">正在进行 Linux 恢复</translation>
 <translation id="1244303850296295656">扩展程序错误</translation>
 <translation id="1246905108078336582">从剪贴板中移除建议？</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">开启 - 自定义设置</translation>
 <translation id="1489664337021920575">选择其他选项</translation>
 <translation id="1493892686965953381">正在等待<ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">一并清除浏览数据 (<ph name="URL" />)，这可能会使您在 Google.com 上退出帐号。</translation>
 <translation id="1495486559005647033">另外<ph name="NUM_PRINTERS" />个可用的设备。</translation>
 <translation id="1495677929897281669">返回到标签页</translation>
 <translation id="1499271269825557605">如果您不认识某款扩展程序或者您的浏览器无法按预期运行，您可在此处关闭或自定义扩展程序。</translation>
@@ -480,7 +478,7 @@
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{请将该打印机添加到 Google 云打印，以便您可以随时随地进行打印。}other{请将 # 台打印机添加到 Google 云打印，以便您可以随时随地进行打印。}}</translation>
 <translation id="1656528038316521561">背景不透明度</translation>
 <translation id="1657406563541664238">将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 <ph name="PRODUCT_NAME" /></translation>
-<translation id="1657937299377480641">要重新登录以访问教育资源，请让您的家长向您授予权限</translation>
+<translation id="1657937299377480641">要重新登录并访问教育资源，请让您的家长向您授予权限</translation>
 <translation id="1658424621194652532">此网页正在使用您的麦克风。</translation>
 <translation id="1660204651932907780">允许网站播放声音（推荐）</translation>
 <translation id="1660763353352708040">电源适配器问题</translation>
@@ -1186,7 +1184,6 @@
 <translation id="2575247648642144396">仅当此扩展程序能够对当前网页采取操作时，该图标才会显示。要使用此扩展程序，请点击该图标或按 <ph name="EXTENSION_SHORTCUT" />。</translation>
 <translation id="257779572837908839">设为 Chromebox 会易设备</translation>
 <translation id="2580889980133367162">始终允许 <ph name="HOST" /> 下载多个文件</translation>
-<translation id="2580924999637585241">总计：<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">长</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />（平台：<ph name="PLATFORM_VERSION" />）<ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">无法获取 Kerberos 票据。请重试或与贵单位的设备管理员联系。（错误代码：<ph name="ERROR_CODE" />）。</translation>
@@ -2452,7 +2449,7 @@
 <translation id="4263223596040212967">请检查键盘布局，然后重试。</translation>
 <translation id="4263757076580287579">已取消注册打印机。</translation>
 <translation id="426564820080660648">要检查是否有更新，请使用以太网、WLAN 或移动数据。</translation>
-<translation id="4267455501101322486">要添加帐号以访问教育资源，请让您的家长向您授予权限</translation>
+<translation id="4267455501101322486">要添加帐号并访问教育资源，请让您的家长向您授予权限</translation>
 <translation id="4267953847983678297">自动连接到移动网络</translation>
 <translation id="4268025649754414643">密钥加密</translation>
 <translation id="4270393598798225102">版本 <ph name="NUMBER" /></translation>
@@ -2814,7 +2811,6 @@
 <translation id="4808667324955055115">已拦截弹出式窗口：</translation>
 <translation id="480990236307250886">打开主页</translation>
 <translation id="4811503964269049987">为所选标签页建组</translation>
-<translation id="4811818760963189951">此功能已关闭，因为您停用了历史记录同步功能</translation>
 <translation id="4813136279048157860">我的图片</translation>
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4814378367953456825">请为此指纹输入一个名称</translation>
@@ -2983,7 +2979,6 @@
 <translation id="5040823038948176460">更多内容设置</translation>
 <translation id="5042282098504489593">打开“设置”以将<ph name="USB_DEVICE_NAME" />连接到 Linux</translation>
 <translation id="5043913660911154449">或指定您的打印机 PPD <ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">此功能已关闭，因为您使用密码加密了同步数据</translation>
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="504561833207953641">正在现有的浏览器会话中打开。</translation>
 <translation id="5047421709274785093">禁止网站使用动作传感器和光传感器</translation>
@@ -3960,7 +3955,6 @@
 <translation id="63566973648609420">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需<ph name="BEGIN_LINK" />重置同步<ph name="END_LINK" />。</translation>
 <translation id="6357619544108132570">欢迎使用<ph name="SHORT_PRODUCT_NAME" />系列产品！这不是一款普通的计算机。</translation>
 <translation id="6358884629796491903">龙</translation>
-<translation id="6360719647236334056">利用您的 Chrome 浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务</translation>
 <translation id="6361850914223837199">错误详情：</translation>
 <translation id="6362853299801475928">报告问题(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4238,7 +4232,6 @@
 <translation id="6758056191028427665">让我们知道您的满意度。</translation>
 <translation id="6759193508432371551">恢复出厂设置</translation>
 <translation id="6762833852331690540">已开启</translation>
-<translation id="6764693078871405569">一并清除浏览数据 (<ph name="URL" />)，这会使您在 <ph name="DOMAIN" /> 上退出帐号。</translation>
 <translation id="6767566652486411142">选择另一种语言…</translation>
 <translation id="6767639283522617719">无法加入到该网域中。请确保这一组织单元的设置正确无误。</translation>
 <translation id="6769712124046837540">添加打印机…</translation>

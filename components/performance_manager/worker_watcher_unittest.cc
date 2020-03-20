@@ -308,7 +308,7 @@ TestProcessNodeSource::~TestProcessNodeSource() {
     std::unique_ptr<ProcessNodeImpl> process_node = std::move(kv.second);
     nodes.push_back(std::move(process_node));
   }
-  PerformanceManagerImpl::GetInstance()->BatchDeleteNodes(std::move(nodes));
+  PerformanceManagerImpl::BatchDeleteNodes(std::move(nodes));
   process_node_map_.clear();
 }
 
@@ -323,8 +323,8 @@ int TestProcessNodeSource::CreateProcessNode() {
   int render_process_id = GenerateNextId();
 
   // Create the process node and insert it into the map.
-  auto process_node = PerformanceManagerImpl::GetInstance()->CreateProcessNode(
-      RenderProcessHostProxy());
+  auto process_node =
+      PerformanceManagerImpl::CreateProcessNode(RenderProcessHostProxy());
   bool inserted =
       process_node_map_.insert({render_process_id, std::move(process_node)})
           .second;
@@ -376,12 +376,11 @@ class TestFrameNodeSource : public FrameNodeSource {
 };
 
 TestFrameNodeSource::TestFrameNodeSource()
-    : page_node_(PerformanceManagerImpl::GetInstance()->CreatePageNode(
-          WebContentsProxy(),
-          "page_node_context_id",
-          GURL(),
-          false,
-          false)) {}
+    : page_node_(PerformanceManagerImpl::CreatePageNode(WebContentsProxy(),
+                                                        "page_node_context_id",
+                                                        GURL(),
+                                                        false,
+                                                        false)) {}
 
 TestFrameNodeSource::~TestFrameNodeSource() {
   std::vector<std::unique_ptr<NodeBase>> nodes;
@@ -389,7 +388,7 @@ TestFrameNodeSource::~TestFrameNodeSource() {
   nodes.reserve(frame_node_map_.size());
   for (auto& kv : frame_node_map_)
     nodes.push_back(std::move(kv.second));
-  PerformanceManagerImpl::GetInstance()->BatchDeleteNodes(std::move(nodes));
+  PerformanceManagerImpl::BatchDeleteNodes(std::move(nodes));
   frame_node_map_.clear();
 }
 
@@ -427,7 +426,7 @@ content::GlobalFrameRoutingId TestFrameNodeSource::CreateFrameNode(
   int frame_id = GenerateNextId();
   content::GlobalFrameRoutingId render_frame_host_id(render_process_id,
                                                      frame_id);
-  auto frame_node = PerformanceManagerImpl::GetInstance()->CreateFrameNode(
+  auto frame_node = PerformanceManagerImpl::CreateFrameNode(
       process_node, page_node_.get(), nullptr, 0, frame_id,
       base::UnguessableToken::Null(), 0, 0);
 
@@ -448,7 +447,7 @@ void TestFrameNodeSource::DeleteFrameNode(
 
   // Notify the subscriber then delete the node.
   InvokeAndRemoveCallback(frame_node);
-  PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(it->second));
+  PerformanceManagerImpl::DeleteNode(std::move(it->second));
 
   frame_node_map_.erase(it);
 }
@@ -481,10 +480,6 @@ class WorkerWatcherTest : public testing::Test {
   WorkerNodeImpl* GetDedicatedWorkerNode(
       content::DedicatedWorkerId dedicated_worker_id);
   WorkerNodeImpl* GetSharedWorkerNode(content::SharedWorkerId shared_worker_id);
-
-  PerformanceManagerImpl* performance_manager() {
-    return performance_manager_.get();
-  }
 
   TestDedicatedWorkerService* dedicated_worker_service() {
     return &dedicated_worker_service_;

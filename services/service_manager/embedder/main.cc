@@ -27,7 +27,6 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "mojo/core/embedder/configuration.h"
@@ -389,8 +388,6 @@ int Main(const MainParams& params) {
     // sandboxed process. The defines below must be in sync with the
     // implementation of mojo::NodeController::CreateSharedBuffer().
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
-    // TODO(dcheng): Remove this after debugging crashes in cloud print service.
-    const char* shmem_hooks_result = "";
     // TODO(dcheng): The separate check for |is_broker_process| should not be
     // required, but avoid changing the behavior of IsUnsandboxedSandboxType()
     // for now.
@@ -399,11 +396,9 @@ int Main(const MainParams& params) {
             service_manager::SandboxTypeFromCommandLine(command_line))) {
       // Unsandboxed processes don't need shared memory brokering... because
       // they're not sandboxed.
-      shmem_hooks_result = "not set";
     } else if (mojo_config.force_direct_shared_memory_allocation) {
       // Don't bother with hooks if direct shared memory allocation has been
       // requested.
-      shmem_hooks_result = "direct requested";
     } else {
       // Otherwise, this is a sandboxed process that will need brokering to
       // allocate shared memory.
@@ -411,35 +406,7 @@ int Main(const MainParams& params) {
           &mojo::CreateReadOnlySharedMemoryRegion,
           &mojo::CreateUnsafeSharedMemoryRegion,
           &mojo::CreateWritableSharedMemoryRegion);
-      shmem_hooks_result = "installed";
     }
-
-    static crash_reporter::CrashKeyString<32> has_process_type_key(
-        "shmem_hooks_has_process_type");
-    has_process_type_key.Set(
-        command_line.HasSwitch(switches::kProcessType) ? "true" : "false");
-
-    static crash_reporter::CrashKeyString<32> process_type_key(
-        "shmem_hooks_process_type");
-    std::string shmem_process_type =
-        command_line.GetSwitchValueASCII(switches::kProcessType);
-    process_type_key.Set(shmem_process_type);
-
-    static crash_reporter::CrashKeyString<32> is_process_broker_key(
-        "shmem_hooks_is_broker");
-    is_process_broker_key.Set(mojo_config.is_broker_process ? "true" : "false");
-
-    static crash_reporter::CrashKeyString<32> is_unsandboxed_process_key(
-        "shmem_hooks_is_unsandboxed");
-    is_unsandboxed_process_key.Set(
-        service_manager::IsUnsandboxedSandboxType(
-            service_manager::SandboxTypeFromCommandLine(command_line))
-            ? "true"
-            : "false");
-
-    static crash_reporter::CrashKeyString<32> shmem_hooks_result_key(
-        "shmem_hooks_result");
-    shmem_hooks_result_key.Set(shmem_hooks_result);
 #endif  // !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
 
 #if defined(OS_WIN)

@@ -207,16 +207,16 @@ void InspectorDOMSnapshotAgent::Restore() {
 Response InspectorDOMSnapshotAgent::enable() {
   if (!enabled_.Get())
     EnableAndReset();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMSnapshotAgent::disable() {
   if (!enabled_.Get())
-    return Response::Error("DOM snapshot agent hasn't been enabled.");
+    return Response::ServerError("DOM snapshot agent hasn't been enabled.");
   enabled_.Clear();
   origin_url_map_.reset();
   instrumenting_agents_->RemoveInspectorDOMSnapshotAgent(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMSnapshotAgent::getSnapshot(
@@ -231,7 +231,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
         computed_styles) {
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
-    return Response::Error("Document is not available");
+    return Response::ServerError("Document is not available");
   LegacyDOMSnapshotAgent legacySupport(dom_debugger_agent_,
                                        origin_url_map_.get());
   return legacySupport.GetSnapshot(
@@ -253,7 +253,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
 
   auto* main_window = inspected_frames_->Root()->DomWindow();
   if (!main_window)
-    return Response::Error("Document is not available");
+    return Response::ServerError("Document is not available");
 
   strings_ = std::make_unique<protocol::Array<String>>();
   documents_ = std::make_unique<
@@ -293,7 +293,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   string_table_.clear();
   document_order_map_.clear();
   documents_.reset();
-  return Response::OK();
+  return Response::Success();
 }
 
 int InspectorDOMSnapshotAgent::AddString(const String& string) {

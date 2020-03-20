@@ -33,8 +33,7 @@ void BrowserChildProcessWatcher::Initialize() {
   DCHECK(gpu_process_nodes_.empty());
 
   browser_process_node_ =
-      PerformanceManagerImpl::GetInstance()->CreateProcessNode(
-          RenderProcessHostProxy());
+      PerformanceManagerImpl::CreateProcessNode(RenderProcessHostProxy());
   OnProcessLaunched(base::Process::Current(), browser_process_node_.get());
   BrowserChildProcessObserver::Add(this);
 }
@@ -51,15 +50,14 @@ void BrowserChildProcessWatcher::TearDown() {
     nodes.push_back(std::move(node.second));
   gpu_process_nodes_.clear();
 
-  PerformanceManagerImpl::GetInstance()->BatchDeleteNodes(std::move(nodes));
+  PerformanceManagerImpl::BatchDeleteNodes(std::move(nodes));
 }
 
 void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     std::unique_ptr<ProcessNodeImpl> gpu_node =
-        PerformanceManagerImpl::GetInstance()->CreateProcessNode(
-            RenderProcessHostProxy());
+        PerformanceManagerImpl::CreateProcessNode(RenderProcessHostProxy());
     OnProcessLaunched(data.GetProcess(), gpu_node.get());
     gpu_process_nodes_[data.id] = std::move(gpu_node);
   }
@@ -74,7 +72,7 @@ void BrowserChildProcessWatcher::BrowserChildProcessHostDisconnected(
     // launch-and-connect notification arrives.
     // See https://crbug.com/942500.
     if (it != gpu_process_nodes_.end()) {
-      PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(it->second));
+      PerformanceManagerImpl::DeleteNode(std::move(it->second));
       gpu_process_nodes_.erase(it);
     }
   }
@@ -101,7 +99,7 @@ void BrowserChildProcessWatcher::GPUProcessExited(int id, int exit_code) {
   if (base::Contains(gpu_process_nodes_, id)) {
     auto* process_node = gpu_process_nodes_[id].get();
 
-    DCHECK(PerformanceManagerImpl::GetInstance());
+    DCHECK(PerformanceManagerImpl::IsAvailable());
     PerformanceManagerImpl::GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcessExitStatus,
                                   base::Unretained(process_node), exit_code));
@@ -122,7 +120,7 @@ void BrowserChildProcessWatcher::OnProcessLaunched(
       process.CreationTime();
 #endif
 
-  DCHECK(PerformanceManagerImpl::GetInstance());
+  DCHECK(PerformanceManagerImpl::IsAvailable());
   PerformanceManagerImpl::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetProcess,
                                 base::Unretained(process_node),

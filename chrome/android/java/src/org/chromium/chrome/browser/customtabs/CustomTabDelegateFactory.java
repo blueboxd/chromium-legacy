@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
-import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
@@ -107,8 +106,8 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
         @Override
         public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
-            // Note: This method will not be called if applyWebappScopePolicyForUrl returns
-            // IGNORE_EXTERNAL_INTENT_REQUESTS.
+            // Note: This method will not be called if shouldDisableExternalIntentRequestsForUrl()
+            // returns false.
 
             boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.toUri(0));
             boolean hasDefaultHandler = hasDefaultHandler(intent);
@@ -180,29 +179,10 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             return mHasActivityStarted;
         }
 
-        /**
-         * If the current activity is a webapp, applies the webapp's scope policy and returns the
-         * result. Returns {@link WebappScopePolicy#NavigationDirective#NORMAL_BEHAVIOR} if the
-         * current activity is not a webapp. Protected to allow subclasses to customize the logic.
-         */
-        protected @WebappScopePolicy.NavigationDirective int applyWebappScopePolicyForUrl(
-                String url) {
-            Context context = getAvailableContext();
-            if (context instanceof WebappActivity) {
-                WebappActivity webappActivity = (WebappActivity) context;
-                return WebappScopePolicy.applyPolicyForNavigationToUrl(
-                        webappActivity.scopePolicy(), webappActivity.getWebappInfo(), url);
-            }
-            return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
-        }
-
         @Override
         public boolean shouldDisableExternalIntentRequestsForUrl(String url) {
-            // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
-            if (applyWebappScopePolicyForUrl(url)
-                    == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS) {
-                return true;
-            }
+            // http://crbug.com/647569 : Do not forward URL requests to external intents for URLs
+            // within the Webapp/TWA's scope.
             return mExternalIntentsPolicyProvider.shouldIgnoreExternalIntentHandlers(url);
         }
     }

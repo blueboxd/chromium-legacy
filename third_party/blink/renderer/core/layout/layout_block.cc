@@ -1457,11 +1457,8 @@ MinMaxSizes LayoutBlock::ComputeIntrinsicLogicalWidths() const {
 }
 
 DISABLE_CFI_PERF
-void LayoutBlock::ComputePreferredLogicalWidths() {
-  DCHECK(IntrinsicLogicalWidthsDirty());
-
-  min_preferred_logical_width_ = LayoutUnit();
-  max_preferred_logical_width_ = LayoutUnit();
+MinMaxSizes LayoutBlock::PreferredLogicalWidths() const {
+  MinMaxSizes sizes;
 
   // FIXME: The isFixed() calls here should probably be checking for isSpecified
   // since you should be able to use percentage, calc or viewport relative
@@ -1471,48 +1468,31 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
       style_to_use.LogicalWidth().Value() >= 0 &&
       !(IsFlexItemCommon() && Parent()->StyleRef().IsDeprecatedWebkitBox() &&
         !style_to_use.LogicalWidth().IntValue())) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        AdjustBorderBoxLogicalWidthForBoxSizing(
-            LayoutUnit(style_to_use.LogicalWidth().Value()));
+    sizes = AdjustBorderBoxLogicalWidthForBoxSizing(
+        LayoutUnit(style_to_use.LogicalWidth().Value()));
   } else {
-    MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
-    min_preferred_logical_width_ = sizes.min_size;
-    max_preferred_logical_width_ = sizes.max_size;
+    sizes = IntrinsicLogicalWidths();
   }
 
   if (style_to_use.LogicalMaxWidth().IsFixed()) {
-    max_preferred_logical_width_ =
-        std::min(max_preferred_logical_width_,
-                 AdjustBorderBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_,
-                 AdjustBorderBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
+    sizes.Constrain(AdjustBorderBoxLogicalWidthForBoxSizing(
+        LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
   }
 
   if (style_to_use.LogicalMinWidth().IsFixed() &&
       style_to_use.LogicalMinWidth().Value() > 0) {
-    max_preferred_logical_width_ =
-        std::max(max_preferred_logical_width_,
-                 AdjustBorderBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.LogicalMinWidth().Value())));
-    min_preferred_logical_width_ =
-        std::max(min_preferred_logical_width_,
-                 AdjustBorderBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.LogicalMinWidth().Value())));
+    sizes.Encompass(AdjustBorderBoxLogicalWidthForBoxSizing(
+        LayoutUnit(style_to_use.LogicalMinWidth().Value())));
   }
 
   // Table layout uses integers, ceil the preferred widths to ensure that they
   // can contain the contents.
   if (IsTableCell()) {
-    min_preferred_logical_width_ =
-        LayoutUnit(min_preferred_logical_width_.Ceil());
-    max_preferred_logical_width_ =
-        LayoutUnit(max_preferred_logical_width_.Ceil());
+    sizes.min_size = LayoutUnit(sizes.min_size.Ceil());
+    sizes.max_size = LayoutUnit(sizes.max_size.Ceil());
   }
 
-  ClearIntrinsicLogicalWidthsDirty();
+  return sizes;
 }
 
 void LayoutBlock::ComputeBlockPreferredLogicalWidths(

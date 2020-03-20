@@ -313,26 +313,17 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
   const ComputedStyle& child_style = child.Style();
   WritingMode parent_writing_mode = parent_style.GetWritingMode();
   WritingMode child_writing_mode = child_style.GetWritingMode();
-  LayoutBox* box = child.GetLayoutBox();
-
-  if (box->NeedsPreferredWidthsRecalculation()) {
-    // Some objects (when there's an intrinsic ratio) have their min/max inline
-    // size affected by the block size of their container. We don't really know
-    // whether the containing block of this child did change or is going to
-    // change size. However, this is our only opportunity to make sure that it
-    // gets its min/max widths calculated.
-    box->SetIntrinsicLogicalWidthsDirty();
-  }
 
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-    if (!box->IntrinsicLogicalWidthsDirty()) {
-      return box->PreferredLogicalWidths();
-    }
     // Tables are special; even if a width is specified, they may end up being
     // sized different. So we just always let the table code handle this.
+    if (child.IsTable())
+      return child.ComputeMinMaxSizes(parent_writing_mode, input, nullptr);
+
     // Replaced elements may size themselves using aspect ratios and block
     // sizes, so we pass that on as well.
-    if (box->IsTable() || box->IsLayoutReplaced()) {
+    if (child.IsReplaced()) {
+      LayoutBox* box = child.GetLayoutBox();
       bool needs_size_reset = false;
       if (!box->HasOverrideContainingBlockContentLogicalHeight()) {
         box->SetOverrideContainingBlockContentLogicalHeight(
@@ -371,40 +362,8 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
   NGBoxStrut border_padding =
       ComputeBorders(space, child_style) + ComputePadding(space, child_style);
 
-  MinMaxSizes sizes = ComputeMinAndMaxContentContribution(
-      parent_writing_mode, child_style, border_padding, min_max_sizes);
-  if (IsParallelWritingMode(parent_writing_mode, child_writing_mode))
-    box->SetPreferredLogicalWidthsFromNG(sizes);
-  return sizes;
-}
-
-MinMaxSizes ComputeMinAndMaxContentSizeForOutOfFlow(
-    const NGConstraintSpace& constraint_space,
-    NGLayoutInputNode node,
-    const NGBoxStrut& border_padding,
-    const MinMaxSizesInput& input) {
-  LayoutBox* box = node.GetLayoutBox();
-  // If we've already populated the legacy preferred logical widths cache for
-  // this node at the bottom of this function, use those cached results here.
-  // Or, if we're working on a table, use the legacy preferred widths code
-  // instead of ComputeMinAndMaxContentContribution below because
-  // ComputeMinAndMaxContentContribution assumes that if an element has a
-  // specified size, that's its final size, which tables don't follow.
-  if ((!box->IntrinsicLogicalWidthsDirty() &&
-       !box->NeedsPreferredWidthsRecalculation()) ||
-      box->IsTable()) {
-    return box->PreferredLogicalWidths();
-  }
-
-  // Compute the intrinsic sizes without regard to the specified sizes.
-  MinMaxSizes result = node.ComputeMinMaxSizes(node.Style().GetWritingMode(),
-                                               input, &constraint_space);
-  // Apply the specified min, main, max sizes.
-  MinMaxSizes contribution = ComputeMinAndMaxContentContribution(
-      node.Style().GetWritingMode(), node.Style(), border_padding, result);
-  // Cache these computed values.
-  box->SetPreferredLogicalWidthsFromNG(contribution);
-  return result;
+  return ComputeMinAndMaxContentContribution(parent_writing_mode, child_style,
+                                             border_padding, min_max_sizes);
 }
 
 LayoutUnit ComputeInlineSizeForFragment(
@@ -420,55 +379,23 @@ LayoutUnit ComputeInlineSizeForFragment(
   if (logical_width.IsAuto() && space.IsShrinkToFit())
     logical_width = Length::FitContent();
 
-  LayoutBox* box = node.GetLayoutBox();
-  // If we have usable cached min/max intrinsic sizes, use those if we can. They
-  // will normally also be constrained to {min,max}-inline-size, but not if
-  // percentages are involved. In such cases we'll have to calculate and apply
-  // the constraints on our own. We also need to discard the cached values if
-  // the box has certain properties (e.g. percentage padding) that cause the
-  // cached values to be affected by extrinsic sizing.
-  if (!box->IntrinsicLogicalWidthsDirty() && !override_min_max_sizes_for_test &&
-      !style.LogicalMinWidth().IsPercentOrCalc() &&
-      !style.LogicalMaxWidth().IsPercentOrCalc() &&
-      !box->NeedsPreferredWidthsRecalculation()) {
-    if (logical_width.IsFitContent()) {
-      // This is not as easy as {min, max}.ShrinkToFit() because we also need
-      // to subtract inline margins from the available size. The code in
-      // ResolveMainInlineLength knows how to handle that, just call that.
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizes {
+    if (override_min_max_sizes_for_test)
+      return *override_min_max_sizes_for_test;
 
-      base::Optional<MinMaxSizes> min_max_sizes = box->PreferredLogicalWidths();
-      return ResolveMainInlineLength(space, style, border_padding,
-                                     min_max_sizes, logical_width);
-    }
-    if (logical_width.IsMinContent())
-      return box->PreferredLogicalWidths().min_size;
-    if (logical_width.IsMaxContent())
-      return box->PreferredLogicalWidths().max_size;
-  }
-
-  base::Optional<MinMaxSizes> min_max_sizes;
-  if (NeedMinMaxSize(space, style)) {
-    if (override_min_max_sizes_for_test) {
-      min_max_sizes = *override_min_max_sizes_for_test;
-    } else {
-      min_max_sizes = node.ComputeMinMaxSizes(
-          space.GetWritingMode(),
-          MinMaxSizesInput(space.PercentageResolutionBlockSize()), &space);
-      // Cache these computed values
-      MinMaxSizes contribution = ComputeMinAndMaxContentContribution(
-          style.GetWritingMode(), style, border_padding, min_max_sizes);
-      box->SetPreferredLogicalWidthsFromNG(contribution);
-    }
-  }
+    return node.ComputeMinMaxSizes(
+        space.GetWritingMode(),
+        MinMaxSizesInput(space.PercentageResolutionBlockSize()), &space);
+  };
 
   LayoutUnit extent = ResolveMainInlineLength(space, style, border_padding,
-                                              min_max_sizes, logical_width);
+                                              MinMaxSizesFunc, logical_width);
 
   LayoutUnit max = ResolveMaxInlineLength(
-      space, style, border_padding, min_max_sizes, style.LogicalMaxWidth(),
+      space, style, border_padding, MinMaxSizesFunc, style.LogicalMaxWidth(),
       LengthResolvePhase::kLayout);
   LayoutUnit min = ResolveMinInlineLength(
-      space, style, border_padding, min_max_sizes, style.LogicalMinWidth(),
+      space, style, border_padding, MinMaxSizesFunc, style.LogicalMinWidth(),
       LengthResolvePhase::kLayout);
   return ConstrainByMinMax(extent, min, max);
 }

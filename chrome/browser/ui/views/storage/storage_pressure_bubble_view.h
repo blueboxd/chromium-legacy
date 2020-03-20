@@ -19,6 +19,7 @@ class StoragePressureBubbleView : public views::BubbleDialogDelegateView {
                             const gfx::Rect& anchor_rect,
                             Browser* browser,
                             const url::Origin origin);
+  ~StoragePressureBubbleView() override;
 
   void OnDialogAccepted();
 
@@ -27,10 +28,13 @@ class StoragePressureBubbleView : public views::BubbleDialogDelegateView {
 
   // views::BubbleDialogDelegateView:
   void Init() override;
+  bool ShouldShowCloseButton() const override;
 
   Browser* const browser_;
-  const GURL all_sites_url_ = GURL("chrome://settings/content/all");
   const url::Origin origin_;
+  // Whether or not the user opened the all sites page from the notification
+  // positive button.
+  bool ignored_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_STORAGE_STORAGE_PRESSURE_BUBBLE_VIEW_H_

@@ -10,8 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "chrome/browser/serial/serial_chooser_context.h"
 #include "content/public/browser/serial_chooser.h"
 #include "services/device/public/mojom/serial.mojom-forward.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
@@ -21,10 +23,10 @@ namespace content {
 class RenderFrameHost;
 }  // namespace content
 
-class SerialChooserContext;
-
 // SerialChooserController provides data for the Serial API permission prompt.
-class SerialChooserController final : public ChooserController {
+class SerialChooserController final
+    : public ChooserController,
+      public SerialChooserContext::PortObserver {
  public:
   SerialChooserController(
       content::RenderFrameHost* render_frame_host,
@@ -43,6 +45,11 @@ class SerialChooserController final : public ChooserController {
   void Close() override;
   void OpenHelpCenterUrl() const override;
 
+  // SerialChooserContext::PortObserver:
+  void OnPortAdded(const device::mojom::SerialPortInfo& port) override;
+  void OnPortRemoved(const device::mojom::SerialPortInfo& port) override;
+  void OnPortManagerConnectionError() override;
+
  private:
   void OnGetDevices(std::vector<device::mojom::SerialPortInfoPtr> ports);
   bool FilterMatchesAny(const device::mojom::SerialPortInfo& port) const;
@@ -53,6 +60,12 @@ class SerialChooserController final : public ChooserController {
   url::Origin embedding_origin_;
 
   base::WeakPtr<SerialChooserContext> chooser_context_;
+  ScopedObserver<SerialChooserContext,
+                 SerialChooserContext::PortObserver,
+                 &SerialChooserContext::AddPortObserver,
+                 &SerialChooserContext::RemovePortObserver>
+      observer_{this};
+
   std::vector<device::mojom::SerialPortInfoPtr> ports_;
 
   base::WeakPtrFactory<SerialChooserController> weak_factory_{this};

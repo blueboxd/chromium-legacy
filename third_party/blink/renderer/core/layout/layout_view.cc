@@ -111,9 +111,6 @@ LayoutView::LayoutView(Document* document)
   // init LayoutObject attributes
   SetInline(false);
 
-  min_preferred_logical_width_ = LayoutUnit();
-  max_preferred_logical_width_ = LayoutUnit();
-
   SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
 
   SetPositionState(EPosition::kAbsolute);  // to 0,0 :)
@@ -313,8 +310,7 @@ void LayoutView::UpdateLayout() {
     SetPageLogicalHeight(LayoutUnit());
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        LogicalWidth();
+    intrinsic_logical_widths_ = LogicalWidth();
     if (!fragmentation_context_) {
       fragmentation_context_ =
           std::make_unique<ViewFragmentationContext>(*this);

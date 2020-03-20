@@ -151,6 +151,11 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent,
   // LayoutNGTableRowInterface methods end.
 
  private:
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
+
   void ComputeVisualOverflow();
   void AddLayoutOverflowFromCell(const LayoutTableCell*);
   void AddVisualOverflowFromCell(const LayoutTableCell*);

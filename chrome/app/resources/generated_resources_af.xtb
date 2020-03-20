@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Lees en verander al jou data op die huidige webwerf wanneer dit opgeroep word</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wil jou instellings terugstel.</translation>
 <translation id="1243314992276662751">Laai op</translation>
-<translation id="1243398753772016127">Werwe kan nie jou blaai-aktiwiteit op verskillende werwe gebruik om advertensies te personaliseer nie</translation>
 <translation id="1244265436519979884">Linux-terugstelling vind tans plaas</translation>
 <translation id="1244303850296295656">Uitbreidingfout</translation>
 <translation id="1246905108078336582">Verwyder voorstel van knipbord af?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Aan – gepasmaakte instellings</translation>
 <translation id="1489664337021920575">Kies 'n ander opsie</translation>
 <translation id="1493892686965953381">Wag tans vir <ph name="LOAD_STATE_PARAMETER" /> …</translation>
-<translation id="1494438840282430403">Vee ook blaaierdata uit (<ph name="URL" />), wat jou by Google.com kan afmeld.</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> ander beskikbare toestelle.</translation>
 <translation id="1495677929897281669">Terug na oortjie</translation>
 <translation id="1499271269825557605">As jy nie 'n uitbreiding herken nie, of as jou blaaier nie werk soos verwag nie, kan jy uitbreidings hier afskakel of pasmaak.</translation>
@@ -1190,7 +1188,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2575247648642144396">Hierdie ikoon sal sigbaar wees wanneer die uitbreiding op die huidige bladsy kan reageer. Gebruik hierdie uitbreiding deur op die ikoon te klik of deur <ph name="EXTENSION_SHORTCUT" /> te druk.</translation>
 <translation id="257779572837908839">Stel op as Chromebox vir vergaderings</translation>
 <translation id="2580889980133367162">Laat <ph name="HOST" /> altyd toe om veelvuldige lêers af te laai</translation>
-<translation id="2580924999637585241">Totaal: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lank</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kon nie Kerberos-kaartjie kry nie. Probeer weer of kontak jou organisasie se toesteladministrateur. (Foutkode: <ph name="ERROR_CODE" />).</translation>
@@ -2819,7 +2816,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4808667324955055115">Opspringers geblokkeer:</translation>
 <translation id="480990236307250886">Maak die tuisblad oop</translation>
 <translation id="4811503964269049987">Groepeer geselekteerde oortjie</translation>
-<translation id="4811818760963189951">Afgeskakel omdat jy geskiedenissinkronisering gedeaktiveer het</translation>
 <translation id="4813136279048157860">My prente</translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
 <translation id="4814378367953456825">Voer 'n naam in vir hierdie vingerafdruk</translation>
@@ -2988,7 +2984,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5040823038948176460">Bykomende inhoudinstellings</translation>
 <translation id="5042282098504489593">Maak instellings oop om <ph name="USB_DEVICE_NAME" /> aan Linux te koppel</translation>
 <translation id="5043913660911154449">Of spesifiseer jou drukker se PPD <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Afgeskakel omdat jy jou sinkroniseringdata met 'n wagfrase geënkripteer het</translation>
 <translation id="5045550434625856497">Verkeerde wagwoord</translation>
 <translation id="504561833207953641">Maak tans in bestaande blaaiersessie oop.</translation>
 <translation id="5047421709274785093">Keer dat werwe beweging- en ligsensors gebruik</translation>
@@ -3966,7 +3961,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="63566973648609420">Net iemand met jou wagfrase kan jou geënkripteerde data lees. Die wagfrase word nie na Google gestuur of deur Google geberg nie. As jy jou wagfrase vergeet of hierdie instelling wil verander, sal jy <ph name="BEGIN_LINK" />sinkronisering moet terugstel<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Welkom by die <ph name="SHORT_PRODUCT_NAME" />-familie. Dit is geen gewone rekenaar nie.</translation>
 <translation id="6358884629796491903">Draak</translation>
-<translation id="6360719647236334056">Gebruik jou Chrome-blaaigeskiedenis om Search, advertensies en ander Google-dienste te personaliseer</translation>
 <translation id="6361850914223837199">Foutbesonderhede:</translation>
 <translation id="6362853299801475928">Gee 'n kwessie aan …</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4244,7 +4238,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6758056191028427665">Sê vir ons hoe ons vaar.</translation>
 <translation id="6759193508432371551">Fabriekterugstelling</translation>
 <translation id="6762833852331690540">Aan</translation>
-<translation id="6764693078871405569">Vee ook blaaierdata uit (<ph name="URL" />), wat jou by kan <ph name="DOMAIN" /> afmeld.</translation>
 <translation id="6767566652486411142">Kies 'n ander taal …</translation>
 <translation id="6767639283522617719">Kan nie by die domein aansluit nie. Maak seker dat die instellings vir die organisatoriese eenheid korrek is.</translation>
 <translation id="6769712124046837540">Voeg tans drukker by …</translation>

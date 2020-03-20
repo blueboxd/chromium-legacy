@@ -226,6 +226,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kNoControlPart:
       value_id_ = CSSValueID::kNone;
       break;
+    case kAutoPart:
+      value_id_ = CSSValueID::kAuto;
+      break;
     case kCheckboxPart:
       value_id_ = CSSValueID::kCheckbox;
       break;
@@ -305,8 +308,10 @@ template <>
 inline ControlPart CSSIdentifierValue::ConvertTo() const {
   if (value_id_ == CSSValueID::kNone)
     return kNoControlPart;
+  if (value_id_ == CSSValueID::kAuto)
+    return kAutoPart;
   return ControlPart(static_cast<int>(value_id_) -
-                     static_cast<int>(CSSValueID::kCheckbox) + 1);
+                     static_cast<int>(CSSValueID::kCheckbox) + kCheckboxPart);
 }
 
 template <>

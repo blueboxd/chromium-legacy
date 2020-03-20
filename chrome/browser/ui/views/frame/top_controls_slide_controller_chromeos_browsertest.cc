@@ -61,25 +61,6 @@ enum class ScrollDirection {
   kDown,
 };
 
-// Using the given |generator| and the start and end points, it generates a
-// gesture scroll sequence with appropriate velocity so that fling gesture
-// scrolls are generated.
-void GenerateGestureFlingScrollSequence(ui::test::EventGenerator* generator,
-                                        const gfx::Point& start_point,
-                                        const gfx::Point& end_point) {
-  DCHECK(generator);
-  generator->GestureScrollSequenceWithCallback(
-      start_point, end_point,
-      generator->CalculateScrollDurationForFlingVelocity(
-          start_point, end_point, 100 /* velocity */, 2 /* steps */),
-      2 /* steps */,
-      base::BindRepeating([](ui::EventType, const gfx::Vector2dF&) {
-        // Give the event a chance to propagate to renderer before sending the
-        // next one.
-        base::RunLoop().RunUntilIdle();
-      }));
-}
-
 // Checks that the translation part of the two given transforms are equal.
 void CompareTranslations(const gfx::Transform& t1, const gfx::Transform& t2) {
   const gfx::Vector2dF t1_translation = t1.To2dTranslation();
@@ -505,6 +486,33 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     CompareTranslations(expected_transform, root_view_layer->transform());
   }
 
+  // Using the given |generator| and the start and end points, it generates a
+  // gesture scroll sequence with appropriate velocity so that fling gesture
+  // scrolls are generated.
+  void GenerateGestureFlingScrollSequence(ui::test::EventGenerator* generator,
+                                          const gfx::Point& start_point,
+                                          const gfx::Point& end_point) {
+    DCHECK(generator);
+    content::WebContents* contents = browser_view()->GetActiveWebContents();
+    generator->GestureScrollSequenceWithCallback(
+        start_point, end_point,
+        generator->CalculateScrollDurationForFlingVelocity(
+            start_point, end_point, 100 /* velocity */, 2 /* steps */),
+        2 /* steps */,
+        base::BindRepeating(
+            [](content::WebContents* contents, ui::EventType,
+               const gfx::Vector2dF&) {
+              // Give the event a chance to propagate to renderer before sending
+              // the next one by waiting for at least 2 render frame
+              // submissions.
+              content::RenderFrameSubmissionObserver submission_observer(
+                  contents);
+              while (submission_observer.render_frame_count() < 2)
+                submission_observer.WaitForAnyFrameSubmission();
+            },
+            contents));
+  }
+
   // Generates a gesture fling scroll sequence to scroll the current page in the
   // given |direction|, and waits for and verifies that top-chrome reaches the
   // given |target_state|.
@@ -781,9 +789,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestClosingATab) {
                                TopChromeShownState::kFullyHidden);
 }
 
-// Disabled for flakes. See http://crbug.com/1049178
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLED_TestFocusEditableElements) {
+                       TestFocusEditableElements) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
@@ -794,6 +801,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
                  0);
 
+  SCOPED_TRACE("Initial scroll to hide the top controls.");
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
                                TopChromeShownState::kFullyHidden);
 
@@ -822,6 +830,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
 
   // Focus on the editable element in the page and expect that top-chrome will
   // be shown.
+  SCOPED_TRACE("Focus an editable element in the page.");
   TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
   content::WebContents* contents = browser_view()->GetActiveWebContents();
   bool bool_result = false;
@@ -835,18 +844,22 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   // Now try scrolling in a way that would normally hide top-chrome, and expect
   // that top-chrome will be forced shown as long as the editable element is
   // focused.
+  SCOPED_TRACE("Attempting a scroll which will not hide the top controls.");
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
                                TopChromeShownState::kFullyShown);
 
   // Now blur the focused editable element. Expect that top-chrome can now be
   // hidden with gesture scrolls.
   bool_result = false;
+  SCOPED_TRACE("Bluring the focus away from the editable element.");
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       contents, get_js_function_body(false /* should_focus */), &bool_result));
   EXPECT_TRUE(bool_result);
   // Evaluate an empty sentence to make sure that the event processing is done
   // in the content.
   ignore_result(content::EvalJs(contents, ";"));
+
+  SCOPED_TRACE("Scroll to hide should now work.");
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
                                TopChromeShownState::kFullyHidden);
 }

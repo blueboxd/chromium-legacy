@@ -22,6 +22,9 @@
     <item name="default_focused_hovered_alpha" format="float" type="dimen">0.06</item>
     <item name="default_focused_alpha" format="float" type="dimen">0.06</item>
     <item name="default_hovered_alpha" format="float" type="dimen">0.04</item>
+    <item name="default_icon_pressed_alpha" format="float" type="dimen" tools:ignore="UnusedResources">
+        0.50
+    </item>
 
     <!-- Minimum height/width for a touchable item -->
     <dimen name="min_touch_target_size">48dp</dimen>
@@ -31,16 +34,16 @@
     <dimen name="button_bg_vertical_inset">6dp</dimen>
 
     <!-- Chips default measures -->
+    <item name="chip_background_selected_alpha_light" format="float" type="dimen">0.06</item>
+    <item name="chip_background_selected_alpha_dark" format="float" type="dimen">1</item>
+
     <dimen name="chip_border_width">1dp</dimen>
     <dimen name="chip_corner_radius">8dp</dimen>
     <dimen name="chip_default_height">32dp</dimen>
     <dimen name="chip_end_padding">16dp</dimen>
     <dimen name="chip_element_leading_padding">8dp</dimen>
     <dimen name="chip_bg_vertical_inset">8dp</dimen>
-    <item name="chip_background_selected_focused_alpha" format="float" type="dimen">0.12</item>
-    <item name="chip_background_selected_alpha" format="float" type="dimen">0.06</item>
-    <item name="chip_background_selected_hover_alpha" format="float" type="dimen">0.10</item>
-    <item name="chip_background_selected_hover_focused_alpha" format="float" type="dimen">0.12</item>
+    <dimen name="chip_background_selected_alpha">@dimen/chip_background_selected_alpha_light</dimen>
     <dimen name="chip_icon_size">20dp</dimen>
 
     <!-- Dropdown default measures -->

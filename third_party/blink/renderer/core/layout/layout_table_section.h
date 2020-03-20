@@ -336,6 +336,11 @@ class CORE_EXPORT LayoutTableSection final
                    HitTestAction) override;
 
  private:
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
+
   void ComputeVisualOverflowFromDescendants();
 
   bool IsOfType(LayoutObjectType type) const override {

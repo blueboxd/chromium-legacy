@@ -13,7 +13,7 @@
  *            isGaiaAvatar: (boolean|undefined),
  *            selected: (boolean|undefined)}}
  */
-let AvatarIcon;
+/* #export */ let AvatarIcon;
 
 Polymer({
   is: 'cr-profile-avatar-selector',

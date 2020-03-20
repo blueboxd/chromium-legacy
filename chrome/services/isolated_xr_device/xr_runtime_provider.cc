@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/common/content_switches.h"
+#include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device_base.h"
 
@@ -156,7 +156,7 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
   ALLOW_UNUSED_LOCAL(command_line);
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
-  if (IsEnabled(command_line, features::kOculusVR,
+  if (IsEnabled(command_line, device::features::kOculusVR,
                 switches::kWebXrRuntimeOculus)) {
     should_check_oculus_ = device::OculusDevice::IsApiAvailable();
     any_runtimes_available |= should_check_oculus_;
@@ -164,7 +164,7 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-  if (IsEnabled(command_line, features::kOpenVR,
+  if (IsEnabled(command_line, device::features::kOpenVR,
                 switches::kWebXrRuntimeOpenVr)) {
     should_check_openvr_ = device::OpenVRDevice::IsApiAvailable();
     any_runtimes_available |= should_check_openvr_;
@@ -172,7 +172,7 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
 #endif
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
-  if (IsEnabled(command_line, features::kWindowsMixedReality,
+  if (IsEnabled(command_line, device::features::kWindowsMixedReality,
                 switches::kWebXrRuntimeWMR)) {
     wmr_statics_ = device::MixedRealityDeviceStatics::CreateInstance();
     should_check_wmr_ = wmr_statics_->IsApiAvailable();
@@ -181,7 +181,7 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
 #endif
 
 #if BUILDFLAG(ENABLE_OPENXR)
-  if (IsEnabled(command_line, features::kOpenXR,
+  if (IsEnabled(command_line, device::features::kOpenXR,
                 switches::kWebXrRuntimeOpenXr)) {
     openxr_statics_ = std::make_unique<device::OpenXrStatics>();
     should_check_openxr_ = openxr_statics_->IsApiAvailable();

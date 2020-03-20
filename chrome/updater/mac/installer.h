@@ -13,11 +13,27 @@ class FilePath;
 
 namespace updater {
 
-// Mounts the DMG specified by |dmg_file_path|. The install script located at
-// "/.install.sh" in the mounted volume is executed, and then the DMG is
-// un-mounted. Returns false if mounting the dmg or executing the script failed.
-bool InstallFromDMG(const base::FilePath& dmg_file_path,
-                    const std::string& arguments);
+enum class InstallErrors {
+  // Failed to mount the DMG.
+  kFailMountDmg = -1,
+
+  // No mount point was created from the DMG, even though mounting succeeded.
+  kNoMountPoint = -2,
+
+  // Failed to find the mounted DMG path, even though mounting succeeded and a
+  // mount point was created.
+  kMountedDmgPathDoesNotExist = -3,
+
+  // Failed to find a path to the install executable.
+  kExecutableFilePathDoesNotExist = -4,
+};
+
+// Mounts the DMG specified by |dmg_file_path|. The install executable located
+// at "/.install" in the mounted volume is executed, and then the DMG is
+// un-mounted. Returns an error code if mounting the DMG or executing the
+// executable failed.
+int InstallFromDMG(const base::FilePath& dmg_file_path,
+                   const std::string& arguments);
 
 }  // namespace updater
 

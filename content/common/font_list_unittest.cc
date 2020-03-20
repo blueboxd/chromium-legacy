@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/test/task_environment.h"
@@ -75,3 +76,23 @@ TEST(FontList, GetFontListLocalized) {
   EXPECT_TRUE(HasFontWithName(*ko_fonts, "Malgun Gothic", "맑은 고딕"));
 }
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+// On some macOS versions, CTFontManager returns LastResort and/or hidden fonts.
+// Ensure that someone (CTFontManager or our FontList code) filters these fonts
+// on all OS versions that we support.
+TEST(FontList, GetFontListDoesNotIncludeHiddenFonts) {
+  std::unique_ptr<base::ListValue> fonts = content::GetFontList_SlowBlocking();
+
+  for (const auto& font : fonts->GetList()) {
+    const auto& font_names = font.GetList();
+    const std::string& font_id = font_names[0].GetString();
+
+    // The checks are inspired by Gecko's gfxMacPlatformFontList::AddFamily.
+    EXPECT_FALSE(base::LowerCaseEqualsASCII(font_id, "lastresort"))
+        << font_id << " seems to be LastResort, which should be filtered";
+    EXPECT_FALSE(font_id[0] == '.')
+        << font_id << " seems like a hidden font, which should be filtered";
+  }
+}
+#endif  // defined(OS_MACOSX)

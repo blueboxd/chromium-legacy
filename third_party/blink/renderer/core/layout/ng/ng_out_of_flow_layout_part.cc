@@ -528,8 +528,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
       // Since out-of-flow positioning sets up a constraint space with fixed
       // inline-size, the regular layout code (|NGBlockNode::Layout()|) cannot
       // re-layout if it discovers that a scrollbar was added or removed. Handle
-      // that situation here. The assumption is that if preferred logical widths
-      // are dirty after layout, AND its inline-size depends on preferred
+      // that situation here. The assumption is that if intrinsic logical widths
+      // are dirty after layout, AND its inline-size depends on the intrinsic
       // logical widths, it means that scrollbars appeared or disappeared. We
       // have the same logic in legacy layout in
       // |LayoutBlockFlow::UpdateBlockLayout()|.
@@ -585,12 +585,11 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
 
   if (AbsoluteNeedsChildInlineSize(candidate_style) ||
       NeedMinMaxSize(candidate_style) || should_be_considered_as_replaced) {
-    // This is a new formatting context, so whatever happened on the outside
-    // doesn't concern us.
-    MinMaxSizesInput input(
-        container_content_size_in_candidate_writing_mode.block_size);
-    min_max_sizes = ComputeMinAndMaxContentSizeForOutOfFlow(
-        candidate_constraint_space, node, border_padding, input);
+    min_max_sizes = node.ComputeMinMaxSizes(
+        candidate_writing_mode,
+        MinMaxSizesInput(
+            container_content_size_in_candidate_writing_mode.block_size),
+        &candidate_constraint_space);
   }
 
   base::Optional<LogicalSize> replaced_size;

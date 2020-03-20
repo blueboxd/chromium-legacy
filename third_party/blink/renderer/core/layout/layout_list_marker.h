@@ -79,7 +79,7 @@ class CORE_EXPORT LayoutListMarker : public LayoutBox {
 
  private:
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
-  void ComputePreferredLogicalWidths() override;
+  MinMaxSizes PreferredLogicalWidths() const override;
 
   void Paint(const PaintInfo&) const override;
 

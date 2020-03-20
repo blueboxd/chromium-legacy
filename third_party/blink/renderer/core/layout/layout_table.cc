@@ -310,11 +310,10 @@ bool LayoutTable::IsLogicalWidthAuto() const {
 void LayoutTable::UpdateLogicalWidth() {
   RecalcSectionsIfNeeded();
 
-  // Recalculate preferred logical widths now, rather than relying on them being
-  // lazily recalculated, via PreferredLogicalWidths() further below. We might
-  // not even get there.
-  if (IntrinsicLogicalWidthsDirty())
-    ComputePreferredLogicalWidths();
+  // Recalculate the intrinsic logical widths now, rather than relying on them
+  // being lazily recalculated, via PreferredLogicalWidths() further below. We
+  // might not even get there.
+  UpdateCachedIntrinsicLogicalWidthsIfNeeded();
 
   if (IsFlexItemIncludingDeprecatedAndNG() || IsGridItem()) {
     // TODO(jfernandez): Investigate whether the grid layout algorithm provides
@@ -1105,24 +1104,16 @@ MinMaxSizes LayoutTable::ComputeIntrinsicLogicalWidths() const {
   return sizes;
 }
 
-void LayoutTable::ComputePreferredLogicalWidths() {
-  DCHECK(IntrinsicLogicalWidthsDirty());
-
-  MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
+MinMaxSizes LayoutTable::PreferredLogicalWidths() const {
+  MinMaxSizes sizes = IntrinsicLogicalWidths();
 
   table_layout_->ApplyPreferredLogicalWidthQuirks(sizes.min_size,
                                                   sizes.max_size);
-  min_preferred_logical_width_ = sizes.min_size;
-  max_preferred_logical_width_ = sizes.max_size;
 
   for (const auto* caption : captions_) {
     LayoutUnit min_preferred_logical_width =
         caption->PreferredLogicalWidths().min_size;
-    min_preferred_logical_width_ =
-        std::max(min_preferred_logical_width_, min_preferred_logical_width);
-    // Note: using captions' min-width is intentional here:
-    max_preferred_logical_width_ =
-        std::max(max_preferred_logical_width_, min_preferred_logical_width);
+    sizes.Encompass(min_preferred_logical_width);
   }
 
   const ComputedStyle& style_to_use = StyleRef();
@@ -1130,14 +1121,8 @@ void LayoutTable::ComputePreferredLogicalWidths() {
   // able to use percentage or calc values for min-width.
   if (style_to_use.LogicalMinWidth().IsFixed() &&
       style_to_use.LogicalMinWidth().Value() > 0) {
-    max_preferred_logical_width_ =
-        std::max(max_preferred_logical_width_,
-                 AdjustBorderBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
-    min_preferred_logical_width_ =
-        std::max(min_preferred_logical_width_,
-                 AdjustBorderBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
+    sizes.Encompass(AdjustBorderBoxLogicalWidthForBoxSizing(
+        style_to_use.LogicalMinWidth().Value()));
   }
 
   // FIXME: This should probably be checking for isSpecified since you should be
@@ -1145,10 +1130,9 @@ void LayoutTable::ComputePreferredLogicalWidths() {
   if (style_to_use.LogicalMaxWidth().IsFixed()) {
     // We don't constrain m_minPreferredLogicalWidth as the table should be at
     // least the size of its min-content, regardless of 'max-width'.
-    max_preferred_logical_width_ =
-        std::min(max_preferred_logical_width_,
-                 AdjustBorderBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMaxWidth().Value()));
+    sizes.max_size =
+        std::min(sizes.max_size, AdjustBorderBoxLogicalWidthForBoxSizing(
+                                     style_to_use.LogicalMaxWidth().Value()));
   }
 
   // 2 cases need this:
@@ -1157,13 +1141,8 @@ void LayoutTable::ComputePreferredLogicalWidths() {
   // 2. We buggily calculate min > max for some tables with colspans and
   //    percent widths. See fast/table/spans-min-greater-than-max-crash.html and
   //    http://crbug.com/857185
-  max_preferred_logical_width_ =
-      std::max(min_preferred_logical_width_, max_preferred_logical_width_);
-
-  // FIXME: We should be adding borderAndPaddingLogicalWidth here, but
-  // m_tableLayout->computePreferredLogicalWidths already does, so a bunch of
-  // tests break doing this naively.
-  ClearIntrinsicLogicalWidthsDirty();
+  sizes.max_size = std::max(sizes.min_size, sizes.max_size);
+  return sizes;
 }
 
 LayoutTableSection* LayoutTable::TopNonEmptySection() const {

@@ -639,6 +639,12 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       style.SetDisplayLayoutCustomParentName(
           layout_parent_style.DisplayLayoutCustomName());
     }
+
+    bool is_in_main_frame = element && element->GetDocument().IsInMainFrame();
+    // The root element of the main frame has no backdrop, so don't allow
+    // it to have a backdrop filter either.
+    if (is_document_element && is_in_main_frame && style.HasBackdropFilter())
+      style.MutableBackdropFilter().clear();
   } else {
     AdjustStyleForFirstLetter(style);
   }

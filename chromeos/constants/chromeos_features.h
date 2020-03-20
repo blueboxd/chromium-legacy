@@ -24,6 +24,8 @@ extern const base::Feature kArcManagedAdbSideloadingSupport;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAutoScreenBrightness;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kAssistAutoCorrect;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAssistPersonalInfo;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAvatarToolbarButton;

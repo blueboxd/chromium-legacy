@@ -28,8 +28,16 @@ namespace base {
 class Value;
 }
 
-class SerialChooserContext : public permissions::ChooserContextBase {
+class SerialChooserContext : public permissions::ChooserContextBase,
+                             public device::mojom::SerialPortManagerClient {
  public:
+  class PortObserver : public base::CheckedObserver {
+   public:
+    virtual void OnPortAdded(const device::mojom::SerialPortInfo& port) = 0;
+    virtual void OnPortRemoved(const device::mojom::SerialPortInfo& port) = 0;
+    virtual void OnPortManagerConnectionError() = 0;
+  };
+
   explicit SerialChooserContext(Profile* profile);
   ~SerialChooserContext() override;
 
@@ -59,9 +67,17 @@ class SerialChooserContext : public permissions::ChooserContextBase {
 
   device::mojom::SerialPortManager* GetPortManager();
 
+  void AddPortObserver(PortObserver* observer);
+  void RemovePortObserver(PortObserver* observer);
+
   void SetPortManagerForTesting(
       mojo::PendingRemote<device::mojom::SerialPortManager> manager);
+  void FlushPortManagerConnectionForTesting();
   base::WeakPtr<SerialChooserContext> AsWeakPtr();
+
+  // SerialPortManagerClient implementation.
+  void OnPortAdded(device::mojom::SerialPortInfoPtr port) override;
+  void OnPortRemoved(device::mojom::SerialPortInfoPtr port) override;
 
  private:
   void EnsurePortManagerConnection();
@@ -85,6 +101,8 @@ class SerialChooserContext : public permissions::ChooserContextBase {
   std::map<base::UnguessableToken, base::Value> port_info_;
 
   mojo::Remote<device::mojom::SerialPortManager> port_manager_;
+  mojo::Receiver<device::mojom::SerialPortManagerClient> client_receiver_{this};
+  base::ObserverList<PortObserver> port_observer_list_;
 
   base::WeakPtrFactory<SerialChooserContext> weak_factory_{this};
 

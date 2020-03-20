@@ -297,6 +297,11 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
 
  private:
   // device::mojom::SerialPortManager methods:
+  void SetClient(mojo::PendingRemote<device::mojom::SerialPortManagerClient>
+                     remote) override {
+    NOTIMPLEMENTED();
+  }
+
   void GetDevices(GetDevicesCallback callback) override {
     std::vector<device::mojom::SerialPortInfoPtr> ports;
     for (const auto& port : ports_)

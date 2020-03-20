@@ -752,8 +752,7 @@
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_HTML"
                    file="people_page/manage_profile.html"
-                   type="chrome_html"
-                   preprocess="true" />
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_JS"
                    file="people_page/manage_profile.js"
                    type="chrome_html" />

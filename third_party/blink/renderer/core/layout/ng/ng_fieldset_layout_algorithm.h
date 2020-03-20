@@ -65,13 +65,14 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   LayoutUnit intrinsic_block_size_;
   LogicalSize border_box_size_;
 
+  // The legend may eat from the available content box block size. This
+  // represents the minimum block size needed by the border box to encompass
+  // the legend.
+  LayoutUnit minimum_border_box_block_size_;
+
   // If true, this indicates the block_start_padding_edge_ had changed from its
   // initial value during the current layout pass.
   bool block_start_padding_edge_adjusted_ = false;
-
-  // If true, this indicates that either the entire legend or part of the
-  // legend needs to be laid out during the current layout pass.
-  bool legend_needs_layout_ = false;
 };
 
 }  // namespace blink

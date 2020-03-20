@@ -21,6 +21,7 @@ source_set("viz") {
   deps = [
     "//components/ui_devtools",
     "//components/viz/service",
+    "//third_party/inspector_protocol:crdtp",
   ]
 }
 

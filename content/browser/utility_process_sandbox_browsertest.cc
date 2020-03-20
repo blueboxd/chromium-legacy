@@ -101,6 +101,7 @@ class UtilityProcessSandboxBrowserTest
       case SandboxType::kCdm:
       case SandboxType::kPpapi:
       case SandboxType::kPrintCompositor:
+      case SandboxType::kSharingService:
       case SandboxType::kUtility: {
         constexpr int kExpectedFullSandboxFlags =
             SandboxLinux::kPIDNS | SandboxLinux::kNetNS |

@@ -198,4 +198,10 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, CLSAttribution_MaxImpact) {
   CheckRect(*impacted[2].FindListKey("new_rect"), 50, 50, 10, 50);   // #c
   CheckRect(*impacted[3].FindListKey("new_rect"), 60, 50, 50, 10);   // #d
   CheckRect(*impacted[4].FindListKey("new_rect"), 110, 50, 40, 30);  // #e
+
+  ASSERT_EQ("DIV id='a'", *impacted[0].FindStringKey("debug_name"));
+  ASSERT_EQ("DIV id='f'", *impacted[1].FindStringKey("debug_name"));
+  ASSERT_EQ("DIV id='c'", *impacted[2].FindStringKey("debug_name"));
+  ASSERT_EQ("DIV id='d'", *impacted[3].FindStringKey("debug_name"));
+  ASSERT_EQ("DIV id='e'", *impacted[4].FindStringKey("debug_name"));
 }

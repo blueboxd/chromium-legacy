@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Прочитајте ги и променете ги сите ваши податоци на тековниот веб-сајт кога ќе биде побарано</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> сака да ги ресетира вашите поставки.</translation>
 <translation id="1243314992276662751">Постави</translation>
-<translation id="1243398753772016127">Сајтовите не може да ја користат вашата активност од прелистувањето на различни сајтови за персонализирање реклами</translation>
 <translation id="1244265436519979884">Обновата на Linux моментално е во тек</translation>
 <translation id="1244303850296295656">Грешка на наставка</translation>
 <translation id="1246905108078336582">Дали да се отстрани предлогот од привремената меморија?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Вклучено - приспособени поставки</translation>
 <translation id="1489664337021920575">Изберете друга опција</translation>
 <translation id="1493892686965953381">Се чека <ph name="LOAD_STATE_PARAMETER" />…</translation>
-<translation id="1494438840282430403">Избришете ги и податоците од прелистувањето (<ph name="URL" />), а тоа може да ве одјави од Google.com.</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> други достапни уреди.</translation>
 <translation id="1495677929897281669">Назад на картичката</translation>
 <translation id="1499271269825557605">Ако не ја препознавате екстензијата или ако вашиот прелистувач не работи според очекувањата, може да ги исклучите или приспособите екстензиите тука.</translation>
@@ -1190,7 +1188,6 @@
 <translation id="2575247648642144396">Иконата ќе се гледа кога наставката може да дејствува на тековната страница. Користете ја наставката со кликање на иконата или со притискање <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Поставете како „Chromebox за состаноци“</translation>
 <translation id="2580889980133367162">Секогаш дозволи <ph name="HOST" /> да презема повеќе датотеки</translation>
-<translation id="2580924999637585241">Вкупно: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Долго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не можеше да се преземе билетот на Kerberos. Обидете се повторно или контактирајте со администраторот на уредот во вашата организација. (Код за грешка <ph name="ERROR_CODE" />).</translation>
@@ -2819,7 +2816,6 @@
 <translation id="4808667324955055115">Блокирани скокачки прозорци:</translation>
 <translation id="480990236307250886">Отвори ја почетната страница</translation>
 <translation id="4811503964269049987">Групирајте ја избраната картичка</translation>
-<translation id="4811818760963189951">Исклучено бидејќи ја оневозможивте синхронизацијата на историјата</translation>
 <translation id="4813136279048157860">Мои слики</translation>
 <translation id="4813512666221746211">Грешка на мрежа</translation>
 <translation id="4814378367953456825">Внесете име за отпечатоков</translation>
@@ -2988,7 +2984,6 @@
 <translation id="5040823038948176460">Дополнителни поставки за содржини</translation>
 <translation id="5042282098504489593">Отворете „Поставки“ за да го поврзете <ph name="USB_DEVICE_NAME" /> со Linux</translation>
 <translation id="5043913660911154449">Или одредете го PPD на вашиот печатач <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Исклучено бидејќи синхронизираните податоци ги шифриравте со лозинка</translation>
 <translation id="5045550434625856497">Погрешна лозинка</translation>
 <translation id="504561833207953641">Се отвора во постојната сесија на прелистувачот.</translation>
 <translation id="5047421709274785093">Блокирај го користењето сензори за движење и светлина на сајтовите</translation>
@@ -3965,7 +3960,6 @@
 <translation id="63566973648609420">Само лицата што ја знаат вашата лозинка може да ги прочитаат шифрираните податоци. Лозинката не се испраќа до Google ниту пак се складира. Ако ја заборавите, ќе треба да ја <ph name="BEGIN_LINK" />ресетирате синхронизацијата<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Добре дојдовте во семејството на <ph name="SHORT_PRODUCT_NAME" />. Ова не е обичен компјутер.</translation>
 <translation id="6358884629796491903">Змеј</translation>
-<translation id="6360719647236334056">Користете ја историјата на прелистување на Chrome за да ги персонализирате „Пребарувањето“, рекламите и другите услуги на Google</translation>
 <translation id="6361850914223837199">Детали за грешка:</translation>
 <translation id="6362853299801475928">&amp;Пријави проблем…</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4243,7 +4237,6 @@
 <translation id="6758056191028427665">Оценете ја нашата работа.</translation>
 <translation id="6759193508432371551">Ресетирање до фабрички вредности</translation>
 <translation id="6762833852331690540">Вклучено</translation>
-<translation id="6764693078871405569">Избришете ги и податоците од прелистувањето (<ph name="URL" />), а тоа ќе ве одјави од <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Изберете друг јазик…</translation>
 <translation id="6767639283522617719">Не може да се приклучи на доменот. Проверете дали поставките се точни за организациската единица.</translation>
 <translation id="6769712124046837540">Се додава печатач…</translation>

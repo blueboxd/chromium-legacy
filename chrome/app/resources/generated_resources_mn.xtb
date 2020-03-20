@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Одоогийн вэбсайтыг ажиллуулж байх үед бүх өгөгдлөө унших, өөрчлөх</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> таны тохиргоог шинэчлэхийг хүсэж байна.</translation>
 <translation id="1243314992276662751">Байршуул</translation>
-<translation id="1243398753772016127">Сайтууд зарыг хувийн болгохын тулд өөр өөр сайт дээрх таны хөтчийн үйл ажиллагааг ашиглах боломжгүй</translation>
 <translation id="1244265436519979884">Linux-г одоогоор сэргээж байна</translation>
 <translation id="1244303850296295656">Өргөтгөлийн алдаа</translation>
 <translation id="1246905108078336582">Түр санах ойгоос зөвлөмжийг устгах уу?</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Асаалттай - өөрчлөх тохиргоо</translation>
 <translation id="1489664337021920575">Өөр сонголтыг сонгох</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" />-ыг хүлээж байна...</translation>
-<translation id="1494438840282430403">Мөн хайлтын өгөгдлийг (<ph name="URL" />) устгах. Ингэснээр таныг Google.com-с гаргаж болзошгүй.</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> бусад боломжтой төхөөрөмжүүд.</translation>
 <translation id="1495677929897281669">Таб руу буцах</translation>
 <translation id="1499271269825557605">Хэрэв та өргөтгөлийг танихгүй эсвэл таны хөтөч сайн ажиллахгүй байвал та өргөтгөлийг эндээс унтраах эсвэл өөрчлөх боломжтой.</translation>
@@ -1185,7 +1183,6 @@
 <translation id="2575247648642144396">Өргөтгөл нь тухайн хуудсанд ажиллахад тэмдэглэгээ харагдана. Энэхүү тэмдэглэгээн дээр дарж эсвэл <ph name="EXTENSION_SHORTCUT" /> дээр дарснаар өргөлтгөлийг ашиглах боломжтой.</translation>
 <translation id="257779572837908839">Уулзалтад зориулсан Chromebox-р тохируулах</translation>
 <translation id="2580889980133367162"><ph name="HOST" />-ийг хэд хэдэн файл татаж авахыг үргэлж зөвшөөрөх</translation>
-<translation id="2580924999637585241">Нийт: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Урт</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /><ph name="PRODUCT_VERSION" /> (Платформ <ph name="PLATFORM_VERSION" /> ) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos тасалбарыг авч чадсангүй. Дахин оролдоно уу эсвэл байгууллагынхаа төхөөрөмжийн админтай холбогдоно уу. (Алдааны код <ph name="ERROR_CODE" />).</translation>
@@ -2813,7 +2810,6 @@
 <translation id="4808667324955055115">Попапыг хориглосон.</translation>
 <translation id="480990236307250886">Нүүр хуудсыг нээх</translation>
 <translation id="4811503964269049987">Сонгосон табыг бүлэгт нэмэх</translation>
-<translation id="4811818760963189951">Та түүхийг синк хийхийг идэвхгүй болгосон тул унтраасан</translation>
 <translation id="4813136279048157860">Миний зураг</translation>
 <translation id="4813512666221746211">Сүлжээний алдаа</translation>
 <translation id="4814378367953456825">Энэ хурууны хээний нэрийг оруулна уу</translation>
@@ -2982,7 +2978,6 @@
 <translation id="5040823038948176460">Контентын нэмэлт тохиргоо</translation>
 <translation id="5042282098504489593"><ph name="USB_DEVICE_NAME" />-г Linux-д холбохын тулд Тохиргоог нээнэ үү</translation>
 <translation id="5043913660911154449">Эсвэл хэвлэгчийнхээ PPD-г заах <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Та синк хийх өгөгдлөө нэвтрэх үгээр шифрлэсэн тул унтраасан</translation>
 <translation id="5045550434625856497">Буруу нууц үг</translation>
 <translation id="504561833207953641">Ашиглалтад байгаа хөтчийн харилцан үйлдэлд нээж байна.</translation>
 <translation id="5047421709274785093">Сайтуудад хөдөлгөөн болон гэрэл мэдрэгч ашиглахыг нь хориглох</translation>
@@ -3959,7 +3954,6 @@
 <translation id="63566973648609420">Зөвхөн таны нэвтрэх үгийг мэддэг хүн л таны шифрлэсэн өгөгдлийг унших боломжтой. Нэвтрэх үгийг Google-д илгээх болон хадгалахгүй. Хэрэв та нэвтрэх үгээ мартсан, эсвэл тохиргоог өөрчлөх бол <ph name="BEGIN_LINK" />синкийг дахин тохируулах<ph name="END_LINK" /> шаардлагатай.</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" />-ийн гэр бүлд тавтай морилно уу. Энэ зүгээр ч нэг энгийн компьютер биш ээ.</translation>
 <translation id="6358884629796491903">Луу</translation>
-<translation id="6360719647236334056">Хайлт, зар болон Google-н бусад үйлчилгээг хувийн болгохын тулд Chrome хөтчийн түүхээ ашиглаарай</translation>
 <translation id="6361850914223837199">Алдааны талаарх дэлгэрэнгүй мэдээлэл:</translation>
 <translation id="6362853299801475928">&amp; Асуудлыг мэдэгдэх ...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4237,7 +4231,6 @@
 <translation id="6758056191028427665">Биднийг хэр ажиллаж байгааг мэдэгдэнэ үү.</translation>
 <translation id="6759193508432371551">Үйлдвэрийн тохиргоонд нь буцааж оруулах</translation>
 <translation id="6762833852331690540">Асаалттай</translation>
-<translation id="6764693078871405569">Мөн хайлтын өгөгдлийг (<ph name="URL" />) устгах. Ингэснээр таныг <ph name="DOMAIN" />-с гаргах болно.</translation>
 <translation id="6767566652486411142">Өөр хэл сонгох...</translation>
 <translation id="6767639283522617719">Домайнд нэгдэх боломжгүй байна. Байгууллагын нэгжийн тохиргоог зөв эсэхийг шалгана уу.</translation>
 <translation id="6769712124046837540">Принтерийг нэмж байна...</translation>

@@ -97,6 +97,24 @@ void FakeSerialPortManager::AddReceiver(
 void FakeSerialPortManager::AddPort(mojom::SerialPortInfoPtr port) {
   base::UnguessableToken token = port->token;
   ports_[token] = std::move(port);
+
+  for (auto& client : clients_)
+    client->OnPortAdded(ports_[token]->Clone());
+}
+
+void FakeSerialPortManager::RemovePort(base::UnguessableToken token) {
+  auto it = ports_.find(token);
+  DCHECK(it != ports_.end());
+  mojom::SerialPortInfoPtr info = std::move(it->second);
+  ports_.erase(it);
+
+  for (auto& client : clients_)
+    client->OnPortRemoved(info.Clone());
+}
+
+void FakeSerialPortManager::SetClient(
+    mojo::PendingRemote<mojom::SerialPortManagerClient> client) {
+  clients_.Add(std::move(client));
 }
 
 void FakeSerialPortManager::GetDevices(GetDevicesCallback callback) {

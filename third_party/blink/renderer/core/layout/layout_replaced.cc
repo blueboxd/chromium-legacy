@@ -899,8 +899,8 @@ MinMaxSizes LayoutReplaced::ComputeIntrinsicLogicalWidths() const {
   return sizes;
 }
 
-void LayoutReplaced::ComputePreferredLogicalWidths() {
-  DCHECK(IntrinsicLogicalWidthsDirty());
+MinMaxSizes LayoutReplaced::PreferredLogicalWidths() const {
+  MinMaxSizes sizes;
 
   // We cannot resolve some logical width here (i.e. percent, fill-available or
   // fit-content) as the available logical width may not be set on our
@@ -908,48 +908,30 @@ void LayoutReplaced::ComputePreferredLogicalWidths() {
   const Length& logical_width = StyleRef().LogicalWidth();
   if (logical_width.IsPercentOrCalc() || logical_width.IsFillAvailable() ||
       logical_width.IsFitContent()) {
-    MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
+    sizes = IntrinsicLogicalWidths();
     sizes -= BorderAndPaddingLogicalWidth();
-    min_preferred_logical_width_ = sizes.min_size;
-    max_preferred_logical_width_ = sizes.max_size;
   } else {
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        ComputeReplacedLogicalWidth(kComputePreferred);
+    sizes = ComputeReplacedLogicalWidth(kComputePreferred);
   }
 
   const ComputedStyle& style_to_use = StyleRef();
   if (style_to_use.LogicalWidth().IsPercentOrCalc() ||
       style_to_use.LogicalMaxWidth().IsPercentOrCalc())
-    min_preferred_logical_width_ = LayoutUnit();
+    sizes.min_size = LayoutUnit();
 
   if (style_to_use.LogicalMinWidth().IsFixed() &&
       style_to_use.LogicalMinWidth().Value() > 0) {
-    max_preferred_logical_width_ =
-        std::max(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
-    min_preferred_logical_width_ =
-        std::max(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMinWidth().Value()));
+    sizes.Encompass(AdjustContentBoxLogicalWidthForBoxSizing(
+        style_to_use.LogicalMinWidth().Value()));
   }
 
   if (style_to_use.LogicalMaxWidth().IsFixed()) {
-    max_preferred_logical_width_ =
-        std::min(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMaxWidth().Value()));
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     style_to_use.LogicalMaxWidth().Value()));
+    sizes.Constrain(AdjustContentBoxLogicalWidthForBoxSizing(
+        style_to_use.LogicalMaxWidth().Value()));
   }
 
-  LayoutUnit border_and_padding = BorderAndPaddingLogicalWidth();
-  min_preferred_logical_width_ += border_and_padding;
-  max_preferred_logical_width_ += border_and_padding;
-
-  ClearIntrinsicLogicalWidthsDirty();
+  sizes += BorderAndPaddingLogicalWidth();
+  return sizes;
 }
 
 static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(

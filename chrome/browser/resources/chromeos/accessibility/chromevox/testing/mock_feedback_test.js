@@ -221,23 +221,23 @@ TEST_F('MockFeedbackUnitTest', 'SpeechWithLanguage', function() {
         speak('This is English', {lang: 'en'});
         speak('This is also English', {lang: 'en'});
       })
-      .expectSpeechWithLanguage('en', 'This is English', 'This is also English')
+      .expectSpeechWithLocale('en', 'This is English', 'This is also English')
       .call(function() {
         speak('Expect French', {lang: 'fr'});
       })
-      .expectSpeechWithLanguage('fr', 'Expect French')
+      .expectSpeechWithLocale('fr', 'Expect French')
       .call(function() {
         speak('Expect Canadian French', {lang: 'fr-ca'});
       })
-      .expectSpeechWithLanguage('fr-ca', 'Expect Canadian French')
+      .expectSpeechWithLocale('fr-ca', 'Expect Canadian French')
       .call(function() {
         speak('Expect empty language', {lang: ''});
       })
-      .expectSpeechWithLanguage('', 'Expect empty language')
+      .expectSpeechWithLocale('', 'Expect empty language')
       .call(function() {
         speak('Expect no language');
       })
-      .expectSpeechWithLanguage(undefined, 'Expect no language')
+      .expectSpeechWithLocale(undefined, 'Expect no language')
       .replay();
   assertTrue(finishCalled);
 });

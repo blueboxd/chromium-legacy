@@ -330,7 +330,8 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
   }
 }
 
-TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
+// Disabled test: https://crbug.com/1062668
+TEST_F(IdleManagerTest, DISABLED_LockingScreenAfterIdle) {
   mojo::Remote<blink::mojom::IdleManager> service_remote;
 
   auto impl = std::make_unique<IdleManager>();

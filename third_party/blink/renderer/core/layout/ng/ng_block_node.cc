@@ -299,6 +299,31 @@ void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
     input->override_block_size = space.AvailableSize().block_size;
 }
 
+bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
+                                      const LayoutBox& box) {
+  // Obviously can't use the cache if our intrinsic logical widths are dirty.
+  if (box.IntrinsicLogicalWidthsDirty())
+    return false;
+
+  // We don't store the float inline sizes for comparison, always skip the
+  // cache in this case.
+  if (input.float_left_inline_size || input.float_right_inline_size)
+    return false;
+
+  // Check if we have any percentage inline padding.
+  const auto& style = box.StyleRef();
+  if (style.MayHavePadding() && (style.PaddingStart().IsPercentOrCalc() ||
+                                 style.PaddingEnd().IsPercentOrCalc()))
+    return false;
+
+  // Check if the %-block-size matches.
+  if (input.percentage_resolution_block_size !=
+      box.IntrinsicLogicalWidthsPercentageResolutionBlockSize())
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
@@ -634,6 +659,11 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
   bool is_orthogonal_flow_root =
       !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
+  if (CanUseCachedIntrinsicInlineSizes(input, *box_))
+    return box_->IntrinsicLogicalWidths();
+
+  box_->SetIntrinsicLogicalWidthsDirty();
+
   MinMaxSizes sizes;
   // If we're orthogonal, we have to run layout to compute the sizes. However,
   // if we're outside of layout, we can't do that. This can happen on Mac.
@@ -680,6 +710,8 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
                            input_type_names::kFile)) &&
              Style().LogicalWidth().IsPercentOrCalc())
       maybe_sizes->min_size = LayoutUnit();
+    box_->SetIntrinsicLogicalWidthsFromNG(
+        *maybe_sizes, input.percentage_resolution_block_size);
     return *maybe_sizes;
   }
 
@@ -721,7 +753,13 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizesFromLegacy(
     needs_size_reset = true;
   }
 
-  MinMaxSizes sizes = box_->ComputeIntrinsicLogicalWidths();
+  // Tables don't calculate their min/max content contribution the same way as
+  // other layout nodes. This is because width/min-width/etc have a different
+  // meaning for tables.
+  //
+  // Due to this the min/max content contribution is their min/max content size.
+  MinMaxSizes sizes = box_->IsTable() ? box_->PreferredLogicalWidths()
+                                      : box_->IntrinsicLogicalWidths();
 
   if (needs_size_reset)
     box_->ClearOverrideContainingBlockContentSize();

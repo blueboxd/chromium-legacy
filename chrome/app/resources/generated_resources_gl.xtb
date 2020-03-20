@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Ler e cambiar todos os teus datos no sitio web actual cando se invoque</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quere restablecer a túa configuración.</translation>
 <translation id="1243314992276662751">Cargar</translation>
-<translation id="1243398753772016127">Os sitios web non poderán utilizar a túa actividade de navegación a través de distintos sitios para personalizar os anuncios</translation>
 <translation id="1244265436519979884">Estase restaurando Linux</translation>
 <translation id="1244303850296295656">Erro de extensión</translation>
 <translation id="1246905108078336582">Queres quitar a suxestión do portapapeis?</translation>
@@ -196,7 +195,7 @@
 <translation id="1251366534849411931">Falta unha chave de apertura: <ph name="ERROR_LINE" /></translation>
 <translation id="1252987234827889034">Produciuse un erro no perfil</translation>
 <translation id="1254593899333212300">Conexión directa a Internet</translation>
-<translation id="1259152067760398571">A revisión de seguranza executouse onte</translation>
+<translation id="1259152067760398571">A comprobación de seguranza executouse onte</translation>
 <translation id="1260451001046713751">Permitir sempre ventás emerxentes e redireccións desde <ph name="HOST" /></translation>
 <translation id="126156426083987769">Produciuse un problema coas licenzas do dispositivo do modo de demostración.</translation>
 <translation id="126710816202626562">Idioma da tradución:</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Activado: configuración personalizada</translation>
 <translation id="1489664337021920575">Seleccionar outra opción</translation>
 <translation id="1493892686965953381">Agardando por <ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">Borrar tamén os datos de navegación (<ph name="URL" />), o que pode provocar que peches sesión en Google.com.</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> dispositivos máis dispoñibles.</translation>
 <translation id="1495677929897281669">Volver á pestana</translation>
 <translation id="1499271269825557605">Se non recoñeces unha extensión ou se o navegador non funciona como debería, podes desactivar ou personalizar as extensións aquí.</translation>
@@ -520,7 +518,7 @@
 <translation id="1700079447639026019">Sitios que nunca poden utilizar cookies</translation>
 <translation id="1701062906490865540">Eliminar esta persoa</translation>
 <translation id="1703331064825191675">Non te preocupes nunca polos teus contrasinais</translation>
-<translation id="1704970325597567340">A revisión de seguranza executouse o <ph name="DATE" /></translation>
+<translation id="1704970325597567340">A comprobación de seguranza executouse o <ph name="DATE" /></translation>
 <translation id="1706586824377653884">Engadido polo administrador</translation>
 <translation id="1706625117072057435">Niveis de zoom</translation>
 <translation id="1708338024780164500">(Inactiva)</translation>
@@ -693,7 +691,7 @@
 <translation id="1921584744613111023"><ph name="DPI" /> ppp</translation>
 <translation id="192494336144674234">Abrir con</translation>
 <translation id="1925021887439448749">Introducir enderezo web personalizado</translation>
-<translation id="1925124445985510535">A revisión de seguranza executouse á seguinte hora: <ph name="TIME" /></translation>
+<translation id="1925124445985510535">A comprobación de seguranza executouse á seguinte hora: <ph name="TIME" /></translation>
 <translation id="1926339101652878330">Estas opcións de configuración están controladas pola política empresarial. Ponte en contacto co administrador para obter máis información.</translation>
 <translation id="1927632033341042996">Dedo <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Introducir PIN antigo</translation>
@@ -1189,7 +1187,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2575247648642144396">Esta icona estará visible cando a extensión se poida utilizar na páxina actual. Para utilizar a extensión, fai clic na icona ou preme <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reunións</translation>
 <translation id="2580889980133367162">Permitir sempre a <ph name="HOST" /> descargar varios ficheiros</translation>
-<translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Longo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Non se puido obter o tícket de Kerberos. Téntao outra vez ou contacta co administrador de dispositivos da túa organización. (Código de erro <ph name="ERROR_CODE" />).</translation>
@@ -1617,7 +1614,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
     Descrición:
     <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3149510190863420837">Aplicacións de Chrome</translation>
-<translation id="3150693969729403281">Realizar agora a revisión de seguranza</translation>
+<translation id="3150693969729403281">Realizar agora a comprobación de seguranza</translation>
 <translation id="3150927491400159470">Volver cargar de maneira forzada</translation>
 <translation id="315116470104423982">Datos móbiles</translation>
 <translation id="3151539355209957474">Hora de inicio</translation>
@@ -1752,7 +1749,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3341703758641437857">Permitir acceso aos URL dos ficheiros</translation>
 <translation id="3342361181740736773">Á extensión "<ph name="TRIGGERING_EXTENSION_NAME" />" gustaríalle eliminar esta extensión.</translation>
 <translation id="3345135638360864351">A túa solicitude para acceder a este sitio non se puido enviar a <ph name="NAME" />. Téntao de novo.</translation>
-<translation id="3345634917232014253">A revisión de seguranza executouse hai un momento</translation>
+<translation id="3345634917232014253">A comprobación de seguranza executouse hai un momento</translation>
 <translation id="3345886924813989455">Non se atopou ningún navegador compatible</translation>
 <translation id="3347086966102161372">C&amp;opiar enderezo da imaxe</translation>
 <translation id="3348038390189153836">Dispositivo extraíble detectado</translation>
@@ -2818,7 +2815,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4808667324955055115">Ventás emerxentes bloqueadas:</translation>
 <translation id="480990236307250886">Abre a páxina de inicio</translation>
 <translation id="4811503964269049987">Agrupar a pestana seleccionada</translation>
-<translation id="4811818760963189951">Desactivouse a opción porque desactivaches a sincronización do historial</translation>
 <translation id="4813136279048157860">As miñas imaxes</translation>
 <translation id="4813512666221746211">Erro de rede</translation>
 <translation id="4814378367953456825">Ponlle un nome a esta impresión dixital</translation>
@@ -2987,7 +2983,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5040823038948176460">Configuración de contido adicional</translation>
 <translation id="5042282098504489593">Para conectar o dispositivo <ph name="USB_DEVICE_NAME" /> con Linux, abre Configuración</translation>
 <translation id="5043913660911154449">Tamén podes especificar o PPD da túa impresora <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Desactivouse a opción porque encriptaches os datos sincronizados cunha frase de acceso</translation>
 <translation id="5045550434625856497">Contrasinal incorrecto</translation>
 <translation id="504561833207953641">Abrindo nunha sesión xa aberta do navegador.</translation>
 <translation id="5047421709274785093">Impedir que os sitios utilicen sensores de movemento e de luz</translation>
@@ -3320,7 +3315,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5495597166260341369">Manter a pantalla activada</translation>
 <translation id="5496587651328244253">Organizar</translation>
 <translation id="5499313591153584299">É posible que este ficheiro sexa daniño para o teu ordenador.</translation>
-<translation id="5500709606820808700">A revisión de seguranza executouse hoxe</translation>
+<translation id="5500709606820808700">A comprobación de seguranza executouse hoxe</translation>
 <translation id="5502500733115278303">Importados desde Firefox</translation>
 <translation id="5505264765875738116">Os sitios non poden pedir permiso para enviar notificacións</translation>
 <translation id="5505307013568720083">Non hai tinta</translation>
@@ -3964,7 +3959,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="63566973648609420">Só alguén co teu contrasinal pode ler os teus datos encriptados. O contrasinal non se envía nin se almacena en Google. Se esqueciches o contrasinal ou queres cambiar esta configuración, deberás <ph name="BEGIN_LINK" />restablecer a sincronización<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Dámosche a benvida á familia de <ph name="SHORT_PRODUCT_NAME" />. Este non é un ordenador normal.</translation>
 <translation id="6358884629796491903">Dragón</translation>
-<translation id="6360719647236334056">Utiliza o teu historial de navegación de Chrome para personalizar a Busca, os anuncios e outros servizos de Google</translation>
 <translation id="6361850914223837199">Detalles dos erros:</translation>
 <translation id="6362853299801475928">&amp;Informar dun problema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4242,7 +4236,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6758056191028427665">Indícanos o teu grao de satisfacción.</translation>
 <translation id="6759193508432371551">Restablecemento de fábrica</translation>
 <translation id="6762833852331690540">Si</translation>
-<translation id="6764693078871405569">Borrar tamén os datos de navegación (<ph name="URL" />), o que pode provocar que peches sesión en <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Escoller outro idioma…</translation>
 <translation id="6767639283522617719">O dispositivo non se puido vincular ao dominio. Asegúrate de que a configuración sexa correcta para a unidade organizativa.</translation>
 <translation id="6769712124046837540">Engadindo impresora...</translation>

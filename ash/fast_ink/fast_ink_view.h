@@ -8,10 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "ash/fast_ink/fast_ink_host.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "components/viz/common/resources/resource_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
 
@@ -21,7 +19,6 @@ class Window;
 
 namespace gfx {
 class GpuMemoryBuffer;
-struct PresentationFeedback;
 }  // namespace gfx
 
 namespace views {
@@ -30,76 +27,49 @@ class Widget;
 
 namespace fast_ink {
 
-// FastInkView is a view supporting low-latency rendering. The view can enter
-// 'auto-refresh' mode in order to provide minimum latency updates for the
-// associated widget. 'auto-refresh' mode will take advantage of HW overlays
-// when possible and trigger continious updates.
+// FastInkView is a view supporting low-latency rendering by using FastInkHost.
+// THe view's widget must have the same bounds as a root window (covers the
+// entire display). FastInkHost for more details.
 class FastInkView : public views::View {
  public:
-  using PresentationCallback =
-      base::RepeatingCallback<void(const gfx::PresentationFeedback&)>;
-
   // Creates a FastInkView filling the bounds of |root_window|.
   // If |root_window| is resized (e.g. due to a screen size change),
   // a new instance of FastInkView should be created.
   FastInkView(aura::Window* container,
-              const PresentationCallback& presentation_callback);
+              const FastInkHost::PresentationCallback& presentation_callback);
   ~FastInkView() override;
+  FastInkView(const FastInkView&) = delete;
+  FastInkView& operator=(const FastInkView&) = delete;
+
+  // Update content and damage rectangles for surface. See
+  // FastInkHost::UpdateSurface for more detials.
+  void UpdateSurface(const gfx::Rect& content_rect,
+                     const gfx::Rect& damage_rect,
+                     bool auto_refresh);
 
  protected:
   // Helper class that provides flicker free painting to a GPU memory buffer.
   class ScopedPaint {
    public:
-    ScopedPaint(gfx::GpuMemoryBuffer* gpu_memory_buffer,
-                const gfx::Transform& screen_to_buffer_transform,
-                const gfx::Rect& rect);
+    ScopedPaint(FastInkView* view, const gfx::Rect& damage_rect_in_window);
     ~ScopedPaint();
 
     gfx::Canvas& canvas() { return canvas_; }
 
    private:
     gfx::GpuMemoryBuffer* const gpu_memory_buffer_;
-    const gfx::Rect buffer_rect_;
+    // Damage rect in the buffer coordinates.
+    const gfx::Rect damage_rect_;
     gfx::Canvas canvas_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedPaint);
   };
 
-  // Update content and damage rectangles for surface. |auto_refresh| should
-  // be set to true if continuous updates are expected within content rectangle.
-  void UpdateSurface(const gfx::Rect& content_rect,
-                     const gfx::Rect& damage_rect,
-                     bool auto_refresh);
-
-  // Constants initialized in constructor.
-  const PresentationCallback presentation_callback_;
-  gfx::Transform screen_to_buffer_transform_;
-  gfx::Size buffer_size_;
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+  FastInkHost* host() { return host_.get(); }
 
  private:
-  class LayerTreeFrameSinkHolder;
-  struct Resource;
-
-  void SubmitCompositorFrame();
-  void SubmitPendingCompositorFrame();
-  void ReclaimResource(std::unique_ptr<Resource> resource);
-  void DidReceiveCompositorFrameAck();
-  void DidPresentCompositorFrame(const gfx::PresentationFeedback& feedback);
-
   std::unique_ptr<views::Widget> widget_;
-  gfx::Rect content_rect_;
-  gfx::Rect damage_rect_;
-  bool auto_refresh_ = false;
-  bool pending_compositor_frame_ = false;
-  bool pending_compositor_frame_ack_ = false;
-  int next_resource_id_ = 1;
-  viz::FrameTokenGenerator next_frame_token_;
-  std::vector<std::unique_ptr<Resource>> returned_resources_;
-  std::unique_ptr<LayerTreeFrameSinkHolder> frame_sink_holder_;
-  base::WeakPtrFactory<FastInkView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FastInkView);
+  std::unique_ptr<FastInkHost> host_;
 };
 
 }  // namespace fast_ink

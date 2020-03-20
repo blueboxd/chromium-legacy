@@ -46,7 +46,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -76,7 +75,7 @@ import java.util.List;
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 @DisableFeatures(
         {ChromeFeatureList.TAB_SWITCHER_ON_RETURN, ChromeFeatureList.START_SURFACE_ANDROID})
-@EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+@EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ChromeFeatureList.TAB_TO_GTS_ANIMATION})
 public class TabSwitcherMediatorUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -142,7 +141,6 @@ public class TabSwitcherMediatorUnitTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         RecordHistogram.setDisabledForTests(true);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -197,8 +195,6 @@ public class TabSwitcherMediatorUnitTest {
     @After
     public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test
@@ -566,8 +562,8 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_SingleTab() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
         // Mock that tab 1 is a single tab.
         doReturn(new ArrayList<>(Arrays.asList(mTab1)))
@@ -577,8 +573,8 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_TabGroup_NotEmpty() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
         // Set up a tab group.
         TabImpl newTab = prepareTab(TAB4_ID, TAB4_TITLE);
@@ -593,8 +589,8 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void openDialogButton_TabGroup_Empty() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
         // Assume that due to tab model change, current group becomes empty in current model.
         doReturn(new ArrayList<>()).when(mTabModelFilter).getRelatedTabList(TAB1_ID);

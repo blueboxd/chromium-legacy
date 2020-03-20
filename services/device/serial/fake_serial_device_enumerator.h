@@ -5,7 +5,7 @@
 #ifndef SERVICES_DEVICE_SERIAL_FAKE_SERIAL_DEVICE_ENUMERATOR_H_
 #define SERVICES_DEVICE_SERIAL_FAKE_SERIAL_DEVICE_ENUMERATOR_H_
 
-#include <vector>
+#include <map>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -18,12 +18,12 @@ class FakeSerialEnumerator : public SerialDeviceEnumerator {
   FakeSerialEnumerator();
   ~FakeSerialEnumerator() override;
 
-  bool AddDevicePath(const base::FilePath& path);
-
-  std::vector<mojom::SerialPortInfoPtr> GetDevices() override;
+  void AddDevicePath(const base::FilePath& path);
+  void RemoveDevicePath(const base::FilePath& path);
 
  private:
-  std::vector<base::FilePath> device_paths_;
+  std::map<base::FilePath, base::UnguessableToken> paths_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeSerialEnumerator);
 };
 

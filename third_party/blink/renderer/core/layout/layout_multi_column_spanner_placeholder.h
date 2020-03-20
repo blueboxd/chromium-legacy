@@ -74,6 +74,11 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
  private:
   LayoutMultiColumnSpannerPlaceholder(LayoutBox*);
 
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
+
   // The actual column-span:all layoutObject inside the flow thread.
   LayoutBox* layout_object_in_flow_thread_;
 };

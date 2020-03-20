@@ -188,7 +188,6 @@
 <translation id="1241753985463165747">Leer y modificar todos los datos del sitio web actual cuando se invoca</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
 <translation id="1243314992276662751">Cargar</translation>
-<translation id="1243398753772016127">Los sitios no podrán usar tu actividad de navegación en diferentes sitios para personalizar anuncios</translation>
 <translation id="1244265436519979884">El restablecimiento de Linux está en curso</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
 <translation id="1246905108078336582">¿Quieres quitar la sugerencia del portapapeles?</translation>
@@ -196,7 +195,7 @@
 <translation id="1251366534849411931">Llave de apertura esperada: <ph name="ERROR_LINE" /></translation>
 <translation id="1252987234827889034">Se produjo un error en el perfil</translation>
 <translation id="1254593899333212300">Conexión directa a Internet</translation>
-<translation id="1259152067760398571">Ayer se ejecutó la verificación de seguridad</translation>
+<translation id="1259152067760398571">La verificación de seguridad se ejecutó ayer</translation>
 <translation id="1260451001046713751">Siempre permitir ventanas emergentes y redireccionamientos de <ph name="HOST" /></translation>
 <translation id="126156426083987769">Hubo un problema con las licencias del dispositivo en el modo de demostración.</translation>
 <translation id="126710816202626562">Idioma de traducción:</translation>
@@ -355,7 +354,6 @@
 <translation id="1487335504823219454">Activado: Configuración personalizada</translation>
 <translation id="1489664337021920575">Elegir otra opción</translation>
 <translation id="1493892686965953381">Esperando <ph name="LOAD_STATE_PARAMETER" />...</translation>
-<translation id="1494438840282430403">También quiero borrar los datos de navegación (<ph name="URL" />), lo que posiblemente me haga salir de Google.com.</translation>
 <translation id="1495486559005647033">Hay otros <ph name="NUM_PRINTERS" /> dispositivos disponibles.</translation>
 <translation id="1495677929897281669">Volver a la pestaña</translation>
 <translation id="1499271269825557605">Si no reconoces una extensión o el navegador no funciona correctamente, puedes desactivar o personalizar extensiones aquí.</translation>
@@ -518,7 +516,7 @@
 <translation id="1700079447639026019">Sitios que nunca pueden usar cookies</translation>
 <translation id="1701062906490865540">Eliminar a esta persona</translation>
 <translation id="1703331064825191675">Ya no tendrás que preocuparte por tus contraseñas</translation>
-<translation id="1704970325597567340">El <ph name="DATE" />, se ejecutó la verificación de seguridad</translation>
+<translation id="1704970325597567340">La verificación de seguridad se ejecutó el <ph name="DATE" /></translation>
 <translation id="1706586824377653884">Agregado por el administrador</translation>
 <translation id="1706625117072057435">Niveles de zoom</translation>
 <translation id="1708338024780164500">(Inactiva)</translation>
@@ -691,7 +689,7 @@
 <translation id="1921584744613111023"><ph name="DPI" /> ppp</translation>
 <translation id="192494336144674234">Abrir con</translation>
 <translation id="1925021887439448749">Ingresa una dirección web personalizada</translation>
-<translation id="1925124445985510535">A las <ph name="TIME" />, se ejecutó la verificación de seguridad</translation>
+<translation id="1925124445985510535">La verificación de seguridad se ejecutó a las <ph name="TIME" /></translation>
 <translation id="1926339101652878330">Esta configuración se controla por medio de una política de la empresa. Ponte en contacto con tu administrador para obtener más información.</translation>
 <translation id="1927632033341042996">Dedo <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Ingresar PIN anterior</translation>
@@ -1187,7 +1185,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2575247648642144396">Este ícono estará visible cuando la extensión se pueda utilizar en la página actual. Para usar esta extensión, haz clic en el ícono o presiona <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reuniones</translation>
 <translation id="2580889980133367162">Siempre permitir que <ph name="HOST" /> descargue varios archivos</translation>
-<translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Largo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No se pudo obtener el ticket de Kerberos. Vuelve a intentarlo o comunícate con el administrador de dispositivos de tu organización. (Código de error <ph name="ERROR_CODE" />).</translation>
@@ -2816,7 +2813,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4808667324955055115">Se bloquearon ventanas emergentes:</translation>
 <translation id="480990236307250886">Abrir la página principal</translation>
 <translation id="4811503964269049987">Crear un grupo con la pestaña seleccionada</translation>
-<translation id="4811818760963189951">Se desactivó porque inhabilitaste la sincronización del historial</translation>
 <translation id="4813136279048157860">Mis imágenes</translation>
 <translation id="4813512666221746211">Error de red</translation>
 <translation id="4814378367953456825">Escribe un nombre para esta huella digital</translation>
@@ -2985,7 +2981,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5040823038948176460">Configuración adicional de contenido</translation>
 <translation id="5042282098504489593">Abrir la configuración para conectar <ph name="USB_DEVICE_NAME" /> a Linux</translation>
 <translation id="5043913660911154449">O especifica el PPD de tu impresora. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Se desactivó porque encriptaste los datos de sincronización con una frase de contraseña</translation>
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="504561833207953641">Abriendo en una sesión existente del navegador</translation>
 <translation id="5047421709274785093">Bloquear el uso de los sensores de luz y movimiento en los sitios</translation>
@@ -3318,7 +3313,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5495597166260341369">Pantalla encendida</translation>
 <translation id="5496587651328244253">Organizar</translation>
 <translation id="5499313591153584299">Este archivo puede dañar el equipo.</translation>
-<translation id="5500709606820808700">Hoy se ejecutó la verificación de seguridad</translation>
+<translation id="5500709606820808700">La verificación de seguridad se ejecutó hoy</translation>
 <translation id="5502500733115278303">Importado desde Firefox</translation>
 <translation id="5505264765875738116">Los sitios no podrán preguntarte si quieres recibir notificaciones</translation>
 <translation id="5505307013568720083">Se agotó la tinta</translation>
@@ -3962,7 +3957,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="63566973648609420">Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás <ph name="BEGIN_LINK" />restablecer la sincronización<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Te damos la bienvenida a la familia <ph name="SHORT_PRODUCT_NAME" />. Esta no es una computadora convencional.</translation>
 <translation id="6358884629796491903">Dragón</translation>
-<translation id="6360719647236334056">Usa tu historial de navegación de Chrome para personalizar la Búsqueda, los anuncios y otros Servicios de Google</translation>
 <translation id="6361850914223837199">Detalles del error:</translation>
 <translation id="6362853299801475928">&amp;Cómo informar de un problema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -4240,7 +4234,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6758056191028427665">Danos tu opinión sobre nuestro trabajo.</translation>
 <translation id="6759193508432371551">Restablecer configuración de fábrica</translation>
 <translation id="6762833852331690540">Sí</translation>
-<translation id="6764693078871405569">También quiero borrar los datos de navegación (<ph name="URL" />), lo que me hará salir de <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Elegir otro idioma…</translation>
 <translation id="6767639283522617719">No se puede unir al dominio. Asegúrate de que sea correcta la configuración de la unidad organizacional.</translation>
 <translation id="6769712124046837540">Agregando impresora…</translation>
@@ -6025,7 +6018,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9101691533782776290">Iniciar aplicación</translation>
 <translation id="9102610709270966160">Habilitar extensión</translation>
 <translation id="9103868373786083162">Presiona para retroceder; usa el menú contextual para consultar el historial</translation>
-<translation id="9108808586816295166">Es posible que el DNS seguro no esté disponible en todo momento</translation>
+<translation id="9108808586816295166">Es posible que el DNS seguro no esté disponible en todo momento</translation>
 <translation id="9109122242323516435">Para liberar espacio, borra archivos del almacenamiento del dispositivo.</translation>
 <translation id="9109283579179481106">Conéctate a una red móvil</translation>
 <translation id="9111102763498581341">Desbloquear</translation>

@@ -574,8 +574,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // H/W decoding.
   bool use_dx11_;
 
-  // True when using Microsoft's VP9 HMFT for decoding.
-  bool using_ms_vp9_mft_ = false;
+  // True when using Microsoft's VPx HMFT for decoding.
+  bool using_ms_vpx_mft_ = false;
 
   // True if we should use DXGI keyed mutexes to synchronize between the two
   // contexts.

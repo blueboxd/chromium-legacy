@@ -426,15 +426,15 @@ ProcessExitResult WMain(HMODULE module) {
   // Unpack the compressed archive to extract the uncompressed archive file.
   UnPackStatus unpack_status =
       UnPackArchive(base::FilePath(compressed_archive.get()), unpack_path,
-                    nullptr, nullptr, nullptr);
+                    /*output_file=*/nullptr);
   if (unpack_status != UNPACK_NO_ERROR)
     return ProcessExitResult(static_cast<DWORD>(installer::UNPACKING_FAILED));
 
   // Unpack the uncompressed archive to extract the updater files.
   base::FilePath uncompressed_archive =
       unpack_path.Append(FILE_PATH_LITERAL("updater.7z"));
-  unpack_status = UnPackArchive(uncompressed_archive, unpack_path, nullptr,
-                                nullptr, nullptr);
+  unpack_status =
+      UnPackArchive(uncompressed_archive, unpack_path, /*output_file=*/nullptr);
   if (unpack_status != UNPACK_NO_ERROR)
     return ProcessExitResult(static_cast<DWORD>(installer::UNPACKING_FAILED));
 

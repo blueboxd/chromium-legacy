@@ -27,9 +27,8 @@ namespace performance_manager {
 
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      performance_manager_(PerformanceManagerImpl::GetInstance()) {
-  page_node_ = performance_manager_->CreatePageNode(
+    : content::WebContentsObserver(web_contents) {
+  page_node_ = PerformanceManagerImpl::CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
       web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibleURL(),
@@ -70,7 +69,7 @@ void PerformanceManagerTabHelper::TearDown() {
   frames_.clear();
 
   // Delete the page and its entire frame tree from the graph.
-  performance_manager_->BatchDeleteNodes(std::move(nodes));
+  PerformanceManagerImpl::BatchDeleteNodes(std::move(nodes));
 
   if (destruction_observer_) {
     destruction_observer_->OnPerformanceManagerTabHelperDestroying(
@@ -113,20 +112,22 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
 
   // Create the frame node, and provide a callback that will run in the graph to
   // initialize it.
-  std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
-      process_node, page_node_.get(), parent_frame_node,
-      render_frame_host->GetFrameTreeNodeId(),
-      render_frame_host->GetRoutingID(),
-      render_frame_host->GetDevToolsFrameToken(),
-      site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
-      base::BindOnce(
-          [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
-            if (!url.is_empty())
-              frame_node->OnNavigationCommitted(url, /* same_document */ false);
-            frame_node->SetIsCurrent(is_current);
-          },
-          render_frame_host->GetLastCommittedURL(),
-          render_frame_host->IsCurrent()));
+  std::unique_ptr<FrameNodeImpl> frame =
+      PerformanceManagerImpl::CreateFrameNode(
+          process_node, page_node_.get(), parent_frame_node,
+          render_frame_host->GetFrameTreeNodeId(),
+          render_frame_host->GetRoutingID(),
+          render_frame_host->GetDevToolsFrameToken(),
+          site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
+          base::BindOnce(
+              [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
+                if (!url.is_empty())
+                  frame_node->OnNavigationCommitted(url,
+                                                    /* same_document */ false);
+                frame_node->SetIsCurrent(is_current);
+              },
+              render_frame_host->GetLastCommittedURL(),
+              render_frame_host->IsCurrent()));
 
   frames_[render_frame_host] = std::move(frame);
 }
@@ -151,7 +152,7 @@ void PerformanceManagerTabHelper::RenderFrameDeleted(
     observer.OnBeforeFrameNodeRemoved(this, frame_node.get());
 
   // Then delete the node.
-  performance_manager_->DeleteNode(std::move(frame_node));
+  PerformanceManagerImpl::DeleteNode(std::move(frame_node));
   frames_.erase(it);
 }
 

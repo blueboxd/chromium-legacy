@@ -147,8 +147,8 @@ std::string BuildStylesheetUId(int node_id, int stylesheet_id) {
 }
 
 Response NodeNotFoundError(int node_id) {
-  return Response::Error("Node with id=" + std::to_string(node_id) +
-                         " not found");
+  return Response::ServerError("Node with id=" + base::NumberToString(node_id) +
+                               " not found");
 }
 
 Response ParseProperties(const std::string& style_text,
@@ -158,13 +158,14 @@ Response ParseProperties(const std::string& style_text,
       style_text, ":;", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   if (tokens.size() < 2 || tokens.size() % 2 != 0)
-    return Response::Error("Need both a property name and value.");
+    return Response::ServerError("Need both a property name and value.");
 
   for (size_t i = 0; i < tokens.size() - 1; i += 2) {
     const std::string& property = tokens.at(i);
     int value;
     if (!base::StringToInt(tokens.at(i + 1), &value)) {
-      return Response::Error("Unable to parse value for property=" + property);
+      return Response::ServerError("Unable to parse value for property=" +
+                                   property);
     }
 
     if (property == kHeight)
@@ -178,9 +179,9 @@ Response ParseProperties(const std::string& style_text,
     else if (property == kVisibility)
       *visible = std::max(0, value) == 1;
     else
-      return Response::Error("Unsupported property=" + property);
+      return Response::ServerError("Unsupported property=" + property);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 std::unique_ptr<CSS::CSSStyleSheetHeader> BuildObjectForStyleSheetInfo(
@@ -210,12 +211,12 @@ CSSAgent::~CSSAgent() {
 
 Response CSSAgent::enable() {
   dom_agent_->AddObserver(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response CSSAgent::disable() {
   dom_agent_->RemoveObserver(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response CSSAgent::getMatchedStylesForNode(
@@ -225,7 +226,7 @@ Response CSSAgent::getMatchedStylesForNode(
   if (!ui_element)
     return NodeNotFoundError(node_id);
   *matched_css_rules = BuildMatchedStyles(ui_element);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response CSSAgent::getStyleSheetText(const protocol::String& style_sheet_id,
@@ -236,19 +237,19 @@ Response CSSAgent::getStyleSheetText(const protocol::String& style_sheet_id,
       style_sheet_id, "_", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (ids.size() < 2 || !base::StringToInt(ids[0], &node_id) ||
       !base::StringToInt(ids[1], &stylesheet_id))
-    return Response::Error("Invalid stylesheet id");
+    return Response::ServerError("Invalid stylesheet id");
 
   UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
   if (!ui_element)
-    return Response::Error("Node id not found");
+    return Response::ServerError("Node id not found");
 
   auto sources = ui_element->GetSources();
   if (static_cast<int>(sources.size()) <= stylesheet_id)
-    return Response::Error("Stylesheet id not found");
+    return Response::ServerError("Stylesheet id not found");
 
   if (GetSourceCode(sources[stylesheet_id].path_, result))
-    return Response::OK();
-  return Response::Error("Could not read source file");
+    return Response::Success();
+  return Response::ServerError("Could not read source file");
 }
 
 Response CSSAgent::setStyleTexts(
@@ -264,12 +265,12 @@ Response CSSAgent::setStyleTexts(
                           base::SPLIT_WANT_NONEMPTY);
     if (ids.size() < 2 || !base::StringToInt(ids[0], &node_id) ||
         !base::StringToInt(ids[1], &stylesheet_id))
-      return Response::Error("Invalid stylesheet id");
+      return Response::ServerError("Invalid stylesheet id");
 
     UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
 
     if (!ui_element)
-      return Response::Error("Node id not found");
+      return Response::ServerError("Node id not found");
     // Handle setting properties from metadata for View.
     if (ui_element->type() == VIEW)
       ui_element->SetPropertiesFromString(edit->getText());
@@ -281,7 +282,7 @@ Response CSSAgent::setStyleTexts(
 
     Response response(
         ParseProperties(edit->getText(), &updated_bounds, &visible));
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
 
     if (!SetPropertiesForUIElement(ui_element, updated_bounds, visible))
@@ -293,7 +294,7 @@ Response CSSAgent::setStyleTexts(
                                      .properties_));
   }
   *result = std::move(updated_styles);
-  return Response::OK();
+  return Response::Success();
 }
 
 void CSSAgent::OnElementBoundsChanged(UIElement* ui_element) {

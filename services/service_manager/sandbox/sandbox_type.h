@@ -74,6 +74,11 @@ enum class SandboxType {
   kIme,
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_MACOSX)
+  // Hosts WebRTC for Sharing Service, uses kUtility on OS_MACOSX.
+  kSharingService,
+#endif
+
   // The Speech On-Device API service process.
   kSoda,
 

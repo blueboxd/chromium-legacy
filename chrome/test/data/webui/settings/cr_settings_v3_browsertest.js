@@ -171,6 +171,23 @@ TEST_F('CrSettingsIncompatibleApplicationsPageV3Test', 'All', function() {
 
 GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
+GEN('#if !defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsPeoplePageManageProfileV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/people_page_manage_profile_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPeoplePageManageProfileV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // !defined(OS_CHROMEOS)');
+
 // eslint-disable-next-line no-var
 var CrSettingsPrefUtilV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */

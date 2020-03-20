@@ -344,31 +344,6 @@ const base::Feature kExternalExtensionDefaultButtonControl{
 // Enables Focus Mode which brings up a PWA-like window look.
 const base::Feature kFocusMode{"FocusMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(ENABLE_VR)
-
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-// Controls Oculus support.
-const base::Feature kOculusVR{"OculusVR", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // ENABLE_OCULUS_VR
-
-#if BUILDFLAG(ENABLE_OPENVR)
-// Controls OpenVR support.
-const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // ENABLE_OPENVR
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-// Controls Windows Mixed Reality support.
-const base::Feature kWindowsMixedReality{"WindowsMixedReality",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // ENABLE_WINDOWS_MR
-
-#if BUILDFLAG(ENABLE_OPENXR)
-// Controls OpenXR support.
-const base::Feature kOpenXR{"OpenXR", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // ENABLE_OPENXR
-
-#endif  // BUILDFLAG(ENABLE_VR)
-
 #if defined(OS_WIN)
 // Enables using GDI to print text as simply text.
 const base::Feature kGdiTextPrinting{"GdiTextPrinting",

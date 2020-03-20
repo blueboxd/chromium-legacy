@@ -75,6 +75,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
@@ -155,6 +156,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"save", IDS_SAVE},
     {"searchResultBubbleText", IDS_SEARCH_RESULT_BUBBLE_TEXT},
     {"searchResultsBubbleText", IDS_SEARCH_RESULTS_BUBBLE_TEXT},
+    {"sentenceEnd", IDS_SENTENCE_END},
     {"settings", IDS_SETTINGS_SETTINGS},
     {"settingsAltPageTitle", IDS_SETTINGS_ALT_PAGE_TITLE},
     {"subpageArrowRoleDescription", IDS_SETTINGS_SUBPAGE_BUTTON},
@@ -821,6 +823,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC},
       {"passwordsLeakDetectionLabel",
        IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL},
+      {"passwordsLeakDetectionGeneralDescription",
+       IDS_PASSWORD_MANAGER_LEAK_HELP_MESSAGE},
       {"passwordsLeakDetectionSignedOutEnabledDescription",
        IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC},
       {"savedPasswordsHeading", IDS_SETTINGS_PASSWORDS_SAVED_HEADING},
@@ -1072,6 +1076,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"privacyPageMore", IDS_SETTINGS_PRIVACY_MORE},
       {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
       {"doNotTrackDialogTitle", IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TITLE},
+      // TODO(crbug.com/1062607): This string is no longer used. Remove.
       {"permissionsPageTitle", IDS_SETTINGS_PERMISSIONS},
       {"permissionsPageDescription", IDS_SETTINGS_PERMISSIONS_DESCRIPTION},
       {"securityPageTitle", IDS_SETTINGS_SECURITY},

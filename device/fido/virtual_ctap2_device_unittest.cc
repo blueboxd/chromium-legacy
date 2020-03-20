@@ -58,36 +58,35 @@ TEST_F(VirtualCtap2DeviceTest, ParseMakeCredentialRequestForVirtualCtapKey) {
       base::make_span(test_data::kCtapMakeCredentialRequest).subspan(1));
   ASSERT_TRUE(cbor_request);
   ASSERT_TRUE(cbor_request->is_map());
-  const auto request_and_hash =
-      ParseCtapMakeCredentialRequest(cbor_request->GetMap());
-  ASSERT_TRUE(request_and_hash);
-  auto request = std::get<0>(*request_and_hash);
-  auto client_data_hash = std::get<1>(*request_and_hash);
-  EXPECT_THAT(client_data_hash,
+  const base::Optional<CtapMakeCredentialRequest> request =
+      CtapMakeCredentialRequest::Parse(cbor_request->GetMap());
+  ASSERT_TRUE(request);
+  EXPECT_THAT(request->client_data_hash,
               ::testing::ElementsAreArray(test_data::kClientDataHash));
-  EXPECT_EQ(test_data::kRelyingPartyId, request.rp.id);
-  EXPECT_EQ("Acme", request.rp.name);
-  EXPECT_THAT(request.user.id, ::testing::ElementsAreArray(test_data::kUserId));
-  ASSERT_TRUE(request.user.name);
-  EXPECT_EQ("johnpsmith@example.com", *request.user.name);
-  ASSERT_TRUE(request.user.display_name);
-  EXPECT_EQ("John P. Smith", *request.user.display_name);
-  ASSERT_TRUE(request.user.icon_url);
+  EXPECT_EQ(test_data::kRelyingPartyId, request->rp.id);
+  EXPECT_EQ("Acme", request->rp.name);
+  EXPECT_THAT(request->user.id,
+              ::testing::ElementsAreArray(test_data::kUserId));
+  ASSERT_TRUE(request->user.name);
+  EXPECT_EQ("johnpsmith@example.com", *request->user.name);
+  ASSERT_TRUE(request->user.display_name);
+  EXPECT_EQ("John P. Smith", *request->user.display_name);
+  ASSERT_TRUE(request->user.icon_url);
   EXPECT_EQ("https://pics.acme.com/00/p/aBjjjpqPb.png",
-            request.user.icon_url->spec());
+            request->user.icon_url->spec());
   ASSERT_EQ(2u,
-            request.public_key_credential_params.public_key_credential_params()
+            request->public_key_credential_params.public_key_credential_params()
                 .size());
   EXPECT_EQ(-7,
-            request.public_key_credential_params.public_key_credential_params()
+            request->public_key_credential_params.public_key_credential_params()
                 .at(0)
                 .algorithm);
   EXPECT_EQ(257,
-            request.public_key_credential_params.public_key_credential_params()
+            request->public_key_credential_params.public_key_credential_params()
                 .at(1)
                 .algorithm);
-  EXPECT_EQ(UserVerificationRequirement::kRequired, request.user_verification);
-  EXPECT_TRUE(request.resident_key_required);
+  EXPECT_EQ(UserVerificationRequirement::kRequired, request->user_verification);
+  EXPECT_TRUE(request->resident_key_required);
 }
 
 TEST_F(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
@@ -111,20 +110,18 @@ TEST_F(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
   ASSERT_TRUE(cbor_request);
   ASSERT_TRUE(cbor_request->is_map());
 
-  auto request_and_hash = ParseCtapGetAssertionRequest(cbor_request->GetMap());
-  ASSERT_TRUE(request_and_hash);
-  auto request = std::get<0>(*request_and_hash);
-  auto client_data_hash = std::get<1>(*request_and_hash);
-  EXPECT_THAT(client_data_hash,
+  const base::Optional<CtapGetAssertionRequest> request =
+      CtapGetAssertionRequest::Parse(cbor_request->GetMap());
+  EXPECT_THAT(request->client_data_hash,
               ::testing::ElementsAreArray(test_data::kClientDataHash));
-  EXPECT_EQ(test_data::kRelyingPartyId, request.rp_id);
-  EXPECT_EQ(UserVerificationRequirement::kRequired, request.user_verification);
-  EXPECT_FALSE(request.user_presence_required);
-  ASSERT_EQ(2u, request.allow_list.size());
+  EXPECT_EQ(test_data::kRelyingPartyId, request->rp_id);
+  EXPECT_EQ(UserVerificationRequirement::kRequired, request->user_verification);
+  EXPECT_FALSE(request->user_presence_required);
+  ASSERT_EQ(2u, request->allow_list.size());
 
-  EXPECT_THAT(request.allow_list.at(0).id(),
+  EXPECT_THAT(request->allow_list.at(0).id(),
               ::testing::ElementsAreArray(kAllowedCredentialOne));
-  EXPECT_THAT(request.allow_list.at(1).id(),
+  EXPECT_THAT(request->allow_list.at(1).id(),
               ::testing::ElementsAreArray(kAllowedCredentialTwo));
 }
 

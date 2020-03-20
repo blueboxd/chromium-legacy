@@ -15,6 +15,121 @@
 
 namespace device {
 
+namespace {
+bool IsGetAssertionOptionMapFormatCorrect(
+    const cbor::Value::MapValue& option_map) {
+  return std::all_of(
+      option_map.begin(), option_map.end(), [](const auto& param) {
+        return param.first.is_string() &&
+               (param.first.GetString() == kUserPresenceMapKey ||
+                param.first.GetString() == kUserVerificationMapKey) &&
+               param.second.is_bool();
+      });
+}
+
+bool AreGetAssertionRequestMapKeysCorrect(
+    const cbor::Value::MapValue& request_map) {
+  return std::all_of(
+      request_map.begin(), request_map.end(), [](const auto& param) {
+        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
+                param.first.GetInteger() <= 7u);
+      });
+}
+}  // namespace
+
+// static
+base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
+    const cbor::Value::MapValue& request_map) {
+  if (!AreGetAssertionRequestMapKeysCorrect(request_map))
+    return base::nullopt;
+
+  const auto rp_id_it = request_map.find(cbor::Value(1));
+  if (rp_id_it == request_map.end() || !rp_id_it->second.is_string())
+    return base::nullopt;
+
+  const auto client_data_hash_it = request_map.find(cbor::Value(2));
+  if (client_data_hash_it == request_map.end() ||
+      !client_data_hash_it->second.is_bytestring() ||
+      client_data_hash_it->second.GetBytestring().size() !=
+          kClientDataHashLength) {
+    return base::nullopt;
+  }
+  base::span<const uint8_t, kClientDataHashLength> client_data_hash(
+      client_data_hash_it->second.GetBytestring().data(),
+      kClientDataHashLength);
+
+  CtapGetAssertionRequest request(rp_id_it->second.GetString(),
+                                  /*client_data_json=*/std::string());
+  request.client_data_hash = fido_parsing_utils::Materialize(client_data_hash);
+
+  const auto allow_list_it = request_map.find(cbor::Value(3));
+  if (allow_list_it != request_map.end()) {
+    if (!allow_list_it->second.is_array())
+      return base::nullopt;
+
+    const auto& credential_descriptors = allow_list_it->second.GetArray();
+    if (credential_descriptors.empty())
+      return base::nullopt;
+
+    std::vector<PublicKeyCredentialDescriptor> allow_list;
+    for (const auto& credential_descriptor : credential_descriptors) {
+      auto allowed_credential =
+          PublicKeyCredentialDescriptor::CreateFromCBORValue(
+              credential_descriptor);
+      if (!allowed_credential)
+        return base::nullopt;
+
+      allow_list.push_back(std::move(*allowed_credential));
+    }
+    request.allow_list = std::move(allow_list);
+  }
+
+  const auto option_it = request_map.find(cbor::Value(5));
+  if (option_it != request_map.end()) {
+    if (!option_it->second.is_map())
+      return base::nullopt;
+
+    const auto& option_map = option_it->second.GetMap();
+    if (!IsGetAssertionOptionMapFormatCorrect(option_map))
+      return base::nullopt;
+
+    const auto user_presence_option =
+        option_map.find(cbor::Value(kUserPresenceMapKey));
+    if (user_presence_option != option_map.end()) {
+      request.user_presence_required = user_presence_option->second.GetBool();
+    }
+
+    const auto uv_option =
+        option_map.find(cbor::Value(kUserVerificationMapKey));
+    if (uv_option != option_map.end()) {
+      request.user_verification =
+          uv_option->second.GetBool()
+              ? UserVerificationRequirement::kRequired
+              : UserVerificationRequirement::kDiscouraged;
+    }
+  }
+
+  const auto pin_auth_it = request_map.find(cbor::Value(6));
+  if (pin_auth_it != request_map.end()) {
+    if (!pin_auth_it->second.is_bytestring())
+      return base::nullopt;
+
+    request.pin_auth = pin_auth_it->second.GetBytestring();
+  }
+
+  const auto pin_protocol_it = request_map.find(cbor::Value(7));
+  if (pin_protocol_it != request_map.end()) {
+    if (!pin_protocol_it->second.is_unsigned() ||
+        pin_protocol_it->second.GetUnsigned() >
+            std::numeric_limits<uint8_t>::max()) {
+      return base::nullopt;
+    }
+    request.pin_protocol = pin_protocol_it->second.GetUnsigned();
+  }
+
+  return request;
+}
+
 CtapGetAssertionRequest::CtapGetAssertionRequest(
     std::string in_rp_id,
     std::string in_client_data_json)

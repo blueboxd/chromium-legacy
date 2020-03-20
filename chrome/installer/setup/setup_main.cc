@@ -272,6 +272,25 @@ bool UncompressAndPatchChromeArchive(
   // --- Background (>90%) ---
   //   Full archive: 22s (50%ile) / >3m (99%ile)
   //   Archive patch: ~2s (50%ile) / 1.5m - >3m (99%ile)
+  //
+  // The top unpack failure result with 28 days aggregation (>=0.01%)
+  // Setup.Install.LzmaUnPackResult_CompressedChromeArchive
+  // 13.50% DISK_FULL
+  // 0.67% ERROR_NO_SYSTEM_RESOURCES
+  // 0.12% ERROR_IO_DEVICE
+  // 0.05% INVALID_HANDLE
+  // 0.01% INVALID_LEVEL
+  // 0.01% FILE_NOT_FOUND
+  // 0.01% LOCK_VIOLATION
+  // 0.01% ACCESS_DENIED
+  //
+  // Setup.Install.LzmaUnPackResult_ChromeArchivePatch
+  // 0.09% DISK_FULL
+  // 0.01% FILE_NOT_FOUND
+  //
+  // More information can also be found with metrics:
+  // Setup.Install.LzmaUnPackNTSTATUS_CompressedChromeArchive
+  // Setup.Install.LzmaUnPackNTSTATUS_ChromeArchivePatch
   if (!archive_helper->Uncompress(NULL)) {
     *install_status = installer::UNCOMPRESSION_FAILED;
     installer_state.WriteInstallerResult(*install_status,
@@ -813,6 +832,12 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
       base::FilePath compressed_archive(cmd_line.GetSwitchValuePath(
           installer::switches::kUpdateSetupExe));
       VLOG(1) << "Opening archive " << compressed_archive.value();
+      // The top unpack failure result with 28 days aggregation (>=0.01%)
+      // Setup.Install.LzmaUnPackResult_SetupExePatch
+      // 0.02% PATH_NOT_FOUND
+      //
+      // More information can also be found with metric:
+      // Setup.Install.LzmaUnPackNTSTATUS_SetupExePatch
       if (installer::ArchivePatchHelper::UncompressAndPatch(
               temp_path.GetPath(), compressed_archive, setup_exe,
               cmd_line.GetSwitchValuePath(installer::switches::kNewSetupExe),
@@ -1100,12 +1125,22 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   //   <2.7s (50%ile) / 45s (99%ile)
   // --- Background ---
   //   ~14s (50%ile) / >3m (99%ile)
+  //
+  // The top unpack failure result with 28 days aggregation (>=0.01%)
+  // Setup.Install.LzmaUnPackResult_UncompressedChromeArchive
+  // 0.66% DISK_FULL
+  // 0.04% ACCESS_DENIED
+  // 0.01% INVALID_HANDLE
+  // 0.01% ERROR_NO_SYSTEM_RESOURCES
+  // 0.01% PATH_NOT_FOUND
+  // 0.01% ERROR_IO_DEVICE
+  //
+  // More information can also be found with metric:
+  // Setup.Install.LzmaUnPackNTSTATUS_UncompressedChromeArchive
   installer_state.SetStage(UNPACKING);
-  base::Optional<DWORD> error_code;
-  base::Optional<int32_t> ntstatus;
   UnPackStatus unpack_status = UnPackArchive(uncompressed_archive, unpack_path,
-                                             nullptr, &error_code, &ntstatus);
-  RecordUnPackMetrics(unpack_status, ntstatus, error_code,
+                                             /*output_file=*/nullptr);
+  RecordUnPackMetrics(unpack_status,
                       UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE);
   if (unpack_status != UNPACK_NO_ERROR) {
     installer_state.WriteInstallerResult(

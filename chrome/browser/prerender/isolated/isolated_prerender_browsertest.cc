@@ -86,7 +86,9 @@ class TestCustomProxyConfigClient
   void OnCustomProxyConfigUpdated(
       network::mojom::CustomProxyConfigPtr proxy_config) override {
     config_ = std::move(proxy_config);
-    std::move(update_closure_).Run();
+    if (update_closure_) {
+      std::move(update_closure_).Run();
+    }
   }
   void MarkProxiesAsBad(base::TimeDelta bypass_duration,
                         const net::ProxyList& bad_proxies,

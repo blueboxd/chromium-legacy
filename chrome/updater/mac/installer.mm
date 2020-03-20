@@ -93,54 +93,55 @@ bool UnmountDMG(const base::FilePath& mounted_dmg_path) {
   return true;
 }
 
-bool RunScript(const base::FilePath& mounted_dmg_path,
-               const base::FilePath::StringPieceType script_name,
-               const std::string& arguments) {
+int RunExecutable(const base::FilePath& mounted_dmg_path,
+                  const base::FilePath::StringPieceType executable_name,
+                  const std::string& arguments) {
   if (!base::PathExists(mounted_dmg_path)) {
     DLOG(ERROR) << "File path (" << mounted_dmg_path << ") does not exist.";
-    return false;
+    return static_cast<int>(InstallErrors::kMountedDmgPathDoesNotExist);
   }
-  base::FilePath script_file_path = mounted_dmg_path.Append(script_name);
-  if (!base::PathExists(script_file_path)) {
-    DLOG(ERROR) << "Script file path (" << script_file_path
+  base::FilePath executable_file_path =
+      mounted_dmg_path.Append(executable_name);
+  if (!base::PathExists(executable_file_path)) {
+    DLOG(ERROR) << "Executable file path (" << executable_file_path
                 << ") does not exist.";
-    return false;
+    return static_cast<int>(InstallErrors::kExecutableFilePathDoesNotExist);
   }
 
   // TODO(copacitt): Improve the way we parse args for CommandLine object.
   // http://crbug.com/1056818
-  base::CommandLine command(script_file_path);
+  base::CommandLine command(executable_file_path);
+  command.AppendArgPath(mounted_dmg_path);
   if (!arguments.empty()) {
     base::CommandLine::StringVector argv =
         base::SplitString(arguments, base::kWhitespaceASCII,
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    argv.insert(argv.begin(), script_file_path.value());
+    argv.insert(argv.begin(), mounted_dmg_path.value());
+    argv.insert(argv.begin(), executable_file_path.value());
     command = base::CommandLine(argv);
   }
 
   std::string output;
-  if (!base::GetAppOutput(command, &output)) {
-    DLOG(ERROR) << "Installer script failed.";
-    return false;
-  }
+  int exit_code = 0;
+  base::GetAppOutputWithExitCode(command, &output, &exit_code);
 
-  return true;
+  return exit_code;
 }
 
 }  // namespace
 
-bool InstallFromDMG(const base::FilePath& dmg_file_path,
-                    const std::string& arguments) {
+int InstallFromDMG(const base::FilePath& dmg_file_path,
+                   const std::string& arguments) {
   std::string mount_point;
   if (!MountDMG(dmg_file_path, &mount_point))
-    return false;
+    return static_cast<int>(InstallErrors::kFailMountDmg);
 
   if (mount_point.empty()) {
     DLOG(ERROR) << "No mount point.";
-    return false;
+    return static_cast<int>(InstallErrors::kNoMountPoint);
   }
   const base::FilePath mounted_dmg_path = base::FilePath(mount_point);
-  bool result = RunScript(mounted_dmg_path, ".install.sh", arguments);
+  int result = RunExecutable(mounted_dmg_path, ".install", arguments);
 
   if (!UnmountDMG(mounted_dmg_path))
     DLOG(WARNING) << "Could not unmount the DMG: " << mounted_dmg_path;

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.trusted.sharing.ShareData;
@@ -20,12 +21,12 @@ import org.chromium.components.browser_ui.widget.TintedDrawable;
  * Stores info about a web app.
  */
 public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider {
-    private int mToolbarColor;
-    private boolean mHasCustomToolbarColor;
-    private Drawable mCloseButtonIcon;
-    private ShareData mShareData;
-    private WebappExtras mWebappExtras;
-    private WebApkExtras mWebApkExtras;
+    private final int mToolbarColor;
+    private final boolean mHasCustomToolbarColor;
+    private final Drawable mCloseButtonIcon;
+    private final ShareData mShareData;
+    private final @NonNull WebappExtras mWebappExtras;
+    private final @Nullable WebApkExtras mWebApkExtras;
 
     /**
      * Returns the toolbar color to use if a custom color is not specified by the webapp.
@@ -35,7 +36,7 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     }
 
     WebappIntentDataProvider(int toolbarColor, boolean hasCustomToolbarColor, ShareData shareData,
-            WebappExtras webappExtras, WebApkExtras webApkExtras) {
+            @NonNull WebappExtras webappExtras, @Nullable WebApkExtras webApkExtras) {
         mToolbarColor = toolbarColor;
         mHasCustomToolbarColor = hasCustomToolbarColor;
         mCloseButtonIcon = TintedDrawable.constructTintedDrawable(
@@ -43,6 +44,12 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         mShareData = shareData;
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
+    }
+
+    @Override
+    @Nullable
+    public String getUrlToLoad() {
+        return mWebappExtras.url;
     }
 
     @Override

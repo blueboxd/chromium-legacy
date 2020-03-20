@@ -712,7 +712,7 @@ void InspectorCSSAgent::ResetNonPersistentData() {
 void InspectorCSSAgent::enable(std::unique_ptr<EnableCallback> prp_callback) {
   if (!dom_agent_->Enabled()) {
     prp_callback->sendFailure(
-        Response::Error("DOM agent needs to be enabled first."));
+        Response::ServerError("DOM agent needs to be enabled first."));
     return;
   }
   enable_requested_.Set(true);
@@ -747,7 +747,7 @@ Response InspectorCSSAgent::disable() {
   resource_content_loader_->Cancel(resource_content_loader_client_id_);
   coverage_enabled_.Set(false);
   SetCoverageEnabled(false);
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorCSSAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
@@ -908,7 +908,7 @@ Response InspectorCSSAgent::getMediaQueries(
         CollectMediaQueriesFromRule(rule, medias->get());
     }
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::getMatchedStylesForNode(
@@ -923,12 +923,12 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
     Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*
         css_keyframes_rules) {
   Response response = AssertEnabled();
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Element* element = nullptr;
   response = dom_agent_->AssertElement(node_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Element* original_element = element;
@@ -936,13 +936,13 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   if (element_pseudo_id) {
     element = element->ParentOrShadowHostElement();
     if (!element)
-      return Response::Error("Pseudo element has no parent");
+      return Response::ServerError("Pseudo element has no parent");
   }
 
   Document* owner_document = element->ownerDocument();
   // A non-active document has no styles.
   if (!owner_document->IsActive())
-    return Response::Error("Document is not active");
+    return Response::ServerError("Document is not active");
 
   // FIXME: It's really gross for the inspector to reach in and access
   // StyleResolver directly here. We need to provide the Inspector better APIs
@@ -959,7 +959,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
 
   // Pseudo elements.
   if (element_pseudo_id)
-    return Response::OK();
+    return Response::Success();
 
   InspectorStyleSheetForInlineStyle* inline_style_sheet =
       AsInspectorStyleSheet(element);
@@ -1014,7 +1014,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   }
 
   *css_keyframes_rules = AnimationsForNode(element);
-  return Response::OK();
+  return Response::Success();
 }
 
 template <class CSSRuleCollection>
@@ -1101,21 +1101,21 @@ Response InspectorCSSAgent::getInlineStylesForNode(
     Maybe<protocol::CSS::CSSStyle>* inline_style,
     Maybe<protocol::CSS::CSSStyle>* attributes_style) {
   Response response = AssertEnabled();
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   Element* element = nullptr;
   response = dom_agent_->AssertElement(node_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   InspectorStyleSheetForInlineStyle* style_sheet =
       AsInspectorStyleSheet(element);
   if (!style_sheet)
-    return Response::Error("Element is not a style sheet");
+    return Response::ServerError("Element is not a style sheet");
 
   *inline_style = style_sheet->BuildObjectForStyle(element->style());
   *attributes_style = BuildObjectForAttributesStyle(element);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::getComputedStyleForNode(
@@ -1123,11 +1123,11 @@ Response InspectorCSSAgent::getComputedStyleForNode(
     std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*
         style) {
   Response response = AssertEnabled();
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   Node* node = nullptr;
   response = dom_agent_->AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   auto* computed_style_info =
@@ -1153,7 +1153,7 @@ Response InspectorCSSAgent::getComputedStyleForNode(
                                .setValue(it.value->CssText())
                                .build());
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
@@ -1218,11 +1218,11 @@ Response InspectorCSSAgent::getPlatformFontsForNode(
     std::unique_ptr<protocol::Array<protocol::CSS::PlatformFontUsage>>*
         platform_fonts) {
   Response response = AssertEnabled();
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   Node* node = nullptr;
   response = dom_agent_->AssertNode(node_id, node);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   HashCountedSet<std::pair<int, String>> font_stats;
@@ -1245,7 +1245,7 @@ Response InspectorCSSAgent::getPlatformFontsForNode(
                            .setGlyphCount(font.value)
                            .build());
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::getStyleSheetText(const String& style_sheet_id,
@@ -1253,11 +1253,11 @@ Response InspectorCSSAgent::getStyleSheetText(const String& style_sheet_id,
   InspectorStyleSheetBase* inspector_style_sheet = nullptr;
   Response response =
       AssertStyleSheetForId(style_sheet_id, inspector_style_sheet);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   inspector_style_sheet->GetText(result);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::collectClassNames(
@@ -1266,10 +1266,10 @@ Response InspectorCSSAgent::collectClassNames(
   InspectorStyleSheet* inspector_style_sheet = nullptr;
   Response response =
       AssertInspectorStyleSheetForId(style_sheet_id, inspector_style_sheet);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   *class_names = inspector_style_sheet->CollectClassNames();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::setStyleSheetText(
@@ -1280,7 +1280,7 @@ Response InspectorCSSAgent::setStyleSheetText(
   InspectorStyleSheetBase* inspector_style_sheet = nullptr;
   Response response =
       AssertStyleSheetForId(style_sheet_id, inspector_style_sheet);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   DummyExceptionStateForTesting exception_state;
@@ -1288,25 +1288,33 @@ Response InspectorCSSAgent::setStyleSheetText(
                                      inspector_style_sheet, text),
                                  exception_state);
   response = InspectorDOMAgent::ToResponse(exception_state);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   if (!inspector_style_sheet->SourceMapURL().IsEmpty())
     *source_map_url = inspector_style_sheet->SourceMapURL();
-  return Response::OK();
+  return Response::Success();
 }
 
 static Response JsonRangeToSourceRange(
     InspectorStyleSheetBase* inspector_style_sheet,
     protocol::CSS::SourceRange* range,
     SourceRange* source_range) {
-  if (range->getStartLine() < 0)
-    return Response::Error("range.startLine must be a non-negative integer");
-  if (range->getStartColumn() < 0)
-    return Response::Error("range.startColumn must be a non-negative integer");
-  if (range->getEndLine() < 0)
-    return Response::Error("range.endLine must be a non-negative integer");
-  if (range->getEndColumn() < 0)
-    return Response::Error("range.endColumn must be a non-negative integer");
+  if (range->getStartLine() < 0) {
+    return Response::ServerError(
+        "range.startLine must be a non-negative integer");
+  }
+  if (range->getStartColumn() < 0) {
+    return Response::ServerError(
+        "range.startColumn must be a non-negative integer");
+  }
+  if (range->getEndLine() < 0) {
+    return Response::ServerError(
+        "range.endLine must be a non-negative integer");
+  }
+  if (range->getEndColumn() < 0) {
+    return Response::ServerError(
+        "range.endColumn must be a non-negative integer");
+  }
 
   unsigned start_offset = 0;
   unsigned end_offset = 0;
@@ -1316,13 +1324,13 @@ static Response JsonRangeToSourceRange(
       inspector_style_sheet->LineNumberAndColumnToOffset(
           range->getEndLine(), range->getEndColumn(), &end_offset);
   if (!success)
-    return Response::Error("Specified range is out of bounds");
+    return Response::ServerError("Specified range is out of bounds");
 
   if (start_offset > end_offset)
-    return Response::Error("Range start must not succeed its end");
+    return Response::ServerError("Range start must not succeed its end");
   source_range->start = start_offset;
   source_range->end = end_offset;
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::setRuleSelector(
@@ -1334,12 +1342,12 @@ Response InspectorCSSAgent::setRuleSelector(
   InspectorStyleSheet* inspector_style_sheet = nullptr;
   Response response =
       AssertInspectorStyleSheetForId(style_sheet_id, inspector_style_sheet);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   SourceRange selector_range;
   response = JsonRangeToSourceRange(inspector_style_sheet, range.get(),
                                     &selector_range);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   DummyExceptionStateForTesting exception_state;
@@ -1351,8 +1359,10 @@ Response InspectorCSSAgent::setRuleSelector(
     CSSStyleRule* rule = InspectorCSSAgent::AsCSSStyleRule(action->TakeRule());
     InspectorStyleSheet* inspector_style_sheet =
         InspectorStyleSheetForRule(rule);
-    if (!inspector_style_sheet)
-      return Response::Error("Failed to get inspector style sheet for rule.");
+    if (!inspector_style_sheet) {
+      return Response::ServerError(
+          "Failed to get inspector style sheet for rule.");
+    }
     *result = inspector_style_sheet->BuildObjectForSelectorList(rule);
   }
   return InspectorDOMAgent::ToResponse(exception_state);
@@ -1367,12 +1377,12 @@ Response InspectorCSSAgent::setKeyframeKey(
   InspectorStyleSheet* inspector_style_sheet = nullptr;
   Response response =
       AssertInspectorStyleSheetForId(style_sheet_id, inspector_style_sheet);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   SourceRange key_range;
   response =
       JsonRangeToSourceRange(inspector_style_sheet, range.get(), &key_range);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   DummyExceptionStateForTesting exception_state;
@@ -1384,9 +1394,10 @@ Response InspectorCSSAgent::setKeyframeKey(
     auto* rule = To<CSSKeyframeRule>(action->TakeRule());
     InspectorStyleSheet* inspector_style_sheet =
         BindStyleSheet(rule->parentStyleSheet());
-    if (!inspector_style_sheet)
-      return Response::Error("Failed to get inspector style sheet for rule.");
-
+    if (!inspector_style_sheet) {
+      return Response::ServerError(
+          "Failed to get inspector style sheet for rule.");
+    }
     CSSRuleSourceData* source_data =
         inspector_style_sheet->SourceDataForRule(rule);
     *result = protocol::CSS::Value::create()
@@ -1403,22 +1414,23 @@ Response InspectorCSSAgent::MultipleStyleTextsActions(
     HeapVector<Member<StyleSheetAction>>* actions) {
   size_t n = edits->size();
   if (n == 0)
-    return Response::Error("Edits should not be empty");
+    return Response::ServerError("Edits should not be empty");
 
   for (size_t i = 0; i < n; ++i) {
     protocol::CSS::StyleDeclarationEdit* edit = (*edits)[i].get();
     InspectorStyleSheetBase* inspector_style_sheet = nullptr;
     Response response =
         AssertStyleSheetForId(edit->getStyleSheetId(), inspector_style_sheet);
-    if (!response.isSuccess()) {
-      return Response::Error(String::Format(
-          "StyleSheet not found for edit #%zu of %zu", i + 1, n));
+    if (!response.IsSuccess()) {
+      return Response::ServerError(
+          String::Format("StyleSheet not found for edit #%zu of %zu", i + 1, n)
+              .Utf8());
     }
 
     SourceRange range;
     response =
         JsonRangeToSourceRange(inspector_style_sheet, edit->getRange(), &range);
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
 
     if (inspector_style_sheet->IsInlineStyle()) {
@@ -1437,7 +1449,7 @@ Response InspectorCSSAgent::MultipleStyleTextsActions(
       actions->push_back(action);
     }
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::setStyleTexts(
@@ -1446,7 +1458,7 @@ Response InspectorCSSAgent::setStyleTexts(
   FrontendOperationScope scope;
   HeapVector<Member<StyleSheetAction>> actions;
   Response response = MultipleStyleTextsActions(std::move(edits), &actions);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   DummyExceptionStateForTesting exception_state;
@@ -1464,9 +1476,9 @@ Response InspectorCSSAgent::setStyleTexts(
         revert->Undo(undo_exception_state);
         DCHECK(!undo_exception_state.HadException());
       }
-      return Response::Error(
-          String::Format("Failed applying edit #%d: ", i) +
-          InspectorDOMAgent::ToResponse(exception_state).errorMessage());
+      return Response::ServerError(
+          String::Format("Failed applying edit #%d: ", i).Utf8() +
+          InspectorDOMAgent::ToResponse(exception_state).Message());
     }
     serialized_styles->emplace_back(action->TakeSerializedStyle());
   }
@@ -1476,7 +1488,7 @@ Response InspectorCSSAgent::setStyleTexts(
     dom_agent_->History()->AppendPerformedAction(action);
   }
   *result = std::move(serialized_styles);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::SetStyleText(
@@ -1493,7 +1505,7 @@ Response InspectorCSSAgent::SetStyleText(
     bool success = dom_agent_->History()->Perform(action, exception_state);
     if (success) {
       result = inline_style_sheet->InlineStyle();
-      return Response::OK();
+      return Response::Success();
     }
   } else {
     ModifyRuleAction* action = MakeGarbageCollected<ModifyRuleAction>(
@@ -1504,11 +1516,11 @@ Response InspectorCSSAgent::SetStyleText(
       CSSRule* rule = action->TakeRule();
       if (auto* style_rule = DynamicTo<CSSStyleRule>(rule)) {
         result = style_rule->style();
-        return Response::OK();
+        return Response::Success();
       }
       if (auto* keyframe_rule = DynamicTo<CSSKeyframeRule>(rule)) {
         result = keyframe_rule->style();
-        return Response::OK();
+        return Response::Success();
       }
     }
   }
@@ -1524,12 +1536,12 @@ Response InspectorCSSAgent::setMediaText(
   InspectorStyleSheet* inspector_style_sheet = nullptr;
   Response response =
       AssertInspectorStyleSheetForId(style_sheet_id, inspector_style_sheet);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   SourceRange text_range;
   response =
       JsonRangeToSourceRange(inspector_style_sheet, range.get(), &text_range);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   DummyExceptionStateForTesting exception_state;
@@ -1555,20 +1567,20 @@ Response InspectorCSSAgent::createStyleSheet(
   LocalFrame* frame =
       IdentifiersFactory::FrameById(inspected_frames_, frame_id);
   if (!frame)
-    return Response::Error("Frame not found");
+    return Response::ServerError("Frame not found");
 
   Document* document = frame->GetDocument();
   if (!document)
-    return Response::Error("Frame does not have a document");
+    return Response::ServerError("Frame does not have a document");
 
   InspectorStyleSheet* inspector_style_sheet = ViaInspectorStyleSheet(document);
   if (!inspector_style_sheet)
-    return Response::Error("No target stylesheet found");
+    return Response::ServerError("No target stylesheet found");
 
   UpdateActiveStyleSheets(document);
 
   *out_style_sheet_id = inspector_style_sheet->Id();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::addRule(
@@ -1580,12 +1592,12 @@ Response InspectorCSSAgent::addRule(
   InspectorStyleSheet* inspector_style_sheet = nullptr;
   Response response =
       AssertInspectorStyleSheetForId(style_sheet_id, inspector_style_sheet);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   SourceRange rule_location;
   response = JsonRangeToSourceRange(inspector_style_sheet, location.get(),
                                     &rule_location);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   DummyExceptionStateForTesting exception_state;
@@ -1597,18 +1609,18 @@ Response InspectorCSSAgent::addRule(
 
   CSSStyleRule* rule = action->TakeRule();
   *result = BuildObjectForRule(rule);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::forcePseudoState(
     int node_id,
     std::unique_ptr<protocol::Array<String>> forced_pseudo_classes) {
   Response response = AssertEnabled();
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   Element* element = nullptr;
   response = dom_agent_->AssertElement(node_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   unsigned forced_pseudo_state =
@@ -1619,7 +1631,7 @@ Response InspectorCSSAgent::forcePseudoState(
       it == node_id_to_forced_pseudo_state_.end() ? 0 : it->value;
   bool need_style_recalc = forced_pseudo_state != current_forced_pseudo_state;
   if (!need_style_recalc)
-    return Response::OK();
+    return Response::Success();
 
   if (forced_pseudo_state)
     node_id_to_forced_pseudo_state_.Set(node_id, forced_pseudo_state);
@@ -1627,7 +1639,7 @@ Response InspectorCSSAgent::forcePseudoState(
     node_id_to_forced_pseudo_state_.erase(node_id);
   element->ownerDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
-  return Response::OK();
+  return Response::Success();
 }
 
 std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
@@ -1932,22 +1944,22 @@ InspectorStyleSheet* InspectorCSSAgent::ViaInspectorStyleSheet(
 }
 
 Response InspectorCSSAgent::AssertEnabled() {
-  return enable_completed_ ? Response::OK()
-                           : Response::Error("CSS agent was not enabled");
+  return enable_completed_ ? Response::Success()
+                           : Response::ServerError("CSS agent was not enabled");
 }
 
 Response InspectorCSSAgent::AssertInspectorStyleSheetForId(
     const String& style_sheet_id,
     InspectorStyleSheet*& result) {
   Response response = AssertEnabled();
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   IdToInspectorStyleSheet::iterator it =
       id_to_inspector_style_sheet_.find(style_sheet_id);
   if (it == id_to_inspector_style_sheet_.end())
-    return Response::Error("No style sheet with given id found");
+    return Response::ServerError("No style sheet with given id found");
   result = it->value.Get();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::AssertStyleSheetForId(
@@ -1956,16 +1968,16 @@ Response InspectorCSSAgent::AssertStyleSheetForId(
   InspectorStyleSheet* style_sheet = nullptr;
   Response response =
       AssertInspectorStyleSheetForId(style_sheet_id, style_sheet);
-  if (response.isSuccess()) {
+  if (response.IsSuccess()) {
     result = style_sheet;
     return response;
   }
   IdToInspectorStyleSheetForInlineStyle::iterator it =
       id_to_inspector_style_sheet_for_inline_style_.find(style_sheet_id);
   if (it == id_to_inspector_style_sheet_for_inline_style_.end())
-    return Response::Error("No style sheet with given id found");
+    return Response::ServerError("No style sheet with given id found");
   result = it->value.Get();
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::CSS::StyleSheetOrigin InspectorCSSAgent::DetectOrigin(
@@ -2201,18 +2213,20 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
     const String& value) {
   Element* element = nullptr;
   Response response = dom_agent_->AssertElement(node_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   if (element->GetPseudoId())
-    return Response::Error("Elements is pseudo");
+    return Response::ServerError("Elements is pseudo");
 
-  if (!element->ownerDocument()->IsActive())
-    return Response::Error("Can't edit a node from a non-active document");
+  if (!element->ownerDocument()->IsActive()) {
+    return Response::ServerError(
+        "Can't edit a node from a non-active document");
+  }
 
   CSSPropertyID property =
       cssPropertyID(element->GetExecutionContext(), property_name);
   if (!isValidCSSPropertyID(property))
-    return Response::Error("Invalid property name");
+    return Response::ServerError("Invalid property name");
 
   CSSPropertyID property_id =
       cssPropertyID(element->GetExecutionContext(), property_name);
@@ -2220,7 +2234,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   CSSStyleDeclaration* style =
       FindEffectiveDeclaration(property_class, MatchingStyles(element));
   if (!style)
-    return Response::Error("Can't find a style to edit");
+    return Response::ServerError("Can't find a style to edit");
 
   bool force_important = false;
   InspectorStyleSheetBase* inspector_style_sheet = nullptr;
@@ -2239,7 +2253,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   }
 
   if (!source_data)
-    return Response::Error("Can't find a source to edit");
+    return Response::ServerError("Can't find a source to edit");
 
   Vector<StylePropertyShorthand, 4> shorthands;
   getMatchingShorthandsForLonghand(property_id, &shorthands);
@@ -2311,7 +2325,7 @@ Response InspectorCSSAgent::getBackgroundColors(
     Maybe<String>* computed_font_weight) {
   Element* element = nullptr;
   Response response = dom_agent_->AssertElement(node_id, element);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Vector<Color> bgcolors;
@@ -2330,7 +2344,7 @@ Response InspectorCSSAgent::getBackgroundColors(
     *computed_font_size = fs;
   if (!fw.IsEmpty())
     *computed_font_weight = fw;
-  return Response::OK();
+  return Response::Success();
 }
 
 // static
@@ -2407,7 +2421,7 @@ Response InspectorCSSAgent::startRuleUsageTracking() {
     document->UpdateStyleAndLayoutTree();
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorCSSAgent::stopRuleUsageTracking(
@@ -2424,7 +2438,7 @@ Response InspectorCSSAgent::takeCoverageDelta(
     std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
     double* out_timestamp) {
   if (!tracker_)
-    return Response::Error("CSS rule usage tracking is not enabled");
+    return Response::ServerError("CSS rule usage tracking is not enabled");
 
   StyleRuleUsageTracker::RuleListByStyleSheet coverage_delta =
       tracker_->TakeDelta();
@@ -2458,7 +2472,7 @@ Response InspectorCSSAgent::takeCoverageDelta(
     }
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorCSSAgent::Trace(Visitor* visitor) {

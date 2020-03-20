@@ -89,7 +89,7 @@ Response CastHandler::SetSinkToUse(const std::string& in_sink_name) {
       ->set_start_presentation_cb(
           base::BindRepeating(&CastHandler::StartPresentation,
                               weak_factory_.GetWeakPtr(), in_sink_name));
-  return Response::OK();
+  return Response::Success();
 }
 
 void CastHandler::StartTabMirroring(
@@ -98,7 +98,7 @@ void CastHandler::StartTabMirroring(
   EnsureInitialized();
   const media_router::MediaSink::Id& sink_id = GetSinkIdByName(in_sink_name);
   if (sink_id.empty()) {
-    callback->sendFailure(Response::Error("Sink not found"));
+    callback->sendFailure(Response::ServerError("Sink not found"));
     return;
   }
 
@@ -119,19 +119,19 @@ Response CastHandler::StopCasting(const std::string& in_sink_name) {
   EnsureInitialized();
   const media_router::MediaSink::Id& sink_id = GetSinkIdByName(in_sink_name);
   if (sink_id.empty())
-    return Response::Error("Sink not found");
+    return Response::ServerError("Sink not found");
   const MediaRoute::Id& route_id = GetRouteIdForSink(sink_id);
   if (route_id.empty())
-    return Response::Error("Route not found");
+    return Response::ServerError("Route not found");
   router_->TerminateRoute(route_id);
   initiated_routes_.erase(route_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response CastHandler::Enable(protocol::Maybe<std::string> in_presentation_url) {
   EnsureInitialized();
   StartObservingForSinks(std::move(in_presentation_url));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response CastHandler::Disable() {
@@ -140,7 +140,7 @@ Response CastHandler::Disable() {
   issues_observer_.reset();
   for (const MediaRoute::Id& route_id : initiated_routes_)
     router_->TerminateRoute(route_id);
-  return Response::OK();
+  return Response::Success();
 }
 
 void CastHandler::OnResultsUpdated(
@@ -266,7 +266,7 @@ void CastHandler::OnTabMirroringStarted(
     initiated_routes_.insert(result.route()->media_route_id());
     callback->sendSuccess();
   } else {
-    callback->sendFailure(Response::Error(result.error()));
+    callback->sendFailure(Response::ServerError(result.error()));
   }
 }
 

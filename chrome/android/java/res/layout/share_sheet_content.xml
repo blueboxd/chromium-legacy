@@ -15,7 +15,7 @@
       android:minHeight="@dimen/min_touch_target_size"
       android:id="@+id/share_sheet_chrome_apps" />
   <View
-    android:background="@color/divider_bg_color"
+    android:background="@color/divider_line_bg_color"
     android:layout_height="1dp"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"

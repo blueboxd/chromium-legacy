@@ -39,7 +39,7 @@ Response SchemaHandler::GetDomains(
     (*domains)->emplace_back(
         Schema::Domain::Create().SetName(domain).SetVersion(kVersion).Build());
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 }  // namespace protocol

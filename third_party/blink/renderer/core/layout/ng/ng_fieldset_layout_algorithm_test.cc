@@ -350,7 +350,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, ZeroHeight) {
   offset:unplaced size:1000x53
     offset:0,0 size:126x53
       offset:13,0 size:30x30
-      offset:3,30 size:120x0
+      offset:3,30 size:120x20
         offset:10,10 size:100x200
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -441,6 +441,46 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendPercentHeightQuirks) {
       offset:13,0 size:100x100
       offset:3,100 size:120x60
         offset:10,10 size:40x40
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// This test makes sure that the fieldset content handles fieldset padding
+// when the fieldset is expanded to encompass the legend.
+TEST_F(NGFieldsetLayoutAlgorithmTest, FieldsetPaddingWithLegend) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        #fieldset {
+          border:none; margin:0; padding:10px; width: 150px; height: 100px;
+        }
+        #legend {
+          padding:0px; margin:0; width: 50px; height: 120px;
+        }
+        #child {
+          width: 100px; height: 40px;
+        }
+      </style>
+      <fieldset id="fieldset">
+        <legend id="legend"></legend>
+        <div id="child"></div>
+      </fieldset>
+  )HTML");
+
+  NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("fieldset")));
+  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize), false,
+      node.CreatesNewFormattingContext());
+
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
+      NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(node, space);
+
+  String dump = DumpFragmentTree(fragment.get());
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:170x140
+    offset:10,0 size:50x120
+    offset:0,120 size:170x20
+      offset:10,10 size:100x40
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

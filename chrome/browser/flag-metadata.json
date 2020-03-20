@@ -98,11 +98,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "android-setup-search-engine",
-    "owners": [ "pavely", "wylieb" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "android-site-settings-ui-refresh",
     "owners": [ "hkamila" ],
     "expiry_milestone": 76

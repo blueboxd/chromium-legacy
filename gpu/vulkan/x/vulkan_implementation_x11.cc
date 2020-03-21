@@ -26,11 +26,20 @@ namespace gpu {
 namespace {
 
 bool IsVulkanSurfaceSupported() {
+  static const char* extensions[] = {
+      "DRI3",         // open source driver.
+      "ATIFGLRXDRI",  // AMD proprietary driver.
+      "NV-CONTROL",   // NVidia proprietary driver.
+  };
   auto* display = gfx::GetXDisplay();
   int ext_code, first_event, first_error;
-  // Vulkan surface is supported via DRI3.
-  return XQueryExtension(display, "DRI3", &ext_code, &first_event,
-                         &first_error);
+  for (const auto* extension : extensions) {
+    if (XQueryExtension(display, extension, &ext_code, &first_event,
+                        &first_error)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 class ScopedUnsetDisplay {

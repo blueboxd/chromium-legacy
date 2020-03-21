@@ -9,6 +9,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -17,9 +18,13 @@
 #include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/offline_gaia_test_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -56,11 +61,10 @@ class LoginGuestTest : public MixinBasedInProcessBrowserTest {
   GuestSessionMixin guest_session_{&mixin_host_};
 };
 
-class LoginCursorTest : public InProcessBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kLoginManager);
-  }
+class LoginCursorTest : public OobeBaseTest {
+ public:
+  LoginCursorTest() = default;
+  ~LoginCursorTest() override = default;
 };
 
 class LoginSigninTest : public InProcessBrowserTest {
@@ -114,9 +118,22 @@ void TestSystemTrayIsVisible(bool otr) {
       shelf->GetStatusAreaWidget());
   EXPECT_TRUE(tray->GetVisible());
 
-  // This check flakes for LoginGuestTest: https://crbug.com/693106.
-  if (!otr)
-    EXPECT_TRUE(RectContains(primary_win->bounds(), tray->GetBoundsInScreen()));
+  if (otr)
+    return;
+  // Wait for the system tray be inside primary bounds.
+  chromeos::test::TestPredicateWaiter(
+      base::BindRepeating(
+          [](const aura::Window* primary_win,
+             const ash::TrayBackgroundView* tray) {
+            if (RectContains(primary_win->bounds(), tray->GetBoundsInScreen()))
+              return true;
+            LOG(WARNING) << primary_win->bounds().ToString()
+                         << " does not contain "
+                         << tray->GetBoundsInScreen().ToString();
+            return false;
+          },
+          primary_win, tray))
+      .Wait();
 }
 
 }  // namespace
@@ -124,8 +141,7 @@ void TestSystemTrayIsVisible(bool otr) {
 // After a chrome crash, the session manager will restart chrome with
 // the -login-user flag indicating that the user is already logged in.
 // This profile should NOT be an OTR profile.
-// Test is flaky: https://crbug.com/1052603
-IN_PROC_BROWSER_TEST_F(LoginUserTest, DISABLED_UserPassed) {
+IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
   Profile* profile = browser()->profile();
   std::string profile_base_path("hash");
   profile_base_path.insert(0, chrome::kProfileDirPrefix);
@@ -146,11 +162,8 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
 }
 
 // Verifies the cursor is hidden at startup on login screen.
-// DISABLED for flakiness. http://crbug.com/1056429
-IN_PROC_BROWSER_TEST_F(LoginCursorTest, DISABLED_CursorHidden) {
-  // Login screen needs to be shown explicitly when running test.
-  ShowLoginWizard(OobeScreen::SCREEN_SPECIAL_LOGIN);
-
+IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   // Cursor should be hidden at startup
   EXPECT_FALSE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
 

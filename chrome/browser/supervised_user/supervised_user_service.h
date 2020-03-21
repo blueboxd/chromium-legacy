@@ -86,6 +86,26 @@ class SupervisedUserService : public KeyedService,
     virtual bool SetActive(bool active) = 0;
   };
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // These enum values represent a child user trying to install an extension
+  // during the COVID-19 crisis.
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "SupervisedUserExtensionAllowlist" in
+  // src/tools/metrics/histograms/enums.xml.
+  enum class UmaExtensionStateAllowlist {
+    // Recorded when the extension id is not found in the allowlist.
+    kAllowlistMiss = 0,
+    // Recorded when the extension id is found in the allowlist.
+    kAllowlistHit = 1,
+    // Add future entries above this comment, in sync with
+    // "SupervisedUserExtensionAllowlist" in
+    // src/tools/metrics/histograms/enums.xml.
+    // Update kMaxValue to the last value.
+    kMaxValue = kAllowlistHit
+  };
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
   ~SupervisedUserService() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -271,6 +291,10 @@ class SupervisedUserService : public KeyedService,
   // REQUIRE_APPROVAL from the Supervised User service's point of view.
   ExtensionState GetExtensionState(
       const extensions::Extension& extension) const;
+
+  // Returns whether we should block an extension based on the state of the
+  // "Permissions for sites, apps and extensions" toggle.
+  bool ShouldBlockExtension(const std::string& extension_id) const;
 
   // Extensions helper to SetActive().
   void SetExtensionsActive();

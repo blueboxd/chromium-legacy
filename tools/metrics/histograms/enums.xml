@@ -63117,6 +63117,15 @@ would be helpful to identify which type is being sent.
   <int value="2" label="Removed"/>
 </enum>
 
+<enum name="SupervisedUserExtensionAllowlist">
+  <summary>
+    Tracks the state of a supervised user trying to install an extension during
+    the COVID-19 crisis.
+  </summary>
+  <int value="0" label="Extensions allowlist miss"/>
+  <int value="1" label="Extensions allowlist hit"/>
+</enum>
+
 <enum name="SupervisedUserSafetyFilterResult">
   <int value="100" label="LINK_ALLOWED">Link; Allowed as safe</int>
   <int value="101" label="TYPED_ALLOWED">Typed URL; Allowed as safe</int>

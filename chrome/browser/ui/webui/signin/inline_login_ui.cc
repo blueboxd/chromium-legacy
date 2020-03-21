@@ -27,8 +27,10 @@
 #include "content/public/common/content_switches.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #else
@@ -38,7 +40,8 @@
 namespace {
 
 #if defined(OS_CHROMEOS)
-void AddEduStrings(content::WebUIDataSource* source) {
+void AddEduStrings(content::WebUIDataSource* source,
+                   const base::string16& username) {
   source->AddLocalizedString("okButton", IDS_APP_OK);
   source->AddLocalizedString("backButton", IDS_EDU_LOGIN_BACK);
   source->AddLocalizedString("nextButton", IDS_EDU_LOGIN_NEXT);
@@ -53,6 +56,26 @@ void AddEduStrings(content::WebUIDataSource* source) {
                              IDS_EDU_LOGIN_PARENTS_LIST_TITLE);
   source->AddLocalizedString("parentsListBody",
                              IDS_EDU_LOGIN_PARENTS_LIST_BODY);
+
+  source->AddLocalizedString("parentSigninTitle",
+                             IDS_EDU_LOGIN_PARENT_SIGNIN_TITLE);
+  source->AddString(
+      "parentSigninBody",
+      l10n_util::GetStringFUTF16(IDS_EDU_LOGIN_PARENT_SIGNIN_BODY, username));
+  source->AddLocalizedString("parentSigninPasswordLabel",
+                             IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_LABEL);
+  source->AddLocalizedString(
+      "parentSigninPasswordError",
+      IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_ERROR_MESSAGE);
+  source->AddLocalizedString(
+      "parentSigninAccountRecoveryText",
+      IDS_EDU_LOGIN_PARENT_SIGNIN_ACCOUNT_RECOVERY_LINK_TEXT);
+  source->AddLocalizedString("parentSigninPasswordShow",
+                             IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_SHOW);
+  source->AddLocalizedString("parentSigninPasswordHide",
+                             IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_HIDE);
+  source->AddString("parentSigninAccountRecoveryUrl",
+                    chrome::kAccountRecoveryURL);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -88,12 +111,15 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("edu_login_template.js",
                           IDR_EDU_LOGIN_EDU_LOGIN_TEMPLATE_JS);
   source->AddResourcePath("edu_login_css.js", IDR_EDU_LOGIN_EDU_LOGIN_CSS_JS);
+  source->AddResourcePath("icons.js", IDR_EDU_LOGIN_ICONS_JS);
   source->AddResourcePath("browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS);
   source->AddResourcePath("edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS);
   source->AddResourcePath("edu_login_welcome.js",
                           IDR_EDU_LOGIN_EDU_LOGIN_WELCOME_JS);
   source->AddResourcePath("edu_login_parents.js",
                           IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS);
+  source->AddResourcePath("edu_login_parent_signin.js",
+                          IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS);
 
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
@@ -105,7 +131,6 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("family_link_logo.svg", IDR_FAMILY_LINK_LOGO_SVG);
 
   source->EnableReplaceI18nInJS();
-  AddEduStrings(source);
 #endif  // defined(OS_CHROMEOS)
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
@@ -157,7 +182,13 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
     return;
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateWebUIDataSource());
+  content::WebUIDataSource* source = CreateWebUIDataSource();
+#if defined(OS_CHROMEOS)
+  base::string16 username =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile)->GetGivenName();
+  AddEduStrings(source, username);
+#endif  // defined(OS_CHROMEOS)
+  content::WebUIDataSource::Add(profile, source);
 
 #if defined(OS_CHROMEOS)
   web_ui->AddMessageHandler(

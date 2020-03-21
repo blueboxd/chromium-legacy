@@ -5,6 +5,7 @@
 #include "chrome/common/url_constants.h"
 
 #include "build/branding_buildflags.h"
+#include "chrome/common/webui_url_constants.h"
 
 namespace chrome {
 
@@ -290,6 +291,9 @@ const char kEnhancedPlaybackNotificationLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
 const char kAccountManagerLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=google_accounts";
+
+const char kAccountRecoveryURL[] =
+    "https://accounts.google.com/signin/recovery";
 
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";

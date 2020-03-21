@@ -290,7 +290,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninAccessTokenFailure) {
   VerifyJavascriptCallbackResolved(data, callback_id, false /*success*/);
 
   base::DictionaryValue result;
-  result.SetBoolKey("wrongPassword", false);
+  result.SetBoolKey("isWrongPassword", false);
   ASSERT_EQ(result, *data.arg3());
 }
 
@@ -324,7 +324,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninReAuthProofTokenFailure) {
   VerifyJavascriptCallbackResolved(data, callback_id, false);
 
   base::DictionaryValue result;
-  result.SetBoolKey("wrongPassword", true);
+  result.SetBoolKey("isWrongPassword", true);
   ASSERT_EQ(result, *data.arg3());
 }
 

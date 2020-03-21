@@ -311,7 +311,7 @@ void EduAccountLoginHandler::CreateReAuthProofTokenForParent(
         << "Could not get access token to create ReAuthProofToken for parent"
         << error.ToString();
     base::DictionaryValue result;
-    result.SetBoolKey("wrongPassword", false);
+    result.SetBoolKey("isWrongPassword", false);
     RejectJavascriptCallback(base::Value(parent_signin_callback_id_), result);
     parent_signin_callback_id_.clear();
     return;
@@ -337,7 +337,7 @@ void EduAccountLoginHandler::OnReAuthProofTokenFailure(
 
   base::DictionaryValue result;
   result.SetBoolKey(
-      "wrongPassword",
+      "isWrongPassword",
       error == GaiaAuthConsumer::ReAuthProofTokenStatus::kInvalidGrant);
   RejectJavascriptCallback(base::Value(parent_signin_callback_id_), result);
   parent_signin_callback_id_.clear();

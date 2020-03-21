@@ -128,12 +128,12 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
             safe_search_util::YOUTUBE_RESTRICT_MODERATE);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Permissions requests default to disallowed.
+  // Permissions requests default to allowed.
   bool extensions_may_request_permissions = false;
   EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(
       prefs::kSupervisedUserExtensionsMayRequestPermissions,
       &extensions_may_request_permissions));
-  EXPECT_FALSE(extensions_may_request_permissions);
+  EXPECT_TRUE(extensions_may_request_permissions);
 #endif
 
   // Activating the service again should not change anything.
@@ -172,12 +172,12 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   // extension permissions and update this test.
   fixture.changed_prefs()->Clear();
   service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
-                           std::make_unique<base::Value>(false));
+                           std::make_unique<base::Value>(true));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(
       prefs::kSupervisedUserExtensionsMayRequestPermissions,
       &extensions_may_request_permissions));
-  EXPECT_TRUE(extensions_may_request_permissions);
+  EXPECT_FALSE(extensions_may_request_permissions);
 #endif
 }
 

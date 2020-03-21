@@ -241,6 +241,9 @@ extern const char kEnhancedPlaybackNotificationLearnMoreURL[];
 // Help center URL for Chrome OS Account Manager.
 extern const char kAccountManagerLearnMoreURL[];
 
+// The URL for the "Account recovery" page.
+extern const char kAccountRecoveryURL[];
+
 // The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
 

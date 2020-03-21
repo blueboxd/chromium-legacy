@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'cc4989cc2d32b6514c1b5a6182d1112179fbcdb9',
+  'catapult_revision': 'f9b607efef1b111fe56c6d99533dbe82966bfd1c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4546a2a7512b2b7c761bb5c005c37bc57d9452b7',
+  'devtools_frontend_revision': '412941c12f5b2039ca7b48bc17f7cf17caf25e4e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -933,7 +933,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'fa1c3c4e673cf12ffa22b8fbe4a7c79314571f1b',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '9659831766f1be87a6aaf6df8302ec61be0ca05a',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '1f0fcbe5a30fdc9632a8bff36277103fabf0797c',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4e05f601ae6a4e88cd526ab2ba9c5724f7e3bd03',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@990675be10a47a3e0e1ee1db04d4e1812a5760e9',
     'condition': 'checkout_src_internal',
   },
 

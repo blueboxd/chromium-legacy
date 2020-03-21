@@ -42,8 +42,12 @@
 #include "ui/gl/gl_switches.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/supervised_user/supervised_user_features.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_switches.h"
@@ -453,12 +457,46 @@ class ExtensionWebstorePrivateApiTestChild
   chromeos::LoggedInUserMixin logged_in_user_mixin_;
 };
 
+class ExtensionWebstorePrivateApiTestChildWithAllowlistDisabled
+    : public ExtensionWebstorePrivateApiTestChild {
+ public:
+  ExtensionWebstorePrivateApiTestChildWithAllowlistDisabled() {
+    scoped_feature_list_.InitAndDisableFeature(
+        supervised_users::kSupervisedUserAllowlistExtensionInstall);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Tests that extension installation is blocked for child accounts, and
 // attempting to do so produces a special error code.
 // Note: This will have to be updated when we enable child-initiated installs.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild, InstallBlocked) {
+IN_PROC_BROWSER_TEST_F(
+    ExtensionWebstorePrivateApiTestChildWithAllowlistDisabled,
+    InstallBlocked) {
   ASSERT_TRUE(browser());
   ASSERT_TRUE(RunInstallTest("begin_install_fail_child.html", "extension.crx"));
+}
+
+// Tests that extension installation is not blocked for child accounts, if the
+// extension id is allowlisted.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild,
+                       InstallAllowlisted) {
+  ASSERT_TRUE(browser());
+  base::HistogramTester histogram_tester;
+
+  histogram_tester.ExpectTotalCount("SupervisedUsers.ExtensionsAllowlist", 0);
+
+  ASSERT_TRUE(RunInstallTest("begin_install.html", "extension.crx"));
+
+  // begin_install.html successfully installs two different extensions.
+  histogram_tester.ExpectBucketCount(
+      "SupervisedUsers.ExtensionsAllowlist",
+      /*sample=*/
+      SupervisedUserService::UmaExtensionStateAllowlist::kAllowlistHit,
+      /*expected_count=*/2);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.ExtensionsAllowlist", 2);
 }
 
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)

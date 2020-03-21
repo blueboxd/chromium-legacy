@@ -4536,6 +4536,27 @@
   <message name="IDS_EDU_LOGIN_PARENTS_LIST_BODY" desc="Text on the parent sign-in screen asking the user to ask a parent to sign-in to approve EDU account addition.">
     Ask a parent to sign in to grant permission to add a school account
   </message>
+  <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_TITLE" desc="Title for the parent sign-in screen asking parent to sign-in to approve EDU account addition.">
+    Hi <ph name="PARENT_NAME">$1<ex>Francis</ex></ph>
+  </message>
+  <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_BODY" desc="Text on the parent sign-in screen asking parent to sign-in to approve EDU account addition.">
+    Sign in to help <ph name="USER_NAME">$1<ex>Julie</ex></ph> add a school account
+  </message>
+  <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_LABEL" desc="Label for the password field on parent sign-in page in EDU account addition flow.">
+    Parent password
+  </message>
+  <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_ERROR_MESSAGE" desc="Error message that is shown when password is wrong in EDU login flow.">
+    Wrong password. Try again or click Forgot password to reset it.
+  </message>
+  <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_ACCOUNT_RECOVERY_LINK_TEXT" desc="Text for the link that points to password recovery page.">
+    Forgot password?
+  </message>
+  <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_SHOW" desc="A tool tip on a button that reveals the saved password.">
+    Show password
+  </message>
+  <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_HIDE" desc="A tool tip on a button that hides the saved password that is being shown.">
+    Hide password
+  </message>
 
   <!-- TPM firmware auto-update notifications -->
   <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">

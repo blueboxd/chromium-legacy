@@ -12,3 +12,12 @@
  * }}
  */
 export let ParentAccount;
+
+
+/**
+ * Failure result of parentSignin call.
+ * @typedef {{
+ *   isWrongPassword: boolean
+ * }}
+ */
+export let ParentSigninFailureResult;

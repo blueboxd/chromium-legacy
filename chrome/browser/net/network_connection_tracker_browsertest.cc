@@ -111,12 +111,10 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
 // Basic test to make sure NetworkConnectionTracker is set up.
 IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
                        NetworkConnectionTracker) {
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // NetworkService on ChromeOS doesn't yet have a NetworkChangeManager
   // implementation. OSX uses a separate binary for service processes and
   // browser test fixture doesn't have NetworkServiceTest mojo code.
-  return;
-#endif
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   network::NetworkConnectionTracker* tracker =
       content::GetNetworkConnectionTracker();
   EXPECT_NE(nullptr, tracker);
@@ -141,6 +139,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
             network_connection_observer.connection_type());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, network_connection_observer.num_notifications());
+#endif
 }
 
 // Simulates a network service crash, and ensures that network change manager

@@ -326,9 +326,7 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
   // re-establish credentials. Let the global error popup handle everything.
   // In kiosk mode, interactive sign-in is not supported.
   SigninFailed();
-  return;
-#endif
-
+#else
   if (g_browser_process->IsShuttingDown()) {
     // The login prompt cannot be displayed when the browser process is shutting
     // down.
@@ -355,6 +353,7 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
   scoped_identity_manager_observer_.Add(identity_manager);
 
   ShowExtensionLoginPrompt();
+#endif
 }
 
 void IdentityGetAuthTokenFunction::StartMintTokenFlow(

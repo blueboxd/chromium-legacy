@@ -71,7 +71,7 @@ class FakeDriveFs : public drivefs::mojom::DriveFsInterceptorForTesting {
       std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
       return;
     }
-    FAIL() << "Unexpected DriveFS metadata request for " << path;
+    ADD_FAILURE() << "Unexpected DriveFS metadata request for " << path;
     std::move(callback).Run(drive::FILE_ERROR_INVALID_URL, nullptr);
   }
 };

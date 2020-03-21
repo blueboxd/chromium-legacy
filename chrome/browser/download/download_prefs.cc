@@ -513,7 +513,7 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
 
   // Fall back to the default download directory for all other paths.
   return GetDefaultDownloadDirectoryForProfile();
-#endif
+#else
   // If the stored download directory is an absolute path, we presume it's
   // correct; there's not really much more validation we can do here.
   if (path.IsAbsolute())
@@ -522,6 +522,7 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
   // When the default download directory is *not* an absolute path, we use the
   // profile directory as a safe default.
   return GetDefaultDownloadDirectoryForProfile();
+#endif
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(

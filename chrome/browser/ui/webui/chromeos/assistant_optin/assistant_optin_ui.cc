@@ -139,9 +139,7 @@ void AssistantOptInDialog::Show(
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback) {
 #if !BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   std::move(callback).Run(false);
-  return;
-#endif
-
+#else
   // Check Assistant allowed state.
   if (::assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) !=
@@ -165,6 +163,7 @@ void AssistantOptInDialog::Show(
   g_dialog = new AssistantOptInDialog(type, std::move(callback));
 
   g_dialog->ShowSystemDialog();
+#endif
 }
 
 // static

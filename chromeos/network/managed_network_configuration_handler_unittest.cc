@@ -950,7 +950,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
       base::Bind(
           [](base::RepeatingClosure quit_closure, const std::string& error_name,
              std::unique_ptr<base::DictionaryValue> error_data) {
-            FAIL() << error_name;
+            ADD_FAILURE() << error_name;
             quit_closure.Run();
           },
           get_initial_properties_run_loop.QuitClosure()));
@@ -986,7 +986,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
       base::Bind(
           [](base::RepeatingClosure quit_closure, const std::string& error_name,
              std::unique_ptr<base::DictionaryValue> error_data) {
-            FAIL() << error_name;
+            ADD_FAILURE() << error_name;
             quit_closure.Run();
           },
           get_merged_properties_run_loop.QuitClosure()));

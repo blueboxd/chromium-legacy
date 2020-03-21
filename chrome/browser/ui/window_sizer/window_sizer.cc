@@ -235,8 +235,7 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
   DCHECK(default_bounds);
 #if defined(OS_CHROMEOS)
   *default_bounds = GetDefaultWindowBoundsAsh(browser_, display);
-  return;
-#endif
+#else
   gfx::Rect work_area = display.work_area();
 
   // The default size is either some reasonably wide width, or if the work
@@ -269,6 +268,7 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
   default_bounds->SetRect(kWindowTilePixels + work_area.x(),
                           kWindowTilePixels + work_area.y(),
                           default_width, default_height);
+#endif
 }
 
 void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(

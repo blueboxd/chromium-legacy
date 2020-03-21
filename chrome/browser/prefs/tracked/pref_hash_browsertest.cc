@@ -129,6 +129,7 @@ int GetTrackedPrefHistogramCount(const char* histogram_name,
   return GetTrackedPrefHistogramCount(histogram_name, "", allowed_buckets);
 }
 
+#if !defined(OS_CHROMEOS)
 std::unique_ptr<base::DictionaryValue> ReadPrefsDictionary(
     const base::FilePath& pref_file) {
   JSONFileValueDeserializer deserializer(pref_file);
@@ -147,6 +148,7 @@ std::unique_ptr<base::DictionaryValue> ReadPrefsDictionary(
   return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(prefs.release()));
 }
+#endif
 
 // Returns whether external validation is supported on the platform through
 // storing MACs in the registry.
@@ -227,8 +229,7 @@ class PrefHashBrowserTestBase
     // below).
     EXPECT_EQ(PROTECTION_DISABLED_ON_PLATFORM, protection_level_);
     return true;
-#endif
-
+#else
     base::FilePath profile_dir;
     EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
@@ -277,6 +278,7 @@ class PrefHashBrowserTestBase
     }
 
     return true;
+#endif
   }
 
   void SetUpInProcessBrowserTestFixture() override {

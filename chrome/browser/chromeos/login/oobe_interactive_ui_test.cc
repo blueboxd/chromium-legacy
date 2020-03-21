@@ -318,10 +318,7 @@ void HandleAppDownloadingScreen() {
 // screen is shown, and how the setup progresses after the screen. The actual
 // assistant opt-in flow is tested separately.
 void HandleAssistantOptInScreen() {
-#if !BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  return;
-#endif
-
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   OobeScreenWaiter(AssistantOptInFlowScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: Switched to 'assistant-optin' screen.";
 
@@ -340,6 +337,7 @@ void HandleAssistantOptInScreen() {
 
   OobeScreenExitWaiter(AssistantOptInFlowScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: 'assistant-optin' screen done.";
+#endif
 }
 
 // Waits for gesture navigation to get shown, runs through all pages in the

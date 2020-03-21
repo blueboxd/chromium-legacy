@@ -12,12 +12,14 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/independent_otr_profile_manager.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 class Browser;
 class Profile;
 
 namespace views {
+class WebDialogView;
 class Widget;
 }
 
@@ -25,7 +27,8 @@ class Widget;
 // This class lives on the UI thread and is self deleting.
 // TODO(weili): This dialog shares a lot of common code with the one in
 // chrome/browser/chromeos/hats/, should be merged into one.
-class HatsWebDialog : public ui::WebDialogDelegate {
+class HatsWebDialog : public ui::WebDialogDelegate,
+                      public views::DialogDelegateView {
  public:
   // Create an instance of HatsWebDialog and load its content without showing.
   static void Create(Browser* browser, const std::string& site_id);
@@ -50,7 +53,6 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   void GetDialogSize(gfx::Size* size) const override;
   bool CanResizeDialog() const override;
   std::string GetDialogArgs() const override;
-  // NOTE: This function deletes this object at the end.
   void OnDialogClosed(const std::string& json_retval) override;
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
@@ -60,6 +62,12 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   void OnWebContentsFinishedLoad() override;
   void OnMainFrameResourceLoadComplete(
       const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+
+  // views::DialogDelegateView implementation.
+  views::View* GetContentsView() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  ui::ModalType GetModalType() const override;
 
   // These are virtual for tests.
   virtual void OnLoadTimedOut();
@@ -84,6 +92,7 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   // The widget created for preloading. It is owned by us until it is shown to
   // user.
   views::Widget* preloading_widget_{nullptr};
+  views::WebDialogView* webview_{nullptr};
 
   // Indicate whether HaTS resources were loaded successfully.
   bool resource_loaded_{false};

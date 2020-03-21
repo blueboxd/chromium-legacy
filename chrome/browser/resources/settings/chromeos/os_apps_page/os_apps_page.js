@@ -121,10 +121,6 @@ Polymer({
 
   /** @private */
   onAndroidAppsSubpageTap_(event) {
-    if (event.target && event.target.tagName == 'A') {
-      // Filter out events coming from 'Learn more' link
-      return;
-    }
     if (this.androidAppsInfo.playStoreEnabled) {
       settings.Router.getInstance().navigateTo(
           settings.routes.ANDROID_APPS_DETAILS);

@@ -36,8 +36,8 @@ Polymer({
      */
     linkUrl: {
       type: String,
-      value: ''
-    }
+      value: '',
+    },
   },
 
   /**
@@ -86,13 +86,32 @@ Polymer({
 
     assert(anchorTags.length == 1,
         'settings-localized-link should contain exactly one anchor tag');
-    anchorTags[0].setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));
+    const anchorTag = anchorTags[0];
+    anchorTag.setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));
 
     if (linkUrl != '') {
-      anchorTags[0].href = linkUrl;
-      anchorTags[0].target = '_blank';
+      anchorTag.href = linkUrl;
+      anchorTag.target = '_blank';
     }
 
     return tempEl.innerHTML;
-  }
+  },
+
+  /** @override */
+  attached() {
+    const anchorTag = this.$$('a');
+    if (anchorTag) {
+      anchorTag.addEventListener('click', this.onAnchorTagClick_.bind(this));
+    }
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onAnchorTagClick_(event) {
+    // Stop propagation of the event, since it has already been handled by
+    // opening the link.
+    event.stopPropagation();
+  },
 });

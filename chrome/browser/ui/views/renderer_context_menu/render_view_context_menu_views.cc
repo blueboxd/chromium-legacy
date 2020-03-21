@@ -71,7 +71,6 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     ui::Accelerator* accel) const {
   // There are no formally defined accelerators we can query so we assume
   // that Ctrl+C, Ctrl+V, Ctrl+X, Ctrl-A, etc do what they normally do.
-  ui::AcceleratorProvider* accelerator_provider = nullptr;
   switch (command_id) {
     case IDC_BACK:
       *accel = ui::Accelerator(ui::VKEY_LEFT, ui::EF_ALT_DOWN);
@@ -138,7 +137,7 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       *accel = ui::Accelerator(ui::VKEY_S, ui::EF_CONTROL_DOWN);
       return true;
 
-    case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
+    case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN: {
       // Esc only works in HTML5 (site-triggered) fullscreen.
       if (IsHTML5Fullscreen()) {
         // Per UX design feedback, do not show an accelerator when press and
@@ -154,16 +153,18 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       // Chromebooks typically do not have an F11 key, so do not show an
       // accelerator here.
       return false;
-#endif
-
+#else
       // User-triggered fullscreen. Show the shortcut for toggling fullscreen
       // (i.e., F11).
-      accelerator_provider = GetBrowserAcceleratorProvider();
+      ui::AcceleratorProvider* accelerator_provider =
+          GetBrowserAcceleratorProvider();
       if (!accelerator_provider)
         return false;
 
       return accelerator_provider->GetAcceleratorForCommandId(IDC_FULLSCREEN,
                                                               accel);
+#endif
+    }
 
     case IDC_VIEW_SOURCE:
       *accel = ui::Accelerator(ui::VKEY_U, ui::EF_CONTROL_DOWN);

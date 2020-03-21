@@ -90,33 +90,4 @@ gfx::NativeWindow ShowWebDialogWithParams(
   return window;
 }
 
-gfx::NativeWindow CreateWebDialogWithBounds(gfx::NativeView parent,
-                                            content::BrowserContext* context,
-                                            ui::WebDialogDelegate* delegate,
-                                            const gfx::Rect& bounds,
-                                            bool show) {
-  // Use custom dialog frame instead of platform frame when possible.
-  bool use_dialog_frame = views::DialogDelegate::CanSupportCustomFrame(parent);
-  views::WebDialogView* view = new views::WebDialogView(
-      context, delegate, std::make_unique<ChromeWebContentsHandler>(),
-      use_dialog_frame);
-
-  views::Widget::InitParams params;
-  params.delegate = view;
-  params.bounds = bounds;
-  params.parent = parent;
-  params.child = true;
-  if (use_dialog_frame) {
-    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
-    params.remove_standard_frame = true;
-#if !defined(OS_MACOSX)
-    // Except on Mac, the bubble frame includes its own shadow; remove any
-    // native shadowing. On Mac, the window server provides the shadow.
-    params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
-#endif
-  }
-
-  return CreateWebDialogWidget(std::move(params), view, show);
-}
-
 }  // namespace chrome

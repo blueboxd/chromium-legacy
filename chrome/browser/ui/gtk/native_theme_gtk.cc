@@ -101,7 +101,8 @@ base::Optional<SkColor> SkColorFromColorId(
     // Menu
     case ui::NativeTheme::kColorId_MenuBackgroundColor:
     case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
-    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor:
+    case ui::NativeTheme::kColorId_MenuItemInitialAlertBackgroundColor:
+    case ui::NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor:
       return GetBgColor("GtkMenu#menu");
     case ui::NativeTheme::kColorId_MenuBorderColor:
       return GetBorderColor("GtkMenu#menu");

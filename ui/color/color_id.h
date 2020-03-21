@@ -62,8 +62,10 @@
   E(kColorLinkPressedForeground, NativeTheme::kColorId_LinkPressed) \
   E(kColorMenuBackground, NativeTheme::kColorId_MenuBackgroundColor) \
   E(kColorMenuBorder, NativeTheme::kColorId_MenuBorderColor) \
-  E(kColorMenuItemAlertedBackground, \
-    NativeTheme::kColorId_MenuItemAlertBackgroundColor) \
+  E(kColorMenuItemBackgroundAlertedInitial, \
+    NativeTheme::kColorId_MenuItemInitialAlertBackgroundColor) \
+  E(kColorMenuItemBackgroundAlertedTarget, \
+    NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor) \
   E(kColorMenuItemDisabledForeground, \
     NativeTheme::kColorId_DisabledMenuItemForegroundColor) \
   E(kColorMenuItemForeground, \

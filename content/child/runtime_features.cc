@@ -232,6 +232,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kEnableAccessibilityExposeARIAAnnotations, kEnableOnly},
     {wf::EnableAccessibilityExposeDisplayNone,
      features::kEnableAccessibilityExposeDisplayNone, kEnableOnly},
+    {wf::EnableAccessibilityExposeHTMLElement,
+     features::kEnableAccessibilityExposeHTMLElement, kUseFeatureState},
     {wf::EnableAllowSyncXHRInPageDismissal,
      blink::features::kAllowSyncXHRInPageDismissal, kEnableOnly},
     {wf::EnableAutoplayIgnoresWebAudio, media::kAutoplayIgnoreWebAudio,

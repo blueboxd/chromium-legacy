@@ -2416,8 +2416,8 @@ class AssistantInteractionHelper
     std::move(callback).Run(true);
   }
 
-  void OnSuggestionsResponse(
-      std::vector<AssistantSuggestionPtr> response) override {}
+  void OnSuggestionsResponse(std::vector<AssistantSuggestionPtr>) override {}
+  void OnTimersResponse(const std::vector<std::string>& timer_ids) override {}
   void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
   void OnSpeechRecognitionStarted() override {}
   void OnSpeechRecognitionIntermediateResult(

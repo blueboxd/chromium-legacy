@@ -58,7 +58,8 @@ class LocalNetworkCollectorImplTest : public testing::Test {
     testing::Test::SetUp();
     helper()->SetUp();
     local_network_collector_ = std::make_unique<LocalNetworkCollectorImpl>(
-        remote_cros_network_config_.get(),
+        remote_cros_network_config_.get());
+    local_network_collector_->SetNetworkMetadataStore(
         NetworkHandler::Get()->network_metadata_store());
   }
 

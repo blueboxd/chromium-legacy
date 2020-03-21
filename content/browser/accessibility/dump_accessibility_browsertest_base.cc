@@ -107,27 +107,32 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
 void DumpAccessibilityTestBase::SetUp() {
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
+  ChooseFeatures(&enabled_features, &disabled_features);
 
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  ContentBrowserTest::SetUp();
+}
+
+void DumpAccessibilityTestBase::ChooseFeatures(
+    std::vector<base::Feature>* enabled_features,
+    std::vector<base::Feature>* disabled_features) {
   // Enable exposing ARIA Annotation roles.
   // TODO(aleventhal) Remove when we completely remove runtime flag around m83.
   // enabled_features.emplace_back(
   //     features::kEnableAccessibilityExposeARIAAnnotations);
 
   // Enable exposing "display: none" nodes to the browser process for testing.
-  enabled_features.emplace_back(
+  enabled_features->emplace_back(
       features::kEnableAccessibilityExposeDisplayNone);
 
-  enabled_features.emplace_back(blink::features::kPortals);
+  enabled_features->emplace_back(blink::features::kPortals);
 
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
   // assumption that the accessibility labels feature is off. (There are
   // also several tests that explicitly enable the feature.) It'd be better
   // if DumpAccessibilityTree tests assumed that the feature is on by
   // default instead.  http://crbug.com/940330
-  disabled_features.emplace_back(features::kExperimentalAccessibilityLabels);
-
-  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  ContentBrowserTest::SetUp();
+  disabled_features->emplace_back(features::kExperimentalAccessibilityLabels);
 }
 
 base::string16

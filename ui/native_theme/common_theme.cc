@@ -92,8 +92,10 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
       return gfx::kGoogleGrey800;
     case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
       return SkColorSetRGB(0x32, 0x36, 0x39);
-    case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
-      return gfx::kGoogleBlue300;
+    case NativeTheme::kColorId_MenuItemInitialAlertBackgroundColor:
+      return SkColorSetA(gfx::kGoogleBlue300, 0x4D);
+    case NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor:
+      return SkColorSetA(gfx::kGoogleBlue300, 0x1A);
     case NativeTheme::kColorId_MenuItemMinorTextColor:
       return gfx::kGoogleGrey500;
 
@@ -295,8 +297,10 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
       return gfx::kGoogleGrey050;
-    case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
-      return gfx::kGoogleBlue600;
+    case NativeTheme::kColorId_MenuItemInitialAlertBackgroundColor:
+      return SkColorSetA(gfx::kGoogleBlue600, 0x4D);
+    case NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor:
+      return SkColorSetA(gfx::kGoogleBlue600, 0x1A);
 
     // Dropdown
     case NativeTheme::kColorId_DropdownBackgroundColor:

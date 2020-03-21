@@ -115,6 +115,10 @@ void WebRuntimeFeatures::EnableAccessibilityExposeDisplayNone(bool enable) {
   RuntimeEnabledFeatures::SetAccessibilityExposeDisplayNoneEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAccessibilityExposeHTMLElement(bool enable) {
+  RuntimeEnabledFeatures::SetAccessibilityExposeHTMLElementEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAccessibilityObjectModel(bool enable) {
   RuntimeEnabledFeatures::SetAccessibilityObjectModelEnabled(enable);
 }

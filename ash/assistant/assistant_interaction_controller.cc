@@ -45,6 +45,7 @@ namespace {
 
 using assistant::ui::kWarmerWelcomesMaxTimesTriggered;
 using chromeos::assistant::features::IsResponseProcessingV2Enabled;
+using chromeos::assistant::features::IsTimersV2Enabled;
 
 // Android.
 constexpr char kAndroidIntentScheme[] = "intent://";
@@ -608,6 +609,16 @@ void AssistantInteractionController::OnTextResponse(const std::string& text) {
     if (response == model_.pending_response())
       model_.CommitPendingResponse();
   }
+}
+
+void AssistantInteractionController::OnTimersResponse(
+    const std::vector<std::string>& timer_ids) {
+  DCHECK(IsTimersV2Enabled());
+  if (!HasActiveInteraction())
+    return;
+
+  // TODO(dmblack): Implement inline UI for timers.
+  NOTIMPLEMENTED();
 }
 
 void AssistantInteractionController::OnSpeechRecognitionStarted() {}

@@ -835,10 +835,9 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLDialogElement>(*GetNode()))
     return ax::mojom::Role::kDialog;
 
-  // The HTML element should not be exposed as an element. That's what the
-  // LayoutView element does.
+  // The HTML element.
   if (IsA<HTMLHtmlElement>(GetNode()))
-    return ax::mojom::Role::kIgnored;
+    return ax::mojom::Role::kGenericContainer;
 
   // Treat <iframe> and <frame> the same.
   if (IsA<HTMLIFrameElement>(*GetNode()) || IsA<HTMLFrameElement>(*GetNode())) {

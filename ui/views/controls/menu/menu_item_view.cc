@@ -1016,10 +1016,13 @@ void MenuItemView::PaintBackground(gfx::Canvas* canvas,
               : ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
       color = GetNativeTheme()->GetSystemColor(color_id);
     } else {
-      color = GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor);
       const auto* animation = GetMenuController()->GetAlertAnimation();
-      color = SkColorSetA(color, animation->CurrentValueBetween(0x4D, 0x1A));
+      color = gfx::Tween::ColorValueBetween(
+          animation->GetCurrentValue(),
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_MenuItemInitialAlertBackgroundColor),
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor));
     }
 
     DCHECK_NE(color, gfx::kPlaceholderColor);

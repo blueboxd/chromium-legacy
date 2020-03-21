@@ -29,6 +29,8 @@ class FakeLocalNetworkCollector : public LocalNetworkCollector {
 
   void AddNetwork(sync_pb::WifiConfigurationSpecifics proto);
   void ClearNetworks();
+  void SetNetworkMetadataStore(
+      NetworkMetadataStore* network_metadata_store) override;
 
  private:
   std::vector<sync_pb::WifiConfigurationSpecifics> networks_;

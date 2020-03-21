@@ -616,6 +616,9 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (role_ == ax::mojom::Role::kRootWebArea)
     return false;
 
+  if (IsA<HTMLHtmlElement>(GetNode()))
+    return true;
+
   if (!layout_object_) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
@@ -738,6 +741,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
       ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
   }
+
   // By default, objects should be ignored so that the AX hierarchy is not
   // filled with unnecessary items.
   if (ignored_reasons)

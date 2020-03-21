@@ -128,7 +128,6 @@ crbug.com/772037 [ win7 debug amd d3d11 passthrough ] conformance/textures/misc/
 crbug.com/772037 [ win7 release amd d3d11 passthrough ] conformance/extensions/oes-texture-half-float.html [ RetryOnFailure ]
 
 # Win / NVIDIA / Passthrough command decoder / D3D11
-crbug.com/751849 [ win7 debug nvidia d3d11 passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
 # crbug.com/737016 [ win nvidia d3d11 passthrough ] conformance/programs/program-test.html [ RetryOnFailure ]
 
 # Vulkan / Passthrough command decoder

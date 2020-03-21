@@ -118,6 +118,10 @@
       status: "test",
     },
     {
+      name: "AccessibilityExposeHTMLElement",
+      status: "experimental",
+    },
+    {
       name: "AccessibilityObjectModel",
       status: "experimental",
     },

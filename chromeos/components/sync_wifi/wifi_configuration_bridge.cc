@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -45,14 +46,19 @@ WifiConfigurationBridge::WifiConfigurationBridge(
     syncer::OnceModelTypeStoreFactory create_store_callback)
     : ModelTypeSyncBridge(std::move(change_processor)),
       synced_network_updater_(synced_network_updater),
-      local_network_collector_(local_network_collector) {
+      local_network_collector_(local_network_collector),
+      network_metadata_store_(nullptr) {
   std::move(create_store_callback)
       .Run(syncer::WIFI_CONFIGURATIONS,
            base::BindOnce(&WifiConfigurationBridge::OnStoreCreated,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-WifiConfigurationBridge::~WifiConfigurationBridge() {}
+WifiConfigurationBridge::~WifiConfigurationBridge() {
+  if (network_metadata_store_) {
+    network_metadata_store_->RemoveObserver(this);
+  }
+}
 
 std::unique_ptr<syncer::MetadataChangeList>
 WifiConfigurationBridge::CreateMetadataChangeList() {
@@ -292,6 +298,20 @@ std::vector<NetworkIdentifier> WifiConfigurationBridge::GetAllIdsForTesting() {
     ids.push_back(NetworkIdentifier::FromProto(entry.second));
 
   return ids;
+}
+
+void WifiConfigurationBridge::OnFirstConnectionToNetwork(
+    const std::string& guid) {
+  // TODO(jonmann): Add network to sync.
+}
+
+void WifiConfigurationBridge::SetNetworkMetadataStore(
+    NetworkMetadataStore* network_metadata_store) {
+  if (network_metadata_store_) {
+    network_metadata_store->RemoveObserver(this);
+  }
+  network_metadata_store_ = network_metadata_store;
+  network_metadata_store->AddObserver(this);
 }
 
 }  // namespace sync_wifi

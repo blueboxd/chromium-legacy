@@ -50,7 +50,8 @@
   OP(kColorId_MenuBorderColor),                                                \
   OP(kColorId_HighlightedMenuItemBackgroundColor),                             \
   OP(kColorId_HighlightedMenuItemForegroundColor),                             \
-  OP(kColorId_MenuItemAlertBackgroundColor),                                   \
+  OP(kColorId_MenuItemInitialAlertBackgroundColor),                            \
+  OP(kColorId_MenuItemTargetAlertBackgroundColor),                             \
   /* Dropdown */                                                               \
   OP(kColorId_DropdownBackgroundColor),                                        \
   OP(kColorId_DropdownForegroundColor),                                        \

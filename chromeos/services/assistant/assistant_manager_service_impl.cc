@@ -163,7 +163,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
-          assistant::features::IsRoutinesEnabled())),
+          assistant::features::IsRoutinesEnabled(),
+          assistant::features::IsTimersV2Enabled())),
       chromium_api_delegate_(std::move(pending_url_loader_factory)),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(context, this)),
@@ -308,8 +309,20 @@ void AssistantManagerServiceImpl::RegisterAlarmsTimersListener() {
       base::BindRepeating(
           &AssistantManagerServiceImpl::OnAlarmTimerStateChanged,
           weak_factory_.GetWeakPtr()));
+
+  // We always want to know when a timer has started ringing.
   alarm_timer_manager->RegisterRingingStateListener(
-      [listener = std::move(listener_callback)] { listener.Run(); });
+      [listener = listener_callback] { listener.Run(); });
+
+  if (features::IsTimersV2Enabled()) {
+    // In timers v2, we also want to know when timers are scheduled, updated,
+    // and/or removed so that we can represent those states in UI.
+    alarm_timer_manager->RegisterTimerActionListener(
+        [listener = listener_callback](
+            assistant_client::AlarmTimerManager::EventActionType ignore) {
+          listener.Run();
+        });
+  }
 }
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
@@ -695,6 +708,18 @@ void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
 
   for (auto& it : interaction_subscribers_)
     it->OnTextResponse(text);
+}
+
+void AssistantManagerServiceImpl::OnShowTimers(
+    const std::vector<std::string>& timer_ids) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnShowTimers, timer_ids);
+  if (!features::IsTimersV2Enabled())
+    return;
+
+  receive_inline_response_ = true;
+
+  for (auto& it : interaction_subscribers_)
+    it->OnTimersResponse(timer_ids);
 }
 
 void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
@@ -1364,11 +1389,14 @@ void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
 
   auto* manager = assistant_manager_internal_->GetAlarmTimerManager();
   for (const auto& event : manager->GetAllEvents()) {
-    // Note that we currently only handle timers, alarms are unsupported. Also
-    // note that we only handle timers that are fired. Non-firing (e.g. paused
-    // or scheduled) timers will be supported in the near future.
-    if (event.type != assistant_client::AlarmTimerEvent::TIMER ||
-        event.timer_data.state != assistant_client::Timer::State::FIRED) {
+    // Note that we currently only handle timers, alarms are unsupported.
+    if (event.type != assistant_client::AlarmTimerEvent::TIMER)
+      continue;
+
+    // We always handle timers that have fired. Only for timers v2, however, do
+    // we handle scheduled/paused timers so we can represent those states in UI.
+    if (event.timer_data.state != assistant_client::Timer::State::FIRED &&
+        !features::IsTimersV2Enabled()) {
       continue;
     }
 

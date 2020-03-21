@@ -5,15 +5,7 @@ WebArea
 {
   "nodeId": "<string>",
   "ignored": true,
-  "ignoredReasons": [
-    {
-      "name": "uninteresting",
-      "value": {
-        "type": "boolean",
-        "value": true
-      }
-    }
-  ],
+  "ignoredReasons": [],
   "role": {
     "type": "internalRole",
     "value": "Ignored"

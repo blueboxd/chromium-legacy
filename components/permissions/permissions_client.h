@@ -78,6 +78,14 @@ class PermissionsClient {
       content::BrowserContext* browser_context,
       const GURL& origin);
 
+  // Determines whether some origins are "important". |origins| is an in-out
+  // param that passes in the list of origins which need judgment as the first
+  // item in each pair, and the determination of importance should be stored in
+  // the second item in the pair (true meaning important).
+  virtual void AreSitesImportant(
+      content::BrowserContext* browser_context,
+      std::vector<std::pair<url::Origin, bool>>* origins);
+
   // Retrieves the ukm::SourceId (if any) associated with this |browser_context|
   // and |web_contents|. |web_contents| may be null. |callback| will be called
   // with the result, and may be run synchronously if the result is available

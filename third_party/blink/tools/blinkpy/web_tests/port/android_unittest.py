@@ -104,11 +104,6 @@ class AndroidPortTest(port_testcase.PortTestCase):
         # FIXME: Do something useful here, but testing the full logic would be hard.
         pass
 
-    # Test that content_shell currently is the only supported driver.
-    def test_non_content_shell_driver(self):
-        with self.assertRaises(Exception):
-            self.make_port(options=optparse.Values({'driver_name': 'foobar'}))
-
     # Test that the number of child processes to create depends on the devices.
     def test_default_child_processes(self):
         port_default = self.make_port(device_count=5)
@@ -116,6 +111,16 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
         self.assertEquals(6, port_default.default_child_processes())
         self.assertEquals(1, port_fixed_device.default_child_processes())
+
+    def test_weblayer_expectation_tags(self):
+        host = MockSystemHost()
+        port = android.AndroidPort(host, apk='apks/WebLayerShell.apk')
+        self.assertEqual(port.get_platform_tags(), set(['android', 'android-weblayer']))
+
+    def test_content_shell_expectation_tags(self):
+        host = MockSystemHost()
+        port = android.AndroidPort(host)
+        self.assertEqual(port.get_platform_tags(), set(['android', 'android-content-shell']))
 
     # Test that an HTTP server indeed is required by Android (as we serve all tests over them)
     def test_requires_http_server(self):
@@ -128,7 +133,7 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     def test_path_to_apache_config_file(self):
         port = self.make_port()
-        port._host_port.path_to_apache_config_file = lambda: '/host/apache/conf'  # pylint: disable=protected-access
+        port._local_port.path_to_apache_config_file = lambda: '/host/apache/conf'  # pylint: disable=protected-access
         self.assertEqual(port.path_to_apache_config_file(), '/host/apache/conf')
 
 
@@ -201,9 +206,11 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
     def test_two_drivers(self):
         port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         driver0 = android.ChromiumAndroidDriver(port, worker_number=0,
-                                                driver_details=android.ContentShellDriverDetails(), android_devices=port._devices)
+                                                driver_details=android.ContentShellDriverDetails(),
+                                                android_devices=port._devices)
         driver1 = android.ChromiumAndroidDriver(port, worker_number=1,
-                                                driver_details=android.ContentShellDriverDetails(), android_devices=port._devices)
+                                                driver_details=android.ContentShellDriverDetails(),
+                                                android_devices=port._devices)
 
         self.assertEqual(['adb', '-s', '123456789ABCDEF0', 'shell'], driver0.cmd_line([]))
         self.assertEqual(['adb', '-s', '123456789ABCDEF1', 'shell'], driver1.cmd_line(['anything']))

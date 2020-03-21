@@ -32,10 +32,6 @@ namespace permissions {
 class ChooserContextBase;
 }
 
-namespace safe_browsing {
-class ChromePasswordProtectionService;
-}
-
 class StatefulSSLHostStateDelegate;
 class HostContentSettingsMap;
 class Profile;
@@ -335,11 +331,6 @@ class PageInfo : public content::WebContentsObserver {
   security_state::SecurityLevel security_level_;
 
   security_state::VisibleSecurityState visible_security_state_for_metrics_;
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Used to handle changing password, and whitelisting site.
-  safe_browsing::ChromePasswordProtectionService* password_protection_service_;
-#endif
 
   // Set when the user ignored the password reuse modal warning dialog. When
   // |show_change_password_buttons_| is true, the page identity area of the page

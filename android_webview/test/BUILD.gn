@@ -39,8 +39,8 @@ if (public_android_sdk) {
       "//android_webview:system_webview_apk",
       "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
       "//chrome/test/chromedriver:chromedriver($host_toolchain)",
+      "//third_party/blink/tools:wpt_tests_android_isolate",
     ]
-    data = [ "//third_party/blink/web_tests/external/" ]
   }
 }
 

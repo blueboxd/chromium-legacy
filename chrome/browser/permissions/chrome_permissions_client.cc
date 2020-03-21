@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
@@ -21,7 +22,9 @@
 #include "components/permissions/features.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "extensions/common/constants.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/android/chrome_jni_headers/ChromePermissionsClient_jni.h"
@@ -84,6 +87,37 @@ double ChromePermissionsClient::GetSiteEngagementScore(
   return SiteEngagementService::Get(
              Profile::FromBrowserContext(browser_context))
       ->GetScore(origin);
+}
+
+void ChromePermissionsClient::AreSitesImportant(
+    content::BrowserContext* browser_context,
+    std::vector<std::pair<url::Origin, bool>>* origins) {
+  // We need to limit our size due to the algorithm in ImportantSiteUtil,
+  // but we want to be more on the liberal side here as we're not exposing
+  // these sites to the user, we're just using them for our 'clear
+  // unimportant' feature in ManageSpaceActivity.java.
+  const int kMaxImportantSites = 10;
+  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_domains =
+      ImportantSitesUtil::GetImportantRegisterableDomains(
+          Profile::FromBrowserContext(browser_context), kMaxImportantSites);
+
+  for (auto& entry : *origins) {
+    const std::string host = entry.first.host();
+    std::string registerable_domain =
+        url::HostIsIPAddress(host)
+            ? host
+            : net::registry_controlled_domains::GetDomainAndRegistry(
+                  host,
+                  net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    auto important_domain_search =
+        [&registerable_domain](
+            const ImportantSitesUtil::ImportantDomainInfo& item) {
+          return item.registerable_domain == registerable_domain;
+        };
+    entry.second =
+        std::find_if(important_domains.begin(), important_domains.end(),
+                     important_domain_search) != important_domains.end();
+  }
 }
 
 void ChromePermissionsClient::GetUkmSourceId(

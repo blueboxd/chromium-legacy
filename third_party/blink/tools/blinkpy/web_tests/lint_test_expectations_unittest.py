@@ -107,14 +107,15 @@ class LintTest(LoggingTestCase):
                                                FakePort(host, 'b', 'path-to-b'),
                                                FakePort(host, 'b-win', 'path-to-b')))
 
-        options = optparse.Values({'platform': None})
+        options = optparse.Values({'platform': 'a', 'additional_expectations': []})
         res = lint_test_expectations.lint(host, options)
         self.assertEqual(res, [])
         self.assertEqual(host.ports_parsed, ['a', 'b', 'b-win'])
 
     @unittest.skip('crbug.com/986447, re-enable after merging crrev.com/c/1918294')
     def test_lint_test_files(self):
-        options = optparse.Values({'platform': 'test-mac-mac10.10'})
+        options = optparse.Values({
+            'additional_expectations': [], 'platform': 'test-mac-mac10.10'})
         host = MockHost()
 
         host.port_factory.all_port_names = lambda platform=None: [platform]
@@ -123,7 +124,8 @@ class LintTest(LoggingTestCase):
         self.assertEqual(res, [])
 
     def test_lint_test_files_errors(self):
-        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        options = optparse.Values({
+            'additional_expectations': [], 'platform': 'test', 'debug_rwt_logging': False})
         host = MockHost()
 
         port = host.port_factory.get(options.platform, options=options)
@@ -140,7 +142,8 @@ class LintTest(LoggingTestCase):
         self.assertIn('bar', all_logs)
 
     def test_extra_files_errors(self):
-        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        options = optparse.Values({
+            'additional_expectations': [], 'platform': 'test', 'debug_rwt_logging': False})
         host = MockHost()
 
         port = host.port_factory.get(options.platform, options=options)
@@ -157,7 +160,8 @@ class LintTest(LoggingTestCase):
         self.assertIn('LeakExpectations', all_logs)
 
     def test_lint_flag_specific_expectation_errors(self):
-        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        options = optparse.Values({
+            'platform': 'test', 'debug_rwt_logging': False, 'additional_expectations': []})
         host = MockHost()
 
         port = host.port_factory.get(options.platform, options=options)
@@ -175,7 +179,8 @@ class LintTest(LoggingTestCase):
         self.assertNotIn('noproblem', all_logs)
 
     def test_lint_conflicts_in_test_expectations_between_os_and_os_version(self):
-        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        options = optparse.Values({
+            'additional_expectations': [], 'platform': 'test', 'debug_rwt_logging': False})
         host = MockHost()
 
         port = host.port_factory.get(options.platform, options=options)

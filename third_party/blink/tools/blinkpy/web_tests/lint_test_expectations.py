@@ -61,8 +61,27 @@ def PresubmitCheckTestExpectations(input_api, output_api):
 
 
 def lint(host, options):
-    ports_to_lint = [host.port_factory.get(name) for name in host.port_factory.all_port_names(options.platform)]
-    files_linted = set()
+    port = host.port_factory.get(options.platform)
+
+    # Add all extra expectation files to be linted.
+    options.additional_expectations.extend([
+        host.filesystem.join(
+            port.web_tests_dir(), 'android', 'ClankWPTOverrideExpectations'),
+        host.filesystem.join(
+            port.web_tests_dir(), 'android', 'WebviewWPTOverrideExpectations'),
+        host.filesystem.join(
+            port.web_tests_dir(), 'android', 'WeblayerWPTOverrideExpectations'),
+        host.filesystem.join(
+            port.web_tests_dir(), 'android', 'AndroidWPTNeverFixTests'),
+        host.filesystem.join(
+            port.web_tests_dir(), 'WPTOverrideExpectations'),
+        host.filesystem.join(
+            port.web_tests_dir(), 'WebGPUExpectations'),
+    ])
+
+    ports_to_lint = [
+        host.port_factory.get(name, options=options)
+        for name in host.port_factory.all_port_names(options.platform)]
 
     # In general, the set of TestExpectation files should be the same for
     # all ports. However, the method used to list expectations files is
@@ -71,20 +90,12 @@ def lint(host, options):
     # (the default Port for this host) and it would work the same.
 
     failures = []
-    wpt_overrides_exps_path = host.filesystem.join(
-        ports_to_lint[0].web_tests_dir(), 'WPTOverrideExpectations')
-    web_gpu_exps_path = host.filesystem.join(
-        ports_to_lint[0].web_tests_dir(), 'WebGPUExpectations')
-    paths = [wpt_overrides_exps_path, web_gpu_exps_path]
     expectations_dict = {}
     all_system_specifiers = set()
     all_build_specifiers = set(ports_to_lint[0].ALL_BUILD_TYPES)
 
     # TODO(crbug.com/986447) Remove the checks below after migrating the expectations
     # parsing to Typ. All the checks below can be handled by Typ.
-    for path in paths:
-        if host.filesystem.exists(path):
-            expectations_dict[path] = host.filesystem.read_text_file(path)
 
     for port in ports_to_lint:
         expectations_dict.update(port.all_expectations_dict())
@@ -96,8 +107,8 @@ def lint(host, options):
         for path in port.extra_expectations_files():
             if host.filesystem.exists(path):
                 expectations_dict[path] = host.filesystem.read_text_file(path)
-    for path, content in expectations_dict.items():
 
+    for path, content in expectations_dict.items():
         # check for expectations which start with the Bug(...) token
         exp_lines = content.split('\n')
         for lineno, line in enumerate(exp_lines, 1):
@@ -243,6 +254,9 @@ def main(argv, stderr, host=None):
     parser.add_option('--json', help='Path to JSON output file')
     parser.add_option('--verbose', action='store_true', default=False,
                       help='log extra details that may be helpful when debugging')
+    parser.add_option('--additional-expectations', action='append', default=[],
+                      help='paths to additional expectation files to lint.')
+
     options, _ = parser.parse_args(argv)
 
     if not host:

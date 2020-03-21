@@ -35,7 +35,8 @@ import common
 
 logger = logging.getLogger(__name__)
 
-SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+SRC_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 BUILD_ANDROID = os.path.join(SRC_DIR, 'build', 'android')
 
@@ -50,9 +51,17 @@ from devil.android import device_utils
 from devil.android.tools import system_app
 from devil.android.tools import webview_app
 
+CATAPULT_DIR = os.path.join(SRC_DIR, 'third_party', 'catapult')
+PYUTILS = os.path.join(CATAPULT_DIR, 'common', 'py_utils')
 
-DEFAULT_WPT = os.path.join(SRC_DIR, 'third_party', 'blink', 'web_tests',
-                           'external', 'wpt', 'wpt')
+if PYUTILS not in sys.path:
+  sys.path.append(PYUTILS)
+
+from py_utils.tempfile_ext import NamedTemporaryDirectory
+
+BLINK_TOOLS_DIR = os.path.join(SRC_DIR, 'third_party', 'blink', 'tools')
+WEB_TESTS_DIR = os.path.join(BLINK_TOOLS_DIR, os.pardir, 'web_tests')
+DEFAULT_WPT = os.path.join(WEB_TESTS_DIR, 'external', 'wpt', 'wpt')
 
 SYSTEM_WEBVIEW_SHELL_PKG = 'org.chromium.webview_shell'
 WEBLAYER_SHELL_PKG = 'org.chromium.weblayer.shell'
@@ -60,6 +69,7 @@ WEBLAYER_SUPPORT_PKG = 'org.chromium.weblayer.support'
 
 # List of supported products.
 PRODUCTS = ['android_weblayer', 'android_webview', 'chrome_android']
+
 
 class PassThroughArgs(argparse.Action):
   pass_through_args = []
@@ -80,10 +90,27 @@ class PassThroughArgs(argparse.Action):
 
 
 class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
+
   def __init__(self):
     self.pass_through_wpt_args = []
     self.pass_through_binary_args = []
+    self._metadata_dir = None
+    self._test_apk = None
+    self._missing_test_apk_arg = None
     super(WPTAndroidAdapter, self).__init__()
+    # Arguments from add_extra_argumentsparse were added so
+    # its safe to parse the arguments and set self._options
+    self.parse_args()
+
+  @classmethod
+  def get_adapter(cls):
+    product = cls().options.product
+    if product == 'android_weblayer':
+      return WPTWeblayerAdapter()
+    elif product == 'android_webview':
+      return WPTWebviewAdapter()
+    else:
+      return WPTClankAdapter()
 
   def generate_test_output_args(self, output):
     return ['--log-chromium', output]
@@ -112,8 +139,11 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
       "--no-pause-after-test",
       "--no-capture-stdio",
       "--no-manifest-download",
-      "--no-fail-on-unexpected",
     ])
+    # if metadata was created then add the metadata directory
+    # to the list of wpt arguments
+    if self._metadata_dir:
+      rest_args.extend(['--metadata', self._metadata_dir])
 
     # Default to the apk's package name for chrome_android
     if not self.options.package_name:
@@ -138,6 +168,40 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     rest_args.extend(self.pass_through_wpt_args)
 
     return rest_args
+
+  def _extra_metadata_builder_args(self):
+    raise NotImplementedError
+
+  def _maybe_build_metadata(self):
+    if not self._test_apk:
+      assert self._missing_test_apk_arg, (
+          'self._missing_test_apk_arg was not set.')
+      logger.info('%s was not set, skipping metadata generation.' %
+                  self._missing_test_apk_arg)
+      return
+
+    metadata_builder_cmd = [
+         sys.executable,
+         os.path.join(BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
+         '--android-apk',
+         self._test_apk,
+         '--metadata-output-dir',
+         self._metadata_dir,
+         '--additional-expectations',
+         os.path.join(WEB_TESTS_DIR, 'android', 'AndroidWPTNeverFixTests')
+    ]
+    metadata_builder_cmd.extend(self._extra_metadata_builder_args())
+    common.run_command(metadata_builder_cmd)
+
+  def run_test(self):
+    with NamedTemporaryDirectory() as self._metadata_dir:
+      self._maybe_build_metadata()
+      return super(WPTAndroidAdapter, self).run_test()
+
+  def clean_up_after_test_run(self):
+    # Avoid having a dangling reference to the temp directory
+    # which was deleted
+    self._metadata_dir = None
 
   def add_extra_arguments(self, parser):
     # TODO: |pass_through_args| are broke and need to be supplied by way of
@@ -204,6 +268,47 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     parser.add_argument('--force-fieldtrial-params',
                         action=BinaryPassThroughArgs,
                         help='Force trial params for Chromium features.')
+
+
+class WPTWebviewAdapter(WPTAndroidAdapter):
+
+  def __init__(self):
+    super(WPTWebviewAdapter, self).__init__()
+    self._test_apk = self.options.system_webview_shell
+    self._missing_test_apk_arg = '--system-webview-shell'
+
+  def _extra_metadata_builder_args(self):
+    return [
+      '--additional-expectations',
+      os.path.join(
+          WEB_TESTS_DIR, 'android', 'WebviewWPTOverrideExpectations')]
+
+
+class WPTWeblayerAdapter(WPTAndroidAdapter):
+
+  def __init__(self):
+    super(WPTWeblayerAdapter, self).__init__()
+    self._test_apk = self.options.weblayer_shell
+    self._missing_test_apk_arg = '--weblayer-shell'
+
+  def _extra_metadata_builder_args(self):
+    return [
+      '--additional-expectations',
+      os.path.join(WEB_TESTS_DIR,
+                   'android', 'WeblayerWPTOverrideExpectations')]
+
+
+class WPTClankAdapter(WPTAndroidAdapter):
+
+  def __init__(self):
+    super(WPTClankAdapter, self).__init__()
+    self._test_apk = self.options.apk
+    self._missing_test_apk_arg = '--apk'
+
+  def _extra_metadata_builder_args(self):
+    return [
+      '--additional-expectations',
+      os.path.join(WEB_TESTS_DIR, 'android', 'ClankWPTOverrideExpectations')]
 
 
 def run_android_weblayer(device, adapter):
@@ -312,7 +417,7 @@ def main_compile_targets(args):
 
 
 def main():
-  adapter = WPTAndroidAdapter()
+  adapter = WPTAndroidAdapter.get_adapter()
   adapter.parse_args()
 
   if adapter.options.verbose:
@@ -333,11 +438,13 @@ def main():
                                 os.environ['PATH'].split(':'))
 
   if adapter.options.product == 'android_weblayer':
-    run_android_weblayer(device, adapter)
+    return run_android_weblayer(device, adapter)
   elif adapter.options.product == 'android_webview':
-    run_android_webview(device, adapter)
+    return run_android_webview(device, adapter)
   elif adapter.options.product == 'chrome_android':
-    run_chrome_android(device, adapter)
+    return run_chrome_android(device, adapter)
+  else:
+    return 1
 
 
 if __name__ == '__main__':

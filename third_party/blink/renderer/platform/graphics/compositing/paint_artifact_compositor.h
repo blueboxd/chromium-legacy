@@ -40,6 +40,7 @@ namespace blink {
 class ContentLayerClientImpl;
 class JSONObject;
 class PaintArtifact;
+class PropertyTreeManager;
 class SynthesizedClip;
 struct PaintChunk;
 
@@ -196,7 +197,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       cc::Layer*,
       const gfx::Vector2dF& layer_offset,
       const PropertyTreeState& layer_state,
-      const PaintChunkSubset& paint_chunks);
+      const PaintChunkSubset& paint_chunks,
+      PropertyTreeManager* = nullptr);
 
   void SetNeedsUpdate() { needs_update_ = true; }
   bool NeedsUpdate() const { return needs_update_; }

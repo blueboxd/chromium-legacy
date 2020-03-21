@@ -484,7 +484,7 @@
       "--product=chrome_android",
       "--apk=apks/ChromePublic.apk",
       "--webdriver-binary=clang_x64/chromedriver",
-      "-vvv",
+      "-v",
     ],
   },
   "chrome_sandbox": {
@@ -1608,7 +1608,7 @@
       "--apk=apks/SystemWebView.apk",
       "--system-webview-shell=apks/SystemWebViewShell.apk",
       "--webdriver-binary=clang_x64/chromedriver",
-      "-vvv",
+      "-v",
     ],
   },
   "telemetry_gpu_integration_test": {
@@ -1866,7 +1866,7 @@
       "--weblayer-shell=apks/WebLayerShell.apk",
       "--weblayer-support=apks/WebLayerSupport.apk",
       "--webdriver-binary=clang_x64/chromedriver",
-      "-vvv",
+      "-v",
     ],
   },
   "webview_cts_tests": {

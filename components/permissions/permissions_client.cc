@@ -41,6 +41,13 @@ double PermissionsClient::GetSiteEngagementScore(
   return 0.0;
 }
 
+void PermissionsClient::AreSitesImportant(
+    content::BrowserContext* browser_context,
+    std::vector<std::pair<url::Origin, bool>>* origins) {
+  for (auto& entry : *origins)
+    entry.second = false;
+}
+
 void PermissionsClient::GetUkmSourceId(content::BrowserContext* browser_context,
                                        const content::WebContents* web_contents,
                                        const GURL& requesting_origin,

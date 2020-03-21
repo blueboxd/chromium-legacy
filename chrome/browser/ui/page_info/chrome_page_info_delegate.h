@@ -16,6 +16,13 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace safe_browsing {
+class PasswordProtectionService;
+class ChromePasswordProtectionService;
+}  // namespace safe_browsing
+
+class Profile;
+
 class ChromePageInfoDelegate : public PageInfoDelegate {
  public:
   explicit ChromePageInfoDelegate(content::WebContents* web_contents);
@@ -23,20 +30,34 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
 
   // PageInfoDelegate implementation
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) override;
-
   int GetFirstPartyAllowedCookiesCount(const GURL& site_url) override;
   int GetFirstPartyBlockedCookiesCount(const GURL& site_url) override;
   int GetThirdPartyAllowedCookiesCount(const GURL& site_url) override;
   int GetThirdPartyBlockedCookiesCount(const GURL& site_url) override;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
+      const override;
+  void OnUserActionOnPasswordUi(content::WebContents* web_contents,
+                                safe_browsing::WarningAction action) override;
+  base::string16 GetWarningDetailText() override;
+#endif
+  permissions::PermissionResult GetPermissionStatus(
+      ContentSettingsType type,
+      const GURL& site_url) override;
 
  private:
   TabSpecificContentSettings* tab_specific_content_settings() const {
     TabSpecificContentSettings::CreateForWebContents(web_contents_);
     return TabSpecificContentSettings::FromWebContents(web_contents_);
   }
+
   const LocalSharedObjectsContainer& GetAllowedObjects(const GURL& site_url);
   const LocalSharedObjectsContainer& GetBlockedObjects(const GURL& site_url);
-
+  Profile* GetProfile() const;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  safe_browsing::ChromePasswordProtectionService*
+  GetChromePasswordProtectionService() const;
+#endif
   content::WebContents* web_contents_;
 };
 

@@ -34,7 +34,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
@@ -99,10 +98,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
-#endif
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -379,11 +374,6 @@ PageInfo::PageInfo(
       profile_(profile),
       security_level_(security_state::NONE),
       visible_security_state_for_metrics_(visible_security_state),
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-      password_protection_service_(
-          safe_browsing::ChromePasswordProtectionService::
-              GetPasswordProtectionService(profile_)),
-#endif
       show_change_password_buttons_(false),
       did_perform_action_(false) {
   DCHECK(delegate_);
@@ -647,7 +637,6 @@ void PageInfo::OpenSiteSettingsView() {
 void PageInfo::OnChangePasswordButtonPressed(
     content::WebContents* web_contents) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  DCHECK(password_protection_service_);
   DCHECK(safe_browsing_status_ ==
              SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE ||
          safe_browsing_status_ ==
@@ -655,21 +644,14 @@ void PageInfo::OnChangePasswordButtonPressed(
          safe_browsing_status_ ==
              SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE);
 
-  password_protection_service_->OnUserAction(
-      web_contents,
-      password_protection_service_
-          ->reused_password_account_type_for_last_shown_warning(),
-      RequestOutcome::UNKNOWN,
-      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-      /*verdict_token=*/"", safe_browsing::WarningUIType::PAGE_INFO,
-      safe_browsing::WarningAction::CHANGE_PASSWORD);
+  delegate_->OnUserActionOnPasswordUi(
+      web_contents, safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
 }
 
 void PageInfo::OnWhitelistPasswordReuseButtonPressed(
     content::WebContents* web_contents) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  DCHECK(password_protection_service_);
   DCHECK(safe_browsing_status_ ==
              SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE ||
          safe_browsing_status_ ==
@@ -677,14 +659,8 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
          safe_browsing_status_ ==
              SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE);
 
-  password_protection_service_->OnUserAction(
-      web_contents,
-      password_protection_service_
-          ->reused_password_account_type_for_last_shown_warning(),
-      RequestOutcome::UNKNOWN,
-      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-      /*verdict_token=*/"", safe_browsing::WarningUIType::PAGE_INFO,
-      safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
+  delegate_->OnUserActionOnPasswordUi(
+      web_contents, safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
 }
 
@@ -1001,12 +977,8 @@ void PageInfo::PresentSitePermissions() {
         permission_info.setting == CONTENT_SETTING_DEFAULT &&
         permission_info.source ==
             content_settings::SettingSource::SETTING_SOURCE_USER) {
-      // TODO(raymes): Use GetPermissionStatus() to retrieve information
-      // about *all* permissions once it has default behaviour implemented for
-      // ContentSettingTypes that aren't permissions.
       permissions::PermissionResult permission_result =
-          PermissionManagerFactory::GetForProfile(profile_)
-              ->GetPermissionStatus(permission_info.type, site_url_, site_url_);
+          delegate_->GetPermissionStatus(permission_info.type, site_url_);
 
       // If under embargo, update |permission_info| to reflect that.
       if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
@@ -1103,13 +1075,14 @@ void PageInfo::PresentPageFeatureInfo() {
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 void PageInfo::RecordPasswordReuseEvent() {
-  if (!password_protection_service_) {
+  auto* password_protection_service = delegate_->GetPasswordProtectionService();
+  if (!password_protection_service) {
     return;
   }
   safe_browsing::LogWarningAction(
       safe_browsing::WarningUIType::PAGE_INFO,
       safe_browsing::WarningAction::SHOWN,
-      password_protection_service_
+      password_protection_service
           ->reused_password_account_type_for_last_shown_warning());
 }
 #endif
@@ -1126,7 +1099,6 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
     security_state::MaliciousContentStatus malicious_content_status,
     PageInfo::SafeBrowsingStatus* status,
     base::string16* details) {
-  std::vector<size_t> placeholder_offsets;
   switch (malicious_content_status) {
     case security_state::MALICIOUS_CONTENT_STATUS_NONE:
       NOTREACHED();
@@ -1148,27 +1120,13 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
     case security_state::MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       *status = PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE;
-      // |password_protection_service_| may be null in test.
-      *details =
-          password_protection_service_
-              ? password_protection_service_->GetWarningDetailText(
-                    password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning(),
-                    &placeholder_offsets)
-              : base::string16();
+      *details = delegate_->GetWarningDetailText();
 #endif
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       *status = PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
-      // |password_protection_service_| may be null in test.
-      *details =
-          password_protection_service_
-              ? password_protection_service_->GetWarningDetailText(
-                    password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning(),
-                    &placeholder_offsets)
-              : base::string16();
+      *details = delegate_->GetWarningDetailText();
 #endif
       break;
     case security_state::
@@ -1176,27 +1134,13 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       *status =
           PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
-      // |password_protection_service_| may be null in test.
-      *details =
-          password_protection_service_
-              ? password_protection_service_->GetWarningDetailText(
-                    password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning(),
-                    &placeholder_offsets)
-              : base::string16();
+      *details = delegate_->GetWarningDetailText();
 #endif
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       *status = PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
-      // |password_protection_service_| maybe null in test.
-      *details =
-          password_protection_service_
-              ? password_protection_service_->GetWarningDetailText(
-                    password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning(),
-                    &placeholder_offsets)
-              : base::string16();
+      *details = delegate_->GetWarningDetailText();
 #endif
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_BILLING:

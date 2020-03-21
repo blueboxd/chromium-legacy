@@ -1,0 +1,6 @@
+# tags: [ android-weblayer ]
+# results: [ Skip ]
+
+# This expectations file will disable tests for functionality which there are no
+# plans to implement in any of the Android browsers.
+

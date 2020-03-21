@@ -25,6 +25,9 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
       ContentSettingsType type) override;
   double GetSiteEngagementScore(content::BrowserContext* browser_context,
                                 const GURL& origin) override;
+  void AreSitesImportant(
+      content::BrowserContext* browser_context,
+      std::vector<std::pair<url::Origin, bool>>* urls) override;
   void GetUkmSourceId(content::BrowserContext* browser_context,
                       const content::WebContents* web_contents,
                       const GURL& requesting_origin,

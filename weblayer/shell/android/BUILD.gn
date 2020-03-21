@@ -207,6 +207,6 @@ python_library("weblayer_shell_wpt") {
     ":weblayer_support_apk",
     "//build/android:test_runner_py",
     "//chrome/test/chromedriver:chromedriver($host_toolchain)",
+    "//third_party/blink/tools:wpt_tests_android_isolate",
   ]
-  data = [ "//third_party/blink/web_tests/external/" ]
 }

@@ -384,7 +384,8 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
     cc::Layer* layer,
     const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
-    const PaintChunkSubset& paint_chunks) {
+    const PaintChunkSubset& paint_chunks,
+    PropertyTreeManager* property_tree_manager) {
   cc::Region non_fast_scrollable_regions_in_layer_space;
   for (const auto& chunk : paint_chunks) {
     // Add any non-fast scrollable hit test data from the paint chunk.
@@ -402,6 +403,12 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
         auto scroll_element_id = scroll_node.GetCompositorElementId();
         if (layer->element_id() == scroll_element_id)
           continue;
+        // Ensure the cc scroll node to prepare for possible descendant nodes
+        // referenced by later composited layers. This can't be done by ensuring
+        // parent transform node in EnsureCompositorTransformNode() if the
+        // transform tree and the scroll tree have different topologies.
+        DCHECK(property_tree_manager);
+        property_tree_manager->EnsureCompositorScrollNode(*scroll_translation);
       }
     }
 
@@ -1245,9 +1252,9 @@ void PaintArtifactCompositor::Update(
           pending_layer.paint_chunk_indices);
       UpdateTouchActionRects(layer.get(), layer->offset_to_transform_parent(),
                              property_state, paint_chunks);
-      UpdateNonFastScrollableRegions(layer.get(),
-                                     layer->offset_to_transform_parent(),
-                                     property_state, paint_chunks);
+      UpdateNonFastScrollableRegions(
+          layer.get(), layer->offset_to_transform_parent(), property_state,
+          paint_chunks, &property_tree_manager);
     }
 
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());

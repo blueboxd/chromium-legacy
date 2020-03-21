@@ -2403,11 +2403,11 @@ if (public_android_sdk) {
 python_library("chrome_public_wpt") {
   testonly = true
   pydeps_file = "//testing/scripts/run_android_wpt.pydeps"
-  data = [ "//third_party/blink/web_tests/external/" ]
   data_deps = [
     ":chrome_public_apk",
     "//build/android:test_runner_py",
     "//chrome/test/chromedriver:chromedriver($host_toolchain)",
+    "//third_party/blink/tools:wpt_tests_android_isolate",
   ]
 }
 

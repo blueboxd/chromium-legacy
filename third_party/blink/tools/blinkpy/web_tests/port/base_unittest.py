@@ -371,12 +371,6 @@ class PortTest(LoggingTestCase):
             {'additional_expectations': ['/tmp/additional-expectations-1.txt']})
         self.assertEqual(port.expectations_dict().values(), ['content1\n'])
 
-    def test_additional_expectations_nonexistent_and_1(self):
-        port = self._make_port_for_test_additional_expectations(
-            {'additional_expectations': ['/tmp/nonexistent-file',
-                                         '/tmp/additional-expectations-1.txt']})
-        self.assertEqual(port.expectations_dict().values(), ['content1\n'])
-
     def test_additional_expectations_2(self):
         port = self._make_port_for_test_additional_expectations(
             {'additional_expectations': ['/tmp/additional-expectations-1.txt',

@@ -7,13 +7,13 @@ group("wpt_tests_isolate") {
   testonly = true
   data = [
     "//testing/scripts/common.py",
-    "//testing/scripts/run_wpt_tests.py",
     "//testing/xvfb.py",
 
     # Include blinkpy tools for setting up expectations.
     "//third_party/blink/tools/build_wpt_metadata.py",
     "//third_party/blink/tools/update_wpt_output.py",
     "//third_party/blink/tools/blinkpy/",
+    "//third_party/catapult/third_party/typ/",
 
     # The web_tests/external directory contains all WPT components including
     # the test runner codebase, manifest file, and the tests themselves.
@@ -38,4 +38,18 @@ group("wpt_tests_isolate") {
   if (is_win) {
     data_deps = [ "//build/win:copy_cdb_to_output" ]
   }
+  if (!is_android) {
+    data += [ "//testing/scripts/run_wpt_tests.py" ]
+  }
+}
+
+group("wpt_tests_android_isolate") {
+  testonly = true
+  data_deps = [ "//third_party/blink/tools:wpt_tests_isolate" ]
+  data = [
+    "//third_party/blink/web_tests/android/WeblayerWPTOverrideExpectations",
+    "//third_party/blink/web_tests/android/ClankWPTOverrideExpectations",
+    "//third_party/blink/web_tests/android/WebviewWPTOverrideExpectations",
+    "//third_party/blink/web_tests/android/AndroidWPTNeverFixTests",
+  ]
 }

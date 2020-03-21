@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -138,6 +139,15 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       bool force_prefer_compositing_to_lcd_text =
           reasons != CompositingReason::kNone;
+
+      if (!force_prefer_compositing_to_lcd_text && object.IsLayoutView()) {
+        if (auto* owner_object = object.GetFrame()->OwnerLayoutObject()) {
+          force_prefer_compositing_to_lcd_text =
+              DirectReasonsForPaintProperties(*owner_object) !=
+              CompositingReason::kNone;
+        }
+      }
+
       if (scrollable_area->ComputeNeedsCompositedScrolling(
               force_prefer_compositing_to_lcd_text)) {
         reasons |= CompositingReason::kOverflowScrolling;

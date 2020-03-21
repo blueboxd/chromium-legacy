@@ -21,7 +21,6 @@
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
-#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,7 +42,6 @@
 #include "components/permissions/permissions_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -62,11 +60,6 @@ using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
 namespace {
-// We need to limit our size due to the algorithm in ImportantSiteUtil, but we
-// want to be more on the liberal side here as we're not exposing these sites
-// to the user, we're just using them for our 'clear unimportant' feature in
-// ManageSpaceActivity.java.
-const int kMaxImportantSites = 10;
 
 const char kHttpPortSuffix[] = ":80";
 const char kHttpsPortSuffix[] = ":443";
@@ -714,38 +707,25 @@ void OnLocalStorageModelInfoLoaded(
   ScopedJavaLocalRef<jobject> map =
       Java_WebsitePreferenceBridge_createLocalStorageInfoMap(env);
 
-  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_domains;
+  std::vector<std::pair<url::Origin, bool>> important_notations(
+      local_storage_info.size());
+  std::transform(local_storage_info.begin(), local_storage_info.end(),
+                 important_notations.begin(),
+                 [](const content::StorageUsageInfo& info) {
+                   return std::make_pair(info.origin, false);
+                 });
   if (fetch_important) {
-    important_domains = ImportantSitesUtil::GetImportantRegisterableDomains(
-        profile, kMaxImportantSites);
+    permissions::PermissionsClient::Get()->AreSitesImportant(
+        profile, &important_notations);
   }
 
+  int i = 0;
   for (const content::StorageUsageInfo& info : local_storage_info) {
-    bool important = false;
-    if (fetch_important) {
-      std::string registerable_domain;
-      if (url::HostIsIPAddress(info.origin.host())) {
-        registerable_domain = info.origin.host();
-      } else {
-        registerable_domain =
-            net::registry_controlled_domains::GetDomainAndRegistry(
-                info.origin.host(),
-                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-      }
-      auto important_domain_search =
-          [&registerable_domain](
-              const ImportantSitesUtil::ImportantDomainInfo& item) {
-            return item.registerable_domain == registerable_domain;
-          };
-      if (std::find_if(important_domains.begin(), important_domains.end(),
-                       important_domain_search) != important_domains.end()) {
-        important = true;
-      }
-    }
     ScopedJavaLocalRef<jstring> java_origin =
         ConvertUTF8ToJavaString(env, info.origin.Serialize());
     Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(
-        env, map, java_origin, info.total_size_bytes, important);
+        env, map, java_origin, info.total_size_bytes,
+        important_notations[i++].second);
   }
 
   base::android::RunObjectCallbackAndroid(java_callback, map);

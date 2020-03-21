@@ -1247,9 +1247,9 @@ Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilis
 <translation id="2665422249821137126">Activer le grand curseur sur l'écran de connexion</translation>
 <translation id="266882888912227087"> Contrôler les notifications de lancement automatique des sessions Invité gérées sur <ph name="PRODUCT_OS_NAME" />.
 
-      Si cette règle est définie sur "True", les notifications d'avertissement concernant la confidentialité se ferment après quelques secondes.
+      Si cette règle est définie sur "True", les avertissements concernant la confidentialité se ferment après quelques secondes.
 
-      Si cette règle est définie sur "False" ou n'est pas configurée, les notifications d'avertissement concernant la confidentialité restent épinglées jusqu'à leur fermeture par l'utilisateur.</translation>
+      Si cette règle est définie sur "False" ou n'est pas configurée, les avertissements concernant la confidentialité restent épinglés jusqu'à ce que l'utilisateur les ferme.</translation>
 <translation id="2672012807430078509">Contrôle l'activation du protocole d'authentification NTLM pour les installations SMB</translation>
 <translation id="267596348720209223">Spécifie les encodages de caractères compatibles avec le moteur de recherche. Les encodages sont des noms de page de code, comme UTF-8, GB2312 et ISO-8859-1. Ils sont testés dans l'ordre indiqué. 
 
@@ -3132,8 +3132,8 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5475361623548884387">Activer l'impression</translation>
 <translation id="547601067149622666">Ne pas autoriser les annonces sur les sites présentant des annonces intrusives</translation>
 <translation id="5483065054530244863">Autoriser les certificats signés SHA-1 émis par les ancres d'approbation locales</translation>
-<translation id="5486493714323160905">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> effectue une vérification des certificats des serveurs à l'aide de l'outil de vérification des certificats intégré.
-      Lorsque ce paramètre est désactivé, <ph name="PRODUCT_NAME" /> effectue une vérification des certificats des serveurs à l'aide de l'ancien outil de vérification des certificats fourni par la plate-forme.
+<translation id="5486493714323160905">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> vérifie les certificats des serveurs à l'aide de l'outil de vérification intégré.
+      Lorsque ce paramètre est désactivé, <ph name="PRODUCT_NAME" /> vérifi les certificats des serveurs à l'aide de l'ancien outil de vérification fourni par la plate-forme.
       Lorsque ce paramètre n'est pas défini, l'outil intégré de vérification des certificats ou l'ancien outil peuvent être utilisés.
 
       Il est prévu que cette règle soit supprimée dans la version 81 de <ph name="PRODUCT_OS_NAME" />, car l'ancien outil de vérification des certificats sur <ph name="PRODUCT_OS_NAME" /> le sera également.
@@ -3861,7 +3861,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
 <translation id="6704515759227307131">Cette règle est obsolète et a été remplacée par AdvancedProtectionAllowed.
 
-      Elle permet de contrôler si les utilisateurs inscrits au Programme Protection Avancée sont autorisés ou non à envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants. Si cette règle est définie sur "True" ou si elle n'est pas configurée, ces utilisateurs sont invités à envoyer leurs téléchargements à Google pour une analyse approfondie. Si ces utilisateurs sélectionnent l'option d'analyse, leurs téléchargements sont envoyés à Google. Si cette règle est définie sur "False", aucune invite ne s'affiche, et les téléchargements des utilisateurs ne sont pas envoyés à Google.</translation>
+      Elle permet de contrôler si les utilisateurs inscrits au Programme Protection Avancée sont autorisés à envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants. Si cette règle est définie sur "True" ou si elle n'est pas configurée, ces utilisateurs sont invités à envoyer leurs téléchargements à Google pour une analyse approfondie. Si ces utilisateurs sélectionnent l'option d'analyse, leurs téléchargements sont envoyés à Google. Si cette règle est définie sur "False", aucune invite ne s'affiche, et les téléchargements des utilisateurs ne sont pas envoyés à Google.</translation>
 <translation id="670597451099978576">Autoriser automatiquement ces sites à se connecter aux appareils USB à l'aide des ID de fournisseur et de produit indiqués sur l'écran de connexion.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> assure la sécurité de la mise à jour et de l'installation d'extensions. Cependant, le contenu de certaines extensions hébergées en dehors du Chrome Web Store peut n'être protégé que par une connexion non sécurisée ou des algorithmes de hachage tels que SHA1. Si cette règle est désactivée, Chrome n'autorise pas l'installation ni la mise à jour de ces extensions (tant que les développeurs ne les dotent pas d'algorithmes plus sécurisés). Si cette règle est activée, l'installation et la mise à jour de ces extensions sont autorisées.
 

@@ -45,7 +45,8 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!PrivacyPageVisibility}
+     * TODO(dpapad): Restore the type information here (PrivacyPageVisibility),
+     * when this file is no longer shared with chrome://os-settings.
      */
     pageVisibility: Object,
 
@@ -232,7 +233,7 @@ Polymer({
 
   /** @private */
   onSetupCancelDialogBack_() {
-    this.$$('#setupCancelDialog').cancel();
+    /** @type {!CrDialogElement} */ (this.$$('#setupCancelDialog')).cancel();
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_CancelCancelAdvancedSyncSettings');
   },
@@ -240,7 +241,7 @@ Polymer({
   /** @private */
   onSetupCancelDialogConfirm_() {
     this.setupCancelConfirmed_ = true;
-    this.$$('#setupCancelDialog').close();
+    /** @type {!CrDialogElement} */ (this.$$('#setupCancelDialog')).close();
     const router = settings.Router.getInstance();
     router.navigateTo(router.getRoutes().BASIC);
     chrome.metricsPrivate.recordUserAction(

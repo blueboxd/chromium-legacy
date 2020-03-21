@@ -1360,6 +1360,7 @@
       'linux-dawn-rel': 'dawn_tests_release_trybot',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
+      'linux-layout-tests-edit-ng': 'release_trybot',
       'linux-layout-tests-fragment-item': 'release_trybot',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
       'linux-ozone-rel': 'ozone_linux_release_trybot',

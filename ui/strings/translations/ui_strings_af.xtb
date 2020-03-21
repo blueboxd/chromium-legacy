@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maak groot</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, geïnstalleerde program</translation>
 <translation id="1450753235335490080">Kan nie <ph name="CONTENT_TYPE" /> deel nie</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> is geruil met <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Jy het voorheen hiervoor gesoek. As jy "<ph name="QUERY" />" in jou geskiedenis uitvee, word dit permanent op al jou toestelle van jou rekening af uitgevee.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minute en }}</translation>
 <translation id="1643823602425662293">Kennisgewing</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Regs na links</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MEES WAARSKYNLIK</translation>
+<translation id="7170202025028120564">Jou program se skerminstellings sal in werking tree wanneer dit weer herbegin word.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. oor}other{# min. oor}}</translation>
 <translation id="7319740667687257810">Lanseerder, gedeeltelike aansig</translation>

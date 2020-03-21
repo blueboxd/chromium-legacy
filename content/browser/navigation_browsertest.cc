@@ -669,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PostUploadIllegalFilePath) {
 
   // Revoke the access to the file and submit the form. The renderer process
   // should be terminated.
-  RenderProcessHostKillWaiter process_kill_waiter(rfh->GetProcess());
+  RenderProcessHostBadIpcMessageWaiter process_kill_waiter(rfh->GetProcess());
   ChildProcessSecurityPolicyImpl* security_policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   security_policy->RevokeAllPermissionsForFile(rfh->GetProcess()->GetID(),

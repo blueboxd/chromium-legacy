@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">Кошумча: Google'га автоматтык түрдө колдонуу статистикасын жөнөтүп, каталар жөнүндө кабар берүү менен, Chromium'ду өркүндөтүүгө кол кабыш кылыңыз.</translation>
 <translation id="2910007522516064972">&amp;Chromium жөнүндө</translation>
 <translation id="2977470724722393594">Chromium жаңыртылган</translation>
+<translation id="2983934633046890458">Chromium cырсөздөрдү өзгөртүүгө аракет кылууда.</translation>
 <translation id="3032706164202344641">Chromium сырсөздөрүңүздү текшере албай жатат. Кийинчерээк кайталаңыз.</translation>
 <translation id="3032787606318309379">Chromium'га кошууда…</translation>
 <translation id="3068515742935458733">Google'га автоматтык түрдө каталар жана <ph name="UMA_LINK" /> жөнүндө кабар берип, Chromium'ду өркүндөткөнгө кол кабыш кылыңыз!</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium OS бул баракты ача албайт.</translation>
 <translation id="5480860683791598150">Бул сайт менен бөлүшүү үчүн Chromium жайгашкан жериңиз тууралуу маалыматты алышы керек</translation>
 <translation id="549669000822060376">Chromium эң акыркы тутум жаңыртууларын орнотуп бүткүчө күтө туруңуз.</translation>
+<translation id="5496810170689441661">Chromium сырсөздөрдү өзгөртүүгө аракет кылып жатат. Уруксат берүү үчүн Windows сырсөзүңүздү териңиз.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium'дун жаңы версиясы жеткиликтүү}=1{Chromium'дун жаңы версиясы жеткиликтүү}other{Chromium'дун жаңы версиясы # күндөн бери жеткиликтүү}}</translation>
 <translation id="5631814766731275228">Chromium'дагы профилдин аталышы жана сүрөтү</translation>
 <translation id="5634636535844844681">Chromium'га Windows 7 же жаңыраак версиясы талап кылынат.</translation>

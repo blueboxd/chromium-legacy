@@ -1186,6 +1186,11 @@ extern const char kWebBluetoothNewPermissionsBackendDescription[];
 extern const char kWebBundlesName[];
 extern const char kWebBundlesDescription[];
 
+extern const char kWebOtpBackendName[];
+extern const char kWebOtpBackendDescription[];
+extern const char kWebOtpBackendSmsVerification[];
+extern const char kWebOtpBackendUserConsent[];
+
 extern const char kWebglDraftExtensionsName[];
 extern const char kWebglDraftExtensionsDescription[];
 

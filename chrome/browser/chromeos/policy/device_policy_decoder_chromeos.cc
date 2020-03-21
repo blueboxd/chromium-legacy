@@ -59,12 +59,14 @@ void SetJsonDevicePolicy(
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher,
     PolicyMap* policies) {
   std::string error;
-  std::unique_ptr<base::Value> decoded_json =
+  base::Optional<base::Value> decoded_json =
       DecodeJsonStringAndNormalize(json_string, policy_name, &error);
-  auto value_to_set = decoded_json ? std::move(decoded_json)
-                                   : std::make_unique<base::Value>(json_string);
+  base::Value value_to_set = decoded_json.has_value()
+                                 ? std::move(decoded_json.value())
+                                 : base::Value(json_string);
   policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                POLICY_SOURCE_CLOUD, std::move(value_to_set),
+                POLICY_SOURCE_CLOUD,
+                base::Value::ToUniquePtrValue(std::move(value_to_set)),
                 std::move(external_data_fetcher));
   if (!error.empty())
     policies->AddError(policy_name, error);
@@ -1780,18 +1782,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 
 }  // namespace
 
-std::unique_ptr<base::Value> DecodeJsonStringAndNormalize(
+base::Optional<base::Value> DecodeJsonStringAndNormalize(
     const std::string& json_string,
     const std::string& policy_name,
     std::string* error) {
-  std::string json_error;
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &json_error);
-  if (!root) {
-    *error = "Invalid JSON string: " + json_error;
-    return nullptr;
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json_string, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+    *error = "Invalid JSON string: " + value_with_error.error_message;
+    return base::nullopt;
   }
+  base::Value root = std::move(value_with_error.value.value());
 
   const Schema& schema =
       policy::GetChromeSchema().GetKnownProperty(policy_name);
@@ -1800,13 +1802,13 @@ std::unique_ptr<base::Value> DecodeJsonStringAndNormalize(
   std::string schema_error;
   std::string error_path;
   bool changed = false;
-  if (!schema.Normalize(root.get(), SCHEMA_ALLOW_UNKNOWN, &error_path,
-                        &schema_error, &changed)) {
+  if (!schema.Normalize(&root, SCHEMA_ALLOW_UNKNOWN, &error_path, &schema_error,
+                        &changed)) {
     std::ostringstream msg;
     msg << "Invalid policy value: " << schema_error << " (at "
         << (error_path.empty() ? "toplevel" : error_path) << ")";
     *error = msg.str();
-    return nullptr;
+    return base::nullopt;
   }
   if (changed) {
     std::ostringstream msg;

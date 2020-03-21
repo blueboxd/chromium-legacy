@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.FieldTrials;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -45,19 +44,17 @@ public class BottomToolbarWithStartSurfaceTest {
 
     @Before
     public void setUp() {
-        // TODO(https://crbug.com/1060622): Removes this.
-        FieldTrials.getInstance().reset();
-    }
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_SHARE);
 
-    private void launchActivity(@Variations String variation) {
-        BottomToolbarVariationManager.setVariation(variation);
-        mActivityTestRule.startMainActivityFromLauncher();
+        // TODO(crbug.com/1051226): Test start activity with startMainActivityFromLauncher, so there
+        // is no tab will be created, then the single start surface should be shown if it is
+        // enabled.
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @Test
     @MediumTest
     public void testShowAndHideSingleSurface() {
-        launchActivity(Variations.HOME_SEARCH_SHARE);
         checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()

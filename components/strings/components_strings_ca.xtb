@@ -594,6 +594,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3587738293690942763">Mitjà</translation>
 <translation id="3592413004129370115">Italian (sobre)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Aplicació bloquejada per l'administrador</translation>
 <translation id="3608932978122581043">Orientació de l'entrada</translation>
 <translation id="3614103345592970299">Mida 2</translation>
 <translation id="361438452008624280">Entrada "<ph name="LANGUAGE_ID" />" de la llista: l'idioma és desconegut o no s'admet.</translation>
@@ -847,6 +848,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="467662567472608290">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat conté errors. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> vol respondre als esdeveniments d'accessibilitat</translation>
 <translation id="467809019005607715">Presentacions de Google</translation>
+<translation id="4680804919228900307">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que comprovis les teves contrasenyes desades per a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i altres llocs web en què utilitzis aquesta contrasenya ara.</translation>
 <translation id="4690462567478992370">Deixa de fer servir un certificat no vàlid</translation>
 <translation id="4691835149146451662">Architecture-A (sobre)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1012,8 +1014,10 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5329858041417644019">El navegador no està gestionat</translation>
 <translation id="5332219387342487447">Mètode d'enviament</translation>
 <translation id="5334013548165032829">Registres detallats del sistema</translation>
+<translation id="5340250774223869109">L'aplicació està bloquejada</translation>
 <translation id="534295439873310000">Dispositius amb NFC</translation>
 <translation id="5344579389779391559">És possible que aquesta pàgina provi de fer-te algun càrrec</translation>
+<translation id="5346336634660260557">Analitza el contingut del porta-retalls, així com el dels fitxers que baixis de Chrome o que hi pengis.</translation>
 <translation id="5355557959165512791">En aquest moment no pots visitar <ph name="SITE" /> perquè se li ha revocat el certificat. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="536296301121032821">No s'ha pogut emmagatzemar la configuració de la política</translation>
 <translation id="5371425731340848620">Actualitza la targeta</translation>
@@ -1424,6 +1428,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">S'està processant</translation>
 <translation id="7221855153210829124">Mostrar notificacions</translation>
+<translation id="7229659723041939809">Acabes d'introduir la contrasenya en un lloc web enganyós. Chrome et recomana que comprovis les teves contrasenyes desades per a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i altres llocs web en què utilitzis aquesta contrasenya ara.</translation>
 <translation id="7233592378249864828">Imprimeix el full de confirmació</translation>
 <translation id="7238585580608191973">Empremta SHA-256</translation>
 <translation id="7240120331469437312">Nom alternatiu del subjecte del certificat</translation>
@@ -1491,6 +1496,7 @@ Detalls addicionals:
 <translation id="7485870689360869515">No s'han trobat dades.</translation>
 <translation id="7495290002932347110">La teva contrasenya ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que comprovis les contrasenyes desades i que canviïs la contrasenya per a <ph name="ORIGIN" /> ara.</translation>
 <translation id="7498234416455752244">Continua editant</translation>
+<translation id="7503664977220660814">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que comprovis les teves contrasenyes desades per a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i altres llocs web en què utilitzis aquesta contrasenya ara.</translation>
 <translation id="7508255263130623398">L'identificador de dispositiu de la política que s'ha tornat és buit o no coincideix amb l'actual</translation>
 <translation id="7508870219247277067">Verd alvocat</translation>
 <translation id="7511955381719512146">És possible que la xarxa Wi-Fi que esteu fent servir requereixi que visiteu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1566,6 +1572,7 @@ Detalls addicionals:
 <translation id="7763386264682878361">Analitzador de fitxers de manifest de pagament</translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>
 <translation id="7766518757692125295">Skirt</translation>
+<translation id="7767271804335921384">L'administrador ha bloquejat l'aplicació</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Ordre idèntic de cara amunt</translation>
 <translation id="777702478322588152">Prefectura</translation>
@@ -1586,6 +1593,7 @@ Detalls addicionals:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Vols sortir del lloc web?</translation>
 <translation id="7865448901209910068">Velocitat òptima</translation>
+<translation id="7874263914261512992">Acabes d'introduir la contrasenya en un lloc web enganyós. Chrome et recomana que comprovis les teves contrasenyes desades per a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i altres llocs web en què utilitzis aquesta contrasenya ara.</translation>
 <translation id="7878562273885520351">La teva contrasenya pot estar en perill</translation>
 <translation id="7882421473871500483">Marró</translation>
 <translation id="7887683347370398519">Comproveu el CVC i torneu-ho a provar</translation>
@@ -1722,6 +1730,7 @@ Detalls addicionals:
 <translation id="8474910779563686872">Mostra els detalls del desenvolupador</translation>
 <translation id="8479754468255770962">Grapat a la part inferior esquerra</translation>
 <translation id="8483780878231876732">Per poder utilitzar targetes del teu compte de Google, inicia la sessió a Chrome</translation>
+<translation id="8485393050551136813">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que comprovis les teves contrasenyes desades per a <ph name="WEBSITE_1" /> i altres llocs web en què utilitzis aquesta contrasenya ara.</translation>
 <translation id="8488350697529856933">Objectiu d'aplicació</translation>
 <translation id="8490137692873530638">Apiladora 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardat massa a respondre.</translation>
@@ -1771,6 +1780,7 @@ Detalls addicionals:
 <translation id="87601671197631245">Aquest lloc web utilitza una configuració de seguretat obsoleta i, per tant, la informació que hi enviïs podria quedar exposada (per exemple, les contrasenyes, els missatges o les targetes de crèdit).</translation>
 <translation id="8761567432415473239">Recentment, amb Navegació segura de Google s'han <ph name="BEGIN_LINK" />detectat programes perjudicials<ph name="END_LINK" /> al lloc <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositiu USB</translation>
+<translation id="8774457497170244317">Acabes d'introduir la contrasenya en un lloc web enganyós. Chrome et recomana que comprovis les teves contrasenyes desades per a <ph name="WEBSITE_1" /> i altres llocs web en què utilitzis aquesta contrasenya ara.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Refés la supressió</translation>
 <translation id="8792621596287649091">Podries perdre l'accés al compte de <ph name="ORG_NAME" /> o tenir problemes de suplantació d'identitat. Chromium et recomana que canviïs la contrasenya ara.</translation>

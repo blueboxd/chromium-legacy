@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import org.chromium.base.SysUtils;
+import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
@@ -19,6 +20,12 @@ public class StartSurfaceConfiguration {
     public static final StringCachedFieldTrialParameter START_SURFACE_VARIATION =
             new StringCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation", "");
+    public static final BooleanCachedFieldTrialParameter START_SURFACE_EXCLUDE_MV_TILES =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.START_SURFACE_ANDROID, "exclude_mv_tiles", false);
+    public static final BooleanCachedFieldTrialParameter START_SURFACE_HIDE_INCOGNITO_SWITCH =
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
+                    "hide_switch_when_no_incognito_tabs", false);
 
     /**
      * @return Whether the Start Surface is enabled.

@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium er oppdatert</translation>
+<translation id="2983934633046890458">Chromium prøver å redigere passord.</translation>
 <translation id="3032706164202344641">Chromium kan ikke sjekke passordene dine. Prøv igjen senere.</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
 <translation id="3068515742935458733">Bidra til å gjøre Chromium bedre ved å sende programstopprapporter og <ph name="UMA_LINK" /> til Google</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="5480860683791598150">Chromium trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
+<translation id="5496810170689441661">Chromium prøver å redigere passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="5623402015214259806">{0,plural, =0{En Chromium-oppdatering er tilgjengelig}=1{En Chromium-oppdatering er tilgjengelig}other{En Chromium-oppdatering har vært tilgjengelig i # dager}}</translation>
 <translation id="5631814766731275228">Navn og bilde i Chromium</translation>
 <translation id="5634636535844844681">Chromium krever Windows 7 eller nyere.</translation>

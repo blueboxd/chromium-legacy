@@ -77,6 +77,7 @@ fuzzer_test("pdfium_fuzzer") {
   deps = [ "//third_party/pdfium/testing/fuzzers:pdfium_fuzzer_src" ]
   dict = "dicts/pdf.dict"
   seed_corpus = "//third_party/pdfium/testing/resources"
+  grammar_options = [ "grammar=PDF" ]
 }
 
 fuzzer_test("pdf_cmap_fuzzer") {
@@ -270,6 +271,7 @@ if (pdf_enable_v8) {
       deps = [ "//third_party/pdfium/testing/fuzzers:pdfium_xfa_fuzzer_src" ]
       dict = "dicts/pdf.dict"
       seed_corpus = "corpora/xfa"
+      grammar_options = [ "grammar=PDF" ]
     }
 
     static_library("proto_to_xfa") {

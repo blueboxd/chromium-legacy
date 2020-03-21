@@ -593,6 +593,7 @@
 <translation id="3587738293690942763">Середина</translation>
 <translation id="3592413004129370115">Italian (конверт)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Приложение заблокировано администратором</translation>
 <translation id="3608932978122581043">Задать ориентацию</translation>
 <translation id="3614103345592970299">Размер: 2</translation>
 <translation id="361438452008624280">Элемент списка "<ph name="LANGUAGE_ID" />": язык не поддерживается или неизвестен.</translation>
@@ -846,6 +847,7 @@
 <translation id="467662567472608290">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности содержит ошибки. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="4677585247300749148">Сайт <ph name="URL" /> запрашивает доступ к специальным возможностям.</translation>
 <translation id="467809019005607715">Google Презентации</translation>
+<translation id="4680804919228900307">Вы только что ввели пароль на поддельном сайте. Рекомендуем проверить сохраненные пароли для <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и других сайтов, на которых вы используете этот пароль.</translation>
 <translation id="4690462567478992370">Прекратить использование недействительного сертификата</translation>
 <translation id="4691835149146451662">Architecture-A (конверт)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1011,8 +1013,10 @@
 <translation id="5329858041417644019">Этот браузер не управляется администратором</translation>
 <translation id="5332219387342487447">Способ доставки</translation>
 <translation id="5334013548165032829">Подробные системные журналы.</translation>
+<translation id="5340250774223869109">Приложение заблокировано</translation>
 <translation id="534295439873310000">Устройства с функцией NFC</translation>
 <translation id="5344579389779391559">Если вы откроете эту страницу, с вашего счета могут быть списаны средства</translation>
+<translation id="5346336634660260557">Проверять содержимое буфера обмена, а также файлы, которые вы скачиваете и загружаете через Chrome.</translation>
 <translation id="5355557959165512791">Сертификат веб-сайта <ph name="SITE" /> отозван. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="536296301121032821">Не удалось сохранить настройки политики</translation>
 <translation id="5371425731340848620">Изменить информацию о карте</translation>
@@ -1136,7 +1140,7 @@
 <translation id="5901630391730855834">Желтый</translation>
 <translation id="5905445707201418379">Заблокировано в соответствии с политикой в отношении источников <ph name="ORIGIN" /></translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
-<translation id="59174027418879706">Включен</translation>
+<translation id="59174027418879706">Включено</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921185718311485855">ВКЛ</translation>
 <translation id="5921639886840618607">Сохранить карту в аккаунте Google?</translation>
@@ -1423,6 +1427,7 @@
 <translation id="7219179957768738017">В этом подключении используется протокол <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Подождите…</translation>
 <translation id="7221855153210829124">Показ уведомлений</translation>
+<translation id="7229659723041939809">Вы только что ввели пароль на поддельном сайте. Рекомендуем проверить сохраненные пароли для <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и других сайтов, на которых вы используете этот пароль.</translation>
 <translation id="7233592378249864828">Распечатать лист для подтверждения</translation>
 <translation id="7238585580608191973">Отпечаток SHA-256</translation>
 <translation id="7240120331469437312">Альтернативное имя субъекта сертификата</translation>
@@ -1490,6 +1495,7 @@
 <translation id="7485870689360869515">Данные не найдены.</translation>
 <translation id="7495290002932347110">В результате утечки данных на одном из сайтов или в одном из приложений ваш пароль оказался раскрыт. Рекомендуем проверить безопасность сохраненных паролей и сменить пароль для следующего ресурса: <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Продолжить редактирование</translation>
+<translation id="7503664977220660814">Вы только что ввели пароль на поддельном сайте. Рекомендуем проверить сохраненные пароли для <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и других сайтов, на которых вы используете этот пароль.</translation>
 <translation id="7508255263130623398">Возвращенный идентификатор устройства пуст или не соответствует имеющемуся</translation>
 <translation id="7508870219247277067">Зеленый (авокадо)</translation>
 <translation id="7511955381719512146">Возможно, вам нужно перейти на страницу <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> сети Wi-Fi.</translation>
@@ -1565,6 +1571,7 @@
 <translation id="7763386264682878361">Синтаксический анализатор манифестов</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7766518757692125295">Юбка</translation>
+<translation id="7767271804335921384">Приложение заблокировано администратором.</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">В том же порядке лицевой стороной вверх</translation>
 <translation id="777702478322588152">Префектура</translation>
@@ -1585,6 +1592,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Закрыть сайт?</translation>
 <translation id="7865448901209910068">Лучшая скорость</translation>
+<translation id="7874263914261512992">Вы только что ввели пароль на поддельном сайте. Рекомендуем проверить сохраненные пароли для <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и других сайтов, на которых вы используете этот пароль.</translation>
 <translation id="7878562273885520351">Злоумышленники могли узнать ваш пароль</translation>
 <translation id="7882421473871500483">Коричневый</translation>
 <translation id="7887683347370398519">Проверьте CVC-код и повторите попытку</translation>
@@ -1721,6 +1729,7 @@
 <translation id="8474910779563686872">Показать сведения о разработчике</translation>
 <translation id="8479754468255770962">Скоба в левом нижнем углу</translation>
 <translation id="8483780878231876732">Чтобы использовать карты, привязанные к аккаунту Google Account, войдите в Chrome</translation>
+<translation id="8485393050551136813">Вы только что ввели пароль на поддельном сайте. Рекомендуем проверить сохраненные пароли для <ph name="WEBSITE_1" /> и других сайтов, на которых вы используете этот пароль.</translation>
 <translation id="8488350697529856933">Объект применения</translation>
 <translation id="8490137692873530638">Укладчик 10</translation>
 <translation id="8498891568109133222">Превышено время ожидания ответа от сайта <ph name="HOST_NAME" />.</translation>
@@ -1770,6 +1779,7 @@
 <translation id="87601671197631245">Настройки безопасности этого сайта устарели. Злоумышленники могут получить доступ к вашим данным (например, паролям, сообщениям и номерам банковских карт) при их отправке на этот сайт.</translation>
 <translation id="8761567432415473239">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB-устройство</translation>
+<translation id="8774457497170244317">Вы только что ввели пароль на поддельном сайте. Рекомендуем проверить сохраненные пароли для <ph name="WEBSITE_1" /> и других сайтов, на которых вы используете этот пароль.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
 <translation id="8792621596287649091">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту в домене <ph name="ORG_NAME" />. Рекомендуем немедленно сменить пароль.</translation>

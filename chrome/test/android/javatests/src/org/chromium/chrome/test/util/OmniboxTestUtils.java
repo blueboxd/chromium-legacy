@@ -138,9 +138,9 @@ public class OmniboxTestUtils {
                 View view,
                 OnSuggestionsReceivedListener listener,
                 Map<String, List<SuggestionsResult>> suggestions) {
-            super(listener);
             mView = view;
             mSuggestions = suggestions;
+            setOnSuggestionsReceivedListener(listener);
         }
 
         @Override
@@ -194,7 +194,8 @@ public class OmniboxTestUtils {
      */
     public static class StubAutocompleteController extends AutocompleteController {
         public StubAutocompleteController() {
-            super(new OnSuggestionsReceivedListener() {
+            super();
+            setOnSuggestionsReceivedListener(new OnSuggestionsReceivedListener() {
                 @Override
                 public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
                         String inlineAutocompleteText) {

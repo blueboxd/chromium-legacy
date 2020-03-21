@@ -30,12 +30,12 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_util.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/configured_proxy_resolution_request.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/multi_threaded_proxy_resolver.h"
 #include "net/proxy_resolution/pac_file_decider.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
-#include "net/proxy_resolution/proxy_resolution_request_impl.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -997,8 +997,8 @@ int ConfiguredProxyResolutionService::ResolveProxy(
     return rv;
   }
 
-  std::unique_ptr<ProxyResolutionRequestImpl> req =
-      std::make_unique<ProxyResolutionRequestImpl>(
+  std::unique_ptr<ConfiguredProxyResolutionRequest> req =
+      std::make_unique<ConfiguredProxyResolutionRequest>(
           this, url, method, network_isolation_key, result, std::move(callback),
           net_log);
 
@@ -1065,14 +1065,14 @@ ConfiguredProxyResolutionService::~ConfiguredProxyResolutionService() {
   // callbacks (if it deletes another request), iterating through the set in a
   // for-loop will not work.
   while (!pending_requests_.empty()) {
-    ProxyResolutionRequestImpl* req = *pending_requests_.begin();
+    ConfiguredProxyResolutionRequest* req = *pending_requests_.begin();
     req->QueryComplete(ERR_ABORTED);
     pending_requests_.erase(req);
   }
 }
 
 void ConfiguredProxyResolutionService::SuspendAllPendingRequests() {
-  for (ProxyResolutionRequestImpl* req : pending_requests_) {
+  for (ConfiguredProxyResolutionRequest* req : pending_requests_) {
     if (req->is_started()) {
       req->CancelResolveJob();
 
@@ -1185,10 +1185,10 @@ bool ConfiguredProxyResolutionService::MarkProxiesAsBadUntil(
     base::TimeDelta retry_delay,
     const std::vector<ProxyServer>& additional_bad_proxies,
     const NetLogWithSource& net_log) {
-  result.proxy_list_.UpdateRetryInfoOnFallback(&proxy_retry_info_, retry_delay,
-                                               false, additional_bad_proxies,
-                                               OK, net_log);
-  return result.proxy_list_.size() > (additional_bad_proxies.size() + 1);
+  result.proxy_list().UpdateRetryInfoOnFallback(&proxy_retry_info_, retry_delay,
+                                                false, additional_bad_proxies,
+                                                OK, net_log);
+  return result.proxy_list().size() > (additional_bad_proxies.size() + 1);
 }
 
 void ConfiguredProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
@@ -1219,12 +1219,12 @@ void ConfiguredProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
 }
 
 bool ConfiguredProxyResolutionService::ContainsPendingRequest(
-    ProxyResolutionRequestImpl* req) {
+    ConfiguredProxyResolutionRequest* req) {
   return pending_requests_.count(req) == 1;
 }
 
 void ConfiguredProxyResolutionService::RemovePendingRequest(
-    ProxyResolutionRequestImpl* req) {
+    ConfiguredProxyResolutionRequest* req) {
   DCHECK(ContainsPendingRequest(req));
   pending_requests_.erase(req);
 }

@@ -18,9 +18,9 @@ import './search_engines_page/search_engines_page.m.js';
 // import './site_settings/all_sites.m.js';
 import './site_settings/site_data_details_subpage.m.js';
 // import './site_settings_page/site_settings_page.m.js';
-// import './site_settings/category_default_setting.m.js';
-// import './site_settings/category_setting_exceptions.m.js';
-// import './site_settings/chooser_exception_list.m.js';
+import './site_settings/category_default_setting.m.js';
+import './site_settings/category_setting_exceptions.m.js';
+import './site_settings/chooser_exception_list.m.js';
 // import './site_settings/media_picker.m.js';
 // import './site_settings/pdf_documents.m.js';
 // import './site_settings/protocol_handlers.m.js';
@@ -30,8 +30,10 @@ import './site_settings/site_data_details_subpage.m.js';
 
 // <if expr="not chromeos">
 import './people_page/manage_profile.m.js';
+import './people_page/import_data_dialog.m.js';
 // </if>
-// import './people_page/sync_account_control.m.js';
+import './people_page/signout_dialog.m.js';
+import './people_page/sync_account_control.m.js';
 
 // <if expr="use_nss_certs">
 import 'chrome://resources/cr_components/certificate_manager/certificate_manager.m.js';
@@ -81,16 +83,18 @@ export {AutofillManagerImpl} from './autofill_page/autofill_section.m.js';
 export {PaymentsManagerImpl} from './autofill_page/payments_section.m.js';
 export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
+export {SyncBrowserProxyImpl, PageStatus} from './people_page/sync_browser_proxy.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
 export {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SITE_EXCEPTION_WILDCARD} from './site_settings/constants.m.js';
 export {cookieInfo} from './site_settings/cookie_info.m.js';
 export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
 export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.m.js';
-export {SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.m.js';
+export {ContentSettingProvider,SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.m.js';
 
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';
+export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.m.js';
 export {ProfileShortcutStatus, ManageProfileBrowserProxyImpl} from './people_page/manage_profile_browser_proxy.m.js';
 // </if>
 

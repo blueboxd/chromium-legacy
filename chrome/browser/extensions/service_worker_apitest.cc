@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
@@ -56,6 +57,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/service_worker_test_helpers.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_function_histogram_value.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
@@ -377,9 +379,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, StorageNoPermissions) {
 
 // Tests chrome.tabs APIs.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsBasic) {
+  base::HistogramTester histogram_tester;
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/tabs_basic"))
       << message_;
+  // Extension should issue two chrome.tabs.create calls, verify that we logged
+  // histograms for them.
+  EXPECT_EQ(2, histogram_tester.GetBucketCount(
+                   "Extensions.Functions.ExtensionServiceWorkerCalls",
+                   functions::HistogramValue::TABS_CREATE));
 }
 
 // Tests chrome.tabs events.
@@ -1938,8 +1946,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // PendingTasks correctly. Also tests that subsequent tasks are properly
 // cleared.
 // Regression test for https://crbug.com/1019161.
+//
+// Flaky (https://crbug.com/1063476): Fails DCHECK(version_ptr) in
+// ServiceWorkerContextWrapper.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       WorkerStartFailureClearsPendingTasks) {
+                       DISABLED_WorkerStartFailureClearsPendingTasks) {
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
   content::ServiceWorkerContext* context =

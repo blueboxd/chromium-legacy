@@ -68,19 +68,10 @@ bool RealTimePolicyEngine::IsUserEpOptedIn(PrefService* pref_service) {
 }
 
 // static
-// TODO(crbug.com/1050859): Remove this method.
-bool RealTimePolicyEngine::IsEnabledByPolicy() {
-  return false;
-}
-
-// static
 bool RealTimePolicyEngine::CanPerformFullURLLookup(PrefService* pref_service,
                                                    bool is_off_the_record) {
   if (is_off_the_record)
     return false;
-
-  if (IsEnabledByPolicy())
-    return true;
 
   if (IsUrlLookupEnabledForEp() && IsUserEpOptedIn(pref_service))
     return true;

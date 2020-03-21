@@ -131,15 +131,6 @@ TEST_F(RealTimePolicyEngineTest,
 }
 #endif  // defined(OS_ANDROID)
 
-TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledByPolicy) {
-  base::test::ScopedFeatureList feature_list;
-  pref_service_.SetManagedPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
-                               std::make_unique<base::Value>(true));
-  // Verifies that setting the pref still doesn't enable the feature.
-  // See crbug.com/1030815 for details.
-  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
-}
-
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledUrlLookup) {
   base::test::ScopedFeatureList feature_list;
@@ -150,8 +141,8 @@ TEST_F(RealTimePolicyEngineTest,
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledOffTheRecord) {
   base::test::ScopedFeatureList feature_list;
-  pref_service_.SetManagedPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
-                               std::make_unique<base::Value>(true));
+  pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ true));
 }
 

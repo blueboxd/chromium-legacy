@@ -303,10 +303,9 @@ js_type_check("closure_compile_module") {
     #    ":all_sites.m",
     #    ":all_sites_icons.m",
     ":android_info_browser_proxy.m",
-
-    #    ":category_default_setting.m",
-    #    ":category_setting_exceptions.m",
-    #    ":chooser_exception_list.m",
+    ":category_default_setting.m",
+    ":category_setting_exceptions.m",
+    ":chooser_exception_list.m",
     ":chooser_exception_list_entry.m",
     ":constants.m",
     ":cookie_info.m",
@@ -371,24 +370,42 @@ js_library("android_info_browser_proxy.m") {
 js_library("category_default_setting.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/category_default_setting.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":constants.m",
+    ":site_settings_behavior.m",
+    "..:route.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":category_default_setting_module" ]
 }
 
 js_library("category_setting_exceptions.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/category_setting_exceptions.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":constants.m",
+    ":site_settings_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":category_setting_exceptions_module" ]
 }
 
 js_library("chooser_exception_list.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/chooser_exception_list.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":chooser_exception_list_entry.m",
+    ":site_settings_behavior.m",
+    ":site_settings_prefs_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:list_property_update_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":chooser_exception_list_module" ]
 }
 
@@ -398,6 +415,7 @@ js_library("chooser_exception_list_entry.m") {
     ":site_list_entry.m",
     ":site_settings_behavior.m",
     ":site_settings_prefs_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":chooser_exception_list_entry_module" ]
@@ -638,18 +656,32 @@ polymer_modulizer("category_default_setting") {
   js_file = "category_default_setting.js"
   html_file = "category_default_setting.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSetting,ContentSettingsTypes",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|ContentSettingProvider,DefaultContentSetting",
+                   "ui/webui/resources/html/assert.html|assert,assertNotReached",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("category_setting_exceptions") {
   js_file = "category_setting_exceptions.js"
   html_file = "category_setting_exceptions.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/site_settings/constants.html|ContentSetting,ContentSettingsTypes,SiteSettingSource" ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("chooser_exception_list") {
   js_file = "chooser_exception_list.js"
   html_file = "chooser_exception_list.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/site_settings/constants.html|ChooserType,ContentSettingsTypes",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|ChooserException,RawChooserException",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("chooser_exception_list_entry") {

@@ -599,6 +599,7 @@
 <translation id="3587738293690942763">મધ્ય</translation>
 <translation id="3592413004129370115">ઇટાલિયન (એન્વલપ)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">તમારા વ્યવસ્થાપક દ્વારા બ્લૉક કરેલી ઍપ્લિકેશન</translation>
 <translation id="3608932978122581043">ફીડ ઓરિએન્ટેશન</translation>
 <translation id="3614103345592970299">કદ 2</translation>
 <translation id="361438452008624280">સૂચિની એન્ટ્રી "<ph name="LANGUAGE_ID" />": અજાણી અથવા અસમર્થિત ભાષા.</translation>
@@ -852,6 +853,7 @@
 <translation id="467662567472608290">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રમાં ભૂલો છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ઍક્સેસિબિલિટી ઇવેન્ટનો જવાબ આપવા માગે છે</translation>
 <translation id="467809019005607715">Google સ્લાઇડ</translation>
+<translation id="4680804919228900307">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> અને હવે તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હો તે અન્ય સાઇટ પરના તમે સાચવેલા પાસવર્ડ ચેક કરવાનો Chromium સુઝાવ આપે છે.</translation>
 <translation id="4690462567478992370">અમાન્ય પ્રમાણપત્રનો ઉપયોગ કરવાનું બંધ કરો</translation>
 <translation id="4691835149146451662">સ્થાપત્ય-A (એન્વલપ)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1017,8 +1019,10 @@
 <translation id="5329858041417644019">તમારું બ્રાઉઝર મેનેજ કરેલું નથી</translation>
 <translation id="5332219387342487447">શિપિંગ પદ્ધતિ</translation>
 <translation id="5334013548165032829">વિગતવાર સિસ્ટમ લૉગ</translation>
+<translation id="5340250774223869109">ઍપ્લિકેશન બ્લૉક કરેલી છે</translation>
 <translation id="534295439873310000">NFC ડિવાઇસ</translation>
 <translation id="5344579389779391559">આ પેજ કદાચ તમારી પાસેથી શુલ્ક વસૂલ કરવાનો પ્રયાસ કરી શકે છે</translation>
+<translation id="5346336634660260557">તમે Chromeમાં ડાઉનલોડ અથવા અપલોડ કરેલી ફાઇલો ઉપરાંત ક્લિપબોર્ડના કન્ટેન્ટ તપાસો.</translation>
 <translation id="5355557959165512791">તમે અત્યારે <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે તેનું પ્રમાણપત્ર રદબાતલ કરવામાં આવ્યું છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
 <translation id="536296301121032821">નીતિ સેટિંગ્સ સ્ટોર કરવામાં નિષ્ફળ થયાં</translation>
 <translation id="5371425731340848620">કાર્ડને અપડેટ કરો</translation>
@@ -1429,6 +1433,7 @@
 <translation id="7219179957768738017">કનેક્શન <ph name="SSL_VERSION" /> નો ઉપયોગ કરે છે.</translation>
 <translation id="7220786058474068424">પ્રક્રિયા કરી રહ્યું છે</translation>
 <translation id="7221855153210829124">સૂચનાઓ દર્શાવો</translation>
+<translation id="7229659723041939809">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> અને હવે તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હો તે અન્ય સાઇટ પરના તમે સાચવેલા પાસવર્ડ ચેક કરવાનો Chrome સુઝાવ આપે છે.</translation>
 <translation id="7233592378249864828">કન્ફર્મેશન શીટ પ્રિન્ટ કરો</translation>
 <translation id="7238585580608191973">SHA-256 ફિંગરપ્રિંટ</translation>
 <translation id="7240120331469437312">પ્રમાણપત્ર વિષય વૈકલ્પિક નામ</translation>
@@ -1496,6 +1501,7 @@
 <translation id="7485870689360869515">કોઈ ડેટા મળ્યો નથી.</translation>
 <translation id="7495290002932347110">કોઈ સાઇટ અથવા ઍપ પર થયેલા ડેટા બ્રીચમાં તમારો પાસવર્ડ ઉઘાડો પાડી દેવામાં આવ્યો છે. Chrome સુઝાવ આપે છે કે તમે તમારા સાચવેલા પાસવર્ડની તપાસ કરો અને <ph name="ORIGIN" /> પર હમણાં જ તમારો પાસવર્ડ બદલો.</translation>
 <translation id="7498234416455752244">ફેરફાર કરવાનું ચાલુ રાખો</translation>
+<translation id="7503664977220660814">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> અને હવે તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હો તે અન્ય સાઇટ પરના તમે સાચવેલા પાસવર્ડ ચેક કરવાનો Chromium સુઝાવ આપે છે.</translation>
 <translation id="7508255263130623398">પરત થયેલ નીતિ ઉપકરણ id ખાલી છે અથવા વર્તમાન ટોકન સાથે મેળ ખાતું નથી</translation>
 <translation id="7508870219247277067">જમરૂખ જેવો લીલો</translation>
 <translation id="7511955381719512146">તમે ઉપયોગ કરી રહ્યા છો તે વાઇ-ફાઇને <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ની મુલાકાત લેવાની જરૂર પડી શકે છે.</translation>
@@ -1571,6 +1577,7 @@
 <translation id="7763386264682878361">ચુકવણી મેનિફેસ્ટ વિશ્લેષક</translation>
 <translation id="7764225426217299476">સરનામું ઉમેરો</translation>
 <translation id="7766518757692125295">સ્કર્ટ</translation>
+<translation id="7767271804335921384">તમારા વ્યવસ્થાપક દ્વારા ઍપ્લિકેશન બ્લૉક કરવામાં આવી છે</translation>
 <translation id="7770259615151589601">નિર્દિષ્ટ-લાંબું</translation>
 <translation id="7773005668374414287">ઉપર તરફ તે જ ક્રમમાં</translation>
 <translation id="777702478322588152">પ્રીફેચર</translation>
@@ -1591,6 +1598,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">સાઇટ છોડવી છે?</translation>
 <translation id="7865448901209910068">શ્રેષ્ઠ ઝડપ</translation>
+<translation id="7874263914261512992">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> અને હવે તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હો તે અન્ય સાઇટ પરના તમે સાચવેલા પાસવર્ડ ચેક કરવાનો Chrome સુઝાવ આપે છે.</translation>
 <translation id="7878562273885520351">તમારા પાસવર્ડ સાથે ચેડાં થઈ શકે છે</translation>
 <translation id="7882421473871500483">ભૂરો</translation>
 <translation id="7887683347370398519">તમારું CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
@@ -1727,6 +1735,7 @@
 <translation id="8474910779563686872">ડેવલપરની વિગતો બતાવો</translation>
 <translation id="8479754468255770962">નીચેની ડાબી બાજુએ સ્ટેપલ લગાવો</translation>
 <translation id="8483780878231876732">તમારા Google એકાઉન્ટમાંથી કાર્ડ્સનો ઉપયોગ કરવા માટે, Chromeમાં સાઇન ઇન કરો</translation>
+<translation id="8485393050551136813">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. <ph name="WEBSITE_1" /> અને હવે તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હો તે અન્ય સાઇટ પરના તમે સાચવેલા પાસવર્ડ ચેક કરવાનો Chromium સુઝાવ આપે છે.</translation>
 <translation id="8488350697529856933">આમને લાગુ</translation>
 <translation id="8490137692873530638">સ્ટૅકર 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> એ પ્રતિસાદ આપવા માટે ઘણો સમય લીધો.</translation>
@@ -1776,6 +1785,7 @@
 <translation id="87601671197631245">આ સાઇટ હજી પણ જૂના સુરક્ષા કન્ફિગ્યુરેશનનો ઉપયોગ કરે છે, જેને લીધે તમારી માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ, સંદેશ અથવા ક્રેડિટ કાર્ડ) જ્યારે આ સાઇટને મોકલવામાં આવે, ત્યારે તે જોખમમાં આવી શકે છે.</translation>
 <translation id="8761567432415473239">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />હાનિકારક પ્રોગ્રામ્સ મળ્યાં<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ઉપકરણ</translation>
+<translation id="8774457497170244317">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. <ph name="WEBSITE_1" /> અને હવે તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હો તે અન્ય સાઇટ પરના તમે સાચવેલા પાસવર્ડ ચેક કરવાનો Chrome સુઝાવ આપે છે.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;ફરી ડિલીટ કરો</translation>
 <translation id="8792621596287649091">તમે તમારા <ph name="ORG_NAME" /> એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chromium તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>

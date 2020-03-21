@@ -593,6 +593,7 @@
 <translation id="3587738293690942763">मध्य भाग</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">तपाईंका प्रशासकले रोक लगाउनुभएको अनुप्रयोग</translation>
 <translation id="3608932978122581043">अभिमुखीकरण फिड गर्नुहोस्</translation>
 <translation id="3614103345592970299">आकार २</translation>
 <translation id="361438452008624280">प्रविष्टिको सूची "<ph name="LANGUAGE_ID" />": अज्ञात वा असमर्थित भाषा।</translation>
@@ -846,6 +847,7 @@
 <translation id="467662567472608290">यो सर्भरले यो <ph name="DOMAIN" /> को भनि प्रमाणित गर्न सकेन; यसको सुरक्षा प्रमाणपत्रमा त्रुटिहरू छन्। यो कुनै एउटा मिसकन्फिगरेसन वा कुनै आक्रमणकारीले तपाईंको जडानमा गरेको हस्तक्षेपको कारणले गर्दा भएको हुन सक्छ।</translation>
 <translation id="4677585247300749148"><ph name="URL" /> पहुँचसम्बन्धी कार्यक्रमहरूमा प्रतिक्रिया दिन चाहन्छ</translation>
 <translation id="467809019005607715">Google स्लाइड</translation>
+<translation id="4680804919228900307">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chromium तपाईंलाई अहिले नै <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
 <translation id="4690462567478992370">अवैध प्रमाणपत्र प्रयोग गर्न रोक्नुहोस्</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1011,8 +1013,10 @@
 <translation id="5329858041417644019">तपाईंको ब्राउजरको व्यवस्थापन गरिएको छैन</translation>
 <translation id="5332219387342487447">ढुवानीको विधि</translation>
 <translation id="5334013548165032829">प्रणालीका विस्तृत लगहरू</translation>
+<translation id="5340250774223869109">अनुप्रयोगमाथि रोक लगाइएको छ</translation>
 <translation id="534295439873310000">NFC यन्त्रहरू</translation>
 <translation id="5344579389779391559">यो पृष्ठले तपाईंलाई पैसा तिराउने प्रयास गर्न सक्छ</translation>
+<translation id="5346336634660260557">आफूले Chrome मा डाउनलोड वा अपलोड गर्ने फाइलहरूका साथसाथै क्लिपबोर्डका सामग्रीहरू स्क्यान गर्नुहोस्।</translation>
 <translation id="5355557959165512791">यो साइटको प्रमाणपत्र खारेज गरिएको हुनाले तपाईं अहिले नै <ph name="SITE" /> मा जान सक्नुहुन्न। नेटवर्कसम्बन्धी त्रुटि र आक्रमणहरू सामान्यतया अस्थायी हुन्छन्, त्यसैले यो पृष्ठले पछि सम्भवतः काम गर्नसक्नेछ।</translation>
 <translation id="536296301121032821">नीति सेटिङहरू भण्डारण गर्न असफल भयो</translation>
 <translation id="5371425731340848620">कार्ड अद्यावधिक गर्नुहोस्</translation>
@@ -1423,6 +1427,7 @@
 <translation id="7219179957768738017">जडानले <ph name="SSL_VERSION" /> प्रयोग गर्छ।</translation>
 <translation id="7220786058474068424">प्रशोधन गर्दै</translation>
 <translation id="7221855153210829124">सूचनाहरू देखाउनुहोस्</translation>
+<translation id="7229659723041939809">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chrome तपाईंलाई अहिले नै <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
 <translation id="7233592378249864828">पुष्टि गर्ने पाना छाप्नुहोस्</translation>
 <translation id="7238585580608191973">SHA-256 अङ्गुठाछाप</translation>
 <translation id="7240120331469437312">प्रमाणपत्र विषय वैकल्पिक नाम</translation>
@@ -1490,6 +1495,7 @@
 <translation id="7485870689360869515">कुनैपनि डाटा भेटिएन।</translation>
 <translation id="7495290002932347110">कुनै साइट वा अनुप्रयोगमा भएको डेटाको चोरीले तपाईंको पासवर्ड खुलासा गर्‍यो। Chrome ले अहिले नै आफ्नो सुरक्षित गरिएको पासवर्डको जाँच गर्न र <ph name="ORIGIN" /> को आफ्नो पासवर्ड बदल्न सिफारिस गर्छ।</translation>
 <translation id="7498234416455752244">सम्पादन गरिरहनुहोस्</translation>
+<translation id="7503664977220660814">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chromium तपाईंलाई अहिले नै <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
 <translation id="7508255263130623398">फिर्ता गरिएको नीति सम्बन्धी यन्त्र खाली छ वा हालको यन्त्रको id सँग मेल खाँदैन</translation>
 <translation id="7508870219247277067">गाढा हरियो</translation>
 <translation id="7511955381719512146">तपाईँले प्रयोग गरिरहनुभएको Wi-Fi लाई तपाईँले <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> को भ्रमण गर्न आवश्यकता हुन सक्छ।</translation>
@@ -1565,6 +1571,7 @@
 <translation id="7763386264682878361">भुक्तानी म्यानिफेस्ट पार्सर</translation>
 <translation id="7764225426217299476">ठेगाना थप्नुहोस्</translation>
 <translation id="7766518757692125295">स्कर्ट</translation>
+<translation id="7767271804335921384">तपाईंका प्रशासकले यो अनुप्रयोगमाथि रोक लगाउनुभएको छ</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">उही क्रम तर माथितिर फर्काएर</translation>
 <translation id="777702478322588152">प्रशासकिय क्षेत्र</translation>
@@ -1585,6 +1592,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट छाड्ने हो?</translation>
 <translation id="7865448901209910068">उत्कृष्ट गति</translation>
+<translation id="7874263914261512992">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chrome तपाईंलाई अहिले नै <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
 <translation id="7878562273885520351">तपाईंको पासवर्ड जोखिममा पर्न सक्छ</translation>
 <translation id="7882421473871500483">खैरो</translation>
 <translation id="7887683347370398519">तपाईँको CVC जाँच गर्नुहोस् र फेरि प्रयास गर्नुहोस्</translation>
@@ -1721,6 +1729,7 @@
 <translation id="8474910779563686872">विकासकर्ताका विवरणहरू देखाउनुहोस्</translation>
 <translation id="8479754468255770962">फेदको बायाँपट्टि स्टिच</translation>
 <translation id="8483780878231876732">आफ्नो Google खाताका कार्डहरूको प्रयोग गर्न Chrome मा साइन इन गर्नुहोस्</translation>
+<translation id="8485393050551136813">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chromium तपाईंलाई अहिले नै <ph name="WEBSITE_1" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
 <translation id="8488350697529856933">मा लागू हुन्छ</translation>
 <translation id="8490137692873530638">स्ट्याकर १०</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ले प्रतिक्रिया दिन निकै लामो समय लियो।</translation>
@@ -1770,6 +1779,7 @@
 <translation id="87601671197631245">यो साइटले एउटा अद्यावधिक नभएको सुरक्षा कन्फिगुरेसनको प्रयोग गर्छ जसले यस साइटमा तपाईंको जानकारी (उदाहरणका लागि, पासवर्ड, सन्देश वा क्रेडिट कार्ड) पठाइँदा देखाउन सक्छ।</translation>
 <translation id="8761567432415473239">Google सुरक्षित ब्राउजिङले <ph name="SITE" /> मा हालै  <ph name="BEGIN_LINK" />हानिकारक कार्यक्रमहरू फेला<ph name="END_LINK" /> पार्‍यो।</translation>
 <translation id="8763927697961133303">USB यन्त्र</translation>
+<translation id="8774457497170244317">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chrome तपाईंलाई अहिले नै <ph name="WEBSITE_1" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">मेटाउने कार्य &amp;पुन: गर्नुहोस्</translation>
 <translation id="8792621596287649091">तपाईंले आफ्नो <ph name="ORG_NAME" /> खातामाथिको पहुँच गुमाउन सक्नुहुन्छ वा तपाईंको पहिचान चोरी हुन सक्छ। Chromium तपाईंलाई आफ्नो पासवर्ड अहिले नै परिवर्तन गर्न सिफारिस गर्छ।</translation>

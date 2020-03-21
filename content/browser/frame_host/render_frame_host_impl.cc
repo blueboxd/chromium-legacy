@@ -6909,7 +6909,7 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
     mojo::ReportBadMessage("Must have the same origin as the top-level frame.");
     return;
   }
-  auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
+  auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext(), this);
   SmsService::Create(fetcher, this, std::move(receiver));
 }
 

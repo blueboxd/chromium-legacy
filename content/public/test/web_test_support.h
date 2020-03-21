@@ -35,20 +35,9 @@ namespace content {
 
 class RenderFrame;
 class RenderView;
-class StoragePartition;
 
 // Turn the browser process into web test mode.
 void EnableBrowserWebTestMode();
-
-// Replaces the SharedWorkerService implementation with a test-specific one that
-// tracks running shared workers.
-void InjectTestSharedWorkerService(StoragePartition* storage_partition);
-
-// Terminates all workers and notifies when complete. This is used for
-// testing when it is important to make sure that all shared worker activity
-// has stopped. Can only be used if InjectTestSharedWorkerService() was called.
-void TerminateAllSharedWorkers(StoragePartition* storage_partition,
-                               base::OnceClosure callback);
 
 ///////////////////////////////////////////////////////////////////////////////
 // The following methods are meant to be used from a renderer.

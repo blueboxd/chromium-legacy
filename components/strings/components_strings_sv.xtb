@@ -600,6 +600,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3587738293690942763">Mellan</translation>
 <translation id="3592413004129370115">Italian (kuvert)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Appen blockeras av administratören</translation>
 <translation id="3608932978122581043">Ställa in riktning</translation>
 <translation id="3614103345592970299">Storlek 2</translation>
 <translation id="361438452008624280">Listposten <ph name="LANGUAGE_ID" />: Språket är okänt eller stöds inte.</translation>
@@ -854,6 +855,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="467662567472608290">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat innehåller fel. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> vill svara på tillgänglighetshändelser</translation>
 <translation id="467809019005607715">Google Presentationer</translation>
+<translation id="4680804919228900307">Du angav just ditt lösenord på en bedräglig webbplats. Chromium rekommenderar att du kontrollerar dina sparade lösenord för <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> och andra webbplatser där du använder lösenordet nu.</translation>
 <translation id="4690462567478992370">Sluta använda ett ogiltigt certifikat</translation>
 <translation id="4691835149146451662">Architecture-A (kuvert)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1019,8 +1021,10 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5329858041417644019">Din webbläsare är inte hanterad</translation>
 <translation id="5332219387342487447">Fraktmetod</translation>
 <translation id="5334013548165032829">Detaljerade systemloggar</translation>
+<translation id="5340250774223869109">Appen blockeras</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
 <translation id="5344579389779391559">Den här sidan kan försöka debitera dig</translation>
+<translation id="5346336634660260557">Genomsöka innehållet i urklipp och filer som du laddar ned eller laddar upp i Chrome.</translation>
 <translation id="5355557959165512791">Det går inte att besöka <ph name="SITE" /> just nu eftersom dess certifikat har återkallats. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen att fungera senare.</translation>
 <translation id="536296301121032821">Det gick inte att spara policyinställningarna</translation>
 <translation id="5371425731340848620">Uppdatera kortet</translation>
@@ -1431,6 +1435,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="7219179957768738017">För anslutningen används <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Bearbetning pågår</translation>
 <translation id="7221855153210829124">Visa aviseringar</translation>
+<translation id="7229659723041939809">Du angav just ditt lösenord på en bedräglig webbplats. Chrome rekommenderar att du kontrollerar dina sparade lösenord för <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> och andra webbplatser där du använder lösenordet nu.</translation>
 <translation id="7233592378249864828">Skriva ut bekräftelseark</translation>
 <translation id="7238585580608191973">SHA-256-fingeravtryck</translation>
 <translation id="7240120331469437312">Certifikatämnets andra namn</translation>
@@ -1498,6 +1503,7 @@ Mer information.
 <translation id="7485870689360869515">Ingen data hittades.</translation>
 <translation id="7495290002932347110">Ditt lösenord har läckt ut efter ett dataintrång på en webbplats eller i en app. Om du har återanvänt lösenordet på andra webbplatser rekommenderas du att återställa lösenordet på <ph name="ORIGIN" /> nu.</translation>
 <translation id="7498234416455752244">Fortsätt redigera</translation>
+<translation id="7503664977220660814">Du angav just ditt lösenord på en bedräglig webbplats. Chromium rekommenderar att du kontrollerar dina sparade lösenord för <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och andra webbplatser där du använder lösenordet nu.</translation>
 <translation id="7508255263130623398">Enhets-id för returnerad princip är tomt eller matchar inte nuvarande enhets-id</translation>
 <translation id="7508870219247277067">Avokadogrön</translation>
 <translation id="7511955381719512146">Wi-Fi-nätverket du använder kanske kräver att du besöker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1573,6 +1579,7 @@ Mer information.
 <translation id="7763386264682878361">Textanalysator för manifest för betalning</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7766518757692125295">Skirt</translation>
+<translation id="7767271804335921384">Appen har blockerats av administratören</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Samma ordning – framsidan uppåt</translation>
 <translation id="777702478322588152">Prefektur</translation>
@@ -1593,6 +1600,7 @@ Mer information.
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Vill du lämna webbplatsen?</translation>
 <translation id="7865448901209910068">Bästa hastighet</translation>
+<translation id="7874263914261512992">Du angav just ditt lösenord på en bedräglig webbplats. Chrome rekommenderar att du kontrollerar dina sparade lösenord för <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och andra webbplatser där du använder lösenordet nu.</translation>
 <translation id="7878562273885520351">Lösenordet kan vara utsatt för risk</translation>
 <translation id="7882421473871500483">Brun</translation>
 <translation id="7887683347370398519">Kontrollera CVC-koden och försök igen</translation>
@@ -1729,6 +1737,7 @@ Mer information:
 <translation id="8474910779563686872">Visa information om utvecklare</translation>
 <translation id="8479754468255770962">Häfta nere till vänster</translation>
 <translation id="8483780878231876732">Logga in i Chrome om du vill använda kort i Google-kontot</translation>
+<translation id="8485393050551136813">Du angav just ditt lösenord på en bedräglig webbplats. Chromium rekommenderar att du kontrollerar dina sparade lösenord för <ph name="WEBSITE_1" /> och andra webbplatser där du använder lösenordet nu.</translation>
 <translation id="8488350697529856933">Gäller för</translation>
 <translation id="8490137692873530638">Utmatningsfack 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tog för lång tid på sig att svara.</translation>
@@ -1779,6 +1788,7 @@ Mer information:
 <translation id="87601671197631245">Den här webbplatsens säkerhetskonfiguration är inaktuell. Det kan leda till att dina uppgifter (t.ex. lösenord, meddelanden eller kreditkort) exponeras när de skickas till den här webbplatsen.</translation>
 <translation id="8761567432415473239">Googles tjänst Säker webbsökning <ph name="BEGIN_LINK" />hittade skadliga program<ph name="END_LINK" /> på <ph name="SITE" /> nyligen.</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
+<translation id="8774457497170244317">Du angav just ditt lösenord på en bedräglig webbplats. Chrome rekommenderar att du kontrollerar dina sparade lösenord för <ph name="WEBSITE_1" /> och andra webbplatser där du använder lösenordet nu.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>
 <translation id="8792621596287649091">Du kan förlora åtkomsten till kontot på <ph name="ORG_NAME" /> eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>

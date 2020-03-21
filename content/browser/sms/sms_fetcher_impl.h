@@ -33,8 +33,6 @@ class CONTENT_EXPORT SmsFetcherImpl : public content::SmsFetcher,
                  std::unique_ptr<SmsProvider> provider);
   ~SmsFetcherImpl() override;
 
-  static SmsFetcher* Get(BrowserContext* context);
-
   void Subscribe(const url::Origin& origin, Subscriber* subscriber) override;
   void Unsubscribe(const url::Origin& origin, Subscriber* subscriber) override;
 
@@ -43,6 +41,7 @@ class CONTENT_EXPORT SmsFetcherImpl : public content::SmsFetcher,
                  const std::string& one_time_code) override;
 
   bool HasSubscribers() override;
+  bool CanReceiveSms() override;
 
   void SetSmsProviderForTesting(std::unique_ptr<SmsProvider> provider);
 

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">تكبير</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />، تطبيق مثبّت</translation>
 <translation id="1450753235335490080">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
+<translation id="1487931858675166540">تم استبدال <ph name="FIRST_ITEM_TITLE" /> بالعنصر <ph name="SECOND_ITEM_TITLE" />.</translation>
 <translation id="1498028757988366001">لقد بحثت عن هذا الموضوع من قبل. سيؤدي حذف "<ph name="QUERY" />" من السجل إلى إزالته نهائيًا من حسابك على جميع أجهزتك.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
 <translation id="1643823602425662293">الإشعار</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">من اليمين لليسار</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">التطبيقات التي يرجح النقر عليها</translation>
+<translation id="7170202025028120564">ستدخل إعدادات عرض التطبيق حيز التنفيذ عند إعادة تشغيله.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{يتبقى دقيقة واحدة}zero{يتبقى # من الدقائق}two{يتبقى دقيقتان (#)}few{يتبقى # دقائق}many{يتبقى # دقيقة}other{يتبقى # من الدقائق}}</translation>
 <translation id="7319740667687257810">‏Launcher، عرض جزئي</translation>

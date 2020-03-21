@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Zmadho</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, aplikacion i instaluar</translation>
 <translation id="1450753235335490080">Nuk mund të ndahet <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> u ndërrua me <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Ke kërkuar për këtë më parë. Fshirja e "<ph name="QUERY" />" nga historiku yt do ta heqë atë përgjithmonë nga llogaria jote në të gjitha pajisjet e tua.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutë dhe }other{# minuta dhe }}</translation>
 <translation id="1643823602425662293">Njoftimi</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Nga e djathta në të majtë</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MË TË MUNDSHME</translation>
+<translation id="7170202025028120564">Cilësimet e ekranit të aplikacionit tënd do të hyjnë në fuqi kur të riniset Linux herën tjetër.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. e mbetur}other{# min. të mbetura}}</translation>
 <translation id="7319740667687257810">Nisësi, pamje e pjesëshme</translation>

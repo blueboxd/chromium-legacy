@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Максимизирај</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, инсталирана апликација</translation>
 <translation id="1450753235335490080">Не може да се сподели <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> се замени со <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Го пребарувавте ова порано. Ако го избришете „<ph name="QUERY" />“ од историјата, трајно ќе се отстрани од вашата сметка на сите уреди.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута и }one{# минута и }other{# минути и }}</translation>
 <translation id="1643823602425662293">Известување</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Десно на лево</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ВЕРОЈАТНО ЌЕ ГИ КЛИКНЕТЕ</translation>
+<translation id="7170202025028120564">Поставките за екран на апликацијата ќе се применат при следното рестартирање.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Преостана 1 мин.}one{Преостана # мин.}other{Преостанаа # мин.}}</translation>
 <translation id="7319740667687257810">Стартер, делумен приказ</translation>

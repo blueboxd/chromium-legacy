@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "components/policy/policy_export.h"
 
@@ -95,14 +96,14 @@ class POLICY_EXPORT Schema {
   // Verifies if |schema| is a valid JSON v3 schema. When this validation passes
   // then |schema| is valid JSON that can be parsed into a Value, and that Value
   // can be used to build a |Schema|. Returns the parsed Value when |schema|
-  // validated, otherwise returns nullptr. In that case, |error| contains an
+  // validated, otherwise returns nullopt. In that case, |error| contains an
   // error description. For performance reasons, currently IsValidSchema() won't
   // check the correctness of regular expressions used in "pattern" and
   // "patternProperties" and in Validate() invalid regular expression don't
   // accept any strings.
   // |options| is a bitwise-OR combination of the options above (see
   // |kSchemaOptions*| above).
-  static std::unique_ptr<base::Value> ParseToDictAndValidate(
+  static base::Optional<base::Value> ParseToDictAndValidate(
       const std::string& schema,
       int options,
       std::string* error);

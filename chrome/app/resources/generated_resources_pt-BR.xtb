@@ -1175,7 +1175,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2541706104884128042">Nova hora de dormir definida</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
 <translation id="2546283357679194313">Cookies e dados do site</translation>
-<translation id="2547583314137677375">Desativar a sincronização</translation>
 <translation id="2548347166720081527"><ph name="PERMISSION" /> permitida</translation>
 <translation id="2549985041256363841">Iniciar gravação</translation>
 <translation id="2550212893339833758">Memória trocada</translation>
@@ -1651,7 +1650,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3172808215939929606">Esta página foi traduzida</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3179982752812949580">Fonte do texto</translation>
-<translation id="3181825792072797598">Ativar a Sincronização</translation>
 <translation id="3181954750937456830">Navegação segura: protege você e seu dispositivo de sites perigosos</translation>
 <translation id="3182749001423093222">Verificação ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfil</translation>
@@ -2748,7 +2746,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4660540330091848931">Redimensionando</translation>
 <translation id="4660838440047236328">o layout do ambiente.</translation>
 <translation id="4661407454952063730">Os dados de apps podem ser quaisquer dados que um app tenha salvo (com base nas configurações do desenvolvedor), incluindo dados como contatos, mensagens e fotos.</translation>
-<translation id="4661931051827810091">Envia URLs anônimos de algumas páginas que você visita, informações do sistema limitadas e parte do conteúdo das páginas para ajudar a descobrir e bloquear novas ameaças contra todos os usuários da Web.</translation>
+<translation id="4661931051827810091">Envia, de forma anônima, URLs de páginas que você visita, informações do sistema limitadas e parte do conteúdo das páginas para ajudar a descobrir e bloquear novas ameaças contra todos os usuários da Web.</translation>
 <translation id="4662788913887017617">Compartilhar esse favorito com seu iPhone</translation>
 <translation id="4663373278480897665">Câmera permitida</translation>
 <translation id="4664482161435122549">Erro de exportação do PKCS #12</translation>

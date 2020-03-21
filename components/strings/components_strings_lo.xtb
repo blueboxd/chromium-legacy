@@ -600,6 +600,7 @@
 <translation id="3587738293690942763">ເຄິ່ງກາງ</translation>
 <translation id="3592413004129370115">Italian (ຊອງຈົດໝາຍ)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ບລັອກແອັບພລິເຄຊັນ</translation>
 <translation id="3608932978122581043">ປ້ອນເຈ້ຍຕາມທິດທາງ</translation>
 <translation id="3614103345592970299">ຂະໜາດ 2</translation>
 <translation id="361438452008624280">ລະບຸລາຍການ "<ph name="LANGUAGE_ID" />": ພາສາທີ່ບໍ່ຮູ້ຈັກ ຫຼື ບໍ່ຮອງຮັບ.</translation>
@@ -854,6 +855,7 @@
 <translation id="467662567472608290">ເຊີບເວີນີ້ບໍ່ສາມາດພິສູດໄດ້ວ່າ ມັນແມ່ນ <ph name="DOMAIN" />; ໃບຢັ້ງຢືນຄວາມປອດໄພຂອງມັນມີຄວາມຜິດພາດ. ອັນນີ້ອາດຈະເຮັດໃຫ້ເກີດມີການປັບຕັ້ງຄ່າຜິດ ຫຼືຜູ້ໂຈມຕີອາດຈະດັກເອົາການເຊື່ອມຕໍ່ຂອງທ່ານ.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ຕ້ອງການຕອບສະໜອງກັບເຫດການຊ່ວຍເຂົ້າເຖິງ</translation>
 <translation id="467809019005607715">Google Slides</translation>
+<translation id="4680804919228900307">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chromium ຂໍແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ.</translation>
 <translation id="4690462567478992370">ຢຸດ​ການ​ໃຊ້​ໃບ​ຢັ້ງ​ຢືນ​ທີ່ໃຊ້ບໍ່ໄດ້</translation>
 <translation id="4691835149146451662">Architecture-A (ຊອງຈົດໝາຍ)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1019,8 +1021,10 @@
 <translation id="5329858041417644019">ບໍ່ຮອງຮັບໂປຣແກຣມທ່ອງເວັບຂອງທ່ານ</translation>
 <translation id="5332219387342487447">ວິທີການຈັດສົ່ງ</translation>
 <translation id="5334013548165032829">ບັນທຶກລະບົບລະອຽດ</translation>
+<translation id="5340250774223869109">ແອັບພລິເຄຊັນຖືກບລັອກໄວ້</translation>
 <translation id="534295439873310000">ອຸປະກອນ NFC</translation>
 <translation id="5344579389779391559">ໜ້ານີ້ອາດຈະພະຍາຍາມຮຽກເກັບເງິນນຳທ່ານ</translation>
+<translation id="5346336634660260557">ສະແກນເນື້ອຫາຂອງຄລິບບອດ ເຊັ່ນດຽວກັບທີ່ທ່ານດາວໂຫຼດ ຫຼື ອັບໂຫຼດໃນ Chrome.</translation>
 <translation id="5355557959165512791">ທ່ານບໍ່ສາມາດເຂົ້າເບິ່ງ <ph name="SITE" /> ໄດ້ໃນຂະນະນີ້ ເພາະວ່າໃບຢັ້ງຢືນຂອງມັນໄດ້ຖືກຖອນຄືນແລ້ວ. ໂດຍປົກກະຕິແລ້ວ ຂໍ້ຜິດພາດ ແລະ ການໂຈມຕີທາງເຄືອຂ່າຍແມ່ນຊົ່ວຄາວເທົ່ານັ້ນ, ສະນັ້ນ ໜ້ານີ້ອາດຈະໃຊ້ໄດ້ໃນພາຍຫຼັງ.</translation>
 <translation id="536296301121032821">ເກັບຮັກສາການຕັ້ງຄ່ານະໂຍບາຍບໍ່ສໍາເລັດ</translation>
 <translation id="5371425731340848620">ອັບເດດບັດ</translation>
@@ -1431,6 +1435,7 @@
 <translation id="7219179957768738017">ການເຊື່ອມຕໍ່ໃຊ້ <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">ກຳລັງດຳເນີນການ</translation>
 <translation id="7221855153210829124">ສະ​ແດງ​ການ​ແຈ້ງ​ເຕືອນ</translation>
+<translation id="7229659723041939809">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chrome ຂໍແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ.</translation>
 <translation id="7233592378249864828">ພິມແຜ່ນວຽກການຢືນຢັນ</translation>
 <translation id="7238585580608191973">ລາຍນີ້ວມື SHA-256</translation>
 <translation id="7240120331469437312">ຊື່ທາງເລືອກຫົວຂໍ້ໃບຢັ້ງຢືນ</translation>
@@ -1498,6 +1503,7 @@
 <translation id="7485870689360869515">ບໍ່ພົບຂໍ້​ມູນ​.</translation>
 <translation id="7495290002932347110">ການລະເມີດຂໍ້ມູນໃນເວັບໄຊ ຫຼື ແອັບເຮັດໃຫ້ລະຫັດຜ່ານຂອງທ່ານຮົ່ວໄຫຼ. Chrome ແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ ແລະ ປ່ຽນລະຫັດຜ່ານຂອງທ່ານໃນ <ph name="ORIGIN" /> ຕອນນີ້ເລີຍ.</translation>
 <translation id="7498234416455752244">ສືບຕໍ່ແກ້ໄຂ</translation>
+<translation id="7503664977220660814">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chromium ຂໍແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ.</translation>
 <translation id="7508255263130623398">id ອຸປະກອນນະໂຍບາຍຫວ່າງເປົ່າ ຫຼື ບໍ່ກົງກັບ id ອຸປະກອນປັດຈຸບັນ</translation>
 <translation id="7508870219247277067">ສີ​ຂຽວ​ອາ​ໂວ​ກາ​ໂດ</translation>
 <translation id="7511955381719512146">Wi-Fi ທີ່​ທ່ານ​ກຳ​ລັງ​ໃຊ້​ຢູ່ (WIFI_NAME) ອາດ​ຈະ​ຕ້ອງ​ການ​ໃຫ້​ທ່ານ​ເຂົ້າ​ເບິ່ງ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1573,6 +1579,7 @@
 <translation id="7763386264682878361">ຕົວແຍກວິເຄາະໄຟລ໌ Manifest</translation>
 <translation id="7764225426217299476">ເພີ່ມ​ທີ່​ຢູ່</translation>
 <translation id="7766518757692125295">Skirt</translation>
+<translation id="7767271804335921384">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ບລັອກແອັບພລິເຄຊັນໄວ້ແລ້ວ</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">ລຳດັບດຽວກັນປີ້ນໜ້າຂຶ້ນ</translation>
 <translation id="777702478322588152">ແຂວງ</translation>
@@ -1593,6 +1600,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">ອອກຈາກເວັບໄຊບໍ?</translation>
 <translation id="7865448901209910068">ຄວາມໄວດີສຸດ</translation>
+<translation id="7874263914261512992">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chrome ຂໍແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ.</translation>
 <translation id="7878562273885520351">ອາດຈະມີການລັກໃຊ້ລະຫັດຜ່ານຂອງທ່ານ</translation>
 <translation id="7882421473871500483">ສີນ້ຳຕານ</translation>
 <translation id="7887683347370398519">ກວດ​ເບິ່ງ CVC ຂອງ​ທ່ານ ແລະ​ລອງ​ໃໝ່​ອີກ</translation>
@@ -1729,6 +1737,7 @@
 <translation id="8474910779563686872">ສະແດງລາຍລະອຽດຂອງນັກພັດທະນາ</translation>
 <translation id="8479754468255770962">ໜີບກະຫຼັບເຟີຢູ່ລຸ່ມສຸດເບື້ອງຊ້າຍ</translation>
 <translation id="8483780878231876732">ເພື່ອໃຊ້ບັດຕ່າງໆຈາກບັນຊີ Google ຂອງທ່ານ, ໃຫ້ເຂົ້າສູ່ລະບົບ Chrome</translation>
+<translation id="8485393050551136813">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chromium ຂໍແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="WEBSITE_1" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ.</translation>
 <translation id="8488350697529856933">ນໍາໃຊ້ກັບ</translation>
 <translation id="8490137692873530638">ສະແຕັກເກີ້ 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ໃຊ້ເວລາດົນເກີນໄປໃນການຕອບສະໜອງ.</translation>
@@ -1778,6 +1787,7 @@
 <translation id="87601671197631245">ເວັບໄຊນີ້ໃຊ້ການຕັ້ງຄ່າຄວາມປອດໄພທີ່ເກົ່າແລ້ວ, ເຊິ່ງອາດຈະເຮັດໃຫ້ຂໍ້ມູນຂອງທ່ານມີຄວາມສ່ຽງ (ຕົວຢ່າງ: ລະຫັດຜ່ານ, ຂໍ້ຄວາມ ຫຼື ບັດເຄຣດິດ) ເມື່ອມັນຖືກສົ່ງໃຫ້ເວັບໄຊນີ້.</translation>
 <translation id="8761567432415473239">ການທ່ອງເນັດທີ່ປອດໄພຂອງ Google <ph name="BEGIN_LINK" />ພົບໂປຣແກຣມອັນຕະລາຍ<ph name="END_LINK" /> ຢູ່ໃນ <ph name="SITE" /> ແລ້ວເມື່ອບໍ່ດົນມານີ້.</translation>
 <translation id="8763927697961133303">ອຸປະກອນ USB</translation>
+<translation id="8774457497170244317">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chrome ຂໍແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="WEBSITE_1" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">ເຮັດຄືນຄໍາສັ່ງລຶບ</translation>
 <translation id="8792621596287649091">ທ່ານສາມາດສູນເສຍການເຂົ້າເຖິງບັນຊີ <ph name="ORG_NAME" /> ຂອງທ່ານ ຫຼື ປະສົບກັບການຖືກລັກໃຊ້ຕົວຕົນ. Chromium ຂໍແນະນຳໃຫ້ປ່ຽນລະຫັດຜ່ານຂອງທ່ານດຽວນີ້.</translation>

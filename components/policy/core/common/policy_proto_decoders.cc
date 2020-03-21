@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/policy_map.h"
@@ -46,63 +47,60 @@ bool GetPolicyLevel(const AnyPolicyProto& policy_proto, PolicyLevel* level) {
 }
 
 // Convert a BooleanPolicyProto to a bool base::Value.
-std::unique_ptr<base::Value> DecodeBooleanProto(
-    const em::BooleanPolicyProto& proto) {
-  return std::make_unique<base::Value>(proto.value());
+base::Value DecodeBooleanProto(const em::BooleanPolicyProto& proto) {
+  return base::Value(proto.value());
 }
 
 // Convert an IntegerPolicyProto to an int base::Value.
-std::unique_ptr<base::Value> DecodeIntegerProto(
-    const em::IntegerPolicyProto& proto,
-    std::string* error) {
+base::Value DecodeIntegerProto(const em::IntegerPolicyProto& proto,
+                               std::string* error) {
   google::protobuf::int64 value = proto.value();
 
   if (value < std::numeric_limits<int>::min() ||
       value > std::numeric_limits<int>::max()) {
     LOG(WARNING) << "Integer value " << value << " out of numeric limits";
     *error = "Number out of range - invalid int32";
-    return std::make_unique<base::Value>(std::to_string(value));
+    return base::Value(base::NumberToString(value));
   }
 
-  return std::make_unique<base::Value>(static_cast<int>(value));
+  return base::Value(static_cast<int>(value));
 }
 
 // Convert a StringPolicyProto to a string base::Value.
-std::unique_ptr<base::Value> DecodeStringProto(
-    const em::StringPolicyProto& proto) {
-  return std::make_unique<base::Value>(proto.value());
+base::Value DecodeStringProto(const em::StringPolicyProto& proto) {
+  return base::Value(proto.value());
 }
 
 // Convert a StringListPolicyProto to a List base::Value, where each list value
 // is of Type::STRING.
-std::unique_ptr<base::Value> DecodeStringListProto(
-    const em::StringListPolicyProto& proto) {
-  auto list_value = std::make_unique<base::ListValue>();
+base::Value DecodeStringListProto(const em::StringListPolicyProto& proto) {
+  base::Value list_value(base::Value::Type::LIST);
   for (const auto& entry : proto.value().entries())
-    list_value->AppendString(entry);
-  return std::move(list_value);
+    list_value.Append(entry);
+  return list_value;
 }
 
 // Convert a StringPolicyProto to a base::Value of any type (for example,
 // Type::DICTIONARY or Type::LIST) by parsing it as JSON.
-std::unique_ptr<base::Value> DecodeJsonProto(const em::StringPolicyProto& proto,
-                                             std::string* error) {
+base::Value DecodeJsonProto(const em::StringPolicyProto& proto,
+                            std::string* error) {
   const std::string& json = proto.value();
-  std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, error);
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
 
-  if (!parsed_value) {
+  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
     // Can't parse as JSON so return it as a string, and leave it to the handler
     // to validate.
     LOG(WARNING) << "Invalid JSON: " << json;
-    return std::make_unique<base::Value>(json);
+    *error = value_with_error.error_message;
+    return base::Value(json);
   }
 
   // Accept any Value type that parsed as JSON, and leave it to the handler to
   // convert and check the concrete type.
   error->clear();
-  return parsed_value;
+  return std::move(value_with_error.value.value());
 }
 
 }  // namespace
@@ -126,7 +124,7 @@ void DecodeProtoFields(
       continue;
 
     map->Set(access->policy_key, level, scope, source,
-             DecodeBooleanProto(proto), nullptr);
+             base::Value::ToUniquePtrValue(DecodeBooleanProto(proto)), nullptr);
   }
 
   for (const IntegerPolicyAccess* access = &kIntegerPolicyAccess[0];
@@ -140,7 +138,8 @@ void DecodeProtoFields(
 
     std::string error;
     map->Set(access->policy_key, level, scope, source,
-             DecodeIntegerProto(proto, &error), nullptr);
+             base::Value::ToUniquePtrValue(DecodeIntegerProto(proto, &error)),
+             nullptr);
     if (!error.empty())
       map->AddError(access->policy_key, error);
   }
@@ -155,10 +154,9 @@ void DecodeProtoFields(
       continue;
 
     std::string error;
-    std::unique_ptr<base::Value> value =
-        (access->type == StringPolicyType::STRING)
-            ? DecodeStringProto(proto)
-            : DecodeJsonProto(proto, &error);
+    base::Value value = (access->type == StringPolicyType::STRING)
+                            ? DecodeStringProto(proto)
+                            : DecodeJsonProto(proto, &error);
 
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher =
         (access->type == StringPolicyType::EXTERNAL)
@@ -166,7 +164,8 @@ void DecodeProtoFields(
                                                     access->policy_key)
             : nullptr;
 
-    map->Set(access->policy_key, level, scope, source, std::move(value),
+    map->Set(access->policy_key, level, scope, source,
+             base::Value::ToUniquePtrValue(std::move(value)),
              std::move(external_data_fetcher));
     if (!error.empty())
       map->AddError(access->policy_key, error);
@@ -182,7 +181,8 @@ void DecodeProtoFields(
       continue;
 
     map->Set(access->policy_key, level, scope, source,
-             DecodeStringListProto(proto), nullptr);
+             base::Value::ToUniquePtrValue(DecodeStringListProto(proto)),
+             nullptr);
   }
 }
 

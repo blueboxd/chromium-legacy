@@ -158,6 +158,7 @@ CONTENT_EXPORT extern const base::Feature kWebBundles;
 CONTENT_EXPORT extern const base::Feature kWebBundlesFromNetwork;
 CONTENT_EXPORT extern const base::Feature kWebContentsOcclusion;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
+CONTENT_EXPORT extern const base::Feature kWebOtpBackend;
 CONTENT_EXPORT extern const base::Feature kWebPayments;
 CONTENT_EXPORT extern const base::Feature kWebPaymentsMinimalUI;
 CONTENT_EXPORT extern const base::Feature kWebRtcEcdsaDefault;

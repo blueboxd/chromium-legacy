@@ -45,6 +45,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2886012850691518054">Volitelné: Pomozte Chromium zlepšit – posílejte automaticky společnosti Google statistiky o využívání a zprávy o selhání aplikace.</translation>
 <translation id="2910007522516064972">O prohlížeči &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium je aktuální</translation>
+<translation id="2983934633046890458">Chromium se pokouší upravit hesla.</translation>
 <translation id="3032706164202344641">Chromium nemůže zkontrolovat hesla. Zkuste to později.</translation>
 <translation id="3032787606318309379">Přidávání do prohlížeče Chromium...</translation>
 <translation id="3068515742935458733">Pomozte aplikaci Chromium zlepšovat tím, že budete společnosti Google zasílat zprávy o selhání a <ph name="UMA_LINK" />.</translation>
@@ -112,6 +113,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5479196819031988440">Chromium OS tuto stránku nedokáže otevřít</translation>
 <translation id="5480860683791598150">Prohlížeč Chromium potřebuje přístup k vaší poloze, aby ji mohl sdílet s tímto webem</translation>
 <translation id="549669000822060376">Počkejte prosím, než Chromium nainstaluje nejnovější aktualizace systému.</translation>
+<translation id="5496810170689441661">Chromium se pokouší upravit hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Je k dispozici aktualizace prohlížeče Chromium}=1{Je k dispozici aktualizace prohlížeče Chromium}few{Již # dny je k dispozici aktualizace prohlížeče Chromium}many{Již # dne je k dispozici aktualizace prohlížeče Chromium}other{Již # dní je k dispozici aktualizace prohlížeče Chromium}}</translation>
 <translation id="5631814766731275228">Jméno a fotka v profilu Chromium</translation>
 <translation id="5634636535844844681">Chromium vyžaduje systém Windows 7 nebo vyšší.</translation>

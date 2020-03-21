@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.intent.Intents.intended;
@@ -91,6 +92,8 @@ import org.chromium.ui.test.util.UiRestriction;
 @Features.EnableFeatures({TAB_GRID_LAYOUT_ANDROID, TAB_GROUPS_ANDROID})
 public class TabGridDialogTest {
     // clang-format on
+    private static final String CUSTOMIZED_TITLE1 = "wfh tips";
+    private static final String CUSTOMIZED_TITLE2 = "wfh funs";
 
     private boolean mHasReceivedSourceRect;
     private TabSelectionEditorTestingRobot mSelectionEditorRobot =
@@ -135,7 +138,7 @@ public class TabGridDialogTest {
         mergeAllNormalTabsToAGroup(cta);
         verifyTabSwitcherCardCount(cta, 1);
         // Open dialog from tab switcher and verify dialog is showing correct content.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
 
         // Press back and dialog should be hidden.
         Espresso.pressBack();
@@ -148,7 +151,7 @@ public class TabGridDialogTest {
         clickFirstCardFromTabSwitcher(cta);
         clickFirstTabInDialog(cta);
         // Open dialog from tab strip and verify dialog is showing correct content.
-        openDialogFromStripAndVerify(cta, 2);
+        openDialogFromStripAndVerify(cta, 2, null);
 
         // Press back and dialog should be hidden.
         Espresso.pressBack();
@@ -168,7 +171,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Open dialog and verify dialog is showing correct content.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
 
         // Verify TabGroupsContinuation related functionality is not exposed.
         verifyTabGroupsContinuation(cta, false);
@@ -188,7 +191,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Open dialog and verify dialog is showing correct content.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
 
         // Verify TabGroupsContinuation related functionality is exposed.
         verifyTabGroupsContinuation(cta, true);
@@ -257,11 +260,11 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Open dialog and verify dialog is showing correct content.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
 
         // Click close button to close the first tab in group.
         closeFirstTabInDialog(cta);
-        verifyShowingDialog(cta, 1);
+        verifyShowingDialog(cta, 1, null);
 
         // Exit dialog, wait for the undo bar showing and undo the closure.
         clickScrimToExitDialog(cta);
@@ -273,7 +276,7 @@ public class TabGridDialogTest {
             TextView textView = (TextView) v;
             assertEquals("2 tabs", textView.getText().toString());
         });
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
     }
 
     @Test
@@ -294,11 +297,11 @@ public class TabGridDialogTest {
         clickFirstTabInDialog(cta);
 
         // Open dialog from tab strip and verify dialog is showing correct content.
-        openDialogFromStripAndVerify(cta, 2);
+        openDialogFromStripAndVerify(cta, 2, null);
 
         // Click close button to close the first tab in group.
         closeFirstTabInDialog(cta);
-        verifyShowingDialog(cta, 1);
+        verifyShowingDialog(cta, 1, null);
 
         // Exit dialog, wait for the undo bar showing and undo the closure.
         clickScrimToExitDialog(cta);
@@ -307,7 +310,7 @@ public class TabGridDialogTest {
 
         // Verify the undo has happened.
         verifyTabStripFaviconCount(cta, 2);
-        openDialogFromStripAndVerify(cta, 2);
+        openDialogFromStripAndVerify(cta, 2, null);
     }
 
     @Test
@@ -324,7 +327,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Open dialog and verify dialog is showing correct content.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
 
         // Click to show the menu and verify it.
         openDialogToolbarMenuAndVerify(cta);
@@ -347,7 +350,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Open dialog and open selection editor.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
         openSelectionEditorAndVerify(cta, 2);
 
         // Click navigation button should close selection editor but not tab grid dialog.
@@ -363,7 +366,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Clicking ScrimView should close both the dialog and selection editor.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
         openSelectionEditorAndVerify(cta, 2);
         clickScrimToExitDialog(cta);
         mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
@@ -391,7 +394,7 @@ public class TabGridDialogTest {
         assertEquals(1, filter.getCount());
 
         // Open dialog and open selection editor.
-        openDialogFromTabSwitcherAndVerify(cta, 3);
+        openDialogFromTabSwitcherAndVerify(cta, 3, null);
         openSelectionEditorAndVerify(cta, 3);
 
         // Select and ungroup the first tab.
@@ -402,14 +405,14 @@ public class TabGridDialogTest {
 
         mSelectionEditorRobot.actionRobot.clickToolbarActionButton();
         mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
-        verifyShowingDialog(cta, 2);
+        verifyShowingDialog(cta, 2, null);
         clickScrimToExitDialog(cta);
         waitForDialogHidingAnimationInTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 2);
         assertEquals(2, filter.getCount());
 
         // Open dialog and open selection editor.
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
         openSelectionEditorAndVerify(cta, 2);
 
         // Select and ungroup all two tabs in dialog.
@@ -436,14 +439,14 @@ public class TabGridDialogTest {
         enterTabSwitcher(cta);
         mergeAllNormalTabsToAGroup(cta);
         verifyTabSwitcherCardCount(cta, 1);
-        openDialogFromTabSwitcherAndVerify(cta, 2);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
 
         // Swipe to dismiss two tabs in dialog.
         onView((withId(R.id.tab_list_view)))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
                         1, getSwipeToDismissAction(true)));
-        verifyShowingDialog(cta, 1);
+        verifyShowingDialog(cta, 1, null);
         onView((withId(R.id.tab_list_view)))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
@@ -467,7 +470,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Verify the size and position of TabGridDialog in portrait mode.
-        openDialogFromTabSwitcherAndVerify(cta, 3);
+        openDialogFromTabSwitcherAndVerify(cta, 3, null);
         checkPopupPosition(cta, true, true);
 
         // Verify the size and position of TabSelectionEditor in portrait mode.
@@ -489,19 +492,58 @@ public class TabGridDialogTest {
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
     }
 
-    private void openDialogFromTabSwitcherAndVerify(ChromeTabbedActivity cta, int tabCount) {
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testTabGroupNaming() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and modify group title.
+        openDialogFromTabSwitcherAndVerify(cta, 2,
+                cta.getResources().getQuantityString(
+                        R.plurals.bottom_tab_grid_title_placeholder, 2, 2));
+        editDialogTitle(cta, CUSTOMIZED_TITLE1);
+
+        // Verify the title is updated in both tab switcher and dialog.
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimation(cta);
+        verifyFirstCardTitle(CUSTOMIZED_TITLE1);
+        openDialogFromTabSwitcherAndVerify(cta, 2, CUSTOMIZED_TITLE1);
+
+        // Modify title in dialog from tab strip.
+        clickFirstTabInDialog(cta);
+        openDialogFromStripAndVerify(cta, 2, CUSTOMIZED_TITLE1);
+        editDialogTitle(cta, CUSTOMIZED_TITLE2);
+
+        clickScrimToExitDialog(cta);
+        waitForDialogHidingAnimation(cta);
+        enterTabSwitcher(cta);
+        verifyFirstCardTitle(CUSTOMIZED_TITLE2);
+    }
+
+    private void openDialogFromTabSwitcherAndVerify(
+            ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         clickFirstCardFromTabSwitcher(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
-        verifyShowingDialog(cta, tabCount);
+        verifyShowingDialog(cta, tabCount, customizedTitle);
     }
 
-    private void openDialogFromStripAndVerify(ChromeTabbedActivity cta, int tabCount) {
+    private void openDialogFromStripAndVerify(
+            ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         showDialogFromStrip(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
-        verifyShowingDialog(cta, tabCount);
+        verifyShowingDialog(cta, tabCount, customizedTitle);
     }
 
-    private void verifyShowingDialog(ChromeTabbedActivity cta, int tabCount) {
+    private void verifyShowingDialog(
+            ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         verifyShowingPopupTabList(cta, tabCount);
 
         onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title)))
@@ -511,8 +553,10 @@ public class TabGridDialogTest {
 
                     Assert.assertTrue(v instanceof EditText);
                     EditText titleText = (EditText) v;
-                    String title = cta.getResources().getQuantityString(
-                            R.plurals.bottom_tab_grid_title_placeholder, tabCount, tabCount);
+                    String title = customizedTitle == null
+                            ? cta.getResources().getQuantityString(
+                                    R.plurals.bottom_tab_grid_title_placeholder, tabCount, tabCount)
+                            : customizedTitle;
                     Assert.assertEquals(title, titleText.getText().toString());
                     assertFalse(v.isFocused());
                 });
@@ -663,6 +707,25 @@ public class TabGridDialogTest {
                     // Check the size.
                     assertEquals(parentView.getHeight() - 2 * topMargin, v.getHeight());
                     assertEquals(parentView.getWidth() - 2 * sideMargin, v.getWidth());
+                });
+    }
+
+    private void editDialogTitle(ChromeTabbedActivity cta, String title) {
+        onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title)))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(click(), replaceText(title));
+    }
+
+    private void verifyFirstCardTitle(String title) {
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .check((v, noMatchException) -> {
+                    if (noMatchException != null) throw noMatchException;
+
+                    RecyclerView recyclerView = (RecyclerView) v;
+                    TextView firstCardTitleTextView =
+                            recyclerView.findViewHolderForAdapterPosition(0).itemView.findViewById(
+                                    R.id.tab_title);
+                    assertEquals(title, firstCardTitleTextView.getText().toString());
                 });
     }
 }

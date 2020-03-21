@@ -23,6 +23,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -1101,6 +1102,67 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostWatcher);
+};
+
+// Implementation helper for:
+// *) content-internal content::RenderProcessHostBadIpcMessageWaiter
+//    (declared in //content/test/content_browser_test_utils_internal.h)
+// *) content-public content::RenderProcessHostBadMojoMessageWaiter
+//    (declared below)
+// *) maybe in the future: similar helpers for chrome-layer BadMessageReason
+class RenderProcessHostKillWaiter {
+ public:
+  // |uma_name| is the name of the histogram from which the |bad_message_reason|
+  // can be extracted.
+  RenderProcessHostKillWaiter(RenderProcessHost* render_process_host,
+                              const std::string& uma_name);
+
+  RenderProcessHostKillWaiter(const RenderProcessHostKillWaiter&) = delete;
+  RenderProcessHostKillWaiter& operator=(const RenderProcessHostKillWaiter&) =
+      delete;
+
+  // Waits until the renderer process exits.  Extracts and returns the bad
+  // message reason that should be logged in the |uma_name_| histogram.
+  // Returns |base::nullopt| if the renderer exited normally or didn't log
+  // the |uma_name_| histogram.
+  base::Optional<int> Wait() WARN_UNUSED_RESULT;
+
+ private:
+  RenderProcessHostWatcher exit_watcher_;
+  base::HistogramTester histogram_tester_;
+  std::string uma_name_;
+};
+
+// Helps tests to wait until the given renderer process is terminated because of
+// a bad/invalid mojo message.
+//
+// Example usage:
+//   RenderProcessHostBadMojoMessageWaiter kill_waiter(render_process_host);
+//   ... test code that triggers a renderer kill ...
+//   EXPECT_EQ("expected error message", kill_waiter.Wait());
+class RenderProcessHostBadMojoMessageWaiter {
+ public:
+  explicit RenderProcessHostBadMojoMessageWaiter(
+      RenderProcessHost* render_process_host);
+  ~RenderProcessHostBadMojoMessageWaiter();
+
+  RenderProcessHostBadMojoMessageWaiter(
+      const RenderProcessHostBadMojoMessageWaiter&) = delete;
+  RenderProcessHostBadMojoMessageWaiter& operator=(
+      const RenderProcessHostBadMojoMessageWaiter&) = delete;
+
+  // Waits until |render_process_host| from the constructor is terminated
+  // because of a bad/invalid mojo message and returns the associated error
+  // string.  Returns base::nullopt if the process was terminated for an
+  // unrelated reason.
+  base::Optional<std::string> Wait() WARN_UNUSED_RESULT;
+
+ private:
+  void OnBadMojoMessage(int render_process_id, const std::string& error);
+
+  int monitored_render_process_id_;
+  base::Optional<std::string> observed_mojo_error_;
+  RenderProcessHostKillWaiter kill_waiter_;
 };
 
 // Watches for responses from the DOMAutomationController and keeps them in a

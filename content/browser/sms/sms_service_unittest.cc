@@ -137,8 +137,8 @@ class Service {
 
 class SmsServiceTest : public RenderViewHostTestHarness {
  protected:
-  SmsServiceTest() {}
-  ~SmsServiceTest() override {}
+  SmsServiceTest() = default;
+  ~SmsServiceTest() override = default;
 
   void ExpectDestroyedReasonCount(SmsReceiverDestroyedReason bucket,
                                   int32_t count) {

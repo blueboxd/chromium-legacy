@@ -68,8 +68,8 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
         ModelList listItems = new ModelList();
-        mMediator =
-                new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
+        mMediator = new AutocompleteMediator(context, delegate, urlBarEditingTextProvider,
+                new AutocompleteController(), listModel);
         mMediator.initDefaultProcessors();
 
         listModel.set(SuggestionListProperties.EMBEDDER, listEmbedder);

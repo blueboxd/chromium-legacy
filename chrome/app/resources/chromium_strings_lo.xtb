@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">ເລືອກໄດ້: ຊ່ວຍເຮັດໃຫ້ Chromium ດີກ່ວາ່ ໂດຍການສົ່ງສະຖິຕິການໃຊ້ ແລະລາຍງານການ​ຂັດຂ້ອງຫາ Google ໂດຍອັດຕະໂນມັດ.</translation>
 <translation id="2910007522516064972">ກ່ຽວ​ກັບ​ Chromium</translation>
 <translation id="2977470724722393594">Chromium ແມ່ນເວີຊັນໃໝ່ຫຼ້າສຸດແລ້ວ</translation>
+<translation id="2983934633046890458">Chromium ກຳລັງພະຍາຍາມແກ້ໄຂລະຫັດຜ່ານ.</translation>
 <translation id="3032706164202344641">Chromium ບໍ່ສາມາດກວດລະຫັດຜ່ານຂອງທ່ານໄດ້. ກະລຸນາລອງໃໝ່ໃນພາຍຫລັງ.</translation>
 <translation id="3032787606318309379">ກໍາລັງເພີ່ມ Chromium...</translation>
 <translation id="3068515742935458733">ຊ່ວຍເຮັດໃຫ້ Chromium ດີຂຶ້ນໂດຍການສົ່ງລາຍງານການ​ຂັດຂ້ອງ ແລະ  <ph name="UMA_LINK" />  ຫາ Google.</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium OS ບໍ່ສາມາດເປີດໜ້ານີ້ໄດ້.</translation>
 <translation id="5480860683791598150">Chromium ຕ້ອງການເຂົ້າເຖິງສະຖານທີ່ຂອງທ່ານເພື່ອແບ່ງປັນສະຖານທີ່ຂອງທ່ານກັບເວັບໄຊນີ້</translation>
 <translation id="549669000822060376">ກະ​ລຸ​ນາ​ລໍ​ຖ້າ​ໃນ​ຂະ​ນະ​ທີ່ Chromium ​ຕິດ​ຕັ້ງ​ການອັບເດດລະບົບຫລ້າ​ສຸດ.</translation>
+<translation id="5496810170689441661">Chromium ກໍາລັງພະຍາຍາມແກ້ໄຂລະຫັດຜ່ານ. ພິມລະຫັດຜ່ານ Windows ຂອງທ່ານ ເພື່ອອະນຸຍາດໃຫ້ສຳເນົາໄດ້.</translation>
 <translation id="5623402015214259806">{0,plural, =0{ມີການອັບເດດ Chromium}=1{ມີການອັບເດດ Chromium}other{ມີການອັບເດດ Chromium ເປັນເວລາ # ມື້ແລ້ວ}}</translation>
 <translation id="5631814766731275228">ຊື່ ແລະ ຮູບໃນ Chromium</translation>
 <translation id="5634636535844844681">Chromium ຕ້ອງໃຊ້ Windows 7 ຫຼື ສູງກວ່າ.</translation>

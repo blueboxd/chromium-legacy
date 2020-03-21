@@ -52,9 +52,9 @@ luci.console_view(
             short_name = 'bld',
         ),
         luci.console_view_entry(
-            builder = 'ci/Mac10.14 Tests',
+            builder = 'ci/Mac10.15 Tests',
             category = 'mac',
-            short_name = '14',
+            short_name = '15',
         ),
         luci.console_view_entry(
             builder = 'ci/mac-hermetic-upgrade-rel',

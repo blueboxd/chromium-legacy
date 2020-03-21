@@ -1621,7 +1621,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
 
-  content::RenderProcessHostKillWaiter kill_waiter(
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   // Use ignore_result here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
@@ -1660,7 +1660,7 @@ IN_PROC_BROWSER_TEST_F(
       base::BindRepeating(&CreateTestDomStorageBackend, isolated_origin));
   EXPECT_TRUE(NavigateToURL(shell(), nonisolated_url));
 
-  content::RenderProcessHostKillWaiter kill_waiter(
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   // Use ignore_result here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
@@ -1685,7 +1685,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   EXPECT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
 
-  content::RenderProcessHostKillWaiter kill_waiter(
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   // Use ignore_result here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
@@ -2962,7 +2962,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, BroadcastChannelOriginEnforcement) {
   EXPECT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
 
-  content::RenderProcessHostKillWaiter kill_waiter(
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   ExecuteScriptAsync(
       shell()->web_contents()->GetMainFrame(),

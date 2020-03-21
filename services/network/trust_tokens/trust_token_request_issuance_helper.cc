@@ -73,7 +73,7 @@ void TrustTokenRequestIssuanceHelper::Begin(
   }
 
   key_commitment_getter_->Get(
-      top_level_origin_,
+      issuer_,
       base::BindOnce(&TrustTokenRequestIssuanceHelper::OnGotKeyCommitment,
                      weak_ptr_factory_.GetWeakPtr(), request, std::move(done)));
 }

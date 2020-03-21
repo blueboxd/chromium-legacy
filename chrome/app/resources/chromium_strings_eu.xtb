@@ -45,6 +45,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="2886012850691518054">Aukerakoa: lagundu Chromium hobetzen Google-ra erabilera-estatistikak eta hutsegite-txostenak automatikoki bidalita.</translation>
 <translation id="2910007522516064972">&amp;Chromium arakatzaileari buruz</translation>
 <translation id="2977470724722393594">Eguneratuta dago Chromium</translation>
+<translation id="2983934633046890458">Pasahitzak editatzen saiatzen ari da Chromium.</translation>
 <translation id="3032706164202344641">Chromium-ek ezin ditu egiaztatu pasahitzak. Saiatu geroago.</translation>
 <translation id="3032787606318309379">Chromium-era gehitzen…</translation>
 <translation id="3068515742935458733">Lagundu Chromium hobetzen hutsegite-txostenak eta <ph name="UMA_LINK" /> Google-ra bidalita</translation>
@@ -112,6 +113,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="5479196819031988440">Chromium sistema eragileak ezin du ireki orri hau.</translation>
 <translation id="5480860683791598150">Chromium-ek zure kokapena webgune honekin partekatzeko baimena behar du</translation>
 <translation id="549669000822060376">Itxaron Chromium-ek sistemaren azken eguneratzeak instalatu arte.</translation>
+<translation id="5496810170689441661">Pasahitzak editatzen saiatzen ari da Chromium. Hori baimentzeko, idatzi Windows-eko pasahitza.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium arakatzailearen eguneratze bat dago erabilgarri}=1{Chromium arakatzailearen eguneratze bat dago erabilgarri}other{Chromium arakatzailearen eguneratze batek # egun daramatza erabilgarri}}</translation>
 <translation id="5631814766731275228">Chromium profileko izena eta argazkia</translation>
 <translation id="5634636535844844681">Windows 7 edo sistema berriagoa behar da Chromium erabiltzeko.</translation>

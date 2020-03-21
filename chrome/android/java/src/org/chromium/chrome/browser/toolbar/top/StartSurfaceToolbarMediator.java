@@ -47,6 +47,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 /** The mediator implements interacts between the views and the caller. */
 class StartSurfaceToolbarMediator {
     private final PropertyModel mPropertyModel;
+    private final IdentityDiscController mIdentityDiscController;
+    private final Callback<IPHCommandBuilder> mShowIPHCallback;
+    private final boolean mHideIncognitoSwitchWhenNoTabs;
+
     private TabModelSelector mTabModelSelector;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private TabModelSelectorObserver mTabModelSelectorObserver;
@@ -55,16 +59,15 @@ class StartSurfaceToolbarMediator {
     @OverviewModeState
     private int mOverviewModeState;
     private boolean mIsGoogleSearchEngine;
-    private final IdentityDiscController mIdentityDiscController;
-    private final Callback<IPHCommandBuilder> mShowIPHCallback;
 
     StartSurfaceToolbarMediator(PropertyModel model, IdentityDiscController identityDiscController,
-            Callback<IPHCommandBuilder> showIPHCallback) {
+            Callback<IPHCommandBuilder> showIPHCallback, boolean hideIncognitoSwitchWhenNoTabs) {
         mPropertyModel = model;
         mOverviewModeState = OverviewModeState.NOT_SHOWN;
         mIdentityDiscController = identityDiscController;
         mIdentityDiscController.addObserver(this::identityDiscStateChanged);
         mShowIPHCallback = showIPHCallback;
+        mHideIncognitoSwitchWhenNoTabs = hideIncognitoSwitchWhenNoTabs;
     }
 
     void onNativeLibraryReady() {
@@ -112,7 +115,7 @@ class StartSurfaceToolbarMediator {
                     mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
                     updateIdentityDisc(
                             mIdentityDiscController.getForStartSurface(mOverviewModeState));
-                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
+                    if (mHideIncognitoSwitchWhenNoTabs) {
                         mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
                     }
                 }
@@ -130,7 +133,6 @@ class StartSurfaceToolbarMediator {
         for (int i = 0; i < incognitoTabModel.getCount(); i++) {
             if (!incognitoTabModel.getTabAt(i).isClosing()) return true;
         }
-        assert !mTabModelSelector.isIncognitoSelected();
         return false;
     }
 
@@ -170,8 +172,10 @@ class StartSurfaceToolbarMediator {
                 }
                 @Override
                 public void onOverviewModeStartedShowing(boolean showToolbar) {
-                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
+                    if (mHideIncognitoSwitchWhenNoTabs) {
                         mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
+                    }
+                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
                         mPropertyModel.set(NEW_TAB_BUTTON_AT_LEFT, true);
                     }
                 }

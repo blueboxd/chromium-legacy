@@ -2432,6 +2432,86 @@ void RenderProcessHostWatcher::RenderProcessHostDestroyed(
     std::move(quit_closure_).Run();
 }
 
+RenderProcessHostKillWaiter::RenderProcessHostKillWaiter(
+    RenderProcessHost* render_process_host,
+    const std::string& uma_name)
+    : exit_watcher_(render_process_host,
+                    RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT),
+      uma_name_(uma_name) {}
+
+base::Optional<int> RenderProcessHostKillWaiter::Wait() {
+  base::Optional<bad_message::BadMessageReason> result;
+
+  // Wait for the renderer kill.
+  exit_watcher_.Wait();
+#if !defined(OS_ANDROID)
+  // Getting termination status on android is not reliable. To avoid flakiness,
+  // we can skip this check and just check bad message. On other platforms we
+  // want to verify that the renderer got killed, rather than exiting normally.
+  if (exit_watcher_.did_exit_normally()) {
+    LOG(ERROR) << "Renderer unexpectedly exited normally.";
+    return result;
+  }
+#endif
+
+  // Find the logged UMA data (if present).
+  std::vector<base::Bucket> uma_samples =
+      histogram_tester_.GetAllSamples(uma_name_);
+  // No UMA will be present if the kill was not triggered by the //content layer
+  // (e.g. if it was triggered by bad_message::ReceivedBadMessage from //chrome
+  // layer or from somewhere in the //components layer).
+  if (uma_samples.empty()) {
+    LOG(ERROR) << "Unexpectedly found no '" << uma_name_ << "' samples.";
+    return result;
+  }
+  const base::Bucket& bucket = uma_samples.back();
+  // Assuming that user of RenderProcessHostKillWatcher makes sure that only one
+  // kill can happen while using the class.
+  DCHECK_EQ(1u, uma_samples.size())
+      << "Multiple renderer kills are unsupported";
+
+  return bucket.min;
+}
+
+RenderProcessHostBadMojoMessageWaiter::RenderProcessHostBadMojoMessageWaiter(
+    RenderProcessHost* render_process_host)
+    : monitored_render_process_id_(render_process_host->GetID()),
+      kill_waiter_(render_process_host,
+                   "Stability.BadMessageTerminated.Content") {
+  // base::Unretained is safe below, because the destructor unregisters the
+  // callback.
+  RenderProcessHostImpl::SetBadMojoMessageCallbackForTesting(
+      base::BindRepeating(
+          &RenderProcessHostBadMojoMessageWaiter::OnBadMojoMessage,
+          base::Unretained(this)));
+}
+
+RenderProcessHostBadMojoMessageWaiter::
+    ~RenderProcessHostBadMojoMessageWaiter() {
+  RenderProcessHostImpl::SetBadMojoMessageCallbackForTesting(
+      RenderProcessHostImpl::BadMojoMessageCallbackForTesting());
+}
+
+base::Optional<std::string> RenderProcessHostBadMojoMessageWaiter::Wait() {
+  base::Optional<int> bad_message_reason = kill_waiter_.Wait();
+  if (!bad_message_reason.has_value())
+    return base::nullopt;
+  if (bad_message_reason.value() != bad_message::RPH_MOJO_PROCESS_ERROR) {
+    LOG(ERROR) << "Unexpected |bad_message_reason|: "
+               << bad_message_reason.value();
+    return base::nullopt;
+  }
+
+  return observed_mojo_error_;
+}
+
+void RenderProcessHostBadMojoMessageWaiter::OnBadMojoMessage(
+    int render_process_id,
+    const std::string& error) {
+  if (render_process_id == monitored_render_process_id_)
+    observed_mojo_error_ = error;
+}
+
 DOMMessageQueue::DOMMessageQueue() {
   registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());

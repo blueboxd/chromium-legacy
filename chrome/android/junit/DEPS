@@ -5,7 +5,7 @@ include_rules = [
   "+chrome/browser/image_fetcher",
   "+chrome/browser/preferences/android/java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ssl/ChromeSecurityStateModelDelegate.java",
-  "+components/security_state/content/android/java/src/org/chromium/components/security_state/SecurityStateModel.java",
+  "+chrome/browser/profiles/android",
   "+chrome/browser/thumbnail/generator/android/java",
   "+chrome/browser/ui/messages/android/java",
   "+chrome/browser/util",
@@ -17,6 +17,7 @@ include_rules = [
   "+components/omnibox/browser/android/java/src/org/chromium/components/omnibox",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
   "+components/search_engines/android/java/src/org/chromium/components/search_engines",
+  "+components/security_state/content/android/java/src/org/chromium/components/security_state/SecurityStateModel.java",
   "+components/sync/android/java/src/org/chromium/components/sync",
   "+components/sync/test/android/javatests/src/org/chromium/components/sync/test/util",
 

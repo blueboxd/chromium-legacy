@@ -4,24 +4,33 @@
 
 #include <memory>
 
+#include "base/command_line.h"
+
 #include "build/build_config.h"
 #include "content/browser/sms/sms_provider.h"
+#include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #if defined(OS_ANDROID)
-#include "content/browser/sms/sms_provider_android.h"
+#include "content/browser/sms/sms_provider_gms_user_consent.h"
+#include "content/browser/sms/sms_provider_gms_verification.h"
 #endif
 
 namespace content {
 
-SmsProvider::SmsProvider() = default;
+class RenderFrameHost;
 
+SmsProvider::SmsProvider() = default;
 SmsProvider::~SmsProvider() = default;
 
 // static
-std::unique_ptr<SmsProvider> SmsProvider::Create() {
+std::unique_ptr<SmsProvider> SmsProvider::Create(RenderFrameHost* rfh) {
 #if defined(OS_ANDROID)
-  return std::make_unique<SmsProviderAndroid>();
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebOtpBackend) == switches::kWebOtpBackendUserConsent) {
+    return std::make_unique<SmsProviderGmsUserConsent>(rfh);
+  }
+  return std::make_unique<SmsProviderGmsVerification>();
 #else
   return nullptr;
 #endif

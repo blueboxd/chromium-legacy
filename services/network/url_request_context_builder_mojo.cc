@@ -67,7 +67,7 @@ URLRequestContextBuilderMojo::CreateProxyResolutionService(
 
     std::unique_ptr<net::PacFileFetcherImpl> pac_file_fetcher;
     pac_file_fetcher = net::PacFileFetcherImpl::Create(url_request_context);
-    return CreateProxyResolutionServiceUsingMojoFactory(
+    return CreateConfiguredProxyResolutionServiceUsingMojoFactory(
         std::move(mojo_proxy_resolver_factory_),
         std::move(proxy_config_service), std::move(pac_file_fetcher),
         std::move(dhcp_pac_file_fetcher), host_resolver, net_log,

@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">По избор: Помогнете ни да подобрим Chromium, като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове.</translation>
 <translation id="2910007522516064972">Всичко за &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium е актуален</translation>
+<translation id="2983934633046890458">Chromium се опитва да редактира паролите.</translation>
 <translation id="3032706164202344641">Chromium не може да провери паролите ви. Опитайте пак по-късно.</translation>
 <translation id="3032787606318309379">Добавя се към Chromium...</translation>
 <translation id="3068515742935458733">Помогнете ни да подобрим Chromium, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
@@ -108,6 +109,7 @@
 <translation id="5479196819031988440">Chromium OS не може да отвори тази страница.</translation>
 <translation id="5480860683791598150">Chromium се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
 <translation id="549669000822060376">Моля, изчакайте, докато Chromium инсталира най-новите системни актуализации.</translation>
+<translation id="5496810170689441661">Chromium опитва да редактира паролите. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Налице е актуализация за Chromium}=1{Налице е актуализация за Chromium}other{Налице е актуализация за Chromium от # дни}}</translation>
 <translation id="5631814766731275228">Име и снимка за Chromium</translation>
 <translation id="5634636535844844681">За Chromium се изисква Windows 7 или по-нова версия.</translation>

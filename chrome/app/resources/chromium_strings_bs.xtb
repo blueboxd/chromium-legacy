@@ -45,6 +45,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="2886012850691518054">Nije obavezno: Pomozite nam poboljšati Chromium automatskim slanjem Googleu statistika korištenja i izvještaja o padovima aplikacija.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
 <translation id="2977470724722393594">Chromium je ažuriran</translation>
+<translation id="2983934633046890458">Chromium pokušava urediti lozinke.</translation>
 <translation id="3032706164202344641">Chromium ne može provjeravati vaše lozinke. Pokušajte ponovo kasnije.</translation>
 <translation id="3032787606318309379">Dodavanje u Chromium…</translation>
 <translation id="3068515742935458733">Pomozite nam da poboljšamo Chromium i šaljite Googleu izvještaje o padu aplikacija i <ph name="UMA_LINK" /></translation>
@@ -112,6 +113,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="5479196819031988440">Chromium OS ne može otvoriti ovu stranicu.</translation>
 <translation id="5480860683791598150">Chromiumu treba pristup vašoj lokaciji da bi je dijelio s ovom web lokacijom</translation>
 <translation id="549669000822060376">Sačekajte dok Chromium instalira najnovija ažuriranja sistema.</translation>
+<translation id="5496810170689441661">Chromium pokušava urediti lozinke. Unesite Windows lozinku da ovo omogućite.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ažuriranje za Chromium je dostupno}=1{Ažuriranje za Chromium je dostupno}one{Ažuriranje za Chromium je dostupno # dan}few{Ažuriranje za Chromium je dostupno # dana}other{Ažuriranje za Chromium je dostupno # dana}}</translation>
 <translation id="5631814766731275228">Ime i slika u Chromiumu</translation>
 <translation id="5634636535844844681">Za Chromium je potreban Windows 7 ili noviji operativni sistem.</translation>

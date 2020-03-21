@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">Προαιρετικό: συμβάλετε στη βελτίωση του Chromium στέλνοντας αυτόματα στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
 <translation id="2910007522516064972">Σχετικά με το &amp;Chromium</translation>
 <translation id="2977470724722393594">Το Chromium έχει ενημερωθεί</translation>
+<translation id="2983934633046890458">Το Chromium προσπαθεί να επεξεργαστεί κωδικούς πρόσβασης.</translation>
 <translation id="3032706164202344641">Το Chromium δεν μπορεί να ελέγξει τους κωδικούς πρόσβασής σας. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="3032787606318309379">Προσθήκη στο Chromium…</translation>
 <translation id="3068515742935458733">Βοηθήστε μας να κάνουμε το Chromium καλύτερο, αποστέλλωντας αναφορές σφαλμάτων και <ph name="UMA_LINK" /> στη Google</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">Το Chromium OS δεν μπορεί να ανοίξει αυτήν τη σελίδα.</translation>
 <translation id="5480860683791598150">Το Chromium χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο</translation>
 <translation id="549669000822060376">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chromium.</translation>
+<translation id="5496810170689441661">Το Chromium προσπαθεί να επεξεργαστεί κωδικούς πρόσβασης. Για να επιτρέψετε αυτήν την ενέργεια, πληκτρολογήστε τον κωδικό πρόσβασης των Windows.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium}=1{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium}other{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium για # ημέρες}}</translation>
 <translation id="5631814766731275228">Όνομα και εικόνα στο Chromium</translation>
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>

@@ -1758,6 +1758,13 @@ are declared in tools/grit/grit_rule.gni.
       </message>
 
       <if expr="chromeos">
+        <message name="IDS_PROMPT_BLOCKED_MIXED_DOWNLOAD_TITLE"
+                 desc="In the download notification, a title of the message shown on a download blocked for being insecure.">
+          Insecure download blocked
+        </message>
+      </if>
+
+      <if expr="chromeos">
         <message name="IDS_PROMPT_BLOCKED_MALICIOUS_DOWNLOAD_TITLE"
                  desc="In the download notification, a title of message shown for blocked download">
           Dangerous download blocked

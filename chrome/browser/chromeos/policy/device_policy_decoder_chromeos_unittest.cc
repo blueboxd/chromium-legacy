@@ -63,9 +63,9 @@ std::unique_ptr<base::Value> DevicePolicyDecoderChromeOSTest::GetWallpaperDict()
 TEST_F(DevicePolicyDecoderChromeOSTest,
        DecodeJsonStringAndNormalizeJSONParseError) {
   std::string error;
-  std::unique_ptr<base::Value> decoded_json = DecodeJsonStringAndNormalize(
+  base::Optional<base::Value> decoded_json = DecodeJsonStringAndNormalize(
       kInvalidJson, key::kDeviceWallpaperImage, &error);
-  EXPECT_FALSE(decoded_json);
+  EXPECT_FALSE(decoded_json.has_value());
   EXPECT_EQ("Invalid JSON string: Line: 1, column: 13, Syntax error.", error);
 }
 
@@ -82,9 +82,9 @@ TEST_F(DevicePolicyDecoderChromeOSTest,
 TEST_F(DevicePolicyDecoderChromeOSTest,
        DecodeJsonStringAndNormalizeInvalidValue) {
   std::string error;
-  std::unique_ptr<base::Value> decoded_json = DecodeJsonStringAndNormalize(
+  base::Optional<base::Value> decoded_json = DecodeJsonStringAndNormalize(
       kWallpaperJsonInvalidValue, key::kDeviceWallpaperImage, &error);
-  EXPECT_FALSE(decoded_json);
+  EXPECT_FALSE(decoded_json.has_value());
   EXPECT_EQ(
       "Invalid policy value: The value type doesn't match the schema type. (at "
       "url)",
@@ -94,9 +94,9 @@ TEST_F(DevicePolicyDecoderChromeOSTest,
 TEST_F(DevicePolicyDecoderChromeOSTest,
        DecodeJsonStringAndNormalizeUnknownProperty) {
   std::string error;
-  std::unique_ptr<base::Value> decoded_json = DecodeJsonStringAndNormalize(
+  base::Optional<base::Value> decoded_json = DecodeJsonStringAndNormalize(
       kWallpaperJsonUnknownProperty, key::kDeviceWallpaperImage, &error);
-  EXPECT_EQ(*GetWallpaperDict(), *decoded_json);
+  EXPECT_EQ(*GetWallpaperDict(), decoded_json.value());
   EXPECT_EQ(
       "Dropped unknown properties: Unknown property: unknown-field (at "
       "toplevel)",
@@ -105,9 +105,9 @@ TEST_F(DevicePolicyDecoderChromeOSTest,
 
 TEST_F(DevicePolicyDecoderChromeOSTest, DecodeJsonStringAndNormalizeSuccess) {
   std::string error;
-  std::unique_ptr<base::Value> decoded_json = DecodeJsonStringAndNormalize(
+  base::Optional<base::Value> decoded_json = DecodeJsonStringAndNormalize(
       kWallpaperJson, key::kDeviceWallpaperImage, &error);
-  EXPECT_EQ(*GetWallpaperDict(), *decoded_json);
+  EXPECT_EQ(*GetWallpaperDict(), decoded_json.value());
   EXPECT_TRUE(error.empty());
 }
 

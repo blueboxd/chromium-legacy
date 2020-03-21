@@ -600,6 +600,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8735953464173050365">A billentyűzet beállításainak megjelenítése. <ph name="KEYBOARD_NAME" /> van kiválasztva</translation>
 <translation id="875593634123171288">VPN-beállítások megjelenítése</translation>
 <translation id="8785070478575117577">Csatlakozás a következőhöz: <ph name="NETWORK_NAME" /></translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">A visszalépéshez csúsztasson balról jobbra</translation>
 <translation id="8828714802988429505">90°</translation>

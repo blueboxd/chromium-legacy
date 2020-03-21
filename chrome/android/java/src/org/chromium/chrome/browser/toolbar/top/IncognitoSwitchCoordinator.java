@@ -13,7 +13,6 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -39,7 +38,22 @@ class IncognitoSwitchCoordinator {
         Switch incognitoSwitchView = (Switch) root.findViewById(R.id.incognito_switch);
         assert incognitoSwitchView != null;
 
-        initializePropertyModel();
+        mPropertyModel = new PropertyModel.Builder(IncognitoSwitchProperties.ALL_KEYS)
+                                 .with(ON_CHECKED_CHANGE_LISTENER,
+                                         new CompoundButton.OnCheckedChangeListener() {
+                                             @Override
+                                             public void onCheckedChanged(CompoundButton buttonView,
+                                                     boolean incognitoSelected) {
+                                                 setSelectedMode(incognitoSelected);
+                                             }
+                                         })
+                                 .with(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected())
+                                 // TODO(crbug.com/1042997): check start surface status properly in
+                                 //  StartSurfaceToolbarMediator.
+                                 .with(IS_VISIBLE,
+                                         !StartSurfaceConfiguration
+                                                  .START_SURFACE_HIDE_INCOGNITO_SWITCH.getValue())
+                                 .build();
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -59,38 +73,6 @@ class IncognitoSwitchCoordinator {
      */
     public void destroy() {
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
-    }
-
-    private void initializePropertyModel() {
-        mPropertyModel = new PropertyModel(IncognitoSwitchProperties.ALL_KEYS);
-        mPropertyModel.set(
-                ON_CHECKED_CHANGE_LISTENER, new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(
-                            CompoundButton buttonView, boolean incognitoSelected) {
-                        setSelectedMode(incognitoSelected);
-                    }
-                });
-        // Set the initial state.
-        mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
-        if (!isOmniboxOnlyStartSurface()) {
-            // TODO(crbug.com/1042997): check start surface status properly in
-            //  StartSurfaceToolbarMediator.
-            mPropertyModel.set(IS_VISIBLE, true);
-        }
-    }
-
-    // TODO(crbug.com/1042997): refactor the logic and share with StartSurfaceCoordinator.
-    private boolean isOmniboxOnlyStartSurface() {
-        if (!StartSurfaceConfiguration.isStartSurfaceEnabled()) {
-            return false;
-        }
-
-        if (!ChromeFeatureList.isInitialized()) return false;
-
-        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
-        return feature.equals("omniboxonly");
     }
 
     private void setSelectedMode(boolean incognitoSelected) {

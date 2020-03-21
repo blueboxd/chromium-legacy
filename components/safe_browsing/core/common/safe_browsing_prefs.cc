@@ -107,8 +107,6 @@ const char kPasswordProtectionWarningTrigger[] =
     "safebrowsing.password_protection_warning_trigger";
 const char kAdvancedProtectionLastRefreshInUs[] =
     "safebrowsing.advanced_protection_last_refresh";
-const char kSafeBrowsingRealTimeLookupEnabled[] =
-    "safebrowsing.real_time_lookup_enabled";
 const char kSafeBrowsingSendFilesForMalwareCheck[] =
     "safebrowsing.send_files_for_malware_check";
 const char kUnsafeEventsReportingEnabled[] =
@@ -217,8 +215,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
                                 PASSWORD_PROTECTION_OFF);
   registry->RegisterInt64Pref(prefs::kAdvancedProtectionLastRefreshInUs, 0);
-  registry->RegisterBooleanPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
-                                false);
   registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
                                 DO_NOT_SCAN);
   registry->RegisterBooleanPref(prefs::kAdvancedProtectionAllowed, true);

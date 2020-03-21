@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">Изборно: помогнете да го подобриме Chromium со автоматско испраќање статистика на користење и извештаи за падови на Google.</translation>
 <translation id="2910007522516064972">За &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium е ажуриран</translation>
+<translation id="2983934633046890458">Chromium се обидува да измени лозинки.</translation>
 <translation id="3032706164202344641">Chromium не може да ги провери вашите лозинки. Обидете се пак подоцна.</translation>
 <translation id="3032787606318309379">Се додава на Chromium...</translation>
 <translation id="3068515742935458733">Помогнете да го подобриме Chromium со испраќање извештаи за падови и <ph name="UMA_LINK" /> до Google</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">ОС на Chromium не може да ја отвори страницава.</translation>
 <translation id="5480860683791598150">На Chromium му треба пристап до вашата локација за да ја сподели со сајтов</translation>
 <translation id="549669000822060376">Почекајте додека Chromium ги инсталира последните системски ажурирања.</translation>
+<translation id="5496810170689441661">Chromium се обидува да измени лозинки. Внесете ја својата лозинка за Windows за да го дозволите ова.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Достапно е ажурирање за Chromium}=1{Достапно е ажурирање за Chromium}one{Достапно е ажурирање за Chromium веќе # ден}other{Достапно е ажурирање за Chromium веќе # дена}}</translation>
 <translation id="5631814766731275228">Име и слика на Chromium</translation>
 <translation id="5634636535844844681">Chromium бара Windows 7 или понова верзија.</translation>

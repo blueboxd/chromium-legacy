@@ -259,9 +259,8 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest, CrashForNoBinder) {
   ASSERT_TRUE(NavigateToURL(web_contents, content::GetWebUIURL("foo")));
 
   content::ScopedAllowRendererCrashes allow;
-  content::RenderProcessHostWatcher watcher(
-      web_contents->GetMainFrame()->GetProcess(),
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  content::RenderProcessHostBadMojoMessageWaiter watcher(
+      web_contents->GetMainFrame()->GetProcess());
 
   // Attempt to bind an interface with no browser binders registered.
   EXPECT_FALSE(content::EvalJs(web_contents,
@@ -272,6 +271,10 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest, CrashForNoBinder) {
                                "})()")
                    .error.empty());
 
-  watcher.Wait();
+  const char kExpectedMojoError[] =
+      "Received bad user message: "
+      "No binder found for interface test.mojom.Baz "
+      "for the frame/document scope";
+  EXPECT_EQ(kExpectedMojoError, watcher.Wait());
   EXPECT_TRUE(web_contents->IsCrashed());
 }

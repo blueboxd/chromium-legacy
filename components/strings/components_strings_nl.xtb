@@ -590,6 +590,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="3587738293690942763">Midden</translation>
 <translation id="3592413004129370115">Italian (envelop)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">App geblokkeerd door je beheerder</translation>
 <translation id="3608932978122581043">Invoerrichting</translation>
 <translation id="3614103345592970299">Grootte 2</translation>
 <translation id="361438452008624280">Lijstitem '<ph name="LANGUAGE_ID" />': Onbekende of niet-ondersteunde taal.</translation>
@@ -842,6 +843,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> wil reageren op toegankelijkheidsfunctionaliteit</translation>
 <translation id="467809019005607715">Google Presentaties</translation>
+<translation id="4680804919228900307">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan je opgeslagen wachtwoorden voor <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en andere sites waarop je dit wachtwoord gebruikt, nu te checken.</translation>
 <translation id="4690462567478992370">Stoppen met het gebruik van een ongeldig certificaat</translation>
 <translation id="4691835149146451662">Architecture-A (envelop)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1007,8 +1009,10 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5329858041417644019">Je browser wordt niet beheerd.</translation>
 <translation id="5332219387342487447">Verzendmethode</translation>
 <translation id="5334013548165032829">Gedetailleerde systeemlogboeken</translation>
+<translation id="5340250774223869109">App is geblokkeerd</translation>
 <translation id="534295439873310000">NFC-apparaten</translation>
 <translation id="5344579389779391559">Deze pagina brengt je mogelijk kosten in rekening</translation>
+<translation id="5346336634660260557">De content van het klembord scannen, evenals bestanden die je downloadt of uploadt in Chrome.</translation>
 <translation id="5355557959165512791">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat het bijbehorende certificaat is ingetrokken. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
 <translation id="5371425731340848620">Pas updaten</translation>
@@ -1418,6 +1422,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="7219179957768738017">De verbinding maakt gebruik van <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Verwerken</translation>
 <translation id="7221855153210829124">Meldingen weergeven</translation>
+<translation id="7229659723041939809">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan je opgeslagen wachtwoorden voor <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en andere sites waarop je dit wachtwoord gebruikt, nu te checken.</translation>
 <translation id="7233592378249864828">Bevestigingsblad afdrukken</translation>
 <translation id="7238585580608191973">SHA-256-vingerafdruk</translation>
 <translation id="7240120331469437312">Alternatieve naam voor entiteit van certificaat</translation>
@@ -1485,6 +1490,7 @@ Aanvullende informatie:
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="7495290002932347110">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app. Chrome raadt je aan je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> nu te wijzigen.</translation>
 <translation id="7498234416455752244">Doorgaan met bewerken</translation>
+<translation id="7503664977220660814">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan je opgeslagen wachtwoorden voor <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en andere sites waarop je dit wachtwoord gebruikt, nu te checken.</translation>
 <translation id="7508255263130623398">Geretourneerde apparaat-ID voor beleid is leeg of komt niet overeen met de huidige apparaat-ID</translation>
 <translation id="7508870219247277067">Avocadogroen</translation>
 <translation id="7511955381719512146">Het is mogelijk dat je <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> moet bezoeken van het wifi-netwerk dat je gebruikt.</translation>
@@ -1560,6 +1566,7 @@ Aanvullende informatie:
 <translation id="7763386264682878361">Payment Manifest Parser</translation>
 <translation id="7764225426217299476">Adres toevoegen</translation>
 <translation id="7766518757692125295">Skirt</translation>
+<translation id="7767271804335921384">De app is geblokkeerd door je beheerder</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Dezelfde volgorde met de bedrukte zijde omhoog</translation>
 <translation id="777702478322588152">Prefectuur</translation>
@@ -1580,6 +1587,7 @@ Aanvullende informatie:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Site verlaten?</translation>
 <translation id="7865448901209910068">Beste snelheid</translation>
+<translation id="7874263914261512992">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan je opgeslagen wachtwoorden voor <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en andere sites waarop je dit wachtwoord gebruikt, nu te checken.</translation>
 <translation id="7878562273885520351">Je wachtwoord is mogelijk gehackt</translation>
 <translation id="7882421473871500483">Bruin</translation>
 <translation id="7887683347370398519">Controleer je CVC-code en probeer het opnieuw</translation>
@@ -1716,6 +1724,7 @@ Aanvullende informatie:
 <translation id="8474910779563686872">Ontwikkelaarsgegevens weergeven</translation>
 <translation id="8479754468255770962">Nietje linksonder</translation>
 <translation id="8483780878231876732">Log in bij Chrome om passen uit je Google-account te gebruiken</translation>
+<translation id="8485393050551136813">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan je opgeslagen wachtwoorden voor <ph name="WEBSITE_1" /> en andere sites waarop je dit wachtwoord gebruikt, nu te checken.</translation>
 <translation id="8488350697529856933">Van toepassing op</translation>
 <translation id="8490137692873530638">Stapeleenheid 10</translation>
 <translation id="8498891568109133222">Het duurt te lang voordat <ph name="HOST_NAME" /> reageert.</translation>
@@ -1765,6 +1774,7 @@ Aanvullende informatie:
 <translation id="87601671197631245">Deze site gebruikt een verouderde beveiligingsconfiguratie, waardoor je gegevens (zoals wachtwoorden, berichten of creditcardnummers) openbaar kunnen worden gemaakt als ze naar deze site worden gestuurd.</translation>
 <translation id="8761567432415473239">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />schadelijke programma's gevonden<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-apparaat</translation>
+<translation id="8774457497170244317">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan je opgeslagen wachtwoorden voor <ph name="WEBSITE_1" /> en andere sites waarop je dit wachtwoord gebruikt, nu te checken.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
 <translation id="8792621596287649091">Je kunt de toegang tot je account van <ph name="ORG_NAME" /> kwijtraken of slachtoffer worden van identiteitsdiefstal. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>

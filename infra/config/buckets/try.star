@@ -81,6 +81,10 @@ try_.blink_mac_builder(
     name = 'mac10.14-blink-rel',
 )
 
+try_.blink_mac_builder(
+    name = 'mac10.15-blink-rel',
+)
+
 
 try_.chromium_android_builder(
     name = 'android-asan',
@@ -439,6 +443,10 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = 'linux-layout-tests-edit-ng',
+)
+
+try_.chromium_linux_builder(
     name = 'linux-layout-tests-fragment-item',
 )
 
@@ -474,7 +482,7 @@ try_.chromium_mac_builder(
     os = os.MAC_DEFAULT,
 )
 
-# NOTE: the following 4 trybots aren't sensitive to Mac version on which
+# NOTE: the following trybots aren't sensitive to Mac version on which
 # they are built, hence no additional dimension is specified.
 # The 10.xx version translates to which bots will run isolated tests.
 try_.chromium_mac_builder(
@@ -491,6 +499,10 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_builder(
     name = 'mac_chromium_10.14_rel_ng',
+)
+
+try_.chromium_mac_builder(
+    name = 'mac_chromium_10.15_rel_ng',
 )
 
 try_.chromium_mac_builder(

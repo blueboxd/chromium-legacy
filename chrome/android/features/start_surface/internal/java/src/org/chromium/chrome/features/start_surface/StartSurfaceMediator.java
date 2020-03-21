@@ -123,13 +123,15 @@ class StartSurfaceMediator
     private ChromeFullscreenManager mFullScreenManager;
     private ChromeFullscreenManager.FullscreenListener mFullScreenListener;
     private ActivityStateChecker mActivityStateChecker;
+    private boolean mExcludeMVTiles;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             @SurfaceMode int surfaceMode, NightModeStateProvider nightModeStateProvider,
-            ChromeFullscreenManager fullscreenManager, ActivityStateChecker activityStateChecker) {
+            ChromeFullscreenManager fullscreenManager, ActivityStateChecker activityStateChecker,
+            boolean excludeMVTiles) {
         mController = controller;
         mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
@@ -139,6 +141,7 @@ class StartSurfaceMediator
         mNightModeStateProvider = nightModeStateProvider;
         mFullScreenManager = fullscreenManager;
         mActivityStateChecker = activityStateChecker;
+        mExcludeMVTiles = excludeMVTiles;
 
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
@@ -640,7 +643,7 @@ class StartSurfaceMediator
     }
 
     private void setMVTilesVisibility(boolean isVisible) {
-        if (isVisible == mPropertyModel.get(MV_TILES_VISIBLE)) return;
+        if (mExcludeMVTiles || isVisible == mPropertyModel.get(MV_TILES_VISIBLE)) return;
         mPropertyModel.set(MV_TILES_VISIBLE, isVisible);
     }
 

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">ពង្រីក</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, កម្មវិធី​ដែលបាន​ដំឡើង</translation>
 <translation id="1450753235335490080">មិន​អាច​ចែក​រំលែក <ph name="CONTENT_TYPE" />​ បាន​ទេ</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> បានប្ដូរ​ជាមួយ <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">អ្នកបានស្វែងរកវាពីមុន។ ការលុប "<ph name="QUERY" />" ចេញពីប្រវត្តិ​របស់អ្នកនឹងលុបវាចេញពីគណនីនៅលើ​ឧបករណ៍​ទាំងអស់​របស់អ្នក​ជាអចិន្ត្រៃយ៍។</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 នាទី និង }other{# នាទី និង }}</translation>
 <translation id="1643823602425662293">ការ​ជូន​ដំណឹង</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">ពីឆ្វេងទៅស្តាំ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ទំនងបំផុត</translation>
+<translation id="7170202025028120564">ការកំណត់​ការបង្ហាញរបស់​កម្មវិធី​អ្នក​នឹង​មានប្រសិទ្ធភាព នៅពេល​កម្មវិធីនេះ​ចាប់ផ្ដើមឡើងវិញ​លើកក្រោយ​។</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{នៅសល់ 1 នាទីទៀត}other{នៅសល់ # នាទីទៀត}}</translation>
 <translation id="7319740667687257810">កម្មវិធី​ចាប់ផ្ដើម ទិដ្ឋភាព​ដោយផ្នែក</translation>

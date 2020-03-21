@@ -600,6 +600,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8735953464173050365">Kuvab klaviatuuriseaded. Valitud on <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Kuvab VPN-i seaded</translation>
 <translation id="8785070478575117577">Loo ühendus võrguga <ph name="NETWORK_NAME" /></translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" />.</translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="8825863694328519386">Tagasiliikumiseks pühkige vasakult paremale</translation>
 <translation id="8828714802988429505">90°</translation>

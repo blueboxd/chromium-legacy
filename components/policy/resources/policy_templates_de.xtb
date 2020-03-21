@@ -3058,7 +3058,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Außerdem wird sie voraussichtlich in Version 83 von <ph name="PRODUCT_NAME" /> für Linux entfernt, wenn auch die Legacy-Zertifikatsprüfung unter Linux voraussichtlich nicht mehr unterstützt wird.
 
-      Voraussichtlich wird sie auch in Version 87 von <ph name="PRODUCT_NAME" /> für Mac OS X entfernt, wenn auch die Legacy-Zertifikatsprüfung unter Mac OS X voraussichtlich nicht mehr unterstützt wird.
+      Voraussichtlich wird sie auch in Version 87 von <ph name="PRODUCT_NAME" /> für Mac OS X entfernt, wenn die Legacy-Zertifikatsprüfung unter Mac OS X voraussichtlich nicht mehr unterstützt wird.
       </translation>
 <translation id="5498045818698736356">Hierdurch wird eine Liste von Web-Apps festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können.
 

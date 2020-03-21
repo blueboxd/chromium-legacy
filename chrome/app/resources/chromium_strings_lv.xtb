@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">Izvēles: palīdziet uzlabot Chromium, automātiski nosūtot lietojuma statistiku un avārijas pārskatus uzņēmumam Google.</translation>
 <translation id="2910007522516064972">Par &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium ir atjaunināts</translation>
+<translation id="2983934633046890458">Chromium mēģina rediģēt paroles.</translation>
 <translation id="3032706164202344641">Pārlūkprogrammā Chromium nevar pārbaudīt jūsu paroles. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="3032787606318309379">Notiek pievienošana pārlūkam Chromium...</translation>
 <translation id="3068515742935458733">Palīdzēt uzlabot Chromium, nosūtot Google serveriem avāriju pārskatus un <ph name="UMA_LINK" /></translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">Chromium OS nevar atvērt šo lapu.</translation>
 <translation id="5480860683791598150">Pārlūkam Chromium ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="549669000822060376">Lūdzu, uzgaidiet, kamēr Chromium instalē jaunākos sistēmas atjauninājumus.</translation>
+<translation id="5496810170689441661">Chromium mēģina rediģēt paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ir pieejams Chromium atjauninājums}=1{Ir pieejams Chromium atjauninājums}zero{Chromium atjauninājums ir pieejams jau # dienu}one{Chromium atjauninājums ir pieejams jau # dienu}other{Chromium atjauninājums ir pieejams jau # dienas}}</translation>
 <translation id="5631814766731275228">Chromium profila vārds un attēls</translation>
 <translation id="5634636535844844681">Pārlūka Chromium izmantošanai nepieciešama operētājsistēma Windows 7 vai jaunāka versija.</translation>

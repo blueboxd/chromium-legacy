@@ -114,9 +114,12 @@ class ClientBase {
  protected:
   ClientBase();
   virtual ~ClientBase();
-  std::unique_ptr<Buffer> CreateBuffer(const gfx::Size& size,
-                                       int32_t drm_format,
-                                       int32_t bo_usage);
+  std::unique_ptr<Buffer> CreateBuffer(
+      const gfx::Size& size,
+      int32_t drm_format,
+      int32_t bo_usage,
+      wl_buffer_listener* buffer_listener = nullptr,
+      void* data = nullptr);
   std::unique_ptr<Buffer> CreateDrmBuffer(const gfx::Size& size,
                                           int32_t drm_format,
                                           int32_t bo_usage,

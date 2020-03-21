@@ -381,6 +381,11 @@
              use_base_dir="false"
              type="BINDATA" />
   </if>
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_SYNC_ACCOUNT_CONTROL_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_account_control.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_PEOPLE_PAGE_PEOPLE_PAGE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/people_page.m.js"
            use_base_dir="false"
@@ -392,6 +397,15 @@
            type="BINDATA" />
   <include name="IDR_SETTINGS_PEOPLE_PAGE_SIGNOUT_DIALOG_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/signout_dialog.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_SYNC_CONTROLS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_controls.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_SYNC_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_page.m.js"
            use_base_dir="false"
            preprocess="true"
            type="BINDATA" />
@@ -552,6 +566,18 @@
              use_base_dir="false"
              type="BINDATA" />
   </if>
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_DEFAULT_SETTING_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/category_default_setting.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_SETTING_EXCEPTIONS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/category_setting_exceptions.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CHOOSER_EXCEPTION_LIST_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/chooser_exception_list.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_SITE_SETTINGS_CHOOSER_EXCEPTION_LIST_ENTRY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/chooser_exception_list_entry.m.js"
            use_base_dir="false"

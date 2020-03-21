@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Povečaj</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, aplikacija je že nameščena</translation>
 <translation id="1450753235335490080">Ni mogoče deliti tega: <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Element <ph name="FIRST_ITEM_TITLE" /> je zamenjan z elementom <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">To ste v preteklosti že iskali. Če izbrišete poizvedbo »<ph name="QUERY" />« iz zgodovine, bo trajno odstranjena iz računa v vseh napravah.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
 <translation id="1643823602425662293">Obvestilo</translation>
@@ -186,6 +187,7 @@
 <translation id="6974053822202609517">Od desne proti levi</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">NAJVERJETNEJŠE</translation>
+<translation id="7170202025028120564">Nastavitve prikaza aplikacije se bodo uveljavile, ko jo boste naslednjič znova zagnali.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>
 <translation id="7319740667687257810">Zaganjalnik, delni pogled</translation>

@@ -48,6 +48,8 @@ enum class ShadowRootType { V0, kOpen, kClosed, kUserAgent };
 
 enum class SlotAssignmentMode { kManual, kAuto };
 
+enum class FocusDelegation { kNone, kDelegateFocus };
+
 class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);

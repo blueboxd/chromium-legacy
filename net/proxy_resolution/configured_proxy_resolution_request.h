@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_RESOLUTION_PROXY_RESOLUTION_REQUEST_IMPL_H_
-#define NET_PROXY_RESOLUTION_PROXY_RESOLUTION_REQUEST_IMPL_H_
+#ifndef NET_PROXY_RESOLUTION_CONFIGURED_PROXY_RESOLUTION_REQUEST_H_
+#define NET_PROXY_RESOLUTION_CONFIGURED_PROXY_RESOLUTION_REQUEST_H_
 
 #include <memory>
 #include <string>
@@ -22,27 +22,26 @@ namespace net {
 class ProxyInfo;
 class ConfiguredProxyResolutionService;
 
-// ProxyResolutionRequestImpl is the concrete implementation of
+// ConfiguredProxyResolutionRequest is the concrete implementation of
 // ProxyResolutionRequest used by ConfiguredProxyResolutionService. Manages a
 // single asynchronous proxy resolution request.
-//
-// TODO(https://crbug.com/1032820): Rename this to
-// ConfiguredProxyResolutionRequestImpl.
-class ProxyResolutionRequestImpl final : public ProxyResolutionRequest {
+class ConfiguredProxyResolutionRequest final : public ProxyResolutionRequest {
  public:
-  ProxyResolutionRequestImpl(ConfiguredProxyResolutionService* service,
-                             const GURL& url,
-                             const std::string& method,
-                             const NetworkIsolationKey& network_isolation_key,
-                             ProxyInfo* results,
-                             const CompletionOnceCallback user_callback,
-                             const NetLogWithSource& net_log);
+  ConfiguredProxyResolutionRequest(
+      ConfiguredProxyResolutionService* service,
+      const GURL& url,
+      const std::string& method,
+      const NetworkIsolationKey& network_isolation_key,
+      ProxyInfo* results,
+      const CompletionOnceCallback user_callback,
+      const NetLogWithSource& net_log);
 
-  ProxyResolutionRequestImpl(const ProxyResolutionRequestImpl&) = delete;
-  ProxyResolutionRequestImpl& operator=(const ProxyResolutionRequestImpl&) =
+  ConfiguredProxyResolutionRequest(const ConfiguredProxyResolutionRequest&) =
       delete;
+  ConfiguredProxyResolutionRequest& operator=(
+      const ConfiguredProxyResolutionRequest&) = delete;
 
-  ~ProxyResolutionRequestImpl() override;
+  ~ConfiguredProxyResolutionRequest() override;
 
   // Starts the resolve proxy request.
   int Start();
@@ -97,4 +96,4 @@ class ProxyResolutionRequestImpl final : public ProxyResolutionRequest {
 
 }  // namespace net
 
-#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLUTION_REQUEST_IMPL_H_
+#endif  // NET_PROXY_RESOLUTION_CONFIGURED_PROXY_RESOLUTION_REQUEST_H_

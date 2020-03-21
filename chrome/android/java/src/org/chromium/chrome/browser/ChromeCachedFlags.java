@@ -70,6 +70,8 @@ public class ChromeCachedFlags {
         // clang-format off
         List<CachedFieldTrialParameter> fieldTrialsToCache = Arrays.asList(
                 BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION,
+                StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES,
+                StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
                 TabFeatureUtilities.ZOOMING_MIN_MEMORY,

@@ -599,6 +599,7 @@
 <translation id="8735953464173050365">किबोर्डका सेटिङहरू देखाउनुहोस्। <ph name="KEYBOARD_NAME" /> चयन गरिएको छ</translation>
 <translation id="875593634123171288">VPN सेटिङहरू देखाउनुहोस्</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> मा जोड्नुहोस्</translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />। <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">पछि फर्कन दायाँबाट स्वाइप गर्नुहोस्</translation>
 <translation id="8828714802988429505">90°</translation>

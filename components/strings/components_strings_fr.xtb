@@ -594,6 +594,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3587738293690942763">Milieu</translation>
 <translation id="3592413004129370115">Italian (enveloppe)</translation>
 <translation id="3600246354004376029">"<ph name="TITLE" />", <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Application bloquée par votre administrateur</translation>
 <translation id="3608932978122581043">Orientation de l'alimentation</translation>
 <translation id="3614103345592970299">Taille 2</translation>
 <translation id="361438452008624280">Entrée de la liste "<ph name="LANGUAGE_ID" />" : langue inconnue ou non compatible.</translation>
@@ -847,6 +848,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> souhaite répondre aux événements d'accessibilité</translation>
 <translation id="467809019005607715">Google Slides</translation>
+<translation id="4680804919228900307">Vous venez de saisir votre mot de passe sur un site trompeur. Chromium vous recommande de vérifier vos mots de passe enregistrés pour <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, ainsi que les autres sites pour lesquels vous utilisez ce mot de passe actuellement.</translation>
 <translation id="4690462567478992370">Arrêter d'utiliser un certificat non valide</translation>
 <translation id="4691835149146451662">Architecture-A (enveloppe)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1012,8 +1014,10 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5329858041417644019">Votre navigateur n'est pas géré</translation>
 <translation id="5332219387342487447">Mode de livraison</translation>
 <translation id="5334013548165032829">Journaux système détaillés</translation>
+<translation id="5340250774223869109">Application bloquée</translation>
 <translation id="534295439873310000">Appareils NFC</translation>
 <translation id="5344579389779391559">L'accès à la page suivante peut engendrer des frais</translation>
+<translation id="5346336634660260557">Analysez le contenu du presse-papiers, ainsi que des fichiers que vous téléchargez ou importez dans Chrome.</translation>
 <translation id="5355557959165512791">Le site <ph name="SITE" /> est actuellement inaccessible, car son certificat a été révoqué. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
 <translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
 <translation id="5371425731340848620">Mettre à jour la carte</translation>
@@ -1424,6 +1428,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="7219179957768738017">La connexion utilise <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Traitement en cours</translation>
 <translation id="7221855153210829124">Afficher les notifications</translation>
+<translation id="7229659723041939809">Vous venez de saisir votre mot de passe sur un site trompeur. Chrome vous recommande de vérifier vos mots de passe enregistrés pour <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, ainsi que les autres sites pour lesquels vous utilisez ce mot de passe actuellement.</translation>
 <translation id="7233592378249864828">Imprimer la feuille de confirmation</translation>
 <translation id="7238585580608191973">Empreinte SHA-256</translation>
 <translation id="7240120331469437312">Autre nom de l'objet du certificat</translation>
@@ -1491,6 +1496,7 @@ Informations supplémentaires :
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
 <translation id="7495290002932347110">Votre mot de passe a été compromis à la suite d'une violation de données affectant un site ou une application. Nous vous recommandons de vérifier vos mots de passe enregistrés et de modifier celui utilisé pour <ph name="ORIGIN" /> immédiatement.</translation>
 <translation id="7498234416455752244">Poursuivre les modifications</translation>
+<translation id="7503664977220660814">Vous venez de saisir votre mot de passe sur un site trompeur. Chromium vous recommande de vérifier vos mots de passe enregistrés pour <ph name="WEBSITE_1" /> et <ph name="WEBSITE_2" />, ainsi que les autres sites pour lesquels vous utilisez ce mot de passe actuellement.</translation>
 <translation id="7508255263130623398">L'ID d'appareil de la règle renvoyé est vide ou ne correspond pas à l'ID d'appareil actuel.</translation>
 <translation id="7508870219247277067">Vert avocat</translation>
 <translation id="7511955381719512146">Pour utiliser ce réseau Wi-Fi, il est possible que vous deviez vous rendre sur la page <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1566,6 +1572,7 @@ Informations supplémentaires :
 <translation id="7763386264682878361">Analyseur du fichier manifeste du paiement</translation>
 <translation id="7764225426217299476">Ajouter une adresse</translation>
 <translation id="7766518757692125295">Jupe</translation>
+<translation id="7767271804335921384">Cette application a été bloquée par votre administrateur</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Même ordre, face vers le haut</translation>
 <translation id="777702478322588152">Préfecture</translation>
@@ -1586,6 +1593,7 @@ Informations supplémentaires :
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> : <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Quitter le site Web ?</translation>
 <translation id="7865448901209910068">Vitesse optimale</translation>
+<translation id="7874263914261512992">Vous venez de saisir votre mot de passe sur un site trompeur. Chrome vous recommande de vérifier vos mots de passe enregistrés pour <ph name="WEBSITE_1" /> et <ph name="WEBSITE_2" />, ainsi que les autres sites pour lesquels vous utilisez ce mot de passe actuellement.</translation>
 <translation id="7878562273885520351">Votre mot de passe a peut-être été piraté</translation>
 <translation id="7882421473871500483">Marron</translation>
 <translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
@@ -1722,6 +1730,7 @@ Informations supplémentaires :
 <translation id="8474910779563686872">Afficher les informations destinées aux développeurs</translation>
 <translation id="8479754468255770962">Agrafe en bas à gauche</translation>
 <translation id="8483780878231876732">Pour utiliser les cartes de votre compte Google, connectez-vous à Chrome.</translation>
+<translation id="8485393050551136813">Vous venez de saisir votre mot de passe sur un site trompeur. Chromium vous recommande de vérifier vos mots de passe enregistrés pour <ph name="WEBSITE_1" />, ainsi que les autres sites pour lesquels vous utilisez ce mot de passe actuellement.</translation>
 <translation id="8488350697529856933">S'applique à</translation>
 <translation id="8490137692873530638">Empileur 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a mis trop de temps à répondre.</translation>
@@ -1771,6 +1780,7 @@ Informations supplémentaires :
 <translation id="87601671197631245">La configuration de sécurité obsolète de ce site peut exposer vos informations, comme vos mots de passe, vos messages ou vos cartes de crédit, lorsqu'elles lui sont transmises.</translation>
 <translation id="8761567432415473239">La fonctionnalité de navigation sécurisée a récemment permis de <ph name="BEGIN_LINK" />détecter des programmes dangereux<ph name="END_LINK" /> sur le site <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Périphérique USB</translation>
+<translation id="8774457497170244317">Vous venez de saisir votre mot de passe sur un site trompeur. Chromium vous recommande de vérifier vos mots de passe enregistrés pour <ph name="WEBSITE_1" />, ainsi que les autres sites pour lesquels vous utilisez ce mot de passe actuellement.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
 <translation id="8792621596287649091">Vous risquez de perdre l'accès à votre compte <ph name="ORG_NAME" /> ou d'être victime d'usurpation d'identité. L'équipe Chromium vous recommande de modifier votre mot de passe maintenant.</translation>

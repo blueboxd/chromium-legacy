@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox;
 import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
 import android.annotation.SuppressLint;
-import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
@@ -324,83 +323,6 @@ public class OmniboxTest {
             urlBar.setText("G");
         });
         Assert.assertEquals("Location bar should have text.", "G", urlBar.getText().toString());
-    }
-
-    @Test
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
-    @MediumTest
-    @Feature({"Omnibox", "Main"})
-    @RetryOnFailure
-    public void testAutoCompleteAndCorrectionLandscape()
-            throws ExecutionException, InterruptedException {
-        // Default orientation for tablets is landscape. Default for phones is portrait.
-        int requestedOrientation = 1;
-        if (mActivityTestRule.getActivity().isTablet()) {
-            requestedOrientation = 0;
-        }
-        doTestAutoCompleteAndCorrectionForOrientation(requestedOrientation);
-
-        // Reset orientation.
-        mActivityTestRule.getActivity().setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-    }
-
-    @Test
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
-    @MediumTest
-    @Feature({"Omnibox", "Main"})
-    @RetryOnFailure
-    public void testAutoCompleteAndCorrectionPortrait()
-            throws ExecutionException, InterruptedException {
-        // Default orientation for tablets is landscape. Default for phones is portrait.
-        int requestedOrientation = 0;
-        if (mActivityTestRule.getActivity().isTablet()) {
-            requestedOrientation = 1;
-        }
-        doTestAutoCompleteAndCorrectionForOrientation(requestedOrientation);
-
-        // Reset device orientation.
-        mActivityTestRule.getActivity().setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-    }
-
-    private void doTestAutoCompleteAndCorrectionForOrientation(
-            int orientation) throws ExecutionException, InterruptedException {
-        mActivityTestRule.getActivity().setRequestedOrientation(orientation);
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-
-        Map<String, List<SuggestionsResult>> suggestionsMap = buildSuggestionMap(
-                new TestSuggestionResultsBuilder()
-                        .setTextShownFor("wiki")
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                                        "wikipedia", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                                        "wiki", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                                        "wikileaks", null)
-                                .setAutocompleteText("pedia")),
-                new TestSuggestionResultsBuilder()
-                        .setTextShownFor("onomatop")
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                                        "onomatopoeia", null)
-                                .addGeneratedSuggestion(
-                                        OmniboxSuggestionType.SEARCH_SUGGEST,
-                                        "onomatopoeia foo", null)
-                                .setAutocompleteText("oeia")),
-                new TestSuggestionResultsBuilder()
-                        .setTextShownFor("mispellled")
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                                        "misspelled", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                                        "misspelled words", null)
-                                .setAutocompleteText(""))
-        );
-        checkAutocompleteText(suggestionsMap, "wiki", "wikipedia", 4, 9);
-        checkAutocompleteText(suggestionsMap, "onomatop", "onomatopoeia", 8, 12);
-        checkAutocompleteText(suggestionsMap, "mispellled", "mispellled", 10, 10);
     }
 
     @Test

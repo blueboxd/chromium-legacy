@@ -21,7 +21,7 @@ import org.chromium.base.annotations.JNINamespace;
 
 @JNINamespace("content")
 @JNIAdditionalImport(Wrappers.class)
-class Fakes {
+class SmsVerificationFakes {
     private static final String TAG = "SmsReceiver";
 
     /**
@@ -39,10 +39,12 @@ class Fakes {
         }
 
         @CalledByNative("FakeSmsRetrieverClient")
-        private Task<Void> triggerSms(String sms) {
+        private Task<Void> triggerSmsVerificationSms(String sms) {
             Wrappers.SmsReceiverContext context = super.getContext();
             if (context == null) {
-                Log.v(TAG, "FakeSmsRetrieverClient.triggerSms failed: no context was set");
+                Log.v(TAG,
+                        "FakeSmsRetrieverClient.triggerSmsVerificationSms failed: "
+                                + "no context was set");
                 return Tasks.forResult(null);
             }
 
@@ -90,7 +92,7 @@ class Fakes {
      **/
     @CalledByNative
     private static void setClientForTesting(
-            SmsReceiver receiver, Wrappers.SmsRetrieverClientWrapper client) {
+            SmsVerificationReceiver receiver, Wrappers.SmsRetrieverClientWrapper client) {
         receiver.setClientForTesting(client);
     }
 }

@@ -12,12 +12,12 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/policy/policy_export.h"
 
 namespace base {
 
 class Value;
-class ListValue;
 
 }  // namespace base
 
@@ -66,12 +66,11 @@ class POLICY_EXPORT PolicyConverter {
   // additional restrictions, or the schema for value's items or properties in
   // the case of a list or dictionary value.
   // Public for testing.
-  static std::unique_ptr<base::Value> ConvertValueToSchema(
-      std::unique_ptr<base::Value> value,
-      const Schema& schema);
+  static base::Optional<base::Value> ConvertValueToSchema(base::Value value,
+                                                          const Schema& schema);
 
   // Public for testing.
-  static std::unique_ptr<base::ListValue> ConvertJavaStringArrayToListValue(
+  static base::Value ConvertJavaStringArrayToListValue(
       JNIEnv* env,
       const base::android::JavaRef<jobjectArray>& array);
 
@@ -82,8 +81,7 @@ class POLICY_EXPORT PolicyConverter {
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
-  void SetPolicyValue(const std::string& key,
-                      std::unique_ptr<base::Value> raw_value);
+  void SetPolicyValue(const std::string& key, base::Value raw_value);
 
   DISALLOW_COPY_AND_ASSIGN(PolicyConverter);
 };

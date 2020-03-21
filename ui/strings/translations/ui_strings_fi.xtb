@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, asennettu sovellus</translation>
 <translation id="1450753235335490080">Jakaminen ei onnistu: <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> vaihdettiin: <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Hait tätä aiemmin. Jos <ph name="QUERY" /> poistetaan historiastasi, se poistetaan pysyvästi tililtäsi kaikilla laitteillasi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuutti ja }other{# minuuttia ja }}</translation>
 <translation id="1643823602425662293">Ilmoitus</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Oikealta vasemmalle</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">TODENNÄKÖISIMMÄT</translation>
+<translation id="7170202025028120564">Sovelluksen näyttöasetukset tulevat voimaan, kun käynnistät sen seuraavan kerran uudelleen.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min jäljellä}other{# min jäljellä}}</translation>
 <translation id="7319740667687257810">Käynnistysohjelma, osittainen näkymä</translation>

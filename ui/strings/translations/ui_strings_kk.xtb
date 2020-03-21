@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Жаю</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, орнатылған қолданба</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> бөлісу мүмкін емес</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> және <ph name="SECOND_ITEM_TITLE" /> өзара ауыстырылды.</translation>
 <translation id="1498028757988366001">Оны бұған дейін іздегенсіз. Тарихтан "<ph name="QUERY" />" сұрауын жойып тастасаңыз, ол барлық құрылғыңыздағы есептік жазбаңыздан өшіп қалады.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут және }other{# минут және }}</translation>
 <translation id="1643823602425662293">Хабарландыру</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Оңнан солға</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ЕҢ ЫҚТИМАЛ</translation>
+<translation id="7170202025028120564">Қолданбаңыз келесі рет іске қосылғанда, оның дисплей параметрлері күшіне енеді.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 мин қалды}other{# мин қалды}}</translation>
 <translation id="7319740667687257810">Launcher, жартылай көрініс</translation>

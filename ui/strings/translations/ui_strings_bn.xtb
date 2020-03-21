@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ইনস্টল করা অ্যাপ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> শেয়ার করা যাচ্ছে না</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" />-কে <ph name="SECOND_ITEM_TITLE" /> দিয়ে পাল্টানো হয়েছে</translation>
 <translation id="1498028757988366001">আপনি এটি আগেও সার্চ করেছেন। ইতিহাস থেকে "<ph name="QUERY" />" সরিয়ে দিলে, আপনার সব ডিভাইসের অ্যাকাউন্ট থেকে সেটি স্থায়ীভাবে মুছে যাবে।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট এবং }one{# মিনিট এবং }other{# মিনিট এবং }}</translation>
 <translation id="1643823602425662293">বিজ্ঞপ্তি</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">ডান থেকে বামে</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">সবথেকে বেশি সম্ভাবনা</translation>
+<translation id="7170202025028120564">আপনার অ্যাপ্লিকেশনের ডিসপ্লে সেটিংস তখনই কার্যকর হবে পরে যখন এটি রিস্টার্ট করা হবে।</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{১ মিনিট বাকি}one{# মিনিট বাকি}other{# মিনিট বাকি}}</translation>
 <translation id="7319740667687257810">লঞ্চার, আংশিক দেখুন</translation>

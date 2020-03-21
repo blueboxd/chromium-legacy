@@ -18,7 +18,7 @@
 namespace network {
 
 std::unique_ptr<net::ConfiguredProxyResolutionService>
-CreateProxyResolutionServiceUsingMojoFactory(
+CreateConfiguredProxyResolutionServiceUsingMojoFactory(
     mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
         mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,

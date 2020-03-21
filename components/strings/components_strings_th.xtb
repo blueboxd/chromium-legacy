@@ -593,6 +593,7 @@
 <translation id="3587738293690942763">ตรงกลาง</translation>
 <translation id="3592413004129370115">Italian (ซองจดหมาย)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">ผู้ดูแลระบบบล็อกแอปพลิเคชันไว้</translation>
 <translation id="3608932978122581043">ฟีดกระดาษตามแนว</translation>
 <translation id="3614103345592970299">ขนาด 2</translation>
 <translation id="361438452008624280">ข้อมูลในรายการ "<ph name="LANGUAGE_ID" />": ภาษาที่ไม่รู้จักหรือไม่รองรับ</translation>
@@ -846,6 +847,7 @@
 <translation id="467662567472608290">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยมีข้อผิดพลาด โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ต้องการตอบสนองต่อเหตุการณ์การเข้าถึงพิเศษ</translation>
 <translation id="467809019005607715">Google สไลด์</translation>
+<translation id="4680804919228900307">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้สำหรับ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ทันที</translation>
 <translation id="4690462567478992370">หยุดใช้ใบรับรองที่ไม่ถูกต้อง</translation>
 <translation id="4691835149146451662">Architecture-A (ซองจดหมาย)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1011,8 +1013,10 @@
 <translation id="5329858041417644019">เบราว์เซอร์ของคุณไม่มีการจัดการ</translation>
 <translation id="5332219387342487447">วิธีการจัดส่ง</translation>
 <translation id="5334013548165032829">บันทึกของระบบโดยละเอียด</translation>
+<translation id="5340250774223869109">แอปพลิเคชันถูกบล็อก</translation>
 <translation id="534295439873310000">อุปกรณ์ NFC</translation>
 <translation id="5344579389779391559">อาจมีการพยายามเรียกเก็บเงินจากคุณในหน้านี้</translation>
+<translation id="5346336634660260557">สแกนเนื้อหาในคลิปบอร์ด รวมถึงไฟล์ที่คุณดาวน์โหลดหรืออัปโหลดใน Chrome</translation>
 <translation id="5355557959165512791">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากใบรับรองถูกเพิกถอนแล้ว โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจจะใช้งานได้ในภายหลัง</translation>
 <translation id="536296301121032821">ไม่สามารถจัดเก็บการตั้งค่านโยบาย</translation>
 <translation id="5371425731340848620">อัปเดตบัตร</translation>
@@ -1423,6 +1427,7 @@
 <translation id="7219179957768738017">การเชื่อมต่อใช้ <ph name="SSL_VERSION" /></translation>
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
 <translation id="7221855153210829124">แสดงการแจ้งเตือน</translation>
+<translation id="7229659723041939809">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้สำหรับ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ทันที</translation>
 <translation id="7233592378249864828">พิมพ์แผ่นงานยืนยัน</translation>
 <translation id="7238585580608191973">ลายนิ้วมือ SHA-256</translation>
 <translation id="7240120331469437312">ชื่อสำรองของหัวเรื่องใบรับรอง</translation>
@@ -1490,6 +1495,7 @@
 <translation id="7485870689360869515">ไม่พบข้อมูล</translation>
 <translation id="7495290002932347110">การละเมิดข้อมูลในเว็บไซต์หรือแอปเปิดเผยรหัสผ่านของคุณ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้และเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="7498234416455752244">แก้ไขต่อ</translation>
+<translation id="7503664977220660814">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้สำหรับ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ทันที</translation>
 <translation id="7508255263130623398">รหัสอุปกรณ์นโยบายที่ส่งกลับว่างเปล่าหรือไม่ตรงกับรหัสอุปกรณ์ปัจจุบัน</translation>
 <translation id="7508870219247277067">เขียวอะโวคาโด</translation>
 <translation id="7511955381719512146">Wi-Fi ที่คุณใช้อาจต้องการให้คุณไปที่ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /></translation>
@@ -1565,6 +1571,7 @@
 <translation id="7763386264682878361">โปรแกรมแยกวิเคราะห์ไฟล์ Manifest ของการชำระเงิน</translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
 <translation id="7766518757692125295">Skirt</translation>
+<translation id="7767271804335921384">ผู้ดูแลระบบบล็อกแอปพลิเคชันนี้ไว้</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">ลำดับเดียวกันหงายหน้าขึ้น</translation>
 <translation id="777702478322588152">เขตปกครอง</translation>
@@ -1585,6 +1592,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">ออกจากเว็บไซต์ไหม</translation>
 <translation id="7865448901209910068">เร็วที่สุด</translation>
+<translation id="7874263914261512992">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้สำหรับ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ทันที</translation>
 <translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยได้</translation>
 <translation id="7882421473871500483">น้ำตาล</translation>
 <translation id="7887683347370398519">ตรวจสอบ CVC และลองอีกครั้ง</translation>
@@ -1721,6 +1729,7 @@
 <translation id="8474910779563686872">แสดงรายละเอียดนักพัฒนาซอฟต์แวร์</translation>
 <translation id="8479754468255770962">เย็บด้วยลวดเย็บกระดาษด้านซ้ายล่าง</translation>
 <translation id="8483780878231876732">หากต้องการใช้การ์ดจากบัญชี Google ให้ลงชื่อเข้าใช้ Chrome</translation>
+<translation id="8485393050551136813">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้สำหรับ <ph name="WEBSITE_1" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ทันที</translation>
 <translation id="8488350697529856933">ใช้กับ</translation>
 <translation id="8490137692873530638">สแต็กเกอร์ 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ใช้เวลาตอบกลับนานเกินไป</translation>
@@ -1771,6 +1780,7 @@
 <translation id="87601671197631245">เว็บไซต์นี้ใช้การกำหนดค่าความปลอดภัยที่ล้าสมัย ซึ่งอาจเปิดเผยข้อมูลของคุณ (เช่น รหัสผ่าน ข้อความ หรือบัตรเครดิต) เมื่อมีการส่งไปยังเว็บไซต์นี้</translation>
 <translation id="8761567432415473239">Google Safe Browsing <ph name="BEGIN_LINK" />พบโปรแกรมที่เป็นอันตราย<ph name="END_LINK" />บน <ph name="SITE" /> เมื่อเร็วๆ นี้</translation>
 <translation id="8763927697961133303">อุปกรณ์ USB</translation>
+<translation id="8774457497170244317">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้สำหรับ <ph name="WEBSITE_1" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ทันที</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
 <translation id="8792621596287649091">คุณอาจเข้าถึงบัญชี <ph name="ORG_NAME" /> ไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>

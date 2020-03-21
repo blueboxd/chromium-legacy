@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">‏اختياري: ساعد في تحسين Chromium عن طريق إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="2910007522516064972">‏حو&amp;ل Chromium</translation>
 <translation id="2977470724722393594">‏Chromium محدّث</translation>
+<translation id="2983934633046890458">‏يحاول Chromium تعديل كلمات المرور.</translation>
 <translation id="3032706164202344641">‏يتعذّر على Chromium التحقّق من كلمات المرور. يُرجى إعادة المحاولة.</translation>
 <translation id="3032787606318309379">‏جارٍ الإضافة إلى Chromium...</translation>
 <translation id="3068515742935458733">‏يمكنك المساعدة في تحسين Chromium عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">‏يتعذر على نظام التشغيل Chromium فتح هذه الصفحة.</translation>
 <translation id="5480860683791598150">‏يحتاج Chromium للوصول إلى موقعك الجغرافي لمشاركته مع هذا الموقع.</translation>
 <translation id="549669000822060376">‏يُرجى الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
+<translation id="5496810170689441661">‏يحاول Chromium تعديل كلمات المرور. للسماح بذلك، يُرجى كتابة كلمة مرور Windows الخاصة بك.</translation>
 <translation id="5623402015214259806">{0,plural, =0{‏يتوفر تحديث لمتصفح Chromium}=1{‏يتوفر تحديث لمتصفح Chromium}two{‏يتوفر تحديث لمتصفح Chromium منذ يومين}few{‏يتوفر تحديث لمتصفح Chromium منذ # أيام}many{‏يتوفر تحديث لمتصفح Chromium منذ # يومًا}other{‏يتوفر تحديث لمتصفح Chromium منذ # يوم}}</translation>
 <translation id="5631814766731275228">‏الاسم والصورة على Chromium</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>

@@ -565,16 +565,17 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
     const std::string& json_string,
     PolicyErrorMap* errors,
     int index) {
-  std::string parse_error;
-  std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json_string, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &parse_error);
-  if (errors && !parse_error.empty()) {
-    errors->AddError(policy_name_, ErrorPath(index, ""),
-                     IDS_POLICY_INVALID_JSON_ERROR, parse_error);
-  }
-  if (!parsed_value)
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json_string, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+    if (errors) {
+      errors->AddError(policy_name_, ErrorPath(index, ""),
+                       IDS_POLICY_INVALID_JSON_ERROR,
+                       value_with_error.error_message);
+    }
     return false;
+  }
 
   std::string schema_error;
   std::string error_path;
@@ -583,8 +584,9 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
   // Even though we are validating this schema here, we don't actually change
   // the policy if it fails to validate. This validation is just so we can show
   // the user errors.
-  bool validated = json_string_schema.Validate(
-      *parsed_value, SCHEMA_ALLOW_UNKNOWN, &error_path, &schema_error);
+  bool validated = json_string_schema.Validate(value_with_error.value.value(),
+                                               SCHEMA_ALLOW_UNKNOWN,
+                                               &error_path, &schema_error);
   if (errors && !schema_error.empty())
     errors->AddError(policy_name_, ErrorPath(index, error_path), schema_error);
   if (!validated)

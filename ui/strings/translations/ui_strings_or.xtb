@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">ସର୍ବାଧିକ କରନ୍ତୁ</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ଇନ୍‌ଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପ୍</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ସେୟାର୍ କରାଯାଇ ପାରିବ ନାହିଁ</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" />କୁ <ph name="SECOND_ITEM_TITLE" /> ସହିତ ସ୍ୱାପ୍ କରାଯାଇଛି</translation>
 <translation id="1498028757988366001">ଆପଣ ପୂର୍ବରୁ ଏହାକୁ ସନ୍ଧାନ କରିଥିଲେ। ଆପଣଙ୍କ ଇତିହାସରୁ "<ph name="QUERY" />" ଡିଲିଟ୍ କରିବା ଦ୍ୱାରା, ଏହା ଆପଣଙ୍କ ସମସ୍ତ ଡିଭାଇସ୍‌ରେ ଥିବା ଆକାଉଣ୍ଟରୁ ସ୍ଥାୟୀ ଭାବେ କାଢ଼ି ହୋଇଯିବ।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ମିନିଟ୍‍ ଏବଂ }other{# ମିନିଟ୍‍ ଏବଂ }}</translation>
 <translation id="1643823602425662293">ବିଜ୍ଞପ୍ତି</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">ଡାହାଣରୁ ବାମକୁ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ସବୁଠୁ ଲୋକପ୍ରିୟ</translation>
+<translation id="7170202025028120564">ପରବର୍ତ୍ତୀ ସମୟରେ ଆପଣଙ୍କ ଆପ୍ଲିକେସନର ଡିସପ୍ଲେ ସେଟିଂସ୍ ରିଷ୍ଟାର୍ଟ ହେଲେ ଏଥିରେ ପରିବର୍ତ୍ତନଗୁଡ଼ିକ କାର୍ଯ୍ୟକାରୀ ହେବ।</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 ମିନିଟ୍ ବାକି ଅଛି}other{# ମିନିଟ୍ ବାକି ଅଛି}}</translation>
 <translation id="7319740667687257810">ଲଞ୍ଚର୍, ଆଂଶିକ ଦୃଶ୍ୟ</translation>

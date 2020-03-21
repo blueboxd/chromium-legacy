@@ -3031,7 +3031,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Esta política será removida do <ph name="PRODUCT_NAME" /> para a versão 83 do Linux, quando a compatibilidade com o verificador de certificados legado no Linux também será removida.
 
-      Esta política será removida no <ph name="PRODUCT_NAME" /> para a versão 87 do Mac OS X, quando a compatibilidade com o verificador de certificado legado no Mac OS X também será removida.
+      Esta política será removida do <ph name="PRODUCT_NAME" /> para a versão 87 do Mac OS X, quando a compatibilidade com o verificador de certificado legado no Mac OS X também será removida.
       </translation>
 <translation id="5498045818698736356">Especifica uma lista de sites que são instalados silenciosamente, sem qualquer interação do usuário e sem permitir a desinstalação nem a desativação feita por ele.
 

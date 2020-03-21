@@ -12,11 +12,15 @@ suite('CopiesSettingsTest', function() {
   /** @type {?PrintPreviewCopiesSettingsElement} */
   let copiesSection = null;
 
+  /** @type {?PrintPreviewModelElement} */
+  let model = null;
+
   /** @override */
   setup(function() {
     PolymerTest.clearBody();
-    const model = document.createElement('print-preview-model');
+    model = document.createElement('print-preview-model');
     document.body.appendChild(model);
+    model.set('settings.collate.available', true);
 
     copiesSection = document.createElement('print-preview-copies-settings');
     copiesSection.settings = model.settings;
@@ -66,6 +70,11 @@ suite('CopiesSettingsTest', function() {
     assertTrue(collateSection.hidden);
 
     copiesSection.setSetting('copies', 2);
+    assertFalse(collateSection.hidden);
+
+    model.set('settings.collate.available', false);
+    assertTrue(collateSection.hidden);
+    model.set('settings.collate.available', true);
     assertFalse(collateSection.hidden);
 
     // Set copies empty.

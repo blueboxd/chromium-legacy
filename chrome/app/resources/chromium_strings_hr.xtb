@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">Dodatno: pomognite nam da poboljšamo Chromium automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu.</translation>
 <translation id="2910007522516064972">O pregledniku &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium je ažuran</translation>
+<translation id="2983934633046890458">Chromium pokušava urediti zaporke.</translation>
 <translation id="3032706164202344641">Chromium ne može provjeriti vaše zaporke. Pokušajte ponovno kasnije.</translation>
 <translation id="3032787606318309379">Dodavanje u preglednik Chromium...</translation>
 <translation id="3068515742935458733">Pomognite nam poboljšati Chromium šaljući izvješća o rušenju programa i <ph name="UMA_LINK" /> Googleu</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">OS Chromium ne može otvoriti ovu stranicu.</translation>
 <translation id="5480860683791598150">Chromium treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom</translation>
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>
+<translation id="5496810170689441661">Chromium pokušava urediti zaporke. Upišite svoju zaporku za Windows da biste to dopustili.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Dostupno je ažuriranje Chromiuma}=1{Dostupno je ažuriranje Chromiuma}one{Ažuriranje Chromiuma dostupno je već # dan}few{Ažuriranje Chromiuma dostupno je već # dana}other{Ažuriranje Chromiuma dostupno je već # dana}}</translation>
 <translation id="5631814766731275228">Ime i slika Chromium profila</translation>
 <translation id="5634636535844844681">Chromium zahtijeva Windows 7 ili noviju verziju.</translation>

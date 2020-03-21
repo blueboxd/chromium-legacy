@@ -45,6 +45,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium är uppdaterat</translation>
+<translation id="2983934633046890458">Lösenorden i Chromium redigeras.</translation>
 <translation id="3032706164202344641">Chromium kan inte kontrollera dina lösenord. Försök igen senare.</translation>
 <translation id="3032787606318309379">Lägger till i Chromium ...</translation>
 <translation id="3068515742935458733">Hjälp oss att göra Chromium bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google</translation>
@@ -112,6 +113,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5479196819031988440">Det går inte att öppna den här sidan i Chromium OS.</translation>
 <translation id="5480860683791598150">Du behöver ge Chromium åtkomst till din plats om den ska kunna delas med webbplatsen</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
+<translation id="5496810170689441661">Skriv ditt lösenord i Windows om du tillåter att lösenorden i Chromium redigeras.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Det finns en uppdatering för Chromium}=1{Det finns en uppdatering för Chromium}other{Det finns en uppdatering för Chromium sedan # dagar}}</translation>
 <translation id="5631814766731275228">Namn och bild i Chromium</translation>
 <translation id="5634636535844844681">För Chromium krävs Windows 7 eller senare.</translation>

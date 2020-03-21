@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">ከተፈለገ፦ የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን ወደ Google በራስ-ሰር በመላክ Chromium የተሻለ እንዲሆን ያግዙ።</translation>
 <translation id="2910007522516064972">ስለ &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium የተዘመነ ነው</translation>
+<translation id="2983934633046890458">Chromium የይለፍ ቃላትን ለማርትዕ እየሞከረ ነው</translation>
 <translation id="3032706164202344641">Chromium የእርስዎን የይለፍ ቃላት መፈተሽ አይችልም። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="3032787606318309379">ወደ Chromium በማከል ላይ...</translation>
 <translation id="3068515742935458733">የብልሽት ሪፖርቶችን እና <ph name="UMA_LINK" /> ወደ Google በመላክ Chromiumን የተሻለ ለማድረግ እገዛ ያድርጉ</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium OS ይህን ገጽ መክፈት አይችልም።</translation>
 <translation id="5480860683791598150">Chromium አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ያስፈልገዋል</translation>
 <translation id="549669000822060376">Chromium የቅርብ ጊዜዎቹ የስርዓቱ ዝማኔዎችን እስኪጭን ድረስ እባክዎ ይጠብቁ።</translation>
+<translation id="5496810170689441661">Chromium የይለፍ ቃላትን ለማርትዕ እየሞከረ ነው። ይህንን ለመፍቀድ የWindows የይለፍ ቃልዎን ይተይቡ።</translation>
 <translation id="5623402015214259806">{0,plural, =0{የChromium ዝማኔ ይገኛል}=1{የChromium ዝማኔ ይገኛል}one{አንድ የChromium ዝማኔ ለ# ቀኖች ነበር}other{አንድ የChromium ዝማኔ ለ# ቀኖች ነበር}}</translation>
 <translation id="5631814766731275228">Chromium ስም እና ሥዕል</translation>
 <translation id="5634636535844844681">Chromium Windows 7 ወይም ከዚያ በላይ ያስፈልገዋል።</translation>

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Разгарнуць</translation>
 <translation id="1414271762428216854">Усталяваная праграма (<ph name="APP_NAME" />)</translation>
 <translation id="1450753235335490080">Не ўдалося абагуліць наступнае змесціва: <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> і <ph name="SECOND_ITEM_TITLE" /> памяняліся месцамі</translation>
 <translation id="1498028757988366001">Вы шукалі гэта раней. Калі выдаліць запыт "<ph name="QUERY" />" з гісторыі, ён будзе незваротна выдалены з вашага ўліковага запісу на ўсіх прыладах.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 хвіліна і }one{# хвіліна і }few{# хвіліны і }many{# хвілін і }other{# хвіліны і }}</translation>
 <translation id="1643823602425662293">Апавяшчэнне</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Справа налева</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">НАЙБОЛЬШ ІМАВЕРНЫЯ</translation>
+<translation id="7170202025028120564">Налады паказу праграмы пачнуць дзейнічаць пасля яе перазапуску.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Засталася 1 хв}one{Засталася # хв}few{Засталося # хв}many{Засталося # хв}other{Засталося # хв}}</translation>
 <translation id="7319740667687257810">Панэль запуску, частковы рэжым</translation>

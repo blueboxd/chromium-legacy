@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximizează</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, aplicație instalată</translation>
 <translation id="1450753235335490080">Nu se poate trimite <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> a fost înlocuit cu <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Ai mai căutat asta. Dacă ștergi „<ph name="QUERY" />” din istoric, se va elimina definitiv din contul tău, de pe toate dispozitivele.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Un minut și  }few{# minute și  }other{# de minute și  }}</translation>
 <translation id="1643823602425662293">Notificare</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">De la dreapta la stânga</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">CEL MAI PROBABIL DE ACCESAT</translation>
+<translation id="7170202025028120564">Setările de afișare ale aplicației vor fi aplicate la următoarea repornire.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Un min. rămas}few{# min. rămase}other{# min. rămase}}</translation>
 <translation id="7319740667687257810">Lansator, afișare parțială</translation>

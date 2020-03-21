@@ -39,7 +39,7 @@
  *   searchPrediction: boolean,
  * }}
  */
-let PrivacyPageVisibility;
+/* #export */ let PrivacyPageVisibility;
 
 cr.define('settings', function() {
   /**

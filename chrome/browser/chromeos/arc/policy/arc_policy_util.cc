@@ -71,13 +71,13 @@ base::Optional<EcryptfsMigrationAction> DecodeMigrationActionFromPolicy(
 
 std::set<std::string> GetRequestedPackagesFromArcPolicy(
     const std::string& arc_policy) {
-  std::unique_ptr<base::Value> dict = base::JSONReader::ReadDeprecated(
+  base::Optional<base::Value> dict = base::JSONReader::Read(
       arc_policy, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-  if (!dict || !dict->is_dict())
+  if (!dict.has_value() || !dict.value().is_dict())
     return {};
 
   const base::Value* const packages =
-      dict->FindKeyOfType(kApplicationsKey, base::Value::Type::LIST);
+      dict.value().FindKeyOfType(kApplicationsKey, base::Value::Type::LIST);
   if (!packages)
     return {};
 

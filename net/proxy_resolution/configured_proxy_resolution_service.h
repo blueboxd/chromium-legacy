@@ -41,12 +41,12 @@ class TimeDelta;
 
 namespace net {
 
+class ConfiguredProxyResolutionRequest;
 class DhcpPacFileFetcher;
 class NetLog;
 class PacFileFetcher;
 class ProxyDelegate;
 class ProxyResolverFactory;
-class ProxyResolutionRequestImpl;
 struct PacFileDataWithSource;
 
 // This class can be used to resolve the proxy server to use when loading a
@@ -253,7 +253,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   bool quick_check_enabled_for_testing() const { return quick_check_enabled_; }
 
  private:
-  friend class ProxyResolutionRequestImpl;
+  friend class ConfiguredProxyResolutionRequest;
   FRIEND_TEST_ALL_PREFIXES(ProxyResolutionServiceTest,
                            UpdateConfigAfterFailedAutodetect);
   FRIEND_TEST_ALL_PREFIXES(ProxyResolutionServiceTest,
@@ -261,7 +261,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   class InitProxyResolver;
   class PacFileDeciderPoller;
 
-  typedef std::set<ProxyResolutionRequestImpl*> PendingRequests;
+  typedef std::set<ConfiguredProxyResolutionRequest*> PendingRequests;
 
   enum State {
     STATE_NONE,
@@ -307,10 +307,10 @@ class NET_EXPORT ConfiguredProxyResolutionService
   void SetReady();
 
   // Returns true if |pending_requests_| contains |req|.
-  bool ContainsPendingRequest(ProxyResolutionRequestImpl* req);
+  bool ContainsPendingRequest(ConfiguredProxyResolutionRequest* req);
 
   // Removes |req| from the list of pending requests.
-  void RemovePendingRequest(ProxyResolutionRequestImpl* req);
+  void RemovePendingRequest(ConfiguredProxyResolutionRequest* req);
 
   // Called when proxy resolution has completed (either synchronously or
   // asynchronously). Handles logging the result, and cleaning out

@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -51,7 +52,7 @@ class StartSurfaceToolbarCoordinator {
                     if (mView == null) return;
                     userEducationHelper.requestShowIPH(
                             iphCommandBuilder.setAnchorView(mView.getIdentityDiscView()).build());
-                });
+                }, StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH.getValue());
     }
 
     /**

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SMS_SMS_PROVIDER_ANDROID_H_
-#define CONTENT_BROWSER_SMS_SMS_PROVIDER_ANDROID_H_
+#ifndef CONTENT_BROWSER_SMS_SMS_PROVIDER_GMS_USER_CONSENT_H_
+#define CONTENT_BROWSER_SMS_SMS_PROVIDER_GMS_USER_CONSENT_H_
 
 #include <utility>
 
@@ -15,10 +15,10 @@
 
 namespace content {
 
-class CONTENT_EXPORT SmsProviderAndroid : public SmsProvider {
+class CONTENT_EXPORT SmsProviderGmsUserConsent : public SmsProvider {
  public:
-  SmsProviderAndroid();
-  ~SmsProviderAndroid() override;
+  SmsProviderGmsUserConsent(RenderFrameHost* rfh);
+  ~SmsProviderGmsUserConsent() override;
 
   void Retrieve() override;
 
@@ -30,10 +30,11 @@ class CONTENT_EXPORT SmsProviderAndroid : public SmsProvider {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_sms_receiver_;
+  RenderFrameHost* const render_frame_host_;
 
-  DISALLOW_COPY_AND_ASSIGN(SmsProviderAndroid);
+  DISALLOW_COPY_AND_ASSIGN(SmsProviderGmsUserConsent);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SMS_SMS_PROVIDER_ANDROID_H_
+#endif  // CONTENT_BROWSER_SMS_SMS_PROVIDER_GMS_USER_CONSENT_H_

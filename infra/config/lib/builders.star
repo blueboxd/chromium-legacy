@@ -61,6 +61,7 @@ os = struct(
     MAC_10_12 = os_enum('Mac-10.12', os_category.MAC),
     MAC_10_13 = os_enum('Mac-10.13', os_category.MAC),
     MAC_10_14 = os_enum('Mac-10.14', os_category.MAC),
+    MAC_10_15 = os_enum('Mac-10.15', os_category.MAC),
     MAC_DEFAULT = os_enum('Mac-10.13', os_category.MAC),
     MAC_ANY = os_enum('Mac', os_category.MAC),
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
@@ -69,30 +70,25 @@ std::string GetPolicyValue(const std::string& policy_fetch_response_blob) {
   return policy_data.policy_value();
 }
 
-// Parses |json| to a base::DictionaryValue. Returns nullptr and prints errors
+// Parses |json| to a base::Value. Returns nullptr and prints errors
 // on failure.
-std::unique_ptr<base::DictionaryValue> ParseJsonToDict(
-    const std::string& json) {
-  std::string json_reader_error_message;
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr /* error_code_out */,
-          &json_reader_error_message);
-  if (!value) {
+base::Optional<base::Value> ParseJsonToDict(const std::string& json) {
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
     LOG(ERROR) << "Could not parse policy value as JSON: "
-               << json_reader_error_message;
-    return nullptr;
+               << value_with_error.error_message;
+    return base::nullopt;
   }
 
-  // Convert to a dictionary.
-  std::unique_ptr<base::DictionaryValue> dict =
-      base::DictionaryValue::From(std::move(value));
-  if (!dict) {
+  base::Value value = std::move(value_with_error.value.value());
+  if (!value.is_dict()) {
     LOG(ERROR) << "The JSON policy value is not a dictionary.";
-    return nullptr;
+    return base::nullopt;
   }
 
-  return dict;
+  return value;
 }
 
 // Gets the policy value from the |policy_fetch_response_blob|, parses it as
@@ -116,11 +112,14 @@ bool ParsePolicy(const std::string& policy_fetch_response_blob,
   //   { "Name1": { "Value":Value1 },
   //     "Name2": { "Value":Value2, "Level":"Recommended" } }
   // (see ParsePolicy in ComponentCloudPolicyStore).
-  std::unique_ptr<base::DictionaryValue> dict = ParseJsonToDict(policy_value);
+  base::Optional<base::Value> dict = ParseJsonToDict(policy_value);
+
+  if (!dict.has_value())
+    return false;
 
   // Search for "Policy" and "Recommended" keys in dict, perform some type
   // conversions on the sub-dicts and put them into |policy|.
-  for (const auto& it : dict->DictItems()) {
+  for (const auto& it : dict.value().DictItems()) {
     const Level* level = FindMatchingLevel(it.first);
     if (!level) {
       LOG(WARNING) << "Unknown key '" << it.first
@@ -133,17 +132,17 @@ bool ParsePolicy(const std::string& policy_fetch_response_blob,
     // be converted to the types specified in the schema:
     //   string -> double for 'number'  type policies
     //   int    -> bool   for 'boolean' type policies
-    std::unique_ptr<base::Value> converted_value =
+    base::Optional<base::Value> converted_value =
         ConvertRegistryValue(it.second, schema);
-    std::unique_ptr<base::DictionaryValue> converted_dict =
-        base::DictionaryValue::From(std::move(converted_value));
-    if (!converted_dict) {
+    if (!converted_value.has_value() || !converted_value.value().is_dict()) {
       LOG(ERROR) << "Failed to filter JSON policy at level " << level->json_key;
       continue;
     }
+    const base::DictionaryValue& converted_dict =
+        base::Value::AsDictionaryValue(converted_value.value());
 
     // Put the policy into the right spot.
-    policy->LoadFrom(converted_dict.get(), level->level, scope,
+    policy->LoadFrom(&converted_dict, level->level, scope,
                      POLICY_SOURCE_ACTIVE_DIRECTORY);
   }
   return true;

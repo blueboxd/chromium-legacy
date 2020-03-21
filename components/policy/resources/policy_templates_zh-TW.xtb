@@ -1206,7 +1206,7 @@
 
       如果將這項政策設為 True，系統會在數秒後關閉隱私權警告通知。
 
-      如果將這項政策設為 False 或不予設定，系統會固定隱私權警告通知，直到使用者關閉為止。</translation>
+      如果將這項政策設為 False 或不予設定，系統會持續顯示隱私權警告通知，直到使用者關閉為止。</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2678503605767349615">必須提供裝置通用用戶端憑證</translation>

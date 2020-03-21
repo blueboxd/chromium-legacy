@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />，已安装的应用</translation>
 <translation id="1450753235335490080">无法分享<ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">“<ph name="FIRST_ITEM_TITLE" />”与“<ph name="SECOND_ITEM_TITLE" />”交换了位置</translation>
 <translation id="1498028757988366001">您以前搜索过此内容。如果您将“<ph name="QUERY" />”从历史记录中删除，该条目将会从登录您帐号的所有设备上永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">从右向左</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">很可能会点击的应用</translation>
+<translation id="7170202025028120564">您的应用的显示设置会在下次重启此应用时生效。</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
 <translation id="7319740667687257810">启动器，局部视图</translation>

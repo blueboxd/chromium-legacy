@@ -1174,7 +1174,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2541706104884128042">Bola nastavená nová večierka</translation>
 <translation id="2544853746127077729">Certifikát na overenie totožnosti bol zamietnutý sieťou</translation>
 <translation id="2546283357679194313">Súbory cookie a dáta webov</translation>
-<translation id="2547583314137677375">Vypnúť synchronizáciu</translation>
 <translation id="2548347166720081527">Povoľujete <ph name="PERMISSION" /></translation>
 <translation id="2549985041256363841">Spustiť zaznamenávanie</translation>
 <translation id="2550212893339833758">Swapovaná pamäť</translation>
@@ -1650,7 +1649,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3172808215939929606">Táto stránka bola preložená</translation>
 <translation id="3177909033752230686">Jazyk stránky:</translation>
 <translation id="3179982752812949580">Písmo textu</translation>
-<translation id="3181825792072797598">Zapnúť synchronizáciu</translation>
 <translation id="3181954750937456830">Bezpečné prehliadanie (chráni vás aj zariadenie pred nebezpečnými webmi)</translation>
 <translation id="3182749001423093222">Kontrola pravopisu</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
@@ -4423,7 +4421,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Zariadenie</translation>
-<translation id="6966201992886493384">Weby môžu pomocou súborov cookie zlepšovať vašu skúsenosť s prehliadaním, napríklad zabrániť automatickému odhláseniu alebo zapamätať si položky v nákupnom košíku</translation>
+<translation id="6966201992886493384">Weby môžu pomocou súborov cookie zlepšovať vaše prostredie prehliadania, napríklad zabrániť automatickému odhláseniu alebo zapamätať si položky v nákupnom košíku</translation>
 <translation id="696780070563539690">Weby si nemôžu na základe súborov cookie zobraziť vašu históriu prehliadania v rámci rôznych webov (napríklad na prispôsobenie reklám)</translation>
 <translation id="6968288415730398122">Ak chcete konfigurovať zámku obrazovky, zadajte heslo</translation>
 <translation id="6970480684834282392">Typ spustenia</translation>
@@ -4839,7 +4837,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7507207699631365376">Zobraziť <ph name="BEGIN_LINK" />pravidlá ochrany súkromia<ph name="END_LINK" /> tohto poskytovateľa</translation>
 <translation id="7507930499305566459">Certifikát stavového odpovedajúceho zariadenia</translation>
 <translation id="7508054832109420082">Poskytnite prístup k tlačiarňam</translation>
-<translation id="751120035300339">Weby nemôžu pomocou súborov cookie zlepšovať vašu skúsenosť s prehliadaním, napríklad zabrániť automatickému odhláseniu alebo zapamätať si položky v nákupnom košíku</translation>
+<translation id="751120035300339">Weby nemôžu pomocou súborov cookie zlepšovať vaše prostredie prehliadania, napríklad zabrániť automatickému odhláseniu alebo zapamätať si položky v nákupnom košíku</translation>
 <translation id="7513029293694390567">Prihlasovať sa na weboch automaticky pomocou uložených prihlasovacích údajov. Keď je táto funkcia vypnutá, zobrazí sa vám pred každým prihlásením žiadosť o potvrdenie.</translation>
 <translation id="7514239104543605883">Kopírovať do zariadenia</translation>
 <translation id="7514365320538308">Stiahnuť</translation>

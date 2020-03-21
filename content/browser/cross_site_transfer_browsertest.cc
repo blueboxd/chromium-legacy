@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, MaliciousPostWithFileData) {
       target_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
 
   // Submit the form and wait until the malicious renderer gets killed.
-  RenderProcessHostKillWaiter kill_waiter(
+  RenderProcessHostBadIpcMessageWaiter kill_waiter(
       form_contents->GetMainFrame()->GetProcess());
   EXPECT_TRUE(ExecuteScript(
       form_contents,

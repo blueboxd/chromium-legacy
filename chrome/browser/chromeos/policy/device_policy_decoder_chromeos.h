@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_POLICY_DECODER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_POLICY_DECODER_CHROMEOS_H_
 
-#include <memory>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
@@ -33,7 +33,7 @@ extern const char hostNameRegex[];
 // valid JSON string or doesn't comply with the declared schema (e.g. mismatched
 // type, missing required field, etc.). Any warning or error messages from the
 // decoding and schema validation process are stored in |error|.
-std::unique_ptr<base::Value> DecodeJsonStringAndNormalize(
+base::Optional<base::Value> DecodeJsonStringAndNormalize(
     const std::string& json_string,
     const std::string& policy_name,
     std::string* error);

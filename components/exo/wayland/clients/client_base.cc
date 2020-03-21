@@ -793,7 +793,9 @@ void ClientBase::HandleScale(void* data,
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     const gfx::Size& size,
     int32_t drm_format,
-    int32_t bo_usage) {
+    int32_t bo_usage,
+    wl_buffer_listener* buffer_listener,
+    void* data) {
   std::unique_ptr<Buffer> buffer;
 #if defined(USE_GBM)
   if (device_) {
@@ -889,8 +891,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     DCHECK(buffer->sk_surface);
   }
 
-  wl_buffer_add_listener(buffer->buffer.get(), &g_buffer_listener,
-                         buffer.get());
+  wl_buffer_add_listener(buffer->buffer.get(),
+                         buffer_listener ? buffer_listener : &g_buffer_listener,
+                         data ? data : buffer.get());
   return buffer;
 }
 

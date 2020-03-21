@@ -25,7 +25,8 @@ class BASE_EXPORT ScopedDeferTaskPosting {
  public:
   static void PostOrDefer(scoped_refptr<SequencedTaskRunner> task_runner,
                           const Location& from_here,
-                          OnceClosure task);
+                          OnceClosure task,
+                          base::TimeDelta delay);
 
   static bool IsPresent();
 
@@ -40,18 +41,21 @@ class BASE_EXPORT ScopedDeferTaskPosting {
 
   void DeferTaskPosting(scoped_refptr<SequencedTaskRunner> task_runner,
                         const Location& from_here,
-                        OnceClosure task);
+                        OnceClosure task,
+                        base::TimeDelta delay);
 
   struct DeferredTask {
     DeferredTask(scoped_refptr<SequencedTaskRunner> task_runner,
                  Location from_here,
-                 OnceClosure task);
+                 OnceClosure task,
+                 base::TimeDelta delay);
     DeferredTask(DeferredTask&& task);
     ~DeferredTask();
 
     scoped_refptr<SequencedTaskRunner> task_runner;
     Location from_here;
     OnceClosure task;
+    base::TimeDelta delay;
 
     DISALLOW_COPY_AND_ASSIGN(DeferredTask);
   };

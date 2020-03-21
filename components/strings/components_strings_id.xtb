@@ -599,6 +599,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3587738293690942763">Tengah</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Aplikasi diblokir oleh administrator Anda</translation>
 <translation id="3608932978122581043">Feed orientasi</translation>
 <translation id="3614103345592970299">Ukuran 2</translation>
 <translation id="361438452008624280">Entri daftar "<ph name="LANGUAGE_ID" />": Bahasa tidak dikenal atau tidak didukung.</translation>
@@ -853,6 +854,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="467662567472608290">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya berisi kesalahan. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ingin merespons peristiwa aksesibilitas</translation>
 <translation id="467809019005607715">Google Slide</translation>
+<translation id="4680804919228900307">Anda baru saja memasukkan sandi ke situs penipuan. Chromium merekomendasikan Anda memeriksa sandi yang disimpan untuk <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, dan situs lain tempat Anda menggunakan sandi ini sekarang.</translation>
 <translation id="4690462567478992370">Berhenti menggunakan sertifikat yang tidak valid</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1018,8 +1020,10 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5329858041417644019">Browser Anda tidak dikelola</translation>
 <translation id="5332219387342487447">Metode Pengiriman</translation>
 <translation id="5334013548165032829">Log sistem mendetail</translation>
+<translation id="5340250774223869109">Aplikasi diblokir</translation>
 <translation id="534295439873310000">Perangkat NFC</translation>
 <translation id="5344579389779391559">Halaman ini mungkin mencoba menagih Anda</translation>
+<translation id="5346336634660260557">Pindai konten papan klip, serta file yang Anda download atau upload di Chrome.</translation>
 <translation id="5355557959165512791">Anda tidak dapat membuka <ph name="SITE" /> sekarang karena sertifikatnya telah dicabut. Error jaringan dan serangan biasanya bersifat sementara, sehingga halaman ini mungkin akan berfungsi nanti.</translation>
 <translation id="536296301121032821">Gagal menyimpan setelan kebijakan</translation>
 <translation id="5371425731340848620">Perbarui kartu</translation>
@@ -1430,6 +1434,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7219179957768738017">Koneksi menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Dalam proses</translation>
 <translation id="7221855153210829124">Tampilkan notifikasi</translation>
+<translation id="7229659723041939809">Anda baru saja memasukkan sandi ke situs penipuan. Chrome merekomendasikan Anda memeriksa sandi yang disimpan untuk <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, dan situs lain tempat Anda menggunakan sandi ini sekarang.</translation>
 <translation id="7233592378249864828">Cetak lembar konfirmasi</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Nama Alternatif Subjek Sertifikat</translation>
@@ -1495,6 +1500,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="7495290002932347110">Pelanggaran data di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan Anda untuk memeriksa sandi yang tersimpan dan mengubah sandi Anda di <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="7498234416455752244">Lanjut mengedit</translation>
+<translation id="7503664977220660814">Anda baru saja memasukkan sandi ke situs penipuan. Chromium merekomendasikan Anda memeriksa sandi yang disimpan untuk <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan situs lain tempat Anda menggunakan sandi ini sekarang.</translation>
 <translation id="7508255263130623398">ID perangkat kebijakan yang dikembalikan kosong atau tidak cocok dengan ID perangkat saat ini</translation>
 <translation id="7508870219247277067">Hijau Avokad</translation>
 <translation id="7511955381719512146">Wi-Fi yang digunakan mungkin mewajibkan Anda mengunjungi <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1570,6 +1576,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7763386264682878361">Parser Manifes Pembayaran</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
 <translation id="7766518757692125295">Perbatasan</translation>
+<translation id="7767271804335921384">Aplikasi telah diblokir oleh administrator Anda</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Urutan yang sama menghadap ke atas</translation>
 <translation id="777702478322588152">Prefektur</translation>
@@ -1590,6 +1597,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Keluar dari situs?</translation>
 <translation id="7865448901209910068">Paling cepat</translation>
+<translation id="7874263914261512992">Anda baru saja memasukkan sandi ke situs penipuan. Chrome merekomendasikan Anda memeriksa sandi yang disimpan untuk <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan situs lain tempat Anda menggunakan sandi ini sekarang.</translation>
 <translation id="7878562273885520351">Sandi Anda mungkin disusupi</translation>
 <translation id="7882421473871500483">Cokelat</translation>
 <translation id="7887683347370398519">Periksa CVC dan coba lagi</translation>
@@ -1724,6 +1732,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8474910779563686872">Lihat detail developer</translation>
 <translation id="8479754468255770962">Jepretan di kiri bawah</translation>
 <translation id="8483780878231876732">Untuk menggunakan kartu dari Akun Google Anda, masuk ke Chrome</translation>
+<translation id="8485393050551136813">Anda baru saja memasukkan sandi ke situs penipuan. Chromium merekomendasikan Anda memeriksa sandi yang disimpan untuk <ph name="WEBSITE_1" /> dan situs lain tempat Anda menggunakan sandi ini sekarang.</translation>
 <translation id="8488350697529856933">Berlaku untuk</translation>
 <translation id="8490137692873530638">Tempat kertas 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> membutuhkan terlalu banyak waktu untuk merespons.</translation>
@@ -1773,6 +1782,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="87601671197631245">Situs ini menggunakan konfigurasi keamanan yang telah habis masa berlakunya, yang dapat mengekspos informasi Anda (misalnya, sandi, pesan, atau kartu kredit) saat dikirimkan ke situs ini.</translation>
 <translation id="8761567432415473239">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />menemukan program berbahaya<ph name="END_LINK" /> di <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Perangkat USB</translation>
+<translation id="8774457497170244317">Anda baru saja memasukkan sandi ke situs penipuan. Chrome merekomendasikan Anda memeriksa sandi yang disimpan untuk <ph name="WEBSITE_1" /> dan situs lain tempat Anda menggunakan sandi ini sekarang.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Ulangi penghapusan</translation>
 <translation id="8792621596287649091">Anda dapat kehilangan akses ke akun <ph name="ORG_NAME" /> atau mengalami pencurian identitas. Chromium menyarankan Anda untuk mengubah sandi sekarang.</translation>

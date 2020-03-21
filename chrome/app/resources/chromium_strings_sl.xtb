@@ -45,6 +45,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
 <translation id="2977470724722393594">Chromium je posodobljen</translation>
+<translation id="2983934633046890458">Chromium poskuša urejati gesla.</translation>
 <translation id="3032706164202344641">Chromium ne more preveriti gesel. Poskusite pozneje.</translation>
 <translation id="3032787606318309379">Dodajanje v Chromium ...</translation>
 <translation id="3068515742935458733">Pomagajte izboljšati Chromium – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK" />.</translation>
@@ -112,6 +113,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5479196819031988440">OS Chromium ne more odpreti te strani.</translation>
 <translation id="5480860683791598150">Chromium potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom</translation>
 <translation id="549669000822060376">Počakajte, da Chromium namesti najnovejše sistemske posodobitve.</translation>
+<translation id="5496810170689441661">Chromium poskuša urejati gesla. Če želite to omogočiti, vnesite geslo za Windows.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Posodobitev za Chromium je na voljo}=1{Posodobitev za Chromium je na voljo}one{Posodobitev za Chromium je na voljo že # dan}two{Posodobitev za Chromium je na voljo že # dneva}few{Posodobitev za Chromium je na voljo že # dni}other{Posodobitev za Chromium je na voljo že # dni}}</translation>
 <translation id="5631814766731275228">Ime in slika za Chromium</translation>
 <translation id="5634636535844844681">Za Chromium potrebujete Windows 7 ali novejši.</translation>

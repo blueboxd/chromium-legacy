@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/proxy_resolution_request_impl.h"
+#include "net/proxy_resolution/configured_proxy_resolution_request.h"
 
 #include <utility>
 
@@ -15,7 +15,7 @@
 
 namespace net {
 
-ProxyResolutionRequestImpl::ProxyResolutionRequestImpl(
+ConfiguredProxyResolutionRequest::ConfiguredProxyResolutionRequest(
     ConfiguredProxyResolutionService* service,
     const GURL& url,
     const std::string& method,
@@ -35,7 +35,7 @@ ProxyResolutionRequestImpl::ProxyResolutionRequestImpl(
   DCHECK(!user_callback_.is_null());
 }
 
-ProxyResolutionRequestImpl::~ProxyResolutionRequestImpl() {
+ConfiguredProxyResolutionRequest::~ConfiguredProxyResolutionRequest() {
   if (service_) {
     service_->RemovePendingRequest(this);
     net_log_.AddEvent(NetLogEventType::CANCELLED);
@@ -50,7 +50,7 @@ ProxyResolutionRequestImpl::~ProxyResolutionRequestImpl() {
 }
 
 // Starts the resolve proxy request.
-int ProxyResolutionRequestImpl::Start() {
+int ConfiguredProxyResolutionRequest::Start() {
   DCHECK(!was_completed());
   DCHECK(!is_started());
 
@@ -63,12 +63,13 @@ int ProxyResolutionRequestImpl::Start() {
 
   return service_->GetProxyResolver()->GetProxyForURL(
       url_, network_isolation_key_, results_,
-      base::BindOnce(&ProxyResolutionRequestImpl::QueryComplete,
+      base::BindOnce(&ConfiguredProxyResolutionRequest::QueryComplete,
                      base::Unretained(this)),
       &resolve_job_, net_log_);
 }
 
-void ProxyResolutionRequestImpl::StartAndCompleteCheckingForSynchronous() {
+void ConfiguredProxyResolutionRequest::
+    StartAndCompleteCheckingForSynchronous() {
   int rv = service_->TryToCompleteSynchronously(url_, results_);
   if (rv == ERR_IO_PENDING)
     rv = Start();
@@ -76,14 +77,14 @@ void ProxyResolutionRequestImpl::StartAndCompleteCheckingForSynchronous() {
     QueryComplete(rv);
 }
 
-void ProxyResolutionRequestImpl::CancelResolveJob() {
+void ConfiguredProxyResolutionRequest::CancelResolveJob() {
   DCHECK(is_started());
   // The request may already be running in the resolver.
   resolve_job_.reset();
   DCHECK(!is_started());
 }
 
-int ProxyResolutionRequestImpl::QueryDidComplete(int result_code) {
+int ConfiguredProxyResolutionRequest::QueryDidComplete(int result_code) {
   DCHECK(!was_completed());
 
   // Clear |resolve_job_| so is_started() returns false while
@@ -96,18 +97,18 @@ int ProxyResolutionRequestImpl::QueryDidComplete(int result_code) {
 
   // Make a note in the results which configuration was in use at the
   // time of the resolve.
-  results_->did_use_pac_script_ = true;
-  results_->proxy_resolve_start_time_ = creation_time_;
-  results_->proxy_resolve_end_time_ = base::TimeTicks::Now();
+  results_->set_did_use_pac_script(true);
+  results_->set_proxy_resolve_start_time(creation_time_);
+  results_->set_proxy_resolve_end_time(base::TimeTicks::Now());
 
   // If annotation is not already set, e.g. through TryToCompleteSynchronously
   // function, use in-progress-resolve annotation.
-  if (!results_->traffic_annotation_.is_valid())
+  if (!results_->traffic_annotation().is_valid())
     results_->set_traffic_annotation(traffic_annotation_);
 
   // If proxy is set without error, ensure that an annotation is provided.
   if (result_code != ERR_ABORTED && !rv)
-    DCHECK(results_->traffic_annotation_.is_valid());
+    DCHECK(results_->traffic_annotation().is_valid());
 
   // Reset the state associated with in-progress-resolve.
   traffic_annotation_.reset();
@@ -115,13 +116,14 @@ int ProxyResolutionRequestImpl::QueryDidComplete(int result_code) {
   return rv;
 }
 
-int ProxyResolutionRequestImpl::QueryDidCompleteSynchronously(int result_code) {
+int ConfiguredProxyResolutionRequest::QueryDidCompleteSynchronously(
+    int result_code) {
   int rv = QueryDidComplete(result_code);
   service_ = nullptr;
   return rv;
 }
 
-LoadState ProxyResolutionRequestImpl::GetLoadState() const {
+LoadState ConfiguredProxyResolutionRequest::GetLoadState() const {
   LoadState load_state = LOAD_STATE_IDLE;
   if (service_ && service_->GetLoadStateIfAvailable(&load_state))
     return load_state;
@@ -132,7 +134,7 @@ LoadState ProxyResolutionRequestImpl::GetLoadState() const {
 }
 
 // Callback for when the ProxyResolver request has completed.
-void ProxyResolutionRequestImpl::QueryComplete(int result_code) {
+void ConfiguredProxyResolutionRequest::QueryComplete(int result_code) {
   result_code = QueryDidComplete(result_code);
 
   CompletionOnceCallback callback = std::move(user_callback_);

@@ -318,7 +318,8 @@ PrinterSemanticCapsAndDefaults::Papers SupportedPapers(
 bool CollateCapable(const CupsOptionProvider& printer) {
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(kIppCollate);
-  return base::Contains(values, kCollated);
+  return base::Contains(values, kCollated) &&
+         base::Contains(values, kUncollated);
 }
 
 bool CollateDefault(const CupsOptionProvider& printer) {

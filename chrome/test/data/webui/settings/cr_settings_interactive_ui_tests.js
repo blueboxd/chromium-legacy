@@ -21,6 +21,19 @@ CrSettingsInteractiveUITest.prototype = {
   get browsePreload() {
     throw 'this is abstract and should be overriden by subclasses';
   },
+
+  /** @override */
+  extraLibraries: [
+    ...PolymerInteractiveUITest.prototype.extraLibraries,
+    'ensure_lazy_loaded.js',
+  ],
+
+  /** @override */
+  setUp: function() {
+    PolymerInteractiveUITest.prototype.setUp.call(this);
+
+    settings.ensureLazyLoaded();
+  },
 };
 
 

@@ -599,6 +599,7 @@
 <translation id="3587738293690942763">मध्य</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">तुमच्या अ‍ॅडमिनिस्ट्रेटरने अ‍ॅप्लिकेशन ब्लॉक केले आहे</translation>
 <translation id="3608932978122581043">ओरिएंटेशन फीड करा</translation>
 <translation id="3614103345592970299">आकार २</translation>
 <translation id="361438452008624280">सूची एंट्री "<ph name="LANGUAGE_ID" />": अज्ञात किंवा सपोर्ट नसलेली भाषा.</translation>
@@ -853,6 +854,7 @@
 <translation id="467662567472608290">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याच्या सुरक्षितता सर्टिफिकेटमध्ये एरर आहेत. हे कदाचित एका चुकीच्या कॉंफिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ला ॲक्सेसिबिलिटी इव्‍हेंटना प्रतिसाद द्यायचा आहे</translation>
 <translation id="467809019005607715">Google स्लाइड</translation>
+<translation id="4680804919228900307">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला. तुम्ही हा पासवर्ड आता जेथे वापरता अशा <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> आणि इतर साइटसाठी तुमचे सेव्ह केलेले पासवर्ड तपासण्याची Chromium शिफारस करते.</translation>
 <translation id="4690462567478992370">चुकीचे सर्टिफिकेट वापरणे थांबवा</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1018,8 +1020,10 @@
 <translation id="5329858041417644019">तुमचे ब्राउझर व्यवस्थापित केलेले नाही</translation>
 <translation id="5332219387342487447">पाठविण्‍याची पद्धत</translation>
 <translation id="5334013548165032829">तपशीलवार सिस्टम लॉग</translation>
+<translation id="5340250774223869109">अ‍ॅप्लिकेशन ब्लॉक केले आहे</translation>
 <translation id="534295439873310000">NFC डिव्हाइस</translation>
 <translation id="5344579389779391559">या पेजवर कदाचित तुमच्याकडून शुल्क आकारले जाऊ शकते</translation>
+<translation id="5346336634660260557">क्लिपबोर्डचे त्याचप्रमाणे तुम्ही Chrome मध्ये डाउनलोड किंवा अपलोड करता त्या फाइलचे आशय स्कॅन करा.</translation>
 <translation id="5355557959165512791">तुम्ही आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही कारण तिचे सर्टिफिकेट काढून टाकले आहे. नेटवर्क एरर आणि आक्रमण शक्यतो तात्पुरती असतात, त्यामुळे हे पेज नंतर पाहता येईल.</translation>
 <translation id="536296301121032821">धोरण सेटिंग्ज संचयित करण्यात अयशस्वी</translation>
 <translation id="5371425731340848620">कार्ड अपडेट करा</translation>
@@ -1431,6 +1435,7 @@
 <translation id="7219179957768738017">कनेक्शन <ph name="SSL_VERSION" /> वापरते.</translation>
 <translation id="7220786058474068424">प्रक्रिया करत आहे</translation>
 <translation id="7221855153210829124">सूचना दर्शवा</translation>
+<translation id="7229659723041939809">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला. तुम्ही हा पासवर्ड आता जेथे वापरता अशा <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> आणि इतर साइटसाठी तुमचे सेव्ह केलेले पासवर्ड तपासण्याची Chrome शिफारस करते.</translation>
 <translation id="7233592378249864828">खात्री केलेले पत्रक प्रिंट करा</translation>
 <translation id="7238585580608191973">SHA-256 बोटाचा ठसा</translation>
 <translation id="7240120331469437312">सर्टिफिकेट विषय वैकल्पिक नाव</translation>
@@ -1498,6 +1503,7 @@
 <translation id="7485870689360869515">डेटा आढळला नाही.</translation>
 <translation id="7495290002932347110">एखाद्या साइट किंवा ॲपवरील डेटा भंगामुळे तुमचा पासवर्ड उघड झाला. Chrome तुमचे सेव्ह केलेले पासवर्ड तपासण्याची आणि तुमचा <ph name="ORIGIN" /> वरील पासवर्ड आताच बदलण्याची शिफारस करते.</translation>
 <translation id="7498234416455752244">संपादन सुरू ठेवा</translation>
+<translation id="7503664977220660814">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला. तुम्ही हा पासवर्ड आता जेथे वापरता अशा <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> आणि इतर साइटसाठी तुमचे सेव्ह केलेले पासवर्ड तपासण्याची Chromium शिफारस करते.</translation>
 <translation id="7508255263130623398">परत केलेला धोरण डिव्हाइस आयडी रिक्त आहे किंवा वर्तमान डिव्हाइस आयडी शी जुळत नाही</translation>
 <translation id="7508870219247277067">हिरवे पिवळे</translation>
 <translation id="7511955381719512146">तुम्ही वापरत असलेल्या वाय-फाय ला तुम्ही <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ला भेट देण्याची आवश्यकता असू शकते.</translation>
@@ -1573,6 +1579,7 @@
 <translation id="7763386264682878361">पेमेंट मॅनिफेस्ट पार्सर</translation>
 <translation id="7764225426217299476">पत्ता जोडा</translation>
 <translation id="7766518757692125295">स्कर्ट</translation>
+<translation id="7767271804335921384">तुमच्या अ‍ॅडमिनिस्ट्रेटरने अ‍ॅप्लिकेशन ब्लॉक केले आहे</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">तोच क्रम ठेवून फेस अप</translation>
 <translation id="777702478322588152">परफेक्चुअर</translation>
@@ -1593,6 +1600,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट सोडायची?</translation>
 <translation id="7865448901209910068">सर्वोत्तम गती</translation>
+<translation id="7874263914261512992">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला. तुम्ही हा पासवर्ड आता जेथे वापरता अशा <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> आणि इतर साइटसाठी तुमचे सेव्ह केलेले पासवर्ड तपासण्याची Chrome शिफारस करते.</translation>
 <translation id="7878562273885520351">तुमच्या पासवर्डशी तडजोड होत असल्याची शक्यता आहे</translation>
 <translation id="7882421473871500483">तपकिरी</translation>
 <translation id="7887683347370398519">तुमचे CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
@@ -1729,6 +1737,7 @@
 <translation id="8474910779563686872">डेव्हलपर तपशील दाखवा</translation>
 <translation id="8479754468255770962">स्टेपल बॉटम लेफ्ट</translation>
 <translation id="8483780878231876732">आपल्या Google खात्यावरून कार्ड वापरण्यासाठी Chrome मध्ये साइन इन करा</translation>
+<translation id="8485393050551136813">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला. तुम्ही हा पासवर्ड आता जेथे वापरता अशा <ph name="WEBSITE_1" /> आणि इतर साइटसाठी तुमचे सेव्ह केलेले पासवर्ड तपासण्याची Chromium शिफारस करते.</translation>
 <translation id="8488350697529856933">यावर लागू होते</translation>
 <translation id="8490137692873530638">स्टॅकर १०</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>
@@ -1778,6 +1787,7 @@
 <translation id="87601671197631245">ही साइट कालबाह्य झालेली सुरक्षितता कॉन्फिगरेशन वापरत आहे ज्यामुळे कदाचित तुमची माहिती (उदाहरणार्थ, पासवर्ड, मेसेज किंवा क्रेडिट कार्डे) या साइटला पाठवल्यानंतर ती उघड होऊ शकते.</translation>
 <translation id="8761567432415473239">Google सुरक्षित ब्राउझिंग ला <ph name="SITE" /> वर अलीकडे <ph name="BEGIN_LINK" />हानिकारक प्रोग्राम आढळले आहेत<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB डिव्हाइस</translation>
+<translation id="8774457497170244317">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला. तुम्ही हा पासवर्ड आता जेथे वापरता अशा <ph name="WEBSITE_1" /> आणि इतर साइटसाठी तुमचे सेव्ह केलेले पासवर्ड तपासण्याची Chrome शिफारस करते.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
 <translation id="8792621596287649091">तुम्ही तुमच्या Google <ph name="ORG_NAME" /> चा ॲक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chromium लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>

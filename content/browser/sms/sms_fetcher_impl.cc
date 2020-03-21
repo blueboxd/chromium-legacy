@@ -30,11 +30,22 @@ SmsFetcherImpl::~SmsFetcherImpl() {
 // static
 SmsFetcher* SmsFetcher::Get(BrowserContext* context) {
   if (!context->GetUserData(kSmsFetcherImplKeyName)) {
-    auto fetcher =
-        std::make_unique<SmsFetcherImpl>(context, SmsProvider::Create());
+    auto fetcher = std::make_unique<SmsFetcherImpl>(context, nullptr);
     context->SetUserData(kSmsFetcherImplKeyName, std::move(fetcher));
   }
 
+  return static_cast<SmsFetcherImpl*>(
+      context->GetUserData(kSmsFetcherImplKeyName));
+}
+
+SmsFetcher* SmsFetcher::Get(BrowserContext* context, RenderFrameHost* rfh) {
+  auto* stored_fetcher = static_cast<SmsFetcherImpl*>(
+      context->GetUserData(kSmsFetcherImplKeyName));
+  if (!stored_fetcher || !stored_fetcher->CanReceiveSms()) {
+    auto fetcher =
+        std::make_unique<SmsFetcherImpl>(context, SmsProvider::Create(rfh));
+    context->SetUserData(kSmsFetcherImplKeyName, std::move(fetcher));
+  }
   return static_cast<SmsFetcherImpl*>(
       context->GetUserData(kSmsFetcherImplKeyName));
 }
@@ -100,6 +111,10 @@ bool SmsFetcherImpl::OnReceive(const url::Origin& origin,
 bool SmsFetcherImpl::HasSubscribers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return subscribers_.HasSubscribers();
+}
+
+bool SmsFetcherImpl::CanReceiveSms() {
+  return provider_ != nullptr;
 }
 
 void SmsFetcherImpl::SetSmsProviderForTesting(

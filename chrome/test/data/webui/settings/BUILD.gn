@@ -14,8 +14,11 @@ js_modulizer("modulize") {
     "autofill_page_test.js",
     "autofill_section_test.js",
     "basic_page_test.js",
+    "category_default_setting_tests.js",
+    "category_setting_exceptions_tests.js",
     "checkbox_tests.js",
     "chooser_exception_list_entry_tests.js",
+    "chooser_exception_list_tests.js",
     "clear_browsing_data_test.js",
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",
@@ -120,8 +123,11 @@ js_modulizer("modulize") {
                          "sync_test_util.getSyncAllPrefs|getSyncAllPrefs",
                          "sync_test_util.simulateSyncStatus|simulateSyncStatus",
                          "test_util.createContentSettingTypeToValuePair|createContentSettingTypeToValuePair",
+                         "test_util.createDefaultContentSetting|createDefaultContentSetting",
+                         "test_util.createRawChooserException|createRawChooserException",
                          "test_util.createRawSiteException|createRawSiteException",
                          "test_util.createSiteSettingsPrefs|createSiteSettingsPrefs",
+                         "test_util.getContentSettingsTypeFromChooserType|getContentSettingsTypeFromChooserType",
                          "test_util.setupPopstateListener|setupPopstateListener",
                        ]
 }

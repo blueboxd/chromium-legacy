@@ -57,7 +57,7 @@ void PolicyConverter::SetPolicyBoolean(JNIEnv* env,
                                        const JavaRef<jstring>& policyKey,
                                        jboolean value) {
   SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
-                 std::make_unique<base::Value>(static_cast<bool>(value)));
+                 base::Value(static_cast<bool>(value)));
 }
 
 void PolicyConverter::SetPolicyInteger(JNIEnv* env,
@@ -65,16 +65,15 @@ void PolicyConverter::SetPolicyInteger(JNIEnv* env,
                                        const JavaRef<jstring>& policyKey,
                                        jint value) {
   SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
-                 std::make_unique<base::Value>(static_cast<int>(value)));
+                 base::Value(static_cast<int>(value)));
 }
 
 void PolicyConverter::SetPolicyString(JNIEnv* env,
                                       const JavaRef<jobject>& obj,
                                       const JavaRef<jstring>& policyKey,
                                       const JavaRef<jstring>& value) {
-  SetPolicyValue(
-      ConvertJavaStringToUTF8(env, policyKey),
-      std::make_unique<base::Value>(ConvertJavaStringToUTF8(env, value)));
+  SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
+                 base::Value(ConvertJavaStringToUTF8(env, value)));
 }
 
 void PolicyConverter::SetPolicyStringArray(JNIEnv* env,
@@ -86,8 +85,7 @@ void PolicyConverter::SetPolicyStringArray(JNIEnv* env,
 }
 
 // static
-std::unique_ptr<base::ListValue>
-PolicyConverter::ConvertJavaStringArrayToListValue(
+base::Value PolicyConverter::ConvertJavaStringArrayToListValue(
     JNIEnv* env,
     const JavaRef<jobjectArray>& array) {
   DCHECK(!array.is_null());
@@ -95,59 +93,58 @@ PolicyConverter::ConvertJavaStringArrayToListValue(
   DCHECK_GE(array_reader.size(), 0)
       << "Invalid array length: " << array_reader.size();
 
-  std::unique_ptr<base::ListValue> list_value(new base::ListValue());
-  for (auto j_str : array_reader) {
-    list_value->AppendString(ConvertJavaStringToUTF8(env, j_str));
-  }
+  base::Value list_value(base::Value::Type::LIST);
+  for (auto j_str : array_reader)
+    list_value.Append(ConvertJavaStringToUTF8(env, j_str));
 
   return list_value;
 }
 
 // static
-std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
-    std::unique_ptr<base::Value> value,
+base::Optional<base::Value> PolicyConverter::ConvertValueToSchema(
+    base::Value value,
     const Schema& schema) {
   if (!schema.valid())
     return value;
 
   switch (schema.type()) {
     case base::Value::Type::NONE:
-      return std::make_unique<base::Value>();
+      return base::Value();
 
     case base::Value::Type::BOOLEAN: {
       std::string string_value;
-      if (value->GetAsString(&string_value)) {
+      if (value.is_string()) {
+        const std::string& string_value = value.GetString();
         if (string_value.compare("true") == 0)
-          return std::make_unique<base::Value>(true);
+          return base::Value(true);
 
         if (string_value.compare("false") == 0)
-          return std::make_unique<base::Value>(false);
+          return base::Value(false);
 
         return value;
       }
-      int int_value = 0;
-      if (value->GetAsInteger(&int_value))
-        return std::make_unique<base::Value>(int_value != 0);
+      if (value.is_int())
+        return base::Value(value.GetInt() != 0);
 
       return value;
     }
 
     case base::Value::Type::INTEGER: {
-      std::string string_value;
-      if (value->GetAsString(&string_value)) {
+      if (value.is_string()) {
+        const std::string& string_value = value.GetString();
         int int_value = 0;
         if (base::StringToInt(string_value, &int_value))
-          return std::make_unique<base::Value>(int_value);
+          return base::Value(int_value);
       }
       return value;
     }
 
     case base::Value::Type::DOUBLE: {
-      std::string string_value;
-      if (value->GetAsString(&string_value)) {
+      if (value.is_string()) {
+        const std::string& string_value = value.GetString();
         double double_value = 0;
         if (base::StringToDouble(string_value, &double_value))
-          return std::make_unique<base::Value>(double_value);
+          return base::Value(double_value);
       }
       return value;
     }
@@ -160,19 +157,17 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
     // Binary is not a valid schema type.
     case base::Value::Type::BINARY: {
       NOTREACHED();
-      return std::unique_ptr<base::Value>();
+      return base::Value();
     }
 
     // Complex types have to be deserialized from JSON.
     case base::Value::Type::DICTIONARY:
     case base::Value::Type::LIST: {
-      std::string string_value;
-      if (value->GetAsString(&string_value)) {
-        std::unique_ptr<base::Value> decoded_value =
-            base::JSONReader::ReadDeprecated(
-                string_value,
-                base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-        if (decoded_value)
+      if (value.is_string()) {
+        base::Optional<base::Value> decoded_value = base::JSONReader::Read(
+            value.GetString(),
+            base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+        if (decoded_value.has_value())
           return decoded_value;
       }
       return value;
@@ -181,22 +176,28 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
     // TODO(crbug.com/859477): Remove after root cause is found.
     case base::Value::Type::DEAD: {
       CHECK(false);
-      return nullptr;
+      return base::nullopt;
     }
   }
 
   // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
   CHECK(false);
-  return nullptr;
+  return base::nullopt;
 }
 
 void PolicyConverter::SetPolicyValue(const std::string& key,
-                                     std::unique_ptr<base::Value> value) {
+                                     base::Value value) {
   const Schema schema = policy_schema_->GetKnownProperty(key);
   const PolicyNamespace ns(POLICY_DOMAIN_CHROME, std::string());
-  policy_bundle_->Get(ns).Set(
-      key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
-      ConvertValueToSchema(std::move(value), schema), nullptr);
+  base::Optional<base::Value> converted_value =
+      ConvertValueToSchema(std::move(value), schema);
+  std::unique_ptr<base::Value> value_ptr =
+      converted_value.has_value()
+          ? base::Value::ToUniquePtrValue(std::move(converted_value.value()))
+          : nullptr;
+  policy_bundle_->Get(ns).Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                              POLICY_SOURCE_PLATFORM, std::move(value_ptr),
+                              nullptr);
 }
 
 }  // namespace android

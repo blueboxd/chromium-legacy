@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">ตัวเลือก: ช่วยปรับปรุง Chromium ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="2910007522516064972">เกี่ยวกับ &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium อัปเดตแล้ว</translation>
+<translation id="2983934633046890458">Chromium กำลังพยายามแก้ไขรหัสผ่าน</translation>
 <translation id="3032706164202344641">Chromium ตรวจสอบรหัสผ่านของคุณไม่ได้ โปรดลองอีกครั้งภายหลัง</translation>
 <translation id="3032787606318309379">กำลังเพิ่มลงใน Chromium...</translation>
 <translation id="3068515742935458733">ช่วยทำให้ Chromium ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK" /> ไปยัง Google</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">Chromium OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5480860683791598150">Chromium ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับเว็บไซต์นี้</translation>
 <translation id="549669000822060376">โปรดรอขณะที่ Chromium ติดตั้งการอัปเดตระบบล่าสุด</translation>
+<translation id="5496810170689441661">Chromium กำลังพยายามแก้ไขรหัสผ่าน โปรดพิมพ์รหัสผ่าน Windows ของคุณเพื่ออนุญาต</translation>
 <translation id="5623402015214259806">{0,plural, =0{มีอัปเดต Chromium พร้อมให้ใช้งาน}=1{มีอัปเดต Chromium พร้อมให้ใช้งาน}other{อัปเดต Chromium พร้อมให้ใช้งานมาแล้ว # วัน}}</translation>
 <translation id="5631814766731275228">ชื่อและภาพโปรไฟล์ Chromium</translation>
 <translation id="5634636535844844681">Chromium ต้องใช้ Windows 7 ขึ้นไป</translation>

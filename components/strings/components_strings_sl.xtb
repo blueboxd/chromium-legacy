@@ -600,6 +600,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="3587738293690942763">Srednje</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Aplikacijo je blokiral skrbnik</translation>
 <translation id="3608932978122581043">Usmerjenost podajanja</translation>
 <translation id="3614103345592970299">Velikost 2</translation>
 <translation id="361438452008624280">Vnos na seznamu »<ph name="LANGUAGE_ID" />«: neznan ali nepodprt jezik.</translation>
@@ -854,6 +855,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="467662567472608290">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo vsebuje napake. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> se želi odzvati na dogodke funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="467809019005607715">Google Predstavitve</translation>
+<translation id="4680804919228900307">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da takoj preverite shranjena gesla za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> in druga spletna mesta, na katerih uporabljate to geslo.</translation>
 <translation id="4690462567478992370">Prenehaj uporabljati neveljavno potrdilo</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1019,8 +1021,10 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5329858041417644019">Vaš brskalnik ni upravljan</translation>
 <translation id="5332219387342487447">Način pošiljanja</translation>
 <translation id="5334013548165032829">Podrobni sistemski dnevniki</translation>
+<translation id="5340250774223869109">Aplikacija je blokirana</translation>
 <translation id="534295439873310000">Naprave s tehnologijo NFC</translation>
 <translation id="5344579389779391559">Ta stran vam bo morda poskusila kaj zaračunati</translation>
+<translation id="5346336634660260557">Pregled vsebine odložišča in datotek, ki jih prenesete iz Chroma ali naložite vanj.</translation>
 <translation id="5355557959165512791">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, saj je to potrdilo preklicano. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="536296301121032821">Nastavitev pravilnika ni bilo mogoče shraniti</translation>
 <translation id="5371425731340848620">Posodobite kartico</translation>
@@ -1431,6 +1435,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="7219179957768738017">Povezava uporablja <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Obdelovanje</translation>
 <translation id="7221855153210829124">Pokaži obvestila</translation>
+<translation id="7229659723041939809">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da takoj preverite shranjena gesla za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> in druga spletna mesta, na katerih uporabljate to geslo.</translation>
 <translation id="7233592378249864828">Tiskanje potrditvenega lista</translation>
 <translation id="7238585580608191973">Prstni odtis SHA-256</translation>
 <translation id="7240120331469437312">Nadomestno ime subjekta potrdila</translation>
@@ -1498,6 +1503,7 @@ Dodatne podrobnosti:
 <translation id="7485870689360869515">Ni podatkov.</translation>
 <translation id="7495290002932347110">Zaradi podatkovne kršitve na spletnem mestu ali v aplikaciji je bilo razkrito vaše geslo. Chrome priporoča, da preverite shranjena gesla in spremenite geslo za spletno mesto <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Nadaljuj urejanje</translation>
+<translation id="7503664977220660814">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da takoj preverite shranjena gesla za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in druga spletna mesta, na katerih uporabljate to geslo.</translation>
 <translation id="7508255263130623398">Vrnjen ID naprave pravilnika je prazen ali se ne ujema s trenutnim ID-jem naprave</translation>
 <translation id="7508870219247277067">Avokadovo zelena</translation>
 <translation id="7511955381719512146">Omrežje Wi-Fi, ki ga uporabljate, morda zahteva, da obiščete <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1573,6 +1579,7 @@ Dodatne podrobnosti:
 <translation id="7763386264682878361">Razčlenjevalnik manifesta plačil</translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="7766518757692125295">Votla podlaga</translation>
+<translation id="7767271804335921384">Aplikacijo je blokiral skrbnik</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">V istem vrstnem redu s tiskom na zgornji strani</translation>
 <translation id="777702478322588152">Prefektura</translation>
@@ -1593,6 +1600,7 @@ Dodatne podrobnosti:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Želite zapustiti spletno mesto?</translation>
 <translation id="7865448901209910068">Najboljša hitrost</translation>
+<translation id="7874263914261512992">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da takoj preverite shranjena gesla za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in druga spletna mesta, na katerih uporabljate to geslo.</translation>
 <translation id="7878562273885520351">Geslo je morda ogroženo</translation>
 <translation id="7882421473871500483">Rjava</translation>
 <translation id="7887683347370398519">Preverite CVC in poskusite znova</translation>
@@ -1729,6 +1737,7 @@ Dodatne podrobnosti:
 <translation id="8474910779563686872">Pokaži podrobnosti o razvijalcu</translation>
 <translation id="8479754468255770962">Spenjanje spodaj levo</translation>
 <translation id="8483780878231876732">Če želite uporabljati kartice iz Google Računa, se prijavite v Chrome</translation>
+<translation id="8485393050551136813">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da takoj preverite shranjena gesla za <ph name="WEBSITE_1" /> in druga spletna mesta, na katerih uporabljate to geslo.</translation>
 <translation id="8488350697529856933">Velja za</translation>
 <translation id="8490137692873530638">Zlagalnik 10</translation>
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>
@@ -1778,6 +1787,7 @@ Dodatne podrobnosti:
 <translation id="87601671197631245">To spletno mesto uporablja zastarelo varnostno konfiguracijo, zaradi česar so lahko vaši podatki ob pošiljanju temu spletnemu mestu izpostavljeni (npr. gesla, sporočila ali številke kreditnih kartic).</translation>
 <translation id="8761567432415473239">Googlova funkcija varnega brskanja je nedavno <ph name="BEGIN_LINK" />odkrila škodljive programe<ph name="END_LINK" /> na spletnem mestu <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Naprava USB</translation>
+<translation id="8774457497170244317">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da takoj preverite shranjena gesla za <ph name="WEBSITE_1" /> in druga spletna mesta, na katerih uporabljate to geslo.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8792621596287649091">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chromium priporoča, da spremenite geslo.</translation>

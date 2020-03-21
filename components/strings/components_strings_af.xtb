@@ -600,6 +600,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="3587738293690942763">Middel</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Jou administrateur blokkeer die program</translation>
 <translation id="3608932978122581043">Stroomoriëntasie</translation>
 <translation id="3614103345592970299">Grootte 2</translation>
 <translation id="361438452008624280">Lysinskrywing "<ph name="LANGUAGE_ID" />": onbekende of ongesteunde taal.</translation>
@@ -854,6 +855,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="467662567472608290">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaar bevat foute. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> wil op toeganklikheidgebeurtenisse reageer</translation>
 <translation id="467809019005607715">Google Skyfies</translation>
+<translation id="4680804919228900307">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy jou gestoorde wagwoorde vir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en ander werwe waar jy hierdie wagwoord gebruik, nou nagaan.</translation>
 <translation id="4690462567478992370">Hou op om 'n ongeldige sertifikaat te gebruik</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1019,8 +1021,10 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5329858041417644019">Jou blaaier word nie bestuur nie</translation>
 <translation id="5332219387342487447">Versendingmetode</translation>
 <translation id="5334013548165032829">Gedetailleerde stelselloglêers</translation>
+<translation id="5340250774223869109">Program word geblokkeer</translation>
 <translation id="534295439873310000">NFC-toestelle</translation>
 <translation id="5344579389779391559">Hierdie bladsy kan dalk geld van jou probeer hef</translation>
+<translation id="5346336634660260557">Skandeer die inhoud van die knipbord, asook lêers wat jy in Chrome aflaai of oplaai.</translation>
 <translation id="5355557959165512791">Jy kan nie <ph name="SITE" /> nou onmiddellik besoek nie omdat sy sertifikaat herroep is. Netwerkfoute is gewoonlik tydelik en daarom sal hierdie bladsy waarskynlik later werk.</translation>
 <translation id="536296301121032821">Kon nie beleidinstellings stoor nie</translation>
 <translation id="5371425731340848620">Dateer kaart op</translation>
@@ -1431,6 +1435,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="7219179957768738017">Die verbinding gebruik <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Verwerk tans</translation>
 <translation id="7221855153210829124">Wys kennisgewings</translation>
+<translation id="7229659723041939809">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy jou gestoorde wagwoorde vir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en ander werwe waar jy hierdie wagwoord gebruik, nou nagaan.</translation>
 <translation id="7233592378249864828">Drukbevestigingbladsy</translation>
 <translation id="7238585580608191973">SHA-256-vingerafdruk</translation>
 <translation id="7240120331469437312">Sertifikaatonderwerp se alternatiewe naam</translation>
@@ -1498,6 +1503,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7485870689360869515">Geen data gevind nie.</translation>
 <translation id="7495290002932347110">'n Dataskending op 'n werf of program het jou wagwoord blootgestel. Chrome beveel aan dat jy jou gestoorde wagwoorde nagaan en jou wagwoord op <ph name="ORIGIN" /> nou verander.</translation>
 <translation id="7498234416455752244">Hou aan wysig</translation>
+<translation id="7503664977220660814">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy jou gestoorde wagwoorde vir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en ander werwe waar jy hierdie wagwoord gebruik, nou nagaan.</translation>
 <translation id="7508255263130623398">Teruggestuurde beleidtoestel-ID is leeg of stem nie met huidige toestel-ID ooreen nie</translation>
 <translation id="7508870219247277067">Avokadogroen</translation>
 <translation id="7511955381719512146">Die Wi-Fi wat jy gebruik, kan vereis dat jy <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> besoek.</translation>
@@ -1573,6 +1579,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7763386264682878361">Betalingmanifesontleder</translation>
 <translation id="7764225426217299476">Voeg adres by</translation>
 <translation id="7766518757692125295">Buitelyn</translation>
+<translation id="7767271804335921384">Jou administrateur het die program geblokkeer</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Dieselfde volgorde, voorkant na bo</translation>
 <translation id="777702478322588152">Prefektuur</translation>
@@ -1593,6 +1600,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Verlaat werf?</translation>
 <translation id="7865448901209910068">Beste spoed</translation>
+<translation id="7874263914261512992">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy jou gestoorde wagwoorde vir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en ander werwe waar jy hierdie wagwoord gebruik, nou nagaan.</translation>
 <translation id="7878562273885520351">Jou wagwoord is dalk in gevaar</translation>
 <translation id="7882421473871500483">Bruin</translation>
 <translation id="7887683347370398519">Gaan jou CVC na en probeer weer</translation>
@@ -1729,6 +1737,7 @@ Bykomende besonderhede:
 <translation id="8474910779563686872">Wys ontwikkelaarbesonderhede</translation>
 <translation id="8479754468255770962">Kram links onder</translation>
 <translation id="8483780878231876732">Meld by Chrome aan om kaarte van jou Google-rekening af te gebruik</translation>
+<translation id="8485393050551136813">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy jou gestoorde wagwoorde vir <ph name="WEBSITE_1" /> en ander werwe waar jy hierdie wagwoord gebruik, nou nagaan.</translation>
 <translation id="8488350697529856933">Is van toepassing op</translation>
 <translation id="8490137692873530638">Stapelaar 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> het te lank gevat om te reageer.</translation>
@@ -1778,6 +1787,7 @@ Bykomende besonderhede:
 <translation id="87601671197631245">Hierdie werf gebruik 'n verouderde sekuriteitopstelling, wat jou inligting (byvoorbeeld, wagwoorde, boodskappe of kredietkaarte) kan blootstel wanneer dit na hierdie werf toe gestuur word.</translation>
 <translation id="8761567432415473239">Google Veiligblaai het onlangs <ph name="BEGIN_LINK" />skadelike programme gevind<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-toestel</translation>
+<translation id="8774457497170244317">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy jou gestoorde wagwoorde vir <ph name="WEBSITE_1" /> en ander werwe waar jy hierdie wagwoord gebruik, nou nagaan.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Herdoen uitvee</translation>
 <translation id="8792621596287649091">Jy kan toegang tot jou <ph name="ORG_NAME" />-rekening verloor of identiteitdiefstal ervaar. Chromium beveel aan dat jy jou wagwoord nou verander.</translation>

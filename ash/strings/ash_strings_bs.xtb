@@ -599,6 +599,7 @@
 <translation id="8735953464173050365">Pogledajte postavke tastature. Izabrana je tastatura <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Prikaži postavke VPN mreže</translation>
 <translation id="8785070478575117577">Povezivanje na mrežu <ph name="NETWORK_NAME" /></translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="8825863694328519386">Prevucite prstom slijeva nadesno da se vratite</translation>
 <translation id="8828714802988429505">90°</translation>

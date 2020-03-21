@@ -29,15 +29,15 @@ import org.chromium.base.annotations.NativeMethods;
  */
 @JNINamespace("content")
 @JNIAdditionalImport(Wrappers.class)
-public class SmsReceiver extends BroadcastReceiver {
-    private static final String TAG = "SmsReceiver";
+public class SmsVerificationReceiver extends BroadcastReceiver {
+    private static final String TAG = "SmsVerificationReceiver";
     private static final boolean DEBUG = false;
     private final long mSmsProviderAndroid;
     private boolean mDestroyed;
     private Wrappers.SmsRetrieverClientWrapper mClient;
     private Wrappers.SmsReceiverContext mContext;
 
-    private SmsReceiver(long smsProviderAndroid) {
+    private SmsVerificationReceiver(long smsProviderAndroid) {
         mDestroyed = false;
         mSmsProviderAndroid = smsProviderAndroid;
 
@@ -57,14 +57,14 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     @CalledByNative
-    private static SmsReceiver create(long smsProviderAndroid) {
-        if (DEBUG) Log.d(TAG, "Creating SmsReceiver.");
-        return new SmsReceiver(smsProviderAndroid);
+    private static SmsVerificationReceiver create(long smsProviderAndroid) {
+        if (DEBUG) Log.d(TAG, "Creating SmsVerificationReceiver.");
+        return new SmsVerificationReceiver(smsProviderAndroid);
     }
 
     @CalledByNative
     private void destroy() {
-        if (DEBUG) Log.d(TAG, "Destroying SmsReceiver.");
+        if (DEBUG) Log.d(TAG, "Destroying SmsVerificationReceiver.");
         mDestroyed = true;
         mContext.unregisterReceiver(this);
     }
@@ -98,11 +98,11 @@ public class SmsReceiver extends BroadcastReceiver {
             case CommonStatusCodes.SUCCESS:
                 String message = intent.getExtras().getString(SmsRetriever.EXTRA_SMS_MESSAGE);
                 if (DEBUG) Log.d(TAG, "Got message: %s!", message);
-                SmsReceiverJni.get().onReceive(mSmsProviderAndroid, message);
+                SmsVerificationReceiverJni.get().onReceive(mSmsProviderAndroid, message);
                 break;
             case CommonStatusCodes.TIMEOUT:
                 if (DEBUG) Log.d(TAG, "Timeout");
-                SmsReceiverJni.get().onTimeout(mSmsProviderAndroid);
+                SmsVerificationReceiverJni.get().onTimeout(mSmsProviderAndroid);
                 break;
         }
     }
@@ -132,7 +132,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @NativeMethods
     interface Natives {
-        void onReceive(long nativeSmsProviderAndroid, String sms);
-        void onTimeout(long nativeSmsProviderAndroid);
+        void onReceive(long nativeSmsProviderGmsVerification, String sms);
+        void onTimeout(long nativeSmsProviderGmsVerification);
     }
 }

@@ -598,6 +598,7 @@
 <translation id="3587738293690942763">보통</translation>
 <translation id="3592413004129370115">Italian(봉투)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">관리자가 애플리케이션을 차단함</translation>
 <translation id="3608932978122581043">종이 공급 방향</translation>
 <translation id="3614103345592970299">크기 2</translation>
 <translation id="361438452008624280">목록 항목 ‘<ph name="LANGUAGE_ID" />’: 알 수 없거나 지원되지 않는 언어입니다.</translation>
@@ -852,6 +853,7 @@
 <translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="4677585247300749148"><ph name="URL" />에서 접근성 이벤트에 응답하려고 합니다</translation>
 <translation id="467809019005607715">Google 프레젠테이션</translation>
+<translation id="4680804919228900307">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> 등 동일한 비밀번호를 사용한 사이트에 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="4690462567478992370">유효하지 않은 인증서 사용 중단</translation>
 <translation id="4691835149146451662">Architecture-A(봉투)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1017,8 +1019,10 @@
 <translation id="5329858041417644019">관리 대상 브라우저가 아닙니다</translation>
 <translation id="5332219387342487447">배송 방법</translation>
 <translation id="5334013548165032829">세부 시스템 로그</translation>
+<translation id="5340250774223869109">애플리케이션이 차단됨</translation>
 <translation id="534295439873310000">NFC 기기</translation>
 <translation id="5344579389779391559">이 페이지에서 금액을 청구할 수 있습니다.</translation>
+<translation id="5346336634660260557">Chrome에서 다운로드 또는 업로드한 파일과 클립보드의 콘텐츠를 검사합니다.</translation>
 <translation id="5355557959165512791">인증서가 취소되었기 때문에 현재 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 나중에 이 페이지가 정상적으로 작동할 수 있습니다.</translation>
 <translation id="536296301121032821">정책 설정 저장 실패</translation>
 <translation id="5371425731340848620">카드 업데이트</translation>
@@ -1429,6 +1433,7 @@
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
 <translation id="7220786058474068424">처리 중</translation>
 <translation id="7221855153210829124">알림 표시</translation>
+<translation id="7229659723041939809">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> 등 동일한 비밀번호를 사용한 사이트에 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="7233592378249864828">인쇄 확인 시트</translation>
 <translation id="7238585580608191973">SHA-256 지문</translation>
 <translation id="7240120331469437312">인증서 대상 대체 이름</translation>
@@ -1495,6 +1500,7 @@
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="7495290002932347110">사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 저장된 비밀번호를 확인하고 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="7498234416455752244">계속 수정</translation>
+<translation id="7503664977220660814">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> 등 동일한 비밀번호를 사용한 사이트에 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="7508255263130623398">반환된 정책 기기 ID가 비었거나 현재 기기 ID와 일치하지 않음</translation>
 <translation id="7508870219247277067">아보카도 녹색</translation>
 <translation id="7511955381719512146">사용 중인 Wi-Fi에서 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> 방문을 요청할 수 있습니다.</translation>
@@ -1570,6 +1576,7 @@
 <translation id="7763386264682878361">결제 매니페스트 파서</translation>
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="7766518757692125295">스커트</translation>
+<translation id="7767271804335921384">관리자가 애플리케이션을 차단했습니다.</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">같은 순서로 인쇄면이 위를 향하게</translation>
 <translation id="777702478322588152">현</translation>
@@ -1590,6 +1597,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">사이트에서 나가시겠습니까?</translation>
 <translation id="7865448901209910068">최고 속도</translation>
+<translation id="7874263914261512992">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> 등 동일한 비밀번호를 사용한 사이트에 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="7878562273885520351">비밀번호가 도용될 수도 있음</translation>
 <translation id="7882421473871500483">갈색</translation>
 <translation id="7887683347370398519">CVC를 확인한 후 다시 시도하세요.</translation>
@@ -1726,6 +1734,7 @@
 <translation id="8474910779563686872">개발자 세부정보 표시</translation>
 <translation id="8479754468255770962">왼쪽 하단 스테이플</translation>
 <translation id="8483780878231876732">Google 계정에서 카드를 사용하려면 Chrome에 로그인하세요.</translation>
+<translation id="8485393050551136813">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" /> 등 동일한 비밀번호를 사용한 사이트에 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="8488350697529856933">적용 대상</translation>
 <translation id="8490137692873530638">스태커 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" />에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>
@@ -1775,6 +1784,7 @@
 <translation id="87601671197631245">이 사이트에서는 오래된 보안 설정을 사용하므로 개인정보(예: 비밀번호, 메시지 또는 신용카드)를 이 사이트로 전송할 경우 정보가 유출될 수도 있습니다.</translation>
 <translation id="8761567432415473239">Google 세이프 브라우징 결과 <ph name="SITE" />에서 최근 <ph name="BEGIN_LINK" />악성 프로그램이 발견<ph name="END_LINK" />되었습니다.</translation>
 <translation id="8763927697961133303">USB 기기</translation>
+<translation id="8774457497170244317">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" /> 등 동일한 비밀번호를 사용한 사이트에 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다.</translation>

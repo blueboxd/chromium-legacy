@@ -189,12 +189,14 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private LargeIconBridge mIconBridge;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
-            UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
+            UrlBarEditingTextStateProvider textProvider,
+            AutocompleteController autocompleteController, PropertyModel listPropertyModel) {
         mContext = context;
         mDelegate = delegate;
         mUrlBarEditingTextProvider = textProvider;
         mListPropertyModel = listPropertyModel;
-        mAutocomplete = new AutocompleteController(this);
+        mAutocomplete = autocompleteController;
+        mAutocomplete.setOnSuggestionsReceivedListener(this);
         mHandler = new Handler();
         mSuggestionProcessors = new ArrayList<>();
         mAvailableSuggestions = new ArrayList<>();

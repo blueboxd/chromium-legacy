@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installeret app</translation>
 <translation id="1450753235335490080">Delingen af <ph name="CONTENT_TYPE" /> mislykkedes</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> blev udskiftet med <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Du har tidligere søgt efter dette. Hvis du sletter "<ph name="QUERY" />" fra din historik, fjernes den permanent på fra din konto på alle dine enheder.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut og }one{# minutter og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Notifikation</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Højre til venstre</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">HØJST SANDSYNLIGT</translation>
+<translation id="7170202025028120564">Din apps skærmindstillinger træder i kraft, efter den næste genstart.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. tilbage}one{# min. tilbage}other{# min. tilbage}}</translation>
 <translation id="7319740667687257810">Appliste, delvis visning</translation>

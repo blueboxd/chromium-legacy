@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">გაშლა</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, დაინსტალირებული აპი</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ვერ ზიარდება</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> ჩანაცვლდა შემდეგით: <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">თქვენ უკვე ეძებდით ამას. ისტორიიდან „<ph name="QUERY" />“-ის წაშლის შემთხვევაში, ის ამოიშლება თქვენი ანგარიშიდან თქვენს ყველა მოწყობილობაზე.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 წუთი და }other{# წუთი და }}</translation>
 <translation id="1643823602425662293">შეტყობინება</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">მარჯვნიდან მარცხნივ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ყველაზე სავარაუდო</translation>
+<translation id="7170202025028120564">აპლიკაციის ჩვენების პარამეტრები ამოქმედდება მისი მომდევნო გადატვირთვის შემდეგ.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{დარჩენილია 1 წთ}other{დარჩენილია # წთ}}</translation>
 <translation id="7319740667687257810">გამშვები, ნაწილობრივი ხედი</translation>

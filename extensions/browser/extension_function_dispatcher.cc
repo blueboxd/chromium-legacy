@@ -376,6 +376,12 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
                                function->histogram_value());
     }
 
+    if (IsRequestFromServiceWorker(params)) {
+      base::UmaHistogramSparse(
+          "Extensions.Functions.ExtensionServiceWorkerCalls",
+          function->histogram_value());
+    }
+
     base::ElapsedTimer timer;
     function->RunWithValidation()->Execute();
     // TODO(devlin): Once we have a baseline metric for how long functions take,

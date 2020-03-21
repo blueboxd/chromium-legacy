@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">Valinnainen: Lähetä Googlelle automaattisesti käyttötilastoja ja virheraportteja Chromiumin kehittämiseksi.</translation>
 <translation id="2910007522516064972">Tietoja &amp;Chromiumista</translation>
 <translation id="2977470724722393594">Chromium on ajan tasalla.</translation>
+<translation id="2983934633046890458">Chromium yrittää muuttaa salasanoja.</translation>
 <translation id="3032706164202344641">Chromium ei voi tarkistaa salasanojasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="3032787606318309379">Lisätään Chromiumiin...</translation>
 <translation id="3068515742935458733">Auta parantamaan Chromiumia lähettämällä kaatumisilmoitukset ja <ph name="UMA_LINK" /> Googlelle</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">Chromium-käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="5480860683791598150">Chromium tarvitsee oikeuden käyttää sijaintiasi, jotta se voidaan jakaa tämän sivuston kanssa.</translation>
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
+<translation id="5496810170689441661">Chromium yrittää muuttaa salasanoja. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium-päivitys on saatavilla}=1{Chromium-päivitys on saatavilla}other{Chromium-päivitys on ollut saatavilla # vuorokauden ajan}}</translation>
 <translation id="5631814766731275228">Chromiumin nimi ja kuva</translation>
 <translation id="5634636535844844681">Chromium edellyttää Windows 7:ää tai uudempaa versiota.</translation>

@@ -1173,7 +1173,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2541706104884128042">Yangi uyqu vaqti belgilandi</translation>
 <translation id="2544853746127077729">Haqiqiylikni tekshirish sertifikati tarmoq tomonidan rad etildi</translation>
 <translation id="2546283357679194313">Cookie fayllari va sayt ma’lumotlari</translation>
-<translation id="2547583314137677375">Sinxronizatsiya qilmaslik</translation>
 <translation id="2548347166720081527"><ph name="PERMISSION" /> ruxsati berildi</translation>
 <translation id="2549985041256363841">Yozuvni boshlash</translation>
 <translation id="2550212893339833758">Swap xotirasi</translation>
@@ -1649,7 +1648,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3172808215939929606">Bu sahifa tarjima qilindi</translation>
 <translation id="3177909033752230686">Sahifa tili:</translation>
 <translation id="3179982752812949580">Matn shrifti</translation>
-<translation id="3181825792072797598">Sinxronizatsiyani yoqish</translation>
 <translation id="3181954750937456830">Saytlarni xavfsiz kezish (sizni va qurilmangizni xavfli saytlardan himoya qiladi)</translation>
 <translation id="3182749001423093222">Imlo tekshiruvi</translation>
 <translation id="3183139917765991655">Profillar importi</translation>
@@ -4422,7 +4420,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Qurilma</translation>
-<translation id="6966201992886493384">Saytlar cookie fayllardan sahifalarni kezishingizni yaxshilash uchun foydalanishi mumkin, masalan kirish axborotingiz yoki xarid qutingizni eslab qolish uchun</translation>
+<translation id="6966201992886493384">Saytlar sahifalarni kezishingizni yaxshilash, jumladan, kirish axborotingiz yoki xarid qutingizni eslab qolish uchun cookie fayllardan foydalanishi mumkin</translation>
 <translation id="696780070563539690">Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi</translation>
 <translation id="6968288415730398122">Ekran qulfini sozlash uchun parolingizni kiriting</translation>
 <translation id="6970480684834282392">Boshlanish turi</translation>
@@ -4838,7 +4836,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7507207699631365376">Bu taʼminotchining <ph name="BEGIN_LINK" />maxfiylik siyosati<ph name="END_LINK" /> bilan tanishish.</translation>
 <translation id="7507930499305566459">Status Responder sertifikati</translation>
 <translation id="7508054832109420082">Printerlardan foydalanishga ruxsat berish</translation>
-<translation id="751120035300339">Saytlar cookie fayllardan sahifalarni kezishingizni yaxshilash uchun foydalana olmaydi, masalan kirish axborotingiz yoki xarid qutingizni eslab qolish uchun</translation>
+<translation id="751120035300339">Saytlar sahifalarni kezishingizni yaxshilash, jumladan, kirish axborotingiz yoki xarid qutingizni eslab qolish uchun cookie fayllardan foydalana olmaydi</translation>
 <translation id="7513029293694390567">Saqlangan hisob ma’lumotlaridan foydalanib veb-saytlarga avtomatik kirish. Bu funksiya o‘chirilsa, har safar veb-saytga kirishdan oldin to‘ldirish so‘raladi.</translation>
 <translation id="7514239104543605883">Qurilmaga nusxalash</translation>
 <translation id="7514365320538308">Yuklab olish</translation>

@@ -30,7 +30,7 @@ cr.define('test_util', function() {
    * overwrite the defaults in this function's return value.
    * @return {DefaultContentSetting}
    */
-  function createDefaultContentSetting(override) {
+  /* #export */ function createDefaultContentSetting(override) {
     if (override === undefined) {
       override = {};
     }
@@ -76,7 +76,8 @@ cr.define('test_util', function() {
    *     the defaults in this function's return value.
    * @return {RawChooserException}
    */
-  function createRawChooserException(chooserType, sites, override) {
+  /* #export */ function createRawChooserException(
+      chooserType, sites, override) {
     return Object.assign(
         {chooserType: chooserType, displayName: '', object: {}, sites: sites},
         override || {});

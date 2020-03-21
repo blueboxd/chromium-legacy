@@ -24,8 +24,9 @@ class PacFileFetcher;
 namespace network {
 
 // Creates a proxy resolution service that uses |mojo_proxy_factory| to create
-// and connect to a Mojo proxy resolver service. This proxy service polls
-// |proxy_config_service| to notice when the proxy settings change.
+// and connect to a Mojo service for evaluating PAC files
+// (ProxyResolverFactory). The proxy service observes |proxy_config_service| to
+// notice when the proxy settings change.
 //
 // |pac_file_fetcher| specifies the dependency to use for downloading
 // any PAC scripts.
@@ -36,12 +37,9 @@ namespace network {
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ConfiguredProxyResolutionService.
-//
-// TODO(https://crbug.com/1032820): Rename this to
-// CreateConfiguredProxyResolutionServiceUsingMojoFactory.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 std::unique_ptr<net::ConfiguredProxyResolutionService>
-CreateProxyResolutionServiceUsingMojoFactory(
+CreateConfiguredProxyResolutionServiceUsingMojoFactory(
     mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
         mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,

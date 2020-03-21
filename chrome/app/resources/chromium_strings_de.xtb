@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">Optional: Unterstützen Sie Google bei der Verbesserung von Chromium durch automatisches Senden von Nutzungsstatistiken und Absturzberichten.</translation>
 <translation id="2910007522516064972">Über &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium ist auf dem neuesten Stand</translation>
+<translation id="2983934633046890458">Chromium versucht, Passwörter zu bearbeiten.</translation>
 <translation id="3032706164202344641">Chromium kann Ihre Passwörter nicht prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="3032787606318309379">Wird zu Chromium hinzugefügt...</translation>
 <translation id="3068515742935458733">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Chromium an Google senden</translation>
@@ -110,6 +111,7 @@
 <translation id="5479196819031988440">Chromium OS kann diese Seite nicht öffnen.</translation>
 <translation id="5480860683791598150">Chromium benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen</translation>
 <translation id="549669000822060376">Bitte warten Sie, bis die aktuellen Systemupdates von Chromium installiert wurden.</translation>
+<translation id="5496810170689441661">Chromium versucht, Passwörter zu bearbeiten. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ein Chromium-Update ist verfügbar}=1{Ein Chromium-Update ist verfügbar}other{Ein Chromium-Update ist seit # Tagen verfügbar}}</translation>
 <translation id="5631814766731275228">Chromium-Name und -Bild</translation>
 <translation id="5634636535844844681">Für Chromium ist Windows 7 oder höher erforderlich.</translation>

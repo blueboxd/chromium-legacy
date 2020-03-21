@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installerad app</translation>
 <translation id="1450753235335490080">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> har bytts ut mot <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Du har sökt efter detta tidigare. Om du raderar <ph name="QUERY" /> från historiken tas förslaget bort från ditt konto på alla enheter.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
 <translation id="1643823602425662293">Avisering</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Höger till vänster</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MEST TROLIGA</translation>
+<translation id="7170202025028120564">Appens skärminställningar börjar gälla nästa gång den startas om.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min kvar}other{# min kvar}}</translation>
 <translation id="7319740667687257810">Översikt, delvy</translation>

@@ -25,7 +25,6 @@ import './settings_ui/settings_ui.m.js';
 
 // <if expr="not chromeos">
 import './default_browser_page/default_browser_page.m.js';
-import './people_page/import_data_dialog.m.js';
 // </if>
 
 // <if expr="not chromeos">

@@ -165,7 +165,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browserservices/ClientAppBroadcastReceiver.java",
   "java/src/org/chromium/chrome/browser/browserservices/ClientAppDataRegister.java",
   "java/src/org/chromium/chrome/browser/browserservices/ManageTrustedWebActivityDataActivity.java",
-  "java/src/org/chromium/chrome/browser/browserservices/Origin.java",
   "java/src/org/chromium/chrome/browser/browserservices/OriginVerifier.java",
   "java/src/org/chromium/chrome/browser/browserservices/PostMessageHandler.java",
   "java/src/org/chromium/chrome/browser/browserservices/Relationship.java",

@@ -28,6 +28,7 @@
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -284,6 +285,11 @@ void DownloadItemNotification::Close(bool by_user) {
     return;
   }
 
+  if (item_ && item_->IsMixedContent() && !item_->IsDone()) {
+    item_->Cancel(by_user);
+    return;
+  }
+
   if (image_decode_status_ == IN_PROGRESS) {
     image_decode_status_ = NOT_STARTED;
     ImageDecoder::Cancel(this);
@@ -329,6 +335,12 @@ void DownloadItemNotification::Click(
     base::RecordAction(
         UserMetricsAction("DownloadNotification.Click_Dangerous"));
     // Do nothing.
+    return;
+  }
+
+  // Handle a click on the notification's body.
+  if (item_->IsMixedContent()) {
+    chrome::ShowDownloads(GetBrowser());
     return;
   }
 
@@ -386,6 +398,7 @@ void DownloadItemNotification::Update() {
   // dangerous, make sure it pops up again.
   bool pop_up =
       ((item_->IsDangerous() && !previous_dangerous_state_) ||
+       (item_->IsMixedContent() && !previous_mixed_content_state_) ||
        (download_state == download::DownloadItem::COMPLETE &&
         previous_download_state_ != download::DownloadItem::COMPLETE) ||
        (download_state == download::DownloadItem::INTERRUPTED &&
@@ -395,6 +408,7 @@ void DownloadItemNotification::Update() {
   show_next_ = false;
   previous_download_state_ = item_->GetState();
   previous_dangerous_state_ = item_->IsDangerous();
+  previous_mixed_content_state_ = item_->IsMixedContent();
 }
 
 void DownloadItemNotification::UpdateNotificationData(bool display,
@@ -422,6 +436,22 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
       notification_->set_priority(message_center::HIGH_PRIORITY);
     else
       notification_->set_priority(message_center::DEFAULT_PRIORITY);
+  } else if (item_->IsMixedContent()) {
+    notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
+    switch (item_->GetMixedContentStatus()) {
+      case download::DownloadItem::MixedContentStatus::BLOCK:
+        notification_->set_priority(message_center::HIGH_PRIORITY);
+        break;
+      case download::DownloadItem::MixedContentStatus::WARN:
+        notification_->set_priority(message_center::DEFAULT_PRIORITY);
+        break;
+      case download::DownloadItem::MixedContentStatus::UNKNOWN:
+      case download::DownloadItem::MixedContentStatus::SAFE:
+      case download::DownloadItem::MixedContentStatus::VALIDATED:
+      case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
+        NOTREACHED();
+        break;
+    }
   } else {
     switch (item_->GetState()) {
       case download::DownloadItem::IN_PROGRESS: {
@@ -508,6 +538,20 @@ SkColor DownloadItemNotification::GetNotificationIconColor() {
                ? ash::kSystemNotificationColorCriticalWarning
                : ash::kSystemNotificationColorWarning;
   }
+  if (item_->IsMixedContent()) {
+    switch (item_->GetMixedContentStatus()) {
+      case download::DownloadItem::MixedContentStatus::BLOCK:
+        return ash::kSystemNotificationColorCriticalWarning;
+      case download::DownloadItem::MixedContentStatus::WARN:
+        return ash::kSystemNotificationColorWarning;
+      case download::DownloadItem::MixedContentStatus::UNKNOWN:
+      case download::DownloadItem::MixedContentStatus::SAFE:
+      case download::DownloadItem::MixedContentStatus::VALIDATED:
+      case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
+        NOTREACHED();
+        break;
+    }
+  }
 
   switch (item_->GetState()) {
     case download::DownloadItem::IN_PROGRESS:
@@ -581,6 +625,25 @@ DownloadItemNotification::GetExtraActions() const {
     return actions;
   }
 
+  if (item_->IsMixedContent()) {
+    switch (item_->GetMixedContentStatus()) {
+      case download::DownloadItem::MixedContentStatus::BLOCK:
+        actions->push_back(DownloadCommands::DISCARD);
+        break;
+      case download::DownloadItem::MixedContentStatus::WARN:
+        actions->push_back(DownloadCommands::KEEP);
+        break;
+      case download::DownloadItem::MixedContentStatus::UNKNOWN:
+      case download::DownloadItem::MixedContentStatus::SAFE:
+      case download::DownloadItem::MixedContentStatus::VALIDATED:
+      case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
+        NOTREACHED();
+        break;
+    }
+    actions->push_back(DownloadCommands::LEARN_MORE_MIXED_CONTENT);
+    return actions;
+  }
+
   switch (item_->GetState()) {
     case download::DownloadItem::IN_PROGRESS:
       if (!item_->IsPaused())
@@ -619,6 +682,10 @@ base::string16 DownloadItemNotification::GetTitle() const {
       return l10n_util::GetStringUTF16(
           IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
     }
+  }
+
+  if (item_->IsMixedContent()) {
+    return l10n_util::GetStringUTF16(IDS_PROMPT_BLOCKED_MIXED_DOWNLOAD_TITLE);
   }
 
   base::string16 file_name =
@@ -690,10 +757,12 @@ base::string16 DownloadItemNotification::GetCommandLabel(
     case DownloadCommands::ANNOTATE:
       id = IDS_DOWNLOAD_NOTIFICATION_ANNOTATE;
       break;
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+      id = IDS_LEARN_MORE;
+      break;
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::PLATFORM_OPEN:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
-    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
       // Only for menu.
@@ -854,7 +923,7 @@ base::string16 DownloadItemNotification::GetSubStatusString() const {
 }
 
 base::string16 DownloadItemNotification::GetStatusString() const {
-  if (item_->IsDangerous())
+  if (item_->IsDangerous() || item_->IsMixedContent())
     return base::string16();
 
   // The hostname. (E.g.:"example.com" or "127.0.0.1")

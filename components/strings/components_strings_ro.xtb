@@ -598,6 +598,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="3587738293690942763">Central</translation>
 <translation id="3592413004129370115">Italian (Plic)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Aplicația a fost blocată de administrator</translation>
 <translation id="3608932978122581043">Orientarea alimentării</translation>
 <translation id="3614103345592970299">Mărimea 2</translation>
 <translation id="361438452008624280">Intrarea din listă „<ph name="LANGUAGE_ID" />”: limbă necunoscută sau neacceptată.</translation>
@@ -852,6 +853,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="467662567472608290">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate conține erori. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> dorește să răspundă evenimentelor de accesibilitate</translation>
 <translation id="467809019005607715">Prezentări Google</translation>
+<translation id="4680804919228900307">Ai introdus parola pe un site înșelător. Chromium recomandă să verifici acum parolele salvate pentru <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> și alte site-uri pe care folosești această parolă.</translation>
 <translation id="4690462567478992370">Nu mai folosi un certificat nevalid</translation>
 <translation id="4691835149146451662">Architecture-A (Plic)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1017,8 +1019,10 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5329858041417644019">Browserul tău nu este gestionat</translation>
 <translation id="5332219387342487447">Metoda de expediere</translation>
 <translation id="5334013548165032829">Jurnale de sistem detaliate</translation>
+<translation id="5340250774223869109">Aplicația a fost blocată</translation>
 <translation id="534295439873310000">Dispozitive NFC</translation>
 <translation id="5344579389779391559">Această pagină poate să genereze costuri</translation>
+<translation id="5346336634660260557">Scanează conținutul clipboardului și fișierele pe care le descarci sau le încarci în Chrome.</translation>
 <translation id="5355557959165512791">Nu poți accesa <ph name="SITE" /> acum, deoarece certificatul său a fost revocat. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5371425731340848620">Actualizează cardul</translation>
@@ -1429,6 +1433,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="7219179957768738017">Conexiunea utilizează <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Se procesează</translation>
 <translation id="7221855153210829124">Afișeze notificări</translation>
+<translation id="7229659723041939809">Ai introdus parola pe un site înșelător. Chrome recomandă să verifici acum parolele salvate pentru <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> și alte site-uri pe care folosești această parolă.</translation>
 <translation id="7233592378249864828">Printează foaia de confirmare</translation>
 <translation id="7238585580608191973">Amprentă digitală SHA-256</translation>
 <translation id="7240120331469437312">Nume alternativ subiect certificat</translation>
@@ -1496,6 +1501,7 @@ Detalii suplimentare:
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
 <translation id="7495290002932347110">O încălcare a securității datelor de pe un site sau dintr-o aplicație ți-a expus parola. Chrome recomandă să verifici parolele salvate și să-ți schimbi acum parola de pe <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Continuați editarea</translation>
+<translation id="7503664977220660814">Ai introdus parola pe un site înșelător. Chromium recomandă să verifici acum parolele salvate pentru <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și alte site-uri pe care folosești această parolă.</translation>
 <translation id="7508255263130623398">ID-ul de dispozitiv returnat pentru politică este gol sau nu corespunde cu ID-ul de dispozitiv actual</translation>
 <translation id="7508870219247277067">Verde avocado</translation>
 <translation id="7511955381719512146">Rețeaua Wi-Fi pe care o folosești poate solicita accesarea adresei <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1571,6 +1577,7 @@ Detalii suplimentare:
 <translation id="7763386264682878361">Parser pentru manifestul plății</translation>
 <translation id="7764225426217299476">Adaugă o adresă</translation>
 <translation id="7766518757692125295">Contur</translation>
+<translation id="7767271804335921384">Aplicația a fost blocată de administrator</translation>
 <translation id="7770259615151589601">Designated-Lung</translation>
 <translation id="7773005668374414287">În aceeași ordine, cu fața în sus</translation>
 <translation id="777702478322588152">Prefectură</translation>
@@ -1591,6 +1598,7 @@ Detalii suplimentare:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Ieși de pe site?</translation>
 <translation id="7865448901209910068">Viteza optimă</translation>
+<translation id="7874263914261512992">Ai introdus parola pe un site înșelător. Chrome recomandă să verifici acum parolele salvate pentru <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și alte site-uri pe care folosești această parolă.</translation>
 <translation id="7878562273885520351">Este posibil ca parola să fie compromisă</translation>
 <translation id="7882421473871500483">Maro</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
@@ -1727,6 +1735,7 @@ Detalii suplimentare:
 <translation id="8474910779563686872">Afișează detaliile dezvoltatorului</translation>
 <translation id="8479754468255770962">Capsare în stânga jos</translation>
 <translation id="8483780878231876732">Pentru a folosi cardurile din Contul Google, conectează-te la Chrome</translation>
+<translation id="8485393050551136813">Ai introdus parola pe un site înșelător. Chromium recomandă să verifici acum parolele salvate pentru <ph name="WEBSITE_1" /> și alte site-uri pe care folosești această parolă.</translation>
 <translation id="8488350697529856933">Se aplică pentru</translation>
 <translation id="8490137692873530638">Receptorul de hârtie 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a răspuns prea târziu.</translation>
@@ -1777,6 +1786,7 @@ Detalii suplimentare:
 <translation id="87601671197631245">Site-ul folosește o configurație de securitate învechită, care îți poate expune informațiile (de exemplu, parolele, mesajele sau cardurile de credit) când sunt trimise la acest site.</translation>
 <translation id="8761567432415473239">Recent, Navigarea sigură Google a <ph name="BEGIN_LINK" />descoperit programe dăunătoare<ph name="END_LINK" /> pe <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispozitiv USB</translation>
+<translation id="8774457497170244317">Ai introdus parola pe un site înșelător. Chrome recomandă să verifici acum parolele salvate pentru <ph name="WEBSITE_1" /> și alte site-uri pe care folosești această parolă.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
 <translation id="8792621596287649091">Este posibil să pierzi accesul la contul <ph name="ORG_NAME" /> sau să fii victima unui furt de identitate. Chromium îți recomandă să îți schimbi acum parola.</translation>

@@ -598,6 +598,7 @@
 <translation id="3587738293690942763">وسط</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />، <ph name="DOMAIN" />، <ph name="TIME" /></translation>
+<translation id="3603507503523709">سرپرست برنامه را مسدود کرده است</translation>
 <translation id="3608932978122581043">جهت تغذیه کاغذ</translation>
 <translation id="3614103345592970299">اندازه ۲</translation>
 <translation id="361438452008624280">ورودی فهرست «<ph name="LANGUAGE_ID" />»: زبان ناشناس یا پشتیبانی‌نشده.</translation>
@@ -852,6 +853,7 @@
 <translation id="467662567472608290">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن خطاهایی دارد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> می‌خواهد به رویدادهای مربوط به دسترس‌پذیری پاسخ دهد</translation>
 <translation id="467809019005607715">‏اسلایدنگار Google</translation>
+<translation id="4680804919228900307">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium توصیه می‌کند همین حالا گذرواژه‌های ذخیره‌شده برای <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، <ph name="WEBSITE_3" />، و سایت‌های دیگری را که در آن‌ها از این گذرواژه استفاده می‌کنید بررسی کنید.</translation>
 <translation id="4690462567478992370">توقف استفاده از گواهینامه نامعتبر</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1017,8 +1019,10 @@
 <translation id="5329858041417644019">مرورگرتان مدیریت نمی‌شود</translation>
 <translation id="5332219387342487447">روش ارسال کالا</translation>
 <translation id="5334013548165032829">گزارش دقیق سیستم</translation>
+<translation id="5340250774223869109">برنامه مسدود شده است</translation>
 <translation id="534295439873310000">‏دستگاه‌های NFC</translation>
 <translation id="5344579389779391559">این صفحه ممکن است تلاش کند از شما پول دریافت کند</translation>
+<translation id="5346336634660260557">‏محتوای بریده‌دان و همچنین فایل‌هایی را که در Chrome بارگیری یا بارگذاری می‌کنید اسکن می‌کند.</translation>
 <translation id="5355557959165512791">درحال‌حاضر نمی‌توانید از <ph name="SITE" /> دیدن کنید، زیرا گواهینامه آن لغو شده است. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
 <translation id="5371425731340848620">به‌روزرسانی کارت</translation>
@@ -1429,6 +1433,7 @@
 <translation id="7219179957768738017">اتصال از <ph name="SSL_VERSION" /> استفاده می‌کند.</translation>
 <translation id="7220786058474068424">درحال پردازش</translation>
 <translation id="7221855153210829124">نمایش اعلان‌ها</translation>
+<translation id="7229659723041939809">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chrome توصیه می‌کند همین‌حالا گذرواژه‌های ذخیره‌شده برای <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، <ph name="WEBSITE_3" />، و سایت‌های دیگری را که در آن‌ها از این گذرواژه استفاده می‌کنید بررسی کنید.</translation>
 <translation id="7233592378249864828">برگ تأیید چاپ</translation>
 <translation id="7238585580608191973">‏اثر انگشت SHA-256</translation>
 <translation id="7240120331469437312">نام دیگر موضوع گواهی</translation>
@@ -1496,6 +1501,7 @@
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="7495290002932347110">‏نقض داده در سایت یا برنامه‌ای باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند همین‌حالا گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید و گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="7498234416455752244">ادامه ویرایش</translation>
+<translation id="7503664977220660814">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium توصیه می‌کند همین حالا گذرواژه‌های ذخیره‌شده برای <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، و سایت‌های دیگری را که در آن‌ها از این گذرواژه استفاده می‌کنید بررسی کنید.</translation>
 <translation id="7508255263130623398">شناسه دستگاه خط‌مشی برگردانده‌شده خالی است یا با شناسه کنونی دستگاه مطابقت ندارد</translation>
 <translation id="7508870219247277067">سبز مایل به زرد</translation>
 <translation id="7511955381719512146">‏شبکه Wi-Fi مورد استفاده‌تان احتمالاً نیاز دارد که به صفحه <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> بروید.</translation>
@@ -1571,6 +1577,7 @@
 <translation id="7763386264682878361">تجزیه‌کننده مانیفست پرداخت</translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
 <translation id="7766518757692125295">«اسکیرت»</translation>
+<translation id="7767271804335921384">سرپرستتان برنامه را مسدود کرده است</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">ترتیب یکسان، روبه‌بالا</translation>
 <translation id="777702478322588152">اداره ریاست</translation>
@@ -1591,6 +1598,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">سایت را ترک می‌کنید؟</translation>
 <translation id="7865448901209910068">بهترین سرعت</translation>
+<translation id="7874263914261512992">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chrome توصیه می‌کند همین حالا گذرواژه‌های ذخیره‌شده برای <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، و سایت‌های دیگری را که در آن‌ها از این گذرواژه استفاده می‌کنید بررسی کنید.</translation>
 <translation id="7878562273885520351">ممکن است گذرواژه‌تان درمعرض خطر باشد</translation>
 <translation id="7882421473871500483">قهوه‌ای</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
@@ -1727,6 +1735,7 @@
 <translation id="8474910779563686872">نمایش جزئیات برنامه‌نویس</translation>
 <translation id="8479754468255770962">منگنه در پایین سمت چپ</translation>
 <translation id="8483780878231876732">‏برای استفاده از کارت‌ها از حساب Google خود، به سیستم Chrome وارد شوید</translation>
+<translation id="8485393050551136813">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium توصیه می‌کند همین حالا گذرواژه‌های ذخیره‌شده برای <ph name="WEBSITE_1" /> و سایت‌های دیگری را که در آن‌ها از این گذرواژه استفاده می‌کنید بررسی کنید.</translation>
 <translation id="8488350697529856933">اعمال برای</translation>
 <translation id="8490137692873530638">پشته‌ساز ۱۰</translation>
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>
@@ -1776,6 +1785,7 @@
 <translation id="87601671197631245">پیکربندی امنیتی این سایت قدیمی است و ممکن است اطلاعاتتان (برای مثال، گذرواژه‌ها، پیام‌ها، یا کارت‌های اعتباری) هنگام ارسال شدن به این سایت، درمعرض خطر قرار گیرد.</translation>
 <translation id="8761567432415473239">‏مرور ایمن Google اخیراً <ph name="BEGIN_LINK" />برنامه‌های خطرناک<ph name="END_LINK" /> را در <ph name="SITE" /> پیدا کرده است.</translation>
 <translation id="8763927697961133303">‏دستگاه USB</translation>
+<translation id="8774457497170244317">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chrome توصیه می‌کند همین حالا گذرواژه‌های ذخیره‌شده برای <ph name="WEBSITE_1" /> و سایت‌های دیگری را که در آن‌ها از این گذرواژه استفاده می‌کنید بررسی کنید.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
 <translation id="8792621596287649091">‏ممکن است دسترسی به حساب <ph name="ORG_NAME" /> را از دست بدهید یا به سرقت هویت دچار شوید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>

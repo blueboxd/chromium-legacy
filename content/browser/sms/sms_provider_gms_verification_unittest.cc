@@ -8,10 +8,12 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/sms/sms_provider.h"
-#include "content/browser/sms/sms_provider_android.h"
+#include "content/browser/sms/sms_provider_gms_verification.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/test/content_unittests_jni_headers/Fakes_jni.h"
+#include "content/test/content_unittests_jni_headers/SmsVerificationFakes_jni.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,26 +38,27 @@ class MockObserver : public SmsProvider::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
-// SmsProviderAndroidTest tests the JNI bindings to the android SmsReceiver
-// and the handling of the SMS upon retrieval.
-class SmsProviderAndroidTest : public RenderViewHostTestHarness {
+// SmsProviderGmsVerificationTest tests the JNI bindings to the android
+// SmsVerificationReceiver and the handling of the SMS upon retrieval.
+class SmsProviderGmsVerificationTest : public RenderViewHostTestHarness {
  protected:
-  SmsProviderAndroidTest() {}
-  ~SmsProviderAndroidTest() override {}
+  SmsProviderGmsVerificationTest() = default;
+  ~SmsProviderGmsVerificationTest() override = default;
 
-  void SetUp() override {
+  void SetUp() {
     RenderViewHostTestHarness::SetUp();
+    provider_ = std::make_unique<SmsProviderGmsVerification>();
     j_fake_sms_retriever_client_.Reset(
         Java_FakeSmsRetrieverClient_create(AttachCurrentThread()));
-    Java_Fakes_setClientForTesting(AttachCurrentThread(),
-                                   provider_.GetSmsReceiverForTesting(),
-                                   j_fake_sms_retriever_client_);
-    provider_.AddObserver(&observer_);
+    Java_SmsVerificationFakes_setClientForTesting(
+        AttachCurrentThread(), provider_->GetSmsReceiverForTesting(),
+        j_fake_sms_retriever_client_);
+    provider_->AddObserver(&observer_);
   }
 
-  void TriggerSms(const std::string& sms) {
+  void TriggerSmsVerificationSms(const std::string& sms) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_FakeSmsRetrieverClient_triggerSms(
+    Java_FakeSmsRetrieverClient_triggerSmsVerificationSms(
         env, j_fake_sms_retriever_client_,
         base::android::ConvertUTF8ToJavaString(env, sms));
   }
@@ -66,58 +69,59 @@ class SmsProviderAndroidTest : public RenderViewHostTestHarness {
                                                j_fake_sms_retriever_client_);
   }
 
-  SmsProviderAndroid& provider() { return provider_; }
+  SmsProviderGmsVerification* provider() { return provider_.get(); }
 
   NiceMock<MockObserver>* observer() { return &observer_; }
 
  private:
-  SmsProviderAndroid provider_;
+  std::unique_ptr<SmsProviderGmsVerification> provider_;
   NiceMock<MockObserver> observer_;
   base::android::ScopedJavaGlobalRef<jobject> j_fake_sms_retriever_client_;
+  base::test::ScopedFeatureList feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(SmsProviderAndroidTest);
+  DISALLOW_COPY_AND_ASSIGN(SmsProviderGmsVerificationTest);
 };
 
 }  // namespace
 
-TEST_F(SmsProviderAndroidTest, Retrieve) {
+TEST_F(SmsProviderGmsVerificationTest, Retrieve) {
   std::string test_url = "https://google.com";
 
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
-  provider().Retrieve();
-  TriggerSms("Hi\n@google.com #ABC123");
+  provider()->Retrieve();
+  TriggerSmsVerificationSms("Hi\n@google.com #ABC123");
 }
 
-TEST_F(SmsProviderAndroidTest, IgnoreBadSms) {
+TEST_F(SmsProviderGmsVerificationTest, IgnoreBadSms) {
   std::string test_url = "https://google.com";
   std::string good_sms = "Hi\n@google.com #ABC123";
   std::string bad_sms = "Hi\n@b.com";
 
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
-  provider().Retrieve();
-  TriggerSms(bad_sms);
-  TriggerSms(good_sms);
+  provider()->Retrieve();
+  TriggerSmsVerificationSms(bad_sms);
+  TriggerSmsVerificationSms(good_sms);
 }
 
-TEST_F(SmsProviderAndroidTest, TaskTimedOut) {
+TEST_F(SmsProviderGmsVerificationTest, TaskTimedOut) {
   EXPECT_CALL(*observer(), OnReceive(_, _)).Times(0);
-  provider().Retrieve();
+  provider()->Retrieve();
   TriggerTimeout();
 }
 
-TEST_F(SmsProviderAndroidTest, OneObserverTwoTasks) {
+TEST_F(SmsProviderGmsVerificationTest, OneObserverTwoTasks) {
   std::string test_url = "https://google.com";
 
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
   // Two tasks for when 1 request gets aborted but the task is still triggered.
-  provider().Retrieve();
-  provider().Retrieve();
+  provider()->Retrieve();
+  provider()->Retrieve();
 
   // First timeout should be ignored.
   TriggerTimeout();
-  TriggerSms("Hi\n@google.com #ABC123");
+  TriggerSmsVerificationSms("Hi\n@google.com #ABC123");
 }
 
 }  // namespace content

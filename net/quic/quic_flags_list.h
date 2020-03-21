@@ -276,12 +276,6 @@ QUIC_FLAG(bool,
 // If true, use predictable grease settings identifiers and values.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 
-// If true and batch writer is used, QuicConnection will flush after a mtu probe
-// is sent.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_batch_writer_flush_after_mtu_probe,
-          true)
-
 // When the EACK connection option is sent by the client, an ack-eliciting frame
 // is bundled with ACKs sent after the PTO fires.
 QUIC_FLAG(bool,
@@ -346,13 +340,13 @@ QUIC_FLAG(bool,
 // ACK frame.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_ack_frame_to_get_min_size,
-          false)
+          true)
 
 // If true, skip packet threshold loss detection if largest acked is a runt.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_skip_packet_threshold_loss_detection_with_runt,
-    false)
+    true)
 
 // If true, QUIC BBRv2 to take ack height into account when calculating
 // queuing_threshold in PROBE_UP.
@@ -386,3 +380,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bw_sampler_app_limited_starting_value,
           false)
+
+// If true, QUIC connection will ignore one packet write error after MTU probe.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_ignore_one_write_error_after_mtu_probe,
+    false)

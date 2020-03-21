@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Εγκατεστημένη εφαρμογή</translation>
 <translation id="1450753235335490080">Δεν είναι δυνατή η κοινοποίηση <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Γίνεται ανταλλαγή του στοιχείου <ph name="FIRST_ITEM_TITLE" /> με το στοιχείο <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Αναζητήσατε αυτόν τον όρο στο παρελθόν. Η διαγραφή του όρου "<ph name="QUERY" />" από το ιστορικό σας θα τον καταργήσει οριστικά από τον λογαριασμό σας σε όλες τις συσκευές σας.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Από δεξιά προς τα αριστερά</translation>
 <translation id="7052633198403197513">Πλήκτρο F1</translation>
 <translation id="7130207228079676353">ΔΗΜΟΦΙΛΕΣΤΕΡΕΣ</translation>
+<translation id="7170202025028120564">Οι ρυθμίσεις προβολής της εφαρμογής σας θα τεθούν σε ισχύ κατά την επόμενη επανεκκίνηση.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
 <translation id="7319740667687257810">Εφαρμογή εκκίνησης, μερική προβολή</translation>

@@ -596,6 +596,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3587738293690942763">Gitna</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Na-block ng iyong administrator ang application</translation>
 <translation id="3608932978122581043">Oryentasyon ng feed</translation>
 <translation id="3614103345592970299">Laki 2</translation>
 <translation id="361438452008624280">Listahan ng entry na "<ph name="LANGUAGE_ID" />": Hindi kilala o hindi sinusuportahang wika.</translation>
@@ -849,6 +850,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="467662567472608290">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; naglalaman ng mga error ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="4677585247300749148">Gustong tumugon ng <ph name="URL" /> sa mga kaganapan ng pagiging accessible</translation>
 <translation id="467809019005607715">Google Slides</translation>
+<translation id="4680804919228900307">Kakalagay mo lang ng iyong password sa isang mapanlinlang na site. Inirerekomda ng Chromium na suriin mo ngayon ang iyong mga naka-save na password para sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, at iba pang site kung saan mo ginagamit ang password na ito.</translation>
 <translation id="4690462567478992370">Ihinto ang paggamit ng di-wastong certificate</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1014,8 +1016,10 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5329858041417644019">Hindi pinapamahalaan ang iyong browser</translation>
 <translation id="5332219387342487447">Paraan ng Pagpapadala</translation>
 <translation id="5334013548165032829">Mga detalyadong log ng system</translation>
+<translation id="5340250774223869109">Naka-block ang application</translation>
 <translation id="534295439873310000">Mga NFC device</translation>
 <translation id="5344579389779391559">Maaari kang singilin ng pera ng page na ito</translation>
+<translation id="5346336634660260557">I-scan ang mga content ng clipboard, pati na rin ang mga file na-download o na-upload mo sa Chrome.</translation>
 <translation id="5355557959165512791">Hindi mo maaaring bisitahin ang <ph name="SITE" /> sa ngayon dahil binawi na ang certificate nito. Karaniwang pansamantala lang ang mga error at pag-atake sa network, kaya malamang na gagana ang page na ito sa ibang pagkakataon.</translation>
 <translation id="536296301121032821">Nabigo i-load ang mga setting ng patakaran sa store</translation>
 <translation id="5371425731340848620">I-update ang card</translation>
@@ -1426,6 +1430,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="7219179957768738017">Gumagamit ng <ph name="SSL_VERSION" /> ang koneksyon.</translation>
 <translation id="7220786058474068424">Pinoproseso</translation>
 <translation id="7221855153210829124">Ipakita ang mga notification</translation>
+<translation id="7229659723041939809">Kakalagay mo lang ng iyong password sa isang mapanlinlang na site. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password para sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, at iba pang site kung saan mo ginagamit ang password na ito.</translation>
 <translation id="7233592378249864828">I-print ang sheet ng kumpirmasyon</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Kahaliling Pangalan ng Paksa ng Certificate</translation>
@@ -1493,6 +1498,7 @@ Mga karagdagang detalye:
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
 <translation id="7495290002932347110">Na-expose ang iyong password dahil sa isang paglabag sa data sa isang site o app. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password at palitan ang password mo sa <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Magpatuloy sa pag-edit</translation>
+<translation id="7503664977220660814">Kakalagay mo lang ng iyong password sa isang mapanlinlang na site. Inirerekomenda ng Chromium na suriin mo ngayon ang iyong mga naka-save na password para sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, at iba pang site kung saan mo ginagamit ang password na ito.</translation>
 <translation id="7508255263130623398">Walang laman ang ibinalik na device id ng patakaran o hindi ito tumutugma sa kasalukuyang device id</translation>
 <translation id="7508870219247277067">Avocado Green</translation>
 <translation id="7511955381719512146">Maaaring hilingin ng Wi-Fi na ginagamit mo na bisitahin mo ang <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1568,6 +1574,7 @@ Mga karagdagang detalye:
 <translation id="7763386264682878361">Pang-parse ng Manifest ng Pagbabayad</translation>
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="7766518757692125295">Skirt</translation>
+<translation id="7767271804335921384">Na-block ng iyong administrator ang application</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Parehong pagkakasunod-sunod nang nakatihaya</translation>
 <translation id="777702478322588152">Prefecture</translation>
@@ -1588,6 +1595,7 @@ Mga karagdagang detalye:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Umalis sa site?</translation>
 <translation id="7865448901209910068">Pinakamabilis</translation>
+<translation id="7874263914261512992">Kakalagay mo lang ng iyong password sa isang mapanlinlang na site. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password para sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, at iba pang site kung saan mo ginagamit ang password na ito.</translation>
 <translation id="7878562273885520351">Maaaring makompromismo ang iyong password</translation>
 <translation id="7882421473871500483">Brown</translation>
 <translation id="7887683347370398519">Tingnan ang iyong CVC at subukang muli</translation>
@@ -1724,6 +1732,7 @@ Mga karagdagang detalye:
 <translation id="8474910779563686872">Ipakita ang mga detalye ng developer</translation>
 <translation id="8479754468255770962">Staple bottom left</translation>
 <translation id="8483780878231876732">Upang gumamit ng mga card mula sa iyong Google Account, mag-sign in sa Chrome</translation>
+<translation id="8485393050551136813">Kakalagay mo lang ng iyong password sa isang mapanlinlang na site. Inirerekomenda ng Chromium na suriin mo ngayon ang iyong mga naka-save na password para sa <ph name="WEBSITE_1" /> at iba pang site kung saan mo ginagamit ang password na ito.</translation>
 <translation id="8488350697529856933">Nalalapat sa</translation>
 <translation id="8490137692873530638">Stacker 10</translation>
 <translation id="8498891568109133222">Masyadong matagal bago nakatugon ang <ph name="HOST_NAME" />.</translation>
@@ -1773,6 +1782,7 @@ Mga karagdagang detalye:
 <translation id="87601671197631245">Gumagamit ang site na ito ng lumang configuration sa seguridad, na posibleng maglantad ng iyong impormasyon (halimbawa, mga password, mensahe, o credit card) kapag ipinadala ito sa site na ito.</translation>
 <translation id="8761567432415473239">Ang Google Safe Browsing ay may <ph name="BEGIN_LINK" />natagpuang mga nakakasirang program<ph name="END_LINK" /> sa <ph name="SITE" /> kamakailan.</translation>
 <translation id="8763927697961133303">USB device</translation>
+<translation id="8774457497170244317">Kakalagay mo lang ng iyong password sa isang mapanlinlang na site. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password para sa <ph name="WEBSITE_1" /> at iba pang site kung saan mo ginagamit ang password na ito.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>
 <translation id="8792621596287649091">Maaari kang mawalan ng access sa iyong account sa <ph name="ORG_NAME" /> o manakawan ng pagkakakilanlan. Inirerekomenda ng Chromium na palitan ang iyong password ngayon.</translation>

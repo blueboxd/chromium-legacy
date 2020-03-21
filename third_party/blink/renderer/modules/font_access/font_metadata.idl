@@ -1,0 +1,14 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Returned by the async iterator FontIterator as the entry value.
+// https://inexorabletash.github.io/font-enumeration/
+[
+    NoInterfaceObject,
+    RuntimeEnabled=FontAccess
+] interface FontMetadata {
+  readonly attribute DOMString postscriptName;
+  readonly attribute DOMString fullName;
+  readonly attribute DOMString family;
+};

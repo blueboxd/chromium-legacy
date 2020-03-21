@@ -16,16 +16,16 @@ class ExtensionInstallWhitelistTest(ChromeEnterpriseTestCase):
   @before_all
   def setup(self):
     self.InstallChrome('client2012')
+    self.EnableUITest('client2012')
     self.InstallWebDriver('client2012')
 
   def installExtension(self, url):
-    args = ['--url', url, '--text_only', '--wait', '5']
+    args = ['--url', url]
 
     dir = os.path.dirname(os.path.abspath(__file__))
     logging.info('Opening page: %s' % url)
-    output = self.RunWebDriverTest('client2012',
-                                   os.path.join(dir, '../install_extension.py'),
-                                   args)
+    output = self.RunUITest(
+        'client2012', os.path.join(dir, '../install_extension.py'), args=args)
     return output
 
   @test
@@ -40,7 +40,7 @@ class ExtensionInstallWhitelistTest(ChromeEnterpriseTestCase):
 
     test_url = 'https://chrome.google.com/webstore/detail/google-hangouts/nckgahadagoaajjgafhacjanaoiihapd'
     output = self.installExtension(test_url)
-    self.assertNotIn('blocked', output)
+    self.assertIn('Not blocked', output)
 
     negative_test_url = 'https://chrome.google.com/webstore/detail/grammarly-for-chrome/kbfnbcaeplbcioakkpcpgfkobkghlhen'
     output = self.installExtension(negative_test_url)

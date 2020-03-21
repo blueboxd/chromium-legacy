@@ -599,6 +599,7 @@
 <translation id="8735953464173050365">显示键盘设置。已选择<ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">显示 VPN 设置</translation>
 <translation id="8785070478575117577">连接到“<ph name="NETWORK_NAME" />”</translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />。<ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">从左侧向右滑动手指即可返回</translation>
 <translation id="8828714802988429505">90°</translation>

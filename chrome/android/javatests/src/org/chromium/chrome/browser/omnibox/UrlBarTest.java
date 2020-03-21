@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
@@ -836,5 +837,25 @@ public class UrlBarTest extends DummyUiActivityTestCase {
         Assert.assertEquals("chrome://fblahblahblah", urlText.toString());
         Assert.assertEquals(BaseInputConnection.getComposingSpanStart(urlText), 10);
         Assert.assertEquals(BaseInputConnection.getComposingSpanEnd(urlText), 22);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testUrlTextChangeListener() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+
+        UrlBar.UrlTextChangeListener listener = Mockito.mock(UrlBar.UrlTextChangeListener.class);
+        mUrlBar.setUrlTextChangeListener(listener);
+
+        setTextAndVerifyNoAutocomplete("onomatop");
+        Mockito.verify(listener).onTextChanged("onomatop", "onomatop");
+
+        // Setting autocomplete does not send a change update.
+        setAutocomplete("onomatop", "oeia");
+
+        setTextAndVerifyNoAutocomplete("");
+        Mockito.verify(listener).onTextChanged("", "");
     }
 }

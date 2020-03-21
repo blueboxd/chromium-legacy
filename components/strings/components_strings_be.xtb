@@ -599,6 +599,7 @@
 <translation id="3587738293690942763">Сярэдні</translation>
 <translation id="3592413004129370115">Italian (канверт)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Праграма заблакіравана адміністратарам</translation>
 <translation id="3608932978122581043">Арыентацыя падачы</translation>
 <translation id="3614103345592970299">Памер 2</translation>
 <translation id="361438452008624280">Элемент спіса "<ph name="LANGUAGE_ID" />": мова невядомая або не падтрымліваецца.</translation>
@@ -853,6 +854,7 @@
 <translation id="467662567472608290">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />: у сертыфікаце ёсць памылкі. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> запытвае дазвол адказваць на падзеі функцый спецыяльных магчымасцей</translation>
 <translation id="467809019005607715">Прэзентацыі Google</translation>
+<translation id="4680804919228900307">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chromium рэкамендуе праверыць захаваныя паролі на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="4690462567478992370">Спыніць выкарыстанне несапраўднага сертыфіката</translation>
 <translation id="4691835149146451662">Architecture-A (канверт)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1018,8 +1020,10 @@
 <translation id="5329858041417644019">Ваш браўзер не знаходзіцца пад кіраваннем</translation>
 <translation id="5332219387342487447">Спосаб дастаўкі</translation>
 <translation id="5334013548165032829">Падрабязныя сістэмныя журналы</translation>
+<translation id="5340250774223869109">Праграма заблакіравана</translation>
 <translation id="534295439873310000">Прылады NFC</translation>
 <translation id="5344579389779391559">Гэта старонка можа паспрабаваць спагнаць з вас грошы</translation>
+<translation id="5346336634660260557">Праверка змесціва буфера абмену, а таксама файлаў, якія вы спампоўваеце або запампоўваеце ў браўзеры Chrome.</translation>
 <translation id="5355557959165512791">Наведаць сайт <ph name="SITE" /> зараз нельга: яго сертыфікат адкліканы. Звычайна сеткавыя памылкі і атакі – часовая з'ява, таму гэта старонка будзе, хутчэй за ўсё, працаваць пазней.</translation>
 <translation id="536296301121032821">Не ўдалося захаваць налады палітыкі</translation>
 <translation id="5371425731340848620">Абнавіць картку</translation>
@@ -1430,6 +1434,7 @@
 <translation id="7219179957768738017">На падключэнні выкарыстоўваецца <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Ідзе апрацоўка</translation>
 <translation id="7221855153210829124">Паказваць апавяшчэнні</translation>
+<translation id="7229659723041939809">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chrome рэкамендуе праверыць захаваныя паролі на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="7233592378249864828">Друкаваць аркуш пацвярджэння</translation>
 <translation id="7238585580608191973">Лічбавы адбітак SHA-256</translation>
 <translation id="7240120331469437312">Альтэрнатыўнае імя суб'екта сертыфіката</translation>
@@ -1498,6 +1503,7 @@
 <translation id="7485870689360869515">Даныя не знойдзены.</translation>
 <translation id="7495290002932347110">У выніку ўцечкі даных на сайце або ў праграме ваш пароль быў раскрыты. Chrome рэкамендуе праверыць захаваныя паролі і неадкладна змяніць пароль на сайце <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Рэдагаваць далей</translation>
+<translation id="7503664977220660814">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chromium рэкамендуе праверыць захаваныя паролі на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="7508255263130623398">Атрыманы з палітыкі ідэнтыфікатар прылады пусты або не супадае з бягучым ідэнтыфікатарам прылады</translation>
 <translation id="7508870219247277067">Цёмна-зялёны</translation>
 <translation id="7511955381719512146">Wi-Fi-сетка, якую вы выкарыстоўваеце, можа запатрабаваць ад вас наведаць <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1573,6 +1579,7 @@
 <translation id="7763386264682878361">Аналізатар плацежных маніфестаў</translation>
 <translation id="7764225426217299476">Дадаць адрас</translation>
 <translation id="7766518757692125295">Край</translation>
+<translation id="7767271804335921384">Праграма заблакіравана адміністратарам</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">У тым жа парадку, рабочым бокам уверх</translation>
 <translation id="777702478322588152">Прэфектура</translation>
@@ -1593,6 +1600,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Закрыць сайт?</translation>
 <translation id="7865448901209910068">Найлепшая хуткасць</translation>
+<translation id="7874263914261512992">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chrome рэкамендуе праверыць захаваныя паролі на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="7878562273885520351">Ваш пароль можа быць раскрыты</translation>
 <translation id="7882421473871500483">Карычневы</translation>
 <translation id="7887683347370398519">Праверце код CVC і паўтарыце спробу</translation>
@@ -1729,6 +1737,7 @@
 <translation id="8474910779563686872">Паказаць падрабязныя звесткі пра распрацоўшчыка</translation>
 <translation id="8479754468255770962">Скаба знізу злева</translation>
 <translation id="8483780878231876732">Каб выкарыстоўваць карткі з Уліковага запісу Google, увайдзіце ў Chrome</translation>
+<translation id="8485393050551136813">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chromium рэкамендуе праверыць захаваныя паролі на сайце <ph name="WEBSITE_1" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="8488350697529856933">Аб'ект прымянення</translation>
 <translation id="8490137692873530638">Укладчык 10</translation>
 <translation id="8498891568109133222">Чаканне адказу ад <ph name="HOST_NAME" /> заняло занадта шмат часу.</translation>
@@ -1778,6 +1787,7 @@
 <translation id="87601671197631245">Гэты сайт выкарыстоўвае ўстарэлую канфігурацыю бяспекі, таму звесткі пра вас (напрыклад, паролі, паведамленні або нумары крэдытных картак) пры іх адпраўцы на гэты сайт могуць быць раскрыты.</translation>
 <translation id="8761567432415473239">Google Бяспечны прагляд нядаўна <ph name="BEGIN_LINK" />выявіў шкодныя праграмы<ph name="END_LINK" /> на сайце <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Прылада USB</translation>
+<translation id="8774457497170244317">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chrome рэкамендуе праверыць захаваныя паролі на сайце <ph name="WEBSITE_1" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Узнавіць выдаленне</translation>
 <translation id="8792621596287649091">Вы можаце страціць доступ да свайго ўліковага запісу <ph name="ORG_NAME" />, або ў вас могуць скрасці асабістыя даныя. Chromium рэкамендуе змяніць пароль.</translation>

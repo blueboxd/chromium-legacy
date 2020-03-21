@@ -45,6 +45,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2886012850691518054">Opcional: ayudar a mejorar Chromium enviando automáticamente a Google estadísticas de uso e informes de errores</translation>
 <translation id="2910007522516064972">Información de &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium está actualizado</translation>
+<translation id="2983934633046890458">Chromium está intentando cambiar contraseñas.</translation>
 <translation id="3032706164202344641">Chromium no puede comprobar tus contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="3032787606318309379">Añadiendo a Chromium...</translation>
 <translation id="3068515742935458733">Ayudar a mejorar Chromium enviando informes sobre fallos y <ph name="UMA_LINK" /> a Google</translation>
@@ -112,6 +113,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5479196819031988440">Chromium OS no puede abrir esta página.</translation>
 <translation id="5480860683791598150">Chromium necesita acceder a tu ubicación para compartirla con este sitio web</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
+<translation id="5496810170689441661">Chromium está intentando cambiar contraseñas. Para permitirlo, escribe tu contraseña de Windows.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Hay una actualización de Chromium disponible}=1{Hay una actualización de Chromium disponible}other{Hay una actualización de Chromium disponible desde hace # días}}</translation>
 <translation id="5631814766731275228">Nombre y foto de Chromium</translation>
 <translation id="5634636535844844681">Chromium requiere Windows 7 o una versión posterior.</translation>

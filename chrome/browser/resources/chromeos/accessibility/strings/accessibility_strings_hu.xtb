@@ -5,13 +5,11 @@
 <translation id="1011903154582639569">Keressen egy billentyűt, majd emelje fel az ujját a gépeléshez</translation>
 <translation id="1012173283529841972">Listaelem</translation>
 <translation id="1013742170491673792">keresés</translation>
-<translation id="1014370462248694370">Csúsztassa két ujját jobbra</translation>
 <translation id="1022586497894531524">Először használja a ChromeVox hangos visszajelzését? Ez a rövid útmutató elmagyarázza a ChromeVox legfontosabb kezdő lépéseit.</translation>
 <translation id="1025074108959230262">Beragadó mód kikapcsolva</translation>
 <translation id="1031961866430398710">majd</translation>
 <translation id="1038643060055067718">Sorok:</translation>
 <translation id="1038795173450935438">Az oldal elemei közötti továbblépéshez nyomja le a Keresés + jobbra nyíl billentyűkombinációt, a visszalépéshez pedig a Keresés + balra nyíl billentyűkombinációt. Ha a következő sorra kíván lépni, nyomja le a Keresés + a lefelé nyíl billentyűkombinációt. Az előző sorra lépéshez használja a Keresés + a felfelé nyíl billentyűkombinációt. Ha olyan elemhez ér, amelyre rá kíván kattintani, nyomja le a Keresés + szóköz billentyűkombinációt.</translation>
-<translation id="1044777062731150180">Nincsenek fejlécek</translation>
 <translation id="106222400312645156">sorfejléc</translation>
 <translation id="1065552602950927991">Érvénytelen adat</translation>
 <translation id="1066085461259044485">Erdőzöld</translation>
@@ -20,15 +18,10 @@
 <translation id="1088402100970133699">Nincs előző listaelem</translation>
 <translation id="1114836634143403764">Javaslat</translation>
 <translation id="1120743664840974483">{"a": "aladár", "á": "ákos" "b": "béla", "c": "cecil", "cs": "csaba", "d": "dénes", "dz": "edzés", "dzs": "dzsungel", "e": "elemér", "é": "éva", "f": "ferenc", "g": "géza", "gy": "györgy", "h": "hugó", "i": "ilona", "í": "írás", "j": "józsef","k": "katalin", "l": "lászló", "ly": "lyuk", "m": "márton", "n": "nándor", "ny": "nyár", "o": "ottó", "ó": "óriás", "ö": "ödön", "ő": "őrség", "p": "péter", "q": "quebec", "r": "róbert", "s": "sándor", "sz": "szilárd", "t": "tibor", "ty": "tyúk", "u": "ubul", "ú": "újság", "ü": "ünnep", "ű": "űrhajó", "v": "viktor", "w": "waterloo","x": "xilofon", "y": "youtube", "z": "zoltán", "zs": "zsuzsanna",}</translation>
-<translation id="1120938014254001895">Csúsztassa két ujját felfelé</translation>
 <translation id="1126928665165112660">Nem dőlt</translation>
 <translation id="113582498867142724"><ph name="TAG" /> gyűjtemény <ph name="NUM" /> elemmel</translation>
-<translation id="1157782847298808853">Billentyűzet Súgó</translation>
-<translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, legördülő lista</translation>
 <translation id="1161762950103988776">Ugrás</translation>
-<translation id="1167230103353892028"><ph name="NAME" />, menüelem almenüvel</translation>
 <translation id="1175914831232945926">Számjegyekként</translation>
-<translation id="1177863135347784049">Egyéni</translation>
 <translation id="1188858454923323853">kiegészítő</translation>
 <translation id="1195238899008218998">Utószó</translation>
 <translation id="1197088940767939838">Narancssárga</translation>
@@ -44,7 +37,6 @@
     A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyűkombinációt.</translation>
 <translation id="1213216066620407844">ChromeVox – A Chrome megszólaltatása</translation>
 <translation id="1225969361094801578">Sötét palaszürke</translation>
-<translation id="1229276918471378188">Előző ugrás</translation>
 <translation id="1230503547248836149">Kijelölés kezdete</translation>
 <translation id="1236794971743289975">Záró jegyzet</translation>
 <translation id="1237866625126425153">rádiógombcsoport</translation>
@@ -54,24 +46,18 @@
 <translation id="1268366246392928616">Nincs előző matematikai kifejezés</translation>
 <translation id="1273314450961659276">A szövegfelolvasó beállításai</translation>
 <translation id="1275718070701477396">Kijelölt</translation>
-<translation id="1277589437867411124">Nincsenek űrlapok</translation>
 <translation id="1291286136605998134">Váltógomb</translation>
-<translation id="1294202217346877070">Nincs előző horgony</translation>
 <translation id="1299774449519412690">Világos égkék</translation>
 <translation id="1303806948938513162">A ChromeVox-menük megnyitásához koppintson négy ujjal</translation>
-<translation id="1321576897702511272">ChromeVox súgójának elrejtése</translation>
 <translation id="1325946044405407859">Cserszín</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">karakterek és szavak visszaolvasása</translation>
 <translation id="1334570596456017464">Alsó index</translation>
 <translation id="133801305381959373">Nincs következő szerkeszthető szövegmező</translation>
-<translation id="1339428534620983148">Előző táblázatoszlop</translation>
 <translation id="1342835525016946179">cikk</translation>
 <translation id="1346059596910821859">Tipp</translation>
-<translation id="1346748346194534595">Jobbra</translation>
 <translation id="135978014023467274">Sikeresen frissített a ChromeVox 63-as verziójára</translation>
 <translation id="1360699455582016846">Kattintson a(z) <ph name="ROUTING_KEY_NUMBER" /> átirányítási kulcs alatti elemre</translation>
-<translation id="136718599399906424">Következő táblázatsor</translation>
 <translation id="1377925789329510816">Ez az utolsó címsor. Nyomja le a Keresés+H billentyűkombinációt az első címsorra ugráshoz, vagy a Keresés+Shift+H-t az oldalon található második címsorra lépéshez.</translation>
 <translation id="138218114945450791">Világoskék</translation>
 <translation id="1383876407941801731">Keresés</translation>
@@ -80,9 +66,7 @@
 <translation id="1417889266572670458">Tengerészkék</translation>
 <translation id="1431911867058218151">Szilvalila</translation>
 <translation id="1439316808600711881">régió</translation>
-<translation id="1452236308086741652"><ph name="VALUE" />, jelszómező</translation>
 <translation id="146450394670219700">Grafikus objektum</translation>
-<translation id="1467432559032391204">Balra</translation>
 <translation id="1480046233931937785">Készítők</translation>
 <translation id="1487494366197411587">A Chromebookon a keresőbillentyű közvetlenül a Shift billentyű felett található.</translation>
 <translation id="1499041187027566160">hangerő növelése</translation>
@@ -95,46 +79,36 @@
 <translation id="1559739829547075274">Navigálás visszafelé</translation>
 <translation id="1565432156062359693">Nincs következő lista</translation>
 <translation id="1571643229714746283">A ChromeVox készen áll</translation>
-<translation id="158493514907962286">december</translation>
 <translation id="1594072653727561613">mnü</translation>
 <translation id="1610130962244179598">Váltás 6 pontos braille-táblázatra</translation>
 <translation id="161042844686301425">Cián</translation>
-<translation id="1611168825862729585">Oszlopfejléc:</translation>
 <translation id="1611649489706141841">következő</translation>
 <translation id="1612960140435400149">Nincs következő űrlapmező</translation>
 <translation id="1613476421962910979">beállítási oldal</translation>
 <translation id="1616111909442424068">Búza</translation>
 <translation id="1618597272655350600">Pontosan elmondja, hogy mi az aktuális pozíció</translation>
 <translation id="1627222324347828322">Szellemfehér</translation>
-<translation id="1630688379087270943">Dőlt jelzése:</translation>
-<translation id="1637708931433488456">Nincs olyan következő elem, amely nem link</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{nagyobb jel}other{# nagyobb jel}}</translation>
 <translation id="1653266918374749391">Előző 3. szintű fejléc</translation>
 <translation id="1657616855184033958">Esemény streamszűrőinek megjelenítése</translation>
 <translation id="1659072772017912254">Nincs bejelölve</translation>
 <translation id="1666326070478924810">Felolvasási beállítások</translation>
-<translation id="1669290819662866522">hét</translation>
 <translation id="1674262202423278359">Navigáció a ChromeVoxban</translation>
 <translation id="16777221443363124">Menüsor</translation>
 <translation id="1680732992526857724"><ph name="NAME" />, bekapcsolás</translation>
 <translation id="1686878109459149415">Arany</translation>
 <translation id="1690731385917361335">Nincsenek elemek</translation>
-<translation id="1692077714702418899">strukturális vonal</translation>
 <translation id="1700517974991662022">Felkeresett</translation>
 <translation id="1714116687360794776">Mérő</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">lábl</translation>
 <translation id="174268867904053074">Következő grafika</translation>
-<translation id="1752708997038853212">Adja meg a keresési lekérdezést</translation>
 <translation id="1756785467854861272">Sötétmagenta</translation>
-<translation id="1765245556747822181">Csúsztassa egy ujját felfelé</translation>
 <translation id="1771761307086386028">Görgetés jobbra</translation>
 <translation id="1781173782405573156">Átugrás gomb</translation>
 <translation id="1787176709638001873">Jelszó – szövegszerkesztés</translation>
-<translation id="1802710350767629429">Frissítési jegyzetek megjelenítése</translation>
 <translation id="1810107444790159527">Lista mező</translation>
 <translation id="1812527064848182527">fekvő</translation>
-<translation id="1828385960365606039">május</translation>
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
 <translation id="1834891354138622109">Oszlop</translation>
 <translation id="1845944666972354496">Érintse meg kétszer az aktiváláshoz</translation>
@@ -144,29 +118,21 @@
 <translation id="1902396333223336119">Mobil</translation>
 <translation id="1903683160884433981">Közepes tavaszzöld</translation>
 <translation id="1905379170753160525">Fejléclista megjelenítése</translation>
-<translation id="1912556590115083156">felkeresett link</translation>
 <translation id="1913761808037590218">#beviteli mező</translation>
 <translation id="1914424852593176649">Méret: <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> billentyűkombináció</translation>
 <translation id="1923956950274750765">Középorchidea</translation>
 <translation id="1928932365747995741">Nincs előző szerkeszthető szövegmező</translation>
-<translation id="1954623340234317532">Az év hetének beállítása</translation>
 <translation id="1964135212174907577">Következő objektum</translation>
 <translation id="1966649499058910679">Szavak kiemelése a beszédtempóval egyező ütemben</translation>
-<translation id="1969092762068865084">július</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
-<translation id="1982529757455190616">Nincs előző ugrópont</translation>
 <translation id="1988733631391393183">Braille-parancsok megjelenítése a ChromeVox-menükben</translation>
-<translation id="1990932729021763163">Sorfejléc:</translation>
-<translation id="2002895034995108595">Jelenlegi billentyűzetkiosztás visszaállítása</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{szögletes nyitó zárójel}other{# szögletes nyitó zárójel}}</translation>
 <translation id="2009187674653301682">Nem felső indexelt</translation>
 <translation id="2010555995361223825">ChromeVox-menük</translation>
 <translation id="203030071582665758">Nincs előző 4. szintű címsor</translation>
 <translation id="2045055672832940894">Nincs előző vezérlő</translation>
-<translation id="2045490512405922022">nincs bejelölve</translation>
 <translation id="2063539687800151747">Mottó</translation>
-<translation id="207477615537953741">Szemantikai értelmezés kikapcsolva</translation>
 <translation id="2086961585857038472">Következő szó</translation>
 <translation id="2087981446621639008">leirlistaadat</translation>
 <translation id="2089387485033699258">hu</translation>
@@ -187,25 +153,20 @@
 <translation id="2216790501338699346">Link URL-címe: <ph name="LINK_URL" /></translation>
 <translation id="2220205454259065436">Ugrás visszább egy karakterrel</translation>
 <translation id="2220529011494928058">Probléma bejelentése</translation>
-<translation id="2223693656926968778">Művelet végrehajtása az aktuális elemen</translation>
 <translation id="224426591676115802">A következő nyelvhez nincs használható hang: <ph name="LANGUAGE" /></translation>
 <translation id="2247700577781885251">A tanulási mód leállítása</translation>
 <translation id="225732394367814946">Beszédsebesség növelése</translation>
 <translation id="2267538686624070261">Elgépelés elhagyása</translation>
 <translation id="2267945578749931355">Következő karakter</translation>
-<translation id="2278490101488436824">Csúsztassa három ujját balra</translation>
-<translation id="2281234842553884450">Előző dia</translation>
 <translation id="2305942658236913680">Nincs következő címsor</translation>
 <translation id="2311237334957139798">Ugrás az előző részletességi szintre</translation>
 <translation id="2314393392395134769">Nem alsó indexelt</translation>
 <translation id="2318372665160196757">Fő</translation>
 <translation id="2329324941084714723">Lappanel</translation>
-<translation id="2344193891939537199">Dátum és idő beállítása</translation>
 <translation id="2347456970887948350">Link</translation>
 <translation id="2381733276052567791">Szövegfelolvasás be- és kikapcsolása</translation>
 <translation id="2390264819538553347">Továbblépéshez nyomja le az Enter, visszalépéshez a Backspace billentyűt.</translation>
 <translation id="240709722712693803">Kékeslila</translation>
-<translation id="241124561063364910">azután</translation>
 <translation id="2416512023405990736">Nem bejelölt négyzet</translation>
 <translation id="2417569100218200841">Tartalominformáció</translation>
 <translation id="2417948780551741035">Záró jegyzetek</translation>
@@ -213,9 +174,7 @@
 <translation id="2421113964388408478">Törlés</translation>
 <translation id="2422937916923936891">Menüelem – jelölőnégyzet</translation>
 <translation id="2428534162001909979">Parancsmenük</translation>
-<translation id="2429669115401274487">du.</translation>
 <translation id="242998846562331953">Felirat</translation>
-<translation id="2435413342408885429">A ChromeVox módosítóbillentyűje mostantól a következő: <ph name="KEY" />.</translation>
 <translation id="2435422727584637732">Dodger-kék</translation>
 <translation id="2450814015951372393">Jelölőnégyzet</translation>
 <translation id="2462626033734746142">Választógombcsoport</translation>
@@ -226,17 +185,12 @@
 <translation id="2497706219848005458">Zöldessárga</translation>
 <translation id="2523609930580546572">ChromeVox-útmutató</translation>
 <translation id="2525706221823668172">Chromebook-billentyűparancsok</translation>
-<translation id="2549392850788122959"><ph name="KEY" /> visszaállítva.</translation>
 <translation id="2553108862507765288">nyelvtani hiba</translation>
-<translation id="2564726732032738475">Nincsenek további találatok</translation>
 <translation id="257674075312929031">Csoport</translation>
 <translation id="2582407057977008361">Oldaltartalom</translation>
-<translation id="2583123579994033088">Rács elhagyása</translation>
 <translation id="2592212930811759050">Koppintson duplán a szerkesztés megkezdéséhez</translation>
-<translation id="2594420797397883935">Nincs olyan előző elem, amely nem link</translation>
 <translation id="2598495320872286378">Nyelvhelyességi hiba</translation>
 <translation id="2603828437139726540">Ugrás előrébb egy karakterrel</translation>
-<translation id="2614981083756825552">Matematikai „ML” elrendezés</translation>
 <translation id="2624431853467395961">Tanuló mód megnyitása</translation>
 <translation id="2626530649491650971">rákattintható</translation>
 <translation id="2637227747952042642">Matematika</translation>
@@ -252,23 +206,18 @@
 <translation id="2697408785920771974">szövegközi automatikus kiegészítés</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{nyitó zárójel}other{# nyitó zárójel}}</translation>
 <translation id="2705875883745373140">Nincs megnyomva</translation>
-<translation id="2706462751667573066">Fel</translation>
 <translation id="2708078563826046398">Őszibarackfelfújt</translation>
 <translation id="2713444072780614174">Fehér</translation>
 <translation id="2714180132046334502">Sötét háttér</translation>
 <translation id="2717271541250958000">fülpanel</translation>
 <translation id="2723001399770238859">audio</translation>
-<translation id="2732718972699418926">de.</translation>
 <translation id="27349076983469322">Világos háttér</translation>
 <translation id="2737898226590637227">Nincs következő ARIA-terület</translation>
 <translation id="2749275490991666823">Bejelölve</translation>
 <translation id="27527859628328957">Ugrás a következő fókuszálható elemre</translation>
 <translation id="2756452585631602151">Adjon meg egy egyéni címkét</translation>
 <translation id="2766299274563946262">Nincs több cella balra</translation>
-<translation id="2770781857296573485">Csoportfelfedezés megadása</translation>
-<translation id="2777845298774924149">Kilépett</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
-<translation id="2784959586797362050">Mint mindig, a Keresés+a billentyűkombináció, majd az i billentyű lenyomása után küldhet nekünk közvetlen visszajelzést. Kíváncsian várjuk véleményét.</translation>
 <translation id="280499067616661124">ChromeVox-keresés az oldalon</translation>
 <translation id="2808001342598757276">Képernyő sötétítésének visszavonása</translation>
 <translation id="2811019999044652585">A képernyő más részeihez, például az eszköztárakhoz vagy a tálcához való ugráshoz nyomja le a Control + „előre” billentyűkombinációt. A Chromebookokon az „előre” billentyű közvetlenül a 2-es gomb felett található.</translation>
@@ -277,20 +226,16 @@
 <translation id="2843432675592278677">Nincs előző ARIA-terület</translation>
 <translation id="2843814945404750166">Sötét olajzöld</translation>
 <translation id="2843837985843789981">Előző csoport</translation>
-<translation id="2844995807198708617">Helyi menü</translation>
 <translation id="2864481629947106776">Előző link</translation>
 <translation id="2867808975387772810">Bibliográfia</translation>
 <translation id="2873259058405069099">Ugrás a táblázat elejére</translation>
 <translation id="287383510823843610">Sötét narancssárga</translation>
-<translation id="2879867157561757640">Csúsztassa három ujját lefelé</translation>
 <translation id="288178314850623291">Az egyes elemtípusok kihagyásához használja az ugróparancsokat. A címsorok közötti előre ugráshoz nyomja le a Keresés + H, a visszaugráshoz pedig a Keresés + Shift + H billentyűkombinációt.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{perc}other{perc}}</translation>
 <translation id="2894654529758326923">Információ</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{kapcsos nyitó zárójel}other{# kapcsos nyitó zárójel}}</translation>
 <translation id="2909584066358367921">Nincs következő gomb</translation>
 <translation id="2911433807131383493">A ChromeVox útmutatójának megnyitása</translation>
-<translation id="2912405967290226587">Csúsztassa három ujját jobbra</translation>
-<translation id="2932083475399492303">Váltás a strukturális és elrendezési vonalak között</translation>
 <translation id="2937799153569150791">Nincs következő 3. szintű címsor</translation>
 <translation id="2942710183375260152">Sötét palakék</translation>
 <translation id="2943596527105977722">Sötét aranyvessző</translation>
@@ -298,7 +243,6 @@
 <translation id="2968634799764242930">Tengerzöld</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulátor}other{# tabulátor}}</translation>
 <translation id="2972205263822847197">Elemleírás</translation>
-<translation id="297825089465017871">Csúsztassa két ujját balra</translation>
 <translation id="2998131015536248178">Előző karakter</translation>
 <translation id="2999559350546931576">Hangszín csökkentése</translation>
 <translation id="3014130421870723208">@szerk 8pont</translation>
@@ -306,14 +250,11 @@
 <translation id="3037392361165431467">{COUNT,plural, =1{aposztróf}other{# aposztróf}}</translation>
 <translation id="3040901448410802366">Folyamatjelző</translation>
 <translation id="3046838483509668188">ChromeVox-opciók</translation>
-<translation id="3047143736589213134">Kísérleti billentyűzetkiosztás</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> menü megnyitva</translation>
 <translation id="3060880924447482063">Az elem szerinti mozgáshoz csúsztassa ujját balra vagy jobbra</translation>
-<translation id="3070245424257836917">Csúsztassa három ujját felfelé</translation>
 <translation id="3078345202707391975">Következő 2. szintű fejléc</translation>
 <translation id="3078740164268491126">táblázat</translation>
 <translation id="3082249673510793544">Görgetés vissza</translation>
-<translation id="3082557070674409251">Rákattintott</translation>
 <translation id="3084806535845658316">nincs gépelési visszaolvasás</translation>
 <translation id="3086746722712840547">jegyzet</translation>
 <translation id="3090227230165225418">Letöltési értesítések bejelentése</translation>
@@ -325,7 +266,6 @@
 <translation id="3104705064753753826">riaszt pnl</translation>
 <translation id="3109724472072898302">Összecsukott</translation>
 <translation id="3112457281078985179">A ChromeVox be- vagy kikapcsolásához használja a Control + Alt + Z billentyűparancsot.</translation>
-<translation id="3128896337293924532">Nincs következő blokkszintű idézet</translation>
 <translation id="3131002934070407451">Számok olvasása:</translation>
 <translation id="3134461040845705080">csak olv</translation>
 <translation id="3137663468179739624">Olajzöld</translation>
@@ -335,19 +275,16 @@
 <translation id="3153024374267644603">Szövegfelolvasás bekapcsolása</translation>
 <translation id="3153928844647607688"><ph name="TABLENAME" /> táblázat – <ph name="TABLEROWS" /> × <ph name="TABLECOLS" /></translation>
 <translation id="3159493096109238499">Bézs</translation>
-<translation id="3163593631834463955">Üres oszlopfejléc</translation>
 <translation id="316542773973815724">Navigálás</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{szóköz}other{# szóköz}}</translation>
 <translation id="3179119189286472195">Nem link</translation>
 <translation id="320041337977930740">A megjelenítési mód módosítása beékeltre</translation>
 <translation id="3208346789712025453">Nincs következő vezérlő</translation>
-<translation id="320961988183078793">bevitte ezt: <ph name="TYPE" /></translation>
 <translation id="321072937702597574">Orchidea</translation>
 <translation id="3218691001991391708">A következő szöveg beillesztése: <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, lap</translation>
 <translation id="3223779237381380437">Nincs áthúzva</translation>
 <translation id="3226035351387556942">jelölőnégyzet</translation>
-<translation id="3229375994964697375">Felkeresett link</translation>
 <translation id="3232388865800379423">Előugró gomb</translation>
 <translation id="3241052487511142956">Előző felkeresett link</translation>
 <translation id="3241638166094654466">Az egyes sorokban található cellák száma:</translation>
@@ -360,7 +297,6 @@
 <translation id="3286390186030710347">Csúszka</translation>
 <translation id="3300348286427369683">Formázott szöveg támogatása. A ChromeVox már támogatja a formázott szöveget tartalmazó mezőket, beleértve az „ugrás” parancsokat, a Braille-kurzor irányítását, a kiválasztást és egyebeket.</translation>
 <translation id="3307886118343381874">Ugrás a táblázat végére</translation>
-<translation id="3311969765485641742">Az értesítések megtekintéséhez nyomja meg az Alt+Shift+A kombinációt</translation>
 <translation id="3312997241656799641">A következő felkeresett link</translation>
 <translation id="3313245066383501820">A ChromeVox-módosítóbillentyű</translation>
 <translation id="3317212938060708859">Csúszka</translation>
@@ -368,44 +304,32 @@
 <translation id="3322936298410871309">Előző 1. szintű fejléc</translation>
 <translation id="3323447499041942178">Szövegmező</translation>
 <translation id="3324983252691184275">Karmazsinvörös</translation>
-<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> csúszka</translation>
-<translation id="3345360775039279114">A ChromeVox most inaktív</translation>
-<translation id="3346780868293545834">A fókusz megváltoztatásához használja az egeret</translation>
 <translation id="335581015389089642">Beszéd</translation>
 <translation id="3356951775008366684">Szó fonetikus kiejtésének bejelentése</translation>
 <translation id="3359142382821736686">elválasztó</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{pluszjel}other{# pluszjel}}</translation>
 <translation id="338583716107319301">Elválasztó</translation>
 <translation id="3389259863310851658">Előző űrlap mező</translation>
-<translation id="3392045790598181549"><ph name="NAME" />, menüelem</translation>
 <translation id="3393605254399152980">Ha hallani szeretné, mit érintett meg, csúsztasson egy ujjával</translation>
-<translation id="3399215457750029150">Nincs több hasonló elem</translation>
 <translation id="3406283310380167331">Űrlaplista megjelenítése</translation>
 <translation id="3414400929511680526">Alice-kék</translation>
 <translation id="3418936350470374046">Nincs több cella lefelé</translation>
-<translation id="3426155011797552211">Váltás a klasszikus ChromeVox aktív és inaktív állapota között</translation>
 <translation id="344800400831402066">Perubarna</translation>
 <translation id="3457000393508828486">Részben megnyomva</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, kikapcsolás</translation>
-<translation id="3462439746547587373"><ph name="NAME" />, gomb</translation>
 <translation id="3466530247399808663">Érvénytelen billentyű lenyomása</translation>
 <translation id="3468959318854349468">Nincs cím</translation>
-<translation id="3469005380014336304">Sorcsoport</translation>
 <translation id="3469413619751135069">Halványzöld</translation>
-<translation id="3473644018603298796"><ph name="COUNT" />. dia</translation>
-<translation id="3486232535569802404"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="3490765818161916458">Lista/rács</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{szögletes berekesztő zárójel}other{# szögletes berekesztő zárójel}}</translation>
 <translation id="3494946239022273294">menüelem</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{kérdőjel}other{# kérdőjel}}</translation>
-<translation id="3501862755841696979">Nincsenek linkek</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{csúcsos ékezet}other{# csúcsos ékezet}}</translation>
 <translation id="352577523970648069">Szerkeszthető szövegmező</translation>
 <translation id="3538907380453898475">leirlista</translation>
 <translation id="3549141990712742152">A következő szöveg kivágása: <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">A beszéd ideiglenes leállításához koppintson két ujjal</translation>
 <translation id="3564729643041517261">A jelenlegi megjelenítési mód egymás melletti</translation>
-<translation id="3568702578574425662"><ph name="NAME" />, jelölőnégyzet nincs bejelölve</translation>
 <translation id="3589661172894441357">Szószedet</translation>
 <translation id="3591784666823501596">Királykék</translation>
 <translation id="3594207934078151302">Közepes tengerzöld</translation>
@@ -417,9 +341,7 @@
 <translation id="3650317109285159359">jelölőnégyzet menüelem</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dollárjel}other{# dollárjel}}</translation>
 <translation id="3659787053479271466">riaszt</translation>
-<translation id="3665563998540286755"><ph name="VALUE" />, lista</translation>
 <translation id="3681531118904532409">Papajahab</translation>
-<translation id="3687295507293856493">Aktuális cella oszlopfejlécének tippelése</translation>
 <translation id="3692274950075847560">K:<ph name="RESULT" /></translation>
 <translation id="370367311675896712">Áthúzás</translation>
 <translation id="3704037000573066734">A Keresés+A, J billentyűkombinációkkal a részletekhez ugorhat</translation>
@@ -436,13 +358,11 @@
 <translation id="3810838688059735925">Videó</translation>
 <translation id="3813387282697781382">Világos korallpiros</translation>
 <translation id="3816633764618089385">Következő médiaelem</translation>
-<translation id="3838966660807147922">A szöveg szerkesztéséhez vigye a kurzort a karakterek közé (mint a Mac OS X-nél)</translation>
 <translation id="385383972552776628">A beállítások oldalának megnyitása</translation>
 <translation id="3856075812838139784">Csak olvasható</translation>
 <translation id="3857141338659865495">Középtürkiz</translation>
 <translation id="3870295413168340326">Nincs előző 3. szintű címsor</translation>
 <translation id="3887576927692165210">szövegmező</translation>
-<translation id="3888566098798982329">Nincs több eltérő elem</translation>
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3907138069015388678">listnéz</translation>
 <translation id="3909320334364316587">Előző 6. szintű fejléc</translation>
@@ -453,20 +373,15 @@
 <translation id="3935615366277838204">Nagy <ph name="LETTER" /> betű</translation>
 <translation id="3936394396199829062">Levendulapír</translation>
 <translation id="3943857333388298514">Beillesztés</translation>
-<translation id="394953087167197343">Elírás jelzése:</translation>
 <translation id="3962990492275676168">Olvasás megkezdése az aktuális helyről</translation>
 <translation id="3970951409746498040">Homokszín</translation>
-<translation id="398295518268580432">Előző hasonló elem</translation>
 <translation id="3989324057180830702">vltgmb</translation>
 <translation id="3991317907213946254">Mokaszinbarna</translation>
 <translation id="4002709828007663583">Sötét orchidea</translation>
 <translation id="4004802134384979325">bejelölve</translation>
 <translation id="4006140876663370126">kép</translation>
 <translation id="4021716437419160885">Görgetés lefelé</translation>
-<translation id="4038349100599457191">Hónap beállítása</translation>
-<translation id="4039983576244166038">Üres sorfejléc</translation>
 <translation id="4047216625641135770">Kiemelés</translation>
-<translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Limezöld</translation>
 <translation id="4054936709456751127">állpt</translation>
 <translation id="4058278702844053247">Weboldal betöltése folyamatban</translation>
@@ -489,16 +404,11 @@
 <translation id="4202186506458631436">Mozgatás jobbra</translation>
 <translation id="4204126831294769023">Azúrkék</translation>
 <translation id="4204864733111726379">Virágfehér</translation>
-<translation id="4206289001967551965">Belső táblázat</translation>
-<translation id="4215733775853809057">Következő dia</translation>
 <translation id="42164919740161077">Kadétkék</translation>
 <translation id="4217571870635786043">Diktálás</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{kötőjel}other{# kötőjel}}</translation>
-<translation id="421884353938374759">színválasztó</translation>
 <translation id="4221012616705981690">Nincs előző lista</translation>
-<translation id="4221071177874897997">Félkövér jelzése:</translation>
 <translation id="4225355998815256469">Űrlapvezérlők</translation>
-<translation id="4229646983878045487">dátum idő</translation>
 <translation id="4230834257931120629">Világos palaszürke</translation>
 <translation id="4231102694147661229">Fejlesztői beállítások engedélyezése</translation>
 <translation id="423428485095722850">A váltáshoz nyomja le a Keresés+szóköz billentyűparancsot</translation>
@@ -506,18 +416,14 @@
 <translation id="4246217262268234757">Acélkék</translation>
 <translation id="4253168017788158739">Jegyzet</translation>
 <translation id="4254798249533888099">Fa</translation>
-<translation id="4255943572433203166">Használja az alábbi lehetőségeket a ChromeVox személyre szabásához. A változások azonnal életbe lépnek.</translation>
-<translation id="4257525771875631676">Nincs következő horgony</translation>
 <translation id="4271220233568730077">Következő művelet</translation>
 <translation id="4275397969489577657">Esemény streamnaplózásának engedélyezése</translation>
 <translation id="4278486392851938658">Nincs előző felkeresett link</translation>
 <translation id="4281245629646759298">Világossárga</translation>
 <translation id="4289540628985791613">Áttekintés</translation>
 <translation id="4300318234632215983">Link URL-jének felolvasása</translation>
-<translation id="4301352596632316575">almenüvel rendelkezik</translation>
 <translation id="4322625298640984693">Vörösesbarna</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{pont}=3{három pont}other{# pont}}</translation>
-<translation id="4367650418938037324">Matematikai „ML Leaf”</translation>
 <translation id="4372435075475052704">min.: <ph name="X" /></translation>
 <translation id="4372705107434148843">Beszéd leállítása</translation>
 <translation id="4376316291247992553">Kép megtekintése Braille-formátumban</translation>
@@ -526,142 +432,44 @@
 <translation id="4384583879834880242">Kérdések és válaszok</translation>
 <translation id="4391478986194775161">tartalominformáció</translation>
 <translation id="4402014469255336455">Mély égszínkék</translation>
-<translation id="443163561286008705">visszaáll</translation>
 <translation id="4432457053224379116">Indiai vörös</translation>
 <translation id="4457472090507035117">Az aktuális hang kiválasztása:</translation>
 <translation id="4476183483923481720">új sor</translation>
 <translation id="4479068155583208887">Téglavörös</translation>
 <translation id="4482330759234983253">Előző táblázat</translation>
 <translation id="4491109536499578614">Kép</translation>
-<translation id="4493933053716737069">Nincs előző cikk</translation>
 <translation id="4505167975768625962">Beszúrás</translation>
 <translation id="4511186779140817916">Hámozott mandula</translation>
 <translation id="451510441928265982">Nincs előző 2. szintű címsor</translation>
 <translation id="4517854969512651305">Érték növelése</translation>
-<translation id="4529987814483543472">Hagyományos billentyűzetkiosztás</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{törtvonal}other{# törtvonal}}</translation>
 <translation id="4537277403911487429">Következő hasonló elem</translation>
 <translation id="4547556996012970016">Következő 5. szintű fejléc</translation>
 <translation id="4562381607973973258">Fejléc</translation>
-<translation id="4591507479202817876">, kiválasztva</translation>
-<translation id="4594534924594958364">Előző eltérő elem</translation>
 <translation id="4597532268155981612">űrlap</translation>
-<translation id="4597896406374528575">április</translation>
 <translation id="4601367666219428522"><ph name="TABLENAME" /> táblázat – <ph name="TABLEROWS" /> × <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">A következő gombnyomás figyelmen kívül hagyása</translation>
-<translation id="461613135510474570">Mondat</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Nyomja meg a ChromeVox o, n billentyűket, ha többet szeretne megtudni az újdonságokról</translation>
-<translation id="4646606380313237501">{"ar": "arab",
-    "as": "asszámi",
-    "aw": "avadhi",
-    "be": "bengáli",
-    "bg": "bolgár",
-    "bh": "bihari",
-    "bo": "tibeti",
-    "br": "braj",
-    "ca": "katalán",
-    "ckb": "szorani",
-    "cs": "cseh",
-    "cy": "walesi",
-    "da": "dán",
-    "de": "német",
-    "de_CH": "német (Svájc)",
-    "de_DE": "német (Németország)",
-    "dra": "dravida",
-    "el": "görög",
-    "en": "angol",
-    "en_CA": "angol (Kanada)",
-    "en_GB": "angol (Egyesült Királyság)",
-    "en_US": "angol (Amerikai Egyesült Államok)",
-    "eo": "eszperantó",
-    "es": "spanyol",
-    "et": "észt",
-    "fa": "perzsa",
-    "fr": "francia",
-    "fr_CA": "francia (Kanada)",
-    "fr_FR": "francia (Franciaország)",
-    "fi": "finn",
-    "ga": "ír",
-    "gd": "gael",
-    "gon": "gondi",
-    "gu": "gudzsaráti",
-    "he": "héber",
-    "hi": "hindi",
-    "hr": "horvát",
-    "hu": "magyar",
-    "hy": "örmény",
-    "is": "izlandi",
-    "it": "olasz",
-    "iu": "inuktitut",
-    "ka": "kannada",
-    "kh": "khasi",
-    "ko": "koreai",
-    "kok": "konkani",
-    "kru": "kurukh",
-    "ks": "kasmíri",
-    "lt": "litván",
-    "lv": "lett",
-    "mao": "maori",
-    "ml": "malajálam",
-    "mt": "máltai",
-    "mwr": "marwari",
-    "mn": "mongol",
-    "mun": "munda",
-    "nb": "norvég bokmål",
-    "ne": "nepáli",
-    "nl": "holland",
-    "no": "norvég",
-    "or": "oriya",
-    "pi": "páli",
-    "pl": "lengyel",
-    "pt": "portugál",
-    "pu": "pandzsábi",
-    "ro": "román",
-    "ru": "orosz",
-    "sa": "szanszkrit",
-    "si": "szindhi",
-    "sin": "szingaléz",
-    "sk": "szlovák",
-    "sl": "szlovén",
-    "sr": "szerb",
-    "sv": "svéd",
-    "ta": "tamil",
-    "te": "telugu",
-    "tr": "török",
-    "tsn": "afrikaans",
-    "uk": "ukrán",
-    "ur": "urdu",
-    "vi": "vietnámi",
-    "zh": "kínai",
-    "zh_TW": "kínai (hagyományos han)"}</translation>
-<translation id="4647836961514597010">Színválasztó</translation>
 <translation id="4660783501463101648">A hagyományos verzió eltávolítva. A ChromeVox hagyományos verziójára való váltásra alkalmas billentyűzetkapcsolót eltávolítottuk.</translation>
 <translation id="4661075872484491155">fa</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4677535310137735442">Ugrás a következő oszlopra</translation>
 <translation id="4688873778442829762">rács</translation>
 <translation id="4693675773662933727">Előző határjel</translation>
-<translation id="4710166929009737753">Csúsztassa egy ujját jobbra</translation>
 <translation id="4712898966495541134">Kijelölés vége</translation>
-<translation id="4729095194763193578">Előző táblázatsor</translation>
-<translation id="4736221692378411923">augusztus</translation>
 <translation id="4740661827607246557">Súgóparancsok</translation>
 <translation id="4755857887974653209">A ChromeVox kikapcsolása</translation>
-<translation id="4763296182459741068">Az aljára kerül</translation>
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">alapbeállítás</translation>
 <translation id="4772771694153161212">Nincs aláhúzás</translation>
-<translation id="4785388431077919785">Kilépett az oldalon történő keresésből</translation>
 <translation id="4786285211967466855">Nincs előző 1. szintű címsor</translation>
 <translation id="4787577491510559358">Aktuális elem formázásának bejelentése</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
 <translation id="481165870889056555">Aktuális oldal címének felolvasása</translation>
-<translation id="4813110703341685753">Nincs ugrás</translation>
 <translation id="4815668758102003883">Halvány türkizkék</translation>
 <translation id="4826415162591436065">Navigálás előre</translation>
-<translation id="4826604887384865800">Következő ugrás</translation>
 <translation id="4827410568042294688">nincs kijelölve</translation>
 <translation id="4838490795649708173">Koppintson négy ujjal</translation>
 <translation id="4839925464551908214">Ugrás az előző sorra</translation>
@@ -683,31 +491,21 @@
 <translation id="495046168593986294">Görgetés felfelé</translation>
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4953585991029886728">Szöveg szerkesztése</translation>
-<translation id="4954534434583049121">Előző idézetblokk</translation>
-<translation id="4967543208652787610">Nyomja le az Entert az elfogadáshoz vagy az Escape billentyűt a visszavonáshoz, illetve a lefelé mutató nyilat a következőre, a felfelé mutató nyilat pedig az előzőre való lépéshez</translation>
 <translation id="4973717656530883744">Maximum <ph name="X" /></translation>
-<translation id="4973762002207131920">A rendszer átvált a következőre: <ph name="KEY" />.</translation>
 <translation id="4974612477719259470">Nincs előző gomb</translation>
-<translation id="4975416682604111799">ezredmásodperc</translation>
 <translation id="4979404613699303341">Előző gomb</translation>
-<translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, listamező</translation>
 <translation id="4983588134362688868">Ugrás az oldal tetejére</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, ablak</translation>
 <translation id="4993152509206108683">Sebesség: <ph name="PERCENT" /> százalék</translation>
 <translation id="4994420463726586413">Aktuális akkumulátortöltöttség bejelentése</translation>
-<translation id="4996716799442435517">Vizuális</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, kiválasztott választógomb</translation>
 <translation id="5011664330025416377">Az aktiváláshoz nyomja le a Keresés+szóköz billentyűparancsot</translation>
-<translation id="501473567976723023">január</translation>
 <translation id="5020651427400641814">Beszéd naplózásának engedélyezése</translation>
 <translation id="5041394372352067729">A Braille-kijelző áthelyezése az oldal tetejére</translation>
 <translation id="5042770794184672516">Beszéd hangerejének növelése</translation>
 <translation id="5042992464904238023">Webtartalom</translation>
 <translation id="5050015258024679800">Előző 4. szintű fejléc</translation>
 <translation id="5054047268577924192">Előző listaelem</translation>
-<translation id="5075936896689244141">Next-billentyűzetkiosztás</translation>
-<translation id="5078661581131202757">Fájl kiválasztása</translation>
-<translation id="5080758118274074384">duplán kattintva</translation>
 <translation id="5085453135206054947">Halvány lilásvörös</translation>
 <translation id="5087864757604726239">vissza</translation>
 <translation id="5102981729317424850">Eszköztár</translation>
@@ -721,25 +519,17 @@
 <translation id="5140016802771803559">Rebecca-lila</translation>
 <translation id="5158275234811857234">Borító</translation>
 <translation id="5170206230005240598">Braille-feliratok engedélyezve</translation>
-<translation id="517143700877085897">, nincs kiválasztva</translation>
-<translation id="5177546608148437145">Gépelje be a megfelelő mezőbe a billentyűparancsokat a gyakran használt parancsok személyre szabásához</translation>
 <translation id="5183440668879371625">Előző sor Braille-írása</translation>
-<translation id="5184585361753914100">Az elem kontextusának megjelenítése más információk (például az elem neve) előtt</translation>
 <translation id="5189244881767082992">Sor</translation>
-<translation id="5193883032494788230">Adott webhelyek (például a Google Keresés) felhasználói élményének fokozása</translation>
-<translation id="5203930734796605961">A(z) <ph name="KEY" /> billentyű már hozzá van rendelve egy parancshoz.</translation>
-<translation id="5205493599117157272"><ph name="TYPE" /> lista.</translation>
 <translation id="5263034204789987535">Kukoricahaj</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Befejezés</translation>
-<translation id="5291783959063340370">Objektum</translation>
 <translation id="5302089807023311274">Bibliográfiai hivatkozás</translation>
 <translation id="5304943142864553931"><ph name="TITLE" /> lap</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5310788376443009632">eltávolítva:</translation>
 <translation id="5320727453979144100">Beragadó mód bekapcsolva</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{vessző}other{# vessző}}</translation>
-<translation id="532371086589123547"><ph name="VALUE" />, szövegmező</translation>
 <translation id="532485153932049746">Szövegformázás
     <ph name="FONT_SIZE_STRING" />
     <ph name="COLOR_STRING" />
@@ -748,12 +538,10 @@
     <ph name="UNDERLINE_STRING" />
     <ph name="LINE_THROUGH_STRING" />
     <ph name="FONT_FAMILY_STRING" /></translation>
-<translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Mindössze egy vagy kettő kapcsolóval vezérelheti az eszközt.</translation>
 <translation id="5336381510091010269">automatikus kiegészítés (szövegközi és lista)</translation>
 <translation id="5349770431644471053">Visszamutató link</translation>
 <translation id="5355014376930441909">Nincs következő szakasz</translation>
-<translation id="536031132345979795">Ugrás vissza folyamatos olvasáskor</translation>
 <translation id="5368000168321181111">Hangjelzések kikapcsolva</translation>
 <translation id="5368505757342402527"><ph name="PROGRESS" />%-ban kész a következő letöltése: <ph name="FILE_NAME" />. Körülbelül <ph name="TIME" /> <ph name="UNITS" /> van hátra.</translation>
 <translation id="5400836586163650660">Szürke</translation>
@@ -764,28 +552,22 @@
 <translation id="5435274640623994081">Hangjelzés naplózásának engedélyezése</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kisebb jel}other{# kisebb jel}}</translation>
 <translation id="5444587279251314700">(aktív)</translation>
-<translation id="5446809554778706307">Egy elem sincs fókuszban. Új lap megnyitásához nyomja le a Ctrl+t billentyűparancsot.</translation>
 <translation id="5451268436205074266"><ph name="DOT" /> pont</translation>
 <translation id="5452267669091857717">Nincs következő 1. szintű címsor</translation>
 <translation id="5455441614648621694">Kiegészítő</translation>
 <translation id="5462510922370980473">Oldallista</translation>
 <translation id="549602578321198708">Szó</translation>
-<translation id="5502713021410870035">szeptember</translation>
-<translation id="5507663321906818013">Összehasonlítás hibajavítása</translation>
 <translation id="5513242761114685513">Helyi menü</translation>
 <translation id="551361796444814639">Középkék</translation>
 <translation id="552195134157544755">Választógomb</translation>
 <translation id="5534303576632885660">fejl</translation>
-<translation id="5536840902105301299">Nem található táblázat</translation>
 <translation id="5539820223028224601">Gainsborói szürke</translation>
 <translation id="5549179427201066174">Hangjelzések be- és kikapcsolása</translation>
 <translation id="556042886152191864">Gomb</translation>
 <translation id="5561345396546889625">Következő lista</translation>
 <translation id="5562645715554321347">címsorcsoport</translation>
 <translation id="5574412348552378458">ChromeVox Tanuló mód</translation>
-<translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">Szövegszerkesztés, e-mail bevitel</translation>
-<translation id="5586942249556966598">Ne tegyen semmit</translation>
 <translation id="5597170376237141345">Következő jelölőnégyzet</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, nem kiválasztott választógomb</translation>
 <translation id="5601172225407283979">Alapértelmezett művelet végrehajtása</translation>
@@ -803,20 +585,13 @@
 <translation id="5682113568322255809">Határjel</translation>
 <translation id="5683155931978483559">Előző jelölőnégyzet</translation>
 <translation id="5684277895745049190">Lista</translation>
-<translation id="570138335948847274">Váltás a ChromeVox aktív és inaktív állapota között</translation>
 <translation id="5703716265115423771">hangerő csökkentése</translation>
 <translation id="5704453877234251104">Az automatikus kiegészítéseket a lefelé és a felfelé mutató nyilakkal választhatja ki</translation>
-<translation id="5709192780268610569">Nincs hosszú leírás</translation>
 <translation id="5712244464475377681">előugró ablak gombja</translation>
-<translation id="5712338278108304766">Következő táblázatoszlop</translation>
-<translation id="5712530945736290890">Nincsenek táblázatok</translation>
-<translation id="571866080859340309">Csoportok felfedezése</translation>
 <translation id="5725079927589231571">Világos acélkék</translation>
 <translation id="5732189279857692565">Ez a második címsor. Lépjen tovább; nyomja le a Keresés+H vagy a Keresés+Shift+H billentyűparancsot</translation>
 <translation id="5748623122140342504">Előző 5. szintű fejléc</translation>
-<translation id="5750633686117194034">Nincs lenyomva módosítóbillentyű. Kérjük, nyomjon le egy vagy több módosítóbillentyűt, majd engedje fel, ha kész. Hallani fogja, hogy a billentyűk be lettek állítva. A Tab segítségével léphet ki.</translation>
 <translation id="5760594853119905566">Függelék</translation>
-<translation id="5788275253279308023">inkognitóablak, <ph name="TITLE" /> lap</translation>
 <translation id="5805940204952508776">Koppintson két ujjal</translation>
 <translation id="5819072574982403430">Faelem</translation>
 <translation id="5822819874379903994">Sötéttürkiz</translation>
@@ -839,11 +614,9 @@
 <translation id="5906974869830879618">Adja meg a PIN-kódot</translation>
 <translation id="5921587111466148855">Fejezet</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{egyenlőségjel}other{# egyenlőségjel}}</translation>
-<translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5948123859135882163">Váltás a matematikai kifejezések strukturális és szemantikai értelmezése között</translation>
 <translation id="5955304353782037793">alk</translation>
 <translation id="5956928062748260866">Párbeszédpanel</translation>
-<translation id="5961639938291964703">A fel és le nyílbillentyűkkel böngészhet, vagy kezdjen el gépelni a kereséshez</translation>
 <translation id="5963413905009737549">Szakasz</translation>
 <translation id="5968607524793740041">Helyi menü megjelenítése</translation>
 <translation id="597121107011153418">{COUNT,plural, =1{# elemmel}other{# elemmel}}</translation>
@@ -860,30 +633,23 @@
 <translation id="6044160928851315051">Képernyő sötétítése</translation>
 <translation id="6082768461603900813">Alapvető navigáció</translation>
 <translation id="609281021724813947">Nincs előző csúszka</translation>
-<translation id="6095514649509181044">A kis- és nagybetűk nincsenek megkülönböztetve</translation>
 <translation id="6100239002225743044">Ugrás feljebb egy sorral</translation>
 <translation id="6118126368611144850">Android-alkalmazások Chrome-ra. Ha eszközén telepítve van a Play Áruház, előzetes betekintést kaphat a ChromeVox Android-alkalmazásokkal való használatába. Töltse le a Google Chrome Canary verzióját a Play Áruházból, és próbálja ki a kísérleti támogatást.</translation>
 <translation id="611827076493383239">felkeresett</translation>
 <translation id="6122013438240733403">gmb</translation>
-<translation id="6129953537138746214">Szóköz</translation>
 <translation id="6132506484792346370">Listamező vagy kombinált mező</translation>
 <translation id="6142308968191113180">4-es címsor</translation>
 <translation id="6150023170003443621">Sárgászöld</translation>
-<translation id="6156755592608846750">Cella vége</translation>
 <translation id="6158882249329863701">sor <ph name="TABLECELLROWINDEX" /> oszlop <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">mérő</translation>
 <translation id="6166362019018438352">Braille-feliratok letiltva</translation>
-<translation id="6169420925157477918">Kép hosszú leírással</translation>
 <translation id="6186305613600865047">Ugrás az oldal aljára</translation>
 <translation id="6187190722927752226">Akvamarin</translation>
-<translation id="6193330012414963395">DE DU</translation>
 <translation id="6197361807490522975">Sötétkék</translation>
-<translation id="622484624075952240">Le</translation>
 <translation id="6236061028292614533">Következő fejléc</translation>
 <translation id="6254901459154107917">Következő szerkeszthető szövegterület</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> bezárva.</translation>
 <translation id="6282062888058716985">nav</translation>
-<translation id="6304851457627491382">Kilépett a párbeszédpanelből</translation>
 <translation id="6305702903308659374">Lejátszás normál hangerőn akkor is, ha a ChromeVox beszél</translation>
 <translation id="6307969636681130414">Megnyomva</translation>
 <translation id="6315652249189065725">A billentyűparancsokat tartalmazó menü megnyitása</translation>
@@ -904,20 +670,16 @@
 <translation id="6393014464788431702">Az összes eseményszűrő letiltása</translation>
 <translation id="6417265370957905582">Google Segéd</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{kettőspont}other{# kettőspont}}</translation>
-<translation id="6438968337250688271"><ph name="NAME" />, menü</translation>
 <translation id="6444046323172968959">Értesítő párbeszédpanel</translation>
 <translation id="6452403590345320472">Tartalomjegyzék</translation>
-<translation id="6459511626086141404">Sima billentyűzetkiosztás</translation>
 <translation id="6468049171101508116">Tovább gomb</translation>
 <translation id="646954774886932461">Tárgymutató</translation>
 <translation id="6475604559827479857">Szókiemeléshez tartozó szín:</translation>
 <translation id="6493991254603208962">fényerő csökkentése</translation>
 <translation id="6501595918865591267">Türkizkék</translation>
 <translation id="6508059270146105198">A Braille-kijelző áthelyezése az oldal aljára</translation>
-<translation id="6512238863305721975">Üres cella</translation>
 <translation id="6521550811716689390">Sötétlila</translation>
 <translation id="6536157907112457272">Nyersvászon</translation>
-<translation id="6536864053412760904">Matematikai „ML” token</translation>
 <translation id="6540201937398578274">A ChromeVox szolgáltatásban a keresőgomb a módosító billentyű. A legtöbb ChromeVox-billentyűparancs a keresőgombbal kezdődik. A navigációhoz a nyílbillentyűket is használnia kell.</translation>
 <translation id="6544923685317771506">Gyöngyház</translation>
 <translation id="6551185905438378412">Elefántcsont</translation>
@@ -925,11 +687,9 @@
 <translation id="6579990219486187401">Világos rózsaszín</translation>
 <translation id="6583174818554398774">Ugrás a következő részletességi szintre</translation>
 <translation id="6609828810966525877">Tanuló módban és a Chromebook súgójában további kézmozdulatokat is felfedezhet</translation>
-<translation id="6622161592949949545">Nem táblázat módban van</translation>
 <translation id="6628427060004938651">Rész</translation>
 <translation id="6637586476836377253">napló</translation>
 <translation id="6657128831881431364">Folyamatjelző</translation>
-<translation id="6659594942844771486">Lap</translation>
 <translation id="667999046851023355">Dokumentum</translation>
 <translation id="6688209025607531203">Nem modális riasztás</translation>
 <translation id="6689672606256159458">Sötét lazacrózsaszín</translation>
@@ -939,24 +699,17 @@
 <translation id="6702609185760332517">{COUNT,plural, =1{felkiáltójel}other{# felkiáltójel}}</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6714813999819678458">Előző 2. szintű fejléc</translation>
-<translation id="6716505898850596801">Módosítóbillentyűk</translation>
-<translation id="6720808010210697990">Nem táblázatban van</translation>
 <translation id="6730312624811567147">Keresés és balra vagy jobbra használata Home vagy End billentyűként, Keresés és Control és balra vagy jobbra használata Control és Home vagy End billentyűparancsként, Keresés és fel vagy le használata Page Up vagy Down billentyűként</translation>
-<translation id="6734854816611871228"><ph name="VALUE" />, kombinált mező</translation>
-<translation id="6735257939857578167"><ph name="NUM" /> elemmel</translation>
 <translation id="6736510033526053669">lap létrehozva</translation>
 <translation id="675895815784134693">folyamatjelző sáv</translation>
 <translation id="67862343314499040">Ibolyaszín</translation>
 <translation id="6786800275320335305">Cikk</translation>
-<translation id="6787839852456839824">Billentyűkódok</translation>
 <translation id="6793101435925451627">lstmez</translation>
 <translation id="6815255864998354418">Citromhab</translation>
 <translation id="6816066673340002913">Halvány aranyvessző</translation>
-<translation id="6826226459053491773">Csúsztassa két ujját lefelé</translation>
 <translation id="6833103209700200188">Lábléc</translation>
 <translation id="6837853484260746864">Válasszon hangot:</translation>
 <translation id="6858047746862060282">Prológus</translation>
-<translation id="6859876496651143278">Csúsztassa egy ujját balra</translation>
 <translation id="6865519907510167493">Elgépelés</translation>
 <translation id="6894148351896207544">A pontos idő és dátum kimondása</translation>
 <translation id="6896758677409633944">Másolás</translation>
@@ -976,7 +729,6 @@
 <translation id="6997224546856374593">Nagy kezdőbetűk felolvasásakor:</translation>
 <translation id="700202842116345659">Bibliográfiai bejegyzés</translation>
 <translation id="7005146664810010831">Nem található URL</translation>
-<translation id="7010712454773919705">ChromeVox-módosítóbillentyű</translation>
 <translation id="7026338066939101231">Csökkentés</translation>
 <translation id="7031651751836475482">lstelem</translation>
 <translation id="7037042857287298941">Előző lista</translation>
@@ -994,24 +746,17 @@
 <translation id="7116595520562830928">többsoros</translation>
 <translation id="712735679809149106">szavak visszaolvasása</translation>
 <translation id="7137397390322864165">Lazacrózsaszín</translation>
-<translation id="713824876195128146">Következő idézetblokk</translation>
 <translation id="7140168702531682811">Felső index</translation>
 <translation id="7143034430156387447">Váltás 6 és 8 pontos Braille-táblázat között</translation>
 <translation id="7143207342074048698">Csatlakozás</translation>
 <translation id="7153618581592392745">Levendula</translation>
-<translation id="7157095268991842805">Egyesítve</translation>
 <translation id="7157306005867877619">Absztrakt</translation>
 <translation id="7161771961008409533">Előugró gomb</translation>
 <translation id="7167657087543110">karakterek visszaolvasása</translation>
-<translation id="7170733337935166589">Ugrás előre folyamatos olvasáskor</translation>
 <translation id="7173102181852295013">Éjkék</translation>
-<translation id="717574717447196690">Táblázat elhagyása</translation>
 <translation id="7203150201908454328">Kibontott</translation>
 <translation id="7209751026933045237">Nincs következő csúszka</translation>
-<translation id="7210211103303402262">perc</translation>
-<translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7218782500591078391">Aranyvessző</translation>
-<translation id="7221740160534240920">sor</translation>
 <translation id="7226216518520804442">list</translation>
 <translation id="7229749224609077523">6 pontos Braille-táblázat kiválasztása:</translation>
 <translation id="72393384879519786">Címsor</translation>
@@ -1032,9 +777,6 @@
 <translation id="7308519659008003150">Nincs előző űrlapmező</translation>
 <translation id="731121099745151312">faelem</translation>
 <translation id="7317017974771324508">részben kiválasztva</translation>
-<translation id="7322388933135261569">február</translation>
-<translation id="7332592614823088566"><ph name="ROWINDEX" />/<ph name="ROWTOTAL" />. sor, <ph name="COLINDEX" />/<ph name="COLTOTAL" />. oszlop</translation>
-<translation id="7336596009609913925">előugróval rendelkezik</translation>
 <translation id="7356165926712028380">Váltás 8 pontos braille-táblázatra</translation>
 <translation id="7356610683936413584">Leíráslista adatai</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ÉS jel}other{# ÉS jel}}</translation>
@@ -1050,10 +792,8 @@
 <translation id="7439060726180460871">Címtár</translation>
 <translation id="744163271241493234">jelszóbevitel</translation>
 <translation id="7491962110804786152">tab</translation>
-<translation id="7492049978501397201">Belépett a párbeszédbe</translation>
 <translation id="7505149250476994901">A betű előtt mondja, hogy „nagy”</translation>
 <translation id="7518543783849163354">A ChromeVox beszédének átmeneti leállításához nyomja le a Control billentyűt.</translation>
-<translation id="7532613204005497612">június</translation>
 <translation id="7533226154149229506">Világos aranyvesszősárga</translation>
 <translation id="7543255924852002459">Címke elvetése</translation>
 <translation id="7552432549459840808">Hasznos Chrome-billentyűparancsok</translation>
@@ -1061,7 +801,6 @@
 <translation id="7579911500627256166"><ph name="DOT" /> pont</translation>
 <translation id="7595446402663080101">Nincs előző táblázat</translation>
 <translation id="7596131838331109045">Világos lazacrózsaszín</translation>
-<translation id="7596919493010894443">kijelölés törölve</translation>
 <translation id="7604026522577407655">Ugrás az aktuális oszlop elejére</translation>
 <translation id="7604451927827590395">címsor</translation>
 <translation id="7609342235116740824">Aktuális oldal URL-jének felolvasása</translation>
@@ -1070,9 +809,7 @@
 <translation id="762020119231868829">A jelenleg működő összes médiamodul szüneteltetése</translation>
 <translation id="7625690649919402823">Következő táblázat</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grade <ph name="GRADE" /></translation>
-<translation id="763535765081585392">Aláhúzás jelzése:</translation>
 <translation id="7639968568612851608">Sötétszürke</translation>
-<translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, szövegmező</translation>
 <translation id="7663318257180412551">2-es címsor</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{óra}other{óra}}</translation>
 <translation id="7674576868851035240">Következő link</translation>
@@ -1088,28 +825,20 @@
 <translation id="7724603315864178912">Kivágás</translation>
 <translation id="7731785449856576010">Nincs következő médiamodul</translation>
 <translation id="773906353055481349">A cellánkénti mozgáshoz használja a Keresés+Ctrl+Alt és a nyílbillentyűket</translation>
-<translation id="7750184816513382104">A kis- és nagybetűk meg vannak különböztetve</translation>
 <translation id="7763537600611320912">A következő fájl letöltése megkezdődött: <ph name="FILE_NAME" /></translation>
 <translation id="7768784765476638775">Felolvasás</translation>
-<translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, jelszómező</translation>
 <translation id="7776293189010177726">ChromeVox-menük megnyitása</translation>
 <translation id="7799302833060027366">A matematikai tartalmak felfedezéséhez használja a fel, le, balra és jobbra nyílbillentyűket</translation>
 <translation id="7800558923657349506">Végszó</translation>
-<translation id="7805247615045262757">alapértelmezett navigáció</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="7810781339813764006">Következő csoport</translation>
 <translation id="7813616274030162878">A kapcsolóalapú hozzáférés menüje</translation>
-<translation id="7819187121850078213">ablak, <ph name="TITLE" /> lap</translation>
-<translation id="7828956995407538686">október</translation>
 <translation id="7839679365527550018">Előző szó</translation>
 <translation id="7846634333498149051">Billentyűzet</translation>
-<translation id="7851132556376253786">Nincs következő cikk</translation>
 <translation id="7851816175263618915">Bizonyos írásjelek</translation>
-<translation id="7870596830398826354">Matematikai „ML Tree”</translation>
 <translation id="7871691770940645922">Virtuális Braille-kijelző</translation>
 <translation id="7882421473871500483">Barna</translation>
 <translation id="78826985582142166">csúsz</translation>
-<translation id="7895896691902835279">Ismeretlen link</translation>
 <translation id="7913106023953875143">Nincs következő 2. szintű címsor</translation>
 <translation id="7914870167134465181">Kiemelés</translation>
 <translation id="7927711904086083099">Nincs kiválasztva</translation>
@@ -1135,7 +864,6 @@
 <translation id="8042761080832772327">Szövegszerkesztés, keresési bevitel</translation>
 <translation id="8049189770492311300">Időzítő</translation>
 <translation id="8058636807889143711">Nincs következő matematikai kifejezés</translation>
-<translation id="8065607967589909823">A kijelölés:</translation>
 <translation id="8066678206530322333">Szalaghirdetés</translation>
 <translation id="8076492880354921740">Lapok</translation>
 <translation id="8083115023881784332">Jelenleg semmi sincs a ChromeVox fókuszában. Az indító megnyitásához nyomja le az Alt+Shift+L billentyűkombinációt.</translation>
@@ -1149,8 +877,6 @@
 <translation id="8129445297241948503">Nincs több cella felfelé</translation>
 <translation id="8138880386467279117">Érintés</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alulvonás}other{# alulvonás}}</translation>
-<translation id="8179976553408161302">Enter</translation>
-<translation id="8182552736960088316">Nincs előző blokkszintű idézet</translation>
 <translation id="8184828902145951186">sor</translation>
 <translation id="8186185314313222077">váltás teljes képernyős módra</translation>
 <translation id="8199231515320852133">Aktuális cella fejléceinek felolvasása</translation>
@@ -1172,9 +898,7 @@
 <translation id="8324974933005349667">A szövegfelolvasóhoz tartozó beállítások személyre szabása</translation>
 <translation id="8326783648485765113">Fűzöld</translation>
 <translation id="8328063869313048659">Sötét képernyő be- vagy kikapcsolása</translation>
-<translation id="8344569602005188545">óra</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{kettős kereszt}other{# kettős kereszt jel}}</translation>
-<translation id="8374154622594089836">hónap</translation>
 <translation id="8378855320830505539">Terület</translation>
 <translation id="8382679411218029383">Automatikus kiegészítés soron belül és listaként</translation>
 <translation id="8428213095426709021">Beállítások</translation>
@@ -1182,19 +906,15 @@
 <translation id="8430049249787218991">menüsor</translation>
 <translation id="8446884382197647889">További információ</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
-<translation id="8457542835502295883">Nincs következő ugrópont</translation>
 <translation id="84575901236241018">hozzáférési kulccsal rendelkezik: <ph name="KEY" /></translation>
 <translation id="8463645336674919227">Nyelvhelyességi hiba elhagyása</translation>
 <translation id="847040613207937740">Nincs következő jelölőnégyzet</translation>
-<translation id="847154984256717791">elfoglalt</translation>
 <translation id="8473540203671727883">Kurzor alatti szöveg felolvasása</translation>
 <translation id="8476408756881832830">Lejátszás szüneteltetése, amikor a ChromeVox beszél</translation>
 <translation id="8476508772960940536">ablakáttekintési mód</translation>
 <translation id="8503360654911991865">Navigáció részletezettségének csökkentése</translation>
 <translation id="8520472399088452386">Léptetőnyíl</translation>
 <translation id="8534394844575788431">Formázás</translation>
-<translation id="8538744478902126321">Aktuális cella sorfejlécének tippelése</translation>
-<translation id="8540054775867439484">A tetejére kerül</translation>
 <translation id="8542271685829952264">A ChromeVox összes parancsának és billentyűparancsának felfedezéséhez nyomja le a Keresés + „pont” billentyűkombinációt, majd a nyílbillentyűk segítségével navigáljon a menük között, végül az Enter billentyűvel aktiválja a parancsot. Ha vissza szeretne ide térni, nyomja le a Keresés+O, majd a T gombot.</translation>
 <translation id="8548973727659841685">Karakter</translation>
 <translation id="8561322612995434619">pop-uppal rendelkezik</translation>
@@ -1203,24 +923,19 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Következő listaelem</translation>
 <translation id="8591343418134616947">Nincs előző 6. szintű címsor</translation>
-<translation id="860150890330522909"><ph name="NAME" /> négyzet bejelölve</translation>
 <translation id="8603071050456974042">ChromeVox-panel</translation>
 <translation id="8606621670302093223">Dátum beállítása</translation>
 <translation id="8613709718990529335">Mázatlan porcelán</translation>
 <translation id="8625173877182443267">Nincs következő 6. szintű címsor</translation>
 <translation id="8628186274519446680">Paradicsom</translation>
-<translation id="8631359288236106450"><ph name="COUNT" /> elem kiválasztva</translation>
 <translation id="8638532244051952400">Aktuális cella koordinátáinak kimondása</translation>
 <translation id="8640369214276455272">Füstszürke</translation>
 <translation id="8651481478098336970">némítás</translation>
 <translation id="8653646212587894517">Linklista megjelenítése</translation>
 <translation id="8656888282555543604">Braille-naplózás engedélyezése</translation>
-<translation id="8664519043722036194">másodperc</translation>
 <translation id="867187640362843212">5-ös címsor</translation>
 <translation id="8696284982970258155">Mézharmatzöld</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{függőleges vonal}other{# függőleges vonal karakter}}</translation>
-<translation id="8731479400585463771">Következő eltérő elem</translation>
-<translation id="8735450637152821465">Kijelölés eleje</translation>
 <translation id="8743786158317878347">belépés a strukturált tartalmakba, például táblázatokba</translation>
 <translation id="8747966237988593539">Rendezett lista</translation>
 <translation id="8749988712346667988">Ezüst</translation>
@@ -1228,35 +943,25 @@
 <translation id="8767968232364267681">Következő 4. szintű fejléc</translation>
 <translation id="8770473310765924354">kilépés a strukturált tartalmakból, például táblázatokból</translation>
 <translation id="8779057862865475116">Nincs előző link</translation>
-<translation id="8791025954632646584">Szemantikai értelmezés bekapcsolva</translation>
 <translation id="8796411681063377102">Következő 3. szintű fejléc</translation>
-<translation id="8808582214901541005">március</translation>
 <translation id="8825828890761629845">szlghird</translation>
 <translation id="8851136666856101339">fő</translation>
-<translation id="8856538297388979332">Nyomja meg felfelé vagy lefelé a parancsok megtekintéséhez, majd az Entert az aktiválásukhoz</translation>
 <translation id="8882002077197914455">Sorfejléc</translation>
 <translation id="8883850400338911892">urlszerk 8pont</translation>
 <translation id="8896479570570613387">Középbíbor</translation>
 <translation id="8897030325301866860"><ph name="FONT_FAMILY" /> betűtípus</translation>
 <translation id="8898516272131543774">Központozás visszaolvasásának be- vagy kikapcsolása</translation>
-<translation id="8900148057318340779">Előtagkulcs</translation>
 <translation id="8908714597367957477">oszlopfejléc</translation>
-<translation id="8931936695772494138">Üres fejlécek</translation>
-<translation id="8933434366189817061">Következő hasonló elem</translation>
 <translation id="8937112856099038376">belső link</translation>
 <translation id="8940925288729953902">Módosítóbillentyűk</translation>
 <translation id="8943282376843390568">Limezöld</translation>
 <translation id="8944511129464116546">részben bejelölve</translation>
 <translation id="8946628535652548639">s<ph name="TABLECELLROWINDEX" />o<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">Nincs előző választógomb</translation>
-<translation id="8957142051395645063">Bejelentés</translation>
-<translation id="896035116006462153">Engedélyezze a képernyő-billentyűzetet az állapottálca kisegítő lehetőségeiben, hogy használhassa a bővített Braille-parancsokat</translation>
 <translation id="8970172509886453271">Nincs előző szakasz</translation>
 <translation id="8978496506222343566">helyi súgó</translation>
 <translation id="8986362086234534611">Elfelejt</translation>
-<translation id="900114243503212879">fájl</translation>
 <translation id="9040132695316389094">1-es címsor</translation>
-<translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">8 pontos Braille-táblázat kiválasztása:</translation>
 <translation id="9065283790526219006">+előugr</translation>
 <translation id="9065912140022662363">Nincs következő választógomb</translation>
@@ -1269,13 +974,10 @@
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9108589040018540527">görgetősáv</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{százalékjel}other{# százalékjel}}</translation>
-<translation id="9115913704608474258">november</translation>
-<translation id="912759640994130978">A jelenlegi billentyűzetkiosztást az alábbi listáról választva változtathatja meg</translation>
 <translation id="9128414153595658330">pnl</translation>
 <translation id="9133928141873682933">Keki</translation>
 <translation id="9149560530563164529">szakasz</translation>
 <translation id="9150735707954472829">Lap</translation>
-<translation id="9151211641321628915">Röviden elmondja, hogy mi az aktuális pozíció</translation>
 <translation id="9151249085738989067">A ChromeVox hangjának automatikus átváltása a nyelv alapján</translation>
 <translation id="9153606228985488238">Hangmagasság: <ph name="PERCENT" /> százalék</translation>
 <translation id="9160096769946561184">Ugrás az aktuális oszlop végére</translation>
@@ -1286,10 +988,8 @@
 <translation id="9220679313820249046">Pirosas narancssárga</translation>
 <translation id="9223032053830369045">Sötétpiros</translation>
 <translation id="923331726185079994">ChromeVox frissítve</translation>
-<translation id="932892745999655330">Nincsenek címsorok</translation>
 <translation id="93384979447910801">Sötét tengerzöld</translation>
 <translation id="948171205378458592">Beszédsebesség csökkentése</translation>
-<translation id="958854023026327378">Csúsztassa egy ujját lefelé</translation>
 <translation id="962913030769097253">Következő 1. szintű fejléc</translation>
 <translation id="966588271015727539">Bluetooth-os Braille-kijelző választása</translation>
 <translation id="973955474346881951">Rögzített mód engedélyezése/tiltása</translation>

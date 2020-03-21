@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, geïnstalleerde app</translation>
 <translation id="1450753235335490080">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> is verwisseld met <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Je hebt hier eerder naar gezocht. Als je '<ph name="QUERY" />' uit je geschiedenis verwijdert, wordt deze zoekopdracht definitief op al je apparaten uit je account verwijderd.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minuten en }}</translation>
 <translation id="1643823602425662293">Melding</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Rechts naar links</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MEEST WAARSCHIJNLIJK</translation>
+<translation id="7170202025028120564">De weergave-instellingen van je app worden van kracht als de app opnieuw wordt opgestart.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. resterend}other{# min. resterend}}</translation>
 <translation id="7319740667687257810">Launcher, gedeeltelijke weergave</translation>

@@ -437,6 +437,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::DomStorage> receiver)>;
   static void SetDomStorageBinderForTesting(DomStorageBinder binder);
 
+  using BadMojoMessageCallbackForTesting =
+      base::RepeatingCallback<void(int render_process_host_id,
+                                   const std::string& error)>;
+  static void SetBadMojoMessageCallbackForTesting(
+      BadMojoMessageCallbackForTesting callback);
+
   // Allows external code to supply a callback which handles a
   // mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider>. Used for
   // supplying test versions of the service.

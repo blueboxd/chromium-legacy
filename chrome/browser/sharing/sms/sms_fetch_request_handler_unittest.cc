@@ -36,6 +36,7 @@ class MockSmsFetcher : public content::SmsFetcher {
   MOCK_METHOD2(Unsubscribe,
                void(const url::Origin& origin, Subscriber* subscriber));
   MOCK_METHOD0(HasSubscribers, bool());
+  MOCK_METHOD0(CanReceiveSms, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsFetcher);

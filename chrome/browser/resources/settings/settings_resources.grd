@@ -1133,12 +1133,10 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SYNC_CONTROLS_JS"
                  file="people_page/sync_controls.js"
-                 type="chrome_html"
-                 preprocess="true" />
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SYNC_CONTROLS_HTML"
                  file="people_page/sync_controls.html"
-                 type="chrome_html"
-                 preprocess="true" />
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SYNC_ENCRYPTION_OPTIONS_JS"
                  file="people_page/sync_encryption_options.js"
                  type="chrome_html" />

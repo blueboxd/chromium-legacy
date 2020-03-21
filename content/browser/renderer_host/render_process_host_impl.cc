@@ -1240,6 +1240,31 @@ GetCreateNetworkFactoryCallback() {
   return *s_callback;
 }
 
+RenderProcessHostImpl::BadMojoMessageCallbackForTesting&
+GetBadMojoMessageCallbackForTesting() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  static base::NoDestructor<
+      RenderProcessHostImpl::BadMojoMessageCallbackForTesting>
+      s_callback;
+  return *s_callback;
+}
+
+void InvokeBadMojoMessageCallbackForTesting(int render_process_id,
+                                            const std::string& error) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&InvokeBadMojoMessageCallbackForTesting,
+                                  render_process_id, error));
+    return;
+  }
+
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHostImpl::BadMojoMessageCallbackForTesting& callback =
+      GetBadMojoMessageCallbackForTesting();
+  if (!callback.is_null())
+    callback.Run(render_process_id, error);
+}
+
 }  // namespace
 
 // A RenderProcessHostImpl's IO thread implementation of the
@@ -1600,6 +1625,18 @@ void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
 void RenderProcessHostImpl::SetDomStorageBinderForTesting(
     DomStorageBinder binder) {
   GetDomStorageBinder() = std::move(binder);
+}
+
+// static
+void RenderProcessHostImpl::SetBadMojoMessageCallbackForTesting(
+    BadMojoMessageCallbackForTesting callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // No support for setting the global callback twice.
+  DCHECK_NE(callback.is_null(),
+            GetBadMojoMessageCallbackForTesting().is_null());
+
+  GetBadMojoMessageCallbackForTesting() = callback;
 }
 
 void RenderProcessHostImpl::
@@ -4927,6 +4964,8 @@ void RenderProcessHostImpl::CreateMdnsResponder(
 void RenderProcessHostImpl::OnMojoError(int render_process_id,
                                         const std::string& error) {
   LOG(ERROR) << "Terminating render process for bad Mojo message: " << error;
+
+  InvokeBadMojoMessageCallbackForTesting(render_process_id, error);
 
   // The ReceivedBadMessage call below will trigger a DumpWithoutCrashing.
   // Capture the error message in a crash key value.

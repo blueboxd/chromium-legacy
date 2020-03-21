@@ -600,6 +600,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="3587738293690942763">Srednji</translation>
 <translation id="3592413004129370115">Italian (omotnica)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Administrator je blokirao aplikaciju</translation>
 <translation id="3608932978122581043">Usmjerenje umetanja</translation>
 <translation id="3614103345592970299">Veličina 2</translation>
 <translation id="361438452008624280">Unos na popisu "<ph name="LANGUAGE_ID" />": nepoznati ili nepodržani jezik.</translation>
@@ -853,6 +854,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="467662567472608290">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat sadrži pogreške. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> želi odgovoriti na događaje pristupačnosti</translation>
 <translation id="467809019005607715">Google prezentacije</translation>
+<translation id="4680804919228900307">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chromium preporučuje da odmah provjerite spremljene zaporke za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i druge web-lokacije na kojima koristite tu zaporku.</translation>
 <translation id="4690462567478992370">Prestani upotrebljavati nevažeći certifikat</translation>
 <translation id="4691835149146451662">Architecture-A (omotnica)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1018,8 +1020,10 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="5329858041417644019">Preglednikom se ne upravlja</translation>
 <translation id="5332219387342487447">Način otpreme</translation>
 <translation id="5334013548165032829">Detaljni zapisnici sustava</translation>
+<translation id="5340250774223869109">Aplikacija je blokirana</translation>
 <translation id="534295439873310000">NFC uređaji</translation>
 <translation id="5344579389779391559">Ta će vam stranica možda pokušati nešto naplatiti</translation>
+<translation id="5346336634660260557">Pregledajte sadržaj međuspremnika, kao i datoteka koje preuzimate s Chromea ili prenosite putem Chromea.</translation>
 <translation id="5355557959165512791">Trenutačno ne možete otvoriti web-lokaciju <ph name="SITE" /> jer je njezin certifikat opozvan. Mrežne pogreške i napadi uglavnom su privremeni i ta bi stranica kasnije trebala funkcionirati.</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
 <translation id="5371425731340848620">Ažuriranje kartice</translation>
@@ -1430,6 +1434,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="7219179957768738017">Veza upotrebljava <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Obrada</translation>
 <translation id="7221855153210829124">Prikazati obavijesti</translation>
+<translation id="7229659723041939809">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chrome preporučuje da odmah provjerite spremljene zaporke za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i druge web-lokacije na kojima koristite tu zaporku.</translation>
 <translation id="7233592378249864828">List potvrde ispisa</translation>
 <translation id="7238585580608191973">SHA-256 otisak prsta</translation>
 <translation id="7240120331469437312">Zamjenski naziv predmeta certifikata</translation>
@@ -1497,6 +1502,7 @@ Dodatne pojedinosti:
 <translation id="7485870689360869515">Nema pronađenih podataka.</translation>
 <translation id="7495290002932347110">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da provjerite svoje spremljene zaporke i promijenite ih na <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Nastavi uređivati</translation>
+<translation id="7503664977220660814">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chromium preporučuje da odmah provjerite spremljene zaporke za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i druge web-lokacije na kojima koristite tu zaporku.</translation>
 <translation id="7508255263130623398">Vraćeni ID uređaja pravila prazan je ili ne odgovara trenutačnom ID-u uređaja</translation>
 <translation id="7508870219247277067">Zelenožuta</translation>
 <translation id="7511955381719512146">Za Wi-Fi koji upotrebljavate možda ćete morati posjetiti stranicu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1572,6 +1578,7 @@ Dodatne pojedinosti:
 <translation id="7763386264682878361">Raščlanjivač manifesta za plaćanje</translation>
 <translation id="7764225426217299476">Dodaj adresu</translation>
 <translation id="7766518757692125295">Ivica</translation>
+<translation id="7767271804335921384">Administrator je blokirao aplikaciju</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Istim redoslijedom prema gore</translation>
 <translation id="777702478322588152">Prefektura</translation>
@@ -1592,6 +1599,7 @@ Dodatne pojedinosti:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Želite li napustiti web-lokaciju?</translation>
 <translation id="7865448901209910068">Najbolja brzina</translation>
+<translation id="7874263914261512992">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chrome preporučuje da odmah provjerite spremljene zaporke za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i druge web-lokacije na kojima koristite tu zaporku.</translation>
 <translation id="7878562273885520351">Vaša je zaporka možda ugrožena</translation>
 <translation id="7882421473871500483">Smeđa</translation>
 <translation id="7887683347370398519">Provjerite CVC i pokušajte ponovo</translation>
@@ -1728,6 +1736,7 @@ Dodatne pojedinosti:
 <translation id="8474910779563686872">Prikaži pojedinosti o razvojnom programeru</translation>
 <translation id="8479754468255770962">Spajanje pri dnu lijevo</translation>
 <translation id="8483780878231876732">Da biste upotrebljavali kartice sa svojeg Google računa, prijavite se na Chrome</translation>
+<translation id="8485393050551136813">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chromium preporučuje da odmah provjerite spremljene zaporke za <ph name="WEBSITE_1" /> i druge web-lokacije na kojima koristite tu zaporku.</translation>
 <translation id="8488350697529856933">Primjenjuje se na</translation>
 <translation id="8490137692873530638">Spremnik za slaganje u snopove 10</translation>
 <translation id="8498891568109133222">Hostu <ph name="HOST_NAME" /> bilo je potrebno previše vremena za odgovor.</translation>
@@ -1778,6 +1787,7 @@ Dodatne pojedinosti:
 <translation id="87601671197631245">Ova web-lokacija upotrebljava zastarjelu sigurnosnu konfiguraciju, pa bi vaši podaci (na primjer zaporke, poruke ili brojevi kreditnih kartica) mogli biti otkriveni kad se šalju na nju.</translation>
 <translation id="8761567432415473239">Googleovo Sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />pronašlo štetne programe<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB uređaj</translation>
+<translation id="8774457497170244317">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chrome preporučuje da odmah provjerite spremljene zaporke za <ph name="WEBSITE_1" /> i druge web-lokacije na kojima koristite tu zaporku.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>
 <translation id="8792621596287649091">Mogli biste izgubiti pristup svojem <ph name="ORG_NAME" /> računu ili bi netko mogao ukrasti vaš identitet. Chromium preporučuje da odmah promijenite zaporku.</translation>

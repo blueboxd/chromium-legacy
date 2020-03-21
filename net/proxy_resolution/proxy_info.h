@@ -122,6 +122,10 @@ class NET_EXPORT ProxyInfo {
     return did_bypass_proxy_;
   }
 
+  void set_did_use_pac_script(bool did_use_pac_script) {
+    did_use_pac_script_ = did_use_pac_script;
+  }
+
   // Returns true if the proxy resolution was done using a PAC script.
   bool did_use_pac_script() const {
     return did_use_pac_script_;
@@ -130,6 +134,9 @@ class NET_EXPORT ProxyInfo {
   // Returns the first valid proxy server. is_empty() must be false to be able
   // to call this function.
   const ProxyServer& proxy_server() const { return proxy_list_.Get(); }
+
+  // Returns the full list of proxies to use.
+  const ProxyList& proxy_list() const { return proxy_list_; }
 
   // See description in ProxyList::ToPacString().
   std::string ToPacString() const;
@@ -148,16 +155,21 @@ class NET_EXPORT ProxyInfo {
   // Deletes any entry which doesn't have one of the specified proxy schemes.
   void RemoveProxiesWithoutScheme(int scheme_bit_field);
 
-  // Returns the list of proxies to use.
-  const ProxyList& proxy_list() const {
-    return proxy_list_;
-  }
-
   // Returns the alternative proxy, which may be invalid.
   const ProxyServer& alternative_proxy() const { return alternative_proxy_; }
 
+  void set_proxy_resolve_start_time(
+      const base::TimeTicks& proxy_resolve_start_time) {
+    proxy_resolve_start_time_ = proxy_resolve_start_time;
+  }
+
   base::TimeTicks proxy_resolve_start_time() const {
     return proxy_resolve_start_time_;
+  }
+
+  void set_proxy_resolve_end_time(
+      const base::TimeTicks& proxy_resolve_end_time) {
+    proxy_resolve_end_time_ = proxy_resolve_end_time;
   }
 
   base::TimeTicks proxy_resolve_end_time() const {
@@ -173,15 +185,11 @@ class NET_EXPORT ProxyInfo {
     return traffic_annotation_;
   }
 
- private:
-  friend class ConfiguredProxyResolutionService;
-  friend class ProxyResolutionRequestImpl;
-  FRIEND_TEST_ALL_PREFIXES(ProxyInfoTest, UseVsOverrideProxyList);
-
   const ProxyRetryInfoMap& proxy_retry_info() const {
     return proxy_retry_info_;
   }
 
+ private:
   // Reset proxy and config settings.
   void Reset();
 

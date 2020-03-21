@@ -190,7 +190,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
   GURL test_url(GetWebUIURL("webui/"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  RenderProcessHostKillWaiter kill_waiter(
+  RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   ASSERT_FALSE(CheckCanLoadHttp());
   EXPECT_EQ(bad_message::WEBUI_BAD_SCHEME_ACCESS, kill_waiter.Wait());
@@ -461,7 +461,6 @@ class NetworkServiceInvalidLogBrowserTest : public ContentBrowserTest {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceInvalidLogBrowserTest);
 };
 

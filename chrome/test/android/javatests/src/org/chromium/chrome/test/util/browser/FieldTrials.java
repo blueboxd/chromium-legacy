@@ -151,7 +151,7 @@ public class FieldTrials {
         }
     }
 
-    public void reset() {
+    void reset() {
         mTrialToFeatureNameMap.clear();
         mTrialToParamValueMap.clear();
         sInstance = null;

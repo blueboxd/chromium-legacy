@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">Կամընտիր. Օգնեք բարելավել Chromium-ը՝ ավտոմատ Google-ին ուղարկելով օգտագործման վիճակագրությունները և խափանումների մասին հաշվետվությունները:</translation>
 <translation id="2910007522516064972">&amp;Chromium-ի մասին</translation>
 <translation id="2977470724722393594">Chromium-ը թարմացված է</translation>
+<translation id="2983934633046890458">Chromium-ը փորձում է փոխել գաղտնաբառերը:</translation>
 <translation id="3032706164202344641">Chromium-ը չի կարող ստուգել ձեր գաղտնաբառերը։ Փորձեք ավելի ուշ։</translation>
 <translation id="3032787606318309379">Ավելացվում է Chromium-ին…</translation>
 <translation id="3068515742935458733">Օգնեք բարելավել Chromium-ը՝ Google-ին ուղարկելով խափանման մասին հաշվետվությունները և <ph name="UMA_LINK" />ը</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium OS-ը չի կարող բացել այս էջը:</translation>
 <translation id="5480860683791598150">Chromium-ին այս կայքի համար անհրաժեշտ է ձեզ տեղորոշելու թույլտվություն</translation>
 <translation id="549669000822060376">Սպասեք` մինչ Chromium-ը տեղադրում է համակարգի նորագույն թարմացումները:</translation>
+<translation id="5496810170689441661">Chromium-ը փորձում է փոխել գաղտնաբառերը: Թույլատրելու համար մուտքագրեք Windows-ի ձեր գաղտնաբառը:</translation>
 <translation id="5623402015214259806">{0,plural, =0{Հասանելի է Chromium-ի նոր տարբերակը}=1{Հասանելի է Chromium-ի նոր տարբերակը}one{Chromium-ի նոր տարբերակը # օր է հասանելի է}other{Chromium-ի նոր տարբերակը # օր է հասանելի է}}</translation>
 <translation id="5631814766731275228">Chromium պրոֆիլի անունն ու պատկերը</translation>
 <translation id="5634636535844844681">Chromium-ի համար հարկավոր է Windows 7 կամ ավելի նոր տարբերակ:</translation>

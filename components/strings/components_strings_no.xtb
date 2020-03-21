@@ -600,6 +600,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3587738293690942763">Midtre</translation>
 <translation id="3592413004129370115">Italian (konvolutt)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Programmet er blokkert av administratoren din</translation>
 <translation id="3608932978122581043">Feed-retning</translation>
 <translation id="3614103345592970299">Størrelse 2</translation>
 <translation id="361438452008624280">Listeoppføringen «<ph name="LANGUAGE_ID" />»: Språket er ukjent eller støttes ikke.</translation>
@@ -854,6 +855,7 @@ brukere av denne nettleseren.</translation>
 <translation id="467662567472608290">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren inneholder feil. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ber om å svare på tilgjengelighetshendelser</translation>
 <translation id="467809019005607715">Google Presentasjoner</translation>
+<translation id="4680804919228900307">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du sjekker de lagrede passordene dine for <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> og andre nettsteder der du bruker dette passordet, nå.</translation>
 <translation id="4690462567478992370">Slutt å bruke et ugyldig sertifikat</translation>
 <translation id="4691835149146451662">Architecture-A (konvolutt)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1019,8 +1021,10 @@ brukere av denne nettleseren.</translation>
 <translation id="5329858041417644019">Nettleseren din administreres ikke</translation>
 <translation id="5332219387342487447">Leveringsmetode</translation>
 <translation id="5334013548165032829">Detaljerte systemlogger</translation>
+<translation id="5340250774223869109">Programmet er blokkert</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
 <translation id="5344579389779391559">Denne siden kan prøve å belaste deg for penger</translation>
+<translation id="5346336634660260557">Gjennomsøk innholdet på utklippstavlen og i filene du laster ned eller opp i Chrome.</translation>
 <translation id="5355557959165512791">Du kan ikke gå til <ph name="SITE" /> akkurat nå, siden sertifikatet for nettstedet er trukket tilbake. Nettverksfeil- og angrep er vanligvis midlertidige, så denne siden fungerer sannsynligvis senere.</translation>
 <translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
 <translation id="5371425731340848620">Oppdater kortet</translation>
@@ -1431,6 +1435,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7219179957768738017">Tilkoblingen bruker <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Behandler</translation>
 <translation id="7221855153210829124">Vis varsler</translation>
+<translation id="7229659723041939809">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du sjekker de lagrede passordene dine for <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> og andre nettsteder der du bruker dette passordet, nå.</translation>
 <translation id="7233592378249864828">Skriv ut bekreftelsesark</translation>
 <translation id="7238585580608191973">SHA-256-fingeravtrykk</translation>
 <translation id="7240120331469437312">Alternativt navn på sertifikatemne</translation>
@@ -1497,6 +1502,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="7495290002932347110">Et databrudd på et nettsted eller i en app har avdekket passordet ditt. Chrome anbefaler at du sjekker de lagrede passordene dine og endrer passordet på <ph name="ORIGIN" /> nå.</translation>
 <translation id="7498234416455752244">Fortsett å endre</translation>
+<translation id="7503664977220660814">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du sjekker de lagrede passordene dine for <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og andre nettsteder der du bruker dette passordet, nå.</translation>
 <translation id="7508255263130623398">Den returnerte enhets-ID-en for regelen er tom eller samsvarer ikke med den faktiske enhets-ID-en</translation>
 <translation id="7508870219247277067">Avokadogrønn</translation>
 <translation id="7511955381719512146">Det kan hende at Wi-Fi-nettverket du bruker, krever at du besøker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1572,6 +1578,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7763386264682878361">Parser for betalingsmanifest</translation>
 <translation id="7764225426217299476">Legg til adresse</translation>
 <translation id="7766518757692125295">Skjørt</translation>
+<translation id="7767271804335921384">Programmet er blokkert av administratoren din</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Samme rekkefølge – forsiden opp</translation>
 <translation id="777702478322588152">Prefektur</translation>
@@ -1592,6 +1599,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Vil du forlate nettstedet?</translation>
 <translation id="7865448901209910068">Beste hastighet</translation>
+<translation id="7874263914261512992">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du sjekker de lagrede passordene dine for <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og andre nettsteder der du bruker dette passordet, nå.</translation>
 <translation id="7878562273885520351">Passordet ditt kan være kompromittert</translation>
 <translation id="7882421473871500483">Brun</translation>
 <translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
@@ -1728,6 +1736,7 @@ Mer informasjon:
 <translation id="8474910779563686872">Vis utviklerdetaljer</translation>
 <translation id="8479754468255770962">Stift nede til venstre</translation>
 <translation id="8483780878231876732">For å bruke kredittkort du har lagret i Google-kontoen din, logg på Chrome</translation>
+<translation id="8485393050551136813">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du sjekker de lagrede passordene dine for <ph name="WEBSITE_1" /> og andre nettsteder der du bruker dette passordet, nå.</translation>
 <translation id="8488350697529856933">Gjelder for</translation>
 <translation id="8490137692873530638">Hylle 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> brukte for lang tid på å svare.</translation>
@@ -1777,6 +1786,7 @@ Mer informasjon:
 <translation id="87601671197631245">Dette nettstedet bruker en utdatert sikkerhetskonfigurasjon, som betyr at informasjonen din (for eksempel passord, meldinger eller kredittkort) kan bli avslørt når den sendes til dette nettstedet.</translation>
 <translation id="8761567432415473239">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
+<translation id="8774457497170244317">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du sjekker de lagrede passordene dine for <ph name="WEBSITE_1" /> og andre nettsteder der du bruker dette passordet, nå.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
 <translation id="8792621596287649091">Du kan miste tilgangen til <ph name="ORG_NAME" />-kontoen din eller bli utsatt for identitetstyveri. Chromium anbefaler at du endrer passordet ditt nå.</translation>

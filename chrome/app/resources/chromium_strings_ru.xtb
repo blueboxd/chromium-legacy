@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">(Необязательно) Помогите сделать Chromium лучше, автоматически отправляя статистику использования и отчеты об ошибках в Google.</translation>
 <translation id="2910007522516064972">О &amp;Chromium</translation>
 <translation id="2977470724722393594">Вы используете последнюю версию Chromium</translation>
+<translation id="2983934633046890458">Chromium пытается изменить пароли</translation>
 <translation id="3032706164202344641">Не удается запустить проверку паролей в Chromium. Повторите попытку позже.</translation>
 <translation id="3032787606318309379">Добавление в Chromium...</translation>
 <translation id="3068515742935458733">Помочь улучшить Chromium, отправляя в Google отчеты о сбоях и <ph name="UMA_LINK" /></translation>
@@ -108,6 +109,7 @@
 <translation id="5479196819031988440">Chromium OS не может открыть эту страницу</translation>
 <translation id="5480860683791598150">Для этого сайта Chromium запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
+<translation id="5496810170689441661">Chromium пытается изменить пароли. Чтобы разрешить это действие, введите свой пароль Windows.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Доступно обновление Chromium}=1{Доступно обновление Chromium}one{Обновление Chromium доступно # день}few{Обновление Chromium доступно # дня}many{Обновление Chromium доступно # дней}other{Обновление Chromium доступно # дня}}</translation>
 <translation id="5631814766731275228">Имя и изображение профиля Chromium</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>

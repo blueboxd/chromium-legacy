@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">選擇性：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
 <translation id="2910007522516064972">關於 Chromium(&amp;C)</translation>
 <translation id="2977470724722393594">Chromium 已是最新版本</translation>
+<translation id="2983934633046890458">Chromium 正在嘗試編輯密碼。</translation>
 <translation id="3032706164202344641">Chromium 無法檢查密碼，請稍後再試。</translation>
 <translation id="3032787606318309379">正在新增至 Chromium…</translation>
 <translation id="3068515742935458733">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Google Chrome 更臻完美</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium 作業系統無法開啟此網頁。</translation>
 <translation id="5480860683791598150">Chromium 需要位置資訊存取權，才能與這個網站分享您的位置資訊</translation>
 <translation id="549669000822060376">請稍候，Chromium 正在安裝最新的系統更新。</translation>
+<translation id="5496810170689441661">Chromium 正在嘗試編輯密碼。如果您同意的話，請輸入 Windows 密碼。</translation>
 <translation id="5623402015214259806">{0,plural, =0{有可用的 Chromium 更新}=1{有可用的 Chromium 更新}other{Chromium 更新已發佈 # 天}}</translation>
 <translation id="5631814766731275228">Chromium 名稱和相片</translation>
 <translation id="5634636535844844681">Chromium 只能在 Windows 7 或以上作業系統中執行。</translation>

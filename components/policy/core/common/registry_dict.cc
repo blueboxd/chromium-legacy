@@ -33,101 +33,97 @@ bool IsKeyNumerical(const std::string& key) {
 
 }  // namespace
 
-std::unique_ptr<base::Value> ConvertRegistryValue(const base::Value& value,
-                                                  const Schema& schema) {
+base::Optional<base::Value> ConvertRegistryValue(const base::Value& value,
+                                                 const Schema& schema) {
   if (!schema.valid())
-    return value.CreateDeepCopy();
+    return value.Clone();
 
   // If the type is good already, go with it.
   if (value.type() == schema.type()) {
     // Recurse for complex types.
-    const base::DictionaryValue* dict = nullptr;
-    const base::ListValue* list = nullptr;
-    if (value.GetAsDictionary(&dict)) {
-      std::unique_ptr<base::DictionaryValue> result(
-          new base::DictionaryValue());
-      for (base::DictionaryValue::Iterator entry(*dict); !entry.IsAtEnd();
-           entry.Advance()) {
-        std::unique_ptr<base::Value> converted = ConvertRegistryValue(
-            entry.value(), schema.GetProperty(entry.key()));
-        if (converted)
-          result->SetWithoutPathExpansion(entry.key(), std::move(converted));
+    if (value.is_dict()) {
+      base::Value result(base::Value::Type::DICTIONARY);
+      for (const auto& entry : value.DictItems()) {
+        base::Optional<base::Value> converted =
+            ConvertRegistryValue(entry.second, schema.GetProperty(entry.first));
+        if (converted.has_value())
+          result.SetKey(entry.first, std::move(converted.value()));
       }
-      return std::move(result);
-    } else if (value.GetAsList(&list)) {
-      std::unique_ptr<base::ListValue> result(new base::ListValue());
-      for (auto entry(list->begin()); entry != list->end(); ++entry) {
-        std::unique_ptr<base::Value> converted =
-            ConvertRegistryValue(*entry, schema.GetItems());
-        if (converted)
-          result->Append(std::move(converted));
+      return result;
+    } else if (value.is_list()) {
+      base::Value result(base::Value::Type::LIST);
+      for (const auto& entry : value.GetList()) {
+        base::Optional<base::Value> converted =
+            ConvertRegistryValue(entry, schema.GetItems());
+        if (converted.has_value())
+          result.Append(std::move(converted.value()));
       }
-      return std::move(result);
+      return result;
     }
-    return value.CreateDeepCopy();
+    return value.Clone();
   }
 
   // Else, do some conversions to map windows registry data types to JSON types.
-  std::string string_value;
   int int_value = 0;
   switch (schema.type()) {
     case base::Value::Type::NONE: {
-      return std::make_unique<base::Value>();
+      return base::Value();
     }
     case base::Value::Type::BOOLEAN: {
       // Accept booleans encoded as either string or integer.
-      if (value.GetAsInteger(&int_value) ||
-          (value.GetAsString(&string_value) &&
-           base::StringToInt(string_value, &int_value))) {
-        return std::unique_ptr<base::Value>(new base::Value(int_value != 0));
+      if (value.is_int())
+        return base::Value(value.GetInt() != 0);
+      if (value.is_string() &&
+          base::StringToInt(value.GetString(), &int_value)) {
+        return base::Value(int_value != 0);
       }
       break;
     }
     case base::Value::Type::INTEGER: {
       // Integers may be string-encoded.
-      if (value.GetAsString(&string_value) &&
-          base::StringToInt(string_value, &int_value)) {
-        return std::unique_ptr<base::Value>(new base::Value(int_value));
+      if (value.is_string() &&
+          base::StringToInt(value.GetString(), &int_value)) {
+        return base::Value(int_value);
       }
       break;
     }
     case base::Value::Type::DOUBLE: {
       // Doubles may be string-encoded or integer-encoded.
+      if (value.is_double() || value.is_int())
+        return base::Value(value.GetDouble());
       double double_value = 0;
-      if (value.GetAsDouble(&double_value) ||
-          (value.GetAsString(&string_value) &&
-           base::StringToDouble(string_value, &double_value))) {
-        return std::unique_ptr<base::Value>(new base::Value(double_value));
+      if (value.is_string() &&
+          base::StringToDouble(value.GetString(), &double_value)) {
+        return base::Value(double_value);
       }
       break;
     }
     case base::Value::Type::LIST: {
       // Lists are encoded as subkeys with numbered value in the registry
       // (non-numerical keys are ignored).
-      const base::DictionaryValue* dict = nullptr;
-      if (value.GetAsDictionary(&dict)) {
-        std::unique_ptr<base::ListValue> result(new base::ListValue());
-        for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
-             it.Advance()) {
-          if (!IsKeyNumerical(it.key()))
+      if (value.is_dict()) {
+        base::Value result(base::Value::Type::LIST);
+        for (const auto& it : value.DictItems()) {
+          if (!IsKeyNumerical(it.first))
             continue;
-          std::unique_ptr<base::Value> converted =
-              ConvertRegistryValue(it.value(), schema.GetItems());
-          if (converted)
-            result->Append(std::move(converted));
+          base::Optional<base::Value> converted =
+              ConvertRegistryValue(it.second, schema.GetItems());
+          if (converted.has_value())
+            result.Append(std::move(converted.value()));
         }
-        return std::move(result);
+        return result;
       }
       // Fall through in order to accept lists encoded as JSON strings.
       FALLTHROUGH;
     }
     case base::Value::Type::DICTIONARY: {
       // Dictionaries may be encoded as JSON strings.
-      if (value.GetAsString(&string_value)) {
-        std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
-            string_value, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-        if (result && result->type() == schema.type())
-          return result;
+      if (value.is_string()) {
+        base::Optional<base::Value> result = base::JSONReader::Read(
+            value.GetString(),
+            base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+        if (result.has_value() && result.value().type() == schema.type())
+          return std::move(result.value());
       }
       break;
     }
@@ -138,12 +134,12 @@ std::unique_ptr<base::Value> ConvertRegistryValue(const base::Value& value,
     // TODO(crbug.com/859477): Remove after root cause is found.
     case base::Value::Type::DEAD:
       CHECK(false);
-      return nullptr;
+      return base::nullopt;
   }
 
   LOG(WARNING) << "Failed to convert " << value.type() << " to "
                << schema.type();
-  return nullptr;
+  return base::nullopt;
 }
 
 bool CaseInsensitiveStringCompare::operator()(const std::string& a,
@@ -314,10 +310,10 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
         if (matching_schemas.empty())
           matching_schemas.push_back(Schema());
         for (const Schema& subschema : matching_schemas) {
-          std::unique_ptr<base::Value> converted =
+          base::Optional<base::Value> converted =
               ConvertRegistryValue(*entry->second, subschema);
-          if (converted) {
-            result->SetWithoutPathExpansion(entry->first, std::move(converted));
+          if (converted.has_value()) {
+            result->SetKey(entry->first, std::move(converted.value()));
             break;
           }
         }
@@ -357,10 +353,10 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
            entry != values_.end(); ++entry) {
         if (!IsKeyNumerical(entry->first))
           continue;
-        std::unique_ptr<base::Value> converted =
+        base::Optional<base::Value> converted =
             ConvertRegistryValue(*entry->second, item_schema);
-        if (converted)
-          result->Append(std::move(converted));
+        if (converted.has_value())
+          result->Append(std::move(converted.value()));
       }
       return std::move(result);
     }

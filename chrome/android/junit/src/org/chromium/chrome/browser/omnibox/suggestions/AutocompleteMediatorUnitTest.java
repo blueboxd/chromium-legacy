@@ -11,6 +11,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -22,13 +23,17 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -58,6 +63,12 @@ public class AutocompleteMediatorUnitTest {
     @Mock
     SuggestionProcessor mMockProcessor;
 
+    @Mock
+    AutocompleteController mAutocompleteController;
+
+    @Mock
+    ToolbarDataProvider mToolbarDataProvider;
+
     private Activity mActivity;
     private PropertyModel mListModel;
     private AutocompleteMediator mMediator;
@@ -76,8 +87,9 @@ public class AutocompleteMediatorUnitTest {
 
         mListModel.set(SuggestionListProperties.SUGGESTION_MODELS, mSuggestionModels);
 
-        mMediator = new AutocompleteMediator(
-                mActivity, mAutocompleteDelegate, mTextStateProvider, mListModel);
+        mMediator = new AutocompleteMediator(mActivity, mAutocompleteDelegate, mTextStateProvider,
+                mAutocompleteController, mListModel);
+        mMediator.setToolbarDataProvider(mToolbarDataProvider);
         mMediator.registerSuggestionProcessor(mMockProcessor);
         mMediator.setSuggestionVisibilityState(
                 AutocompleteMediator.SuggestionVisibilityState.ALLOWED);
@@ -337,5 +349,91 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onSuggestionListScroll();
 
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(false));
+    }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void onTextChanged_emptyTextTriggersZeroSuggest() {
+        when(mAutocompleteDelegate.isUrlBarFocused()).thenReturn(true);
+        when(mAutocompleteDelegate.didFocusUrlFromFakebox()).thenReturn(false);
+
+        Profile profile = Mockito.mock(Profile.class);
+        String url = "http://www.example.com";
+        String title = "Title";
+        int pageClassification = 2;
+        when(mToolbarDataProvider.getProfile()).thenReturn(profile);
+        when(mToolbarDataProvider.getCurrentUrl()).thenReturn(url);
+        when(mToolbarDataProvider.getTitle()).thenReturn(title);
+        when(mToolbarDataProvider.hasTab()).thenReturn(true);
+        when(mToolbarDataProvider.getPageClassification(false)).thenReturn(pageClassification);
+
+        when(mTextStateProvider.getTextWithAutocomplete()).thenReturn("");
+
+        mMediator.onNativeInitialized();
+        mMediator.onTextChanged("", "");
+        verify(mAutocompleteController)
+                .startZeroSuggest(profile, "", url, pageClassification, title);
+    }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void onTextChanged_nonEmptyTextTriggersSuggestions() {
+        Profile profile = Mockito.mock(Profile.class);
+        String url = "http://www.example.com";
+        int pageClassification = 2;
+        when(mToolbarDataProvider.getProfile()).thenReturn(profile);
+        when(mToolbarDataProvider.getCurrentUrl()).thenReturn(url);
+        when(mToolbarDataProvider.hasTab()).thenReturn(true);
+        when(mToolbarDataProvider.getPageClassification(false)).thenReturn(pageClassification);
+
+        when(mTextStateProvider.shouldAutocomplete()).thenReturn(true);
+        when(mTextStateProvider.getSelectionStart()).thenReturn(4);
+        when(mTextStateProvider.getSelectionEnd()).thenReturn(4);
+
+        mMediator.onNativeInitialized();
+        mMediator.onTextChanged("test", "testing");
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        verify(mAutocompleteController).start(profile, url, pageClassification, "test", 4, false);
+    }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void onTextChanged_cancelsPendingRequests() {
+        Profile profile = Mockito.mock(Profile.class);
+        String url = "http://www.example.com";
+        int pageClassification = 2;
+        when(mToolbarDataProvider.getProfile()).thenReturn(profile);
+        when(mToolbarDataProvider.getCurrentUrl()).thenReturn(url);
+        when(mToolbarDataProvider.hasTab()).thenReturn(true);
+        when(mToolbarDataProvider.getPageClassification(false)).thenReturn(pageClassification);
+
+        when(mTextStateProvider.shouldAutocomplete()).thenReturn(true);
+        when(mTextStateProvider.getSelectionStart()).thenReturn(4);
+        when(mTextStateProvider.getSelectionEnd()).thenReturn(4);
+
+        mMediator.onNativeInitialized();
+        mMediator.onTextChanged("test", "testing");
+        mMediator.onTextChanged("nottest", "nottesting");
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        verify(mAutocompleteController)
+                .start(profile, url, pageClassification, "nottest", 4, false);
+    }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void onSuggestionsReceived_sendsOnSuggestionsChanged() {
+        mMediator.onNativeInitialized();
+        mMediator.onSuggestionsReceived(mSuggestionsList, "inline_autocomplete");
+        verify(mAutocompleteDelegate).onSuggestionsChanged("inline_autocomplete");
+
+        // Ensure duplicate requests are suppressed.
+        mMediator.onSuggestionsReceived(mSuggestionsList, "inline_autocomplete2");
+        verifyNoMoreInteractions(mAutocompleteDelegate);
     }
 }

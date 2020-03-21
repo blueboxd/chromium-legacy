@@ -286,10 +286,12 @@ suite('SiteList', function() {
 
   suiteSetup(function() {
     // clang-format off
-    /* #ignore */ PolymerTest.importHtml(
-        /* #ignore */ 'chrome://settings/prefs/prefs_types.html').then(() => {
-          CrSettingsPrefs.setInitialized();
-        /* #ignore */ });
+    /* #ignore */ if (customElements.get('settings-prefs') === undefined) {
+      /* #ignore */ return PolymerTest.importHtml(
+        /* #ignore */ 'chrome://settings/prefs/prefs_types.html')
+      /* #ignore */ .then(() => CrSettingsPrefs.setInitialized());
+    /* #ignore */ }
+    CrSettingsPrefs.setInitialized();
     // clang-format on
   });
 

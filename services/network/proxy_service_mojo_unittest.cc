@@ -118,15 +118,16 @@ class ProxyServiceMojoTest : public testing::Test {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
     fetcher_ = new net::MockPacFileFetcher;
-    proxy_resolution_service_ = CreateProxyResolutionServiceUsingMojoFactory(
-        test_mojo_proxy_resolver_factory_.CreateFactoryRemote(),
-        std::make_unique<net::ProxyConfigServiceFixed>(
-            net::ProxyConfigWithAnnotation(
-                net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),
-                TRAFFIC_ANNOTATION_FOR_TESTS)),
-        base::WrapUnique(fetcher_),
-        std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
-        &mock_host_resolver_, &net_log_, &network_delegate_);
+    proxy_resolution_service_ =
+        CreateConfiguredProxyResolutionServiceUsingMojoFactory(
+            test_mojo_proxy_resolver_factory_.CreateFactoryRemote(),
+            std::make_unique<net::ProxyConfigServiceFixed>(
+                net::ProxyConfigWithAnnotation(
+                    net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),
+                    TRAFFIC_ANNOTATION_FOR_TESTS)),
+            base::WrapUnique(fetcher_),
+            std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
+            &mock_host_resolver_, &net_log_, &network_delegate_);
   }
 
   base::test::TaskEnvironment task_environment_;

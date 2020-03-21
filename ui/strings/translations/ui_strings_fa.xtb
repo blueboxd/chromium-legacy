@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />، برنامه نصب‌شده</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> هم‌رسانی نشد</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> با <ph name="SECOND_ITEM_TITLE" /> جابه‌جا شد</translation>
 <translation id="1498028757988366001">قبلاً این را جستجو کردید. اگر «<ph name="QUERY" />» را از سابقه‌تان حذف کنید، این پرسمان در همه دستگاه‌ها از حسابتان به‌طور دائم برداشته خواهد شد.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{۱ دقیقه و }one{# دقیقه و }other{# دقیقه و }}</translation>
 <translation id="1643823602425662293">اعلان</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">راست به چپ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">به احتمال خیلی زیاد</translation>
+<translation id="7170202025028120564">تنظیمات نمایش برنامه‌تان در بازراه‌اندازی بعدی اعمال می‌شود.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
 <translation id="7319740667687257810">راه‌انداز، نمای جزئی</translation>

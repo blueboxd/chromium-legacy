@@ -161,7 +161,6 @@ js_library("sync_encryption_options") {
   ]
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
@@ -169,12 +168,10 @@ js_type_check("closure_compile_module") {
     ":people_page.m",
     ":profile_info_browser_proxy.m",
     ":signout_dialog.m",
-
-    #    ":sync_account_control.m",
+    ":sync_account_control.m",
     ":sync_browser_proxy.m",
-
-    #    ":sync_controls.m",
-    #    ":sync_page.m",
+    ":sync_controls.m",
+    ":sync_page.m",
   ]
 
   if (!is_chromeos) {
@@ -281,7 +278,13 @@ js_library("signout_dialog.m") {
 js_library("sync_account_control.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/sync_account_control.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":sync_browser_proxy.m",
+    "..:i18n_setup.m",
+    "..:router.m",
+    "../prefs:prefs_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/js:assert.m",
   ]
   extra_deps = [ ":sync_account_control_module" ]
 }
@@ -296,7 +299,11 @@ js_library("sync_browser_proxy.m") {
 js_library("sync_controls.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/sync_controls.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":sync_browser_proxy.m",
+    "..:i18n_setup.m",
+    "..:router.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":sync_controls_module" ]
 }
@@ -304,7 +311,13 @@ js_library("sync_controls.m") {
 js_library("sync_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/sync_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":sync_browser_proxy.m",
+    "..:i18n_setup.m",
+    "..:router.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
+    "//ui/webui/resources/js:assert.m",
   ]
   extra_deps = [ ":sync_page_module" ]
 }
@@ -353,10 +366,6 @@ polymer_modulizer("people_page") {
   js_file = "people_page.js"
   html_file = "people_page.html"
   html_type = "dom-module"
-  ignore_imports = [
-    "chrome/browser/resources/settings/people_page/sync_controls.html",
-    "chrome/browser/resources/settings/people_page/sync_page.html",
-  ]
   namespace_rewrites = settings_namespace_rewrites
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/route.html|routes",
@@ -388,18 +397,41 @@ polymer_modulizer("sync_account_control") {
   js_file = "sync_account_control.js"
   html_file = "sync_account_control.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxy,SyncBrowserProxyImpl,SyncStatus,StatusAction,StoredAccount",
+                   "chrome/browser/resources/settings/router.html|Router",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
 }
 
 polymer_modulizer("sync_controls") {
   js_file = "sync_controls.js"
   html_file = "sync_controls.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/router.html|Router,RouteObserverBehavior",
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxy,SyncBrowserProxyImpl,StatusAction,SyncStatus,SyncPrefs",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
 }
 
 polymer_modulizer("sync_page") {
   js_file = "sync_page.js"
   html_file = "sync_page.html"
   html_type = "dom-module"
+  ignore_imports = [
+    "chrome/browser/resources/settings/people_page/sync_encryption_options.html",
+    "chrome/browser/resources/settings/privacy_page/personalization_options.html",
+  ]
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "ui/webui/resources/html/polymer.html|Polymer,html,flush",
+                   "chrome/browser/resources/settings/router.html|Router,RouteObserverBehavior",
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxy,SyncBrowserProxyImpl,PageStatus,StatusAction,SyncStatus,SyncPrefs",
+                   "ui/webui/resources/html/assert.html|assert,assertNotReached",
+                 ]
 }
 
 js_modulizer("modulize") {

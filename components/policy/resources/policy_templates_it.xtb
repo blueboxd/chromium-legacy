@@ -1185,7 +1185,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa norma non viene impostata, per impostazione predefinita non sarà disponibile per gli utenti gestiti, mentre lo sarà invece per gli utenti non gestiti.</translation>
 <translation id="2660846099862559570">Non utilizzare mai un proxy</translation>
 <translation id="2665422249821137126">Attiva il puntatore grande nella schermata di accesso</translation>
-<translation id="266882888912227087"> Consente di controllare la notifica ad avvio automatico della sessione Ospite gestita su <ph name="PRODUCT_OS_NAME" />.
+<translation id="266882888912227087"> Consente di controllare la notifica sull'avvio automatico della sessione Ospite gestita su <ph name="PRODUCT_OS_NAME" />.
 
       Se questo criterio viene impostato su True, la notifica di avviso sulla privacy viene chiusa dopo alcuni secondi.
 
@@ -3241,7 +3241,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
           Se non viene fornita alcuna impostazione, <ph name="PRODUCT_NAME" /> dovrà ricorrere a un nome di libreria predefinito.</translation>
 <translation id="5783009211970309878">Stampa intestazioni e piè di pagina</translation>
-<translation id="5790763087505467169">Riduci notifiche ad avvio automatico della sessione Ospite gestita</translation>
+<translation id="5790763087505467169">Riduci notifiche sull'avvio automatico della sessione Ospite gestita</translation>
 <translation id="5806128552675651249">Consenti solo la stampa senza immagini di sfondo</translation>
 <translation id="5809210507920527553">Consente di gestire le impostazioni relative al container Linux (Crostini).</translation>
 <translation id="5809728392451418079">Imposta il nome visualizzato per gli account del dispositivo</translation>

@@ -599,6 +599,7 @@
 <translation id="8735953464173050365">Prikaz postavki tipkovnice. Odabrana je tipkovnica <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Prikaz postavki VPN-a</translation>
 <translation id="8785070478575117577">Povežite se sa satom <ph name="NETWORK_NAME" /></translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Prijeđite prstom slijeva nadesno da biste se vratili</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -1548,8 +1548,7 @@ CrSettingsSiteListTest.prototype = {
   ]),
 };
 
-// TODO(crbug.com/929455): flaky, fix.
-TEST_F('CrSettingsSiteListTest', 'DISABLED_SiteList', function() {
+TEST_F('CrSettingsSiteListTest', 'SiteList', function() {
   runMochaSuite('SiteList');
 });
 
@@ -1585,8 +1584,7 @@ CrSettingsSiteListChromeOSTest.prototype = {
   ]),
 };
 
-// TODO(crbug.com/929455): flaky, fix.
-TEST_F('CrSettingsSiteListChromeOSTest', 'DISABLED_AndroidSmsInfo', function() {
+TEST_F('CrSettingsSiteListChromeOSTest', 'AndroidSmsInfo', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_CHROMEOS)');

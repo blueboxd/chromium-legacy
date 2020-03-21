@@ -18,7 +18,7 @@
  * should be treated as 'default'.
  * @enum {string}
  */
-const ContentSettingProvider = {
+/* #export */ const ContentSettingProvider = {
   POLICY: 'policy',
   SUPERVISED_USER: 'supervised_user',
   EXTENSION: 'extension',
@@ -109,7 +109,7 @@ let RecentSitePermissions;
  *            object: Object,
  *            sites: Array<!RawSiteException>}}
  */
-let RawChooserException;
+/* #export */ let RawChooserException;
 
 /**
  * The chooser exception after it has been converted/filtered for UI use.
@@ -125,7 +125,7 @@ let RawChooserException;
  * @typedef {{setting: !settings.ContentSetting,
  *            source: !ContentSettingProvider}}
  */
-let DefaultContentSetting;
+/* #export */ let DefaultContentSetting;
 
 /**
  * @typedef {{name: string,

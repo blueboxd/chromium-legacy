@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">(Неабавязкова.) Дапамажыце палепшыць Chromium, дазволіўшы аўтаматычна адпраўляць у Google статыстыку выкарыстання і справаздачы аб збоях.</translation>
 <translation id="2910007522516064972">Пра &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium абноўлены</translation>
+<translation id="2983934633046890458">Chromium спрабуе змяніць паролі.</translation>
 <translation id="3032706164202344641">Браўзеру Chromium не ўдаецца праверыць паролі. Паўтарыце спробу пазней.</translation>
 <translation id="3032787606318309379">Дадаецца ў Chromium...</translation>
 <translation id="3068515742935458733">Дапамагаць палепшыць Chromium, адпраўляючы ў Google справаздачы аб збоях і <ph name="UMA_LINK" /></translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Сістэме Chromium OS не ўдалося адкрыць гэту старонку.</translation>
 <translation id="5480860683791598150">Chromium патрабуецца доступ да геаданых, каб абагуліць звесткі аб вашым месцазнаходжанні з гэтым сайтам</translation>
 <translation id="549669000822060376">Пачакайце, пакуль Chromium усталюе апошнія абнаўленні сістэмы.</translation>
+<translation id="5496810170689441661">Chromium спрабуе змяніць паролі. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ёсць абнаўленне Chromium}=1{Ёсць абнаўленне Chromium}one{Абнаўленне Chromium выйшла # дзень таму}few{Абнаўленне Chromium выйшла # дні таму}many{Абнаўленне Chromium выйшла # дзён таму}other{Абнаўленне Chromium выйшла # дня таму}}</translation>
 <translation id="5631814766731275228">Імя і фота профілю Chromium</translation>
 <translation id="5634636535844844681">Для браўзера Chromium патрабуецца Windows 7 або навейшая версія.</translation>

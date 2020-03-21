@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Чоңойтуу</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Орнотулган колдонмо</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> менен бөлүшүү мүмкүн эмес</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> <ph name="SECOND_ITEM_TITLE" /> менен алмаштырылды</translation>
 <translation id="1498028757988366001">Муну буга чейин издегенсиз. "<ph name="QUERY" />" таржымалыңыздан өчүрүлсө, ал бардык түзмөктөрүңүздөгү аккаунтуңуздан биротоло өчүрүлөт.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 мүнөт жана }other{# мүнөт жана }}</translation>
 <translation id="1643823602425662293">Эскертме</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Оңдон солго</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ЭҢ ЫЛАЙЫКТУУ КОЛДОНМОЛОР</translation>
+<translation id="7170202025028120564">Колдонмонун экран жөндөөлөрү, аны өчүрүп күйгүзгөндө иштеп баштайт.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 мүн. калды}other{# мүн. калды}}</translation>
 <translation id="7319740667687257810">Жүргүзгүч, жарым-жартылай көрүнүш</translation>

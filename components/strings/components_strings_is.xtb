@@ -601,6 +601,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="3587738293690942763">Miðja</translation>
 <translation id="3592413004129370115">Italian (umslag)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Kerfisstjóri lokaði á forritið</translation>
 <translation id="3608932978122581043">Inntaksstefna</translation>
 <translation id="3614103345592970299">Stærð 2</translation>
 <translation id="361438452008624280">Listafærslan „<ph name="LANGUAGE_ID" />“: Óþekkt eða óstutt tungumál.</translation>
@@ -855,6 +856,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="467662567472608290">Þessi þjónn gat ekki sannað að hann sé <ph name="DOMAIN" />; öryggisvottorð hans inniheldur villur. Þetta kann að orsakast af vanstillingu eða tölvuþrjóti sem komist hefur inn í tenginguna.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> vill svara aðgengisatburðum</translation>
 <translation id="467809019005607715">Google skyggnur</translation>
+<translation id="4680804919228900307">Þú gafst upp aðgangsorðið þitt á svindlsíðu. Chromium mælir með því að þú athugir vistuðu aðgangsorðin þín fyrir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> og önnur vefsvæði þar sem þú notar þetta aðgangsorð núna.</translation>
 <translation id="4690462567478992370">Hætta að nota ógilt vottorð</translation>
 <translation id="4691835149146451662">Architecture-A (umslag)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1020,8 +1022,10 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5329858041417644019">Vafrinn þinn er ekki í umsjón</translation>
 <translation id="5332219387342487447">Sendingaraðferð</translation>
 <translation id="5334013548165032829">Ítarlegir kerfisannálar</translation>
+<translation id="5340250774223869109">Lokað er á forrit</translation>
 <translation id="534295439873310000">NFC-tæki</translation>
 <translation id="5344579389779391559">Þessi síða gæti reynt að rukka þig um greiðslu</translation>
+<translation id="5346336634660260557">Skanna innihald klippiborðsins auk skráa sem þú sækir eða hleður inn í Chrome.</translation>
 <translation id="5355557959165512791">Þú getur ekki heimsótt <ph name="SITE" /> í augnablikinu vegna þess að þetta vottorð hefur verið afturkallað. Netvillur og árásir eru yfirleitt tímabundnar og því mun þessi síða líklega virka síðar.</translation>
 <translation id="536296301121032821">Mistókst að vista reglustillingar</translation>
 <translation id="5371425731340848620">Uppfæra kort</translation>
@@ -1432,6 +1436,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7219179957768738017">Tengingin notar <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Í vinnslu</translation>
 <translation id="7221855153210829124">Sýna tilkynningar</translation>
+<translation id="7229659723041939809">Þú gafst upp aðgangsorðið þitt á svindlsíðu. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín fyrir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> og önnur vefsvæði þar sem þú notar þetta aðgangsorð núna.</translation>
 <translation id="7233592378249864828">Prenta staðfestingarblað</translation>
 <translation id="7238585580608191973">SHA-256 fingrafar</translation>
 <translation id="7240120331469437312">Auknefni viðfangs vottorðsins</translation>
@@ -1499,6 +1504,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7485870689360869515">Engin gögn fundust.</translation>
 <translation id="7495290002932347110">Öryggisbrot á vefsvæði eða í forriti afhjúpaði aðgangsorðið þitt. Chrome mælir með því að þú athugir vistuð aðgangsorð og breytir aðgangsorðinu þínu fyrir <ph name="ORIGIN" /> núna.</translation>
 <translation id="7498234416455752244">Halda áfram að breyta</translation>
+<translation id="7503664977220660814">Þú gafst upp aðgangsorðið þitt á svindlsíðu. Chromium mælir með því að þú athugir vistuðu aðgangsorðin þín fyrir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og önnur vefsvæði þar sem þú notar þetta aðgangsorð núna.</translation>
 <translation id="7508255263130623398">Tækisauðkenni stefnu sem skilað var er autt eða stemmir ekki við núverandi tækisauðkenni</translation>
 <translation id="7508870219247277067">Lárperugrænn</translation>
 <translation id="7511955381719512146">Wi-Fi netið sem þú notar kann að fara fram á að þú farir á <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1574,6 +1580,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7763386264682878361">Þáttari upplýsingaskráa greiðslna</translation>
 <translation id="7764225426217299476">Bæta við heimilisfangi</translation>
 <translation id="7766518757692125295">Kantur</translation>
+<translation id="7767271804335921384">Kerfisstjóri hefur lokað á forritið</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Sama röð, snýr upp</translation>
 <translation id="777702478322588152">Hérað</translation>
@@ -1594,6 +1601,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Viltu fara af vefsvæðinu?</translation>
 <translation id="7865448901209910068">Mesti hraði</translation>
+<translation id="7874263914261512992">Þú gafst upp aðgangsorðið þitt á svindlsíðu. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín fyrir <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og önnur vefsvæði þar sem þú notar þetta aðgangsorð núna.</translation>
 <translation id="7878562273885520351">Aðgangsorðinu þínu kann að hafa verið stolið</translation>
 <translation id="7882421473871500483">Brúnn</translation>
 <translation id="7887683347370398519">Athugaðu CVC-númerið og reyndu aftur</translation>
@@ -1730,6 +1738,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8474910779563686872">Sýna upplýsingar forritara</translation>
 <translation id="8479754468255770962">Hefti neðst til vinstri</translation>
 <translation id="8483780878231876732">Skráðu þig inn í Chrome til að nota spjöld frá Google reikningnum þínum</translation>
+<translation id="8485393050551136813">Þú gafst upp aðgangsorðið þitt á svindlsíðu. Chromium mælir með því að þú athugir vistuðu aðgangsorðin þín fyrir <ph name="WEBSITE_1" /> og önnur vefsvæði þar sem þú notar þetta aðgangsorð núna.</translation>
 <translation id="8488350697529856933">Gildir um</translation>
 <translation id="8490137692873530638">Staflari 10</translation>
 <translation id="8498891568109133222">Það tók <ph name="HOST_NAME" /> of langan tíma að svara.</translation>
@@ -1779,6 +1788,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="87601671197631245">Þetta vefsvæði notar úrelta öryggisstillingu sem gæti sett upplýsingarnar þínar í hættu (til dæmis aðgangsorð, skilaboð eða kreditkort) þegar þær eru sendar til vefsvæðisins.</translation>
 <translation id="8761567432415473239">Örugg vefskoðun Google <ph name="BEGIN_LINK" />fann skaðleg forrit<ph name="END_LINK" /> á <ph name="SITE" /> nýlega.</translation>
 <translation id="8763927697961133303">USB-tæki</translation>
+<translation id="8774457497170244317">Þú gafst upp aðgangsorðið þitt á svindlsíðu. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín fyrir <ph name="WEBSITE_1" /> og önnur vefsvæði þar sem þú notar þetta aðgangsorð núna.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Endu&amp;rtaka eyðingu</translation>
 <translation id="8792621596287649091">Þú gætir glatað aðganginum að <ph name="ORG_NAME" /> reikningnum þínum eða orðið fyrir auðkennisstuldi. Chromium mælir með því að þú skiptir um aðgangsorð núna.</translation>

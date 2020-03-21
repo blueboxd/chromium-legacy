@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">Opcional: axuda a mellorar Chromium mediante o envío automático de estatísticas de uso e informes de erros a Google.</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium está actualizado</translation>
+<translation id="2983934633046890458">Chromium está tentando editar contrasinais.</translation>
 <translation id="3032706164202344641">Chromium non puido comprobar os teus contrasinais. Téntao de novo máis tarde.</translation>
 <translation id="3032787606318309379">Engadindo a Chromium...</translation>
 <translation id="3068515742935458733">Axudar a mellorar Chromium enviando informes sobre fallos e <ph name="UMA_LINK" /> a Google</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium OS non pode abrir esta páxina.</translation>
 <translation id="5480860683791598150">Chromium necesita acceder á túa localización para compartila con este sitio</translation>
 <translation id="549669000822060376">Espera a que Chromium instale as actualizacións do sistema máis recentes.</translation>
+<translation id="5496810170689441661">Chromium está tentando editar os contrasinais. Escribe o teu contrasinal de Windows para permitir esta acción.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Hai unha actualización de Chromium dispoñible}=1{Hai unha actualización de Chromium dispoñible}other{Hai unha actualización de Chromium que leva dispoñible # días}}</translation>
 <translation id="5631814766731275228">Imaxe e nome para o perfil de Chromium</translation>
 <translation id="5634636535844844681">Chromium require Windows 7 ou unha versión posterior.</translation>

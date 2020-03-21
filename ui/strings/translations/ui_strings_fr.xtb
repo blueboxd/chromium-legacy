@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Agrandir</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, application installée</translation>
 <translation id="1450753235335490080">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Élément <ph name="FIRST_ITEM_TITLE" /> remplacé par <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Vous avez effectué cette recherche précédemment. Si vous supprimez "<ph name="QUERY" />" de votre historique, cette entrée n'apparaîtra plus dans votre compte sur aucun de vos appareils.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute et  }one{# minute et  }other{# minutes et  }}</translation>
 <translation id="1643823602425662293">Notification</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">De droite à gauche</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">CLIC PROBABLE</translation>
+<translation id="7170202025028120564">Les paramètres d'affichage de votre application s'appliqueront à son prochain redémarrage.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restante}one{# min restante}other{# min restantes}}</translation>
 <translation id="7319740667687257810">Lanceur d'applications, vue partielle</translation>

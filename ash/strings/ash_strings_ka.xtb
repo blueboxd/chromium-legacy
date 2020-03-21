@@ -599,6 +599,7 @@
 <translation id="8735953464173050365">კლავიატურის პარამეტრების ჩვენება. არჩეულია <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">VPN-ის პარამეტრების ჩვენება</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" />-თან დაკავშირება</translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">უკან დასაბრუნებლად გადაფურცლეთ მარცხნიდან</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -164,7 +164,7 @@ cr.define('settings', function() {
 
       if (!this.showingPromo && !this.syncStatus.signedIn &&
           this.syncBrowserProxy_.getPromoImpressionCount() <
-              settings.MAX_SIGNIN_PROMO_IMPRESSION) {
+              MAX_SIGNIN_PROMO_IMPRESSION) {
         this.showingPromo = true;
         this.syncBrowserProxy_.incrementPromoImpressionCount();
       } else {

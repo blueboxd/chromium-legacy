@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maksimeeri</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installitud rakendus</translation>
 <translation id="1450753235335490080">Üksust <ph name="CONTENT_TYPE" /> ei saa jagada</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> vahetati üksuse <ph name="SECOND_ITEM_TITLE" /> vastu</translation>
 <translation id="1498028757988366001">Olete seda varem otsinud. Päringu „<ph name="QUERY" />” kustutamisel ajaloost eemaldatakse see teie kontolt jäädavalt kõigis teie seadmetes.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut ja }other{# minutit ja }}</translation>
 <translation id="1643823602425662293">Märguanne</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Right to Left (Paremalt vasakule)</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">KÕIGE TÕENÄOLISEMAD</translation>
+<translation id="7170202025028120564">Teie rakenduse kuvaseaded jõustuvad pärast rakenduse taaskäivitamist.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min on jäänud}other{# min on jäänud}}</translation>
 <translation id="7319740667687257810">Käivitusprogramm, osaline vaade</translation>

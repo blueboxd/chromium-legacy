@@ -600,6 +600,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8735953464173050365">Mostrar la configuración del teclado: Está seleccionado el teclado <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Mostrar la configuración de la VPN</translation>
 <translation id="8785070478575117577">Conectar a <ph name="NETWORK_NAME" /></translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">Para volver, desliza el dedo desde la izquierda</translation>
 <translation id="8828714802988429505">90°</translation>

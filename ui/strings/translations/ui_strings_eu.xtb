@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximizatu</translation>
 <translation id="1414271762428216854">Instalatutako aplikazioa (<ph name="APP_NAME" />)</translation>
 <translation id="1450753235335490080">Ezin da partekatu <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="SECOND_ITEM_TITLE" /> elementuarekin trukatu da <ph name="FIRST_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Dagoeneko bilatu duzu hori. Kendu egiten baduzu "<ph name="QUERY" />" historiatik, behin betiko kenduko da kontutik, gailu guztietan.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutu eta }other{# minutu eta }}</translation>
 <translation id="1643823602425662293">Jakinarazpena</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Eskuinetik ezkerrera</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ZIURRENIK ERABILIKO DIREN APLIKAZIOAK</translation>
+<translation id="7170202025028120564">Aplikazioaren bistaratze-ezarpenak aplikazioa berrabiarazten denean izango dute eragina.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 minutu gelditzen da}other{# minutu gelditzen dira}}</translation>
 <translation id="7319740667687257810">Abiarazlea, ikuspegi partziala</translation>

@@ -19,6 +19,8 @@ class Origin;
 
 namespace content {
 
+class RenderFrameHost;
+
 // This class wraps the platform-specific functions and allows tests to
 // inject custom providers.
 class CONTENT_EXPORT SmsProvider {
@@ -38,7 +40,7 @@ class CONTENT_EXPORT SmsProvider {
   // it is received or (exclusively) when it timeouts.
   virtual void Retrieve() = 0;
 
-  static std::unique_ptr<SmsProvider> Create();
+  static std::unique_ptr<SmsProvider> Create(RenderFrameHost* rfh);
 
   void AddObserver(Observer*);
   void RemoveObserver(const Observer*);

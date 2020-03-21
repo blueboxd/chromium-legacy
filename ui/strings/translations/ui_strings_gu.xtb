@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">મોટું કરો</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ઇન્સ્ટૉલ કરેલી ઍપ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> શેર કરી શકતાં નથી</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> અને <ph name="SECOND_ITEM_TITLE" />ની ફેરબદલ કરવામાં આવી</translation>
 <translation id="1498028757988366001">તમે આ અગાઉ શોધ્યું હતું. "<ph name="QUERY" />"ને તમારા સ્થાન ઇતિહાસમાંથી ડિલીટ કરવાથી તેને તમારા બધા ડિવાઇસ પરના તમારા એકાઉન્ટમાંથી કાઢી નાખવામાં આવશે.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 મિનિટ અને }one{# મિનિટ અને }other{# મિનિટ અને }}</translation>
 <translation id="1643823602425662293">સૂચના</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">જમણેથી ડાબે</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">સૌથી વધુ શક્ય</translation>
+<translation id="7170202025028120564">તમારી ઍપ્લિકેશન હવે પછી ફરી શરૂ થશે, ત્યારે તેનાં ડિસ્પ્લે સેટિંગ અમલી બનશે.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 મિ બાકી}one{# મિ બાકી}other{# મિ બાકી}}</translation>
 <translation id="7319740667687257810">લૉન્ચર, આંશિક દૃશ્ય</translation>

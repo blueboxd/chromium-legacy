@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 
@@ -28,7 +29,7 @@ class Schema;
 // Converts a value (as read from the registry) to meet |schema|, converting
 // types as necessary. Unconvertible types will show up as null values in the
 // result.
-std::unique_ptr<base::Value> POLICY_EXPORT
+base::Optional<base::Value> POLICY_EXPORT
 ConvertRegistryValue(const base::Value& value, const Schema& schema);
 
 // A case-insensitive string comparison functor.

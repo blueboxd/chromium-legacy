@@ -45,6 +45,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2886012850691518054">Opsyonal: Tumulong na pahusayin ang Chromium sa pamamagitan ng awtomatikong pagpapadala sa Google ng mga istatistika ng paggamit at mga ulat ng pag-crash.</translation>
 <translation id="2910007522516064972">Tungkol sa &amp;Chromium</translation>
 <translation id="2977470724722393594">Napapanahon ang Chromium</translation>
+<translation id="2983934633046890458">Sinusubukan ng Chromium na i-edit ang mga password.</translation>
 <translation id="3032706164202344641">Hindi masuri ng Chromium ang iyong mga password. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
 <translation id="3068515742935458733">Tumulong na gawing mas mahusay ang Chromium sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK" /> sa Google</translation>
@@ -112,6 +113,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5479196819031988440">Hindi mabuksan ng Chromium OS ang page na ito.</translation>
 <translation id="5480860683791598150">Kailangan ng Chromium ng access sa iyong lokasyon upang maibahagi ang lokasyon mo sa site na ito</translation>
 <translation id="549669000822060376">Mangyaring maghintay habang ini-install ng Chromium ang mga pinakabagong update sa system.</translation>
+<translation id="5496810170689441661">Sinusubukan ng Chromium na i-edit ang mga password. I-type ang iyong password sa Windows para payagan ito.</translation>
 <translation id="5623402015214259806">{0,plural, =0{May available na update sa Chromium}=1{May available na update sa Chromium}one{# araw nang may available na update sa Chromium}other{# na araw nang may available na update sa Chromium}}</translation>
 <translation id="5631814766731275228">pangalan at larawan sa Chromium</translation>
 <translation id="5634636535844844681">Kailangan ng Chromium ng Windows 7 o mas bago.</translation>

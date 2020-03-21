@@ -600,6 +600,7 @@
 <translation id="3587738293690942763">Средна</translation>
 <translation id="3592413004129370115">Italian (плик)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Администраторот ја блокирал апликацијата</translation>
 <translation id="3608932978122581043">Одржи ја ориентацијата</translation>
 <translation id="3614103345592970299">Големина 2</translation>
 <translation id="361438452008624280">Запис во списокот „<ph name="LANGUAGE_ID" />“: непознат или неподдржан јазик.</translation>
@@ -854,6 +855,7 @@
 <translation id="467662567472608290">Серверот не можеше да докаже дека е <ph name="DOMAIN" />; неговиот безбедносен сертификат содржи грешки. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> сака да одговара на настани за пристапност</translation>
 <translation id="467809019005607715">Google Slides</translation>
+<translation id="4680804919228900307">Тукушто ја внесовте својата лозинка на измамнички сајт. Chromium препорачува веднаш да ги проверите зачуваните лозинки за <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и другите сајтови каде што ја користите лозинкава.</translation>
 <translation id="4690462567478992370">Престани со користење неважечки сертификат</translation>
 <translation id="4691835149146451662">Architecture-A (плик)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1019,8 +1021,10 @@
 <translation id="5329858041417644019">Прелистувачот не е управуван</translation>
 <translation id="5332219387342487447">Метод на испорака</translation>
 <translation id="5334013548165032829">Детални системски дневници</translation>
+<translation id="5340250774223869109">Апликацијата е блокирана</translation>
 <translation id="534295439873310000">NFC-уреди</translation>
 <translation id="5344579389779391559">Страницава можеби ќе се обиде да ви наплати пари</translation>
+<translation id="5346336634660260557">Скенирање на содржините во привремената меморија, како и на датотеките што ги преземате или прикачувате во Chrome.</translation>
 <translation id="5355557959165512791">Не може да го посетите <ph name="SITE" /> во моментов затоа што неговиот сертификат е повлечен. Грешките на мрежата и нападите обично се привремени, така што страницава веројатно ќе работи подоцна.</translation>
 <translation id="536296301121032821">Не успеа да складира поставки за правило</translation>
 <translation id="5371425731340848620">Ажурирајте ја картичката</translation>
@@ -1431,6 +1435,7 @@
 <translation id="7219179957768738017">Оваа врска користи <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Се обработува</translation>
 <translation id="7221855153210829124">Прикажи известувања</translation>
+<translation id="7229659723041939809">Тукушто ја внесовте својата лозинка на измамнички сајт. Chrome препорачува веднаш да ги проверите зачуваните лозинки за <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и другите сајтови каде што ја користите лозинкава.</translation>
 <translation id="7233592378249864828">Испечати лист за потврда</translation>
 <translation id="7238585580608191973">SHA-256 отпечаток од прст</translation>
 <translation id="7240120331469437312">Алтернативно име на предмет на сертификат</translation>
@@ -1498,6 +1503,7 @@
 <translation id="7485870689360869515">Не се пронајдени податоци.</translation>
 <translation id="7495290002932347110">Упад во податоците на сајт или апликација ја откри вашата лозинка. Chrome ви препорачува да ги проверите зачуваните лозинки и да ја промените лозинката на <ph name="ORIGIN" /> веднаш.</translation>
 <translation id="7498234416455752244">Продолжете да изменувате</translation>
+<translation id="7503664977220660814">Тукушто ја внесовте својата лозинка на измамнички сајт. Chromium препорачува веднаш да ги проверите зачуваните лозинки за <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и другите сајтови каде што ја користите лозинкава.</translation>
 <translation id="7508255263130623398">Вратениот id на уредот на правилото е празен или не соодветствува со тековниот id на уредот</translation>
 <translation id="7508870219247277067">Зелена како авокадо</translation>
 <translation id="7511955381719512146">Wi-Fi што го користите може да бара да ја посетите страницата <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1573,6 +1579,7 @@
 <translation id="7763386264682878361">Анализатор на манифестот за плаќање</translation>
 <translation id="7764225426217299476">Додај адреса</translation>
 <translation id="7766518757692125295">Престилка</translation>
+<translation id="7767271804335921384">Администраторот ја блокирал апликацијата</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Ист редослед со лицето нагоре</translation>
 <translation id="777702478322588152">Префектура</translation>
@@ -1593,6 +1600,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Да се напушти ли сајтот?</translation>
 <translation id="7865448901209910068">Најдобра брзина</translation>
+<translation id="7874263914261512992">Тукушто ја внесовте својата лозинка на измамнички сајт. Chrome препорачува веднаш да ги проверите зачуваните лозинки за <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и другите сајтови каде што ја користите лозинкава.</translation>
 <translation id="7878562273885520351">Можно е да ви е компромитирана лозинката</translation>
 <translation id="7882421473871500483">Кафеава</translation>
 <translation id="7887683347370398519">Проверете го КВК и обидете се повторно.</translation>
@@ -1729,6 +1737,7 @@
 <translation id="8474910779563686872">Прикажи ги деталите за програмерот</translation>
 <translation id="8479754468255770962">Спојување долу лево</translation>
 <translation id="8483780878231876732">За да ги користите картичките од вашата сметка на Google, најавете се на Chrome</translation>
+<translation id="8485393050551136813">Тукушто ја внесовте својата лозинка на измамнички сајт. Chromium препорачува веднаш да ги проверите зачуваните лозинки за <ph name="WEBSITE_1" /> и другите сајтови каде што ја користите лозинкава.</translation>
 <translation id="8488350697529856933">Се однесува на</translation>
 <translation id="8490137692873530638">Фиока за складирање 10</translation>
 <translation id="8498891568109133222">На <ph name="HOST_NAME" /> му требаше премногу време да одговори.</translation>
@@ -1778,6 +1787,7 @@
 <translation id="87601671197631245">Сајтов користи застарена конфигурација за безбедност, што може да ги изложи вашите податоци (на пример, лозинките, пораките или кредитните картички) кога се испраќаат на овој сајт.</translation>
 <translation id="8761567432415473239">Безбедното прелистување на Google неодамна <ph name="BEGIN_LINK" />најде штетни програми<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-уред</translation>
+<translation id="8774457497170244317">Тукушто ја внесовте својата лозинка на измамнички сајт. Chrome препорачува веднаш да ги проверите зачуваните лозинки за <ph name="WEBSITE_1" /> и другите сајтови каде што ја користите лозинкава.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Повтори бришење</translation>
 <translation id="8792621596287649091">Може да го изгубите пристапот до вашата сметка на <ph name="ORG_NAME" /> или да ви го украдат идентитетот. Chromium препорачува да ја смените лозинката веднаш.</translation>

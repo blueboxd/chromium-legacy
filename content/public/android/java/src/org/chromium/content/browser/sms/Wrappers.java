@@ -39,6 +39,10 @@ class Wrappers {
         public Task<Void> startSmsRetriever() {
             return mSmsRetrieverClient.startSmsRetriever();
         }
+
+        public Task<Void> startSmsUserConsent(String senderAddress) {
+            return mSmsRetrieverClient.startSmsUserConsent(senderAddress);
+        }
     }
 
     /**

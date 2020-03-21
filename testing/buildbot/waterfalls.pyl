@@ -1620,6 +1620,17 @@
           'all',
         ],
       },
+      'Mac10.15 Tests': {
+        'mixins': [
+            'mac_10.15',
+            'no_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+          'scripts': 'chromium_mac_scripts',
+        },
+      },
       'Mojo Android': {
         'swarming': {
           'dimension_sets': [
@@ -4918,6 +4929,17 @@
     'name': 'tryserver.chromium.linux',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'linux-layout-tests-edit-ng': {
+        'additional_compile_targets': [
+          'blink_tests',
+        ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'linux-layout-tests-fragment-item': {
         'additional_compile_targets': [
           'blink_tests',

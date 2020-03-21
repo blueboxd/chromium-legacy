@@ -598,6 +598,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="3587738293690942763">Katikati</translation>
 <translation id="3592413004129370115">Italian (Bahasha)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Programu imezuiwa na msimamizi wako</translation>
 <translation id="3608932978122581043">Weka mkao</translation>
 <translation id="3614103345592970299">Ukubwa wa 2</translation>
 <translation id="361438452008624280">Hoja ya orodha "<ph name="LANGUAGE_ID" />": Lugha haijulikani au haitumiki.</translation>
@@ -851,6 +852,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="467662567472608290">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kina hitilafu. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> inataka kushughulikia matukio ya zana za walio na matatizo ya kuona au kusikia</translation>
 <translation id="467809019005607715">Slaidi za Google</translation>
+<translation id="4680804919228900307">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chromium inapendekeza ukague manenosiri uliyohifadhi kwenye <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> na tovuti nyingine unakotumia nenosiri hili kwa sasa.</translation>
 <translation id="4690462567478992370">Acha kutumia cheti kisicho sahihi</translation>
 <translation id="4691835149146451662">Architecture-A (Bahasha)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1016,8 +1018,10 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5329858041417644019">Kivinjari chako hakidhibitiwi</translation>
 <translation id="5332219387342487447">Mbinu ya Usafirishaji</translation>
 <translation id="5334013548165032829">Kumbukumbu za mfumo za kina</translation>
+<translation id="5340250774223869109">Programu imezuiwa</translation>
 <translation id="534295439873310000">Vifaa vya NFC</translation>
 <translation id="5344579389779391559">Ukurasa huu huenda ukajaribu kukutoza pesa</translation>
+<translation id="5346336634660260557">Kagua maudhui ya ubao wa kunakili, pamoja na faili unazopakua au kupakia kwenye Chrome.</translation>
 <translation id="5355557959165512791">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu cheti chake kimebatilishwa. Hitilafu na uvamizi wa mtandao kwa kawaida huwa wa muda, kwa hivyo huenda ukurasa huu utafanya kazi baadaye.</translation>
 <translation id="536296301121032821">Imeshindwa kuhifadhi mipangilio ya sera</translation>
 <translation id="5371425731340848620">Badilisha maelezo ya kadi</translation>
@@ -1428,6 +1432,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7219179957768738017">Muunganisho unatumia <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Malipo yanashughulikiwa</translation>
 <translation id="7221855153210829124">Kuonyesha arifa</translation>
+<translation id="7229659723041939809">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chrome inapendekeza ukague manenosiri uliyohifadhi kwenye <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> na tovuti nyingine unakotumia nenosiri hili kwa sasa.</translation>
 <translation id="7233592378249864828">Laha la uthibitishaji wa kuchapisha</translation>
 <translation id="7238585580608191973">Alama ya kidole ya SHA-256</translation>
 <translation id="7240120331469437312">Jina Mbadala la Kichwa cha Cheti</translation>
@@ -1493,6 +1498,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
 <translation id="7495290002932347110">Tukio la ufichuzi haramu wa data kwenye tovuti au programu limefichua nenosiri lako. Chrome inapendekeza ukague manenosiri uliyohifadhi na ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.</translation>
 <translation id="7498234416455752244">Endelea kubadilisha</translation>
+<translation id="7503664977220660814">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chromium inapendekeza ukague manenosiri uliyohifadhi kwenye <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> na tovuti nyingine unakotumia nenosiri hili kwa sasa.</translation>
 <translation id="7508255263130623398">Kitambulisho cha sera ya kifaa kilichorejeshwa hakina kitu au hakilingani na kitambulisho cha kifaa kilichopo</translation>
 <translation id="7508870219247277067">Kijani cha Parachichi</translation>
 <translation id="7511955381719512146">Wi-Fi unayotumia inaweza kukuhitaji kutembelea <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1568,6 +1574,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7763386264682878361">Kichanganuzi cha Faili za Maelezo ya Malipo</translation>
 <translation id="7764225426217299476">Ongeza anwani</translation>
 <translation id="7766518757692125295">Sketi</translation>
+<translation id="7767271804335921384">Programu imezuiwa na msimamizi wako</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Mpangilio sawa zikiangalia juu</translation>
 <translation id="777702478322588152">Mkoa</translation>
@@ -1588,6 +1595,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Ungependa kufunga tovuti?</translation>
 <translation id="7865448901209910068">Kasi bora zaidi</translation>
+<translation id="7874263914261512992">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chrome inapendekeza ukague manenosiri uliyohifadhi kwenye <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> na tovuti nyingine unakotumia nenosiri hili kwa sasa.</translation>
 <translation id="7878562273885520351">Huenda nenosiri lako limetambulika</translation>
 <translation id="7882421473871500483">Kahawia</translation>
 <translation id="7887683347370398519">Angalia CVC yako na ujaribu tena</translation>
@@ -1722,6 +1730,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8474910779563686872">Onyesha maelezo ya msanidi programu</translation>
 <translation id="8479754468255770962">Bana chini kushoto</translation>
 <translation id="8483780878231876732">Ili utumie kadi kutoka kwenye Akaunti yako ya Google, ingia katika Chrome</translation>
+<translation id="8485393050551136813">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chromium inapendekeza ukague manenosiri uliyohifadhi kwenye <ph name="WEBSITE_1" /> na tovuti nyingine unakotumia nenosiri hili kwa sasa.</translation>
 <translation id="8488350697529856933">Inatumika kwenye</translation>
 <translation id="8490137692873530638">Tupio la kutoa la printa la kumi</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> imechukua muda mrefu kupakia.</translation>
@@ -1772,6 +1781,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="87601671197631245">Tovuti hii inatumia mipangilio ya usalama iliyopitwa na wakati, hali ambayo inaweza kuonyesha taarifa zako (kwa mfano, manenosiri, ujumbe au kadi za mikopo) zikitumwa kwenye tovuti hii.</translation>
 <translation id="8761567432415473239">Kuvinjari Salama kwa Google <ph name="BEGIN_LINK" />kulipata programu zinazodhuru<ph name="END_LINK" /> kwenye <ph name="SITE" /> hivi karibuni.</translation>
 <translation id="8763927697961133303">Kifaa cha USB</translation>
+<translation id="8774457497170244317">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chrome inapendekeza ukague manenosiri uliyohifadhi kwenye <ph name="WEBSITE_1" /> na tovuti nyingine unakotumia nenosiri hili kwa sasa.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Rudia kufuta</translation>
 <translation id="8792621596287649091">Unaweza kupoteza uwezo wa kufikia Akaunti yako ya <ph name="ORG_NAME" /> au kuibiwa utambulisho. Chromium inapendekeza ubadilishe nenosiri lako la sasa.</translation>

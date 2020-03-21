@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />，已經安裝嘅應用程式</translation>
 <translation id="1450753235335490080">無法分享<ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">「<ph name="FIRST_ITEM_TITLE" />」同「<ph name="SECOND_ITEM_TITLE" />」調換咗</translation>
 <translation id="1498028757988366001">您曾搜尋此項目。如果從記錄中刪除「<ph name="QUERY" />」，該項目將從您所有裝置上的帳戶中永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分鐘和}other{# 分鐘和}}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">由右至左</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">最常用到的應用程式</translation>
+<translation id="7170202025028120564">應用程式的顯示設定將在下次重新啟動時生效。</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{還有 1 分鐘}other{還有 # 分鐘}}</translation>
 <translation id="7319740667687257810">啟動器，部分檢視</translation>

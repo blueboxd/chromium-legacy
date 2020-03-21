@@ -4,7 +4,7 @@
 
 // clang-format off
 // #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {ContentSetting} from 'chrome://settings/lazy_load.js';
+// #import {ContentSetting,SiteSettingSource} from 'chrome://settings/lazy_load.js';
 // #import {createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.m.js';
 // #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
@@ -294,7 +294,7 @@ let SiteSettingsPref;
     const setting =
         test_util.getContentSettingsTypeFromChooserType(chooserType);
     assert(
-        settings != null,
+        setting != null,
         'ContentSettingsType mapping missing for ' + chooserType);
 
     // Create a deep copy of the pref so that the chooser-exception-list element

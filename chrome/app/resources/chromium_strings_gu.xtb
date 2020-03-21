@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રૅશ રીપોર્ટ્સ ઑટોમૅટિક રીતે Googleને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
 <translation id="2910007522516064972">&amp;Chromium વિશે</translation>
 <translation id="2977470724722393594">Chromium અપ ટૂ ડેટ છે</translation>
+<translation id="2983934633046890458">Chromium પાસવર્ડમાં ફેરફાર કરવાનો પ્રયાસ કરે છે.</translation>
 <translation id="3032706164202344641">Chromium તમારા પાસવર્ડ ચેક કરી શકતું નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="3032787606318309379">Chromium માં ઉમેરી રહ્યું છે...</translation>
 <translation id="3068515742935458733">ક્રૅશ રિપોર્ટ અને <ph name="UMA_LINK" /> Googleને મોકલીને Chromium ને વધુ સારું બનાવવામાં મદદ કરો.</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium OS, આ પેજને ખોલી શકતું નથી.</translation>
 <translation id="5480860683791598150">Chromiumને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
+<translation id="5496810170689441661">Chromium પાસવર્ડમાં ફેરફાર કરવાનો પ્રયાસ કરે છે. આની મંજૂરી આપવા માટે તમારો Windows પાસવર્ડ લખો.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium અપડેટ ઉપલબ્ધ છે}=1{Chromium અપડેટ ઉપલબ્ધ છે}one{Chromium અપડેટ # દિવસ માટે ઉપલબ્ધ છે}other{Chromium અપડેટ # દિવસ માટે ઉપલબ્ધ છે}}</translation>
 <translation id="5631814766731275228">Chromiumમાંનું નામ અને ફોટો</translation>
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>

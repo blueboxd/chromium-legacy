@@ -21,6 +21,7 @@
  *   CHROME_CLEANUP: !settings.Route,
  *   CLEAR_BROWSER_DATA: !settings.Route,
  *   CLOUD_PRINTERS: !settings.Route,
+ *   COOKIES: !settings.Route,
  *   DEFAULT_BROWSER: !settings.Route,
  *   DOWNLOADS: !settings.Route,
  *   EDIT_DICTIONARY: !settings.Route,

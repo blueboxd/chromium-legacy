@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maksimiziraj</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, instalirana aplikacija</translation>
 <translation id="1450753235335490080">Nije moguće dijeliti <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Stavka <ph name="FIRST_ITEM_TITLE" /> zamijenjena je stavkom <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">To ste već tražili. Brisanjem upita "<ph name="QUERY" />" iz povijesti trajno ćete ga ukloniti sa svojeg računa na svim svojim uređajima.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }one{# minuta i }few{# minute i }other{# minuta i }}</translation>
 <translation id="1643823602425662293">Obavijest</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Zdesna ulijevo</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">NAJVJEROJATNIJE</translation>
+<translation id="7170202025028120564">Postavke za prikaz aplikacije aktivirat će se nakon njezinog ponovnog pokretanja.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Još 1 min}one{Još # min}few{Još # min}other{Još # min}}</translation>
 <translation id="7319740667687257810">Pokretač, djelomični prikaz</translation>

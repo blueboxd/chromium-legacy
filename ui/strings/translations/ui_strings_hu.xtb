@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, telepített alkalmazás</translation>
 <translation id="1450753235335490080">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> lecserélve erre: <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Korábban már rákeresett erre. Ha törli a(z) <ph name="QUERY" /> lekérdezést az előzmények közül, azzal véglegesen eltávolítja fiókjából minden eszközén.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 perc és }other{# perc és }}</translation>
 <translation id="1643823602425662293">Értesítés</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Jobbról balra</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">NAGY VALÓSZÍNŰSÉGGEL</translation>
+<translation id="7170202025028120564">Az alkalmazás megjelenítési beállításai a következő indításkor lépnek érvénybe.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 perc van hátra}other{# perc van hátra}}</translation>
 <translation id="7319740667687257810">Indító, részleges nézet</translation>

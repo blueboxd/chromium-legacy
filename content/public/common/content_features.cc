@@ -766,6 +766,11 @@ const base::Feature kWebGLImageChromium{"WebGLImageChromium",
 const base::Feature kExperimentalProductivityFeatures{
     "ExperimentalProductivityFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When this feature is enabled, the Web OTP API will use the User Consent
+// API to retrieve SMSes from the Android device.
+const base::Feature kWebOtpBackend{"kWebOtpBackend",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // The JavaScript API for payments on the web.
 // TODO(rouslan): Remove this.
 const base::Feature kWebPayments{"WebPayments",

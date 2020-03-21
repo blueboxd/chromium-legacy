@@ -34,6 +34,11 @@ PerfettoTaskRunner::~PerfettoTaskRunner() {
 }
 
 void PerfettoTaskRunner::PostTask(std::function<void()> task) {
+  PostDelayedTask(task, /* delay_ms */ 0);
+}
+
+void PerfettoTaskRunner::PostDelayedTask(std::function<void()> task,
+                                         uint32_t delay_ms) {
   base::ScopedDeferTaskPosting::PostOrDefer(
       GetOrCreateTaskRunner(), FROM_HERE,
       base::BindOnce(
@@ -52,23 +57,7 @@ void PerfettoTaskRunner::PostTask(std::function<void()> task) {
                 TraceEventDataSource::GetThreadIsInTraceEventTLS());
             task();
           },
-          task));
-}
-
-void PerfettoTaskRunner::PostDelayedTask(std::function<void()> task,
-                                         uint32_t delay_ms) {
-  if (delay_ms == 0) {
-    PostTask(std::move(task));
-    return;
-  }
-
-  // There's currently nothing which uses PostDelayedTask on the ProducerClient
-  // side, where PostTask sometimes requires blocking. If this DCHECK ever
-  // triggers, support for deferring delayed tasks need to be added.
-  DCHECK(!base::ScopedDeferTaskPosting::IsPresent());
-  GetOrCreateTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce([](std::function<void()> task) { task(); }, task),
+          task),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 

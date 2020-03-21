@@ -676,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
         portal->Navigate(chrome_url, std::move(referrer), std::move(callback));
       },
       portal));
-  RenderProcessHostKillWaiter kill_waiter(main_frame->GetProcess());
+  RenderProcessHostBadIpcMessageWaiter kill_waiter(main_frame->GetProcess());
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   ignore_result(ExecJs(main_frame, JsReplace("portal.src = $1;", a_url)));
 
@@ -1200,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   web_contents_impl->GetMainFrame()->DestroyPortal(portal);
 
   // Get the portal renderer to access the WebContents.
-  RenderProcessHostKillWaiter kill_waiter(portal_frame->GetProcess());
+  RenderProcessHostBadIpcMessageWaiter kill_waiter(portal_frame->GetProcess());
   ExecuteScriptAsync(portal_frame,
                      "window.portalHost.postMessage('message', '*');");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
@@ -1385,7 +1385,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MisbehavingRendererActivated) {
   // and the portal's renderer (having been framed for the crime) should be
   // killed.
   PortalActivatedObserver activated_observer(portal);
-  RenderProcessHostKillWaiter kill_waiter(
+  RenderProcessHostBadIpcMessageWaiter kill_waiter(
       portal->GetPortalContents()->GetMainFrame()->GetProcess());
   ExecuteScriptAsync(main_frame,
                      "document.querySelector('portal').activate();");
@@ -1604,7 +1604,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AdvanceFocusIntoPortal) {
       portal_main_frame->frame_tree_node()
           ->render_manager()
           ->GetProxyToOuterDelegate();
-  RenderProcessHostKillWaiter rph_kill_waiter(main_frame->GetProcess());
+  RenderProcessHostBadIpcMessageWaiter rph_kill_waiter(
+      main_frame->GetProcess());
   outer_delegate_proxy->OnMessageReceived(FrameHostMsg_AdvanceFocus(
       outer_delegate_proxy->GetRoutingID(), blink::mojom::FocusType::kNone,
       main_frame->GetRoutingID()));
@@ -1770,7 +1771,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallCreateProxyAndAttachPortalTwice) {
       },
       portal));
 
-  RenderProcessHostKillWaiter rph_kill_waiter(main_frame->GetProcess());
+  RenderProcessHostBadIpcMessageWaiter rph_kill_waiter(
+      main_frame->GetProcess());
   GURL dummy_url = embedded_test_server()->GetURL("b.com", "/title1.html");
   ExecuteScriptAsync(
       main_frame,

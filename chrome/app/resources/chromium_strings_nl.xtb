@@ -45,6 +45,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2886012850691518054">Optioneel: help Chromium beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden.</translation>
 <translation id="2910007522516064972">Over &amp;Chromium</translation>
 <translation id="2977470724722393594">Chromium is up-to-date</translation>
+<translation id="2983934633046890458">Chromium probeert wachtwoorden te bewerken.</translation>
 <translation id="3032706164202344641">Chromium kan je wachtwoorden niet checken. Probeer het later opnieuw.</translation>
 <translation id="3032787606318309379">Toevoegen aan Chromium...</translation>
 <translation id="3068515742935458733">Help ons Chromium te verbeteren door crashrapporten en <ph name="UMA_LINK" /> naar Google te verzenden</translation>
@@ -112,6 +113,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5479196819031988440">Chromium OS kan deze pagina niet openen.</translation>
 <translation id="5480860683791598150">Chromium heeft toegang tot je locatie nodig om je locatie met deze site te delen</translation>
 <translation id="549669000822060376">Wacht terwijl Chromium de nieuwste systeemupdates installeert.</translation>
+<translation id="5496810170689441661">Chromium probeert wachtwoorden te bewerken. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Er is een Chromium-update beschikbaar}=1{Er is een Chromium-update beschikbaar}other{Er is al # dagen een Chromium-update beschikbaar}}</translation>
 <translation id="5631814766731275228">Naam en afbeelding voor Chromium</translation>
 <translation id="5634636535844844681">Voor Chromium is Windows 7 of hoger vereist.</translation>

@@ -395,18 +395,15 @@ bool ComponentCloudPolicyStore::ValidateData(const std::string& data,
 
 bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
                                             PolicyMap* policy) {
-  std::string json_reader_error_message;
-  std::unique_ptr<base::Value> json =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
-          nullptr /* error_code_out */, &json_reader_error_message);
-  base::DictionaryValue* dict = nullptr;
-  if (!json) {
-    LOG(ERROR) << "Invalid JSON blob: " << json_reader_error_message;
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR) {
+    LOG(ERROR) << "Invalid JSON blob: " << value_with_error.error_message;
     return false;
   }
-
-  if (!json->GetAsDictionary(&dict)) {
+  base::Value json = std::move(value_with_error.value.value());
+  if (!json.is_dict()) {
     LOG(ERROR) << "The JSON blob is not a dictionary.";
     return false;
   }
@@ -416,15 +413,16 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
   // Each description is an object that contains the policy value under the
   // "Value" key. The optional "Level" key is either "Mandatory" (default) or
   // "Recommended".
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    base::DictionaryValue* description = nullptr;
-    if (!dict->GetDictionaryWithoutPathExpansion(it.key(), &description)) {
+  for (const auto& it : json.DictItems()) {
+    const std::string& policy_name = it.first;
+    base::Value description = std::move(it.second);
+    if (!description.is_dict()) {
       LOG(ERROR) << "The JSON blob dictionary value is not a dictionary.";
       return false;
     }
 
-    std::unique_ptr<base::Value> value;
-    if (!description->RemoveWithoutPathExpansion(kValue, &value)) {
+    base::Optional<base::Value> value = description.ExtractKey(kValue);
+    if (!value.has_value()) {
       LOG(ERROR)
           << "The JSON blob dictionary value doesn't contain the required "
           << kValue << " field.";
@@ -432,14 +430,13 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     }
 
     PolicyLevel level = POLICY_LEVEL_MANDATORY;
-    std::string level_string;
-    if (description->GetStringWithoutPathExpansion(kLevel, &level_string) &&
-        level_string == kRecommended) {
+    const std::string* level_string = description.FindStringKey(kLevel);
+    if (level_string && *level_string == kRecommended)
       level = POLICY_LEVEL_RECOMMENDED;
-    }
 
-    policy->Set(it.key(), level, domain_constants_->scope, policy_source_,
-                std::move(value), nullptr);
+    policy->Set(policy_name, level, domain_constants_->scope, policy_source_,
+                base::Value::ToUniquePtrValue(std::move(value.value())),
+                nullptr);
   }
 
   return true;

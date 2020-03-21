@@ -599,6 +599,7 @@
 <translation id="8735953464173050365">Afficher les paramètres du clavier. <ph name="KEYBOARD_NAME" /> est sélectionné</translation>
 <translation id="875593634123171288">Afficher les paramètres de VPN</translation>
 <translation id="8785070478575117577">Se connecter à <ph name="NETWORK_NAME" /></translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="8825863694328519386">Faites glisser votre doigt de gauche à droite pour revenir en arrière</translation>
 <translation id="8828714802988429505">90°</translation>

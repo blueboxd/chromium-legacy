@@ -69,9 +69,6 @@ class RealTimePolicyEngine {
   // Whether the user has opted-in to Enhanced Protection.
   static bool IsUserEpOptedIn(PrefService* pref_service);
 
-  // Is the feature enabled due to enterprise policy?
-  static bool IsEnabledByPolicy();
-
   friend class RealTimePolicyEngineTest;
 };  // class RealTimePolicyEngine
 

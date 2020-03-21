@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">Қосымша: Google компаниясына пайдалану статистикасы мен жаңылыс есептерін автоматты түрде жіберу арқылы Chromium қызметін жақсартуға көмектесіңіз.</translation>
 <translation id="2910007522516064972">&amp;Chromium туралы</translation>
 <translation id="2977470724722393594">Chromium жаңартылған</translation>
+<translation id="2983934633046890458">Chromium браузері құпия сөздерді өзгерткісі келеді.</translation>
 <translation id="3032706164202344641">Chromium сіздің құпия сөздеріңізді тексере алмай жатыр. Кейінірек қайталап көріңіз.</translation>
 <translation id="3032787606318309379">Chromium жүйесіне қосылуда…</translation>
 <translation id="3068515742935458733">Google компаниясына жаңылыс туралы есептер және <ph name="UMA_LINK" /> жіберу арқылы Chromium жақсартуға көмектесіңіз</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium ОЖ бұл бетті аша алмайды.</translation>
 <translation id="5480860683791598150">Бұл сайтқа көрсету үшін Chromium браузері орналасқан жеріңізді білуі керек</translation>
 <translation id="549669000822060376">Chromium ең соңғы жүйе жаңартуларын орнатуда, күте тұрыңыз.</translation>
+<translation id="5496810170689441661">Chromium құпия сөздерді өзгерткісі келеді. Бұған рұқсат беру үшін Windows құпия сөзіңізді теріңіз.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium браузерінің жаңартылған нұсқасы қолжетімді}=1{Chromium браузерінің жаңартылған нұсқасы қолжетімді}other{Chromium браузерінің жаңартылған нұсқасы # күннен бері қолжетімді}}</translation>
 <translation id="5631814766731275228">Chromium браузеріндегі атыңыз бен суретіңіз</translation>
 <translation id="5634636535844844681">Chromium браузері Windows 7 жүйесін не одан кейінгі нұсқасын қажет етеді.</translation>

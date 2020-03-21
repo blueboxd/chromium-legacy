@@ -1368,6 +1368,12 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
     {"start_surface_variation", "single"}};
 
+const FeatureEntry::FeatureParam
+    kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
+        {"start_surface_variation", "single"},
+        {"exclude_mv_tiles", "true"},
+        {"hide_switch_when_no_incognito_tabs", "true"}};
+
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
     {"start_surface_variation", "twopanes"}};
 
@@ -1375,11 +1381,15 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_TasksOnly[] = {
     {"start_surface_variation", "tasksonly"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly[] = {
-    {"start_surface_variation", "omniboxonly"}};
+    {"start_surface_variation", "omniboxonly"},
+    {"hide_switch_when_no_incognito_tabs", "true"}};
 
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
+    {"Single Surface without MV Tiles",
+     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles,
+     base::size(kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles), nullptr},
     {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
      base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr},
     {"Tasks Only", kStartSurfaceAndroid_TasksOnly,
@@ -1660,6 +1670,16 @@ const FeatureEntry::Choice kEnableCrOSActionRecorderChoices[] = {
      ash::switches::kCrOSActionRecorderDisabled},
 };
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+const FeatureEntry::Choice kWebOtpBackendChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kWebOtpBackendSmsVerification, switches::kWebOtpBackend,
+     switches::kWebOtpBackendSmsVerification},
+    {flag_descriptions::kWebOtpBackendUserConsent, switches::kWebOtpBackend,
+     switches::kWebOtpBackendUserConsent},
+};
+#endif  // defined(OS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -3475,7 +3495,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"use-preferred-interval-for-video",
      flag_descriptions::kUsePreferredIntervalForVideoName,
-     flag_descriptions::kUsePreferredIntervalForVideoDescription, kOsCrOS,
+     flag_descriptions::kUsePreferredIntervalForVideoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kUsePreferredIntervalForVideo)},
 
     {"split-partially-occluded-quads",
@@ -4722,6 +4742,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebBundles)},
 
 #if defined(OS_ANDROID)
+    {"web-otp-backend", flag_descriptions::kWebOtpBackendName,
+     flag_descriptions::kWebOtpBackendDescription, kOsAndroid,
+     MULTI_VALUE_TYPE(kWebOtpBackendChoices)},
+
     {"darken-websites-checkbox-in-themes-setting",
      flag_descriptions::kDarkenWebsitesCheckboxInThemesSettingName,
      flag_descriptions::kDarkenWebsitesCheckboxInThemesSettingDescription,

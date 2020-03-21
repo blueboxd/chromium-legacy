@@ -930,12 +930,20 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
         DCHECK(template_stack_item->IsElementNode());
         DCHECK(shadow_host_stack_item);
         DCHECK(shadow_host_stack_item->IsElementNode());
-        // TODO(masonfreed): Add a use counter here.
+        // TODO(1063153): Add a use counter here.
+        bool delegates_focus = template_stack_item->GetAttributeItem(
+            html_names::kShadowrootdelegatesfocusAttr);
+        // TODO(1063157): Add an attribute for imperative slot assignment.
+        bool manual_slotting = false;
         shadow_host_stack_item->GetElement()->AttachDeclarativeShadowRoot(
             DynamicTo<HTMLTemplateElement>(template_stack_item->GetElement()),
-            is_open ? ShadowRootType::kOpen : ShadowRootType::kClosed);
+            is_open ? ShadowRootType::kOpen : ShadowRootType::kClosed,
+            delegates_focus ? FocusDelegation::kDelegateFocus
+                            : FocusDelegation::kNone,
+            manual_slotting ? SlotAssignmentMode::kManual
+                            : SlotAssignmentMode::kAuto);
       } else {
-        // TODO(masonfreed): eventually, console warning here.
+        // TODO(1063153): Add a console warning here.
         LOG(ERROR) << "Invalid shadowroot value " << shadow_mode;
       }
     }

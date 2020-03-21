@@ -239,6 +239,9 @@ CONTENT_EXPORT extern const char kWaitForDebuggerChildren[];
 extern const char kWebglAntialiasingMode[];
 extern const char kWebglMSAASampleCount[];
 
+CONTENT_EXPORT extern const char kWebOtpBackend[];
+CONTENT_EXPORT extern const char kWebOtpBackendSmsVerification[];
+CONTENT_EXPORT extern const char kWebOtpBackendUserConsent[];
 CONTENT_EXPORT extern const char kDisableWebRtcEncryption[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWDecoding[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWEncoding[];

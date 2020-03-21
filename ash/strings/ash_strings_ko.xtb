@@ -599,6 +599,7 @@
 <translation id="8735953464173050365">키보드 설정을 표시합니다. <ph name="KEYBOARD_NAME" />이(가) 선택되었습니다.</translation>
 <translation id="875593634123171288">VPN 설정 표시</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" />에 연결</translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">돌아가려면 왼쪽에서 스와이프하세요.</translation>
 <translation id="8828714802988429505">90°</translation>

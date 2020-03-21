@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, aplicació instal·lada</translation>
 <translation id="1450753235335490080">No es pot compartir <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> s'ha intercanviat amb <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Ja has fet aquesta cerca anteriorment. En suprimir "<ph name="QUERY" />" de l'historial, també se suprimirà permanentment del teu compte en tots els dispositius.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
 <translation id="1643823602425662293">Notificació</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">De dreta a esquerra</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">LES MÉS PROBABLES</translation>
+<translation id="7170202025028120564">La configuració de la pantalla de l'aplicació s'aplicarà la propera vegada que es reiniciï.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restant}other{# min restants}}</translation>
 <translation id="7319740667687257810">Menú d'aplicacions, visualització parcial</translation>

@@ -3493,7 +3493,9 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
 }
 
 void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
-                                          ShadowRootType type) {
+                                          ShadowRootType type,
+                                          FocusDelegation focus_delegation,
+                                          SlotAssignmentMode slot_assignment) {
   DCHECK(template_element);
   DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
   if (!CanAttachShadowRoot()) {
@@ -3502,7 +3504,8 @@ void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
     return;
   }
   ShadowRoot* shadow_root = &AttachShadowRootInternal(
-      type, /*delegates_focus=*/false, /*manual_slotting=*/false);
+      type, focus_delegation == FocusDelegation::kDelegateFocus,
+      slot_assignment == SlotAssignmentMode::kManual);
   shadow_root->appendChild(template_element->content());
   template_element->remove();
 }

@@ -685,9 +685,7 @@ var CrSettingsSiteListV3Test = class extends CrSettingsV3BrowserTest {
   }
 };
 
-// Copied from Polymer 2 test:
-// TODO(crbug.com/929455): flaky, fix.
-TEST_F('CrSettingsSiteListV3Test', 'DISABLED_SiteList', function() {
+TEST_F('CrSettingsSiteListV3Test', 'SiteList', function() {
   runMochaSuite('SiteList');
 });
 
@@ -708,12 +706,9 @@ var CrSettingsSiteListChromeOSV3Test = class extends CrSettingsV3BrowserTest {
   }
 };
 
-// Copied from Polymer 2 test:
-// TODO(crbug.com/929455): flaky, fix.
-TEST_F(
-    'CrSettingsSiteListChromeOSV3Test', 'DISABLED_AndroidSmsInfo', function() {
-      mocha.run();
-    });
+TEST_F('CrSettingsSiteListChromeOSV3Test', 'AndroidSmsInfo', function() {
+  mocha.run();
+});
 GEN('#endif  // defined(OS_CHROMEOS)');
 
 // eslint-disable-next-line no-var
@@ -726,5 +721,44 @@ var CrSettingsChooserExceptionListEntryV3Test =
 };
 
 TEST_F('CrSettingsChooserExceptionListEntryV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsChooserExceptionListV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/chooser_exception_list_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsChooserExceptionListV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsCategoryDefaultSettingV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/category_default_setting_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsCategoryDefaultSettingV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsCategorySettingExceptionsV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/category_setting_exceptions_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsCategorySettingExceptionsV3Test', 'All', function() {
   mocha.run();
 });

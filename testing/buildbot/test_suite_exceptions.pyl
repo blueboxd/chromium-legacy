@@ -325,6 +325,11 @@
           'shards': 20,
         },
       },
+      'linux-layout-tests-edit-ng': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-features=EditingNGruntime',
+        ],
+      },
       'linux-layout-tests-fragment-item': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
@@ -534,6 +539,9 @@
         },
       },
       'linux-code-coverage': {
+        'args': [
+          '--no-sandbox',
+        ],
         'swarming': {
           'shards': 50,
         },
@@ -848,6 +856,9 @@
         },
       },
       'linux-code-coverage': {
+        'args': [
+          '--no-sandbox',
+        ],
         'swarming': {
           'shards': 12,
         },
@@ -1528,6 +1539,14 @@
           'shards': 20,
         },
       },
+      'linux-code-coverage': {
+        'args': [
+          '--no-sandbox',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      }
     },
   },
   'network_service_components_browsertests': {
@@ -2366,12 +2385,6 @@
         },
       },
     },
-  },
-  'weblayer_browsertests': {
-    'remove_from': [
-      # TODO(crbug.com/1034002): Remove this entry once the bug is fixed.
-      'linux-code-coverage',
-    ],
   },
   'webview_instrumentation_test_apk': {
     'remove_from': [

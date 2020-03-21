@@ -1205,11 +1205,11 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini tidak ditetapkan, setelan defaultnya adalah tidak diizinkan untuk pengguna yang dikelola dan diizinkan untuk pengguna yang tidak dikelola.</translation>
 <translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
 <translation id="2665422249821137126">Mengaktifkan kursor besar di layar login</translation>
-<translation id="266882888912227087"> Mengontrol notifikasi peluncuran otomatis sesi tamu terkelola di <ph name="PRODUCT_OS_NAME" />.
+<translation id="266882888912227087"> Mengontrol notifikasi otomatis untuk sesi tamu terkelola di <ph name="PRODUCT_OS_NAME" />.
 
-      Jika kebijakan ini ditetapkan ke Benar, notifikasi peringatan privasi akan ditutup setelah beberapa detik.
+      Jika kebijakan ini ditetapkan ke True, notifikasi peringatan privasi akan ditutup setelah beberapa detik.
 
-      Jika kebijakan ini ditetapkan ke Salah atau tidak ditetapkan, notifikasi peringatan privasi akan dipasangi pin hingga pengguna menutupnya.</translation>
+      Jika kebijakan ini ditetapkan ke False atau tidak ditetapkan, notifikasi peringatan privasi akan terus ditampilkan hingga pengguna menutupnya.</translation>
 <translation id="2672012807430078509">Kontrol yang mengaktifkan NTLM sebagai protokol autentikasi untuk pemasangan SMB</translation>
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama halaman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="2678503605767349615">Sertifikat Klien seluruh perangkat yang diperlukan</translation>
@@ -3047,14 +3047,14 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="547601067149622666">Jangan izinkan iklan di situs yang menayangkan iklan mengganggu</translation>
 <translation id="5483065054530244863">Mengizinkan sertifikat bertanda tangan SHA-1 yang dikeluarkan oleh sumber tepercaya setempat</translation>
 <translation id="5486493714323160905">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat bawaan.
-      Jika setelan ini dinonaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat lama yang disediakan oleh platform.
-      Jika setelan ini tidak ditetapkan, pemverifikasi sertifikat bawaan ataupun yang lama dapat digunakan.
+      Jika setelan ini dinonaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat versi lama yang disediakan oleh platform.
+      Jika setelan ini tidak ditetapkan, pemverifikasi sertifikat bawaan ataupun versi lama dapat digunakan.
 
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81, saat dukungan untuk pemverifikasi sertifikat yang lama di <ph name="PRODUCT_OS_NAME" /> dihapus.
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81 dan saat ini terjadi, dukungan untuk pemverifikasi sertifikat versi lama di <ph name="PRODUCT_OS_NAME" /> akan dihapus.
 
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Linux versi 83, saat dukungan untuk pemverifikasi sertifikat yang lama di Linux dihapus.
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Linux versi 83 dan saat ini terjadi, dukungan untuk pemverifikasi sertifikat versi lama di Linux akan dihapus.
 
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Mac OS X versi 87, saat dukungan untuk pemverifikasi sertifikat yang lama di Mac OS X dihapus.
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Mac OS X versi 87 dan saat ini terjadi, dukungan untuk pemverifikasi sertifikat versi lama di Mac OS X akan dihapus.
       </translation>
 <translation id="5498045818698736356">Menetapkan daftar situs yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna.
 
@@ -3280,7 +3280,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika tidak ada setelan yang diberikan, <ph name="PRODUCT_NAME" /> akan kembali menggunakan nama pustaka default.</translation>
 <translation id="5783009211970309878">Cetak Header dan Footer</translation>
-<translation id="5790763087505467169">Mengurangi Notifikasi peluncuran otomatis sesi tamu terkelola</translation>
+<translation id="5790763087505467169">Mengurangi Notifikasi otomatis untuk sesi tamu terkelola</translation>
 <translation id="5806128552675651249">Izinkan pencetakan hanya tanpa grafis latar belakang</translation>
 <translation id="5809210507920527553">Mengontrol setelan untuk container Linux (Crostini).</translation>
 <translation id="5809728392451418079">Setel nama tampilan untuk akun lokal perangkat</translation>
@@ -3751,9 +3751,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
 <translation id="6698632841807204978">Aktifkan pencetakan monokrom</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
-<translation id="6704515759227307131">Kebijakan ini tidak digunakan lagi, dan telah digantikan dengan AdvancedProtectionAllowed.
+<translation id="6704515759227307131">Kebijakan ini tidak digunakan lagi, dan telah diganti dengan AdvancedProtectionAllowed.
 
-      Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan diizinkan mengirimkan hasil download mereka ke Google untuk pemindaian malware. Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan diminta mengirimkan file mereka ke Google untuk pemindaian mendalam. Jika pengguna memilih 'Pindai', hasil download mereka akan dikirim ke Google. Jika ditetapkan ke Salah, pengguna tidak akan diminta mengirimkan hasil download ke Google.</translation>
+      Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan diizinkan mengirimkan hasil download mereka ke Google untuk pemindaian malware. Jika ditetapkan ke True atau tidak ditetapkan, pengguna terdaftar akan diminta mengirimkan file mereka ke Google untuk pemindaian mendalam. Jika pengguna memilih 'Pindai', hasil download mereka akan dikirim ke Google. Jika ditetapkan ke False, pengguna tidak akan diminta mengirimkan hasil download ke Google.</translation>
 <translation id="670597451099978576">Memberikan izin secara otomatis ke situs ini untuk terhubung ke perangkat USB dengan ID vendor dan ID produk tertentu pada layar login.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> menyediakan update dan penginstalan ekstensi yang aman. Namun, konten dari beberapa ekstensi yang di-host di luar Chrome Web Store mungkin hanya dilindungi dengan algoritme hashing atau penandatanganan yang tidak aman seperti SHA1. Jika kebijakan ini dinonaktifkan, penginstalan baru dan update ekstensi tersebut tidak akan diizinkan oleh Chrome (sampai developer membuat ulang ekstensi ini dengan algoritme yang lebih kuat). Jika kebijakan ini diaktifkan, penginstalan dan update ekstensi tersebut akan diizinkan.
 
@@ -3777,7 +3777,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Setelan ini mengontrol penyajian halaman sambutan yang membantu pengguna login ke <ph name="PRODUCT_NAME" />, memilihnya sebagai browser default, atau memberi tahu pengguna tentang fitur produk.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
-<translation id="6772045451150098845">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima fitur tambahan. Beberapa fitur ini dapat mencakup pembagian data dengan Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima fitur tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur konsumen standar.</translation>
+<translation id="6772045451150098845">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima fitur tambahan. Beberapa fitur ini dapat mencakup pembagian data dengan Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke True atau tidak ditetapkan, pengguna terdaftar akan menerima fitur tambahan. Jika ditetapkan ke False, pengguna Perlindungan Lanjutan hanya akan menerima fitur konsumen standar.</translation>
 <translation id="6780908086869332493">Mengizinkan Anda untuk menentukan daftar pola URL yang menetapkan situs tempat sertifikat klien dipilih secara otomatis di layar login dalam alur SAML hosting frame, jika situs tersebut meminta sertifikat. Contoh penggunaan adalah ketika mengonfigurasikan sertifikat di seluruh perangkat untuk ditampilkan ke SAML IdP.
 
       Nilai harus berupa array kamus dengan string JSON. Setiap kamus harus memiliki bentuk <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan <ph name="URL_PATTERN_PLACEHOLDER" /> merupakan pola setelan konten. <ph name="FILTER_PLACEHOLDER" /> akan membatasi asal sertifikat klien yang akan dipilih secara otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> memiliki bentuk <ph name="JSON_DICTIONARY_EXAMPLE" />, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berupa kamus kosong {}, pemilihan sertifikat klien tidak dibatasi lagi.

@@ -591,6 +591,7 @@
 <translation id="3587738293690942763">中间</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
+<translation id="3603507503523709">已被您的管理员禁用的应用</translation>
 <translation id="3608932978122581043">送纸方向</translation>
 <translation id="3614103345592970299">大小：2</translation>
 <translation id="361438452008624280">列表条目“<ph name="LANGUAGE_ID" />”：语言未知或不受支持。</translation>
@@ -843,6 +844,7 @@
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4677585247300749148"><ph name="URL" /> 想对无障碍事件做出响应</translation>
 <translation id="467809019005607715">Google 幻灯片</translation>
+<translation id="4680804919228900307">您刚刚在一个诈骗网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> 以及使用此密码的其他网站检查您保存的密码。</translation>
 <translation id="4690462567478992370">停止使用无效的证书</translation>
 <translation id="4691835149146451662">Architecture-A (Envelope)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
@@ -1008,8 +1010,10 @@
 <translation id="5329858041417644019">您的浏览器不受管理</translation>
 <translation id="5332219387342487447">送货方式</translation>
 <translation id="5334013548165032829">详细的系统日志</translation>
+<translation id="5340250774223869109">此应用已被禁用</translation>
 <translation id="534295439873310000">NFC 设备</translation>
 <translation id="5344579389779391559">此页面可能会向您收取费用</translation>
+<translation id="5346336634660260557">扫描剪贴板的内容以及您在 Chrome 中下载或上传的文件。</translation>
 <translation id="5355557959165512791">您目前无法访问 <ph name="SITE" />，因为此证书已被撤消。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
 <translation id="5371425731340848620">更新信用卡</translation>
@@ -1419,6 +1423,7 @@
 <translation id="7219179957768738017">该连接使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7220786058474068424">正在处理</translation>
 <translation id="7221855153210829124">显示通知</translation>
+<translation id="7229659723041939809">您刚刚在一个诈骗网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> 以及使用此密码的其他网站检查您保存的密码。</translation>
 <translation id="7233592378249864828">打印确认工作表</translation>
 <translation id="7238585580608191973">SHA-256 指纹</translation>
 <translation id="7240120331469437312">证书主题背景的备用名称</translation>
@@ -1486,6 +1491,7 @@
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7495290002932347110">某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="7498234416455752244">继续修改</translation>
+<translation id="7503664977220660814">您刚刚在一个诈骗网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及使用此密码的其他网站检查您保存的密码。</translation>
 <translation id="7508255263130623398">返回的政策设备 ID 为空，或与当前的设备 ID 不一致</translation>
 <translation id="7508870219247277067">黄绿色</translation>
 <translation id="7511955381719512146">您要使用的 Wi-Fi 网络可能需要您访问 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
@@ -1561,6 +1567,7 @@
 <translation id="7763386264682878361">付款清单解析器</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7766518757692125295">裙式</translation>
+<translation id="7767271804335921384">此应用已被您的管理员禁用</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">顺序不变，正面朝上</translation>
 <translation id="777702478322588152">县</translation>
@@ -1581,6 +1588,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">离开此网站？</translation>
 <translation id="7865448901209910068">最快的速度</translation>
+<translation id="7874263914261512992">您刚刚在一个诈骗网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及使用此密码的其他网站检查您保存的密码。</translation>
 <translation id="7878562273885520351">您的密码可能会被盗用</translation>
 <translation id="7882421473871500483">棕色</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
@@ -1717,6 +1725,7 @@
 <translation id="8474910779563686872">显示开发者详细信息</translation>
 <translation id="8479754468255770962">钉装（左下角）</translation>
 <translation id="8483780878231876732">要使用您 Google 帐号中的信用卡，请登录 Chrome</translation>
+<translation id="8485393050551136813">您刚刚在一个诈骗网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" /> 以及使用此密码的其他网站检查您保存的密码。</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8490137692873530638">堆叠出纸器 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>
@@ -1767,6 +1776,7 @@
 <translation id="87601671197631245">此网站使用的安全性配置已过时，这可能会导致您的信息（例如密码、消息或信用卡卡号）在发送至此网站的过程中遭到泄露。</translation>
 <translation id="8761567432415473239">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />发现了有害程序<ph name="END_LINK" />。</translation>
 <translation id="8763927697961133303">USB 设备</translation>
+<translation id="8774457497170244317">您刚刚在一个诈骗网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" /> 以及使用此密码的其他网站检查您保存的密码。</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
 <translation id="8792621596287649091">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chromium 建议您立即更改密码。</translation>

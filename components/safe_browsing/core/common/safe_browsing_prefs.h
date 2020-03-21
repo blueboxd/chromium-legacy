@@ -87,10 +87,6 @@ extern const char kPasswordProtectionWarningTrigger[];
 // microseconds);
 extern const char kAdvancedProtectionLastRefreshInUs[];
 
-// Whether or not to check URLs in real time. This is configured by enterprise
-// policy. For consumers, this pref is irrelevant.
-extern const char kSafeBrowsingRealTimeLookupEnabled[];
-
 // Whether or not to send downloads to Safe Browsing for deep scanning. This
 // is configured by enterprise policy.
 extern const char kSafeBrowsingSendFilesForMalwareCheck[];

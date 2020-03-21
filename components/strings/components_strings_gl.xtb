@@ -598,6 +598,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3587738293690942763">Medio</translation>
 <translation id="3592413004129370115">Italian (sobre)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">O administrador bloqueou a aplicación</translation>
 <translation id="3608932978122581043">Orientación da alimentación</translation>
 <translation id="3614103345592970299">Tamaño 2</translation>
 <translation id="361438452008624280">Entrada da lista "<ph name="LANGUAGE_ID" />": idioma descoñecido ou non compatible.</translation>
@@ -852,6 +853,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="467662567472608290">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza contén erros. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="4677585247300749148">O URL <ph name="URL" /> quere responder a eventos de accesibilidade</translation>
 <translation id="467809019005607715">Presentacións de Google</translation>
+<translation id="4680804919228900307">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recomenda comprobar os contrasinais gardados para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sitios nos que esteas a utilizar este contrasinal neste momento.</translation>
 <translation id="4690462567478992370">Deter o uso dun certificado non válido</translation>
 <translation id="4691835149146451662">Architecture-A (sobre)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1017,8 +1019,10 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5329858041417644019">O teu navegador non está xestionado</translation>
 <translation id="5332219387342487447">Método de envío</translation>
 <translation id="5334013548165032829">Rexistros do sistema detallados</translation>
+<translation id="5340250774223869109">A aplicación está bloqueada</translation>
 <translation id="534295439873310000">Dispositivos con NFC</translation>
 <translation id="5344579389779391559">Esta páxina pode tentar aplicar cargos</translation>
+<translation id="5346336634660260557">Analiza o contido do portapapeis e dos ficheiros que descargas ou cargas en Chrome.</translation>
 <translation id="5355557959165512791">Non podes visitar <ph name="SITE" /> neste momento porque se revogou o seu certificado. Normalmente, os erros de rede e os ataques son temporais, polo que é posible que esta páxina funcione máis tarde.</translation>
 <translation id="536296301121032821">Non se puido almacenar a configuración da política</translation>
 <translation id="5371425731340848620">Actualizar tarxeta</translation>
@@ -1429,6 +1433,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="7219179957768738017">A conexión utiliza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Procesando</translation>
 <translation id="7221855153210829124">Mostrar notificacións</translation>
+<translation id="7229659723041939809">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome recomenda comprobar os contrasinais gardados para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sitios nos que esteas a utilizar este contrasinal neste momento.</translation>
 <translation id="7233592378249864828">Folla de confirmación da impresión</translation>
 <translation id="7238585580608191973">Impresión dixital SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo do asunto do certificado</translation>
@@ -1496,6 +1501,7 @@ Detalles adicionais:
 <translation id="7485870689360869515">Non se atoparon datos.</translation>
 <translation id="7495290002932347110">O teu contrasinal está en risco debido a unha violación da seguranza dos datos dun sitio ou aplicación. Chrome recoméndache que comprobes os teus contrasinais gardados e que cambies o de <ph name="ORIGIN" /> agora.</translation>
 <translation id="7498234416455752244">Seguir editando</translation>
+<translation id="7503664977220660814">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recomenda comprobar os contrasinais gardados para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sitios nos que esteas a utilizar este contrasinal neste momento.</translation>
 <translation id="7508255263130623398">O código de dispositivo da política está baleiro ou non coincide co código do dispositivo actual</translation>
 <translation id="7508870219247277067">Verde aguacate</translation>
 <translation id="7511955381719512146">É posible que a rede wifi que utilizas requira o acceso a <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1571,6 +1577,7 @@ Detalles adicionais:
 <translation id="7763386264682878361">Analizador de manifestos de pago</translation>
 <translation id="7764225426217299476">Engadir enderezo</translation>
 <translation id="7766518757692125295">Saia</translation>
+<translation id="7767271804335921384">O teu administrador bloqueou a aplicación</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">A mesma orde cara arriba</translation>
 <translation id="777702478322588152">Prefectura</translation>
@@ -1591,6 +1598,7 @@ Detalles adicionais:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Queres saír do sitio?</translation>
 <translation id="7865448901209910068">A mellor velocidade</translation>
+<translation id="7874263914261512992">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome recomenda comprobar os contrasinais gardados para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sitios nos que esteas a utilizar este contrasinal neste momento.</translation>
 <translation id="7878562273885520351">Pode que o teu contrasinal estea en perigo</translation>
 <translation id="7882421473871500483">Marrón</translation>
 <translation id="7887683347370398519">Comproba o CVC e téntao de novo</translation>
@@ -1727,6 +1735,7 @@ Detalles adicionais:
 <translation id="8474910779563686872">Mostrar detalles do programador</translation>
 <translation id="8479754468255770962">Grampa na parte inferior esquerda</translation>
 <translation id="8483780878231876732">Para usar tarxetas da túa conta de Google, inicia sesión en Chrome</translation>
+<translation id="8485393050551136813">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recomenda comprobar os contrasinais gardados para <ph name="WEBSITE_1" /> e outros sitios nos que esteas a utilizar este contrasinal neste momento.</translation>
 <translation id="8488350697529856933">Aplícase a</translation>
 <translation id="8490137692873530638">Amontoador 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tardou demasiado en responder.</translation>
@@ -1776,6 +1785,7 @@ Detalles adicionais:
 <translation id="87601671197631245">Este sitio utiliza unha configuración de seguranza obsoleta que pode poñer en risco a túa información (por exemplo, contrasinais, mensaxes ou números de tarxetas de crédito) cando se lle envía.</translation>
 <translation id="8761567432415473239">A navegación segura de Google <ph name="BEGIN_LINK" />atopou programas prexudiciais<ph name="END_LINK" /> recentemente en <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>
+<translation id="8774457497170244317">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome recomenda comprobar os contrasinais gardados para <ph name="WEBSITE_1" /> e outros sitios nos que esteas a utilizar este contrasinal neste momento.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Refacer eliminación</translation>
 <translation id="8792621596287649091">Poderías perder o acceso á túa conta de <ph name="ORG_NAME" /> ou alguén podería roubarche a identidade. Chromium recoméndache que cambies de contrasinal agora.</translation>

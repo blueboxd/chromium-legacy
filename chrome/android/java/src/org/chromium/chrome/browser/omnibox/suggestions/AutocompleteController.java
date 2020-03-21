@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -35,7 +36,7 @@ public class AutocompleteController {
 
     private long mNativeAutocompleteControllerAndroid;
     private long mCurrentNativeAutocompleteResult;
-    private final OnSuggestionsReceivedListener mListener;
+    private OnSuggestionsReceivedListener mListener;
     private final VoiceSuggestionProvider mVoiceSuggestionProvider = new VoiceSuggestionProvider();
 
     private boolean mUseCachedZeroSuggestResults;
@@ -49,15 +50,10 @@ public class AutocompleteController {
                 List<OmniboxSuggestion> suggestions, String inlineAutocompleteText);
     }
 
-    public AutocompleteController(OnSuggestionsReceivedListener listener) {
-        this(null, listener);
-    }
-
-    public AutocompleteController(Profile profile, OnSuggestionsReceivedListener listener) {
-        if (profile != null) {
-            mNativeAutocompleteControllerAndroid =
-                    AutocompleteControllerJni.get().init(AutocompleteController.this, profile);
-        }
+    /**
+     * @param listener The listener to be notified when new suggestions are available.
+     */
+    public void setOnSuggestionsReceivedListener(@NonNull OnSuggestionsReceivedListener listener) {
         mListener = listener;
     }
 
@@ -72,6 +68,7 @@ public class AutocompleteController {
      * @param profile The profile to reset the AutocompleteController with.
      */
     public void setProfile(Profile profile) {
+        assert mListener != null : "Ensure a listener is set prior to calling.";
         stop(true);
         if (profile == null) {
             mNativeAutocompleteControllerAndroid = 0;
@@ -87,6 +84,7 @@ public class AutocompleteController {
      * for all zero suggest updates.
      */
     void startCachedZeroSuggest() {
+        assert mListener != null : "Ensure a listener is set prior to calling.";
         mUseCachedZeroSuggestResults = true;
         List<OmniboxSuggestion> suggestions =
                 OmniboxSuggestion.getCachedOmniboxSuggestionsForZeroSuggest();
@@ -106,6 +104,7 @@ public class AutocompleteController {
      */
     public void start(Profile profile, String url, int pageClassification, String text,
             int cursorPosition, boolean preventInlineAutocomplete) {
+        assert mListener != null : "Ensure a listener is set prior to calling.";
         // crbug.com/764749
         Log.w(TAG, "starting autocomplete controller..[%b][%b]", profile == null,
                 TextUtils.isEmpty(url));
@@ -156,6 +155,7 @@ public class AutocompleteController {
      */
     public void startZeroSuggest(
             Profile profile, String omniboxText, String url, int pageClassification, String title) {
+        assert mListener != null : "Ensure a listener is set prior to calling.";
         if (profile == null || TextUtils.isEmpty(url)) return;
 
         if (!NewTabPage.isNTPUrl(url)) {
@@ -184,6 +184,7 @@ public class AutocompleteController {
      * @param clear Whether to clear the most recent autocomplete results.
      */
     public void stop(boolean clear) {
+        assert mListener != null : "Ensure a listener is set prior to calling.";
         if (clear) mVoiceSuggestionProvider.clearVoiceSearchResults();
         mCurrentNativeAutocompleteResult = 0;
         mWaitingForSuggestionsToCache = false;
@@ -228,7 +229,7 @@ public class AutocompleteController {
     @CalledByNative
     protected void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
             String inlineAutocompleteText, long currentNativeAutocompleteResult) {
-
+        assert mListener != null : "Ensure a listener is set prior generating suggestions.";
         // Run through new providers to get an updated list of suggestions.
         suggestions = mVoiceSuggestionProvider.addVoiceSuggestions(
                 suggestions, MAX_VOICE_SUGGESTION_COUNT);

@@ -14694,7 +14694,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigationRequest* navigation_request = root->navigation_request();
   ASSERT_TRUE(navigation_request);
 
-  RenderProcessHostKillWaiter kill_waiter(
+  RenderProcessHostBadIpcMessageWaiter kill_waiter(
       root->current_frame_host()->GetProcess());
 
   // Create commit params with the same URL as the start one, so URL checks

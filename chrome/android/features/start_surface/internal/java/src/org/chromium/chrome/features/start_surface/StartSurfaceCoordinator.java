@@ -76,12 +76,15 @@ public class StartSurfaceCoordinator implements StartSurface {
         mActivity = activity;
         mSurfaceMode = computeSurfaceMode();
 
+        boolean excludeMVTiles = StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES.getValue()
+                || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY
+                || mSurfaceMode == SurfaceMode.NO_START_SURFACE;
         if (mSurfaceMode == SurfaceMode.NO_START_SURFACE) {
             // Create Tab switcher directly to save one layer in the view hierarchy.
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
                     mActivity, mActivity.getCompositorViewHolder());
         } else {
-            createAndSetStartSurface();
+            createAndSetStartSurface(excludeMVTiles);
         }
 
         TabSwitcher.Controller controller =
@@ -93,9 +96,9 @@ public class StartSurfaceCoordinator implements StartSurface {
                         : mExploreSurfaceCoordinator.getFeedSurfaceCreator(),
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? this::initializeSecondaryTasksSurface
                                                         : null,
-                mSurfaceMode,
-                mActivity.getNightModeStateProvider(), mActivity.getFullscreenManager(),
-                this::isActivityFinishingOrDestroyed);
+                mSurfaceMode, mActivity.getNightModeStateProvider(),
+                mActivity.getFullscreenManager(), this::isActivityFinishingOrDestroyed,
+                excludeMVTiles);
     }
 
     // Implements StartSurface.
@@ -173,7 +176,6 @@ public class StartSurfaceCoordinator implements StartSurface {
             return SurfaceMode.NO_START_SURFACE;
         }
 
-        // TODO(crbug.com/982018): use cached variation.
         String feature = StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue();
 
         if (feature.equals("twopanes")) {
@@ -183,7 +185,12 @@ public class StartSurfaceCoordinator implements StartSurface {
                                                                        : SurfaceMode.TWO_PANES;
         }
 
-        if (feature.equals("single")) return SurfaceMode.SINGLE_PANE;
+        // TODO(crbug.com/982018): Remove isStartSurfaceSinglePaneEnabled check after
+        // removing ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY.
+        if (feature.equals("single")
+                || StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()) {
+            return SurfaceMode.SINGLE_PANE;
+        }
 
         if (feature.equals("tasksonly")) return SurfaceMode.TASKS_ONLY;
 
@@ -196,7 +203,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         return SurfaceMode.TASKS_ONLY;
     }
 
-    private void createAndSetStartSurface() {
+    private void createAndSetStartSurface(boolean excludeMVTiles) {
         ArrayList<PropertyKey> allProperties =
                 new ArrayList<>(Arrays.asList(TasksSurfaceProperties.ALL_KEYS));
         allProperties.addAll(Arrays.asList(StartSurfaceProperties.ALL_KEYS));
@@ -204,10 +211,8 @@ public class StartSurfaceCoordinator implements StartSurface {
         mPropertyModel.set(TOP_BAR_HEIGHT,
                 mActivity.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow));
 
-        boolean hasMVTiles = mSurfaceMode == SurfaceMode.SINGLE_PANE
-                || mSurfaceMode == SurfaceMode.TWO_PANES || mSurfaceMode == SurfaceMode.TASKS_ONLY;
-        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, mPropertyModel, mSurfaceMode == SurfaceMode.SINGLE_PANE, hasMVTiles);
+        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
+                mPropertyModel, mSurfaceMode == SurfaceMode.SINGLE_PANE, !excludeMVTiles);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
 
         mTasksSurfacePropertyModelChangeProcessor =

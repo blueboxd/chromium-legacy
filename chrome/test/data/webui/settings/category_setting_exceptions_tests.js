@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {ContentSetting,ContentSettingProvider,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl,SiteSettingSource} from 'chrome://settings/lazy_load.js';
+// #import {createContentSettingTypeToValuePair,createDefaultContentSetting,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for category-setting-exceptions. */
 suite('CategorySettingExceptions', function() {
   /**
@@ -9,6 +16,12 @@ suite('CategorySettingExceptions', function() {
    * @type {SiteSettingsExceptionsElement}
    */
   let testElement;
+
+  /**
+   * The mock proxy object to use during test.
+   * @type {TestSiteSettingsPrefsBrowserProxy}
+   */
+  let browserProxy = null;
 
   // Initialize a category-setting-exceptions before each test.
   setup(function() {

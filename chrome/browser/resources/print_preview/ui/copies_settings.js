@@ -46,9 +46,7 @@ Polymer({
     disabled: Boolean,
   },
 
-  observers: [
-    'onSettingsChanged_(settings.copies.value, settings.collate.value)',
-  ],
+  observers: ['onSettingsChanged_(settings.copies.value, settings.collate.*)'],
 
   /**
    * @return {number} The maximum number of copies this printer supports.
@@ -99,8 +97,8 @@ Polymer({
    * @private
    */
   collateHidden_() {
-    return !this.inputValid_ || this.currentValue_ === '' ||
-        parseInt(this.currentValue_, 10) === 1;
+    return !this.getSetting('collate').available || !this.inputValid_ ||
+        this.currentValue_ === '' || parseInt(this.currentValue_, 10) === 1;
   },
 
   /** @private */

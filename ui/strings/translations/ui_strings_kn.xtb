@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">ಗರಿಷ್ಠಗೊಳಿಸು</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿದ ಆ್ಯಪ್</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" />ವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
+<translation id="1487931858675166540"><ph name="SECOND_ITEM_TITLE" /> ಜೊತೆಗೆ <ph name="FIRST_ITEM_TITLE" /> ಅನ್ನು ಸ್ವ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1498028757988366001">ನೀವು ಈ ಮೊದಲೇ ಇದಕ್ಕಾಗಿ ಹುಡುಕಿದ್ದೀರಿ. ನಿಮ್ಮ ಇತಿಹಾಸದಿಂದ "<ph name="QUERY" />" ಅನ್ನು ಅಳಿಸುವುದರಿಂದ, ಅದನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಾದ್ಯಂತ ಇರುವ ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಶಾಶ್ವತವಾಗಿ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ನಿಮಿಷ ಮತ್ತು }one{# ನಿಮಿಷಗಳು ಮತ್ತು }other{# ನಿಮಿಷಗಳು ಮತ್ತು }}</translation>
 <translation id="1643823602425662293">ಅಧಿಸೂಚನೆ</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">ಬಲದಿಂದ ಎಡಕ್ಕೆ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ಹೆಚ್ಚಿನ ಸಾಧ್ಯತೆ ಇದೆ</translation>
+<translation id="7170202025028120564">ಮುಂದಿನ ಬಾರಿ ನೀವು ಅಪ್ಲಿಕೇಶನ್‌ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ, ಅದರ ಡಿಸ್‌ಪ್ಲೇ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 ನಿಮಿಷ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ನಿಮಿಷಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ನಿಮಿಷಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="7319740667687257810">ಲಾಂಚರ್, ಭಾಗಶಃ ವೀಕ್ಷಣೆ</translation>

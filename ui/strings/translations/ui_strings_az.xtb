@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Artırın</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Quraşdırılmış Tətbiq</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> paylaşmaq mümkün deyil</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> <ph name="SECOND_ITEM_TITLE" /> ilə dəyişdirildi</translation>
 <translation id="1498028757988366001">Bunu əvvəl axtarmısınız. Tarixçədən "<ph name="QUERY" />" sorğusunun silinməsi onu bütün cihazlardakı hesabınızdan həmişəlik siləcək.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 dəqiqə və }other{# dəqiqə və }}</translation>
 <translation id="1643823602425662293">Bildiriş</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Sağdan Sola</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ƏN ÇOX BAXILAN TƏTBİQLƏR</translation>
+<translation id="7170202025028120564">Tətbiqinizin displey ayarları növbəti dəfə yenidən başladıldıqda keçərli olacaq.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 dəq qalıb}other{# dəq qalıb}}</translation>
 <translation id="7319740667687257810">İşə salan, yarımçıq görüntü</translation>

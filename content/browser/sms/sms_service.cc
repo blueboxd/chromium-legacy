@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
@@ -19,6 +20,8 @@
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 
 using blink::SmsReceiverDestroyedReason;
 using blink::mojom::SmsStatus;
@@ -100,8 +103,14 @@ void SmsService::OnReceive(const std::string& one_time_code) {
   RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
   one_time_code_ = one_time_code;
-  receive_time_ = base::TimeTicks::Now();
 
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebOtpBackend) == switches::kWebOtpBackendUserConsent) {
+    Process(SmsStatus::kSuccess, one_time_code_);
+    return;
+  }
+
+  receive_time_ = base::TimeTicks::Now();
   OpenInfoBar(one_time_code);
 }
 

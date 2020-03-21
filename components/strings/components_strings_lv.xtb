@@ -598,6 +598,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3587738293690942763">vidējais</translation>
 <translation id="3592413004129370115">Italian (aploksne)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3603507503523709">Lietojumprogrammu bloķēja jūsu administrators</translation>
 <translation id="3608932978122581043">Padeves virziens</translation>
 <translation id="3614103345592970299">2. izmērs</translation>
 <translation id="361438452008624280">Saraksta ieraksts “<ph name="LANGUAGE_ID" />”: nezināma vai neatbalstīta valoda.</translation>
@@ -851,6 +852,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="467662567472608290">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikātā ir kļūdas. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="4677585247300749148">Vietnē <ph name="URL" /> tiek pieprasīta atļauja reaģēt uz piekļūstamības notikumiem.</translation>
 <translation id="467809019005607715">Google prezentācijas</translation>
+<translation id="4680804919228900307">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: tūlīt pārbaudiet saglabātās paroles vietnē <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, kā arī citās vietnēs, kurās izmantojat šo paroli.</translation>
 <translation id="4690462567478992370">Pārtraukt nederīga sertifikāta izmantošanu</translation>
 <translation id="4691835149146451662">Architecture-A (aploksne)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1016,8 +1018,10 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5329858041417644019">Jūsu pārlūks netiek pārvaldīts</translation>
 <translation id="5332219387342487447">Piegādes veids</translation>
 <translation id="5334013548165032829">Sistēmas žurnāli ar detalizētu informāciju</translation>
+<translation id="5340250774223869109">Lietojumprogramma ir bloķēta</translation>
 <translation id="534295439873310000">NFC ierīces</translation>
 <translation id="5344579389779391559">Šajā lapā var tikt mēģināts pieprasīt naudu</translation>
+<translation id="5346336634660260557">Pārmeklēt starpliktuves saturu, kā arī failus, ko lejupielādējat vai augšupielādējat pārlūkā Chrome.</translation>
 <translation id="5355557959165512791">Pašlaik nevarat apmeklēt vietni <ph name="SITE" />, jo tās sertifikāts ir atsaukts. Tā kā tīkla kļūdas un uzbrukumi parasti ir īslaicīgi, visticamāk, šī lapa vēlāk darbosies.</translation>
 <translation id="536296301121032821">Neizdevās saglabāt politikas iestatījumus.</translation>
 <translation id="5371425731340848620">Kartes atjaunināšana</translation>
@@ -1428,6 +1432,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="7219179957768738017">Savienojums izmanto <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Notiek apstrāde</translation>
 <translation id="7221855153210829124">Rādīt paziņojumus</translation>
+<translation id="7229659723041939809">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums: tūlīt pārbaudiet saglabātās paroles vietnē <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, kā arī citas vietnes, kurās izmantojat šo paroli.</translation>
 <translation id="7233592378249864828">Drukāšanas apstiprinājuma lapa</translation>
 <translation id="7238585580608191973">SHA-256 pirkstu nospiedums</translation>
 <translation id="7240120331469437312">Sertifikāta subjekta cits nosaukums</translation>
@@ -1495,6 +1500,7 @@ Papildu informācija:
 <translation id="7485870689360869515">Dati netika atrasti.</translation>
 <translation id="7495290002932347110">Kādā vietnē vai lietotnē notika datu noplūde un tika atklāta jūsu parole. Chrome iesaka nekavējoties pārbaudīt saglabātās paroles un nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="7498234416455752244">Turpināt rediģēšanu</translation>
+<translation id="7503664977220660814">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: tūlīt pārbaudiet saglabātās paroles vietnē <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, kā arī citās vietnēs, kurās izmantojat šo paroli.</translation>
 <translation id="7508255263130623398">Atgrieztais politikas ierīces ID ir tukšs vai neatbilst pašreizējam ierīces ID.</translation>
 <translation id="7508870219247277067">Avokado zaļa</translation>
 <translation id="7511955381719512146">Iespējams, izmantotajā Wi-Fi tīklā tiks pieprasīts apmeklēt vietni <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1570,6 +1576,7 @@ Papildu informācija:
 <translation id="7763386264682878361">Maksājumu manifestu parsētājs</translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>
 <translation id="7766518757692125295">Kontūra</translation>
+<translation id="7767271804335921384">Lietojumprogrammu bloķēja jūsu administrators.</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Tāda pati secība, apdrukātā puse uz augšu</translation>
 <translation id="777702478322588152">Prefektūra</translation>
@@ -1590,6 +1597,7 @@ Papildu informācija:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Vai aizvērt vietni?</translation>
 <translation id="7865448901209910068">Optimālais ātrums</translation>
+<translation id="7874263914261512992">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums: tūlīt pārbaudiet saglabātās paroles vietnē <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, kā arī citās vietnēs, kurās izmantojat šo paroli.</translation>
 <translation id="7878562273885520351">Iespējams, jūsu parole ir apdraudēta</translation>
 <translation id="7882421473871500483">Brūna</translation>
 <translation id="7887683347370398519">Pārbaudiet CVC kodu un mēģiniet vēlreiz.</translation>
@@ -1726,6 +1734,7 @@ Papildu informācija:
 <translation id="8474910779563686872">Skatīt informāciju par izstrādātāju</translation>
 <translation id="8479754468255770962">Skavojums apakšējā kreisajā malā</translation>
 <translation id="8483780878231876732">Lai izmantotu kartes no sava Google konta, pierakstieties pārlūkā Chrome!</translation>
+<translation id="8485393050551136813">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: tūlīt pārbaudiet saglabātās paroles vietnē <ph name="WEBSITE_1" />, kā arī citās vietnēs, kurās izmantojat šo paroli.</translation>
 <translation id="8488350697529856933">Attiecas uz</translation>
 <translation id="8490137692873530638">10. izvades vieta</translation>
 <translation id="8498891568109133222">Vietne <ph name="HOST_NAME" /> pārāk ilgi nereaģēja.</translation>
@@ -1776,6 +1785,7 @@ Papildu informācija:
 <translation id="87601671197631245">Šajā vietnē tiek izmantota novecojusi drošības konfigurācija, tādēļ var tikt atklāta jūsu informācija (piemēram, paroles, ziņojumi vai kredītkaršu dati), kad tā tiek nosūtīta uz šo vietni.</translation>
 <translation id="8761567432415473239">Google drošās pārlūkošanas tehnoloģija nesen vietnē <ph name="SITE" /> <ph name="BEGIN_LINK" />atklāja kaitīgas programmas<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ierīce</translation>
+<translation id="8774457497170244317">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums: tūlīt pārbaudiet saglabātās paroles vietnē <ph name="WEBSITE_1" />, kā arī citās vietnēs, kurās izmantojat šo paroli.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>
 <translation id="8792621596287649091">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chromium iesaka nekavējoties nomainīt paroli.</translation>

@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">ಐಚ್ಚಿಕ: Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಷ್ ವರದಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವುದರಿಂದ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>
 <translation id="2910007522516064972">&amp;Chromium ಕುರಿತು</translation>
 <translation id="2977470724722393594">Chromium ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
+<translation id="2983934633046890458">Chromium, ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="3032706164202344641">Chromium ಗೆ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3032787606318309379">Chromium ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3068515742935458733">Google ಗೆ ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು ಮತ್ತು <ph name="UMA_LINK" /> ಕಳುಹಿಸುವುದರಿಂದ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
@@ -108,6 +109,7 @@
 <translation id="5479196819031988440">Chromium OS ಗೆ ಈ ಪುಟ ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5480860683791598150">ಈ ಸೈಟ್‌ ಜೊತೆಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chromium ಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="549669000822060376">ದಯವಿಟ್ಟು ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chromium ಸ್ಥಾಪಿಸುವಾಗ ಕಾಯಿರಿ.</translation>
+<translation id="5496810170689441661">Chromium, ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}=1{Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}one{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}other{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}}</translation>
 <translation id="5631814766731275228">Chromium ಹೆಸರು ಮತ್ತು ಚಿತ್ರ</translation>
 <translation id="5634636535844844681">Chromium ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>

@@ -30,6 +30,7 @@ luci.list_view(
         'try/mac_chromium_10.12_rel_ng',
         'try/mac_chromium_10.13_rel_ng',
         'try/mac_chromium_10.14_rel_ng',
+        'try/mac_chromium_10.15_rel_ng',
         'try/mac_chromium_archive_rel_ng',
         'try/mac_chromium_asan_rel_ng',
         'try/mac_chromium_compile_dbg_ng',

@@ -1384,9 +1384,9 @@ void Schema::MaskSensitiveValues(base::Value* value) const {
 Schema Schema::Parse(const std::string& content, std::string* error) {
   // Validate as a generic JSON schema, and ignore unknown attributes; they
   // may become used in a future version of the schema format.
-  std::unique_ptr<base::Value> dict = Schema::ParseToDictAndValidate(
+  base::Optional<base::Value> dict = Schema::ParseToDictAndValidate(
       content, kSchemaOptionsIgnoreUnknownAttributes, error);
-  if (!dict)
+  if (!dict.has_value())
     return Schema();
 
   // Validate the main type.
@@ -1398,8 +1398,8 @@ Schema Schema::Parse(const std::string& content, std::string* error) {
   }
 
   // Checks for invalid attributes at the top-level.
-  if (dict->FindKey(schema::kAdditionalProperties) ||
-      dict->FindKey(schema::kPatternProperties)) {
+  if (dict.value().FindKey(schema::kAdditionalProperties) ||
+      dict.value().FindKey(schema::kPatternProperties)) {
     *error =
         "\"additionalProperties\" and \"patternProperties\" are not "
         "supported at the main schema.";
@@ -1407,29 +1407,31 @@ Schema Schema::Parse(const std::string& content, std::string* error) {
   }
 
   scoped_refptr<const InternalStorage> storage =
-      InternalStorage::ParseSchema(*dict, error);
+      InternalStorage::ParseSchema(dict.value(), error);
   if (!storage)
     return Schema();
   return Schema(storage, storage->root_node());
 }
 
 // static
-std::unique_ptr<base::Value> Schema::ParseToDictAndValidate(
+base::Optional<base::Value> Schema::ParseToDictAndValidate(
     const std::string& schema,
     int validator_options,
     std::string* error) {
-  std::unique_ptr<base::Value> json =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          schema, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-          error);
-  if (!json)
-    return nullptr;
-  if (!json->is_dict()) {
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(
+          schema, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  *error = value_with_error.error_message;
+
+  if (value_with_error.error_code != base::JSONReader::JSON_NO_ERROR)
+    return base::nullopt;
+  base::Value json = std::move(value_with_error.value.value());
+  if (!json.is_dict()) {
     *error = "Schema must be a JSON object";
-    return nullptr;
+    return base::nullopt;
   }
-  if (!IsValidSchema(*json, validator_options, error))
-    return nullptr;
+  if (!IsValidSchema(json, validator_options, error))
+    return base::nullopt;
   return json;
 }
 

@@ -43,6 +43,7 @@
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
 <translation id="2910007522516064972">‏درباره &amp;Chromium</translation>
 <translation id="2977470724722393594">‏Chromium به‌روز است</translation>
+<translation id="2983934633046890458">‏Chromium می‌خواهد گذرواژه‌ها را ویرایش کند.</translation>
 <translation id="3032706164202344641">‏Chromium نمی‌تواند گذرواژه‌هایتان را بررسی کند. بعداً دوباره امتحان کنید.</translation>
 <translation id="3032787606318309379">‏افزودن به Chromium…</translation>
 <translation id="3068515742935458733">‏با ارسال گزارش‌های خرابی و <ph name="UMA_LINK" /> به Google، به بهبود Google کمک کنید</translation>
@@ -109,6 +110,7 @@
 <translation id="5479196819031988440">‏Chromium OS نمی‌تواند این صفحه را باز کند.</translation>
 <translation id="5480860683791598150">‏Chromium برای هم‌رسانی مکانتان با این سایت باید به مکان شما دسترسی داشته باشد</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
+<translation id="5496810170689441661">‏Chromium می‌خواهد گذرواژه‌ها را ویرایش کند. برای اینکه اجازه دهید این کار انجام شود، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="5623402015214259806">{0,plural, =0{‏به‌روزرسانی Chromium دردسترس است}=1{‏به‌روزرسانی Chromium دردسترس است}one{‏به‌روزرسانی Chromium از # روز پیش دردسترس است}other{‏به‌روزرسانی Chromium از # روز پیش دردسترس است}}</translation>
 <translation id="5631814766731275228">‏نام و تصویر Chromium</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>

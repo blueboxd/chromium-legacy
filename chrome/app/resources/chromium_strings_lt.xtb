@@ -45,6 +45,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2886012850691518054">Pasirenkama: padėkite tobulinti „Chromium“ automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="2910007522516064972">Apie &amp;„Chromium“</translation>
 <translation id="2977470724722393594">„Chromium“ naujausios versijos</translation>
+<translation id="2983934633046890458">„Chromium“ bando redaguoti slaptažodžius.</translation>
 <translation id="3032706164202344641">„Chromium“ negali patikrinti jūsų slaptažodžių. Vėliau bandykite dar kartą.</translation>
 <translation id="3032787606318309379">Pridedama prie „Chromium“...</translation>
 <translation id="3068515742935458733">Padėkite tobulinti „Chromium“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>
@@ -112,6 +113,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5479196819031988440">„Chromium“ OS negali atidaryti šio puslapio.</translation>
 <translation id="5480860683791598150">„Chromium“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine</translation>
 <translation id="549669000822060376">Palaukite, kol „Chromium“ įdiegs naujausius sistemos naujinius.</translation>
+<translation id="5496810170689441661">„Chromium“ bando redaguoti slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Pasiekiamas „Chromium“ naujinys}=1{Pasiekiamas „Chromium“ naujinys}one{„Chromium“ naujinys pasiekiamas # dieną}few{„Chromium“ naujinys pasiekiamas # dienas}many{„Chromium“ naujinys pasiekiamas # dienos}other{„Chromium“ naujinys pasiekiamas # dienų}}</translation>
 <translation id="5631814766731275228">„Chromium“ pavadinimas ir paveikslėlis</translation>
 <translation id="5634636535844844681">Kad būtų galima naudoti „Chromium“, reikalinga 7 ar naujesnės versijos „Windows“.</translation>

@@ -1,0 +1,13 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO(https://crbug.com/1062766): Update spec documents with objects as implemented.
+// https://inexorabletash.github.io/font-enumeration/
+[
+    Exposed=(Window,Worker),
+    SecureContext,
+    RuntimeEnabled=FontAccess
+] interface FontManager {
+    [CallWith=ScriptState] object query();
+};

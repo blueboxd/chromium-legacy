@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Khulisa</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Uhlelo lokusebenza olufakiwe</translation>
 <translation id="1450753235335490080">Ayikwazi ukwabelana nge-<ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">I-<ph name="FIRST_ITEM_TITLE" /> ishintshisane ne-<ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Useshe lokhu ngaphambilini. Ukususa i-"<ph name="QUERY" />" kusuka kumlando wakho kuzowususa unaphakade kusuka ku-akhawunti yakho kuwo wonke amadivayisi akho.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 iminithi ne- }one{# amaminithi ne- }other{# amaminithi ne- }}</translation>
 <translation id="1643823602425662293">Isaziso</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Ngakwesokudla kuya kwesobunxele</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">KUNGENZEKA KAKHULU</translation>
+<translation id="7170202025028120564">Izilungiselelo zokubonisa zohlelo lwakho lokusebenza zizosebenza ngokulandelayo uma liqalisa kabusha.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 iminithi elisele}one{# amaminithi asele}other{# amaminithi asele}}</translation>
 <translation id="7319740667687257810">Isiqalisi, ukubuka okuncane</translation>

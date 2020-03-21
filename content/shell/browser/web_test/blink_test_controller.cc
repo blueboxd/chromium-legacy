@@ -74,6 +74,7 @@
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
+#include "content/test/storage_partition_test_helpers.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"

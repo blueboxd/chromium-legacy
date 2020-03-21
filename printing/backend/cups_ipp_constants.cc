@@ -8,7 +8,7 @@
 
 namespace printing {
 
-constexpr char kIppCollate[] = "sheet-collate";  // RFC 3381
+constexpr char kIppCollate[] = "multiple-document-handling";  // PWG 5100.19
 constexpr char kIppCopies[] = CUPS_COPIES;
 constexpr char kIppColor[] = CUPS_PRINT_COLOR_MODE;
 constexpr char kIppMedia[] = CUPS_MEDIA;
@@ -19,8 +19,8 @@ constexpr char kIppPin[] = "job-password";                       // PWG 5100.11
 constexpr char kIppPinEncryption[] = "job-password-encryption";  // PWG 5100.11
 
 // collation values
-constexpr char kCollated[] = "collated";
-constexpr char kUncollated[] = "uncollated";
+constexpr char kCollated[] = "separate-documents-collated-copies";
+constexpr char kUncollated[] = "separate-documents-uncollated-copies";
 
 #if defined(OS_CHROMEOS)
 

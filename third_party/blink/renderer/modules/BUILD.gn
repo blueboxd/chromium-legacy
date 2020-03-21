@@ -93,6 +93,7 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/modules/eventsource",
     "//third_party/blink/renderer/modules/exported",
     "//third_party/blink/renderer/modules/filesystem",
+    "//third_party/blink/renderer/modules/font_access",
     "//third_party/blink/renderer/modules/gamepad",
     "//third_party/blink/renderer/modules/geolocation",
     "//third_party/blink/renderer/modules/hid",

@@ -42,9 +42,9 @@
               "http/tests/csspaint"],
     "args": ["--enable-threaded-compositing",
              "--enable-blink-features=OffMainThreadCSSPaint",
-	     "--enable-gpu-rasterization",
-	     "--enable-oop-rasterization",
-	     "--enable-accelerated-2d-canvas"]
+             "--enable-gpu-rasterization",
+             "--enable-oop-rasterization",
+             "--enable-accelerated-2d-canvas"]
   },
   {
     "prefix": "prefer_compositing_to_lcd_text",
@@ -151,6 +151,11 @@
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
+    "prefix": "font-access",
+    "bases": [],
+    "args": ["--enable-features=FontAccess"]
+  },
+  {
     "prefix": "highdpi-threaded",
     "bases": ["external/wpt/css/css-paint-api/hidpi"],
     "args": ["--force-device-scale-factor=2",
@@ -208,7 +213,7 @@
     "prefix": "layout_ng_flex_box",
     "bases": ["css3/flexbox",
               "external/wpt/css/css-flexbox",
-	      "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox"],
+              "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox"],
     "args": ["--enable-blink-features=LayoutNGFlexBox"]
   },
   {

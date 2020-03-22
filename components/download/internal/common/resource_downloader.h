@@ -44,7 +44,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // Create a ResourceDownloader from a navigation that turns to be a download.
   // No URLLoader is created, but the URLLoaderClient implementation is
   // transferred.
-  static std::unique_ptr<ResourceDownloader> InterceptNavigationResponse(
+  static void InterceptNavigationResponse(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<network::ResourceRequest> resource_request,
       int render_process_id,
@@ -167,8 +167,6 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // system enters power saving mode while a download is alive, it can cause
   // download to be interrupted.
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
-
-  base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDownloader);
 };

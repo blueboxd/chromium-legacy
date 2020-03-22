@@ -130,21 +130,15 @@ void CreateDownloadHandlerForNavigation(
     mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
-  UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
-      ResourceDownloader::InterceptNavigationResponse(
-          download_manager, std::move(resource_request), render_process_id,
-          render_frame_id, site_url, tab_url, tab_referrer_url,
-          std::move(url_chain), std::move(cert_status),
-          std::move(response_head), std::move(response_body),
-          std::move(url_loader_client_endpoints),
-          network::SharedURLLoaderFactory::Create(
-              std::move(pending_url_loader_factory)),
-          url_security_policy, std::move(wake_lock_provider), main_task_runner)
-          .release(),
-      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
-  OnUrlDownloadHandlerCreated(std::move(downloader), download_manager,
-                              main_task_runner);
+  ResourceDownloader::InterceptNavigationResponse(
+      download_manager, std::move(resource_request), render_process_id,
+      render_frame_id, site_url, tab_url, tab_referrer_url,
+      std::move(url_chain), std::move(cert_status), std::move(response_head),
+      std::move(response_body), std::move(url_loader_client_endpoints),
+      network::SharedURLLoaderFactory::Create(
+          std::move(pending_url_loader_factory)),
+      url_security_policy, std::move(wake_lock_provider), main_task_runner);
 }
 
 #if defined(OS_ANDROID)

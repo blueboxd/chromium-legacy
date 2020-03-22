@@ -374,7 +374,12 @@ void Preferences::RegisterProfilePrefs(
   bool allow_time_zone_resolve_by_default = true;
   // CfM devices default to static timezone unless time zone resolving is
   // explicitly enabled for the signin screen (usually by policy).
-  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation() &&
+  // We need local_state fully initialized, which does not happen in tests.
+  if (!g_browser_process->local_state() ||
+      g_browser_process->local_state()
+              ->GetAllPrefStoresInitializationStatus() ==
+          PrefService::INITIALIZATION_STATUS_WAITING ||
+      system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation() ||
       !system::TimeZoneResolverManager::
           IfServiceShouldBeRunningForSigninScreen()) {
     allow_time_zone_resolve_by_default = false;

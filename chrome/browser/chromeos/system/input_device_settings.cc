@@ -353,10 +353,7 @@ bool InputDeviceSettings::ForceKeyboardDrivenUINavigation() {
   // tests do not have InstallAttributes or LocalState initialized, so getting
   // browser_policy_connector crashes.
   if (!InstallAttributes::IsInitialized() ||
-      !g_browser_process->local_state() ||
-      g_browser_process->local_state()
-              ->GetAllPrefStoresInitializationStatus() ==
-          PrefService::INITIALIZATION_STATUS_WAITING) {
+      !g_browser_process->local_state()) {
     return false;
   }
 

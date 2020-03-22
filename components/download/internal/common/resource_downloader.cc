@@ -79,8 +79,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
 }
 
 // static
-std::unique_ptr<ResourceDownloader>
-ResourceDownloader::InterceptNavigationResponse(
+void ResourceDownloader::InterceptNavigationResponse(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<network::ResourceRequest> resource_request,
     int render_process_id,
@@ -102,10 +101,17 @@ ResourceDownloader::InterceptNavigationResponse(
       site_url, tab_url, tab_referrer_url, true, task_runner,
       std::move(url_loader_factory), url_security_policy,
       std::move(wake_lock_provider));
-  downloader->InterceptResponse(
+  ResourceDownloader* raw_downloader = downloader.get();
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &UrlDownloadHandler::Delegate::OnUrlDownloadHandlerCreated, delegate,
+          UrlDownloadHandler::UniqueUrlDownloadHandlerPtr(
+              std::move(downloader).release(),
+              base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()))));
+  raw_downloader->InterceptResponse(
       std::move(url_chain), cert_status, std::move(response_head),
       std::move(response_body), std::move(url_loader_client_endpoints));
-  return downloader;
 }
 
 ResourceDownloader::ResourceDownloader(

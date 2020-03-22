@@ -18,6 +18,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -84,8 +85,13 @@
 #include "url/third_party/mozilla/url_parse.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
+#include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
+#include "chrome/browser/extensions/updater/extension_cache_impl.h"
+#include "chrome/browser/extensions/updater/local_extension_cache.h"
 #endif
 
 using base::Time;
@@ -249,6 +255,27 @@ class MockUpdateService : public UpdateService {
                void(const ExtensionUpdateCheckParams& params,
                     base::OnceClosure callback));
 };
+
+#if defined(OS_CHROMEOS)
+// TODO (crbug.com/1061475) : Move this to a utility file.
+std::string CreateUpdateManifest(const std::string& extension_id,
+                                 const std::string& extension_version,
+                                 const std::string& extension_hash) {
+  return "<?xml version='1.0' encoding='UTF-8'?>"
+         "<gupdate xmlns='http://www.google.com/update2/response'"
+         "                protocol='2.0'>"
+         " <app appid='" +
+         extension_id +
+         "'>"
+         "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
+         "               version='" +
+         extension_version +
+         (extension_hash.size() ? "' hash='" + extension_hash : "'") +
+         "' prodversionmin='1.1' />"
+         " </app>"
+         "</gupdate>";
+}
+#endif
 
 }  // namespace
 
@@ -1504,6 +1531,167 @@ class ExtensionUpdaterTest : public testing::Test {
     }
   }
 
+  // Helper to create a new test file of zeros.
+  void CreateFile(const base::FilePath& file,
+                  size_t size,
+                  const base::Time& timestamp) {
+    const std::string data(size, 0);
+    EXPECT_EQ(static_cast<int>(size),
+              base::WriteFile(file, data.data(), data.size()));
+    EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
+  }
+
+#if defined(OS_CHROMEOS)
+  // This tests the condition when the entry for the crx file is already
+  // present in the cache but the crx file is itself corrupted. In this case,
+  // after detecting the corruption of the crx file, it's entry should be
+  // removed from the cache and re-downloaded from the link in the update
+  // manifest.
+  void TestCacheCorruption() {
+    const char kTestExtensionId[] = "test_app";
+    const std::string version = "1.1";
+    const std::string hash = "abcd";
+    ExtensionDownloaderTestHelper helper;
+
+    // Set update manifest fetch data and result.
+    std::unique_ptr<ManifestFetchData> fetch(
+        CreateManifestFetchData(GURL("http://localhost/foo")));
+    fetch->AddExtension(kTestExtensionId, "1.0", &kNeverPingedData,
+                        kEmptyUpdateUrlData, std::string(),
+                        Manifest::Location::INTERNAL,
+                        ManifestFetchData::FetchPriority::BACKGROUND);
+    const std::string manifest =
+        CreateUpdateManifest(kTestExtensionId, version, hash);
+    helper.test_url_loader_factory().AddResponse(fetch->full_url().spec(),
+                                                 manifest, net::HTTP_OK);
+
+    // We need crx installer to install the crx file and also for mock extension
+    // service. CrxInstallers require a real ExtensionService.  Create one on
+    // the testing profile.  Any action the CrxInstallers take is on the testing
+    // profile's extension service, not on our mock |service|.
+    TestingProfile profile;
+    static_cast<TestExtensionSystem*>(ExtensionSystem::Get(&profile))
+        ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                                 base::FilePath(), false);
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(&profile)->extension_service();
+    scoped_refptr<CrxInstaller> fake_crx_installer(
+        CrxInstaller::CreateSilent(extension_service));
+    fake_crx_installer->set_expected_id(kTestExtensionId);
+    fake_crx_installer->set_expected_hash(hash);
+
+    // Create mock extension service for test. We need this mock service so that
+    // the extension updater process can be intercepted before the installer
+    // which is then called explicitly.
+    std::unique_ptr<ServiceForDownloadTests> service =
+        std::make_unique<ServiceForDownloadTests>(prefs_.get(),
+                                                  helper.url_loader_factory());
+    service->AddFakeCrxInstaller(kTestExtensionId, fake_crx_installer.get());
+
+    ExtensionUpdater updater(service.get(), service->extension_prefs(),
+                             service->pref_service(), service->profile(),
+                             kUpdateFrequencySecs, nullptr,
+                             service->GetDownloaderFactory());
+    MockExtensionDownloaderDelegate& delegate = helper.delegate();
+    delegate.DelegateTo(&updater);
+    service->OverrideDownloaderDelegate(&delegate);
+    updater.Start();
+
+    // Create and initialize local cache.
+    const base::Time now = base::Time::Now();
+    base::ScopedTempDir cache_dir;
+    ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
+    const base::FilePath cache_path = cache_dir.GetPath();
+    CreateFile(cache_path.Append(LocalExtensionCache::kCacheReadyFlagFileName),
+               0, now);
+
+    ExtensionCacheImpl test_extension_cache(
+        std::make_unique<ChromeOSExtensionCacheDelegate>(cache_path));
+    base::RunLoop cache_init_run_loop;
+    test_extension_cache.Start(cache_init_run_loop.QuitClosure());
+    cache_init_run_loop.Run();
+
+    // Create crx file in a temp directory.
+    base::ScopedTempDir tmp_dir;
+    ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+    const base::FilePath tmp_path = tmp_dir.GetPath();
+    const base::FilePath filename =
+        tmp_path.Append(LocalExtensionCache::ExtensionFileName(
+            kTestExtensionId, version, "" /* hash */));
+    // Create a small file of zeroes, e.g. 100 bytes size.
+    CreateFile(filename, 100, now - base::TimeDelta::FromSeconds(3));
+
+    // Add crx file entry in the cache.
+    base::RunLoop put_extension_run_loop;
+    test_extension_cache.AllowCaching("test_app");
+    test_extension_cache.PutExtension(
+        kTestExtensionId, "" /* expected hash*/, filename, version,
+        base::BindLambdaForTesting(
+            [&put_extension_run_loop](const base::FilePath& file_path,
+                                      bool file_ownership_passed) {
+              put_extension_run_loop.Quit();
+            }));
+    put_extension_run_loop.Run();
+
+    // Set cache in extension downloader.
+    helper.downloader().StartAllPending(&test_extension_cache);
+
+    EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+        .WillOnce(Return(true));
+    // Download the update manifest for the extension, find the same extension
+    // version in the cache, start installing the cached crx file which fails
+    // due to unpacker error and is hence, removed from the cache and
+    // re-downlaoded for installation.
+    testing::Sequence sequence;
+    EXPECT_CALL(delegate,
+                OnExtensionDownloadStageChanged(
+                    kTestExtensionId,
+                    ExtensionDownloaderDelegate::Stage::QUEUED_FOR_MANIFEST))
+        .Times(testing::AnyNumber());
+    EXPECT_CALL(delegate,
+                OnExtensionDownloadStageChanged(
+                    kTestExtensionId,
+                    ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST))
+        .InSequence(sequence);
+    EXPECT_CALL(delegate,
+                OnExtensionDownloadStageChanged(
+                    kTestExtensionId,
+                    ExtensionDownloaderDelegate::Stage::PARSING_MANIFEST))
+        .InSequence(sequence);
+    EXPECT_CALL(delegate,
+                OnExtensionDownloadStageChanged(
+                    kTestExtensionId,
+                    ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED))
+        .InSequence(sequence);
+    EXPECT_CALL(delegate,
+                OnExtensionDownloadCacheStatusRetrieved(
+                    kTestExtensionId,
+                    ExtensionDownloaderDelegate::CacheStatus::CACHE_HIT))
+        .InSequence(sequence);
+    EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                              kTestExtensionId,
+                              ExtensionDownloaderDelegate::Stage::FINISHED))
+        .InSequence(sequence);
+    EXPECT_CALL(delegate,
+                OnExtensionDownloadStageChanged(
+                    kTestExtensionId,
+                    ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX))
+        .InSequence(sequence);
+
+    helper.downloader().StartUpdateCheck(std::move(fetch));
+
+    content::RunAllTasksUntilIdle();
+
+    LoadErrorReporter::Init(false);
+    fake_crx_installer->InstallCrxFile(
+        CRXFileInfo(kTestExtensionId, filename, hash, GetTestVerifierFormat()));
+
+    content::RunAllTasksUntilIdle();
+
+    testing::Mock::VerifyAndClearExpectations(&delegate);
+  }
+#endif
+
   // Update a single extension in an environment where the download request
   // initially responds with a 403 status. If |identity_provider| is not NULL,
   // this will first expect a request which includes an Authorization header
@@ -2042,12 +2230,9 @@ class ExtensionUpdaterTest : public testing::Test {
                                  Manifest::INTERNAL);
     service.set_extensions(tmp, ExtensionList());
 
-    ExtensionUpdater updater(&service,
-                             service.extension_prefs(),
-                             service.pref_service(),
-                             service.profile(),
-                             kUpdateFrequencySecs,
-                             nullptr,
+    ExtensionUpdater updater(&service, service.extension_prefs(),
+                             service.pref_service(), service.profile(),
+                             kUpdateFrequencySecs, nullptr,
                              service.GetDownloaderFactory());
     updater.Start();
     updater.EnsureDownloaderCreated();
@@ -2214,6 +2399,12 @@ TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingFailureWithRetry) {
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingFailurePending) {
   TestSingleExtensionDownloading(true, false, true);
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(ExtensionUpdaterTest, TestCacheCorruptionCrxDownload) {
+  TestCacheCorruption();
+}
+#endif
 
 TEST_F(ExtensionUpdaterTest, ProtectedDownloadCookieAuth) {
   TestProtectedDownload(

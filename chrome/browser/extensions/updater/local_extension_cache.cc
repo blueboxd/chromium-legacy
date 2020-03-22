@@ -123,11 +123,14 @@ bool LocalExtensionCache::ShouldRetryDownload(
   if (state_ != kReady)
     return false;
 
+  // Should retry download only if in the previous attempt the extension was
+  // present in the cache and the installer process failed. After the removal,
+  // the extension is freshly downloaded.
   CacheMap::iterator it = FindExtension(cached_extensions_, id, expected_hash);
   if (it == cached_extensions_.end())
     return false;
 
-  return (!expected_hash.empty() && it->second.expected_hash.empty());
+  return true;
 }
 
 // static

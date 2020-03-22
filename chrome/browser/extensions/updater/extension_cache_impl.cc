@@ -128,12 +128,7 @@ void ExtensionCacheImpl::Observe(int type,
     DVLOG(2) << "Extension install was declined, file kept";
     return;
   }
-
-  if (error_type ==
-          extensions::CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE &&
-      error->sandbox_failure_detail() ==
-          extensions::SandboxedUnpackerFailureReason::
-              CRX_HASH_VERIFICATION_FAILED) {
+  if (error->IsCrxVerificationFailedError()) {
     if (cache_->ShouldRetryDownload(id, hash)) {
       cache_->RemoveExtension(id, hash);
       installer->set_hash_check_failed(true);

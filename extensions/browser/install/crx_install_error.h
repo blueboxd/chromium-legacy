@@ -81,6 +81,7 @@ class CrxInstallError {
   const base::string16& message() const { return message_; }
   CrxInstallErrorDetail detail() const;
   SandboxedUnpackerFailureReason sandbox_failure_detail() const;
+  bool IsCrxVerificationFailedError() const;
 
  private:
   CrxInstallErrorType type_;

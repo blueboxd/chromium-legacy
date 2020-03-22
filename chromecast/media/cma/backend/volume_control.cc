@@ -232,29 +232,30 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       CHECK(stored_values_.GetDouble(ContentTypeToDbFSKey(type), &dbfs));
       volumes_[type] = VolumeControl::DbFSToVolume(dbfs);
       volume_multipliers_[type] = 1.0f;
-      if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
-        // If ALSA owns volume, our internal mixer should not apply any scaling
-        // multiplier.
-        mixer_->SetVolume(type, 1.0f);
-      } else {
-        mixer_->SetVolume(type, DbFsToScale(dbfs));
-      }
+
+#if BUILDFLAG(SYSTEM_OWNS_VOLUME)
+      // If ALSA owns volume, our internal mixer should not apply any scaling
+      // multiplier.
+      mixer_->SetVolume(type, 1.0f);
+#else   // BUILDFLAG(SYSTEM_OWNS_VOLUME)
+      mixer_->SetVolume(type, DbFsToScale(dbfs));
+#endif  // BUILDFLAG(SYSTEM_OWNS_VOLUME)
 
       // Note that mute state is not persisted across reboots.
       muted_[type] = false;
     }
 
-    if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
-      // If ALSA owns the volume, then read the current volume and mute state
-      // from the ALSA mixer element(s).
-      volumes_[AudioContentType::kMedia] = system_volume_control_->GetVolume();
-      muted_[AudioContentType::kMedia] = system_volume_control_->IsMuted();
-    } else {
-      // Otherwise, make sure the ALSA mixer element correctly reflects the
-      // current volume state.
-      system_volume_control_->SetVolume(volumes_[AudioContentType::kMedia]);
-      system_volume_control_->SetMuted(false);
-    }
+#if BUILDFLAG(SYSTEM_OWNS_VOLUME)
+    // If ALSA owns the volume, then read the current volume and mute state
+    // from the ALSA mixer element(s).
+    volumes_[AudioContentType::kMedia] = system_volume_control_->GetVolume();
+    muted_[AudioContentType::kMedia] = system_volume_control_->IsMuted();
+#else   // BUILDFLAG(SYSTEM_OWNS_VOLUME)
+    // Otherwise, make sure the ALSA mixer element correctly reflects the
+    // current volume state.
+    system_volume_control_->SetVolume(volumes_[AudioContentType::kMedia]);
+    system_volume_control_->SetMuted(false);
+#endif  // BUILDFLAG(SYSTEM_OWNS_VOLUME)
 
     volumes_[AudioContentType::kOther] = 1.0;
     muted_[AudioContentType::kOther] = false;

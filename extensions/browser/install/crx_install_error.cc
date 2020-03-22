@@ -50,4 +50,36 @@ SandboxedUnpackerFailureReason CrxInstallError::sandbox_failure_detail() const {
   return sandbox_failure_detail_.value();
 }
 
+// Returns true if the error occurred during crx file verification.
+// Use this only if the error type is SANDBOXED_UNPACKER_FAILURE.
+bool CrxInstallError::IsCrxVerificationFailedError() const {
+  // List of unpack failure codes related to bad CRX file.
+  constexpr SandboxedUnpackerFailureReason kVerificationFailureReasons[] = {
+      SandboxedUnpackerFailureReason::CRX_FILE_NOT_READABLE,
+      SandboxedUnpackerFailureReason::CRX_HEADER_INVALID,
+      SandboxedUnpackerFailureReason::CRX_MAGIC_NUMBER_INVALID,
+      SandboxedUnpackerFailureReason::CRX_VERSION_NUMBER_INVALID,
+      SandboxedUnpackerFailureReason::CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE,
+      SandboxedUnpackerFailureReason::CRX_ZERO_KEY_LENGTH,
+      SandboxedUnpackerFailureReason::CRX_ZERO_SIGNATURE_LENGTH,
+      SandboxedUnpackerFailureReason::CRX_PUBLIC_KEY_INVALID,
+      SandboxedUnpackerFailureReason::CRX_SIGNATURE_INVALID,
+      SandboxedUnpackerFailureReason::
+          CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED,
+      SandboxedUnpackerFailureReason::CRX_SIGNATURE_VERIFICATION_FAILED,
+      SandboxedUnpackerFailureReason::CRX_HASH_VERIFICATION_FAILED,
+      SandboxedUnpackerFailureReason::CRX_FILE_IS_DELTA_UPDATE,
+      SandboxedUnpackerFailureReason::CRX_EXPECTED_HASH_INVALID,
+      SandboxedUnpackerFailureReason::CRX_REQUIRED_PROOF_MISSING,
+  };
+  if (type() != CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE)
+    return false;
+  const SandboxedUnpackerFailureReason unpacker_failure_reason =
+      sandbox_failure_detail();
+  return std::find(std::begin(kVerificationFailureReasons),
+                   std::end(kVerificationFailureReasons),
+                   unpacker_failure_reason) !=
+         std::end(kVerificationFailureReasons);
+}
+
 }  // namespace extensions

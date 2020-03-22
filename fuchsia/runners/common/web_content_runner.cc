@@ -74,9 +74,8 @@ void WebContentRunner::StartComponent(
       this,
       std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info)),
       std::move(controller_request));
-#if BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0
-  component->EnableRemoteDebugging();
-#endif
+  if (BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0)
+    component->EnableRemoteDebugging();
   component->StartComponent();
   component->LoadUrl(url, std::vector<fuchsia::net::http::Header>());
   RegisterComponent(std::move(component));

@@ -42,10 +42,10 @@ int main(int argc, char** argv) {
       base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)));
   CHECK(create_context_params.data_directory());
 
-#if BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0
-  create_context_params.set_remote_debugging_port(
-      BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT));
-#endif
+  if (BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT) != 0) {
+    create_context_params.set_remote_debugging_port(
+        BUILDFLAG(WEB_RUNNER_REMOTE_DEBUGGING_PORT));
+  }
 
   WebContentRunner runner(
       std::move(create_context_params),

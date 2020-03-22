@@ -167,16 +167,15 @@ void ThreadCPUThrottler::ThrottlingThread::Throttle() {
 }
 
 void ThreadCPUThrottler::ThrottlingThread::Start() {
-#if defined(USE_SIGNALS) || defined(OS_WIN)
-#if defined(USE_SIGNALS)
+#ifdef USE_SIGNALS
   InstallSignalHandler();
+#elif !defined(OS_WIN)
+  LOG(ERROR) << "CPU throttling is not supported.";
+  return;
 #endif
   if (!base::PlatformThread::Create(0, this, &throttling_thread_handle_)) {
     LOG(ERROR) << "Failed to create throttling thread.";
   }
-#else
-  LOG(ERROR) << "CPU throttling is not supported.";
-#endif
 }
 
 void ThreadCPUThrottler::ThrottlingThread::Sleep(base::TimeDelta duration) {

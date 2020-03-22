@@ -641,8 +641,7 @@ void Canvas2DLayerBridge::FlushRecording() {
     timer.emplace();
   }
 
-  ResourceProvider()->FlushCanvas();
-  last_recording_ = ResourceProvider()->last_recording();
+  last_recording_ = ResourceProvider()->FlushCanvas();
   if (last_recording_ && will_measure)
     CalculateDirtyRegion();
   last_record_tainted_by_write_pixels_ = false;

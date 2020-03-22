@@ -147,7 +147,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   cc::PaintCanvas* Canvas();
   void ReleaseLockedImages();
-  void FlushCanvas();
+  sk_sp<cc::PaintRecord> FlushCanvas();
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void SetFilterQuality(SkFilterQuality quality) { filter_quality_ = quality; }
   const IntSize& Size() const { return size_; }
@@ -218,9 +218,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   }
 
   void SkipQueuedDrawCommands();
-  const sk_sp<cc::PaintRecord>& last_recording() const {
-    return last_recording_;
-  }
   void SetRestoreClipStackCallback(RestoreMatrixClipStackCb);
   bool needs_flush() const { return needs_flush_; }
   void RestoreBackBuffer(const cc::PaintImage&);
@@ -291,7 +288,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::SkiaPaintCanvas> skia_canvas_;
   std::unique_ptr<PaintRecorder> recorder_;
-  sk_sp<cc::PaintRecord> last_recording_;
 
   bool needs_flush_ = false;
 

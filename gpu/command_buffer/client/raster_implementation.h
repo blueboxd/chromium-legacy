@@ -171,6 +171,10 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                             GLenum mode) override;
   void EndSharedImageAccessDirectCHROMIUM(GLuint texture) override;
 
+  void InitializeDiscardableTextureCHROMIUM(GLuint texture) override;
+  void UnlockDiscardableTextureCHROMIUM(GLuint texture) override;
+  bool LockDiscardableTextureCHROMIUM(GLuint texture) override;
+
   // ContextSupport implementation.
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap(uint32_t flags,

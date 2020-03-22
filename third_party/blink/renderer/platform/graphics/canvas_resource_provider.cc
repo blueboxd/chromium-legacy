@@ -1124,18 +1124,19 @@ GrContext* CanvasResourceProvider::GetGrContext() const {
   return context_provider_wrapper_->ContextProvider()->GetGrContext();
 }
 
-void CanvasResourceProvider::FlushCanvas() {
+sk_sp<cc::PaintRecord> CanvasResourceProvider::FlushCanvas() {
   if (!HasRecordedDrawOps())
-    return;
+    return nullptr;
   EnsureSkiaCanvas();
-  last_recording_ = recorder_->finishRecordingAsPicture();
-  skia_canvas_->drawPicture(last_recording_);
+  sk_sp<cc::PaintRecord> last_recording = recorder_->finishRecordingAsPicture();
+  skia_canvas_->drawPicture(last_recording);
   cc::PaintCanvas* canvas =
       recorder_->beginRecording(Size().Width(), Size().Height());
   if (restore_clip_stack_callback_)
     restore_clip_stack_callback_.Run(canvas);
   GetSkSurface()->flush();
   needs_flush_ = false;
+  return last_recording;
 }
 
 bool CanvasResourceProvider::IsGpuContextLost() const {

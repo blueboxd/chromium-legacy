@@ -9,8 +9,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
-#include "base/trace_event/trace_event.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/skia_utils_win.h"
@@ -23,14 +21,6 @@ namespace CC = ABI::Windows::Media::ClosedCaptioning;
 namespace ui {
 
 namespace {
-
-// This is used to add tracing when a COM call fails.
-// Param 1 - line is the line number in the caller. This helps locate
-// problematic code.
-// Param 2 - hr is the failure HRESULT.
-void LogCapStyleWinError(int line, HRESULT hr) {
-  TRACE_EVENT2("ui", "LogWindowsCaptionStyleError", "line", line, "hr", hr);
-}
 
 // Adds !important to all captions styles. They should always override any
 // styles added by the video author or by a user stylesheet. This is because on
@@ -96,7 +86,7 @@ std::string GetEdgeEffectString(CC::ClosedCaptionEdgeEffect edge_effect) {
       return "0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px "
              "4px black";
     case CC::ClosedCaptionEdgeEffect_DropShadow:
-      return "3px 3px 3px 2px black";
+      return "0px 0px 2px rgba(0, 0, 0, 0.5), 2px 2px 2px black";
     case CC::ClosedCaptionEdgeEffect_Default:
       // We shouldn't override with OS Styling for Default case.
       NOTREACHED();
@@ -187,11 +177,8 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
       base::win::ResolveCoreWinRTDelayload() &&
       base::win::ScopedHString::ResolveCoreWinRTStringDelayload();
 
-  if (!can_use_scoped_hstring) {
-    DLOG(ERROR) << "Failed loading functions from combase.dll";
-    LogCapStyleWinError(__LINE__, E_FAIL);
+  if (!can_use_scoped_hstring)
     return base::nullopt;
-  }
 
   base::win::ScopedHString closed_caption_properties_string =
       base::win::ScopedHString::Create(
@@ -201,96 +188,56 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
   HRESULT hr = base::win::RoGetActivationFactory(
       closed_caption_properties_string.get(),
       IID_PPV_ARGS(&closed_caption_properties_statics));
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to Get ActivationFactory for ClosedCaptionProperties"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionSize font_size = CC::ClosedCaptionSize_Default;
   hr = closed_caption_properties_statics->get_FontSize(&font_size);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Font Size"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionEdgeEffect edge_effect = CC::ClosedCaptionEdgeEffect_Default;
   hr = closed_caption_properties_statics->get_FontEffect(&edge_effect);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Font Effect"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionStyle font_family = CC::ClosedCaptionStyle_Default;
   hr = closed_caption_properties_statics->get_FontStyle(&font_family);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Font Family"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionColor font_color = CC::ClosedCaptionColor_Default;
   hr = closed_caption_properties_statics->get_FontColor(&font_color);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Font Color"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionOpacity font_opacity = CC::ClosedCaptionOpacity_Default;
   hr = closed_caption_properties_statics->get_FontOpacity(&font_opacity);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Font Opacity"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionColor background_color = CC::ClosedCaptionColor_Default;
   hr =
       closed_caption_properties_statics->get_BackgroundColor(&background_color);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Background Color"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionOpacity background_opacity =
       CC::ClosedCaptionOpacity_Default;
   hr = closed_caption_properties_statics->get_BackgroundOpacity(
       &background_opacity);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Background Opacity"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionColor region_color = CC::ClosedCaptionColor_Default;
   hr = closed_caption_properties_statics->get_RegionColor(&region_color);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Region Color"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CC::ClosedCaptionOpacity region_opacity = CC::ClosedCaptionOpacity_Default;
   hr = closed_caption_properties_statics->get_RegionOpacity(&region_opacity);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to retrieve Region Opacity"
-                << ", HRESULT: 0x" << std::hex << hr;
-    LogCapStyleWinError(__LINE__, hr);
+  if (FAILED(hr))
     return base::nullopt;
-  }
 
   CaptionStyle caption_style;
   if (font_family != CC::ClosedCaptionStyle_Default) {

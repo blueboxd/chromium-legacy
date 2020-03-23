@@ -215,7 +215,6 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
 #include "chrome/browser/android/usage_stats/usage_stats_bridge.h"
-#include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
 #include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -224,6 +223,7 @@
 #include "components/games/core/games_prefs.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
+#include "components/permissions/contexts/geolocation_permission_context_android.h"
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "components/feed/core/common/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
@@ -959,7 +959,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
   explore_sites::HistoryStatisticsReporter::RegisterPrefs(registry);
   games::prefs::RegisterProfilePrefs(registry);
-  GeolocationPermissionContextAndroid::RegisterProfilePrefs(registry);
+  permissions::GeolocationPermissionContextAndroid::RegisterProfilePrefs(
+      registry);
   KnownInterceptionDisclosureInfoBarDelegate::RegisterProfilePrefs(registry);
   MediaDrmOriginIdManager::RegisterProfilePrefs(registry);
   NotificationChannelsProviderAndroid::RegisterProfilePrefs(registry);

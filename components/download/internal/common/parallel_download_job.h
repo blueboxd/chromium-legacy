@@ -29,8 +29,6 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
     : public DownloadJobImpl,
       public DownloadWorker::Delegate {
  public:
-  // TODO(qinmin): Remove |url_request_context_getter| once network service is
-  // enabled.
   ParallelDownloadJob(
       DownloadItem* download_item,
       CancelRequestCallback cancel_request_callback,

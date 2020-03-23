@@ -12,10 +12,10 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
-#include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_plugin.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -124,7 +124,7 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
     case blink::kWebNavigationTypeOther:
       return kOtherString;
   }
-  return kIllegalString;
+  return web_test_string_util::kIllegalString;
 }
 
 }  // namespace
@@ -326,7 +326,8 @@ void WebFrameTestClient::DidStopLoading() {
 void WebFrameTestClient::DidDispatchPingLoader(const blink::WebURL& url) {
   if (test_runner()->ShouldDumpPingLoaderCallbacks())
     delegate()->PrintMessage(std::string("PingLoader dispatched to '") +
-                             URLDescription(url).c_str() + "'.\n");
+                             web_test_string_util::URLDescription(url).c_str() +
+                             "'.\n");
 }
 
 void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
@@ -432,8 +433,11 @@ bool WebFrameTestClient::ShouldContinueNavigation(
   if (test_runner()->ShouldDumpNavigationPolicy()) {
     delegate()->PrintMessage(
         "Default policy for navigation to '" +
-        URLDescription(info->url_request.Url()) + "' is '" +
-        WebNavigationPolicyToString(info->navigation_policy) + "'\n");
+        web_test_string_util::URLDescription(info->url_request.Url()) +
+        "' is '" +
+        web_test_string_util::WebNavigationPolicyToString(
+            info->navigation_policy) +
+        "'\n");
   }
 
   if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
@@ -452,7 +456,8 @@ bool WebFrameTestClient::ShouldContinueNavigation(
   if (test_runner()->PolicyDelegateEnabled()) {
     delegate()->PrintMessage(
         std::string("Policy delegate: attempt to load ") +
-        URLDescription(info->url_request.Url()) + " with navigation type '" +
+        web_test_string_util::URLDescription(info->url_request.Url()) +
+        " with navigation type '" +
         WebNavigationTypeToString(info->navigation_type) + "'\n");
     should_continue = test_runner()->PolicyDelegateIsPermissive();
     if (test_runner()->PolicyDelegateShouldNotifyDone()) {

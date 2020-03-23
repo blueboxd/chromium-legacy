@@ -16,6 +16,16 @@
 namespace blink {
 
 class StyleResolverTest : public PageTestBase {
+ public:
+  scoped_refptr<ComputedStyle> StyleForId(AtomicString id) {
+    Element* element = GetDocument().getElementById(id);
+    StyleResolver* resolver = GetStyleEngine().Resolver();
+    DCHECK(resolver);
+    auto style = resolver->StyleForElement(element);
+    DCHECK(style);
+    return style;
+  }
+
  protected:
 };
 
@@ -86,5 +96,70 @@ TEST_F(StyleResolverTest, ShadowDOMV0Crash) {
   // Test passes if it doesn't crash.
   UpdateAllLifecyclePhasesForTest();
 }
+
+TEST_F(StyleResolverTest, HasEmUnits) {
+  GetDocument().documentElement()->setInnerHTML("<div id=div>Test</div>");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(StyleForId("div")->HasEmUnits());
+
+  GetDocument().documentElement()->setInnerHTML(
+      "<div id=div style='width:1em'>Test</div>");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(StyleForId("div")->HasEmUnits());
+}
+
+TEST_F(StyleResolverTest, BasePresentIfFontRelativeUnitsAbsent) {
+  GetDocument().documentElement()->setInnerHTML("<div id=div>Test</div>");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* div = GetDocument().getElementById("div");
+  StyleResolver* resolver = GetStyleEngine().Resolver();
+  ASSERT_TRUE(resolver);
+  ElementAnimations& animations = div->EnsureElementAnimations();
+  animations.SetAnimationStyleChange(true);
+  // We're animating a font affecting property, but we should still be able to
+  // use the base computed style optimization, since no font-relative units
+  // exist in the base.
+  animations.SetHasFontAffectingAnimation();
+
+  EXPECT_TRUE(resolver->StyleForElement(div));
+  EXPECT_TRUE(animations.BaseComputedStyle());
+}
+
+class StyleResolverFontRelativeUnitTest
+    : public testing::WithParamInterface<const char*>,
+      public StyleResolverTest {};
+
+TEST_P(StyleResolverFontRelativeUnitTest, NoBaseIfFontRelativeUnitPresent) {
+  GetDocument().documentElement()->setInnerHTML(
+      String::Format("<div id=div style='width:1%s'>Test</div>", GetParam()));
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* div = GetDocument().getElementById("div");
+  ElementAnimations& animations = div->EnsureElementAnimations();
+  animations.SetAnimationStyleChange(true);
+  animations.SetHasFontAffectingAnimation();
+
+  EXPECT_TRUE(StyleForId("div")->HasFontRelativeUnits());
+  EXPECT_FALSE(animations.BaseComputedStyle());
+}
+
+TEST_P(StyleResolverFontRelativeUnitTest,
+       BasePresentIfNoFontAffectingAnimation) {
+  GetDocument().documentElement()->setInnerHTML(
+      String::Format("<div id=div style='width:1%s'>Test</div>", GetParam()));
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* div = GetDocument().getElementById("div");
+  ElementAnimations& animations = div->EnsureElementAnimations();
+  animations.SetAnimationStyleChange(true);
+
+  EXPECT_TRUE(StyleForId("div")->HasFontRelativeUnits());
+  EXPECT_TRUE(animations.BaseComputedStyle());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         StyleResolverFontRelativeUnitTest,
+                         testing::Values("em", "rem", "ex", "ch"));
 
 }  // namespace blink

@@ -7,6 +7,7 @@ mac_signing_sources = [
   "signing/chromium_config.py",
   "signing/commands.py",
   "signing/config.py",
+  "signing/config_factory.py",
   "signing/model.py",
   "signing/modification.py",
   "signing/notarize.py",

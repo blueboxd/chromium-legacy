@@ -1039,7 +1039,6 @@ TEST_F(RlzLibTest, ConcurrentStoreAccessWithProcessExitsWhileLockHeld) {
         EXPECT_TRUE(success);
         _exit(success ? 0 : 1);
       }
-      _exit(0);
     } else {
       // Parent.
       pids.push_back(pid);

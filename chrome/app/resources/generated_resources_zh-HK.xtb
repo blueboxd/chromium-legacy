@@ -697,7 +697,7 @@
 <translation id="1921050530041573580">為手機設定訊息配對</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="192494336144674234">選擇開啟程式</translation>
-<translation id="1925017091976104802">按下 <ph name="MODIFIER_KEY_DESCRIPTION" /> 鍵即可貼上</translation>
+<translation id="1925017091976104802">按下 <ph name="MODIFIER_KEY_DESCRIPTION" /> 即可貼上</translation>
 <translation id="1925021887439448749">輸入自訂網址</translation>
 <translation id="1925124445985510535">已於 <ph name="TIME" /> 執行安全檢查</translation>
 <translation id="1926339101652878330">這些設定受到公司政策管控。請聯絡您的管理員，以取得更多資料。</translation>
@@ -3418,7 +3418,7 @@
 <translation id="5593357315997824387">同步檔案</translation>
 <translation id="5595152862129936745">非常遠</translation>
 <translation id="5595485650161345191">編輯地址</translation>
-<translation id="5595727715083333657">無法調整容器大小。如要調整預先分配給 Linux (Beta 版本) 的空間數量，請先備份容器，然後再復原為新容器。</translation>
+<translation id="5595727715083333657">無法調整容器大小。如要調整預先分配給 Linux (Beta 版本) 的空間數量，請先備份容器，然後再復原至新容器。</translation>
 <translation id="5596627076506792578">更多選項</translation>
 <translation id="5600706100022181951">下載更新將會使用 <ph name="UPDATE_SIZE_MB" /> MB 流動數據。要繼續嗎？</translation>
 <translation id="5601503069213153581">PIN</translation>

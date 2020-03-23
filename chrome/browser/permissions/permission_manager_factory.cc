@@ -43,11 +43,13 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/geolocation/geolocation_permission_context_android.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_delegate_android.h"
 #include "chrome/browser/nfc/nfc_permission_context_android.h"
+#include "components/permissions/contexts/geolocation_permission_context_android.h"
 #else
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_delegate.h"
 #include "chrome/browser/nfc/nfc_permission_context.h"
+#include "components/permissions/contexts/geolocation_permission_context.h"
 #endif
 
 namespace {
@@ -62,10 +64,15 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<NotificationPermissionContext>(profile);
 #if !defined(OS_ANDROID)
   permission_contexts[ContentSettingsType::GEOLOCATION] =
-      std::make_unique<GeolocationPermissionContext>(profile);
+      std::make_unique<permissions::GeolocationPermissionContext>(
+          profile,
+          std::make_unique<GeolocationPermissionContextDelegate>(profile));
 #else
   permission_contexts[ContentSettingsType::GEOLOCATION] =
-      std::make_unique<GeolocationPermissionContextAndroid>(profile);
+      std::make_unique<permissions::GeolocationPermissionContextAndroid>(
+          profile,
+          std::make_unique<GeolocationPermissionContextDelegateAndroid>(
+              profile));
 #endif
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   permission_contexts[ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER] =

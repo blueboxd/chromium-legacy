@@ -27,7 +27,10 @@ android_library("java") {
 
 android_resources("java_resources") {
   custom_package = "org.chromium.components.find_in_page"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/values/colors.xml",
+    "java/res/values/dimens.xml",
+  ]
 
   deps = [ "//ui/android:ui_java_resources" ]
 }

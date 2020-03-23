@@ -451,9 +451,7 @@ void ProfileAttributesStorage::DownloadHighResAvatarIfNeeded(
 void ProfileAttributesStorage::DownloadHighResAvatar(
     size_t icon_index,
     const base::FilePath& profile_path) {
-#if defined(OS_ANDROID)
-  return;
-#endif
+#if !defined(OS_ANDROID)
   const char* file_name =
       profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index);
   DCHECK(file_name);
@@ -472,6 +470,7 @@ void ProfileAttributesStorage::DownloadHighResAvatar(
                      AsWeakPtr(), profile_path)));
 
   current_downloader->Start();
+#endif
 }
 
 void ProfileAttributesStorage::SaveAvatarImageAtPath(

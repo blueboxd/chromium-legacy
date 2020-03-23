@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_VIEW_H_
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -16,15 +17,14 @@ class ImageView;
 }  // namespace views
 
 class ChosenObjectViewObserver;
-class Profile;
 
 // A ChosenObjectView is a row in the Page Info bubble that shows an individual
 // object (e.g. a Bluetooth device, a USB device) that the current site has
 // access to.
 class ChosenObjectView : public views::View, public views::ButtonListener {
  public:
-  ChosenObjectView(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info,
-                   Profile* profile);
+  explicit ChosenObjectView(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info,
+                            base::string16 display_name);
   ~ChosenObjectView() override;
 
   void AddObserver(ChosenObjectViewObserver* observer);

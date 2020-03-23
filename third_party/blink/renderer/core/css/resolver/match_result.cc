@@ -104,4 +104,14 @@ MatchedExpansionsRange MatchResult::Expansions(const Document& document,
                                 matched_properties_.size()));
 }
 
+void MatchResult::Reset() {
+  matched_properties_.clear();
+  user_range_ends_.clear();
+  author_range_ends_.clear();
+  ua_range_end_ = 0;
+  is_cacheable_ = true;
+  current_origin_ = CascadeOrigin::kUserAgent;
+  current_tree_order_ = 0;
+}
+
 }  // namespace blink

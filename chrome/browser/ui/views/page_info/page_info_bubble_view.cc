@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info.h"
-#include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -729,8 +728,10 @@ void PageInfoBubbleView::SetPermissionInfo(
     layout->StartRow(1.0, kChosenObjectSectionId,
                      min_height_for_permission_rows + list_item_padding);
     // The view takes ownership of the object info.
-    auto object_view =
-        std::make_unique<ChosenObjectView>(std::move(object), profile_);
+    auto object_view = std::make_unique<ChosenObjectView>(
+        std::move(object),
+        presenter_->GetChooserContextFromUIInfo(object->ui_info)
+            ->GetObjectDisplayName(object->chooser_object->value));
     object_view->AddObserver(this);
     layout->AddView(std::move(object_view));
   }

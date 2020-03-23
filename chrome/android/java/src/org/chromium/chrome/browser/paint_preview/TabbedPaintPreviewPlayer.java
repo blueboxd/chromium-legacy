@@ -9,6 +9,8 @@ import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.paintpreview.player.PlayerManager;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.url.GURL;
 
 /**
  * Responsible for checking for and displaying Paint Previews that are associated with a
@@ -38,6 +40,7 @@ public class TabbedPaintPreviewPlayer {
         if (hasCapture) {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewTabService, String.valueOf(mTab.getId()),
+                    TabbedPaintPreviewPlayer.this::onLinkClicked,
                     safeToShow -> { addPlayerView(safeToShow, shownCallback); });
         }
 
@@ -65,5 +68,12 @@ public class TabbedPaintPreviewPlayer {
         }
 
         shownCallback.onResult(safeToShow);
+    }
+
+    private void onLinkClicked(GURL url) {
+        if (mTab == null || !url.isValid() || url.isEmpty()) return;
+
+        mTab.loadUrl(new LoadUrlParams(url.getSpec()));
+        removePaintPreview();
     }
 }

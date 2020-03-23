@@ -98,6 +98,10 @@ class CORE_EXPORT StyleCascade {
   // the case if two are applied separately.
   void Apply(const MatchResult*, const CascadeInterpolations*, CascadeFilter);
 
+  // Resets the cascade to its initial state. Note that this does not undo
+  // any changes already applied to the StyleResolverState/ComputedStyle.
+  void Reset();
+
   // Resolver is an object passed on the stack during Apply. Its most important
   // job is to detect cycles during Apply (in general, keep track of which
   // properties we're currently applying).

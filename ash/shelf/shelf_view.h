@@ -637,6 +637,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // be ScrollableShelfView.
   ShelfButtonDelegate* shelf_button_delegate_ = nullptr;
 
+  std::unique_ptr<FadeInAnimationDelegate> fade_in_animation_delegate_;
+
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);

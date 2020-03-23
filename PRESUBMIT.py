@@ -3269,9 +3269,10 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   has_some_log_import_pattern = input_api.re.compile(
       r'^import .*\.Log;$', input_api.re.MULTILINE)
   # Extract the tag from lines like `Log.d(TAG, "*");` or `Log.d("TAG", "*");`
-  log_call_pattern = input_api.re.compile(r'^\s*Log\.\w\((?P<tag>\"?\w+\"?)\,')
+  log_call_pattern = input_api.re.compile(r'\bLog\.\w\((?P<tag>\"?\w+)')
   log_decl_pattern = input_api.re.compile(
       r'static final String TAG = "(?P<name>(.*))"')
+  rough_log_decl_pattern = input_api.re.compile(r'\bString TAG\s*=')
 
   REF_MSG = ('See docs/android_logging.md for more info.')
   sources = lambda x: input_api.FilterSourceFile(x, white_list=[r'.*\.java$'],
@@ -3286,13 +3287,14 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   for f in input_api.AffectedSourceFiles(sources):
     file_content = input_api.ReadFile(f)
     has_modified_logs = False
-
     # Per line checks
     if (cr_log_import_pattern.search(file_content) or
         (class_in_base_pattern.search(file_content) and
             not has_some_log_import_pattern.search(file_content))):
       # Checks to run for files using cr log
       for line_num, line in f.ChangedContents():
+        if rough_log_decl_pattern.search(line):
+          has_modified_logs = True
 
         # Check if the new line is doing some logging
         match = log_call_pattern.search(line)

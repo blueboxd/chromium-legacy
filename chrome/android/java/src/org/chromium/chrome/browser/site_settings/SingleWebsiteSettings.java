@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedW
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
-import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingsType;
@@ -593,7 +593,7 @@ public class SingleWebsiteSettings extends PreferenceFragmentCompat
                         }
                     });
 
-            preference.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+            preference.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
                     return info.isManaged();

@@ -74,11 +74,7 @@ class IsolatedPrerenderProxyConfiguratorTest : public testing::Test {
               net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME);
     EXPECT_FALSE(config->should_override_existing_config);
     EXPECT_FALSE(config->allow_non_idempotent_methods);
-    EXPECT_FALSE(config->assume_https_proxies_support_quic);
-    EXPECT_TRUE(config->can_use_proxy_on_http_url_redirect_cycles);
 
-    EXPECT_TRUE(config->pre_cache_headers.IsEmpty());
-    EXPECT_TRUE(config->post_cache_headers.IsEmpty());
     EXPECT_EQ(config->connect_tunnel_headers.ToString(), headers.ToString());
 
     EXPECT_EQ(config->rules.proxies_for_http.size(), 0U);

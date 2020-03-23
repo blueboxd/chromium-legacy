@@ -261,9 +261,9 @@ class PLATFORM_EXPORT ImageDecoder {
   // method, i.e., IsDecodedSizeAvailable() must return true.
   virtual cc::ImageHeaderMetadata MakeMetadataForDecodeAcceleration() const;
 
-  // This will only differ from size() for ICO (where each frame is a
+  // This will only differ from Size() for ICO (where each frame is a
   // different icon) or other formats where different frames are different
-  // sizes. This does NOT differ from size() for GIF or WebP, since
+  // sizes. This does NOT differ from Size() for GIF or WebP, since
   // decoding GIF or WebP composites any smaller frames against previous
   // frames to create full-size frames.
   virtual IntSize FrameSizeAtIndex(size_t) const { return Size(); }

@@ -68,7 +68,7 @@ def GenerateResourceUsages(item_list, src_dir, fake, seen_files):
       if item.grd.startswith('<'):
         raise ValueError('%s: Generated GRD must use META with "sizes" field '
                          'to specify size bounds.' % item.grd)
-      grd_file = os.sep.join([src_dir, item.grd])
+      grd_file = os.path.join(src_dir, item.grd)
       if not os.path.exists(grd_file):
         # Silently skip missing files so that src-internal files do not break
         # public checkouts.

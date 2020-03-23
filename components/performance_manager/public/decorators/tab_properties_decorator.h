@@ -30,6 +30,8 @@ class TabPropertiesDecorator {
 
   // Set the is_tab property of a PageNode.
   static void SetIsTab(content::WebContents* contents, bool is_tab);
+
+  static void SetIsTabForTesting(PageNode* page_node, bool is_tab);
 };
 
 class TabPropertiesDecorator::Data {

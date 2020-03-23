@@ -59,6 +59,24 @@ const char kHTMLBody[] = R"(
       </html>)";
 }  // namespace
 
+class TestIsolatedPrerenderTabHelper : public IsolatedPrerenderTabHelper {
+ public:
+  explicit TestIsolatedPrerenderTabHelper(content::WebContents* web_contents)
+      : IsolatedPrerenderTabHelper(web_contents) {}
+
+  void SetURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    url_loader_factory_ = url_loader_factory;
+  }
+
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory() override {
+    return url_loader_factory_.get();
+  }
+
+ private:
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+};
+
 class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   IsolatedPrerenderTabHelperTest()
@@ -75,12 +93,16 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     isolated_prerender_service->service_workers_observer()
         ->CallOnHasUsageInfoForTesting({});
 
-    IsolatedPrerenderTabHelper::CreateForWebContents(web_contents());
-
-    IsolatedPrerenderTabHelper::FromWebContents(web_contents())
-        ->SetURLLoaderFactoryForTesting(test_shared_loader_factory_);
+    tab_helper_ =
+        std::make_unique<TestIsolatedPrerenderTabHelper>(web_contents());
+    tab_helper_->SetURLLoaderFactory(test_shared_loader_factory_);
 
     SetDataSaverEnabled(true);
+  }
+
+  void TearDown() override {
+    tab_helper_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void SetDataSaverEnabled(bool enabled) {
@@ -97,6 +119,12 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
   }
 
   int RequestCount() { return test_url_loader_factory_.NumPending(); }
+
+  IsolatedPrerenderTabHelper* tab_helper() const { return tab_helper_.get(); }
+
+  size_t PrefetchedResponseSize() const {
+    return tab_helper_->prefetched_responses_size_for_testing();
+  }
 
   void VerifyNIK(const net::NetworkIsolationKey& key) {
     EXPECT_FALSE(key.IsEmpty());
@@ -198,6 +226,9 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
  protected:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+
+ private:
+  std::unique_ptr<TestIsolatedPrerenderTabHelper> tab_helper_;
 };
 
 TEST_F(IsolatedPrerenderTabHelperTest, FeatureDisabled) {
@@ -339,9 +370,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
   VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_NOT_FOUND, net::OK, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
-  EXPECT_EQ(IsolatedPrerenderTabHelper::FromWebContents(web_contents())
-                ->prefetched_responses_size_for_testing(),
-            0U);
+  EXPECT_EQ(PrefetchedResponseSize(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
@@ -356,9 +385,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
   VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
-  EXPECT_EQ(IsolatedPrerenderTabHelper::FromWebContents(web_contents())
-                ->prefetched_responses_size_for_testing(),
-            0U);
+  EXPECT_EQ(PrefetchedResponseSize(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
@@ -374,9 +401,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, "application/javascript",
                       /*headers=*/{},
                       /*body=*/"console.log('Hello world');");
-  EXPECT_EQ(IsolatedPrerenderTabHelper::FromWebContents(web_contents())
-                ->prefetched_responses_size_for_testing(),
-            0U);
+  EXPECT_EQ(PrefetchedResponseSize(), 0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
@@ -409,12 +434,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType,
                       {"X-Testing: Hello World"}, kHTMLBody);
 
-  IsolatedPrerenderTabHelper* tab_helper =
-      IsolatedPrerenderTabHelper::FromWebContents(web_contents());
-  EXPECT_EQ(tab_helper->prefetched_responses_size_for_testing(), 1U);
+  EXPECT_EQ(PrefetchedResponseSize(), 1U);
 
   std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
-      tab_helper->TakePrefetchResponse(prediction_url);
+      tab_helper()->TakePrefetchResponse(prediction_url);
   ASSERT_TRUE(resp);
   EXPECT_EQ(*resp->TakeBody(), kHTMLBody);
 
@@ -661,9 +684,7 @@ class IsolatedPrerenderTabHelperRedirectTest
     WalkRedirectChainUntilFinalRequest({prediction_url, redirect_url});
     // Redirect should not be followed.
     EXPECT_EQ(RequestCount(), 0);
-    EXPECT_EQ(IsolatedPrerenderTabHelper::FromWebContents(web_contents())
-                  ->prefetched_responses_size_for_testing(),
-              0U);
+    EXPECT_EQ(PrefetchedResponseSize(), 0U);
   }
 };
 
@@ -709,12 +730,10 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
   MakeFinalResponse(redirect_url, net::HTTP_OK, {"X-Testing: Hello World"},
                     kHTMLBody);
 
-  IsolatedPrerenderTabHelper* tab_helper =
-      IsolatedPrerenderTabHelper::FromWebContents(web_contents());
-  EXPECT_EQ(tab_helper->prefetched_responses_size_for_testing(), 1U);
+  EXPECT_EQ(PrefetchedResponseSize(), 1U);
 
   std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
-      tab_helper->TakePrefetchResponse(redirect_url);
+      tab_helper()->TakePrefetchResponse(redirect_url);
   ASSERT_TRUE(resp);
   EXPECT_EQ(*resp->TakeBody(), kHTMLBody);
 

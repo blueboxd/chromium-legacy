@@ -198,11 +198,16 @@ def fyi_coverage_builder(
 def fyi_ios_builder(
     *,
     name,
+    caches = None,
     executable='recipe:ios/unified_builder_tester',
     **kwargs):
+
+  if not caches:
+    caches = [builders.xcode_cache.x11c29]
+
   return fyi_builder(
       name = name,
-      caches = [builders.xcode_cache.x11c29],
+      caches = caches,
       cores = None,
       executable = executable,
       goma_backend = None,

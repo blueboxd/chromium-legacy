@@ -47,6 +47,7 @@ android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   sources = [
+    "java/src/org/chromium/components/paintpreview/player/LinkClickHandler.java",
     "java/src/org/chromium/components/paintpreview/player/PaintPreviewFrame.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegate.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegateImpl.java",

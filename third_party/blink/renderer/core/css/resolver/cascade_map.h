@@ -41,6 +41,8 @@ class CORE_EXPORT CascadeMap {
   // corresponding high_priority_-bit to be set. This provides a fast way to
   // check which high-priority properties have been added (if any).
   uint64_t HighPriorityBits() const { return high_priority_; }
+  // Remove all properties (both native and custom) from the CascadeMap.
+  void Reset();
 
  private:
   uint64_t high_priority_ = 0;

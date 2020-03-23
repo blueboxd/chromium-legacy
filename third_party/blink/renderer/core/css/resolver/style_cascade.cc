@@ -165,6 +165,11 @@ void StyleCascade::Apply(const MatchResult* match_result,
   }
 }
 
+void StyleCascade::Reset() {
+  map_.Reset();
+  generation_ = 0;
+}
+
 StyleCascade::Surrogate StyleCascade::ResolveSurrogate(
     const CSSProperty& surrogate,
     CascadePriority priority,
@@ -296,8 +301,11 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
       continue;
 
     CascadePriority* p = map_.Find(name);
-    if (!p || *p >= priority)
+    if (!p || *p >= priority) {
+      if (p->IsImportant())
+        state_.SetHasImportantOverrides();
       continue;
+    }
     *p = priority;
 
     if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
@@ -322,6 +330,9 @@ void StyleCascade::ApplyInterpolation(
     To<TransitionInterpolation>(interpolation).Apply(state_);
   }
 
+  if (property.AffectsFont())
+    state_.SetHasFontAffectingAnimation();
+
   // Applying a color property interpolation will also unconditionally apply
   // the -internal-visited- counterpart (see CSSColorInterpolationType::
   // ApplyStandardPropertyValue). To make sure !important rules in :visited
@@ -333,6 +344,8 @@ void StyleCascade::ApplyInterpolation(
     CascadePriority* visited_priority =
         map_.Find(visited->GetCSSPropertyName());
     if (visited_priority && priority < *visited_priority) {
+      DCHECK(visited_priority->IsImportant());
+      state_.SetHasImportantOverrides();
       // Resetting generation to zero makes it possible to apply the
       // visited property again.
       *visited_priority = CascadePriority(*visited_priority, 0);

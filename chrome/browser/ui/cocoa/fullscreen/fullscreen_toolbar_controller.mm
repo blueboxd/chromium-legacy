@@ -11,7 +11,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
-#import "chrome/browser/ui/cocoa/fullscreen/immersive_fullscreen_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -41,16 +40,10 @@
   DCHECK(!_inFullscreenMode);
   _inFullscreenMode = YES;
 
-  if ([_delegate isInImmersiveFullscreen]) {
-    _immersiveFullscreenController.reset(
-        [[ImmersiveFullscreenController alloc] initWithDelegate:_delegate]);
-    [_immersiveFullscreenController updateMenuBarAndDockVisibility];
-  } else {
-    _menubarTracker.reset([[FullscreenMenubarTracker alloc]
-        initWithFullscreenToolbarController:self]);
-    _mouseTracker.reset([[FullscreenToolbarMouseTracker alloc]
-        initWithFullscreenToolbarController:self]);
-  }
+  _menubarTracker.reset([[FullscreenMenubarTracker alloc]
+      initWithFullscreenToolbarController:self]);
+  _mouseTracker.reset([[FullscreenToolbarMouseTracker alloc]
+      initWithFullscreenToolbarController:self]);
 }
 
 - (void)exitFullscreenMode {
@@ -62,7 +55,6 @@
 
   _menubarTracker.reset();
   _mouseTracker.reset();
-  _immersiveFullscreenController.reset();
 }
 
 - (void)revealToolbarForWebContents:(content::WebContents*)contents
@@ -134,10 +126,6 @@
 
 - (FullscreenToolbarVisibilityLockController*)visibilityLockController {
   return _visibilityLockController.get();
-}
-
-- (ImmersiveFullscreenController*)immersiveFullscreenController {
-  return _immersiveFullscreenController.get();
 }
 
 - (void)setToolbarStyle:(FullscreenToolbarStyle)style {

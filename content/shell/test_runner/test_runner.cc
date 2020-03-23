@@ -21,13 +21,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
+#include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_web_document_subresource_filter.h"
 #include "content/shell/test_runner/pixel_dump.h"
 #include "content/shell/test_runner/spell_check_client.h"
-#include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/test_runner_for_specific_view.h"
@@ -115,7 +115,8 @@ void ConvertAndSet(gin::Arguments* args, blink::WebString* set_param) {
     return;
   }
 
-  *set_param = V8StringToWebString(args->isolate(), result.ToLocalChecked());
+  *set_param = web_test_string_util::V8StringToWebString(
+      args->isolate(), result.ToLocalChecked());
 }
 
 }  // namespace

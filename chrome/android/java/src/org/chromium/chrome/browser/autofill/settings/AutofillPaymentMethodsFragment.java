@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 
 /**
  * Autofill credit cards fragment, which allows the user to edit credit cards and control
@@ -69,7 +69,7 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
             PersonalDataManager.setAutofillCreditCardEnabled((boolean) newValue);
             return true;
         });
-        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+        autofillSwitch.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return PersonalDataManager.isAutofillCreditCardManaged();

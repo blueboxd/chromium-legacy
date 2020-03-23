@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Хэмжээг ихэсгэх</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, суулгасан апп</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" />-г хуваалцах боломжгүй байна</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" />-г <ph name="SECOND_ITEM_TITLE" />-р сольсон</translation>
 <translation id="1498028757988366001">Та үүнийг өмнө нь хайж байсан. "<ph name="QUERY" />"-г түүхээсээ устгаснаар үүнийг таны бүх төхөөрөмж дээрх бүртгэлээс бүрмөсөн хасах болно.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут }other{# минут }}</translation>
 <translation id="1643823602425662293">Мэдэгдэл</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Баруунаас зүүн тал руу</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ДАРАГДАХ МАГАДЛАЛТАЙ</translation>
+<translation id="7170202025028120564">Таны аппликэйшнийг дараагийн удаа дахин эхлүүлэхэд түүний дэлгэцийн тохиргоог хэрэгжүүлнэ.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 мин үлдсэн}other{# мин үлдсэн }}</translation>
 <translation id="7319740667687257810">Эхлүүлэгч, хэсэгчлэн харах</translation>

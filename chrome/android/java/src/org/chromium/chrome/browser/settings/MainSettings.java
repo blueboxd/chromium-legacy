@@ -301,7 +301,7 @@ public class MainSettings extends PreferenceFragmentCompat
     }
 
     private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
-        return new ManagedPreferenceDelegate() {
+        return new ChromeManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 if (PREF_DATA_REDUCTION.equals(preference.getKey())) {

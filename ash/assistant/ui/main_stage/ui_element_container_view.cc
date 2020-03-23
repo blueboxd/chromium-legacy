@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"

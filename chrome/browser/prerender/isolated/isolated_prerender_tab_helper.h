@@ -18,7 +18,10 @@
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -40,8 +43,6 @@ class IsolatedPrerenderTabHelper
  public:
   ~IsolatedPrerenderTabHelper() override;
 
-  void SetURLLoaderFactoryForTesting(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   size_t prefetched_responses_size_for_testing() const {
     return page_ ? page_->prefetched_responses.size() : 0;
   }
@@ -57,8 +58,12 @@ class IsolatedPrerenderTabHelper
   std::unique_ptr<PrefetchedMainframeResponseContainer> TakePrefetchResponse(
       const GURL& url);
 
- private:
+ protected:
+  // Exposed for testing.
   explicit IsolatedPrerenderTabHelper(content::WebContents* web_contents);
+  virtual network::mojom::URLLoaderFactory* GetURLLoaderFactory();
+
+ private:
   friend class content::WebContentsUserData<IsolatedPrerenderTabHelper>;
 
   // Owns all per-pageload state in the tab helper so that new navigations only
@@ -81,6 +86,12 @@ class IsolatedPrerenderTabHelper
     // navigation commits.
     std::map<GURL, std::unique_ptr<PrefetchedMainframeResponseContainer>>
         prefetched_responses;
+
+    // The network context and url loader factory that will be used for
+    // prefetches. A separate network context is used so that the prefetch proxy
+    // can be used via a custom porxy configuration.
+    mojo::Remote<network::mojom::URLLoaderFactory> isolated_url_loader_factory;
+    mojo::Remote<network::mojom::NetworkContext> isolated_network_context;
   };
 
   // A helper method to make it easier to tell when prefetching is already
@@ -125,9 +136,10 @@ class IsolatedPrerenderTabHelper
                        const net::CookieStatusList& cookie_with_status_list,
                        const net::CookieStatusList& excluded_cookies);
 
-  Profile* profile_;
+  // Creates the isolated network context and url loader factory for this page.
+  void CreateIsolatedURLLoaderFactory();
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  Profile* profile_;
 
   // Owns all members which need to be reset on a new page load.
   std::unique_ptr<CurrentPageLoad> page_;

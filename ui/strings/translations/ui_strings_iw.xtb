@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, אפליקציה מותקנת</translation>
 <translation id="1450753235335490080">לא ניתן לשתף את ה<ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">הפריט <ph name="SECOND_ITEM_TITLE" /> החליף את <ph name="FIRST_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">חיפשת את השאילתה הזו בעבר. מחיקת "<ph name="QUERY" />" מההיסטוריה תסיר אותה באופן סופי מהחשבון בכל המכשירים שברשותך.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
 <translation id="1643823602425662293">הודעה</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">מימין לשמאל</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">סבירות גבוהה</translation>
+<translation id="7170202025028120564">הגדרות התצוגה של האפליקציה ייכנסו לתוקף בפעם הבאה שהיא תופעל מחדש.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{נותרה דק‘ אחת}two{נותרו # דק‘}many{נותרו # דק‘}other{נותרו # דק‘}}</translation>
 <translation id="7319740667687257810">מרכז האפליקציות, תצוגה חלקית</translation>

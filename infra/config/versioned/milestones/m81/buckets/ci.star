@@ -1,9 +1,14 @@
-load('//lib/builders.star', 'cpu', 'goma', 'os')
+load('//lib/builders.star', 'cpu', 'defaults', 'goma', 'os')
 load('//lib/ci.star', 'ci')
 load('//versioned/vars/ci.star', 'vars')
 # Load this using relative path so that the load statement doesn't
 # need to be changed when making a new milestone
 load('../vars.star', milestone_vars='vars')
+
+vars.bucket.set('ci-m81')
+vars.poller.set('m81-gitiles-trigger')
+
+defaults.pool.set('luci.chromium.ci')
 
 luci.bucket(
     name = vars.bucket.get(),

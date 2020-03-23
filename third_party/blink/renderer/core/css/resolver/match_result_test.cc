@@ -397,4 +397,64 @@ TEST_F(MatchResultTest, EmptyExpansionsRange) {
   EXPECT_EQ(range.end(), range.begin());
 }
 
+TEST_F(MatchResultTest, Reset) {
+  MatchResult result;
+  result.AddMatchedProperties(PropertySet(0));
+  result.FinishAddingUARules();
+  result.AddMatchedProperties(PropertySet(1));
+  result.FinishAddingUserRules();
+  result.AddMatchedProperties(PropertySet(2));
+  result.FinishAddingAuthorRulesForTreeScope();
+  result.AddMatchedProperties(PropertySet(3));
+  result.FinishAddingAuthorRulesForTreeScope();
+  result.AddMatchedProperties(PropertySet(4));
+  result.FinishAddingAuthorRulesForTreeScope();
+
+  TestOriginInRange(result.UaRules(), 1, CascadeOrigin::kUserAgent);
+  TestOriginInRange(result.UserRules(), 1, CascadeOrigin::kUser);
+  TestOriginInRange(result.AuthorRules(), 3, CascadeOrigin::kAuthor);
+
+  // Check tree_order of last entry.
+  EXPECT_TRUE(result.HasMatchedProperties());
+  ASSERT_EQ(5u, result.GetMatchedProperties().size());
+  EXPECT_EQ(2u, result.GetMatchedProperties()[4].types_.tree_order);
+
+  EXPECT_TRUE(result.IsCacheable());
+  result.SetIsCacheable(false);
+  EXPECT_FALSE(result.IsCacheable());
+
+  result.Reset();
+
+  EXPECT_TRUE(result.UaRules().IsEmpty());
+  EXPECT_TRUE(result.UserRules().IsEmpty());
+  EXPECT_TRUE(result.AuthorRules().IsEmpty());
+  EXPECT_TRUE(result.AllRules().IsEmpty());
+  EXPECT_TRUE(result.IsCacheable());
+  EXPECT_FALSE(result.GetMatchedProperties().size());
+  EXPECT_FALSE(result.HasMatchedProperties());
+
+  // Add same declarations again.
+  result.AddMatchedProperties(PropertySet(0));
+  result.FinishAddingUARules();
+  result.AddMatchedProperties(PropertySet(1));
+  result.FinishAddingUserRules();
+  result.AddMatchedProperties(PropertySet(2));
+  result.FinishAddingAuthorRulesForTreeScope();
+  result.AddMatchedProperties(PropertySet(3));
+  result.FinishAddingAuthorRulesForTreeScope();
+  result.AddMatchedProperties(PropertySet(4));
+  result.FinishAddingAuthorRulesForTreeScope();
+
+  TestOriginInRange(result.UaRules(), 1, CascadeOrigin::kUserAgent);
+  TestOriginInRange(result.UserRules(), 1, CascadeOrigin::kUser);
+  TestOriginInRange(result.AuthorRules(), 3, CascadeOrigin::kAuthor);
+
+  // Check tree_order of last entry.
+  EXPECT_TRUE(result.HasMatchedProperties());
+  ASSERT_EQ(5u, result.GetMatchedProperties().size());
+  EXPECT_EQ(2u, result.GetMatchedProperties()[4].types_.tree_order);
+
+  EXPECT_TRUE(result.IsCacheable());
+}
+
 }  // namespace blink

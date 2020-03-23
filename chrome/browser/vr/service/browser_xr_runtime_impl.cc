@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
-#include "chrome/browser/vr/service/chrome_xr_integration_client.h"
+#include "chrome/browser/vr/chrome_xr_integration_client.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"

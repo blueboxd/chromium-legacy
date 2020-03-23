@@ -683,16 +683,13 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
 
 #if defined(OS_ANDROID)
   DownloadUtils::OpenDownload(download, DownloadOpenSource::kUnknown);
-  return;
-#endif
-
+#else
   if (!DownloadItemModel(download).ShouldPreferOpeningInBrowser()) {
     RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_DEFAULT_PLATFORM);
     OpenDownloadUsingPlatformHandler(download);
     return;
   }
 
-#if !defined(OS_ANDROID)
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(download);
   Browser* browser =
@@ -714,9 +711,6 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
     browser->OpenURL(params);
 
   RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_DEFAULT_BROWSER);
-#else   // OS_ANDROID
-  // ShouldPreferOpeningInBrowser() should never be true on Android.
-  NOTREACHED();
 #endif  // OS_ANDROID
 }
 

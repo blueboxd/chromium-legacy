@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
+#import "ios/chrome/browser/device_sharing/device_sharing_manager_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
@@ -122,11 +123,6 @@
 //@property(nonatomic, readonly) TabModel* otrTabModel;
 @property(nonatomic, readonly) Browser* mainBrowser;
 @property(nonatomic, readonly) Browser* otrBrowser;
-
-// Responsible for maintaining all state related to sharing to other devices.
-// Redeclared readwrite from the readonly declaration in the Testing interface.
-@property(nonatomic, strong, readwrite)
-    DeviceSharingManager* deviceSharingManager;
 
 // Restore session to the given |browser|, any existing tabs that have been
 // saved for the |browser| will be loaded.
@@ -287,10 +283,6 @@
 
 #pragma mark - BrowserViewInformation methods
 
-- (void)cleanDeviceSharingManager {
-  [self.deviceSharingManager updateBrowserState:NULL];
-}
-
 #pragma mark - WebStateListObserving
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -337,20 +329,17 @@
 #pragma mark - Other public methods
 
 - (void)updateDeviceSharingManager {
-  if (!self.deviceSharingManager) {
-    self.deviceSharingManager = [[DeviceSharingManager alloc] init];
-  }
-  [self.deviceSharingManager updateBrowserState:_browserState];
-
-  GURL activeURL;
+  DeviceSharingManager* deviceSharingManager =
+      DeviceSharingManagerFactory::GetForBrowserState(_browserState);
   web::WebState* activeWebState =
       self.currentInterface.tabModel.webStateList->GetActiveWebState();
   // Set the active URL if there's an active webstate and the current BVC is not
   // OTR.
   if (activeWebState && !self.currentInterface.incognito) {
-    activeURL = activeWebState->GetVisibleURL();
+    deviceSharingManager->UpdateActiveUrl(activeWebState->GetVisibleURL());
+  } else {
+    deviceSharingManager->ClearActiveUrl();
   }
-  [self.deviceSharingManager updateActiveURL:activeURL];
 }
 
 - (void)destroyAndRebuildIncognitoBrowser {
@@ -406,9 +395,6 @@
 - (void)shutdown {
   DCHECK(!_isShutdown);
   _isShutdown = YES;
-
-  // Disconnect the DeviceSharingManager.
-  [self cleanDeviceSharingManager];
 
   // At this stage, new BrowserCoordinators shouldn't be lazily constructed by
   // calling their property getters.

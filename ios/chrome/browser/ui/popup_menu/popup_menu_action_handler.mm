@@ -120,6 +120,9 @@ using base::UserMetricsAction;
     case PopupMenuActionViewSource:
       [self.dispatcher viewSource];
       break;
+    case PopupMenuActionOpenNewWindow:
+      [self.dispatcher openNewWindow];
+      break;
 #endif  // !defined(NDEBUG)
 
     case PopupMenuActionBookmarks:

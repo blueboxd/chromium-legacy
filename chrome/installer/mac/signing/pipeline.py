@@ -101,20 +101,7 @@ def _staple_chrome(paths, dist_config):
         paths: A |model.Paths| object.
         dist_config: A |config.CodeSignConfig| for the customized product.
     """
-    # Only staple the signed, bundled executables.
-    part_paths = [
-        part.path
-        for part in parts.get_parts(dist_config).values()
-        # TODO(https://crbug.com/979725): Reinstate .xpc bundle stapling once
-        # the signing environment is on a macOS release that supports
-        # Xcode 10.2 or newer.
-        if part.path[-4:] in ('.app',)
-    ]
-    # Reverse-sort the paths so that more nested paths are stapled before
-    # less-nested ones.
-    part_paths.sort(reverse=True)
-    for part_path in part_paths:
-        notarize.staple(os.path.join(paths.work, part_path))
+    notarize.staple_bundled_parts(parts.get_parts(dist_config).values(), paths)
 
 
 def _create_pkgbuild_scripts(paths, dist_config):

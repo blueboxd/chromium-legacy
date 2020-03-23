@@ -71,9 +71,9 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
+#include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
-#include "content/shell/test_runner/test_common.h"
 #include "content/test/storage_partition_test_helpers.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/cpp/features.h"
@@ -106,7 +106,7 @@ std::string DumpFrameState(const ExplodedFrameState& frame_state,
     result.append(indent, ' ');
   }
 
-  std::string url = test_runner::NormalizeWebTestURL(
+  std::string url = web_test_string_util::NormalizeWebTestURL(
       base::UTF16ToUTF8(frame_state.url_string.value_or(base::string16())));
   result.append(url);
   DCHECK(frame_state.target);

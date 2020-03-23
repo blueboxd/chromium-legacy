@@ -11,6 +11,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 
@@ -46,6 +47,7 @@ public class ContextualSearchPreferenceFragment extends PreferenceFragmentCompat
             return true;
         });
         contextualSearchSwitch.setManagedPreferenceDelegate(
-                preference -> ContextualSearchManager.isContextualSearchDisabledByPolicy());
+                (ChromeManagedPreferenceDelegate)
+                        preference -> ContextualSearchManager.isContextualSearchDisabledByPolicy());
     }
 }

@@ -485,15 +485,13 @@ void MediaCaptureDevicesDispatcher::UpdateVideoScreenCaptureStatus(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(blink::IsVideoScreenCaptureMediaType(stream_type));
 
-  // TODO(thakis): Figure out if it's intentional that the lop below
-  // runs just once. See
-  // https://chromium-review.googlesource.com/c/chromium/src/+/1163533/29/chrome/browser/media/webrtc/media_capture_devices_dispatcher.cc#481
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunreachable-code"
   for (const auto& handler : media_access_handlers_) {
-    handler->UpdateVideoScreenCaptureStatus(render_process_id, render_frame_id,
-                                            page_request_id, is_secure);
-    break;
+    if (handler->SupportsStreamType(
+            WebContentsFromIds(render_process_id, render_frame_id), stream_type,
+            nullptr)) {
+      handler->UpdateVideoScreenCaptureStatus(
+          render_process_id, render_frame_id, page_request_id, is_secure);
+      break;
+    }
   }
-#pragma GCC diagnostic pop
 }

@@ -78,6 +78,17 @@ class NavigationPredictorKeyedService : public KeyedService {
                            const GURL& document_url,
                            const std::vector<GURL>& sorted_predicted_urls);
 
+#ifdef OS_ANDROID
+  // Notifies |this| of the next set of URLs that the user is expected to
+  // navigate to. The set of URLs are reported by an external Android app.
+  // The reporting app is guaranteed to be one of the apps reported in
+  // |external_app_packages_name|. URLs are sorted in non-increasing order of
+  // probability of navigation.
+  void OnPredictionUpdatedByExternalAndroidApp(
+      const std::vector<std::string>& external_app_packages_name,
+      const std::vector<GURL>& sorted_predicted_urls);
+#endif
+
   // Adds |observer| as the observer for next predicted navigation. When
   // |observer| is added via AddObserver, it's immediately notified of the last
   // known prediction.

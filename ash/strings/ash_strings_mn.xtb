@@ -601,6 +601,7 @@
 <translation id="8735953464173050365">Гарын тохиргоог харуулна уу. <ph name="KEYBOARD_NAME" />-г сонгосон</translation>
 <translation id="875593634123171288">VPN тохиргоог харуулах</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" />-д холбогдох</translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Утасгүй интернет</translation>
 <translation id="8825863694328519386">Буцахын тулд зүүн талаас шударна уу</translation>
 <translation id="8828714802988429505">90 °</translation>

@@ -61,6 +61,7 @@ unsigned AdjustLinkMatchType(EInsideLink inside_link,
 
 ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
                                            const SelectorFilter& filter,
+                                           MatchResult& result,
                                            ComputedStyle* style,
                                            EInsideLink inside_link)
     : context_(context),
@@ -73,7 +74,8 @@ ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
       same_origin_only_(false),
       matching_ua_rules_(false),
       include_empty_rules_(false),
-      inside_link_(inside_link) {}
+      inside_link_(inside_link),
+      result_(result) {}
 
 ElementRuleCollector::~ElementRuleCollector() = default;
 

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/logo_view/logo_view.h"

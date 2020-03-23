@@ -1,8 +1,1 @@
 These files are related to the symbol and source server.
-
-The follow files were copied from the BSD licensed pefile-1.2.9.1:
-  COPYING-pefile
-  pefile.py
-
-pefile is available from:
-  https://github.com/erocarrera/pefile

@@ -19,35 +19,16 @@ source_set("promos") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ui/authentication/signin",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/common/ui/colors",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//net",
+
+    # TODO(crbug.com/971989):Remove when this class is deprecated.
+    "//ios/chrome/browser/ui/authentication/signin/user_signin",
   ]
   public_deps = [ "//ios/chrome/browser/ui/authentication" ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "signin_promo_view_controller_unittest.mm" ]
-  deps = [
-    ":promos",
-    "//base",
-    "//components/pref_registry",
-    "//components/sync_preferences",
-    "//components/sync_preferences:test_support",
-    "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/main:test_support",
-    "//ios/chrome/browser/prefs:browser_prefs",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/signin:test_support",
-    "//ios/chrome/test:test_support",
-    "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/web/public/test",
-    "//testing/gtest",
-    "//third_party/ocmock",
-  ]
 }

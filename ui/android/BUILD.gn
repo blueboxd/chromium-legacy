@@ -180,7 +180,62 @@ java_strings_grd("ui_strings_grd") {
 
 android_resources("ui_java_resources") {
   custom_package = "org.chromium.ui"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/color/blue_when_enabled.xml",
+    "java/res/color/chip_background_color.xml",
+    "java/res/color/chip_ripple_color.xml",
+    "java/res/color/chip_stroke_color.xml",
+    "java/res/color/chip_text_color.xml",
+    "java/res/color/chip_text_color_secondary.xml",
+    "java/res/color/default_text_color_inverse_list.xml",
+    "java/res/color/default_text_color_light_list.xml",
+    "java/res/color/default_text_color_list.xml",
+    "java/res/color/default_text_color_secondary_light_list.xml",
+    "java/res/color/default_text_color_secondary_list.xml",
+    "java/res/color/filled_button_bg.xml",
+    "java/res/color/filled_button_ripple_color.xml",
+    "java/res/color/text_button_ripple_color.xml",
+    "java/res/drawable-hdpi/ic_expand_less_black_24dp.png",
+    "java/res/drawable-hdpi/ic_expand_more_black_24dp.png",
+    "java/res/drawable-hdpi/popup_bg.9.png",
+    "java/res/drawable-mdpi/ic_expand_less_black_24dp.png",
+    "java/res/drawable-mdpi/ic_expand_more_black_24dp.png",
+    "java/res/drawable-mdpi/popup_bg.9.png",
+    "java/res/drawable-v21/popup_bg_tinted.xml",
+    "java/res/drawable-v21/transition_expand_less_expand_more_black_24dp.xml",
+    "java/res/drawable-v21/transition_expand_more_expand_less_black_24dp.xml",
+    "java/res/drawable-xhdpi/ic_expand_less_black_24dp.png",
+    "java/res/drawable-xhdpi/ic_expand_more_black_24dp.png",
+    "java/res/drawable-xhdpi/popup_bg.9.png",
+    "java/res/drawable-xxhdpi/ic_expand_less_black_24dp.png",
+    "java/res/drawable-xxhdpi/ic_expand_more_black_24dp.png",
+    "java/res/drawable-xxhdpi/popup_bg.9.png",
+    "java/res/drawable-xxxhdpi/ic_expand_less_black_24dp.png",
+    "java/res/drawable-xxxhdpi/ic_expand_more_black_24dp.png",
+    "java/res/drawable-xxxhdpi/popup_bg.9.png",
+    "java/res/drawable/drag_handlebar.xml",
+    "java/res/drawable/popup_bg_tinted.xml",
+    "java/res/font/accent_font.xml",
+    "java/res/layout/dropdown_footer_wrapper_jellybean.xml",
+    "java/res/layout/dropdown_item.xml",
+    "java/res/layout/dropdown_window.xml",
+    "java/res/values-ldrtl/dimens.xml",
+    "java/res/values-night/colors.xml",
+    "java/res/values-night/dimens.xml",
+    "java/res/values-sw600dp/values.xml",
+    "java/res/values-sw720dp-v17/values.xml",
+    "java/res/values-v17/styles.xml",
+    "java/res/values-v21/styles.xml",
+    "java/res/values/attrs.xml",
+    "java/res/values/color_palette.xml",
+    "java/res/values/dimens.xml",
+    "java/res/values/ids.xml",
+    "java/res/values/one_off_colors.xml",
+    "java/res/values/semantic_colors_adaptive.xml",
+    "java/res/values/semantic_colors_non_adaptive.xml",
+    "java/res/values/strings.xml",
+    "java/res/values/values.xml",
+  ]
 
   deps = [ ":ui_strings_grd" ]
 }
@@ -370,7 +425,11 @@ android_library("ui_java_test_support") {
 
 android_resources("ui_javatest_resources") {
   custom_package = "org.chromium.test.ui"
-  resource_dirs = [ "junit/res" ]
+  sources = [
+    "junit/res/layout/inflated_view.xml",
+    "junit/res/layout/layout_view_builder_test.xml",
+    "junit/res/layout/main_view.xml",
+  ]
 }
 
 junit_binary("ui_junit_tests") {

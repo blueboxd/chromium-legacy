@@ -78,10 +78,6 @@ MainController* GetMainController() {
   return [MainApplicationDelegate sharedMainController];
 }
 
-DeviceSharingManager* GetDeviceSharingManager() {
-  return [GetMainController() deviceSharingManager];
-}
-
 ChromeBrowserState* GetOriginalBrowserState() {
   return GetBrowserState(false);
 }

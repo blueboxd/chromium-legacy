@@ -237,12 +237,13 @@ message ShowCalendarPopupProto {
   optional string max_date_model_identifier = 3;
 }
 
-// Modifies the displayed text of a text view.
+// Modifies the displayed text of a text view or a text input view.
 message SetTextProto {
   // The model identifier containing the text to set. Must point to a single
   // string.
   optional string model_identifier = 1;
-  // The text view to modify. Must point to a text view.
+  // The text view to modify. Must point to a text view or a text input
+  // view.
   optional string view_identifier = 2;
 }
 

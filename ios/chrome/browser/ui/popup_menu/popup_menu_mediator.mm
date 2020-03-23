@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
@@ -771,6 +772,13 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   NSArray* tabActions = [@[ self.reloadStopItem ]
       arrayByAddingObjectsFromArray:[self itemsForNewTab]];
 
+#if !defined(NDEBUG)
+  if (IsMultiwindowSupported() && IsIPadIdiom()) {
+    tabActions =
+        [tabActions arrayByAddingObjectsFromArray:[self itemsForNewWindow]];
+  }
+#endif  // !defined(NDEBUG)
+
   NSArray* browserActions = [self actionItems];
 
   NSArray* collectionActions = [self collectionItems];
@@ -791,6 +799,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
   return @[ openNewTabItem, self.openNewIncognitoTabItem ];
 }
+
+#if !defined(NDEBUG)
+- (NSArray<TableViewItem*>*)itemsForNewWindow {
+  if (!IsMultiwindowSupported())
+    return @[];
+
+  // Create the menu item -- hardcoded string and no accessibility ID.
+  PopupMenuToolsItem* openNewWindowItem =
+      [[PopupMenuToolsItem alloc] initWithType:kItemTypeEnumZero];
+  openNewWindowItem.title = @"New Window";
+  openNewWindowItem.actionIdentifier = PopupMenuActionOpenNewWindow;
+  openNewWindowItem.image = [[UIImage imageNamed:@"popup_menu_new_tab"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+  return @[ openNewWindowItem ];
+}
+#endif  // !defined(NDEBUG)
 
 - (NSArray<TableViewItem*>*)actionItems {
   NSMutableArray* actionsArray = [NSMutableArray array];

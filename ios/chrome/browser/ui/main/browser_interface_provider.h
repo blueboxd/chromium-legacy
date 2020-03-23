@@ -74,9 +74,6 @@ class ChromeBrowserState;
 // The incognito interface. Its |incognito| property must be YES.
 @property(nonatomic, readonly) id<BrowserInterface> incognitoInterface;
 
-// Clean up the device sharing manager.
-- (void)cleanDeviceSharingManager;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_BROWSER_INTERFACE_PROVIDER_H_

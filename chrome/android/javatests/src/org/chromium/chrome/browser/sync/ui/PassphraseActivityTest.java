@@ -77,7 +77,6 @@ public class PassphraseActivityTest {
             // Fake sync's backend finishing its initialization.
             FakeProfileSyncService pss = (FakeProfileSyncService) ProfileSyncService.get();
             pss.setEngineInitialized(true);
-            pss.syncStateChanged();
         });
         // Nothing crashed; success!
 

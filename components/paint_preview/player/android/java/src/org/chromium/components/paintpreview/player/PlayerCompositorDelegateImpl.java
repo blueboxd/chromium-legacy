@@ -31,11 +31,14 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     }
 
     private CompositorListener mCompositorListener;
+    private LinkClickHandler mLinkClickHandler;
     private long mNativePlayerCompositorDelegate;
 
     PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service, GURL url,
-            String directoryKey, @Nonnull CompositorListener compositorListener) {
+            String directoryKey, @Nonnull CompositorListener compositorListener,
+            @Nonnull LinkClickHandler linkClickHandler) {
         mCompositorListener = compositorListener;
+        mLinkClickHandler = linkClickHandler;
         if (service != null && service.getNativeService() != 0) {
             mNativePlayerCompositorDelegate = PlayerCompositorDelegateImplJni.get().initialize(
                     this, service.getNativeService(), url.getSpec(), directoryKey);
@@ -102,7 +105,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
 
     @CalledByNative
     public void onLinkClicked(String url) {
-        // TODO(crbug/1061434): Handle navigation to provided URL.
+        mLinkClickHandler.onLinkClicked(new GURL(url));
     }
 
     void destroy() {

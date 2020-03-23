@@ -2,6 +2,10 @@
 
 [Piet code](https://cs.chromium.org/chromium/src/chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/piet/)
 and [feed wire protos](https://cs.chromium.org/chromium/src/components/feed/core/proto/wire/)
-are hand-merged from https://chromium.googlesource.com/feed regularly.
+are hand-merged from https://chromium.googlesource.com/feed git repo regularly.
+Commits that don't touch these files do not cause changes here.
 
-Last merged commit ID: 11221b03f18e4c3357014306536bd06fc6b53aac
+The hash below represents the last commit from that repo that was reviewed for
+the potential need to merge here.
+
+Last checked commit ID: a9662901062a748b7f018e5ef194f13708546292

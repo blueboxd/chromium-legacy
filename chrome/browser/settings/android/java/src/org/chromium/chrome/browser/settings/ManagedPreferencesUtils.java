@@ -15,8 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.preference.Preference;
 
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.widget.Toast;
 
@@ -46,8 +44,10 @@ public class ManagedPreferencesUtils {
      *
      * @param context The context where the Toast will be shown.
      */
-    public static void showManagedByParentToast(Context context) {
-        Toast.makeText(context, context.getString(getManagedByParentStringRes()), Toast.LENGTH_LONG)
+    public static void showManagedByParentToast(
+            Context context, @Nullable ManagedPreferenceDelegate delegate) {
+        Toast.makeText(context, context.getString(getManagedByParentStringRes(delegate)),
+                     Toast.LENGTH_LONG)
                 .show();
     }
 
@@ -189,7 +189,7 @@ public class ManagedPreferencesUtils {
             if (delegate.isPreferenceControlledByPolicy(preference)) {
                 showManagedByAdministratorToast(preference.getContext());
             } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-                showManagedByParentToast(preference.getContext());
+                showManagedByParentToast(preference.getContext(), delegate);
             }
         });
     }
@@ -214,7 +214,7 @@ public class ManagedPreferencesUtils {
         if (delegate.isPreferenceControlledByPolicy(preference)) {
             showManagedByAdministratorToast(preference.getContext());
         } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-            showManagedByParentToast(preference.getContext());
+            showManagedByParentToast(preference.getContext(), delegate);
         } else {
             // If the preference is disabled, it should be either because it's managed by enterprise
             // policy or by the custodian.
@@ -242,7 +242,7 @@ public class ManagedPreferencesUtils {
         if (delegate.isPreferenceControlledByPolicy(preference)) {
             extraSummary = preference.getContext().getString(R.string.managed_by_your_organization);
         } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-            extraSummary = preference.getContext().getString(getManagedByParentStringRes());
+            extraSummary = preference.getContext().getString(getManagedByParentStringRes(delegate));
         }
 
         if (TextUtils.isEmpty(extraSummary)) return summary;
@@ -250,12 +250,13 @@ public class ManagedPreferencesUtils {
         return String.format(Locale.getDefault(), "%s\n%s", summary, extraSummary);
     }
 
-    private static @StringRes int getManagedByParentStringRes() {
-        boolean singleParentIsManager =
-                PrefServiceBridge.getInstance()
-                        .getString(Pref.SUPERVISED_USER_SECOND_CUSTODIAN_NAME)
-                        .isEmpty();
-        return singleParentIsManager ? R.string.managed_by_your_parent
-                                     : R.string.managed_by_your_parents;
+    private static @StringRes int getManagedByParentStringRes(
+            @Nullable ManagedPreferenceDelegate delegate) {
+        boolean hasMultipleCustodians = false;
+        if (delegate != null) {
+            hasMultipleCustodians = delegate.doesProfileHaveMultipleCustodians();
+        }
+        return hasMultipleCustodians ? R.string.managed_by_your_parents
+                                     : R.string.managed_by_your_parent;
     }
 }

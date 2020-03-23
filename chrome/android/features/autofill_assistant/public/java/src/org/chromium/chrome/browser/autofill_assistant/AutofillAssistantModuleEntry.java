@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,8 +31,8 @@ interface AutofillAssistantModuleEntry {
      * disappears.
      */
     void start(@NonNull Tab tab, @NonNull WebContents webContents, boolean skipOnboarding,
-            String initialUrl, Map<String, String> parameters, String experimentIds,
-            @Nullable String callerAccount, Bundle intentExtras);
+            @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
+            @Nullable String callerAccount, @Nullable String userName);
     /**
      * Returns a {@link AutofillAssistantActionHandler} instance tied to the activity owning the
      * given bottom sheet, and scrim view.

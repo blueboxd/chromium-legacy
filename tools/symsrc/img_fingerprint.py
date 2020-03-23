@@ -12,7 +12,16 @@ compressed .dl_) or .exe is expected at a path like:
 
 from __future__ import print_function
 
+import os
 import sys
+
+# Assume this script is under tools/symsrc/
+_SCRIPT_DIR = os.path.dirname(__file__)
+_ROOT_DIR = os.path.join(_SCRIPT_DIR, os.pardir, os.pardir)
+_PEFILE_DIR = os.path.join(_ROOT_DIR, 'third_party', 'pefile')
+
+sys.path.insert(1, _PEFILE_DIR)
+
 import pefile
 
 

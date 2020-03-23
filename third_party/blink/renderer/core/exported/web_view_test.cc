@@ -103,7 +103,9 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
@@ -327,6 +329,11 @@ static std::string HitTestElementId(WebView* view, int x, int y) {
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.GetNode().To<WebElement>().GetAttribute("id").Utf8();
+}
+
+static Color OutlineColor(Element* element) {
+  return element->GetComputedStyle()->VisitedDependentColor(
+      GetCSSPropertyOutlineColor());
 }
 
 TEST_F(WebViewTest, HitTestVideo) {
@@ -683,6 +690,60 @@ TEST_F(WebViewTest, DocumentHasFocus) {
   web_view->MainFrameWidget()->SetFocus(true);
   EXPECT_TRUE(document->hasFocus());
   EXPECT_EQ("document.hasFocus(): true", log_element.TextContent());
+}
+
+TEST_F(WebViewTest, PlatformColorsChangedOnDeviceEmulation) {
+  WebViewImpl* web_view_impl = web_view_helper_.Initialize();
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
+  frame_test_helpers::LoadHTMLString(
+      web_view_impl->MainFrameImpl(),
+      "<style>"
+      "  span { outline-color: -webkit-focus-ring-color; }"
+      "</style>"
+      "<span id='span1'></span>",
+      base_url);
+  UpdateAllLifecyclePhases();
+
+  WebDeviceEmulationParams params;
+  params.screen_position = WebDeviceEmulationParams::kMobile;
+
+  Document& document =
+      *web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
+
+  Element* span1 = document.getElementById("span1");
+  ASSERT_TRUE(span1);
+
+  // Check non-MobileLayoutTheme color.
+  Color original = LayoutTheme::GetTheme().FocusRingColor();
+  EXPECT_EQ(original, OutlineColor(span1));
+
+  // Set the focus ring color for the mobile theme to something known.
+  Color custom_color = MakeRGB(123, 145, 167);
+  {
+    ScopedMobileLayoutThemeForTest mobile_layout_theme_enabled(true);
+    LayoutTheme::GetTheme().SetCustomFocusRingColor(custom_color);
+  }
+
+  EXPECT_NE(custom_color, original);
+  web_view_impl->EnableDeviceEmulation(params);
+
+  // All <span>s should have the custom outline color, and not (for example)
+  // the original color fetched from cache.
+  auto* span2 = MakeGarbageCollected<HTMLSpanElement>(document);
+  document.body()->AppendChild(span2);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(custom_color, OutlineColor(span1));
+  EXPECT_EQ(custom_color, OutlineColor(span2));
+
+  // Disable mobile emulation. All <span>s should once again have the
+  // original outline color.
+  web_view_impl->DisableDeviceEmulation();
+  auto* span3 = MakeGarbageCollected<HTMLSpanElement>(document);
+  document.body()->AppendChild(span3);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(original, OutlineColor(span1));
+  EXPECT_EQ(original, OutlineColor(span2));
+  EXPECT_EQ(original, OutlineColor(span3));
 }
 
 TEST_F(WebViewTest, ActiveState) {

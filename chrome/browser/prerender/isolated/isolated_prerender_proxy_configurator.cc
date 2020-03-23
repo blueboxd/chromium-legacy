@@ -79,8 +79,9 @@ IsolatedPrerenderProxyConfigurator::CreateCustomProxyConfig() const {
   // be used in order to mask the user's IP address during the prerender.
   for (const GURL& host : proxy_hosts_) {
     DCHECK(host.is_valid());
-    config->rules.proxies_for_https.AddProxyServer(net::ProxyServer(
-        net::ProxyServer::SCHEME_HTTPS, net::HostPortPair::FromURL(host)));
+    config->rules.proxies_for_https.AddProxyServer(
+        net::ProxyServer(net::ProxyServer::GetSchemeFromURI(host.scheme()),
+                         net::HostPortPair::FromURL(host)));
   }
   // This ensures that the user's set proxy is honored, although we also disable
   // the feature is such cases.

@@ -28,6 +28,8 @@ message ViewProto {
     DividerViewProto divider_view = 6;
     // A regular image view.
     ImageViewProto image_view = 7;
+    // A text input view.
+    TextInputViewProto text_input_view = 8;
   }
 }
 
@@ -164,7 +166,32 @@ message ImageViewProto {
   optional DrawableProto image = 1;
 }
 
-message CheckBoxViewProto {}
+// A text input widget.
+message TextInputViewProto {
+  // This mirrors the type hints specified in
+  // https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/autofill/prefeditor/EditorFieldModel.java
+  enum InputTypeHint {
+    // No special formatting rules.
+    NONE = 0;
+    PHONE = 1;
+    EMAIL = 2;
+    // A multi-line address field that may include numbers.
+    STREET_LINES = 3;
+    PERSON_NAME = 4;
+    // A region or administrative area, e.g., a state or a province.
+    REGION = 5;
+    ALPHA_NUMERIC = 6;
+  }
+
+  // The hint to display when the input is empty.
+  optional string hint = 1;
+  // A type hint that the widget may interpret to provide optimized controls.
+  // Note that the actual impact is version-dependent and not all hints may be
+  // supported, in which case a regular text input field will be displayed.
+  optional InputTypeHint type = 2;
+  // The model identifier to write to.
+  optional string model_identifier = 3;
+}
 
 // A generic read-only popup message.
 message InfoPopupProto {

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"

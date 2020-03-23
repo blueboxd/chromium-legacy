@@ -28,12 +28,11 @@ GURL GetStartupURL() {
   if (command_line->HasSwitch(switches::kNoInitialNavigation))
     return GURL();
 
-  const base::CommandLine::StringVector& args = command_line->GetArgs();
-
 #if defined(OS_ANDROID)
   // Delay renderer creation on Android until surface is ready.
   return GURL();
-#endif
+#else
+  const base::CommandLine::StringVector& args = command_line->GetArgs();
 
   if (args.empty())
     return GURL("https://www.google.com/");
@@ -44,6 +43,7 @@ GURL GetStartupURL() {
 
   return net::FilePathToFileURL(
       base::MakeAbsoluteFilePath(base::FilePath(args[0])));
+#endif
 }
 
 class MainDelegateImpl : public MainDelegate {

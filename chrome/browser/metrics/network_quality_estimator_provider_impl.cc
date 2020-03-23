@@ -51,14 +51,14 @@ void NetworkQualityEstimatorProviderImpl::PostReplyOnNetworkQualityChanged(
                          AddEffectiveConnectionTypeObserverNow,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   return;
-#endif
-
+#else
   bool task_posted = base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&NetworkQualityEstimatorProviderImpl::
                          AddEffectiveConnectionTypeObserverNow,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   DCHECK(task_posted);
+#endif
 }
 
 void NetworkQualityEstimatorProviderImpl::AddEffectiveConnectionTypeObserverNow(

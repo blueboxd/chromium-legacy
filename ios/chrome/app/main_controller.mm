@@ -1313,10 +1313,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                            dismissOmnibox:dismissOmnibox];
 }
 
-- (DeviceSharingManager*)deviceSharingManager {
-  return [self.sceneController.browserViewWrangler deviceSharingManager];
-}
-
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher {
   [self.sceneController setTabSwitcher:switcher];
 }

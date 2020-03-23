@@ -11,7 +11,6 @@
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 
-@class DeviceSharingManager;
 class GURL;
 @protocol TabSwitcher;
 
@@ -25,8 +24,6 @@ class GURL;
 
 // Methods that only exist for tests.
 @interface MainController (TestingOnly)
-
-@property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
 
 // Tab switcher state.
 - (BOOL)tabSwitcherActive;

@@ -38,10 +38,10 @@ class IsolatedPrerenderProxyConfigurator {
   // config.
   void UpdateCustomProxyConfig();
 
- private:
   // Creates a config that can be sent to the NetworkContext.
   network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig() const;
 
+ private:
   // The headers used to setup the connect tunnel.
   net::HttpRequestHeaders connect_tunnel_headers_;
 

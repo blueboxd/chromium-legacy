@@ -12,7 +12,6 @@
 
 @protocol ApplicationCommands;
 class ChromeBrowserState;
-@class DeviceSharingManager;
 @class MainController;
 @class NewTabPageController;
 @class UIViewController;
@@ -21,9 +20,6 @@ namespace chrome_test_util {
 
 // Returns the main controller.
 MainController* GetMainController();
-
-// Returns the DeviceSharingManager object.
-DeviceSharingManager* GetDeviceSharingManager();
 
 // Returns the current, non-incognito ChromeBrowserState.
 ChromeBrowserState* GetOriginalBrowserState();

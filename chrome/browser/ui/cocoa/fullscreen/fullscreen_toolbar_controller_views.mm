@@ -51,9 +51,4 @@
   return ns_window;
 }
 
-- (BOOL)isInImmersiveFullscreen {
-  // TODO: support immersive fullscreen mode https://crbug.com/863047.
-  return false;
-}
-
 @end

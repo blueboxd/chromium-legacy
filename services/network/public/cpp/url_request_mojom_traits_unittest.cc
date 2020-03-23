@@ -87,8 +87,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.upgrade_if_insecure = true;
   original.is_revalidating = false;
   original.throttling_profile_id = base::UnguessableToken::Create();
-  original.custom_proxy_pre_cache_headers.SetHeader("pre_x", "x_value");
-  original.custom_proxy_post_cache_headers.SetHeader("post_y", "y_value");
   original.fetch_window_id = base::UnguessableToken::Create();
 
   original.trusted_params = ResourceRequest::TrustedParams();

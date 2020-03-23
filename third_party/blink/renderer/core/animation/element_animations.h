@@ -79,6 +79,8 @@ class CORE_EXPORT ElementAnimations final
   void SetAnimationStyleChange(bool animation_style_change) {
     animation_style_change_ = animation_style_change;
   }
+  void SetHasImportantOverrides() { has_important_overrides_ = true; }
+  void SetHasFontAffectingAnimation() { has_font_affecting_animation_ = true; }
 
   const ComputedStyle* BaseComputedStyle() const;
   void UpdateBaseComputedStyle(const ComputedStyle*);
@@ -90,6 +92,7 @@ class CORE_EXPORT ElementAnimations final
 
  private:
   bool IsAnimationStyleChange() const { return animation_style_change_; }
+  bool IsBaseComputedStyleUsable() const;
 
   EffectStack effect_stack_;
   CSSAnimations css_animations_;
@@ -103,6 +106,15 @@ class CORE_EXPORT ElementAnimations final
   // change from the running animations) and use that during style recalc,
   // applying only the animation changes on top of it.
   bool animation_style_change_;
+  // This is true when there's an !important declaration that overrides an
+  // animation effect. In this case, we can not use the base computed style
+  // optimization, since we have no way of knowing the cascade origins used
+  // to construct the various parts of the base style.
+  bool has_important_overrides_ = false;
+  // If a font-affecting property is undergoing an animation, we can't use
+  // the base computed style optimization, because font-relative units
+  // (such as 'em') present in the base should respond to the animation.
+  bool has_font_affecting_animation_ = false;
   scoped_refptr<ComputedStyle> base_computed_style_;
 
   // CSSAnimations checks if a style change is due to animation.

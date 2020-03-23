@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/assistant/model/assistant_response.h"
+#include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"

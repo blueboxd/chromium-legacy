@@ -64,13 +64,12 @@ GURL GetStartupURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kBrowserTest))
     return GURL();
-  const base::CommandLine::StringVector& args = command_line->GetArgs();
 
 #if defined(OS_ANDROID)
   // Delay renderer creation on Android until surface is ready.
   return GURL();
-#endif
-
+#else
+  const base::CommandLine::StringVector& args = command_line->GetArgs();
   if (args.empty())
     return GURL("https://www.google.com/");
 
@@ -80,6 +79,7 @@ GURL GetStartupURL() {
 
   return net::FilePathToFileURL(
       base::MakeAbsoluteFilePath(base::FilePath(args[0])));
+#endif
 }
 
 scoped_refptr<base::RefCountedMemory> PlatformResourceProvider(int key) {

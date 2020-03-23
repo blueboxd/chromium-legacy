@@ -30,6 +30,7 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.vr.VrModeObserver;
 
 import java.lang.annotation.Retention;
@@ -143,6 +144,9 @@ public class BottomSheetController implements Destroyable {
      */
     private List<BottomSheetObserver> mPendingSheetObservers;
 
+    /** A token held while the bottom sheet is obscuring all visible tabs. */
+    private int mTabObscuringToken;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
@@ -162,6 +166,7 @@ public class BottomSheetController implements Destroyable {
         mOverlayPanelManager = overlayManager;
         mFullscreenManager = fullscreenManager;
         mPendingSheetObservers = new ArrayList<>();
+        mTabObscuringToken = TokenHolder.INVALID_TOKEN;
 
         mPendingSheetObservers.add(new EmptyBottomSheetObserver() {
             /** The token used to enable browser controls persistence. */
@@ -472,9 +477,11 @@ public class BottomSheetController implements Destroyable {
      */
     public void setIsObscuringAllTabs(TabObscuringHandler obscuringHandler, boolean isObscuring) {
         if (isObscuring) {
-            obscuringHandler.addViewObscuringAllTabs(mBottomSheet);
+            assert mTabObscuringToken == TokenHolder.INVALID_TOKEN;
+            mTabObscuringToken = obscuringHandler.obscureAllTabs();
         } else {
-            obscuringHandler.removeViewObscuringAllTabs(mBottomSheet);
+            obscuringHandler.unobscureAllTabs(mTabObscuringToken);
+            mTabObscuringToken = TokenHolder.INVALID_TOKEN;
         }
     }
 

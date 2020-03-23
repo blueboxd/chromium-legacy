@@ -4,7 +4,9 @@
 
 package org.chromium.components.paintpreview.player;
 
+import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -32,6 +34,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private static final String TEST_DATA_DIR = "components/test/data/";
     private static final String TEST_DIRECTORY_KEY = "wikipedia";
     private static final String TEST_URL = "https://en.m.wikipedia.org/wiki/Main_Page";
+    private static final String TEST_EXPECTED_LINK_URL =
+            "https://en.m.wikipedia.org/wiki/File:Grave_marker_of_J._R._Kealoha_(d._1877).jpg";
 
     @Rule
     public PaintPreviewTestRule mPaintPreviewTestRule = new PaintPreviewTestRule();
@@ -39,16 +43,34 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private PlayerManager mPlayerManager;
 
     /**
+     * LinkClickHandler implementation for caching the last URL that was clicked.
+     */
+    public class TestLinkClickHandler implements LinkClickHandler {
+        private GURL mUrl;
+
+        @Override
+        public void onLinkClicked(GURL url) {
+            mUrl = url;
+        }
+
+        public GURL getUrl() {
+            return mUrl;
+        }
+    }
+
+    /**
      * Tests the the player correctly initializes and displays a sample paint preview with 1 frame.
      */
     @Test
     @MediumTest
     public void singleFrameDisplayTest() {
+        TestLinkClickHandler linkClickHandler = new TestLinkClickHandler();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
                     new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
-                    TEST_DIRECTORY_KEY, success -> { Assert.assertTrue(success); });
+                    TEST_DIRECTORY_KEY, linkClickHandler,
+                    success -> { Assert.assertTrue(success); });
             getActivity().setContentView(mPlayerManager.getView());
         });
 
@@ -76,5 +98,24 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
                 },
                 "Player size doesn't match R.id.content", TIMEOUT_MS,
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = downTime + 100;
+        MotionEvent downEvent = MotionEvent.obtain(
+                downTime, downTime + 100, MotionEvent.ACTION_DOWN, 67.0f, 527.0f, 0);
+        MotionEvent upEvent = MotionEvent.obtain(
+                downTime + 150, downTime + 200, MotionEvent.ACTION_UP, 67.0f, 527.0f, 0);
+
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+            playerHostView.dispatchTouchEvent(downEvent);
+            playerHostView.dispatchTouchEvent(upEvent);
+        });
+
+        CriteriaHelper.pollUiThread(() -> {
+            GURL url = linkClickHandler.getUrl();
+            if (url == null) return false;
+
+            return url.getSpec().equals(TEST_EXPECTED_LINK_URL);
+        }, "Link press failed", TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

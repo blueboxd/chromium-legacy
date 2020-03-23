@@ -16,8 +16,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.TextMessagePreference;
 import org.chromium.chrome.browser.settings.homepage.RadioButtonGroupHomepagePreference.HomepageOption;
@@ -42,7 +42,8 @@ public class HomepageSettings extends PreferenceFragmentCompat {
      * Delegate used to mark that the homepage is being managed.
      * Created for {@link org.chromium.chrome.browser.settings.HomepagePreferences}
      */
-    private static class HomepageManagedPreferenceDelegate implements ManagedPreferenceDelegate {
+    private static class HomepageManagedPreferenceDelegate
+            implements ChromeManagedPreferenceDelegate {
         @Override
         public boolean isPreferenceControlledByPolicy(Preference preference) {
             return HomepagePolicyManager.isHomepageManagedByPolicy();

@@ -419,7 +419,8 @@ public class MediaDrmBridge {
             final Method getInt = systemProperties.getMethod("getInt", String.class, int.class);
             firstApiLevel = (Integer) getInt.invoke(null, FIRST_API_LEVEL, 0);
         } catch (Exception e) {
-            Log.e("Exception while getting system property %s. Using default.", FIRST_API_LEVEL, e);
+            Log.e(TAG, "Exception while getting system property %s. Using default.",
+                    FIRST_API_LEVEL, e);
             firstApiLevel = 0;
         }
         return firstApiLevel;

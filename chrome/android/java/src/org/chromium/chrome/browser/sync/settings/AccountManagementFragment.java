@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -325,7 +326,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
             });
             return true;
         });
-        addAccountPreference.setManagedPreferenceDelegate(preference -> !canAddAccounts());
+        addAccountPreference.setManagedPreferenceDelegate(
+                (ChromeManagedPreferenceDelegate) preference -> !canAddAccounts());
         return addAccountPreference;
     }
 

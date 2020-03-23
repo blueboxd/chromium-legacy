@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
-#include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_test_delegate.h"
@@ -39,17 +39,19 @@ blink::WebView* WebViewTestProxy::CreateView(
     const blink::FeaturePolicy::FeatureState& opener_feature_state,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
   if (GetTestRunner()->ShouldDumpNavigationPolicy()) {
-    delegate()->PrintMessage("Default policy for createView for '" +
-                             URLDescription(request.Url()) + "' is '" +
-                             WebNavigationPolicyToString(policy) + "'\n");
+    delegate()->PrintMessage(
+        "Default policy for createView for '" +
+        web_test_string_util::URLDescription(request.Url()) + "' is '" +
+        web_test_string_util::WebNavigationPolicyToString(policy) + "'\n");
   }
 
   if (!GetTestRunner()->CanOpenWindows())
     return nullptr;
 
   if (GetTestRunner()->ShouldDumpCreateView()) {
-    delegate()->PrintMessage(std::string("createView(") +
-                             URLDescription(request.Url()) + ")\n");
+    delegate()->PrintMessage(
+        std::string("createView(") +
+        web_test_string_util::URLDescription(request.Url()) + ")\n");
   }
   return RenderViewImpl::CreateView(creator, request, features, frame_name,
                                     policy, sandbox_flags, opener_feature_state,

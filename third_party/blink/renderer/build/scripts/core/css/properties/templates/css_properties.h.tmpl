@@ -46,6 +46,7 @@ namespace {{namespace}} {
   (property.valid_for_cue and 'kValidForCue' or ''),
   (property.valid_for_marker and 'kValidForMarker' or ''),
   (is_surrogate and 'kSurrogate' or ''),
+  (property.font and 'kAffectsFont' or ''),
 ] | reject('==', '') | join(' | ') %}
 {% set ctor_args = (not is_alias and [property_id, flags, separator] or []) %}
 // {{property.name}}

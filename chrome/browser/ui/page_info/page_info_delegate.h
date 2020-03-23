@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_DELEGATE_H_
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_result.h"
 #include "components/safe_browsing/buildflags.h"
@@ -16,9 +18,19 @@ class PasswordProtectionService;
 }  // namespace safe_browsing
 
 // PageInfoDelegate allows an embedder to customize PageInfo logic.
+namespace permissions {
+class ChooserContextBase;
+}
+
 class PageInfoDelegate {
  public:
   virtual ~PageInfoDelegate() = default;
+
+  // Return the |ChooserContextBase| corresponding to the  content settings
+  // type, |type|. Returns a nullptr for content settings for which there's no
+  // ChooserContextBase.
+  virtual permissions::ChooserContextBase* GetChooserContext(
+      ContentSettingsType type) = 0;
 
   // Whether the content setting of type |type| has changed via Page Info UI.
   virtual bool HasContentSettingChangedViaPageInfo(

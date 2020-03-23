@@ -64,4 +64,9 @@ bool CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
   return false;
 }
 
+void CascadeMap::Reset() {
+  native_property_bits_.reset();
+  custom_properties_.clear();
+}
+
 }  // namespace blink

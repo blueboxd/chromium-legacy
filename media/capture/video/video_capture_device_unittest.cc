@@ -356,6 +356,10 @@ class VideoCaptureDeviceTest
     video_capture_device_factory_->GetDeviceDescriptors(
         device_descriptors_.get());
 
+    if (device_descriptors_->empty()) {
+      DLOG(WARNING) << "No camera found";
+      return nullptr;
+    }
 #if defined(OS_ANDROID)
     for (const auto& descriptor : *device_descriptors_) {
       // Android deprecated/legacy devices capture on a single thread, which is
@@ -370,25 +374,11 @@ class VideoCaptureDeviceTest
     }
     DLOG(WARNING) << "No usable camera found";
     return nullptr;
-#endif
-
-    if (device_descriptors_->empty()) {
-      DLOG(WARNING) << "No camera found";
-      return nullptr;
-    }
-#if defined(OS_WIN)
-    // Dump the camera model to help debugging.
-    // TODO(alaoui.rda@gmail.com): remove after http://crbug.com/730068 is
-    // fixed.
-    LOG(INFO) << "Using camera "
-              << device_descriptors_->front().GetNameAndModel();
 #else
-    DLOG(INFO) << "Using camera "
-               << device_descriptors_->front().GetNameAndModel();
+    const auto& descriptor = device_descriptors_->front();
+    DLOG(INFO) << "Using camera " << descriptor.GetNameAndModel();
+    return std::make_unique<VideoCaptureDeviceDescriptor>(descriptor);
 #endif
-
-    return std::make_unique<VideoCaptureDeviceDescriptor>(
-        device_descriptors_->front());
   }
 
   const VideoCaptureFormat& last_format() const { return last_format_; }

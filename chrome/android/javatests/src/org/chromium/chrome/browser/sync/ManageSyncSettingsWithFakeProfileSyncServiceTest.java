@@ -149,7 +149,6 @@ public class ManageSyncSettingsWithFakeProfileSyncServiceTest {
         // PassphraseDialogFragment should be dismissed.
         fakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            fakeProfileSyncService.syncStateChanged();
             fragment.getFragmentManager().executePendingTransactions();
             Assert.assertNull("PassphraseDialogFragment should be dismissed.",
                     mSettingsActivity.getFragmentManager().findFragmentByTag(

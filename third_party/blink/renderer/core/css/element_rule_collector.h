@@ -110,6 +110,7 @@ class ElementRuleCollector {
  public:
   ElementRuleCollector(const ElementResolveContext&,
                        const SelectorFilter&,
+                       MatchResult&,
                        ComputedStyle*,
                        EInsideLink);
   ~ElementRuleCollector();
@@ -197,7 +198,7 @@ class ElementRuleCollector {
   // Output.
   Member<RuleIndexList> css_rule_list_;
   Member<StyleRuleList> style_rule_list_;
-  MatchResult result_;
+  MatchResult& result_;
   DISALLOW_COPY_AND_ASSIGN(ElementRuleCollector);
 };
 

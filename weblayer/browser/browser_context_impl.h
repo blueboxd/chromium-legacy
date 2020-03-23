@@ -60,6 +60,8 @@ class BrowserContextImpl : public content::BrowserContext {
 
   ProfileImpl* profile_impl() const { return profile_impl_; }
 
+  PrefService* pref_service() const { return user_pref_service_.get(); }
+
  private:
   class WebLayerVariationsClient;
 
@@ -84,8 +86,6 @@ class BrowserContextImpl : public content::BrowserContext {
       resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
   std::unique_ptr<PrefService> user_pref_service_;
-  std::unique_ptr<content::PermissionControllerDelegate>
-      permission_controller_delegate_;
   std::unique_ptr<WebLayerVariationsClient> weblayer_variations_client_;
 };
 }  // namespace weblayer

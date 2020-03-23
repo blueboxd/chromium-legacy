@@ -58,6 +58,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private boolean mInDestroy;
     private final UrlBarControllerImpl mUrlBarController;
     private boolean mFragmentStarted;
+    private boolean mFragmentResumed;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -377,8 +378,20 @@ public class BrowserImpl extends IBrowser.Stub {
         updateAllTabs();
     }
 
+    public void onFragmentResume() {
+        mFragmentResumed = true;
+    }
+
+    public void onFragmentPause() {
+        mFragmentResumed = false;
+    }
+
     public boolean isStarted() {
         return mFragmentStarted;
+    }
+
+    public boolean isResumed() {
+        return mFragmentResumed;
     }
 
     private void destroyAttachmentState() {

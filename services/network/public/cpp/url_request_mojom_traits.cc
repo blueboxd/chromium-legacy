@@ -185,10 +185,6 @@ bool StructTraits<
       !data.ReadFetchIntegrity(&out->fetch_integrity) ||
       !data.ReadRequestBody(&out->request_body) ||
       !data.ReadThrottlingProfileId(&out->throttling_profile_id) ||
-      !data.ReadCustomProxyPreCacheHeaders(
-          &out->custom_proxy_pre_cache_headers) ||
-      !data.ReadCustomProxyPostCacheHeaders(
-          &out->custom_proxy_post_cache_headers) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
       !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
       !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token) ||

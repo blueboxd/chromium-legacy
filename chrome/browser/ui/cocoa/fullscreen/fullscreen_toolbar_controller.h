@@ -15,7 +15,6 @@
 class FullscreenToolbarAnimationController;
 @class FullscreenToolbarMouseTracker;
 @class FullscreenToolbarVisibilityLockController;
-@class ImmersiveFullscreenController;
 
 namespace content {
 class WebContents;
@@ -47,8 +46,6 @@ enum class FullscreenToolbarStyle {
 - (BOOL)isFullscreenTransitionInProgress;
 // The native window associated with the fullscreen controller.
 - (NSWindow*)window;
-// Whether in immersive fullscreen mode.
-- (BOOL)isInImmersiveFullscreen;
 
 @end
 
@@ -76,10 +73,6 @@ enum class FullscreenToolbarStyle {
   // is used to keep them visible until the mouse moves far enough away from
   // them. Only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenToolbarMouseTracker> _mouseTracker;
-
-  // Controller for immersive fullscreen.
-  base::scoped_nsobject<ImmersiveFullscreenController>
-      _immersiveFullscreenController;
 
   // The style of the fullscreen toolbar.
   FullscreenToolbarStyle _toolbarStyle;
@@ -128,9 +121,6 @@ enum class FullscreenToolbarStyle {
 
 // Returns the object in |visibilityLockController_|;
 - (FullscreenToolbarVisibilityLockController*)visibilityLockController;
-
-// Returns the object in |immersiveFullscreenController_|;
-- (ImmersiveFullscreenController*)immersiveFullscreenController;
 
 // Sets the value of |toolbarStyle_|.
 - (void)setToolbarStyle:(FullscreenToolbarStyle)style;

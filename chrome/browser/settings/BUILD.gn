@@ -22,8 +22,6 @@ android_library("java") {
   deps = [
     ":java_resources",
     "//base:base_java",
-    "//chrome/browser/preferences:java",
-    "//chrome/browser/util:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_preference_preference_java",
@@ -32,6 +30,14 @@ android_library("java") {
     "//components/browser_ui/styles/android:java_resources",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java",
+  ]
+}
+
+android_library("chrome_managed_preference_delegate_java") {
+  sources = [ "android/java/src/org/chromium/chrome/browser/settings/ChromeManagedPreferenceDelegate.java" ]
+  deps = [
+    ":java",
+    "//chrome/browser/preferences:java",
   ]
 }
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
@@ -24,7 +25,7 @@
 
 ChosenObjectView::ChosenObjectView(
     std::unique_ptr<PageInfoUI::ChosenObjectInfo> info,
-    Profile* profile)
+    base::string16 display_name)
     : info_(std::move(info)) {
   // |ChosenObjectView| layout (fills parent):
   // *------------------------------------*
@@ -69,9 +70,8 @@ ChosenObjectView::ChosenObjectView(
   icon_ = layout->AddView(std::make_unique<views::ImageView>());
 
   // Create the label that displays the chosen object name.
-  auto label = std::make_unique<views::Label>(
-      PageInfoUI::ChosenObjectToUIString(*info_, profile),
-      CONTEXT_BODY_TEXT_LARGE);
+  auto label =
+      std::make_unique<views::Label>(display_name, CONTEXT_BODY_TEXT_LARGE);
   icon_->SetImage(
       PageInfoUI::GetChosenObjectIcon(*info_, false, label->GetEnabledColor()));
   layout->AddView(std::move(label));

@@ -5,7 +5,7 @@
 #include "content/shell/test_runner/mock_content_settings_client.h"
 
 #include "content/public/common/origin_util.h"
-#include "content/shell/test_runner/test_common.h"
+#include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -32,7 +32,8 @@ bool MockContentSettingsClient::AllowImage(bool enabled_per_settings,
   if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
     delegate_->PrintMessage(
         std::string("MockContentSettingsClient: allowImage(") +
-        NormalizeWebTestURL(image_url.GetString().Utf8()) +
+        web_test_string_util::NormalizeWebTestURL(
+            image_url.GetString().Utf8()) +
         "): " + (allowed ? "true" : "false") + "\n");
   }
   return allowed;
@@ -49,7 +50,8 @@ bool MockContentSettingsClient::AllowScriptFromSource(
   if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
     delegate_->PrintMessage(
         std::string("MockContentSettingsClient: allowScriptFromSource(") +
-        NormalizeWebTestURL(script_url.GetString().Utf8()) +
+        web_test_string_util::NormalizeWebTestURL(
+            script_url.GetString().Utf8()) +
         "): " + (allowed ? "true" : "false") + "\n");
   }
   return allowed;

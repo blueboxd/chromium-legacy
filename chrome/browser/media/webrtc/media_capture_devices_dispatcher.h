@@ -163,6 +163,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   void SetTestVideoCaptureDevices(const blink::MediaStreamDevices& devices);
 
  private:
+  friend class MediaCaptureDevicesDispatcherTest;
+
   friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
   MediaCaptureDevicesDispatcher();

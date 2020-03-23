@@ -59,6 +59,10 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
   return true;
 }
 
+bool operator!=(const ValueProto& value_a, const ValueProto& value_b) {
+  return !(value_a == value_b);
+}
+
 bool operator<(const ValueProto& value_a, const ValueProto& value_b) {
   if (value_a.kind_case() != value_b.kind_case()) {
     return false;

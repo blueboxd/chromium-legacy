@@ -2019,7 +2019,7 @@ void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
 
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  TRACE_EVENT1("memory", "RenderThreadImpl::OnMemoryPressure", "Level",
+  TRACE_EVENT1("memory", "RenderThreadImpl::OnMemoryPressure", "level",
                memory_pressure_level);
   if (blink_platform_impl_) {
     blink::WebMemoryPressureListener::OnMemoryPressure(

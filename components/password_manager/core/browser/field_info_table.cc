@@ -15,6 +15,7 @@ namespace {
 
 constexpr char kFieldInfoTableName[] = "field_info";
 
+#if !defined(OS_ANDROID)
 // Represents columns of the FieldInfoTable. Used with SQL queries that use all
 // the columns.
 enum class FieldInfoTableColumn {
@@ -57,6 +58,7 @@ std::vector<FieldInfo> StatementToFieldInfo(sql::Statement* s) {
   }
   return results;
 }
+#endif
 
 }  // namespace
 
@@ -79,12 +81,13 @@ void FieldInfoTable::Init(sql::Database* db) {
 bool FieldInfoTable::CreateTableIfNecessary() {
 #if defined(OS_ANDROID)
   return true;
-#endif  // defined(OS_ANDROID)
+#else
   if (db_->DoesTableExist(kFieldInfoTableName))
     return true;
   SQLTableBuilder builder(kFieldInfoTableName);
   InitializeFieldInfoBuilder(&builder);
   return builder.CreateTable(db_);
+#endif  // defined(OS_ANDROID)
 }
 
 bool FieldInfoTable::DropTableIfExists() {
@@ -96,7 +99,7 @@ bool FieldInfoTable::DropTableIfExists() {
 bool FieldInfoTable::AddRow(const FieldInfo& field) {
 #if defined(OS_ANDROID)
   return false;
-#endif  // defined(OS_ANDROID)
+#else
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT OR IGNORE INTO field_info "
@@ -111,13 +114,14 @@ bool FieldInfoTable::AddRow(const FieldInfo& field) {
   s.BindInt64(GetColumnNumber(FieldInfoTableColumn::kCreateTime),
               field.create_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   return s.Run();
+#endif  // defined(OS_ANDROID)
 }
 
 bool FieldInfoTable::RemoveRowsByTime(base::Time remove_begin,
                                       base::Time remove_end) {
 #if defined(OS_ANDROID)
   return false;
-#endif  // defined(OS_ANDROID)
+#else
   sql::Statement s(
       db_->GetCachedStatement(SQL_FROM_HERE,
                               "DELETE FROM field_info WHERE "
@@ -125,17 +129,19 @@ bool FieldInfoTable::RemoveRowsByTime(base::Time remove_begin,
   s.BindInt64(0, remove_begin.ToDeltaSinceWindowsEpoch().InMicroseconds());
   s.BindInt64(1, remove_end.ToDeltaSinceWindowsEpoch().InMicroseconds());
   return s.Run();
+#endif  // defined(OS_ANDROID)
 }
 
 std::vector<FieldInfo> FieldInfoTable::GetAllRows() {
 #if defined(OS_ANDROID)
   return std::vector<FieldInfo>();
-#endif  // defined(OS_ANDROID)
+#else
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT form_signature, field_signature, field_type, create_time FROM "
       "field_info"));
   return StatementToFieldInfo(&s);
+#endif  // defined(OS_ANDROID)
 }
 
 // Returns all FieldInfo from the database which have |form_signature|.
@@ -143,7 +149,7 @@ std::vector<FieldInfo> FieldInfoTable::GetAllRowsForFormSignature(
     uint64_t form_signature) {
 #if defined(OS_ANDROID)
   return std::vector<FieldInfo>();
-#endif  // defined(OS_ANDROID)
+#else
   sql::Statement s(
       db_->GetCachedStatement(SQL_FROM_HERE,
                               "SELECT form_signature, field_signature, "
@@ -151,6 +157,7 @@ std::vector<FieldInfo> FieldInfoTable::GetAllRowsForFormSignature(
                               "WHERE form_signature = ?"));
   s.BindInt64(0, form_signature);
   return StatementToFieldInfo(&s);
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace password_manager

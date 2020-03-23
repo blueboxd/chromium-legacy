@@ -195,10 +195,6 @@ class PageInfoUI {
   // Returns the color to use for the permission decision reason strings.
   static SkColor GetSecondaryTextColor();
 
-  // Returns the UI string describing the given object |info|.
-  static base::string16 ChosenObjectToUIString(const ChosenObjectInfo& info,
-                                               Profile* profile);
-
 #if defined(OS_ANDROID)
   // Returns the identity icon ID for the given identity |status|.
   static int GetIdentityIconID(PageInfo::SiteIdentityStatus status);

@@ -6,6 +6,8 @@ source_set("permissions") {
   sources = [
     "chooser_context_base.cc",
     "chooser_context_base.h",
+    "contexts/geolocation_permission_context.cc",
+    "contexts/geolocation_permission_context.h",
     "features.cc",
     "features.h",
     "notification_permission_ui_selector.h",
@@ -32,6 +34,8 @@ source_set("permissions") {
     "permission_util.h",
     "permissions_client.cc",
     "permissions_client.h",
+    "pref_names.cc",
+    "pref_names.h",
     "switches.cc",
     "switches.h",
   ]
@@ -55,10 +59,15 @@ source_set("permissions") {
       "android/permission_prompt_android.h",
       "android/resource_id.h",
       "android/theme_resources.h",
+      "contexts/geolocation_permission_context_android.cc",
+      "contexts/geolocation_permission_context_android.h",
     ]
     deps += [
       "//components/infobars/core",
+      "//components/location/android:location_settings_dialog_enums_java",
+      "//components/location/android:settings",
       "//components/permissions/android:jni_headers",
+      "//components/prefs",
       "//ui/android",
     ]
   } else {
@@ -100,6 +109,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chooser_context_base_unittest.cc",
+    "contexts/geolocation_permission_context_unittest.cc",
     "permission_context_base_unittest.cc",
     "permission_decision_auto_blocker_unittest.cc",
     "permission_manager_unittest.cc",
@@ -113,10 +123,17 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/content_settings/core/browser",
     "//components/keyed_service/content",
+    "//components/prefs:test_support",
     "//components/ukm:test_support",
     "//components/ukm/content",
     "//components/variations",
     "//content/test:test_support",
     "//testing/gtest",
   ]
+  if (is_android) {
+    deps += [
+      "//components/location/android:location_settings_dialog_enums_java",
+      "//components/location/android:test_support",
+    ]
+  }
 }

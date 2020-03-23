@@ -68,8 +68,7 @@ import java.io.IOException;
 
         // Resolving the error should not show the infobar again.
         deleteSyncErrorInfoBarShowTimePref();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mFakeProfileSyncService.setAuthError(GoogleServiceAuthError.State.NONE); });
+        mFakeProfileSyncService.setAuthError(GoogleServiceAuthError.State.NONE);
         InfoBarUtil.waitUntilNoInfoBarsExist(mSyncTestRule.getInfoBars());
     }
 
@@ -85,7 +84,6 @@ import java.io.IOException;
         deleteSyncErrorInfoBarShowTimePref();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mFakeProfileSyncService.setFirstSetupComplete(SyncFirstSetupCompleteSource.BASIC_FLOW);
-            mFakeProfileSyncService.syncStateChanged();
         });
         InfoBarUtil.waitUntilNoInfoBarsExist(mSyncTestRule.getInfoBars());
     }
@@ -100,10 +98,7 @@ import java.io.IOException;
 
         // Resolving the error should not show the infobar again.
         deleteSyncErrorInfoBarShowTimePref();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(false);
-            mFakeProfileSyncService.syncStateChanged();
-        });
+        mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(false);
         InfoBarUtil.waitUntilNoInfoBarsExist(mSyncTestRule.getInfoBars());
     }
 
@@ -114,14 +109,13 @@ import java.io.IOException;
                 mSyncTestRule.getInfoBars().size());
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
+        mFakeProfileSyncService.setEngineInitialized(true);
+        mFakeProfileSyncService.setAuthError(GoogleServiceAuthError.State.NONE);
+        mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(false);
 
         @SyncError
         int syncError = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            mFakeProfileSyncService.setEngineInitialized(true);
-            mFakeProfileSyncService.setAuthError(GoogleServiceAuthError.State.NONE);
-            mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(false);
             mFakeProfileSyncService.setFirstSetupComplete(SyncFirstSetupCompleteSource.BASIC_FLOW);
-            mFakeProfileSyncService.syncStateChanged();
             return SyncSettingsUtils.getSyncError();
         });
         // syncError should not equal to any of these errors that trigger the infobar.
@@ -188,22 +182,14 @@ import java.io.IOException;
 
     private void showSyncErrorInfoBarForAuthError() {
         mSyncTestRule.setUpTestAccountAndSignIn();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mFakeProfileSyncService.setAuthError(
-                    GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS);
-        });
+        mFakeProfileSyncService.setAuthError(GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS);
         mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
     }
 
     private void showSyncErrorInfoBarForPassphraseRequired() {
         mSyncTestRule.setUpTestAccountAndSignIn();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // TODO(https://crbug.com/1056677): call syncStateChanged inside
-            // setPassphraseRequiredForPreferredDataTypes
-            mFakeProfileSyncService.setEngineInitialized(true);
-            mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(true);
-            mFakeProfileSyncService.syncStateChanged();
-        });
+        mFakeProfileSyncService.setEngineInitialized(true);
+        mFakeProfileSyncService.setPassphraseRequiredForPreferredDataTypes(true);
         mSyncTestRule.loadUrlInNewTab(UrlConstants.CHROME_BLANK_URL);
     }
 

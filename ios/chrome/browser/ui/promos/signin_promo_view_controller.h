@@ -12,19 +12,6 @@
 @protocol ApplicationCommands;
 class Browser;
 
-// Key in the UserDefaults to record the version of the application when the
-// SSO Recall promo has been displayed.
-// Exposed for testing.
-extern NSString* kDisplayedSSORecallForMajorVersionKey;
-// Key in the UserDefaults to record the GAIA id list when the sign-in promo
-// was shown.
-// Exposed for testing.
-extern NSString* kLastShownAccountGaiaIdVersionKey;
-// Key in the UserDefaults to record the number of time the sign-in promo has
-// been shown.
-// Exposed for testing.
-extern NSString* kSigninPromoViewDisplayCountKey;
-
 // Class to display a promotion view to encourage the user to sign on, if
 // SSO detects that the user has signed in with another application.
 //
@@ -32,20 +19,10 @@ extern NSString* kSigninPromoViewDisplayCountKey;
 // should always be presented in an |OrientationLimitingNavigationController|.
 @interface SigninPromoViewController : ChromeSigninViewController
 
-// YES if this promo should be shown for |browserState|
-+ (BOOL)shouldBePresentedForBrowserState:(ChromeBrowserState*)browserState;
-
 // Designated initializer.  |browser| must not be nil.
 - (instancetype)initWithBrowser:(Browser*)browser
                      dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
                                     dispatcher;
-
-// Records in user defaults:
-//   + the Chromium current version.
-//   + increases the sign-in promo display count.
-//   + Gaia ids list.
-// Separated out into a discrete function to allow overriding when testing.
-+ (void)recordVersionSeen;
 
 @end
 

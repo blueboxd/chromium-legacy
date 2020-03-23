@@ -552,7 +552,7 @@ public class ChromeTabModalPresenterTest {
 
     private void checkBrowserControls(boolean restricted) {
         boolean isViewObscuringAllTabs = TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mActivity.getTabObscuringHandler().isViewObscuringAllTabs());
+                () -> mActivity.getTabObscuringHandler().areAllTabsObscured());
         boolean isMenuEnabled = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             View menu = mActivity.getToolbarManager().getMenuButtonView();
             Assert.assertNotNull("Toolbar menu is incorrectly null.", menu);

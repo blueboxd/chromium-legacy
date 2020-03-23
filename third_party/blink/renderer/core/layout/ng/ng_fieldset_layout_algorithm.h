@@ -64,6 +64,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
   LayoutUnit block_start_padding_edge_;
   LayoutUnit intrinsic_block_size_;
+  const LayoutUnit consumed_block_size_;
   LogicalSize border_box_size_;
 
   // The legend may eat from the available content box block size. This

@@ -74,21 +74,19 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
     return nullptr;
   }
 
-  // For WebGL last-uploaded-frame-metadata API.
-  WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
-  int already_uploaded_id = HTMLVideoElement::kNoAlreadyUploadedFrame;
-  auto* frame_metadata_ptr = &frame_metadata;
-  if (RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled())
-    already_uploaded_id = texture->GetLastUploadedVideoFrameId();
-
 #if defined(OS_ANDROID)
   // TODO(crbug.com/776222): support extension on Android
   NOTIMPLEMENTED();
   return nullptr;
-#else  // defined OS_ANDROID
-  target = GL_TEXTURE_2D;
+#else
+  // For WebGL last-uploaded-frame-metadata API.
+  WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
+  auto* frame_metadata_ptr = &frame_metadata;
+  int already_uploaded_id = HTMLVideoElement::kNoAlreadyUploadedFrame;
+  if (RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled())
+    already_uploaded_id = texture->GetLastUploadedVideoFrameId();
 
-#endif  // defined OS_ANDROID
+  target = GL_TEXTURE_2D;
 
   // TODO(shaobo.yan@intel.com) : A fallback path or exception needs to be
   // added when video is not using gpu decoder.
@@ -120,6 +118,7 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
   current_frame_metadata_->setPresentationTimestamp(
       frame_metadata_ptr->timestamp.InSecondsF());
   return current_frame_metadata_;
+#endif  // defined OS_ANDROID
 }
 
 }  // namespace blink

@@ -1639,6 +1639,12 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_DATE" desc="A message shown on the top of the safety check feature, showing to the user on which date it ran.">
     Safety check ran on <ph name="DATE">$1<ex>April 1st, 2020</ex></ph>
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_ARIA_LIVE_RUNNING" desc="A message read out to accessibility users that safety check is running.">
+    Safety check is running.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_ARIA_LIVE_AFTER" desc="A message read out to accessibility users that safety check has completed.">
+    Safety check has completed.
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON" desc="'Check' is a verb. By clicking this button, the user can quickly check whether their safety-related settings are fully protecting them.">
     Check now
   </message>

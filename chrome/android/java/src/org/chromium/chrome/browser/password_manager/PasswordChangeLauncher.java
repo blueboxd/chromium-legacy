@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.password_manager;
 
-import android.os.Bundle;
-
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -21,8 +20,7 @@ public class PasswordChangeLauncher {
      * |kSessionUsernameParameterName| from components/autofill_assistant/browser/controller.cc
      * TODO(b/151401974): Eliminate duplicate parameter definitions.
      */
-    private static final String PASSWORD_CHANGE_USERNAME_PARAMETER =
-            AutofillAssistantFacade.INTENT_EXTRA_PREFIX + "PASSWORD_CHANGE_USERNAME";
+    private static final String PASSWORD_CHANGE_USERNAME_PARAMETER = "PASSWORD_CHANGE_USERNAME";
 
     @CalledByNative
     public static void start(WindowAndroid windowAndroid, String origin, String username) {
@@ -31,8 +29,10 @@ public class PasswordChangeLauncher {
             Log.v(TAG, "Failed to retrieve ChromeActivity.");
             return;
         }
-        Bundle bundleExtras = new Bundle();
-        bundleExtras.putString(PASSWORD_CHANGE_USERNAME_PARAMETER, username);
-        AutofillAssistantFacade.start(activity, bundleExtras, origin);
+        AutofillAssistantFacade.start(activity,
+                AutofillAssistantArguments.newBuilder()
+                        .withInitialUrl(origin)
+                        .addParameter(PASSWORD_CHANGE_USERNAME_PARAMETER, username)
+                        .build());
     }
 }

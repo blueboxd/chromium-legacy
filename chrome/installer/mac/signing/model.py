@@ -154,6 +154,12 @@ CodeSignOptions = make_enum(
         'KILL': 'kill',
     })
 
+# Specify the components of HARDENED_RUNTIME that are also available on
+# older macOS versions.
+CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS = (
+    CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
+    CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
+
 
 class Distribution(object):
     """A Distribution represents a final, signed, and potentially channel-

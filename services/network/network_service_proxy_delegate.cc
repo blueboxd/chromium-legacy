@@ -14,13 +14,6 @@
 namespace network {
 namespace {
 
-// The maximum size of the two caches that contain the GURLs for which special
-// handling is required.
-constexpr size_t kMaxCacheSize = 15;
-
-// The maximum number of previous configs to keep.
-constexpr size_t kMaxPreviousConfigs = 2;
-
 bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig::ProxyRules& rules,
                                  const net::ProxyRetryInfoMap& proxy_retry_info,
                                  const GURL& url,
@@ -98,24 +91,6 @@ void MergeRequestHeaders(net::HttpRequestHeaders* out,
   }
 }
 
-bool IsURLBlockedForCustomProxy(const net::URLRequest& request) {
-  auto* url_loader = URLLoader::ForRequest(request);
-  if (url_loader && url_loader->GetProcessId() == 0 &&
-      static_cast<SpecialRoutingIDs>(url_loader->GetRenderFrameId()) ==
-          MSG_ROUTING_NONE) {
-    // The request is not initiated by navigation or renderer. Block the request
-    // from going through custom proxy. This is a temporary solution to fix the
-    // bypassed downloads when using the custom proxy. See crbug.com/953166.
-    // TODO(957215): Implement a better solution in download manager and remove
-    // this codepath
-    return true;
-  }
-  // If the last entry occurs earlier in the |url_chain|, then very likely there
-  // is a redirect cycle.
-  return std::find(request.url_chain().rbegin() + 1, request.url_chain().rend(),
-                   request.url_chain().back()) != request.url_chain().rend();
-}
-
 }  // namespace
 
 NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
@@ -130,66 +105,6 @@ NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
     proxy_config_ = mojom::CustomProxyConfig::New();
 }
 
-void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
-    net::URLRequest* request,
-    net::HttpRequestHeaders* headers) {
-  if (!MayProxyURL(request->url()))
-    return;
-
-  if (!proxy_config_->can_use_proxy_on_http_url_redirect_cycles &&
-      MayHaveProxiedURL(request->url()) &&
-      request->url().SchemeIs(url::kHttpScheme) &&
-      IsURLBlockedForCustomProxy(*request)) {
-    redirect_loop_cache_.push_front(request->url());
-    if (previous_proxy_configs_.size() > kMaxCacheSize)
-      redirect_loop_cache_.pop_back();
-  }
-
-  // For other schemes, the headers can be added to the CONNECT request when
-  // establishing the secure tunnel instead, see OnBeforeHttp1TunnelRequest().
-  const bool scheme_is_http = request->url().SchemeIs(url::kHttpScheme);
-  if (scheme_is_http) {
-    MergeRequestHeaders(headers, proxy_config_->pre_cache_headers);
-    auto* url_loader = URLLoader::ForRequest(*request);
-    if (url_loader) {
-      MergeRequestHeaders(headers,
-                          url_loader->custom_proxy_pre_cache_headers());
-    }
-  }
-}
-
-void NetworkServiceProxyDelegate::OnBeforeSendHeaders(
-    net::URLRequest* request,
-    const net::ProxyInfo& proxy_info,
-    net::HttpRequestHeaders* headers) {
-  // For other schemes, the headers can be added to the CONNECT request when
-  // establishing the secure tunnel instead, see OnBeforeHttp1TunnelRequest().
-  if (!request->url().SchemeIs(url::kHttpScheme))
-    return;
-
-  auto* url_loader = URLLoader::ForRequest(*request);
-
-  if (IsInProxyConfig(proxy_info.proxy_server())) {
-    MergeRequestHeaders(headers, proxy_config_->post_cache_headers);
-
-    if (url_loader) {
-      MergeRequestHeaders(headers,
-                          url_loader->custom_proxy_post_cache_headers());
-    }
-  } else if (MayHaveProxiedURL(request->url())) {
-    for (const auto& kv : proxy_config_->pre_cache_headers.GetHeaderVector()) {
-      headers->RemoveHeader(kv.key);
-    }
-
-    if (url_loader) {
-      for (const auto& kv :
-           url_loader->custom_proxy_pre_cache_headers().GetHeaderVector()) {
-        headers->RemoveHeader(kv.key);
-      }
-    }
-  }
-}
-
 NetworkServiceProxyDelegate::~NetworkServiceProxyDelegate() {}
 
 void NetworkServiceProxyDelegate::OnResolveProxy(
@@ -200,18 +115,11 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
   if (!EligibleForProxy(*result, method))
     return;
 
-  // Check if using custom proxy for |url| can result in redirect loops.
-  std::deque<GURL>::const_iterator it =
-      std::find(redirect_loop_cache_.begin(), redirect_loop_cache_.end(), url);
-  if (it != redirect_loop_cache_.end())
-    return;
-
   net::ProxyInfo proxy_info;
   if (ApplyProxyConfigToProxyInfo(proxy_config_->rules, proxy_retry_info, url,
                                   &proxy_info)) {
     DCHECK(!proxy_info.is_empty() && !proxy_info.is_direct());
     result->OverrideProxyList(proxy_info.proxy_list());
-    GetAlternativeProxy(proxy_retry_info, result);
   }
 }
 
@@ -234,11 +142,6 @@ net::Error NetworkServiceProxyDelegate::OnTunnelHeadersReceived(
 void NetworkServiceProxyDelegate::OnCustomProxyConfigUpdated(
     mojom::CustomProxyConfigPtr proxy_config) {
   DCHECK(IsValidCustomProxyConfig(*proxy_config));
-  if (proxy_config_) {
-    previous_proxy_configs_.push_front(std::move(proxy_config_));
-    if (previous_proxy_configs_.size() > kMaxPreviousConfigs)
-      previous_proxy_configs_.pop_back();
-  }
   proxy_config_ = std::move(proxy_config);
 }
 
@@ -278,29 +181,11 @@ bool NetworkServiceProxyDelegate::IsInProxyConfig(
   if (RulesContainsProxy(proxy_config_->rules, proxy_server))
     return true;
 
-  for (const auto& config : previous_proxy_configs_) {
-    if (RulesContainsProxy(config->rules, proxy_server)) {
-      return true;
-    }
-  }
-
   return false;
 }
 
 bool NetworkServiceProxyDelegate::MayProxyURL(const GURL& url) const {
   return !proxy_config_->rules.empty();
-}
-
-bool NetworkServiceProxyDelegate::MayHaveProxiedURL(const GURL& url) const {
-  if (!proxy_config_->rules.empty())
-    return true;
-
-  for (const auto& config : previous_proxy_configs_) {
-    if (!config->rules.empty())
-      return true;
-  }
-
-  return false;
 }
 
 bool NetworkServiceProxyDelegate::EligibleForProxy(
@@ -317,28 +202,6 @@ bool NetworkServiceProxyDelegate::EligibleForProxy(
   }
 
   return true;
-}
-
-void NetworkServiceProxyDelegate::GetAlternativeProxy(
-    const net::ProxyRetryInfoMap& proxy_retry_info,
-    net::ProxyInfo* result) {
-  net::ProxyServer resolved_proxy_server = result->proxy_server();
-  DCHECK(resolved_proxy_server.is_valid());
-
-  if (!resolved_proxy_server.is_https() ||
-      !proxy_config_->assume_https_proxies_support_quic) {
-    return;
-  }
-
-  net::ProxyInfo alternative_proxy_info;
-  alternative_proxy_info.UseProxyServer(net::ProxyServer(
-      net::ProxyServer::SCHEME_QUIC, resolved_proxy_server.host_port_pair()));
-  alternative_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
-
-  if (alternative_proxy_info.is_empty())
-    return;
-
-  result->SetAlternativeProxy(alternative_proxy_info.proxy_server());
 }
 
 }  // namespace network

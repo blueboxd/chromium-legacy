@@ -113,7 +113,7 @@
 <translation id="1147991416141538220">Për të kërkuar qasjen, kontakto me administratorin e kësaj pajisjeje.</translation>
 <translation id="1149401351239820326">Muaji i skadimit</translation>
 <translation id="1150565364351027703">Syze dielli</translation>
-<translation id="1151841030700667295">Do të dalësh nga të gjitha sajtet, duke përfshirë në skedat të hapur.</translation>
+<translation id="1151841030700667295">Do të dalësh nga të gjitha sajtet, duke përfshirë edhe në skedat e hapura.</translation>
 <translation id="1151917987301063366">Lejo gjithmonë që <ph name="HOST" /> të qaset te sensorët</translation>
 <translation id="1153356358378277386">Pajisjet e çiftuara</translation>
 <translation id="1153636665119721804">Programi i "Mbrojtjes së përparuar" të Google</translation>
@@ -1048,7 +1048,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2392369802118427583">Aktivizoje</translation>
 <translation id="2394566832561516196">Cilësimet do të pastrohen në ringarkimin tjetër.</translation>
 <translation id="2395616325548404795">Pajisja jote <ph name="DEVICE_TYPE" /> është regjistruar me sukses për menaxhimin e sipërmarrjes, por dështoi në dërgimin e burimit të saj dhe informacionit të vendndodhjes. Fute manualisht këtë informacion nga paneli i Administratorit tënd në këtë pajisje.</translation>
-<translation id="2396387085693598316">Administratori yt ka bllokuar "<ph name="EXTENSION_NAME" />"</translation>
+<translation id="2396387085693598316">Administratori yt e ka bllokuar "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="2396783860772170191">Vendos kodin 4-shifror (0000-9999)</translation>
 <translation id="2399939490305346086">Të dhënat e identifikimit të çelësit të sigurisë</translation>
 <translation id="2400664245143453337">Kërkohet përditësimi i menjëhershëm</translation>
@@ -3969,7 +3969,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6325191661371220117">Çaktivizo hapjen automatike</translation>
 <translation id="6326175484149238433">Hiqe nga Chrome</translation>
 <translation id="6326855256003666642">Numërimi i mbajtjes aktive</translation>
-<translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> të kërkon që të përditësosh këtë pajisje përpara përditësimit.</translation>
+<translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> të kërkon që ta përditësosh këtë pajisje përpara përditësimit.</translation>
 <translation id="6327785803543103246">Zbulimi automatik i përfaqësuesit të uebit</translation>
 <translation id="6333064448949140209">Skedari do të dërgohet te Google për korrigjimin e gabimeve</translation>
 <translation id="6339668969738228384">Krijo një profil të ri për <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -4271,7 +4271,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6762833852331690540">Aktiv</translation>
 <translation id="6767566652486411142">Zgjidh një gjuhë tjetër...</translation>
 <translation id="6767639283522617719">Nuk mund t'i bashkohet domenit. Sigurohu që cilësimet të jenë të sakta për njësinë organizative.</translation>
-<translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> rekomandon që të përditësosh këtë pajisje.</translation>
+<translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> të rekomandon që ta përditësosh këtë pajisje.</translation>
 <translation id="6769712124046837540">Po shton printerin...</translation>
 <translation id="6770602306803890733">Përmirëson sigurinë për ty dhe këdo në ueb</translation>
 <translation id="6770664076092644100">Verifikohu nëpërmjet NFC-së</translation>
@@ -4782,7 +4782,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7441830548568730290">Përdoruesit e tjerë</translation>
 <translation id="7442465037756169001">Hangouts Meet hardware është i gatshëm të konfigurohet.</translation>
 <translation id="744341768939279100">Krijo një profil të ri</translation>
-<translation id="744366959743242014">Po ngarkohen të dhënat, kjo mund të zgjasë disa sekonda.</translation>
+<translation id="744366959743242014">Po ngarkohen të dhënat. Kjo mund të zgjasë disa sekonda.</translation>
 <translation id="7443806024147773267">Merr qasjen te fjalëkalimet e tua kur je identifikuar në "Llogarinë tënde të Google"</translation>
 <translation id="7444983668544353857">Çaktivizoje <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instalo automatikisht aplikacionet</translation>

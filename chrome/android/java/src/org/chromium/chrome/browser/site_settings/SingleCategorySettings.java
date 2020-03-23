@@ -46,9 +46,9 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.ExpandablePreferenceGroup;
-import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.settings.SearchUtils;
 import org.chromium.chrome.browser.settings.SettingsUtils;
@@ -146,18 +146,6 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
     private static final String BLOCKED_GROUP = "blocked_group";
     private static final String MANAGED_GROUP = "managed_group";
 
-    private void getInfoForOrigins() {
-        if (!mCategory.enabledInAndroid(getActivity())) {
-            // No need to fetch any data if we're not going to show it, but we do need to update
-            // the global toggle to reflect updates in Android settings (e.g. Location).
-            resetList();
-            return;
-        }
-
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(false);
-        fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
-    }
-
     private class ResultsPopulator implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
         @Override
         public void onWebsitePermissionsAvailable(Collection<Website> sites) {
@@ -176,6 +164,34 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
 
             mEmptyView.setVisibility(hasEntries ? View.GONE : View.VISIBLE);
         }
+    }
+
+    /** Called by common settings code to determine if a Preference is managed. */
+    private class SingleCategoryManagedPreferenceDelegate
+            implements ChromeManagedPreferenceDelegate {
+        @Override
+        public boolean isPreferenceControlledByPolicy(Preference preference) {
+            // TODO(bauerb): Align the ManagedPreferenceDelegate and
+            // SiteSettingsCategory interfaces better to avoid this indirection.
+            return mCategory.isManaged() && !mCategory.isManagedByCustodian();
+        }
+
+        @Override
+        public boolean isPreferenceControlledByCustodian(Preference preference) {
+            return mCategory.isManagedByCustodian();
+        }
+    }
+
+    private void getInfoForOrigins() {
+        if (!mCategory.enabledInAndroid(getActivity())) {
+            // No need to fetch any data if we're not going to show it, but we do need to update
+            // the global toggle to reflect updates in Android settings (e.g. Location).
+            resetList();
+            return;
+        }
+
+        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(false);
+        fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
     }
 
     /**
@@ -1059,19 +1075,7 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         }
         binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
 
-        binaryToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                // TODO(bauerb): Align the ManagedPreferenceDelegate and
-                // SiteSettingsCategory interfaces better to avoid this indirection.
-                return mCategory.isManaged() && !mCategory.isManagedByCustodian();
-            }
-
-            @Override
-            public boolean isPreferenceControlledByCustodian(Preference preference) {
-                return mCategory.isManagedByCustodian();
-            }
-        });
+        binaryToggle.setManagedPreferenceDelegate(new SingleCategoryManagedPreferenceDelegate());
 
         // Set the checked value.
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)) {
@@ -1089,7 +1093,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
                 PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
         thirdPartyCookiesPref.setEnabled(
                 WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES));
-        thirdPartyCookiesPref.setManagedPreferenceDelegate(preference
+        thirdPartyCookiesPref.setManagedPreferenceDelegate(
+                (ChromeManagedPreferenceDelegate) preference
                 -> PrefServiceBridge.getInstance().isManagedPreference(
                         Pref.BLOCK_THIRD_PARTY_COOKIES));
     }
@@ -1127,7 +1132,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
 
     private void showManagedToast() {
         if (mCategory.isManagedByCustodian()) {
-            ManagedPreferencesUtils.showManagedByParentToast(getActivity());
+            ManagedPreferencesUtils.showManagedByParentToast(
+                    getActivity(), new SingleCategoryManagedPreferenceDelegate());
         } else {
             ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
         }

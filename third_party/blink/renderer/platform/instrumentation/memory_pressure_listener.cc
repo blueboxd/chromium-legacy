@@ -102,7 +102,7 @@ void MemoryPressureListenerRegistry::UnregisterClient(
 void MemoryPressureListenerRegistry::OnMemoryPressure(
     WebMemoryPressureLevel level) {
   TRACE_EVENT1("blink", "MemoryPressureListenerRegistry::onMemoryPressure",
-               "Level", level);
+               "level", level);
   CHECK(IsMainThread());
   for (auto& client : clients_)
     client->OnMemoryPressure(level);

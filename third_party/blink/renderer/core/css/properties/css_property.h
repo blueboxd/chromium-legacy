@@ -57,6 +57,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsValidForCue() const { return flags_ & kValidForCue; }
   bool IsValidForMarker() const { return flags_ & kValidForMarker; }
   bool IsSurrogate() const { return flags_ & kSurrogate; }
+  bool AffectsFont() const { return flags_ & kAffectsFont; }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
@@ -129,6 +130,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // for example -webkit-writing-mode is a surrogate for writing-mode, and
     // inline-size is a surrogate for either width or height.
     kSurrogate = 1 << 14,
+    kAffectsFont = 1 << 15,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

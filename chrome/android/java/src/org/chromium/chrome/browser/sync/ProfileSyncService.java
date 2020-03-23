@@ -345,8 +345,7 @@ public class ProfileSyncService {
      * UI elements can update themselves.
      */
     @CalledByNative
-    @VisibleForTesting
-    public void syncStateChanged() {
+    protected void syncStateChanged() {
         for (SyncStateChangedListener listener : mListeners) {
             listener.syncStateChanged();
         }

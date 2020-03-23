@@ -40,9 +40,14 @@ public interface ManagedPreferenceDelegate {
      * @param preference the {@link Preference} under consideration.
      * @return whether the given Preference is controlled by the supervised user's custodian.
      */
-    default boolean isPreferenceControlledByCustodian(Preference preference) {
-        return false;
-    }
+    boolean isPreferenceControlledByCustodian(Preference preference);
+
+    /**
+     * Returns whether the current Profile is managed by multiple custodians.
+     *
+     * This is used to control messaging when a Preference is managed by a custodian(s).
+     */
+    boolean doesProfileHaveMultipleCustodians();
 
     /**
      * Returns whether clicking on the given Preference is disabled due to a policy. The default

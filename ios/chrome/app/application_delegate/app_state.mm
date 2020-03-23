@@ -391,13 +391,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
   _appIsTerminating = YES;
 
-  // Clean up the device sharing manager before the main browser state is shut
-  // down.
-  if ([_browserLauncher browserInitializationStage] >=
-      INITIALIZATION_STAGE_FOREGROUND) {
-    [_browserLauncher.interfaceProvider cleanDeviceSharingManager];
-  }
-
   // Cancel any in-flight distribution notifications.
   ios::GetChromeBrowserProvider()
       ->GetAppDistributionProvider()

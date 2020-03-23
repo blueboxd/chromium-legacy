@@ -264,16 +264,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   } else {
     [self setTextAlignment:NSTextAlignmentNatural];
   }
-  return;
-  // Setting the empty field to Natural seems to let iOS update the cursor
-  // position when the keyboard language is changed.
-  if (!self.text.length) {
-    [self setTextAlignment:NSTextAlignmentNatural];
-    return;
-  }
-
-  NSTextAlignment alignment = [self bestTextAlignment];
-  [self setTextAlignment:alignment];
 }
 
 - (UIColor*)displayedTextColor {

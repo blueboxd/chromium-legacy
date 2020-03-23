@@ -9,7 +9,7 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from signing import commands, logger, model, pipeline
+from signing import config_factory, commands, logger, model, pipeline
 
 
 def _link_stdout_and_stderr():
@@ -40,24 +40,11 @@ def create_config(config_args, development):
     Returns:
         An instance of |model.CodeSignConfig|.
     """
-    # First look up the processed Chromium config.
-    from signing.chromium_config import ChromiumCodeSignConfig
-    config_class = ChromiumCodeSignConfig
-
-    # Then search for the internal config for Google Chrome.
-    try:
-        from signing.internal_config import InternalCodeSignConfig
-        config_class = InternalCodeSignConfig
-    except ImportError as e:
-        # If the build specified Google Chrome as the product, then the
-        # internal config has to be available.
-        if config_class.is_chrome_branded():
-            raise e
+    config_class = config_factory.get_class()
 
     if development:
 
         class DevelopmentCodeSignConfig(config_class):
-
             @property
             def codesign_requirements_basic(self):
                 return ''

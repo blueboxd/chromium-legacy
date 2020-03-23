@@ -129,6 +129,27 @@ class CORE_EXPORT StyleResolverState {
     is_animating_custom_properties_ = value;
   }
 
+  // Normally, we apply all active animation effects on top of the style created
+  // by regular CSS declarations. However, !important declarations have a
+  // higher priority than animation effects [1]. If StyleCascade skipped
+  // application of some interpolation, it means something else in the cascade
+  // had a higher priority (i.e. it was !important). In this case, we can't
+  // use the base-computed-style optimization, since that code path is unable
+  // to skip any animation effects at all.
+  //
+  // [1] https://drafts.csswg.org/css-cascade-4/#cascade-origin
+  bool HasImportantOverrides() const { return has_important_overrides_; }
+  void SetHasImportantOverrides() { has_important_overrides_ = true; }
+
+  // This flag is set when applying an animation (or transition) for a font
+  // affecting property. When such properties are animated, font-relative
+  // units (e.g. em, ex) in the base style must respond to the animation.
+  // Therefore we can't use the base computed style optimization in such cases.
+  bool HasFontAffectingAnimation() const {
+    return has_font_affecting_animation_;
+  }
+  void SetHasFontAffectingAnimation() { has_font_affecting_animation_ = true; }
+
   const Element* GetAnimatingElement() const;
 
   void SetParentStyle(scoped_refptr<const ComputedStyle>);
@@ -227,6 +248,8 @@ class CORE_EXPORT StyleResolverState {
   CSSAnimationUpdate animation_update_;
   bool is_animation_interpolation_map_ready_;
   bool is_animating_custom_properties_;
+  bool has_important_overrides_ = false;
+  bool has_font_affecting_animation_ = false;
 
   bool has_dir_auto_attribute_;
 

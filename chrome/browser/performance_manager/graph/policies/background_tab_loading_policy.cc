@@ -5,6 +5,7 @@
 #include "chrome/browser/performance_manager/graph/policies/background_tab_loading_policy.h"
 
 #include "chrome/browser/performance_manager/mechanisms/page_loader.h"
+#include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 
 namespace performance_manager {
 
@@ -20,8 +21,9 @@ void BackgroundTabLoadingPolicy::OnTakenFromGraph(Graph* graph) {}
 
 void BackgroundTabLoadingPolicy::RestoreTabs(
     std::vector<PageNode*> page_nodes) {
-  // TODO(https://crbug.com/1059341): DCHECK that |page_node| is in a tab strip.
   for (auto* page_node : page_nodes) {
+    DCHECK(
+        TabPropertiesDecorator::Data::FromPageNode(page_node)->IsInTabStrip());
     page_loader_->LoadPageNode(page_node);
   }
 }

@@ -146,6 +146,15 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
                                                         jidentifier, jimage);
       break;
     }
+    case ViewProto::kTextInputView:
+      jview = Java_AssistantViewFactory_createTextInputView(
+          env, jcontext, jdelegate, jidentifier,
+          static_cast<int>(proto.text_input_view().type()),
+          base::android::ConvertUTF8ToJavaString(
+              env, proto.text_input_view().hint()),
+          base::android::ConvertUTF8ToJavaString(
+              env, proto.text_input_view().model_identifier()));
+      break;
     case ViewProto::VIEW_NOT_SET:
       NOTREACHED();
       return nullptr;

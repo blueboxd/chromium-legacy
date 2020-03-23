@@ -217,7 +217,7 @@
       'Linux remote_run Builder': 'release_bot',
       'Linux remote_run Tester': 'release_bot',
       'Linux Viz': 'release_trybot',
-      'Mac Builder Next': 'gpu_tests_release_bot_minimal_symbols',
+      'Mac Builder Next': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols_deterministic',
       'Mac deterministic (dbg)': 'debug_bot_deterministic',
       'Mojo Android': 'android_release_bot_minimal_symbols_arm64',
@@ -241,6 +241,7 @@
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
       'ios-simulator-cronet': 'ios_cronet',
+      'ios-webkit-tot': 'ios_simulator_debug_static_bot',
       'linux-annotator-rel': 'release_bot',
       'linux-autofill-captured-sites-rel': 'release_bot',
       'linux-bfcache-rel': 'release_bot',
@@ -655,7 +656,7 @@
       'mac10.13-blink-rel': 'release_bot_minimal_symbols',
       'mac10.13_retina-blink-rel': 'release_bot_minimal_symbols',
       'mac10.14-blink-rel': 'release_bot_minimal_symbols',
-      'mac10.15-blink-rel': 'release_bot_minimal_symbols',
+      'mac10.15-blink-rel': 'release_bot_minimal_symbols_no_nacl',
       'win7-blink-rel': 'release_bot_x86_minimal_symbols',
       'win10-blink-rel': 'release_bot_x86_minimal_symbols',
     },
@@ -889,7 +890,7 @@
       'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.13_rel_ng': 'release_trybot',
       'mac_chromium_10.14_rel_ng': 'release_trybot',
-      'mac_chromium_10.15_rel_ng': 'release_trybot',
+      'mac_chromium_10.15_rel_ng': 'release_trybot_no_nacl',
       'mac_chromium_archive_rel_ng': 'release_bot_mac_strip_minimal_symbols',
       'mac_chromium_asan_rel_ng': 'asan_dcheck_disable_nacl_release_bot',
       'mac_chromium_compile_dbg_ng': 'gpu_tests_debug_bot',
@@ -1728,6 +1729,13 @@
       'partial_code_coverage_instrumentation',
     ],
 
+    'gpu_tests_release_bot_minimal_symbols_no_nacl': [
+      'gpu_tests',
+      'release_bot',
+      'minimal_symbols',
+      'disable_nacl',
+    ],
+
     'gpu_tests_release_bot_x86_minimal_symbols': [
       'gpu_tests', 'release_bot', 'x86', 'minimal_symbols',
     ],
@@ -2010,6 +2018,10 @@
       'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
     ],
 
+    'release_bot_minimal_symbols_no_nacl': [
+      'release_bot', 'minimal_symbols', 'disable_nacl',
+    ],
+
     'release_trybot': [
       'release_trybot',
     ],
@@ -2040,6 +2052,10 @@
 
     'release_trybot_fuchsia_arm64_cast': [
       'release_trybot', 'fuchsia', 'arm64', 'cast',
+    ],
+
+    'release_trybot_no_nacl': [
+      'release_trybot', 'disable_nacl',
     ],
 
     'release_trybot_tsan': [

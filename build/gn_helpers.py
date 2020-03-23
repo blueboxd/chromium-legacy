@@ -19,7 +19,12 @@ To use in a random python file in the build:
 Where the sequence of parameters to join is the relative path from your source
 file to the build directory."""
 
+import os
+import re
 import sys
+
+
+IMPORT_RE = re.compile(r'^import\("//(\S+)"\)')
 
 
 class GNException(Exception):
@@ -170,6 +175,31 @@ class GNValueParser(object):
   def IsDone(self):
     return self.cur == len(self.input)
 
+  def ReplaceImports(self):
+    """Replaces import(...) lines with the contents of the imports.
+
+    Recurses on itself until there are no imports remaining, in the case of
+    nested imports.
+    """
+    lines = self.input.splitlines()
+    if not any(line.startswith('import(') for line in lines):
+      return
+    for line in lines:
+      if not line.startswith('import('):
+        continue
+      regex_match = IMPORT_RE.match(line)
+      if not regex_match:
+        raise GNException('Not a valid import string: %s' % line)
+      import_path = os.path.join(
+          os.path.dirname(__file__), os.pardir, regex_match.group(1))
+      with open(import_path) as f:
+        imported_args = f.read()
+      self.input = self.input.replace(line, imported_args)
+    # Call ourselves again if we've just replaced an import() with additional
+    # imports.
+    self.ReplaceImports()
+
+
   def ConsumeWhitespace(self):
     while not self.IsDone() and self.input[self.cur] in ' \t\n':
       self.cur += 1
@@ -218,6 +248,7 @@ class GNValueParser(object):
     """
     d = {}
 
+    self.ReplaceImports()
     self.ConsumeWhitespace()
     self.ConsumeComment()
     while not self.IsDone():

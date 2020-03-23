@@ -15,7 +15,6 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"

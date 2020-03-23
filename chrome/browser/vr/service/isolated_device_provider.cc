@@ -5,7 +5,7 @@
 #include "chrome/browser/vr/service/isolated_device_provider.h"
 
 #include "base/bind.h"
-#include "chrome/browser/vr/service/chrome_xr_integration_client.h"
+#include "chrome/browser/vr/chrome_xr_integration_client.h"
 #include "chrome/browser/vr/service/xr_device_service.h"
 
 namespace {

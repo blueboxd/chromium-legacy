@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_ui_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/permissions/permission_manager.h"
@@ -484,16 +485,6 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
 // static
 SkColor PageInfoUI::GetSecondaryTextColor() {
   return SK_ColorGRAY;
-}
-
-// static
-base::string16 PageInfoUI::ChosenObjectToUIString(
-    const ChosenObjectInfo& object,
-    Profile* profile) {
-  permissions::ChooserContextBase* context =
-      object.ui_info.get_context(profile);
-  DCHECK(context);
-  return context->GetObjectDisplayName(object.chooser_object->value);
 }
 
 #if defined(OS_ANDROID)

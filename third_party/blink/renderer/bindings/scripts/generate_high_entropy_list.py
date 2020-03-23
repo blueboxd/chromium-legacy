@@ -4,19 +4,22 @@
 """
 Generate of table of APIs and their attributes based on the WebIDL database.
 
-Each row of the table contains the following:
+The columns of the table are as follows:
 
-  * Interface or Namespace or Dictionary
-  * Name           : The name of a method or property.
-  * Entity type    : One of 'interface', 'namespace', 'const', 'attribute',
+  * interface      : Name of interface.
+  * name           : Member name. Will be empty for interfaces.
+  * entity_type    : One of 'interface', 'namespace', 'const', 'attribute',
                      'operation', 'constructor', 'stringifier', 'iterable',
                      'maplike', 'setlike', 'dictionary'
-  * IDL Type       : Type of the object. For function-like entries, this is the
+  * idl_type       : Type of the object. For function-like entries, this is the
                      type of the return value. Note that the type is stripped
                      of nullable unions.
-  * UseCounter     : If usage is being measured, this is the UseCounter.
-  * SecureContext? : 'SecureContext' or ''.
-  * HighEntropy?   : 'HighEntropy' or ''.
+  * syntactic_form : Human readable idl_type.
+  * use_counter    : If usage is being measured, this is the UseCounter.
+  * secure_context : 'True' if the [SecureContext] extended attribute is
+                     present. Empty otherwise.
+  * high_entropy   : 'True' if the [HighEntropy] extended attribute is present.
+                     Empty otherwise.
 """
 
 import optparse
@@ -50,6 +53,10 @@ def get_idl_type_name(idl_type):
     assert isinstance(idl_type, web_idl.IdlType)
     unwrapped_type = idl_type.unwrap()
     return unwrapped_type.type_name, unwrapped_type.syntactic_form
+
+
+def true_or_nothing(v):
+    return 'True' if v else ''
 
 
 def record(csv_writer, entity):
@@ -99,8 +106,8 @@ def record(csv_writer, entity):
         'idl_type': idl_type,
         'syntactic_form': syntactic_form,
         'use_counter': use_counter,
-        'secure_context': secure_context,
-        'high_entropy': high_entropy
+        'secure_context': true_or_nothing(secure_context),
+        'high_entropy': true_or_nothing(high_entropy)
     })
 
 

@@ -953,8 +953,7 @@ bool PasswordFormManager::UsePossibleUsername(
   // Do not trust local heuristics on Android.
   // TODO(https://crbug.com/1051914): Make local heuristics more reliable.
   return false;
-#endif  // defined(OS_ANDROID)
-
+#else
   // Check whether it is already learned from previous user actions whether
   // |possible_username| corresponds to the valid username form.
   const FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
@@ -979,6 +978,7 @@ bool PasswordFormManager::UsePossibleUsername(
   LogUsingPossibleUsername(client_, /*is_used*/ is_possible_username_valid,
                            "Local heuristics");
   return is_possible_username_valid;
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace password_manager

@@ -5,40 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_DEVICE_SHARING_DEVICE_SHARING_MANAGER_H_
 #define IOS_CHROME_BROWSER_DEVICE_SHARING_DEVICE_SHARING_MANAGER_H_
 
-#import <Foundation/Foundation.h>
+#include "components/keyed_service/core/keyed_service.h"
 
-class ChromeBrowserState;
 class GURL;
-@class HandoffManager;
 
 // This manager maintains all state related to sharing the active URL to other
 // devices. It has the role of a dispatcher that shares the active URL to
 // various internal sharing services (e.g. handoff).
-@interface DeviceSharingManager : NSObject
+class DeviceSharingManager : public KeyedService {
+ public:
+  DeviceSharingManager() = default;
 
-// Updates the internal browser state to |browserState|.
-// If the browser state is already |browserState|, then this is a no-op.
-// Otherwise, this method cleans up the active URL and updates the internal
-// state to reflect the new browser state.
-//
-// Note that this method keep a weak reference to |browserState|. It
-// expects its owner to clear the browser state via a call to
-// |-updateBrowserState:nullptr| before |browserState| is destroyed.
-//
-// |browserState| must not be off the record.
-- (void)updateBrowserState:(ChromeBrowserState*)browserState;
-
-// Updates the active URL to be shared with other devices. This method is
-// a no-op if the active browser state was never set previously.
-- (void)updateActiveURL:(const GURL&)activeURL;
-
-@end
-
-@interface DeviceSharingManager (TestingOnly)
-
-// Exposing Handoff feature for testing.
-@property(nonatomic, readonly) HandoffManager* handoffManager;
-
-@end
+  virtual void UpdateActiveUrl(const GURL& active_url) = 0;
+  virtual void ClearActiveUrl() = 0;
+};
 
 #endif  // IOS_CHROME_BROWSER_DEVICE_SHARING_DEVICE_SHARING_MANAGER_H_

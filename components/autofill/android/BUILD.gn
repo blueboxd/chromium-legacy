@@ -15,7 +15,13 @@ java_strings_grd("autofill_strings_grd") {
 
 android_resources("autofill_java_resources") {
   custom_package = "org.chromium.components.autofill"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/layout/autofill_dropdown_footer_item_refresh.xml",
+    "java/res/layout/autofill_dropdown_item.xml",
+    "java/res/layout/autofill_dropdown_item_refresh.xml",
+    "java/res/values/colors.xml",
+    "java/res/values/dimens.xml",
+  ]
   deps = [
     ":autofill_strings_grd",
     "//ui/android:ui_java_resources",

@@ -11,8 +11,10 @@ import org.chromium.chrome.browser.paint_preview.services.PaintPreviewDemoServic
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewDemoServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.paintpreview.player.PlayerManager;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.Toast;
+import org.chromium.url.GURL;
 
 /**
  * Responsible for displaying the Paint Preview demo. When displaying, the Paint Preview will
@@ -45,6 +47,7 @@ public class PaintPreviewDemoManager implements Destroyable {
         if (success) {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewDemoService, String.valueOf(mTab.getId()),
+                    PaintPreviewDemoManager.this::onLinkClicked,
                     safeToShow -> { addPlayerView(safeToShow); });
         }
         int toastStringRes = success ? R.string.paint_preview_demo_capture_success
@@ -81,6 +84,12 @@ public class PaintPreviewDemoManager implements Destroyable {
     public boolean isShowingPaintPreviewDemo() {
         return mPlayerManager != null
                 && mPlayerManager.getView().getParent() == mTab.getContentView();
+    }
+
+    private void onLinkClicked(GURL url) {
+        if (mTab == null || !url.isValid() || url.isEmpty()) return;
+
+        mTab.loadUrl(new LoadUrlParams(url.getSpec()));
     }
 
     @Override

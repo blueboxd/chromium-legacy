@@ -15,8 +15,6 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
-#include "chrome/browser/vr/metrics/webxr_session_tracker.h"
-#include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager_impl.h"
 #include "chrome/common/chrome_switches.h"

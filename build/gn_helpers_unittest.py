@@ -2,8 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import gn_helpers
+import mock
+import textwrap
 import unittest
+
+import gn_helpers
+
 
 class UnitTest(unittest.TestCase):
   def test_ToGNString(self):
@@ -121,6 +125,59 @@ class UnitTest(unittest.TestCase):
                      {'foo_bar': True})
     self.assertEqual(gn_helpers.FromGNArgs('foo_=true'),
                      {'foo_': True})
+
+  def test_ReplaceImports(self):
+    # Should be a no-op on args inputs without any imports.
+    parser = gn_helpers.GNValueParser(
+        textwrap.dedent("""
+        some_arg1 = "val1"
+        some_arg2 = "val2"
+    """))
+    parser.ReplaceImports()
+    self.assertEquals(
+        parser.input,
+        textwrap.dedent("""
+        some_arg1 = "val1"
+        some_arg2 = "val2"
+    """))
+
+    # A single "import(...)" line should be replaced with the contents of the
+    # file being imported.
+    parser = gn_helpers.GNValueParser(
+        textwrap.dedent("""
+        some_arg1 = "val1"
+        import("//some/args/file.gni")
+        some_arg2 = "val2"
+    """))
+    fake_import = 'some_imported_arg = "imported_val"'
+    with mock.patch('__builtin__.open', mock.mock_open(read_data=fake_import)):
+      parser.ReplaceImports()
+    self.assertEquals(
+        parser.input,
+        textwrap.dedent("""
+        some_arg1 = "val1"
+        some_imported_arg = "imported_val"
+        some_arg2 = "val2"
+    """))
+
+    # No trailing parenthesis should raise an exception.
+    with self.assertRaises(gn_helpers.GNException):
+      parser = gn_helpers.GNValueParser(
+          textwrap.dedent('import("//some/args/file.gni"'))
+      parser.ReplaceImports()
+
+    # No double quotes should raise an exception.
+    with self.assertRaises(gn_helpers.GNException):
+      parser = gn_helpers.GNValueParser(
+          textwrap.dedent('import(//some/args/file.gni)'))
+      parser.ReplaceImports()
+
+    # A path that's not source absolute should raise an exception.
+    with self.assertRaises(gn_helpers.GNException):
+      parser = gn_helpers.GNValueParser(
+          textwrap.dedent('import("some/relative/args/file.gni")'))
+      parser.ReplaceImports()
+
 
 if __name__ == '__main__':
   unittest.main()

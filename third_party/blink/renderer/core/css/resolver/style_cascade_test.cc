@@ -171,6 +171,8 @@ class TestCascade {
     cascade_.Analyze(GetInterpolations(), filter);
   }
 
+  void Reset() { cascade_.Reset(); }
+
  private:
   Document& GetDocument() const { return state_.GetDocument(); }
   Element* Body() const { return GetDocument().body(); }
@@ -1813,6 +1815,86 @@ TEST_F(StyleCascadeTest, AnimatedVisitedHighPrio) {
             style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
+TEST_F(StyleCascadeTest, AnimatedImportantOverrideFlag) {
+  AppendSheet(R"HTML(
+     @keyframes test {
+        from { background-color: white; }
+        to { background-color: gray; }
+     }
+    )HTML");
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("animation:test 10s -5s linear");
+  cascade.Add("background-color: green !important");
+  cascade.Apply();
+  EXPECT_FALSE(cascade.State().HasImportantOverrides());
+
+  cascade.AnalyzeAnimations();
+  cascade.Apply();
+  EXPECT_TRUE(cascade.State().HasImportantOverrides());
+}
+
+TEST_F(StyleCascadeTest, AnimatedImportantOverrideNoFlag) {
+  AppendSheet(R"HTML(
+     @keyframes test {
+        from { background-color: white; }
+        to { background-color: gray; }
+     }
+    )HTML");
+
+  TestCascade cascade(GetDocument());
+  cascade.Add("animation:test 10s -5s linear");
+  cascade.Add("color:green !important");
+  cascade.Apply();
+  EXPECT_FALSE(cascade.State().HasImportantOverrides());
+
+  cascade.AnalyzeAnimations();
+  cascade.Apply();
+  EXPECT_FALSE(cascade.State().HasImportantOverrides());
+}
+
+TEST_F(StyleCascadeTest, AnimatedImportantOverrideFlagHighPriority) {
+  AppendSheet(R"HTML(
+     @keyframes test {
+        from { color: white; }
+        to { color: gray; }
+     }
+    )HTML");
+
+  // 'color' is a high priority property, and therefore applied by lookup.
+  TestCascade cascade(GetDocument());
+  cascade.Add("animation:test 10s -5s linear");
+  cascade.Add("color:green !important");
+  cascade.Apply();
+  EXPECT_FALSE(cascade.State().HasImportantOverrides());
+
+  cascade.AnalyzeAnimations();
+  cascade.Apply();
+  EXPECT_TRUE(cascade.State().HasImportantOverrides());
+}
+
+TEST_F(StyleCascadeTest, AnimatedImportantOverrideFlagVisited) {
+  AppendSheet(R"HTML(
+     @keyframes test {
+        from { background-color: white; }
+        to { background-color: gray; }
+     }
+    )HTML");
+
+  TestCascade cascade(GetDocument());
+  cascade.State().Style()->SetInsideLink(EInsideLink::kInsideVisitedLink);
+
+  cascade.Add(ParseDeclarationBlock("background-color:red !important"),
+              CascadeOrigin::kAuthor, CSSSelector::kMatchVisited);
+  cascade.Add("animation:test 10s -5s linear");
+  cascade.Apply();
+  EXPECT_FALSE(cascade.State().HasImportantOverrides());
+
+  cascade.AnalyzeAnimations();
+  cascade.Apply();
+  EXPECT_TRUE(cascade.State().HasImportantOverrides());
+}
+
 TEST_F(StyleCascadeTest, AnimatePendingSubstitutionValue) {
   RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
 
@@ -2306,6 +2388,26 @@ TEST_F(StyleCascadeTest, NoMarkHasReferenceForInherited) {
   EXPECT_FALSE(cascade.State()
                    .StyleRef()
                    .HasVariableReferenceFromNonInheritedProperty());
+}
+
+TEST_F(StyleCascadeTest, Reset) {
+  TestCascade cascade(GetDocument());
+
+  EXPECT_EQ(CascadePriority(), cascade.GetPriority("color"));
+  EXPECT_EQ(CascadePriority(), cascade.GetPriority("--x"));
+
+  cascade.Add("color:red");
+  cascade.Add("--x:red");
+  cascade.Apply();  // generation=1
+  cascade.Apply();  // generation=2
+
+  EXPECT_EQ(2u, cascade.GetPriority("color").GetGeneration());
+  EXPECT_EQ(2u, cascade.GetPriority("--x").GetGeneration());
+
+  cascade.Reset();
+
+  EXPECT_EQ(CascadePriority(), cascade.GetPriority("color"));
+  EXPECT_EQ(CascadePriority(), cascade.GetPriority("--x"));
 }
 
 }  // namespace blink

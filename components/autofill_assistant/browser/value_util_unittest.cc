@@ -307,5 +307,48 @@ TEST_F(ValueUtilTest, SmallerOperatorForValueProto) {
   EXPECT_FALSE(value_a < value_b || value_b < value_a);
 }
 
+TEST_F(ValueUtilTest, NotEqualOperatorForValueProto) {
+  ValueProto value_a;
+  ValueProto value_b;
+  EXPECT_FALSE(value_a != value_b);
+
+  value_a.mutable_strings()->add_values("potato");
+  EXPECT_TRUE(value_a != value_b);
+
+  value_a.mutable_strings()->clear_values();
+  EXPECT_TRUE(value_a != value_b);
+
+  value_a.clear_kind();
+  EXPECT_FALSE(value_a != value_b);
+
+  value_a = CreateStringValue();
+  value_b = value_a;
+  EXPECT_FALSE(value_a != value_b);
+
+  value_a = CreateIntValue();
+  value_b = value_a;
+  EXPECT_FALSE(value_a != value_b);
+
+  value_a.mutable_ints()->add_values(1);
+  value_b.mutable_ints()->add_values(0);
+  EXPECT_TRUE(value_a != value_b);
+
+  value_a = CreateBoolValue();
+  value_b = value_a;
+  EXPECT_FALSE(value_a != value_b);
+
+  value_a.mutable_booleans()->add_values(true);
+  value_b.mutable_booleans()->add_values(false);
+  EXPECT_TRUE(value_a != value_b);
+
+  value_a = SimpleValue(CreateDateProto(2020, 4, 18));
+  value_b = value_a;
+  EXPECT_FALSE(value_a != value_b);
+
+  *value_a.mutable_dates()->add_values() = CreateDateProto(2020, 6, 14);
+  *value_b.mutable_dates()->add_values() = CreateDateProto(2020, 6, 15);
+  EXPECT_TRUE(value_a != value_b);
+}
+
 }  // namespace value_util
 }  // namespace autofill_assistant

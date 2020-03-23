@@ -4,6 +4,7 @@
 
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 
+#include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"

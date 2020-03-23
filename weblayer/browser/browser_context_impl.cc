@@ -23,13 +23,13 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
-#include "weblayer/browser/fake_permission_controller_delegate.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/public/common/switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
+#include "components/permissions/contexts/geolocation_permission_context_android.h"
 #elif defined(OS_WIN)
 #include <KnownFolders.h>
 #include <shlobj.h>
@@ -152,14 +152,6 @@ content::SSLHostStateDelegate* BrowserContextImpl::GetSSLHostStateDelegate() {
 
 content::PermissionControllerDelegate*
 BrowserContextImpl::GetPermissionControllerDelegate() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebLayerFakePermissions)) {
-    if (!permission_controller_delegate_) {
-      permission_controller_delegate_ =
-          std::make_unique<FakePermissionControllerDelegate>();
-    }
-    return permission_controller_delegate_.get();
-  }
   return PermissionManagerFactory::GetForBrowserContext(this);
 }
 
@@ -236,6 +228,10 @@ void BrowserContextImpl::RegisterPrefs(
   StatefulSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
+#if defined(OS_ANDROID)
+  permissions::GeolocationPermissionContextAndroid::RegisterProfilePrefs(
+      pref_registry);
+#endif
 }
 
 class BrowserContextImpl::WebLayerVariationsClient

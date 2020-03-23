@@ -204,6 +204,10 @@ class CORE_EXPORT MatchResult {
     return matched_properties_;
   }
 
+  // Reset the MatchResult to its initial state, as if no MatchedProperties
+  // objects were added.
+  void Reset();
+
  private:
   friend class ImportantUserRanges;
   friend class ImportantUserRangeIterator;

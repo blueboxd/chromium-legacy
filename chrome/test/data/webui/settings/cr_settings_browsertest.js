@@ -370,10 +370,17 @@ CrSettingsPasswordsSectionTest.prototype = {
   ]),
 };
 
-// TODO(crbug.com/1063723): Fix it.
-TEST_F('CrSettingsPasswordsSectionTest', 'DISABLED_All', function() {
+// Flakily times out on Linux CFI.
+// TODO(crbug.com/1063723): Fix this by splitting up the test suite.
+GEN('#if defined(OS_LINUX) && defined(IS_CFI)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('CrSettingsPasswordsSectionTest', 'MAYBE_All', function() {
   mocha.run();
 });
+GEN('#undef MAYBE_All');
 
 /**
  * Test fixture for

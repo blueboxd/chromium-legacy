@@ -575,8 +575,7 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
 // Android.
 #if defined(OS_ANDROID)
   return false;
-#endif
-
+#else
   if (password_type.account_type() ==
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE)
     return true;
@@ -588,6 +587,7 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
   return password_type.is_account_syncing() ||
          base::FeatureList::IsEnabled(
              safe_browsing::kPasswordProtectionForSignedInUsers);
+#endif
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

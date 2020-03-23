@@ -44,11 +44,21 @@ bool IsVulkanSurfaceSupported() {
 
 class ScopedUnsetDisplay {
  public:
-  ScopedUnsetDisplay() : display_(getenv("DISPLAY")) { unsetenv("DISPLAY"); }
-  ~ScopedUnsetDisplay() { setenv("DISPLAY", display_.c_str(), 1); }
+  ScopedUnsetDisplay() {
+    const char* display = getenv("DISPLAY");
+    if (display) {
+      display_.emplace(display);
+      unsetenv("DISPLAY");
+    }
+  }
+  ~ScopedUnsetDisplay() {
+    if (display_) {
+      setenv("DISPLAY", display_->c_str(), 1);
+    }
+  }
 
  private:
-  std::string display_;
+  base::Optional<std::string> display_;
   DISALLOW_COPY_AND_ASSIGN(ScopedUnsetDisplay);
 };
 

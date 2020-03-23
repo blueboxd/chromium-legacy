@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SearchUtils;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -429,7 +430,8 @@ public class PasswordSettings
                     Pref.REMEMBER_PASSWORDS_ENABLED, (boolean) newValue);
             return true;
         });
-        mSavePasswordsSwitch.setManagedPreferenceDelegate(preference
+        mSavePasswordsSwitch.setManagedPreferenceDelegate(
+                (ChromeManagedPreferenceDelegate) preference
                 -> PrefServiceBridge.getInstance().isManagedPreference(
                         Pref.REMEMBER_PASSWORDS_ENABLED));
 
@@ -456,7 +458,7 @@ public class PasswordSettings
                     Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, (boolean) newValue);
             return true;
         });
-        mAutoSignInSwitch.setManagedPreferenceDelegate(preference
+        mAutoSignInSwitch.setManagedPreferenceDelegate((ChromeManagedPreferenceDelegate) preference
                 -> PrefServiceBridge.getInstance().isManagedPreference(
                         Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
         getPreferenceScreen().addPreference(mAutoSignInSwitch);

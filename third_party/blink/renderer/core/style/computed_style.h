@@ -1007,6 +1007,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
   CORE_EXPORT bool SetFontDescription(const FontDescription&);
   bool HasIdenticalAscentDescentAndLineGap(const ComputedStyle& other) const;
+  bool HasFontRelativeUnits() const {
+    return HasEmUnits() || HasRemUnits() || HasGlyphRelativeUnits();
+  }
 
   // If true, the ComputedStyle must be recalculated when fonts are updated.
   bool DependsOnFontMetrics() const {

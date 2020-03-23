@@ -14,6 +14,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsUtils;
@@ -57,7 +58,7 @@ public class LanguageSettings
                 return true;
             }
         });
-        translateSwitch.setManagedPreferenceDelegate(preference
+        translateSwitch.setManagedPreferenceDelegate((ChromeManagedPreferenceDelegate) preference
                 -> PrefServiceBridge.getInstance().isManagedPreference(
                         Pref.OFFER_TRANSLATE_ENABLED));
         LanguagesManager.recordImpression(LanguagesManager.LanguageSettingsPageType.PAGE_MAIN);

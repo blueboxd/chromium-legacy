@@ -113,9 +113,15 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
   // If any changes to CSS Animations were detected, stash the update away for
   // application after the layout object is updated if we're in the appropriate
   // scope.
-  if (!state.AnimationUpdate().IsEmpty())
-    element.EnsureElementAnimations().CssAnimations().SetPendingUpdate(
+  if (!state.AnimationUpdate().IsEmpty()) {
+    auto& element_animations = element.EnsureElementAnimations();
+    element_animations.CssAnimations().SetPendingUpdate(
         state.AnimationUpdate());
+    if (state.HasImportantOverrides())
+      element_animations.SetHasImportantOverrides();
+    if (state.HasFontAffectingAnimation())
+      element_animations.SetHasFontAffectingAnimation();
+  }
 }
 
 bool HasAnimationsOrTransitions(const StyleResolverState& state) {
@@ -163,6 +169,20 @@ bool ValidateBaseComputedStyle(const ComputedStyle* base_computed_style,
   return *base_computed_style == computed_style;
 #else
   return true;
+#endif  // DCHECK_IS_ON()
+}
+
+// When force-computing the base computed style for validation purposes,
+// we need to reset the StyleCascade/MatchResult when the base computed style
+// optimization is used. This is because we don't want the computation of
+// the base to populate the cascade/MatchResult, as they are supposed to be
+// empty when the optimization is in use. This is to match the behavior of
+// non-DCHECK builds.
+void MaybeResetCascade(StyleCascade* cascade, MatchResult& match_result) {
+#if DCHECK_IS_ON()
+  if (cascade)
+    cascade->Reset();
+  match_result.Reset();
 #endif  // DCHECK_IS_ON()
 }
 
@@ -807,14 +827,16 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
       !default_parent && !default_layout_parent &&
       matching_behavior == kMatchAllRules;
 
-  ApplyBaseComputedStyle(element, state, matching_behavior,
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  StyleCascade* cascade_ptr =
+      RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr;
+
+  MatchResult match_result;
+  ApplyBaseComputedStyle(element, state, cascade_ptr, match_result,
+                         matching_behavior,
                          can_cache_animation_base_computed_style);
 
-  // FIXME: The CSSWG wants to specify that the effects of animations are
-  // applied before important rules, but this currently happens here as we
-  // require adjustment to have happened before deciding which properties to
-  // transition.
-  if (ApplyAnimatedStandardProperties(state)) {
+  if (ApplyAnimatedStandardProperties(state, match_result, cascade_ptr)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   styles_animated, 1);
     StyleAdjuster::AdjustComputedStyle(state, element);
@@ -889,6 +911,8 @@ void StyleResolver::InitStyleAndApplyInheritance(Element& element,
 void StyleResolver::ApplyBaseComputedStyle(
     Element* element,
     StyleResolverState& state,
+    StyleCascade* cascade,
+    MatchResult& match_result,
     RuleMatchingBehavior matching_behavior,
     bool can_cache_animation_base_computed_style) {
   const ComputedStyle* animation_base_computed_style =
@@ -902,15 +926,15 @@ void StyleResolver::ApplyBaseComputedStyle(
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
 
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                   state.Style(), state.Style()->InsideLink());
+                                   match_result, state.Style(),
+                                   state.Style()->InsideLink());
 
     MatchAllRules(state, collector,
                   matching_behavior != kMatchAllRulesExcludingSMIL);
 
     // TODO(dominicc): Remove this counter when Issue 590014 is fixed.
     if (element->HasTagName(html_names::kSummaryTag)) {
-      MatchedPropertiesRange matched_range =
-          collector.MatchedResult().AuthorRules();
+      MatchedPropertiesRange matched_range = match_result.AuthorRules();
       for (const auto& matched : matched_range) {
         const CSSValue* value =
             matched.properties->GetPropertyCSSValue(CSSPropertyID::kDisplay);
@@ -941,7 +965,13 @@ void StyleResolver::ApplyBaseComputedStyle(
     if (state.HasDirAutoAttribute())
       state.Style()->SetSelfOrAncestorHasDirAutoAttribute(true);
 
-    ApplyMatchedProperties(state, collector.MatchedResult());
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+      DCHECK(cascade);
+      CascadeAndApplyMatchedProperties(state, *cascade, match_result);
+    } else {
+      ApplyMatchedProperties(state, match_result);
+    }
+
     ApplyCallbackSelectors(state);
 
     // Cache our original display.
@@ -963,6 +993,7 @@ void StyleResolver::ApplyBaseComputedStyle(
       state.SetParentStyle(InitialStyleForElement(GetDocument()));
       state.SetLayoutParentStyle(state.ParentStyle());
     }
+    MaybeResetCascade(cascade, match_result);
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   base_styles_used, 1);
   }
@@ -1017,6 +1048,11 @@ bool StyleResolver::PseudoStyleForElementInternal(
   // Since we don't use pseudo-elements in any of our quirk/print
   // user agent rules, don't waste time walking those rules.
 
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  StyleCascade* cascade_ptr =
+      RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr;
+
+  MatchResult match_result;
   if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
     if (pseudo_style_request.AllowsInheritance(state.ParentStyle())) {
       scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
@@ -1034,7 +1070,8 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
     // Check UA, user and author rules.
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                   state.Style(), state.Style()->InsideLink());
+                                   match_result, state.Style(),
+                                   state.Style()->InsideLink());
     collector.SetPseudoElementStyleRequest(pseudo_style_request);
 
     // The UA sheet is supposed to set some styles to ::marker pseudo-elements,
@@ -1070,7 +1107,11 @@ bool StyleResolver::PseudoStyleForElementInternal(
       return false;
     }
 
-    ApplyMatchedProperties(state, collector.MatchedResult());
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled())
+      CascadeAndApplyMatchedProperties(state, cascade, match_result);
+    else
+      ApplyMatchedProperties(state, match_result);
+
     ApplyCallbackSelectors(state);
 
     // Cache our original display.
@@ -1090,13 +1131,10 @@ bool StyleResolver::PseudoStyleForElementInternal(
   if (animation_base_computed_style) {
     state.SetStyle(ComputedStyle::Clone(*animation_base_computed_style));
     state.Style()->SetStyleType(pseudo_style_request.pseudo_id);
+    MaybeResetCascade(cascade_ptr, match_result);
   }
 
-  // FIXME: The CSSWG wants to specify that the effects of animations are
-  // applied before important rules, but this currently happens here as we
-  // require adjustment to have happened before deciding which properties to
-  // transition.
-  if (ApplyAnimatedStandardProperties(state))
+  if (ApplyAnimatedStandardProperties(state, match_result, cascade_ptr))
     StyleAdjuster::AdjustComputedStyle(state, nullptr);
 
   GetDocument().GetStyleEngine().IncStyleForElementCount();
@@ -1254,8 +1292,10 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
                                                    unsigned rules_to_include) {
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
+  MatchResult match_result;
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 nullptr, EInsideLink::kNotInsideLink);
+                                 match_result, state.Style(),
+                                 EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
   CollectPseudoRulesForElement(*element, collector, kPseudoIdNone,
                                rules_to_include);
@@ -1268,8 +1308,10 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
     unsigned rules_to_include) {
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
+  MatchResult match_result;
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 nullptr, EInsideLink::kNotInsideLink);
+                                 match_result, state.Style(),
+                                 EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingCSSRules);
   CollectPseudoRulesForElement(*element, collector, pseudo_id,
                                rules_to_include);
@@ -1303,7 +1345,10 @@ void StyleResolver::CollectPseudoRulesForElement(
   }
 }
 
-bool StyleResolver::ApplyAnimatedStandardProperties(StyleResolverState& state) {
+bool StyleResolver::ApplyAnimatedStandardProperties(
+    StyleResolverState& state,
+    const MatchResult& match_result,
+    StyleCascade* cascade) {
   Element& element = state.GetElement();
 
   // The animating element may be this element, the pseudo element we are
@@ -1314,13 +1359,10 @@ bool StyleResolver::ApplyAnimatedStandardProperties(StyleResolverState& state) {
   DCHECK(animating_element == &element || !animating_element ||
          animating_element->ParentOrShadowHostElement() == element);
 
-  if (state.Style()->Animations() ||
-      (animating_element && animating_element->HasAnimations())) {
-    if (!state.IsAnimationInterpolationMapReady())
-      CalculateAnimationUpdate(state);
-  } else if (!state.Style()->Transitions()) {
+  if (!HasAnimationsOrTransitions(state))
     return false;
-  }
+
+  CalculateAnimationUpdate(state);
 
   CSSAnimations::CalculateCompositorAnimationUpdate(
       state.AnimationUpdate(), animating_element, element, *state.Style(),
@@ -1335,42 +1377,43 @@ bool StyleResolver::ApplyAnimatedStandardProperties(StyleResolverState& state) {
   if (state.AnimationUpdate().IsEmpty())
     return false;
 
-  const ActiveInterpolationsMap& animations_map =
+  const ActiveInterpolationsMap& standard_animations =
       state.AnimationUpdate().ActiveInterpolationsForStandardAnimations();
-  const ActiveInterpolationsMap& transitions_map =
+  const ActiveInterpolationsMap& standard_transitions =
       state.AnimationUpdate().ActiveInterpolationsForStandardTransitions();
+  const ActiveInterpolationsMap& custom_animations =
+      state.AnimationUpdate().ActiveInterpolationsForCustomAnimations();
+  const ActiveInterpolationsMap& custom_transitions =
+      state.AnimationUpdate().ActiveInterpolationsForCustomTransitions();
 
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    // TODO(crbug.com/985049): Use main cascade.
-    //
-    // For now, we use a dedicated cascade for animation of standard properties.
-    // A StyleCascade is required, because otherwise we can't resolve any var()
-    // references that may appear in keyframes. Ultimately, we should use ONE
-    // cascade for everything, but this is not yet possible.
-    STACK_UNINITIALIZED StyleCascade cascade(state);
+    DCHECK(cascade);
     CascadeFilter filter;
 
     using Entry = CascadeInterpolations::Entry;
     class CascadeInterpolations interpolations(Vector<Entry, 4>{
-        Entry{&animations_map, CascadeOrigin::kAnimation},
-        Entry{&transitions_map, CascadeOrigin::kTransition},
+        Entry{&standard_animations, CascadeOrigin::kAnimation},
+        Entry{&standard_transitions, CascadeOrigin::kTransition},
+        Entry{&custom_animations, CascadeOrigin::kAnimation},
+        Entry{&custom_transitions, CascadeOrigin::kTransition},
     });
     if (IsForcedColorsModeEnabled(state))
       filter = filter.Add(CSSProperty::kIsAffectedByForcedColors, true);
-    cascade.Analyze(interpolations, filter);
-    cascade.Apply(interpolations, filter);
+    filter = filter.Add(CSSProperty::kAnimation, true);
+    cascade->Analyze(interpolations, filter);
+    cascade->Apply(&match_result, &interpolations, filter);
   } else {
     ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
-                                                           animations_map);
-    ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
-                                                           transitions_map);
+                                                           standard_animations);
+    ApplyAnimatedStandardProperties<kHighPropertyPriority>(
+        state, standard_transitions);
 
     UpdateFont(state);
 
     ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
-                                                          animations_map);
+                                                          standard_animations);
     ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
-                                                          transitions_map);
+                                                          standard_transitions);
   }
 
   // Start loading resources used by animations.
@@ -2002,13 +2045,10 @@ void StyleResolver::ApplyMatchedLowPriorityProperties(
 
 void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
                                            const MatchResult& match_result) {
+  DCHECK(!RuntimeEnabledFeatures::CSSCascadeEnabled());
+
   INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                 matched_property_apply, 1);
-
-  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    CascadeAndApplyMatchedProperties(state, match_result);
-    return;
-  }
 
   CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
   bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
@@ -2059,17 +2099,22 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
     Element& element,
     ActiveInterpolationsMap& interpolations) {
   StyleResolverState state(GetDocument(), element);
-  ApplyBaseComputedStyle(&element, state, kMatchAllRules, true);
+
+  MatchResult match_result;
+  STACK_UNINITIALIZED StyleCascade cascade(state);
 
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    STACK_UNINITIALIZED StyleCascade cascade(state);
+    ApplyBaseComputedStyle(&element, state, &cascade, match_result,
+                           kMatchAllRules, true);
     using Entry = CascadeInterpolations::Entry;
     class CascadeInterpolations cascade_interpolations(Vector<Entry, 4>({
         Entry{&interpolations, CascadeOrigin::kAnimation},
     }));
     cascade.Analyze(cascade_interpolations, CascadeFilter());
-    cascade.Apply(cascade_interpolations, CascadeFilter());
+    cascade.Apply(&match_result, &cascade_interpolations, CascadeFilter());
   } else {
+    ApplyBaseComputedStyle(&element, state, nullptr /* cascade */, match_result,
+                           kMatchAllRules, true);
     ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
                                                            interpolations);
     UpdateFont(state);
@@ -2082,18 +2127,16 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
 
 void StyleResolver::CascadeAndApplyMatchedProperties(
     StyleResolverState& state,
+    StyleCascade& cascade,
     const MatchResult& result) {
   DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
 
   CacheSuccess cache_success = ApplyMatchedCache(state, result);
 
-  STACK_UNINITIALIZED StyleCascade cascade(state);
   CascadeFilter filter;
 
-  if (cache_success.IsFullCacheHit()) {
-    CascadeAndApplyCustomPropertyAnimations(state, cascade, filter, nullptr);
+  if (cache_success.IsFullCacheHit())
     return;
-  }
 
   cascade.Analyze(result, filter);
 
@@ -2109,41 +2152,12 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
     cascade.Apply(result, filter);
   }
 
-  CascadeAndApplyCustomPropertyAnimations(state, cascade, filter, &result);
-
   CascadeAndApplyForcedColors(state, result);
 
   LoadPendingResources(state);
   MaybeAddToMatchedPropertiesCache(state, cache_success, result);
 
   DCHECK(!state.GetFontBuilder().FontDirty());
-}
-
-void StyleResolver::CascadeAndApplyCustomPropertyAnimations(
-    StyleResolverState& state,
-    StyleCascade& cascade,
-    CascadeFilter filter,
-    const MatchResult* match_result) {
-  filter = filter.Add(CSSProperty::kAnimation, true);
-
-  if (HasAnimationsOrTransitions(state)) {
-    CalculateAnimationUpdate(state);
-
-    if (state.IsAnimatingCustomProperties()) {
-      const auto& update = state.AnimationUpdate();
-      if (!update.IsEmpty()) {
-        using Entry = CascadeInterpolations::Entry;
-        CascadeInterpolations interpolations(Vector<Entry, 4>({
-            Entry{&update.ActiveInterpolationsForCustomAnimations(),
-                  CascadeOrigin::kAnimation},
-            Entry{&update.ActiveInterpolationsForCustomTransitions(),
-                  CascadeOrigin::kTransition},
-        }));
-        cascade.Analyze(interpolations, filter);
-        cascade.Apply(match_result, &interpolations, filter);
-      }
-    }
-  }
 }
 
 void StyleResolver::CascadeAndApplyForcedColors(StyleResolverState& state,
@@ -2231,8 +2245,10 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   if (!watched_selectors_rule_set)
     return;
 
+  MatchResult match_result;
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 state.Style(), state.Style()->InsideLink());
+                                 match_result, state.Style(),
+                                 state.Style()->InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
   collector.SetIncludeEmptyRules(true);
 

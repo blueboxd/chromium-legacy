@@ -149,17 +149,6 @@ class FakeProfileSessionDurationsService
 
 }  // namespace
 
-@interface CallTrackingStubBrowserInterfaceProvider
-    : StubBrowserInterfaceProvider
-@property(nonatomic) BOOL deviceManagerCleaned;
-@end
-@implementation CallTrackingStubBrowserInterfaceProvider
-
-- (void)cleanDeviceSharingManager {
-  self.deviceManagerCleaned = YES;
-}
-@end
-
 class AppStateTest : public BlockCleanupTest {
  protected:
   AppStateTest() {
@@ -524,8 +513,8 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   id applicationDelegate =
       [OCMockObject mockForClass:[MainApplicationDelegate class]];
   id window = [OCMockObject mockForClass:[UIWindow class]];
-  CallTrackingStubBrowserInterfaceProvider* interfaceProvider =
-      [[CallTrackingStubBrowserInterfaceProvider alloc] init];
+  StubBrowserInterfaceProvider* interfaceProvider =
+      [[StubBrowserInterfaceProvider alloc] init];
   interfaceProvider.mainInterface.userInteractionEnabled = YES;
   interfaceProvider.mainInterface.bvc = browserViewController;
 
@@ -553,7 +542,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   EXPECT_OCMOCK_VERIFY(startupInformation);
   EXPECT_OCMOCK_VERIFY(application);
   EXPECT_FALSE(interfaceProvider.mainInterface.userInteractionEnabled);
-  EXPECT_TRUE(interfaceProvider.deviceManagerCleaned);
   FakeAppDistributionProvider* provider =
       static_cast<FakeAppDistributionProvider*>(
           ios::GetChromeBrowserProvider()->GetAppDistributionProvider());

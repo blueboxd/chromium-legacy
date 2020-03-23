@@ -16,6 +16,7 @@ namespace autofill_assistant {
 // Custom comparison operators for |ValueProto|, because we can't use
 // |MessageDifferencer| for protobuf lite and can't rely on serialization.
 bool operator==(const ValueProto& value_a, const ValueProto& value_b);
+bool operator!=(const ValueProto& value_a, const ValueProto& value_b);
 bool operator<(const ValueProto& value_a, const ValueProto& value_b);
 bool operator>(const ValueProto& value_a, const ValueProto& value_b);
 

@@ -30,6 +30,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.TokenHolder;
 
 /**
  * This presenter creates tab modality by blocking interaction with select UI elements while a
@@ -68,6 +69,9 @@ public class ChromeTabModalPresenter
     private int mBottomControlsHeight;
     private boolean mShouldUpdateContainerLayoutParams;
 
+    /** A token held while the dialog manager is obscuring all tabs. */
+    private int mTabObscuringToken;
+
     /**
      * Constructor for initializing dialog container.
      * @param chromeActivity The activity displaying the dialogs.
@@ -81,6 +85,7 @@ public class ChromeTabModalPresenter
         mChromeFullscreenManager = mChromeActivity.getFullscreenManager();
         mChromeFullscreenManager.addListener(this);
         mVisibilityDelegate = new TabModalBrowserControlsVisibilityDelegate();
+        mTabObscuringToken = TokenHolder.INVALID_TOKEN;
     }
 
     public void destroy() {
@@ -150,7 +155,8 @@ public class ChromeTabModalPresenter
         } else {
             mRunEnterAnimationOnCallback = true;
         }
-        mTabObscuringHandlerSupplier.get().addViewObscuringAllTabs(getDialogContainer());
+        assert mTabObscuringToken == TokenHolder.INVALID_TOKEN;
+        mTabObscuringToken = mTabObscuringHandlerSupplier.get().obscureAllTabs();
     }
 
     @Override
@@ -202,7 +208,8 @@ public class ChromeTabModalPresenter
     @Override
     protected void removeDialogView(PropertyModel model) {
         mRunEnterAnimationOnCallback = false;
-        mTabObscuringHandlerSupplier.get().removeViewObscuringAllTabs(getDialogContainer());
+        mTabObscuringHandlerSupplier.get().unobscureAllTabs(mTabObscuringToken);
+        mTabObscuringToken = TokenHolder.INVALID_TOKEN;
         super.removeDialogView(model);
     }
 

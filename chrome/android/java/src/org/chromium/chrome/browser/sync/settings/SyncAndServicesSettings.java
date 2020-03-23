@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
@@ -629,7 +630,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
                 R.string.passwords_leak_detection_switch_signed_out_enable_description);
     }
 
-    private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
+    private ChromeManagedPreferenceDelegate createManagedPreferenceDelegate() {
         return preference -> {
             String key = preference.getKey();
             if (PREF_NAVIGATION_ERROR.equals(key)) {

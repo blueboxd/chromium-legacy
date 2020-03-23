@@ -86,40 +86,6 @@ struct CustomProxyConfig {
   // case properly.
   bool allow_non_idempotent_methods = false;
 
-  // Whether every HTTPS proxy in the custom proxy config can be assumed to
-  // also support QUIC. If this is true, the network service will try to
-  // establish an alternative QUIC stream to the proxy in parallel to the HTTPS
-  // stream in an attempt to use QUIC if possible.
-  bool assume_https_proxies_support_quic = false;
-
-  // Whether the custom proxy config can be used on HTTP URLs whose fetching
-  // causes redirect cycles. If set to false, network service will try to
-  // bypass custom proxies on HTTP requests whose fetching causes redirect
-  // cycles. In such cases, the request will be fetched directly once the
-  // redirect cycle is detected.
-  // TODO(https://crbug.com/945892): Remove this boolean once Network
-  // Servicification is fully launched.
-  bool can_use_proxy_on_http_url_redirect_cycles = true;
-
-  // The custom proxy can set these headers in this config which will be added
-  // to all requests using the proxy. This allows setting headers that may be
-  // privacy/security sensitive which we don't want to send to the renderer.
-  // Headers that require per-request logic can be added through the
-  // |custom_proxy_pre_cache_headers| and |custom_proxy_post_cache_headers|
-  // fields in ResourceRequest.
-  //
-  // Headers that will be set before the cache for http:// requests. If the
-  // request does not use a custom proxy, these headers will be removed before
-  // sending to the network. If a request already has one of these headers set,
-  // it may be overwritten if a custom proxy is used, or removed if a custom
-  // proxy is not used.
-  HttpRequestHeaders pre_cache_headers;
-
-  // Headers that will be set after the cache for http:// requests that are
-  // issued through a custom proxy. Headers here will overwrite matching
-  // headers on the request if a custom proxy is used.
-  HttpRequestHeaders post_cache_headers;
-
   // For tunneled requests (https://, ws://, wss://), these headers are added
   // to the CONNECT request. Headers here will overwrite matching headers on
   // the CONNECT request if a custom proxy is used.

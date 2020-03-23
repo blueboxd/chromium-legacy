@@ -1282,12 +1282,14 @@
                   # Exclude XML files; in particular, histograms.xml.
                   '|tools/metrics/[^.]*([.](?!xml$).*)?$',
     },
+    'metrics_metadata_files': {
+      # Subscribe to this to watch for changes to {actions, histograms, ukm}.xml
+      # and to the field trial testing config.
+      'filepath': 'tools/metrics/.*\.xml$'\
+                  '|testing/variations/fieldtrial_testing_config.json',
+    },
     'metrics_perf': {
       'filepath': 'chrome/browser/metrics/perf/',
-    },
-    'metrics_xml_files': {
-      # Subscribe to this to watch for changes to histograms.xml.
-      'filepath': 'tools/metrics/.*\.xml$',
     },
     'midi': {
       'filepath': 'midi',
@@ -2562,8 +2564,9 @@
                      'takumif+watch@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
+    'metrics_metadata_files': ['asvitkine+watchxml@chromium.org',
+                               'chromium-metrics-reviews@google.com'],
     'metrics_perf': ['cwp-reviews+chromium@google.com'],
-    'metrics_xml_files': ['asvitkine+watchxml@chromium.org'],
     'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['darin+watch@chromium.org'],
     'multidevice': ['hansberry+watch-multidevice@chromium.org',

@@ -973,7 +973,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floa
 
 ### With LayoutNGBlockFragmentation enabled:
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
-crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
+crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Crash Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/floats-and-text-narrow-and-short-dynamic.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/line-after-unbreakable-float-after-padding.html [ Failure ]
 crbug.com/967329 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
@@ -1400,7 +1400,7 @@ crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/transformed-clip-bef
 ### With LayoutNGFragmentTraversal (and LayoutNGFragmentItem) enabled:
 
 crbug.com/626703 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
-crbug.com/626703 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/float-nowrap-4.html [ Crash ]
+crbug.com/1051773 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/float-nowrap-4.html [ Timeout Crash ]
 crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
 crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
@@ -1869,7 +1869,6 @@ crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transit
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-to-no-value.html [ Skip ]
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-transition-property-variable-before-value.html [ Skip ]
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
-crbug.com/552085 virtual/cascade/external/wpt/css/css-cascade/important-prop.html [ Failure ]
 crbug.com/989123 virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
 # This is for some reason WontFix'd in the main expectations (see NeverFixTests).
@@ -2812,8 +2811,6 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 
 crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Pass Failure ]
-
-crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -4040,7 +4037,7 @@ crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-aft
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
-crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-4.html [ Crash ]
+crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-4.html [ Timeout Crash ]
 crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-ref.html [ Failure ]
 crbug.com/626703 virtual/web-components-v0-disabled/external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-ref.html [ Failure ]
 
@@ -5846,6 +5843,9 @@ crbug.com/985811 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-2.js
 crbug.com/985869 [ Linux ] http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
 crbug.com/985869 [ Win7 ] http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
 
+# ecosystem-infra sheriff 2019-07-22
+crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
+
 crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Pass Failure ]
 crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Pass Failure ]
 # Sheriff 2019-07-24
@@ -6452,8 +6452,6 @@ crbug.com/1046784 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test
 crbug.com/1046201 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
 crbug.com/1046201 [ Mac ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
 crbug.com/1046201 [ Win10 ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
-crbug.com/1042848 virtual/audio-service/external/wpt/mediacapture-streams/idlharness.https.window.html [ Pass Timeout ]
-crbug.com/1042848 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/1046440 fast/loader/submit-form-while-parsing-2.html [ Pass Failure Timeout ]
 crbug.com/1041851 [ Mac ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
 crbug.com/1041851 [ Win10 ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]

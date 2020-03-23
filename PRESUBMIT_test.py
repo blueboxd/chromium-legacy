@@ -1290,6 +1290,12 @@ class LogUsageTest(unittest.TestCase):
         'private static final String TAG = "cr_Foo";',
         'Log.d("TAG", "foo");',
       ]),
+      MockAffectedFile('HasInlineTagWithSpace.java', [
+        'import org.chromium.base.Log;',
+        'some random stuff',
+        'private static final String TAG = "cr_Foo";',
+        'Log.d("log message", "foo");',
+      ]),
       MockAffectedFile('HasUnprefixedTag.java', [
         'import org.chromium.base.Log;',
         'some random stuff',
@@ -1301,6 +1307,11 @@ class LogUsageTest(unittest.TestCase):
         'some random stuff',
         'private static final String TAG = "21_charachers_long___";',
         'Log.d(TAG, "foo");',
+      ]),
+      MockAffectedFile('HasTooLongTagWithNoLogCallsInDiff.java', [
+        'import org.chromium.base.Log;',
+        'some random stuff',
+        'private static final String TAG = "21_charachers_long___";',
       ]),
     ]
 
@@ -1319,21 +1330,25 @@ class LogUsageTest(unittest.TestCase):
 
     # Tag length
     nb = len(msgs[1].items)
-    self.assertEqual(1, nb,
-                     'Expected %d items, found %d: %s' % (1, nb, msgs[1].items))
+    self.assertEqual(2, nb,
+                     'Expected %d items, found %d: %s' % (2, nb, msgs[1].items))
     self.assertTrue('HasTooLongTag.java' in msgs[1].items)
+    self.assertTrue('HasTooLongTagWithNoLogCallsInDiff.java' in msgs[1].items)
 
     # Tag must be a variable named TAG
     nb = len(msgs[2].items)
-    self.assertEqual(1, nb,
-                     'Expected %d items, found %d: %s' % (1, nb, msgs[2].items))
+    self.assertEqual(3, nb,
+                     'Expected %d items, found %d: %s' % (3, nb, msgs[2].items))
+    self.assertTrue('HasBothLog.java:5' in msgs[2].items)
     self.assertTrue('HasInlineTag.java:4' in msgs[2].items)
+    self.assertTrue('HasInlineTagWithSpace.java:4' in msgs[2].items)
 
     # Util Log usage
     nb = len(msgs[3].items)
-    self.assertEqual(2, nb,
-                     'Expected %d items, found %d: %s' % (2, nb, msgs[3].items))
+    self.assertEqual(3, nb,
+                     'Expected %d items, found %d: %s' % (3, nb, msgs[3].items))
     self.assertTrue('HasAndroidLog.java:3' in msgs[3].items)
+    self.assertTrue('HasExplicitUtilLog.java:2' in msgs[3].items)
     self.assertTrue('IsInBasePackageButImportsLog.java:4' in msgs[3].items)
 
     # Tag must not contain

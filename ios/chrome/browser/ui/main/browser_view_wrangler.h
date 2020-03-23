@@ -14,7 +14,6 @@
 @class BrowserCoordinator;
 @protocol BrowsingDataCommands;
 class ChromeBrowserState;
-@class DeviceSharingManager;
 @protocol WebStateListObserving;
 
 class AppUrlLoadingService;
@@ -70,10 +69,6 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
 // Switch all global states for the given mode (normal or incognito).
 - (void)switchGlobalStateToMode:(ApplicationMode)mode;
 
-@end
-
-@interface BrowserViewWrangler (Testing)
-@property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_BROWSER_VIEW_WRANGLER_H_

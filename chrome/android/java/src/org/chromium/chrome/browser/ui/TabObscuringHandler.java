@@ -4,12 +4,8 @@
 
 package org.chromium.chrome.browser.ui;
 
-import android.view.View;
-
 import org.chromium.base.ObserverList;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.chromium.ui.util.TokenHolder;
 
 /**
  * Passes around the ability to set a view that is obscuring all tabs.
@@ -25,37 +21,41 @@ public class TabObscuringHandler {
         void updateObscured(boolean isObscured);
     }
 
-    // A set of views obscuring all tabs. When this set is nonempty, all tab content will be hidden
-    // from the accessibility tree.
-    private final Set<View> mViewsObscuringAllTabs = new HashSet<>();
+    /** A mechanism for distributing unique tokens to users of this system. */
+    private final TokenHolder mTokenHolder;
 
     private final ObserverList<Observer> mVisibilityObservers = new ObserverList<>();
 
-    /**
-     * Add a view to the set of views that obscure the content of all tabs for
-     * accessibility. As long as this set is nonempty, all tabs should be
-     * hidden from the accessibility tree.
-     *
-     * @param view The view that obscures the contents of all tabs.
-     */
-    public void addViewObscuringAllTabs(View view) {
-        mViewsObscuringAllTabs.add(view);
-        notifyUpdate(isViewObscuringAllTabs());
+    /** Default constructor */
+    public TabObscuringHandler() {
+        mTokenHolder = new TokenHolder(this::notifyUpdate);
     }
 
     /**
-     * Remove a view that previously obscured the content of all tabs.
+     * Notify the system that there is a feature obscuring all visible tabs for accessibility. As
+     * long as this set is nonempty, all tabs should be hidden from the accessibility tree.
      *
-     * @param view The view that no longer obscures the contents of all tabs.
+     * @return A token to hold while the feature is obscuring all tabs. This token is required to
+     *         un-obscure the tabs.
      */
-    public void removeViewObscuringAllTabs(View view) {
-        mViewsObscuringAllTabs.remove(view);
-        notifyUpdate(isViewObscuringAllTabs());
+    public int obscureAllTabs() {
+        return mTokenHolder.acquireToken();
     }
 
-    /** @return Whether or not any views obscure all tabs. */
-    public boolean isViewObscuringAllTabs() {
-        return !mViewsObscuringAllTabs.isEmpty();
+    /**
+     * Remove a feature that previously obscured the content of all tabs.
+     *
+     * @param token The unique token that identified the feature (acquired in
+     *              {@link #obscureAllTabs()}.
+     */
+    public void unobscureAllTabs(int token) {
+        assert token != TokenHolder.INVALID_TOKEN;
+        mTokenHolder.releaseToken(token);
+    }
+
+    /** @return Whether or not any features obscure all tabs. */
+    public boolean areAllTabsObscured() {
+        return mTokenHolder.hasTokens();
     }
 
     /**
@@ -77,9 +77,9 @@ public class TabObscuringHandler {
     /**
      * Notify all the observers of the visibility update.
      */
-    private void notifyUpdate(boolean isObscured) {
+    private void notifyUpdate() {
         for (Observer observer : mVisibilityObservers) {
-            observer.updateObscured(isObscured);
+            observer.updateObscured(mTokenHolder.hasTokens());
         }
     }
 }

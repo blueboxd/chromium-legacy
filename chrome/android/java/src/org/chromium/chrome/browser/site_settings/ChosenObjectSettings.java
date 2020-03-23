@@ -26,7 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
-import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 
 import java.util.ArrayList;
@@ -287,7 +287,7 @@ public class ChosenObjectSettings extends PreferenceFragmentCompat {
                         getInfo();
                     });
 
-            preference.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+            preference.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
                     return info.isManaged();

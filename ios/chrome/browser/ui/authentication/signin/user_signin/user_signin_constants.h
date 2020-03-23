@@ -19,5 +19,21 @@ typedef NS_ENUM(NSUInteger, UserSigninIntent) {
 
 // Name of notification sent when the user has attempted a sign-in.
 extern NSString* const kUserSigninAttemptedNotification;
+// Key in the UserDefaults to record the version of the application when the
+// SSO Recall promo has been displayed.
+// Exposed for testing.
+extern NSString* kDisplayedSSORecallForMajorVersionKey;
+// Key in the UserDefaults to record the GAIA id list when the sign-in promo
+// was shown.
+// Exposed for testing.
+extern NSString* kLastShownAccountGaiaIdVersionKey;
+// Key in the UserDefaults to record the number of time the sign-in promo has
+// been shown.
+// Exposed for testing.
+extern NSString* kSigninPromoViewDisplayCountKey;
+// Key in the UserDefaults to track how many times the SSO Recall promo has been
+// displayed.
+// Exposed for testing.
+extern NSString* kDisplayedSSORecallPromoCountKey;
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_USER_SIGNIN_USER_SIGNIN_CONSTANTS_H_

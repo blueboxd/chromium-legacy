@@ -31,7 +31,7 @@ public class AccessibilityVisibilityHandler implements Destroyable {
 
             @Override
             public void onContentChanged(Tab tab) {
-                mTab.updateObscured(tabObscuringHandler.isViewObscuringAllTabs());
+                mTab.updateObscured(tabObscuringHandler.areAllTabsObscured());
             }
         };
         lifecycleDispatcher.register(this);

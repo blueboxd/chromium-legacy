@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_PERFORMANCE_MANAGER_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_PERFORMANCE_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
@@ -31,14 +33,21 @@ class PerformanceManager {
   static bool IsAvailable();
 
   // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to call from any sequence, but |graph_callback|
-  // won't run if "IsAvailable" returns false.
+  // pointer to the Graph. Valid to call from any sequence.
+  //
+  // Note: If called from the main thread, the |graph_callback| is guaranteed to
+  //       run if and only if "IsAvailable()" returns true.
+  //
+  //       If called from any other sequence, there is no guarantee that the
+  //       callback will run. It will depend on if the PerformanceManager was
+  //       destroyed before the the task is scheduled.
   using GraphCallback = base::OnceCallback<void(Graph*)>;
   static void CallOnGraph(const base::Location& from_here,
                           GraphCallback graph_callback);
 
-  // Passes a GraphOwned object into the Graph on the PM sequence. Should only
-  // be called from the main thread and only if "IsAvailable" returns true.
+  // Passes a GraphOwned object into the Graph on the PM sequence. Must only be
+  // called if "IsAvailable()" returns true. Valid to call from the main thread
+  // only.
   static void PassToGraph(const base::Location& from_here,
                           std::unique_ptr<GraphOwned> graph_owned);
 

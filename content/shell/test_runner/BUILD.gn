@@ -47,8 +47,6 @@ jumbo_component("test_runner") {
     "pixel_dump.h",
     "spell_check_client.cc",
     "spell_check_client.h",
-    "test_common.cc",
-    "test_common.h",
     "test_interfaces.cc",
     "test_interfaces.h",
     "test_plugin.cc",

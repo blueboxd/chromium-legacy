@@ -42,7 +42,7 @@ const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_hash", nullptr};
 const char* const kLifecyclesTaskPostedAllowedArgs[] = {
     "task_queue_name", "time_since_disabled_ms", "ipc_hash", "location",
     nullptr};
-const char* const kMemoryPressureEventsAllowedArgs[] = {"Level", nullptr};
+const char* const kMemoryPressureEventsAllowedArgs[] = {"level", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -52,6 +52,8 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "chrome_library_module", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
+    {"base", "MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged",
+     kMemoryPressureEventsAllowedArgs},
     {"base", "ScopedAllowBaseSyncPrimitivesOutsideBlockingScope",
      kScopedBlockingCallAllowedArgs},
     {"base", "ScopedAllowBlocking", kScopedBlockingCallAllowedArgs},

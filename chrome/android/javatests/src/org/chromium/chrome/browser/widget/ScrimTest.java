@@ -123,7 +123,7 @@ public class ScrimTest {
     }
 
     private boolean isViewObscuringAllTabs() {
-        return mActivityTestRule.getActivity().getTabObscuringHandler().isViewObscuringAllTabs();
+        return mActivityTestRule.getActivity().getTabObscuringHandler().areAllTabsObscured();
     }
 
     /**

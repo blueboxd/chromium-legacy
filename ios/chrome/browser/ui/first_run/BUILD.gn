@@ -36,6 +36,7 @@ source_set("first_run") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/signin",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/icons",

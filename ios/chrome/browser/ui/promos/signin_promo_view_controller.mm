@@ -16,6 +16,8 @@
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
+#import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -27,23 +29,7 @@
 #error "This file requires ARC support."
 #endif
 
-// Key in the UserDefaults to record the version of the application when the
-// SSO Recall promo has been displayed.
-NSString* kDisplayedSSORecallForMajorVersionKey =
-    @"DisplayedSSORecallForMajorVersionKey";
-// Key in the UserDefaults to record the GAIA id list when the sign-in promo
-// was shown.
-NSString* kLastShownAccountGaiaIdVersionKey =
-    @"LastShownAccountGaiaIdVersionKey";
-// Key in the UserDefaults to record the number of time the sign-in promo has
-// been shown.
-NSString* kSigninPromoViewDisplayCountKey = @"SigninPromoViewDisplayCountKey";
-
 namespace {
-
-// Key in the UserDefaults to track how many times the SSO Recall promo has been
-// displayed.
-NSString* kDisplayedSSORecallPromoCountKey = @"DisplayedSSORecallPromoCount";
 
 // Name of the UMA SSO Recall histogram.
 const char* const kUMASSORecallPromoAction = "SSORecallPromo.PromoAction";
@@ -63,14 +49,6 @@ enum PromoAction {
   ACTION_ADDED_ANOTHER_ACCOUNT,
   PROMO_ACTION_COUNT
 };
-
-NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
-  NSMutableSet* gaiaIdSet = [NSMutableSet set];
-  for (ChromeIdentity* identity in identities) {
-    [gaiaIdSet addObject:identity.gaiaID];
-  }
-  return [gaiaIdSet copy];
-}
 }  // namespace
 
 @interface SigninPromoViewController ()<ChromeSigninViewControllerDelegate>
@@ -129,8 +107,9 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
 
 // Records in user defaults that the promo has been shown as well as the number
 // of times it's been displayed.
+// TODO(crbug.com/971989): Move this method to upgrade logger.
 - (void)recordPromoDisplayed {
-  [[self class] recordVersionSeen];
+  SigninRecordVersionSeen();
   NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
   int promoSeenCount =
       [standardDefaults integerForKey:kDisplayedSSORecallPromoCountKey];
@@ -145,90 +124,10 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
   UMA_HISTOGRAM_COUNTS_100(kUMASSORecallPromoSeenCount, promoSeenCount);
 }
 
-+ (void)recordVersionSeen {
-  base::Version currentVersion = [self currentVersion];
-  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
-  [standardDefaults
-      setObject:base::SysUTF8ToNSString(currentVersion.GetString())
-         forKey:kDisplayedSSORecallForMajorVersionKey];
-  NSArray* identities = ios::GetChromeBrowserProvider()
-                            ->GetChromeIdentityService()
-                            ->GetAllIdentitiesSortedForDisplay();
-  NSArray* gaiaIdList = GaiaIdSetWithIdentities(identities).allObjects;
-  [standardDefaults setObject:gaiaIdList
-                       forKey:kLastShownAccountGaiaIdVersionKey];
-  NSInteger displayCount =
-      [standardDefaults integerForKey:kSigninPromoViewDisplayCountKey];
-  ++displayCount;
-  [standardDefaults setInteger:displayCount
-                        forKey:kSigninPromoViewDisplayCountKey];
-}
-
-+ (base::Version)currentVersion {
-  base::Version currentVersion = version_info::GetVersion();
-  DCHECK(currentVersion.IsValid());
-  return currentVersion;
-}
-
 #pragma mark Superclass overrides
 
 - (UIColor*)backgroundColor {
   return [UIColor colorNamed:kBackgroundColor];
-}
-
-#pragma mark - PromoViewController
-
-+ (BOOL)shouldBePresentedForBrowserState:(ChromeBrowserState*)browserState {
-  if (signin::ForceStartupSigninPromo())
-    return YES;
-
-  if (tests_hook::DisableSigninRecallPromo())
-    return NO;
-
-  if (browserState->IsOffTheRecord())
-    return NO;
-
-  // There will be an error shown if the user chooses to sign in or select
-  // another account while offline.
-  if (net::NetworkChangeNotifier::IsOffline())
-    return NO;
-
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(browserState);
-  // Do not show the SSO promo if the user is already logged in.
-  if (authService->IsAuthenticated())
-    return NO;
-
-  // Show the promo at most every two major versions.
-  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
-  NSString* versionShown =
-      [standardDefaults stringForKey:kDisplayedSSORecallForMajorVersionKey];
-  if (versionShown) {
-    base::Version seenVersion(base::SysNSStringToUTF8(versionShown));
-    base::Version currentVersion = [[self class] currentVersion];
-    if (currentVersion.components()[0] - seenVersion.components()[0] < 2)
-      return NO;
-  }
-  // Don't show the promo if there is no identities.
-  NSArray* identities = ios::GetChromeBrowserProvider()
-                            ->GetChromeIdentityService()
-                            ->GetAllIdentitiesSortedForDisplay();
-  if ([identities count] == 0)
-    return NO;
-  // The sign-in promo should be shown twice, even if no account has been added.
-  NSInteger displayCount =
-      [standardDefaults integerForKey:kSigninPromoViewDisplayCountKey];
-  if (displayCount <= 1)
-    return YES;
-  // Otherwise, it can be shown only if a new account has been added.
-  NSArray* lastKnownGaiaIdList =
-      [standardDefaults arrayForKey:kLastShownAccountGaiaIdVersionKey];
-  NSSet* lastKnownGaiaIdSet = lastKnownGaiaIdList
-                                  ? [NSSet setWithArray:lastKnownGaiaIdList]
-                                  : [NSSet set];
-  NSSet* currentGaiaIdSet = GaiaIdSetWithIdentities(identities);
-  return [lastKnownGaiaIdSet isSubsetOfSet:currentGaiaIdSet] &&
-         ![lastKnownGaiaIdSet isEqualToSet:currentGaiaIdSet];
 }
 
 #pragma mark - ChromeSigninViewControllerDelegate

@@ -143,6 +143,8 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                     StyleResolverState& state);
   void ApplyBaseComputedStyle(Element* element,
                               StyleResolverState& state,
+                              StyleCascade* cascade,
+                              MatchResult& match_result,
                               RuleMatchingBehavior matching_behavior,
                               bool can_cache_animation_base_computed_style);
 
@@ -271,15 +273,14 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void CascadeAndApplyForcedColors(StyleResolverState&, const MatchResult&);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
+                                        StyleCascade& cascade,
                                         const MatchResult&);
-  void CascadeAndApplyCustomPropertyAnimations(StyleResolverState&,
-                                               StyleCascade&,
-                                               CascadeFilter,
-                                               const MatchResult*);
 
   void CalculateAnimationUpdate(StyleResolverState&);
 
-  bool ApplyAnimatedStandardProperties(StyleResolverState&);
+  bool ApplyAnimatedStandardProperties(StyleResolverState&,
+                                       const MatchResult&,
+                                       StyleCascade* cascade = nullptr);
 
   void ApplyCallbackSelectors(StyleResolverState&);
 

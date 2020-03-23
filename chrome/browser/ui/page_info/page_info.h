@@ -137,7 +137,6 @@ class PageInfo : public content::WebContentsObserver {
 
   struct ChooserUIInfo {
     ContentSettingsType content_settings_type;
-    permissions::ChooserContextBase* (*get_context)(Profile*);
     int description_string_id;
     int allowed_by_policy_description_string_id;
     int delete_tooltip_string_id;
@@ -195,6 +194,15 @@ class PageInfo : public content::WebContentsObserver {
   // This method is called when the user pressed "Mark as legitimate" button.
   void OnWhitelistPasswordReuseButtonPressed(
       content::WebContents* web_contents);
+
+  // Return the object name of the ChooserContextBase corresponding to the
+  // content settings type, |type|. Returns an empty string for content settings
+  // for which there's no ChooserContextBase.
+  base::string16 GetChooserContextObjectName(ContentSettingsType type,
+                                             const base::Value& object);
+
+  permissions::ChooserContextBase* GetChooserContextFromUIInfo(
+      const ChooserUIInfo& ui_info) const;
 
   // Accessors.
   const SiteConnectionStatus& site_connection_status() const {

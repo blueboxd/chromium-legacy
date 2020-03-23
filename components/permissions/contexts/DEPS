@@ -1,0 +1,6 @@
+include_rules = [
+  "+components/location",
+  "+components/prefs",
+  "+mojo/public",
+  "+services/device/public",
+]

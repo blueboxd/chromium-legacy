@@ -602,7 +602,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/vr/service/chrome_xr_integration_client.h"
+#include "chrome/browser/vr/chrome_xr_integration_client.h"
 #endif
 
 using base::FileDescriptor;

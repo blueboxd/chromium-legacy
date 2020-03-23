@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_delegate.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,7 +24,9 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
     Profile* profile) {
   permissions::PermissionManager::PermissionContextMap permission_contexts;
   permission_contexts[ContentSettingsType::GEOLOCATION] =
-      std::make_unique<GeolocationPermissionContext>(profile);
+      std::make_unique<permissions::GeolocationPermissionContext>(
+          profile,
+          std::make_unique<GeolocationPermissionContextDelegate>(profile));
   return permission_contexts;
 }
 

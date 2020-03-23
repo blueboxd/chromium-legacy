@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -60,7 +59,7 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
         @Override
         public void start(@NonNull Tab tab, @NonNull WebContents webContents,
                 boolean skipOnboarding, String initialUrl, Map<String, String> parameters,
-                String experimentIds, @Nullable String callerAccount, Bundle intentExtras) {}
+                String experimentIds, @Nullable String callerAccount, @Nullable String userName) {}
 
         @Override
         public AutofillAssistantActionHandler createActionHandler(Context context,

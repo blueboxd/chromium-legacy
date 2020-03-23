@@ -122,6 +122,11 @@
 // Sets whether the UI is displaying incognito content.
 - (void)setIncognitoContentVisible:(BOOL)incognitoContentVisible;
 
+#if !defined(NDEBUG)
+// Open a new window.
+- (void)openNewWindow;
+#endif  // !defined(NDEBUG)
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_

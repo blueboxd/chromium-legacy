@@ -5,10 +5,15 @@
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/browser/web_contents.h"
@@ -17,12 +22,37 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/serial/serial_chooser_context.h"
+#include "chrome/browser/serial/serial_chooser_context_factory.h"
+#endif
+
 ChromePageInfoDelegate::ChromePageInfoDelegate(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {}
 
 Profile* ChromePageInfoDelegate::GetProfile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+}
+
+permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(
+    ContentSettingsType type) {
+  switch (type) {
+    case ContentSettingsType::USB_CHOOSER_DATA:
+      return UsbChooserContextFactory::GetForProfile(GetProfile());
+    case ContentSettingsType::BLUETOOTH_CHOOSER_DATA:
+      return BluetoothChooserContextFactory::GetForProfile(GetProfile());
+    case ContentSettingsType::SERIAL_CHOOSER_DATA:
+#if !defined(OS_ANDROID)
+      return SerialChooserContextFactory::GetForProfile(GetProfile());
+#else
+      NOTREACHED();
+      return nullptr;
+#endif
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 bool ChromePageInfoDelegate::HasContentSettingChangedViaPageInfo(

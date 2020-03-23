@@ -9,3 +9,13 @@
 #endif
 
 NSString* const kUserSigninAttemptedNotification = @"kUserSigninAttempted";
+
+NSString* kDisplayedSSORecallForMajorVersionKey =
+    @"DisplayedSSORecallForMajorVersionKey";
+
+NSString* kLastShownAccountGaiaIdVersionKey =
+    @"LastShownAccountGaiaIdVersionKey";
+
+NSString* kSigninPromoViewDisplayCountKey = @"SigninPromoViewDisplayCountKey";
+
+NSString* kDisplayedSSORecallPromoCountKey = @"DisplayedSSORecallPromoCount";

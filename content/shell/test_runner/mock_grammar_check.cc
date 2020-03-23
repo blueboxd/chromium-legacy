@@ -10,9 +10,17 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "content/shell/test_runner/test_common.h"
+#include "base/strings/string_util.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_text_checking_result.h"
+
+namespace {
+
+bool IsASCIIAlpha(char ch) {
+  return base::IsAsciiLower(ch | 0x20);
+}
+
+}  // namespace
 
 namespace test_runner {
 

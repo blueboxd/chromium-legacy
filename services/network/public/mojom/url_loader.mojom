@@ -347,13 +347,6 @@ struct URLRequest {
   // The profile ID of network conditions to throttle the network request.
   mojo_base.mojom.UnguessableToken? throttling_profile_id;
 
-  // Headers that will be added pre and post cache for http:// requests if the
-  // network context uses the custom proxy for this request. The custom proxy
-  // is used for requests that match the custom proxy config, and would
-  // otherwise be made direct.
-  HttpRequestHeaders custom_proxy_pre_cache_headers;
-  HttpRequestHeaders custom_proxy_post_cache_headers;
-
   // See https://fetch.spec.whatwg.org/#concept-request-window
   //
   // This is an opaque id of the original requestor of the resource, which might

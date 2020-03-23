@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantAccessibilityUtils.setAccessibility;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorTextField;
 import org.chromium.ui.widget.ChromeImageView;
 
 /** Generic view factory. */
@@ -125,5 +129,34 @@ public class AssistantViewFactory {
             }
         });
         return imageView;
+    }
+
+    /** Creates a {@code EditorTextField} view. */
+    @CalledByNative
+    public static View createTextInputView(Context context, AssistantGenericUiDelegate delegate,
+            String viewIdentifier, int type, String hint, String modelIdentifier) {
+        View view = new EditorTextField(context,
+                EditorFieldModel.createTextInput(type, hint, /* suggestions = */ null,
+                        /* formatter = */ null, /* validator = */ null,
+                        /* valueIconGenerator = */ null, /* requiredErrorMessage = */ null,
+                        /* invalidErrorMessage = */ null, ""),
+                (v, actionId, event)
+                        -> false,
+                /* filter = */ null, new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                    @Override
+                    public void afterTextChanged(Editable value) {
+                        delegate.onValueChanged(modelIdentifier,
+                                AssistantValue.createForStrings(new String[] {value.toString()}));
+                    }
+                });
+        view.setTag(viewIdentifier);
+        return view;
     }
 }

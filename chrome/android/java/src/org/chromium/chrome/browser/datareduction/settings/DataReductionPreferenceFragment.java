@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.infobar.PreviewsLitePageInfoBar;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings.ContentLengths;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.util.ConversionUtils;
@@ -190,10 +191,12 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
             DataReductionPreferenceFragment.this.updatePreferences((boolean) newValue);
             return true;
         });
-        dataReductionSwitch.setManagedPreferenceDelegate(preference -> {
-            return CommandLine.getInstance().hasSwitch(ENABLE_DATA_REDUCTION_PROXY)
-                    || DataReductionProxySettings.getInstance().isDataReductionProxyManaged();
-        });
+        dataReductionSwitch.setManagedPreferenceDelegate(
+                (ChromeManagedPreferenceDelegate) preference -> {
+                    return CommandLine.getInstance().hasSwitch(ENABLE_DATA_REDUCTION_PROXY)
+                            || DataReductionProxySettings.getInstance()
+                                       .isDataReductionProxyManaged();
+                });
 
         getPreferenceScreen().addPreference(dataReductionSwitch);
 

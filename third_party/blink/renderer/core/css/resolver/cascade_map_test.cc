@@ -181,4 +181,27 @@ TEST(CascadeMapTest, LastHighPrio) {
   EXPECT_EQ(map.HighPriorityBits(), 1ull << static_cast<uint64_t>(last));
 }
 
+TEST(CascadeMapTest, Reset) {
+  CascadeMap map;
+
+  CascadePriority author(CascadeOrigin::kAuthor);
+
+  CSSPropertyName color(CSSPropertyID::kColor);
+  CSSPropertyName x(AtomicString("--x"));
+
+  EXPECT_FALSE(map.Find(color));
+  EXPECT_FALSE(map.Find(x));
+
+  map.Add(color, author);
+  map.Add(x, author);
+
+  EXPECT_EQ(author, map.At(color));
+  EXPECT_EQ(author, map.At(x));
+
+  map.Reset();
+
+  EXPECT_FALSE(map.Find(color));
+  EXPECT_FALSE(map.Find(x));
+}
+
 }  // namespace blink

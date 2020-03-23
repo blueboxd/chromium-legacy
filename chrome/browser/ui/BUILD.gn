@@ -2401,8 +2401,6 @@ jumbo_static_library("ui") {
       "cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.mm",
       "cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h",
       "cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.mm",
-      "cocoa/fullscreen/immersive_fullscreen_controller.h",
-      "cocoa/fullscreen/immersive_fullscreen_controller.mm",
       "cocoa/handoff_active_url_observer.cc",
       "cocoa/handoff_active_url_observer.h",
       "cocoa/handoff_active_url_observer_bridge.h",

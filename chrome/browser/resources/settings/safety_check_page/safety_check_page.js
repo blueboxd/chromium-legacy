@@ -235,6 +235,10 @@ Polymer({
     this.extensionsDisplayString_ = '';
     // Trigger safety check.
     this.safetyCheckBrowserProxy_.runSafetyCheck();
+    // Readout new safety check status via accessibility.
+    this.fire('iron-announce', {
+      text: this.i18n('safetyCheckAriaLiveRunning'),
+    });
   },
 
   /** @private */
@@ -259,6 +263,10 @@ Polymer({
       this.updateTimerId_ = setInterval(update, 60000);
       // Run initial safety check parent ran string update now.
       update();
+      // Readout new safety check status via accessibility.
+      this.fire('iron-announce', {
+        text: this.i18n('safetyCheckAriaLiveAfter'),
+      });
     }
   },
 

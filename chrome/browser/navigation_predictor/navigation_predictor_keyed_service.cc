@@ -5,6 +5,8 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,6 +70,21 @@ void NavigationPredictorKeyedService::OnPredictionUpdated(
     observer.OnPredictionUpdated(last_prediction_);
   }
 }
+
+#ifdef OS_ANDROID
+void NavigationPredictorKeyedService::OnPredictionUpdatedByExternalAndroidApp(
+    const std::vector<std::string>& external_app_packages_name,
+    const std::vector<GURL>& sorted_predicted_urls) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  LOCAL_HISTOGRAM_COUNTS_100(
+      "NavigationPredictor.ExternalAndroidApp.CountPredictedURLs",
+      sorted_predicted_urls.size());
+
+  // TODO(https://crbug.com/1014210): Notify the predicted URLs to the
+  // observers.
+}
+#endif
 
 void NavigationPredictorKeyedService::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

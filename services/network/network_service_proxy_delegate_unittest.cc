@@ -20,7 +20,6 @@ constexpr char kHttpUrl[] = "http://example.com";
 constexpr char kLocalhost[] = "http://localhost";
 constexpr char kHttpsUrl[] = "https://example.com";
 constexpr char kWebsocketUrl[] = "ws://example.com";
-constexpr char kBypassUrl[] = "http://bypass.com";
 
 }  // namespace
 
@@ -75,238 +74,11 @@ TEST_F(NetworkServiceProxyDelegateTest, NullConfigDoesNotCrash) {
 
   net::HttpRequestHeaders headers;
   auto request = CreateRequest(GURL(kHttpUrl));
-  delegate->OnBeforeStartTransaction(request.get(), &headers);
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, AddsHeadersBeforeCache) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kHttpUrl));
-  delegate->OnBeforeStartTransaction(request.get(), &headers);
-
-  EXPECT_THAT(headers, Contain("foo", "bar"));
-}
-
-TEST_F(NetworkServiceProxyDelegateTest,
-       DoesNotAddHeadersBeforeCacheWithEmptyConfig) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kHttpUrl));
-  delegate->OnBeforeStartTransaction(request.get(), &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, DoesNotAddHeadersBeforeCacheForHttps) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kHttpsUrl));
-  delegate->OnBeforeStartTransaction(request.get(), &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest,
-       DoesNotAddHeadersBeforeCacheForWebSocket) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kWebsocketUrl));
-  delegate->OnBeforeStartTransaction(request.get(), &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, AddsHeadersAfterCache) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->post_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kHttpUrl));
-  net::ProxyInfo info;
-  info.UsePacString("PROXY proxy");
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_THAT(headers, Contain("foo", "bar"));
-}
-
-TEST_F(NetworkServiceProxyDelegateTest,
-       DoesNotAddHeadersAfterCacheForProxyNotInConfig) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->post_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kHttpUrl));
-  net::ProxyInfo info;
-  info.UsePacString("PROXY other");
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, DoesNotAddHeadersAfterCacheForDirect) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->post_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kHttpUrl));
-  net::ProxyInfo info;
-  info.UseDirect();
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, DoesNotAddHeadersAfterCacheForHttps) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->post_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kHttpsUrl));
-  net::ProxyInfo info;
-  info.UsePacString("PROXY proxy");
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, DoesNotAddHeadersIfProxyIsBypassed) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->rules.bypass_rules.AddRuleFromString(GURL(kBypassUrl).host());
-  config->pre_cache_headers.SetHeader("pre", "cache");
-  config->post_cache_headers.SetHeader("post", "cache");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  auto request = CreateRequest(GURL(kBypassUrl));
-  delegate->OnBeforeStartTransaction(request.get(), &headers);
-
-  net::ProxyInfo info;
-  info.UseDirect();
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest,
-       RemovesPreCacheHeadersWhenProxyNotInConfig) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  headers.SetHeader("foo", "bar");
-  auto request = CreateRequest(GURL(kHttpUrl));
-  net::ProxyInfo info;
-  info.UseDirect();
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest,
-       DoesNotRemoveHeaderForHttpsIfAlreadyExists) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bad");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  headers.SetHeader("foo", "value");
-  auto request = CreateRequest(GURL(kHttpsUrl));
-  net::ProxyInfo info;
-  info.UseDirect();
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_THAT(headers, Contain("foo", "value"));
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, KeepsPreCacheHeadersWhenProxyInConfig) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  headers.SetHeader("foo", "bar");
-  auto request = CreateRequest(GURL(kHttpUrl));
-  net::ProxyInfo info;
-  info.UsePacString("PROXY proxy");
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_THAT(headers, Contain("foo", "bar"));
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, KeepsHeadersWhenConfigUpdated) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(config->Clone());
-
-  // Update config with new proxy.
-  config->rules.ParseFromString("http=other");
-  SetConfig(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  headers.SetHeader("foo", "bar");
-  auto request = CreateRequest(GURL(kHttpUrl));
-  net::ProxyInfo info;
-  info.UsePacString("PROXY proxy");
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_THAT(headers, Contain("foo", "bar"));
-}
-
-TEST_F(NetworkServiceProxyDelegateTest,
-       RemovesPreCacheHeadersWhenConfigUpdatedToBeEmpty) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=proxy");
-  config->pre_cache_headers.SetHeader("foo", "bar");
-  auto delegate = CreateDelegate(config->Clone());
-
-  // Update config with empty proxy rules.
-  config->rules = net::ProxyConfig::ProxyRules();
-  SetConfig(std::move(config));
-
-  net::HttpRequestHeaders headers;
-  headers.SetHeader("foo", "bar");
-  auto request = CreateRequest(GURL(kHttpUrl));
-  net::ProxyInfo info;
-  info.UseDirect();
-  delegate->OnBeforeSendHeaders(request.get(), info, &headers);
-
-  EXPECT_TRUE(headers.IsEmpty());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, AddsHeadersToTunnelRequest) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("https://proxy");
-  config->pre_cache_headers.SetHeader("pre_cache", "foo");
-  config->post_cache_headers.SetHeader("post_cache", "bar");
   config->connect_tunnel_headers.SetHeader("connect", "baz");
   auto delegate = CreateDelegate(std::move(config));
 
@@ -314,8 +86,6 @@ TEST_F(NetworkServiceProxyDelegateTest, AddsHeadersToTunnelRequest) {
   auto proxy_server = net::ProxyServer::FromPacString("HTTPS proxy");
   delegate->OnBeforeTunnelRequest(proxy_server, &headers);
 
-  EXPECT_FALSE(headers.HasHeader("pre_cache"));
-  EXPECT_FALSE(headers.HasHeader("post_cache"));
   EXPECT_THAT(headers, Contain("connect", "baz"));
 }
 
@@ -334,39 +104,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpProxy) {
       net::ProxyServer::FromPacString("PROXY foo"));
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
   // HTTP proxies are not used as alternative QUIC proxies.
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpsProxy) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=https://foo");
-  config->assume_https_proxies_support_quic = true;
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::ProxyInfo result;
-  result.UseDirect();
-  delegate->OnResolveProxy(GURL(kHttpUrl), "GET", net::ProxyRetryInfoMap(),
-                           &result);
-
-  net::ProxyList expected_proxy_list;
-  expected_proxy_list.AddProxyServer(
-      net::ProxyServer::FromPacString("HTTPS foo"));
-  EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
-  EXPECT_EQ(result.alternative_proxy(),
-            net::ProxyServer::FromPacString("QUIC foo"));
-}
-
-TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpsProxyNoQuic) {
-  auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=https://foo");
-  config->assume_https_proxies_support_quic = false;
-  auto delegate = CreateDelegate(std::move(config));
-
-  net::ProxyInfo result;
-  result.UseDirect();
-  delegate->OnResolveProxy(GURL(kHttpUrl), "GET", net::ProxyRetryInfoMap(),
-                           &result);
-
   EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 

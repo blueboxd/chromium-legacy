@@ -9,12 +9,13 @@
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/page_info/page_info_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
+namespace permissions {
+class ChooserContextBase;
+}
 
 namespace safe_browsing {
 class PasswordProtectionService;
@@ -29,6 +30,8 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   ~ChromePageInfoDelegate() override = default;
 
   // PageInfoDelegate implementation
+  permissions::ChooserContextBase* GetChooserContext(
+      ContentSettingsType type) override;
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) override;
   int GetFirstPartyAllowedCookiesCount(const GURL& site_url) override;
   int GetFirstPartyBlockedCookiesCount(const GURL& site_url) override;

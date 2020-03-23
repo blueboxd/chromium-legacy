@@ -8,6 +8,7 @@
 
 #include "chrome/browser/performance_manager/mechanisms/page_loader.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,6 +73,10 @@ TEST_F(BackgroundTabLoadingPolicyTest, RestoreTabs) {
     page_nodes.push_back(CreateNode<performance_manager::PageNodeImpl>());
     raw_page_nodes.push_back(page_nodes.back().get());
     EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes.back()));
+
+    // Set |is_tab| property as this is a requirement to pass the PageNode to
+    // RestoreTabs().
+    TabPropertiesDecorator::SetIsTabForTesting(raw_page_nodes.back(), true);
   }
 
   policy()->RestoreTabs(raw_page_nodes);

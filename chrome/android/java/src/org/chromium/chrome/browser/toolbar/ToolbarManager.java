@@ -237,6 +237,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     // onBottomToolbarVisibilityChanged, etc. to all use mBottomToolbarVisibilitySupplier.
     private final ObservableSupplierImpl<Boolean> mBottomToolbarVisibilitySupplier;
 
+    /** A token held while the toolbar/omnibox is obscuring all visible tabs. */
+    private int mTabObscuringToken;
+
     /**
      * Creates a ToolbarManager object.
      * @param controlContainer The container of the toolbar.
@@ -264,6 +267,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
         mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
+        mTabObscuringToken = TokenHolder.INVALID_TOKEN;
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -749,9 +753,19 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     @Override
     public void onScrimVisibilityChanged(boolean visible) {
         if (visible) {
-            mTabObscuringHandler.addViewObscuringAllTabs(mActivity.getScrim());
+            // It's possible for the scrim to unfocus and refocus without the visibility actually
+            // changing. In this case we have to make sure we unregister the previous token before
+            // acquiring a new one.
+            // TODO(mdjones): Consider calling the visibility change event in the scrim between
+            //                requests the show.
+            int oldToken = mTabObscuringToken;
+            mTabObscuringToken = mTabObscuringHandler.obscureAllTabs();
+            if (oldToken != TokenHolder.INVALID_TOKEN) {
+                mTabObscuringHandler.unobscureAllTabs(oldToken);
+            }
         } else {
-            mTabObscuringHandler.removeViewObscuringAllTabs(mActivity.getScrim());
+            mTabObscuringHandler.unobscureAllTabs(mTabObscuringToken);
+            mTabObscuringToken = TokenHolder.INVALID_TOKEN;
         }
     }
 

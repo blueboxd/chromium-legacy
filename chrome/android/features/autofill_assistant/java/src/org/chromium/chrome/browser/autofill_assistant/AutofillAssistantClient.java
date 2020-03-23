@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.accounts.Account;
 import android.content.Context;
 import android.os.Build;
-import android.os.Bundle;
 import android.telephony.TelephonyManager;
 
 import androidx.annotation.Nullable;
@@ -38,7 +37,6 @@ class AutofillAssistantClient {
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
-    private static final String PARAMETER_USER_EMAIL = "USER_EMAIL";
 
     /**
      * Pointer to the corresponding native autofill_assistant::ClientAndroid instance. Might be 0 if
@@ -93,9 +91,10 @@ class AutofillAssistantClient {
      *
      * @param initialUrl the original deep link, if known. When started from CCT, this
      * is the URL included into the intent
-     * @param parameters autobot parameters to set during the whole flow
+     * @param parameters Autofill Assistant parameters to set during the whole flow
      * @param experimentIds comma-separated set of experiments to use while running the flow
-     * @param intentExtras extras of the original intent
+     * @param callerAccount the account calling the flow
+     * @param userName the user name associated with this flow
      * @param onboardingCoordinator if non-null, reuse existing UI elements, usually created to show
      *         onboarding.
      *
@@ -104,12 +103,12 @@ class AutofillAssistantClient {
      * still fail after this method returns true; the failure will be displayed on the UI.
      */
     boolean start(String initialUrl, Map<String, String> parameters, String experimentIds,
-            @Nullable String callerAccount, Bundle intentExtras,
+            @Nullable String callerAccount, @Nullable String userName,
             @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         if (mNativeClientAndroid == 0) return false;
 
         checkNativeClientIsAliveOrThrow();
-        chooseAccountAsyncIfNecessary(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
+        chooseAccountAsyncIfNecessary(userName);
         return AutofillAssistantClientJni.get().start(mNativeClientAndroid,
                 AutofillAssistantClient.this, initialUrl, experimentIds, callerAccount,
                 parameters.keySet().toArray(new String[parameters.size()]),
@@ -151,7 +150,7 @@ class AutofillAssistantClient {
             return;
         }
 
-        chooseAccountAsyncIfNecessary(userName.isEmpty() ? null : userName, null);
+        chooseAccountAsyncIfNecessary(userName.isEmpty() ? null : userName);
 
         // The native side calls sendDirectActionList() on the callback once the controller has
         // results.
@@ -188,7 +187,7 @@ class AutofillAssistantClient {
      * @param actionId id of the action
      * @param experimentIds comma-separated set of experiments to use while running the flow
      * @param arguments report these as autobot parameters while performing this specific action
-     * @param onboardingcoordinator if non-null, reuse existing UI elements, usually created to show
+     * @param onboardingCoordinator if non-null, reuse existing UI elements, usually created to show
      *         onboarding.
      * @return true if the action was found started, false otherwise. The action can still fail
      * after this method returns true; the failure will be displayed on the UI.
@@ -211,8 +210,7 @@ class AutofillAssistantClient {
         return new AutofillAssistantClient(nativeClientAndroid);
     }
 
-    private void chooseAccountAsyncIfNecessary(
-            @Nullable String accountFromParameter, @Nullable Bundle extras) {
+    private void chooseAccountAsyncIfNecessary(@Nullable String userName) {
         if (mAccountInitializationStarted) return;
         mAccountInitializationStarted = true;
 
@@ -233,24 +231,11 @@ class AutofillAssistantClient {
                 return;
             }
 
-            if (accountFromParameter != null) {
-                Account account = findAccountByName(accounts, accountFromParameter);
+            if (userName != null) {
+                Account account = findAccountByName(accounts, userName);
                 if (account != null) {
                     onAccountChosen(account);
                     return;
-                }
-            }
-
-            if (extras != null) {
-                for (String extra : extras.keySet()) {
-                    // TODO(crbug.com/806868): Deprecate ACCOUNT_NAME.
-                    if (extra.endsWith("ACCOUNT_NAME")) {
-                        Account account = findAccountByName(accounts, extras.getString(extra));
-                        if (account != null) {
-                            onAccountChosen(account);
-                            return;
-                        }
-                    }
                 }
             }
             onAccountChosen(null);

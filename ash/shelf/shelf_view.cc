@@ -49,6 +49,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_utils.h"
@@ -196,34 +197,21 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
 
 }  // namespace
 
-// AnimationDelegate used when inserting a new item. This steadily increases the
-// opacity of the layer as the animation progress.
-class ShelfView::FadeInAnimationDelegate : public gfx::AnimationDelegate {
+// ImplicitAnimationObserver used when adding an item.
+class ShelfView::FadeInAnimationDelegate
+    : public ui::ImplicitAnimationObserver {
  public:
-  explicit FadeInAnimationDelegate(ShelfView* host, views::View* view)
-      : shelf_view_(host), view_(view) {}
-  ~FadeInAnimationDelegate() override = default;
-
-  // AnimationDelegate overrides:
-  void AnimationProgressed(const Animation* animation) override {
-    view_->layer()->SetOpacity(animation->GetCurrentValue());
-    view_->layer()->ScheduleDraw();
-  }
-  void AnimationEnded(const Animation* animation) override {
-    view_->layer()->SetOpacity(1.0f);
-    view_->layer()->ScheduleDraw();
-    shelf_view_->OnFadeInAnimationEnded();
-  }
-  void AnimationCanceled(const Animation* animation) override {
-    view_->layer()->SetOpacity(1.0f);
-    view_->layer()->ScheduleDraw();
-  }
+  explicit FadeInAnimationDelegate(ShelfView* shelf_view)
+      : shelf_view_(shelf_view) {}
+  ~FadeInAnimationDelegate() override { StopObservingImplicitAnimations(); }
 
  private:
-  ShelfView* shelf_view_ = nullptr;
-  views::View* view_;
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    shelf_view_->OnFadeInAnimationEnded();
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
+  ShelfView* shelf_view_ = nullptr;
 };
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
@@ -237,7 +225,6 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
   // AnimationDelegate overrides:
   void AnimationProgressed(const Animation* animation) override {
     view_->layer()->SetOpacity(1 - animation->GetCurrentValue());
-    view_->layer()->ScheduleDraw();
   }
   void AnimationEnded(const Animation* animation) override {
     // Ensures that |view| is not used after destruction.
@@ -349,6 +336,8 @@ void ShelfView::Init() {
     // Add child view so it has the same ordering as in the |view_model_|.
     AddChildViewAt(child, index);
   }
+
+  fade_in_animation_delegate_ = std::make_unique<FadeInAnimationDelegate>(this);
 
   // We'll layout when our bounds change.
 }
@@ -1223,10 +1212,14 @@ void ShelfView::AnimateToIdealBounds() {
 void ShelfView::FadeIn(views::View* view) {
   view->SetVisible(true);
   view->layer()->SetOpacity(0);
-  AnimateToIdealBounds();
-  bounds_animator_->SetAnimationDelegate(
-      view, std::unique_ptr<gfx::AnimationDelegate>(
-                new FadeInAnimationDelegate(this, view)));
+
+  ui::ScopedLayerAnimationSettings fade_in_animation_settings(
+      view->layer()->GetAnimator());
+  fade_in_animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
+  fade_in_animation_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  fade_in_animation_settings.AddObserver(fade_in_animation_delegate_.get());
+  view->layer()->SetOpacity(1.f);
 }
 
 void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {

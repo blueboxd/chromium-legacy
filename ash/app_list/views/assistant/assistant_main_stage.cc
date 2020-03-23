@@ -4,6 +4,7 @@
 
 #include "ash/app_list/views/assistant/assistant_main_stage.h"
 
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"

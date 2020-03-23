@@ -146,7 +146,11 @@ bool IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
                                          ColorSpace::TransferID::ARIB_STD_B67,
                                          ColorSpace::MatrixID::BT2020_NCL,
                                          ColorSpace::RangeID::LIMITED)) {
-      color_space_name = kCGColorSpaceITUR_2020_HLG;
+      // The CGColorSpace kCGColorSpaceITUR_2020_HLG cannot be used here because
+      // it expects that "pixel values should be between 0.0 and 12.0", while
+      // Chrome uses pixel values between 0.0 and 1.0.
+      // https://crbug.com/1061723.
+      return false;
     }
   }
   if (color_space_name) {

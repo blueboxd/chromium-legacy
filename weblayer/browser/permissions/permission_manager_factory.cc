@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 
+#include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/permissions/permission_context_base.h"
@@ -11,6 +12,13 @@
 #include "content/public/browser/permission_type.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
+#include "weblayer/browser/permissions/geolocation_permission_context_delegate.h"
+
+#if defined(OS_ANDROID)
+#include "components/permissions/contexts/geolocation_permission_context_android.h"
+#else
+#include "components/permissions/contexts/geolocation_permission_context.h"
+#endif
 
 namespace weblayer {
 namespace {
@@ -39,15 +47,29 @@ class DeniedPermissionContext : public permissions::PermissionContextBase {
 permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
     content::BrowserContext* browser_context) {
   permissions::PermissionManager::PermissionContextMap permission_contexts;
+#if defined(OS_ANDROID)
+  using GeolocationPermissionContext =
+      permissions::GeolocationPermissionContextAndroid;
+#else
+  using GeolocationPermissionContext =
+      permissions::GeolocationPermissionContext;
+#endif
+  permission_contexts[ContentSettingsType::GEOLOCATION] =
+      std::make_unique<GeolocationPermissionContext>(
+          browser_context,
+          std::make_unique<GeolocationPermissionContextDelegate>());
   // For now, all requests are denied. As features are added, their permission
   // contexts can be added here instead of DeniedPermissionContext.
   for (content::PermissionType type : content::GetAllPermissionTypes()) {
     ContentSettingsType content_settings_type =
         permissions::PermissionManager::PermissionTypeToContentSetting(type);
-    permission_contexts[content_settings_type] =
-        std::make_unique<DeniedPermissionContext>(
-            browser_context, content_settings_type,
-            blink::mojom::FeaturePolicyFeature::kNotFound);
+    if (permission_contexts.find(content_settings_type) ==
+        permission_contexts.end()) {
+      permission_contexts[content_settings_type] =
+          std::make_unique<DeniedPermissionContext>(
+              browser_context, content_settings_type,
+              blink::mojom::FeaturePolicyFeature::kNotFound);
+    }
   }
   return permission_contexts;
 }

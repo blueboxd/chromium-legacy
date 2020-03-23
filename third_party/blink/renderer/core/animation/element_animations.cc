@@ -113,8 +113,18 @@ void ElementAnimations::Trace(Visitor* visitor) {
   visitor->Trace(worklet_animations_);
 }
 
+bool ElementAnimations::IsBaseComputedStyleUsable() const {
+  if (has_important_overrides_)
+    return false;
+  if (has_font_affecting_animation_ && base_computed_style_ &&
+      base_computed_style_->HasFontRelativeUnits()) {
+    return false;
+  }
+  return true;
+}
+
 const ComputedStyle* ElementAnimations::BaseComputedStyle() const {
-  if (IsAnimationStyleChange())
+  if (IsAnimationStyleChange() && IsBaseComputedStyleUsable())
     return base_computed_style_.get();
   return nullptr;
 }
@@ -122,7 +132,7 @@ const ComputedStyle* ElementAnimations::BaseComputedStyle() const {
 void ElementAnimations::UpdateBaseComputedStyle(
     const ComputedStyle* computed_style) {
   DCHECK(computed_style);
-  if (!IsAnimationStyleChange()) {
+  if (!IsAnimationStyleChange() || !IsBaseComputedStyleUsable()) {
     base_computed_style_ = nullptr;
     return;
   }

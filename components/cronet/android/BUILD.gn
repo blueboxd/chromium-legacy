@@ -419,7 +419,12 @@ java_group("cronet_impl_all_java") {
 }
 
 android_resources("cronet_sample_apk_resources") {
-  resource_dirs = [ "sample/res" ]
+  sources = [
+    "sample/res/layout/activity_main.xml",
+    "sample/res/layout/dialog_url.xml",
+    "sample/res/values/dimens.xml",
+    "sample/res/values/strings.xml",
+  ]
   android_manifest = "sample/AndroidManifest.xml"
   deps = [ "//third_party/android_deps:android_support_v7_appcompat_java" ]
 }
@@ -746,7 +751,12 @@ if (!is_component_build) {
   # targets which are common between the "instrumentation test apk" and the
   # "tested apk" are removed from the "instrumentation test apk".
   android_resources("cronet_sample_test_apk_resources") {
-    resource_dirs = [ "sample/res" ]
+    sources = [
+      "sample/res/layout/activity_main.xml",
+      "sample/res/layout/dialog_url.xml",
+      "sample/res/values/dimens.xml",
+      "sample/res/values/strings.xml",
+    ]
     android_manifest = "sample/javatests/AndroidManifest.xml"
   }
 
@@ -837,9 +847,10 @@ if (!is_component_build) {
   android_resources("cronet_test_apk_resources") {
     testonly = true
     custom_package = "org.chromium.net"
-    resource_dirs = [
-      "test/res",
-      "test/smoketests/res/native",
+    sources = [
+      "test/res/values/strings.xml",
+      "test/res/xml/network_security_config.xml",
+      "test/smoketests/res/native/values/strings.xml",
     ]
   }
 
@@ -1053,7 +1064,10 @@ if (!is_component_build) {
   android_resources("cronet_smoketests_platform_only_apk_resources") {
     testonly = true
     custom_package = "org.chromium.net"
-    resource_dirs = [ "test/smoketests/res/platform_only" ]
+    sources = [
+      "test/smoketests/res/platform_only/values/strings.xml",
+      "test/smoketests/res/platform_only/xml/network_security_config.xml",
+    ]
   }
 
   instrumentation_test_apk(

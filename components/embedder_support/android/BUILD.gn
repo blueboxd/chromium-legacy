@@ -120,7 +120,18 @@ static_library("web_contents_delegate") {
 
 android_resources("web_contents_delegate_java_resources") {
   custom_package = "org.chromium.components.embedder_support.delegate"
-  resource_dirs = [ "java/res" ]
+  sources = [
+    "java/res/drawable-hdpi/color_picker_advanced_select_handle.png",
+    "java/res/drawable-mdpi/color_picker_advanced_select_handle.png",
+    "java/res/drawable-xhdpi/color_picker_advanced_select_handle.png",
+    "java/res/drawable/color_button_background.xml",
+    "java/res/drawable/color_picker_border.xml",
+    "java/res/layout/color_picker_advanced_component.xml",
+    "java/res/layout/color_picker_dialog_content.xml",
+    "java/res/layout/color_picker_dialog_title.xml",
+    "java/res/values/colors.xml",
+    "java/res/values/dimens.xml",
+  ]
   deps = [ ":web_contents_delegate_strings_grd" ]
 }
 

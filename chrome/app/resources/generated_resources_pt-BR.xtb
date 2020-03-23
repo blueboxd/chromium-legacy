@@ -405,7 +405,7 @@
 <translation id="1545177026077493356">Modo de quiosque automático</translation>
 <translation id="1545775234664667895">Tema "<ph name="THEME_NAME" />" instalado</translation>
 <translation id="1546280085599573572">Esta extensão alterou a página que é exibida quando você clica no botão "Página inicial".</translation>
-<translation id="1546452108651444655"><ph name="CHILD_NAME" /> quer instalar uma <ph name="EXTENSION_TYPE" /> que pode:</translation>
+<translation id="1546452108651444655"><ph name="CHILD_NAME" /> quer instalar <ph name="EXTENSION_TYPE" />, que pode:</translation>
 <translation id="1549275686094429035">ARC ativado</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> deseja acessar <ph name="VOLUME_NAME" />. Ele pode modificar ou excluir seus arquivos.</translation>
 <translation id="1553538517812678578">ilimitado</translation>

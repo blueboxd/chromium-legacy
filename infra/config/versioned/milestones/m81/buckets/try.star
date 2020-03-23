@@ -1,9 +1,14 @@
-load('//lib/builders.star', 'cpu', 'goma', 'os')
+load('//lib/builders.star', 'cpu', 'defaults', 'goma', 'os')
 load('//lib/try.star', 'try_')
 load('//versioned/vars/try.star', 'vars')
 # Load this using relative path so that the load statement doesn't
 # need to be changed when making a new milestone
 load('../vars.star', milestone_vars='vars')
+
+vars.bucket.set('try-m81')
+vars.cq_group.set('cq-m81')
+
+defaults.pool.set('luci.chromium.try')
 
 luci.bucket(
     name = vars.bucket.get(),

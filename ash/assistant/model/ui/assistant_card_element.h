@@ -15,8 +15,6 @@
 
 namespace ash {
 
-// AssistantCardElement --------------------------------------------------------
-
 // An Assistant UI element that will be rendered as an HTML card.
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
     : public AssistantUiElement {

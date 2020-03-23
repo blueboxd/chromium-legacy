@@ -37,36 +37,49 @@ class PerformanceManagerImpl : public PerformanceManager {
   ~PerformanceManagerImpl() override;
 
   // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to call from any sequence, but |graph_callback|
-  // won't run if this is called before Create() or after Destroy().
+  // pointer to the Graph. Valid to call from any sequence.
   //
-  // TODO(chrisha): Move this to the public interface.
+  // Note: If called from the main thread, the |graph_callback| is guaranteed to
+  //       run if and only if "IsAvailable()" returns true.
+  //
+  //       If called from any other sequence, there is no guarantee that the
+  //       callback will run. It will depend on if the PerformanceManager was
+  //       destroyed before the the task is scheduled.
   using GraphImplCallback = base::OnceCallback<void(GraphImpl*)>;
   static void CallOnGraphImpl(const base::Location& from_here,
                               GraphImplCallback graph_callback);
 
   // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to be called from the main thread only, and
-  // only if "IsAvailable" returns true. The return value is returned as an
-  // argument to the reply callback.
+  // pointer to the Graph. The return value is returned as an argument to the
+  // reply callback. As opposed to CallOnGraphImpl(), this is valid to call from
+  // the main thread only, and only if "IsAvailable" returns true.
   template <typename TaskReturnType>
   static void CallOnGraphAndReplyWithResult(
       const base::Location& from_here,
       base::OnceCallback<TaskReturnType(GraphImpl*)> task,
       base::OnceCallback<void(TaskReturnType)> reply);
 
-  // Creates, initializes and registers an instance.
-  // Invokes |on_start| on the PM sequence.
+  // Creates, initializes and registers an instance. Invokes |on_start| on the
+  // PM sequence. Valid to call from the main thread only.
   static std::unique_ptr<PerformanceManagerImpl> Create(
       GraphImplCallback on_start);
 
-  // Unregisters |instance| and arranges for its deletion on its sequence.
+  // Unregisters |instance| and arranges for its deletion on its sequence. Valid
+  // to call from the main thread only.
   static void Destroy(std::unique_ptr<PerformanceManager> instance);
 
   // Creates a new node of the requested type and adds it to the graph.
-  // May be called from any sequence. If a |creation_callback| is provided it
-  // will be run on the performance manager sequence immediately after creating
-  // the node.
+  // May be called from any sequence. If a |creation_callback| is provided, it
+  // will be run on the performance manager sequence immediately after adding
+  // the node to the graph. This callback will not be executed if the node could
+  // not be added to the graph.
+  //
+  // Note: If called from the main thread, the node is guaranteed to be added to
+  //       the graph if and only if "IsAvailable()" returns true.
+  //
+  //       If called from any other sequence, there is no guarantee that the
+  //       node will be added to the graph. It will depend on if the
+  //       PerformanceManager was destroyed before the the task is scheduled.
   static std::unique_ptr<FrameNodeImpl> CreateFrameNode(
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
@@ -92,20 +105,19 @@ class PerformanceManagerImpl : public PerformanceManager {
       ProcessNodeImpl* process_node,
       const base::UnguessableToken& dev_tools_token);
 
-  // Destroys a node returned from the creation functions above.
-  // May be called from any sequence.
+  // Destroys a node returned from the creation functions above. May be called
+  // from any sequence.
   static void DeleteNode(std::unique_ptr<NodeBase> node);
 
-  // Each node in |nodes| must have been returned from one of the creation
-  // functions above. This function takes care of removing them from the graph
-  // in topological order and destroying them.
+  // Destroys multiples nodes in one single task. Equivalent to calling
+  // DeleteNode() on all elements of the vector. This function takes care of
+  // removing them from the graph in topological order and destroying them.
+  // May be called from any sequence.
   static void BatchDeleteNodes(std::vector<std::unique_ptr<NodeBase>> nodes);
 
   // Indicates whether or not the caller is currently running on the PM task
   // runner.
-  static bool OnPMTaskRunnerForTesting() {
-    return GetTaskRunner()->RunsTasksInCurrentSequence();
-  }
+  static bool OnPMTaskRunnerForTesting();
 
  private:
   friend class PerformanceManager;
@@ -115,10 +127,10 @@ class PerformanceManagerImpl : public PerformanceManager {
   // Returns the performance manager TaskRunner.
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
-  // Retrieves the currently registered instance. Calls must not race with
-  // Create() or Destroy(). The returned pointer must not be used after
-  // Destroy(). This function can be called from any sequence with those
-  // caveats.
+  // Retrieves the currently registered instance. Can only be called from the PM
+  // sequence.
+  // Note: Only exists so that RunCallbackWithGraphAndReplyWithResult can be
+  // implemented in the header file.
   static PerformanceManagerImpl* GetInstance();
 
   template <typename NodeType, typename... Args>
@@ -142,7 +154,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   static void RunCallbackWithGraph(GraphCallback graph_callback);
 
   template <typename TaskReturnType>
-  TaskReturnType RunCallbackWithGraphAndReplyWithResult(
+  static TaskReturnType RunCallbackWithGraphAndReplyWithResult(
       base::OnceCallback<TaskReturnType(GraphImpl*)> task);
 
   GraphImpl graph_;
@@ -158,22 +170,20 @@ void PerformanceManagerImpl::CallOnGraphAndReplyWithResult(
     const base::Location& from_here,
     base::OnceCallback<TaskReturnType(GraphImpl*)> task,
     base::OnceCallback<void(TaskReturnType)> reply) {
-  auto* pm = GetInstance();
   base::PostTaskAndReplyWithResult(
       GetTaskRunner().get(), from_here,
       base::BindOnce(
           &PerformanceManagerImpl::RunCallbackWithGraphAndReplyWithResult<
               TaskReturnType>,
-          base::Unretained(pm), std::move(task)),
+          std::move(task)),
       std::move(reply));
 }
 
+// static
 template <typename TaskReturnType>
 TaskReturnType PerformanceManagerImpl::RunCallbackWithGraphAndReplyWithResult(
     base::OnceCallback<TaskReturnType(GraphImpl*)> task) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  return std::move(task).Run(&graph_);
+  return std::move(task).Run(&GetInstance()->graph_);
 }
 
 }  // namespace performance_manager

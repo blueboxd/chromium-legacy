@@ -200,13 +200,11 @@ void PlayerCompositorDelegateAndroid::OnClick(
       gfx::Rect(static_cast<int>(j_x), static_cast<int>(j_y), 1U, 1U));
   if (res.empty())
     return;
-  if (res.size() == 1U) {
-    Java_PlayerCompositorDelegateImpl_onLinkClicked(
-        env, java_ref_,
-        base::android::ConvertUTF8ToJavaString(env, res[0]->spec()));
-    return;
-  }
   // TODO(crbug/1061435): Resolve cases where there are multiple links.
+  // For now just return the first in the list.
+  Java_PlayerCompositorDelegateImpl_onLinkClicked(
+      env, java_ref_,
+      base::android::ConvertUTF8ToJavaString(env, res[0]->spec()));
 }
 
 void PlayerCompositorDelegateAndroid::Destroy(JNIEnv* env) {

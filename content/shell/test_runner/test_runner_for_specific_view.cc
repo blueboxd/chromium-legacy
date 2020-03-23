@@ -18,12 +18,12 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/pixel_dump.h"
 #include "content/shell/test_runner/spell_check_client.h"
-#include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -651,13 +651,13 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
 
   blink::WebIsolatedWorldInfo info;
   if (security_origin->IsString()) {
-    info.security_origin =
-        blink::WebSecurityOrigin::CreateFromString(V8StringToWebString(
+    info.security_origin = blink::WebSecurityOrigin::CreateFromString(
+        web_test_string_util::V8StringToWebString(
             blink::MainThreadIsolate(), security_origin.As<v8::String>()));
   }
 
   if (content_security_policy->IsString()) {
-    info.content_security_policy = V8StringToWebString(
+    info.content_security_policy = web_test_string_util::V8StringToWebString(
         blink::MainThreadIsolate(), content_security_policy.As<v8::String>());
   }
 

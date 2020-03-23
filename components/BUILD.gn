@@ -65,7 +65,6 @@ test("components_unittests") {
     "//components/bookmarks/browser:unit_tests",
     "//components/bookmarks/managed:unit_tests",
     "//components/browsing_data/core:unit_tests",
-    "//components/bubble:unit_tests",
     "//components/captive_portal/core:unit_tests",
     "//components/cbor:unit_tests",
     "//components/certificate_matching:unit_tests",
@@ -517,7 +516,9 @@ if (is_android) {
 
   android_resources("components_browsertests_resources") {
     testonly = true
-    resource_dirs = [ "//components/test/android/browsertests_apk/res" ]
+    sources = [
+      "//components/test/android/browsertests_apk/res/layout/test_activity.xml",
+    ]
     custom_package = "org.chromium.components_browsertests_apk"
   }
 }

@@ -121,6 +121,12 @@ double CSSToLengthConversionData::ViewportMaxPercent() const {
   return std::max(viewport_size_.Width(), viewport_size_.Height()) / 100;
 }
 
+float CSSToLengthConversionData::EmFontSize() const {
+  if (style_)
+    const_cast<ComputedStyle*>(style_)->SetHasEmUnits();
+  return font_sizes_.Em();
+}
+
 float CSSToLengthConversionData::RemFontSize() const {
   if (style_)
     const_cast<ComputedStyle*>(style_)->SetHasRemUnits();

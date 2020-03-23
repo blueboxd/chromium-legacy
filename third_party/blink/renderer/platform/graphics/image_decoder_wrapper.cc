@@ -112,7 +112,7 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
 
   // For multi-frame image decoders, we need to know how many frames are
   // in that image in order to release the decoder when all frames are
-  // decoded. frameCount() is reliable only if all data is received and set in
+  // decoded. FrameCount() is reliable only if all data is received and set in
   // decoder, particularly with GIF.
   if (all_data_received_)
     *frame_count = decoder->FrameCount();

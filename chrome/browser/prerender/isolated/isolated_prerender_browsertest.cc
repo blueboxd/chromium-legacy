@@ -10,12 +10,15 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
@@ -45,6 +48,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -120,9 +124,17 @@ class IsolatedPrerenderBrowserTest
         net::EmbeddedTestServer::TYPE_HTTPS);
     origin_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     origin_server_->RegisterRequestMonitor(base::BindRepeating(
-        &IsolatedPrerenderBrowserTest::MonitorResourceRequest,
+        &IsolatedPrerenderBrowserTest::MonitorOriginResourceRequest,
         base::Unretained(this)));
     EXPECT_TRUE(origin_server_->Start());
+
+    proxy_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    proxy_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    proxy_server_->RegisterRequestMonitor(base::BindRepeating(
+        &IsolatedPrerenderBrowserTest::MonitorProxyResourceRequest,
+        base::Unretained(this)));
+    EXPECT_TRUE(proxy_server_->Start());
 
     config_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
@@ -135,6 +147,7 @@ class IsolatedPrerenderBrowserTest
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {features::kIsolatePrerenders,
+         features::kPrefetchSRPNavigationPredictions_HTMLOnly,
          data_reduction_proxy::features::kDataReductionProxyHoldback,
          data_reduction_proxy::features::kFetchClientConfig},
         {});
@@ -147,11 +160,15 @@ class IsolatedPrerenderBrowserTest
 
     // Ensure the service gets created before the tests start.
     IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
+
+    host_resolver()->AddRule("testorigin.com", "127.0.0.1");
+    host_resolver()->AddRule("proxy.com", "127.0.0.1");
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     InProcessBrowserTest::SetUpCommandLine(cmd);
-    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    // For the proxy.
+    cmd->AppendSwitch("ignore-certificate-errors");
     cmd->AppendSwitchASCII(
         data_reduction_proxy::switches::kDataReductionProxyConfigURL,
         config_server_->base_url().spec());
@@ -161,6 +178,14 @@ class IsolatedPrerenderBrowserTest
     data_reduction_proxy::DataReductionProxySettings::
         SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
                                       enabled);
+  }
+
+  void MakeNavigationPrediction(const GURL& doc_url,
+                                const std::vector<GURL>& predicted_urls) {
+    NavigationPredictorKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->OnPredictionUpdated(
+            browser()->tab_strip_model()->GetActiveWebContents(), doc_url,
+            predicted_urls);
   }
 
   std::unique_ptr<prerender::PrerenderHandle> StartPrerender(const GURL& url) {
@@ -178,6 +203,24 @@ class IsolatedPrerenderBrowserTest
         kSize);
   }
 
+  network::mojom::CustomProxyConfigPtr WaitForUpdatedCustomProxyConfig() {
+    IsolatedPrerenderService* isolated_prerender_service =
+        IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
+
+    base::RunLoop run_loop;
+    mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+    TestCustomProxyConfigClient config_client(
+        client_remote.BindNewPipeAndPassReceiver(), run_loop.QuitClosure());
+    isolated_prerender_service->proxy_configurator()
+        ->AddCustomProxyConfigClient(std::move(client_remote));
+
+    // A network change forces the config to be fetched.
+    SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+    run_loop.Run();
+
+    return std::move(config_client.config_);
+  }
+
   void VerifyProxyConfig(network::mojom::CustomProxyConfigPtr config,
                          bool want_empty = false) {
     ASSERT_TRUE(config);
@@ -186,23 +229,17 @@ class IsolatedPrerenderBrowserTest
               net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME);
     EXPECT_FALSE(config->should_override_existing_config);
     EXPECT_FALSE(config->allow_non_idempotent_methods);
-    EXPECT_FALSE(config->assume_https_proxies_support_quic);
-    EXPECT_TRUE(config->can_use_proxy_on_http_url_redirect_cycles);
-
-    EXPECT_TRUE(config->pre_cache_headers.IsEmpty());
-    EXPECT_TRUE(config->post_cache_headers.IsEmpty());
-
-    EXPECT_EQ(config->rules.proxies_for_http.size(), 0U);
-    EXPECT_EQ(config->rules.proxies_for_ftp.size(), 0U);
 
     if (want_empty) {
       EXPECT_EQ(config->rules.proxies_for_https.size(), 0U);
     } else {
       ASSERT_EQ(config->rules.proxies_for_https.size(), 1U);
       EXPECT_EQ(GURL(config->rules.proxies_for_https.Get().ToURI()),
-                GURL("https://prefetch-proxy.com:443/"));
+                GetProxyURL());
     }
   }
+
+  GURL GetProxyURL() const { return proxy_server_->GetURL("proxy.com", "/"); }
 
   GURL GetOriginServerURL(const std::string& path) const {
     return origin_server_->GetURL("testorigin.com", path);
@@ -214,19 +251,20 @@ class IsolatedPrerenderBrowserTest
 
  protected:
   base::OnceClosure waiting_for_resource_request_closure_;
+  base::OnceClosure on_proxy_request_closure_;
 
  private:
-  void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
+  void MonitorOriginResourceRequest(
+      const net::test_server::HttpRequest& request) {
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(
-            &IsolatedPrerenderBrowserTest::MonitorResourceRequestOnUIThread,
-            base::Unretained(this), request));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&IsolatedPrerenderBrowserTest::
+                                      MonitorOriginResourceRequestOnUIThread,
+                                  base::Unretained(this), request));
   }
 
-  void MonitorResourceRequestOnUIThread(
+  void MonitorOriginResourceRequestOnUIThread(
       const net::test_server::HttpRequest& request) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // Don't care about favicons.
@@ -235,6 +273,40 @@ class IsolatedPrerenderBrowserTest
 
     if (request.headers.find("Cookie") != request.headers.end()) {
       origin_server_request_with_cookies_++;
+    }
+  }
+
+  void MonitorProxyResourceRequest(
+      const net::test_server::HttpRequest& request) {
+    // This method is called on embedded test server thread. Post the
+    // information on UI thread.
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&IsolatedPrerenderBrowserTest::
+                                      MonitorProxyResourceRequestOnUIThread,
+                                  base::Unretained(this), request));
+  }
+
+  void MonitorProxyResourceRequestOnUIThread(
+      const net::test_server::HttpRequest& request) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    std::vector<std::string> request_lines =
+        base::SplitString(request.all_headers, "\r\n", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+
+    EXPECT_EQ(request_lines[0], "CONNECT testorigin.com:443 HTTP/1.1");
+
+    bool found_chrome_proxy_header = false;
+    for (const std::string& header : request_lines) {
+      if (header.find("chrome-proxy") != std::string::npos &&
+          header.find("s=secretsessionkey") != std::string::npos) {
+        found_chrome_proxy_header = true;
+      }
+    }
+    EXPECT_TRUE(found_chrome_proxy_header);
+
+    if (on_proxy_request_closure_) {
+      std::move(on_proxy_request_closure_).Run();
     }
   }
 
@@ -253,8 +325,8 @@ class IsolatedPrerenderBrowserTest
         config.mutable_prefetch_proxy_config()->add_proxy_list();
     valid_secure_proxy->set_type(
         data_reduction_proxy::PrefetchProxyConfig_Proxy_Type_CONNECT);
-    valid_secure_proxy->set_host("prefetch-proxy.com");
-    valid_secure_proxy->set_port(443);
+    valid_secure_proxy->set_host(GetProxyURL().host());
+    valid_secure_proxy->set_port(GetProxyURL().EffectiveIntPort());
     valid_secure_proxy->set_scheme(
         data_reduction_proxy::PrefetchProxyConfig_Proxy_Scheme_HTTPS);
 
@@ -278,6 +350,7 @@ class IsolatedPrerenderBrowserTest
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<net::EmbeddedTestServer> proxy_server_;
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
   std::unique_ptr<net::EmbeddedTestServer> config_server_;
   size_t origin_server_request_with_cookies_ = 0;
@@ -346,21 +419,23 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(DRPClientConfigPlumbing)) {
   SetDataSaverEnabled(true);
+  auto client_config = WaitForUpdatedCustomProxyConfig();
+  VerifyProxyConfig(std::move(client_config));
+}
 
-  IsolatedPrerenderService* isolated_prerender_service =
-      IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ConnectProxyEndtoEnd)) {
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), GetOriginServerURL("/simple.html"));
+  WaitForUpdatedCustomProxyConfig();
 
   base::RunLoop run_loop;
-  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
-  TestCustomProxyConfigClient config_client(
-      client_remote.BindNewPipeAndPassReceiver(), run_loop.QuitClosure());
-  isolated_prerender_service->proxy_configurator()->AddCustomProxyConfigClient(
-      std::move(client_remote));
-  base::RunLoop().RunUntilIdle();
+  on_proxy_request_closure_ = run_loop.QuitClosure();
 
-  // A network change forces the config to be fetched.
-  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {GURL("https://testorigin.com/")});
+
+  // This run loop will quit when a valid CONNECT request is made to the proxy
+  // server.
   run_loop.Run();
-
-  VerifyProxyConfig(std::move(config_client.config_));
 }

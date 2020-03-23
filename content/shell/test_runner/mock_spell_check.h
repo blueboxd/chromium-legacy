@@ -65,7 +65,7 @@ class MockSpellCheck {
   std::vector<base::string16> misspelled_words_;
 
   // A flag representing whether or not this object is initialized.
-  bool initialized_;
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockSpellCheck);
 };

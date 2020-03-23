@@ -21,6 +21,8 @@ import org.chromium.url.GURL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 /**
  * This is the only public class in this package and is hence the access point of this component for
  * the outer world. Users should call {@link #destroy()}  to ensure the native part is destroyed.
@@ -34,10 +36,11 @@ public class PlayerManager {
 
     public PlayerManager(GURL url, Context context,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
-            String directoryKey, Callback<Boolean> viewReadyCallback) {
+            String directoryKey, @Nonnull LinkClickHandler linkClickHandler,
+            Callback<Boolean> viewReadyCallback) {
         mContext = context;
-        mDelegate = new PlayerCompositorDelegateImpl(
-                nativePaintPreviewServiceProvider, url, directoryKey, this::onCompositorReady);
+        mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
+                directoryKey, this::onCompositorReady, linkClickHandler);
         mHostView = new FrameLayout(mContext);
         mViewReadyCallback = viewReadyCallback;
     }

@@ -105,7 +105,7 @@ public class AutofillAssistantModuleEntryProvider {
         ui.showInstallStartUi();
         AutofillAssistantModule.install((success) -> {
             if (success) {
-                // Don't show success UI from DFM, transition to autobot UI directly.
+                // Don't show success UI from DFM, transition to Autofill Assistant UI directly.
                 AutofillAssistantMetrics.recordFeatureModuleInstallation(
                         FeatureModuleInstallation.DFM_FOREGROUND_INSTALLATION_SUCCEEDED);
                 callback.onResult(AutofillAssistantModule.getImpl());

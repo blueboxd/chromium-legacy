@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
 namespace util {
@@ -79,6 +80,10 @@ void MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(current_pressure_level_, level);
+
+  TRACE_EVENT_INSTANT1(
+      "base", "MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged",
+      TRACE_EVENT_SCOPE_THREAD, "level", level);
 
   // Records the duration of the latest pressure session, there are 4
   // transitions of interest:

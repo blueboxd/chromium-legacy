@@ -194,6 +194,11 @@ const char kNTPHelpURL[] =
   [self setContentOffsetForWebState:webState];
 }
 
+- (void)webStateWasHidden:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  [self locationBarDidResignFirstResponder];
+}
+
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(self.webState, webState);
   self.webState = nullptr;

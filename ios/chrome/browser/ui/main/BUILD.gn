@@ -54,6 +54,7 @@ source_set("scene") {
     "//ios/chrome/browser/tabs:tabs",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/signin",
     "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/first_run",

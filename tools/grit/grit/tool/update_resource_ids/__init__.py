@@ -266,7 +266,7 @@ Other options:
       return self._DumpRootObj(root_obj)
     item_list = common.BuildItemList(root_obj)
 
-    src_dir = os.path.abspath(os.sep.join([file_dir, root_obj['SRCDIR'].val]))
+    src_dir = os.path.normpath(os.path.join(file_dir, root_obj['SRCDIR'].val))
     seen_files = set()
     usage_gen = reader.GenerateResourceUsages(item_list, src_dir, args.fake,
                                               seen_files)

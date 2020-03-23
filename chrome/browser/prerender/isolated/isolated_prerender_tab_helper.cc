@@ -12,6 +12,7 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
@@ -21,10 +22,12 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/user_agent.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
@@ -32,8 +35,10 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "url/origin.h"
 
 IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad() = default;
@@ -44,9 +49,6 @@ IsolatedPrerenderTabHelper::IsolatedPrerenderTabHelper(
     : content::WebContentsObserver(web_contents) {
   page_ = std::make_unique<CurrentPageLoad>();
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  url_loader_factory_ =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetURLLoaderFactoryForBrowserProcess();
 
   NavigationPredictorKeyedService* navigation_predictor_service =
       NavigationPredictorKeyedServiceFactory::GetForProfile(profile_);
@@ -62,11 +64,6 @@ IsolatedPrerenderTabHelper::~IsolatedPrerenderTabHelper() {
   if (navigation_predictor_service) {
     navigation_predictor_service->RemoveObserver(this);
   }
-}
-
-void IsolatedPrerenderTabHelper::SetURLLoaderFactoryForTesting(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  url_loader_factory_ = url_loader_factory;
 }
 
 void IsolatedPrerenderTabHelper::DidStartNavigation(
@@ -209,7 +206,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
       &IsolatedPrerenderTabHelper::OnPrefetchRedirect, base::Unretained(this)));
   page_->url_loader->SetAllowHttpErrorResults(true);
   page_->url_loader->DownloadToString(
-      url_loader_factory_.get(),
+      GetURLLoaderFactory(),
       base::BindOnce(&IsolatedPrerenderTabHelper::OnPrefetchComplete,
                      base::Unretained(this), url, key),
       1024 * 1024 * 5 /* 5MB */);
@@ -382,6 +379,50 @@ void IsolatedPrerenderTabHelper::OnGotCookieList(
   if (!PrefetchingActive()) {
     Prefetch();
   }
+}
+
+network::mojom::URLLoaderFactory*
+IsolatedPrerenderTabHelper::GetURLLoaderFactory() {
+  if (!page_->isolated_url_loader_factory) {
+    CreateIsolatedURLLoaderFactory();
+  }
+  DCHECK(page_->isolated_url_loader_factory);
+  return page_->isolated_url_loader_factory.get();
+}
+
+void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
+  page_->isolated_network_context.reset();
+  page_->isolated_url_loader_factory.reset();
+
+  IsolatedPrerenderService* isolated_prerender_service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile_);
+
+  auto context_params = network::mojom::NetworkContextParams::New();
+  context_params->user_agent = content::GetFrozenUserAgent(true).as_string();
+  context_params->initial_custom_proxy_config =
+      isolated_prerender_service->proxy_configurator()
+          ->CreateCustomProxyConfig();
+
+  // Also register a client config receiver so that updates to the set of proxy
+  // hosts or proxy headers will be updated.
+  mojo::Remote<network::mojom::CustomProxyConfigClient> config_client;
+  context_params->custom_proxy_config_client_receiver =
+      config_client.BindNewPipeAndPassReceiver();
+  isolated_prerender_service->proxy_configurator()->AddCustomProxyConfigClient(
+      std::move(config_client));
+
+  content::GetNetworkService()->CreateNetworkContext(
+      page_->isolated_network_context.BindNewPipeAndPassReceiver(),
+      std::move(context_params));
+
+  auto factory_params = network::mojom::URLLoaderFactoryParams::New();
+  factory_params->process_id = network::mojom::kBrowserProcessId;
+  factory_params->is_trusted = true;
+  factory_params->is_corb_enabled = false;
+
+  page_->isolated_network_context->CreateURLLoaderFactory(
+      page_->isolated_url_loader_factory.BindNewPipeAndPassReceiver(),
+      std::move(factory_params));
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(IsolatedPrerenderTabHelper)

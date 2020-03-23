@@ -7,10 +7,15 @@ package org.chromium.weblayer_private.test;
 import android.os.IBinder;
 
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.components.permissions.PermissionDialogController;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.weblayer_private.test_interfaces.ITestWebLayer;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Root implementation class for TestWebLayer.
@@ -45,5 +50,25 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
     @Override
     public boolean isMockLocationProviderRunning() {
         return mMockLocationProvider.isRunning();
+    }
+
+    @Override
+    public boolean isPermissionDialogShown() {
+        try {
+            return TestThreadUtils.runOnUiThreadBlocking(() -> {
+                return PermissionDialogController.getInstance().isDialogShownForTest();
+            });
+        } catch (ExecutionException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void clickPermissionDialogButton(boolean allow) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController.getInstance().clickButtonForTest(allow
+                            ? ModalDialogProperties.ButtonType.POSITIVE
+                            : ModalDialogProperties.ButtonType.NEGATIVE);
+        });
     }
 }

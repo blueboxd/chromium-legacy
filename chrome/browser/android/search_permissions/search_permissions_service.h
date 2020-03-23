@@ -91,7 +91,7 @@ class SearchPermissionsService : public KeyedService {
  private:
   friend class ChromeBrowsingDataRemoverDelegateTest;
   friend class SearchPermissionsServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(GeolocationPermissionContextTests,
+  FRIEND_TEST_ALL_PREFIXES(GeolocationPermissionContextDelegateTests,
                            SearchGeolocationInIncognito);
   struct PrefValue;
 

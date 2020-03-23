@@ -516,8 +516,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   // TODO(henrika): Re-evaluate whether to use same logic as other platforms.
   // https://crbug.com/638081
   return (2 * sample_rate / 100);
-#endif
-
+#else
   // If audio processing is turned on, require 10ms buffers.
   if (audio_processor_->has_audio_processing() || audio_processor_proxy_)
     return (sample_rate / 100);
@@ -535,6 +534,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   // TODO(miu): Identify where/why the buffer size might be missing, fix the
   // code, and then require it here. https://crbug.com/638081
   return (sample_rate / 100);
+#endif
 }
 
 }  // namespace blink

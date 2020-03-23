@@ -313,6 +313,7 @@
 <translation id="2288422996159078444">ඔබ ටයිප් කරන ඕනෑම දෙයක්, ඔබ බලන ඕනෑම පිටුවක්, හෝ වෙබය මත වෙනත් ඕනෑම ක්‍රියාකාරකමක් නරඹනු ලැබේ. වෙබ් අඩවි මත ඇති අන්තර්ගතය ඔබ නොදැනුවත්වම වෙනස් විය හැක.</translation>
 <translation id="2289385804009217824">කප්පාදු කරන්න</translation>
 <translation id="2292556288342944218">ඔබේ අන්තර්ජාල ප්‍රවේශය අවහිර කර ඇත</translation>
+<translation id="2293443924986248631">සක්‍රීය වූ විට, වෙබ් අඩවි හරහා ඔබව නිරීක්‍ෂණ කරන කුකී වෙබ් අඩවිවලට භාවිත කළ නොහැක. සමහර වෙබ් අඩවි මත විශේෂාංග කැඩී ගිය හැක.</translation>
 <translation id="2297722699537546652">B5 (ලියුම් කවරය)</translation>
 <translation id="2300306941146563769">උඩුගත නොකළා</translation>
 <translation id="2310021320168182093">Chou2 (ලියුම් කවරය)</translation>
@@ -724,6 +725,7 @@
 <translation id="4152318981910038897">{COUNT,plural, =1{1 වෙනි පිටුව}one{{COUNT} වෙනි පිටුව}other{{COUNT} වෙනි පිටුව}}</translation>
 <translation id="4154664944169082762">ඇඟිලි සලකුණු</translation>
 <translation id="4159784952369912983">දම්</translation>
+<translation id="4163132590327127354">මෙය කියවීමට පහසු කිරීමට Chrome මෙම පිටුව සරල කළා.</translation>
 <translation id="4165986682804962316">අඩවි සැකසුම්</translation>
 <translation id="4171400957073367226">වැරදි සත්‍යාපන සන් කිරීමකි</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1024,6 +1026,11 @@
 <translation id="536296301121032821">ප්‍රතිපත්ති සැකසුම් ගබඩා කිරීමට අසමත් විය</translation>
 <translation id="5371425731340848620">කාඩ්පත යාවත්කාලීන කරන්න</translation>
 <translation id="5377026284221673050">"ඔබේ ඔරලෝසුව පිටුපසින්" හෝ "ඔබේ ඔරලෝසුව ඉදිරියෙන්" හෝ "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">ඔබ යන සේවාදායකය, <ph name="ORIGIN" />, එය වෙත කෙරෙන සියලුම
+    ඉල්ලීම්වලට මූලාරම්භ ප්‍රතිපත්තියක් යෙදෙන මාතෘකාවක් සකසා ඇත. නමුත්
+    මාතෘකාව වැරදිව ආකෘති කර ඇත, එය බ්‍රවුසරය
+    <ph name="SITE" /> සඳහා වන ඔබේ ඉල්ලීම ඉටු කිරීමෙන් වළක්වයි. වෙබ් අඩවියක් සඳහා ආරක්‍ෂාව සහ වෙනත් ලක්‍ෂණ
+    වින්‍යාස කිරීමට වෙබ් අඩවිය ක්‍රියා කරවන්නන් විසින් මූලාරම්භ ප්‍රතිපත්ති භාවිත කරනු ලැබිය හැක.</translation>
 <translation id="5386426401304769735">සහතික දාමයෙහි SHA-1 භාවිතයෙන් අත්සන් කළ සහතිකයක් අඩංගුය.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">දකුණු දාරය මසන්න</translation>
@@ -1570,6 +1577,7 @@
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">සුරැකුම් පවුර හෝ ප්‍රතිවයිරස මෘදුකාංග සබැඳුම අවහිර කර තිබෙනවා විය හැකිය.</translation>
 <translation id="7759163816903619567">සංදර්ශක වසම:</translation>
+<translation id="776110834126722255">අත් හැරියා</translation>
 <translation id="7761701407923456692">සර්වරයේ සහතිකය URL ලිපිනය හා නොගැළපෙයි.</translation>
 <translation id="7763386264682878361">ගෙවීම් මැනිෆෙස්ට් විග්‍රහක</translation>
 <translation id="7764225426217299476">ලිපිනය එක් කරන්න</translation>

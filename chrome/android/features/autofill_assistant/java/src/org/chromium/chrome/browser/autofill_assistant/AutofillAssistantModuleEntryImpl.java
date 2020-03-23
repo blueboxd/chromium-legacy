@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,13 +28,13 @@ import java.util.Map;
 public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModuleEntry {
     @Override
     public void start(@NonNull Tab tab, @NonNull WebContents webContents, boolean skipOnboarding,
-            String initialUrl, Map<String, String> parameters, String experimentIds,
-            @Nullable String callerAccount, Bundle intentExtras) {
+            @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
+            @Nullable String callerAccount, @Nullable String userName) {
         if (skipOnboarding) {
             AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
             AutofillAssistantClient.fromWebContents(tab.getWebContents())
-                    .start(initialUrl, parameters, experimentIds, callerAccount, intentExtras,
-                            null);
+                    .start(initialUrl, parameters, experimentIds, callerAccount, userName,
+                            /* onboardingCoordinator= */ null);
             return;
         }
 
@@ -46,7 +45,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
             if (!accepted) return;
 
             AutofillAssistantClient.fromWebContents(tab.getWebContents())
-                    .start(initialUrl, parameters, experimentIds, callerAccount, intentExtras,
+                    .start(initialUrl, parameters, experimentIds, callerAccount, userName,
                             onboardingCoordinator);
         });
     }

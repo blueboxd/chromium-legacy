@@ -33,11 +33,6 @@ def get_parts(config):
     else:
         uncustomized_bundle_id = config.base_bundle_id
 
-    # Specify the components of HARDENED_RUNTIME that are also available on
-    # older macOS versions.
-    full_hardened_runtime_options = (
-        CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
-        CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
     verify_options = VerifyOptions.DEEP + VerifyOptions.STRICT
 
     parts = {
@@ -45,7 +40,7 @@ def get_parts(config):
             CodeSignedProduct(
                 '{.app_product}.app'.format(config),
                 config.base_bundle_id,
-                options=full_hardened_runtime_options,
+                options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
                 requirements=config.codesign_requirements_outer_app,
                 identifier_requirement=False,
                 entitlements='app-entitlements.plist',
@@ -62,29 +57,30 @@ def get_parts(config):
                 .format(config),
                 '{}.framework.AlertNotificationService'.format(
                     config.base_bundle_id),
-                options=full_hardened_runtime_options,
+                options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
                 verify_options=verify_options),
         'crashpad':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/chrome_crashpad_handler'.format(
                     config),
                 'chrome_crashpad_handler',
-                options=full_hardened_runtime_options,
+                options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
                 verify_options=verify_options),
         'helper-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper.app'.format(
                     config),
                 '{}.helper'.format(uncustomized_bundle_id),
-                options=full_hardened_runtime_options,
+                options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
                 verify_options=verify_options),
         'helper-renderer-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper (Renderer).app'
                 .format(config),
                 '{}.helper.renderer'.format(uncustomized_bundle_id),
-                # Do not use |full_hardened_runtime_options| because library
-                # validation is incompatible with the JIT entitlement.
+                # Do not use |CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS|
+                # because library validation is incompatible with the JIT
+                # entitlement.
                 options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-renderer-entitlements.plist',
@@ -94,9 +90,9 @@ def get_parts(config):
                 '{0.framework_dir}/Helpers/{0.product} Helper (GPU).app'.format(
                     config),
                 '{}.helper'.format(uncustomized_bundle_id),
-                # Do not use |full_hardened_runtime_options| because library
-                # validation is incompatible with more permissive code signing
-                # entitlements.
+                # Do not use |CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS|
+                # because library validation is incompatible with more
+                # permissive code signing entitlements.
                 options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-gpu-entitlements.plist',
@@ -106,9 +102,9 @@ def get_parts(config):
                 '{0.framework_dir}/Helpers/{0.product} Helper (Plugin).app'
                 .format(config),
                 '{}.helper.plugin'.format(uncustomized_bundle_id),
-                # Do not use |full_hardened_runtime_options| because library
-                # validation is incompatible with the disable-library-validation
-                # entitlement.
+                # Do not use |CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS|
+                # because library validation is incompatible with the
+                # disable-library-validation entitlement.
                 options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-plugin-entitlements.plist',
@@ -117,7 +113,7 @@ def get_parts(config):
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/app_mode_loader'.format(config),
                 'app_mode_loader',
-                options=full_hardened_runtime_options,
+                options=CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS,
                 verify_options=verify_options),
     }
 

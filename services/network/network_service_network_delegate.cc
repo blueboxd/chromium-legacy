@@ -104,10 +104,6 @@ int NetworkServiceNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* headers) {
-  if (network_context_->proxy_delegate()) {
-    network_context_->proxy_delegate()->OnBeforeStartTransaction(request,
-                                                                 headers);
-  }
   URLLoader* url_loader = URLLoader::ForRequest(*request);
   if (url_loader)
     return url_loader->OnBeforeStartTransaction(std::move(callback), headers);
@@ -126,10 +122,6 @@ void NetworkServiceNetworkDelegate::OnBeforeSendHeaders(
     const net::ProxyInfo& proxy_info,
     const net::ProxyRetryInfoMap& proxy_retry_info,
     net::HttpRequestHeaders* headers) {
-  if (network_context_->proxy_delegate()) {
-    network_context_->proxy_delegate()->OnBeforeSendHeaders(request, proxy_info,
-                                                            headers);
-  }
 }
 
 int NetworkServiceNetworkDelegate::OnHeadersReceived(

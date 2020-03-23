@@ -47,6 +47,14 @@ void TabPropertiesDecorator::SetIsTab(content::WebContents* contents,
                                     &TabPropertiesDataImpl::set_is_tab, is_tab);
 }
 
+void TabPropertiesDecorator::SetIsTabForTesting(PageNode* page_node,
+                                                bool is_tab) {
+  auto* data =
+      TabPropertiesDataImpl::GetOrCreate(PageNodeImpl::FromNode(page_node));
+  DCHECK(data);
+  data->set_is_tab(is_tab);
+}
+
 TabPropertiesDecorator::Data::Data() = default;
 TabPropertiesDecorator::Data::~Data() = default;
 

@@ -12,6 +12,9 @@
 #endif
 
 bool IsMultiwindowSupported() {
-  return BUILDFLAG(IOS_MULTIWINDOW_ENABLED) &&
-         base::ios::IsRunningOnIOS13OrLater();
+#if BUILDFLAG(IOS_MULTIWINDOW_ENABLED)
+  return base::ios::IsRunningOnIOS13OrLater();
+#else
+  return false;
+#endif
 }

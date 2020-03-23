@@ -23,8 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
-#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -39,8 +37,6 @@
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
-#include "chrome/browser/usb/usb_chooser_context.h"
-#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -92,8 +88,6 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/serial/serial_chooser_context.h"
-#include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -301,39 +295,21 @@ base::string16 GetSimpleSiteName(const GURL& url) {
       url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 }
 
-permissions::ChooserContextBase* GetUsbChooserContext(Profile* profile) {
-  return UsbChooserContextFactory::GetForProfile(profile);
-}
-
-#if !defined(OS_ANDROID)
-permissions::ChooserContextBase* GetSerialChooserContext(Profile* profile) {
-  return SerialChooserContextFactory::GetForProfile(profile);
-}
-#endif
-
-permissions::ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
-  if (base::FeatureList::IsEnabled(
-          features::kWebBluetoothNewPermissionsBackend)) {
-    return BluetoothChooserContextFactory::GetForProfile(profile);
-  }
-  return nullptr;
-}
-
 // The list of chooser types that need to display entries in the Website
 // Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
 // email security-dev@chromium.org.
 const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
-    {ContentSettingsType::USB_CHOOSER_DATA, &GetUsbChooserContext,
+    {ContentSettingsType::USB_CHOOSER_DATA,
      IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
      IDS_PAGE_INFO_DELETE_USB_DEVICE},
 #if !defined(OS_ANDROID)
-    {ContentSettingsType::SERIAL_CHOOSER_DATA, &GetSerialChooserContext,
+    {ContentSettingsType::SERIAL_CHOOSER_DATA,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
      IDS_PAGE_INFO_DELETE_SERIAL_PORT},
 #endif
-    {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, &GetBluetoothChooserContext,
+    {ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
      IDS_PAGE_INFO_BLUETOOTH_DEVICE_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
      IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE},
@@ -594,7 +570,8 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
 void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
                                          const base::Value& object) {
   // TODO(reillyg): Create metrics for revocations. crbug.com/556845
-  permissions::ChooserContextBase* context = ui_info.get_context(profile_);
+  permissions::ChooserContextBase* context =
+      delegate_->GetChooserContext(ui_info.content_settings_type);
   const auto origin = url::Origin::Create(site_url_);
   context->RevokeObjectPermission(origin, origin, object);
   show_info_bar_ = true;
@@ -666,6 +643,11 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
   delegate_->OnUserActionOnPasswordUi(
       web_contents, safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
+}
+
+permissions::ChooserContextBase* PageInfo::GetChooserContextFromUIInfo(
+    const ChooserUIInfo& ui_info) const {
+  return delegate_->GetChooserContext(ui_info.content_settings_type);
 }
 
 void PageInfo::ComputeUIInputs(
@@ -1006,7 +988,8 @@ void PageInfo::PresentSitePermissions() {
 
   const auto origin = url::Origin::Create(site_url_);
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
-    permissions::ChooserContextBase* context = ui_info.get_context(profile_);
+    permissions::ChooserContextBase* context =
+        delegate_->GetChooserContext(ui_info.content_settings_type);
     if (!context)
       continue;
     auto chosen_objects = context->GetGrantedObjects(origin, origin);

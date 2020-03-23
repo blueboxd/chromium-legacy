@@ -151,12 +151,7 @@ void UMAHelper::LogTimeOnDistillablePage(content::WebContents* web_contents) {
   DistillabilityDriver* driver =
       DistillabilityDriver::FromWebContents(web_contents);
   CHECK(driver);
-
-  // TODO(crbug.com/1061928): Check that the timer has started before logging.
-  // This is currently causing tests to fail, but they can begin passing if they
-  // add DistillabilityObservers and wait for DistillabilityResults before
-  // trying to toggle from a distillable to a distilled page.
-  // DCHECK(driver->GetTimer().HasStarted());
+  DCHECK(driver->GetTimer().HasStarted());
 
   // We shouldn't log time on a distillable page if this is a distilled page.
   DCHECK(!driver->GetTimer().IsTimingDistilledPage());

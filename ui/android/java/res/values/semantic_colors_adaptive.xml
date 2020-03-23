@@ -6,13 +6,12 @@
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- TODO(huayinz): remove tools:ignore once these colors are used in ui/android -->
-    <!--  TODO(lazzzis): move all hex values to color_palette.xml  -->
     <!-- Common text colors -->
     <color name="default_text_color">@color/default_text_color_dark</color>
     <!-- Text color used on dark background on light theme, and light background on dark theme. -->
     <color name="default_text_color_inverse">@color/default_text_color_light</color>
     <color name="default_text_color_secondary">@color/default_text_color_secondary_dark</color>
-    <color name="default_text_color_tertiary" tools:ignore="UnusedResources">@color/default_text_color_tertiary_dark</color>
+    <color name="default_text_color_tertiary">@color/default_text_color_tertiary_dark</color>
     <!-- Text color for non-clickable blue text. -->
     <color name="default_text_color_blue" tools:ignore="UnusedResources">@color/default_text_color_link</color>
     <!-- Text color for clickable text. -->
@@ -21,7 +20,7 @@
     <color name="default_text_color_error">@color/default_text_color_error_dark</color>
 
     <!-- Common icon colors for drawables. -->
-    <color name="default_icon_color" tools:ignore="UnusedResources">
+    <color name="default_icon_color">
         @color/default_icon_color_dark
     </color>
     <color name="default_icon_color_inverse" tools:ignore="UnusedResources">
@@ -36,9 +35,8 @@
     <color name="hairline_stroke_color">@color/hairline_stroke_color_light</color>
 
     <!-- Common background and branding color. -->
-    <!-- TODO(huayinz): Change primary and secondary color to default_bg_color*. -->
-    <color name="modern_primary_color" tools:ignore="UnusedResources">@color/default_bg_color_light</color>
-    <color name="modern_secondary_color" tools:ignore="UnusedResources">@color/modern_grey_100</color>
+    <color name="default_bg_color">@color/default_bg_color_light</color>
+    <color name="default_bg_color_secondary" tools:ignore="UnusedResources">@color/default_bg_color_secondary_light</color>
 
     <color name="default_bg_color_blue" tools:ignore="UnusedResources">@color/default_bg_color_blue_dark</color>
 
@@ -64,13 +62,13 @@
     <color name="popup_bg_color">@color/default_bg_color_elev_4</color>
 
     <!-- Snackbar colors -->
-    <color name="snackbar_background_color">@color/modern_primary_color</color>
+    <color name="snackbar_background_color">@color/default_bg_color</color>
 
     <!-- Infobar colors -->
     <color name="infobar_background_color" tools:ignore="UnusedResources">@color/snackbar_background_color</color>
 
     <!-- Bottom sheet colors -->
-    <color name="sheet_bg_color" tools:ignore="UnusedResources">@color/modern_primary_color</color>
+    <color name="sheet_bg_color" tools:ignore="UnusedResources">@color/default_bg_color</color>
 
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/ripple_color_blue_dark</color>

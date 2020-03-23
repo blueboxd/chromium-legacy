@@ -100,6 +100,8 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::SetInitiator(
 
 net::HttpResponseHeaders*
 AppCacheUpdateJob::UpdateURLLoaderRequest::GetResponseHeaders() const {
+  if (!response_)
+    return nullptr;
   return response_->headers.get();
 }
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -68,8 +68,8 @@ class _SizeDelta(collections.namedtuple(
   def IsLargeImprovement(self):
     return (self.actual * -1) >= self.expected
 
-  def __cmp__(self, other):
-    return cmp(self.name, other.name)
+  def __lt__(self, other):
+    return self.name < other.name
 
 
 def _SymbolDiffHelper(symbols):

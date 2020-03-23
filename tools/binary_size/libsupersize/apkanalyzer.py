@@ -7,8 +7,6 @@
 Assumes that apk_path.mapping and apk_path.jar.info is available.
 """
 
-from __future__ import division
-
 import logging
 import os
 import subprocess
@@ -37,7 +35,7 @@ def _RunApkAnalyzer(apk_path, mapping_path):
     args.extend(['--proguard-mappings', mapping_path])
   env = os.environ.copy()
   env['JAVA_HOME'] = path_util.GetJavaHome()
-  output = subprocess.check_output(args, env=env)
+  output = subprocess.check_output(args, env=env).decode('ascii')
   data = []
   for line in output.splitlines():
     try:
@@ -144,7 +142,7 @@ def CreateDexSymbols(apk_path, mapping_path, size_info_prefix):
   nodes = UndoHierarchicalSizing(nodes)
 
   dex_expected_size = _ExpectedDexTotalSize(apk_path)
-  total_node_size = sum(map(lambda x: x[2], nodes))
+  total_node_size = sum([x[2] for x in nodes])
   # TODO(agrieve): Figure out why this log is triggering for
   #     ChromeModernPublic.apk (https://crbug.com/851535).
   # Reporting: dex_expected_size=6546088 total_node_size=6559549

@@ -454,6 +454,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                 false,                 // is_off_the_record
                 false,                 // is_extended_reporting_enabled
                 false,                 // is_extended_reporting_policy_managed
+                false,                 // is_enhanced_protection_enabled
                 false,                 // is_proceed_anyway_disabled
                 true,                  // should_open_links_in_new_tab
                 true,                  // always_show_back_to_safety

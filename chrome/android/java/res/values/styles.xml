@@ -10,10 +10,10 @@
 
     <style name="Base.V17.Theme.Chromium" parent="Theme.BrowserUI">
         <!-- Window Properties -->
-        <item name="android:windowBackground">@color/modern_primary_color</item>
+        <item name="android:windowBackground">@color/default_bg_color</item>
 
         <!-- Action bar color -->
-        <item name="colorPrimary">@color/modern_primary_color</item>
+        <item name="colorPrimary">@color/default_bg_color</item>
 
         <!-- Status bar color -->
         <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
@@ -491,7 +491,7 @@
         <item name="tabMaxWidth">0dp</item>
         <item name="tabTextColor">@color/default_text_color_secondary</item>
         <item name="tabSelectedTextColor">@color/tab_layout_selected_tab_color</item>
-        <item name="android:background">@color/modern_primary_color</item>
+        <item name="android:background">@color/default_bg_color</item>
     </style>
 
     <!-- Misc styles -->
@@ -509,7 +509,7 @@
     <style name="ModernToolbar" parent="Widget.AppCompat.Toolbar">
         <item name="titleTextAppearance">@style/TextAppearance.Headline.Primary</item>
         <item name="windowActionBarOverlay">true</item>
-        <item name="android:background">@color/modern_primary_color</item>
+        <item name="android:background">@color/default_bg_color</item>
     </style>
     <style name="ToolbarButton">
         <item name="android:background">?attr/selectableItemBackground</item>

@@ -41,6 +41,26 @@ constexpr int kBlinkBreakdownInitialIndex =
 constexpr int kFrameSequenceTrackerTypeCount =
     static_cast<int>(FrameSequenceTrackerType::kMaxType) + 1;
 
+// Names for the viz breakdowns that are shown in trace as substages under
+// PipelineReporter -> SubmitCompositorFrameToPresentationCompositorFrame
+constexpr const char* GetVizBreakdownName(VizBreakdown stage) {
+  switch (stage) {
+    case VizBreakdown::kSubmitToReceiveCompositorFrame:
+      return "SubmitToReceiveCompositorFrame";
+    case VizBreakdown::kReceivedCompositorFrameToStartDraw:
+      return "ReceiveCompositorFrameToStartDraw";
+    case VizBreakdown::kStartDrawToSwapStart:
+      return "StartDrawToSwapStart";
+    case VizBreakdown::kSwapStartToSwapEnd:
+      return "Swap";
+    case VizBreakdown::kSwapEndToPresentationCompositorFrame:
+      return "SwapEndToPresentationCompositorFrame";
+    case VizBreakdown::kBreakdownCount:
+      NOTREACHED();
+      return "";
+  }
+}
+
 // Names for CompositorFrameReporter::StageType, which should be updated in case
 // of changes to the enum.
 constexpr const char* GetStageName(int stage_type_index) {
@@ -416,6 +436,19 @@ void CompositorFrameReporter::ReportBlinkBreakdowns(
   }
 }
 
+void CompositorFrameReporter::ReportVizBreakdownStage(
+    VizBreakdown stage,
+    const base::TimeTicks start_time,
+    const base::TimeTicks end_time,
+    FrameSequenceTrackerType frame_sequence_tracker_type) const {
+  base::TimeDelta time_delta = end_time - start_time;
+
+  ReportVizBreakdownTrace(stage, start_time, end_time);
+  ReportCompositorLatencyHistogram(
+      frame_sequence_tracker_type,
+      kVizBreakdownInitialIndex + static_cast<int>(stage), time_delta);
+}
+
 void CompositorFrameReporter::ReportVizBreakdowns(
     base::TimeTicks start_time,
     FrameSequenceTrackerType frame_sequence_tracker_type) const {
@@ -426,56 +459,32 @@ void CompositorFrameReporter::ReportVizBreakdowns(
       viz_breakdown_.received_compositor_frame_timestamp < start_time) {
     return;
   }
-  base::TimeDelta submit_to_receive_compositor_frame_delta =
-      viz_breakdown_.received_compositor_frame_timestamp - start_time;
-  ReportCompositorLatencyHistogram(
-      frame_sequence_tracker_type,
-      kVizBreakdownInitialIndex +
-          static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame),
-      submit_to_receive_compositor_frame_delta);
+  ReportVizBreakdownStage(VizBreakdown::kSubmitToReceiveCompositorFrame,
+                          start_time,
+                          viz_breakdown_.received_compositor_frame_timestamp,
+                          frame_sequence_tracker_type);
 
   if (viz_breakdown_.draw_start_timestamp.is_null())
     return;
-  base::TimeDelta received_compositor_frame_to_start_draw_delta =
-      viz_breakdown_.draw_start_timestamp -
-      viz_breakdown_.received_compositor_frame_timestamp;
-  ReportCompositorLatencyHistogram(
-      frame_sequence_tracker_type,
-      kVizBreakdownInitialIndex +
-          static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw),
-      received_compositor_frame_to_start_draw_delta);
+  ReportVizBreakdownStage(VizBreakdown::kReceivedCompositorFrameToStartDraw,
+                          viz_breakdown_.received_compositor_frame_timestamp,
+                          viz_breakdown_.draw_start_timestamp,
+                          frame_sequence_tracker_type);
 
   if (viz_breakdown_.swap_timings.is_null())
     return;
-  base::TimeDelta start_draw_to_swap_start_delta =
-      viz_breakdown_.swap_timings.swap_start -
-      viz_breakdown_.draw_start_timestamp;
+  ReportVizBreakdownStage(
+      VizBreakdown::kStartDrawToSwapStart, viz_breakdown_.draw_start_timestamp,
+      viz_breakdown_.swap_timings.swap_start, frame_sequence_tracker_type);
 
-  ReportCompositorLatencyHistogram(
-      frame_sequence_tracker_type,
-      kVizBreakdownInitialIndex +
-          static_cast<int>(VizBreakdown::kStartDrawToSwapStart),
-      start_draw_to_swap_start_delta);
+  ReportVizBreakdownStage(
+      VizBreakdown::kSwapStartToSwapEnd, viz_breakdown_.swap_timings.swap_start,
+      viz_breakdown_.swap_timings.swap_end, frame_sequence_tracker_type);
 
-  base::TimeDelta swap_start_to_swap_end_delta =
-      viz_breakdown_.swap_timings.swap_end -
-      viz_breakdown_.swap_timings.swap_start;
-
-  ReportCompositorLatencyHistogram(
-      frame_sequence_tracker_type,
-      kVizBreakdownInitialIndex +
-          static_cast<int>(VizBreakdown::kSwapStartToSwapEnd),
-      swap_start_to_swap_end_delta);
-
-  base::TimeDelta swap_end_to_presentation_compositor_frame_delta =
-      viz_breakdown_.presentation_feedback.timestamp -
-      viz_breakdown_.swap_timings.swap_end;
-
-  ReportCompositorLatencyHistogram(
-      frame_sequence_tracker_type,
-      kVizBreakdownInitialIndex +
-          static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame),
-      swap_end_to_presentation_compositor_frame_delta);
+  ReportVizBreakdownStage(VizBreakdown::kSwapEndToPresentationCompositorFrame,
+                          viz_breakdown_.swap_timings.swap_end,
+                          viz_breakdown_.presentation_feedback.timestamp,
+                          frame_sequence_tracker_type);
 }
 
 void CompositorFrameReporter::ReportCompositorLatencyHistogram(
@@ -571,6 +580,22 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
     TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
         "cc,input", "EventLatency", trace_id, frame_termination_time_);
   }
+}
+
+void CompositorFrameReporter::ReportVizBreakdownTrace(
+    VizBreakdown substage,
+    const base::TimeTicks start_time,
+    const base::TimeTicks end_time) const {
+  // Do not report events with negative time span.
+  if (end_time < start_time)
+    return;
+
+  const char* stage_name = GetVizBreakdownName(substage);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      "cc,benchmark", stage_name, TRACE_ID_LOCAL(this), start_time);
+
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "cc,benchmark", stage_name, TRACE_ID_LOCAL(this), end_time);
 }
 
 base::TimeDelta CompositorFrameReporter::SumOfStageHistory() const {

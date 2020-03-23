@@ -65,6 +65,7 @@ import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
 import './search_engines_page/search_engine_entry.m.js';
 import './site_settings/chooser_exception_list_entry.m.js';
+import './site_settings/site_entry.m.js';
 import './site_settings/site_list_entry.m.js';
 import './site_settings/site_list.m.js';
 
@@ -86,7 +87,7 @@ export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_prox
 export {SyncBrowserProxyImpl, PageStatus} from './people_page/sync_browser_proxy.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
-export {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SITE_EXCEPTION_WILDCARD} from './site_settings/constants.m.js';
+export {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SITE_EXCEPTION_WILDCARD,SortMethod} from './site_settings/constants.m.js';
 export {cookieInfo} from './site_settings/cookie_info.m.js';
 export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
 export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.m.js';

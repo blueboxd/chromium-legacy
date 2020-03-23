@@ -4,9 +4,6 @@
 
 """Creates an html report that allows you to view binary size by component."""
 
-from __future__ import division
-from __future__ import print_function
-
 import codecs
 import collections
 import itertools
@@ -171,9 +168,9 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   inserted_smalls_abs_pss = 0
   skipped_smalls_count = 0
   skipped_smalls_abs_pss = 0
-  for tup, type_to_pss in small_symbol_pss.iteritems():
+  for tup, type_to_pss in small_symbol_pss.items():
     path, component = tup
-    for section_name, pss in type_to_pss.iteritems():
+    for section_name, pss in type_to_pss.items():
       if abs(pss) < _MIN_OTHER_PSS:
         skipped_smalls_count += 1
         skipped_smalls_abs_pss += abs(pss)
@@ -196,7 +193,7 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     'components': components.value_list,
     'total': symbols.pss,
   }
-  return meta, file_nodes.values()
+  return meta, list(file_nodes.values())
 
 
 def BuildReportFromSizeInfo(out_path, size_info, all_symbols=False):

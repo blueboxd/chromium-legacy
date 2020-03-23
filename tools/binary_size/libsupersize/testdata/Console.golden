@@ -60,8 +60,8 @@ Print(c[-1].GroupedByPath(depth=2).Sorted())
 
 # For even more inspiration, look at canned_queries.py
 # (and feel free to add your own!).
-0: (.rodata@266e600(size_without_padding=5,padding=0,full_name="Str1",object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=2,component=Blink>Internal), 'Str1\x00')
-1: (.rodata@266e605(size_without_padding=16,padding=0,full_name="String literal2",object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1,component=Internal>Android), 'String literal2\x00')
+0: (.rodata@266e600(size_without_padding=5,padding=0,full_name="Str1",object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=2,component=Blink>Internal), b'Str1\x00')
+1: (.rodata@266e605(size_without_padding=16,padding=0,full_name="String literal2",object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1,component=Internal>Android), b'String literal2\x00')
 Metadata:
     elf_arch=arm
     elf_build_id=WhatAnAmazingBuildId

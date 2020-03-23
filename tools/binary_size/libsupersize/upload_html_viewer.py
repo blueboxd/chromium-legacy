@@ -5,8 +5,6 @@
 
 """Update the firebase project hosting the Super Size UI."""
 
-from __future__ import division
-
 import os
 import shutil
 import subprocess

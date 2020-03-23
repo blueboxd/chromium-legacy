@@ -841,9 +841,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
       UseCounter::Count(
           document(),
           WebFeature::kMessageEventSharedArrayBufferDifferentAgentCluster);
-      // TODO(dtapuska): Make sure this generates an error. See
-      // https://crbug.com/1028736
-      // event = MessageEvent::CreateError(event->origin(), event->source());
+      event = MessageEvent::CreateError(event->origin(), event->source());
     } else {
       scoped_refptr<SecurityOrigin> sender_origin =
           SecurityOrigin::Create(sender);

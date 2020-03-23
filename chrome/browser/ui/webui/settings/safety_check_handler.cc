@@ -512,8 +512,9 @@ void SafetyCheckHandler::OnStateChanged(
       break;
   }
 
-  // Stop observing the leak service in all terminal states.
-  observed_leak_check_.Remove(leak_service_);
+  // Stop observing the leak service in all terminal states, if it's still being
+  // observed.
+  observed_leak_check_.RemoveAll();
 }
 
 void SafetyCheckHandler::OnCredentialDone(

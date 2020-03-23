@@ -137,7 +137,7 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testColorAndTint() {
-        int bgColor = getActivity().getResources().getColor(R.color.modern_primary_color);
+        int bgColor = getActivity().getResources().getColor(R.color.default_bg_color);
         int textColor = getActivity().getResources().getColor(R.color.default_text_color);
         assertEquals("Wrong initial background color.", bgColor,
                 ((ColorDrawable) mContainer.getBackground()).getColor());

@@ -3,10 +3,8 @@
 # found in the LICENSE file.
 """Methods for converting model objects to human-readable formats."""
 
-from __future__ import division
-
 import abc
-import cStringIO
+import io
 import collections
 import csv
 import datetime
@@ -58,22 +56,21 @@ def _IncludeInTotals(section_name):
 
 
 def _GetSectionSizeInfo(section_sizes):
-  total_bytes = sum(v for k, v in section_sizes.iteritems()
-                    if _IncludeInTotals(k))
-  max_bytes = max(abs(v) for k, v in section_sizes.iteritems()
-                  if _IncludeInTotals(k))
+  total_bytes = sum(v for k, v in section_sizes.items() if _IncludeInTotals(k))
+  max_bytes = max(
+      abs(v) for k, v in section_sizes.items() if _IncludeInTotals(k))
 
   def is_significant_section(name, size):
     # Show all sections containing symbols, plus relocations.
     # As a catch-all, also include any section that comprises > 4% of the
     # largest section. Use largest section rather than total so that it still
     # works out when showing a diff containing +100, -100 (total=0).
-    return (name in models.SECTION_TO_SECTION_NAME.values() or
-            name in ('.rela.dyn', '.rel.dyn') or
-            _IncludeInTotals(name) and abs(_Divide(size, max_bytes)) > .04)
+    return (name in list(models.SECTION_TO_SECTION_NAME.values())
+            or name in ('.rela.dyn', '.rel.dyn')
+            or _IncludeInTotals(name) and abs(_Divide(size, max_bytes)) > .04)
 
-  section_names = sorted(k for k, v  in section_sizes.iteritems()
-                         if is_significant_section(k, v))
+  section_names = sorted(
+      k for k, v in section_sizes.items() if is_significant_section(k, v))
 
   return (total_bytes, section_names)
 
@@ -112,20 +109,21 @@ class Histogram(object):
     num_items = len(keys)
     num_cols = 6
     num_rows = (num_items + num_cols - 1) // num_cols  # Divide and round up.
-    # Needed for xrange to not throw due to step by 0.
+    # Needed for range() to not throw due to step by 0.
     if num_rows == 0:
       return
     # Spaces needed by items in each column, to align on ':'.
     name_col_widths = []
     value_col_widths = []
-    for i in xrange(0, num_items, num_rows):
+    for i in range(0, num_items, num_rows):
       name_col_widths.append(max(len(s) for s in bucket_names[i:][:num_rows]))
       value_col_widths.append(max(len(s) for s in bucket_values[i:][:num_rows]))
 
     yield 'Histogram of symbols based on PSS:'
-    for r in xrange(num_rows):
-      row = zip(bucket_names[r::num_rows], name_col_widths,
-                bucket_values[r::num_rows], value_col_widths)
+    for r in range(num_rows):
+      row = list(
+          zip(bucket_names[r::num_rows], name_col_widths,
+              bucket_values[r::num_rows], value_col_widths))
       line = '    ' + '   '.join('{:>{}}: {:<{}}'.format(*t) for t in row)
       yield line.rstrip()
 
@@ -199,8 +197,8 @@ class DescriberText(Describer):
     if self.verbose:
       yield ''
       yield 'Other section sizes:'
-      section_names = sorted(k for k in section_sizes.iterkeys()
-                             if k not in section_names)
+      section_names = sorted(
+          k for k in section_sizes.keys() if k not in section_names)
       for name in section_names:
         not_included_part = ''
         if not _IncludeInTotals(name):
@@ -325,8 +323,8 @@ class DescriberText(Describer):
   @staticmethod
   def _RelevantSections(section_names):
     relevant_sections = [
-        s for s in models.SECTION_TO_SECTION_NAME.itervalues()
-        if s in section_names]
+        s for s in models.SECTION_TO_SECTION_NAME.values() if s in section_names
+    ]
     if models.SECTION_MULTIPLE in relevant_sections:
       relevant_sections.remove(models.SECTION_MULTIPLE)
     return relevant_sections
@@ -393,7 +391,7 @@ class DescriberText(Describer):
       titles = 'Index | Running Total | Section@Address | ...'
     elif group.IsDelta():
       titles = (u'Index | Running Total | Section@Address | \u0394 PSS '
-                u'(\u0394 size_without_padding) | Path').encode('utf-8')
+                u'(\u0394 size_without_padding) | Path')
     else:
       titles = ('Index | Running Total | Section@Address | PSS | Path')
 
@@ -486,12 +484,19 @@ class DescriberText(Describer):
     return itertools.chain(diff_summary_desc, path_delta_desc, group_desc)
 
   def _DescribeDeltaSizeInfo(self, diff):
-    common_metadata = {k: v for k, v in diff.before.metadata.iteritems()
-                       if diff.after.metadata.get(k) == v}
-    before_metadata = {k: v for k, v in diff.before.metadata.iteritems()
-                       if k not in common_metadata}
-    after_metadata = {k: v for k, v in diff.after.metadata.iteritems()
-                      if k not in common_metadata}
+    common_metadata = {
+        k: v
+        for k, v in diff.before.metadata.items()
+        if diff.after.metadata.get(k) == v
+    }
+    before_metadata = {
+        k: v
+        for k, v in diff.before.metadata.items() if k not in common_metadata
+    }
+    after_metadata = {
+        k: v
+        for k, v in diff.after.metadata.items() if k not in common_metadata
+    }
     metadata_desc = itertools.chain(
         ('Common Metadata:',),
         ('    %s' % line for line in DescribeMetadata(common_metadata)),
@@ -519,7 +524,7 @@ class DescriberText(Describer):
 
 def DescribeSizeInfoCoverage(size_info):
   """Yields lines describing how accurate |size_info| is."""
-  for section, section_name in models.SECTION_TO_SECTION_NAME.iteritems():
+  for section, section_name in models.SECTION_TO_SECTION_NAME.items():
     expected_size = size_info.section_sizes.get(section_name)
     in_section = size_info.raw_symbols.WhereInSection(section_name)
     actual_size = in_section.size
@@ -594,7 +599,7 @@ def DescribeSizeInfoCoverage(size_info):
     # These thresholds were found by experimenting with arm32 Chrome.
     # E.g.: Set them to 0 and see what warnings get logged, then take max value.
     spam_counter = 0
-    for i in xrange(len(in_section) - 1):
+    for i in range(len(in_section) - 1):
       sym = in_section[i + 1]
       if (not sym.full_name.startswith('*')
           and not sym.source_path.endswith('.S')  # Assembly symbol are iffy.
@@ -614,11 +619,12 @@ class DescriberCsv(Describer):
   def __init__(self, verbose=False):
     super(DescriberCsv, self).__init__()
     self.verbose = verbose
-    self.stringio = cStringIO.StringIO()
+    self.stringio = io.StringIO()
     self.csv_writer = csv.writer(self.stringio)
 
   def _RenderCsv(self, data):
     self.stringio.truncate(0)
+    self.stringio.seek(0)
     self.csv_writer.writerow(data)
     return self.stringio.getvalue().rstrip()
 
@@ -627,7 +633,7 @@ class DescriberCsv(Describer):
 
     if self.verbose:
       significant_set = set(significant_section_names)
-      section_names = sorted(section_sizes.iterkeys())
+      section_names = sorted(section_sizes.keys())
       yield self._RenderCsv(['Name', 'Size', 'IsSignificant'])
       for name in section_names:
         size = section_sizes[name]
@@ -728,7 +734,7 @@ def DescribeMetadata(metadata):
   gn_args = display_dict.get(models.METADATA_GN_ARGS)
   if gn_args:
     display_dict[models.METADATA_GN_ARGS] = ' '.join(gn_args)
-  return sorted('%s=%s' % t for t in display_dict.iteritems())
+  return sorted('%s=%s' % t for t in display_dict.items())
 
 
 def GenerateLines(obj, verbose=False, recursive=False, summarize=True,

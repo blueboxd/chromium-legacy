@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -21,8 +21,6 @@ can be uploaded to the destination bucket.
 Reports can be uploaded automatically with the --sync flag. Otherwise, they can
 be uploaded at a later point.
 """
-
-from __future__ import print_function
 
 import argparse
 import collections

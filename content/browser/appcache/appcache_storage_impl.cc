@@ -635,6 +635,7 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       group->last_full_update_check_time();
   group_record_.first_evictable_error_time =
       group->first_evictable_error_time();
+  group_record_.token_expires = group->token_expires();
   newest_cache->ToDatabaseRecords(
       group,
       &cache_record_, &entry_records_,
@@ -689,12 +690,9 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 
   AppCacheDatabase::GroupRecord existing_group;
   success_ = database_->FindGroup(group_record_.group_id, &existing_group);
-  // TODO(enne): get correct token expires here.
-  base::Time token_expires;
   if (!success_) {
     group_record_.creation_time = base::Time::Now();
     group_record_.last_access_time = base::Time::Now();
-    group_record_.token_expires = base::Time();
     success_ = database_->InsertGroup(&group_record_);
   } else {
     DCHECK(group_record_.group_id == existing_group.group_id);
@@ -704,8 +702,6 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     database_->UpdateLastAccessTime(group_record_.group_id,
                                     base::Time::Now());
 
-    group_record_.token_expires =
-        std::max(group_record_.token_expires, token_expires);
     database_->UpdateEvictionTimesAndTokenExpires(
         group_record_.group_id, group_record_.last_full_update_check_time,
         group_record_.first_evictable_error_time, group_record_.token_expires);
@@ -737,7 +733,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     }
   }
 
-  cache_record_.token_expires = token_expires;
+  cache_record_.token_expires = group_record_.token_expires;
 
   success_ =
       success_ &&

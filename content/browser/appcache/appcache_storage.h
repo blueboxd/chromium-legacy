@@ -22,6 +22,10 @@
 
 class GURL;
 
+namespace net {
+class HttpResponseHeaders;
+}  // namespace net
+
 namespace content {
 
 namespace appcache_storage_unittest {
@@ -221,6 +225,14 @@ class CONTENT_EXPORT AppCacheStorage {
 
   // Simple ptr back to the service object that owns us.
   AppCacheServiceImpl* service() { return service_; }
+
+  // Returns base::Time() if the reverse origin trial is not enabled.
+  base::Time GetOriginTrialExpiration(
+      const GURL& request_url,
+      const net::HttpResponseHeaders* response_headers,
+      base::Time current_time);
+
+  static std::string GetOriginTrialNameForTesting();
 
   // Returns a weak pointer reference to the AppCacheStorage instance.
   base::WeakPtr<AppCacheStorage> GetWeakPtr();

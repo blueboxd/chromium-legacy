@@ -198,7 +198,7 @@ public class SelectableListToolbar<E>
                 R.dimen.selectable_list_search_icon_end_padding);
 
         mNormalBackgroundColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_bg_color);
         setBackgroundColor(mNormalBackgroundColor);
 
         mSelectionBackgroundColor =

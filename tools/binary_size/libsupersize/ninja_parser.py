@@ -1,16 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Extract source file information from .ninja files."""
 
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import logging
 import os
 import re
+import sys
 
 
 # E.g.:
@@ -62,7 +60,7 @@ class _SourceMapper(object):
     return len(self._unmatched_paths)
 
   def IterAllPaths(self):
-    return self._dep_map.iterkeys()
+    return self._dep_map.keys()
 
 
 def _ParseNinjaPathList(path_list):

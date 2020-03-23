@@ -99,13 +99,13 @@ void GestureNavigationScreen::OnUserAction(const std::string& action_id) {
 void GestureNavigationScreen::RecordPageShownTimeMetrics() {
   page_times_[current_page_] += base::TimeTicks::Now() - start_time_;
 
-  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Intro",
+  UmaHistogramMediumTimes("OOBE.GestureNavigationScreen.PageShownTime.Intro",
                           page_times_[kGestureIntroPage]);
-  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Home",
+  UmaHistogramMediumTimes("OOBE.GestureNavigationScreen.PageShownTime.Home",
                           page_times_[kGestureHomePage]);
-  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Overview",
+  UmaHistogramMediumTimes("OOBE.GestureNavigationScreen.PageShownTime.Overview",
                           page_times_[kGestureOverviewPage]);
-  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Back",
+  UmaHistogramMediumTimes("OOBE.GestureNavigationScreen.PageShownTime.Back",
                           page_times_[kGestureBackPage]);
 }
 

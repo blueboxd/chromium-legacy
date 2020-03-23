@@ -49,5 +49,5 @@
         android:state_focused="true"
         android:state_hovered="true"
         android:state_selected="true" />
-    <item android:color="@color/modern_primary_color" />
+    <item android:color="@color/default_bg_color" />
 </selector>

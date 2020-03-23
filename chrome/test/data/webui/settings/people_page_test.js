@@ -97,12 +97,13 @@ cr.define('settings_people_page', function() {
         peoplePage.remove();
       });
 
-      // TODO(crbug.com/1063451): Re-enable once fixed.
-      test.skip('ShowCorrectRows', function(done) {
+      test('ShowCorrectRows', function() {
         return syncBrowserProxy.whenCalled('getSyncStatus').then(function() {
+          Polymer.dom.flush();
+
           // The correct /manageProfile link row is shown.
-          assertTrue(!!peoplePage.$$('#edit-profile'));
-          assertFalse(!!peoplePage.$$('#picture-subpage-trigger'));
+          assertFalse(!!peoplePage.$$('#edit-profile'));
+          assertTrue(!!peoplePage.$$('#picture-subpage-trigger'));
 
           // Control element doesn't exist when policy forbids sync.
           sync_test_util.simulateSyncStatus({
@@ -141,9 +142,13 @@ cr.define('settings_people_page', function() {
         assertTrue(peoplePage.$.toast.open);
       });
 
-      // TODO(crbug.com/1063451): Re-enable once fixed.
-      test.skip('ShowCorrectRows', function() {
+      test('ShowCorrectRows', function() {
         return syncBrowserProxy.whenCalled('getSyncStatus').then(function() {
+          sync_test_util.simulateSyncStatus({
+            syncSystemEnabled: true,
+          });
+          Polymer.dom.flush();
+
           // The correct /manageProfile link row is shown.
           assertTrue(!!peoplePage.$$('#edit-profile'));
           assertFalse(!!peoplePage.$$('#picture-subpage-trigger'));

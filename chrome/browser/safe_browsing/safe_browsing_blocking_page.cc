@@ -79,7 +79,8 @@ class SafeBrowsingBlockingPageFactoryImpl
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs),
-        IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
+        IsExtendedReportingPolicyManaged(*prefs),
+        IsEnhancedProtectionEnabled(*prefs), is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
         kHelpCenterLink);

@@ -125,7 +125,7 @@ TrialTokenValidator::GetValidTokensFromHeaders(
     base::Time current_time) const {
   std::unique_ptr<FeatureToTokensMap> tokens(
       std::make_unique<FeatureToTokensMap>());
-  if (!IsTrialPossibleOnOrigin(origin))
+  if (!IsTrialPossibleOnOrigin(origin.GetURL()))
     return tokens;
 
   size_t iter = 0;
@@ -148,7 +148,7 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
                                     base::Time current_time) const {
   std::unique_ptr<FeatureToTokensMap> out_tokens(
       std::make_unique<FeatureToTokensMap>());
-  if (!IsTrialPossibleOnOrigin(origin))
+  if (!IsTrialPossibleOnOrigin(origin.GetURL()))
     return out_tokens;
 
   for (const auto& feature : tokens) {
@@ -166,15 +166,11 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
   return out_tokens;
 }
 
-bool TrialTokenValidator::IsTrialPossibleOnOrigin(const GURL& url) const {
+// static
+bool TrialTokenValidator::IsTrialPossibleOnOrigin(const GURL& url) {
   OriginTrialPolicy* policy = Policy();
   return policy && policy->IsOriginTrialsSupported() &&
          policy->IsOriginSecure(url);
-}
-
-bool TrialTokenValidator::IsTrialPossibleOnOrigin(
-    const url::Origin& origin) const {
-  return IsTrialPossibleOnOrigin(origin.GetURL());
 }
 
 }  // namespace blink

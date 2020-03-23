@@ -75,9 +75,7 @@ class BLINK_COMMON_EXPORT TrialTokenValidator {
   static void ResetOriginTrialPolicyGetter();
   static OriginTrialPolicy* Policy();
 
- private:
-  bool IsTrialPossibleOnOrigin(const url::Origin& origin) const;
-  bool IsTrialPossibleOnOrigin(const GURL& url) const;
+  static bool IsTrialPossibleOnOrigin(const GURL& url);
 };  // class TrialTokenValidator
 
 }  // namespace blink

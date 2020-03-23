@@ -12,8 +12,13 @@ def CommonChecks(input_api, output_api):
   output = []
   output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
   py_tests = input_api.canned_checks.GetUnitTestsRecursively(
-      input_api, output_api, input_api.PresubmitLocalPath(),
-      whitelist=[r'.+_test\.py$'], blacklist=[])
+      input_api,
+      output_api,
+      input_api.PresubmitLocalPath(),
+      whitelist=[r'.+_test\.py$'],
+      blacklist=[],
+      run_on_python2=False,
+      run_on_python3=True)
 
   output.extend(input_api.RunTests(py_tests, False))
 

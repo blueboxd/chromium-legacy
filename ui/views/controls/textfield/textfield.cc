@@ -439,84 +439,44 @@ bool Textfield::HasSelection() const {
 }
 
 SkColor Textfield::GetTextColor() const {
-  if (!use_default_text_color_)
-    return text_color_;
-
-  return style::GetColor(*this, style::CONTEXT_TEXTFIELD, GetTextStyle());
+  return text_color_.value_or(
+      style::GetColor(*this, style::CONTEXT_TEXTFIELD, GetTextStyle()));
 }
 
 void Textfield::SetTextColor(SkColor color) {
   text_color_ = color;
-  use_default_text_color_ = false;
   SetColor(color);
 }
 
-void Textfield::UseDefaultTextColor() {
-  use_default_text_color_ = true;
-  SetColor(GetTextColor());
-}
-
 SkColor Textfield::GetBackgroundColor() const {
-  if (!use_default_background_color_)
-    return background_color_;
-
-  return GetNativeTheme()->GetSystemColor(
+  return background_color_.value_or(GetNativeTheme()->GetSystemColor(
       GetReadOnly() || !GetEnabled()
           ? ui::NativeTheme::kColorId_TextfieldReadOnlyBackground
-          : ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+          : ui::NativeTheme::kColorId_TextfieldDefaultBackground));
 }
 
 void Textfield::SetBackgroundColor(SkColor color) {
   background_color_ = color;
-  use_default_background_color_ = false;
-  UpdateBackgroundColor();
-}
-
-void Textfield::UseDefaultBackgroundColor() {
-  use_default_background_color_ = true;
   UpdateBackgroundColor();
 }
 
 SkColor Textfield::GetSelectionTextColor() const {
-  return use_default_selection_text_color_
-             ? GetNativeTheme()->GetSystemColor(
-                   ui::NativeTheme::kColorId_TextfieldSelectionColor)
-             : selection_text_color_;
+  return selection_text_color_.value_or(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionColor));
 }
 
 void Textfield::SetSelectionTextColor(SkColor color) {
   selection_text_color_ = color;
-  use_default_selection_text_color_ = false;
-  UpdateSelectionTextColor();
-}
-
-void Textfield::UseDefaultSelectionTextColor() {
-  if (use_default_selection_text_color_ == true)
-    return;
-
-  use_default_selection_text_color_ = true;
   UpdateSelectionTextColor();
 }
 
 SkColor Textfield::GetSelectionBackgroundColor() const {
-  return use_default_selection_background_color_
-             ? GetNativeTheme()->GetSystemColor(
-                   ui::NativeTheme::
-                       kColorId_TextfieldSelectionBackgroundFocused)
-             : selection_background_color_;
+  return selection_background_color_.value_or(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
 }
 
 void Textfield::SetSelectionBackgroundColor(SkColor color) {
   selection_background_color_ = color;
-  use_default_selection_background_color_ = false;
-  UpdateSelectionBackgroundColor();
-}
-
-void Textfield::UseDefaultSelectionBackgroundColor() {
-  if (use_default_selection_background_color_ == true)
-    return;
-
-  use_default_selection_background_color_ = true;
   UpdateSelectionBackgroundColor();
 }
 

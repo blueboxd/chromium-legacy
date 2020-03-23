@@ -25,7 +25,7 @@
         <HorizontalScrollView android:id="@+id/mv_tiles_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/modern_primary_color"
+            android:background="@color/default_bg_color"
             android:visibility="gone"
             android:scrollbars="none"
             app:layout_scrollFlags="scroll">
@@ -44,7 +44,7 @@
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
             android:visibility="gone"
-            android:background="@color/modern_primary_color"
+            android:background="@color/default_bg_color"
             android:orientation="horizontal"
             app:layout_scrollFlags="scroll">
             <TextView

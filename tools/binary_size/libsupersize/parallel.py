@@ -3,10 +3,8 @@
 # found in the LICENSE file.
 """Helpers related to multiprocessing."""
 
-from __future__ import division
-
-import __builtin__  # __builtins__ does not have exception types.
 import atexit
+import builtins
 import itertools
 import logging
 import multiprocessing
@@ -55,7 +53,7 @@ class _ExceptionWrapper(object):
 
   def MaybeThrow(self):
     if self.exception_type:
-      raise getattr(__builtin__,
+      raise getattr(builtins,
                     self.exception_type)('Originally caused by: ' + self.msg)
 
 
@@ -74,7 +72,7 @@ class _FuncWrapper(object):
       # Only keep the exception type for builtin exception types or else risk
       # further marshalling exceptions.
       exception_type = None
-      if type(e).__name__ in dir(__builtin__):
+      if type(e).__name__ in dir(builtins):
         exception_type = type(e).__name__
       # multiprocessing is supposed to catch and return exceptions automatically
       # but it doesn't seem to work properly :(.
@@ -210,7 +208,7 @@ def BulkForkAndCall(func, arg_tuples, **kwargs):
   pool = _MakeProcessPool(arg_tuples, **kwargs)
   wrapped_func = _FuncWrapper(func)
   try:
-    for result in pool.imap_unordered(wrapped_func, xrange(len(arg_tuples))):
+    for result in pool.imap_unordered(wrapped_func, range(len(arg_tuples))):
       _CheckForException(result)
       yield result
   finally:
@@ -235,16 +233,16 @@ def EncodeDictOfLists(d, key_transform=None, value_transform=None):
   Does not support '' as keys, nor [''] as values.
   """
   assert '' not in d
-  assert [''] not in d.itervalues()
+  assert [''] not in iter(d.values())
   keys = iter(d)
   if key_transform:
     keys = (key_transform(k) for k in keys)
   keys = '\x01'.join(keys)
   if value_transform:
     values = '\x01'.join(
-        '\x02'.join(value_transform(y) for y in x) for x in d.itervalues())
+        '\x02'.join(value_transform(y) for y in x) for x in d.values())
   else:
-    values = '\x01'.join('\x02'.join(x) for x in d.itervalues())
+    values = '\x01'.join('\x02'.join(x) for x in d.values())
   return keys, values
 
 
@@ -266,13 +264,13 @@ def DecodeDictOfLists(encoded_keys_and_values,
     keys = (key_transform(k) for k in keys)
   encoded_lists = encoded_values.split('\x01')
   ret = {}
-  for key, encoded_list in itertools.izip(keys, encoded_lists):
+  for key, encoded_list in zip(keys, encoded_lists):
     if not encoded_list:
       values = []
     else:
       values = encoded_list.split('\x02')
       if value_transform:
-        for i in xrange(len(values)):
+        for i in range(len(values)):
           values[i] = value_transform(values[i])
     ret[key] = values
   return ret

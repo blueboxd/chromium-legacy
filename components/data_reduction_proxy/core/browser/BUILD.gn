@@ -151,7 +151,6 @@ bundle_data("unit_tests_bundle_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "data_reduction_proxy_bypass_protocol_unittest.cc",
     "data_reduction_proxy_compression_stats_unittest.cc",
     "data_reduction_proxy_config_service_client_unittest.cc",
     "data_reduction_proxy_data_unittest.cc",

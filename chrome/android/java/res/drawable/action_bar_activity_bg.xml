@@ -13,6 +13,6 @@
      these shenanigans aren't needed. http://crbug.com/448012 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
-        android:drawable="@color/modern_primary_color"
+        android:drawable="@color/default_bg_color"
         android:top="50dp" />
 </layer-list>

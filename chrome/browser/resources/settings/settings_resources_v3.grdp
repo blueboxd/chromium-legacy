@@ -602,6 +602,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data_details_subpage.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_ENTRY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_entry.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_LIST_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_list.m.js"
            use_base_dir="false"

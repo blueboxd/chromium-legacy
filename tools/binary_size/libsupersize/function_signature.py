@@ -7,8 +7,6 @@
 Much of this logic is duplicated at
 tools/binary_size/libsupersize/caspian/function_signature.cc."""
 
-from __future__ import division
-
 
 def _FindParameterListParen(name):
   """Finds index of the "(" that denotes the start of a parameter list."""

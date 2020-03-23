@@ -20,7 +20,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -196,18 +195,6 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     public TabGroupModelFilter(TabModel tabModel) {
         super(tabModel);
-
-        // Record the group count after all tabs are being restored. This only happen once per life
-        // cycle, therefore remove the observer after recording.
-        addObserver(new EmptyTabModelObserver() {
-            @Override
-            public void restoreCompleted() {
-                RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", mActualGroupCount);
-                Tab currentTab = TabModelUtils.getCurrentTab(getTabModel());
-                if (currentTab != null) recordSessionsCount(currentTab);
-                removeObserver(this);
-            }
-        });
     }
 
     /**

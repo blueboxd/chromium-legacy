@@ -22,7 +22,7 @@ const base::Feature kDogfood{"DataReductionProxyDogfood",
 // Does not affect the state of save-data header or other
 // features that may depend on data saver being enabled.
 const base::Feature kDataReductionProxyHoldback{
-    "DataReductionProxyHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DataReductionProxyHoldback", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables data reduction proxy when network service is enabled.
 const base::Feature kDataReductionProxyEnabledWithNetworkService{

@@ -71,7 +71,7 @@ public class MockResourcesForLayout extends MockResources {
         mFloats.put(org.chromium.chrome.R.dimen.overlay_panel_end_buttons_width, 94.f);
         mFloats.put(org.chromium.chrome.R.dimen.toolbar_height_no_shadow, 56.f);
         mIntegers.put(R.color.modern_grey_100, 0xFFF1F3F4);
-        mIntegers.put(R.color.modern_primary_color, Color.WHITE);
+        mIntegers.put(R.color.default_bg_color, Color.WHITE);
         mIntegers.put(R.color.default_primary_color, 0xFFF2F2F2);
         mIntegers.put(R.color.default_bg_color_dark, 0xFF3C4043);
     }

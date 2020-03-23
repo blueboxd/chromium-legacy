@@ -33,10 +33,6 @@ struct DistillabilityResult {
   bool is_last;
   bool is_mobile_friendly;
 };
-
-bool operator==(const DistillabilityResult& first,
-                const DistillabilityResult& second);
-
 std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result);
 
 class DistillabilityObserver : public base::CheckedObserver {

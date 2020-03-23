@@ -6,5 +6,5 @@
 <!-- Once pre-KitKat devices aren't supported, this drawable can be replaced
      with a plain old color. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" >
-    <solid android:color="@color/modern_primary_color" />
+    <solid android:color="@color/default_bg_color" />
 </shape>

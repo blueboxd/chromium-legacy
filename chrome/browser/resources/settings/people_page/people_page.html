@@ -155,20 +155,22 @@
         </cr-link-row>
 
 <if expr="not chromeos">
-        <cr-link-row id="manage-google-account"
-            label="$i18n{manageGoogleAccount}"
-            hidden="[[!shouldShowGoogleAccount_]]"
-            on-click="openGoogleAccount_" external></cr-link-row>
+        <template is="dom-if" if="[[signinAllowed_]]">
+          <cr-link-row id="manage-google-account"
+              label="$i18n{manageGoogleAccount}"
+              hidden="[[!shouldShowGoogleAccount_]]"
+              on-click="openGoogleAccount_" external></cr-link-row>
 
-        <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
-            actionable>
-          <div class="start settings-box-text">
-            $i18n{profileNameAndPicture}
+          <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
+              actionable>
+            <div class="start settings-box-text">
+              $i18n{profileNameAndPicture}
+            </div>
+            <cr-icon-button class="subpage-arrow" aria-label="$i18n{editPerson}"
+                aria-roledescription="$i18n{subpageArrowRoleDescription}">
+            </cr-icon-button>
           </div>
-          <cr-icon-button class="subpage-arrow" aria-label="$i18n{editPerson}"
-              aria-roledescription="$i18n{subpageArrowRoleDescription}">
-          </cr-icon-button>
-        </div>
+        </template>
 </if>
 
 <if expr="not chromeos">

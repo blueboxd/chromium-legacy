@@ -295,8 +295,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(activity, profile, navigationDelegate);
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor = ApiCompatibilityUtils.getColor(
-                activity.getResources(), R.color.modern_primary_color);
+        mBackgroundColor =
+                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.default_bg_color);
         mIsTablet = activity.isTablet();
         TemplateUrlServiceFactory.get().addObserver(this);
 

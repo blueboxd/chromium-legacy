@@ -92,13 +92,13 @@ bool AppCache::AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry) {
   // existing entries.
   if (!ret.second) {
     ret.first->second.add_types(entry.types());
-    // TODO(pwnall): Figure out if we want to overwrite or max the two entries.
-    ret.first->second.set_token_expires(
-        std::max(entry.token_expires(), ret.first->second.token_expires()));
   } else {
     cache_size_ += entry.response_size();  // New entry. Add to cache size.
     padding_size_ += entry.padding_size();
   }
+  // TODO(pwnall): Figure out if we want to overwrite or max the two entries.
+  ret.first->second.set_token_expires(
+      std::max(entry.token_expires(), ret.first->second.token_expires()));
   return ret.second;
 }
 
@@ -149,7 +149,8 @@ bool SortNamespacesByLength(
 }
 }
 
-void AppCache::InitializeWithManifest(AppCacheManifest* manifest) {
+void AppCache::InitializeWithManifest(AppCacheManifest* manifest,
+                                      base::Time token_expires) {
   DCHECK(manifest);
   manifest_parser_version_ = manifest->parser_version;
   manifest_scope_ = manifest->scope;
@@ -157,8 +158,7 @@ void AppCache::InitializeWithManifest(AppCacheManifest* manifest) {
   fallback_namespaces_.swap(manifest->fallback_namespaces);
   online_whitelist_namespaces_.swap(manifest->online_whitelist_namespaces);
   online_whitelist_all_ = manifest->online_whitelist_all;
-  // TODO(enne): initialize token expires from manifest
-  token_expires_ = base::Time();
+  token_expires_ = token_expires;
 
   // Sort the namespaces by url string length, longest to shortest,
   // since longer matches trump when matching a url to a namespace.
@@ -166,6 +166,12 @@ void AppCache::InitializeWithManifest(AppCacheManifest* manifest) {
             SortNamespacesByLength);
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
             SortNamespacesByLength);
+
+  for (auto& intercept : intercept_namespaces_)
+    intercept.token_expires = token_expires;
+
+  for (auto& fallback : fallback_namespaces_)
+    fallback.token_expires = token_expires;
 }
 
 void AppCache::InitializeWithDatabaseRecords(

@@ -1830,10 +1830,11 @@ class OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded
 ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded)
 
-class OcclusionTrackerTestBlendModeDoesNotOcclude
+class OcclusionTrackerTestRenderSurfaceBlendModeDoesNotOcclude
     : public OcclusionTrackerTest {
  protected:
-  explicit OcclusionTrackerTestBlendModeDoesNotOcclude(bool opaque_layers)
+  explicit OcclusionTrackerTestRenderSurfaceBlendModeDoesNotOcclude(
+      bool opaque_layers)
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
     TestContentLayerImpl* parent = this->CreateRoot(gfx::Size(100, 100));
@@ -1875,7 +1876,39 @@ class OcclusionTrackerTestBlendModeDoesNotOcclude
   }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestBlendModeDoesNotOcclude)
+ALL_OCCLUSIONTRACKER_TEST(
+    OcclusionTrackerTestRenderSurfaceBlendModeDoesNotOcclude)
+
+class OcclusionTrackerTestNonRenderSurfaceBlendModeDoesNotOcclude
+    : public OcclusionTrackerTest {
+ protected:
+  explicit OcclusionTrackerTestNonRenderSurfaceBlendModeDoesNotOcclude(
+      bool opaque_layers)
+      : OcclusionTrackerTest(opaque_layers) {}
+  void RunMyTest() override {
+    TestContentLayerImpl* parent = CreateRoot(gfx::Size(100, 100));
+    LayerImpl* top_layer =
+        CreateDrawingSurface(parent, this->identity_matrix,
+                             gfx::PointF(10.f, 12.f), gfx::Size(20, 22), true);
+    LayerImpl* blend_mode_layer =
+        CreateDrawingLayer(top_layer, this->identity_matrix,
+                           gfx::PointF(0.f, 0.f), gfx::Size(100, 100), true);
+
+    // Create an effect node with kDstIn blend mode without a render surface.
+    CreateEffectNode(blend_mode_layer).blend_mode = SkBlendMode::kDstIn;
+    this->CalcDrawEtc();
+
+    TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));
+    ASSERT_NO_FATAL_FAILURE(this->VisitLayer(blend_mode_layer, &occlusion));
+    // |blend_mode_layer| doesn't occlude because it has a blend mode without a
+    // render surface.
+    EXPECT_EQ(gfx::Rect(), occlusion.occlusion_from_inside_target().bounds());
+    EXPECT_EQ(gfx::Rect(), occlusion.occlusion_from_outside_target().bounds());
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(
+    OcclusionTrackerTestNonRenderSurfaceBlendModeDoesNotOcclude)
 
 class OcclusionTrackerTestMinimumTrackingSize : public OcclusionTrackerTest {
  protected:

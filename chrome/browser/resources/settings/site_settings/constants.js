@@ -137,7 +137,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/site_settings_handler.cc
    * @enum {number}
    */
-  const AllSitesAction2 = {
+  /* #export */ const AllSitesAction2 = {
     LOAD_PAGE: 0,
     RESET_SITE_GROUP_PERMISSIONS: 1,
     RESET_ORIGIN_PERMISSIONS: 2,
@@ -151,7 +151,7 @@ cr.define('settings', function() {
    * Contains the possible sort methods.
    * @enum {string}
    */
-  const SortMethod = {
+  /* #export */ const SortMethod = {
     NAME: 'name',
     MOST_VISITED: 'most-visited',
     STORAGE: 'data-stored',

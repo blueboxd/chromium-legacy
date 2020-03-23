@@ -2,15 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import division
-
 import difflib
 import logging
 
 import describe
 
 
-class Golden:
+class Golden(object):
   """Utility to use or manage "Golden" test files."""
 
   # Global state on whether to update Golden files in CheckOrUpdate().

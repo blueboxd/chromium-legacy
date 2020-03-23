@@ -24,13 +24,6 @@
 #include "base/android/application_status_listener.h"
 #endif  // OS_ANDROID
 
-namespace net {
-class HttpRequestHeaders;
-class HttpResponseHeaders;
-struct LoadTimingInfo;
-class ProxyServer;
-}  // namespace net
-
 namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
@@ -114,17 +107,6 @@ class DataReductionProxyConfigServiceClient
   // current Data Reduction Proxy configuration. If a remote configuration has
   // already been retrieved, the remote configuration takes precedence.
   void ApplySerializedConfig(const std::string& config_value);
-
-  // Examines |response_headers| to determine if an authentication failure
-  // occurred on a Data Reduction Proxy. Returns true if authentication failure
-  // occurred, and the session key specified in |request_headers| matches the
-  // current session in use by the client. If an authentication failure is
-  // detected,  it fetches a new config.
-  bool ShouldRetryDueToAuthFailure(
-      const net::HttpRequestHeaders& request_headers,
-      const net::HttpResponseHeaders* response_headers,
-      const net::ProxyServer& proxy_server,
-      const net::LoadTimingInfo& load_timing_info);
 
   void SetRemoteConfigAppliedForTesting(bool remote_config_applied) {
     remote_config_applied_ = remote_config_applied;

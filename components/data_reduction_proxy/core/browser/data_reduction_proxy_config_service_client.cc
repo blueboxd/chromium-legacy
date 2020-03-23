@@ -151,26 +151,6 @@ void RecordAuthExpiredHistogram(bool auth_expired) {
   UMA_HISTOGRAM_BOOLEAN(kUMAConfigServiceAuthExpired, auth_expired);
 }
 
-// Records whether the session key used in the request matches the current
-// sesssion key.
-void RecordAuthExpiredSessionKey(bool matches) {
-  // This enum must remain synchronized with the
-  // DataReductionProxyConfigServiceAuthExpiredSessionKey enum in
-  // metrics/histograms/histograms.xml.
-  enum AuthExpiredSessionKey {
-    AUTH_EXPIRED_SESSION_KEY_MISMATCH = 0,
-    AUTH_EXPIRED_SESSION_KEY_MATCH = 1,
-    AUTH_EXPIRED_SESSION_KEY_BOUNDARY = 2
-  };
-
-  AuthExpiredSessionKey state = matches ? AUTH_EXPIRED_SESSION_KEY_MATCH
-                                        : AUTH_EXPIRED_SESSION_KEY_MISMATCH;
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "DataReductionProxy.ConfigService.AuthExpiredSessionKey", state,
-      AUTH_EXPIRED_SESSION_KEY_BOUNDARY);
-}
-
 }  // namespace
 
 net::BackoffEntry::Policy GetBackoffPolicy() {
@@ -352,76 +332,6 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
     if (config.ParseFromString(decoded_config))
       ParseAndApplyProxyConfig(config);
   }
-}
-
-bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
-    const net::HttpRequestHeaders& request_headers,
-    const net::HttpResponseHeaders* response_headers,
-    const net::ProxyServer& proxy_server,
-    const net::LoadTimingInfo& load_timing_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(response_headers);
-
-  if (!config_->FindConfiguredDataReductionProxy(proxy_server))
-    return false;
-
-  if (response_headers->response_code() !=
-      net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
-    previous_request_failed_authentication_ = false;
-    return false;
-  }
-
-  // If the session key used in the request is different from the current
-  // session key, then the current session key does not need to be
-  // invalidated.
-  base::Optional<std::string> session_key =
-      request_options_->GetSessionKeyFromRequestHeaders(request_headers);
-  if ((session_key.has_value() ? session_key.value() : std::string()) !=
-      request_options_->GetSecureSession()) {
-    RecordAuthExpiredSessionKey(false);
-    return true;
-  }
-  RecordAuthExpiredSessionKey(true);
-
-  // The default backoff logic is to increment the failure count (and
-  // increase the backoff time) with each response failure to the remote
-  // config service, and to decrement the failure count (and decrease the
-  // backoff time) with each response success. In the case where the
-  // config service returns a success response (decrementing the failure
-  // count) but the session key is continually invalid (as a response from
-  // the Data Reduction Proxy and not the config service), the previous
-  // response should be considered a failure in order to ensure the backoff
-  // time continues to increase.
-  if (previous_request_failed_authentication_)
-    GetBackoffEntry()->InformOfRequest(false);
-
-  // Record that a request resulted in an authentication failure.
-  RecordAuthExpiredHistogram(true);
-  previous_request_failed_authentication_ = true;
-  InvalidateConfig();
-  DCHECK(config_->GetProxiesForHttp().empty());
-
-  if (fetch_in_progress_) {
-    // If a client config fetch is already in progress, then do not start
-    // another fetch since starting a new fetch will cause extra data
-    // usage, and also cancel the ongoing fetch.
-    return true;
-  }
-
-  RetrieveConfig();
-
-  if (!load_timing_info.send_start.is_null() &&
-      !load_timing_info.request_start.is_null() &&
-      !network_connection_tracker_->IsOffline() &&
-      last_ip_address_change_ < load_timing_info.request_start) {
-    // Record only if there was no change in the IP address since the
-    // request started.
-    UMA_HISTOGRAM_TIMES(
-        "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty",
-        base::TimeTicks::Now() - load_timing_info.request_start);
-  }
-
-  return true;
 }
 
 net::BackoffEntry* DataReductionProxyConfigServiceClient::GetBackoffEntry() {

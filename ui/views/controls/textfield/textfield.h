@@ -19,6 +19,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -138,29 +139,21 @@ class VIEWS_EXPORT Textfield : public View,
   bool HasSelection() const;
 
   // Gets/sets the text color to be used when painting the Textfield.
-  // Call UseDefaultTextColor() to restore the default system color.
   SkColor GetTextColor() const;
   void SetTextColor(SkColor color);
-  void UseDefaultTextColor();
 
   // Gets/sets the background color to be used when painting the Textfield.
-  // Call UseDefaultBackgroundColor() to restore the default system color.
   SkColor GetBackgroundColor() const;
   void SetBackgroundColor(SkColor color);
-  void UseDefaultBackgroundColor();
 
   // Gets/sets the selection text color to be used when painting the Textfield.
-  // Call UseDefaultSelectionTextColor() to restore the default system color.
   SkColor GetSelectionTextColor() const;
   void SetSelectionTextColor(SkColor color);
-  void UseDefaultSelectionTextColor();
 
   // Gets/sets the selection background color to be used when painting the
-  // Textfield. Call UseDefaultSelectionBackgroundColor() to restore the default
-  // system color.
+  // Textfield.
   SkColor GetSelectionBackgroundColor() const;
   void SetSelectionBackgroundColor(SkColor color);
-  void UseDefaultSelectionBackgroundColor();
 
   // Gets/Sets whether or not the cursor is enabled.
   bool GetCursorEnabled() const;
@@ -565,16 +558,11 @@ class VIEWS_EXPORT Textfield : public View,
   // return View::GetMinimumSize(). Defaults to -1.
   int minimum_width_in_chars_ = -1;
 
-  // Flags indicating whether various system colors should be used, and if not,
-  // what overriding color values should be used instead.
-  bool use_default_text_color_ = true;
-  bool use_default_background_color_ = true;
-  bool use_default_selection_text_color_ = true;
-  bool use_default_selection_background_color_ = true;
-  SkColor text_color_ = SK_ColorBLACK;
-  SkColor background_color_ = SK_ColorWHITE;
-  SkColor selection_text_color_ = SK_ColorWHITE;
-  SkColor selection_background_color_ = SK_ColorBLUE;
+  // Colors which override default system colors.
+  base::Optional<SkColor> text_color_;
+  base::Optional<SkColor> background_color_;
+  base::Optional<SkColor> selection_text_color_;
+  base::Optional<SkColor> selection_background_color_;
 
   // Text to display when empty.
   base::string16 placeholder_text_;

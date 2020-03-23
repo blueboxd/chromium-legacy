@@ -76,17 +76,18 @@
           <cr-lottie class="marketing-animation" animation-url="all_set.json">
           </cr-lottie>
         </div>
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified"
+          id="marketing-bottom-buttons">
         <div hidden="[[!isA11ySettingsButtonVisible_]]"
             id="finalAccessibilityLinkContainer">
           <a class="oobe-local-link"
               id="finalAccessibilityLink" on-tap="onToggleAccessibilityPage_">
-           [[i18nDynamic(locale, 'marketingOptInA11yLinkLabel')]]
+            [[i18nDynamic(locale, 'marketingOptInA11yLinkLabel')]]
           </a>
         </div>
-      </div>
-      <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button on-tap="onAllSet_" class="focus-on-show" inverse
-            text-key="marketingOptInScreenAllSet"
+        <oobe-text-button on-tap="onAllSet_" class="focus-on-show"
+            inverse text-key="marketingOptInScreenAllSet"
             hidden="[[!allSetButtonVisible_]]"
             id="marketing-opt-in-next-button">
         </oobe-text-button>

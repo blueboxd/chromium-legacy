@@ -136,9 +136,13 @@ class CONTENT_EXPORT AppCache
     manifest_scope_ = manifest_scope;
   }
 
+  base::Time token_expires() const { return token_expires_; }
+  void set_token_expires(base::Time expires) { token_expires_ = expires; }
+
   // Initializes the cache with information in the manifest.
   // Do not use the manifest after this call.
-  void InitializeWithManifest(AppCacheManifest* manifest);
+  void InitializeWithManifest(AppCacheManifest* manifest,
+                              base::Time token_expires);
 
   // Initializes the cache with the information in the database records.
   void InitializeWithDatabaseRecords(

@@ -21,6 +21,7 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_web_ui.h"
+#include "content/public/test/web_contents_tester.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
@@ -99,16 +100,10 @@ TEST_F(TabStripUIHandlerTest, GroupClosedEvent) {
       browser()->tab_strip_model()->AddToNewGroup({0});
   browser()->tab_strip_model()->RemoveFromGroup({0});
 
-  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
-
-  std::string event_name;
-  ASSERT_TRUE(data.arg1()->GetAsString(&event_name));
-  EXPECT_EQ("tab-group-closed", event_name);
-
-  std::string actual_group_id;
-  ASSERT_TRUE(data.arg2()->GetAsString(&actual_group_id));
-  EXPECT_EQ(expected_group_id.ToString(), actual_group_id);
+  const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-group-closed", call_data.arg1()->GetString());
+  EXPECT_EQ(expected_group_id.ToString(), call_data.arg2()->GetString());
 }
 
 TEST_F(TabStripUIHandlerTest, GroupStateChangedEvents) {
@@ -118,41 +113,27 @@ TEST_F(TabStripUIHandlerTest, GroupStateChangedEvents) {
   // Add one of the tabs to a group to test for a tab-group-state-changed event.
   tab_groups::TabGroupId expected_group_id =
       browser()->tab_strip_model()->AddToNewGroup({0, 1});
-
-  const content::TestWebUI::CallData& grouped_data =
-      *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", grouped_data.function_name());
-
-  std::string event_name;
-  ASSERT_TRUE(grouped_data.arg1()->GetAsString(&event_name));
-  EXPECT_EQ("tab-group-state-changed", event_name);
-
   int expected_tab_id = extensions::ExtensionTabUtil::GetTabId(
       browser()->tab_strip_model()->GetWebContentsAt(1));
-  int actual_tab_id;
-  ASSERT_TRUE(grouped_data.arg2()->GetAsInteger(&actual_tab_id));
-  EXPECT_EQ(expected_tab_id, actual_tab_id);
 
-  int index;
-  ASSERT_TRUE(grouped_data.arg3()->GetAsInteger(&index));
-  EXPECT_EQ(1, index);
-
-  std::string actual_group_id;
-  ASSERT_TRUE(grouped_data.arg4()->GetAsString(&actual_group_id));
-  EXPECT_EQ(expected_group_id.ToString(), actual_group_id);
+  const content::TestWebUI::CallData& grouped_call_data =
+      *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", grouped_call_data.function_name());
+  EXPECT_EQ("tab-group-state-changed", grouped_call_data.arg1()->GetString());
+  EXPECT_EQ(expected_tab_id, grouped_call_data.arg2()->GetInt());
+  EXPECT_EQ(1, grouped_call_data.arg3()->GetInt());
+  EXPECT_EQ(expected_group_id.ToString(),
+            grouped_call_data.arg4()->GetString());
 
   // Remove the tab from the group to test for a tab-group-state-changed event.
   browser()->tab_strip_model()->RemoveFromGroup({1});
-  const content::TestWebUI::CallData& ungrouped_data =
+  const content::TestWebUI::CallData& ungrouped_call_data =
       *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", ungrouped_data.function_name());
-  ASSERT_TRUE(ungrouped_data.arg1()->GetAsString(&event_name));
-  EXPECT_EQ("tab-group-state-changed", event_name);
-  ASSERT_TRUE(ungrouped_data.arg2()->GetAsInteger(&actual_tab_id));
-  EXPECT_EQ(expected_tab_id, actual_tab_id);
-  ASSERT_TRUE(ungrouped_data.arg3()->GetAsInteger(&index));
-  EXPECT_EQ(1, index);
-  EXPECT_EQ(nullptr, ungrouped_data.arg4());
+  EXPECT_EQ("cr.webUIListenerCallback", ungrouped_call_data.function_name());
+  EXPECT_EQ("tab-group-state-changed", ungrouped_call_data.arg1()->GetString());
+  EXPECT_EQ(expected_tab_id, ungrouped_call_data.arg2()->GetInt());
+  EXPECT_EQ(1, ungrouped_call_data.arg3()->GetInt());
+  EXPECT_EQ(nullptr, ungrouped_call_data.arg4());
 }
 
 TEST_F(TabStripUIHandlerTest, GroupMovedEvents) {
@@ -180,21 +161,11 @@ TEST_F(TabStripUIHandlerTest, GroupMovedEvents) {
 
   EXPECT_EQ(1U, web_ui()->call_data().size());
 
-  const content::TestWebUI::CallData& grouped_data =
-      *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", grouped_data.function_name());
-
-  std::string event_name;
-  ASSERT_TRUE(grouped_data.arg1()->GetAsString(&event_name));
-  EXPECT_EQ("tab-group-moved", event_name);
-
-  std::string actual_group_id;
-  ASSERT_TRUE(grouped_data.arg2()->GetAsString(&actual_group_id));
-  EXPECT_EQ(expected_group_id.ToString(), actual_group_id);
-
-  int actual_index;
-  ASSERT_TRUE(grouped_data.arg3()->GetAsInteger(&actual_index));
-  EXPECT_EQ(expected_index, actual_index);
+  const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-group-moved", call_data.arg1()->GetString());
+  EXPECT_EQ(expected_group_id.ToString(), call_data.arg2()->GetString());
+  EXPECT_EQ(expected_index, call_data.arg3()->GetInt());
 
   web_ui()->ClearTrackedCalls();
 
@@ -206,15 +177,12 @@ TEST_F(TabStripUIHandlerTest, GroupMovedEvents) {
 
   EXPECT_EQ(1U, web_ui()->call_data().size());
 
-  const content::TestWebUI::CallData& grouped_data2 =
+  const content::TestWebUI::CallData& call_data2 =
       *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", grouped_data2.function_name());
-  ASSERT_TRUE(grouped_data2.arg1()->GetAsString(&event_name));
-  EXPECT_EQ("tab-group-moved", event_name);
-  ASSERT_TRUE(grouped_data2.arg2()->GetAsString(&actual_group_id));
-  EXPECT_EQ(expected_group_id.ToString(), actual_group_id);
-  ASSERT_TRUE(grouped_data2.arg3()->GetAsInteger(&actual_index));
-  EXPECT_EQ(expected_index, actual_index);
+  EXPECT_EQ("cr.webUIListenerCallback", call_data2.function_name());
+  EXPECT_EQ("tab-group-moved", call_data2.arg1()->GetString());
+  EXPECT_EQ(expected_group_id.ToString(), call_data2.arg2()->GetString());
+  EXPECT_EQ(expected_index, call_data2.arg3()->GetInt());
 }
 
 TEST_F(TabStripUIHandlerTest, GetGroupVisualData) {
@@ -243,19 +211,13 @@ TEST_F(TabStripUIHandlerTest, GetGroupVisualData) {
   args.AppendString("callback-id");
   handler()->HandleGetGroupVisualData(&args);
 
-  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIResponse", data.function_name());
-
-  std::string callback_id;
-  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-  EXPECT_EQ("callback-id", callback_id);
-
-  bool success = false;
-  ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
-  EXPECT_TRUE(success);
+  const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+  EXPECT_EQ("callback-id", call_data.arg1()->GetString());
+  EXPECT_TRUE(call_data.arg2()->GetBool());
 
   const base::DictionaryValue* returned_data;
-  ASSERT_TRUE(data.arg3()->GetAsDictionary(&returned_data));
+  ASSERT_TRUE(call_data.arg3()->GetAsDictionary(&returned_data));
 
   const base::DictionaryValue* group1_dict;
   ASSERT_TRUE(returned_data->GetDictionary(group1.ToString(), &group1_dict));
@@ -278,19 +240,13 @@ TEST_F(TabStripUIHandlerTest, GroupVisualDataChangedEvent) {
       ->GetTabGroup(expected_group_id)
       ->SetVisualData(new_visual_data);
 
-  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
-
-  std::string event_name;
-  ASSERT_TRUE(data.arg1()->GetAsString(&event_name));
-  EXPECT_EQ("tab-group-visuals-changed", event_name);
-
-  std::string actual_group_id;
-  ASSERT_TRUE(data.arg2()->GetAsString(&actual_group_id));
-  EXPECT_EQ(expected_group_id.ToString(), actual_group_id);
+  const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-group-visuals-changed", call_data.arg1()->GetString());
+  EXPECT_EQ(expected_group_id.ToString(), call_data.arg2()->GetString());
 
   const base::DictionaryValue* visual_data;
-  ASSERT_TRUE(data.arg3()->GetAsDictionary(&visual_data));
+  ASSERT_TRUE(call_data.arg3()->GetAsDictionary(&visual_data));
   ExpectVisualDataDictionary(new_visual_data, visual_data);
 }
 
@@ -390,18 +346,12 @@ TEST_F(TabStripUIHandlerTest, MoveGroupAcrossWindows) {
   ASSERT_EQ(visual_data.color(), new_visual_data->color());
 
   // Test that a WebUI event for the ID change was sent first.
-  const content::TestWebUI::CallData& group_replaced_data =
+  const content::TestWebUI::CallData& call_data =
       *web_ui()->call_data().front();
-  EXPECT_EQ("cr.webUIListenerCallback", group_replaced_data.function_name());
-  std::string event_name;
-  ASSERT_TRUE(group_replaced_data.arg1()->GetAsString(&event_name));
-  EXPECT_EQ("tab-group-id-replaced", event_name);
-  std::string old_group_id_arg;
-  ASSERT_TRUE(group_replaced_data.arg2()->GetAsString(&old_group_id_arg));
-  EXPECT_EQ(group_id.ToString(), old_group_id_arg);
-  std::string new_group_id_arg;
-  ASSERT_TRUE(group_replaced_data.arg3()->GetAsString(&new_group_id_arg));
-  EXPECT_EQ(new_group_id.value().ToString(), new_group_id_arg);
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-group-id-replaced", call_data.arg1()->GetString());
+  EXPECT_EQ(group_id.ToString(), call_data.arg2()->GetString());
+  EXPECT_EQ(new_group_id.value().ToString(), call_data.arg3()->GetString());
 }
 
 TEST_F(TabStripUIHandlerTest, MoveGroupAcrossProfiles) {
@@ -494,6 +444,103 @@ TEST_F(TabStripUIHandlerTest, MoveTabAcrossWindows) {
 
   // Close all tabs before destructing.
   new_browser.get()->tab_strip_model()->CloseAllTabs();
+}
+
+TEST_F(TabStripUIHandlerTest, TabCreated) {
+  AddTab(browser(), GURL("http://foo"));
+
+  const content::TestWebUI::CallData& call_data =
+      *web_ui()->call_data().front();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-created", call_data.arg1()->GetString());
+
+  const base::DictionaryValue* tab_data;
+  ASSERT_TRUE(call_data.arg2()->GetAsDictionary(&tab_data));
+
+  int tab_id;
+  ASSERT_TRUE(tab_data->GetInteger("id", &tab_id));
+  ASSERT_EQ(extensions::ExtensionTabUtil::GetTabId(
+                browser()->tab_strip_model()->GetWebContentsAt(0)),
+            tab_id);
+
+  bool is_active;
+  ASSERT_TRUE(tab_data->GetBoolean("active", &is_active));
+  ASSERT_TRUE(is_active);
+
+  int tab_index;
+  ASSERT_TRUE(tab_data->GetInteger("index", &tab_index));
+  ASSERT_EQ(0, tab_index);
+}
+
+TEST_F(TabStripUIHandlerTest, TabRemoved) {
+  // Two tabs so the browser does not close when a tab is closed.
+  AddTab(browser(), GURL("http://foo"));
+  AddTab(browser(), GURL("http://foo"));
+  int expected_tab_id = extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+
+  web_ui()->ClearTrackedCalls();
+  browser()->tab_strip_model()->GetWebContentsAt(0)->Close();
+
+  const content::TestWebUI::CallData& call_data =
+      *web_ui()->call_data().front();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-removed", call_data.arg1()->GetString());
+  EXPECT_EQ(expected_tab_id, call_data.arg2()->GetInt());
+}
+
+TEST_F(TabStripUIHandlerTest, TabMoved) {
+  AddTab(browser(), GURL("http://foo"));
+  AddTab(browser(), GURL("http://foo"));
+
+  int from_index = 0;
+  int expected_to_index = 1;
+  int expected_tab_id = extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(from_index));
+
+  browser()->tab_strip_model()->MoveWebContentsAt(from_index, expected_to_index,
+                                                  false);
+
+  const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-moved", call_data.arg1()->GetString());
+  EXPECT_EQ(expected_tab_id, call_data.arg2()->GetInt());
+  EXPECT_EQ(expected_to_index, call_data.arg3()->GetInt());
+}
+
+TEST_F(TabStripUIHandlerTest, TabReplaced) {
+  AddTab(browser(), GURL("http://foo"));
+  int expected_previous_id = extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+
+  web_ui()->ClearTrackedCalls();
+  browser()->tab_strip_model()->ReplaceWebContentsAt(
+      0, content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  int expected_new_id = extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+
+  const content::TestWebUI::CallData& call_data =
+      *web_ui()->call_data().front();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-replaced", call_data.arg1()->GetString());
+  ASSERT_EQ(expected_previous_id, call_data.arg2()->GetInt());
+  ASSERT_EQ(expected_new_id, call_data.arg3()->GetInt());
+}
+
+TEST_F(TabStripUIHandlerTest, TabActivated) {
+  AddTab(browser(), GURL("http://foo"));
+  AddTab(browser(), GURL("http://foo"));
+  AddTab(browser(), GURL("http://foo"));
+
+  web_ui()->ClearTrackedCalls();
+  browser()->tab_strip_model()->ActivateTabAt(1);
+
+  const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-active-changed", call_data.arg1()->GetString());
+  EXPECT_EQ(extensions::ExtensionTabUtil::GetTabId(
+                browser()->tab_strip_model()->GetWebContentsAt(1)),
+            call_data.arg2()->GetInt());
 }
 
 TEST_F(TabStripUIHandlerTest, UngroupTab) {

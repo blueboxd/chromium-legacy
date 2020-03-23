@@ -214,6 +214,7 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_debugger_id_first);
   WriteParam(m, p->data.stack_trace_debugger_id_second);
   WriteParam(m, p->data.stack_trace_should_pause);
+  WriteParam(m, p->data.locked_agent_cluster_id);
   WriteParam(m, p->data.ports);
   WriteParam(m, p->data.stream_channels);
   WriteParam(m, !!p->data.user_activation);
@@ -249,6 +250,7 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_should_pause) ||
+      !ReadParam(m, iter, &(*r)->data.locked_agent_cluster_id) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &has_activation) ||

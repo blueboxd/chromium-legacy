@@ -6,6 +6,8 @@
 """A tool to extract size information for chrome.
 
 For a list of command-line options, call this script with '--help'.
+
+This script uses Python 2 due to dependence on tracing.value.
 """
 
 from __future__ import print_function
@@ -71,6 +73,7 @@ def get_linux_stripped_size(filename):
 
 
 def run_process(result, command):
+  # TODO: When converting to Python 3, pass param encoding='ascii'.
   p = subprocess.Popen(command, stdout=subprocess.PIPE)
   stdout = p.communicate()[0]
   if p.returncode != 0:
@@ -260,7 +263,7 @@ def main_linux(output_directory, results_collector, size_path):
     path = os.path.join(output_directory, filename)
     try:
       size = get_size(path)
-    except OSError, e:
+    except OSError as e:
       if e.errno == errno.ENOENT:
         continue  # Don't print anything for missing files.
       raise

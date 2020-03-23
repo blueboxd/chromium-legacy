@@ -246,13 +246,13 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, PageShownMetricsTest) {
   WaitForScreenExit();
 
   histogram_tester_.ExpectTotalCount(
-      "GestureNavigationOOBEScreen.PageShownTime.Intro", 1);
+      "OOBE.GestureNavigationScreen.PageShownTime.Intro", 1);
   histogram_tester_.ExpectTotalCount(
-      "GestureNavigationOOBEScreen.PageShownTime.Home", 1);
+      "OOBE.GestureNavigationScreen.PageShownTime.Home", 1);
   histogram_tester_.ExpectTotalCount(
-      "GestureNavigationOOBEScreen.PageShownTime.Overview", 1);
+      "OOBE.GestureNavigationScreen.PageShownTime.Overview", 1);
   histogram_tester_.ExpectTotalCount(
-      "GestureNavigationOOBEScreen.PageShownTime.Back", 1);
+      "OOBE.GestureNavigationScreen.PageShownTime.Back", 1);
 }
 
 }  // namespace chromeos

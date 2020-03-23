@@ -44,6 +44,10 @@ class UserSessionInitializer : public session_manager::SessionManagerObserver {
   // Initialize child user profile services that depend on the policy.
   void InitializeChildUserServices(Profile* profile);
 
+  void set_init_rlz_impl_closure_for_testing(base::OnceClosure closure) {
+    init_rlz_impl_closure_for_testing_ = std::move(closure);
+  }
+
  private:
   // Initialize RLZ.
   void InitRlz(Profile* profile);
@@ -65,6 +69,8 @@ class UserSessionInitializer : public session_manager::SessionManagerObserver {
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlzImpl(Profile* profile, const RlzInitParams& params);
+
+  base::OnceClosure init_rlz_impl_closure_for_testing_;
 
   base::WeakPtrFactory<UserSessionInitializer> weak_factory_{this};
 };

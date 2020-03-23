@@ -6,7 +6,7 @@
 <level-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:maxLevel="@integer/list_item_level_default">
         <shape android:shape="oval">
-            <solid android:color="@color/modern_secondary_color" />
+            <solid android:color="@color/default_bg_color_secondary" />
         </shape>
     </item>
     <item android:maxLevel="@integer/list_item_level_selected">

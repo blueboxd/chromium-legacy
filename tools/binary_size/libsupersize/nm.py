@@ -17,14 +17,13 @@ RunNmOnIntermediates():
   offset information.
 """
 
-from __future__ import division
-
 import collections
 import subprocess
 
 import demangle
 import parallel
 import path_util
+import sys
 
 
 def _IsRelevantNmName(name):
@@ -95,7 +94,9 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
   # directly takes 3s.
   args = [path_util.GetNmPath(tool_prefix), '--no-sort', '--defined-only',
           elf_path]
-  proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  # pylint: disable=unexpected-keyword-arg
+  proc = subprocess.Popen(
+      args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
   # llvm-nm may write to stderr. Discard to denoise.
   stdout, _ = proc.communicate()
   assert proc.returncode == 0
@@ -121,7 +122,7 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
       names_by_address[address].add(mangled_name)
 
   # Need to add before demangling because |names_by_address| changes type.
-  for address, count in num_outlined_functions_at_address.iteritems():
+  for address, count in num_outlined_functions_at_address.items():
     name = '** outlined function' + (' * %d' % count if count > 1 else '')
     names_by_address[address].add(name)
 
@@ -133,7 +134,7 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
   # Also: Sort to ensure stable ordering.
   return {
       addr: sorted(names)
-      for addr, names in names_by_address.iteritems()
+      for addr, names in names_by_address.items()
       if len(names) > 1 or num_outlined_functions_at_address.get(addr, 0) > 1
   }
 
@@ -185,14 +186,19 @@ def RunNmOnIntermediates(target, tool_prefix, output_directory):
   Args:
     target: Either a single path to a .a (as a string), or a list of .o paths.
   """
-  is_archive = isinstance(target, basestring)
+  is_archive = isinstance(target, str)
   args = [path_util.GetNmPath(tool_prefix), '--no-sort', '--defined-only']
   if is_archive:
     args.append(target)
   else:
     args.extend(target)
-  proc = subprocess.Popen(args, cwd=output_directory, stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
+  # pylint: disable=unexpected-keyword-arg
+  proc = subprocess.Popen(
+      args,
+      cwd=output_directory,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      encoding='utf-8')
   # llvm-nm can print 'no symbols' to stderr. Capture and count the number of
   # lines, to be returned to the caller.
   stdout, stderr = proc.communicate()

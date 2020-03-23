@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -18,9 +18,6 @@ The |linker_name| parameter in various functions must take one of the above
 coded linker name values.
 """
 
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import code
 import collections
@@ -29,6 +26,7 @@ import logging
 import os
 import re
 import readline
+import sys
 
 import demangle
 import models

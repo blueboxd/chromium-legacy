@@ -20,7 +20,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.chrome.browser.share.ShareParams;
@@ -195,11 +194,6 @@ public class ShareServiceImpl implements ShareService {
         if (files.length > MAX_SHARED_FILE_COUNT) {
             callback.call(ShareError.PERMISSION_DENIED);
             return;
-        }
-
-        for (SharedFile file : files) {
-            RecordHistogram.recordSparseHistogram(
-                    "WebShare.Unverified", SafeBrowsingBridge.umaValueForFile(file.name));
         }
 
         for (SharedFile file : files) {

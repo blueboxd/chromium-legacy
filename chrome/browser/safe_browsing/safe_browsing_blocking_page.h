@@ -104,6 +104,8 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
                            ExtendedReportingNotShownInIncognito);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ExtendedReportingNotShownNotAllowExtendedReporting);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           ExtendedReportingNotShownForEnhancedProtection);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest, BillingPage);
 
   void UpdateReportingPref();  // Used for the transition from old to new pref.

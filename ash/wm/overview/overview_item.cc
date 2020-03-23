@@ -207,6 +207,13 @@ bool OverviewItem::Contains(const aura::Window* target) const {
   return transform_window_.Contains(target);
 }
 
+void OverviewItem::OnMovingWindowToAnotherDesk() {
+  is_moving_to_another_desk_ = true;
+  // Restore the dragged item window, so that its transform is reset to
+  // identity.
+  RestoreWindow(/*reset_transform=*/true);
+}
+
 void OverviewItem::RestoreWindow(bool reset_transform) {
   // TODO(oshima): SplitViewController has its own logic to adjust the
   // target state in |SplitViewController::OnOverviewModeEnding|.
@@ -223,9 +230,13 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
   if (transform_window_.IsMinimized()) {
     const auto enter_exit_type = overview_session_->enter_exit_overview_type();
 
-    if (enter_exit_type ==
-        OverviewSession::EnterExitOverviewType::kImmediateExit) {
+    if (is_moving_to_another_desk_ ||
+        enter_exit_type ==
+            OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
+          overview_item_view_);
       ImmediatelyCloseWidgetOnExit(std::move(item_widget_));
+      overview_item_view_ = nullptr;
       return;
     }
 
@@ -828,8 +839,9 @@ OverviewAnimationType OverviewItem::GetExitOverviewAnimationType() {
 }
 
 OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
-  if (overview_session_->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kImmediateExit) {
+  if (is_moving_to_another_desk_ ||
+      overview_session_->enter_exit_overview_type() ==
+          OverviewSession::EnterExitOverviewType::kImmediateExit) {
     return OVERVIEW_ANIMATION_NONE;
   }
 

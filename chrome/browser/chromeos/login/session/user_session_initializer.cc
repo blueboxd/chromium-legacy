@@ -240,6 +240,8 @@ void UserSessionInitializer::InitRlzImpl(Profile* profile,
       ChromeRLZTrackerDelegate::IsGoogleHomepage(profile),
       ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile));
 #endif
+  if (init_rlz_impl_closure_for_testing_)
+    std::move(init_rlz_impl_closure_for_testing_).Run();
 }
 
 }  // namespace chromeos

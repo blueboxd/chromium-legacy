@@ -49,7 +49,7 @@ let IsValid;
               hasPermissionSettings: boolean,
               isInstalled: boolean}}
  */
-let OriginInfo;
+/* #export */ let OriginInfo;
 
 /**
  * Represents a list of sites, grouped under the same eTLD+1. For example, an
@@ -61,7 +61,7 @@ let OriginInfo;
  *            origins: Array<OriginInfo>,
  *            hasInstalledPWA: boolean}}
  */
-let SiteGroup;
+/* #export */ let SiteGroup;
 
 /**
  * The site exception information passed from the C++ handler.

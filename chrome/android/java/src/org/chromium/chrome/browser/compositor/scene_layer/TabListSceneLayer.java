@@ -148,14 +148,14 @@ public class TabListSceneLayer extends SceneLayer {
      * @return The background color of the scene layer.
      */
     protected int getTabListBackgroundColor(Context context) {
-        int colorId = R.color.modern_primary_color;
+        int colorId = R.color.default_bg_color;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                 || TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
             if (mTabModelSelector != null && mTabModelSelector.isIncognitoSelected()) {
                 colorId = R.color.default_bg_color_dark;
             } else {
-                colorId = R.color.modern_primary_color;
+                colorId = R.color.default_bg_color;
             }
         }
 

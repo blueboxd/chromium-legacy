@@ -21,8 +21,8 @@
     <color name="hairline_stroke_color">@color/hairline_stroke_color_dark</color>
 
     <!-- Common background and branding color. -->
-    <color name="modern_primary_color">@color/default_bg_color_dark</color>
-    <color name="modern_secondary_color">@color/modern_grey_800</color>
+    <color name="default_bg_color">@color/default_bg_color_dark</color>
+    <color name="default_bg_color_secondary">@color/default_bg_color_secondary_dark</color>
     <color name="default_bg_color_elev_0">@color/default_bg_color_dark</color>
     <color name="default_bg_color_elev_1">@color/default_bg_color_dark_elev_1</color>
     <color name="default_bg_color_elev_2">@color/default_bg_color_dark_elev_2</color>

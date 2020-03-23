@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
@@ -45,6 +46,9 @@ public class IsReadyToPayServiceHelperTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private boolean mErrorReceived;
     private boolean mResponseReceived;
@@ -123,6 +127,35 @@ public class IsReadyToPayServiceHelperTest {
                            }
 
                            serviceConnection.onServiceConnected(mockComponentName, serviceBinder);
+                       });
+                       return true;
+                   })
+                    .when(context)
+                    .bindService(Mockito.any(Intent.class), Mockito.any(ServiceConnection.class),
+                            Mockito.anyInt());
+        } catch (Throwable e) {
+            Assert.fail(e.toString());
+        }
+        return context;
+    }
+
+    /**
+     * Create a mock context that never connects to a service.
+     */
+    private Context createContextThatNeverConnectToService() {
+        Context context = Mockito.mock(Context.class);
+
+        // Mock {@link Context#bindService}.
+        try {
+            Mockito.doAnswer((invocation) -> {
+                       ServiceConnection serviceConnection = invocation.getArgument(1);
+                       new Handler().post(() -> {
+                           ComponentName mockComponentName = null;
+                           try {
+                               mockComponentName = Mockito.any(ComponentName.class);
+                           } catch (Throwable e) {
+                               Assert.fail(e.toString());
+                           }
                        });
                        return true;
                    })
@@ -241,6 +274,37 @@ public class IsReadyToPayServiceHelperTest {
                         }
                     });
         });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mErrorReceived;
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void serviceConnectionTimeoutTest() throws Throwable {
+        mErrorReceived = false;
+        mRule.runOnUiThread(() -> {
+            Intent intent = new Intent();
+            intent.setClassName("mock.package.name", "mock.service.name");
+            Context context = createContextThatNeverConnectToService();
+            IsReadyToPayServiceHelper helper = new IsReadyToPayServiceHelper(
+                    context, intent, new IsReadyToPayServiceHelper.ResultHandler() {
+                        @Override
+                        public void onIsReadyToPayServiceResponse(boolean isReadyToPay) {
+                            Assert.fail();
+                        }
+                        @Override
+                        public void onIsReadyToPayServiceError() {
+                            mErrorReceived = true;
+                        }
+                    });
+        });
+        // Assuming CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL >
+        // IsReadyToPayServiceHelper.SERVICE_CONNECTION_TIMEOUT_MS.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

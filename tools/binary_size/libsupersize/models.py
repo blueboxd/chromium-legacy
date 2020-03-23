@@ -28,9 +28,8 @@ Description of common properties:
         Never None, but will be '' when no component exists.
 """
 
-from __future__ import division
-
 import collections
+import functools
 import logging
 import os
 import re
@@ -648,7 +647,7 @@ class SymbolGroup(BaseSymbol):
     """
     if isinstance(key, slice):
       return self._CreateTransformed(self._symbols.__getitem__(key))
-    if isinstance(key, basestring) or key > len(self._symbols):
+    if isinstance(key, str) or key > len(self._symbols):
       found = self.WhereAddressInRange(key)
       if len(found) != 1:
         raise KeyError('%d symbols found at address %s.' % (len(found), key))
@@ -770,8 +769,10 @@ class SymbolGroup(BaseSymbol):
       is_default_sorted = not reverse
       # Sort by PSS, but ensure ties are broken in a consistent manner.
       key = lambda s: (-abs(s.pss), s.full_name, s.object_path, s.section_name)
+    elif cmp_func is not None:
+      key = functools.cmp_to_key(cmp_func)
 
-    after_symbols = sorted(self._symbols, cmp_func, key, reverse)
+    after_symbols = sorted(self._symbols, key=key, reverse=reverse)
     return self._CreateTransformed(
         after_symbols, filtered_symbols=self._filtered_symbols,
         is_default_sorted=is_default_sorted)
@@ -891,7 +892,7 @@ class SymbolGroup(BaseSymbol):
 
     Args may be ints or hex strings. Default value for |end| is |start| + 1.
     """
-    if isinstance(start, basestring):
+    if isinstance(start, str):
       start = int(start, 16)
     if end is None:
       end = start + 1
@@ -960,7 +961,7 @@ class SymbolGroup(BaseSymbol):
     # Create the subgroups.
     include_singles = min_count >= 0
     min_count = abs(min_count)
-    for token, symbol_or_list in symbols_by_token.iteritems():
+    for token, symbol_or_list in symbols_by_token.items():
       count = 1
       if symbol_or_list.__class__ == list:
         count = len(symbol_or_list)
@@ -1185,7 +1186,7 @@ class DeltaSymbolGroup(SymbolGroup):
 def _ExtractPrefixBeforeSeparator(string, separator, count):
   idx = -len(separator)
   prev_idx = None
-  for _ in xrange(count):
+  for _ in range(count):
     idx = string.find(separator, idx + len(separator))
     if idx < 0:
       break
@@ -1195,7 +1196,7 @@ def _ExtractPrefixBeforeSeparator(string, separator, count):
 
 def _ExtractSuffixAfterSeparator(string, separator, count):
   prev_idx = len(string) + 1
-  for _ in xrange(count):
+  for _ in range(count):
     idx = string.rfind(separator, 0, prev_idx - 1)
     if idx < 0:
       break

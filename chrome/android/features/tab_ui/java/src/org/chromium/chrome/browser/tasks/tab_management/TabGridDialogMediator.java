@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediator.INITIAL_SCROLL_INDEX_OFFSET;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.text.Editable;
@@ -20,6 +21,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -228,6 +230,16 @@ public class TabGridDialogMediator {
                                 .setShareDirectly(false)
                                 .setSaveLastUsed(true)
                                 .setText(getTabGroupStringForSharing())
+                                .setCallback(new ShareHelper.TargetChosenCallback() {
+                                    @Override
+                                    public void onTargetChosen(ComponentName chosenComponent) {
+                                        RecordUserAction.record(
+                                                "TabGridDialog.SharedGroupAsTextList");
+                                    }
+
+                                    @Override
+                                    public void onCancel() {}
+                                })
                                 .build();
                 mShareDelegateSupplier.get().share(shareParams);
             }
@@ -487,6 +499,7 @@ public class TabGridDialogMediator {
         mTabGroupTitleEditor.storeTabGroupTitle(getRootId(currentTab), mCurrentGroupModifiedTitle);
         mTabGroupTitleEditor.updateTabGroupTitle(currentTab, mCurrentGroupModifiedTitle);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, mCurrentGroupModifiedTitle);
+        RecordUserAction.record("TabGridDialog.TabGroupNamedInDialog");
         mCurrentGroupModifiedTitle = null;
     }
 

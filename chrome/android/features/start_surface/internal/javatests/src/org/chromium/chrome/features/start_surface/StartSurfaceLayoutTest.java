@@ -57,7 +57,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -77,7 +76,6 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -161,11 +159,9 @@ public class StartSurfaceLayoutTest {
     @Before
     public void setUp() {
         AccessibilityChecks.enable();
-        // After setUp, Chrome is launched and has one NTP.
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
-
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        // After setUp, Chrome is launched and has one NTP.
         mActivityTestRule.startMainActivityFromLauncher();
 
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
@@ -190,12 +186,6 @@ public class StartSurfaceLayoutTest {
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
     }
 
-    @After
-    public void tearDown() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
-    }
-
     @Test
     @MediumTest
     @Feature({"RenderTest"})
@@ -206,6 +196,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(3, 0, "about:blank");
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
+        // See crbug.com/1063619
+        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "3_web_tabs");
     }
@@ -220,6 +212,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(10, 0, "about:blank");
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
+        // See crbug.com/1063619
+        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "10_web_tabs");
     }
@@ -234,6 +228,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(10, 0, "about:blank");
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 9);
         enterGTSWithThumbnailChecking();
+        // See crbug.com/1063619
+        mRenderTestRule.setPixelDiffThreshold(2);
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "10_web_tabs-select_last");
@@ -251,6 +247,8 @@ public class StartSurfaceLayoutTest {
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
+        // See crbug.com/1063619
+        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "3_incognito_web_tabs");
     }
@@ -269,6 +267,8 @@ public class StartSurfaceLayoutTest {
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
+        // See crbug.com/1063620
+        mRenderTestRule.setPixelDiffThreshold(3);
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "3_incognito_ntps");
     }
@@ -728,11 +728,6 @@ public class StartSurfaceLayoutTest {
                     ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForUndoableClosedTab() throws Exception {
         // clang-format on
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
-
-        // Restart Chrome to have Group.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
-        mActivityTestRule.startMainActivityFromLauncher();
         mActivityTestRule.getActivity().getSnackbarManager().disableForTesting();
         prepareTabs(2, 0, null);
         enterGTSWithThumbnailChecking();
@@ -754,11 +749,6 @@ public class StartSurfaceLayoutTest {
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForTabNotInCurrentModel() throws Exception {
         // clang-format on
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
-
-        // Restart Chrome to have Group.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
-        mActivityTestRule.startMainActivityFromLauncher();
         prepareTabs(1, 1, null);
         enterGTSWithThumbnailChecking();
 
@@ -975,6 +965,9 @@ public class StartSurfaceLayoutTest {
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+
+        // Force portrait mode since the device can be wrongly in landscape. See crbug/1063639.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
 
         onView(withId(R.id.tab_list_view))
                 .check(MessageCardWidthAssertion.checkMessageItemSpanSize(3, 2));
@@ -1383,11 +1376,6 @@ public class StartSurfaceLayoutTest {
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCloseTabViaCloseButton() throws Exception {
         // clang-format on
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
-
-        // Restart Chrome to have Group.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
-        mActivityTestRule.startMainActivityFromLauncher();
         mActivityTestRule.getActivity().getSnackbarManager().disableForTesting();
         prepareTabs(1, 0, null);
         enterGTSWithThumbnailChecking();

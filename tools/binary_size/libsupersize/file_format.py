@@ -101,16 +101,15 @@ All remaining bytes are a valid gzipped sparse .size file containing the
 "after" snapshot.
 """
 
-from __future__ import division
-
-import cStringIO
 import contextlib
 import gzip
+import io
 import itertools
 import json
 import logging
 import os
 import shutil
+import sys
 
 import models
 import parallel
@@ -134,12 +133,10 @@ class _Writer:
     self.file_obj_.write(b)
 
   def WriteString(self, s):
-    # TODO(huangs): Python 3 will require |s.encode('ascii')|.
-    self.file_obj_.write(s)
+    self.file_obj_.write(s.encode('ascii'))
 
   def WriteLine(self, s):
-    # TODO(huangs): Python 3 will require |s.encode('ascii')|.
-    self.file_obj_.write(s)
+    self.file_obj_.write(s.encode('ascii'))
     self.file_obj_.write(b'\n')
 
   def WriteNumberList(self, gen):
@@ -259,11 +256,7 @@ def _SaveSizeInfoToFile(size_info,
       'has_components': True,
       'has_padding': include_padding,
   }
-  metadata_str = json.dumps(headers, file_obj, indent=2, sort_keys=True)
-  # TODO(huangs): Remove .replace() after transitioning to Python 3.
-  # Strip space at end of each line, injected by Python 2 json.dumps().
-  metadata_str = metadata_str.replace(' \n', '\n')
-
+  metadata_str = json.dumps(headers, indent=2, sort_keys=True)
   w.WriteLine(str(len(metadata_str)))
   w.WriteLine(metadata_str)
   w.LogSize('header')  # For libchrome: 570 bytes.
@@ -305,7 +298,7 @@ def _SaveSizeInfoToFile(size_info,
 
     If |delta| is True, the differences in values are written instead."""
     for group in symbol_group_by_section:
-      gen = itertools.imap(func, group)
+      gen = map(func, group)
       w.WriteNumberList(gen_delta(gen) if delta else gen)
 
   write_groups(lambda s: s.address, delta=True)
@@ -374,33 +367,36 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   Args:
     file_obj: File to read, should be a GzipFile
   """
-  lines = iter(file_obj)
+  # Split lines on '\n', since '\r' can appear in some lines!
+  lines = io.TextIOWrapper(file_obj, newline='\n')
   _ReadLine(lines)  # Line 0: Created by supersize header
   actual_version = _ReadLine(lines)
   assert actual_version == _SERIALIZATION_VERSION, (
       'Version mismatch. Need to write some upgrade code.')
   # JSON metadata
   json_len = int(_ReadLine(lines))
-  json_str = file_obj.read(json_len)
+  json_str = lines.read(json_len)
 
   headers = json.loads(json_str)
   section_sizes = headers['section_sizes']
   metadata = headers.get('metadata')
   has_components = headers.get('has_components', False)
   has_padding = headers.get('has_padding', False)
-  lines = iter(file_obj)
+
+  # Eat empty line.
   _ReadLine(lines)
 
   # Path list
   num_path_tuples = int(_ReadLine(lines))  # Line 4 - number of paths in list
   # Read the path list values and store for later
-  path_tuples = [_ReadValuesFromLine(lines, split='\t')
-                 for _ in xrange(num_path_tuples)]
+  path_tuples = [
+      _ReadValuesFromLine(lines, split='\t') for _ in range(num_path_tuples)
+  ]
 
   # Component list
   if has_components:
     num_components = int(_ReadLine(lines))  # number of components in list
-    components = [_ReadLine(lines) for _ in xrange(num_components)]
+    components = [_ReadLine(lines) for _ in range(num_components)]
 
   # Symbol counts by section.
   section_names = _ReadValuesFromLine(lines, split='\t')
@@ -440,11 +436,11 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   raw_symbols = [None] * sum(section_counts)
   symbol_idx = 0
   for (cur_section_name, cur_section_count, cur_addresses, cur_sizes,
-       cur_paddings, cur_path_indices, cur_component_indices) in itertools.izip(
+       cur_paddings, cur_path_indices, cur_component_indices) in zip(
            section_names, section_counts, addresses, sizes, paddings,
            path_indices, component_indices):
     alias_counter = 0
-    for i in xrange(cur_section_count):
+    for i in range(cur_section_count):
       parts = _ReadValuesFromLine(lines, split='\t')
       full_name = parts[0]
       flags_part = None
@@ -530,6 +526,7 @@ def SaveSizeInfo(size_info,
                  sparse_symbols=None):
   """Saves |size_info| to |path|."""
   if os.environ.get('SUPERSIZE_MEASURE_GZIP') == '1':
+    # Doing serialization and Gzip together.
     with _OpenGzipForWrite(path, file_obj=file_obj) as f:
       _SaveSizeInfoToFile(
           size_info,
@@ -537,19 +534,19 @@ def SaveSizeInfo(size_info,
           include_padding=include_padding,
           sparse_symbols=sparse_symbols)
   else:
-    # It is seconds faster to do gzip in a separate step. 6s -> 3.5s.
-    # TODO(huangs): Use io.BytesIO for Python 3.
-    stringio = cStringIO.StringIO()
+    # Doing serizliation and Gzip separately.
+    # This turns out to be faster. On Python 3: 40s -> 14s.
+    bytesio = io.BytesIO()
     _SaveSizeInfoToFile(
         size_info,
-        stringio,
+        bytesio,
         include_padding=include_padding,
         sparse_symbols=sparse_symbols)
 
     logging.debug('Serialization complete. Gzipping...')
-    stringio.seek(0)
+    bytesio.seek(0)
     with _OpenGzipForWrite(path, file_obj=file_obj) as f:
-      shutil.copyfileobj(stringio, f)
+      f.write(bytesio.read())
 
 
 def LoadSizeInfo(filename, file_obj=None):
@@ -568,9 +565,8 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
   after_symbols = models.SymbolGroup(
       [sym.after_symbol for sym in changed_symbols if sym.after_symbol])
 
-  # TODO(huangs): Use io.BytesIO for Python 3.
-  before_size_file = cStringIO.StringIO()
-  after_size_file = cStringIO.StringIO()
+  before_size_file = io.BytesIO()
+  after_size_file = io.BytesIO()
 
   after_promise = parallel.CallOnThread(
       SaveSizeInfo,
@@ -598,10 +594,7 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
         'version': 1,
         'before_length': before_size_file.tell(),
     }
-    metadata_str = json.dumps(headers, output_file, indent=2, sort_keys=True)
-    # TODO(huangs): Remove .replace() after transitioning to Python 3.
-    # Strip space at end of each line, injected by Python 2 json.dumps().
-    metadata_str = metadata_str.replace(' \n', '\n')
+    metadata_str = json.dumps(headers, indent=2, sort_keys=True)
     w.WriteLine(str(len(metadata_str)))
     w.WriteLine(metadata_str)
 

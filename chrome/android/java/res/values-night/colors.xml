@@ -30,7 +30,7 @@
     <color name="default_scroll_thumb">@color/white_alpha_20</color>
 
     <!-- Explore Sites colors -->
-    <color name="explore_sites_dense_tile_background_color">@color/modern_secondary_color</color>
+    <color name="explore_sites_dense_tile_background_color">@color/default_bg_color_secondary</color>
 
     <!-- Prefetch article colors -->
     <color name="prefetch_offline_icon_tint_color">@color/modern_white</color>

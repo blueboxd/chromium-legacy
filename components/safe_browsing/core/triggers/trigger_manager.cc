@@ -87,6 +87,7 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
                         web_contents->GetBrowserContext()->IsOffTheRecord(),
                         IsExtendedReportingEnabled(pref_service),
                         IsExtendedReportingPolicyManaged(pref_service),
+                        IsEnhancedProtectionEnabled(pref_service),
                         /*is_proceed_anyway_disabled=*/false,
                         /*should_open_links_in_new_tab=*/false,
                         /*show_back_to_safety_button=*/true,

@@ -77,7 +77,10 @@ class WebDOMMessageEvent : public WebDOMEvent {
   BLINK_EXPORT TransferableMessage AsMessage();
 
 #if INSIDE_BLINK
-  explicit WebDOMMessageEvent(MessageEvent* e) : WebDOMEvent(e) {}
+  explicit WebDOMMessageEvent(
+      MessageEvent* e,
+      base::Optional<base::UnguessableToken> locked_agent_cluster_id)
+      : WebDOMEvent(e), locked_agent_cluster_id_(locked_agent_cluster_id) {}
 #endif
 
  private:

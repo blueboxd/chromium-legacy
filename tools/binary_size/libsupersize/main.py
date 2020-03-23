@@ -1,18 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Collect, archive, and analyze Chrome's binary size."""
 
-from __future__ import division
-
 import argparse
 import atexit
 import collections
 import distutils.spawn
 import logging
-import os
 import platform
 import resource
 import sys
@@ -32,8 +29,6 @@ def _LogPeakRamUsage():
 
 
 def _AddCommonArguments(parser):
-  parser.add_argument('--no-pypy', action='store_true',
-                      help='Do not automatically switch to pypy when available')
   parser.add_argument('-v',
                       '--verbose',
                       default=0,
@@ -114,7 +109,7 @@ def main():
       _SaveDiffAction(),
       'Create a stand-alone .sizediff diff report from two .size files.')
 
-  for name, tup in actions.iteritems():
+  for name, tup in actions.items():
     sub_parser = sub_parsers.add_parser(name, help=tup[1])
     _AddCommonArguments(sub_parser)
     tup[0].AddArguments(sub_parser)
@@ -131,15 +126,6 @@ def main():
   args = parser.parse_args()
   logging.basicConfig(level=logging.WARNING - args.verbose * 10,
                       format='%(levelname).1s %(relativeCreated)6d %(message)s')
-
-  if not args.no_pypy and platform.python_implementation() == 'CPython':
-    # Switch to pypy if it's available.
-    pypy_path = distutils.spawn.find_executable('pypy')
-    if pypy_path:
-      logging.debug('Switching to pypy.')
-      os.execv(pypy_path, [pypy_path] + sys.argv)
-    # Running with python: 6s. Running with pypy: 3s
-    logging.warning('This script runs more than 2x faster if you install pypy.')
 
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     atexit.register(_LogPeakRamUsage)

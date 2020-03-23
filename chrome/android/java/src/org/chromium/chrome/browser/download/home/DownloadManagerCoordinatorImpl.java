@@ -82,8 +82,8 @@ class DownloadManagerCoordinatorImpl
      */
     private void initializeView() {
         mMainView = new FrameLayout(mActivity);
-        mMainView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                mActivity.getResources(), R.color.modern_primary_color));
+        mMainView.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(mActivity.getResources(), R.color.default_bg_color));
 
         FrameLayout.LayoutParams listParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);

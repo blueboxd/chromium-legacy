@@ -32,6 +32,7 @@ class BaseSafeBrowsingErrorUI {
                           bool is_off_the_record,
                           bool is_extended_reporting_enabled,
                           bool is_extended_reporting_policy_managed,
+                          bool is_enhanced_protection_enabled,
                           bool is_proceed_anyway_disabled,
                           bool should_open_links_in_new_tab,
                           bool always_show_back_to_safety,
@@ -54,6 +55,9 @@ class BaseSafeBrowsingErrorUI {
     // Whether the SBER pref is being managed by enterprise policy, meaning the
     // user is unable to change the pref.
     bool is_extended_reporting_policy_managed;
+
+    // Indicates if enhanced protection is on for the user.
+    bool is_enhanced_protection_enabled;
 
     // Indicates if kSafeBrowsingProceedAnywayDisabled preference is set.
     bool is_proceed_anyway_disabled;
@@ -104,6 +108,10 @@ class BaseSafeBrowsingErrorUI {
     return display_options_.is_extended_reporting_policy_managed;
   }
 
+  bool is_enhanced_protection_enabled() const {
+    return display_options_.is_enhanced_protection_enabled;
+  }
+
   bool is_proceed_anyway_disabled() const {
     return display_options_.is_proceed_anyway_disabled;
   }
@@ -129,9 +137,11 @@ class BaseSafeBrowsingErrorUI {
   // - in incognito mode
   // - if kSafeBrowsingExtendedReportingOptInAllowed preference is disabled.
   // - if kSafeBrowsingExtendedReporting is managed by enterprise policy.
+  // - if enhanced protection is on
   bool CanShowExtendedReportingOption() {
     return !is_off_the_record() && is_extended_reporting_opt_in_allowed() &&
-           !is_extended_reporting_policy_managed();
+           !is_extended_reporting_policy_managed() &&
+           !is_enhanced_protection_enabled();
   }
 
   SBInterstitialReason interstitial_reason() const {

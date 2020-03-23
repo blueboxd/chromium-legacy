@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '99ede42ffe508f718ffdc07fedafde653b982aca',
+  'skia_revision': '165b68ebb6ad21adae9f7a099ee0f78de93e1424',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '079cda55d7c1c902a41a052480cbc2cf9efd5433',
+  'v8_revision': '96e601c0faa5778b7fce900bae351981c0556d67',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'bf306f5ba55687f1db76a4dc39c142a8d9cc2ed4',
+  'catapult_revision': '1dea10da0ae8713f8214bcfe80d59ff3fa736ad2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -333,7 +333,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:9499562d94bf142f43d03622492e67b217461f67',
+  'gn_version': 'git_revision:5ed3c9cc67b090d5e311e4bd2aba072173e82db9',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -877,7 +877,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'befc2993d54938d69d3ec1b707031da5dacf89d4',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '01ed358917aa9f9f6314414ba3bb5e808bdedca2',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1448,7 +1448,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '84ee597cdeae08bb26e578fc66a35bcf35f633f4',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8d1f72852e9839abb7cb96271bc367339dfee518',
+    Var('webrtc_git') + '/src.git' + '@' + '7eab0a820f9c891f22df26bddfd8cb4435153ac5',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@aa550dd6d8b81e8118237241fc852c4b4d634f07',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e9340f3aaa1e089f216561c9b2a39dae722a1740',
     'condition': 'checkout_src_internal',
   },
 

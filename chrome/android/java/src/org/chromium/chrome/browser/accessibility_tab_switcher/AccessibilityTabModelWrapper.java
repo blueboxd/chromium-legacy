@@ -170,7 +170,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
                     mIncognitoButtonIcon, mTabIconSelectedLightColor);
         } else {
             setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_bg_color));
             mStackButtonWrapper.setSelectedTabIndicatorColor(
                     mTabIconSelectedDarkColor.getDefaultColor());
             ApiCompatibilityUtils.setImageTintList(mStandardButtonIcon, mTabIconSelectedDarkColor);

@@ -165,7 +165,7 @@ cr.define('test_util', function() {
    *     in the site group.
    * @return {SiteGroup}
    */
-  function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
+  /* #export */ function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
     if (mockUsage == undefined) {
       mockUsage = 0;
     }

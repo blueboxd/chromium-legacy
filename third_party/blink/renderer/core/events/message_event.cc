@@ -367,6 +367,8 @@ bool MessageEvent::IsOriginCheckRequiredToAccessData() const {
 }
 
 bool MessageEvent::IsLockedToAgentCluster() const {
+  if (locked_to_agent_cluster_)
+    return true;
   if (data_type_ != kDataTypeSerializedScriptValue) {
     return false;
   }
@@ -387,6 +389,10 @@ void MessageEvent::Trace(Visitor* visitor) {
   visitor->Trace(ports_);
   visitor->Trace(user_activation_);
   Event::Trace(visitor);
+}
+
+void MessageEvent::LockToAgentCluster() {
+  locked_to_agent_cluster_ = true;
 }
 
 v8::Local<v8::Object> MessageEvent::AssociateWithWrapper(

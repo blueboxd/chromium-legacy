@@ -610,6 +610,21 @@ bool DesksController::MoveWindowFromActiveDeskTo(
   auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview = overview_controller->InOverviewSession();
 
+  // The below order matters:
+  // If in overview, remove the item from overview first, before calling
+  // MoveWindowToDesk(), since MoveWindowToDesk() unminimizes the window (if it
+  // was minimized) before updating the mini views. We shouldn't change the
+  // window's minimized state before removing it from overview, since overview
+  // handles minimized windows differently.
+  if (in_overview) {
+    auto* overview_session = overview_controller->overview_session();
+    auto* item = overview_session->GetOverviewItemForWindow(window);
+    DCHECK(item);
+    item->OnMovingWindowToAnotherDesk();
+    // The item no longer needs to be in the overview grid.
+    overview_session->RemoveItem(item);
+  }
+
   active_desk_->MoveWindowToDesk(window, target_desk, target_root);
 
   Shell::Get()
@@ -623,24 +638,12 @@ bool DesksController::MoveWindowFromActiveDeskTo(
   UMA_HISTOGRAM_ENUMERATION(kMoveWindowFromActiveDeskHistogramName, source);
   ReportNumberOfWindowsPerDeskHistogram();
 
-  if (in_overview) {
-    DCHECK(overview_controller->InOverviewSession());
-    auto* overview_session = overview_controller->overview_session();
-    auto* item = overview_session->GetOverviewItemForWindow(window);
-    DCHECK(item);
-    // Restore the dragged item window, so that its transform is reset to
-    // identity.
-    item->RestoreWindow(/*reset_transform=*/true);
-    // The item no longer needs to be in the overview grid.
-    overview_session->RemoveItem(item);
-    // When in overview, we should return immediately and not change the window
-    // activation as we do below, since the dummy "OverviewModeFocusedWidget"
-    // should remain active while overview mode is active..
-    return true;
-  }
-
   // A window moving out of the active desk cannot be active.
-  wm::DeactivateWindow(window);
+  // If we are in overview, we should not change the window activation as we do
+  // below, since the dummy "OverviewModeFocusedWidget" should remain active
+  // while overview mode is active.
+  if (!in_overview)
+    wm::DeactivateWindow(window);
   return true;
 }
 

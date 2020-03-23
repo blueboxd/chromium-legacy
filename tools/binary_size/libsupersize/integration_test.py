@@ -1,14 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import division
-
-import cStringIO
 import contextlib
 import copy
 import glob
+import io
 import itertools
 import os
 import unittest
@@ -88,7 +86,7 @@ def _AddMocksToPath():
 
 
 def _RunApp(name, args, debug_measures=False):
-  argv = [os.path.join(_SCRIPT_DIR, 'main.py'), name, '--no-pypy']
+  argv = [os.path.join(_SCRIPT_DIR, 'main.py'), name]
   argv.extend(args)
   with _AddMocksToPath():
     env = None
@@ -97,7 +95,7 @@ def _RunApp(name, args, debug_measures=False):
       env['SUPERSIZE_DISABLE_ASYNC'] = '1'
       env['SUPERSIZE_MEASURE_GZIP'] = '1'
 
-    return subprocess.check_output(argv, env=env).splitlines()
+    return subprocess.check_output(argv, env=env).decode('utf-8').splitlines()
 
 
 class IntegrationTest(unittest.TestCase):
@@ -281,13 +279,13 @@ class IntegrationTest(unittest.TestCase):
     expected_size_info = self._CloneSizeInfo(
         use_output_directory=use_output_directory, use_elf=use_elf,
         use_apk=use_apk, use_minimal_apks=use_minimal_apks, use_pak=use_pak)
-    self.assertEquals(expected_size_info.metadata, size_info.metadata)
+    self.assertEqual(expected_size_info.metadata, size_info.metadata)
     # Don't cluster.
     expected_size_info.symbols = expected_size_info.raw_symbols
     size_info.symbols = size_info.raw_symbols
     expected = list(describe.GenerateLines(expected_size_info, verbose=True))
     actual = list(describe.GenerateLines(size_info, verbose=True))
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
     sym_strs = (repr(sym) for sym in size_info.symbols)
     stats = describe.DescribeSizeInfoCoverage(size_info)
@@ -374,7 +372,7 @@ class IntegrationTest(unittest.TestCase):
   # Runs archive 3 times, and asserts the contents are the same each time.
   def test_Idempotent(self):
     prev_contents = None
-    for _ in xrange(3):
+    for _ in range(3):
       with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
         self._DoArchive(temp_file.name)
         contents = temp_file.read()
@@ -401,14 +399,14 @@ class IntegrationTest(unittest.TestCase):
 
     # Serialize & de-serialize so that name normalization runs again for the pak
     # symbol.
-    stringio = cStringIO.StringIO()
-    file_format.SaveSizeInfo(size_info2, 'path', file_obj=stringio)
-    stringio.seek(0)
-    size_info2 = archive.LoadAndPostProcessSizeInfo('path', file_obj=stringio)
+    bytesio = io.BytesIO()
+    file_format.SaveSizeInfo(size_info2, 'path', file_obj=bytesio)
+    bytesio.seek(0)
+    size_info2 = archive.LoadAndPostProcessSizeInfo('path', file_obj=bytesio)
 
     d = diff.Diff(size_info1, size_info2)
     d.raw_symbols = d.raw_symbols.Sorted()
-    self.assertEquals(d.raw_symbols.CountsByDiffStatus()[1:], (2, 2, 3))
+    self.assertEqual(d.raw_symbols.CountsByDiffStatus()[1:], (2, 2, 3))
     changed_sym = d.raw_symbols.WhereNameMatches('Patcher::Name_')[0]
     padding_sym = d.raw_symbols.WhereNameMatches('symbol gap 0')[0]
     bss_sym = d.raw_symbols.WhereInSection(models.SECTION_BSS)[0]

@@ -728,7 +728,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // are usually dummy layout objects that pad out the tree, but there are
   // some exceptions below.
   auto* block_flow = DynamicTo<LayoutBlockFlow>(*layout_object_);
-  if (block_flow && block_flow->ChildrenInline() && !CanSetFocusAttribute()) {
+  if (block_flow && block_flow->ChildrenInline()) {
     // If the layout object has any plain text in it, that text will be
     // inside a LineBox, so the layout object will have a first LineBox.
     bool has_any_text = HasLineBox(*block_flow);

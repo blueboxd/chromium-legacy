@@ -4,8 +4,6 @@
 
 """Main Python API for analyzing binary size."""
 
-from __future__ import division
-
 import argparse
 import bisect
 import calendar
@@ -38,6 +36,7 @@ import obj_analyzer
 import parallel
 import path_util
 import string_extract
+
 
 sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
@@ -127,11 +126,11 @@ class SectionSizeKnobs(object):
     self.relocations_mode = False
 
 
-def _OpenMaybeGz(path):
+def _OpenMaybeGzAsText(path):
   """Calls `gzip.open()` if |path| ends in ".gz", otherwise calls `open()`."""
   if path.endswith('.gz'):
-    return gzip.open(path, 'rb')
-  return open(path, 'rb')
+    return gzip.open(path, 'rt')
+  return open(path, 'rt')
 
 
 def _NormalizeNames(raw_symbols):
@@ -459,12 +458,12 @@ def _CreateMergeStringsReplacements(merge_string_syms,
   ret = []
   STRING_LITERAL_NAME = models.STRING_LITERAL_NAME
   assert len(merge_string_syms) == len(list_of_positions_by_object_path)
-  tups = itertools.izip(merge_string_syms, list_of_positions_by_object_path)
+  tups = zip(merge_string_syms, list_of_positions_by_object_path)
   for merge_sym, positions_by_object_path in tups:
     merge_sym_address = merge_sym.address
     new_symbols = []
     ret.append(new_symbols)
-    for object_path, positions in positions_by_object_path.iteritems():
+    for object_path, positions in positions_by_object_path.items():
       for offset, size in positions:
         address = merge_sym_address + offset
         symbol = models.Symbol(
@@ -645,7 +644,7 @@ def _AddNmAliases(raw_symbols, names_by_address):
       num_new_symbols += len(name_list) - 1
 
   if missing_names and logging.getLogger().isEnabledFor(logging.INFO):
-    for address, names in names_by_address.iteritems():
+    for address, names in names_by_address.items():
       for name in names:
         if name in missing_names:
           logging.info('Missing name %s is at address %x instead of [%s]' %
@@ -767,7 +766,7 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
         sizes_by_module = _CollectModuleSizes(minimal_apks_path)
         metadata[models.METADATA_APK_FILENAME] = relative_to_out(
             minimal_apks_path)
-        for name, size in sizes_by_module.iteritems():
+        for name, size in sizes_by_module.items():
           key = models.METADATA_APK_SIZE
           if name != 'base':
             key += '-' + name
@@ -823,18 +822,24 @@ def _NameStringLiterals(raw_symbols, elf_path, tool_prefix):
   # Assign ASCII-readable string literals names like "string contents".
   STRING_LENGTH_CUTOFF = 30
 
+  PRINTABLE_TBL = [False] * 256
+  for ch in string.printable:
+    PRINTABLE_TBL[ord(ch)] = True
+
   for sym, name in string_extract.ReadStringLiterals(raw_symbols, elf_path,
                                                      tool_prefix):
     # Newlines and tabs are used as delimiters in file_format.py
     # At this point, names still have a terminating null byte.
-    name = name.translate(None, '\t\n').strip('\00')
-    is_printable = all(c in string.printable for c in name)
-    if not is_printable:
-      sym.full_name = models.STRING_LITERAL_NAME
-    elif len(name) > STRING_LENGTH_CUTOFF:
-      sym.full_name = '"{}[...]"'.format(name[:STRING_LENGTH_CUTOFF])
+    name = name.replace(b'\n', b'').replace(b'\t', b'').strip(b'\00')
+    is_printable = all(PRINTABLE_TBL[c] for c in name)
+    if is_printable:
+      name = name.decode('ascii')
+      if len(name) > STRING_LENGTH_CUTOFF:
+        sym.full_name = '"{}[...]"'.format(name[:STRING_LENGTH_CUTOFF])
+      else:
+        sym.full_name = '"{}"'.format(name)
     else:
-      sym.full_name = '"{}"'.format(name)
+      sym.full_name = models.STRING_LITERAL_NAME
 
 
 def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
@@ -863,7 +868,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
       bulk_analyzer.AnalyzePaths(outdir_context.elf_object_paths)
 
   logging.info('Parsing Linker Map')
-  with _OpenMaybeGz(map_path) as map_file:
+  with _OpenMaybeGzAsText(map_path) as map_file:
     map_section_ranges, raw_symbols, linker_map_extras = (
         linker_map_parser.MapFileParser().Parse(linker_name, map_file))
 
@@ -875,7 +880,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
     elf_section_ranges = _SectionInfoFromElf(elf_path, tool_prefix)
     differing_elf_section_sizes = {}
     differing_map_section_sizes = {}
-    for k, (_, elf_size) in elf_section_ranges.iteritems():
+    for k, (_, elf_size) in elf_section_ranges.items():
       if k in _SECTION_SIZE_BLACKLIST:
         continue
       (_, map_size) = map_section_ranges.get(k)
@@ -940,8 +945,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
         logging.info('Deconstructing ** merge strings into literals')
         replacements = _CreateMergeStringsReplacements(merge_string_syms,
             list_of_positions_by_object_path)
-        for merge_sym, literal_syms in itertools.izip(
-            merge_string_syms, replacements):
+        for merge_sym, literal_syms in zip(merge_string_syms, replacements):
           # Don't replace if no literals were found.
           if literal_syms:
             # Re-find the symbols since aliases cause their indices to change.
@@ -963,10 +967,14 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
 
 def _ComputePakFileSymbols(
     file_name, contents, res_info, symbols_by_id, compression_ratio=1):
-  id_map = {id(v): k
-            for k, v in sorted(contents.resources.items(), reverse=True)}
-  alias_map = {k: id_map[id(v)] for k, v in contents.resources.iteritems()
-               if id_map[id(v)] != k}
+  id_map = {
+      id(v): k
+      for k, v in sorted(list(contents.resources.items()), reverse=True)
+  }
+  alias_map = {
+      k: id_map[id(v)]
+      for k, v in contents.resources.items() if id_map[id(v)] != k
+  }
   # Longest locale pak is: es-419.pak.
   # Only non-translated .pak files are: resources.pak, chrome_100_percent.pak.
   if len(posixpath.basename(file_name)) <= 10:
@@ -1029,7 +1037,7 @@ class _ResourceSourceMapper(object):
     # We package resources in the res/ folder only in the apk.
     res_info = {
         os.path.join('res', dest): source
-        for dest, source in res_info_without_root.iteritems()
+        for dest, source in res_info_without_root.items()
     }
     res_info.update(self._knobs.apk_other_files)
     return res_info
@@ -1062,7 +1070,7 @@ def _ParsePakInfoFile(pak_info_path):
 
 def _ParsePakSymbols(symbols_by_id, object_paths_by_pak_id):
   raw_symbols = []
-  for resource_id, symbol in symbols_by_id.iteritems():
+  for resource_id, symbol in symbols_by_id.items():
     raw_symbols.append(symbol)
     paths = object_paths_by_pak_id.get(resource_id)
     if not paths:
@@ -1122,7 +1130,7 @@ def _ParseApkElfSectionRanges(section_ranges, metadata, apk_elf_result):
   return section_ranges, 0
 
 
-class _ResourcePathDeobfuscator:
+class _ResourcePathDeobfuscator(object):
 
   def __init__(self, pathmap_path):
     self._pathmap = self._LoadResourcesPathmap(pathmap_path)
@@ -1250,7 +1258,7 @@ def _FindPakSymbolsFromFiles(section_ranges, pak_files, pak_info_path,
   res_info = _ParsePakInfoFile(pak_info_path)
   symbols_by_id = {}
   for pak_file_path in pak_files:
-    with open(pak_file_path, 'r') as f:
+    with open(pak_file_path, 'rb') as f:
       contents = data_pack.ReadDataPackFromString(f.read())
     section_name = _ComputePakFileSymbols(
         os.path.relpath(pak_file_path, output_directory), contents, res_info,
@@ -1263,7 +1271,7 @@ def _FindPakSymbolsFromFiles(section_ranges, pak_files, pak_info_path,
 def _CalculateElfOverhead(section_ranges, elf_path):
   if elf_path:
     section_sizes_total_without_bss = sum(
-        size for k, (address, size) in section_ranges.iteritems()
+        size for k, (address, size) in section_ranges.items()
         if k not in models.BSS_SECTIONS)
     elf_overhead_size = (
         os.path.getsize(elf_path) - section_sizes_total_without_bss)
@@ -1292,7 +1300,8 @@ def _OverwriteSymbolSizesWithRelocationCount(raw_symbols, tool_prefix,
     symbol.padding = 0
 
   relocs_cmd = [path_util.GetReadElfPath(tool_prefix), '--relocs', elf_path]
-  relro_addresses = subprocess.check_output(relocs_cmd).split('\n')
+  relro_addresses = subprocess.check_output(relocs_cmd).decode('ascii').split(
+      '\n')
   # Grab first column from (sample output) '02de6d5c  00000017 R_ARM_RELATIVE'
   relro_addresses = [
       int(l.split()[0], 16) for l in relro_addresses if 'R_ARM_RELATIVE' in l
@@ -1322,7 +1331,7 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_ranges, elf_result):
   for sym in raw_symbols:
     if sym.end_address > last_symbol_ends[sym.section_name]:
       last_symbol_ends[sym.section_name] = sym.end_address
-  for section_name, last_symbol_end in last_symbol_ends.iteritems():
+  for section_name, last_symbol_end in last_symbol_ends.items():
     size_from_syms = last_symbol_end - section_ranges[section_name][0]
     overhead = section_ranges[section_name][1] - size_from_syms
     assert overhead >= 0, (
@@ -1576,7 +1585,7 @@ def _DetectGitRevision(directory):
   """
   try:
     git_rev = subprocess.check_output(
-        ['git', '-C', directory, 'rev-parse', 'HEAD'])
+        ['git', '-C', directory, 'rev-parse', 'HEAD']).decode('ascii')
     return git_rev.rstrip()
   except Exception:
     logging.warning('Failed to detect git revision for file metadata.')
@@ -1585,7 +1594,7 @@ def _DetectGitRevision(directory):
 
 def BuildIdFromElf(elf_path, tool_prefix):
   args = [path_util.GetReadElfPath(tool_prefix), '-n', elf_path]
-  stdout = subprocess.check_output(args)
+  stdout = subprocess.check_output(args).decode('ascii')
   match = re.search(r'Build ID: (\w+)', stdout)
   assert match, 'Build ID not found from running: ' + ' '.join(args)
   return match.group(1)
@@ -1593,7 +1602,7 @@ def BuildIdFromElf(elf_path, tool_prefix):
 
 def _SectionInfoFromElf(elf_path, tool_prefix):
   args = [path_util.GetReadElfPath(tool_prefix), '-S', '--wide', elf_path]
-  stdout = subprocess.check_output(args)
+  stdout = subprocess.check_output(args).decode('ascii')
   section_ranges = {}
   # Matches  [ 2] .hash HASH 00000000006681f0 0001f0 003154 04   A  3   0  8
   for match in re.finditer(r'\[[\s\d]+\] (\..*)$', stdout, re.MULTILINE):
@@ -1609,7 +1618,7 @@ def _ElfIsMainPartition(elf_path, tool_prefix):
 
 def _ArchFromElf(elf_path, tool_prefix):
   args = [path_util.GetReadElfPath(tool_prefix), '-h', elf_path]
-  stdout = subprocess.check_output(args)
+  stdout = subprocess.check_output(args).decode('ascii')
   machine = re.search('Machine:\s*(.+)', stdout).group(1)
   if machine == 'Intel 80386':
     return 'x86'
@@ -1624,7 +1633,7 @@ def _ArchFromElf(elf_path, tool_prefix):
 
 def _CountRelocationsFromElf(elf_path, tool_prefix):
   args = [path_util.GetObjDumpPath(tool_prefix), '--private-headers', elf_path]
-  stdout = subprocess.check_output(args)
+  stdout = subprocess.check_output(args).decode('ascii')
   relocations = re.search('REL[AR]?COUNT\s*(.+)', stdout).group(1)
   return int(relocations, 16)
 
@@ -1639,11 +1648,11 @@ def _ParseGnArgs(args_path):
       if len(parts) != 2:
         continue
       args[parts[0].strip()] = parts[1].strip()
-  return ["%s=%s" % x for x in sorted(args.iteritems())]
+  return ["%s=%s" % x for x in sorted(args.items())]
 
 
 def _DetectLinkerName(map_path):
-  with _OpenMaybeGz(map_path) as map_file:
+  with _OpenMaybeGzAsText(map_path) as map_file:
     return linker_map_parser.DetectLinkerNameFromMapFile(map_file)
 
 

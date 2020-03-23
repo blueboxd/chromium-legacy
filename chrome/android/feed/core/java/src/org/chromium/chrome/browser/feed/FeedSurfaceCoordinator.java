@@ -374,7 +374,7 @@ public class FeedSurfaceCoordinator {
         mStreamLifecycleManager = mDelegate.createStreamLifecycleManager(mStream, mActivity);
 
         View view = mStream.getView();
-        view.setBackgroundResource(R.color.modern_primary_color);
+        view.setBackgroundResource(R.color.default_bg_color);
         mRootView.addView(view);
         mStreamViewResizer =
                 ViewResizer.createAndAttach(view, mUiConfig, mDefaultMargin, mWideMargin);
@@ -435,8 +435,8 @@ public class FeedSurfaceCoordinator {
         }
 
         mScrollViewForPolicy = new PolicyScrollView(mActivity);
-        mScrollViewForPolicy.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                mActivity.getResources(), R.color.modern_primary_color));
+        mScrollViewForPolicy.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(mActivity.getResources(), R.color.default_bg_color));
         mScrollViewForPolicy.setVerticalScrollBarEnabled(false);
 
         // Make scroll view focusable so that it is the next focusable view when the url bar clears

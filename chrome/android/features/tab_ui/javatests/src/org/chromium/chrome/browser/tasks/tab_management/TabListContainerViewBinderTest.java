@@ -235,7 +235,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
         assertThat(((ColorDrawable) mRecyclerView.getBackground()).getColor(),
                 equalTo(ApiCompatibilityUtils.getColor(
-                        mRecyclerView.getResources(), R.color.modern_primary_color)));
+                        mRecyclerView.getResources(), R.color.default_bg_color)));
     }
 
     @Test

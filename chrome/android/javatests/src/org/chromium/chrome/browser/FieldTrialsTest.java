@@ -126,4 +126,15 @@ public final class FieldTrialsTest {
                 new BooleanCachedFieldTrialParameter(sFeature2, "a3", false);
         Assert.assertEquals(true, parameterB.getValue());
     }
+
+    @Test
+    @SmallTest
+    // clang-format off
+    @CommandLineFlags.Add({"enable-features=" + sFeature1 + "<Study",
+            "force-fieldtrials=Study/Group"})
+    public void testFeatureWithoutParams() {
+        // clang-format on
+        Assert.assertTrue(ChromeFeatureList.isEnabled(sFeature1));
+        Assert.assertTrue(CachedFeatureFlags.isEnabled(sFeature1));
+    }
 }

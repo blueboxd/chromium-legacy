@@ -127,11 +127,13 @@ unsigned RemoteFrameClientImpl::BackForwardLength() {
 void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
+    base::Optional<base::UnguessableToken> cluster_id,
     LocalFrame* source_frame) const {
   if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(
         WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
-        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
+        WebSecurityOrigin(std::move(target)),
+        WebDOMMessageEvent(event, cluster_id));
   }
 }
 

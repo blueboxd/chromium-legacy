@@ -50,6 +50,11 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Returns true if |target| is contained in this OverviewItem.
   bool Contains(const aura::Window* target) const;
 
+  // This called when the window is dragged and dropped on the mini view of
+  // another desk, which prepares this item for being removed from the grid, and
+  // the window to restore its transform.
+  void OnMovingWindowToAnotherDesk();
+
   // Restores and animates the managed window to its non overview mode state.
   // If |reset_transform| equals false, the window's transform will not be
   // reset to identity transform when exiting overview mode. It's needed when
@@ -224,6 +229,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   OverviewGrid* overview_grid() { return overview_grid_; }
 
+  bool is_moving_to_another_desk() const { return is_moving_to_another_desk_; }
+
   void set_should_use_spawn_animation(bool value) {
     should_use_spawn_animation_ = value;
   }
@@ -373,6 +380,11 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Pointer to the OverviewGrid that contains |this|. Guaranteed to be non-null
   // for the lifetime of |this|.
   OverviewGrid* overview_grid_;
+
+  // True when the item is dragged and dropped on another desk's mini view. This
+  // causes it to restore its transform immediately without any animations,
+  // since it is moving to an inactive desk, and therefore won't be visible.
+  bool is_moving_to_another_desk_ = false;
 
   // True if this item should be added to an active overview session using the
   // spawn animation on its first update. This implies an animation type of

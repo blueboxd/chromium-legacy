@@ -621,8 +621,6 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
   if (!IsBluetoothPowered())
     return BLUETOOTH_DISABLED;
 
-  // For the cases below, the state is computed differently depending on whether
-  // the MultiDeviceSetup service is active.
   chromeos::multidevice_setup::mojom::FeatureState tether_multidevice_state =
       multidevice_setup_client_->GetFeatureState(
           chromeos::multidevice_setup::mojom::Feature::kInstantTethering);
@@ -660,14 +658,6 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
       NOTREACHED();
       return NO_AVAILABLE_HOSTS;
   }
-
-  if (!IsAllowedByPolicy())
-    return PROHIBITED;
-
-  if (!IsEnabledByPreference())
-    return USER_PREFERENCE_DISABLED;
-
-  return ENABLED;
 }
 
 void TetherService::RecordTetherFeatureState() {

@@ -575,6 +575,25 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_StartedTwice) {
                       "internet connection.");
 }
 
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverNotifiedTwice) {
+  safety_check_->PerformSafetyCheck();
+  EXPECT_TRUE(test_passwords_delegate_.StartPasswordCheckTriggered());
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnStateChanged(
+          password_manager::BulkLeakCheckService::State::kServiceError);
+  // Another notification about the same state change.
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnStateChanged(
+          password_manager::BulkLeakCheckService::State::kServiceError);
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kError));
+  ASSERT_TRUE(event);
+}
+
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_Safe) {
   safety_check_->PerformSafetyCheck();
   // First, a "running" change of state.

@@ -4,9 +4,6 @@
 
 """An interactive console for looking analyzing .size files."""
 
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import atexit
 import code
@@ -39,7 +36,11 @@ _THRESHOLD_FOR_PAGER = 50
 def _LessPipe():
   """Output to `less`. Yields a file object to write to."""
   try:
-    proc = subprocess.Popen(['less'], stdin=subprocess.PIPE, stdout=sys.stdout)
+    # pylint: disable=unexpected-keyword-arg
+    proc = subprocess.Popen(['less'],
+                            stdin=subprocess.PIPE,
+                            stdout=sys.stdout,
+                            encoding='utf-8')
     yield proc.stdin
     proc.stdin.close()
     proc.wait()
@@ -339,7 +340,8 @@ class _Session(object):
         elf_path,
     ]
 
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+    # pylint: disable=unexpected-keyword-arg
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE, encoding='utf-8')
     lines = itertools.chain(('Showing disassembly for %r' % symbol,
                              'Command: %s' % ' '.join(args)),
                             (l.rstrip() for l in proc.stdout))
@@ -431,7 +433,7 @@ class _Session(object):
         'Variables:',
         '  printed: List of objects passed to Print().',
     ]
-    for key, value in self._variables.iteritems():
+    for key, value in self._variables.items():
       if isinstance(value, types.ModuleType):
         continue
       if key.startswith('size_info'):
@@ -454,7 +456,7 @@ class _Session(object):
     atexit.register(lambda: readline.write_history_file(history_file))
 
   def Eval(self, query):
-    exec query in self._variables
+    exec (query, self._variables)
 
   def GoInteractive(self):
     _Session._InitReadline()

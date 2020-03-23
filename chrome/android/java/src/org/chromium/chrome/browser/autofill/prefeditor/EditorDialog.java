@@ -190,8 +190,8 @@ public class EditorDialog
      */
     private void prepareToolbar() {
         EditorDialogToolbar toolbar = (EditorDialogToolbar) mLayout.findViewById(R.id.action_bar);
-        toolbar.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                toolbar.getResources(), R.color.modern_primary_color));
+        toolbar.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(toolbar.getResources(), R.color.default_bg_color));
         toolbar.setTitleTextAppearance(
                 toolbar.getContext(), R.style.TextAppearance_Headline_Primary);
         toolbar.setTitle(mEditorModel.getTitle());

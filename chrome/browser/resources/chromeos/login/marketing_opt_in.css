@@ -17,8 +17,8 @@
 }
 
 .marketing-animation {
-  height: 113%;
-  margin-top: -3%;
+  height: 90.4%;
+  margin-top: 4%;
   position: absolute;
   width: 100%;
 }
@@ -42,12 +42,15 @@
 }
 
 #finalAccessibilityLink {
-  align-self: flex-end;
+  color: var(--google-blue-600);
 }
 
 #finalAccessibilityLinkContainer {
-  display: flex;
-  justify-content: center;
+  left: 0;
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  text-align: center;
 }
 
 #finalAccessibilityPage oobe-a11y-option {
@@ -57,4 +60,8 @@
 
 #finalAccessibilityPage oobe-a11y-option:last-of-type {
   border-bottom: var(--oobe-a11y-dialog-list-item-border);
+}
+
+#marketing-bottom-buttons {
+  position: relative;
 }

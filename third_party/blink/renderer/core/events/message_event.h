@@ -195,6 +195,8 @@ class CORE_EXPORT MessageEvent final : public Event {
 
   void Trace(Visitor*) override;
 
+  void LockToAgentCluster();
+
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
@@ -236,6 +238,10 @@ class CORE_EXPORT MessageEvent final : public Event {
   bool transfer_user_activation_ = false;
   bool allow_autoplay_ = false;
   size_t amount_of_external_memory_ = 0;
+  // For serialized messages across process this attribute contains the
+  // information of whether the actual original SerializedScriptValue was locked
+  // to the agent cluster.
+  bool locked_to_agent_cluster_ = false;
 };
 
 }  // namespace blink

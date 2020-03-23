@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -35,9 +35,6 @@ This file can also be run stand-alone in order to test out the logic on smaller
 sample sizes.
 """
 
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import atexit
 import collections
@@ -45,7 +42,7 @@ import errno
 import logging
 import os
 import multiprocessing
-import Queue
+import queue
 import signal
 import sys
 import threading
@@ -82,7 +79,7 @@ def _MakeToolPrefixAbsolute(tool_prefix):
   return tool_prefix
 
 
-class _PathsByType:
+class _PathsByType(object):
   def __init__(self, arch, obj, bc):
     self.arch = arch
     self.obj = obj
@@ -126,7 +123,7 @@ class _BulkObjectFileAnalyzerWorker(object):
       # Create 1-tuples of strings.
       return [(p,) for p in paths]
     # Create 1-tuples of arrays of strings.
-    return [(paths[i:i + size],) for i in xrange(0, len(paths), size)]
+    return [(paths[i:i + size], ) for i in range(0, len(paths), size)]
 
   def _DoBulkFork(self, runner, batches):
     # Order of the jobs doesn't matter since each job owns independent paths,
@@ -153,7 +150,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     for encoded_syms, encoded_strs, num_no_symbols in results:
       total_no_symbols += num_no_symbols
       symbol_names_by_path = parallel.DecodeDictOfLists(encoded_syms)
-      for path, names in symbol_names_by_path.iteritems():
+      for path, names in symbol_names_by_path.items():
         for name in names:
           all_paths_by_name[name].append(path)
 
@@ -170,7 +167,7 @@ class _BulkObjectFileAnalyzerWorker(object):
         bcanalyzer.RunBcAnalyzerOnIntermediates, batches)
     for encoded_strs in results:
       if encoded_strs != parallel.EMPTY_ENCODED_DICT:
-        self._encoded_strings_by_path_chunks.append(encoded_strs);
+        self._encoded_strings_by_path_chunks.append(encoded_strs)
 
   def AnalyzePaths(self, paths):
     logging.debug('worker: AnalyzePaths() started.')
@@ -188,7 +185,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     self._paths_by_name = demangle.DemangleKeysAndMergeLists(
         self._paths_by_name, self._tool_prefix)
     # Sort and uniquefy.
-    for key in self._paths_by_name.iterkeys():
+    for key in self._paths_by_name.keys():
       self._paths_by_name[key] = sorted(set(self._paths_by_name[key]))
 
   def _ReadElfStringData(self, elf_path, elf_string_ranges):
@@ -233,7 +230,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     # [section_idx] -> {path: [string_ranges]}.
     self._list_of_encoded_elf_string_ranges_by_path = []
     # Contract [source_idx] and [batch_idx], then decode and join.
-    for section_idx in xrange(len(elf_string_ranges)):  # Fetch result.
+    for section_idx in range(len(elf_string_ranges)):  # Fetch result.
       t = []
       for encoded_ranges in encoded_ranges_sources:  # [source_idx].
         t.extend([b[section_idx] for b in encoded_ranges])  # [batch_idx].
@@ -340,7 +337,7 @@ class _BulkObjectFileAnalyzerSlave(object):
     # Use a worker thread so that AnalyzeStringLiterals() is non-blocking. The
     # thread allows the main thread to process a call to GetSymbolNames() while
     # AnalyzeStringLiterals() is in progress.
-    self._job_queue = Queue.Queue()
+    self._job_queue = queue.Queue()
     self._worker_thread = threading.Thread(target=self._WorkerThreadMain)
     self._allow_analyze_paths = True
 
@@ -442,7 +439,7 @@ def main():
   names_to_paths = bulk_analyzer.GetSymbolNames()
   print('Found {} names'.format(len(names_to_paths)))
   if args.show_names:
-    for name, paths in names_to_paths.iteritems():
+    for name, paths in names_to_paths.items():
       print('{}: {!r}'.format(name, paths))
 
   if args.elf_file:
@@ -451,11 +448,11 @@ def main():
     bulk_analyzer.AnalyzeStringLiterals(args.elf_file, ((address, size),))
 
     positions_by_path = bulk_analyzer.GetStringPositions()[0]
-    print('Found {} string literals'.format(sum(
-        len(v) for v in positions_by_path.itervalues())))
+    print('Found {} string literals'.format(
+        sum(len(v) for v in positions_by_path.values())))
     if args.show_strings:
       logging.debug('.rodata adjust=%d', address - offset)
-      for path, positions in positions_by_path.iteritems():
+      for path, positions in positions_by_path.items():
         strs = string_extract.ReadFileChunks(
             args.elf_file, ((offset + addr, size) for addr, size in positions))
         print('{}: {!r}'.format(

@@ -35,6 +35,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -48,9 +49,48 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
+#include "third_party/blink/public/common/origin_trials/trial_token.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+
+// TODO(enne): consolidate multiple TestOriginTrialPolicy implementations
+namespace {
+const char* kTestAppCacheOriginTrialToken =
+    "AnIRfMbu5xrUEIBGno19QnlNiW7gZgKrkLaCysH+/"
+    "XU2FEpF+"
+    "TLisekclfG9xOkjQgTEllip14FPATbapHAH5ggAAABNeyJvcmlnaW4iOiAiaHR0cDovL21vY2t"
+    "ob3N0OjgwIiwgImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTU4ODM1OTM5NH0=";
+
+const uint8_t kTestPublicKey[] = {
+    0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
+    0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
+    0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
+};
+
+class TestOriginTrialPolicy : public blink::OriginTrialPolicy {
+ public:
+  TestOriginTrialPolicy() {
+    public_keys_.push_back(
+        base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
+                          base::size(kTestPublicKey)));
+  }
+
+  bool IsOriginTrialsSupported() const override { return true; }
+  std::vector<base::StringPiece> GetPublicKeys() const override {
+    return public_keys_;
+  }
+  bool IsOriginSecure(const GURL& url) const override { return true; }
+
+ private:
+  std::vector<base::StringPiece> public_keys_;
+};
+
+static TestOriginTrialPolicy g_origin_trial_policy;
+
+}  // namespace
 
 namespace content {
 namespace appcache_update_job_unittest {
@@ -117,6 +157,10 @@ const char kScopeManifestContents[] =
 // we mock them up.
 class MockHttpServer {
  public:
+  static url::Origin GetOrigin() {
+    return url::Origin::Create(GURL("http://mockhost"));
+  }
+
   static GURL GetMockUrl(const std::string& path) {
     return GURL("http://mockhost/" + path);
   }
@@ -145,7 +189,8 @@ class MockHttpServer {
 
   static void GetMockResponse(const std::string& path,
                               std::string* headers,
-                              std::string* body) {
+                              std::string* body,
+                              bool append_origin_trial_header) {
     const char ok_headers[] =
         "HTTP/1.1 200 OK\n"
         "\n";
@@ -329,6 +374,25 @@ class MockHttpServer {
       (*headers) =
           std::string(not_found_headers, base::size(not_found_headers));
       (*body) = "";
+    }
+
+    // Do some hacky string editing to conditionally edit in the
+    // origin trial header if requested.
+    if (append_origin_trial_header) {
+      int insert_idx = 0;
+      size_t len = headers->length();
+      for (size_t i = len - 1; i > 0; --i) {
+        char c = (*headers)[i];
+        if (c != '\0' && c != '\n') {
+          insert_idx = i + 1;
+          break;
+        }
+      }
+      CHECK_GT(insert_idx, 0);
+      headers->erase(insert_idx, len - insert_idx);
+      (*headers) += "\nOrigin-Trial: ";
+      (*headers) += kTestAppCacheOriginTrialToken;
+      (*headers) += "\n\n";
     }
   }
 };
@@ -658,10 +722,12 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     std::string headers;
     std::string body;
-    if (RetryRequestTestJob::IsRetryUrl(url_request.url))
+    if (RetryRequestTestJob::IsRetryUrl(url_request.url)) {
       RetryRequestTestJob::GetResponseForURL(url_request.url, &headers, &body);
-    else
-      MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body);
+    } else {
+      MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body,
+                                      append_origin_trial_header_to_responses_);
+    }
 
     net::HttpResponseInfo info;
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
@@ -693,6 +759,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   void SetUp() override {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(process_id_,
                                                        &browser_context_);
+    blink::TrialTokenValidator::SetOriginTrialPolicyGetter(base::BindRepeating(
+        []() -> blink::OriginTrialPolicy* { return &g_origin_trial_policy; }));
   }
 
   void TearDown() override {
@@ -3908,6 +3976,73 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
+  void OriginTrialUpdateTest() {
+    // Get the expected expiration date of the test token.
+    {
+      blink::TrialTokenValidator validator;
+      std::string token_feature;
+      ASSERT_EQ(validator.ValidateToken(
+                    kTestAppCacheOriginTrialToken, MockHttpServer::GetOrigin(),
+                    base::Time::Now(), &token_feature, &expect_token_expires_),
+                blink::OriginTrialTokenStatus::kSuccess);
+      EXPECT_EQ(AppCacheStorage::GetOriginTrialNameForTesting(), token_feature);
+      EXPECT_NE(base::Time(), expect_token_expires_);
+    }
+
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/manifest2"),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Create response writer to get a response id.
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    MockFrontend* frontend1 = MakeMockFrontend();
+    AppCacheHost* host1 = MakeHost(frontend1);
+    host1->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    append_origin_trial_header_to_responses_ = true;
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST2_WITH_FILES_SCOPE;
+
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed storage with identical manifest2 contents
+    const std::string seed_data(kManifest2Contents);
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(seed_data);
+    response_writer_->WriteData(
+        io_buffer.get(), seed_data.length(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
+  }
+
   void WaitForUpdateToFinish() {
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
@@ -4096,6 +4231,25 @@ class AppCacheUpdateJobTest : public testing::Test,
       }
     } else {
       EXPECT_TRUE(group_->newest_complete_cache() == nullptr);
+    }
+
+    // Verify token_expires times on cache, group, entry, namespaces.
+    {
+      EXPECT_EQ(group_->token_expires(), expect_token_expires_);
+      if (expect_group_has_cache_) {
+        AppCache* cache = group_->newest_complete_cache();
+        ASSERT_TRUE(cache);
+        EXPECT_EQ(cache->token_expires(), expect_token_expires_);
+        for (const auto& pair : cache->entries()) {
+          EXPECT_EQ(pair.second.token_expires(), expect_token_expires_);
+        }
+        for (auto& fallback : cache->fallback_namespaces_) {
+          EXPECT_EQ(fallback.token_expires, expect_token_expires_);
+        }
+        for (auto& intercept : cache->intercept_namespaces_) {
+          EXPECT_EQ(intercept.token_expires, expect_token_expires_);
+        }
+      }
     }
 
     // Check expected events.
@@ -4789,6 +4943,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   bool expect_eviction_;
   base::Time expect_full_update_time_newer_than_;
   base::Time expect_full_update_time_equal_to_;
+  base::Time expect_token_expires_;
   AppCache* expect_old_cache_;
   AppCache* expect_newest_cache_;
   bool expect_non_null_update_time_;
@@ -4799,11 +4954,14 @@ class AppCacheUpdateJobTest : public testing::Test,
   AppCache::EntryMap expect_extra_entries_;
   std::map<GURL, int64_t> expect_response_ids_;
 
+  bool append_origin_trial_header_to_responses_ = false;
+
   content::TestBrowserContext browser_context_;
   URLLoaderInterceptor interceptor_;
   const int process_id_;
   std::map<GURL, std::unique_ptr<HttpHeadersRequestTestJob>>
       http_headers_request_test_jobs_;
+
   base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
 };
 
@@ -5212,6 +5370,10 @@ TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsSuccess) {
 
 TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::CrossOriginHttpsDeniedTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, OriginTrialUpdate) {
+  RunTestOnUIThread(&AppCacheUpdateJobTest::OriginTrialUpdateTest);
 }
 
 }  // namespace appcache_update_job_unittest

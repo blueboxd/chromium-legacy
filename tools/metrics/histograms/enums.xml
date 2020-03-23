@@ -69895,6 +69895,15 @@ Full version information for the fingerprint enum values:
   <int value="1073807364" label="0x40010004 - DBG_TERMINATE_PROCESS"/>
 </enum>
 
+<enum name="WindowSnapAcceleratorAction">
+  <int value="0" label="CycleLeftSnapInClamshellNoOverview"/>
+  <int value="1" label="CycleLeftSnapInClamshellOverview"/>
+  <int value="2" label="CycleLeftSnapInTablet"/>
+  <int value="3" label="CycleRightSnapInClamshellNoOverview"/>
+  <int value="4" label="CycleRightSnapInClamshellOverview"/>
+  <int value="5" label="CycleRightSnapInTablet"/>
+</enum>
+
 <enum name="WindowsNotificationActivationStatus">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="GET_PROFILE_ID_INVALID_LAUNCH_ID (deprecated)"/>

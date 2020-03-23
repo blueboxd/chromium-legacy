@@ -132,6 +132,8 @@ const char kAccessibilityScreenMagnifierShortcut[] =
 const char kAccessibilityDockedMagnifierShortcut[] =
     "Accessibility.Shortcuts.CrosDockedMagnifier";
 
+const char kAccelWindowSnap[] = "Ash.Accelerators.WindowSnap";
+
 namespace {
 
 using base::UserMetricsAction;
@@ -164,6 +166,10 @@ enum class RotationAcceleratorAction {
 
 void RecordRotationAcceleratorAction(const RotationAcceleratorAction& action) {
   UMA_HISTOGRAM_ENUMERATION("Ash.Accelerators.Rotation.Usage", action);
+}
+
+void RecordWindowSnapAcceleratorAction(WindowSnapAcceleratorAction action) {
+  UMA_HISTOGRAM_ENUMERATION(kAccelWindowSnap, action);
 }
 
 void RecordTabletVolumeAdjustTypeHistogram(TabletModeVolumeAdjustType type) {
@@ -851,10 +857,34 @@ bool CanHandleWindowSnap() {
 }
 
 void HandleWindowSnap(AcceleratorAction action) {
-  if (action == WINDOW_CYCLE_SNAP_LEFT)
+  Shell* shell = Shell::Get();
+  const bool in_tablet = shell->tablet_mode_controller()->InTabletMode();
+  const bool in_overview = shell->overview_controller()->InOverviewSession();
+  if (action == WINDOW_CYCLE_SNAP_LEFT) {
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Left"));
-  else
+    if (in_tablet) {
+      RecordWindowSnapAcceleratorAction(
+          WindowSnapAcceleratorAction::kCycleLeftSnapInTablet);
+    } else if (in_overview) {
+      RecordWindowSnapAcceleratorAction(
+          WindowSnapAcceleratorAction::kCycleLeftSnapInClamshellOverview);
+    } else {
+      RecordWindowSnapAcceleratorAction(
+          WindowSnapAcceleratorAction::kCycleLeftSnapInClamshellNoOverview);
+    }
+  } else {
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Right"));
+    if (in_tablet) {
+      RecordWindowSnapAcceleratorAction(
+          WindowSnapAcceleratorAction::kCycleRightSnapInTablet);
+    } else if (in_overview) {
+      RecordWindowSnapAcceleratorAction(
+          WindowSnapAcceleratorAction::kCycleRightSnapInClamshellOverview);
+    } else {
+      RecordWindowSnapAcceleratorAction(
+          WindowSnapAcceleratorAction::kCycleRightSnapInClamshellNoOverview);
+    }
+  }
 
   const WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
                           ? WM_EVENT_CYCLE_SNAP_LEFT

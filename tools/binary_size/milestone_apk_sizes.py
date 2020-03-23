@@ -85,7 +85,7 @@ class _Artifact(object):
 
 def _DumpCsv(metrics):
   csv_writer = csv.DictWriter(
-      sys.stdout, fieldnames=metrics.keys(), delimiter='\t')
+      sys.stdout, fieldnames=list(metrics.keys()), delimiter='\t')
   csv_writer.writeheader()
   csv_writer.writerow(metrics)
 

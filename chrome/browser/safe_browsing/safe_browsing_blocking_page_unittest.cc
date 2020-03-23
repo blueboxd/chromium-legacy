@@ -172,7 +172,8 @@ class TestSafeBrowsingBlockingPageFactory
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs),
-        IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
+        IsExtendedReportingPolicyManaged(*prefs),
+        IsEnhancedProtectionEnabled(*prefs), is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
         "cpn_safe_browsing" /* help_center_article_link */);
@@ -253,7 +254,8 @@ class TestSafeBrowsingBlockingQuietPageFactory
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs),
-        IsExtendedReportingPolicyManaged(*prefs), is_proceed_anyway_disabled,
+        IsExtendedReportingPolicyManaged(*prefs),
+        IsEnhancedProtectionEnabled(*prefs), is_proceed_anyway_disabled,
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
         "cpn_safe_browsing" /* help_center_article_link */);
@@ -1019,6 +1021,44 @@ TEST_F(SafeBrowsingBlockingPageTest,
       web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
+
+  // Start a load.
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
+
+  // Simulate the load causing a safe browsing interstitial to be shown.
+  ShowInterstitial(false, kBadURL);
+  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+  EXPECT_FALSE(
+      sb_interstitial->sb_error_ui()->CanShowExtendedReportingOption());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate the user clicking "don't proceed".
+  DontProceedThroughInterstitial(sb_interstitial);
+
+  // The interstitial should be gone.
+  EXPECT_EQ(CANCEL, user_response());
+  EXPECT_FALSE(GetSafeBrowsingBlockingPage());
+
+  // No report should have been sent.
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
+}
+
+// Test that extended reporting option is not shown if
+// enhanced protecxtion is enabled.
+TEST_F(SafeBrowsingBlockingPageTest,
+       ExtendedReportingNotShownForEnhancedProtection) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
+  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
 
   // Start a load.
   auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),

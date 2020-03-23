@@ -37,6 +37,9 @@
 #include "ash/test_media_client.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/test_session_state_animator.h"
@@ -591,6 +594,169 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 }
+
+namespace {
+
+class AcceleratorControllerTestWithClamshellSplitView
+    : public AcceleratorControllerTest {
+ public:
+  AcceleratorControllerTestWithClamshellSplitView() = default;
+  AcceleratorControllerTestWithClamshellSplitView(
+      const AcceleratorControllerTestWithClamshellSplitView&) = delete;
+  AcceleratorControllerTestWithClamshellSplitView& operator=(
+      const AcceleratorControllerTestWithClamshellSplitView&) = delete;
+  ~AcceleratorControllerTestWithClamshellSplitView() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDragToSnapInClamshellMode);
+    AcceleratorControllerTest::SetUp();
+  }
+
+ protected:
+  // Note: These functions assume the default display resolution 800x600.
+  void EnterOverviewAndDragToSnapLeft(aura::Window* window) {
+    EnterOverviewAndDragTo(window, gfx::Point(0, 300));
+  }
+  void EnterOverviewAndDragToSnapRight(aura::Window* window) {
+    EnterOverviewAndDragTo(window, gfx::Point(799, 300));
+  }
+
+ private:
+  void EnterOverviewAndDragTo(aura::Window* window,
+                              const gfx::Point& destination) {
+    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
+    ToggleOverview();
+
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->MoveMouseTo(gfx::ToRoundedPoint(
+        GetOverviewItemForWindow(window)->target_bounds().CenterPoint()));
+    generator->DragMouseTo(destination);
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
+  base::UserActionTester user_action_tester;
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 20, 20)));
+  // Some test cases use clamshell split view, for which we need a second window
+  // so overview will be nonempty. Otherwise split view will end when it starts.
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  base::HistogramBase::Count left_clamshell_no_overview = 0;
+  base::HistogramBase::Count left_clamshell_overview = 0;
+  base::HistogramBase::Count left_tablet = 0;
+  base::HistogramBase::Count right_clamshell_no_overview = 0;
+  base::HistogramBase::Count right_clamshell_overview = 0;
+  base::HistogramBase::Count right_tablet = 0;
+  // Performs |action|, checks that |window1| is in |target_window1_state_type|,
+  // and verifies metrics. Output of failed expectations includes |description|.
+  const auto test = [&](const char* description, AcceleratorAction action,
+                        WindowStateType target_window1_state_type) {
+    SCOPED_TRACE(description);
+    controller_->PerformActionIfEnabled(action, {});
+    EXPECT_EQ(target_window1_state_type,
+              WindowState::Get(window1.get())->GetStateType());
+    EXPECT_EQ(
+        left_clamshell_no_overview + left_clamshell_overview + left_tablet,
+        user_action_tester.GetActionCount("Accel_Window_Snap_Left"));
+    EXPECT_EQ(
+        right_clamshell_no_overview + right_clamshell_overview + right_tablet,
+        user_action_tester.GetActionCount("Accel_Window_Snap_Right"));
+    histogram_tester.ExpectBucketCount(
+        kAccelWindowSnap,
+        WindowSnapAcceleratorAction::kCycleLeftSnapInClamshellNoOverview,
+        left_clamshell_no_overview);
+    histogram_tester.ExpectBucketCount(
+        kAccelWindowSnap,
+        WindowSnapAcceleratorAction::kCycleLeftSnapInClamshellOverview,
+        left_clamshell_overview);
+    histogram_tester.ExpectBucketCount(
+        kAccelWindowSnap, WindowSnapAcceleratorAction::kCycleLeftSnapInTablet,
+        left_tablet);
+    histogram_tester.ExpectBucketCount(
+        kAccelWindowSnap,
+        WindowSnapAcceleratorAction::kCycleRightSnapInClamshellNoOverview,
+        right_clamshell_no_overview);
+    histogram_tester.ExpectBucketCount(
+        kAccelWindowSnap,
+        WindowSnapAcceleratorAction::kCycleRightSnapInClamshellOverview,
+        right_clamshell_overview);
+    histogram_tester.ExpectBucketCount(
+        kAccelWindowSnap, WindowSnapAcceleratorAction::kCycleRightSnapInTablet,
+        right_tablet);
+  };
+
+  // Alt+[, clamshell, no overview
+  wm::ActivateWindow(window1.get());
+  left_clamshell_no_overview = 1;
+  test("Snap left, clamshell, no overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kLeftSnapped);
+  left_clamshell_no_overview = 2;
+  test("Unsnap left, clamshell, no overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kNormal);
+  // Alt+[, clamshell, overview
+  EnterOverviewAndDragToSnapRight(window1.get());
+  left_clamshell_overview = 1;
+  test("Snap left, clamshell, overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kLeftSnapped);
+  left_clamshell_overview = 2;
+  test("Unsnap left, clamshell, overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kNormal);
+  // Alt+], clamshell, no overview
+  right_clamshell_no_overview = 1;
+  test("Snap right, clamshell, no overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kRightSnapped);
+  right_clamshell_no_overview = 2;
+  test("Unsnap right, clamshell, no overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kNormal);
+  // Alt+], clamshell, overview
+  EnterOverviewAndDragToSnapLeft(window1.get());
+  right_clamshell_overview = 1;
+  test("Snap right, clamshell, overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kRightSnapped);
+  right_clamshell_overview = 2;
+  test("Unsnap right, clamshell, overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kNormal);
+  // Alt+[, tablet, no overview
+  ShellTestApi().SetTabletModeEnabledForTest(true);
+  left_tablet = 1;
+  test("Snap left, tablet, no overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kLeftSnapped);
+  ToggleOverview();
+  left_tablet = 2;
+  test("Unsnap left, tablet, no overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kMaximized);
+  // Alt+[, tablet, overview
+  EnterOverviewAndDragToSnapRight(window1.get());
+  left_tablet = 3;
+  test("Snap left, tablet, overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kLeftSnapped);
+  left_tablet = 4;
+  test("Unsnap left, tablet, overview", WINDOW_CYCLE_SNAP_LEFT,
+       WindowStateType::kMaximized);
+  // Alt+], tablet, no overview
+  right_tablet = 1;
+  test("Snap right, tablet, no overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kRightSnapped);
+  ToggleOverview();
+  right_tablet = 2;
+  test("Unsnap right, tablet, no overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kMaximized);
+  // Alt+], tablet, overview
+  EnterOverviewAndDragToSnapLeft(window1.get());
+  right_tablet = 3;
+  test("Snap right, tablet, overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kRightSnapped);
+  right_tablet = 4;
+  test("Unsnap right, tablet, overview", WINDOW_CYCLE_SNAP_RIGHT,
+       WindowStateType::kMaximized);
+}
+
+}  // namespace
 
 TEST_F(AcceleratorControllerTest, RotateScreen) {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();

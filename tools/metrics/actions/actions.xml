@@ -22941,6 +22941,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TabGrid.AccessibilityDelegate.Reordered">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User reordered tabs in grid layout in accessibility mode.
+  </description>
+</action>
+
 <action name="TabGrid.Drag">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -24826,11 +24834,21 @@ should be able to be added at any place in this file.
 
 <action-suffix separator="." ordering="suffix">
   <suffix name="Exit"
-      label="Users click the back button or the scrim to exit the tab group
+      label="Users clicked the back button or the scrim to exit the tab group
              dialog."/>
   <suffix name="ExpandedFromSwitcher"
-      label="Users click a card in TabSwitcher to open a dialog. See also
+      label="Users clicked a card in TabSwitcher to open a dialog. See also
              TabGroup.ExpandedFromStrip.TabGridDialog."/>
+  <suffix name="RemoveFromGroup.TabMultiSelect"
+      label="Users ungrouped tabs by clicking the ungroup option in the top
+             toolbar menu in tab grid dialog and selecting tabs they want to
+             ungroup."/>
+  <suffix name="SharedGroupAsTextList"
+      label="Users shared a tab group as a text list of links by clicking the
+             share option in the top toolbar menu in tab grid dialog."/>
+  <suffix name="TabGroupNamedInDialog"
+      label="Users named a tab group by clicking the title text field in tab
+             grid dialog and modifying."/>
   <affected-action name="TabGridDialog"/>
 </action-suffix>
 

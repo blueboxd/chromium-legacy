@@ -11,7 +11,7 @@
     android:layout_height="wrap_content"
     android:minHeight="64dp"
     android:clickable="true"
-    android:background="@color/modern_primary_color"
+    android:background="@color/default_bg_color"
     app:columnCount="3"
     app:rowCount="2">
 

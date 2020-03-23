@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -109,6 +111,18 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         mActivityLifecycleDispatcher.register(this);
 
         TabGroupUtils.startObservingForCreationIPH();
+
+        // Record the group count after all tabs are being restored. This only happen once per life
+        // cycle, therefore remove the observer after recording. We only focus on normal tab model
+        // because we don't restore tabs in incognito tab model.
+        tabModelSelector.getModel(false).addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void restoreCompleted() {
+                recordTabGroupCount();
+                recordSessionCount();
+                tabModelSelector.getModel(false).removeObserver(this);
+            }
+        });
     }
 
     /**
@@ -168,14 +182,34 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         // record that elsewhere when TabModel emits the restoreCompleted signal.
         if (!mActivity.isWarmOnResume()) return;
 
+        recordTabGroupCount();
+        recordSessionCount();
+    }
+
+    private void recordTabGroupCount() {
         TabModelFilterProvider provider =
                 mActivity.getTabModelSelector().getTabModelFilterProvider();
-        int groupCount =
-                ((TabGroupModelFilter) provider.getTabModelFilter(true)).getTabGroupCount();
-        groupCount += ((TabGroupModelFilter) provider.getTabModelFilter(false)).getTabGroupCount();
+        TabGroupModelFilter normalFilter = (TabGroupModelFilter) provider.getTabModelFilter(false);
+        TabGroupModelFilter incognitoFilter =
+                (TabGroupModelFilter) provider.getTabModelFilter(true);
+        int groupCount = normalFilter.getTabGroupCount() + incognitoFilter.getTabGroupCount();
         RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", groupCount);
-
-        recordSessionCount();
+        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            int namedGroupCount = 0;
+            for (int i = 0; i < normalFilter.getTabGroupCount(); i++) {
+                int rootId = ((TabImpl) normalFilter.getTabAt(i)).getRootId();
+                if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
+                    namedGroupCount += 1;
+                }
+            }
+            for (int i = 0; i < incognitoFilter.getTabGroupCount(); i++) {
+                int rootId = ((TabImpl) incognitoFilter.getTabAt(i)).getRootId();
+                if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
+                    namedGroupCount += 1;
+                }
+            }
+            RecordHistogram.recordCountHistogram("TabGroups.UserNamedGroupCount", namedGroupCount);
+        }
     }
 
     private void recordSessionCount() {

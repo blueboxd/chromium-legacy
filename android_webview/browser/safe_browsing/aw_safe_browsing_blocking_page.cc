@@ -127,6 +127,7 @@ AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
           browser_context->IsOffTheRecord(),
           safe_browsing::IsExtendedReportingEnabled(*pref_service),
           safe_browsing::IsExtendedReportingPolicyManaged(*pref_service),
+          safe_browsing::IsEnhancedProtectionEnabled(*pref_service),
           pref_service->GetBoolean(::prefs::kSafeBrowsingProceedAnywayDisabled),
           false,                    // should_open_links_in_new_tab
           false,                    // always_show_back_to_safety

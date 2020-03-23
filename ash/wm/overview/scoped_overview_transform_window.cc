@@ -252,7 +252,13 @@ bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
 
   if (!IsMinimized())
     return false;
-  return overview_item_->item_widget()->GetNativeWindow()->Contains(target);
+
+  // A minimized window's item_widget_ may have already been destroyed.
+  const auto* item_widget = overview_item_->item_widget();
+  if (!item_widget)
+    return false;
+
+  return item_widget->GetNativeWindow()->Contains(target);
 }
 
 gfx::RectF ScopedOverviewTransformWindow::GetTransformedBounds() const {

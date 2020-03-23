@@ -12,7 +12,7 @@ Android has a number of [developer guides](https://developer.android.com/guide) 
 
 ## Colors and text styles
 
-Chrome for Android has a color palette defined in [//ui/android/java/res/values/color_palette.xml](/ui/android/java/res/values/color_palette.xml) and a set of reusable semantic colors defined in [//ui/android/java/res/values/colors.xml](/ui/android/java/res/values/colors.xml). The semantic colors from colors.xml should be used to ensure colors adapt properly for dark mode and can be consistently and easily updated during product-wide visual refreshes.
+Chrome for Android has a color palette defined in [//ui/android/java/res/values/color_palette.xml](/ui/android/java/res/values/color_palette.xml) and a set of reusable semantic colors defined in [//ui/android/java/res/values/semantc_colors_adaptive.xml](/ui/android/java/res/values/semantc_colors_adaptive.xml). The semantic colors from semantc_colors_adaptive.xml should be used to ensure colors adapt properly for dark mode and can be consistently and easily updated during product-wide visual refreshes.
 
 For more information on selecting the right color, see [Night Mode on Chrome Android](night_mode.md).
 

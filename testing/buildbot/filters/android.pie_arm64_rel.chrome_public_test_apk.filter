@@ -70,12 +70,6 @@
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabSwitchBackToSuspended
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabUnsuspendedInBackground
 
-# crbug/1023833
--org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRenderGrid_10WebTabs
--org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRenderGrid_Incognito
--org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRecycling_aspectRatioPoint75
--org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRecycling_defaultAspectRatio
-
 # crbug/1036571
 -org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithHint
 -org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithoutHint

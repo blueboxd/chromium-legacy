@@ -164,6 +164,14 @@ class CC_EXPORT CompositorFrameReporter {
   void ReportBlinkBreakdowns(
       const base::TimeTicks start_time,
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
+
+  // Report histogram and trace event stage for one Viz breakdown
+  void ReportVizBreakdownStage(
+      VizBreakdown stage,
+      const base::TimeTicks start_time,
+      const base::TimeTicks end_time,
+      FrameSequenceTrackerType frame_sequence_tracker_type) const;
+
   void ReportVizBreakdowns(
       const base::TimeTicks start_time,
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
@@ -172,6 +180,14 @@ class CC_EXPORT CompositorFrameReporter {
       const int stage_type_index,
       base::TimeDelta time_delta) const;
   void ReportEventLatencyHistograms() const;
+
+  // Generate a trace event corresponding to a Viz breakdown under
+  // SubmitCompositorFrameToPresentationCompositorFrame stage in
+  // PipelineReporter. This function only generates trace events and does not
+  // report histograms.
+  void ReportVizBreakdownTrace(VizBreakdown substage,
+                               const base::TimeTicks start_time,
+                               const base::TimeTicks end_time) const;
 
   StageData current_stage_;
   BeginMainFrameMetrics blink_breakdown_;

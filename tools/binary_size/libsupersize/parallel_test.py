@@ -1,9 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-from __future__ import division
 
 import os
 import threading
@@ -14,7 +12,7 @@ import parallel
 
 def _ForkTestHelper(arg1, arg2, pickle_me_not, test_instance, parent_pid):
   _ = pickle_me_not  # Suppress lint warning.
-  test_instance.assertNotEquals(os.getpid(), parent_pid)
+  test_instance.assertNotEqual(os.getpid(), parent_pid)
   return arg1 + arg2
 
 
@@ -30,32 +28,32 @@ class ConcurrentTest(unittest.TestCase):
     test_dict = {}
     encoded = parallel.EncodeDictOfLists(test_dict)
     decoded = parallel.DecodeDictOfLists(encoded)
-    self.assertEquals(test_dict, decoded)
+    self.assertEqual(test_dict, decoded)
 
   def testEncodeDictOfLists_EmptyValue(self):
     test_dict = {'foo': []}
     encoded = parallel.EncodeDictOfLists(test_dict)
     decoded = parallel.DecodeDictOfLists(encoded)
-    self.assertEquals(test_dict, decoded)
+    self.assertEqual(test_dict, decoded)
 
   def testEncodeDictOfLists_AllStrings(self):
     test_dict = {'foo': ['a', 'b', 'c'], 'foo2': ['a', 'b']}
     encoded = parallel.EncodeDictOfLists(test_dict)
     decoded = parallel.DecodeDictOfLists(encoded)
-    self.assertEquals(test_dict, decoded)
+    self.assertEqual(test_dict, decoded)
 
   def testEncodeDictOfLists_KeyTransform(self):
     test_dict = {0: ['a', 'b', 'c'], 9: ['a', 'b']}
     encoded = parallel.EncodeDictOfLists(test_dict, key_transform=str)
     decoded = parallel.DecodeDictOfLists(encoded, key_transform=int)
-    self.assertEquals(test_dict, decoded)
+    self.assertEqual(test_dict, decoded)
 
   def testEncodeDictOfLists_ValueTransform(self):
     test_dict = {'a': ['0', '1', '2'], 'b': ['3', '4']}
     expected = {'a': [0, 1, 2], 'b': [3, 4]}
     encoded = parallel.EncodeDictOfLists(test_dict)
     decoded = parallel.DecodeDictOfLists(encoded, value_transform=int)
-    self.assertEquals(expected, decoded)
+    self.assertEqual(expected, decoded)
 
   def testEncodeDictOfLists_Join_Empty(self):
     test_dict1 = {}
@@ -65,14 +63,14 @@ class ConcurrentTest(unittest.TestCase):
     encoded2 = parallel.EncodeDictOfLists(test_dict2)
     encoded = parallel.JoinEncodedDictOfLists([encoded1, encoded2])
     decoded = parallel.DecodeDictOfLists(encoded)
-    self.assertEquals(expected, decoded)
+    self.assertEqual(expected, decoded)
 
   def testEncodeDictOfLists_Join_Singl(self):
     test_dict1 = {'key1': ['a']}
     encoded1 = parallel.EncodeDictOfLists(test_dict1)
     encoded = parallel.JoinEncodedDictOfLists([encoded1])
     decoded = parallel.DecodeDictOfLists(encoded)
-    self.assertEquals(test_dict1, decoded)
+    self.assertEqual(test_dict1, decoded)
 
   def testEncodeDictOfLists_JoinMultiple(self):
     test_dict1 = {'key1': ['a']}
@@ -83,26 +81,26 @@ class ConcurrentTest(unittest.TestCase):
     encoded3 = parallel.EncodeDictOfLists(test_dict2)
     encoded = parallel.JoinEncodedDictOfLists([encoded1, encoded2, encoded3])
     decoded = parallel.DecodeDictOfLists(encoded)
-    self.assertEquals(expected, decoded)
+    self.assertEqual(expected, decoded)
 
   def testCallOnThread(self):
     main_thread = threading.current_thread()
 
     def callback(arg1, arg2):
-      self.assertEquals(1, arg1)
-      self.assertEquals(2, arg2)
+      self.assertEqual(1, arg1)
+      self.assertEqual(2, arg2)
       my_thread = threading.current_thread()
-      self.assertNotEquals(my_thread, main_thread)
+      self.assertNotEqual(my_thread, main_thread)
       return 3
 
     result = parallel.CallOnThread(callback, 1, arg2=2)
-    self.assertEquals(3, result.get())
+    self.assertEqual(3, result.get())
 
   def testForkAndCall_normal(self):
     parent_pid = os.getpid()
     result = parallel.ForkAndCall(_ForkTestHelper,
                                   (1, 2, Unpicklable(), self, parent_pid))
-    self.assertEquals(3, result.get())
+    self.assertEqual(3, result.get())
 
   def testForkAndCall_exception(self):
     parent_pid = os.getpid()
@@ -112,14 +110,14 @@ class ConcurrentTest(unittest.TestCase):
 
   def testBulkForkAndCall_none(self):
     results = parallel.BulkForkAndCall(_ForkTestHelper, [])
-    self.assertEquals([], list(results))
+    self.assertEqual([], list(results))
 
   def testBulkForkAndCall_few(self):
     parent_pid = os.getpid()
     results = parallel.BulkForkAndCall(_ForkTestHelper,
                                        [(1, 2, Unpicklable(), self, parent_pid),
                                         (3, 4, None, self, parent_pid)])
-    self.assertEquals({3, 7}, set(results))
+    self.assertEqual({3, 7}, set(results))
 
   def testBulkForkAndCall_few_kwargs(self):
     parent_pid = os.getpid()
@@ -127,30 +125,30 @@ class ConcurrentTest(unittest.TestCase):
         _ForkTestHelper, [(1, 2, Unpicklable()), (3, 4, None)],
         test_instance=self,
         parent_pid=parent_pid)
-    self.assertEquals({3, 7}, set(results))
+    self.assertEqual({3, 7}, set(results))
 
   def testBulkForkAndCall_many(self):
     parent_pid = os.getpid()
-    args = [(1, 2, Unpicklable(), self, parent_pid) for _ in xrange(100)]
+    args = [(1, 2, Unpicklable(), self, parent_pid) for _ in range(100)]
     results = parallel.BulkForkAndCall(_ForkTestHelper, args)
-    self.assertEquals([3] * 100, list(results))
+    self.assertEqual([3] * 100, list(results))
 
   def testBulkForkAndCall_many_kwargs(self):
     parent_pid = os.getpid()
-    args = [(1, 2) for _ in xrange(100)]
+    args = [(1, 2) for _ in range(100)]
     results = parallel.BulkForkAndCall(
         _ForkTestHelper,
         args,
         pickle_me_not=Unpicklable(),
         test_instance=self,
         parent_pid=parent_pid)
-    self.assertEquals([3] * 100, list(results))
+    self.assertEqual([3] * 100, list(results))
 
   def testBulkForkAndCall_exception(self):
     parent_pid = os.getpid()
     results = parallel.BulkForkAndCall(_ForkTestHelper,
                                        [(1, 'a', None, self, parent_pid)])
-    self.assertRaises(TypeError, results.next)
+    self.assertRaises(TypeError, results.__next__)
 
 
 if __name__ == '__main__':

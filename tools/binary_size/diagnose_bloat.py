@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,8 +9,6 @@ See //tools/binary_size/README.md for example usage.
 
 Note: this tool will perform gclient sync/git checkout on your local repo.
 """
-
-from __future__ import print_function
 
 import atexit
 import argparse
@@ -139,7 +137,7 @@ class ResourceSizesDiff(BaseDiff):
 
   @property
   def summary_stat(self):
-    for section_name, results in self._diff.iteritems():
+    for section_name, results in self._diff.items():
       for subsection_name, value, units in results:
         if 'normalized' in subsection_name:
           full_name = '{} {}'.format(section_name, subsection_name)
@@ -162,8 +160,8 @@ class ResourceSizesDiff(BaseDiff):
     before = self._LoadResults(before_dir)
     after = self._LoadResults(after_dir)
     self._diff = collections.defaultdict(list)
-    for section, section_dict in after.iteritems():
-      for subsection, v in section_dict.iteritems():
+    for section, section_dict in after.items():
+      for subsection, v in section_dict.items():
         # Ignore entries when resource_sizes.py chartjson format has changed.
         if (section not in before or
             subsection not in before[section] or
@@ -180,7 +178,7 @@ class ResourceSizesDiff(BaseDiff):
   def _ResultLines(self, include_sections=None):
     """Generates diff lines for the specified sections (defaults to all)."""
     section_lines = collections.defaultdict(list)
-    for section_name, section_results in self._diff.iteritems():
+    for section_name, section_results in self._diff.items():
       if not include_sections or section_name in include_sections:
         subsection_lines = []
         section_sum = 0
@@ -213,7 +211,7 @@ class ResourceSizesDiff(BaseDiff):
     charts = chartjson['charts']
     # Older versions of resource_sizes.py prefixed the apk onto section names.
     ret = {}
-    for section, section_dict in charts.iteritems():
+    for section, section_dict in charts.items():
       section_no_target = re.sub(r'^.*_', '', section)
       ret[section_no_target] = section_dict
     return ret
@@ -623,7 +621,9 @@ def _RunCmd(cmd, verbose=False, exit_on_failure=True):
   if verbose:
     proc_stdout, proc_stderr = sys.stdout, subprocess.STDOUT
 
-  proc = subprocess.Popen(cmd, stdout=proc_stdout, stderr=proc_stderr)
+  # pylint: disable=unexpected-keyword-arg
+  proc = subprocess.Popen(
+      cmd, stdout=proc_stdout, stderr=proc_stderr, encoding='utf-8')
   stdout, stderr = proc.communicate()
 
   if proc.returncode and exit_on_failure:
@@ -724,7 +724,7 @@ def _ValidateRevs(rev, reference_rev, subrepo, extra_rev):
 
 def _VerifyUserAccepts(message):
   print(message + ' Do you want to proceed? [y/n]')
-  if raw_input('> ').lower() != 'y':
+  if input('> ').lower() != 'y':
     sys.exit()
 
 
@@ -743,7 +743,7 @@ def _Die(s, *args):
 
 
 def _WriteToFile(logfile, s, *args, **kwargs):
-  if isinstance(s, basestring):
+  if isinstance(s, str):
     data = s.format(*args, **kwargs) + '\n'
   else:
     data = '\n'.join(s) + '\n'

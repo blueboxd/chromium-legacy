@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,9 +19,6 @@ RunBcAnalyzerOnIntermediates():
 This file can also be run stand-alone in order to test out the logic on smaller
 sample sizes.
 """
-
-from __future__ import division
-from __future__ import print_function
 
 import argparse
 import os
@@ -61,7 +58,7 @@ def _IsClosingTag(tag_type):
 def IsBitcodeFile(path):
   try:
     with open(path, 'rb') as f:
-      return f.read(4) == 'BC\xc0\xde'
+      return f.read(4) == b'BC\xc0\xde'
   except IOError:
     return False
 
@@ -92,7 +89,7 @@ def ParseTag(line):
   if len(line) < 2 or line[0] != '<':
     return (None, None, None)
   tag_type, pos = (CLOSING_TAG, 2) if line[1] == '/' else (OPENING_TAG, 1)
-  for i in xrange(pos, len(line)):
+  for i in range(pos, len(line)):
     if not line[i].isalnum() and line[i] != '_':
       if i == pos or not line[i] in ' >/':
         break
@@ -143,7 +140,7 @@ def _UnpackUint32ListToBytes(items):
     yield (item >> 24) & 0xFF
 
 
-class _BcIntArrayType:
+class _BcIntArrayType(object):
   """The specs of an integer array type."""
 
   # Lookup table to map from width to an unpacker that splits ints into bytes.
@@ -159,7 +156,7 @@ class _BcIntArrayType:
     # Number of bytes per element.
     self.width = width
 
-  def ParseOpItemsAsString(self, line, attrib_pos, add_null_at_end):
+  def ParseOpItemsAsBytes(self, line, attrib_pos, add_null_at_end):
     """Reads op0=# op=# ... values and returns them as a list of bytes.
 
     Interprets each op0=# op1=# ... value as a |self.width|-byte integer, splits
@@ -172,15 +169,15 @@ class _BcIntArrayType:
     """
     items = _ParseOpItems(line, attrib_pos)
     unpacker = _BcIntArrayType._UNPACKER_MAP[self.width]
-    s = ''.join(chr(t) for t in unpacker(items))
+    s = bytes(unpacker(items))
     if add_null_at_end:
-      s += '\x00' * self.width
+      s += b'\x00' * self.width
     # Rather stringent check to ensure exact size match.
     assert len(s) == self.length * self.width
     return s
 
 
-class _BcTypeInfo:
+class _BcTypeInfo(object):
   """Stateful parser of <TYPE_BLOCK_ID>, specialized for integer arrays."""
 
   # <TYPE_BLOCK_ID NumWords=103 BlockCodeSize=4>
@@ -235,7 +232,7 @@ class _BcTypeInfo:
 
 
 def _ParseBcAnalyzer(lines):
-  """A generator to extract strings from bcanalyzer dump of a BC file."""
+  """A generator to extract bytes() from bcanalyzer dump of a BC file."""
 
   # ...
   # <TYPE_BLOCK_ID NumWords=103 BlockCodeSize=4>
@@ -320,12 +317,12 @@ def _ParseBcAnalyzer(lines):
         if tag in ['CSTRING', 'STRING', 'DATA']:
           # Exclude 32-bit / 4-byte strings since they're rarely used, and are
           # likely confused with 32-bit int arrays.
-          s = consts_cur_type.ParseOpItemsAsString(
-                  line, attrib_pos, tag == 'CSTRING')
+          s = consts_cur_type.ParseOpItemsAsBytes(line, attrib_pos,
+                                                  tag == 'CSTRING')
           yield (consts_cur_type, s)
 
 
-class _BcAnalyzerRunner:
+class _BcAnalyzerRunner(object):
   """Helper to run bcanalyzer and extract output lines. """
   def __init__(self, tool_prefix, output_directory):
     self._args = [path_util.GetBcAnalyzerPath(tool_prefix), '--dump',
@@ -333,8 +330,8 @@ class _BcAnalyzerRunner:
     self._output_directory = output_directory
 
   def RunOnFile(self, obj_file):
-    output = subprocess.check_output(self._args + [obj_file],
-                                     cwd=self._output_directory)
+    output = subprocess.check_output(
+        self._args + [obj_file], cwd=self._output_directory).decode('ascii')
     return output.splitlines()
 
 

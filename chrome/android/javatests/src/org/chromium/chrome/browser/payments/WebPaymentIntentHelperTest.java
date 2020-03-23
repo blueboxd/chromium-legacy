@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -19,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentCurrencyAmount;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentDetailsModifier;
@@ -30,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -39,6 +42,11 @@ import java.util.Map;
 public class WebPaymentIntentHelperTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
+    // Used to receive the result of {@link #parsePaymentResponse}.
+    private String mErrorString;
+    private String mDetails;
+    private String mMethodName;
 
     // Test the happy path of createPayIntent and verify the non-deprecated extras.
     @Test
@@ -69,6 +77,9 @@ public class WebPaymentIntentHelperTest {
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", certificateChain, methodDataMap, total, displayItems,
                 modifiers);
+        Assert.assertEquals(WebPaymentIntentHelper.ACTION_PAY, intent.getAction());
+        Assert.assertEquals("package.name", intent.getComponent().getPackageName());
+        Assert.assertEquals("activity.name", intent.getComponent().getClassName());
         Bundle bundle = intent.getExtras();
         Assert.assertNotNull(bundle);
         Assert.assertEquals(
@@ -486,5 +497,159 @@ public class WebPaymentIntentHelperTest {
                 "payment.request.id", "merchant.name", "schemeless.origin",
                 "schemeless.iframe.origin", /*certificateChain=*/null, methodDataMap, total,
                 /*displayItems=*/null, modifiers);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingIntentDataTest() throws Throwable {
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, /*intent=*/null,
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.MISSING_INTENT_DATA, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseMissingIntentExtrasTest() throws Throwable {
+        Intent intent = new Intent();
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.MISSING_INTENT_EXTRAS, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseResultCanceledTest() throws Throwable {
+        Intent intent = new Intent();
+        intent.putExtras(new Bundle());
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_CANCELED, intent,
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(ErrorStrings.RESULT_CANCELED, mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseUnrecognizedActivityResultTest() throws Throwable {
+        Intent intent = new Intent();
+        intent.putExtras(new Bundle());
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(/*resultCode=*/123, intent,
+                (errorString)
+                        -> mErrorString = errorString,
+                (methodName, details) -> Assert.fail("Parsing should fail."));
+        Assert.assertEquals(
+                String.format(Locale.US, ErrorStrings.UNRECOGNIZED_ACTIVITY_RESULT, 123),
+                mErrorString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseOKTest() throws Throwable {
+        Intent intent = new Intent();
+        Bundle extras = new Bundle();
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_DETAILS, "\"key\":\"value\"}");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_METHOD_NAME, "maxPay");
+        intent.putExtras(extras);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                (errorString) -> Assert.fail("Parsing should succeed."), (methodName, details) -> {
+                    mMethodName = methodName;
+                    mDetails = details;
+                });
+        Assert.assertEquals("maxPay", mMethodName);
+        Assert.assertEquals("\"key\":\"value\"}", mDetails);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void parsePaymentResponseDeprecatedDetailTest() throws Throwable {
+        Intent intent = new Intent();
+        Bundle extras = new Bundle();
+        extras.putString(WebPaymentIntentHelper.EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS,
+                "\"key\":\"value\"}");
+        extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_METHOD_NAME, "maxPay");
+        intent.putExtras(extras);
+        mErrorString = null;
+        WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
+                (errorString) -> Assert.fail("Parsing should succeed."), (methodName, details) -> {
+                    mMethodName = methodName;
+                    mDetails = details;
+                });
+        Assert.assertEquals("maxPay", mMethodName);
+        Assert.assertEquals("\"key\":\"value\"}", mDetails);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void createIsReadyToPayIntent() throws Throwable {
+        Map<String, PaymentMethodData> methodDataMap = new HashMap<String, PaymentMethodData>();
+        PaymentMethodData bobPayMethodData =
+                new PaymentMethodData("bobPayMethod", "{\"key\":\"value\"}");
+        PaymentMethodData maxPayMethodData = new PaymentMethodData("maxPayMethod", "{}");
+        methodDataMap.put("bobPay", bobPayMethodData);
+        methodDataMap.put("maxPay", maxPayMethodData);
+
+        byte[][] certificateChain = new byte[][] {{0}};
+
+        Intent intent = WebPaymentIntentHelper.createIsReadyToPayIntent("package.name",
+                "service.name", "schemeless.origin", "schemeless.iframe.origin", certificateChain,
+                methodDataMap);
+        Assert.assertEquals("package.name", intent.getComponent().getPackageName());
+        Assert.assertEquals("service.name", intent.getComponent().getClassName());
+        Bundle bundle = intent.getExtras();
+        Assert.assertNotNull(bundle);
+        Assert.assertEquals(
+                "schemeless.origin", bundle.get(WebPaymentIntentHelper.EXTRA_TOP_ORIGIN));
+        Assert.assertEquals("schemeless.iframe.origin",
+                bundle.get(WebPaymentIntentHelper.EXTRA_PAYMENT_REQUEST_ORIGIN));
+
+        Parcelable[] certificateChainParcels =
+                bundle.getParcelableArray(WebPaymentIntentHelper.EXTRA_TOP_CERTIFICATE_CHAIN);
+        Assert.assertEquals(1, certificateChainParcels.length);
+        assertThat(((Bundle) certificateChainParcels[0])
+                           .getByteArray(WebPaymentIntentHelper.EXTRA_CERTIFICATE))
+                .isEqualTo(new byte[] {0});
+
+        Assert.assertEquals(new HashSet(Arrays.asList("bobPay", "maxPay")),
+                new HashSet(bundle.getStringArrayList(WebPaymentIntentHelper.EXTRA_METHOD_NAMES)));
+
+        Bundle expectedMethodDataBundle =
+                bundle.getParcelable(WebPaymentIntentHelper.EXTRA_METHOD_DATA);
+        Assert.assertEquals(2, expectedMethodDataBundle.keySet().size());
+        Assert.assertEquals("{\"key\":\"value\"}", expectedMethodDataBundle.getString("bobPay"));
+        Assert.assertEquals("{}", expectedMethodDataBundle.getString("maxPay"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void createIsReadyToPayIntentNullPackageNameExceptionTest() throws Throwable {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("packageName should not be null or empty.");
+
+        Map<String, PaymentMethodData> methodDataMap = new HashMap<String, PaymentMethodData>();
+        PaymentMethodData bobPayMethodData = new PaymentMethodData("method", "null");
+        methodDataMap.put("bobPay", bobPayMethodData);
+
+        PaymentItem total = new PaymentItem(new PaymentCurrencyAmount("CAD", "200"));
+
+        WebPaymentIntentHelper.createIsReadyToPayIntent(/*packageName=*/null, "service.name",
+                "schemeless.origin", "schemeless.iframe.origin", /*certificateChain=*/null,
+                methodDataMap);
     }
 }

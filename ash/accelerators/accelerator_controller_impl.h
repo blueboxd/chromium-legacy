@@ -41,6 +41,19 @@ enum class TabletModeVolumeAdjustType {
   kMaxValue = kNormalAdjustWithSwapDisabled,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Captures usage of Alt+[ and Alt+].
+enum class WindowSnapAcceleratorAction {
+  kCycleLeftSnapInClamshellNoOverview = 0,
+  kCycleLeftSnapInClamshellOverview = 1,
+  kCycleLeftSnapInTablet = 2,
+  kCycleRightSnapInClamshellNoOverview = 3,
+  kCycleRightSnapInClamshellOverview = 4,
+  kCycleRightSnapInTablet = 5,
+  kMaxValue = kCycleRightSnapInTablet,
+};
+
 // Histogram for volume adjustment in tablet mode.
 ASH_EXPORT extern const char kTabletCountOfVolumeAdjustType[];
 
@@ -54,6 +67,9 @@ ASH_EXPORT extern const char kAccessibilityHighContrastShortcut[];
 ASH_EXPORT extern const char kAccessibilitySpokenFeedbackShortcut[];
 ASH_EXPORT extern const char kAccessibilityScreenMagnifierShortcut[];
 ASH_EXPORT extern const char kAccessibilityDockedMagnifierShortcut[];
+
+// Name of histogram corresponding to |WindowSnapAcceleratorAction|.
+ASH_EXPORT extern const char kAccelWindowSnap[];
 
 // AcceleratorControllerImpl provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It

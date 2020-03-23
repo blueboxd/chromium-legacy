@@ -22,8 +22,9 @@ import java.util.Set;
  */
 public class FieldTrials {
     private static FieldTrials sInstance;
-    private Map<String, Map<String, String>> mTrialToParamValueMap = new HashMap<>();
-    private Map<String, Set<String>> mTrialToFeatureNameMap = new HashMap<>();
+    private final Set<String> mEnabledFeatures = new HashSet<>();
+    private final Map<String, Map<String, String>> mTrialToParamValueMap = new HashMap<>();
+    private final Map<String, Set<String>> mTrialToFeatureNameMap = new HashMap<>();
     private static final String TAG = "FieldTrials";
 
     private FieldTrials() {}
@@ -44,12 +45,18 @@ public class FieldTrials {
                 commandLine.getSwitchValue(BaseSwitches.FORCE_FIELD_TRIAL_PARAMS_SWITCH);
         String enableFeatures = commandLine.getSwitchValue(BaseSwitches.ENABLE_FEATURES);
 
+        Set<String> enableFeaturesSet = new HashSet<>();
+        if (enableFeatures != null) {
+            Collections.addAll(enableFeaturesSet, enableFeatures.split(","));
+            for (String enabledFeature : enableFeaturesSet) {
+                mEnabledFeatures.add(cleanupFeatureName(enabledFeature));
+            }
+        }
+
         if (forceFieldTrials == null || forceFieldTrialParams == null || enableFeatures == null) {
             return;
         }
 
-        Set<String> enableFeaturesSet = new HashSet<>();
-        Collections.addAll(enableFeaturesSet, enableFeatures.split(","));
         try {
             updateTrialToParamValueMap(forceFieldTrialParams.split(","));
             updateTrialFeatureMap(forceFieldTrials.split("/"), enableFeaturesSet);
@@ -61,6 +68,11 @@ public class FieldTrials {
                             + forceFieldTrialParams + ".");
             return;
         }
+    }
+
+    private static String cleanupFeatureName(String featureNameWithTrial) {
+        if (!featureNameWithTrial.contains("<")) return featureNameWithTrial;
+        return featureNameWithTrial.split("<")[0];
     }
 
     /**
@@ -133,8 +145,8 @@ public class FieldTrials {
      * in CachedFeatureFlags.
      */
     public void applyFieldTrials() {
-        if (mTrialToFeatureNameMap.isEmpty() || mTrialToParamValueMap.isEmpty()) {
-            return;
+        for (String featureName : mEnabledFeatures) {
+            CachedFeatureFlags.setForTesting(featureName, true);
         }
 
         for (Map.Entry<String, Map<String, String>> entry : mTrialToParamValueMap.entrySet()) {
@@ -143,7 +155,6 @@ public class FieldTrials {
             for (String featureName : featureSet) {
                 Map<String, String> params = entry.getValue();
                 for (Map.Entry<String, String> param : params.entrySet()) {
-                    CachedFeatureFlags.setForTesting(featureName, true);
                     CachedFieldTrialParameter.setForTesting(
                             featureName, param.getKey(), param.getValue());
                 }

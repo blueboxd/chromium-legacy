@@ -1107,6 +1107,7 @@ class TabListMediator {
                     return false;
                 }
                 mModel.move(currentPosition, targetPosition);
+                RecordUserAction.record("TabGrid.AccessibilityDelegate.Reordered");
                 return true;
             }
         };

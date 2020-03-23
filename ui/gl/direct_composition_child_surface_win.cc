@@ -8,7 +8,9 @@
 #include <dcomptypes.h>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -315,10 +317,17 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
         d3d11_device_.Get(), &desc, nullptr, &swap_chain_);
     first_swap_ = true;
+    base::UmaHistogramSparse(
+        "GPU.DirectComposition.CreateSwapChainForComposition", hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
                   << std::hex << hr;
-      return false;
+      // If CreateSwapChainForComposition fails, we cannot draw to the
+      // browser window. Failure here is indicative of an unrecoverable driver
+      // bug. Hence, terminate immediately and let the browser process start
+      // a fresh new instance.
+      base::Process::TerminateCurrentProcessImmediately(0);
+      // No code runs beyond this point.
     }
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {

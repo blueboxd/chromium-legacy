@@ -669,7 +669,6 @@ if (!is_android) {
       "//components/cbor",
       "//components/data_reduction_proxy/core/browser:test_support",
       "//components/dom_distiller/content/browser",
-      "//components/dom_distiller/content/browser:test_support",
       "//components/dom_distiller/content/renderer",
       "//components/dom_distiller/core:test_support",
       "//components/embedder_support",

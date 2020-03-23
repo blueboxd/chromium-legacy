@@ -6,5 +6,5 @@
 <shape
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="@color/modern_secondary_color" />
+    <solid android:color="@color/default_bg_color_secondary" />
 </shape>

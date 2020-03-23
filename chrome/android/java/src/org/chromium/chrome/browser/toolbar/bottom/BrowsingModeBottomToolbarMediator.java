@@ -78,7 +78,7 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
             return;
         }
         int innerBackgroundColor =
-                ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_primary_color);
+                ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.default_bg_color);
         int baseBubbleColor =
                 ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_blue_600);
 

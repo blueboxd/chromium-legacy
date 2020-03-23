@@ -171,16 +171,14 @@ def make_dict_member_set_def(cg_context):
 
     func_def = CxxFuncDefNode(
         name=blink_member_name.set_api,
-        arg_decls=[
-            _format("{} value",
-                    blink_type_info(member.idl_type).ref_t)
-        ],
-        return_type="void")
+        arg_decls=["T&& value"],
+        return_type="void",
+        template_params=["typename T"])
     func_def.set_base_template_vars(cg_context.template_bindings())
     body = func_def.body
 
     _1 = blink_member_name.value_var
-    body.append(T(_format("{_1} = value;", _1=_1)))
+    body.append(T(_format("{_1} = std::forward(value);", _1=_1)))
 
     if _does_use_presence_flag(member):
         _1 = blink_member_name.presence_var

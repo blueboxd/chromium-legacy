@@ -455,9 +455,13 @@ bool GuestOsSharePath::GetAndSetFirstForSession() {
 std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
     const std::string& vm_name) {
   std::vector<base::FilePath> result;
+  // TODO(crbug.com/1057591): Unexpected crashes here.
+  CHECK(profile_);
+  CHECK(profile_->GetPrefs());
   // |shared_paths| format is {'path': ['vm1', vm2']}.
   const base::DictionaryValue* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
+  CHECK(shared_paths);
   for (const auto& it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
     for (const auto& vm : it.second.GetList()) {

@@ -183,6 +183,7 @@ crbug.com/1017164 external/wpt/css/css-text/word-break/word-break-break-all-inli
 
 ### external/wpt/css/css-ui/
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-010.html [ Failure ]
+crbug.com/1063319 external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 
 ### external/wpt/css/css-writing-modes/
 crbug.com/591099 external/wpt/css/css-writing-modes/abs-pos-non-replaced-icb-vlr-003.xht [ Failure ]

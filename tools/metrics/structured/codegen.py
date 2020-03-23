@@ -8,7 +8,10 @@ import hashlib
 import os
 import re
 import struct
-from model import _EVENT_TYPE, _METRIC_TYPE
+from model import _EVENT_TYPE, _EVENTS_TYPE
+from model import _PROJECT_TYPE, _PROJECTS_TYPE
+from model import _METRIC_TYPE
+
 
 def sanitize_name(name):
   s = re.sub('[^0-9a-zA-Z_]', '_', name)
@@ -28,10 +31,19 @@ class FileInfo(object):
 
 
 class EventInfo(object):
-  def __init__(self, json_obj):
-    self.raw_name = json_obj['name']
-    self.name = sanitize_name(json_obj['name'])
-    self.hash = HashName(json_obj['name'])
+  def __init__(self, event_obj, project_obj):
+    self.raw_name = event_obj['name']
+    self.name = sanitize_name(event_obj['name'])
+    self.hash = HashName(event_obj['name'])
+
+    # If a project is associated with this event, project_obj will be non-None
+    # and we should use the project's name as the key name hash. Otherwise, use
+    # the event's name as the key name hash.
+    if project_obj:
+      key_name = project_obj['name']
+    else:
+      key_name = event_obj['name']
+    self.key_name_hash = HashName(key_name)
 
 
 class MetricInfo(object):
@@ -58,13 +70,17 @@ class Template(object):
     self.metric_template = metric_template
 
   def _StampMetricCode(self, file_info, event_info, metric):
+    """Stamp a metric by creating name hash constant based on the metric name,
+    and a setter method."""
     return self.metric_template.format(
         file=file_info,
         event=event_info,
         metric=MetricInfo(metric))
 
-  def _StampEventCode(self, file_info, event):
-    event_info = EventInfo(event)
+  def _StampEventCode(self, file_info, event, project):
+    """Stamp an event class by creating a skeleton of the class based on the
+    event name, and then stamping code for each metric within it."""
+    event_info = EventInfo(event, project)
     metric_code = ''.join(
         self._StampMetricCode(file_info, event_info, metric)
         for metric in event[_METRIC_TYPE.tag])
@@ -74,13 +90,26 @@ class Template(object):
         metric_code=metric_code)
 
   def _StampFileCode(self, relpath, data):
+    """Stamp a file by creating a class for each event, and a list of all event
+    name hashes."""
     file_info = FileInfo(relpath, self.basename)
-    event_code = "".join(
-        self._StampEventCode(file_info, event)
-        for event in data[_EVENT_TYPE.tag])
-    event_name_hashes = ['UINT64_C(%s)' % HashName(metric['name'])
-                         for metric in data[_EVENT_TYPE.tag]]
+    event_code = []
+
+    projects = {
+        project['name']: project
+        for project in data[_PROJECTS_TYPE.tag][_PROJECT_TYPE.tag]
+    }
+    for event in data[_EVENTS_TYPE.tag][_EVENT_TYPE.tag]:
+      project = projects.get(event.get('project'))
+      event_code.append(self._StampEventCode(file_info, event, project))
+    event_code = ''.join(event_code)
+
+    event_name_hashes = [
+        'UINT64_C(%s)' % HashName(metric['name'])
+        for metric in data[_EVENTS_TYPE.tag][_EVENT_TYPE.tag]
+    ]
     event_name_hashes = '{' + ', '.join(event_name_hashes) + '}'
+
     return self.file_template.format(
         file=file_info,
         event_code=event_code,

@@ -565,7 +565,7 @@ unsigned ShapeResult::OffsetToFit(float x, TextDirection line_direction) const {
   if (IsLtr(line_direction))
     return result.left_character_index;
 
-  if (x == result.origin_x && IsRtl(Direction()))
+  if (x == result.origin_x)
     return result.left_character_index;
   return result.right_character_index;
 }

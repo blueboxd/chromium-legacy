@@ -43,7 +43,8 @@ class {event.name} final : public ::metrics::structured::EventBase {{
   {event.name}();
   ~{event.name}() override;
 
-  static constexpr uint64_t kEventNameHash = UINT64_C({event.hash});\
+  static constexpr uint64_t kEventNameHash = UINT64_C({event.hash});
+  static constexpr uint64_t kKeyNameHash = UINT64_C({event.key_name_hash});\
 {metric_code}
 }};\
 """

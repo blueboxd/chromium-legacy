@@ -439,12 +439,12 @@ goma_builder(
 )
 
 
-def goma_mac_builder(*, name, **kwargs):
+def goma_mac_builder(*, name, os=os.MAC_DEFAULT, **kwargs):
   return goma_builder(
       name = name,
       cores = 4,
       goma_jobs = goma.jobs.J80,
-      os = os.MAC_DEFAULT,
+      os = os,
       **kwargs
   )
 
@@ -453,6 +453,7 @@ goma_mac_builder(
     caches = [xcode_cache.x11c29],
     executable = 'recipe:ios/unified_builder_tester',
     goma_backend = goma.backend.RBE_TOT,
+    os = os.MAC_ANY,
 )
 
 goma_mac_builder(

@@ -389,6 +389,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("keyboardCopyDownloads").InGuestMode(),
                       TestCase("keyboardCopyDownloads"),
                       TestCase("keyboardCopyDrive"),
+                      TestCase("keyboardFocusOutlineVisible"),
+                      TestCase("keyboardFocusOutlineVisibleMouse"),
                       TestCase("keyboardSelectDriveDirectoryTree"),
                       TestCase("keyboardDisableCopyWhenDialogDisplayed"),
                       TestCase("keyboardOpenNewWindow"),

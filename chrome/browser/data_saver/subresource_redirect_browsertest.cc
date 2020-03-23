@@ -1032,9 +1032,10 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Tests CSS background images are redirected.
+// Disabled due to flakes. See https://crbug.com/1063736.
 IN_PROC_BROWSER_TEST_F(
     SubresourceRedirectBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
+    DISABLED_TestCSSBackgroundImageRedirect) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths("/load_image/css_background_image.html",

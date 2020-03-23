@@ -50,6 +50,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/api/management.h"
 #include "extensions/common/extension.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -234,7 +235,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->title = base::UTF8ToUTF16(title);
     web_app_info->app_url = launch_url;
-    web_app_info->display_mode = blink::mojom::DisplayMode::kBrowser;
+    web_app_info->display_mode = web_app::DisplayMode::kBrowser;
     web_app_info->open_as_window = false;
 
     if (!image_result.image.IsEmpty()) {
@@ -251,6 +252,59 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
         WebappInstallSource::MANAGEMENT_API,
         base::BindOnce(OnGenerateAppForLinkCompleted,
                        base::RetainedRef(function)));
+  }
+
+  extensions::api::management::ExtensionInfo CreateExtensionInfoFromWebApp(
+      const std::string& app_id,
+      content::BrowserContext* context) override {
+    auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+        Profile::FromBrowserContext(context));
+    DCHECK(provider);
+    const web_app::AppRegistrar& registrar = provider->registrar();
+
+    extensions::api::management::ExtensionInfo info;
+    info.id = app_id;
+    info.name = registrar.GetAppShortName(app_id);
+    info.enabled = registrar.IsLocallyInstalled(app_id);
+    info.install_type =
+        extensions::api::management::EXTENSION_INSTALL_TYPE_OTHER;
+    info.is_app = true;
+    info.type = extensions::api::management::EXTENSION_TYPE_HOSTED_APP;
+    info.app_launch_url =
+        std::make_unique<std::string>(registrar.GetAppLaunchURL(app_id).spec());
+
+    info.icons =
+        std::make_unique<std::vector<extensions::api::management::IconInfo>>();
+    std::vector<WebApplicationIconInfo> icon_infos =
+        registrar.GetAppIconInfos(app_id);
+    info.icons->reserve(icon_infos.size());
+    for (const WebApplicationIconInfo& web_app_icon_info : icon_infos) {
+      extensions::api::management::IconInfo icon_info;
+      icon_info.size = web_app_icon_info.square_size_px;
+      icon_info.url = web_app_icon_info.url.spec();
+      info.icons->push_back(std::move(icon_info));
+    }
+
+    switch (registrar.GetAppDisplayMode(app_id)) {
+      case web_app::DisplayMode::kBrowser:
+        info.launch_type =
+            extensions::api::management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB;
+        break;
+      case web_app::DisplayMode::kMinimalUi:
+      case web_app::DisplayMode::kStandalone:
+        info.launch_type =
+            extensions::api::management::LAUNCH_TYPE_OPEN_AS_WINDOW;
+        break;
+      case web_app::DisplayMode::kFullscreen:
+        info.launch_type =
+            extensions::api::management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
+        break;
+      case web_app::DisplayMode::kUndefined:
+        info.launch_type = extensions::api::management::LAUNCH_TYPE_NONE;
+        break;
+    }
+
+    return info;
   }
 
   // Used for favicon loading tasks.

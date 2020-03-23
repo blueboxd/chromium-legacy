@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/api/management.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -43,6 +44,10 @@ class UninstallDialogDelegate {
 class AppForLinkDelegate {
  public:
   virtual ~AppForLinkDelegate() {}
+
+  virtual extensions::api::management::ExtensionInfo
+  CreateExtensionInfoFromWebApp(const std::string& app_id,
+                                content::BrowserContext* context) = 0;
 };
 
 class ManagementAPIDelegate {

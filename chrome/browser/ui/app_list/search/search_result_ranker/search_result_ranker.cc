@@ -516,15 +516,6 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
 
   if (model == Model::MIXED_TYPES && app_launch_data.query.empty()) {
     LogZeroStateLaunchType(app_launch_data.ranking_item_type);
-
-    if (zero_state_group_ranker_) {
-      std::vector<std::string> weights;
-      for (const auto& pair : *zero_state_group_ranker_->GetTargetData())
-        weights.push_back(base::StrCat(
-            {pair.first, ":", base::NumberToString(pair.second.last_score)}));
-      VLOG(1) << "Zero state files model weights: ["
-              << base::JoinString(weights, ", ") << "]";
-    }
   }
 
   LogChipUsageMetrics(app_launch_data);
@@ -599,25 +590,11 @@ void SearchResultRanker::OverrideZeroStateResults(
     if (candidate_override_index == -1)
       continue;
 
-    // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files
-    // not being shown is resolved.
-    VLOG(1) << "Zero state files override: newtype=" << static_cast<int>(group)
-            << " newpos=" << next_modifiable_index;
     // Override the result at |next_modifiable_index| with
     // |candidate_override_index| by swapping their scores.
     std::swap(result_ptrs[candidate_override_index]->score,
               result_ptrs[next_modifiable_index]->score);
     --next_modifiable_index;
-  }
-
-  // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files not
-  // being shown is resolved.
-  VLOG(1) << "Zero state files setting result scores";
-  for (const auto* result : result_ptrs) {
-    VLOG(1) << "Zero state files result score: type="
-            << static_cast<int>(
-                   RankingItemTypeFromSearchResult(*(result->result)))
-            << " score=" << result->score;
   }
 }
 

@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -262,7 +261,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
 
-    private EphemeralTabCoordinator mEphemeralTabCoordinator;
     private UpdateNotificationController mUpdateNotificationController;
     private StatusBarColorController mStatusBarColorController;
 
@@ -1340,12 +1338,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
 
-        if (EphemeralTabCoordinator.isSupported()) {
-            mEphemeralTabCoordinator = new EphemeralTabCoordinator(this, getWindowAndroid(),
-                    getWindow().getDecorView(), getActivityTabProvider(),
-                    this::getCurrentTabCreator, getBottomSheetController(), () -> !isCustomTab());
-        }
-
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_TAB_REPARENTING)) {
             mNightModeReparentingController = new NightModeReparentingController(
                     ReparentingDelegateFactory.createNightModeReparentingControllerDelegate(
@@ -1506,8 +1498,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     public TabDelegateFactory getTabDelegateFactory() {
-        return new TabbedModeTabDelegateFactory(
-                this, new ComposedBrowserControlsVisibilityDelegate(), getShareDelegateSupplier());
+        return new TabbedModeTabDelegateFactory(this,
+                new ComposedBrowserControlsVisibilityDelegate(), getShareDelegateSupplier(), null);
     }
 
     /**
@@ -1640,13 +1632,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public ContextualSearchManager getContextualSearchManager() {
         return mContextualSearchManager;
-    }
-
-    /**
-     * @return The {@code EphemeralTabCoordinator}.
-     */
-    public EphemeralTabCoordinator getEphemeralTabCoordinator() {
-        return mEphemeralTabCoordinator;
     }
 
     /**

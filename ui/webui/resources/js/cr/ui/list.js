@@ -526,6 +526,9 @@ cr.define('cr.ui', function() {
       }
 
       target = this.getListItemAncestor(target);
+      if (!target) {
+        return;
+      }
 
       const index = this.getIndexOfListItem(target);
       this.selectionController_.handlePointerDownUp(e, index);
@@ -570,7 +573,8 @@ cr.define('cr.ui', function() {
       while (container && container.parentNode !== this) {
         container = container.parentNode;
       }
-      return container && assertInstanceof(container, HTMLLIElement);
+
+      return (container instanceof HTMLLIElement ? container : null);
     },
 
     /**
@@ -614,6 +618,9 @@ cr.define('cr.ui', function() {
       }
 
       target = this.getListItemAncestor(target);
+      if (!target) {
+        return;
+      }
 
       const index = this.getIndexOfListItem(target);
       this.selectionController_.handleTouchEvents(e, index);
@@ -1375,6 +1382,9 @@ cr.define('cr.ui', function() {
   function handleMouseDown(e) {
     e.target = /** @type {!HTMLElement} */ (e.target);
     const listItem = this.getListItemAncestor(e.target);
+    if (!listItem) {
+      return;
+    }
     const wasSelected = listItem && listItem.selected;
     this.handlePointerDownUp_(e);
 

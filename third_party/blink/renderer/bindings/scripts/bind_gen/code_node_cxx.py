@@ -146,6 +146,7 @@ class CxxFuncDeclNode(CompositeNode):
                  name,
                  arg_decls,
                  return_type,
+                 template_params=None,
                  static=False,
                  explicit=False,
                  constexpr=False,
@@ -158,6 +159,7 @@ class CxxFuncDeclNode(CompositeNode):
             name: Function name.
             arg_decls: List of argument declarations.
             return_type: Return type.
+            template_params: List of template parameters or None.
             static: True makes this a static function.
             explicit: True makes this an explicit constructor.
             constexpr: True makes this a constexpr function.
@@ -175,7 +177,8 @@ class CxxFuncDeclNode(CompositeNode):
         assert isinstance(delete, bool)
         assert not (default and delete)
 
-        template_format = ("{static}{explicit}{constexpr}"
+        template_format = ("{template}"
+                           "{static}{explicit}{constexpr}"
                            "{return_type} "
                            "{name}({arg_decls})"
                            "{const}"
@@ -183,11 +186,17 @@ class CxxFuncDeclNode(CompositeNode):
                            "{default_or_delete}"
                            ";")
 
+        if template_params is None:
+            template = ""
+        else:
+            template = "template <{}>\n".format(", ".join(template_params))
+
         static = "static " if static else ""
         explicit = "explicit " if explicit else ""
         constexpr = "constexpr " if constexpr else ""
         const = " const" if const else ""
         override = " override" if override else ""
+
         if default:
             default_or_delete = " = default"
         elif delete:
@@ -202,6 +211,7 @@ class CxxFuncDeclNode(CompositeNode):
             arg_decls=ListNode(
                 map(_to_maybe_text_node, arg_decls), separator=", "),
             return_type=_to_maybe_text_node(return_type),
+            template=template,
             static=static,
             explicit=explicit,
             constexpr=constexpr,
@@ -216,6 +226,7 @@ class CxxFuncDefNode(CompositeNode):
                  arg_decls,
                  return_type,
                  class_name=None,
+                 template_params=None,
                  static=False,
                  inline=False,
                  explicit=False,
@@ -229,6 +240,7 @@ class CxxFuncDefNode(CompositeNode):
             arg_decls: List of argument declarations.
             return_type: Return type.
             class_name: Class name to be used as nested-name-specifier.
+            template_params: List of template parameters or None.
             static: True makes this a static function.
             inline: True makes this an inline function.
             explicit: True makes this an explicit constructor.
@@ -244,7 +256,8 @@ class CxxFuncDefNode(CompositeNode):
         assert isinstance(const, bool)
         assert isinstance(override, bool)
 
-        template_format = ("{static}{inline}{explicit}{constexpr}"
+        template_format = ("{template}"
+                           "{static}{inline}{explicit}{constexpr}"
                            "{return_type} "
                            "{class_name}{name}({arg_decls})"
                            "{const}"
@@ -257,6 +270,11 @@ class CxxFuncDefNode(CompositeNode):
             class_name = ""
         else:
             class_name = ListNode([_to_maybe_text_node(class_name)], tail="::")
+
+        if template_params is None:
+            template = ""
+        else:
+            template = "template <{}>\n".format(", ".join(template_params))
 
         static = "static " if static else ""
         inline = "inline " if inline else ""
@@ -283,6 +301,7 @@ class CxxFuncDefNode(CompositeNode):
                 map(_to_maybe_text_node, arg_decls), separator=", "),
             return_type=_to_maybe_text_node(return_type),
             class_name=class_name,
+            template=template,
             static=static,
             inline=inline,
             explicit=explicit,

@@ -61,7 +61,8 @@ def checkEventsHaveOwners(config):
 def main():
   with open(STRUCTURED_XML, 'r') as config_file:
     document = minidom.parse(config_file)
-    [config] = document.getElementsByTagName('structured-metrics-configuration')
+    [config] = document.getElementsByTagName('structured-metrics')
+    [events] = document.getElementsByTagName('events')
 
     errors = checkEventsHaveOwners(config)
     if errors:

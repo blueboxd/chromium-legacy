@@ -41,19 +41,8 @@ var tests = [
         url, title, null, function(data) {
           assertEq("http://google.com/", data.appLaunchUrl);
           assertEq(title, data.name);
-          // There is no favicon in the test browser, so only 4 icons will
-          // be created.
-          assertEq(6, data.icons.length);
-          assertEq(32, data.icons[0].size);
-          assertEq(48, data.icons[1].size);
-          assertEq(64, data.icons[2].size);
-          assertEq(96, data.icons[3].size);
-          assertEq(128, data.icons[4].size);
-          assertEq(256, data.icons[5].size);
-
-          chrome.management.getAll(callback(function(items) {
-            assertTrue(getItemNamed(items, title) != null);
-          }));
+          // There is no manifest for the test page so no icons are specified.
+          assertEq(0, data.icons.length);
         });
   },
 
@@ -63,17 +52,8 @@ var tests = [
         url, title, null, function(data) {
           assertEq(url, data.appLaunchUrl);
           assertEq(title, data.name);
-          assertEq(6, data.icons.length);
-          assertEq(32, data.icons[0].size);
-          assertEq(48, data.icons[1].size);
-          assertEq(64, data.icons[2].size);
-          assertEq(96, data.icons[3].size);
-          assertEq(128, data.icons[4].size);
-          assertEq(256, data.icons[5].size);
-
-          chrome.management.getAll(callback(function(items) {
-            assertTrue(getItemNamed(items, title) != null);
-          }));
+          // There is no manifest for the test page so no icons are specified.
+          assertEq(0, data.icons.length);
         });
   }
 ];

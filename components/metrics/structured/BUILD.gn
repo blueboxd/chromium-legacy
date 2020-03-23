@@ -37,6 +37,7 @@ action("gen_structured_events") {
   # Re-generate the outputs if the codegen code changes:
   inputs = [
     "//tools/metrics/structured/codegen.py",
+    "//tools/metrics/structured/compile_time_validation.py",
     "//tools/metrics/structured/events_template.py",
     "//tools/metrics/structured/gen_events.py",
   ]

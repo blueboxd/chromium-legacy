@@ -13,12 +13,14 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -56,6 +58,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
     private static final int STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
 
+    private final ObservableSupplierImpl<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
     private @Nullable ImmersiveModeManager mImmersiveModeManager;
     private TabbedSystemUiCoordinator mSystemUiCoordinator;
     private @Nullable EmptyBackgroundViewWrapper mEmptyBackgroundViewWrapper;
@@ -79,9 +82,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     public TabbedRootUiCoordinator(ChromeActivity activity,
             Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
-            ActivityTabProvider tabProvider) {
+            ActivityTabProvider tabProvider,
+            ObservableSupplierImpl<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider);
         mIntentWithEffect = intentWithEffect;
+        mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
     }
 
     @Override
@@ -118,6 +123,13 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         }
     }
 
+    @Override
+    protected void onFindToolbarShown() {
+        super.onFindToolbarShown();
+        EphemeralTabCoordinator coordinator = mEphemeralTabCoordinatorSupplier.get();
+        if (coordinator != null && coordinator.isOpened()) coordinator.close();
+    }
+
     /**
      * @return The toolbar button IPH controller for the tabbed UI this coordinator controls.
      * TODO(pnoland, https://crbug.com/865801): remove this in favor of wiring it directly.
@@ -137,6 +149,13 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
                     appMenuHandler, mActivity.getSnackbarManager(),
                     mActivity.getOverviewModeBehaviorSupplier());
             mEmptyBackgroundViewWrapper.initialize();
+        }
+
+        if (EphemeralTabCoordinator.isSupported()) {
+            mEphemeralTabCoordinatorSupplier.set(new EphemeralTabCoordinator(mActivity,
+                    mActivity.getWindowAndroid(), mActivity.getWindow().getDecorView(),
+                    mActivity.getActivityTabProvider(), mActivity::getCurrentTabCreator,
+                    mActivity.getBottomSheetController(), () -> !mActivity.isCustomTab()));
         }
 
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::initializeIPH);

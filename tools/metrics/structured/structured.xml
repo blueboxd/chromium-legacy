@@ -1,6 +1,8 @@
 <!-- Structured metrics is under development and isn't available for use yet. -->
 
-<structured-metrics-configuration>
+<structured-metrics>
+
+<events>
 
 <event name="LauncherUsage">
   <owner>tby@chromium.org</owner>
@@ -69,7 +71,19 @@
   </metric>
 </event>
 
-<event name="TestEventTwo">
+<event name="TestEventThree" project="TestProject">
+  <owner>tby@chromium.org</owner>
+  <summary>
+    Event for unit testing, do not use.
+  </summary>
+  <metric name="TestMetricFour" kind="hashed-string">
+    <summary>
+      A per-user keyed hashed value.
+    </summary>
+  </metric>
+</event>
+
+<event name="TestEventTwo" project="TestProject">
   <owner>tby@chromium.org</owner>
   <summary>
     Event for unit testing, do not use.
@@ -81,4 +95,17 @@
   </metric>
 </event>
 
-</structured-metrics-configuration>
+</events>
+
+<projects>
+
+<project name="TestProject">
+  <owner>tby@chromium.org</owner>
+  <summary>
+    Project for unit testing, do not use.
+  </summary>
+</project>
+
+</projects>
+
+</structured-metrics>

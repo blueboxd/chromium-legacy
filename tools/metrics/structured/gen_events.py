@@ -14,6 +14,7 @@ import sys
 
 import model
 import events_template
+import compile_time_validation
 
 parser = argparse.ArgumentParser(
   description='Generate structured metrics events')
@@ -25,6 +26,7 @@ def main(argv):
 
   data = model.XML_TYPE.Parse(open(args.input).read())
   relpath = 'components/metrics/structured'
+  compile_time_validation.validate(data)
   events_template.WriteFiles(args.output, relpath, data)
 
   return 0

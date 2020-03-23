@@ -2756,13 +2756,13 @@ def make_wrapper_type_info(cg_context, function_name, member_var_name,
     func_def = CxxFuncDefNode(
         name=function_name,
         arg_decls=[],
-        return_type="constexpr WrapperTypeInfo*",
+        return_type="constexpr const WrapperTypeInfo*",
         static=True)
     func_def.set_base_template_vars(cg_context.template_bindings())
     func_def.body.append(TextNode("return &{};".format(member_var_name)))
 
     member_var_def = TextNode(
-        "static WrapperTypeInfo {};".format(member_var_name))
+        "static const WrapperTypeInfo {};".format(member_var_name))
 
     pattern = """\
 // Migration adapter
@@ -2775,7 +2775,7 @@ v8::Local<v8::FunctionTemplate> ${class_name}::DomTemplate(
       ${class_name}::InstallInterfaceTemplate);
 }}
 
-WrapperTypeInfo ${class_name}::wrapper_type_info_{{
+const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     gin::kEmbedderBlink,
     ${class_name}::DomTemplate,
     {install_context_dependent_func},

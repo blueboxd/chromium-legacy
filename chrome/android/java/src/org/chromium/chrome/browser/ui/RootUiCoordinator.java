@@ -495,14 +495,7 @@ public class RootUiCoordinator
         mFindToolbarObserver = new FindToolbarObserver() {
             @Override
             public void onFindToolbarShown() {
-                if (mActivity.getContextualSearchManager() != null) {
-                    mActivity.getContextualSearchManager().hideContextualSearch(
-                            OverlayPanel.StateChangeReason.UNKNOWN);
-                }
-                if (mActivity.getEphemeralTabCoordinator() != null
-                        && mActivity.getEphemeralTabCoordinator().isOpened()) {
-                    mActivity.getEphemeralTabCoordinator().close();
-                }
+                RootUiCoordinator.this.onFindToolbarShown();
             }
 
             @Override
@@ -512,6 +505,17 @@ public class RootUiCoordinator
         mFindToolbarManager.addObserver(mFindToolbarObserver);
 
         mActivity.getToolbarManager().setFindToolbarManager(mFindToolbarManager);
+    }
+
+    /**
+     * Called when the find in page toolbar is shown. Sub-classes may override to manage
+     * cross-feature interaction, e.g. hide other features when this feature is shown.
+     */
+    protected void onFindToolbarShown() {
+        if (mActivity.getContextualSearchManager() != null) {
+            mActivity.getContextualSearchManager().hideContextualSearch(
+                    OverlayPanel.StateChangeReason.UNKNOWN);
+        }
     }
 
     /**

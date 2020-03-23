@@ -117,6 +117,13 @@ Polymer({
       type: Boolean,
       notify: false,
     },
+
+    /** @type {!Map<string, (string|Function)>} */
+    focusConfig: {
+      type: Object,
+      observer: 'focusConfigChanged_',
+    },
+
   },
 
   observers: [
@@ -146,6 +153,25 @@ Polymer({
         this.updateCookiesControls_();
       }
     });
+  },
+
+  /*
+   * @param {!Map<string, string>} newConfig
+   * @param {?Map<string, string>} oldConfig
+   * @private
+   */
+  focusConfigChanged_(newConfig, oldConfig) {
+    assert(!oldConfig);
+    assert(settings.routes.SITE_SETTINGS_SITE_DATA);
+    this.focusConfig.set(settings.routes.SITE_SETTINGS_SITE_DATA.path, () => {
+      cr.ui.focusWithoutInk(assert(this.$$('#site-data-trigger')));
+    });
+  },
+
+  /** @private */
+  onSiteDataClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.SITE_SETTINGS_SITE_DATA);
   },
 
   /**

@@ -13,6 +13,7 @@
 namespace chrome_pdf {
 namespace features {
 
+extern const base::Feature kAccessiblePDFForm;
 extern const base::Feature kAccessiblePDFHighlight;
 extern const base::Feature kPDFAnnotations;
 extern const base::Feature kPDFTwoUpView;

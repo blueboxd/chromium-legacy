@@ -68,11 +68,12 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
   // |TabSpecificContentSettings| and need to create one; otherwise, noop.
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
-      this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       std::make_unique<ChromePageInfoDelegate>(web_contents),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
       nav_entry->GetURL(), helper->GetSecurityLevel(),
       *helper->GetVisibleSecurityState());
+  presenter_->InitializeUiState(this);
 }
 
 PageInfoControllerAndroid::~PageInfoControllerAndroid() {}

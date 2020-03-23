@@ -83,6 +83,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetModelValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetTextProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetUserActionsProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SetViewVisibilityProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShapeDrawableProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowCalendarPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowGenericUiProto;
@@ -1391,5 +1392,94 @@ public class AutofillAssistantGenericUiTest {
         onView(withText("Info popup title")).check(doesNotExist());
         onView(withText("Click me three+ times")).perform(click());
         onView(withText("Info popup title")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Shows two textviews. Clicking the first one will show/hide the other one.
+     */
+    @Test
+    @MediumTest
+    public void testViewVisibility() {
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "toggle_view")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setResultModelIdentifier("visible")
+                                        .setBooleanNot(
+                                                BooleanNotProto.newBuilder().setModelIdentifier(
+                                                        "visible"))))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "visible")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetViewVisibility(
+                                SetViewVisibilityProto.newBuilder()
+                                        .setViewIdentifier("text_view")
+                                        .setModelIdentifier("visible")))
+                        .build());
+
+        // Set visibility initially to false for text_view.
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("visible")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(ViewProto.newBuilder().setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addViews(
+                                                ViewProto.newBuilder()
+                                                        .setIdentifier("toggle_view")
+                                                        .setTextView(
+                                                                TextViewProto.newBuilder().setText(
+                                                                        "toggle view")))
+                                        .addViews(
+                                                ViewProto.newBuilder()
+                                                        .setIdentifier("text_view")
+                                                        .setTextView(
+                                                                TextViewProto.newBuilder().setText(
+                                                                        "text view")))))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterface))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("toggle view"), isCompletelyDisplayed());
+        onView(withText("text view")).check(matches(not(isDisplayed())));
+
+        onView(withText("toggle view")).perform(click());
+        onView(withText("text view")).check(matches(isDisplayed()));
+
+        onView(withText("toggle view")).perform(click());
+        onView(withText("text view")).check(matches(not(isDisplayed())));
     }
 }

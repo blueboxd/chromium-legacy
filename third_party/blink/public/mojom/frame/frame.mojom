@@ -361,7 +361,7 @@ interface LocalFrame {
   // Add devtools issue to the frames issue storage.
   // Issues offer a more structured way to surface problems in DevTools than
   // doing so via console messages.
-  AddInspectorIssue(InspectorIssueCode code);
+  AddInspectorIssue(InspectorIssueInfo info);
 
   // Sent to a frame when one of its remote children finishes loading, so that
   // the frame can update its loading state.

@@ -15,19 +15,38 @@
 
 namespace blink {
 
-InspectorIssue::InspectorIssue(mojom::blink::InspectorIssueCode code)
-    : code_(code) {}
+InspectorIssue::InspectorIssue(mojom::blink::InspectorIssueCode code,
+                               mojom::blink::InspectorIssueDetailsPtr details,
+                               mojom::blink::AffectedResourcesPtr resources)
+    : code_(code),
+      details_(std::move(details)),
+      resources_(std::move(resources)) {
+  DCHECK(details_);
+  DCHECK(resources_);
+}
 
 InspectorIssue::~InspectorIssue() = default;
 
-InspectorIssue* InspectorIssue::Create(mojom::blink::InspectorIssueCode code) {
-  return MakeGarbageCollected<InspectorIssue>(code);
+InspectorIssue* InspectorIssue::Create(
+    mojom::blink::InspectorIssueInfoPtr info) {
+  DCHECK(info->details);
+  DCHECK(info->resources);
+  return MakeGarbageCollected<InspectorIssue>(
+      info->code, std::move(info->details), std::move(info->resources));
 }
 
-const mojom::blink::InspectorIssueCode& InspectorIssue::Code() const {
+mojom::blink::InspectorIssueCode InspectorIssue::Code() const {
   return code_;
 }
 
-void InspectorIssue::Trace(Visitor* visitor) {}
+const mojom::blink::InspectorIssueDetailsPtr& InspectorIssue::Details() const {
+  return details_;
+}
+
+const mojom::blink::AffectedResourcesPtr& InspectorIssue::Resources() const {
+  return resources_;
+}
+
+void InspectorIssue::Trace(blink::Visitor* visitor) {}
 
 }  // namespace blink

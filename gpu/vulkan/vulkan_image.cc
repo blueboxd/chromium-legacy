@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -22,13 +23,14 @@ namespace gpu {
 
 namespace {
 
-uint32_t FindMemoryTypeIndex(VkPhysicalDevice physical_device,
-                             const VkMemoryRequirements& requirements,
-                             VkMemoryPropertyFlags flags) {
+base::Optional<uint32_t> FindMemoryTypeIndex(
+    VkPhysicalDevice physical_device,
+    const VkMemoryRequirements& requirements,
+    VkMemoryPropertyFlags flags) {
   VkPhysicalDeviceMemoryProperties properties;
   vkGetPhysicalDeviceMemoryProperties(physical_device, &properties);
-  constexpr uint32_t kInvalidTypeIndex = 32;
-  for (uint32_t i = 0; i < kInvalidTypeIndex; i++) {
+  constexpr uint32_t kMaxIndex = 31;
+  for (uint32_t i = 0; i <= kMaxIndex; i++) {
     if (((1u << i) & requirements.memoryTypeBits) == 0)
       continue;
     if ((properties.memoryTypes[i].propertyFlags & flags) != flags)
@@ -36,7 +38,7 @@ uint32_t FindMemoryTypeIndex(VkPhysicalDevice physical_device,
     return i;
   }
   NOTREACHED();
-  return kInvalidTypeIndex;
+  return base::nullopt;
 }
 
 }  // namespace
@@ -229,9 +231,16 @@ bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
       .image = image_,
   };
 
-  memory_type_index_ =
+  auto index =
       FindMemoryTypeIndex(device_queue->GetVulkanPhysicalDevice(), requirements,
                           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  if (!index) {
+    DLOG(ERROR) << "Cannot find validate memory type index.";
+    Destroy();
+    return false;
+  }
+
+  memory_type_index_ = index.value();
   VkMemoryAllocateInfo memory_allocate_info = {
       .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
       .pNext = &dedicated_memory_info,

@@ -33,7 +33,8 @@ public class AssistantViewFactory {
     @CalledByNative
     public static void setViewAttributes(View view, Context context, int paddingStart,
             int paddingTop, int paddingEnd, int paddingBottom,
-            @Nullable AssistantDrawable background, @Nullable String contentDescription) {
+            @Nullable AssistantDrawable background, @Nullable String contentDescription,
+            boolean visible) {
         view.setPaddingRelative(AssistantDimension.getPixelSizeDp(context, paddingStart),
                 AssistantDimension.getPixelSizeDp(context, paddingTop),
                 AssistantDimension.getPixelSizeDp(context, paddingEnd),
@@ -46,6 +47,7 @@ public class AssistantViewFactory {
             });
         }
         setAccessibility(view, contentDescription);
+        view.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     /**

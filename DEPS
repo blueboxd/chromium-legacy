@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd67bef80cceda62d4d872f7a738d18b6ad1b9a11',
+  'v8_revision': 'bc540552a7770bbb2b1f8042683d520c7439fb23',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cb7e7387e61f591f2eaf2e899af64a0cb2446dbf',
+  'angle_revision': '4c7460aceb931f4c7c13ef44ae1f7a005b7350e7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a80b423b2136153f0ae5da32eb2bf4cf59798669',
+  'devtools_frontend_revision': 'c41827fa748db850c83cc66dff16ea31f6f2372f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1448,7 +1448,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '84ee597cdeae08bb26e578fc66a35bcf35f633f4',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'be36db1024cef28a540a8d923bc9bc59ccff456d',
+    Var('webrtc_git') + '/src.git' + '@' + 'c32c5dd61e17f581d2e10c73f4d9860f7a4fa882',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b41fb280f77b4197ef26f67e54202d710d5799e1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8cb91971a35befd7a450eb117b0808deb8ef0519',
     'condition': 'checkout_src_internal',
   },
 

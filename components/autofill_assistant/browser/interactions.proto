@@ -37,6 +37,7 @@ message CallbackProto {
     ShowCalendarPopupProto show_calendar_popup = 7;
     SetTextProto set_text = 8;
     ToggleUserActionProto toggle_user_action = 9;
+    SetViewVisibilityProto set_view_visibility = 11;
   }
   // Optional model identifier pointing to a single boolean. If set, the
   // callback will only be invoked if the condition is true.
@@ -243,4 +244,14 @@ message SetTextProto {
   optional string model_identifier = 1;
   // The text view to modify. Must point to a text view.
   optional string view_identifier = 2;
+}
+
+// Modifies a view's visibiliy.
+message SetViewVisibilityProto {
+  // The view to modify.
+  optional string view_identifier = 1;
+
+  // The model identifier containing the visibility flag. Must point to a single
+  // bool.
+  optional string model_identifier = 2;
 }

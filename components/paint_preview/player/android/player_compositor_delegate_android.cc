@@ -52,12 +52,13 @@ jlong JNI_PlayerCompositorDelegateImpl_Initialize(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_object,
     jlong paint_preview_service,
+    const JavaParamRef<jstring>& j_url_spec,
     const JavaParamRef<jstring>& j_directory_key) {
   PlayerCompositorDelegateAndroid* delegate =
       new PlayerCompositorDelegateAndroid(
           env, j_object,
           reinterpret_cast<PaintPreviewBaseService*>(paint_preview_service),
-          j_directory_key);
+          j_url_spec, j_directory_key);
   return reinterpret_cast<intptr_t>(delegate);
 }
 
@@ -65,9 +66,11 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_object,
     PaintPreviewBaseService* paint_preview_service,
+    const JavaParamRef<jstring>& j_url_spec,
     const JavaParamRef<jstring>& j_directory_key)
     : PlayerCompositorDelegate(
           paint_preview_service,
+          GURL(base::android::ConvertJavaStringToUTF8(env, j_url_spec)),
           DirectoryKey{
               base::android::ConvertJavaStringToUTF8(env, j_directory_key)}) {
   java_ref_.Reset(env, j_object);
@@ -76,11 +79,6 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
 void PlayerCompositorDelegateAndroid::OnCompositorReady(
     mojom::PaintPreviewCompositor::Status status,
     mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {
-  if (status != mojom::PaintPreviewCompositor::Status::kSuccess) {
-    // TODO(crbug.com/1021590): Handle initialization errors.
-    return;
-  }
-
   JNIEnv* env = base::android::AttachCurrentThread();
 
   std::vector<base::UnguessableToken> all_guids;
@@ -88,10 +86,19 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
   std::vector<int> subframe_count;
   std::vector<base::UnguessableToken> subframe_ids;
   std::vector<int> subframe_rects;
+  base::UnguessableToken root_frame_guid;
 
-  CompositeResponseFramesToVectors(composite_response->frames, &all_guids,
-                                   &scroll_extents, &subframe_count,
-                                   &subframe_ids, &subframe_rects);
+  if (composite_response) {
+    CompositeResponseFramesToVectors(composite_response->frames, &all_guids,
+                                     &scroll_extents, &subframe_count,
+                                     &subframe_ids, &subframe_rects);
+    root_frame_guid = composite_response->root_frame_guid;
+  } else {
+    // If there is no composite response due to a failure we don't have a root
+    // frame GUID to pass. However, the token cannot be null so create a
+    // placeholder.
+    root_frame_guid = base::UnguessableToken::Create();
+  }
 
   ScopedJavaLocalRef<jobjectArray> j_all_guids =
       ToJavaUnguessableTokenArray(env, all_guids);
@@ -103,13 +110,15 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
       ToJavaUnguessableTokenArray(env, subframe_ids);
   ScopedJavaLocalRef<jintArray> j_subframe_rects =
       base::android::ToJavaIntArray(env, subframe_rects);
+  ScopedJavaLocalRef<jobject> j_root_frame_guid =
+      base::android::UnguessableTokenAndroid::Create(env, root_frame_guid);
 
   Java_PlayerCompositorDelegateImpl_onCompositorReady(
       env, java_ref_,
-      base::android::UnguessableTokenAndroid::Create(
-          env, composite_response->root_frame_guid),
-      j_all_guids, j_scroll_extents, j_subframe_count, j_subframe_ids,
-      j_subframe_rects);
+      static_cast<jboolean>(status ==
+                            mojom::PaintPreviewCompositor::Status::kSuccess),
+      j_root_frame_guid, j_all_guids, j_scroll_extents, j_subframe_count,
+      j_subframe_ids, j_subframe_rects);
 }
 
 // static

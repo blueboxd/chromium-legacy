@@ -947,14 +947,15 @@ cr.define('settings_passwords_check', function() {
       validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
     });
 
-    // Verify edit a password on the edit dialog.
-    test('testEditDialog', function() {
+    // Verify that the edit dialog is not shown if a plaintext password could
+    // not be obtained.
+    test('testEditDialogWithoutPlaintextPassword', function() {
       passwordManager.data.leakedCredentials = [
         autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
       ];
-      const checkPasswordSection = createCheckPasswordSection();
 
+      const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getCompromisedCredentials')
           .then(() => {
             Polymer.dom.flush();
@@ -964,15 +965,54 @@ cr.define('settings_passwords_check', function() {
             // Open the more actions menu and click 'Edit Password'.
             node.$.more.click();
             checkPasswordSection.$.menuEditPassword.click();
-
+            // Since we did not specify a plaintext password above, this request
+            // should fail.
             return passwordManager.whenCalled(
                 'getPlainttextCompromisedPassword');
           })
           .then(() => {
+            // Verify that the edit dialog has not become visible.
+            Polymer.dom.flush();
+            expectFalse(isElementVisible(checkPasswordSection.$$(
+                'settings-password-check-edit-dialog')));
+
+            // Verify that the more actions menu is closed.
+            expectFalse(checkPasswordSection.$.moreActionsMenu.open);
+          });
+    });
+
+    // Verify edit a password on the edit dialog.
+    test('testEditDialogWithPlaintextPassword', function() {
+      passwordManager.data.leakedCredentials = [
+        autofill_test_util.makeCompromisedCredential(
+            'google.com', 'jdoerrie', 'LEAKED'),
+      ];
+
+      passwordManager.setPlaintextPassword('password');
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getCompromisedCredentials')
+          .then(() => {
+            Polymer.dom.flush();
+            const listElements = checkPasswordSection.$.leakedPasswordList;
+            const node = listElements.children[1];
+
+            // Open the more actions menu and click 'Edit Password'.
+            node.$.more.click();
+            checkPasswordSection.$.menuEditPassword.click();
+            return passwordManager.whenCalled(
+                'getPlainttextCompromisedPassword');
+          })
+          .then(({credential, reason}) => {
+            expectEquals(passwordManager.data.leakedCredentials[0], credential);
+            expectEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
+
             // Verify that the edit dialog has become visible.
             Polymer.dom.flush();
-            assertTrue(!!checkPasswordSection.$$(
-                'settings-password-check-edit-dialog'));
+            expectTrue(isElementVisible(checkPasswordSection.$$(
+                'settings-password-check-edit-dialog')));
+
+            // Verify that the more actions menu is closed.
+            expectFalse(checkPasswordSection.$.moreActionsMenu.open);
           });
     });
 

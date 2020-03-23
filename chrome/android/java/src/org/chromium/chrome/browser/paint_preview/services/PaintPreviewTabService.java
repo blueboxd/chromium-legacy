@@ -83,13 +83,13 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
     /**
      * Returns whether there exists a capture for the tab ID.
      * @param tabId the id for the tab requested.
-     * @param successCallback returns true if there is a capture for the tab.
+     * @return Will be true if there is a capture for the tab.
      */
-    public void hasCaptureForTab(int tabId, Callback<Boolean> successCallback) {
-        if (mNativePaintPreviewTabService == 0) return;
+    public boolean hasCaptureForTab(int tabId) {
+        if (mNativePaintPreviewTabService == 0) return false;
 
-        PaintPreviewTabServiceJni.get().hasCaptureForTab(
-                mNativePaintPreviewTabService, tabId, successCallback);
+        return PaintPreviewTabServiceJni.get().hasCaptureForTabAndroid(
+                mNativePaintPreviewTabService, tabId);
     }
 
     /**
@@ -118,29 +118,30 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
             return;
         }
 
-        PaintPreviewTabServiceJni.get().captureTab(
+        PaintPreviewTabServiceJni.get().captureTabAndroid(
                 mNativePaintPreviewTabService, tab.getId(), tab.getWebContents(), successCallback);
     }
 
     private void tabClosed(Tab tab) {
         if (mNativePaintPreviewTabService == 0) return;
 
-        PaintPreviewTabServiceJni.get().tabClosed(mNativePaintPreviewTabService, tab.getId());
+        PaintPreviewTabServiceJni.get().tabClosedAndroid(
+                mNativePaintPreviewTabService, tab.getId());
     }
 
     private void auditArtifacts(int[] activeTabIds) {
         if (mNativePaintPreviewTabService == 0) return;
 
-        PaintPreviewTabServiceJni.get().auditArtifacts(mNativePaintPreviewTabService, activeTabIds);
+        PaintPreviewTabServiceJni.get().auditArtifactsAndroid(
+                mNativePaintPreviewTabService, activeTabIds);
     }
 
     @NativeMethods
     interface Natives {
-        void captureTab(long nativePaintPreviewTabService, int tabId, WebContents webContents,
-                Callback<Boolean> successCallback);
-        void tabClosed(long nativePaintPreviewTabService, int tabId);
-        void hasCaptureForTab(
-                long nativePaintPreviewTabService, int tabId, Callback<Boolean> successCallback);
-        void auditArtifacts(long nativePaintPreviewTabService, int[] activeTabIds);
+        void captureTabAndroid(long nativePaintPreviewTabService, int tabId,
+                WebContents webContents, Callback<Boolean> successCallback);
+        void tabClosedAndroid(long nativePaintPreviewTabService, int tabId);
+        boolean hasCaptureForTabAndroid(long nativePaintPreviewTabService, int tabId);
+        void auditArtifactsAndroid(long nativePaintPreviewTabService, int[] activeTabIds);
     }
 }

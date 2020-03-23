@@ -144,10 +144,8 @@ class PageInfo : public content::WebContentsObserver {
   };
 
   // Creates a PageInfo for the passed |url| using the given |ssl| status
-  // object to determine the status of the site's connection. The
-  // |PageInfo| takes ownership of the |ui|.
-  PageInfo(PageInfoUI* ui,
-           Profile* profile,
+  // object to determine the status of the site's connection.
+  PageInfo(Profile* profile,
            std::unique_ptr<PageInfoDelegate> delegate,
            TabSpecificContentSettings* tab_specific_content_settings,
            content::WebContents* web_contents,
@@ -155,6 +153,15 @@ class PageInfo : public content::WebContentsObserver {
            security_state::SecurityLevel security_level,
            const security_state::VisibleSecurityState& visible_security_state);
   ~PageInfo() override;
+
+  // Initializes UI state that is dependent on having access to the PageInfoUI
+  // object associated with this object. This explicit post-construction
+  // initialization step is necessary as PageInfoUI subclasses create this
+  // object and also may invoke it as part of the initialization flow that
+  // occurs in this method. If this initialization flow was done as part of
+  // PageInfo's constructor, those subclasses would not have their PageInfo
+  // member set and crashes would ensue.
+  void InitializeUiState(PageInfoUI* ui);
 
   // This method is called to update the presenter's security state and forwards
   // that change on to the UI to be redrawn.

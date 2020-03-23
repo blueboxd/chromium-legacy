@@ -348,7 +348,6 @@ const char kPageInfoTimeNoActionPrefix[] =
 }  // namespace
 
 PageInfo::PageInfo(
-    PageInfoUI* ui,
     Profile* profile,
     std::unique_ptr<PageInfoDelegate> delegate,
     TabSpecificContentSettings* tab_specific_content_settings,
@@ -357,7 +356,6 @@ PageInfo::PageInfo(
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state)
     : content::WebContentsObserver(web_contents),
-      ui_(ui),
       delegate_(std::move(delegate)),
       show_info_bar_(false),
       site_url_(url),
@@ -372,25 +370,11 @@ PageInfo::PageInfo(
       tab_specific_content_settings_(tab_specific_content_settings),
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
-      security_level_(security_state::NONE),
+      security_level_(security_level),
       visible_security_state_for_metrics_(visible_security_state),
       show_change_password_buttons_(false),
       did_perform_action_(false) {
   DCHECK(delegate_);
-  ComputeUIInputs(url, security_level, visible_security_state);
-
-  PresentSitePermissions();
-  PresentSiteIdentity();
-  PresentSiteData();
-  PresentPageFeatureInfo();
-
-  // Every time the Page Info UI is opened a |PageInfo| object is
-  // created. So this counts how ofter the Page Info UI is opened.
-  RecordPageInfoAction(PAGE_INFO_OPENED);
-
-  // Record the time when the Page Info UI is opened so the total time it is
-  // open can be measured.
-  start_time_ = base::TimeTicks::Now();
 }
 
 PageInfo::~PageInfo() {
@@ -462,6 +446,26 @@ PageInfo::~PageInfo() {
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
   }
+}
+
+void PageInfo::InitializeUiState(PageInfoUI* ui) {
+  ui_ = ui;
+  DCHECK(ui_);
+
+  ComputeUIInputs(site_url_, security_level_,
+                  visible_security_state_for_metrics_);
+  PresentSitePermissions();
+  PresentSiteIdentity();
+  PresentSiteData();
+  PresentPageFeatureInfo();
+
+  // Every time the Page Info UI is opened, this method is called.
+  // So this counts how often the Page Info UI is opened.
+  RecordPageInfoAction(PAGE_INFO_OPENED);
+
+  // Record the time when the Page Info UI is opened so the total time it is
+  // open can be measured.
+  start_time_ = base::TimeTicks::Now();
 }
 
 void PageInfo::UpdateSecurityState(

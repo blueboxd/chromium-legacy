@@ -92,6 +92,8 @@ message ViewAttributesProto {
   // - set to non-empty string: the view will have the specified content
   // description.
   optional string content_description = 6;
+  // Whether the view is initially visible or not.
+  optional bool visible = 7 [default = true];
 }
 
 // Parameters configuring how views attach to their parents.

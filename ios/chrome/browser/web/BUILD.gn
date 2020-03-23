@@ -55,6 +55,7 @@ source_set("web") {
     "//ios/net",
     "//ios/web",
     "//ios/web/common",
+    "//ios/web/public/js_messaging",
     "//services/metrics/public/cpp:ukm_builders",
     "//ui/base",
     "//url",

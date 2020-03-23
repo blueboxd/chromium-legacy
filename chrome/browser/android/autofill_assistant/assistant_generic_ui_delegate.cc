@@ -39,43 +39,15 @@ void AssistantGenericUiDelegate::OnViewClicked(
   ui_controller_->OnViewEvent({EventProto::kOnViewClicked, view_identifier});
 }
 
-void AssistantGenericUiDelegate::OnListPopupSelectionChanged(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jindices_model_identifier,
-    const base::android::JavaParamRef<jobject>& jindicies_value,
-    const base::android::JavaParamRef<jstring>& jnames_model_identifier,
-    const base::android::JavaParamRef<jobject>& jnames_value) {
-  ui_controller_->OnValueChanged(
-      ui_controller_android_utils::SafeConvertJavaStringToNative(
-          env, jindices_model_identifier),
-      ui_controller_android_utils::ToNativeValue(env, jindicies_value));
-  if (jnames_model_identifier) {
-    ui_controller_->OnValueChanged(
-        ui_controller_android_utils::SafeConvertJavaStringToNative(
-            env, jnames_model_identifier),
-        ui_controller_android_utils::ToNativeValue(env, jnames_value));
-  }
-}
-
-// TODO(b/145043394): refactor delegate methods into a single SetValue() where
-// possible.
-void AssistantGenericUiDelegate::OnCalendarPopupDateChanged(
+void AssistantGenericUiDelegate::OnValueChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jmodel_identifier,
     const base::android::JavaParamRef<jobject>& jvalue) {
-  std::string identifier;
-  if (jmodel_identifier) {
-    base::android::ConvertJavaStringToUTF8(env, jmodel_identifier, &identifier);
-  }
-
-  ValueProto value;
-  if (jvalue) {
-    value = ui_controller_android_utils::ToNativeValue(env, jvalue);
-  }
-
-  ui_controller_->OnValueChanged(identifier, value);
+  ui_controller_->OnValueChanged(
+      ui_controller_android_utils::SafeConvertJavaStringToNative(
+          env, jmodel_identifier),
+      ui_controller_android_utils::ToNativeValue(env, jvalue));
 }
 
 base::android::ScopedJavaGlobalRef<jobject>

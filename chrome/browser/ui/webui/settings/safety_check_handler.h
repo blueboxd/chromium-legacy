@@ -152,6 +152,15 @@ class SafetyCheckHandler
                                         ReenabledUser reenabled_user,
                                         ReenabledAdmin reenabled_admin);
 
+  // Since the password check API does not distinguish between the cases of
+  // having no compromised passwords and not having any passwords at all, it is
+  // necessary to use this method as a callback for
+  // |PasswordsPrivateDelegate::GetSavedPasswordsList| to distinguish the two
+  // states here.
+  void DetermineIfNoPasswordsOrSafe(
+      const std::vector<extensions::api::passwords_private::PasswordUiEntry>&
+          passwords);
+
   // BulkLeakCheckService::Observer implementation.
   void OnStateChanged(
       password_manager::BulkLeakCheckService::State state) override;

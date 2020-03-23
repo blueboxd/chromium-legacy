@@ -104,7 +104,8 @@ void DesktopMediaListController::OnSourceAdded(DesktopMediaList* list,
           switches::kAutoSelectDesktopCaptureSource);
   const DesktopMediaList::Source& source = GetSource(index);
   if (autoselect_source.empty() ||
-      base::ASCIIToUTF16(autoselect_source) != source.name) {
+      source.name.find(base::ASCIIToUTF16(autoselect_source)) ==
+          base::string16::npos) {
     return;
   }
   base::PostTask(

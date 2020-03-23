@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -508,7 +509,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
                            const WTF::String& message,
                            bool discard_duplicates) final;
-  void AddInspectorIssue(mojom::blink::InspectorIssueCode code) final;
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
   void Collapse(bool collapsed) final;
   void EnableViewSourceMode() final;
   void Focus() final;

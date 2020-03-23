@@ -8,6 +8,7 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +20,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.url.GURL;
 
 /**
  * Instrumentation tests for the Paint Preview player.
@@ -29,6 +31,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
     private static final String TEST_DATA_DIR = "components/test/data/";
     private static final String TEST_DIRECTORY_KEY = "wikipedia";
+    private static final String TEST_URL = "https://en.m.wikipedia.org/wiki/Main_Page";
 
     @Rule
     public PaintPreviewTestRule mPaintPreviewTestRule = new PaintPreviewTestRule();
@@ -44,7 +47,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
                     new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
-            mPlayerManager = new PlayerManager(getActivity(), service, TEST_DIRECTORY_KEY);
+            mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
+                    TEST_DIRECTORY_KEY, success -> { Assert.assertTrue(success); });
             getActivity().setContentView(mPlayerManager.getView());
         });
 

@@ -221,10 +221,10 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   PageInfo* page_info() {
     if (!page_info_.get()) {
       page_info_ = std::make_unique<PageInfo>(
-          mock_ui(), profile(),
-          std::make_unique<ChromePageInfoDelegate>(web_contents()),
+          profile(), std::make_unique<ChromePageInfoDelegate>(web_contents()),
           tab_specific_content_settings(), web_contents(), url(),
           security_level(), visible_security_state());
+      page_info_->InitializeUiState(mock_ui());
     }
     return page_info_.get();
   }

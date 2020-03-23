@@ -158,8 +158,9 @@ FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
     return MakeGarbageCollected<FEImage>(
         filter, image, preserve_aspect_ratio_->CurrentValue());
   }
-
-  return MakeGarbageCollected<FEImage>(filter, GetTreeScope(), HrefString(),
+  const SVGElement* target = DynamicTo<SVGElement>(
+      TargetElementFromIRIString(HrefString(), GetTreeScope()));
+  return MakeGarbageCollected<FEImage>(filter, target,
                                        preserve_aspect_ratio_->CurrentValue());
 }
 

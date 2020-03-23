@@ -9,6 +9,7 @@
 #include "base/containers/adapters.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -17,6 +18,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
+#include "ios/web/public/js_messaging/web_frames_manager.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -130,10 +134,11 @@ void FontSizeTabHelper::SetPageFontSize(int size) {
     return;
   }
   tab_helper_has_zoomed_ = true;
-  if (web_state_->ContentIsHTML()) {
-    NSString* js = [NSString
-        stringWithFormat:@"__gCrWeb.accessibility.adjustFontSize(%d)", size];
-    web_state_->ExecuteJavaScript(base::SysNSStringToUTF16(js));
+  std::vector<base::Value> parameters;
+  parameters.push_back(base::Value(size));
+  for (web::WebFrame* frame :
+       web_state_->GetWebFramesManager()->GetAllWebFrames()) {
+    frame->CallJavaScriptFunction("accessibility.adjustFontSize", parameters);
   }
 }
 

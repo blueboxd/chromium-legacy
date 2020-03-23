@@ -66,6 +66,7 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   void SetOptedInForAccountStorage(bool opted_in);
   void AddCompromisedCredential(int id);
 
+  void ClearSavedPasswordsList() { current_entries_.clear(); }
   void ResetPlaintextPassword() { plaintext_password_.reset(); }
   bool ImportPasswordsTriggered() const { return import_passwords_triggered_; }
   bool ExportPasswordsTriggered() const { return export_passwords_triggered_; }

@@ -43,15 +43,22 @@ public class PaintPreviewDemoManager implements Destroyable {
 
     private void onCapturedPaintPreview(boolean success) {
         if (success) {
-            mPlayerManager = new PlayerManager(mTab.getContext(), mPaintPreviewDemoService,
-                    String.valueOf(mTab.getId()), PaintPreviewDemoManager.this::addPlayerView);
+            mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
+                    mPaintPreviewDemoService, String.valueOf(mTab.getId()),
+                    safeToShow -> { addPlayerView(safeToShow); });
         }
         int toastStringRes = success ? R.string.paint_preview_demo_capture_success
                                      : R.string.paint_preview_demo_capture_failure;
         Toast.makeText(mTab.getContext(), toastStringRes, Toast.LENGTH_LONG).show();
     }
 
-    private void addPlayerView() {
+    private void addPlayerView(boolean safeToShow) {
+        if (!safeToShow) {
+            Toast.makeText(mTab.getContext(), R.string.paint_preview_demo_playback_failure,
+                         Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
         mTab.getContentView().addView(mPlayerManager.getView());
         Toast.makeText(mTab.getContext(), R.string.paint_preview_demo_playback_start,
                      Toast.LENGTH_LONG)

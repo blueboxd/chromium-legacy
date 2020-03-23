@@ -23,13 +23,11 @@
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_fe_image.h"
 
-#include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
-#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
@@ -45,24 +43,21 @@ FEImage::FEImage(Filter* filter,
                  const SVGPreserveAspectRatio* preserve_aspect_ratio)
     : FilterEffect(filter),
       image_(std::move(image)),
-      tree_scope_(nullptr),
       preserve_aspect_ratio_(preserve_aspect_ratio) {
   FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
 FEImage::FEImage(Filter* filter,
-                 const TreeScope& tree_scope,
-                 const String& href,
+                 const SVGElement* element,
                  const SVGPreserveAspectRatio* preserve_aspect_ratio)
     : FilterEffect(filter),
-      tree_scope_(&tree_scope),
-      href_(href),
+      element_(element),
       preserve_aspect_ratio_(preserve_aspect_ratio) {
   FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
 void FEImage::Trace(Visitor* visitor) {
-  visitor->Trace(tree_scope_);
+  visitor->Trace(element_);
   visitor->Trace(preserve_aspect_ratio_);
   FilterEffect::Trace(visitor);
 }
@@ -103,11 +98,9 @@ FloatRect FEImage::MapInputs(const FloatRect&) const {
       GetFilter()->MapLocalRectToAbsoluteRect(FilterPrimitiveSubregion());
   if (const LayoutObject* layout_object = ReferencedLayoutObject()) {
     FloatRect src_rect = GetLayoutObjectRepaintRect(layout_object);
-    auto* context_node = To<SVGElement>(layout_object->GetNode());
-
-    if (context_node->HasRelativeLengths()) {
+    if (element_->HasRelativeLengths()) {
       auto viewport_transform =
-          ComputeViewportAdjustmentTransform(context_node, dest_rect);
+          ComputeViewportAdjustmentTransform(element_, dest_rect);
       if (viewport_transform)
         src_rect = viewport_transform->MapRect(src_rect);
     } else {
@@ -126,13 +119,9 @@ FloatRect FEImage::MapInputs(const FloatRect&) const {
 }
 
 const LayoutObject* FEImage::ReferencedLayoutObject() const {
-  if (!tree_scope_)
+  if (!element_)
     return nullptr;
-  const SVGElement* target = DynamicTo<SVGElement>(
-      SVGURIReference::TargetElementFromIRIString(href_, *tree_scope_));
-  if (!target)
-    return nullptr;
-  return target->GetLayoutObject();
+  return element_->GetLayoutObject();
 }
 
 WTF::TextStream& FEImage::ExternalRepresentation(WTF::TextStream& ts,
@@ -159,11 +148,9 @@ sk_sp<PaintFilter> FEImage::CreateImageFilterForLayoutObject(
       GetFilter()->MapLocalRectToAbsoluteRect(FilterPrimitiveSubregion());
 
   AffineTransform transform;
-  auto* context_node = To<SVGElement>(layout_object.GetNode());
-
-  if (context_node->HasRelativeLengths()) {
+  if (element_->HasRelativeLengths()) {
     auto viewport_transform =
-        ComputeViewportAdjustmentTransform(context_node, dst_rect);
+        ComputeViewportAdjustmentTransform(element_, dst_rect);
     if (viewport_transform)
       transform = *viewport_transform;
   } else {

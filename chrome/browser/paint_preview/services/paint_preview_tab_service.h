@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
@@ -53,6 +55,8 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
   using FinishedCallback = base::OnceCallback<void(Status)>;
   using BooleanCallback = base::OnceCallback<void(bool)>;
 
+  bool CacheInitialized() const { return cache_ready_; }
+
   // Captures a Paint Preview of |contents| which should be associated with
   // |tab_id| for storage. |callback| is invoked on completion to indicate
   // status.
@@ -65,7 +69,7 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
   void TabClosed(int tab_id);
 
   // Checks if there is a capture taken for |tab_id|.
-  void HasCaptureForTab(int tab_id, BooleanCallback callback);
+  bool HasCaptureForTab(int tab_id);
 
   // This should be called on startup with a list of restored tab ids
   // (|active_tab_ids|). This performs an audit over all Paint Previews stored
@@ -76,39 +80,49 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
 
 #if defined(OS_ANDROID)
   // JNI wrapped versions of the above methods
-  void CaptureTab(JNIEnv* env,
-                  jint j_tab_id,
-                  const base::android::JavaParamRef<jobject>& j_web_contents,
-                  const base::android::JavaParamRef<jobject>& j_callback);
-  void TabClosed(JNIEnv* env, jint j_tab_id);
-  void HasCaptureForTab(JNIEnv* env,
-                        jint j_tab_id,
-                        const base::android::JavaParamRef<jobject>& j_callback);
-  void AuditArtifacts(JNIEnv* env,
-                      const base::android::JavaParamRef<jintArray>& j_tab_ids);
+  void CaptureTabAndroid(
+      JNIEnv* env,
+      jint j_tab_id,
+      const base::android::JavaParamRef<jobject>& j_web_contents,
+      const base::android::JavaParamRef<jobject>& j_callback);
+  void TabClosedAndroid(JNIEnv* env, jint j_tab_id);
+  jboolean HasCaptureForTabAndroid(JNIEnv* env, jint j_tab_id);
+  void AuditArtifactsAndroid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jintArray>& j_tab_ids);
 
   base::android::ScopedJavaGlobalRef<jobject> GetJavaRef() { return java_ref_; }
 #endif  // defined(OS_ANDROID)
 
  private:
-  void CaptureTabInternal(const DirectoryKey& key,
+  // Caches current captures in |captured_tab_ids_|. Called as part of
+  // initialization.
+  void InitializeCache(const base::flat_set<DirectoryKey>& in_use_keys);
+
+  // The FTN ID is to look-up the content::WebContents.
+  void CaptureTabInternal(int tab_id,
+                          const DirectoryKey& key,
                           int frame_tree_node_id,
                           FinishedCallback callback,
                           const base::Optional<base::FilePath>& file_path);
 
-  void OnCaptured(const DirectoryKey& key,
+  void OnCaptured(int tab_id,
+                  const DirectoryKey& key,
                   FinishedCallback callback,
                   PaintPreviewBaseService::CaptureStatus status,
                   std::unique_ptr<PaintPreviewProto>);
 
-  void OnFinished(FinishedCallback callback, bool success);
+  void OnFinished(int tab_id, FinishedCallback callback, bool success);
 
   void RunAudit(const std::vector<int>& active_tab_ids,
                 const base::flat_set<DirectoryKey>& in_use_keys);
 
+  bool cache_ready_;
+  base::flat_set<int> captured_tab_ids_;
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 #endif  // defined(OS_ANDROID)
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<PaintPreviewTabService> weak_ptr_factory_{this};
 };
 

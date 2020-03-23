@@ -429,9 +429,16 @@ PasswordManagerProxy.PasswordCheckStatus;
 
   /** @override */
   getPlaintextCompromisedPassword(credential, reason) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       chrome.passwordsPrivate.getPlaintextCompromisedPassword(
-          credential, reason, resolve);
+          credential, reason, credentialWithPassword => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError.message);
+              return;
+            }
+
+            resolve(credentialWithPassword);
+          });
     });
   }
 

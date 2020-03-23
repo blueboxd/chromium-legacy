@@ -23,23 +23,8 @@ class AssistantGenericUiDelegate {
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jview_identifier);
 
-  // The selection in a list popup has changed. |jindices_model_identifier| is
-  // the model identifier that |jindicies_value| should be written to.
-  // |jnames_model_identifier| is the model identifier that |jnames_value|
-  // should be written to, if specified.
-  void OnListPopupSelectionChanged(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jindices_model_identifier,
-      const base::android::JavaParamRef<jobject>& jindicies_value,
-      const base::android::JavaParamRef<jstring>& jnames_model_identifier,
-      const base::android::JavaParamRef<jobject>& jnames_value);
-
-  // The date in a calendar popup has changed. |jmodel_identifier| is the model
-  // identifier that the new date should be written to. |jvalue| is a Java
-  // AssistantValue containing a single AssistantDateTime with the new date, or
-  // nullptr if the date was cleared.
-  void OnCalendarPopupDateChanged(
+  // A value was changed on the Java side. Native should update the model.
+  void OnValueChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jmodel_identifier,

@@ -376,7 +376,8 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
     return;
 
   doc_info_ = doc_info;
-  doc_node_ = CreateNode(ax::mojom::Role::kDocument);
+  doc_node_ =
+      CreateNode(ax::mojom::Role::kDocument, ax::mojom::Restriction::kReadOnly);
   doc_node_->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       l10n_util::GetPluralStringFUTF8(IDS_PDF_DOCUMENT_PAGE_COUNT,
@@ -411,7 +412,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   CHECK_GE(page_index, 0U);
   CHECK_LT(page_index, doc_info_.page_count);
 
-  ui::AXNodeData* page_node = CreateNode(ax::mojom::Role::kRegion);
+  ui::AXNodeData* page_node =
+      CreateNode(ax::mojom::Role::kRegion, ax::mojom::Restriction::kReadOnly);
   page_node->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       l10n_util::GetPluralStringFUTF8(IDS_PDF_PAGE_INDEX, page_index + 1));
@@ -459,6 +461,7 @@ void PdfAccessibilityTree::AddPageContent(
   uint32_t current_link_index = 0;
   uint32_t current_image_index = 0;
   uint32_t current_highlight_index = 0;
+  uint32_t current_text_field_index = 0;
   LineHelper line_helper(text_runs);
   const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
       page_objects.links;
@@ -466,6 +469,8 @@ void PdfAccessibilityTree::AddPageContent(
       page_objects.images;
   const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights =
       page_objects.highlights;
+  const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields =
+      page_objects.text_fields;
 
   for (size_t text_run_index = 0; text_run_index < text_runs.size();
        ++text_run_index) {
@@ -566,6 +571,19 @@ void PdfAccessibilityTree::AddPageContent(
 
       text_run_index =
           std::max<size_t>(highlight_end_text_run_index, text_run_index);
+    } else if (IsObjectInTextRun(text_fields, current_text_field_index,
+                                 text_run_index) &&
+               base::FeatureList::IsEnabled(
+                   chrome_pdf::features::kAccessiblePDFForm)) {
+      FinishStaticNode(&static_text_node, &static_text);
+      // If the |text_run_index| is less than or equal to the text_field's text
+      // run index, then push the text_field ahead of the current text run.
+      ui::AXNodeData* text_field_node =
+          CreateTextFieldNode(text_fields[current_text_field_index]);
+      para_node->child_ids.push_back(text_field_node->id);
+      ++current_text_field_index;
+      --text_run_index;
+      continue;
     } else {
       PP_PdfPageCharacterIndex page_char_index = {
           page_index, text_run_start_indices[text_run_index]};
@@ -629,8 +647,10 @@ void PdfAccessibilityTree::AddPageContent(
       base::make_span(links).subspan(current_link_index);
   base::span<const ppapi::PdfAccessibilityImageInfo> remaining_images =
       base::make_span(images).subspan(current_image_index);
+  base::span<const ppapi::PdfAccessibilityTextFieldInfo> remaining_text_fields =
+      base::make_span(text_fields).subspan(current_text_field_index);
   AddRemainingAnnotations(page_node, page_bounds, page_index, remaining_links,
-                          remaining_images, para_node);
+                          remaining_images, remaining_text_fields, para_node);
 }
 
 void PdfAccessibilityTree::AddRemainingAnnotations(
@@ -639,11 +659,14 @@ void PdfAccessibilityTree::AddRemainingAnnotations(
     uint32_t page_index,
     base::span<const ppapi::PdfAccessibilityLinkInfo> links,
     base::span<const ppapi::PdfAccessibilityImageInfo> images,
+    base::span<const ppapi::PdfAccessibilityTextFieldInfo> text_fields,
     ui::AXNodeData* para_node) {
-  // If we have additional links or images to insert in the tree, and we don't
-  // have a paragraph node, create a new one.
-  if (!para_node && (!links.empty() || !images.empty())) {
-    para_node = CreateNode(ax::mojom::Role::kParagraph);
+  // If we have additional links, images or text fields to insert in the tree,
+  // and we don't have a paragraph node, create a new one.
+  if (!para_node &&
+      (!links.empty() || !images.empty() || !text_fields.empty())) {
+    para_node = CreateNode(ax::mojom::Role::kParagraph,
+                           ax::mojom::Restriction::kReadOnly);
     page_node->child_ids.push_back(para_node->id);
   }
   // Push all the links not anchored to any text run to the last paragraph.
@@ -655,6 +678,15 @@ void PdfAccessibilityTree::AddRemainingAnnotations(
   for (const ppapi::PdfAccessibilityImageInfo& image : images) {
     ui::AXNodeData* image_node = CreateImageNode(image);
     para_node->child_ids.push_back(image_node->id);
+  }
+
+  if (base::FeatureList::IsEnabled(chrome_pdf::features::kAccessiblePDFForm)) {
+    // Push all the text fields not anchored to any text run to the last
+    // paragraph.
+    for (const ppapi::PdfAccessibilityTextFieldInfo& text_field : text_fields) {
+      ui::AXNodeData* text_field_node = CreateTextFieldNode(text_field);
+      para_node->child_ids.push_back(text_field_node->id);
+    }
   }
 }
 
@@ -775,14 +807,16 @@ gfx::RectF PdfAccessibilityTree::ToRectF(const PP_Rect& r) {
   return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
 }
 
-ui::AXNodeData* PdfAccessibilityTree::CreateNode(ax::mojom::Role role) {
+ui::AXNodeData* PdfAccessibilityTree::CreateNode(
+    ax::mojom::Role role,
+    ax::mojom::Restriction restriction) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   DCHECK(render_accessibility);
 
   ui::AXNodeData* node = new ui::AXNodeData();
   node->id = render_accessibility->GenerateAXID();
   node->role = role;
-  node->SetRestriction(ax::mojom::Restriction::kReadOnly);
+  node->SetRestriction(restriction);
 
   // All nodes other than the first one have coordinates relative to
   // the first node.
@@ -797,7 +831,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ax::mojom::Role role) {
 ui::AXNodeData* PdfAccessibilityTree::CreateParagraphNode(
     float font_size,
     float heading_font_size_threshold) {
-  ui::AXNodeData* para_node = CreateNode(ax::mojom::Role::kParagraph);
+  ui::AXNodeData* para_node = CreateNode(ax::mojom::Role::kParagraph,
+                                         ax::mojom::Restriction::kReadOnly);
   para_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                               true);
 
@@ -815,7 +850,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateParagraphNode(
 
 ui::AXNodeData* PdfAccessibilityTree::CreateStaticTextNode(
     const PP_PdfPageCharacterIndex& page_char_index) {
-  ui::AXNodeData* static_text_node = CreateNode(ax::mojom::Role::kStaticText);
+  ui::AXNodeData* static_text_node = CreateNode(
+      ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly);
   node_id_to_page_char_index_.emplace(static_text_node->id, page_char_index);
   return static_text_node;
 }
@@ -825,8 +861,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const PP_PdfPageCharacterIndex& page_char_index,
     const gfx::RectF& page_bounds) {
-  ui::AXNodeData* inline_text_box_node =
-      CreateNode(ax::mojom::Role::kInlineTextBox);
+  ui::AXNodeData* inline_text_box_node = CreateNode(
+      ax::mojom::Role::kInlineTextBox, ax::mojom::Restriction::kReadOnly);
 
   std::string chars_utf8 =
       GetTextRunCharsAsUTF8(text_run, chars, page_char_index.char_index);
@@ -867,7 +903,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
 ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
     const ppapi::PdfAccessibilityLinkInfo& link,
     uint32_t page_index) {
-  ui::AXNodeData* link_node = CreateNode(ax::mojom::Role::kLink);
+  ui::AXNodeData* link_node =
+      CreateNode(ax::mojom::Role::kLink, ax::mojom::Restriction::kReadOnly);
 
   link_node->AddStringAttribute(ax::mojom::StringAttribute::kUrl, link.url);
   link_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
@@ -881,7 +918,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
 
 ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
     const ppapi::PdfAccessibilityImageInfo& image) {
-  ui::AXNodeData* image_node = CreateNode(ax::mojom::Role::kImage);
+  ui::AXNodeData* image_node =
+      CreateNode(ax::mojom::Role::kImage, ax::mojom::Restriction::kReadOnly);
 
   if (image.alt_text.empty()) {
     image_node->AddStringAttribute(
@@ -898,7 +936,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
 ui::AXNodeData* PdfAccessibilityTree::CreateHighlightNode(
     const ppapi::PdfAccessibilityHighlightInfo& highlight) {
   ui::AXNodeData* highlight_node =
-      CreateNode(ax::mojom::Role::kPdfActionableHighlight);
+      CreateNode(ax::mojom::Role::kPdfActionableHighlight,
+                 ax::mojom::Restriction::kReadOnly);
 
   highlight_node->AddStringAttribute(
       ax::mojom::StringAttribute::kRoleDescription,
@@ -910,6 +949,29 @@ ui::AXNodeData* PdfAccessibilityTree::CreateHighlightNode(
                                   highlight.color);
 
   return highlight_node;
+}
+
+ui::AXNodeData* PdfAccessibilityTree::CreateTextFieldNode(
+    const ppapi::PdfAccessibilityTextFieldInfo& text_field) {
+  ax::mojom::Restriction restriction = text_field.is_read_only
+                                           ? ax::mojom::Restriction::kReadOnly
+                                           : ax::mojom::Restriction::kNone;
+  ui::AXNodeData* text_field_node =
+      CreateNode(ax::mojom::Role::kTextField, restriction);
+
+  text_field_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                      text_field.name);
+  text_field_node->AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                                      text_field.value);
+  text_field_node->AddState(ax::mojom::State::kFocusable);
+  if (text_field.is_required)
+    text_field_node->AddState(ax::mojom::State::kRequired);
+  if (text_field.is_password)
+    text_field_node->AddState(ax::mojom::State::kProtected);
+  if (!text_field.is_read_only)
+    text_field_node->AddState(ax::mojom::State::kEditable);
+  text_field_node->relative_bounds.bounds = ToGfxRectF(text_field.bounds);
+  return text_field_node;
 }
 
 void PdfAccessibilityTree::AddTextToAXNode(

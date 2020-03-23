@@ -79,6 +79,9 @@ public class SyncSettingsUtils {
         }
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
+        if (profileSyncService == null) {
+            return SyncError.NO_ERROR;
+        }
         if (profileSyncService.getAuthError()
                 == GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS) {
             return SyncError.AUTH_ERROR;

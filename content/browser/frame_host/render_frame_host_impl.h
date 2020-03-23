@@ -93,6 +93,7 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
@@ -285,7 +286,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeView GetNativeView() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
-  void AddInspectorIssue(blink::mojom::InspectorIssueCode code);
+  void AddInspectorIssue(blink::mojom::InspectorIssueInfoPtr info);
   void ExecuteJavaScript(const base::string16& javascript,
                          JavaScriptResultCallback callback) override;
   void ExecuteJavaScriptInIsolatedWorld(const base::string16& javascript,

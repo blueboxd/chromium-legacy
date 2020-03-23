@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 import static org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue.isDateSingleton;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -53,8 +54,10 @@ public class AssistantViewInteractions {
                 }
                 selectedNamesValue = new AssistantValue(selectedNames);
             }
-            delegate.onListPopupSelectionChanged(selectedIndicesIdentifier,
-                    new AssistantValue(indices), selectedNamesIdentifier, selectedNamesValue);
+            delegate.onValueChanged(selectedIndicesIdentifier, new AssistantValue(indices));
+            if (!TextUtils.isEmpty(selectedNamesIdentifier)) {
+                delegate.onValueChanged(selectedNamesIdentifier, selectedNamesValue);
+            }
         }, popupItems, multiple, selectedItems);
         dialog.show();
     }
@@ -79,9 +82,9 @@ public class AssistantViewInteractions {
                     public void replaceDateTime(double value) {
                         // User tapped the 'clear' button.
                         if (Double.isNaN(value)) {
-                            delegate.onCalendarPopupDateChanged(outputIdentifier, null);
+                            delegate.onValueChanged(outputIdentifier, null);
                         } else {
-                            delegate.onCalendarPopupDateChanged(outputIdentifier,
+                            delegate.onValueChanged(outputIdentifier,
                                     AssistantValue.createForDateTimes(Collections.singletonList(
                                             new AssistantDateTime((long) value))));
                         }
@@ -103,5 +106,12 @@ public class AssistantViewInteractions {
         }
         ((TextView) view).setText(text);
         return true;
+    }
+
+    @CalledByNative
+    private static void setViewVisibility(View view, AssistantValue visible) {
+        if (visible.getBooleans() != null && visible.getBooleans().length == 1) {
+            view.setVisibility(visible.getBooleans()[0] ? View.VISIBLE : View.GONE);
+        }
     }
 }

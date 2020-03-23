@@ -25,22 +25,18 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_FILTERS_SVG_FE_IMAGE_H_
 
 #include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class Image;
 class LayoutObject;
+class SVGElement;
 class SVGPreserveAspectRatio;
-class TreeScope;
 
 class FEImage final : public FilterEffect {
  public:
   FEImage(Filter*, scoped_refptr<Image>, const SVGPreserveAspectRatio*);
-  FEImage(Filter*,
-          const TreeScope&,
-          const String&,
-          const SVGPreserveAspectRatio*);
+  FEImage(Filter*, const SVGElement*, const SVGPreserveAspectRatio*);
 
   // feImage does not perform color interpolation of any kind, so doesn't
   // depend on the value of color-interpolation-filters.
@@ -65,9 +61,7 @@ class FEImage final : public FilterEffect {
   sk_sp<PaintFilter> CreateImageFilterForLayoutObject(const LayoutObject&);
 
   scoped_refptr<Image> image_;
-
-  Member<const TreeScope> tree_scope_;
-  String href_;
+  Member<const SVGElement> element_;
   Member<const SVGPreserveAspectRatio> preserve_aspect_ratio_;
 };
 

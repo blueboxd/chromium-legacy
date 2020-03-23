@@ -432,6 +432,135 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   ASSERT_EQ(2u, static_text_node->children().size());
 }
 
+TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
+  // Enable feature flag
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kAccessiblePDFForm);
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  {
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    text_field.index_in_page = 0;
+    text_field.text_run_index = 2;
+    text_field.name = "Text Box";
+    text_field.value = "Text";
+    text_field.is_read_only = false;
+    text_field.is_required = false;
+    text_field.is_password = false;
+    page_objects_.text_fields.push_back(std::move(text_field));
+  }
+
+  {
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.bounds = PP_MakeFloatRectFromXYWH(1.0f, 10.0f, 5.0f, 6.0f);
+    text_field.index_in_page = 1;
+    text_field.text_run_index = 2;
+    text_field.name = "Text Box 2";
+    text_field.value = "Text 2";
+    text_field.is_read_only = true;
+    text_field.is_required = true;
+    text_field.is_password = true;
+    page_objects_.text_fields.push_back(std::move(text_field));
+  }
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  ASSERT_TRUE(render_frame);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++++ Text Field
+   * ++++++ Text Field
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(2u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(1u, paragraph_node->children().size());
+
+  ui::AXNode* static_text_node = paragraph_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  paragraph_node = page_node->children()[1];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  const std::vector<ui::AXNode*>& child_nodes = paragraph_node->children();
+  ASSERT_EQ(3u, child_nodes.size());
+
+  static_text_node = child_nodes[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  ui::AXNode* text_field_node = child_nodes[1];
+  ASSERT_TRUE(text_field_node);
+  EXPECT_EQ(ax::mojom::Role::kTextField, text_field_node->data().role);
+  EXPECT_EQ("Text Box", text_field_node->GetStringAttribute(
+                            ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("Text", text_field_node->GetStringAttribute(
+                        ax::mojom::StringAttribute::kValue));
+  EXPECT_FALSE(text_field_node->data().HasState(ax::mojom::State::kRequired));
+  EXPECT_FALSE(text_field_node->data().HasState(ax::mojom::State::kProtected));
+  EXPECT_TRUE(text_field_node->data().HasState(ax::mojom::State::kEditable));
+  EXPECT_NE(ax::mojom::Restriction::kReadOnly,
+            text_field_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            text_field_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, text_field_node->children().size());
+
+  text_field_node = child_nodes[2];
+  ASSERT_TRUE(text_field_node);
+  EXPECT_EQ(ax::mojom::Role::kTextField, text_field_node->data().role);
+  EXPECT_EQ("Text Box 2", text_field_node->GetStringAttribute(
+                              ax::mojom::StringAttribute::kName));
+  EXPECT_EQ("Text 2", text_field_node->GetStringAttribute(
+                          ax::mojom::StringAttribute::kValue));
+  EXPECT_TRUE(text_field_node->data().HasState(ax::mojom::State::kRequired));
+  EXPECT_TRUE(text_field_node->data().HasState(ax::mojom::State::kProtected));
+  EXPECT_FALSE(text_field_node->data().HasState(ax::mojom::State::kEditable));
+  EXPECT_EQ(ax::mojom::Restriction::kReadOnly,
+            text_field_node->data().GetRestriction());
+  EXPECT_EQ(gfx::RectF(1.0f, 10.0f, 5.0f, 6.0f),
+            text_field_node->data().relative_bounds.bounds);
+  EXPECT_EQ(0u, text_field_node->children().size());
+}
+
 TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   text_runs_.emplace_back(kFirstRunMultiLine);
   text_runs_.emplace_back(kSecondRunMultiLine);

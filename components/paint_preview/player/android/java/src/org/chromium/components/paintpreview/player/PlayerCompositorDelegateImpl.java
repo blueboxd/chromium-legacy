@@ -14,6 +14,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
+import org.chromium.url.GURL;
 
 import javax.annotation.Nonnull;
 
@@ -24,20 +25,20 @@ import javax.annotation.Nonnull;
 @JNINamespace("paint_preview")
 class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     interface CompositorListener {
-        void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
-                int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
-                int[] subFrameClipRects);
+        void onCompositorReady(boolean safeToShow, UnguessableToken rootFrameGuid,
+                UnguessableToken[] frameGuids, int[] frameContentSize, int[] subFramesCount,
+                UnguessableToken[] subFrameGuids, int[] subFrameClipRects);
     }
 
     private CompositorListener mCompositorListener;
     private long mNativePlayerCompositorDelegate;
 
-    PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service, String directoryKey,
-            @Nonnull CompositorListener compositorListener) {
+    PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service, GURL url,
+            String directoryKey, @Nonnull CompositorListener compositorListener) {
         mCompositorListener = compositorListener;
         if (service != null && service.getNativeService() != 0) {
             mNativePlayerCompositorDelegate = PlayerCompositorDelegateImplJni.get().initialize(
-                    this, service.getNativeService(), directoryKey);
+                    this, service.getNativeService(), url.getSpec(), directoryKey);
         }
         // TODO(crbug.com/1021590): Handle initialization errors when
         // mNativePlayerCompositorDelegate == 0.
@@ -46,6 +47,8 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     /**
      * Called by native when the Paint Preview compositor is ready.
      *
+     * @param safeToShow true if the native initialization of the Paint Preview player succeeded and
+     * the captured result matched the expected URL.
      * @param rootFrameGuid The GUID for the root frame.
      * @param frameGuids Contains all frame GUIDs that are in this hierarchy.
      * @param frameContentSize Contains the content size for each frame. In native, this is called
@@ -68,11 +71,11 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
      * subFrameGuids[4*k+3]}, where {@code k} has the same value as above.
      */
     @CalledByNative
-    void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
-            int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
-            int[] subFrameClipRects) {
-        mCompositorListener.onCompositorReady(rootFrameGuid, frameGuids, frameContentSize,
-                subFramesCount, subFrameGuids, subFrameClipRects);
+    void onCompositorReady(boolean safeToShow, UnguessableToken rootFrameGuid,
+            UnguessableToken[] frameGuids, int[] frameContentSize, int[] subFramesCount,
+            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
+        mCompositorListener.onCompositorReady(safeToShow, rootFrameGuid, frameGuids,
+                frameContentSize, subFramesCount, subFrameGuids, subFrameClipRects);
     }
 
     @Override
@@ -114,7 +117,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     @NativeMethods
     interface Natives {
         long initialize(PlayerCompositorDelegateImpl caller, long nativePaintPreviewBaseService,
-                String directoryKey);
+                String urlSpec, String directoryKey);
         void destroy(long nativePlayerCompositorDelegateAndroid);
         void requestBitmap(long nativePlayerCompositorDelegateAndroid, UnguessableToken frameGuid,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback, float scaleFactor,

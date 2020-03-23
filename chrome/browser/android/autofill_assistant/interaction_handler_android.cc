@@ -258,6 +258,36 @@ void SetTextViewText(
       base::android::ConvertUTF8ToJavaString(env, text->strings().values(0)));
 }
 
+void SetViewVisibility(
+    base::WeakPtr<UserModel> user_model,
+    const SetViewVisibilityProto& proto,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+  if (!user_model) {
+    return;
+  }
+
+  auto jview = views->find(proto.view_identifier());
+  if (jview == views->end()) {
+    DVLOG(2) << "Failed to set view visibility for " << proto.view_identifier()
+             << ": view not found";
+    return;
+  }
+
+  auto visible_value = user_model->GetValue(proto.model_identifier());
+  if (!visible_value.has_value() ||
+      visible_value->booleans().values_size() != 1) {
+    DVLOG(2) << "Failed to set view visibility for " << proto.view_identifier()
+             << ": " << proto.model_identifier()
+             << " did not contain single boolean";
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AssistantViewInteractions_setViewVisibility(
+      env, jview->second,
+      ui_controller_android_utils::ToJavaValue(env, *visible_value));
+}
+
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     const EventProto& proto,
     JNIEnv* env,
@@ -380,7 +410,6 @@ CreateInteractionCallbackFromProto(
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&SetTextViewText, user_model->GetWeakPtr(),
                               proto.set_text(), views));
-      break;
     case CallbackProto::kToggleUserAction:
       if (proto.toggle_user_action().user_actions_model_identifier().empty()) {
         VLOG(1) << "Error creating ToggleUserAction interaction: "
@@ -401,6 +430,20 @@ CreateInteractionCallbackFromProto(
           base::BindRepeating(&TryToggleUserAction,
                               basic_interactions->GetWeakPtr(),
                               proto.toggle_user_action()));
+    case CallbackProto::kSetViewVisibility:
+      if (proto.set_view_visibility().view_identifier().empty()) {
+        VLOG(1) << "Error creating SetViewVisibility interaction: "
+                   "view_identifier not set";
+        return base::nullopt;
+      }
+      if (proto.set_view_visibility().model_identifier().empty()) {
+        VLOG(1) << "Error creating SetViewVisibility interaction: "
+                   "model_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&SetViewVisibility, user_model->GetWeakPtr(),
+                              proto.set_view_visibility(), views));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;

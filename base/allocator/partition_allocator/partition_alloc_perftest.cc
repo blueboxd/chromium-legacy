@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/timer/lap_timer.h"
@@ -29,14 +30,9 @@ constexpr int kMultiBucketIncrement = 13;
 // Final size is 24 + (13 * 22) = 310 bytes.
 constexpr int kMultiBucketRounds = 22;
 
-constexpr char kMetricPrefixMemoryAllocation[] = "MemoryAllocation.";
+constexpr char kMetricPrefixMemoryAllocation[] = "MemoryAllocation";
 constexpr char kMetricThroughput[] = "throughput";
 constexpr char kMetricTimePerAllocation[] = "time_per_allocation";
-constexpr char kStoryBaseSingleBucket[] = "single_bucket";
-constexpr char kStoryBaseSingleBucketWithFree[] = "single_bucket_with_free";
-constexpr char kStoryBaseMultiBucket[] = "multi_bucket";
-constexpr char kStoryBaseMultiBucketWithFree[] = "multi_bucket_with_free";
-constexpr char kStorySuffixWithCompetingThread[] = "_with_competing_thread";
 
 perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
   perf_test::PerfResultReporter reporter(kMetricPrefixMemoryAllocation,
@@ -46,43 +42,60 @@ perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
   return reporter;
 }
 
-std::string GetSuffix(bool competing_thread) {
-  return competing_thread ? kStorySuffixWithCompetingThread : "";
-}
+enum class AllocatorType { kSystem, kPartitionAlloc };
 
-class AllocatingThread : public PlatformThread::Delegate {
+class Allocator {
  public:
-  explicit AllocatingThread(PartitionAllocatorGeneric* allocator)
-      : allocator_(allocator), should_stop_(false) {
-    PlatformThread::Create(0, this, &thread_handle_);
+  Allocator() = default;
+  virtual ~Allocator() = default;
+  virtual void Init() {}
+  virtual void* Alloc(size_t size) = 0;
+  virtual void Free(void* data) = 0;
+};
+
+class SystemAllocator : public Allocator {
+ public:
+  SystemAllocator() = default;
+  ~SystemAllocator() override = default;
+  void* Alloc(size_t size) override { return malloc(size); }
+  void Free(void* data) override { free(data); }
+};
+
+class PartitionAllocator : public Allocator {
+ public:
+  PartitionAllocator()
+      : alloc_(std::make_unique<PartitionAllocatorGeneric>()) {}
+  ~PartitionAllocator() override = default;
+
+  void Init() override { alloc_->init(); }
+  void* Alloc(size_t size) override { return alloc_->root()->Alloc(size, ""); }
+  void Free(void* data) override { return alloc_->root()->Free(data); }
+
+ private:
+  std::unique_ptr<PartitionAllocatorGeneric> alloc_;
+};
+
+class TestLoopThread : public PlatformThread::Delegate {
+ public:
+  explicit TestLoopThread(OnceCallback<float()> test_fn)
+      : test_fn_(std::move(test_fn)) {
+    CHECK(PlatformThread::Create(0, this, &thread_handle_));
   }
 
-  ~AllocatingThread() override {
-    should_stop_ = true;
+  float Run() {
     PlatformThread::Join(thread_handle_);
+    return laps_per_second_;
   }
 
-  // Allocates and frees memory in a loop until |should_stop_| becomes true.
-  void ThreadMain() override {
-    uint64_t count = 0;
-    while (true) {
-      // Only check |should_stop_| every 2^15 iterations, as it is a
-      // sequentially consistent access, hence expensive.
-      if (count % (1 << 15) == 0 && should_stop_)
-        break;
-      void* data = allocator_->root()->Alloc(10, "");
-      allocator_->root()->Free(data);
-      count++;
-    }
-  }
+  void ThreadMain() override { laps_per_second_ = std::move(test_fn_).Run(); }
 
-  PartitionAllocatorGeneric* allocator_;
-  std::atomic<bool> should_stop_;
+  OnceCallback<float()> test_fn_;
   PlatformThreadHandle thread_handle_;
+  std::atomic<float> laps_per_second_;
 };
 
 void DisplayResults(const std::string& story_name,
-                    size_t iterations_per_second) {
+                    float iterations_per_second) {
   auto reporter = SetUpReporter(story_name);
   reporter.AddResult(kMetricThroughput, iterations_per_second);
   reporter.AddResult(kMetricTimePerAllocation,
@@ -93,12 +106,11 @@ class MemoryAllocationPerfNode {
  public:
   MemoryAllocationPerfNode* GetNext() const { return next_; }
   void SetNext(MemoryAllocationPerfNode* p) { next_ = p; }
-  static void FreeAll(MemoryAllocationPerfNode* first,
-                      PartitionAllocatorGeneric& alloc) {
+  static void FreeAll(MemoryAllocationPerfNode* first, Allocator* alloc) {
     MemoryAllocationPerfNode* cur = first;
     while (cur != nullptr) {
       MemoryAllocationPerfNode* next = cur->GetNext();
-      alloc.root()->Free(cur);
+      alloc->Free(cur);
       cur = next;
     }
   }
@@ -107,172 +119,177 @@ class MemoryAllocationPerfNode {
   MemoryAllocationPerfNode* next_ = nullptr;
 };
 
-class MemoryAllocationPerfTest : public testing::Test {
- public:
-  MemoryAllocationPerfTest()
-      : timer_(kWarmupRuns, kTimeLimit, kTimeCheckInterval) {}
-  void SetUp() override { alloc_.init(); }
-  void TearDown() override {
-    alloc_.root()->PurgeMemory(PartitionPurgeDecommitEmptyPages |
-                               PartitionPurgeDiscardUnusedSystemPages);
-  }
+#if !defined(OS_ANDROID)
+float SingleBucket(Allocator* allocator) {
+  auto* first =
+      reinterpret_cast<MemoryAllocationPerfNode*>(allocator->Alloc(40));
 
- protected:
-  void TestSingleBucket(bool competing_thread) {
-    MemoryAllocationPerfNode* first =
-        reinterpret_cast<MemoryAllocationPerfNode*>(
-            alloc_.root()->Alloc(40, "<testing>"));
+  LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
+  MemoryAllocationPerfNode* cur = first;
+  do {
+    auto* next =
+        reinterpret_cast<MemoryAllocationPerfNode*>(allocator->Alloc(40));
+    CHECK_NE(next, nullptr);
+    cur->SetNext(next);
+    cur = next;
+    timer.NextLap();
+  } while (!timer.HasTimeLimitExpired());
+  // next_ = nullptr only works if the class constructor is called (it's not
+  // called in this case because then we can allocate arbitrary-length
+  // payloads.)
+  cur->SetNext(nullptr);
 
-    timer_.Reset();
-    MemoryAllocationPerfNode* cur = first;
-    do {
-      MemoryAllocationPerfNode* next =
-          reinterpret_cast<MemoryAllocationPerfNode*>(
-              alloc_.root()->Alloc(40, "<testing>"));
+  MemoryAllocationPerfNode::FreeAll(first, allocator);
+  return timer.LapsPerSecond();
+}
+#endif  // defined(OS_ANDROID)
+
+float SingleBucketWithFree(Allocator* allocator) {
+  // Allocate an initial element to make sure the bucket stays set up.
+  void* elem = allocator->Alloc(40);
+
+  LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
+  do {
+    void* cur = allocator->Alloc(40);
+    CHECK_NE(cur, nullptr);
+    allocator->Free(cur);
+    timer.NextLap();
+  } while (!timer.HasTimeLimitExpired());
+
+  allocator->Free(elem);
+  return timer.LapsPerSecond();
+}
+
+#if !defined(OS_ANDROID)
+float MultiBucket(Allocator* allocator) {
+  auto* first =
+      reinterpret_cast<MemoryAllocationPerfNode*>(allocator->Alloc(40));
+  MemoryAllocationPerfNode* cur = first;
+
+  LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
+  do {
+    for (int i = 0; i < kMultiBucketRounds; i++) {
+      auto* next = reinterpret_cast<MemoryAllocationPerfNode*>(allocator->Alloc(
+          kMultiBucketMinimumSize + (i * kMultiBucketIncrement)));
       CHECK_NE(next, nullptr);
       cur->SetNext(next);
       cur = next;
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-    // next_ = nullptr only works if the class constructor is called (it's not
-    // called in this case because then we can allocate arbitrary-length
-    // payloads.)
-    cur->SetNext(nullptr);
-
-    MemoryAllocationPerfNode::FreeAll(first, alloc_);
-
-    DisplayResults(
-        std::string(kStoryBaseSingleBucket) + GetSuffix(competing_thread),
-        timer_.LapsPerSecond());
-  }
-
-  void TestSingleBucketWithFree(bool competing_thread) {
-    // Allocate an initial element to make sure the bucket stays set up.
-    void* elem = alloc_.root()->Alloc(40, "<testing>");
-
-    timer_.Reset();
-    do {
-      void* cur = alloc_.root()->Alloc(40, "<testing>");
-      CHECK_NE(cur, nullptr);
-      alloc_.root()->Free(cur);
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    alloc_.root()->Free(elem);
-    DisplayResults(std::string(kStoryBaseSingleBucketWithFree) +
-                       GetSuffix(competing_thread),
-                   timer_.LapsPerSecond());
-  }
-
-  void TestMultiBucket(bool competing_thread) {
-    MemoryAllocationPerfNode* first =
-        reinterpret_cast<MemoryAllocationPerfNode*>(
-            alloc_.root()->Alloc(40, "<testing>"));
-    MemoryAllocationPerfNode* cur = first;
-
-    timer_.Reset();
-    do {
-      for (int i = 0; i < kMultiBucketRounds; i++) {
-        MemoryAllocationPerfNode* next =
-            reinterpret_cast<MemoryAllocationPerfNode*>(alloc_.root()->Alloc(
-                kMultiBucketMinimumSize + (i * kMultiBucketIncrement),
-                "<testing>"));
-        CHECK_NE(next, nullptr);
-        cur->SetNext(next);
-        cur = next;
-      }
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-    cur->SetNext(nullptr);
-
-    MemoryAllocationPerfNode::FreeAll(first, alloc_);
-
-    DisplayResults(
-        std::string(kStoryBaseMultiBucket) + GetSuffix(competing_thread),
-        timer_.LapsPerSecond() * kMultiBucketRounds);
-  }
-
-  void TestMultiBucketWithFree(bool competing_thread) {
-    std::vector<void*> elems;
-    elems.reserve(kMultiBucketRounds);
-    // Do an initial round of allocation to make sure that the buckets stay in
-    // use (and aren't accidentally released back to the OS).
-    for (int i = 0; i < kMultiBucketRounds; i++) {
-      void* cur = alloc_.root()->Alloc(
-          kMultiBucketMinimumSize + (i * kMultiBucketIncrement), "<testing>");
-      CHECK_NE(cur, nullptr);
-      elems.push_back(cur);
     }
+    timer.NextLap();
+  } while (!timer.HasTimeLimitExpired());
+  cur->SetNext(nullptr);
 
-    timer_.Reset();
-    do {
-      for (int i = 0; i < kMultiBucketRounds; i++) {
-        void* cur = alloc_.root()->Alloc(
-            kMultiBucketMinimumSize + (i * kMultiBucketIncrement), "<testing>");
-        CHECK_NE(cur, nullptr);
-        alloc_.root()->Free(cur);
-      }
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
+  MemoryAllocationPerfNode::FreeAll(first, allocator);
+
+  return timer.LapsPerSecond() * kMultiBucketRounds;
+}
+#endif  // defined(OS_ANDROID)
+
+float MultiBucketWithFree(Allocator* allocator) {
+  std::vector<void*> elems;
+  elems.reserve(kMultiBucketRounds);
+  // Do an initial round of allocation to make sure that the buckets stay in
+  // use (and aren't accidentally released back to the OS).
+  for (int i = 0; i < kMultiBucketRounds; i++) {
+    void* cur =
+        allocator->Alloc(kMultiBucketMinimumSize + (i * kMultiBucketIncrement));
+    CHECK_NE(cur, nullptr);
+    elems.push_back(cur);
+  }
+
+  LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
+  do {
+    for (int i = 0; i < kMultiBucketRounds; i++) {
+      void* cur = allocator->Alloc(kMultiBucketMinimumSize +
+                                   (i * kMultiBucketIncrement));
+      CHECK_NE(cur, nullptr);
+      allocator->Free(cur);
+    }
+    timer.NextLap();
+  } while (!timer.HasTimeLimitExpired());
 
     for (void* ptr : elems) {
-      alloc_.root()->Free(ptr);
+      allocator->Free(ptr);
     }
 
-    DisplayResults(std::string(kStoryBaseMultiBucketWithFree) +
-                       GetSuffix(competing_thread),
-                   timer_.LapsPerSecond() * kMultiBucketRounds);
+    return timer.LapsPerSecond() * kMultiBucketRounds;
+}
+
+std::unique_ptr<Allocator> CreateAllocator(AllocatorType type) {
+  if (type == AllocatorType::kSystem)
+    return std::make_unique<SystemAllocator>();
+  return std::make_unique<PartitionAllocator>();
+}
+
+void RunTest(int thread_count,
+             AllocatorType alloc_type,
+             float (*test_fn)(Allocator*),
+             const char* story_base_name) {
+  auto alloc = CreateAllocator(alloc_type);
+  alloc->Init();
+
+  std::vector<std::unique_ptr<TestLoopThread>> threads;
+  for (int i = 0; i < thread_count; ++i) {
+    threads.push_back(std::make_unique<TestLoopThread>(
+        BindOnce(test_fn, Unretained(alloc.get()))));
   }
 
-  LapTimer timer_;
-  PartitionAllocatorGeneric alloc_;
-};
+  uint64_t total_laps_per_second = 0;
+  uint64_t min_laps_per_second = std::numeric_limits<uint64_t>::max();
+  for (int i = 0; i < thread_count; ++i) {
+    uint64_t laps_per_second = threads[i]->Run();
+    min_laps_per_second = std::min(laps_per_second, min_laps_per_second);
+    total_laps_per_second += laps_per_second;
+  }
 
-TEST_F(MemoryAllocationPerfTest, SingleBucket) {
-  TestSingleBucket(false);
+  std::string name = base::StringPrintf(
+      "%s.%s_%s_%d", kMetricPrefixMemoryAllocation, story_base_name,
+      alloc_type == AllocatorType::kSystem ? "System" : "PartitionAlloc",
+      thread_count);
+
+  DisplayResults(name + "_total", total_laps_per_second);
+  DisplayResults(name + "_worst", min_laps_per_second);
 }
 
-TEST_F(MemoryAllocationPerfTest, SingleBucketWithCompetingThread) {
-  AllocatingThread t(&alloc_);
-  TestSingleBucket(true);
-}
+class MemoryAllocationPerfTest
+    : public testing::TestWithParam<std::tuple<int, AllocatorType>> {};
 
-TEST_F(MemoryAllocationPerfTest, SingleBucketWithFree) {
-  TestSingleBucketWithFree(false);
-}
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    MemoryAllocationPerfTest,
+    ::testing::Combine(::testing::Values(1, 2, 3, 4),
+                       ::testing::Values(AllocatorType::kSystem,
+                                         AllocatorType::kPartitionAlloc)));
 
-TEST_F(MemoryAllocationPerfTest, SingleBucketWithFreeWithCompetingThread) {
-  AllocatingThread t(&alloc_);
-  TestSingleBucketWithFree(true);
+// This test (and the other one below) allocates a large amount of memory, which
+// can cause issues on Android.
+#if !defined(OS_ANDROID)
+TEST_P(MemoryAllocationPerfTest, SingleBucket) {
+  auto params = GetParam();
+  RunTest(std::get<0>(params), std::get<1>(params), SingleBucket,
+          "SingleBucket");
 }
-
-// Failing on Nexus5x: crbug.com/949838
-#if defined(OS_ANDROID)
-#define MAYBE_MultiBucket DISABLED_MultiBucket
-#define MAYBE_MultiBucketWithCompetingThread \
-  DISABLED_MultiBucketWithCompetingThread
-#else
-#define MAYBE_MultiBucket MultiBucket
-#define MAYBE_MultiBucketWithCompetingThread MultiBucketWithCompetingThread
 #endif
-TEST_F(MemoryAllocationPerfTest, MAYBE_MultiBucket) {
-  TestMultiBucket(false);
+
+TEST_P(MemoryAllocationPerfTest, SingleBucketWithFree) {
+  auto params = GetParam();
+  RunTest(std::get<0>(params), std::get<1>(params), SingleBucketWithFree,
+          "SingleBucketWithFree");
 }
 
-TEST_F(MemoryAllocationPerfTest, MAYBE_MultiBucketWithCompetingThread) {
-  AllocatingThread t(&alloc_);
-  TestMultiBucket(true);
+#if !defined(OS_ANDROID)
+TEST_P(MemoryAllocationPerfTest, MultiBucket) {
+  auto params = GetParam();
+  RunTest(std::get<0>(params), std::get<1>(params), MultiBucket, "MultiBucket");
+}
+#endif
+
+TEST_P(MemoryAllocationPerfTest, MultiBucketWithFree) {
+  auto params = GetParam();
+  RunTest(std::get<0>(params), std::get<1>(params), MultiBucketWithFree,
+          "MultiBucketWithFree");
 }
 
-TEST_F(MemoryAllocationPerfTest, MultiBucketWithFree) {
-  TestMultiBucketWithFree(false);
-}
-
-TEST_F(MemoryAllocationPerfTest, MultiBucketWithFreeWithCompetingThread) {
-  AllocatingThread t(&alloc_);
-  TestMultiBucketWithFree(true);
-}
-
-}  // anonymous namespace
+}  // namespace
 
 }  // namespace base

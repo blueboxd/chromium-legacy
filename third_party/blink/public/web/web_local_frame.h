@@ -379,7 +379,7 @@ class WebLocalFrame : public WebFrame {
     AddMessageToConsoleImpl(message, discard_duplicates);
   }
 
-  void AddInspectorIssue(blink::mojom::InspectorIssueCode code) {
+  void AddInspectorIssue(mojom::InspectorIssueCode code) {
     AddInspectorIssueImpl(code);
   }
 

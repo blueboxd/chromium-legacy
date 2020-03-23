@@ -1213,28 +1213,11 @@ WebDocument WebAXObject::GetDocument() const {
   return WebDocument(document);
 }
 
-bool WebAXObject::HasComputedStyle() const {
-  if (IsDetached())
-    return false;
-
-  Document* document = private_->GetDocument();
-  if (document)
-    document->UpdateStyleAndLayoutTree();
-
-  Node* node = private_->GetNode();
-  if (!node || node->IsDocumentNode())
-    return false;
-
-  return node->GetComputedStyle();
-}
-
 WebString WebAXObject::ComputedStyleDisplay() const {
   if (IsDetached())
     return WebString();
 
-  Document* document = private_->GetDocument();
-  if (document)
-    document->UpdateStyleAndLayoutTree();
+  DCHECK(IsLayoutClean(private_->GetDocument()));
 
   Node* node = private_->GetNode();
   if (!node || node->IsDocumentNode())
@@ -1584,9 +1567,7 @@ void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
   if (IsDetached())
     return;
 
-#if DCHECK_IS_ON()
   DCHECK(IsLayoutClean(private_->GetDocument()));
-#endif
 
   AXObject* container = nullptr;
   FloatRect bounds;

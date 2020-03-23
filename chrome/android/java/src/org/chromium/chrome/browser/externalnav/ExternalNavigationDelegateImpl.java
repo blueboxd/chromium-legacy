@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationState;
@@ -596,20 +597,35 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         IntentHandler.setPendingIncognitoUrl(intent);
     }
 
-    @Override
-    public boolean isSerpReferrer() {
+    @Nullable
+    private String getReferrerUrl() {
         // TODO (thildebr): Investigate whether or not we can use getLastCommittedUrl() instead of
         // the NavigationController.
-        if (!hasValidTab() || mTab.getWebContents() == null) return false;
+        if (!hasValidTab() || mTab.getWebContents() == null) return null;
 
         NavigationController nController = mTab.getWebContents().getNavigationController();
         int index = nController.getLastCommittedEntryIndex();
-        if (index == -1) return false;
+        if (index == -1) return null;
 
         NavigationEntry entry = nController.getEntryAtIndex(index);
-        if (entry == null) return false;
+        if (entry == null) return null;
 
-        return UrlUtilitiesJni.get().isGoogleSearchUrl(entry.getUrl());
+        return entry.getUrl();
+    }
+
+    @Override
+    public boolean isSerpReferrer() {
+        String referrerUrl = getReferrerUrl();
+        if (referrerUrl == null) return false;
+
+        return UrlUtilitiesJni.get().isGoogleSearchUrl(referrerUrl);
+    }
+
+    public boolean isGoogleReferrer() {
+        String referrerUrl = getReferrerUrl();
+        if (referrerUrl == null) return false;
+
+        return UrlUtilitiesJni.get().isGoogleSubDomainUrl(referrerUrl);
     }
 
     @Override
@@ -694,7 +710,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (browserFallbackUrl != null && !params.isIncognito()
                 && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
                         targetIntent)
-                && isSerpReferrer()) {
+                && isGoogleReferrer()) {
             if (mTab != null) {
                 startAutofillAssistantWithIntent(targetIntent, browserFallbackUrl);
             }

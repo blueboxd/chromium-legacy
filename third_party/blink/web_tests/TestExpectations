@@ -5666,10 +5666,6 @@ crbug.com/802029 [ Mac10.13 Debug ] fast/dom/shadow/focus-controller-recursion-c
 # Sheriff 2019-04-15
 crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Pass Failure ]
 
-# Sheriff 2019-04-16
-crbug.com/953153 virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
-crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
-
 # portals/csp/frame-src.sub.html crashes because of a race between cancelling a
 # speculative navigation in the browser, and committing the navigation in the
 # renderer.
@@ -6849,6 +6845,9 @@ crbug.com/1060175 [ Win ] wpt_internal/webxr/xr_view_projection_detached.https.h
 
 # Temporarily disabled to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2101972
 crbug.com/174309 http/tests/devtools/quick-open/command-menu.js [ Pass Failure ]
+
+# Support for SharedWorker must be added.
+crbug.com/1058785 external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting-shared-worker.https.html [ Timeout ]
 
 # Sheriff 2020-03-12
 crbug.com/1060175 [ Mac ] css3/calc/simple-calcs-prefixed.html [ Pass Timeout ]

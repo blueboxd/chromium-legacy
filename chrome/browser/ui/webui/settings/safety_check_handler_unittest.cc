@@ -652,15 +652,16 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_NoPasswords) {
+  test_passwords_delegate_.ClearSavedPasswordsList();
   test_passwords_delegate_.SetStartPasswordCheckState(
       password_manager::BulkLeakCheckService::State::kIdle);
   safety_check_->PerformSafetyCheck();
   const base::DictionaryValue* event =
       GetSafetyCheckStatusChangedWithDataIfExists(
           kPasswords,
-          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kSafe));
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kNoPasswords));
   EXPECT_TRUE(event);
-  VerifyDisplayString(event, "No compromised passwords found");
+  VerifyDisplayString(event, "No saved passwords");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoExtensions) {

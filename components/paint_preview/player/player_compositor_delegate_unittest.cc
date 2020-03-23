@@ -32,8 +32,9 @@ TEST(PlayerCompositorDelegate, OnClick) {
   auto file_manager = service.GetFileManager();
   auto key = file_manager->CreateKey(1U);
 
+  GURL url("www.example.com");
   PaintPreviewProto proto;
-  proto.mutable_metadata()->set_url("example.com");
+  proto.mutable_metadata()->set_url(url.spec());
 
   GURL root_frame_link("www.chromium.org");
   auto root_frame_id = base::UnguessableToken::Create();
@@ -78,7 +79,7 @@ TEST(PlayerCompositorDelegate, OnClick) {
           loop.QuitClosure(), file_manager, proto, key));
   loop.Run();
 
-  PlayerCompositorDelegate player_compositor_delegate(&service, key, true);
+  PlayerCompositorDelegate player_compositor_delegate(&service, url, key, true);
   env.RunUntilIdle();
 
   auto res = player_compositor_delegate.OnClick(root_frame_id,

@@ -466,6 +466,14 @@ base::string16 SafetyCheckHandler::GetStringForParentRan(
   }
 }
 
+void SafetyCheckHandler::DetermineIfNoPasswordsOrSafe(
+    const std::vector<extensions::api::passwords_private::PasswordUiEntry>&
+        passwords) {
+  OnPasswordsCheckResult(passwords.empty() ? PasswordsStatus::kNoPasswords
+                                           : PasswordsStatus::kSafe,
+                         0);
+}
+
 void SafetyCheckHandler::OnStateChanged(
     password_manager::BulkLeakCheckService::State state) {
   using password_manager::BulkLeakCheckService;
@@ -475,7 +483,9 @@ void SafetyCheckHandler::OnStateChanged(
       size_t num_compromised =
           passwords_delegate_->GetCompromisedCredentials().size();
       if (num_compromised == 0) {
-        OnPasswordsCheckResult(PasswordsStatus::kSafe, 0);
+        passwords_delegate_->GetSavedPasswordsList(
+            base::BindOnce(&SafetyCheckHandler::DetermineIfNoPasswordsOrSafe,
+                           base::Unretained(this)));
       } else {
         OnPasswordsCheckResult(PasswordsStatus::kCompromisedExist,
                                num_compromised);
@@ -501,8 +511,6 @@ void SafetyCheckHandler::OnStateChanged(
       OnPasswordsCheckResult(PasswordsStatus::kError, 0);
       break;
   }
-  // TODO(crbug.com/1015841): implement detecting the following states if it is
-  // possible: kNoPasswords, kQuotaLimit, and kTooManyPasswords.
 
   // Stop observing the leak service in all terminal states.
   observed_leak_check_.Remove(leak_service_);

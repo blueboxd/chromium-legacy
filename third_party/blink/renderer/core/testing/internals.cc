@@ -1972,9 +1972,11 @@ bool Internals::executeCommand(Document* document,
 
 void Internals::triggerTestInspectorIssue(Document* document) {
   DCHECK(document);
-
-  document->AddInspectorIssue(InspectorIssue::Create(
-      mojom::InspectorIssueCode::kSameSiteCookiesSameSiteNoneWithoutSecure));
+  auto info = mojom::blink::InspectorIssueInfo::New(
+      mojom::InspectorIssueCode::kSameSiteCookieIssue,
+      mojom::blink::InspectorIssueDetails::New(),
+      mojom::blink::AffectedResources::New());
+  document->AddInspectorIssue(InspectorIssue::Create(std::move(info)));
 }
 
 AtomicString Internals::htmlNamespace() {

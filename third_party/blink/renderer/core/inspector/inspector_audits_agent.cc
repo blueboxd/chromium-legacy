@@ -64,17 +64,6 @@ bool EncodeAsImage(char* body,
   return image_to_encode->EncodeImage(mime_type, quality, output);
 }
 
-String InspectorIssueCodeValue(mojom::blink::InspectorIssueCode code) {
-  switch (code) {
-    case mojom::blink::InspectorIssueCode::
-        kSameSiteCookiesSameSiteNoneMissingForThirdParty:
-      return "SameSiteCookies::SameSiteNoneMissingForThirdParty";
-    case mojom::blink::InspectorIssueCode::
-        kSameSiteCookiesSameSiteNoneWithoutSecure:
-      return "SameSiteCookies::SameSiteNoneWithoutSecure";
-  }
-}
-
 }  // namespace
 
 void InspectorAuditsAgent::Trace(Visitor* visitor) {
@@ -163,13 +152,140 @@ void InspectorAuditsAgent::InnerEnable() {
     InspectorIssueAdded(inspector_issue_storage_->at(i));
 }
 
+namespace {
+std::unique_ptr<protocol::Array<protocol::Audits::AffectedCookie>> BuildCookies(
+    const WTF::Vector<mojom::blink::AffectedCookiePtr>& cookies) {
+  auto result =
+      std::make_unique<protocol::Array<protocol::Audits::AffectedCookie>>();
+  for (const auto& cookie : cookies) {
+    auto protocol_cookie = std::move(protocol::Audits::AffectedCookie::create()
+                                         .setName(cookie->name)
+                                         .setPath(cookie->path)
+                                         .setDomain(cookie->domain));
+    if (cookie->site_for_cookies) {
+      protocol_cookie.setSiteForCookies(*cookie->site_for_cookies);
+    }
+    result->push_back(protocol_cookie.build());
+  }
+  return result;
+}
+blink::protocol::String InspectorIssueCodeValue(
+    mojom::blink::InspectorIssueCode code) {
+  switch (code) {
+    case mojom::blink::InspectorIssueCode::kSameSiteCookieIssue:
+      return protocol::Audits::InspectorIssueCodeEnum::SameSiteCookieIssue;
+  }
+  NOTREACHED();
+  return "unknown";
+}
+protocol::String BuildCookieExclusionReason(
+    mojom::blink::SameSiteCookieExclusionReason exclusion_reason) {
+  switch (exclusion_reason) {
+    case blink::mojom::blink::SameSiteCookieExclusionReason::
+        ExcludeSameSiteUnspecifiedTreatedAsLax:
+      return protocol::Audits::SameSiteCookieExclusionReasonEnum::
+          ExcludeSameSiteUnspecifiedTreatedAsLax;
+    case blink::mojom::blink::SameSiteCookieExclusionReason::
+        ExcludeSameSiteNoneInsecure:
+      return protocol::Audits::SameSiteCookieExclusionReasonEnum::
+          ExcludeSameSiteNoneInsecure;
+  }
+  NOTREACHED();
+  return "unknown";
+}
+std::unique_ptr<std::vector<blink::protocol::String>>
+BuildCookieExclusionReasons(
+    const WTF::Vector<mojom::blink::SameSiteCookieExclusionReason>&
+        exclusion_reasons) {
+  auto protocol_exclusion_reasons =
+      std::make_unique<std::vector<blink::protocol::String>>();
+  for (const auto& reason : exclusion_reasons) {
+    protocol_exclusion_reasons->push_back(BuildCookieExclusionReason(reason));
+  }
+  return protocol_exclusion_reasons;
+}
+protocol::String BuildCookieWarningReason(
+    mojom::blink::SameSiteCookieWarningReason warning_reason) {
+  switch (warning_reason) {
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteUnspecifiedCrossSiteContext:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteUnspecifiedCrossSiteContext;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteNoneInsecure:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteNoneInsecure;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteUnspecifiedLaxAllowUnsafe:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteUnspecifiedLaxAllowUnsafe;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteCrossSchemeSecureUrlMethodUnsafe:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteCrossSchemeSecureUrlMethodUnsafe;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteCrossSchemeSecureUrlLax:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteCrossSchemeSecureUrlLax;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteCrossSchemeSecureUrlStrict:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteCrossSchemeSecureUrlStrict;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteCrossSchemeInsecureUrlLax:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteCrossSchemeInsecureUrlLax;
+    case blink::mojom::blink::SameSiteCookieWarningReason::
+        WarnSameSiteCrossSchemeInsecureUrlStrict:
+      return protocol::Audits::SameSiteCookieWarningReasonEnum::
+          WarnSameSiteCrossSchemeInsecureUrlStrict;
+  }
+  NOTREACHED();
+  return "unknown";
+}
+std::unique_ptr<std::vector<blink::protocol::String>> BuildCookieWarningReasons(
+    const WTF::Vector<mojom::blink::SameSiteCookieWarningReason>&
+        warning_reasons) {
+  auto protocol_warning_reasons =
+      std::make_unique<std::vector<blink::protocol::String>>();
+  for (const auto& reason : warning_reasons) {
+    protocol_warning_reasons->push_back(BuildCookieWarningReason(reason));
+  }
+  return protocol_warning_reasons;
+}
+}  // namespace
+
 void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
-  std::unique_ptr<protocol::Audits::Issue> tmp =
-      protocol::Audits::Issue::create()
-          .setCode(InspectorIssueCodeValue(issue->Code()))
+  auto issueDetails = protocol::Audits::InspectorIssueDetails::create();
+
+  if (issue->Details()->sameSiteCookieIssueDetails) {
+    auto sameSiteCookieDetails =
+        protocol::Audits::SameSiteCookieIssueDetails::create()
+            .setCookieExclusionReasons(BuildCookieExclusionReasons(
+                issue->Details()->sameSiteCookieIssueDetails->exclusionReason))
+            .setCookieWarningReasons(BuildCookieWarningReasons(
+                issue->Details()->sameSiteCookieIssueDetails->warningReason))
+            .build();
+    issueDetails.setSameSiteCookieIssueDetails(
+        std::move(sameSiteCookieDetails));
+  }
+
+  auto affectedResources =
+      protocol::Audits::AffectedResources::create()
+          .setCookies(BuildCookies(issue->Resources()->cookies))
           .build();
 
-  GetFrontend()->issueAdded(std::move(tmp));
+  auto inspector_issue = protocol::Audits::InspectorIssue::create()
+                             .setCode(InspectorIssueCodeValue(issue->Code()))
+                             .setDetails(issueDetails.build())
+                             .setResources(std::move(affectedResources))
+                             .build();
+
+  GetFrontend()->issueAdded(std::move(inspector_issue));
   GetFrontend()->flush();
 }
 

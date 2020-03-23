@@ -82,7 +82,9 @@ const char kAutoOpenDevToolsForTabs[]       = "auto-open-devtools-for-tabs";
 // This flag makes Chrome auto-select the provided choice when an extension asks
 // permission to start desktop capture. Should only be used for tests. For
 // instance, --auto-select-desktop-capture-source="Entire screen" will
-// automatically select to share the entire screen in English locales.
+// automatically select sharing the entire screen in English locales. The switch
+// value only needs to be substring of the capture source name, i.e. "display"
+// would match "Built-in display" and "External display", whichever comes first.
 const char kAutoSelectDesktopCaptureSource[] =
     "auto-select-desktop-capture-source";
 

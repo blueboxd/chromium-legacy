@@ -271,7 +271,6 @@ class WebAXObject {
 
   BLINK_EXPORT WebNode GetNode() const;
   BLINK_EXPORT WebDocument GetDocument() const;
-  BLINK_EXPORT bool HasComputedStyle() const;
   BLINK_EXPORT WebString ComputedStyleDisplay() const;
   BLINK_EXPORT bool AccessibilityIsIgnored() const;
   BLINK_EXPORT bool AccessibilityIsIncludedInTree() const;

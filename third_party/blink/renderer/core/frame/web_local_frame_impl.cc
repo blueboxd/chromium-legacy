@@ -2496,7 +2496,11 @@ void WebLocalFrameImpl::AddMessageToConsoleImpl(
 void WebLocalFrameImpl::AddInspectorIssueImpl(
     mojom::blink::InspectorIssueCode code) {
   DCHECK(GetFrame());
-  GetFrame()->GetDocument()->AddInspectorIssue(InspectorIssue::Create(code));
+  auto info = mojom::blink::InspectorIssueInfo::New(
+      code, mojom::blink::InspectorIssueDetails::New(),
+      mojom::blink::AffectedResources::New());
+  GetFrame()->GetDocument()->AddInspectorIssue(
+      InspectorIssue::Create(std::move(info)));
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

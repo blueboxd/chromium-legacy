@@ -472,8 +472,7 @@ void TestRunnerForSpecificView::ExecCommand(gin::Arguments* args) {
 
 void TestRunnerForSpecificView::TriggerTestInspectorIssue() {
   web_view()->FocusedFrame()->AddInspectorIssue(
-      blink::mojom::InspectorIssueCode::
-          kSameSiteCookiesSameSiteNoneMissingForThirdParty);
+      blink::mojom::InspectorIssueCode::kSameSiteCookieIssue);
 }
 
 bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {

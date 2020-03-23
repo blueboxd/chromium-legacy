@@ -123,6 +123,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       uint32_t page_index,
       base::span<const ppapi::PdfAccessibilityLinkInfo> links,
       base::span<const ppapi::PdfAccessibilityImageInfo> images,
+      base::span<const ppapi::PdfAccessibilityTextFieldInfo> text_fields,
       ui::AXNodeData* para_node);
 
   std::string GetTextRunCharsAsUTF8(
@@ -135,7 +136,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       int char_index);
   gfx::Vector2dF ToVector2dF(const PP_Point& p);
   gfx::RectF ToRectF(const PP_Rect& r);
-  ui::AXNodeData* CreateNode(ax::mojom::Role role);
+  ui::AXNodeData* CreateNode(ax::mojom::Role role,
+                             ax::mojom::Restriction restriction);
   ui::AXNodeData* CreateParagraphNode(float font_size,
                                       float heading_font_size_threshold);
   ui::AXNodeData* CreateStaticTextNode(
@@ -151,6 +153,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       const ppapi::PdfAccessibilityImageInfo& image);
   ui::AXNodeData* CreateHighlightNode(
       const ppapi::PdfAccessibilityHighlightInfo& highlight);
+  ui::AXNodeData* CreateTextFieldNode(
+      const ppapi::PdfAccessibilityTextFieldInfo& text_field);
   void AddTextToAXNode(
       uint32_t start_text_run_index,
       uint32_t end_text_run_index,

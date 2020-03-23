@@ -58,12 +58,12 @@ import java.util.List;
         }
 
         @Override
-        public boolean isSerpReferrer() {
-            return mIsSerpReferrer;
+        public boolean isGoogleReferrer() {
+            return mIsGoogleReferrer;
         }
 
-        public void setIsSerpReferrer(boolean value) {
-            mIsSerpReferrer = value;
+        public void setIsGoogleReferrer(boolean value) {
+            mIsGoogleReferrer = value;
         }
 
         @Override
@@ -92,7 +92,7 @@ import java.util.List;
             return handleWithAutofillAssistant(params, intent, fallbackUrl);
         }
 
-        private boolean mIsSerpReferrer;
+        private boolean mIsGoogleReferrer;
         private boolean mWasAutofillAssistantStarted;
     }
 
@@ -381,7 +381,7 @@ import java.util.List;
     testHandleWithAutofillAssistant_TriggersFromSearch() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsSerpReferrer(true);
+        delegate.setIsGoogleReferrer(true);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams
@@ -400,7 +400,7 @@ import java.util.List;
     testHandleWithAutofillAssistant_DoesNotTriggerFromSearchInIncognito() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsSerpReferrer(true);
+        delegate.setIsGoogleReferrer(true);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams
@@ -419,7 +419,7 @@ import java.util.List;
     testHandleWithAutofillAssistant_DoesNotTriggerFromDifferentOrigin() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsSerpReferrer(false);
+        delegate.setIsGoogleReferrer(false);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams
@@ -438,7 +438,7 @@ import java.util.List;
     testHandleWithAutofillAssistant_DoesNotTriggerWhenFeatureDisabled() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsSerpReferrer(true);
+        delegate.setIsGoogleReferrer(true);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams

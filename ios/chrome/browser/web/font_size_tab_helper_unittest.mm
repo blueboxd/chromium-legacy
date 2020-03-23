@@ -15,6 +15,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
+#include "ios/web/public/test/fakes/fake_web_frame.h"
+#import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -42,6 +44,17 @@ class FontSizeTabHelperTest : public PlatformTest {
     test_cbs_builder.SetPrefService(CreatePrefService());
     chrome_browser_state_ = test_cbs_builder.Build();
     web_state_.SetBrowserState(chrome_browser_state_.get());
+
+    auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
+    fake_web_frames_manager_ = frames_manager.get();
+    web_state_.SetWebFramesManager(std::move(frames_manager));
+
+    GURL url("https://example.com");
+    web_state_.SetCurrentURL(url);
+    auto main_frame = std::make_unique<web::FakeWebFrame>("frameID", true, url);
+    fake_main_frame_ = main_frame.get();
+    AddWebFrame(std::move(main_frame));
+
     FontSizeTabHelper::CreateForWebState(&web_state_);
   }
   ~FontSizeTabHelperTest() override { [application_ stopMocking]; }
@@ -71,10 +84,18 @@ class FontSizeTabHelperTest : public PlatformTest {
     return factory.CreateSyncable(registry.get());
   }
 
+  void AddWebFrame(std::unique_ptr<web::WebFrame> frame) {
+    web::WebFrame* frame_ptr = frame.get();
+    fake_web_frames_manager_->AddWebFrame(std::move(frame));
+    web_state_.OnWebFrameDidBecomeAvailable(frame_ptr);
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   web::TestWebState web_state_;
+  web::FakeWebFrame* fake_main_frame_ = nullptr;
+  web::FakeWebFramesManager* fake_web_frames_manager_ = nullptr;
   UIContentSizeCategory preferred_content_size_category_ =
       UIContentSizeCategoryLarge;
   id application_ = nil;
@@ -85,77 +106,104 @@ class FontSizeTabHelperTest : public PlatformTest {
 // Tests that a web page's font size is set properly in a procedure started
 // with default |UIApplication.sharedApplication.preferredContentSizeCategory|.
 TEST_F(FontSizeTabHelperTest, PageLoadedWithDefaultFontSize) {
-  std::string last_executed_js;
+  std::vector<std::string> expected_js_call_history;
 
   // Load web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("", last_executed_js);
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 
   // Change PreferredContentSizeCategory and send
   // UIContentSizeCategoryDidChangeNotification.
   preferred_content_size_category_ = UIContentSizeCategoryExtraLarge;
   SendUIContentSizeCategoryDidChangeNotification();
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(112)", last_executed_js);
-  web_state_.ClearLastExecutedJavascript();
+  expected_js_call_history.push_back(
+      "__gCrWeb.accessibility.adjustFontSize(112);");
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(112)", last_executed_js);
+  expected_js_call_history.push_back(
+      "__gCrWeb.accessibility.adjustFontSize(112);");
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 }
 
 // Tests that a web page's font size is set properly in a procedure started
 // with special |UIApplication.sharedApplication.preferredContentSizeCategory|.
 TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
-  std::string last_executed_js;
+  std::vector<std::string> expected_js_call_history;
   preferred_content_size_category_ = UIContentSizeCategoryExtraLarge;
 
   // Load web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(112)", last_executed_js);
-  web_state_.ClearLastExecutedJavascript();
+  expected_js_call_history.push_back(
+      "__gCrWeb.accessibility.adjustFontSize(112);");
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 
   // Change PreferredContentSizeCategory and send
   // UIContentSizeCategoryDidChangeNotification.
   preferred_content_size_category_ = UIContentSizeCategoryExtraExtraLarge;
   SendUIContentSizeCategoryDidChangeNotification();
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
-  web_state_.ClearLastExecutedJavascript();
+  expected_js_call_history.push_back(
+      "__gCrWeb.accessibility.adjustFontSize(124);");
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
+  expected_js_call_history.push_back(
+      "__gCrWeb.accessibility.adjustFontSize(124);");
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 }
 
 // Tests that UMA log is sent when
 // |UIApplication.sharedApplication.preferredContentSizeCategory| returns an
 // unrecognizable category.
 TEST_F(FontSizeTabHelperTest, PageLoadedWithUnrecognizableFontSize) {
-  std::string last_executed_js;
+  std::vector<std::string> expected_js_call_history;
   preferred_content_size_category_ = @"This is a new Category";
 
   // Load web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("", last_executed_js);
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 
   // Change PreferredContentSizeCategory and send
   // UIContentSizeCategoryDidChangeNotification.
   preferred_content_size_category_ = UIContentSizeCategoryExtraExtraLarge;
   SendUIContentSizeCategoryDidChangeNotification();
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
-  web_state_.ClearLastExecutedJavascript();
+  expected_js_call_history.push_back(
+      "__gCrWeb.accessibility.adjustFontSize(124);");
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
 
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
+  expected_js_call_history.push_back(
+      "__gCrWeb.accessibility.adjustFontSize(124);");
+  EXPECT_EQ(expected_js_call_history,
+            fake_main_frame_->GetJavaScriptCallHistory());
+}
+
+// Tests that the font size is changed in all frames on the page.
+TEST_F(FontSizeTabHelperTest, ZoomInAllFrames) {
+  preferred_content_size_category_ = UIContentSizeCategoryExtraLarge;
+
+  std::unique_ptr<web::FakeWebFrame> other_frame =
+      std::make_unique<web::FakeWebFrame>("frameID2", false,
+                                          GURL("https://example.com"));
+  web::FakeWebFrame* fake_other_frame = other_frame.get();
+  AddWebFrame(std::move(other_frame));
+
+  // Load web page.
+  web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  std::string expected_js_call = "__gCrWeb.accessibility.adjustFontSize(112);";
+  EXPECT_EQ(expected_js_call, fake_main_frame_->GetLastJavaScriptCall());
+  EXPECT_EQ(expected_js_call, fake_other_frame->GetLastJavaScriptCall());
 }
 
 // Tests that the user can zoom in, and that after zooming in, the correct
@@ -171,9 +219,8 @@ TEST_F(FontSizeTabHelperTest, ZoomIn) {
 
   EXPECT_TRUE(font_size_tab_helper->CanUserZoomIn());
 
-  std::string last_executed_js =
-      base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110)", last_executed_js);
+  std::string last_executed_js = fake_main_frame_->GetLastJavaScriptCall();
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110);", last_executed_js);
 
   // Check that new zoom value is also saved in the pref under the right key.
   std::string pref_key =
@@ -196,9 +243,8 @@ TEST_F(FontSizeTabHelperTest, ZoomOut) {
 
   EXPECT_TRUE(font_size_tab_helper->CanUserZoomOut());
 
-  std::string last_executed_js =
-      base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(90)", last_executed_js);
+  std::string last_executed_js = fake_main_frame_->GetLastJavaScriptCall();
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(90);", last_executed_js);
 
   // Check that new zoom value is also saved in the pref under the right key.
   std::string pref_key =
@@ -226,9 +272,8 @@ TEST_F(FontSizeTabHelperTest, ResetZoom) {
 
   // Then reset. The pref key should be removed from the dictionary.
   font_size_tab_helper->UserZoom(ZOOM_RESET);
-  std::string last_executed_js =
-      base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(100)", last_executed_js);
+  std::string last_executed_js = fake_main_frame_->GetLastJavaScriptCall();
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(100);", last_executed_js);
   EXPECT_FALSE(pref->FindDoublePath(pref_key));
 }
 
@@ -245,10 +290,9 @@ TEST_F(FontSizeTabHelperTest, ZoomAndAccessibilityTextSize) {
   font_size_tab_helper->UserZoom(ZOOM_IN);
   std::string pref_key =
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
-  std::string last_executed_js =
-      base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
+  std::string last_executed_js = fake_main_frame_->GetLastJavaScriptCall();
   // 1.12 from accessibility * 1.1 from zoom
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(123)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(123);", last_executed_js);
   // Only the user zoom portion is stored in the preferences.
   const base::Value* pref =
       chrome_browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);

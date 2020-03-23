@@ -46,6 +46,7 @@
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
@@ -422,7 +423,9 @@ BrowserContext* GetBrowserContextFromStoragePartition(
 // TODO(crbug.com/977040): Remove when no longer needed.
 void DeprecateSameSiteCookies(int process_id,
                               int routing_id,
-                              const net::CookieStatusList& cookie_list) {
+                              const net::CookieStatusList& cookie_list,
+                              const GURL& url,
+                              const GURL& site_for_cookies) {
   // Navigation requests start in the browser, before process_id is assigned, so
   // the id is set to network::mojom::kBrowserProcessId. In these situations,
   // the routing_id is the frame tree node id, and can be used directly.
@@ -481,9 +484,6 @@ void DeprecateSameSiteCookies(int process_id,
               net::CanonicalCookie::CookieInclusionStatus::
                   WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
         samesite_treated_as_lax_cookies = true;
-        root_frame_host->AddInspectorIssue(
-            blink::mojom::InspectorIssueCode::
-                kSameSiteCookiesSameSiteNoneMissingForThirdParty);
       }
 
       if (excluded_cookie.status.HasWarningReason(
@@ -496,13 +496,10 @@ void DeprecateSameSiteCookies(int process_id,
               net::CanonicalCookie::CookieInclusionStatus::
                   WARN_SAMESITE_NONE_INSECURE)) {
         samesite_none_insecure_cookies = true;
-
-        root_frame_host->AddInspectorIssue(
-            blink::mojom::InspectorIssueCode::
-                kSameSiteCookiesSameSiteNoneWithoutSecure);
       }
+      devtools_instrumentation::ReportSameSiteCookieIssue(
+          root_frame_host, excluded_cookie, url, site_for_cookies);
     }
-
     if (emit_messages) {
       root_frame_host->AddSameSiteCookieDeprecationMessage(
           cookie_url, excluded_cookie.status,
@@ -572,7 +569,8 @@ void ReportCookiesChangedOnUI(
     const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const GlobalFrameRoutingId& id : destinations) {
-    DeprecateSameSiteCookies(id.child_id, id.frame_routing_id, cookie_list);
+    DeprecateSameSiteCookies(id.child_id, id.frame_routing_id, cookie_list, url,
+                             site_for_cookies);
   }
 
   for (const auto& cookie_and_status : cookie_list) {
@@ -626,7 +624,8 @@ void ReportCookiesReadOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (const GlobalFrameRoutingId& id : destinations) {
-    DeprecateSameSiteCookies(id.child_id, id.frame_routing_id, cookie_list);
+    DeprecateSameSiteCookies(id.child_id, id.frame_routing_id, cookie_list, url,
+                             site_for_cookies);
   }
 
   net::CookieList accepted, blocked;

@@ -52,25 +52,6 @@ public class PaintPreviewTabServiceTest {
     }
 
     /**
-     * Holder for boolean data manipulated in lambdas.
-     */
-    public class Success {
-        private boolean mOk;
-
-        public Success() {
-            mOk = false;
-        }
-
-        public boolean get() {
-            return mOk;
-        }
-
-        public void set(boolean ok) {
-            mOk = ok;
-        }
-    }
-
-    /**
      * Verifies that a Tab's contents are captured when the page is loaded and subsequently deleted
      * when the tab is closed.
      */
@@ -88,26 +69,16 @@ public class PaintPreviewTabServiceTest {
         });
 
         int tabId = mTab.getId();
-        Success ok = new Success();
         CriteriaHelper.pollUiThread(() -> {
-            if (!ok.get()) {
-                mPaintPreviewTabService.hasCaptureForTab(
-                        tabId, has_capture -> { ok.set(has_capture); });
-            }
-            return ok.get();
+            return mPaintPreviewTabService.hasCaptureForTab(tabId);
         }, "Paint Preview didn't get captured.", TIMEOUT_MS, POLLING_INTERVAL_MS);
 
         CallbackHelper callbackHelper = new CallbackHelper();
         int callCount = callbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> { mTabModel.closeTab(mTab); });
 
-        ok.set(false);
         CriteriaHelper.pollUiThread(() -> {
-            if (!ok.get()) {
-                mPaintPreviewTabService.hasCaptureForTab(
-                        tabId, has_capture -> { ok.set(!has_capture); });
-            }
-            return ok.get();
+            return !mPaintPreviewTabService.hasCaptureForTab(tabId);
         }, "Paint Preview didn't get deleted.", TIMEOUT_MS, POLLING_INTERVAL_MS);
     }
 }

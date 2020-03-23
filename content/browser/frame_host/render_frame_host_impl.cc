@@ -8095,8 +8095,8 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
 }
 
 void RenderFrameHostImpl::AddInspectorIssue(
-    blink::mojom::InspectorIssueCode code) {
-  GetAssociatedLocalFrame()->AddInspectorIssue(code);
+    blink::mojom::InspectorIssueInfoPtr info) {
+  GetAssociatedLocalFrame()->AddInspectorIssue(std::move(info));
 }
 
 bool RenderFrameHostImpl::ShouldAddCookieSameSiteDeprecationMessage(

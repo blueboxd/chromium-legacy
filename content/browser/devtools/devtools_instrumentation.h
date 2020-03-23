@@ -28,6 +28,7 @@ class UnguessableToken;
 namespace net {
 class SSLInfo;
 class X509Certificate;
+struct CookieWithStatus;
 }  // namespace net
 
 namespace content {
@@ -153,6 +154,10 @@ void PortalAttached(RenderFrameHostImpl* render_frame_host_impl);
 void PortalDetached(RenderFrameHostImpl* render_frame_host_impl);
 void PortalActivated(RenderFrameHostImpl* render_frame_host_impl);
 
+void ReportSameSiteCookieIssue(RenderFrameHostImpl* render_frame_host_impl,
+                               const net::CookieWithStatus& excluded_cookie,
+                               const GURL& url,
+                               const GURL& site_for_cookies);
 }  // namespace devtools_instrumentation
 
 }  // namespace content

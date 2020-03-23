@@ -370,7 +370,8 @@ CrSettingsPasswordsSectionTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
+// TODO(crbug.com/1063723): Fix it.
+TEST_F('CrSettingsPasswordsSectionTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

@@ -135,13 +135,14 @@ PrepareCompositeRequest(const paint_preview::PaintPreviewProto& proto) {
 
 PlayerCompositorDelegate::PlayerCompositorDelegate(
     PaintPreviewBaseService* paint_preview_service,
+    const GURL& expected_url,
     const DirectoryKey& key,
     bool skip_service_launch)
     : paint_preview_service_(paint_preview_service) {
   if (skip_service_launch) {
     paint_preview_service_->GetCapturedPaintPreviewProto(
         key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
-                            weak_factory_.GetWeakPtr()));
+                            weak_factory_.GetWeakPtr(), expected_url));
     return;
   }
   paint_preview_compositor_service_ =
@@ -152,36 +153,52 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
   paint_preview_compositor_client_ =
       paint_preview_compositor_service_->CreateCompositor(
           base::BindOnce(&PlayerCompositorDelegate::OnCompositorClientCreated,
-                         weak_factory_.GetWeakPtr(), key));
+                         weak_factory_.GetWeakPtr(), expected_url, key));
   paint_preview_compositor_client_->SetDisconnectHandler(
       base::BindOnce(&PlayerCompositorDelegate::OnCompositorClientDisconnected,
                      weak_factory_.GetWeakPtr()));
 }
+
+PlayerCompositorDelegate::~PlayerCompositorDelegate() = default;
 
 void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
   // TODO(crbug.com/1039699): Handle compositor service disconnect event.
 }
 
 void PlayerCompositorDelegate::OnCompositorClientCreated(
+    const GURL& expected_url,
     const DirectoryKey& key) {
   paint_preview_service_->GetCapturedPaintPreviewProto(
       key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr(), expected_url));
 }
 
 void PlayerCompositorDelegate::OnProtoAvailable(
+    const GURL& expected_url,
     std::unique_ptr<PaintPreviewProto> proto) {
   if (!proto || !proto->IsInitialized()) {
     // TODO(crbug.com/1021590): Handle initialization errors.
+    OnCompositorReady(
+        mojom::PaintPreviewCompositor::Status::kCompositingFailure, nullptr);
     return;
   }
+
+  auto proto_url = GURL(proto->metadata().url());
+  if (expected_url != proto_url) {
+    OnCompositorReady(
+        mojom::PaintPreviewCompositor::Status::kDeserializingFailure, nullptr);
+    return;
+  }
+
   hit_testers_ = BuildHitTesters(*proto);
 
-  if (!paint_preview_compositor_client_)
+  if (!paint_preview_compositor_client_) {
+    OnCompositorReady(
+        mojom::PaintPreviewCompositor::Status::kCompositingFailure, nullptr);
     return;
+  }
 
-  paint_preview_compositor_client_->SetRootFrameUrl(
-      GURL(proto->metadata().url()));
+  paint_preview_compositor_client_->SetRootFrameUrl(proto_url);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
@@ -193,8 +210,11 @@ void PlayerCompositorDelegate::OnProtoAvailable(
 void PlayerCompositorDelegate::SendCompositeRequest(
     mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request) {
   // TODO(crbug.com/1021590): Handle initialization errors.
-  if (!begin_composite_request)
+  if (!begin_composite_request) {
+    OnCompositorReady(
+        mojom::PaintPreviewCompositor::Status::kCompositingFailure, nullptr);
     return;
+  }
 
   paint_preview_compositor_client_->BeginComposite(
       std::move(begin_composite_request),
@@ -231,7 +251,5 @@ std::vector<const GURL*> PlayerCompositorDelegate::OnClick(
     it->second->HitTest(rect, &urls);
   return urls;
 }
-
-PlayerCompositorDelegate::~PlayerCompositorDelegate() = default;
 
 }  // namespace paint_preview

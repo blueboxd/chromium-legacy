@@ -197,9 +197,13 @@
 
   /** @override */
   getPlaintextCompromisedPassword(credential, reason) {
-    this.methodCalled('getPlainttextCompromisedPassword');
+    this.methodCalled('getPlainttextCompromisedPassword', {credential, reason});
+    if (!this.plaintextPassword_) {
+      return Promise.reject('Could not obtain plaintext password');
+    }
+
     const newCredential = Object.assign({}, credential);
-    newCredential.password = 'this-is-the-password';
+    newCredential.password = this.plaintextPassword_;
     return Promise.resolve(newCredential);
   }
 

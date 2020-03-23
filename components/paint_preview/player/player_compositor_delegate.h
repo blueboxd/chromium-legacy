@@ -30,6 +30,7 @@ class DirectoryKey;
 class PlayerCompositorDelegate {
  public:
   PlayerCompositorDelegate(PaintPreviewBaseService* paint_preview_service,
+                           const GURL& url,
                            const DirectoryKey& key,
                            bool skip_service_launch = false);
   virtual ~PlayerCompositorDelegate();
@@ -57,10 +58,12 @@ class PlayerCompositorDelegate {
  private:
   void OnCompositorServiceDisconnected();
 
-  void OnCompositorClientCreated(const DirectoryKey& key);
+  void OnCompositorClientCreated(const GURL& expected_url,
+                                 const DirectoryKey& key);
   void OnCompositorClientDisconnected();
 
-  void OnProtoAvailable(std::unique_ptr<PaintPreviewProto> proto);
+  void OnProtoAvailable(const GURL& expected_url,
+                        std::unique_ptr<PaintPreviewProto> proto);
   void SendCompositeRequest(
       mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request);
 

@@ -210,11 +210,17 @@ Polymer({
         .getPlaintextCompromisedPassword(
             assert(this.activePassword_),
             chrome.passwordsPrivate.PlaintextReason.EDIT)
-        .then(compromisedCredential => {
-          this.activePassword_ = compromisedCredential;
-          this.$.moreActionsMenu.close();
-          this.showPasswordEditDialog_ = true;
-        });
+        .then(
+            compromisedCredential => {
+              this.activePassword_ = compromisedCredential;
+              this.$.moreActionsMenu.close();
+              this.showPasswordEditDialog_ = true;
+            },
+            error => {
+              this.activePassword_ = null;
+              this.$.moreActionsMenu.close();
+              this.onPasswordEditDialogClosed_();
+            });
   },
 
   /** @private */

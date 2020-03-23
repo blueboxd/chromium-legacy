@@ -829,9 +829,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->SetDefaultActionVerb(src.Action());
     }
 
-    if (src.HasComputedStyle()) {
+    blink::WebString display_style = src.ComputedStyleDisplay();
+    if (!display_style.IsEmpty()) {
       TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDisplay,
-                                    src.ComputedStyleDisplay().Utf8());
+                                    display_style.Utf8());
     }
 
     if (src.Language().length()) {

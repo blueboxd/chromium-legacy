@@ -2220,8 +2220,8 @@ void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
       discard_duplicates);
 }
 
-void LocalFrame::AddInspectorIssue(mojom::blink::InspectorIssueCode code) {
-  GetDocument()->AddInspectorIssue(InspectorIssue::Create(code));
+void LocalFrame::AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) {
+  GetDocument()->AddInspectorIssue(InspectorIssue::Create(std::move(info)));
 }
 
 void LocalFrame::Collapse(bool collapsed) {

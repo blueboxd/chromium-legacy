@@ -16,17 +16,25 @@ namespace blink {
 class CORE_EXPORT InspectorIssue final
     : public GarbageCollected<InspectorIssue> {
  public:
-  InspectorIssue(mojom::blink::InspectorIssueCode code);
+  InspectorIssue() = delete;
+  InspectorIssue(mojom::blink::InspectorIssueCode code,
+
+                 mojom::blink::InspectorIssueDetailsPtr details,
+                 mojom::blink::AffectedResourcesPtr resources);
   ~InspectorIssue();
 
-  static InspectorIssue* Create(mojom::blink::InspectorIssueCode code);
+  static InspectorIssue* Create(mojom::blink::InspectorIssueInfoPtr info);
 
-  const mojom::blink::InspectorIssueCode& Code() const;
+  mojom::blink::InspectorIssueCode Code() const;
+  const mojom::blink::InspectorIssueDetailsPtr& Details() const;
+  const mojom::blink::AffectedResourcesPtr& Resources() const;
 
   void Trace(Visitor*);
 
  private:
   mojom::blink::InspectorIssueCode code_;
+  mojom::blink::InspectorIssueDetailsPtr details_;
+  mojom::blink::AffectedResourcesPtr resources_;
 };
 
 }  // namespace blink

@@ -3462,15 +3462,12 @@
         'browser_config': 'release_x64',
         'mixins': [
           'limited_capacity_bot',
-          'win10_intel_hd_630_stable',
+          'win10_intel_hd_630_experimental',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
-          # TODO(https://crbug.com/1053803): Re-enable tests once the machines
-          # are updated  to the target driver version.
-          # 'gtest_tests': 'gpu_fyi_win_gtests',
-          # 'isolated_scripts': 'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts',
-          # 'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
       'Win10 FYI x64 Exp Release (NVIDIA)': {

@@ -313,6 +313,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2288422996159078444">Apa-apa sahaja yang anda taip, sebarang halaman yang anda lihat atau sebarang aktiviti lain menerusi web sedang diperhatikan. Kandungan pada tapak boleh diubah tanpa pengetahuan anda.</translation>
 <translation id="2289385804009217824">Pangkas</translation>
 <translation id="2292556288342944218">Akses Internet anda disekat</translation>
+<translation id="2293443924986248631">Apabila pilihan ini dihidupkan, tapak tidak dapat menggunakan kuki yang menjejaki anda merentas web. Ciri pada sesetengah tapak mungkin rosak.</translation>
 <translation id="2297722699537546652">B5 (Sampul Surat)</translation>
 <translation id="2300306941146563769">Tidak dimuat naik</translation>
 <translation id="2310021320168182093">Chou2 (Sampul Surat)</translation>
@@ -730,6 +731,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4152318981910038897">{COUNT,plural, =1{Halaman 1}other{Halaman {COUNT}}}</translation>
 <translation id="4154664944169082762">Cap jari</translation>
 <translation id="4159784952369912983">Ungu</translation>
+<translation id="4163132590327127354">Chrome meringkaskan halaman ini untuk memudahkan pembacaan.</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1030,6 +1032,11 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
 <translation id="5371425731340848620">Kemas kini kad</translation>
 <translation id="5377026284221673050">"Jam anda lambat" atau "Jam anda cepat" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">Pelayan destinasi anda, <ph name="ORIGIN" />, telah menetapkan pengepala
+    yang menghendaki dasar asal dikenakan pada semua permintaan yang diterima oleh pelayan itu. Tetapi
+    pengepala tersebut telah rosak dan menghalang penyemak imbas daripada memenuhi
+    permintaan anda untuk <ph name="SITE" />. Dasar asal boleh digunakan oleh
+    pengendali tapak untuk mengkonfigurasi keselamatan dan sifat lain bagi tapak.</translation>
 <translation id="5386426401304769735">Rantaian sijil untuk tapak ini mengandungi sijil yang ditandatangani menggunakan SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Jahitan tepi kanan</translation>
@@ -1576,6 +1583,7 @@ Butiran tambahan:
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Tembok api atau perisian antivirus mungkin telah menyekat sambungan.</translation>
 <translation id="7759163816903619567">Domain paparan:</translation>
+<translation id="776110834126722255">Ditamatkan</translation>
 <translation id="7761701407923456692">Sijil pelayan tidak sepadan dengan URL.</translation>
 <translation id="7763386264682878361">Penghurai Manifes Bayaran</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>

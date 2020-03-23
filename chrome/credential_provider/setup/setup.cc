@@ -27,6 +27,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/process_startup_helper.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -163,11 +164,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
     return -1;
   }
 
-  hr = ::CoInitializeEx(nullptr, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "Could not initialize COM.";
-    return -1;
-  }
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
 
   // Parse command line.
   bool is_uninstall =
@@ -224,6 +222,5 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
                 << ". " << time_string;
   }
 
-  ::CoUninitialize();
   return 0;
 }

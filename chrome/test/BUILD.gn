@@ -168,6 +168,7 @@ static_library("test_support") {
     #"//chrome/app/theme:theme_resources",
     "//chrome/browser:test_support",
     "//chrome/child",
+    "//chrome/common:non_code_constants",
     "//chrome/common:test_support",
     "//chrome/renderer",
     "//chrome/renderer:test_support",

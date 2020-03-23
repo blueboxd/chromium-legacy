@@ -1,4 +1,5 @@
 <!DOCTYPE HTML>
+<script src='../../../resources/gesture-util.js'></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <style>
@@ -45,19 +46,7 @@
 var parentDiv = document.getElementById('parentDiv');
 var childDiv = document.getElementById('childDiv');
 
-const WHEEL_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
-function scrollDown(pixels_to_scroll, start_x, start_y, speed_in_pixels_s) {
-  return new Promise((resolve, reject) => {
-    chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
-                                          resolve,
-                                          start_x,
-                                          start_y,
-                                          WHEEL_SOURCE_TYPE,
-                                          'down',
-                                          speed_in_pixels_s);
-  });
-}
-
+const WHEEL_SOURCE_TYPE = GestureSourceType.MOUSE_INPUT;
 const MAX_RAF = 1000;
 var last_child_scroll_offset = childDiv.scrollTop;
 var last_parent_scroll_offset = parentDiv.scrollTop;
@@ -85,7 +74,7 @@ function waitForAnimationEnd() {
 
 var rect = childDiv.getBoundingClientRect();
 function testWheelScrollLatching() {
-  return scrollDown(400, (rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2, 1000)
+  return smoothScroll(400, (rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2, WHEEL_SOURCE_TYPE, 'down', 1000)
   .then(waitForAnimationEnd)
   .then(() => {
     assert_equals(childDiv.scrollTop, 10, "childDiv must be fully scrolled");

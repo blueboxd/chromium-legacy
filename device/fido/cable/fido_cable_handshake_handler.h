@@ -87,6 +87,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV2HandshakeHandler
       base::span<const uint8_t, 8> nonce,
       base::span<const uint8_t, kCableEphemeralIdSize> eid,
       base::Optional<base::span<const uint8_t, 65>> peer_identity,
+      base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
+          local_seed,
       base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
           pairing_callback);
   ~FidoCableV2HandshakeHandler() override;

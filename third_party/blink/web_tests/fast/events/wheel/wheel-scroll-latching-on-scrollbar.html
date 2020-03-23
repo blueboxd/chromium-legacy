@@ -1,4 +1,5 @@
 <!DOCTYPE HTML>
+<script src='../../../resources/gesture-util.js'></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <style>
@@ -43,19 +44,7 @@
 var childDiv = document.getElementById('childDiv');
 var parentDiv = document.getElementById('parentDiv');
 var rect = childDiv.getBoundingClientRect();
-const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
-
-function scrollDown(pixels_to_scroll, start_x, start_y, speed_in_pixels_s) {
-  return new Promise((resolve, reject) => {
-    chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
-                                          resolve,
-                                          start_x,
-                                          start_y,
-                                          GESTURE_SOURCE_TYPE,
-                                          'down',
-                                          speed_in_pixels_s);
-  });
-}
+const GESTURE_SOURCE_TYPE = GestureSourceType.MOUSE_INPUT;
 
 const MAX_RAF = 1000;
 function waitForAnimationEnd() {
@@ -83,7 +72,7 @@ function waitForAnimationEnd() {
 }
 
 promise_test(t => {
-  return scrollDown(1000, rect.right - 5, rect.bottom - 5, 4000)
+  return smoothScroll(1000, rect.right - 5, rect.bottom - 5, GESTURE_SOURCE_TYPE, 'down', 4000)
   .then(waitForAnimationEnd)
   .then(() => {
     assert_equals(childDiv.scrollTop, childDiv.scrollHeight - childDiv.clientHeight,

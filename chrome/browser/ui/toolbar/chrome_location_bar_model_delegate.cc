@@ -18,6 +18,8 @@
 #include "components/google/core/common/google_util.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_state/core/security_state.h"
@@ -73,8 +75,12 @@ bool ChromeLocationBarModelDelegate::GetURL(GURL* url) const {
 }
 
 bool ChromeLocationBarModelDelegate::ShouldPreventElision() const {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   Profile* const profile = GetProfile();
+  if (profile &&
+      profile->GetPrefs()->GetBoolean(omnibox::kPreventUrlElisionsInOmnibox)) {
+    return true;
+  }
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   return profile && extensions::ExtensionRegistry::Get(profile)
                         ->enabled_extensions()
                         .Contains(kPreventElisionExtensionId);
@@ -227,4 +233,10 @@ ChromeLocationBarModelDelegate::GetAutocompleteClassifier() {
 TemplateURLService* ChromeLocationBarModelDelegate::GetTemplateURLService() {
   Profile* const profile = GetProfile();
   return profile ? TemplateURLServiceFactory::GetForProfile(profile) : nullptr;
+}
+
+// static
+void ChromeLocationBarModelDelegate::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(omnibox::kPreventUrlElisionsInOmnibox, false);
 }

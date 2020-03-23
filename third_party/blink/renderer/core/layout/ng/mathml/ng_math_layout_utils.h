@@ -45,6 +45,10 @@ inline base::Optional<float> MathConstant(
 
 LayoutUnit FractionLineThickness(const ComputedStyle& style);
 
+inline bool HasDisplayStyle(const ComputedStyle& style) {
+  return style.MathStyle() == EMathStyle::kDisplay;
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_MATHML_NG_MATH_LAYOUT_UTILS_H_

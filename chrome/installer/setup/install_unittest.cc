@@ -4,7 +4,6 @@
 
 #include "chrome/installer/setup/install.h"
 
-#include <objbase.h>
 #include <stddef.h>
 
 #include <memory>
@@ -24,6 +23,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/version.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/shortcut.h"
 #include "build/branding_buildflags.h"
 #include "chrome/install_static/install_details.h"
@@ -207,8 +207,7 @@ INSTANTIATE_TEST_SUITE_P(
 class InstallShortcutTest : public testing::Test {
  protected:
   void SetUp() override {
-    EXPECT_EQ(S_OK, CoInitialize(NULL));
-
+    ASSERT_TRUE(com_initializer_.Succeeded());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     chrome_exe_ = temp_dir_.GetPath().Append(installer::kChromeExe);
     EXPECT_EQ(0, base::WriteFile(chrome_exe_, "", 0));
@@ -272,7 +271,6 @@ class InstallShortcutTest : public testing::Test {
     base::win::UnpinShortcutFromTaskbar(user_start_menu_subdir_shortcut_);
     base::win::UnpinShortcutFromTaskbar(system_start_menu_shortcut_);
     base::win::UnpinShortcutFromTaskbar(system_start_menu_subdir_shortcut_);
-    CoUninitialize();
   }
 
   installer::MasterPreferences* GetFakeMasterPrefs(
@@ -299,6 +297,8 @@ class InstallShortcutTest : public testing::Test {
 
     return new installer::MasterPreferences(master_prefs);
   }
+
+  base::win::ScopedCOMInitializer com_initializer_;
 
   base::win::ShortcutProperties expected_properties_;
   base::win::ShortcutProperties expected_start_menu_properties_;

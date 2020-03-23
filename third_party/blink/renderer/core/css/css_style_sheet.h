@@ -100,9 +100,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     deleteRule(index, exception_state);
   }
 
-  ScriptPromise replace(ScriptState* script_state,
-                        const String& text,
-                        ExceptionState&);
+  ScriptPromise replace(ScriptState* script_state, const String& text);
   void replaceSync(const String& text, ExceptionState&);
   void ResolveReplacePromiseIfNeeded(bool load_error_occured);
 
@@ -191,7 +189,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool SheetLoaded();
   bool LoadCompleted() const { return load_completed_; }
   void StartLoadingDynamicSheet();
-  void SetText(const String&, bool allow_import_rules, ExceptionState&);
+  // If `allow_import_rules` is false, an ExceptionState pointer must be
+  // provided, otherwise it can be null.
+  void SetText(const String&, bool allow_import_rules, ExceptionState*);
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
   bool CanBeActivated(const String& current_preferrable_name) const;

@@ -20,6 +20,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -124,8 +125,9 @@ import java.util.concurrent.atomic.AtomicReference;
 /** Tests for the {@link StartSurfaceLayout} */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
         "force-fieldtrials=Study/Group"})
+@Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
+        ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 public class StartSurfaceLayoutTest {
@@ -260,6 +262,7 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRenderGrid_3NativeTabs() throws InterruptedException, IOException {
         // clang-format on
+        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         // Prepare some incognito native tabs and enter tab switcher.
         // NTP in incognito mode is chosen for its consistency in look, and we don't have to mock
         // away the MV tiles, login promo, feed, etc.
@@ -276,10 +279,11 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
         // clang-format on
+        assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(0, mTabListDelegate.getCleanupDelayForTesting());
 
@@ -305,10 +309,11 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
         // clang-format on
+        assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(2000, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
 
@@ -324,6 +329,7 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
+        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
@@ -331,10 +337,11 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
         // clang-format on
+        assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
 
@@ -350,6 +357,7 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         // clang-format on
+        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
@@ -404,8 +412,9 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToCurrentLive() throws InterruptedException {
+        assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(1, 0, mUrl);
         testGridToTab(false, false);
     }
@@ -426,8 +435,9 @@ public class StartSurfaceLayoutTest {
      */
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToCurrentLiveDetached() throws Exception {
+        assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         // This works on emulators but not on real devices. See crbug.com/986047.
         if (!isEmulator()) return;
 
@@ -468,14 +478,16 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
+        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(1, 0, mUrl);
         testGridToTab(false, false);
     }
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToOtherLive() throws InterruptedException {
+        assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, mUrl);
         testGridToTab(true, false);
     }
@@ -486,14 +498,16 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
+        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, mUrl);
         testGridToTab(true, false);
     }
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToOtherFrozen() throws InterruptedException {
+        assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, mUrl);
         testGridToTab(true, true);
     }
@@ -1020,7 +1034,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("NewTabTile")
     // clang-format off
-    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
             ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
     @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/false"
             + "/tab_grid_layout_android_new_tab/false"})
@@ -1042,7 +1056,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testThumbnailAspectRatio_default() throws Exception {
         // clang-format on
@@ -1055,7 +1068,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
     public void testThumbnailAspectRatio_point75() throws Exception {
         prepareTabs(2, 0, mUrl);
@@ -1075,7 +1087,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
     public void testThumbnailAspectRatio_fromTwoToPoint75() throws Exception {
         // clang-format on
@@ -1102,7 +1113,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testThumbnailFetchingResult_defaultAspectRatio() throws Exception {
         // clang-format on
@@ -1180,7 +1190,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
     public void testThumbnailFetchingResult_changingAspectRatio() throws Exception {
         // clang-format on
@@ -1264,7 +1273,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
         message = "https://crbug.com/1023833")
     @CommandLineFlags.Add({BASE_PARAMS})
@@ -1279,7 +1287,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
         message = "https://crbug.com/1023833")
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
@@ -1294,7 +1301,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
         message = "https://crbug.com/1023833")
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
@@ -1309,7 +1315,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("NewTabVariation")
     // clang-format off
-    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION,
+    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
             ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
     @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab/NewTabVariation"})
     public void testNewTabVariation() throws InterruptedException {

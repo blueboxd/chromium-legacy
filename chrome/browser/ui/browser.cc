@@ -818,8 +818,7 @@ base::string16 Browser::GetWindowTitleFromWebContents(
 #if defined(OS_MACOSX)
   // On Mac, we don't want to suffix the page title with the application name.
   return title;
-#endif
-
+#else
   // If there is no title and this is an app, fall back on the app name. This
   // ensures that the native window gets a title which is important for a11y,
   // for example the window selector uses the Aura window title.
@@ -836,6 +835,7 @@ base::string16 Browser::GetWindowTitleFromWebContents(
              ? l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT,
                                           title)
              : title;
+#endif
 }
 
 // static

@@ -113,9 +113,6 @@ class ProfileNetworkContextService
   // formatting them as appropriate.
   void UpdateAcceptLanguage();
 
-  // Forwards changes to |block_third_party_cookies_| to the NetworkContext.
-  void UpdateBlockThirdPartyCookies();
-
   // Computes appropriate value of Accept-Language header based on
   // |pref_accept_language_|
   std::string ComputeAcceptLanguage() const;

@@ -114,15 +114,16 @@ chrome.inputMethodPrivate.InputContext;
 /**
  * User preference settings for a specific input method. Japanese input methods are not included because they are managed separately by Mozc module.
  * @typedef {{
- *   autoCorrectionLevelPK: (number|undefined),
- *   autoCorrectionLevelVK: (number|undefined),
- *   enableCapitalizationPK: (boolean|undefined),
- *   enableCapitalizationVK: (boolean|undefined),
  *   enableCompletion: (boolean|undefined),
  *   enableDoubleSpacePeriod: (boolean|undefined),
  *   enableGestureTyping: (boolean|undefined),
  *   enablePrediction: (boolean|undefined),
  *   enableSoundOnKeypress: (boolean|undefined),
+ *   physicalKeyboardAutoCorrectionLevel: (number|undefined),
+ *   physicalKeyboardEnableCapitalization: (boolean|undefined),
+ *   virtualKeyboardAutoCorrectionLevel: (number|undefined),
+ *   virtualKeyboardEnableCapitalization: (boolean|undefined),
+ *   xkbLayout: (string|undefined),
  *   koreanEnableSyllableInput: (boolean|undefined),
  *   koreanKeyboardLayout: (string|undefined),
  *   koreanShowHangulCandidate: (boolean|undefined),
@@ -146,10 +147,9 @@ chrome.inputMethodPrivate.InputContext;
  *     uan_uang: (boolean|undefined),
  *     z_zh: (boolean|undefined)
  *   }|undefined),
- *   xkbLayout: (string|undefined),
  *   zhuyinKeyboardLayout: (string|undefined),
  *   zhuyinPageSize: (number|undefined),
- *   zhuyinSelectionKeys: (string|undefined)
+ *   zhuyinSelectKeys: (string|undefined)
  * }}
  */
 chrome.inputMethodPrivate.InputMethodSettings;

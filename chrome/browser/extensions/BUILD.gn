@@ -831,6 +831,7 @@ jumbo_static_library("extensions") {
     "//components/net_log",
     "//components/omnibox/browser",
     "//components/onc",
+    "//components/page_load_metrics/browser:browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/browser/leak_detection",

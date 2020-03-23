@@ -109,6 +109,12 @@ class PermissionRequestManager
   void Deny() override;
   void Closing() override;
 
+  void set_web_contents_supports_permission_requests(
+      bool web_contents_supports_permission_requests) {
+    web_contents_supports_permission_requests_ =
+        web_contents_supports_permission_requests;
+  }
+
   // For testing only, used to override the default UI selector.
   void set_notification_permission_ui_selector_for_testing(
       std::unique_ptr<NotificationPermissionUiSelector> selector) {
@@ -232,6 +238,10 @@ class PermissionRequestManager
   // response to a UI event. In this case, callbacks from the bubble itself
   // should be ignored.
   bool deleting_bubble_ = false;
+
+  // Whether the web contents associated with this request manager supports
+  // permission prompts.
+  bool web_contents_supports_permission_requests_ = true;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

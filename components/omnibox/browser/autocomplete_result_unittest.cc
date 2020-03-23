@@ -928,6 +928,11 @@ TEST_F(AutocompleteResultTest, LogAsynchronousUpdateMetrics) {
       histograms.GetAllSamples("Omnibox.MatchStability.AsyncMatchChange2"),
       testing::ElementsAre(base::Bucket(0, 1), base::Bucket(2, 1),
                            base::Bucket(3, 1), base::Bucket(4, 1)));
+
+  // Expect that we log that at least one of the matches has changed.
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition"),
+              testing::ElementsAre(base::Bucket(1, 1)));
 }
 
 TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {

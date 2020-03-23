@@ -452,15 +452,16 @@ int CSSStyleSheet::addRule(const String& selector,
 }
 
 ScriptPromise CSSStyleSheet::replace(ScriptState* script_state,
-                                     const String& text,
-                                     ExceptionState& exception_state) {
+                                     const String& text) {
   if (!is_constructed_) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotAllowedError,
-        "Can't call replace on non-constructed CSSStyleSheets.");
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kNotAllowedError,
+            "Can't call replace on non-constructed CSSStyleSheets."));
   }
   // Parses the text synchronously, loads import rules asynchronously.
-  SetText(text, true /* allow_import_rules */, exception_state);
+  SetText(text, true /* allow_import_rules */, nullptr);
   if (!IsLoading())
     return ScriptPromise::Cast(script_state, ToV8(this, script_state));
   // We're loading a stylesheet that contains @import rules. This is deprecated.
@@ -473,11 +474,11 @@ ScriptPromise CSSStyleSheet::replace(ScriptState* script_state,
 void CSSStyleSheet::replaceSync(const String& text,
                                 ExceptionState& exception_state) {
   if (!is_constructed_) {
-    exception_state.ThrowDOMException(
+    return exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "Can't call replaceSync on non-constructed CSSStyleSheets.");
   }
-  SetText(text, false /* allow_import_rules */, exception_state);
+  SetText(text, false /* allow_import_rules */, &exception_state);
 }
 
 void CSSStyleSheet::ResolveReplacePromiseIfNeeded(bool load_error_occured) {
@@ -570,16 +571,17 @@ void CSSStyleSheet::SetLoadCompleted(bool completed) {
 
 void CSSStyleSheet::SetText(const String& text,
                             bool allow_import_rules,
-                            ExceptionState& exception_state) {
+                            ExceptionState* exception_state) {
   child_rule_cssom_wrappers_.clear();
 
   CSSStyleSheet::RuleMutationScope mutation_scope(this);
   contents_->ClearRules();
   if (contents_->ParseString(text, allow_import_rules) ==
       ParseSheetResult::kHasUnallowedImportRule) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
-                                      "@import rules are not allowed when "
-                                      "creating stylesheet synchronously.");
+    DCHECK(exception_state);
+    exception_state->ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                       "@import rules are not allowed when "
+                                       "creating stylesheet synchronously.");
   }
 }
 

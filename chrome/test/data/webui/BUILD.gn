@@ -259,6 +259,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/test_local_data_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_metrics_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_data_details_subpage_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/site_details_permission_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_entry_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_list_entry_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/site_list_tests.m.js",

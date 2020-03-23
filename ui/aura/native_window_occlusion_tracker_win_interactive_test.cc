@@ -26,7 +26,6 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/aura/window_tree_host_platform.h"
-#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/geometry/rect.h"
@@ -119,7 +118,6 @@ class NativeWindowOcclusionTrackerTest : public test::AuraTestBase {
         features::kCalculateNativeWinOcclusion);
 
     AuraTestBase::SetUp();
-    ui::InitializeInputMethodForTesting();
 
     display::Screen::SetScreenInstance(test_screen());
 

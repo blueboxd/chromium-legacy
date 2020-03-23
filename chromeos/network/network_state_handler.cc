@@ -1066,6 +1066,10 @@ void NetworkStateHandler::RequestUpdateForNetwork(
     const std::string& service_path) {
   NetworkState* network = GetModifiableNetworkState(service_path);
   if (network) {
+    // Tether networks are not managed by Shill; do not request properties.
+    if (network->type() == kTypeTether)
+      return;
+
     network->set_update_requested(true);
     NET_LOG(EVENT) << "RequestUpdate for: " << NetworkId(network);
   } else {

@@ -167,9 +167,7 @@ TEST_F(BulkLeakCheckTest, CheckCredentialsAccessTokenAuthError) {
   credentials.push_back(TestCredential("user1"));
   bulk_check().CheckCredentials(std::move(credentials));
   identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-              CREDENTIALS_REJECTED_BY_SERVER));
+      GoogleServiceAuthError::FromServiceError("error"));
 }
 
 TEST_F(BulkLeakCheckTest, CheckCredentialsAccessTokenNetError) {
@@ -184,6 +182,22 @@ TEST_F(BulkLeakCheckTest, CheckCredentialsAccessTokenNetError) {
   bulk_check().CheckCredentials(std::move(credentials));
   identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError::FromConnectionError(net::ERR_TIMED_OUT));
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentialsAccessTokenSignedOut) {
+  AccountInfo info = identity_test_env().MakeAccountAvailable(kTestEmail);
+  identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_test_env().SetRefreshTokenForAccount(info.account_id);
+
+  EXPECT_CALL(delegate(), OnError(LeakDetectionError::kNotSignIn));
+
+  std::vector<LeakCheckCredential> credentials;
+  credentials.push_back(TestCredential("user1"));
+  bulk_check().CheckCredentials(std::move(credentials));
+  identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER));
 }
 
 TEST_F(BulkLeakCheckTest, CheckCredentialsAccessDoesNetworkRequest) {

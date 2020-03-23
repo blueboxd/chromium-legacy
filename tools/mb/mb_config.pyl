@@ -14,13 +14,13 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
-      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto',
-      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables',
-      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables',
-      'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables',
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
+      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto_official',
+      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official',
+      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
+      'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official',
+      'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official',
+      'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official',
       # Don't include unwind tables for the remaining three builders since
       # they monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_goma',
@@ -744,15 +744,15 @@
     },
 
     'tryserver.chrome': {
-      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto',
-      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables',
-      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables',
-      'chromeos-eve-compile-chrome': 'chromeos_eve_include_unwind_tables',
-      'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables',
-      'chromeos-kevin-compile-chrome': 'chromeos_kevin_include_unwind_tables',
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
+      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto_official',
+      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official',
+      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
+      'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official',
+      'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official',
+      'chromeos-eve-compile-chrome': 'chromeos_eve_include_unwind_tables_official',
+      'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official',
+      'chromeos-kevin-compile-chrome': 'chromeos_kevin_include_unwind_tables_official',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
       'win_chrome_official': 'official_goma_x86',
@@ -1378,6 +1378,10 @@
       'chromeos_device', 'arm-generic',
     ],
 
+    'chromeos_arm-generic_cfi_thin_lto_official': [
+      'chromeos_device', 'arm-generic', 'cfi_full', 'thin_lto', 'official',
+    ],
+
     'chromeos_arm-generic_dcheck_always_on': [
       'chromeos_device', 'arm-generic', 'dcheck_always_on',
     ],
@@ -1390,24 +1394,32 @@
       'chromeos', 'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
-    'chromeos_betty_cfi_thin_lto': [
-      'chromeos_device', 'betty', 'cfi_full', 'thin_lto',
+    'chromeos_betty_cfi_thin_lto_official': [
+      'chromeos_device', 'betty', 'cfi_full', 'thin_lto', 'official',
     ],
 
-    'chromeos_betty_include_unwind_tables': [
-      'chromeos_device', 'betty', 'include_unwind_tables',
+    'chromeos_betty_include_unwind_tables_official': [
+      'chromeos_device', 'betty', 'include_unwind_tables', 'official',
     ],
 
-    'chromeos_eve_include_unwind_tables': [
-      'chromeos_device', 'eve', 'include_unwind_tables',
+    'chromeos_betty-pi-arc_cfi_thin_lto_official': [
+      'chromeos_device', 'betty-pi-arc', 'cfi_full', 'thin_lto', 'official',
+    ],
+
+    'chromeos_betty-pi-arc_include_unwind_tables_official': [
+      'chromeos_device', 'betty-pi-arc', 'include_unwind_tables', 'official',
+    ],
+
+    'chromeos_eve_include_unwind_tables_official': [
+      'chromeos_device', 'eve', 'include_unwind_tables', 'official',
     ],
 
     'chromeos_kevin': [
       'chromeos_device', 'kevin',
     ],
 
-    'chromeos_kevin_include_unwind_tables': [
-      'chromeos_device', 'kevin', 'include_unwind_tables',
+    'chromeos_kevin_include_unwind_tables_official': [
+      'chromeos_device', 'kevin', 'include_unwind_tables', 'official',
     ],
 
     'chromeos_msan_release_bot': [
@@ -1551,14 +1563,6 @@
 
     'codesearch_gen_chromium_bot': [
       'codesearch',
-    ],
-
-    'cros_chrome_sdk_cfi_thin_lto': [
-      'cros_chrome_sdk', 'cfi_full', 'thin_lto',
-    ],
-
-    'cros_chrome_sdk_include_unwind_tables': [
-      'cros_chrome_sdk', 'include_unwind_tables',
     ],
 
     'dawn_tests_release_trybot': [
@@ -2189,6 +2193,10 @@
       'args_file': '//build/args/chromeos/betty.gni',
     },
 
+    'betty-pi-arc': {
+      'args_file': '//build/args/chromeos/betty-pi-arc.gni',
+    },
+
     'cast': {
       'gn_args': 'is_chromecast=true'
     },
@@ -2280,18 +2288,6 @@
     'cronet_ios': {
       'mixins': ['cronet_common'],
       'gn_args': ('disable_brotli_filter=false is_cronet_build=true'),
-    },
-
-    'cros_chrome_sdk': {
-      # This is used so that the cros chrome_sdk (simplechrome) builders
-      # can manage the list of GN args in their .ebuild
-      # files and just pass through the desired arguments, hence not
-      # really using MB. If a bot uses this mixin, we expect that
-      # both GYP_DEFINES and GN_ARGS are set in the environment,
-      # and that GYP_DEFINES has chromeos=1 and GN_ARGS has
-      # target_os="chromeos" in it.
-      'cros_passthrough': True,
-      'gn_args': 'ozone_platform_headless=true',
     },
 
     'dawn_tests': {

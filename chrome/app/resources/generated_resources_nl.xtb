@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Uploaden</translation>
 <translation id="1244265436519979884">Linux-herstel wordt momenteel uitgevoerd</translation>
 <translation id="1244303850296295656">Fout met extensie</translation>
+<translation id="1246158006305844142">Je apps en instellingen worden gesynchroniseerd voor alle Chrome OS-apparaten waarop je bent ingelogd met je Google-account. Ga naar de <ph name="LINK_BEGIN" />Chrome-instellingen<ph name="LINK_END" /> voor opties voor browsersynchronisatie.</translation>
 <translation id="1246905108078336582">Suggestie verwijderen van klembord?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> is geblokkeerd omdat deze is verouderd</translation>
 <translation id="1251366534849411931">Verwachte openingsaccolade <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">Nee, bedankt</translation>
 <translation id="1525740877599838384">Alleen wifi gebruiken om de locatie te bepalen</translation>
 <translation id="152629053603783244">Linux opnieuw opstarten</translation>
+<translation id="1526335046150927198">Scrollversnelling voor touchpad inschakelen</translation>
 <translation id="1526560967942511387">Naamloos document</translation>
 <translation id="1529891865407786369">Voedingsbron</translation>
 <translation id="1530838837447122178">Muis- en touchpadinstellingen van apparaat openen</translation>
@@ -1313,6 +1315,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2725200716980197196">Netwerkverbinding hersteld</translation>
 <translation id="2727633948226935816">Niet opnieuw herinneren</translation>
 <translation id="2727712005121231835">Normaal</translation>
+<translation id="2729314457178420145">Ook browsergegevens wissen (<ph name="URL" />). Als je dit doet, kun je worden uitgelogd bij Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Een back-up maken van Linux-apps en -bestanden</translation>
 <translation id="273093730430620027">Deze pagina gebruikt je camera.</translation>
 <translation id="2731392572903530958">G&amp;esloten venster opnieuw openen</translation>
@@ -2164,6 +2167,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3838486795898716504">Meer <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Cookies en andere site- en plug-ingegevens</translation>
 <translation id="383891835335927981">Er zijn geen sites in- of uitgezoomd</translation>
+<translation id="3839509547554145593">Scrollversnelling voor muis inschakelen</translation>
 <translation id="3839516600093027468"><ph name="HOST" /> altijd blokkeren voor het klembord</translation>
 <translation id="3841964634449506551">Wachtwoord ongeldig</translation>
 <translation id="3842552989725514455">Serif-lettertype</translation>
@@ -2775,6 +2779,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4699172675775169585">Gecachte afbeeldingen en bestanden</translation>
 <translation id="4699357559218762027">(automatisch gestart)</translation>
 <translation id="470074695271471509">Uitloggen om te voltooien?</translation>
+<translation id="4701025263201366865">Inloggen voor ouders</translation>
 <translation id="4707302005824653064">Gebruik en geschiedenis kunnen worden gecontroleerd door de beheerder (<ph name="CUSTODIAN_EMAIL" />) op chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + gebruikerscertificaat</translation>
 <translation id="4708794300267213770">Het vergrendelingsscherm weergeven bij activering vanuit de slaapstand</translation>
@@ -3082,6 +3087,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, zoeken in <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Geef de pincode van je beveiligingssleutel op. Als je de pincode niet weet, moet je de beveiligingssleutel resetten.</translation>
 <translation id="5139955368427980650">&amp;Openen</translation>
+<translation id="5142793792982256885">Scrollsnelheid voor touchpad</translation>
 <translation id="5142961317498132443">Verificatie</translation>
 <translation id="5143374789336132547">De extensie '<ph name="EXTENSION_NAME" />' heeft gewijzigd welke pagina wordt weergegeven wanneer je op de knop 'Homepage' klikt.</translation>
 <translation id="5143712164865402236">Volledig scherm openen</translation>
@@ -3644,6 +3650,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5901630391730855834">Geel</translation>
 <translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="5906732635754427568">Gegevens die zijn gekoppeld aan deze app, worden verwijderd van dit apparaat.</translation>
+<translation id="5908695239556627796">Scrollsnelheid voor muis</translation>
 <translation id="5908769186679515905">Niet toestaan dat sites Flash uitvoeren</translation>
 <translation id="5910363049092958439">Af&amp;beelding opslaan als...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> is offline</translation>
@@ -5090,6 +5097,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
     <ph name="BEGIN_BOLD" />Opmerking:<ph name="END_BOLD" /> Het systeem wordt opnieuw opgestart tijdens het proces.</translation>
 <translation id="7828731929332799387">Dit verwijdert alle cookies en sitegegevens van derden. Wil je doorgaan?</translation>
 <translation id="7829298379596169484">Audio-invoer openen</translation>
+<translation id="7829877209233347340">Vraag een ouder om in te loggen en toe te staan dat je een schoolaccount toevoegt</translation>
 <translation id="7830594666202422257">Verbinden met Linux</translation>
 <translation id="7831491651892296503">Fout bij configureren van netwerk</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5845,6 +5853,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8808686172382650546">Kat</translation>
 <translation id="8808744862003883508">Op deze pagina kun je alle extensies zien die in Chrome zijn geïnstalleerd.</translation>
 <translation id="8809147117840417135">Lichtblauwgroen</translation>
+<translation id="8812593354822910461">Ook browsergegevens wissen (<ph name="URL" />). Als je dit doet, word je uitgelogd bij <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Kan niet inloggen bij <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">vel papier</translation>
 <translation id="8813872945700551674">Vraag een ouder om <ph name="EXTENSION_NAME" /> goed te keuren</translation>
@@ -6134,6 +6143,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9203398526606335860">&amp;Profiling ingeschakeld</translation>
 <translation id="9203904171912129171">Een apparaat selecteren</translation>
 <translation id="9203962528777363226">De beheerder van dit apparaat heeft het toevoegen van nieuwe gebruikers uitgeschakeld</translation>
+<translation id="9209689095351280025">Sites kunnen geen cookies gebruiken die je volgen op internet</translation>
 <translation id="9211177926627870898">Update vereist</translation>
 <translation id="9214520840402538427">De initialisatie van de kenmerken van de installatietijd is verlopen. Neem contact op met je ondersteuningsmedewerker.</translation>
 <translation id="9214695392875603905">Cupcake</translation>

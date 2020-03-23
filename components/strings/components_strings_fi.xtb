@@ -313,6 +313,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2288422996159078444">Joku muu näkee kaikki kirjoittamasi asiat, avaamasi sivut ja muut toimesi verkossa. Sivustojen sisältöä voidaan muuttaa tietämättäsi.</translation>
 <translation id="2289385804009217824">Leikkaus</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
+<translation id="2293443924986248631">Kun tämä on päällä, sivustot eivät voi seurata sinua verkossa evästeiden avulla. Joidenkin sivustojen ominaisuudet saattavat lakata toimimasta.</translation>
 <translation id="2297722699537546652">B5 (kirjekuori)</translation>
 <translation id="2300306941146563769">Ei lähetetty</translation>
 <translation id="2310021320168182093">Chou2 (kirjekuori)</translation>
@@ -730,6 +731,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4152318981910038897">{COUNT,plural, =1{Sivu 1}other{Sivu {COUNT}}}</translation>
 <translation id="4154664944169082762">Tunnistetiedostot</translation>
 <translation id="4159784952369912983">Violetti</translation>
+<translation id="4163132590327127354">Chrome teki sivusta yksinkertaisemman, jotta sen lukeminen olisi helpompaa.</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="4171400957073367226">Virheellinen vahvistusallekirjoitus.</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1030,6 +1032,11 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="536296301121032821">Käytännön asetuksien tallentaminen epäonnistui</translation>
 <translation id="5371425731340848620">Päivitä kortti</translation>
 <translation id="5377026284221673050">"Kellosi jätättää", "Kellosi edistää" tai "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">Kohdepalvelin <ph name="ORIGIN" /> pyytää otsikossaan
+    alkuperäkäytännön soveltamista kaikkiin sen saamiin pyyntöihin. Koska
+    otsikko on muotoiltu väärin, selain ei voi täyttää
+    pyyntöäsi (<ph name="SITE" />). Alkuperäkäytäntöjen avulla
+    sivuston operaattorit voivat määrittää sen tietosuojan ja muita ominaisuuksia.</translation>
 <translation id="5386426401304769735">Tämän sivuston varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
 <translation id="538659543871111977">A4-välilehti</translation>
 <translation id="5396631636586785122">Reunasidonta oikealla</translation>
@@ -1576,6 +1583,7 @@ Lisätietoja:
 <translation id="7757555340166475417">Dai Pa Kai (275 mm x 395 mm)</translation>
 <translation id="7758069387465995638">Palomuuri tai virustorjuntaohjelmisto on saattanut estää yhteyden.</translation>
 <translation id="7759163816903619567">Näytä verkkotunnus:</translation>
+<translation id="776110834126722255">Käytöstä poistettu</translation>
 <translation id="7761701407923456692">Palvelimen varmenne ei vastaa URL-osoitetta.</translation>
 <translation id="7763386264682878361">Maksuluettelon jäsentäjä</translation>
 <translation id="7764225426217299476">Lisää osoite</translation>

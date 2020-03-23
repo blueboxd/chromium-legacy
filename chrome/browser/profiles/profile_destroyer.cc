@@ -122,8 +122,7 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
         // these potential leaks, but we handle it in release so that we don't
         // crash or corrupt profile data on disk.
         LOG(WARNING) << "A render process host wasn't destroyed early enough.";
-        (*i)->profile_ = NULL;
-        break;
+        (*i)->profile_ = nullptr;
       }
     }
   }
@@ -163,7 +162,7 @@ ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
 ProfileDestroyer::~ProfileDestroyer() {
   if (profile_) {
     ProfileDestroyer::DestroyOffTheRecordProfileNow(profile_);
-    profile_ = nullptr;
+    DCHECK(!profile_);
   }
 
   // Once the profile is deleted, all renderer hosts must have been deleted.

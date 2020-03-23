@@ -600,6 +600,7 @@
 <translation id="8735953464173050365">キーボード設定を表示します。<ph name="KEYBOARD_NAME" /> が選択されています</translation>
 <translation id="875593634123171288">VPN 設定を表示</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> に接続</translation>
+<translation id="8788027118671217603"><ph name="STATE_TEXT" />。<ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8825863694328519386">左側からスワイプすると前の画面に戻ります</translation>
 <translation id="8828714802988429505">90°</translation>

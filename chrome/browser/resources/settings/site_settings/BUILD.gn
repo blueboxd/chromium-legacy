@@ -320,7 +320,7 @@ js_type_check("closure_compile_module") {
 
     #    ":site_data_entry.m",
     #    ":site_details.m",
-    #    ":site_details_permission.m",
+    ":site_details_permission.m",
     ":site_entry.m",
     ":site_list.m",
     ":site_list_entry.m",
@@ -517,7 +517,13 @@ js_library("site_details.m") {
 js_library("site_details_permission.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/site_details_permission.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":constants.m",
+    ":site_settings_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":site_details_permission_module" ]
 }
@@ -772,6 +778,13 @@ polymer_modulizer("site_details_permission") {
   js_file = "site_details_permission.js"
   html_file = "site_details_permission.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSetting,ContentSettingsTypes,SiteSettingSource",
+                   "chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.html|RawSiteException",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("site_entry") {

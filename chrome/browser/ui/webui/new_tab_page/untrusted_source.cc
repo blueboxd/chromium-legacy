@@ -71,6 +71,7 @@ void UntrustedSource::StartDataRequest(
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
   const std::string path = url.has_path() ? url.path().substr(1) : "";
+  GURL url_param = GURL(url.query());
   if (path == "one-google-bar" && one_google_bar_service_) {
     one_google_bar_callbacks_.push_back(std::move(callback));
     if (one_google_bar_callbacks_.size() == 1) {
@@ -97,11 +98,21 @@ void UntrustedSource::StartDataRequest(
         bundle.LoadDataResourceBytes(IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_JS));
     return;
   }
-  if (path == "image" && url.has_query()) {
+  if (path == "image" && url_param.is_valid() &&
+      url_param.SchemeIs(url::kHttpsScheme)) {
     ui::TemplateReplacements replacements;
-    replacements["url"] = url.query();
+    replacements["url"] = url_param.spec();
     std::string html =
         FormatTemplate(IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML, replacements);
+    std::move(callback).Run(base::RefCountedString::TakeString(&html));
+    return;
+  }
+  if (path == "iframe" && url_param.is_valid() &&
+      url_param.SchemeIs(url::kHttpsScheme)) {
+    ui::TemplateReplacements replacements;
+    replacements["url"] = url_param.spec();
+    std::string html =
+        FormatTemplate(IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML, replacements);
     std::move(callback).Run(base::RefCountedString::TakeString(&html));
     return;
   }
@@ -137,7 +148,8 @@ bool UntrustedSource::ShouldServiceRequest(
   }
   const std::string path = url.path().substr(1);
   return path == "one-google-bar" || path == "one_google_bar.js" ||
-         path == "promo" || path == "promo.js" || path == "image";
+         path == "promo" || path == "promo.js" || path == "image" ||
+         path == "iframe";
 }
 
 void UntrustedSource::OnOneGoogleBarDataUpdated() {

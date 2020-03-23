@@ -37,3 +37,4 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 Local Modifications:
  - codereview.settings has been excluded.
  - elf_image_reader_fuzzer is enabled only when use_fuzzing_engine is true.
+ - cherry-pick upstream 296501351816

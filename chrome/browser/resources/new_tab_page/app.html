@@ -43,17 +43,27 @@
     flex-direction: column;
   }
 
+  #oneGoogleBar {
+    pointer-events: none;
+  }
+
   #oneGoogleBarSpacer {
     height: 56px;
     width: 100%;
   }
 
-  #oneGoogleBar {
-    height: 100%;
-    pointer-events: none;
-    position: fixed;
-    width: 100%;
-    z-index: 1;
+  ntp-logo {
+    margin-bottom: 8px;
+  }
+
+  ntp-fakebox {
+    margin-bottom: 32px;
+  }
+
+  ntp-most-visited[dark] {
+    --icon-button-color-active: var(--google-grey-refresh-300);
+    --icon-button-color: white;
+    --tile-hover-color: rgba(255, 255, 255, .1);
   }
 
   #promo {
@@ -150,12 +160,6 @@
   #backgroundImageAttribution2 {
     font-size: 0.75rem;
   }
-
-  ntp-most-visited[dark] {
-    --icon-button-color-active: var(--google-grey-refresh-300);
-    --icon-button-color: white;
-    --tile-hover-color: rgba(255, 255, 255, .1);
-  }
 </style>
 <div id="background"
     style="background-color: [[rgbOrInherit_(theme_.backgroundColor)]];
@@ -168,9 +172,7 @@
   <div id="backgroundGradient" hidden="[[!showBackgroundImage_]]"></div>
   <div id="content">
     <div id="oneGoogleBarSpacer"></div>
-    <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
-        hidden$="[[!oneGoogleBarLoaded_]]">
-    </ntp-untrusted-iframe>
+    <ntp-logo></ntp-logo>
     <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_">
     </ntp-fakebox>
     <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]">
@@ -214,4 +216,7 @@
       </div>
     </a>
   </div>
+  <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
+      hidden$="[[!oneGoogleBarLoaded_]]">
+  </ntp-untrusted-iframe>
 </div>

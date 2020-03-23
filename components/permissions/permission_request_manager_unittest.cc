@@ -566,4 +566,16 @@ TEST_F(PermissionRequestManagerTest,
   EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 }
+
+TEST_F(PermissionRequestManagerTest, RequestsNotSupported) {
+  manager_->AddRequest(&request1_);
+  WaitForBubbleToBeShown();
+  Accept();
+  EXPECT_TRUE(request1_.granted());
+
+  manager_->set_web_contents_supports_permission_requests(false);
+
+  manager_->AddRequest(&request2_);
+  EXPECT_TRUE(request2_.cancelled());
+}
 }  // namespace permissions

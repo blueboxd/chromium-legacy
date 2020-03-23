@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/device_event_log/device_event_log.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,7 +54,7 @@ void MobileSetupDialog::ShowByNetworkId(const std::string& network_id) {
     NET_LOG(ERROR) << "MobileSetupDialog: Network ID not found: " << network_id;
     return;
   }
-  NET_LOG(EVENT) << "Opening MobileSetupDialog, ID: " << network_id;
+  NET_LOG(EVENT) << "Opening MobileSetupDialog, ID: " << NetworkId(network);
   dialog_instance = new MobileSetupDialog(*network);
   dialog_instance->ShowSystemDialog();
 }

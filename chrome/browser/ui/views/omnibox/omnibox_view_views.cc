@@ -37,6 +37,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -496,6 +497,9 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDS_SHOW_URL:
       model()->Unelide(true /* exit_query_in_omnibox */);
       return;
+    case IDS_CONTEXT_MENU_SHOW_FULL_URLS:
+      ToggleShowFullUrlsPref();
+      return;
     case IDC_EDIT_SEARCH_ENGINES:
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
@@ -523,6 +527,14 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       OnAfterPossibleChange(true);
       return;
   }
+}
+
+void OmniboxViewViews::ToggleShowFullUrlsPref() {
+  bool pref_enabled = location_bar_view_->profile()->GetPrefs()->GetBoolean(
+      omnibox::kPreventUrlElisionsInOmnibox);
+  location_bar_view_->profile()->GetPrefs()->SetBoolean(
+      omnibox::kPreventUrlElisionsInOmnibox, !pref_enabled);
+  Update();
 }
 
 ui::TextInputType OmniboxViewViews::GetTextInputType() const {
@@ -1509,6 +1521,8 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   // Menu item is only shown when it is valid.
   if (command_id == IDS_SHOW_URL)
     return true;
+  if (command_id == IDS_CONTEXT_MENU_SHOW_FULL_URLS)
+    return true;
 
   return Textfield::IsCommandIdEnabled(command_id) ||
          location_bar_view_->command_updater()->IsCommandEnabled(command_id);
@@ -1904,8 +1918,10 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   menu_contents->InsertItemWithStringIdAt(paste_position + 1, IDC_PASTE_AND_GO,
                                           IDS_PASTE_AND_GO);
 
-  // Only add this menu entry if Query in Omnibox feature is enabled.
-  if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox)) {
+  // Only add this menu entry if Query in Omnibox feature is enabled and the
+  // feature providing an "Always Show Full URLs" option is disabled.
+  if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox) &&
+      !base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls)) {
     // If the user has not started editing the text, and we are not showing the
     // full URL, then provide a way to unelide via the context menu.
     if (!GetReadOnly() && !model()->user_input_in_progress() &&
@@ -1922,6 +1938,19 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // on IDC_ for now.
   menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
                                      IDS_EDIT_SEARCH_ENGINES);
+
+  if (base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls)) {
+    menu_contents->AddCheckItemWithStringId(IDS_CONTEXT_MENU_SHOW_FULL_URLS,
+                                            IDS_CONTEXT_MENU_SHOW_FULL_URLS);
+  }
+}
+
+bool OmniboxViewViews::IsCommandIdChecked(int id) const {
+  if (id == IDS_CONTEXT_MENU_SHOW_FULL_URLS) {
+    return location_bar_view_->profile()->GetPrefs()->GetBoolean(
+        omnibox::kPreventUrlElisionsInOmnibox);
+  }
+  return false;
 }
 
 void OmniboxViewViews::OnCompositingDidCommit(ui::Compositor* compositor) {

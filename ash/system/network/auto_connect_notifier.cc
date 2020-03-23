@@ -146,7 +146,7 @@ void AutoConnectNotifier::OnAutoConnectedInitiated(int auto_connect_reasons) {
 
 void AutoConnectNotifier::DisplayNotification(
     const chromeos::NetworkState* network) {
-  NET_LOG(EVENT) << "Show AutoConnect Notification for: " << network->name();
+  NET_LOG(EVENT) << "Show AutoConnect Notification for: " << NetworkId(network);
   auto notification = CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
       kAutoConnectNotificationId,

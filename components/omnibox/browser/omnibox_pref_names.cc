@@ -13,4 +13,7 @@ const char kDocumentSuggestEnabled[] = "documentsuggest.enabled";
 // A cache of zero suggest results using JSON serialized into a string.
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 
+// Boolean that specifies whether to always show full URLs in the omnibox.
+const char kPreventUrlElisionsInOmnibox[] = "omnibox.prevent_url_elisions";
+
 }  // namespace omnibox

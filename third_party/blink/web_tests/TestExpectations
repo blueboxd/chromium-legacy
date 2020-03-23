@@ -2949,8 +2949,6 @@ crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Timeout Failure Crash Pass ]
-crbug.com/626703 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Timeout Failure Crash Pass ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
@@ -5547,6 +5545,12 @@ crbug.com/1062984 external/wpt/paint-timing/replaced-content-image.html [ Pass F
 crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/replaced-content-image.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/mask-image.html [ Pass Failure ]
 crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/mask-image.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Timeout Failure Pass ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-video-frame.html [ Timeout Failure Pass ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-gradient.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-canvas-context.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Pass Failure ]
 
 # Sheriff 2019-03-01
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]

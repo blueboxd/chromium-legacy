@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Μεταφόρτωση</translation>
 <translation id="1244265436519979884">Η επαναφορά Linux βρίσκεται σε εξέλιξη.</translation>
 <translation id="1244303850296295656">Σφάλμα επέκτασης</translation>
+<translation id="1246158006305844142">Οι εφαρμογές και οι ρυθμίσεις σας θα συγχρονιστούν σε όλες τις συσκευές Chrome OS, στις οποίες έχετε συνδεθεί με τον Λογαριασμό σας Google. Για επιλογές συγχρονισμού προγράμματος περιήγησης, μεταβείτε στις <ph name="LINK_BEGIN" />Ρυθμίσεις Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Θέλετε να καταργήσετε την πρόταση από το πρόχειρο;</translation>
 <translation id="1249643471736608405">Το πρόσθετο <ph name="PLUGIN_NAME" /> αποκλείστηκε γιατί έχει καταργηθεί</translation>
 <translation id="1251366534849411931">Αναμενόμενο άγκιστρο ανοίγματος: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">Όχι, ευχαριστώ</translation>
 <translation id="1525740877599838384">Χρήση μόνο Wi-Fi για καθορισμό τοποθεσίας</translation>
 <translation id="152629053603783244">Επανεκκίνηση του Linux</translation>
+<translation id="1526335046150927198">Ενεργοποίηση επιτάχυνσης κύλισης επιφάνειας αφής</translation>
 <translation id="1526560967942511387">Έγγραφο χωρίς τίτλο</translation>
 <translation id="1529891865407786369">Πηγή ενέργειας</translation>
 <translation id="1530838837447122178">Άνοιγμα των ρυθμίσεων ποντικιού και επιφάνειας αφής της συσκευής</translation>
@@ -1313,6 +1315,7 @@
 <translation id="2725200716980197196">Αποκαταστάθηκε η συνδεσιμότητα δικτύου</translation>
 <translation id="2727633948226935816">Να μην μου ξαναγίνει υπενθύμιση</translation>
 <translation id="2727712005121231835">Πραγματικό Μέγεθος</translation>
+<translation id="2729314457178420145">Επίσης, διαγράψτε δεδομένα περιήγησης (<ph name="URL" />) τα οποία ενδέχεται να σας αποσυνδέσουν από το Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Δημιουργία αντιγράφων ασφαλείας εφαρμογών και αρχείων Linux</translation>
 <translation id="273093730430620027">Αυτή η σελίδα έχει πρόσβαση στην κάμερά σας.</translation>
 <translation id="2731392572903530958">Εκ νέου ά&amp;νοιγμα κλειστού παραθύρου</translation>
@@ -2164,6 +2167,7 @@
 <translation id="3838486795898716504">Περισσότερες σελίδες <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Cookie και άλλα δεδομένα ιστότοπου και προσθηκών</translation>
 <translation id="383891835335927981">Δεν έχει γίνει μεγέθυνση ή σμίκρυνση κανενός ιστοτόπου</translation>
+<translation id="3839509547554145593">Ενεργοποίηση επιτάχυνσης κύλισης ποντικιού</translation>
 <translation id="3839516600093027468">Να γίνεται πάντα αποκλεισμός της προβολής του προχείρου από <ph name="HOST" /></translation>
 <translation id="3841964634449506551">Μη έγκυρος κωδικός πρόσβασης</translation>
 <translation id="3842552989725514455">Γραμματοσειρά Serif</translation>
@@ -2775,6 +2779,7 @@
 <translation id="4699172675775169585">Εικόνες και αρχεία στην κρυφή μνήμη</translation>
 <translation id="4699357559218762027">(αυτόματη εκκίνηση)</translation>
 <translation id="470074695271471509">Αποσύνδεση για ολοκλήρωση;</translation>
+<translation id="4701025263201366865">Γονική σύνδεση</translation>
 <translation id="4707302005824653064">Η χρήση και το ιστορικό μπορούν να ελεγχθούν από το διαχειριστή (<ph name="CUSTODIAN_EMAIL" />) στη διεύθυνση chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + πιστοποιητικό χρήστη</translation>
 <translation id="4708794300267213770">Εμφάνιση κλειδώματος οθόνης κατά την αφύπνιση από την αδράνεια</translation>
@@ -3082,6 +3087,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, Αναζήτηση <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Εισαγάγετε το PIN για το κλειδί ασφαλείας σας. Εάν δεν γνωρίζετε το PIN, θα χρειαστεί να επαναφέρετε το κλειδί ασφαλείας σας.</translation>
 <translation id="5139955368427980650">Άν&amp;οιγμα</translation>
+<translation id="5142793792982256885">Ταχύτητα κύλισης επιφάνειας αφής</translation>
 <translation id="5142961317498132443">Έλεγχος ταυτότητας</translation>
 <translation id="5143374789336132547">Η επέκταση <ph name="EXTENSION_NAME" /> άλλαξε τη σελίδα που εμφανίζεται όταν κάνετε κλικ στο κουμπί αρχικής σελίδας.</translation>
 <translation id="5143712164865402236">Ενεργοποίηση πλήρους οθόνης</translation>
@@ -3645,6 +3651,7 @@
 <translation id="5901630391730855834">Κίτρινο</translation>
 <translation id="5906655207909574370">Η ενημέρωση σχεδόν ολοκληρώθηκε! Επανεκκινήστε τη συσκευή σας για να ολοκληρωθεί η ενημέρωση.</translation>
 <translation id="5906732635754427568">Τα δεδομένα που σχετίζονται με αυτήν την εφαρμογή θα καταργηθούν από αυτήν τη συσκευή.</translation>
+<translation id="5908695239556627796">Ταχύτητα κύλισης ποντικιού</translation>
 <translation id="5908769186679515905">Αποκλεισμός ιστοτόπων από την εκτέλεση Flash</translation>
 <translation id="5910363049092958439">Απο&amp;θήκευση Εικόνας Ως...</translation>
 <translation id="5910726859585389579">Η συσκευή <ph name="DEVICE_TYPE" /> είναι εκτός σύνδεσης.</translation>
@@ -5092,6 +5099,7 @@
     <ph name="BEGIN_BOLD" />Σημείωση:<ph name="END_BOLD" />  Θα γίνει επανεκκίνηση του συστήματος κατά τη διάρκεια της διαδικασίας.</translation>
 <translation id="7828731929332799387">Με αυτή την ενέργεια θα διαγραφούν όλα τα cookie και τα δεδομένα ιστοτόπων που διατίθενται σε περιβάλλοντα τρίτου μέρους. Θέλετε να συνεχίσετε;</translation>
 <translation id="7829298379596169484">Πρόσβαση στην είσοδο ήχου</translation>
+<translation id="7829877209233347340">Ζήτα από έναν γονέα να συνδεθεί για να εκχωρήσει δικαίωμα προσθήκης ενός λογαριασμού σχολείου.</translation>
 <translation id="7830594666202422257">Σύνδεση σε Linux</translation>
 <translation id="7831491651892296503">Σφάλμα κατά τη διαμόρφωση του δικτύου</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5844,6 +5852,7 @@
 <translation id="8808686172382650546">Γάτα</translation>
 <translation id="8808744862003883508">Σε αυτήν τη σελίδα μπορείτε να δείτε όλες τις επεκτάσεις που είναι εγκατεστημένες στο Chrome.</translation>
 <translation id="8809147117840417135">Ανοιχτό γαλαζοπράσινο</translation>
+<translation id="8812593354822910461">Επίσης, διαγράψτε δεδομένα περιήγησης (<ph name="URL" />) τα οποία θα σας αποσυνδέσουν από τον τομέα <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Δεν είναι δυνατή η σύνδεση στο <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">φύλλο χαρτιού</translation>
 <translation id="8813872945700551674">Ζήτα από τον γονέα σου να εγκρίνει την επέκταση "<ph name="EXTENSION_NAME" />"</translation>
@@ -6133,6 +6142,7 @@
 <translation id="9203398526606335860">Ενεργοποιημένη &amp;δυνατότητα δημιουργίας προφίλ</translation>
 <translation id="9203904171912129171">Επιλέξτε μια συσκευή</translation>
 <translation id="9203962528777363226">Ο διαχειριστής αυτής της συσκευής έχει απενεργοποιήσει την προσθήκη νέων χρηστών</translation>
+<translation id="9209689095351280025">Οι ιστότοποι δεν μπορούν να χρησιμοποιήσουν cookie που σας παρακολουθούν στον ιστό.</translation>
 <translation id="9211177926627870898">Απαιτείται ενημέρωση</translation>
 <translation id="9214520840402538427">Ωχ!  Η περίοδος προετοιμασίας των ιδιοτήτων χρόνου εγκατάστασης έχει λήξει.  Επικοινωνήστε με τον αντιπρόσωπό σας υποστήριξης.</translation>
 <translation id="9214695392875603905">Cupcake</translation>

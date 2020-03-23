@@ -1107,8 +1107,7 @@ const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   // On Macs, this path can sometimes lead to all black output.
   // TODO(enne): investigate this and remove this hack.
   return nullptr;
-#endif
-
+#else
   // Can only collapse a single tile quad.
   if (pass->quad_list.size() != 1)
     return nullptr;
@@ -1151,6 +1150,7 @@ const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
     return nullptr;
 
   return tile_quad;
+#endif
 }
 
 void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,

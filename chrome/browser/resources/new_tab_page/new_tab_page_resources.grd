@@ -82,6 +82,9 @@
       <include name="IDR_NEW_TAB_PAGE_FAKEBOX_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/fakebox.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_LOGO_JS"
+          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/logo.js"
+          use_base_dir="false" type="BINDATA" compress="gzip" />
     </includes>
     <structures>
       <structure name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"
@@ -104,6 +107,8 @@
           file="untrusted/promo.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML"
           file="untrusted/image.html" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML"
+          file="untrusted/iframe.html" type="chrome_html" compress="gzip" />
     </structures>
   </release>
 </grit>

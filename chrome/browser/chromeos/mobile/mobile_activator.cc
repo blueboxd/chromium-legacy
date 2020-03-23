@@ -90,8 +90,8 @@ void MobileActivator::TerminateActivation() {
   reconnect_timeout_timer_.Stop();
 
   if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->
-        RemoveObserver(this, FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
   }
   meid_.clear();
   iccid_.clear();
@@ -112,16 +112,17 @@ void MobileActivator::NetworkPropertiesUpdated(const NetworkState* network) {
   if (!network || network->type() != shill::kTypeCellular)
     return;
 
-  const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
-      GetDeviceState(network->device_path());
+  const DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          network->device_path());
   if (!device) {
     LOG(ERROR) << "Cellular device can't be found: " << network->device_path();
     return;
   }
   if (network->device_path() != device_path_) {
     LOG(WARNING) << "Ignoring property update for cellular service "
-                 << network->path()
-                 << " on unknown device " << network->device_path()
+                 << network->path() << " on unknown device "
+                 << network->device_path()
                  << " (Stored device path = " << device_path_ << ")";
     return;
   }
@@ -145,13 +146,14 @@ void MobileActivator::RemoveObserver(MobileActivator::Observer* observer) {
 
 void MobileActivator::InitiateActivation(const std::string& service_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const NetworkState* network =  GetNetworkState(service_path);
+  const NetworkState* network = GetNetworkState(service_path);
   if (!network) {
     LOG(WARNING) << "Cellular service can't be found: " << service_path;
     return;
   }
-  const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
-      GetDeviceState(network->device_path());
+  const DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          network->device_path());
   if (!device) {
     LOG(ERROR) << "Cellular device can't be found: " << network->device_path();
     return;
@@ -180,8 +182,8 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
 void MobileActivator::GetPropertiesFailure(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  NET_LOG_ERROR("MobileActivator GetProperties Failed: " + error_name,
-                service_path_);
+  NET_LOG(ERROR) << "MobileActivator GetProperties failed for "
+                 << NetworkPathId(service_path_) << " Error: " << error_name;
 }
 
 void MobileActivator::OnSetTransactionStatus(bool success) {
@@ -254,9 +256,8 @@ void MobileActivator::HandlePortalLoaded(bool success) {
 void MobileActivator::StartOTASPTimer() {
   pending_activation_request_ = false;
   state_duration_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kOTASPRetryDelay),
-      this, &MobileActivator::HandleOTASPTimeout);
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kOTASPRetryDelay), this,
+      &MobileActivator::HandleOTASPTimeout);
 }
 
 void MobileActivator::StartActivation() {
@@ -342,7 +343,7 @@ void MobileActivator::StartActivationOTASP() {
     // Try to start with OTASP immediately if we have received payment recently.
     state_ = PLAN_ACTIVATION_START_OTASP;
   } else {
-    state_ =  PLAN_ACTIVATION_START;
+    state_ = PLAN_ACTIVATION_START;
   }
 
   EvaluateCellularNetwork(network);
@@ -426,15 +427,13 @@ void MobileActivator::ForceReconnect(const NetworkState* network,
   // Keep trying to connect until told otherwise.
   continue_reconnect_timer_.Stop();
   continue_reconnect_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kReconnectDelayMS),
-      this, &MobileActivator::ContinueConnecting);
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kReconnectDelayMS), this,
+      &MobileActivator::ContinueConnecting);
   // If we don't ever connect again, we're going to call this a failure.
   reconnect_timeout_timer_.Stop();
   reconnect_timeout_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kMaxReconnectTime),
-      this, &MobileActivator::ReconnectTimedOut);
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kMaxReconnectTime), this,
+      &MobileActivator::ReconnectTimedOut);
 }
 
 void MobileActivator::ReconnectTimedOut() {
@@ -475,8 +474,7 @@ void MobileActivator::ContinueConnecting() {
 
 void MobileActivator::RefreshCellularNetworks() {
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING ||
-      state_ == PLAN_ACTIVATION_DONE ||
-      state_ == PLAN_ACTIVATION_ERROR) {
+      state_ == PLAN_ACTIVATION_DONE || state_ == PLAN_ACTIVATION_ERROR) {
     return;
   }
 
@@ -569,7 +567,8 @@ MobileActivator::PlanActivationState MobileActivator::PickNextState(
          activation == shill::kActivationStateActivating) &&
         (network->GetError().empty() ||
          network->GetError() == shill::kErrorOtaspFailed)) {
-      NET_LOG_EVENT("Activation failure detected ", network->path());
+      NET_LOG(EVENT) << "Activation failure detected for "
+                     << NetworkId(network);
       switch (state_) {
         case PLAN_ACTIVATION_OTASP:
           new_state = PLAN_ACTIVATION_DELAY_OTASP;
@@ -647,7 +646,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
       break;
     case PLAN_ACTIVATION_START_OTASP: {
       if (activation == shill::kActivationStatePartiallyActivated) {
-          new_state = PLAN_ACTIVATION_OTASP;
+        new_state = PLAN_ACTIVATION_OTASP;
       } else if (activation == shill::kActivationStateActivated) {
         new_state = PLAN_ACTIVATION_RECONNECTING;
       } else {
@@ -751,16 +750,14 @@ const char* MobileActivator::GetStateDescription(PlanActivationState state) {
   return "UNKNOWN";
 }
 
-
 void MobileActivator::CompleteActivation() {
   // Remove observers, we are done with this page.
-  NetworkHandler::Get()->network_state_handler()->
-      RemoveObserver(this, FROM_HERE);
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                 FROM_HERE);
 }
 
 bool MobileActivator::RunningActivation() const {
-  return !(state_ == PLAN_ACTIVATION_DONE ||
-           state_ == PLAN_ACTIVATION_ERROR ||
+  return !(state_ == PLAN_ACTIVATION_DONE || state_ == PLAN_ACTIVATION_ERROR ||
            state_ == PLAN_ACTIVATION_PAGE_LOADING);
 }
 
@@ -772,11 +769,13 @@ void MobileActivator::HandleActivationFailure(
   pending_activation_request_ = false;
   const NetworkState* network = GetNetworkState(service_path);
   if (!network) {
-    NET_LOG_ERROR("Cellular service no longer exists", service_path);
+    NET_LOG(ERROR) << "Cellular network no longer exists: "
+                   << NetworkPathId(service_path);
     return;
   }
   UMA_HISTOGRAM_COUNTS_1M("Cellular.ActivationFailure", 1);
-  NET_LOG_ERROR("Failed to call Activate() on service", service_path);
+  NET_LOG(ERROR) << "Failed to call Activate() on "
+                 << NetworkPathId(service_path);
   if (new_state == PLAN_ACTIVATION_OTASP) {
     ChangeState(network, PLAN_ACTIVATION_DELAY_OTASP, ActivationError::kNone);
   } else {
@@ -790,14 +789,14 @@ void MobileActivator::RequestCellularActivation(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
   DCHECK(network);
-  NET_LOG_EVENT("Activating cellular service", network->path());
+  NET_LOG(EVENT) << "Activating cellular service: "
+                 << NetworkPathId(network->path());
   UMA_HISTOGRAM_COUNTS_1M("Cellular.ActivationTry", 1);
   pending_activation_request_ = true;
-  NetworkHandler::Get()->network_activation_handler()->
-      Activate(network->path(),
-               "",  // carrier
-               success_callback,
-               error_callback);
+  NetworkHandler::Get()->network_activation_handler()->Activate(
+      network->path(),
+      "",  // carrier
+      success_callback, error_callback);
 }
 
 void MobileActivator::ChangeState(const NetworkState* network,
@@ -822,8 +821,7 @@ void MobileActivator::ChangeState(const NetworkState* network,
   }
 
   static bool first_time = true;
-  VLOG(1) << "Activation state flip old = "
-          << GetStateDescription(state_)
+  VLOG(1) << "Activation state flip old = " << GetStateDescription(state_)
           << ", new = " << GetStateDescription(new_state);
   if (state_ == new_state && !first_time)
     return;
@@ -868,8 +866,7 @@ void MobileActivator::ChangeState(const NetworkState* network,
           base::BindRepeating(&MobileActivator::StartOTASPTimer,
                               weak_ptr_factory_.GetWeakPtr()),
           on_activation_error);
-      }
-      break;
+    } break;
     case PLAN_ACTIVATION_PAGE_LOADING:
       return;
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
@@ -936,8 +933,8 @@ void MobileActivator::SignalCellularPlanPayment() {
 
 bool MobileActivator::HasRecentCellularPlanPayment() const {
   const int kRecentPlanPaymentHours = 6;
-  return (base::Time::Now() -
-          cellular_plan_payment_time_).InHours() < kRecentPlanPaymentHours;
+  return (base::Time::Now() - cellular_plan_payment_time_).InHours() <
+         kRecentPlanPaymentHours;
 }
 
 }  // namespace chromeos

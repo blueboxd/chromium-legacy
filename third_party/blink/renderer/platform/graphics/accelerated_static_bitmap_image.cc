@@ -10,6 +10,7 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -74,10 +75,10 @@ void AcceleratedStaticBitmapImage::ReleaseTexture(void* ctx) {
   auto* release_ctx = static_cast<ReleaseContext*>(ctx);
   if (release_ctx->context_provider_wrapper) {
     if (release_ctx->texture_id) {
-      auto* gl =
-          release_ctx->context_provider_wrapper->ContextProvider()->ContextGL();
-      gl->EndSharedImageAccessDirectCHROMIUM(release_ctx->texture_id);
-      gl->DeleteTextures(1u, &release_ctx->texture_id);
+      auto* ri = release_ctx->context_provider_wrapper->ContextProvider()
+                     ->RasterInterface();
+      ri->EndSharedImageAccessDirectCHROMIUM(release_ctx->texture_id);
+      ri->DeleteGpuRasterTexture(release_ctx->texture_id);
     }
   }
 
@@ -274,11 +275,11 @@ void AcceleratedStaticBitmapImage::InitializeSkImage(
   if (!context_provider_wrapper)
     return;
 
-  gpu::gles2::GLES2Interface* shared_gl =
-      context_provider_wrapper->ContextProvider()->ContextGL();
+  gpu::raster::RasterInterface* shared_ri =
+      context_provider_wrapper->ContextProvider()->RasterInterface();
   GrContext* shared_gr_context =
       context_provider_wrapper->ContextProvider()->GetGrContext();
-  DCHECK(shared_gl &&
+  DCHECK(shared_ri &&
          shared_gr_context);  // context isValid already checked in callers
 
   GLuint shared_context_texture_id = 0u;
@@ -288,12 +289,12 @@ void AcceleratedStaticBitmapImage::InitializeSkImage(
     shared_context_texture_id = shared_image_texture_id;
     should_delete_texture_on_release = false;
   } else {
-    shared_gl->WaitSyncTokenCHROMIUM(
+    shared_ri->WaitSyncTokenCHROMIUM(
         mailbox_ref_->GetOrCreateSyncToken(context_provider_wrapper)
             .GetConstData());
     shared_context_texture_id =
-        shared_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox_.name);
-    shared_gl->BeginSharedImageAccessDirectCHROMIUM(
+        shared_ri->CreateAndConsumeForGpuRaster(mailbox_);
+    shared_ri->BeginSharedImageAccessDirectCHROMIUM(
         shared_context_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   }
 

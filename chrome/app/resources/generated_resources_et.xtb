@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Laadi üles</translation>
 <translation id="1244265436519979884">Linuxi taastamine on pooleli</translation>
 <translation id="1244303850296295656">Laienduse viga</translation>
+<translation id="1246158006305844142">Teie rakendused ja seaded sünkroonitakse kõigis Chrome OS-i seadmetes, kuhu olete oma Google'i kontoga sisse logitud. Brauseri sünkroonimisvalikute nägemiseks avage <ph name="LINK_BEGIN" />Chrome'i seaded<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Kas eemaldada soovitus lõikelaualt?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> blokeeriti, sest selle tugi katkestati</translation>
 <translation id="1251366534849411931">Vaja on esimest looksulgu: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">Ei, tänan</translation>
 <translation id="1525740877599838384">Asukoha määramine ainult WiFi-ühenduse kaudu</translation>
 <translation id="152629053603783244">Taaskäivita Linux</translation>
+<translation id="1526335046150927198">Luba puuteplaadil kerimise kiirendamine</translation>
 <translation id="1526560967942511387">Pealkirjata dokument</translation>
 <translation id="1529891865407786369">Toiteallikas</translation>
 <translation id="1530838837447122178">Hiire ja puuteplaadi seadme seadete avamine</translation>
@@ -1313,6 +1315,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="2725200716980197196">Võrguühendus on taastatud</translation>
 <translation id="2727633948226935816">Ära tuleta rohkem meelde</translation>
 <translation id="2727712005121231835">Tegelik suurus</translation>
+<translation id="2729314457178420145">Kustutage ka sirvimisandmed (<ph name="URL" />). See võib teid saidilt Google.com välja logida. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Linuxi rakenduste ja failide varundamine</translation>
 <translation id="273093730430620027">See leht pääseb teie kaamera juurde.</translation>
 <translation id="2731392572903530958">A&amp;va suletud aken uuesti</translation>
@@ -2164,6 +2167,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="3838486795898716504">Rohkem: <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Küpsised ja muud saidi ning pistikprogrammi andmed</translation>
 <translation id="383891835335927981">Ühtegi saiti pole sisse ega välja suumitud</translation>
+<translation id="3839509547554145593">Luba hiire kerimise kiirendamine</translation>
 <translation id="3839516600093027468">Blokeeri hosti <ph name="HOST" /> jaoks alati lõikelaua nägemine</translation>
 <translation id="3841964634449506551">Parool on sobimatu</translation>
 <translation id="3842552989725514455">Seriifidega font</translation>
@@ -2775,6 +2779,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4699172675775169585">Vahemällu salvestatud kujutised ja failid</translation>
 <translation id="4699357559218762027">(automaatselt käivitatud)</translation>
 <translation id="470074695271471509">Kas logida lõpuleviimiseks välja?</translation>
+<translation id="4701025263201366865">Lapsevanema sisselogimine</translation>
 <translation id="4707302005824653064">Haldur (<ph name="CUSTODIAN_EMAIL" />) saab kasutamise ja ajaloo üle vaadata aadressil chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + kasutaja sertifikaat</translation>
 <translation id="4708794300267213770">Kuva unerežiimist ärgates lukustuskuva</translation>
@@ -3082,6 +3087,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, otsing teenusega <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Sisestage turvavõtme PIN-kood. Kui te PIN-koodi ei tea, peate turvavõtme lähtestama.</translation>
 <translation id="5139955368427980650">&amp;Ava</translation>
+<translation id="5142793792982256885">Puuteplaadi kerimiskiirus</translation>
 <translation id="5142961317498132443">Autentimine</translation>
 <translation id="5143374789336132547">Laiendus „<ph name="EXTENSION_NAME" />” muutis seda, milline leht kuvatakse avalehe nupul klõpsamisel.</translation>
 <translation id="5143712164865402236">Kuvamine täisekraanil</translation>
@@ -3644,6 +3650,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5901630391730855834">Kollane</translation>
 <translation id="5906655207909574370">Seade on peaaegu ajakohane. Värskenduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="5906732635754427568">Selle rakendusega seostatud andmed eemaldatakse seadmest.</translation>
+<translation id="5908695239556627796">Hiire kerimiskiirus</translation>
 <translation id="5908769186679515905">Keela Flashi käitamine saitidel</translation>
 <translation id="5910363049092958439">Sal&amp;vesta pilt nimega...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> on võrguühenduseta</translation>
@@ -5091,6 +5098,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
     <ph name="BEGIN_BOLD" />Märkus.<ph name="END_BOLD" />  Protsessi käigus süsteem taaskäivitatakse.</translation>
 <translation id="7828731929332799387">See kustutab kõik kolmanda osapoole pakutavad küpsisefailid ja saidi andmed. Kas soovite jätkata?</translation>
 <translation id="7829298379596169484">Juurdepääs helisisendile</translation>
+<translation id="7829877209233347340">Palu vanemal sisse logida, et ta annaks loa koolikonto lisamiseks</translation>
 <translation id="7830594666202422257">Ühenda Linuxiga</translation>
 <translation id="7831491651892296503">Viga võrgu seadistamisel</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5845,6 +5853,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8808686172382650546">Kass</translation>
 <translation id="8808744862003883508">Sellel lehel näete kõiki Chrome'i installitud laiendusi.</translation>
 <translation id="8809147117840417135">Helesinakasroheline</translation>
+<translation id="8812593354822910461">Kustutage ka sirvimisandmed (<ph name="URL" />). See võib teid saidilt <ph name="DOMAIN" /> välja logida. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Kasutaja <ph name="USERNAME" /> kontole ei saa sisse logida</translation>
 <translation id="8813811964357448561">paberileht</translation>
 <translation id="8813872945700551674">Palu vanemal laiendus „<ph name="EXTENSION_NAME" />” kinnitada</translation>
@@ -6134,6 +6143,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="9203398526606335860">&amp;Profileerimine lubatud</translation>
 <translation id="9203904171912129171">Valige seade</translation>
 <translation id="9203962528777363226">Selle seadme administraator on keelanud uute kasutajate lisamise</translation>
+<translation id="9209689095351280025">Saidid ei saa veebis teie jälgimiseks kasutada küpsisefaile</translation>
 <translation id="9211177926627870898">Värskendamine on nõutav</translation>
 <translation id="9214520840402538427">Installimisaja atribuutide lähtestamisel ilmnes ajalõpp. Võtke ühendust tugiteenuse esindajaga.</translation>
 <translation id="9214695392875603905">Keeks</translation>

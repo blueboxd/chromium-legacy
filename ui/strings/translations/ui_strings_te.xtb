@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ఇన్‌స్టాల్ చేసిన యాప్</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> షేర్ చేయడం సాధ్యపడలేదు</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" />, <ph name="SECOND_ITEM_TITLE" />గా మార్చబడింది</translation>
 <translation id="1498028757988366001">మీరు దీని కోసం గతంలో వెతికారు. మీ చరిత్ర నుండి "<ph name="QUERY" />"ను తొలగిస్తే, మీ ఖాతాతో సైన్ ఇన్ చేసి ఉన్న మీ పరికరాలు అన్నింటిలో అది శాశ్వతంగా తీసివేయబడుతుంది.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
 <translation id="1643823602425662293">నోటిఫికేషన్</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">కుడి నుండి ఎడమకు</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">అత్యంత ఇష్టపడేవి</translation>
+<translation id="7170202025028120564">మీ యాప్‌ను రీస్టార్ట్ చేసినప్పుడు, దాని ప్రదర్శన సెట్టింగ్‌లు అమలు అవుతాయి.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 నిమి. మిగిలి ఉంది}other{# నిమి. మిగిలి ఉన్నాయి}}</translation>
 <translation id="7319740667687257810">లాంఛ‌ర్‌, పాక్షిక వీక్షణ</translation>

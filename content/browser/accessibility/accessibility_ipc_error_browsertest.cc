@@ -160,7 +160,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   }
 
   // Construct a bad accessibility message that BrowserAccessibilityManager
-  // will reject.
+  // will reject.  Note that BrowserAccessibilityManager is hosted in a
+  // renderer process - the test verifies that the renderer process will crash
+  // (i.e. the scenario under test does not involve mojo::ReportBadMessage
+  // or content::bad_message::ReceivedBadMessage).
   AXEventNotificationDetails bad_accessibility_event;
   bad_accessibility_event.updates.resize(1);
   bad_accessibility_event.updates[0].root_id = 1;

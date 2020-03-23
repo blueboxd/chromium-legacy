@@ -48,7 +48,15 @@ const base::Feature kAutofillCreditCardAssist{
 // Controls whether we download server credit cards to the ephemeral
 // account-based storage when sync the transport is enabled.
 const base::Feature kAutofillEnableAccountWalletStorage{
-    "AutofillEnableAccountWalletStorage", base::FEATURE_DISABLED_BY_DEFAULT};
+  "AutofillEnableAccountWalletStorage",
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
+      // Wallet transport is only currently available on Win/Mac/Linux.
+      // (Somehow, swapping this check makes iOS unhappy?)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Controls whether we use COMPANY as part of Autofill
 const base::Feature kAutofillEnableCompanyName{

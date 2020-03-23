@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.share.qrcode.share_tab;
 import android.content.Context;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialogTab;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -33,7 +34,9 @@ public class QrCodeShareCoordinator implements QrCodeDialogTab {
     }
 
     @Override
-    public void onResume() {}
+    public void onResume() {
+        RecordUserAction.record("SharingQRCode.TabVisible.Share");
+    }
 
     @Override
     public void onPause() {}

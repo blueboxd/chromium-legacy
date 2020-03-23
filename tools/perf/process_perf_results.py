@@ -163,6 +163,11 @@ def _merge_json_output(output_json, jsons_to_merge, extra_links):
 
 def _handle_perf_json_test_results(
     benchmark_directory_map, test_results_list):
+  """Checks the test_results.json under each folder:
+
+  1. mark the benchmark 'enabled' if tests results are found
+  2. add the json content to a list for non-ref.
+  """
   begin_time = time.time()
   benchmark_enabled_map = {}
   for benchmark_name, directories in benchmark_directory_map.iteritems():
@@ -256,9 +261,36 @@ def _get_benchmark_name(directory):
   return os.path.basename(directory).replace(" benchmark", "")
 
 
-def process_perf_results(output_json, configuration_name,
-                         build_properties, task_output_dir,
-                         smoke_test_mode, output_results_dir):
+def _scan_output_dir(task_output_dir):
+  benchmark_directory_map = {}
+  benchmarks_shard_map_file = None
+
+  directory_list = [
+      f for f in os.listdir(task_output_dir)
+      if not os.path.isfile(os.path.join(task_output_dir, f))
+  ]
+  benchmark_directory_list = []
+  for directory in directory_list:
+    for f in os.listdir(os.path.join(task_output_dir, directory)):
+      path = os.path.join(task_output_dir, directory, f)
+      if os.path.isdir(path):
+        benchmark_directory_list.append(path)
+      elif path.endswith('benchmarks_shard_map.json'):
+        benchmarks_shard_map_file = path
+  # Now create a map of benchmark name to the list of directories
+  # the lists were written to.
+  for directory in benchmark_directory_list:
+    benchmark_name = _get_benchmark_name(directory)
+    if benchmark_name in benchmark_directory_map.keys():
+      benchmark_directory_map[benchmark_name].append(directory)
+    else:
+      benchmark_directory_map[benchmark_name] = [directory]
+
+  return benchmark_directory_map, benchmarks_shard_map_file
+
+
+def process_perf_results(output_json, configuration_name, build_properties,
+                         task_output_dir, smoke_test_mode, output_results_dir):
   """Process perf results.
 
   Consists of merging the json-test-format output, uploading the perf test
@@ -280,38 +312,11 @@ def process_perf_results(output_json, configuration_name,
   begin_time = time.time()
   return_code = 0
   benchmark_upload_result_map = {}
-  directory_list = [
-      f for f in os.listdir(task_output_dir)
-      if not os.path.isfile(os.path.join(task_output_dir, f))
-  ]
 
-  benchmark_directory_list = []
-  benchmarks_shard_map_file = None
-  for directory in directory_list:
-    for f in os.listdir(os.path.join(task_output_dir, directory)):
-      path = os.path.join(task_output_dir, directory, f)
-      if os.path.isdir(path):
-        benchmark_directory_list.append(path)
-      elif path.endswith('benchmarks_shard_map.json'):
-        benchmarks_shard_map_file = path
-
-  # Now create a map of benchmark name to the list of directories
-  # the lists were written to.
-  benchmark_directory_map = {}
-  for directory in benchmark_directory_list:
-    benchmark_name = _get_benchmark_name(directory)
-    if benchmark_name in benchmark_directory_map.keys():
-      benchmark_directory_map[benchmark_name].append(directory)
-    else:
-      benchmark_directory_map[benchmark_name] = [directory]
+  benchmark_directory_map, benchmarks_shard_map_file = _scan_output_dir(
+      task_output_dir)
 
   test_results_list = []
-
-  build_properties = json.loads(build_properties)
-  if not configuration_name:
-    # we are deprecating perf-id crbug.com/817823
-    configuration_name = build_properties['buildername']
-
   extra_links = {}
 
   # First, upload benchmarks shard map to logdog and add a page
@@ -330,6 +335,11 @@ def process_perf_results(output_json, configuration_name,
 
   if not smoke_test_mode:
     try:
+      build_properties = json.loads(build_properties)
+      if not configuration_name:
+        # we are deprecating perf-id crbug.com/817823
+        configuration_name = build_properties['buildername']
+
       return_code, benchmark_upload_result_map = _handle_perf_results(
           benchmark_enabled_map, benchmark_directory_map,
           configuration_name, build_properties, extra_links, output_results_dir)
@@ -340,6 +350,7 @@ def process_perf_results(output_json, configuration_name,
   # Finally, merge all test results json, add the extra links and write out to
   # output location
   _merge_json_output(output_json, test_results_list, extra_links)
+
   end_time = time.time()
   print_duration('Total process_perf_results', begin_time, end_time)
   return return_code, benchmark_upload_result_map
@@ -624,9 +635,8 @@ def main():
   output_results_dir = tempfile.mkdtemp('outputresults')
   try:
     return_code, _ = process_perf_results(
-        args.output_json, args.configuration_name,
-        args.build_properties, args.task_output_dir,
-        args.smoke_test_mode, output_results_dir)
+        args.output_json, args.configuration_name, args.build_properties,
+        args.task_output_dir, args.smoke_test_mode, output_results_dir)
     return return_code
   finally:
     shutil.rmtree(output_results_dir)

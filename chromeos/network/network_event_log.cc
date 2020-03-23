@@ -12,7 +12,8 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
-const char* kServicePrefix = "/service/";
+constexpr char kServicePrefix[] = "/service/";
+constexpr char kUnknownId[] = "<none>";
 
 chromeos::NetworkStateHandler* GetNetworkStateHandler() {
   if (!chromeos::NetworkHandler::IsInitialized())
@@ -28,7 +29,7 @@ namespace chromeos {
 // e.g.: ethernet_0, wifi_psk_1, cellular_lte_2, vpn_openvpn_3.
 std::string NetworkId(const NetworkState* network) {
   if (!network)
-    return "<none>";
+    return kUnknownId;
 
   const std::string& type = network->type();
   if (type == kTypeTether) {
@@ -78,6 +79,8 @@ std::string NetworkPathId(const std::string& service_path) {
 // Calls NetworkId() if a NetworkState exists for |guid|, otherwise
 // returns |guid|.
 std::string NetworkGuidId(const std::string& guid) {
+  if (guid.empty())
+    return kUnknownId;
   NetworkStateHandler* handler = GetNetworkStateHandler();
   if (handler) {
     const NetworkState* network = handler->GetNetworkStateFromGuid(guid);

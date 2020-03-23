@@ -16,6 +16,10 @@ class NavigationController;
 class WebContents;
 }  // namespace content
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 // Implementation of LocationBarModelDelegate for the Chrome embedder. It leaves
 // out how to fetch the active WebContents to its subclasses.
 class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
@@ -43,6 +47,9 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
   bool IsHomePage(const GURL& url) const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
   TemplateURLService* GetTemplateURLService() override;
+
+  // Registers a preference used to prevent URL elisions.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
   ChromeLocationBarModelDelegate();

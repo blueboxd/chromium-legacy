@@ -360,21 +360,15 @@ ComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
     bool allow_reinitialize,
     const UMALogCallback& uma_log_cb) {
   ComPtr<IMMDeviceEnumerator> device_enumerator;
-  HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
+  HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
                                   CLSCTX_INPROC_SERVER,
                                   IID_PPV_ARGS(&device_enumerator));
   if (hr == CO_E_NOTINITIALIZED && allow_reinitialize) {
     LOG(ERROR) << "CoCreateInstance fails with CO_E_NOTINITIALIZED";
-    // We have seen crashes which indicates that this method can in fact
-    // fail with CO_E_NOTINITIALIZED in combination with certain 3rd party
-    // modules. Calling CoInitializeEx is an attempt to resolve the reported
-    // issues. See http://crbug.com/378465 for details.
-    hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    if (SUCCEEDED(hr)) {
-      hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
-                              CLSCTX_INPROC_SERVER,
-                              IID_PPV_ARGS(&device_enumerator));
-    }
+    // Buggy third-party DLLs can uninitialize COM out from under us.  Attempt
+    // to re-initialize it.  See http://crbug.com/378465 for more details.
+    CoInitializeEx(nullptr, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
+    return CreateDeviceEnumeratorInternal(false, uma_log_cb);
   }
   uma_log_cb.Run(UmaLogStep::CREATE_DEVICE_ENUMERATOR, hr);
   return device_enumerator;

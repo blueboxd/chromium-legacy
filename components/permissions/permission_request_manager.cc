@@ -93,6 +93,12 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
     return;
   }
 
+  if (!web_contents_supports_permission_requests_) {
+    request->Cancelled();
+    request->RequestFinished();
+    return;
+  }
+
   // TODO(tsergeant): change the UMA to no longer mention bubbles.
   base::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
 

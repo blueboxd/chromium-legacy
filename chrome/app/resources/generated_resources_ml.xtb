@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">അപ്‌ലോഡുചെയ്യുക</translation>
 <translation id="1244265436519979884">Linux പുനഃസ്ഥാപിക്കൽ നിലവിൽ പുരോഗതിയിലാണ്</translation>
 <translation id="1244303850296295656">വിപുലീകരണ പിശക്</translation>
+<translation id="1246158006305844142">നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്‌തിട്ടുള്ള എല്ലാ Chrome OS ഉപകരണങ്ങളിലുമുടനീളം നിങ്ങളുടെ ആപ്പുകളും ക്രമീകരണവും സമന്വയിപ്പിക്കും. ബ്രൗസർ സമന്വയിപ്പിക്കൽ ഓപ്‌ഷനുകൾക്ക് <ph name="LINK_BEGIN" />Chrome ക്രമീകരണത്തിലേക്ക്<ph name="LINK_END" /> പോവുക.</translation>
 <translation id="1246905108078336582">ക്ലിപ്പ്ബോർഡിൽ നിന്ന് നിർദ്ദേശം നീക്കം ചെയ്യണോ?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> അവസാനിപ്പിച്ചതിനാൽ ഇത് ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="1251366534849411931">പ്രതീക്ഷിച്ചത് ഓപ്പൺ ചുരുൾ ബ്രാക്കറ്റ്: <ph name="ERROR_LINE" /></translation>
@@ -388,6 +389,7 @@
 <translation id="1524563461097350801">വേണ്ട</translation>
 <translation id="1525740877599838384">ലൊക്കേഷൻ നിർണ്ണയിക്കാൻ വൈഫൈ മാത്രം ഉപയോഗിക്കുക</translation>
 <translation id="152629053603783244">Linux റീസ്റ്റാർട്ട് ചെയ്യുക</translation>
+<translation id="1526335046150927198">ടച്ച്‌പാഡ് സ്‍ക്രോള്‍ ആക്‌സിലറേഷൻ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="1526560967942511387">പേരില്ലാത്ത പ്രമാണം</translation>
 <translation id="1529891865407786369">പവർ ഉറവിടം</translation>
 <translation id="1530838837447122178">മൗസ്, ടച്ച്‌പാഡ് ഉപകരണ ക്രമീകരണം തുറക്കുക</translation>
@@ -1310,6 +1312,7 @@
 <translation id="2725200716980197196">നെറ്റ്‌വർക്ക് കണക്‌റ്റിവിറ്റി പുനഃസ്‌ഥാപിച്ചു</translation>
 <translation id="2727633948226935816">എന്നെ വീണ്ടും ഓർമ്മപ്പെടുത്തരുത്</translation>
 <translation id="2727712005121231835">യഥാര്‍ത്ഥ വലിപ്പം</translation>
+<translation id="2729314457178420145">Google.com-ൽ നിന്ന് നിങ്ങളെ സൈൻ ഔട്ട് ചെയ്‌തേക്കാവുന്ന ബ്രൗസിംഗ് ഡാറ്റയും (<ph name="URL" />) മായ്‌ക്കുക. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Linux ആപ്പുകളും ഫയലുകളും ബാക്കപ്പ് ചെയ്യുന്നു</translation>
 <translation id="273093730430620027">ഈ പേജ് നിങ്ങളുടെ ക്യാമറ ആക്‌സസ്സുചെയ്യുന്നു.</translation>
 <translation id="2731392572903530958">അടച്ച വിൻഡോ വീണ്ടും തു&amp;റക്കുക</translation>
@@ -2161,6 +2164,7 @@
 <translation id="3838486795898716504">കൂടുതൽ <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">കുക്കികളും മറ്റുള്ള സൈറ്റും പ്ലഗിൻ വിവരവും</translation>
 <translation id="383891835335927981">സൈറ്റുകളൊന്നും സൂം ഇൻ അല്ലെങ്കിൽ സൂം ഔട്ട് ചെയ്‌തിട്ടില്ല</translation>
+<translation id="3839509547554145593">മൗസ് സ്‍ക്രോള്‍ ആക്‌സിലറേഷൻ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="3839516600093027468">ക്ലിപ്പ്‌ബോർഡ് കാണുന്നതിൽ നിന്ന് എല്ലായ്പ്പോഴും <ph name="HOST" /> എന്നതിനെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="3841964634449506551">പാസ്‌വേഡ് അസാധുവാണ്</translation>
 <translation id="3842552989725514455">Serif font </translation>
@@ -2771,6 +2775,7 @@
 <translation id="4699172675775169585">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="4699357559218762027">(സ്വയമേവ-സമാരംഭിച്ചു)</translation>
 <translation id="470074695271471509">പൂർത്തിയാക്കാൻ സൈൻ ഔട്ട് ചെയ്യണോ?</translation>
+<translation id="4701025263201366865">രക്ഷിതാവിനുള്ള സൈൻ ഇൻ</translation>
 <translation id="4707302005824653064">ഉപയോഗവും ചരിത്രവും chrome.com എന്നതിലെ മാനേജർ (<ph name="CUSTODIAN_EMAIL" />) അവലോകനം ചെയ്യാനിടയുണ്ട്.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + ഉപയോക്തൃ സർട്ടിഫിക്കറ്റ്</translation>
 <translation id="4708794300267213770">സുഷുപ്‌തിയിൽ നിന്നുണരുമ്പോൾ ലോക്ക് സ്‌ക്രീൻ കാണിക്കുക</translation>
@@ -3078,6 +3083,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> തിരയൽ</translation>
 <translation id="5139823398361067371">നിങ്ങളുടെ സുരക്ഷാ കീയുടെ പിൻ നൽകുക. നിങ്ങൾക്ക് പിൻ അറിയില്ലെങ്കിൽ, സുരക്ഷാ കീ റീസെറ്റ് ചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="5139955368427980650">&amp;തുറക്കൂ</translation>
+<translation id="5142793792982256885">ടച്ച്‌പാഡ് സ്‍ക്രോള്‍ ചെയ്യൽ വേഗത</translation>
 <translation id="5142961317498132443">പരിശോധിച്ചുറപ്പിക്കൽ</translation>
 <translation id="5143374789336132547">നിങ്ങൾ ഹോം ബട്ടൺ ക്ലിക്ക് ചെയ്യുമ്പോൾ ദൃശ്യമാകുന്ന പേജിനെ "<ph name="EXTENSION_NAME" />" വിപുലീകരണം മാറ്റി.</translation>
 <translation id="5143712164865402236">പൂര്‍‌ണ്ണ സ്‌ക്രീനില്‍‌ പ്രവേശിക്കുക</translation>
@@ -3641,6 +3647,7 @@
 <translation id="5901630391730855834">മഞ്ഞ</translation>
 <translation id="5906655207909574370">എകദേശം അപ് റ്റു ഡേറ്റാണ്! അപ്‌ഡേറ്റ് ചെയ്യൽ പൂർത്തിയാക്കാൻ ഉപകരണം പുനരാരംഭിക്കുക.</translation>
 <translation id="5906732635754427568">ഈ ആപ്പുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ ഈ ഉപകരണത്തിൽ നിന്ന് നീക്കംചെയ്യപ്പെടും.</translation>
+<translation id="5908695239556627796">മൗസ് സ്‍ക്രോള്‍ ചെയ്യൽ വേഗത</translation>
 <translation id="5908769186679515905">Flash റൺ ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ തടയുക</translation>
 <translation id="5910363049092958439">ചിത്രം ഇതായി സം&amp;രക്ഷിക്കുക...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> ഓഫ്‌ലൈൻ ആണ്</translation>
@@ -5089,6 +5096,7 @@
     <ph name="BEGIN_BOLD" />കുറിപ്പ്:<ph name="END_BOLD" />  പ്രോസസ് വേളയിൽ സിസ്റ്റം റീബൂട്ട് ചെയ്യും.</translation>
 <translation id="7828731929332799387">മൂന്നാം കക്ഷികളുമായി ബന്ധപ്പെട്ട സന്ദർഭങ്ങളിൽ ലഭ്യമായ എല്ലാ സൈറ്റ് ഡാറ്റയും കുക്കികളും ഇത് ഇല്ലാതാക്കും. തുടരാൻ നിങ്ങൾ ആഗ്രഹിക്കുന്നുണ്ടോ?</translation>
 <translation id="7829298379596169484">ഓഡിയോ ഇൻപുട്ട് ആക്‌സസ്സുചെയ്യുന്നു</translation>
+<translation id="7829877209233347340">സ്‌കൂൾ അക്കൗണ്ട് ചേർക്കുന്നതിന് അനുമതി നൽകാൻ രക്ഷിതാവിനോട് സൈൻ ഇൻ ചെയ്യാൻ ആവശ്യപ്പെടുക</translation>
 <translation id="7830594666202422257">Linux-ലേക്ക് കണക്റ്റ് ചെയ്യുക</translation>
 <translation id="7831491651892296503">നെറ്റ്‍വര്‍ക്ക് കോണ്‍ഫിഗര്‍ ചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5842,6 +5850,7 @@
 <translation id="8808686172382650546">പൂച്ച</translation>
 <translation id="8808744862003883508">ഈ പേജിൽ നിങ്ങൾക്ക് Chrome-ൽ ഇൻസ്റ്റാൾ ചെയ്‍തിരിക്കുന്ന എല്ലാ വിപുലീകരണങ്ങളും കാണാം.</translation>
 <translation id="8809147117840417135">ഇളം ടീൽ</translation>
+<translation id="8812593354822910461"><ph name="DOMAIN" /> എന്നതിൽ നിന്ന് നിങ്ങളെ സൈൻ ഔട്ട് ചെയ്യുന്ന ബ്രൗസിംഗ് ഡാറ്റയും (<ph name="URL" />) മായ്‌ക്കുക.<ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039"><ph name="USERNAME" /> എന്നതിലേക്ക് സൈൻ ഇൻ ചെയ്യാനാവില്ല</translation>
 <translation id="8813811964357448561">പേപ്പറുകളുടെ ഷീറ്റ്</translation>
 <translation id="8813872945700551674">"<ph name="EXTENSION_NAME" />"-ന് അംഗീകാരം നൽകാൻ രക്ഷിതാവിനോട് ആവശ്യപ്പെടുക</translation>
@@ -6131,6 +6140,7 @@
 <translation id="9203398526606335860">&amp;പ്രൊഫൈലിംഗ് പ്രാപ്തമാക്കി</translation>
 <translation id="9203904171912129171">ഒരു ഉപകരണം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="9203962528777363226">പുതിയ ഉപയോക്താക്കളെ ചേർക്കുന്നത് ഈ ഉപകരണത്തിന്റെ അഡ്‌മിൻ പ്രവർത്തനരഹിതമാക്കി</translation>
+<translation id="9209689095351280025">വെബിലുടനീളം നിങ്ങളെ ട്രാക്ക് ചെയ്യുന്ന കുക്കികൾ ഉപയോഗിക്കാൻ സെെറ്റുകൾക്കാവില്ല</translation>
 <translation id="9211177926627870898">അപ്ഡേറ്റ് ആവശ്യമാണ്</translation>
 <translation id="9214520840402538427">ക്ഷമിക്കണം!  ഇൻസ്റ്റലേഷൻ സമയ-ആട്രിബ്യൂട്ടുകളുടെ ലോഞ്ച് ചെയ്യൽ കാലഹരണപ്പെട്ടു.  നിങ്ങളുടെ പിന്തുണാ പ്രതിനിധിയെ ബന്ധപ്പെടുക.</translation>
 <translation id="9214695392875603905">കപ്പ്‌കേക്ക്</translation>

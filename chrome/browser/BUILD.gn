@@ -2998,6 +2998,7 @@ jumbo_static_library("browser") {
       "//chrome/browser/share",
       "//chrome/browser/upboarding",
       "//chrome/browser/updates",
+      "//chrome/common:non_code_constants",
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/autofill_assistant/browser",
       "//components/cbor",

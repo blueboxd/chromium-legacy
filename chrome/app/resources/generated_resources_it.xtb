@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Carica</translation>
 <translation id="1244265436519979884">È in corso il ripristino di Linux</translation>
 <translation id="1244303850296295656">Errore delle estensioni</translation>
+<translation id="1246158006305844142">Le app e le impostazioni verranno sincronizzate su tutti i dispositivi Chrome OS a cui hai effettuato l'accesso con il tuo Account Google. Per le opzioni di sincronizzazione del browser, vai alle <ph name="LINK_BEGIN" />impostazioni di Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Rimuovere il suggerimento dagli appunti?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> è stato bloccato perché è obsoleto</translation>
 <translation id="1251366534849411931">Parentesi graffa aperta prevista: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">No, grazie</translation>
 <translation id="1525740877599838384">Usa solo la rete Wi-Fi per stabilire la posizione</translation>
 <translation id="152629053603783244">Riavvia Linux</translation>
+<translation id="1526335046150927198">Attiva l'accelerazione di scorrimento del touchpad</translation>
 <translation id="1526560967942511387">Documento senza titolo</translation>
 <translation id="1529891865407786369">Fonte di alimentazione</translation>
 <translation id="1530838837447122178">Apri le impostazioni di mouse e touchpad</translation>
@@ -1312,6 +1314,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2725200716980197196">Connettività di rete ripristinata</translation>
 <translation id="2727633948226935816">Non visualizzare più il promemoria</translation>
 <translation id="2727712005121231835">Dimensioni reali</translation>
+<translation id="2729314457178420145">Cancella anche i dati di navigazione (<ph name="URL" />) che potrebbero farti uscire dall'account su Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Backup di app e file Linux</translation>
 <translation id="273093730430620027">Questa pagina sta accedendo alla webcam.</translation>
 <translation id="2731392572903530958">R&amp;iapri finestra chiusa</translation>
@@ -2163,6 +2166,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3838486795898716504">Altre <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Cookie e altri dati di siti e plug-in</translation>
 <translation id="383891835335927981">Non è stato aumentato o diminuito lo zoom di alcun sito</translation>
+<translation id="3839509547554145593">Attiva l'accelerazione di scorrimento del mouse</translation>
 <translation id="3839516600093027468">Impedisci sempre a <ph name="HOST" /> di leggere gli appunti</translation>
 <translation id="3841964634449506551">Password non valida</translation>
 <translation id="3842552989725514455">Carattere serif</translation>
@@ -2774,6 +2778,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4699172675775169585">Immagini e file memorizzati nella cache</translation>
 <translation id="4699357559218762027">(avviata automaticamente)</translation>
 <translation id="470074695271471509">Vuoi uscire per completare la configurazione?</translation>
+<translation id="4701025263201366865">Accesso per i genitori</translation>
 <translation id="4707302005824653064">Il gestore (<ph name="CUSTODIAN_EMAIL" />) può esaminare l'utilizzo e la cronologia su chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + certificato utente</translation>
 <translation id="4708794300267213770">Mostra la schermata di blocco quando il dispositivo viene riattivato dopo la sospensione</translation>
@@ -3081,6 +3086,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, ricerca in <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Inserisci il PIN del token di sicurezza. Se non conosci il PIN, devi reimpostare il token di sicurezza.</translation>
 <translation id="5139955368427980650">&amp;Apri</translation>
+<translation id="5142793792982256885">Velocità di scorrimento del touchpad</translation>
 <translation id="5142961317498132443">Autenticazione</translation>
 <translation id="5143374789336132547">L'estensione "<ph name="EXTENSION_NAME" />" ha cambiato la pagina mostrata quando fai clic sul pulsante Pagina iniziale.</translation>
 <translation id="5143712164865402236">Passa a schermo intero</translation>
@@ -3643,6 +3649,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5901630391730855834">Giallo</translation>
 <translation id="5906655207909574370">Aggiornamento quasi completato. Riavvia il dispositivo per terminare l'aggiornamento.</translation>
 <translation id="5906732635754427568">I dati associati a questa app verranno rimossi dal dispositivo.</translation>
+<translation id="5908695239556627796">Velocità di scorrimento del mouse</translation>
 <translation id="5908769186679515905">Impedisci ai siti di eseguire Flash</translation>
 <translation id="5910363049092958439">Sal&amp;va immagine con nome...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> è offline</translation>
@@ -5090,6 +5097,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
     <ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> il sistema viene riavviato durante la procedura.</translation>
 <translation id="7828731929332799387">Verranno eliminati tutti i cookie e i dati dei siti disponibili in contesti di terze parti. Vuoi continuare?</translation>
 <translation id="7829298379596169484">Accesso all'input audio in corso</translation>
+<translation id="7829877209233347340">Chiedi a un genitore di accedere per autorizzare l'aggiunta di un account della scuola</translation>
 <translation id="7830594666202422257">Connetti a Linux</translation>
 <translation id="7831491651892296503">Errore durante la configurazione della rete</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5843,6 +5851,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8808686172382650546">Gatto</translation>
 <translation id="8808744862003883508">In questa pagina puoi vedere tutte le estensioni installate in Chrome.</translation>
 <translation id="8809147117840417135">Verde acqua</translation>
+<translation id="8812593354822910461">Cancella anche i dati di navigazione (<ph name="URL" />) che ti faranno uscire dall'account su <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Impossibile accedere a <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">foglio</translation>
 <translation id="8813872945700551674">Chiedi a un genitore di approvare "<ph name="EXTENSION_NAME" />"</translation>
@@ -6132,6 +6141,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9203398526606335860">&amp;Profiling attivato</translation>
 <translation id="9203904171912129171">Seleziona un dispositivo</translation>
 <translation id="9203962528777363226">L'amministratore di questo dispositivo ha disattivato l'aggiunta di nuovi utenti</translation>
+<translation id="9209689095351280025">I siti non possono utilizzare i cookie per monitorare la tua attività sul Web.</translation>
 <translation id="9211177926627870898">Aggiornamento richiesto</translation>
 <translation id="9214520840402538427">Spiacenti. L'inizializzazione degli attributi installation-time è scaduta. Contatta il tuo rappresentante dell'assistenza.</translation>
 <translation id="9214695392875603905">Cupcake</translation>

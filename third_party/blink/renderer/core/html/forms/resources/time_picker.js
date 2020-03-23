@@ -27,7 +27,6 @@ const TimeColumnType = {
   AMPM: 5,
 };
 
-
 /**
  * Supported label types.
  * @enum {number}
@@ -427,6 +426,19 @@ class TimeColumn extends HTMLUListElement {
     this.className = TimeColumn.ClassName;
     this.tabIndex = 0;
     this.columnType_ = columnType;
+    this.setAttribute('role', 'listbox');
+    if (this.columnType_ === TimeColumnType.HOUR) {
+      this.setAttribute('aria-label', global.params.axHourLabel);
+    } else if (this.columnType_ === TimeColumnType.MINUTE) {
+      this.setAttribute('aria-label', global.params.axMinuteLabel);
+    } else if (this.columnType_ === TimeColumnType.SECOND) {
+      this.setAttribute('aria-label', global.params.axSecondLabel);
+    } else if (this.columnType_ === TimeColumnType.MILLISECOND) {
+      this.setAttribute('aria-label', global.params.axMillisecondLabel);
+    } else {
+      this.setAttribute('aria-label', global.params.axAmPmLabel);
+    }
+
     if (this.columnType_ == TimeColumnType.AMPM) {
       this.createAndInitializeAMPMCells_(timePicker);
     } else {
@@ -456,7 +468,7 @@ class TimeColumn extends HTMLUListElement {
           (100 * Math.floor((Number(millisecondValue) + 50.0) / 100.0)) % 1000;
     }
 
-    let time = new Time(1, 1, 1, 0);
+    let time = new Time(1, 1, 1, 100);
     let cells = [];
     let initialCellIndex = -1;
     for (let i = 0; i < totalCells; i++) {
@@ -464,7 +476,7 @@ class TimeColumn extends HTMLUListElement {
 
       if (this.columnType_ === TimeColumnType.MILLISECOND &&
           Number(value) === roundedMillisecondValue) {
-        // Set this cell to the exat ms value of the in-page control
+        // Set this cell to the exact ms value of the in-page control
         value =
             currentTime.value(TimeColumnType.MILLISECOND, timePicker.hasAMPM);
         initialCellIndex = i;
@@ -691,9 +703,12 @@ class TimeColumn extends HTMLUListElement {
   set selectedTimeCell(timeCell) {
     if (this.selectedTimeCell_) {
       this.selectedTimeCell_.classList.remove('selected');
+      this.selectedTimeCell_.removeAttribute('aria-selected');
     }
     this.selectedTimeCell_ = timeCell;
+    this.setAttribute('aria-activedescendant', timeCell.id);
     this.selectedTimeCell_.classList.add('selected');
+    this.selectedTimeCell_.setAttribute('aria-selected', 'true');
   }
 
   resetToInitialValue = () => {
@@ -721,7 +736,16 @@ class TimeCell extends HTMLLIElement {
     this.className = TimeCell.ClassName;
     this.textContent = localizedValue;
     this.value = value;
+
+    this.setAttribute('role', 'option');
+    this.id = TimeCell.getNextUniqueId();
   };
+
+  static getNextUniqueId() {
+    return `timeCell${TimeCell.idCount++}`;
+  }
+
+  static idCount = 0;
 }
 TimeCell.ClassName = 'time-cell';
 window.customElements.define('time-cell', TimeCell, {extends: 'li'});

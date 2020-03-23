@@ -492,6 +492,8 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     return null;
   }
 
+  chrome.cryptotokenPrivate.recordRegisterRequest(sender.tabId, sender.frameId);
+
   var timeoutValueSeconds = getTimeoutValueFromRequest(request);
   // Attenuate watchdog timeout value less than the enroller's timeout, so the
   // watchdog only fires after the enroller could reasonably have called back,

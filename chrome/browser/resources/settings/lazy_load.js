@@ -65,6 +65,7 @@ import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
 import './search_engines_page/search_engine_entry.m.js';
 import './site_settings/chooser_exception_list_entry.m.js';
+import './site_settings/site_details_permission.m.js';
 import './site_settings/site_entry.m.js';
 import './site_settings/site_list_entry.m.js';
 import './site_settings/site_list.m.js';

@@ -86,8 +86,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   struct DetectionAttemptCompletedReport {
     DetectionAttemptCompletedReport();
 
-    DetectionAttemptCompletedReport(const std::string network_name,
-                                    const std::string network_id,
+    DetectionAttemptCompletedReport(const std::string network_id,
                                     captive_portal::CaptivePortalResult result,
                                     int response_code);
 
@@ -95,7 +94,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
 
     bool Equals(const DetectionAttemptCompletedReport& o) const;
 
-    std::string network_name;
     std::string network_id;
     captive_portal::CaptivePortalResult result = captive_portal::RESULT_COUNT;
     int response_code = -1;
@@ -207,9 +205,6 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   void advance_time_ticks_for_testing(const base::TimeDelta& delta) {
     time_ticks_for_testing_ += delta;
   }
-
-  // Name of the default network.
-  std::string default_network_name_;
 
   // Unique identifier of the default network.
   std::string default_network_id_;

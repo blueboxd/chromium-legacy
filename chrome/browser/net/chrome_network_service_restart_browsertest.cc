@@ -43,10 +43,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
                        StoragePartitionGetNetworkContext) {
   if (content::IsInProcessNetworkService())
     return;
-#if defined(OS_MACOSX)
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
-  return;
-#endif
+#if !defined(OS_MACOSX)
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser()->profile());
 
@@ -65,6 +63,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
   EXPECT_NE(old_network_context, partition->GetNetworkContext());
   EXPECT_EQ(net::OK,
             LoadBasicRequest(partition->GetNetworkContext(), GetTestURL()));
+#endif
 }
 
 // Make sure |SystemNetworkContextManager::GetContext()| returns valid interface
@@ -73,10 +72,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
                        SystemNetworkContextManagerGetContext) {
   if (content::IsInProcessNetworkService())
     return;
-#if defined(OS_MACOSX)
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
-  return;
-#endif
+#if !defined(OS_MACOSX)
   SystemNetworkContextManager* system_network_context_manager =
       g_browser_process->system_network_context_manager();
 
@@ -96,6 +93,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
   EXPECT_EQ(net::OK,
             LoadBasicRequest(system_network_context_manager->GetContext(),
                              GetTestURL()));
+#endif
 }
 
 }  // namespace content

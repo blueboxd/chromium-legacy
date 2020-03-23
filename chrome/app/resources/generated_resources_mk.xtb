@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Постави</translation>
 <translation id="1244265436519979884">Обновата на Linux моментално е во тек</translation>
 <translation id="1244303850296295656">Грешка на наставка</translation>
+<translation id="1246158006305844142">Вашите апликации и поставки ќе се синхронизираат на сите уреди со Chrome OS каде што сте најавени со сметката на Google. За опциите за синхронизирање на прелистувачот, одете во <ph name="LINK_BEGIN" />Поставки за Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Дали да се отстрани предлогот од привремената меморија?</translation>
 <translation id="1249643471736608405">Приклучокот <ph name="PLUGIN_NAME" /> е блокиран затоа што е неподдржан</translation>
 <translation id="1251366534849411931">Се очекува лева голема заграда: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">Не, благодарам</translation>
 <translation id="1525740877599838384">Користи само Wi-Fi за утврдување на локацијата</translation>
 <translation id="152629053603783244">Рестартирај го Linux</translation>
+<translation id="1526335046150927198">Овозможи забрзување на лизгањето на подлогата за допир</translation>
 <translation id="1526560967942511387">Документ без наслов</translation>
 <translation id="1529891865407786369">Извор на напојување</translation>
 <translation id="1530838837447122178">Отворете ги поставките на уредот за глувчето и подлогата за допир</translation>
@@ -1313,6 +1315,7 @@
 <translation id="2725200716980197196">Обновена мрежна поврзливост</translation>
 <translation id="2727633948226935816">Не потсетувај ме повторно</translation>
 <translation id="2727712005121231835">Вистинска големина</translation>
+<translation id="2729314457178420145">Избришете ги и податоците од прелистувањето (<ph name="URL" />), а тоа може да ве одјави од Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Се прави бекап на апликациите и датотеките на Linux</translation>
 <translation id="273093730430620027">Страницата пристапува до фотоапаратот.</translation>
 <translation id="2731392572903530958">Повторно&amp; отвори затворен прозорец</translation>
@@ -2164,6 +2167,7 @@
 <translation id="3838486795898716504">Повеќе <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Колачиња и други податоци од локација и од приклучок</translation>
 <translation id="383891835335927981">Ниеден сајт не е зумиран ниту одзумиран</translation>
+<translation id="3839509547554145593">Овозможи забрзување на лизгањето на глувчето</translation>
 <translation id="3839516600093027468">Секогаш блокирај го пристапот на <ph name="HOST" /> за гледање на привремената меморија</translation>
 <translation id="3841964634449506551">Погрешна лозинка</translation>
 <translation id="3842552989725514455">Фонт Serif</translation>
@@ -2775,6 +2779,7 @@
 <translation id="4699172675775169585">Кеширани слики и датотеки</translation>
 <translation id="4699357559218762027">(автоматско стартување)</translation>
 <translation id="470074695271471509">Дали сакате да се одјавите за да завршите?</translation>
+<translation id="4701025263201366865">Најавување на родител</translation>
 <translation id="4707302005824653064">Користењето и историјата може да ги прегледува управникот (<ph name="CUSTODIAN_EMAIL" />) на chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + сертификат на корисник</translation>
 <translation id="4708794300267213770">Прикажи заклучен екран при будење од режим на мирување</translation>
@@ -3082,6 +3087,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, пребарајте со <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Внесете го PIN-кодот за вашиот безбедносен клуч. Ако не го знаете PIN-кодот, ќе треба да го ресетирате безбедносниот клуч.</translation>
 <translation id="5139955368427980650">&amp;Отвори</translation>
+<translation id="5142793792982256885">Брзина на лизгање на подлогата за допир</translation>
 <translation id="5142961317498132443">Проверка</translation>
 <translation id="5143374789336132547">Екстензијата „<ph name="EXTENSION_NAME" />“ ја смени страницата што се прикажува кога ќе кликнете на копчето Почетна страница.</translation>
 <translation id="5143712164865402236">Влези во цел екран</translation>
@@ -3644,6 +3650,7 @@
 <translation id="5901630391730855834">Жолта боја</translation>
 <translation id="5906655207909574370">Речиси ажурирано! Рестартирајте го уредот за да се заврши ажурирањето.</translation>
 <translation id="5906732635754427568">Податоците поврзани со оваа апликација ќе бидат отстранети од уредов.</translation>
+<translation id="5908695239556627796">Брзина на лизгање на глувчето</translation>
 <translation id="5908769186679515905">Блокирајте страниците да пуштаат Flash</translation>
 <translation id="5910363049092958439">Сни&amp;ми слика како…</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> е офлајн</translation>
@@ -5091,6 +5098,7 @@
     <ph name="BEGIN_BOLD" />Напомена:<ph name="END_BOLD" /> системот ќе се рестартира во текот на процесот.</translation>
 <translation id="7828731929332799387">Ова ќе ги избрише сите колачиња и податоците за сајтовите што се достапни во контексти на трета страна. Дали сакате да продолжите?</translation>
 <translation id="7829298379596169484">Пристап до аудиовлез</translation>
+<translation id="7829877209233347340">Побарај од родителот да се најави за да даде дозвола за додавање училишна сметка</translation>
 <translation id="7830594666202422257">Поврзи се со Linux</translation>
 <translation id="7831491651892296503">Грешка при конфигурирање на мрежата</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5847,6 +5855,7 @@
 <translation id="8808686172382650546">Мачка</translation>
 <translation id="8808744862003883508">На страницава, може да ги видите сите екстензии инсталирани во Chrome.</translation>
 <translation id="8809147117840417135">Светла синозелена</translation>
+<translation id="8812593354822910461">Избришете ги и податоците од прелистувањето (<ph name="URL" />), а тоа ќе ве одјави од <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Не може да се најави на <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">лист хартија</translation>
 <translation id="8813872945700551674">Повикај родител за да ја одобри „<ph name="EXTENSION_NAME" />“</translation>
@@ -6136,6 +6145,7 @@
 <translation id="9203398526606335860">&amp;Профилирањето е овозможено</translation>
 <translation id="9203904171912129171">Изберете уред</translation>
 <translation id="9203962528777363226">Администраторот на уредов оневозможи додавање нови корисници</translation>
+<translation id="9209689095351280025">Сајтовите не можат да користат колачиња што ве следат на интернет</translation>
 <translation id="9211177926627870898">Потребно е ажурирање</translation>
 <translation id="9214520840402538427">Упс! Иницијализацијата на атрибутите за време на инсталација истече. Контактирајте со вашиот претставник за поддршка.</translation>
 <translation id="9214695392875603905">Тортичка</translation>

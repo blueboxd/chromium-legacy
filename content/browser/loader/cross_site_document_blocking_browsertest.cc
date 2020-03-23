@@ -1241,7 +1241,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // InjectRequestInitiator-modified request into
   // AppCacheSubresourceURLFactory).  This necessitates testing via
   // mojo::test::BadMessageObserver rather than via RenderProcessHostWatcher or
-  // RenderProcessHostBadIpcMessageWaiter.
+  // RenderProcessHostBadMojoMessageWaiter.
   mojo::test::BadMessageObserver bad_message_observer;
   const char kScriptTemplate[] = R"(
       var img = document.createElement('img');
@@ -1295,7 +1295,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // InjectFetchMode-modified request into
   // AppCacheSubresourceURLFactory).  This necessitates testing via
   // mojo::test::BadMessageObserver rather than via RenderProcessHostWatcher or
-  // RenderProcessHostBadIpcMessageWaiter.
+  // RenderProcessHostBadMojoMessageWaiter.
   mojo::test::BadMessageObserver bad_message_observer;
   const char kScriptTemplate[] = R"(
       var img = document.createElement('img');

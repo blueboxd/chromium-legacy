@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS BottomDisplayStyleShiftDown
-FAIL BottomShiftDown assert_approx_equals: mfrac: denominator shift expected 60 +/- 1 but got 0
-PASS DisplayStyleGapMin
-FAIL GapMin assert_approx_equals: mfrac: gap expected 80 +/- 1 but got 0
-PASS TopDisplayStyleShiftUp
-FAIL ToShiftUp assert_approx_equals: mfrac: numerator shift expected 90 +/- 1 but got 0
-Harness: the test ran to completion.
-

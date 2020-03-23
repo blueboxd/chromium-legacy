@@ -21,6 +21,7 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -162,12 +163,14 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
             String toastMessage =
                     mContext.getString(R.string.qr_code_not_a_url_label, firstCode.rawValue);
             Toast.makeText(mContext, toastMessage, Toast.LENGTH_LONG).show();
+            RecordUserAction.record("SharingQRCode.ScannedNonURL");
             camera.setOneShotPreviewCallback(this);
             return;
         }
 
         openUrl(firstCode.rawValue);
         mNavigationObserver.onNavigation();
+        RecordUserAction.record("SharingQRCode.ScannedURL");
     }
 
     private void openUrl(String url) {

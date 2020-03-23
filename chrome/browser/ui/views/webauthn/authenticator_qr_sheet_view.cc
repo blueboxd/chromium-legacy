@@ -172,27 +172,26 @@ base::span<uint8_t> QRDataForCurrentTime(
     uint8_t out_buf[QRCode::kInputBytes],
     base::span<const uint8_t, 32> qr_generator_key) {
   const int64_t current_tick = device::CableDiscoveryData::CurrentTimeTick();
-  auto qr_secret = device::CableDiscoveryData::DeriveQRSecret(qr_generator_key,
-                                                              current_tick);
+  const device::CableQRData qr_data =
+      device::CableDiscoveryData::DeriveQRData(qr_generator_key, current_tick);
 
-  std::string base64_qr_secret;
+  std::string base64_qr_data;
   base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(qr_secret.data()),
-                        qr_secret.size()),
-      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64_qr_secret);
-  static constexpr size_t kEncodedSecretLength =
-      Base64EncodedSize(sizeof(qr_secret));
-  DCHECK_EQ(kEncodedSecretLength, base64_qr_secret.size());
+      base::StringPiece(reinterpret_cast<const char*>(qr_data.data()),
+                        sizeof(qr_data)),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64_qr_data);
+  static constexpr size_t kEncodedDataLength =
+      Base64EncodedSize(sizeof(qr_data));
+  DCHECK_EQ(kEncodedDataLength, base64_qr_data.size());
 
   static constexpr char kPrefix[] = "fido://c1/";
   static constexpr size_t kPrefixLength = sizeof(kPrefix) - 1;
 
-  static_assert(QRCode::kInputBytes >= kPrefixLength + kEncodedSecretLength,
+  static_assert(QRCode::kInputBytes >= kPrefixLength + kEncodedDataLength,
                 "unexpected QR input length");
   memcpy(out_buf, kPrefix, kPrefixLength);
-  memcpy(&out_buf[kPrefixLength], base64_qr_secret.data(),
-         kEncodedSecretLength);
-  return base::span<uint8_t>(out_buf, kPrefixLength + kEncodedSecretLength);
+  memcpy(&out_buf[kPrefixLength], base64_qr_data.data(), kEncodedDataLength);
+  return base::span<uint8_t>(out_buf, kPrefixLength + kEncodedDataLength);
 }
 
 }  // anonymous namespace

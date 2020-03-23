@@ -18,7 +18,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "content/test/storage_partition_test_utils.h"
+#include "content/test/io_thread_shared_url_loader_factory_owner.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/ssl/client_cert_identity.h"

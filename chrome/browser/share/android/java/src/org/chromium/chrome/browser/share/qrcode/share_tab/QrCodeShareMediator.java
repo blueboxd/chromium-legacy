@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -20,6 +21,8 @@ import java.io.File;
 class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
     private final Context mContext;
     private final PropertyModel mPropertyModel;
+    // The number of times the user has attempted to download the QR code in this dialog.
+    private int mNumDownloads;
 
     /**
      * The QrCodeScanMediator constructor.
@@ -42,6 +45,17 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
                     R.string.qr_code_filename_prefix, String.valueOf(System.currentTimeMillis()));
             ShareImageFileUtils.saveBitmapToExternalStorage(mContext, fileName, qrcodeBitmap, this);
         }
+        logDownload();
+    }
+
+    /** Logs user actions when attempting to download a QR code. */
+    private void logDownload() {
+        // Always log the singular metric; otherwise it's easy to miss during analysis.
+        RecordUserAction.record("SharingQRCode.DownloadQRCode");
+        if (mNumDownloads > 0) {
+            RecordUserAction.record("SharingQRCode.DownloadQRCodeMultipleAttempts");
+        }
+        mNumDownloads++;
     }
 
     // ShareImageFileUtils.OnImageSaveListener implementation.
@@ -49,11 +63,13 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
     public void onImageSaved(File imageFile) {
         // TODO(gayane): Maybe need to show confirmation message.
         mPropertyModel.set(QrCodeShareViewProperties.DOWNLOAD_SUCCESSFUL, true);
+        RecordUserAction.record("SharingQRCode.DownloadQRCode.Succeeded");
     }
 
     @Override
     public void onImageSaveError() {
         // TODO(gayane): Maybe need to show error message.
         mPropertyModel.set(QrCodeShareViewProperties.DOWNLOAD_SUCCESSFUL, false);
+        RecordUserAction.record("SharingQRCode.DownloadQRCode.Failed");
     }
 }

@@ -143,7 +143,8 @@ void InternetHandler::ConfigureThirdPartyVpn(const base::ListValue* args) {
     return;
   }
   if (network->type() != shill::kTypeVPN) {
-    NET_LOG(ERROR) << "ConfigureThirdPartyVpn: Network is not a VPN: " << guid;
+    NET_LOG(ERROR) << "ConfigureThirdPartyVpn: Network is not a VPN: "
+                   << NetworkId(network);
     return;
   }
 
@@ -169,7 +170,8 @@ void InternetHandler::ConfigureThirdPartyVpn(const base::ListValue* args) {
   }
 
   NET_LOG(ERROR) << "ConfigureThirdPartyVpn: Unsupported VPN type: "
-                 << network->GetVpnProviderType() << " For: " << guid;
+                 << network->GetVpnProviderType()
+                 << " For: " << NetworkId(network);
 }
 
 void InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames(

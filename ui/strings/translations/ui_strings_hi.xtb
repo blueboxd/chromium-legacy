@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">बड़ा करें</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, इंस्टॉल किए गए ऐप्लिकेशन</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> शेयर नहीं किया जा सकता</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> की <ph name="SECOND_ITEM_TITLE" /> के साथ अदला-बदली की गई</translation>
 <translation id="1498028757988366001">आपने पहले इसे खोजा है. अगर आप "<ph name="QUERY" />" को अपने इतिहास से मिटा देते हैं, तो यह सभी डिवाइस पर मौजूद आपके खाते से हटा दिया जाएगा.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनट और }one{# मिनट और }other{# मिनट और }}</translation>
 <translation id="1643823602425662293">सूचना</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">दाएं से बाएं</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">सबसे ज़्यादा संभावना है</translation>
+<translation id="7170202025028120564">आपके ऐप्लिकेशन की डिसप्ले सेटिंग अगली बार रीस्टार्ट होने पर लागू होंगी.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>
 <translation id="7319740667687257810">लॉन्चर, आंशिक व्यू</translation>

@@ -85,15 +85,16 @@
         "type": "object",
         "description": "User preference settings for a specific input method. Japanese input methods are not included because they are managed separately by Mozc module.",
         "properties": {
-          "autoCorrectionLevelPK": { "type": "integer", "optional": true, "description": "The level of auto correction for physical keyboard (0: Off, 1: Modest, 2: Aggressive)."},
-          "autoCorrectionLevelVK": { "type": "integer", "optional": true, "description": "The level of auto correction for virtual keyboard (0: Off, 1: Modest, 2: Aggressive)."},
-          "enableCapitalizationPK": { "type": "boolean", "optional": true, "description": "Whether to enable auto capitalization for physical keyboard."},
-          "enableCapitalizationVK": { "type": "boolean", "optional": true, "description": "Whether enable auto capitalization for virtual keyboard."},
           "enableCompletion": { "type": "boolean", "optional": true, "description": "Whether to enable auto completion."},
           "enableDoubleSpacePeriod": { "type": "boolean", "optional": true, "description": "Whether to auto transform double spaces to type period."},
           "enableGestureTyping": { "type": "boolean", "optional": true, "description": "Whether to enable gesture typing."},
           "enablePrediction": { "type": "boolean", "optional": true, "description": "Whether to enable word prediction."},
           "enableSoundOnKeypress": { "type": "boolean", "optional": true, "description": "Whether to enable sound on keypress."},
+          "physicalKeyboardAutoCorrectionLevel": { "type": "integer", "optional": true, "description": "The level of auto correction for physical keyboard (0: Off, 1: Modest, 2: Aggressive)."},
+          "physicalKeyboardEnableCapitalization": { "type": "boolean", "optional": true, "description": "Whether to enable auto capitalization for physical keyboard."},
+          "virtualKeyboardAutoCorrectionLevel": { "type": "integer", "optional": true, "description": "The level of auto correction for virtual keyboard (0: Off, 1: Modest, 2: Aggressive)."},
+          "virtualKeyboardEnableCapitalization": { "type": "boolean", "optional": true, "description": "Whether enable auto capitalization for virtual keyboard."},
+          "xkbLayout": { "type": "string", "optional": true, "description": "The xkb keyboard (system provided keyboard) layout."},
           "koreanEnableSyllableInput": { "type": "boolean", "optional": true, "description": "Whether input one syllable at a time in korean input method."},
           "koreanKeyboardLayout": { "type": "string", "optional": true, "description": "The layout of korean keyboard."},
           "koreanShowHangulCandidate": { "type": "boolean", "optional": true, "description": "Whether to show hangul candidates in korean input method."},
@@ -126,10 +127,9 @@
               "z_zh": {"type": "boolean", "optional": true, "description": "Whether to enable z_zh fuzzy"}
             }
           },
-          "xkbLayout": { "type": "string", "optional": true, "description": "The xkb keyboard (system provided keyboard) layout."},
           "zhuyinKeyboardLayout": { "type": "string", "optional": true, "description": "The layout of zhuyin keyboard."},
           "zhuyinPageSize": { "type": "integer", "optional": true, "description": "The page size of zhuyin candidate page."},
-          "zhuyinSelectionKeys": { "type": "string", "optional": true, "description": "The keys used to select candidates in zhuyin."}
+          "zhuyinSelectKeys": { "type": "string", "optional": true, "description": "The keys used to select candidates in zhuyin."}
         }
       }
     ],

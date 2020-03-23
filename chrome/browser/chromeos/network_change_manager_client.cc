@@ -121,7 +121,8 @@ void NetworkChangeManagerClient::UpdateState(
     // If we lost a default network, we must update our state and notify
     // observers, otherwise we have nothing to do.
     if (connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE) {
-      NET_LOG_EVENT("NCNDefaultNetworkLost", service_path_);
+      NET_LOG(EVENT) << "NCN DefaultNetwork lost"
+                     << NetworkPathId(service_path_);
       *ip_address_changed = true;
       *dns_changed = true;
       *connection_type_changed = true;
@@ -140,19 +141,18 @@ void NetworkChangeManagerClient::UpdateState(
       ConnectionTypeFromShill(default_network->type(),
                               default_network->network_technology());
   if (new_connection_type != connection_type_) {
-    NET_LOG_EVENT(
-        "NCNDefaultConnectionTypeChanged",
-        base::StringPrintf("%s -> %s",
-                           net::NetworkChangeNotifier::ConnectionTypeToString(
-                               connection_type_),
-                           net::NetworkChangeNotifier::ConnectionTypeToString(
-                               new_connection_type)));
+    NET_LOG(EVENT) << "NCN Default connection type changed: "
+                   << net::NetworkChangeNotifier::ConnectionTypeToString(
+                          connection_type_)
+                   << " -> "
+                   << net::NetworkChangeNotifier::ConnectionTypeToString(
+                          new_connection_type);
     *connection_type_changed = true;
   }
   if (default_network->path() != service_path_) {
-    NET_LOG_EVENT("NCNDefaultNetworkServicePathChanged",
-                  base::StringPrintf("%s -> %s", service_path_.c_str(),
-                                     default_network->path().c_str()));
+    NET_LOG(EVENT) << "NCN Default network changed: "
+                   << NetworkPathId(service_path_) << " -> "
+                   << NetworkId(default_network);
 
     // If we had a default network service change, network resources
     // must always be invalidated.
@@ -174,16 +174,14 @@ void NetworkChangeManagerClient::UpdateState(
       is_suppressed = false;
       *ip_address_changed = true;
     }
-    NET_LOG_EVENT(base::StringPrintf("%s%s", "NCNDefaultIPAddressChanged",
-                                     is_suppressed ? " (Suppressed)" : ""),
-                  base::StringPrintf("%s -> %s", ip_address_.c_str(),
-                                     new_ip_address.c_str()));
+    NET_LOG(EVENT) << "NCN Default IPAddress changed"
+                   << (is_suppressed ? " (Suppressed)" : "") << ip_address_
+                   << " -> " << new_ip_address;
   }
   std::string new_dns_servers = default_network->GetDnsServersAsString();
   if (new_dns_servers != dns_servers_) {
-    NET_LOG_EVENT("NCNDefaultDNSServerChanged",
-                  base::StringPrintf("%s -> %s", dns_servers_.c_str(),
-                                     new_dns_servers.c_str()));
+    NET_LOG(EVENT) << "NCN Default DNS server changed" << dns_servers_ << " -> "
+                   << new_dns_servers;
     *dns_changed = true;
   }
 

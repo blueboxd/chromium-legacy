@@ -837,10 +837,6 @@ if (enable_java_templates) {
   android_sdk_jar = "$android_sdk/android.jar"
 
   template("android_lint") {
-    _min_sdk_version = 19
-    if (defined(invoker.min_sdk_version)) {
-      _min_sdk_version = invoker.min_sdk_version
-    }
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
                              [
@@ -862,10 +858,15 @@ if (enable_java_templates) {
         lint_suppressions_file = "//build/android/lint/suppressions.xml"
       }
 
+      _min_sdk_version = 19
+      if (defined(invoker.min_sdk_version)) {
+        _min_sdk_version = invoker.min_sdk_version
+      }
       _lint_path = "$lint_android_sdk_root/tools-lint/bin/lint"
       _cache_dir = "$root_build_dir/android_lint_cache"
-      _result_path = "$target_gen_dir/$target_name/result.xml"
-      _config_path = "$target_gen_dir/$target_name/config.xml"
+      _result_path = "$target_out_dir/$target_name/result.xml"
+      _config_path = "$target_out_dir/$target_name/config.xml"
+      _stamp_path = "$target_out_dir/$target_name/build.stamp"
       _suppressions_file = lint_suppressions_file
       _platform_xml_path =
           "${android_sdk_root}/platform-tools/api/api-versions.xml"
@@ -877,10 +878,11 @@ if (enable_java_templates) {
         _suppressions_file,
       ]
 
-      outputs = [
-        _result_path,
-        _config_path,
-      ]
+      # _config_path and _stamp_path are also outputs, but do not list them
+      # in order to avoid them being uploaded to swarming as part of isolates.
+      # This happens as a side-effect of lint targets being listed as
+      # "data_deps" in order to have them run concurrently with other targets.
+      outputs = [ _stamp_path ]
 
       args = [
         "--lint-path",
@@ -899,6 +901,8 @@ if (enable_java_templates) {
         rebase_path(_config_path, root_build_dir),
         "--result-path",
         rebase_path(_result_path, root_build_dir),
+        "--stamp",
+        rebase_path(_stamp_path, root_build_dir),
         "--include-unexpected-failures",
         "--min-sdk-version=$_min_sdk_version",
       ]
@@ -3378,14 +3382,15 @@ if (enable_java_templates) {
         not_needed(invoker, [ "manifest_package" ])
       }
     }
-    if (defined(invoker.enable_errorprone)) {
-      _enable_errorprone = invoker.enable_errorprone
-    } else {
-      _enable_errorprone =
-          _java_files != [] && _chromium_code && use_errorprone_java_compiler
-    }
 
     if (_has_sources) {
+      if (defined(invoker.enable_errorprone)) {
+        _enable_errorprone = invoker.enable_errorprone
+      } else {
+        _enable_errorprone =
+            _java_files != [] && _chromium_code && use_errorprone_java_compiler
+      }
+
       _type = invoker.type
       template("compile_java_helper") {
         compile_java(target_name) {
@@ -3431,8 +3436,7 @@ if (enable_java_templates) {
         output_jar_path = _javac_jar_path
       }
       if (_enable_errorprone) {
-        _compile_java_errorprone_target =
-            "${_main_target_name}__compile_java_errorprone"
+        _compile_java_errorprone_target = "${_main_target_name}__errorprone"
         compile_java_helper(_compile_java_errorprone_target) {
           forward_variables_from(invoker, _compile_java_forward_variables)
           enable_errorprone = true
@@ -3442,7 +3446,7 @@ if (enable_java_templates) {
             }
             javac_args += invoker.errorprone_args
           }
-          output_jar_path = _javac_jar_path + ".errorprone_stamp"
+          output_jar_path = "$target_out_dir/$target_name.errorprone.stamp"
         }
         _analysis_public_deps += [ ":$_compile_java_errorprone_target" ]
       }
@@ -3477,15 +3481,6 @@ if (enable_java_templates) {
           }
         }
         _analysis_public_deps += [ ":$_android_lint_target" ]
-      }
-
-      if (_analysis_public_deps != []) {
-        # Use an intermediate group() rather as the data_deps target in order to
-        # avoid errorprone or lint artifacts showing up as runtime_deps (while
-        # still having them run in parallel to other targets).
-        group("${_main_target_name}__analysis") {
-          public_deps = _analysis_public_deps
-        }
       }
 
       # Update this after lint so that lint does not depend on javac.
@@ -3608,11 +3603,11 @@ if (enable_java_templates) {
           # as inputs to other targets.
           public_deps = _accumulated_public_deps
 
-          if (_lint_enabled || _enable_errorprone) {
+          if (defined(_analysis_public_deps)) {
             if (!defined(data_deps)) {
               data_deps = []
             }
-            data_deps += [ ":${_main_target_name}__analysis" ]
+            data_deps += _analysis_public_deps
           }
         }
       }
@@ -3649,11 +3644,11 @@ if (enable_java_templates) {
                                  "visibility",
                                ])
         public_deps = _accumulated_public_deps
-        if (_lint_enabled || _enable_errorprone) {
+        if (defined(_analysis_public_deps)) {
           if (!defined(data_deps)) {
             data_deps = []
           }
-          data_deps += [ ":${_main_target_name}__analysis" ]
+          data_deps += _analysis_public_deps
         }
       }
     }

@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/base/time.h"
@@ -33,6 +34,7 @@
 #include "crypto/ec_private_key.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -172,6 +174,35 @@ sync_pb::NigoriSpecifics BuildTrustedVaultNigoriSpecifics(
   return specifics;
 }
 
+// Used to wait until a tab closes.
+class TabClosedChecker : public StatusChangeChecker,
+                         public content::WebContentsObserver {
+ public:
+  explicit TabClosedChecker(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents) {
+    DCHECK(web_contents);
+  }
+
+  ~TabClosedChecker() override = default;
+
+  // StatusChangeChecker overrides.
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for the tab to be closed";
+    return closed_;
+  }
+
+  // content::WebContentsObserver overrides.
+  void WebContentsDestroyed() override {
+    closed_ = true;
+    CheckExitCondition();
+  }
+
+ private:
+  bool closed_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TabClosedChecker);
+};
+
 // Used to wait until a page's title changes to a certain value (useful to
 // detect Javascript events).
 class PageTitleChecker : public StatusChangeChecker,
@@ -184,7 +215,7 @@ class PageTitleChecker : public StatusChangeChecker,
     DCHECK(web_contents);
   }
 
-  ~PageTitleChecker() override {}
+  ~PageTitleChecker() override = default;
 
   // StatusChangeChecker overrides.
   bool IsExitConditionSatisfied(std::ostream* os) override {
@@ -579,6 +610,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
                                 IDS_SYNC_STATUS_NEEDS_KEYS_BUTTON,
                                 sync_ui_util::RETRIEVE_TRUSTED_VAULT_KEYS));
 
+  // There needs to be an existing tab for the second tab (the retrieval flow)
+  // to be closeable via javascript.
+  chrome::AddTabAt(GetBrowser(0), GURL(url::kAboutBlankURL), /*index=*/0,
+                   /*foreground=*/true);
+
   // Mimic opening a web page where the user can interact with the retrieval
   // flow.
   sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
@@ -586,12 +622,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
               NotNull());
 
-  // Wait until the title changes to "OK" via Javascript, which indicates
-  // completion.
-  PageTitleChecker title_checker(
-      /*expected_title=*/"OK",
-      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
-  EXPECT_TRUE(title_checker.Wait());
+  // Wait until the page closes, which indicates successful completion.
+  EXPECT_TRUE(
+      TabClosedChecker(GetBrowser(0)->tab_strip_model()->GetActiveWebContents())
+          .Wait());
 
   EXPECT_TRUE(PasswordSyncActiveChecker(GetSyncService(0)).Wait());
   EXPECT_FALSE(GetSyncService(0)
@@ -612,6 +646,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
 
   ASSERT_TRUE(SetupClients());
 
+  // There needs to be an existing tab for the second tab (the retrieval flow)
+  // to be closeable via javascript.
+  chrome::AddTabAt(GetBrowser(0), GURL(url::kAboutBlankURL), /*index=*/0,
+                   /*foreground=*/true);
+
   // Mimic opening a web page where the user can interact with the retrieval
   // flow, while the user is signed out.
   sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
@@ -619,12 +658,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
               NotNull());
 
-  // Wait until the title changes to "OK" via Javascript, which indicates
-  // completion.
-  PageTitleChecker title_checker(
-      /*expected_title=*/"OK",
-      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
-  EXPECT_TRUE(title_checker.Wait());
+  // Wait until the page closes, which indicates successful completion.
+  EXPECT_TRUE(
+      TabClosedChecker(GetBrowser(0)->tab_strip_model()->GetActiveWebContents())
+          .Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
@@ -660,6 +697,11 @@ IN_PROC_BROWSER_TEST_F(
   // retrieval or before it).
   cookie_helper::AddSigninCookie(GetProfile(0));
 
+  // There needs to be an existing tab for the second tab (the retrieval flow)
+  // to be closeable via javascript.
+  chrome::AddTabAt(GetBrowser(0), GURL(url::kAboutBlankURL), /*index=*/0,
+                   /*foreground=*/true);
+
   TrustedVaultKeysChangedStateChecker keys_fetched_checker(GetSyncService(0));
   // Mimic opening a web page where the user can interact with the retrieval
   // flow, while the user is signed out.
@@ -668,12 +710,10 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
               NotNull());
 
-  // Wait until the title changes to "OK" via Javascript, which indicates
-  // completion.
-  PageTitleChecker title_checker(
-      /*expected_title=*/"OK",
-      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
-  EXPECT_TRUE(title_checker.Wait());
+  // Wait until the page closes, which indicates successful completion.
+  EXPECT_TRUE(
+      TabClosedChecker(GetBrowser(0)->tab_strip_model()->GetActiveWebContents())
+          .Wait());
   EXPECT_TRUE(keys_fetched_checker.Wait());
 
   // Mimic signin cookie clearing.
@@ -720,6 +760,11 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   ASSERT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
 
+  // There needs to be an existing tab for the second tab (the retrieval flow)
+  // to be closeable via javascript.
+  chrome::AddTabAt(GetBrowser(0), GURL(url::kAboutBlankURL), /*index=*/0,
+                   /*foreground=*/true);
+
   // Mimic opening a web page where the user can interact with the retrieval
   // flow.
   sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
@@ -727,12 +772,10 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
               NotNull());
 
-  // Wait until the title changes to "OK" via Javascript, which indicates
-  // completion.
-  PageTitleChecker title_checker(
-      /*expected_title=*/"OK",
-      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
-  ASSERT_TRUE(title_checker.Wait());
+  // Wait until the page closes, which indicates successful completion.
+  EXPECT_TRUE(
+      TabClosedChecker(GetBrowser(0)->tab_strip_model()->GetActiveWebContents())
+          .Wait());
 
   // Mimic remote transition to keystore passphrase.
   const std::vector<std::vector<uint8_t>>& keystore_keys =
@@ -784,6 +827,11 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   ASSERT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
 
+  // There needs to be an existing tab for the second tab (the retrieval flow)
+  // to be closeable via javascript.
+  chrome::AddTabAt(GetBrowser(0), GURL(url::kAboutBlankURL), /*index=*/0,
+                   /*foreground=*/true);
+
   // Mimic opening a web page where the user can interact with the retrieval
   // flow.
   sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
@@ -791,12 +839,10 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
               NotNull());
 
-  // Wait until the title changes to "OK" via Javascript, which indicates
-  // completion.
-  PageTitleChecker title_checker(
-      /*expected_title=*/"OK",
-      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
-  ASSERT_TRUE(title_checker.Wait());
+  // Wait until the page closes, which indicates successful completion.
+  EXPECT_TRUE(
+      TabClosedChecker(GetBrowser(0)->tab_strip_model()->GetActiveWebContents())
+          .Wait());
 
   // Mimic remote transition to custom passphrase.
   const KeyParams kCustomPassphraseKeyParams = {
@@ -865,7 +911,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiFromUntrustedOriginTest,
                                                   /*desired_state=*/true)
                   .Wait());
 
-  // Mimic opening a web page where the user can interact with the retrival
+  // There needs to be an existing tab for the second tab (the retrieval flow)
+  // to be closeable via javascript.
+  chrome::AddTabAt(GetBrowser(0), GURL(url::kAboutBlankURL), /*index=*/0,
+                   /*foreground=*/true);
+
+  // Mimic opening a web page where the user can interact with the retrieval
   // flow.
   sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
                                                             retrieval_url);

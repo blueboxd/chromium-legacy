@@ -69,8 +69,8 @@ void SystemProxySettingsPolicyHandler::OnSystemProxySettingsPolicyChanged() {
       chromeos::kSystemProxySettingsKeySystemServicesPassword);
 
   if (!username || username->empty() || !password || password->empty()) {
-    NET_LOG_ERROR("Proxy credentials for system traffic not set.",
-                  kSystemProxyService);
+    NET_LOG(ERROR) << "Proxy credentials for system traffic not set: "
+                   << kSystemProxyService;
     return;
   }
 
@@ -88,20 +88,17 @@ void SystemProxySettingsPolicyHandler::OnSystemProxySettingsPolicyChanged() {
 void SystemProxySettingsPolicyHandler::OnSetSystemTrafficCredentials(
     const system_proxy::SetSystemTrafficCredentialsResponse& response) {
   if (response.has_error_message()) {
-    NET_LOG_ERROR(
-        "Failed to set system traffic credentials for system proxy with "
-        "error: " +
-            response.error_message(),
-        kSystemProxyService);
+    NET_LOG(ERROR)
+        << "Failed to set system traffic credentials for system proxy: "
+        << kSystemProxyService << ", Error: " << response.error_message();
   }
 }
 
 void SystemProxySettingsPolicyHandler::OnDaemonShutDown(
     const system_proxy::ShutDownResponse& response) {
   if (response.has_error_message() && !response.error_message().empty()) {
-    NET_LOG_ERROR("Failed to shutdown system proxy with error: " +
-                      response.error_message(),
-                  kSystemProxyService);
+    NET_LOG(ERROR) << "Failed to shutdown system proxy: " << kSystemProxyService
+                   << ", error: " << response.error_message();
   }
 }
 

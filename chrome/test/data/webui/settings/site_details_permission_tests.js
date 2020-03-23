@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {ContentSetting,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+// #import {createContentSettingTypeToValuePair,createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for site-details. */
 suite('SiteDetailsPermission', function() {
   /**
@@ -9,6 +17,12 @@ suite('SiteDetailsPermission', function() {
    * @type {SiteDetailsPermission}
    */
   let testElement;
+
+  /**
+   * The mock proxy object to use during test.
+   * @type {TestSiteSettingsPrefsBrowserProxy}
+   */
+  let browserProxy;
 
   /**
    * An example pref with only camera allowed.
@@ -154,7 +168,7 @@ suite('SiteDetailsPermission', function() {
     permissionSourcesNoSetting[settings.SiteSettingSource.KILL_SWITCH] =
         'Temporarily blocked to protect your security';
 
-    for (testSource in permissionSourcesNoSetting) {
+    for (const testSource in permissionSourcesNoSetting) {
       testElement.site = {
         origin: origin,
         embeddingOrigin: origin,
@@ -189,7 +203,7 @@ suite('SiteDetailsPermission', function() {
     extensionSourceStrings[settings.ContentSetting.ASK] =
         'Setting controlled by an extension';
 
-    for (testSetting in extensionSourceStrings) {
+    for (const testSetting in extensionSourceStrings) {
       testElement.site = {
         origin: origin,
         embeddingOrigin: origin,
@@ -214,7 +228,7 @@ suite('SiteDetailsPermission', function() {
     policySourceStrings[settings.ContentSetting.ASK] =
         'Setting controlled by your administrator';
 
-    for (testSetting in policySourceStrings) {
+    for (const testSetting in policySourceStrings) {
       testElement.site = {
         origin: origin,
         embeddingOrigin: origin,

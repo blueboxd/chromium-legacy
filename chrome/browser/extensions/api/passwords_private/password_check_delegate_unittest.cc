@@ -784,7 +784,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusOther) {
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_SERVER));
 
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_OTHER_ERROR,
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT,
             delegate().GetPasswordCheckStatus().state);
 }
 

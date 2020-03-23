@@ -354,7 +354,8 @@ void NetworkingPrivateChromeOS::SetProperties(
     }
   }
 
-  NET_LOG(USER) << "networkingPrivate.setProperties. GUID=" << guid;
+  NET_LOG(USER) << "networkingPrivate.setProperties for: "
+                << NetworkId(network);
   GetManagedConfigurationHandler()->SetProperties(
       network->path(), *properties, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));

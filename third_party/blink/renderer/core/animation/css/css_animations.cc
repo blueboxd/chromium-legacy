@@ -1191,8 +1191,11 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
                   event_type_names::kAnimationiteration, elapsed_time);
   }
 
+  previous_iteration_ = current_iteration;
+
   if (previous_phase_ == current_phase)
     return;
+  previous_phase_ = current_phase;
 
   if (current_phase == Timing::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener,
@@ -1209,9 +1212,6 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
                   event_type_names::kAnimationcancel,
                   AnimationTimeDelta::FromSecondsD(cancel_time));
   }
-
-  previous_phase_ = current_phase;
-  previous_iteration_ = current_iteration;
 }
 
 void CSSAnimations::AnimationEventDelegate::Trace(Visitor* visitor) {

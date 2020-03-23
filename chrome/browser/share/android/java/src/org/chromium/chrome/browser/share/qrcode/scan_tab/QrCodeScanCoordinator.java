@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.share.qrcode.scan_tab;
 import android.content.Context;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialogTab;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -40,6 +41,7 @@ public class QrCodeScanCoordinator implements QrCodeDialogTab {
 
     @Override
     public void onResume() {
+        RecordUserAction.record("SharingQRCode.TabVisible.Scan");
         mMediator.setIsOnForeground(true);
     }
 

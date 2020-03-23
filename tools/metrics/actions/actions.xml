@@ -19398,6 +19398,63 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SharingQRCode.DownloadQRCode">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User attempted to download a QR code from the share hub generator.
+  </description>
+</action>
+
+<action name="SharingQRCode.DownloadQRCode.Failed">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    Downloading a QR Code from the sharing dialog failed.
+  </description>
+</action>
+
+<action name="SharingQRCode.DownloadQRCode.Succeeded">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    Downloading a QR Code from the sharing dialog succeeded.
+  </description>
+</action>
+
+<action name="SharingQRCode.DownloadQRCodeMultipleAttempts">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User attempted to download a QR code from the share hub generator two or
+    more times.
+  </description>
+</action>
+
+<action name="SharingQRCode.ScannedNonURL">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    QR code scanner scanned a QR code that did not contain a URL.
+  </description>
+</action>
+
+<action name="SharingQRCode.ScannedURL">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    QR code scanner scanned a QR code that contained a URL.
+  </description>
+</action>
+
+<action name="SharingQRCode.TabVisible.Scan">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User launched, foregrounded, or switched to the QR feature's scan tab.
+  </description>
+</action>
+
+<action name="SharingQRCode.TabVisible.Share">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User launched, foregrounded, or switched to the QR feature's generator tab.
+  </description>
+</action>
+
 <action name="Shelf_AlignmentSetBottom">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

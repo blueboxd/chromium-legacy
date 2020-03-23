@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Ứng dụng đã được cài đặt</translation>
 <translation id="1450753235335490080">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Đã hoán đổi <ph name="FIRST_ITEM_TITLE" /> bằng <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Bạn đã tìm kiếm nội dung này trước đây. Việc xóa "<ph name="QUERY" />" khỏi lịch sử sẽ xóa vĩnh viễn cụm từ tìm kiếm này khỏi tài khoản của bạn trên tất cả các thiết bị.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 phút và }other{# phút và }}</translation>
 <translation id="1643823602425662293">Thông báo</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">Phải sang Trái</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">RẤT CÓ THỂ</translation>
+<translation id="7170202025028120564">Các tùy chọn cài đặt hiển thị của ứng dụng sẽ có hiệu lực khi bạn khởi động lại ứng dụng vào lần sau.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Còn 1 phút}other{Còn # phút}}</translation>
 <translation id="7319740667687257810">Trình khởi chạy, chế độ xem một phần</translation>

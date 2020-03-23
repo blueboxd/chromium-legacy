@@ -75,7 +75,7 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          is_signed_exchange_prefetch_cache_enabled ==
              request.is_signed_exchange_prefetch_cache_enabled &&
          obey_origin_policy == request.obey_origin_policy &&
-         trusted_params == trusted_params &&
+         trusted_params == request.trusted_params &&
          recursive_prefetch_token == request.recursive_prefetch_token &&
          trust_token_params == request.trust_token_params;
 }

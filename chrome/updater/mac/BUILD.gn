@@ -48,6 +48,8 @@ source_set("updater_tests") {
 mac_app_bundle("updater_bundle") {
   info_plist = "Info.plist"
   output_name = updater_product_full_name
+  extra_substitutions =
+      [ "MAC_BUNDLE_IDENTIFIER=$mac_updater_bundle_identifier" ]
 
   sources = [ "main.cc" ]
   deps = [

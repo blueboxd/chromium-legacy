@@ -48,13 +48,6 @@
 
 namespace blink {
 
-// TODO(altimin): Remove these after per-task mojo dispatching.
-// The maximum number of MessageEvents to dispatch from one task.
-constexpr int kMaximumMessagesPerTask = 200;
-// The threshold to stop processing new tasks.
-constexpr base::TimeDelta kYieldThreshold =
-    base::TimeDelta::FromMilliseconds(50);
-
 MessagePort::MessagePort(ExecutionContext& execution_context)
     : ExecutionContextLifecycleObserver(&execution_context),
       task_runner_(execution_context.GetTaskRunner(TaskType::kPostedMessage)) {}
@@ -266,21 +259,6 @@ void MessagePort::Trace(Visitor* visitor) {
 bool MessagePort::Accept(mojo::Message* mojo_message) {
   TRACE_EVENT0("blink", "MessagePort::Accept");
 
-  // Connector repeatedly calls Accept as long as any messages are available. To
-  // avoid completely starving the event loop and give some time for other tasks
-  // the connector is temporarily paused after |kMaximumMessagesPerTask| have
-  // been received without other tasks having had a chance to run (in particular
-  // the ResetMessageCount task posted here).
-  // TODO(altimin): Remove this after per-task mojo dispatching lands[1].
-  // [1] https://chromium-review.googlesource.com/c/chromium/src/+/1145692
-  if (messages_in_current_task_ == 0) {
-    task_runner_->PostTask(FROM_HERE, WTF::Bind(&MessagePort::ResetMessageCount,
-                                                WrapWeakPersistent(this)));
-  }
-  if (ShouldYieldAfterNewMessage()) {
-    connector_->PauseIncomingMethodCallProcessing();
-  }
-
   BlinkTransferableMessage message;
   if (!mojom::blink::TransferableMessage::DeserializeFromMessage(
           std::move(*mojo_message), &message)) {
@@ -346,25 +324,6 @@ Event* MessagePort::CreateMessageEvent(BlinkTransferableMessage& message) {
   }
   return MessageEvent::Create(ports, std::move(message.message),
                               user_activation);
-}
-
-void MessagePort::ResetMessageCount() {
-  DCHECK_GT(messages_in_current_task_, 0);
-  messages_in_current_task_ = 0;
-  task_start_time_ = base::nullopt;
-  // No-op if not paused already.
-  if (connector_)
-    connector_->ResumeIncomingMethodCallProcessing();
-}
-
-bool MessagePort::ShouldYieldAfterNewMessage() {
-  ++messages_in_current_task_;
-  if (messages_in_current_task_ > kMaximumMessagesPerTask)
-    return true;
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (!task_start_time_)
-    task_start_time_ = now;
-  return now - task_start_time_.value() > kYieldThreshold;
 }
 
 }  // namespace blink

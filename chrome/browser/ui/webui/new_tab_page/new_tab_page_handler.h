@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/common/search/instant_types.h"
+#include "components/search_provider_logos/logo_common.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -30,6 +31,10 @@ class ChromeColorsService;
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace search_provider_logos {
+class LogoService;
+}  // namespace search_provider_logos
 
 class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                           public InstantServiceObserver,
@@ -69,6 +74,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                            GetBackgroundImagesCallback callback) override;
   void FocusOmnibox() override;
   void PasteIntoOmnibox(const std::string& text) override;
+  void GetDoodle(GetDoodleCallback callback) override;
 
  private:
   // InstantServiceObserver:
@@ -86,9 +92,15 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnOmniboxFocusChanged(OmniboxFocusState state,
                              OmniboxFocusChangeReason reason) override;
 
+  void OnLogoAvailable(
+      GetDoodleCallback callback,
+      search_provider_logos::LogoCallbackReason type,
+      const base::Optional<search_provider_logos::EncodedLogo>& logo);
+
   chrome_colors::ChromeColorsService* chrome_colors_service_;
   InstantService* instant_service_;
   NtpBackgroundService* ntp_background_service_;
+  search_provider_logos::LogoService* logo_service_;
   GURL last_blacklisted_;
   GetBackgroundCollectionsCallback background_collections_callback_;
   std::string images_request_collection_id_;
@@ -96,6 +108,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   mojo::Remote<new_tab_page::mojom::Page> page_;
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;
   content::WebContents* web_contents_;
+  base::WeakPtrFactory<NewTabPageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);
 };

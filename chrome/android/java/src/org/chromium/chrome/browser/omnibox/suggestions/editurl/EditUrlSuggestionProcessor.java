@@ -14,8 +14,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -65,15 +65,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         int TAP = 3;
         int NUM_ENTRIES = 4;
     }
-
-    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_TAP =
-            new ActionEvent("Omnibox.EditUrlSuggestion.Tap");
-    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_COPY =
-            new ActionEvent("Omnibox.EditUrlSuggestion.Copy");
-    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_EDIT =
-            new ActionEvent("Omnibox.EditUrlSuggestion.Edit");
-    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_SHARE =
-            new ActionEvent("Omnibox.EditUrlSuggestion.Share");
 
     /** The delegate for accessing the location bar for observation and modification. */
     private final LocationBarDelegate mLocationBarDelegate;
@@ -236,11 +227,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
         if (R.id.url_copy_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.COPY);
-            ACTION_EDIT_URL_SUGGESTION_COPY.record();
+            RecordUserAction.record("Omnibox.EditUrlSuggestion.Copy");
             Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl());
         } else if (R.id.url_share_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.SHARE);
-            ACTION_EDIT_URL_SUGGESTION_SHARE.record();
+            RecordUserAction.record("Omnibox.EditUrlSuggestion.Share");
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
@@ -251,7 +242,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                     .share(activityTab, false);
         } else if (R.id.url_edit_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.EDIT);
-            ACTION_EDIT_URL_SUGGESTION_EDIT.record();
+            RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");
             mLocationBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl());
         }
     }
@@ -267,7 +258,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
      */
     private void onSuggestionSelected(SuggestionViewDelegate delegate) {
         recordSuggestionAction(SuggestionAction.TAP);
-        ACTION_EDIT_URL_SUGGESTION_TAP.record();
+        RecordUserAction.record("Omnibox.EditUrlSuggestion.Tap");
         // If the event wasn't on any of the buttons, treat is as a tap on the general
         // suggestion.
         assert delegate != null : "EditURL suggestion delegate not available";

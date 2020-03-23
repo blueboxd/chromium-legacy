@@ -17,6 +17,7 @@ static_library("internal") {
     ":jni_headers",
     "//cc",
     "//chrome/browser/ui",
+    "//components/permissions",
     "//skia",
   ]
 

@@ -313,6 +313,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2288422996159078444">Tot ceea ce tastezi, paginile pe care le afișezi și orice altă activitate de pe web este urmărită. Conținutul site-urilor poate fi modificat fără știrea ta.</translation>
 <translation id="2289385804009217824">Decupare</translation>
 <translation id="2292556288342944218">Accesul la internet este blocat</translation>
+<translation id="2293443924986248631">Dacă opțiunea este activată, site-urile nu pot folosi cookie-uri care te urmăresc pe web. Este posibil ca funcțiile de pe anumite site-uri să fie întrerupte.</translation>
 <translation id="2297722699537546652">B5 (Plic)</translation>
 <translation id="2300306941146563769">Nu s-a încărcat</translation>
 <translation id="2310021320168182093">Chou2 (Plic)</translation>
@@ -727,6 +728,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="4152318981910038897">{COUNT,plural, =1{Pagina 1}few{Pagina {COUNT}}other{Pagina {COUNT}}}</translation>
 <translation id="4154664944169082762">Amprente digitale</translation>
 <translation id="4159784952369912983">Mov</translation>
+<translation id="4163132590327127354">Chrome a simplificat această pagină pentru a fi mai ușor de citit.</translation>
 <translation id="4165986682804962316">Setări pentru site-uri</translation>
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1027,6 +1029,11 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5371425731340848620">Actualizează cardul</translation>
 <translation id="5377026284221673050">„Ora este setată în trecut”, „Ora este setată în viitor” sau „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
+<translation id="5380442954567233718">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a setat un antet care solicită
+    ca o politică de origine să fie aplicată tuturor solicitărilor către el. Dar
+    antetul este deteriorat, ceea ce împiedică browserul să îți îndeplinească
+    solicitarea pentru <ph name="SITE" />. Politicile de origine pot fi folosite de
+    operatorii de site pentru a configura securitatea și alte proprietăți ale site-ului.</translation>
 <translation id="5386426401304769735">Lanțul de certificate pentru acest site conține un certificat semnat folosind SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Broșare pe marginea din dreapta</translation>
@@ -1573,6 +1580,7 @@ Detalii suplimentare:
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Este posibil ca firewallul sau software-ul antivirus să fi blocat conexiunea.</translation>
 <translation id="7759163816903619567">Domeniu afișat:</translation>
+<translation id="776110834126722255">Învechită</translation>
 <translation id="7761701407923456692">Certificatul serverului nu se potrivește cu adresa URL.</translation>
 <translation id="7763386264682878361">Parser pentru manifestul plății</translation>
 <translation id="7764225426217299476">Adaugă o adresă</translation>

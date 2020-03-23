@@ -12,6 +12,7 @@
  * @typedef {{
  *   origin: string,
  *   tabId: (number|undefined)
+ *   frameId: (number|undefined)
  * }}
  */
 var WebRequestSender;
@@ -31,6 +32,7 @@ function createSenderFromMessageSender(messageSender) {
   var sender = {origin: origin};
   if (messageSender.tab) {
     sender.tabId = messageSender.tab.id;
+    sender.frameId = messageSender.frameId;
   }
   return sender;
 }

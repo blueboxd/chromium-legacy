@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Prześlij</translation>
 <translation id="1244265436519979884">W tej chwili trwa przywracanie Linuksa</translation>
 <translation id="1244303850296295656">Błąd rozszerzenia</translation>
+<translation id="1246158006305844142">Po zalogowaniu się na konto Google Twoje aplikacje i ustawienia zsynchronizują się na wszystkich urządzeniach z Chrome OS. Opcje synchronizacji przeglądarek znajdziesz w <ph name="LINK_BEGIN" />ustawieniach Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Usunąć podpowiedź ze schowka?</translation>
 <translation id="1249643471736608405">Wtyczka <ph name="PLUGIN_NAME" /> została zablokowana, ponieważ jest wycofana</translation>
 <translation id="1251366534849411931">Oczekiwany otwierający nawias klamrowy: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">Nie, dziękuję</translation>
 <translation id="1525740877599838384">Do określania lokalizacji używaj tylko Wi-Fi</translation>
 <translation id="152629053603783244">Uruchom ponownie Linuksa</translation>
+<translation id="1526335046150927198">Włącz szybkie działanie przewijania na touchpadzie</translation>
 <translation id="1526560967942511387">Dokument bez tytułu</translation>
 <translation id="1529891865407786369">Źródło zasilania</translation>
 <translation id="1530838837447122178">Otwórz ustawienia myszy i touchpada</translation>
@@ -1313,6 +1315,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2725200716980197196">Łączność z siecią przywrócona</translation>
 <translation id="2727633948226935816">Nie przypominaj więcej</translation>
 <translation id="2727712005121231835">Rzeczywisty rozmiar</translation>
+<translation id="2729314457178420145">Wyczyść też dane przeglądania (<ph name="URL" />) – w rezultacie może dojść do wylogowania z Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Tworzę kopię zapasową aplikacji i plików Linuksa</translation>
 <translation id="273093730430620027">Ta strona ma dostęp do kamery.</translation>
 <translation id="2731392572903530958">Otwórz ponowni&amp;e zamknięte okno</translation>
@@ -2164,6 +2167,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3838486795898716504">Więcej o <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Pliki cookie oraz inne dane witryn i wtyczek</translation>
 <translation id="383891835335927981">Żadna strona nie jest powiększana ani pomniejszana</translation>
+<translation id="3839509547554145593">Włącz szybkie działanie przewijania kółkiem myszy</translation>
 <translation id="3839516600093027468">Zawsze blokuj stronie <ph name="HOST" /> dostęp do schowka</translation>
 <translation id="3841964634449506551">Nieprawidłowe hasło</translation>
 <translation id="3842552989725514455">Czcionka szeryfowa</translation>
@@ -2775,6 +2779,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4699172675775169585">Obrazy i pliki zapisane w pamięci podręcznej</translation>
 <translation id="4699357559218762027">(automatyczne uruchamianie)</translation>
 <translation id="470074695271471509">Czy chcesz się wylogować, by wprowadzić zmiany?</translation>
+<translation id="4701025263201366865">Logowanie rodzica</translation>
 <translation id="4707302005824653064">Działania i historię może sprawdzać menedżer (<ph name="CUSTODIAN_EMAIL" />) na chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + certyfikat użytkownika</translation>
 <translation id="4708794300267213770">Pokaż ekran blokady po wybudzeniu</translation>
@@ -3082,6 +3087,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, szukaj w: <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Wpisz kod PIN klucza bezpieczeństwa. Jeśli go nie znasz, musisz zresetować klucz.</translation>
 <translation id="5139955368427980650">&amp;Otwórz</translation>
+<translation id="5142793792982256885">Szybkość przewijania na touchpadzie</translation>
 <translation id="5142961317498132443">Uwierzytelnianie</translation>
 <translation id="5143374789336132547">Rozszerzenie „<ph name="EXTENSION_NAME" />” ustawiło inną stronę wyświetlaną po kliknięciu przycisku strony głównej.</translation>
 <translation id="5143712164865402236">Przejdź do pełnego ekranu</translation>
@@ -3644,6 +3650,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5901630391730855834">Żółty</translation>
 <translation id="5906655207909574370">Już prawie gotowe. Uruchom ponownie urządzenie, by zakończyć aktualizację.</translation>
 <translation id="5906732635754427568">Dane powiązane z tą aplikacją zostaną usunięte z urządzenia.</translation>
+<translation id="5908695239556627796">Szybkość przewijania kółkiem myszy</translation>
 <translation id="5908769186679515905">Zablokuj uruchamianie Flasha na stronach</translation>
 <translation id="5910363049092958439">Zapisz gra&amp;fikę jako...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> jest offline</translation>
@@ -5091,6 +5098,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
     <ph name="BEGIN_BOLD" />Uwaga:<ph name="END_BOLD" /> podczas tego procesu system uruchomi się ponownie.</translation>
 <translation id="7828731929332799387">Spowoduje to usunięcie wszystkich plików cookie i danych witryn dostępnych w kontekście witryn innych firm. Czy chcesz kontynuować?</translation>
 <translation id="7829298379596169484">Otwieram wejście audio</translation>
+<translation id="7829877209233347340">Poproś rodzica, by się zalogował i zezwolił na utworzenie konta szkolnego.</translation>
 <translation id="7830594666202422257">Podłącz do Linuksa</translation>
 <translation id="7831491651892296503">Podczas konfigurowania sieci wystąpił błąd</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5845,6 +5853,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8808686172382650546">Kot</translation>
 <translation id="8808744862003883508">Na tej stronie możesz zobaczyć wszystkie rozszerzenia zainstalowane w Chrome.</translation>
 <translation id="8809147117840417135">Jasny morski</translation>
+<translation id="8812593354822910461">Wyczyść też dane przeglądania (<ph name="URL" />) – w rezultacie nastąpi wylogowanie z <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Problem z logowaniem na konto <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">kartka</translation>
 <translation id="8813872945700551674">Poproś rodzica o zatwierdzenie rozszerzenia „<ph name="EXTENSION_NAME" />”</translation>
@@ -6134,6 +6143,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9203398526606335860">&amp;Profilowanie włączone</translation>
 <translation id="9203904171912129171">Wybierz urządzenie</translation>
 <translation id="9203962528777363226">Administrator tego urządzenia wyłączył możliwość dodawania nowych użytkowników</translation>
+<translation id="9209689095351280025">Strony nie mogą używać plików cookie śledzących, co robisz w sieci.</translation>
 <translation id="9211177926627870898">Wymagana aktualizacja</translation>
 <translation id="9214520840402538427">Upłynął limit czasu inicjowania atrybutów instalacyjnych. Skontaktuj się z przedstawicielem obsługi klienta.</translation>
 <translation id="9214695392875603905">Babeczka</translation>

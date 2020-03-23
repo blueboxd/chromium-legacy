@@ -63,6 +63,29 @@ class CryptotokenPrivateCanAppIdGetAttestationFunction
   void Complete(bool result);
 };
 
+class CryptotokenPrivateRecordRegisterRequestFunction
+    : public ExtensionFunction {
+ public:
+  CryptotokenPrivateRecordRegisterRequestFunction() = default;
+  DECLARE_EXTENSION_FUNCTION("cryptotokenPrivate.recordRegisterRequest",
+                             CRYPTOTOKENPRIVATE_RECORDREGISTERREQUEST)
+
+ protected:
+  ~CryptotokenPrivateRecordRegisterRequestFunction() override = default;
+  ResponseAction Run() override;
+};
+
+class CryptotokenPrivateRecordSignRequestFunction : public ExtensionFunction {
+ public:
+  CryptotokenPrivateRecordSignRequestFunction() = default;
+  DECLARE_EXTENSION_FUNCTION("cryptotokenPrivate.recordSignRequest",
+                             CRYPTOTOKENPRIVATE_RECORDSIGNREQUEST)
+
+ protected:
+  ~CryptotokenPrivateRecordSignRequestFunction() override = default;
+  ResponseAction Run() override;
+};
+
 }  // namespace api
 }  // namespace extensions
 

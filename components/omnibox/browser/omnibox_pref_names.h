@@ -12,6 +12,7 @@ namespace omnibox {
 
 extern const char kDocumentSuggestEnabled[];
 extern const char kZeroSuggestCachedResults[];
+extern const char kPreventUrlElisionsInOmnibox[];
 
 }  // namespace omnibox
 

@@ -58,6 +58,9 @@ function handleU2fSignRequest(messageSender, request, sendResponse) {
 
   queuedSignRequest = validateAndEnqueueSignRequest(
       sender, request, sendErrorResponse, sendSuccessResponse);
+  if (queuedSignRequest) {
+    chrome.cryptotokenPrivate.recordSignRequest(sender.tabId, sender.frameId);
+  }
   return queuedSignRequest;
 }
 

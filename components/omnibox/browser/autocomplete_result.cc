@@ -736,11 +736,14 @@ void AutocompleteResult::LogAsynchronousUpdateMetrics(
   constexpr char kAsyncMatchChangeHistogramName[] =
       "Omnibox.MatchStability.AsyncMatchChange2";
 
+  bool any_match_changed = false;
+
   size_t min_size = std::min(old_result.size(), new_result.size());
   for (size_t i = 0; i < min_size; ++i) {
     if (old_result[i] != GetMatchComparisonFields(new_result.match_at(i))) {
       base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
                                     kMaxAutocompletePositionValue);
+      any_match_changed = true;
     }
   }
 
@@ -749,7 +752,12 @@ void AutocompleteResult::LogAsynchronousUpdateMetrics(
   for (size_t i = new_result.size(); i < old_result.size(); ++i) {
     base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
                                   kMaxAutocompletePositionValue);
+    any_match_changed = true;
   }
+
+  base::UmaHistogramBoolean(
+      "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition",
+      any_match_changed);
 }
 
 // static

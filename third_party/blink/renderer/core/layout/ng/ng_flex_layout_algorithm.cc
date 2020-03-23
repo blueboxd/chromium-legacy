@@ -326,7 +326,8 @@ double NGFlexLayoutAlgorithm::GetMainOverCrossAspectRatio(
 
 NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
     const NGBlockNode& flex_item,
-    const NGPhysicalBoxStrut& physical_margins) const {
+    const NGPhysicalBoxStrut& physical_margins,
+    const MinMaxSizes& cross_axis_min_max) const {
   const ComputedStyle& child_style = flex_item.Style();
   NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
                                          child_style.GetWritingMode(),
@@ -341,19 +342,16 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
   if (ShouldItemShrinkToFit(flex_item)) {
     space_builder.SetIsShrinkToFit(true);
   } else if (WillChildCrossSizeBeContainerCrossSize(flex_item)) {
-    // TODO(dgrogan): Do you need to further adjust available size by item's min
-    // and max cross sizes before SetIsFixed{Inline,Block}Size(true) ?
     if (is_column_) {
       space_builder.SetIsFixedInlineSize(true);
       child_available_size.inline_size =
-          (child_available_size.inline_size - margins.InlineSum())
-              .ClampNegativeToZero();
+          cross_axis_min_max.ClampSizeToMinAndMax(
+              child_available_size.inline_size - margins.InlineSum());
     } else {
       space_builder.SetIsFixedBlockSize(true);
       DCHECK_NE(content_box_size_.block_size, kIndefiniteSize);
-      child_available_size.block_size =
-          (child_available_size.block_size - margins.BlockSum())
-              .ClampNegativeToZero();
+      child_available_size.block_size = cross_axis_min_max.ClampSizeToMinAndMax(
+          child_available_size.block_size - margins.BlockSum());
     }
   }
 
@@ -422,33 +420,19 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         is_horizontal_flow_ ? physical_border_padding.VerticalSum()
                             : physical_border_padding.HorizontalSum();
 
-    base::Optional<LayoutUnit> intrinsic_block_size;
-    auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
-      if (!intrinsic_block_size) {
-        NGConstraintSpace child_space =
-            BuildSpaceForIntrinsicBlockSize(child, physical_child_margins);
-        intrinsic_block_size =
-            child.Layout(child_space, /* break_token */ nullptr)
-                ->IntrinsicBlockSize();
-      }
-      return *intrinsic_block_size;
-    };
-
     base::Optional<MinMaxSizes> min_max_size;
     auto MinMaxSizesFunc = [&]() -> MinMaxSizes {
       if (!min_max_size) {
-        NGConstraintSpace child_space =
-            BuildSpaceForIntrinsicBlockSize(child, physical_child_margins);
         if (child.Style().OverflowBlockDirection() == EOverflow::kAuto) {
           // Ensure this child has been laid out so its auto scrollbars are
           // included in its intrinsic sizes.
-          IntrinsicBlockSizeFunc();
+          child.Layout(flex_basis_space);
         }
         // We want the child's min/max size in its writing mode, not ours.
         // We'll only ever use it if the child's inline axis is our main axis.
         min_max_size = child.ComputeMinMaxSizes(
             child_style.GetWritingMode(),
-            MinMaxSizesInput(content_box_size_.block_size), &child_space);
+            MinMaxSizesInput(content_box_size_.block_size), &flex_basis_space);
       }
       return *min_max_size;
     };
@@ -490,6 +474,19 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           MinMaxSizesFunc, min_property_in_cross_axis,
           LengthResolvePhase::kLayout);
     }
+
+    base::Optional<LayoutUnit> intrinsic_block_size;
+    auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
+      if (!intrinsic_block_size) {
+        NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(
+            child, physical_child_margins,
+            min_max_sizes_in_cross_axis_direction);
+        scoped_refptr<const NGLayoutResult> layout_result =
+            child.Layout(child_space, /* break_token */ nullptr);
+        intrinsic_block_size = layout_result->IntrinsicBlockSize();
+      }
+      return *intrinsic_block_size;
+    };
 
     // The logic that calculates flex_base_border_box assumes that the used
     // value of the flex-basis property is either definite or 'content'.
@@ -813,6 +810,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         space_builder.SetIsFixedInlineSize(true);
       }
       if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node)) {
+        // TODO(dgrogan): These need margins subtracted and min/max sizes
+        // applied, like in BuildSpaceForIntrinsicBlockSize.
         if (is_column_)
           space_builder.SetIsFixedInlineSize(true);
         else

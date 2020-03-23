@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_STORAGE_PARTITION_TEST_UTILS_H_
-#define CONTENT_TEST_STORAGE_PARTITION_TEST_UTILS_H_
+#ifndef CONTENT_TEST_IO_THREAD_SHARED_URL_LOADER_FACTORY_OWNER_H_
+#define CONTENT_TEST_IO_THREAD_SHARED_URL_LOADER_FACTORY_OWNER_H_
 
 #include <memory>
 
@@ -55,4 +55,4 @@ class IOThreadSharedURLLoaderFactoryOwner {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_STORAGE_PARTITION_TEST_UTILS_H_
+#endif  // CONTENT_TEST_IO_THREAD_SHARED_URL_LOADER_FACTORY_OWNER_H_

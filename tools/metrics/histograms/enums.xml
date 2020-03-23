@@ -20539,7 +20539,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 </enum>
 
 <enum name="ExtensionEvents">
-<!-- Generated from extensions/browser/extension_event_histogram_value.h.-->
+<!-- Generated from extensions/browser/extension_event_histogram_value.h.
+Called by update_extension_histograms.py.-->
 
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="FOR_TEST"/>
@@ -21038,7 +21039,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 </enum>
 
 <enum name="ExtensionFunctions">
-<!-- Generated from extensions/browser/extension_function_histogram_value.h.-->
+<!-- Generated from extensions/browser/extension_function_histogram_value.h.
+Called by update_extension_histograms.py.-->
 
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="WEBNAVIGATION_GETALLFRAMES"/>
@@ -22549,6 +22551,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1460" label="PASSWORDSPRIVATE_GETPASSWORDCHECKSTATUS"/>
   <int value="1461" label="TERMINALPRIVATE_OPENVMSHELLPROCESS"/>
   <int value="1462" label="PASSWORDSPRIVATE_OPTINFORACCOUNTSTORAGE"/>
+  <int value="1463" label="CRYPTOTOKENPRIVATE_RECORDREGISTERREQUEST"/>
+  <int value="1464" label="CRYPTOTOKENPRIVATE_RECORDSIGNREQUEST"/>
 </enum>
 
 <enum name="ExtensionIconState">

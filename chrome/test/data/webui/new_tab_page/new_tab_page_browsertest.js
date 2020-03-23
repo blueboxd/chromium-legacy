@@ -146,3 +146,15 @@ var NewTabPageFakeboxTest = class extends NewTabPageBrowserTest {
 TEST_F('NewTabPageFakeboxTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageLogoTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/logo_test.js';
+  }
+};
+
+TEST_F('NewTabPageLogoTest', 'All', function() {
+  mocha.run();
+});

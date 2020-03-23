@@ -59,11 +59,11 @@ namespace blink {
 
 namespace {
 
-using mojom::blink::CredentialManagerError;
+using mojom::blink::AuthenticatorStatus;
 using mojom::blink::CredentialInfo;
 using mojom::blink::CredentialInfoPtr;
+using mojom::blink::CredentialManagerError;
 using mojom::blink::CredentialMediationRequirement;
-using mojom::blink::AuthenticatorStatus;
 using MojoPublicKeyCredentialCreationOptions =
     mojom::blink::PublicKeyCredentialCreationOptions;
 using mojom::blink::MakeCredentialAuthenticatorResponsePtr;
@@ -531,11 +531,10 @@ ScriptPromise CredentialsContainer::get(
 
   if (options->hasPublicKey()) {
     auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-    if (cryptotoken_origin->IsSameOriginWith(
+    if (!cryptotoken_origin->IsSameOriginWith(
             resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kU2FCryptotokenSign);
-    } else {
+      // Cryptotoken requests are recorded as kU2FCryptotokenSign from within
+      // the extension.
       UseCounter::Count(resolver->GetExecutionContext(),
                         WebFeature::kCredentialManagerGetPublicKeyCredential);
     }
@@ -764,11 +763,10 @@ ScriptPromise CredentialsContainer::create(
   } else {
     DCHECK(options->hasPublicKey());
     auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-    if (cryptotoken_origin->IsSameOriginWith(
+    if (!cryptotoken_origin->IsSameOriginWith(
             resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kU2FCryptotokenRegister);
-    } else {
+      // Cryptotoken requests are recorded as kU2FCryptotokenRegister from
+      // within the extension.
       UseCounter::Count(
           resolver->GetExecutionContext(),
           WebFeature::kCredentialManagerCreatePublicKeyCredential);

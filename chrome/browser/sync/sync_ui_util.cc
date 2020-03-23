@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -20,6 +21,7 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/url_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_features.h"
@@ -177,8 +179,9 @@ void OpenTabForSyncKeyRetrievalWithURL(Browser* browser, const GURL& url) {
   FocusWebContents(browser);
 
   NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+  // Allow the window to close itself.
+  params.created_with_opener = true;
+  Navigate(&params);
 }
 
 // Returns true if the user has consented to browser sync-the-feature or
@@ -334,8 +337,14 @@ bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service) {
 }
 
 void OpenTabForSyncKeyRetrieval(Browser* browser) {
-  OpenTabForSyncKeyRetrievalWithURL(
-      browser, GaiaUrls::GetInstance()->signin_chrome_sync_keys_url());
+  const GURL continue_url =
+      GURL(UIThreadSearchTermsData().GoogleBaseURLValue());
+  GURL retrieval_url = GaiaUrls::GetInstance()->signin_chrome_sync_keys_url();
+  if (continue_url.is_valid()) {
+    retrieval_url = net::AppendQueryParameter(retrieval_url, "continue",
+                                              continue_url.spec());
+  }
+  OpenTabForSyncKeyRetrievalWithURL(browser, retrieval_url);
 }
 
 void OpenTabForSyncKeyRetrievalWithURLForTesting(Browser* browser,

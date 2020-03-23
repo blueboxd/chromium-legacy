@@ -27,10 +27,10 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "components/device_event_log/device_event_log.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -114,7 +114,8 @@ base::string16 GetActivationErrorMessage(MobileActivator::ActivationError error,
 
 void DataRequestFailed(const std::string& service_path,
                        content::URLDataSource::GotDataCallback callback) {
-  NET_LOG(ERROR) << "Data Request Failed for Mobile Setup: " << service_path;
+  NET_LOG(ERROR) << "Data Request Failed for Mobile Setup: "
+                 << NetworkPathId(service_path);
   scoped_refptr<base::RefCountedBytes> html_bytes(new base::RefCountedBytes);
   std::move(callback).Run(html_bytes.get());
 }
@@ -283,14 +284,16 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   }
 
   if (!network->Matches(NetworkTypePattern::Cellular())) {
-    NET_LOG(ERROR) << "Mobile setup attempt for non cellular network: " << path;
+    NET_LOG(ERROR) << "Mobile setup attempt for non cellular network: "
+                   << NetworkId(network);
     DataRequestFailed(path, std::move(callback));
     return;
   }
 
   if (network->payment_url().empty() &&
       network->activation_state() != shill::kActivationStateActivated) {
-    NET_LOG(ERROR) << "Mobile setup network in unexpected state: " << path
+    NET_LOG(ERROR) << "Mobile setup network in unexpected state: "
+                   << NetworkId(network)
                    << " payment_url: " << network->payment_url()
                    << " activation_state: " << network->activation_state();
     DataRequestFailed(path, std::move(callback));
@@ -307,7 +310,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(
     return;
   }
 
-  NET_LOG(EVENT) << "Starting mobile setup: " << path;
+  NET_LOG(EVENT) << "Starting mobile setup: " << NetworkId(network);
   base::DictionaryValue strings;
 
   strings.SetString(
@@ -441,7 +444,7 @@ void MobileSetupHandler::HandleStartActivation(const base::ListValue* args) {
   if (path.empty())
     return;
 
-  NET_LOG(EVENT) << "Starting activation for service: " << path;
+  NET_LOG(EVENT) << "Starting activation for service: " << NetworkPathId(path);
   active_ = true;
   AllowJavascript();
 

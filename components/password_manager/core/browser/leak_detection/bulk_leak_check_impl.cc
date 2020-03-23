@@ -139,6 +139,8 @@ void BulkLeakCheckImpl::OnTokenReady(
   if (error.state() != GoogleServiceAuthError::NONE) {
     if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED)
       delegate_->OnError(LeakDetectionError::kNetworkError);
+    else if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
+      delegate_->OnError(LeakDetectionError::kNotSignIn);
     else
       delegate_->OnError(LeakDetectionError::kTokenRequestFailure);
     // |this| can be destroyed here.

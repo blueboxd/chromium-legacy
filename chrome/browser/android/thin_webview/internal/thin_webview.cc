@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 
 using base::android::JavaParamRef;
@@ -76,6 +77,8 @@ void ThinWebView::SetWebContents(content::WebContents* web_contents,
     web_contents->SetDelegate(delegate);
 
   TabHelpers::AttachTabHelpers(web_contents);
+  permissions::PermissionRequestManager::FromWebContents(web_contents)
+      ->set_web_contents_supports_permission_requests(false);
   ViewAndroidHelper::FromWebContents(web_contents)
       ->SetViewAndroid(web_contents->GetNativeView());
 }

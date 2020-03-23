@@ -28,6 +28,9 @@ suite('NewTabPageAppTest', () => {
     testProxy.handler.setResultFor('getChromeThemes', Promise.resolve({
       chromeThemes: [],
     }));
+    testProxy.handler.setResultFor('getDoodle', Promise.resolve({
+      doodle: null,
+    }));
     testProxy.setResultMapperFor('matchMedia', () => ({
                                                  addListener() {},
                                                  removeListener() {},

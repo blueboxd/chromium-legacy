@@ -779,3 +779,16 @@ var CrSettingsSiteEntryV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsSiteEntryV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsSiteDetailsPermissionV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_details_permission_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsSiteDetailsPermissionV3Test', 'All', function() {
+  mocha.run();
+});

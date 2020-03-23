@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -154,6 +155,57 @@ TEST_F(CryptoTokenPrivateApiTest, IsAppIdHashInEnterpriseContext) {
   EXPECT_FALSE(result);
 }
 
+TEST_F(CryptoTokenPrivateApiTest, RecordRegisterRequest) {
+  const GURL url("https://example.com/signin");
+  AddTab(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
+
+  page_load_metrics::PageLoadMetricsTestWaiter web_feature_waiter(web_contents);
+  web_feature_waiter.AddWebFeatureExpectation(
+      blink::mojom::WebFeature::kU2FCryptotokenRegister);
+  // Force the metrics waiter to attach.
+  NavigateAndCommitActiveTab(url);
+
+  auto function = base::MakeRefCounted<
+      api::CryptotokenPrivateRecordRegisterRequestFunction>();
+  auto args = std::make_unique<base::ListValue>();
+  args->AppendInteger(tab_id);
+  args->AppendInteger(0 /* top-level frame */);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), base::ListValue::From(std::move(args)), browser(),
+      api_test_utils::NONE));
+  ASSERT_EQ(function->GetResultList()->GetSize(), 0u);
+
+  web_feature_waiter.Wait();
+}
+
+TEST_F(CryptoTokenPrivateApiTest, RecordSignRequest) {
+  const GURL url("https://example.com/signin");
+  AddTab(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
+
+  page_load_metrics::PageLoadMetricsTestWaiter web_feature_waiter(web_contents);
+  web_feature_waiter.AddWebFeatureExpectation(
+      blink::mojom::WebFeature::kU2FCryptotokenSign);
+  // Force the metrics waiter to attach.
+  NavigateAndCommitActiveTab(url);
+
+  auto function =
+      base::MakeRefCounted<api::CryptotokenPrivateRecordSignRequestFunction>();
+  auto args = std::make_unique<base::ListValue>();
+  args->AppendInteger(tab_id);
+  args->AppendInteger(0 /* top-level frame */);
+  ASSERT_TRUE(extension_function_test_utils::RunFunction(
+      function.get(), base::ListValue::From(std::move(args)), browser(),
+      api_test_utils::NONE));
+  ASSERT_EQ(function->GetResultList()->GetSize(), 0u);
+
+  web_feature_waiter.Wait();
+}
 }  // namespace
 
 class CryptoTokenPermissionTest : public ExtensionApiUnittest {

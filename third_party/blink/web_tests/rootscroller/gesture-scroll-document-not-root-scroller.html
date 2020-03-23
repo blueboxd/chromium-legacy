@@ -56,19 +56,6 @@
   if (window.internals)
     internals.settings.setScrollAnimatorEnabled(false);
 
-  function scrollDown(pixels_to_scroll, start_x, start_y,
-      gesture_source_type, speed_in_pixels_s) {
-    return new Promise((resolve, reject) => {
-      chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
-                                            resolve,
-                                            start_x,
-                                            start_y,
-                                            gesture_source_type,
-                                            'down',
-                                            speed_in_pixels_s);
-    });
-  }
-
   function waitForScroll() {
     const MAX_FRAME = 500;
     return new Promise((resolve, reject) => {
@@ -99,8 +86,8 @@
                       rootscroller,
                       "#rootscroller must be the effective root scroller");
       }
-      const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
-      return scrollDown(500, 100, 100, GESTURE_SOURCE_TYPE, 1000)
+      const GESTURE_SOURCE_TYPE = GestureSourceType.MOUSE_INPUT;
+      return smoothScroll(500, 100, 100, GESTURE_SOURCE_TYPE, 'down', 1000)
         .then(waitForScroll)
         .then(() => {
           assert_greater_than(document.scrollingElement.scrollTop,

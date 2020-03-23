@@ -6,7 +6,6 @@
 #include <atlcom.h>
 #include <atlcomcli.h>
 #include <lmerr.h>
-#include <objbase.h>
 #include <unknwn.h>
 #include <wrl/client.h>
 
@@ -28,6 +27,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/win_util.h"
 #include "build/build_config.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
@@ -95,6 +95,8 @@ class GcpSetupTest : public ::testing::Test {
   void GetModulePathAndProductVersion(base::FilePath* module_path,
                                       base::string16* product_version);
 
+  base::win::ScopedCOMInitializer com_initializer_{
+      base::win::ScopedCOMInitializer::kMTA};
   registry_util::RegistryOverrideManager registry_override_;
   base::ScopedTempDir scoped_temp_prog_dir_;
   base::ScopedTempDir scoped_temp_start_menu_dir_;
@@ -216,9 +218,6 @@ void GcpSetupTest::ExpectRequiredRegistryEntriesToBePresent() {
 }
 
 void GcpSetupTest::SetUp() {
-  ASSERT_TRUE(SUCCEEDED(
-      CoInitializeEx(nullptr, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE)));
-
   // Get the path to the setup exe (this exe during unit tests) and the
   // chrome version.
   GetModulePathAndProductVersion(&module_path_, &product_version_);

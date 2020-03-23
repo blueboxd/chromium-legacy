@@ -292,6 +292,9 @@ class OmniboxViewViews : public OmniboxView,
   int OnDrop(const ui::OSExchangeData& data) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
 
+  // ui::SimpleMenuModel::Delegate:
+  bool IsCommandIdChecked(int id) const override;
+
   // ui::CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
   void OnCompositingStarted(ui::Compositor* compositor,
@@ -301,6 +304,9 @@ class OmniboxViewViews : public OmniboxView,
 
   // TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
+
+  // Toggle whether to show full URLs in the omnibox.
+  virtual void ToggleShowFullUrlsPref();
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.

@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Laai op</translation>
 <translation id="1244265436519979884">Linux-terugstelling vind tans plaas</translation>
 <translation id="1244303850296295656">Uitbreidingfout</translation>
+<translation id="1246158006305844142">Jou programme en instellings sal op alle Chrome-bedryfstelseltoestelle waarop jy met jou Google-rekening aangemeld is, sinkroniseer. Gaan na <ph name="LINK_BEGIN" />Chrome-instellings<ph name="LINK_END" /> toe vir blaaiersinkroniseringopsies.</translation>
 <translation id="1246905108078336582">Verwyder voorstel van knipbord af?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> is geblokkeer omdat dit opgeskort is</translation>
 <translation id="1251366534849411931">Verwag beginkrulhakie: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">Nee, dankie</translation>
 <translation id="1525740877599838384">Gebruik net Wi-Fi om ligging te bepaal</translation>
 <translation id="152629053603783244">Herbegin Linux</translation>
+<translation id="1526335046150927198">Aktiveer raakpaneelrolleesversnelling</translation>
 <translation id="1526560967942511387">Titellose dokument</translation>
 <translation id="1529891865407786369">Kragbron</translation>
 <translation id="1530838837447122178">Maak muis- en raakpaneeltoestelinstellings oop</translation>
@@ -1313,6 +1315,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2725200716980197196">Netwerkverbinding is herstel</translation>
 <translation id="2727633948226935816">Moet my nie weer herinner nie</translation>
 <translation id="2727712005121231835">Werklike grootte</translation>
+<translation id="2729314457178420145">Vee ook blaaierdata uit (<ph name="URL" />), wat jou by Google.com kan afmeld. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Rugsteun tans Linux-programme en -lêers</translation>
 <translation id="273093730430620027">Hierdie bladsy gaan tans by jou kamera in.</translation>
 <translation id="2731392572903530958">Maak geslote venster weer oop</translation>
@@ -2164,6 +2167,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3838486795898716504">Meer <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Webkoekies en ander web- en inpropdata</translation>
 <translation id="383891835335927981">Geen werwe is in- of uitgezoem nie</translation>
+<translation id="3839509547554145593">Aktiveer muisrolleesversnelling</translation>
 <translation id="3839516600093027468">Blokkeer <ph name="HOST" /> altyd om die knipbord te sien</translation>
 <translation id="3841964634449506551">Wagwoord is ongeldig</translation>
 <translation id="3842552989725514455">Serif-lettertipe</translation>
@@ -2775,6 +2779,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4699172675775169585">Gekaste prente en lêers</translation>
 <translation id="4699357559218762027">(outomaties begin)</translation>
 <translation id="470074695271471509">Meld af om klaar te maak?</translation>
+<translation id="4701025263201366865">Oueraanmelding</translation>
 <translation id="4707302005824653064">Die bestuurder (<ph name="CUSTODIAN_EMAIL" />) kan gebruik en geskiedenis op chrome.com nagaan.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + gebruikersertifikaat</translation>
 <translation id="4708794300267213770">Wys sluitskerm wanneer dit uit slaap wakker word</translation>
@@ -3082,6 +3087,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, soek met <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Voer die PIN vir jou sekuriteitsleutel in. As jy nie die PIN ken nie, sal jy die sekuriteitsleutel moet terugstel.</translation>
 <translation id="5139955368427980650">Maak oop</translation>
+<translation id="5142793792982256885">Raakpaneel se rolleesspoed</translation>
 <translation id="5142961317498132443">Stawing</translation>
 <translation id="5143374789336132547">Die uitbreiding "<ph name="EXTENSION_NAME" />" het verander watter bladsy gewys word wanneer jy die Tuis-knoppie klik.</translation>
 <translation id="5143712164865402236">Gaan by volskerm in</translation>
@@ -3645,6 +3651,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5901630391730855834">Geel</translation>
 <translation id="5906655207909574370">Amper op datum! Herbegin jou toestel om opdatering te voltooi.</translation>
 <translation id="5906732635754427568">Data wat met hierdie program geassosieer word, sal van hierdie toestel af verwyder word.</translation>
+<translation id="5908695239556627796">Muis se rolleesspoed</translation>
 <translation id="5908769186679515905">Verhinder werwe om Flash te laat loop</translation>
 <translation id="5910363049092958439">Stoor prent as …</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> is vanlyn</translation>
@@ -5092,6 +5099,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
     <ph name="BEGIN_BOLD" />Let wel:<ph name="END_BOLD" /> Die stelsel sal tydens die proses herselflaai.</translation>
 <translation id="7828731929332799387">Dit sal alle webkoekies en werfdata uitvee wat in derdeparty-kontekste beskikbaar is. Wil jy voortgaan?</translation>
 <translation id="7829298379596169484">Gaan tans by oudio-invoer in</translation>
+<translation id="7829877209233347340">Vra 'n ouer om aan te meld om toestemming te gee om 'n skoolrekening by te voeg</translation>
 <translation id="7830594666202422257">Koppel aan Linux</translation>
 <translation id="7831491651892296503">Kon nie netwerk opstel nie</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5845,6 +5853,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8808686172382650546">Kat</translation>
 <translation id="8808744862003883508">Jy kan al die uitbreidings wat in Chrome geïnstalleer is op hierdie bladsy sien.</translation>
 <translation id="8809147117840417135">Liggroenblou</translation>
+<translation id="8812593354822910461">Vee ook blaaierdata uit (<ph name="URL" />), wat jou by kan <ph name="DOMAIN" /> afmeld. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Kan nie by <ph name="USERNAME" /> aanmeld nie</translation>
 <translation id="8813811964357448561">vel papier</translation>
 <translation id="8813872945700551674">Kry 'n ouer om "<ph name="EXTENSION_NAME" />" goed te keur</translation>
@@ -6134,6 +6143,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="9203398526606335860">Profielskepping geaktiveer</translation>
 <translation id="9203904171912129171">Kies 'n toestel</translation>
 <translation id="9203962528777363226">Die administrateur van hierdie toestel het die byvoeging van nuwe gebruikers gedeaktiveer</translation>
+<translation id="9209689095351280025">Werwe kan nie webkoekies gebruik wat jou oral op die web naspoor nie</translation>
 <translation id="9211177926627870898">Opdatering vereis</translation>
 <translation id="9214520840402538427">Oeps! Die inwyding van die installeringtydeienskappe het uitgetel. Kontak asseblief jou steundiensverteenwoordiger.</translation>
 <translation id="9214695392875603905">Kolwyntjie</translation>

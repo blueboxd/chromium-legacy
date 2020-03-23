@@ -78,7 +78,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) HandshakeInitiator {
       // peer_identity, if given, specifies that this is a paired handshake
       // and then contains an X9.62, P-256 public key for the peer. Otherwise
       // this is a QR-code handshake.
-      base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity);
+      base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity,
+      // local_identity must be provided if |peer_identity| is not. It contains
+      // the seed for deriving the local identity key.
+      base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
+          local_identity);
 
   ~HandshakeInitiator();
 
@@ -100,6 +104,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) HandshakeInitiator {
   std::array<uint8_t, 32> psk_;
 
   base::Optional<std::array<uint8_t, kP256PointSize>> peer_identity_;
+  base::Optional<std::array<uint8_t, kCableIdentityKeySeedSize>> local_seed_;
   bssl::UniquePtr<EC_KEY> ephemeral_key_;
 };
 
@@ -112,6 +117,9 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
     // identity, if not nullptr, specifies that this is a paired handshake and
     // contains the long-term identity key for this authenticator.
     const EC_KEY* identity,
+    // peer_identity, which must be non-nullptr iff |identity| is nullptr,
+    // contains the peer's public key as derived from the QR-code data.
+    const EC_POINT* peer_identity,
     // pairing_data, if not nullptr, contains long-term pairing data that will
     // be shared with the peer. This is mutually exclusive with |identity|.
     const CableDiscoveryData* pairing_data,

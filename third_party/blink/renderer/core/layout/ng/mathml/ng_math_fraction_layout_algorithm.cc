@@ -28,7 +28,7 @@ struct FractionParameters {
 FractionParameters GetFractionParameters(const ComputedStyle& style) {
   FractionParameters parameters;
 
-  // TODO(rbuis): Implement displaystyle.
+  bool has_display_style = HasDisplayStyle(style);
 
   // We try and read constants to draw the fraction from the OpenType MATH and
   // use fallback values otherwise.
@@ -37,23 +37,37 @@ FractionParameters GetFractionParameters(const ComputedStyle& style) {
   parameters.numerator_gap_min = LayoutUnit(
       MathConstant(
           style,
-          OpenTypeMathSupport::MathConstants::kFractionNumDisplayStyleGapMin)
-          .value_or(3 * RuleThicknessFallback(style)));
+          has_display_style
+              ? OpenTypeMathSupport::MathConstants::
+                    kFractionNumDisplayStyleGapMin
+              : OpenTypeMathSupport::MathConstants::kFractionNumeratorGapMin)
+          .value_or((has_display_style ? 3 : 1) *
+                    RuleThicknessFallback(style)));
   parameters.denominator_gap_min = LayoutUnit(
       MathConstant(
           style,
-          OpenTypeMathSupport::MathConstants::kFractionDenomDisplayStyleGapMin)
+          has_display_style
+              ? OpenTypeMathSupport::MathConstants::
+                    kFractionDenomDisplayStyleGapMin
+              : OpenTypeMathSupport::MathConstants::kFractionDenominatorGapMin)
           .value_or(parameters.numerator_gap_min));
 
   // TODO(crbug.com/1058369): The MATH table specification does not suggest
   // any values for shifts, so we leave them at zero for now.
-  parameters.numerator_min_shift_up =
-      LayoutUnit(MathConstant(style, OpenTypeMathSupport::MathConstants::
-                                         kFractionNumeratorDisplayStyleShiftUp)
-                     .value_or(0));
+  parameters.numerator_min_shift_up = LayoutUnit(
+      MathConstant(
+          style,
+          has_display_style
+              ? OpenTypeMathSupport::MathConstants::
+                    kFractionNumeratorDisplayStyleShiftUp
+              : OpenTypeMathSupport::MathConstants::kFractionNumeratorShiftUp)
+          .value_or(0));
   parameters.denominator_min_shift_down = LayoutUnit(
-      MathConstant(style, OpenTypeMathSupport::MathConstants::
-                              kFractionDenominatorDisplayStyleShiftDown)
+      MathConstant(style, has_display_style
+                              ? OpenTypeMathSupport::MathConstants::
+                                    kFractionDenominatorDisplayStyleShiftDown
+                              : OpenTypeMathSupport::MathConstants::
+                                    kFractionDenominatorShiftDown)
           .value_or(0));
 
   return parameters;
@@ -72,26 +86,35 @@ struct FractionStackParameters {
 FractionStackParameters GetFractionStackParameters(const ComputedStyle& style) {
   FractionStackParameters parameters;
 
-  // TODO(rbuis): Implement displaystyle.
+  bool has_display_style = HasDisplayStyle(style);
 
   // We try and read constants to draw the stack from the OpenType MATH and use
   // fallback values otherwise.
   // We use the fallback values suggested in the MATH table specification.
   parameters.gap_min = LayoutUnit(
-      MathConstant(style,
-                   OpenTypeMathSupport::MathConstants::kStackDisplayStyleGapMin)
-          .value_or(7 * RuleThicknessFallback(style)));
+      MathConstant(
+          style,
+          has_display_style
+              ? OpenTypeMathSupport::MathConstants::kStackDisplayStyleGapMin
+              : OpenTypeMathSupport::MathConstants::kStackGapMin)
+          .value_or((has_display_style ? 7 : 3) *
+                    RuleThicknessFallback(style)));
   // The MATH table specification does not suggest any values for shifts, so
   // we leave them at zero.
   parameters.top_shift_up = LayoutUnit(
       MathConstant(
           style,
-          OpenTypeMathSupport::MathConstants::kStackTopDisplayStyleShiftUp)
+          has_display_style
+              ? OpenTypeMathSupport::MathConstants::kStackTopDisplayStyleShiftUp
+              : OpenTypeMathSupport::MathConstants::kStackTopShiftUp)
           .value_or(0));
   parameters.bottom_shift_down = LayoutUnit(
       MathConstant(
           style,
-          OpenTypeMathSupport::MathConstants::kStackBottomDisplayStyleShiftDown)
+          has_display_style
+              ? OpenTypeMathSupport::MathConstants::
+                    kStackBottomDisplayStyleShiftDown
+              : OpenTypeMathSupport::MathConstants::kStackBottomShiftDown)
           .value_or(0));
 
   return parameters;

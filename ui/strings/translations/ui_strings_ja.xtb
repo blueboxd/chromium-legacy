@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />、インストール済みアプリ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> を共有できません</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> と <ph name="SECOND_ITEM_TITLE" /> が置き換わりました</translation>
 <translation id="1498028757988366001">このキーワードは以前に検索したことがあります。「<ph name="QUERY" />」を履歴から削除すると、アカウントから完全に（つまりすべてのデバイスから）削除されます。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -187,6 +188,7 @@
 <translation id="6974053822202609517">右から左</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">これですか？</translation>
+<translation id="7170202025028120564">アプリケーションの表示設定は、再起動すると有効になります。</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
 <translation id="7319740667687257810">ランチャー、一部のみ表示</translation>

@@ -517,6 +517,11 @@ void Adapter::SetMetricsReporterDeviceClass() {
             MetricsReporter::DeviceClass::kNocturne);
         return;
       }
+      if (params_.metrics_key == "kohaku") {
+        metrics_reporter_->SetDeviceClass(
+            MetricsReporter::DeviceClass::kKohaku);
+        return;
+      }
       metrics_reporter_->SetDeviceClass(
           MetricsReporter::DeviceClass::kSupportedAls);
       return;

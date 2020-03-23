@@ -147,7 +147,7 @@ chrome.inputMethodPrivate.InputContext;
  *     z_zh: (boolean|undefined)
  *   }|undefined),
  *   xkbLayout: (string|undefined),
- *   zhuyinLayout: (string|undefined),
+ *   zhuyinKeyboardLayout: (string|undefined),
  *   zhuyinPageSize: (number|undefined),
  *   zhuyinSelectionKeys: (string|undefined)
  * }}

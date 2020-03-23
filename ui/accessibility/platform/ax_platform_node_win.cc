@@ -1104,18 +1104,6 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accRole(VARIANT var_id, VARIANT* role) {
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, role, target);
 
-  // For historical reasons, we return a string (typically
-  // containing the HTML tag name) as the MSAA role, rather
-  // than a int.
-  std::string role_string =
-      base::ToUpperASCII(target->StringOverrideForMSAARole());
-  if (!role_string.empty()) {
-    role->vt = VT_BSTR;
-    std::wstring wsTmp(role_string.begin(), role_string.end());
-    role->bstrVal = SysAllocString(wsTmp.c_str());
-    return S_OK;
-  }
-
   role->vt = VT_I4;
   role->lVal = target->MSAARole();
   return S_OK;
@@ -4866,10 +4854,8 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kImage:
-      return ROLE_SYSTEM_GRAPHIC;
-
     case ax::mojom::Role::kImageMap:
-      return ROLE_SYSTEM_CLIENT;
+      return ROLE_SYSTEM_GRAPHIC;
 
     case ax::mojom::Role::kInputTime:
       return ROLE_SYSTEM_GROUPING;
@@ -4922,7 +4908,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kLog:
-      return ROLE_SYSTEM_CLIENT;
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kMain:
       return ROLE_SYSTEM_GROUPING;
@@ -5151,59 +5137,7 @@ int AXPlatformNodeWin::MSAARole() {
   }
 
   NOTREACHED();
-  return ROLE_SYSTEM_CLIENT;
-}
-
-std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
-  std::string html_tag =
-      GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-
-  switch (GetData().role) {
-    case ax::mojom::Role::kBlockquote:
-    case ax::mojom::Role::kDefinition:
-    case ax::mojom::Role::kImageMap:
-      return html_tag;
-
-    case ax::mojom::Role::kCanvas:
-      if (GetData().GetBoolAttribute(
-              ax::mojom::BoolAttribute::kCanvasHasFallback)) {
-        return html_tag;
-      }
-      break;
-
-    case ax::mojom::Role::kForm:
-      // This could be a div with the role of form
-      // so we return just the string "form".
-      return "form";
-
-    case ax::mojom::Role::kHeading:
-      if (!html_tag.empty())
-        return html_tag;
-      break;
-
-    case ax::mojom::Role::kParagraph:
-      return html_tag;
-
-    case ax::mojom::Role::kLog:
-      return "log";
-
-    case ax::mojom::Role::kGenericContainer:
-      // Use html tag if available. In the case where there is no tag, e.g.
-      // for anonymous content inserted by blink, treat it as a "div". This
-      // can occur if the markup had a block and inline element as siblings --
-      // blink will wrap the inline with a block in this case.
-      if (html_tag.empty())
-        return "div";
-      return html_tag;
-
-    case ax::mojom::Role::kSwitch:
-      return "switch";
-
-    default:
-      return "";
-  }
-
-  return "";
+  return ROLE_SYSTEM_GROUPING;
 }
 
 bool AXPlatformNodeWin::IsWebAreaForPresentationalIframe() {

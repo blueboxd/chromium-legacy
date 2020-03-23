@@ -433,8 +433,11 @@ class FileManagerUI {
     document.defaultView.addEventListener('resize', this.relayout.bind(this));
 
     // Add global pointer-active handler.
+    const pointerActiveEvents = window.IN_TEST ?
+        ['pointerdown', 'pointerup', 'mousedown', 'mouseup'] :
+        ['pointerdown', 'pointerup'];
     const rootElement = document.documentElement;
-    ['pointerdown', 'pointerup'].forEach((eventType) => {
+    pointerActiveEvents.forEach((eventType) => {
       document.addEventListener(eventType, (e) => {
         rootElement.classList.toggle('pointer-active', /down$/.test(e.type));
       }, true);

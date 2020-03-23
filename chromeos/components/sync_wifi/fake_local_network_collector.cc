@@ -40,9 +40,6 @@ void FakeLocalNetworkCollector::ClearNetworks() {
   networks_.clear();
 }
 
-void FakeLocalNetworkCollector::SetNetworkMetadataStore(
-    NetworkMetadataStore* network_metadata_store) {}
-
 }  // namespace sync_wifi
 
 }  // namespace chromeos

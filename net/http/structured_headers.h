@@ -164,7 +164,7 @@ inline bool operator!=(const ParameterizedItem& lhs,
 struct NET_EXPORT ParameterizedMember {
   std::vector<ParameterizedItem> member;
   // If false, then |member| should only hold one Item.
-  bool member_is_inner_list;
+  bool member_is_inner_list = false;
 
   Parameters params;
 
@@ -204,10 +204,24 @@ class NET_EXPORT Dictionary {
   const_iterator begin() const;
   iterator end();
   const_iterator end() const;
+
+  // operator[](size_t) and at(size_t) will both abort the program in case of
+  // out of bounds access.
   ParameterizedMember& operator[](std::size_t idx);
+  const ParameterizedMember& operator[](std::size_t idx) const;
+  ParameterizedMember& at(std::size_t idx);
+  const ParameterizedMember& at(std::size_t idx) const;
+
+  // Consistent with std::map, if |key| does not exist in the Dictionary, then
+  // operator[](base::StringPiece) will create an entry for it, but at() will
+  // abort the entire program.
   ParameterizedMember& operator[](base::StringPiece key);
-  std::size_t size();
-  bool contains(base::StringPiece key);
+  ParameterizedMember& at(base::StringPiece key);
+  const ParameterizedMember& at(base::StringPiece key) const;
+
+  bool empty() const;
+  std::size_t size() const;
+  bool contains(base::StringPiece key) const;
   friend bool operator==(const Dictionary& lhs, const Dictionary& rhs);
   friend bool operator!=(const Dictionary& lhs, const Dictionary& rhs);
 

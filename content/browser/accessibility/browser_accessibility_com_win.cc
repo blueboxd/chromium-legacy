@@ -1498,7 +1498,6 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
 
   win_attributes_->ia_role = MSAARole();
   win_attributes_->ia_state = MSAAState();
-  win_attributes_->role_name = base::UTF8ToUTF16(StringOverrideForMSAARole());
 
   win_attributes_->ia2_role = ComputeIA2Role();
   // If we didn't explicitly set the IAccessible2 role, make it the same
@@ -1534,8 +1533,7 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents() {
 
   // The rest of the events only fire on changes, not on new objects.
 
-  if (old_win_attributes_->ia_role != 0 ||
-      !old_win_attributes_->role_name.empty()) {
+  if (old_win_attributes_->ia_role != 0) {
     // Fire an event if the description, help, or value changes.
     if (description() != old_win_attributes_->description)
       FireNativeEvent(EVENT_OBJECT_DESCRIPTIONCHANGE);

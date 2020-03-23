@@ -17,7 +17,7 @@ namespace content {
 
 namespace service_worker_loader_helpers {
 
-std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
+bool CheckResponseHead(
     const network::mojom::URLResponseHead& response_head,
     blink::ServiceWorkerStatusCode* out_service_worker_status,
     network::URLLoaderCompletionStatus* out_completion_status,
@@ -30,7 +30,7 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
         ServiceWorkerConsts::kServiceWorkerBadHTTPResponseError,
         response_head.headers->response_code());
     *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorNetwork;
-    return nullptr;
+    return false;
   }
 
   if (net::IsCertStatusError(response_head.cert_status) &&
@@ -40,7 +40,7 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
         net::MapCertStatusToNetError(response_head.cert_status));
     *out_error_message = ServiceWorkerConsts::kServiceWorkerSSLError;
     *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorNetwork;
-    return nullptr;
+    return false;
   }
 
   // Remain consistent with logic in
@@ -57,6 +57,19 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
                   ServiceWorkerConsts::kServiceWorkerBadMIMEError,
                   response_head.mime_type.c_str());
     *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorSecurity;
+    return false;
+  }
+
+  return true;
+}
+
+std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
+    const network::mojom::URLResponseHead& response_head,
+    blink::ServiceWorkerStatusCode* out_service_worker_status,
+    network::URLLoaderCompletionStatus* out_completion_status,
+    std::string* out_error_message) {
+  if (!CheckResponseHead(response_head, out_service_worker_status,
+                         out_completion_status, out_error_message)) {
     return nullptr;
   }
 

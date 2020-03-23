@@ -718,6 +718,7 @@ extern const char kAutoScreenBrightnessMetricsDailySample[];
 extern const char kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount[];
 extern const char kAutoScreenBrightnessMetricsEveUserAdjustmentCount[];
 extern const char kAutoScreenBrightnessMetricsNocturneUserAdjustmentCount[];
+extern const char kAutoScreenBrightnessMetricsKohakuUserAdjustmentCount[];
 extern const char kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount[];
 extern const char kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount[];
 extern const char

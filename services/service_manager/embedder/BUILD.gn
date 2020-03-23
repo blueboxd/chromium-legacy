@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 if (!is_ios) {
   # iOS embeds the Service Manager but does not use anything in this library.
   # This avoids having an empty component library target, which can otherwise be
@@ -12,7 +14,6 @@ if (!is_ios) {
       "main_delegate.h",
       "process_type.h",
       "set_process_title.h",
-      "set_process_title_linux.h",
       "shared_file_util.h",
     ]
 
@@ -20,7 +21,6 @@ if (!is_ios) {
       "main.cc",
       "main_delegate.cc",
       "set_process_title.cc",
-      "set_process_title_linux.cc",
       "shared_file_util.cc",
     ]
 
@@ -58,6 +58,10 @@ if (!is_ios) {
       deps += [ "//ui/base" ]
     }
 
+    if (is_linux) {
+      deps += [ ":set_process_title_linux" ]
+    }
+
     defines = [ "IS_SERVICE_MANAGER_EMBEDDER_IMPL" ]
   }
 }
@@ -73,4 +77,12 @@ component("embedder_switches") {
 
 source_set("embedder_result_codes") {
   sources = [ "result_codes.h" ]
+}
+
+if (is_linux) {
+  source_set("set_process_title_linux") {
+    public = [ "set_process_title_linux.h" ]
+    sources = [ "set_process_title_linux.cc" ]
+    deps = [ "//base" ]
+  }
 }

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -131,6 +132,10 @@ void AssistantTestApiImpl::SetScreenContextEnabled(bool enabled) {
 
 void AssistantTestApiImpl::SetTabletMode(bool enable) {
   TabletMode::Get()->SetEnabledForTest(enable);
+}
+
+void AssistantTestApiImpl::StartOverview() {
+  Shell::Get()->overview_controller()->StartOverview();
 }
 
 void AssistantTestApiImpl::SetConsentStatus(

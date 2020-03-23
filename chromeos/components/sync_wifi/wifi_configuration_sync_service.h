@@ -23,8 +23,6 @@ class ModelTypeControllerDelegate;
 
 namespace chromeos {
 
-class NetworkMetadataStore;
-
 namespace sync_wifi {
 
 class LocalNetworkCollectorImpl;
@@ -42,7 +40,6 @@ class WifiConfigurationSyncService : public KeyedService {
   ~WifiConfigurationSyncService() override;
 
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate();
-  void SetNetworkMetadataStore(NetworkMetadataStore* network_metadata_store);
 
  private:
   std::unique_ptr<WifiConfigurationBridge> bridge_;

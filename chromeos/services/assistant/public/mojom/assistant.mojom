@@ -177,6 +177,7 @@ enum AssistantExitPoint {
   kLauncherClose = 9,
   kLauncherOpen = 10,
   kScreenshot = 11,
+  kOverviewMode = 12,
 };
 
 // Describes an Assistant interaction.

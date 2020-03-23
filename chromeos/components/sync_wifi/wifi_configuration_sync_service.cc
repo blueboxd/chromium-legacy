@@ -34,7 +34,8 @@ WifiConfigurationSyncService::WifiConfigurationSyncService(
       std::make_unique<PendingNetworkConfigurationTrackerImpl>(pref_service),
       remote_cros_network_config_.get(), std::make_unique<TimerFactory>());
   collector_ = std::make_unique<LocalNetworkCollectorImpl>(
-      remote_cros_network_config_.get());
+      remote_cros_network_config_.get(),
+      NetworkHandler::Get()->network_metadata_store());
   bridge_ = std::make_unique<sync_wifi::WifiConfigurationBridge>(
       updater_.get(), collector_.get(),
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
@@ -48,12 +49,6 @@ WifiConfigurationSyncService::~WifiConfigurationSyncService() = default;
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WifiConfigurationSyncService::GetControllerDelegate() {
   return bridge_->change_processor()->GetControllerDelegate();
-}
-
-void WifiConfigurationSyncService::SetNetworkMetadataStore(
-    NetworkMetadataStore* network_metadata_store) {
-  bridge_->SetNetworkMetadataStore(network_metadata_store);
-  collector_->SetNetworkMetadataStore(network_metadata_store);
 }
 
 }  // namespace sync_wifi

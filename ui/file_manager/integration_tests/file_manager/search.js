@@ -136,7 +136,7 @@
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
         'selectFile', appId, [entry.nameText]));
 
-    // Focus the toolbar search button.
+    // Click the toolbar search button.
     await remoteCall.waitAndClickElement(appId, '#search-button');
 
     // Verify the toolbar search text entry box is enabled.
@@ -179,13 +179,13 @@
     // Click the toolbar search button.
     await remoteCall.waitAndClickElement(appId, '#search-button');
 
-    // Wait search box to expand.
+    // Wait for the search box to expand.
     const caller = getCaller();
     await repeatUntil(async () => {
       const element = await remoteCall.waitForElementStyles(
           appId, '#search-wrapper', ['width']);
       if (collapsedSearchBox.renderedWidth > element.renderedWidth) {
-        return pending(caller, 'Waiting search box to expand');
+        return pending(caller, 'Waiting for the search box to expand');
       }
     });
 
@@ -205,13 +205,13 @@
       const element = await remoteCall.waitForElementStyles(
           appId, '#search-wrapper', ['width']);
       if (collapsedSearchBox.renderedWidth < element.renderedWidth) {
-        return pending(caller, 'Waiting search box to collapse');
+        return pending(caller, 'Waiting for the search box to collapse');
       }
     });
   };
 
   /**
-   * Tests that the search button toggles the search box: collapses and expands.
+   * Tests that clicking the search button expands and collapses the search box.
    */
   testcase.searchButtonToggles = async () => {
     const entry = ENTRIES.hello;
@@ -231,7 +231,7 @@
     await repeatUntil(async () => {
       const element = await remoteCall.waitForElementStyles(
           appId, '#search-wrapper', ['width']);
-      if (collapsedSearchBox.renderedWidth > element.renderedWidth) {
+      if (collapsedSearchBox.renderedWidth >= element.renderedWidth) {
         return pending(caller, 'Waiting search box to expand');
       }
     });

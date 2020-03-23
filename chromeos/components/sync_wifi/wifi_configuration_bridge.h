@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "chromeos/components/sync_wifi/local_network_collector.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
-#include "chromeos/network/network_metadata_observer.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
@@ -27,14 +26,11 @@ class ModelTypeChangeProcessor;
 
 namespace chromeos {
 
-class NetworkMetadataStore;
-
 namespace sync_wifi {
 
 // Receives updates to network configurations from the Chrome sync back end and
 // from the system network stack and keeps both lists in sync.
-class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
-                                public NetworkMetadataObserver {
+class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
  public:
   WifiConfigurationBridge(
       SyncedNetworkUpdater* synced_network_updater,
@@ -57,13 +53,8 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
-  // NetworkMetadataObserver:
-  void OnFirstConnectionToNetwork(const std::string& guid) override;
-
   // Comes from |entries_| the in-memory map.
   std::vector<NetworkIdentifier> GetAllIdsForTesting();
-
-  void SetNetworkMetadataStore(NetworkMetadataStore* network_metadata_store);
 
  private:
   void Commit(std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch);
@@ -95,8 +86,8 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
   std::unique_ptr<syncer::ModelTypeStore> store_;
 
   SyncedNetworkUpdater* synced_network_updater_;
+
   LocalNetworkCollector* local_network_collector_;
-  NetworkMetadataStore* network_metadata_store_;
 
   base::WeakPtrFactory<WifiConfigurationBridge> weak_ptr_factory_{this};
 

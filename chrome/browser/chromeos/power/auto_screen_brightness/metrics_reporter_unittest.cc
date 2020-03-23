@@ -27,6 +27,7 @@ constexpr auto kUnsupportedAls = MetricsReporter::DeviceClass::kUnsupportedAls;
 constexpr auto kAtlas = MetricsReporter::DeviceClass::kAtlas;
 constexpr auto kEve = MetricsReporter::DeviceClass::kEve;
 constexpr auto kNocturne = MetricsReporter::DeviceClass::kNocturne;
+constexpr auto kKohaku = MetricsReporter::DeviceClass::kKohaku;
 
 }  // namespace
 
@@ -134,6 +135,14 @@ TEST_F(MetricsReporterTest, CountAndReportEvents) {
   SendOnUserBrightnessChangeRequested();
   TriggerDailyEventAndVerifyHistograms(
       MetricsReporter::kNocturneUserAdjustmentName, 4);
+
+  // Three with Kohaku.
+  ResetReporter(kKohaku);
+  SendOnUserBrightnessChangeRequested();
+  SendOnUserBrightnessChangeRequested();
+  SendOnUserBrightnessChangeRequested();
+  TriggerDailyEventAndVerifyHistograms(
+      MetricsReporter::kKohakuUserAdjustmentName, 3);
 }
 
 TEST_F(MetricsReporterTest, LoadInitialCountsFromPrefs) {
@@ -158,6 +167,15 @@ TEST_F(MetricsReporterTest, LoadInitialCountsFromPrefs) {
   // start out at zero.
   TriggerDailyEventAndVerifyHistograms(
       MetricsReporter::kAtlasUserAdjustmentName, 0);
+
+  // Now test Kohaku.
+  pref_service_.SetInteger(
+      prefs::kAutoScreenBrightnessMetricsKohakuUserAdjustmentCount, 6);
+  ResetReporter(kKohaku);
+  TriggerDailyEventAndVerifyHistograms(
+      MetricsReporter::kKohakuUserAdjustmentName, 6);
+  TriggerDailyEventAndVerifyHistograms(
+      MetricsReporter::kKohakuUserAdjustmentName, 0);
 }
 
 TEST_F(MetricsReporterTest, IgnoreDailyEventFirstRun) {
@@ -173,10 +191,11 @@ TEST_F(MetricsReporterTest, IgnoreDailyEventFirstRun) {
   tester.ExpectTotalCount(MetricsReporter::kAtlasUserAdjustmentName, 0);
   tester.ExpectTotalCount(MetricsReporter::kEveUserAdjustmentName, 0);
   tester.ExpectTotalCount(MetricsReporter::kNocturneUserAdjustmentName, 0);
+  tester.ExpectTotalCount(MetricsReporter::kKohakuUserAdjustmentName, 0);
 }
 
 TEST_F(MetricsReporterTest, IgnoreDailyEventClockChanged) {
-  ResetReporter(kNocturne);
+  ResetReporter(kKohaku);
   SendOnUserBrightnessChangeRequested();
 
   // metrics::DailyEvent notifies observers if it sees that the system clock has
@@ -190,11 +209,12 @@ TEST_F(MetricsReporterTest, IgnoreDailyEventClockChanged) {
   tester.ExpectTotalCount(MetricsReporter::kAtlasUserAdjustmentName, 0);
   tester.ExpectTotalCount(MetricsReporter::kEveUserAdjustmentName, 0);
   tester.ExpectTotalCount(MetricsReporter::kNocturneUserAdjustmentName, 0);
+  tester.ExpectTotalCount(MetricsReporter::kKohakuUserAdjustmentName, 0);
 
   // The existing stats should be cleared when the clock change notification is
   // received, so the next report should only contain zeros.
   TriggerDailyEventAndVerifyHistograms(
-      MetricsReporter::kNocturneUserAdjustmentName, 0);
+      MetricsReporter::kKohakuUserAdjustmentName, 0);
 }
 
 }  // namespace auto_screen_brightness

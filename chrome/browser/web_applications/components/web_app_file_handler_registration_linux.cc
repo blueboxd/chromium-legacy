@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"

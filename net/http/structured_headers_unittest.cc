@@ -1132,6 +1132,71 @@ TEST(StructuredHeaderTest, SerializeDictionary) {
   }
 }
 
+TEST(StructuredHeaderTest, DictionaryConstructors) {
+  const std::string key0 = "key0";
+  const std::string key1 = "key1";
+  const ParameterizedMember member0{Item("Applepie"), {}};
+  const ParameterizedMember member1{Item("hello", Item::kByteSequenceType), {}};
+
+  Dictionary dict;
+  EXPECT_TRUE(dict.empty());
+  EXPECT_EQ(0U, dict.size());
+  dict[key0] = member0;
+  EXPECT_FALSE(dict.empty());
+  EXPECT_EQ(1U, dict.size());
+
+  const Dictionary dict_copy = dict;
+  EXPECT_FALSE(dict_copy.empty());
+  EXPECT_EQ(1U, dict_copy.size());
+  EXPECT_EQ(dict, dict_copy);
+
+  const Dictionary dict_init{{{key0, member0}, {key1, member1}}};
+  EXPECT_FALSE(dict_init.empty());
+  EXPECT_EQ(2U, dict_init.size());
+  EXPECT_EQ(member0, dict_init.at(key0));
+  EXPECT_EQ(member1, dict_init.at(key1));
+}
+
+TEST(StructuredHeaderTest, DictionaryAccessors) {
+  const std::string key0 = "key0";
+  const std::string key1 = "key1";
+
+  const ParameterizedMember nonempty_member0{Item("Applepie"), {}};
+  const ParameterizedMember nonempty_member1{
+      Item("hello", Item::kByteSequenceType), {}};
+  const ParameterizedMember empty_member;
+
+  Dictionary dict{{{key0, nonempty_member0}}};
+  EXPECT_TRUE(dict.contains(key0));
+  EXPECT_EQ(nonempty_member0, dict[key0]);
+  EXPECT_EQ(&dict[key0], &dict.at(key0));
+  EXPECT_EQ(&dict[key0], &dict[0]);
+  EXPECT_EQ(&dict[key0], &dict.at(0));
+
+  // Even if the key does not yet exist in |dict|, operator[]() should
+  // automatically create an empty entry.
+  ASSERT_FALSE(dict.contains(key1));
+  ParameterizedMember& member1 = dict[key1];
+  EXPECT_TRUE(dict.contains(key1));
+  EXPECT_EQ(empty_member, member1);
+  EXPECT_EQ(&member1, &dict[key1]);
+  EXPECT_EQ(&member1, &dict.at(key1));
+  EXPECT_EQ(&member1, &dict[1]);
+  EXPECT_EQ(&member1, &dict.at(1));
+
+  member1 = nonempty_member1;
+  EXPECT_EQ(nonempty_member1, dict[key1]);
+  EXPECT_EQ(&dict[key1], &dict.at(key1));
+  EXPECT_EQ(&dict[key1], &dict[1]);
+  EXPECT_EQ(&dict[key1], &dict.at(1));
+
+  // at(StringPiece) and indexed accessors have const overloads.
+  const Dictionary& dict_ref = dict;
+  EXPECT_EQ(&member1, &dict_ref.at(key1));
+  EXPECT_EQ(&member1, &dict_ref[1]);
+  EXPECT_EQ(&member1, &dict_ref.at(1));
+}
+
 TEST(StructuredHeaderTest, UnserializableDictionary) {
   static const struct UnserializableDictionary {
     const char* name;

@@ -148,6 +148,10 @@ void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
   test_api_->SetPreferVoice(prefer_voice);
 }
 
+void AssistantAshTestBase::StartOverview() {
+  test_api_->StartOverview();
+}
+
 bool AssistantAshTestBase::IsVisible() {
   return test_api_->IsVisible();
 }

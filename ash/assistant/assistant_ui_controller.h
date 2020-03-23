@@ -15,6 +15,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/highlighter/highlighter_controller.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 
@@ -34,7 +35,8 @@ class ASH_EXPORT AssistantUiController
     : public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
-      public HighlighterController::Observer {
+      public HighlighterController::Observer,
+      public OverviewObserver {
  public:
   explicit AssistantUiController(AssistantController* assistant_controller);
   ~AssistantUiController() override;
@@ -70,6 +72,9 @@ class ASH_EXPORT AssistantUiController
       AssistantVisibility old_visibility,
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
+
+  // OverviewObserver:
+  void OnOverviewModeWillStart() override;
 
   void ShowUi(AssistantEntryPoint entry_point);
   void CloseUi(AssistantExitPoint exit_point);

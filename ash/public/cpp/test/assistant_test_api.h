@@ -60,6 +60,8 @@ class ASH_EXPORT AssistantTestApi {
   // This will ensure the new value is propagated to the |AssistantState|.
   virtual void SetPreferVoice(bool value) = 0;
 
+  virtual void StartOverview() = 0;
+
   // Returns the interface to get/set Assistant related prefs and states.
   virtual AssistantState* GetAssistantState() = 0;
 

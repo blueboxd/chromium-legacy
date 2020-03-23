@@ -19,8 +19,6 @@ class WifiConfigurationSpecifics;
 
 namespace chromeos {
 
-class NetworkMetadataStore;
-
 namespace sync_wifi {
 
 class NetworkIdentifier;
@@ -50,10 +48,6 @@ class LocalNetworkCollector {
   // exist or isn't syncable it will provide base::nullopt to the callback.
   virtual void GetSyncableNetwork(const NetworkIdentifier& id,
                                   ProtoCallback callback) = 0;
-
-  // Provides the metadata store which gets constructed later.
-  virtual void SetNetworkMetadataStore(
-      NetworkMetadataStore* network_metadata_store) = 0;
 };
 
 }  // namespace sync_wifi

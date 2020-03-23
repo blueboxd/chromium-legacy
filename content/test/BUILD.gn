@@ -1528,6 +1528,9 @@ static_library("run_all_unittests") {
     ":test_support",
     "//base/test:test_support",
   ]
+  if (is_linux) {
+    deps += [ "//services/service_manager/embedder:set_process_title_linux" ]
+  }
 }
 
 test("content_unittests") {
@@ -2320,6 +2323,11 @@ test("content_unittests") {
 
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
+  }
+
+  if (is_linux) {
+    sources += [ "../../services/service_manager/embedder/set_process_title_linux_unittest.cc" ]
+    deps += [ "//services/service_manager/embedder:set_process_title_linux" ]
   }
 }
 

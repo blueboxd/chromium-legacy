@@ -36,8 +36,10 @@ dbus::ObjectPath GetServicePathForGuid(const std::string& guid) {
 }  // namespace
 
 LocalNetworkCollectorImpl::LocalNetworkCollectorImpl(
-    network_config::mojom::CrosNetworkConfig* cros_network_config)
-    : cros_network_config_(cros_network_config) {
+    network_config::mojom::CrosNetworkConfig* cros_network_config,
+    NetworkMetadataStore* network_metadata_store)
+    : cros_network_config_(cros_network_config),
+      network_metadata_store_(network_metadata_store) {
   cros_network_config_->AddObserver(
       cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
 
@@ -93,11 +95,6 @@ void LocalNetworkCollectorImpl::GetSyncableNetwork(const NetworkIdentifier& id,
   request_guid_to_single_callback_[request_guid] = std::move(callback);
 
   StartGetNetworkDetails(network, request_guid);
-}
-
-void LocalNetworkCollectorImpl::SetNetworkMetadataStore(
-    NetworkMetadataStore* network_metadata_store) {
-  network_metadata_store_ = network_metadata_store;
 }
 
 std::string LocalNetworkCollectorImpl::InitializeRequest() {

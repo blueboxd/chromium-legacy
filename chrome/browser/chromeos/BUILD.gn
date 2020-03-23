@@ -111,7 +111,6 @@ source_set("chromeos") {
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/components/smbfs",
     "//chromeos/components/smbfs/mojom",
-    "//chromeos/components/sync_wifi",
     "//chromeos/components/tether",
     "//chromeos/constants",
     "//chromeos/cryptohome",

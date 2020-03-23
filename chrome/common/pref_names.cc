@@ -2265,6 +2265,8 @@ const char kAutoScreenBrightnessMetricsEveUserAdjustmentCount[] =
     "auto_screen_brightness.metrics.eve_user_adjustment_count";
 const char kAutoScreenBrightnessMetricsNocturneUserAdjustmentCount[] =
     "auto_screen_brightness.metrics.nocturne_user_adjustment_count";
+const char kAutoScreenBrightnessMetricsKohakuUserAdjustmentCount[] =
+    "auto_screen_brightness.metrics.kohaku_user_adjustment_count";
 const char kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount[] =
     "auto_screen_brightness.metrics.no_als_user_adjustment_count";
 const char kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount[] =

@@ -72,6 +72,8 @@ class AssistantAshTestBase : public AshTestBase {
   // keyboard.
   void SetPreferVoice(bool value);
 
+  void StartOverview();
+
   // Return true if the Assistant UI is visible.
   bool IsVisible();
 

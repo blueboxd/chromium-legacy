@@ -16,6 +16,7 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/chrome_pwa_launcher/chrome_pwa_launcher_util.h"

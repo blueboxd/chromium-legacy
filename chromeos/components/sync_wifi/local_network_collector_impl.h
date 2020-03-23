@@ -38,8 +38,9 @@ class LocalNetworkCollectorImpl
   // LocalNetworkCollector:
 
   // |cros_network_config| and |network_metadata_store| must outlive this class.
-  explicit LocalNetworkCollectorImpl(
-      network_config::mojom::CrosNetworkConfig* cros_network_config);
+  LocalNetworkCollectorImpl(
+      network_config::mojom::CrosNetworkConfig* cros_network_config,
+      NetworkMetadataStore* network_metadata_store);
   ~LocalNetworkCollectorImpl() override;
 
   // Can only execute one request at a time.
@@ -48,9 +49,6 @@ class LocalNetworkCollectorImpl
   // Can be called on multiple networks simultaneously.
   void GetSyncableNetwork(const NetworkIdentifier& id,
                           ProtoCallback callback) override;
-
-  void SetNetworkMetadataStore(
-      NetworkMetadataStore* network_metadata_store) override;
 
   // CrosNetworkConfigObserver:
   void OnNetworkStateListChanged() override;

@@ -95,7 +95,7 @@
           "enablePrediction": { "type": "boolean", "optional": true, "description": "Whether to enable word prediction."},
           "enableSoundOnKeypress": { "type": "boolean", "optional": true, "description": "Whether to enable sound on keypress."},
           "koreanEnableSyllableInput": { "type": "boolean", "optional": true, "description": "Whether input one syllable at a time in korean input method."},
-          "koreanKeyboardLayout": { "type": "string", "optional": true, "description": "The layout for korean keyboard."},
+          "koreanKeyboardLayout": { "type": "string", "optional": true, "description": "The layout of korean keyboard."},
           "koreanShowHangulCandidate": { "type": "boolean", "optional": true, "description": "Whether to show hangul candidates in korean input method."},
           "pinyinChinesePunctuation": { "type": "boolean", "optional": true, "description": "Whether to use Chinese punctuations in pinyin."},
           "pinyinDefaultChinese": {
@@ -127,7 +127,7 @@
             }
           },
           "xkbLayout": { "type": "string", "optional": true, "description": "The xkb keyboard (system provided keyboard) layout."},
-          "zhuyinLayout": { "type": "string", "optional": true, "description": "The layout of zhuyin keyboard."},
+          "zhuyinKeyboardLayout": { "type": "string", "optional": true, "description": "The layout of zhuyin keyboard."},
           "zhuyinPageSize": { "type": "integer", "optional": true, "description": "The page size of zhuyin candidate page."},
           "zhuyinSelectionKeys": { "type": "string", "optional": true, "description": "The keys used to select candidates in zhuyin."}
         }

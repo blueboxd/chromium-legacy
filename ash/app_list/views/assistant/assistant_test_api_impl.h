@@ -34,6 +34,7 @@ class AssistantTestApiImpl : public AssistantTestApi {
   void SetTabletMode(bool enable) override;
   void SetConsentStatus(chromeos::assistant::prefs::ConsentStatus) override;
   void SetPreferVoice(bool value) override;
+  void StartOverview() override;
   AssistantState* GetAssistantState() override;
   void WaitUntilIdle() override;
   views::View* page_view() override;

@@ -629,4 +629,12 @@ TEST_F(AssistantPageViewTabletModeTest,
   EXPECT_FALSE(text_field_observer.was_drawn());
 }
 
+TEST_F(AssistantPageViewTabletModeTest, ShouldCloseAssistantUIInOverviewMode) {
+  ShowAssistantUi(AssistantEntryPoint::kLongPressLauncher);
+  EXPECT_TRUE(IsVisible());
+
+  StartOverview();
+  EXPECT_FALSE(IsVisible());
+}
+
 }  // namespace ash

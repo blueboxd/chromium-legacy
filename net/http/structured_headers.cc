@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 
@@ -828,19 +829,46 @@ std::vector<DictionaryMember>::const_iterator Dictionary::end() const {
 ParameterizedMember& Dictionary::operator[](std::size_t idx) {
   return members_[idx].second;
 }
+const ParameterizedMember& Dictionary::operator[](std::size_t idx) const {
+  return members_[idx].second;
+}
+ParameterizedMember& Dictionary::at(std::size_t idx) {
+  return (*this)[idx];
+}
+const ParameterizedMember& Dictionary::at(std::size_t idx) const {
+  return (*this)[idx];
+}
 ParameterizedMember& Dictionary::operator[](base::StringPiece key) {
-  for (auto& member : members_) {
-    if (member.first == key)
-      return member.second;
-  }
+  auto it =
+      std::find_if(members_.begin(), members_.end(),
+                   [key](const auto& member) { return member.first == key; });
+  if (it != members_.end())
+    return it->second;
   return (*(members_.insert(members_.end(), make_pair(std::string(key),
                                                       ParameterizedMember()))))
       .second;
 }
-std::size_t Dictionary::size() {
+ParameterizedMember& Dictionary::at(base::StringPiece key) {
+  auto it =
+      std::find_if(members_.begin(), members_.end(),
+                   [key](const auto& member) { return member.first == key; });
+  DCHECK(it != members_.end()) << "Provided key not found in dictionary";
+  return it->second;
+}
+const ParameterizedMember& Dictionary::at(base::StringPiece key) const {
+  auto it =
+      std::find_if(members_.begin(), members_.end(),
+                   [key](const auto& member) { return member.first == key; });
+  DCHECK(it != members_.end()) << "Provided key not found in dictionary";
+  return it->second;
+}
+bool Dictionary::empty() const {
+  return members_.empty();
+}
+std::size_t Dictionary::size() const {
   return members_.size();
 }
-bool Dictionary::contains(base::StringPiece key) {
+bool Dictionary::contains(base::StringPiece key) const {
   for (auto& member : members_) {
     if (member.first == key)
       return true;

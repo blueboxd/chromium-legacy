@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '39af23ead96c21ba3a26e85c230c14fd09be1736',
+  'catapult_revision': 'bf306f5ba55687f1db76a4dc39c142a8d9cc2ed4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@670860a21d198c04de19323c31ee1db9bfdba584',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b49ee2484237e1263b087d5aa7d536d726ec87ab',
     'condition': 'checkout_src_internal',
   },
 

@@ -623,10 +623,6 @@ class AccessibilityWinBrowserTest::AccessibleChecker {
                     int32_t expected_role,
                     int32_t expected_ia2_role,
                     const std::wstring& expected_value);
-  AccessibleChecker(const std::wstring& expected_name,
-                    const std::wstring& expected_role,
-                    int32_t expected_ia2_role,
-                    const std::wstring& expected_value);
 
   // Append an AccessibleChecker that verifies accessibility information for
   // a child IAccessible. Order is important.
@@ -652,13 +648,12 @@ class AccessibilityWinBrowserTest::AccessibleChecker {
   void CheckAccessibleValue(IAccessible* accessible);
   void CheckAccessibleState(IAccessible* accessible);
   void CheckAccessibleChildren(IAccessible* accessible);
-  base::string16 RoleVariantToString(const base::win::ScopedVariant& role);
 
   // Expected accessible name. Checked against IAccessible::get_accName.
   std::wstring name_;
 
   // Expected accessible role. Checked against IAccessible::get_accRole.
-  base::win::ScopedVariant role_;
+  int32_t role_;
 
   // Expected IAccessible2 role. Checked against IAccessible2::role.
   int32_t ia2_role_;
@@ -695,16 +690,6 @@ AccessibilityWinBrowserTest::AccessibleChecker::AccessibleChecker(
       value_(expected_value),
       state_(-1) {}
 
-AccessibilityWinBrowserTest::AccessibleChecker::AccessibleChecker(
-    const std::wstring& expected_name,
-    const std::wstring& expected_role,
-    int32_t expected_ia2_role,
-    const std::wstring& expected_value)
-    : name_(expected_name),
-      role_(expected_role.c_str()),
-      ia2_role_(expected_ia2_role),
-      value_(expected_value),
-      state_(-1) {}
 
 void AccessibilityWinBrowserTest::AccessibleChecker::AppendExpectedChild(
     AccessibleChecker* expected_child) {
@@ -714,7 +699,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::AppendExpectedChild(
 void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessible(
     IAccessible* accessible) {
   SCOPED_TRACE("While checking " +
-               base::UTF16ToUTF8(RoleVariantToString(role_)));
+               base::UTF16ToUTF8(IAccessibleRoleToString(role_)));
   CheckAccessibleName(accessible);
   CheckAccessibleRole(accessible);
   CheckIA2Role(accessible);
@@ -755,9 +740,11 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleRole(
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   HRESULT hr = accessible->get_accRole(childid_self, role.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(0, role_.Compare(role))
-      << "Expected role: " << RoleVariantToString(role_)
-      << "\nGot role: " << RoleVariantToString(role);
+
+  ASSERT_EQ(VT_I4, role.type());
+  ASSERT_EQ(role_, V_I4(role.ptr()))
+      << "Expected role: " << IAccessibleRoleToString(role_)
+      << "\nGot role: " << IAccessibleRoleToString(V_I4(role.ptr()));
 }
 
 void AccessibilityWinBrowserTest::AccessibleChecker::CheckIA2Role(
@@ -831,16 +818,6 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleChildren(
     ASSERT_TRUE(child_accessible.Get());
     (*child_checker)->CheckAccessible(child_accessible.Get());
   }
-}
-
-base::string16
-AccessibilityWinBrowserTest::AccessibleChecker::RoleVariantToString(
-    const base::win::ScopedVariant& role) {
-  if (role.type() == VT_I4)
-    return IAccessibleRoleToString(V_I4(role.ptr()));
-  if (role.type() == VT_BSTR)
-    return base::string16(V_BSTR(role.ptr()), SysStringLen(V_BSTR(role.ptr())));
-  return base::string16();
 }
 
 // Helper class that listens to native Windows events using
@@ -937,7 +914,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that the page has indeed loaded.
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  AccessibleChecker paragraph_checker(L"", L"P", IA2_ROLE_PARAGRAPH, L"");
+  AccessibleChecker paragraph_checker(L"", ROLE_SYSTEM_GROUPING,
+                                      IA2_ROLE_PARAGRAPH, L"");
   document_checker.AppendExpectedChild(&paragraph_checker);
   AccessibleChecker text_checker(L"Hello world.", ROLE_SYSTEM_STATICTEXT, L"");
   paragraph_checker.AppendExpectedChild(&text_checker);
@@ -1017,8 +995,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker checkbox_checker(std::wstring(), ROLE_SYSTEM_CHECKBUTTON,
                                      std::wstring());
   checkbox_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
-  AccessibleChecker body_checker(std::wstring(), L"BODY", IA2_ROLE_SECTION,
-                                 std::wstring());
+  AccessibleChecker body_checker(std::wstring(), ROLE_SYSTEM_GROUPING,
+                                 IA2_ROLE_SECTION, std::wstring());
   AccessibleChecker document_checker(std::wstring(), ROLE_SYSTEM_DOCUMENT,
                                      std::wstring());
   body_checker.AppendExpectedChild(&checkbox_checker);
@@ -1305,8 +1283,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker text_field_checker(std::wstring(), ROLE_SYSTEM_TEXT,
                                        L"old value");
   text_field_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
-  AccessibleChecker body_checker(std::wstring(), L"BODY", IA2_ROLE_SECTION,
-                                 std::wstring());
+  AccessibleChecker body_checker(std::wstring(), ROLE_SYSTEM_GROUPING,
+                                 IA2_ROLE_SECTION, std::wstring());
   AccessibleChecker document_checker(std::wstring(), ROLE_SYSTEM_DOCUMENT,
                                      std::wstring());
   body_checker.AppendExpectedChild(&text_field_checker);

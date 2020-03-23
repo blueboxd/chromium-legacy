@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -51,9 +52,11 @@ AssistantUiController::AssistantUiController(
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
 }
 
 AssistantUiController::~AssistantUiController() {
+  Shell::Get()->overview_controller()->RemoveObserver(this);
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
   assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
@@ -156,6 +159,11 @@ void AssistantUiController::OnUiVisibilityChanged(
     // avoid recording duplicate events (e.g. pressing ESC key).
     assistant::util::RecordAssistantExitPoint(exit_point.value());
   }
+}
+
+void AssistantUiController::OnOverviewModeWillStart() {
+  // Close Assistant UI before entering overview mode.
+  CloseUi(AssistantExitPoint::kOverviewMode);
 }
 
 void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {

@@ -351,7 +351,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   CONTENT_EXPORT void ComputeStylesIfNeeded();
 
   // Public accessors (these do not have COM accessible accessors)
-  const base::string16& role_name() const { return win_attributes_->role_name; }
   const ui::TextAttributeMap& offset_to_text_attributes() const {
     return win_attributes_->offset_to_text_attributes;
   }
@@ -434,7 +433,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
     // IAccessible role and state.
     int32_t ia_role;
     int32_t ia_state;
-    base::string16 role_name;
 
     // IAccessible name, description, help, value.
     base::string16 name;

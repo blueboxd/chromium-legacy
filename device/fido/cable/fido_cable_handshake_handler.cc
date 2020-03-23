@@ -187,13 +187,11 @@ FidoCableV2HandshakeHandler::FidoCableV2HandshakeHandler(
     base::span<const uint8_t, 8> nonce,
     base::span<const uint8_t, kCableEphemeralIdSize> eid,
     base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity,
-    base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
-        local_seed,
     base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
         pairing_callback)
     : cable_device_(cable_device),
       pairing_callback_(std::move(pairing_callback)),
-      handshake_(psk_gen_key, nonce, eid, peer_identity, local_seed) {}
+      handshake_(psk_gen_key, nonce, eid, peer_identity) {}
 
 FidoCableV2HandshakeHandler::~FidoCableV2HandshakeHandler() = default;
 

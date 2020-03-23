@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_actions_handler.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_search_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_new_tab_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
@@ -169,9 +169,8 @@
 }
 
 - (ToolbarButton*)openNewTabButton {
-  UIImage* buttonImage = [UIImage imageNamed:@"toolbar_new_tab_page"];
-  ToolbarSearchButton* newTabButton =
-      [ToolbarSearchButton toolbarButtonWithImage:buttonImage];
+  ToolbarNewTabButton* newTabButton = [ToolbarNewTabButton
+      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_new_tab_page"]];
 
   [newTabButton addTarget:self.actionHandler
                    action:@selector(searchAction:)

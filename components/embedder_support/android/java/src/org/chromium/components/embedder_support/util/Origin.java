@@ -25,7 +25,8 @@ public class Origin {
 
     private final Uri mOrigin;
 
-    private Origin(Uri origin) {
+    // TODO(crbug.com/1058597): Make this private once it stops needing to be subclassed for Clank.
+    protected Origin(Uri origin) {
         mOrigin = origin;
     }
 

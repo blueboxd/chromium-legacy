@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/common/css/page_size_type.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
@@ -266,8 +267,8 @@ class WebLocalFrame : public WebFrame {
 
   // CSS3 Paged Media ----------------------------------------------------
 
-  // Returns true if the page style has custom size information.
-  virtual bool HasCustomPageSizeStyle(int page_index) = 0;
+  // Returns the type of @page size styling for the given page.
+  virtual PageSizeType GetPageSizeType(int page_index) = 0;
 
   // Returns the preferred page size and margins in pixels, assuming 96
   // pixels per inch. pageSize, marginTop, marginRight, marginBottom,

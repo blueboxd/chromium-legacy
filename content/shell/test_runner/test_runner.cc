@@ -286,7 +286,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
       const std::string& script);
   bool FindString(const std::string& search_text,
                   const std::vector<std::string>& options_array);
-  bool HasCustomPageSizeStyle(int page_index);
   bool IsChooserShown();
 
   bool IsCommandEnabled(const std::string& command);
@@ -469,8 +468,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("getManifestThen", &TestRunnerBindings::GetManifestThen)
       .SetMethod("getWritableDirectory",
                  &TestRunnerBindings::GetWritableDirectory)
-      .SetMethod("hasCustomPageSizeStyle",
-                 &TestRunnerBindings::HasCustomPageSizeStyle)
       .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
       .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
       .SetMethod("isCommandEnabled", &TestRunnerBindings::IsCommandEnabled)
@@ -841,12 +838,6 @@ void TestRunnerBindings::AddOriginAccessAllowListEntry(
                                            destination_host,
                                            allow_destination_subdomains);
   }
-}
-
-bool TestRunnerBindings::HasCustomPageSizeStyle(int page_index) {
-  if (view_runner_)
-    return view_runner_->HasCustomPageSizeStyle(page_index);
-  return false;
 }
 
 void TestRunnerBindings::ForceRedSelectionColors() {

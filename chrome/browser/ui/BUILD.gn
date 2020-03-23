@@ -3650,8 +3650,6 @@ jumbo_static_library("ui") {
       "views/apps/glass_app_window_frame_view_win.h",
       "views/apps/shaped_app_window_targeter.cc",
       "views/apps/shaped_app_window_targeter.h",
-      "views/color_chooser_aura.cc",
-      "views/color_chooser_aura.h",
       "views/dropdown_bar_host_aura.cc",
       "views/frame/browser_non_client_frame_view_factory_chromeos.cc",
       "views/ime/ime_window_frame_view.cc",
@@ -3676,6 +3674,13 @@ jumbo_static_library("ui") {
         "views/frame/browser_non_client_frame_view_factory_views.cc",
         "views/frame/desktop_browser_frame_aura.cc",
         "views/frame/desktop_browser_frame_aura.h",
+      ]
+    }
+
+    if (!is_win) {
+      sources += [
+        "views/color_chooser_aura.cc",
+        "views/color_chooser_aura.h",
       ]
     }
   }

@@ -136,7 +136,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                          bool had_redirect,
                          const WebSourceLocation&) override;
   void SendOrientationChangeEvent() override;
-  bool HasCustomPageSizeStyle(int page_index) override;
+  PageSizeType GetPageSizeType(int page_index) override;
   void PageSizeAndMarginsInPixels(int page_index,
                                   WebDoubleSize& page_size,
                                   int& margin_top,

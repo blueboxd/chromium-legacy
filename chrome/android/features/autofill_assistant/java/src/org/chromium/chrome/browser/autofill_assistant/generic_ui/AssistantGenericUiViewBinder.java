@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -31,6 +32,9 @@ class AssistantGenericUiViewBinder
             view.mViewContainer.removeAllViews();
             if (model.get(AssistantGenericUiModel.VIEW) != null) {
                 view.mViewContainer.addView(model.get(AssistantGenericUiModel.VIEW));
+                view.mViewContainer.setVisibility(View.VISIBLE);
+            } else {
+                view.mViewContainer.setVisibility(View.GONE);
             }
         } else {
             assert false : "Unhandled property detected in AssistantGenericUiViewBinder!";

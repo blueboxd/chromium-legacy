@@ -98,6 +98,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
+#include "third_party/blink/renderer/core/css/css_page_rule.h"
 #include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/viewport_style_resolver.h"
@@ -13022,6 +13023,52 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(111, WebView().MainFrameImpl()->GetScrollOffset().height);
   EXPECT_EQ(0, WebView().VisualViewportOffset().x());
   EXPECT_EQ(0, WebView().VisualViewportOffset().y());
+}
+
+TEST_F(WebFrameSimTest, GetPageSizeType) {
+  WebView().MainFrameWidget()->Resize(WebSize(500, 500));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @page {}
+      </style>
+  )HTML");
+
+  Compositor().BeginFrame();
+  RunPendingTasks();
+
+  const struct {
+    const char* size;
+    PageSizeType page_size_type;
+  } test_cases[] = {
+      {"auto", PageSizeType::kAuto},
+      {"portrait", PageSizeType::kPortrait},
+      {"landscape", PageSizeType::kLandscape},
+      {"a4", PageSizeType::kFixed},
+      {"letter", PageSizeType::kFixed},
+      {"a4 portrait", PageSizeType::kFixed},
+      {"letter landscape", PageSizeType::kFixed},
+      {"10in", PageSizeType::kFixed},
+      {"10in 12cm", PageSizeType::kFixed},
+  };
+
+  auto* main_frame = WebView().MainFrame()->ToWebLocalFrame();
+  auto* doc = To<LocalFrame>(WebView().GetPage()->MainFrame())->GetDocument();
+  auto* sheet = To<CSSStyleSheet>(doc->StyleSheets().item(0));
+  CSSStyleDeclaration* style_decl =
+      To<CSSPageRule>(sheet->cssRules(ASSERT_NO_EXCEPTION)->item(0))->style();
+
+  // Initially empty @page rule.
+  EXPECT_EQ(PageSizeType::kAuto, main_frame->GetPageSizeType(1));
+
+  for (const auto& test : test_cases) {
+    style_decl->setProperty(doc->ToExecutionContext(), "size", test.size, "",
+                            ASSERT_NO_EXCEPTION);
+    EXPECT_EQ(test.page_size_type, main_frame->GetPageSizeType(1));
+  }
 }
 
 TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {

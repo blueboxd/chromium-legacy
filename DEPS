@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'c23bd5e4e38dfb0dd7b9e955512f49468668c14e',
+  'skia_revision': 'f04f21a5c91357352a41b55a357666702064a5f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4481dd59c13fd01d0cbfd23918e1c0e4eedb6aee',
+  'v8_revision': 'd67bef80cceda62d4d872f7a738d18b6ad1b9a11',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -226,7 +226,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '6a431038c9113d906d66836cd7d216a5c630be7c',
+  'freetype_revision': '13c0df80dca59ce2ef3ec125b08c5b6ea485535c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -441,7 +441,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/autofill/captured_sites',
-        'version': 'uAd9Mpqxn5IpI7OCybU4JKiyUqZLlo9sSOFvZRok3aAC',
+        'version': 'xJFOr7KZ-xyv-0JsdsJXfAB8KguCnExUFa-tJ7UJno8C',
       }
     ],
     'condition': 'checkout_chromium_autofill_test_dependencies',
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@57af8b538c0cab471c2b88909ab8cc3f86dc1e7a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b41fb280f77b4197ef26f67e54202d710d5799e1',
     'condition': 'checkout_src_internal',
   },
 

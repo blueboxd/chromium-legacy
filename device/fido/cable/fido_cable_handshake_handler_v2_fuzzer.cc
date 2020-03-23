@@ -36,11 +36,6 @@ constexpr std::array<uint8_t, 65> kTestPeerIdentity = {
     0x9c, 0xa5, 0x5c, 0x51, 0x2f, 0x9e, 0x4a, 0x00, 0x12, 0x66,
 };
 constexpr char kTestDeviceAddress[] = "Fake_Address";
-constexpr std::array<uint8_t, 32> kLocalSeed = {
-    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-};
 
 }  // namespace
 
@@ -60,7 +55,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
 
   device::FidoCableV2HandshakeHandler handshake_handler_v2(
       &test_cable_device, kTestPSKGeneratorKey, kTestNonce, kTestEphemeralID,
-      peer_identity, kLocalSeed, base::DoNothing());
+      peer_identity, base::DoNothing());
   handshake_handler_v2.InitiateCableHandshake(base::DoNothing());
   handshake_handler_v2.ValidateAuthenticatorHandshakeMessage(input);
   return 0;

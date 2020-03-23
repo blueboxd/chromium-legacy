@@ -177,7 +177,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 progressBarHeight * mDpToPx, progressBarOpacity, progressBarCompletion,
                 dividerLineVisibilityPercentage, dividerLineWidth, dividerLineHeight,
                 dividerLineColor, dividerLineXOffset, touchHighlightVisible, touchHighlightXOffset,
-                touchHighlightWidth, Profile.getLastUsedProfile(), roundedBarTopResourceId,
+                touchHighlightWidth, Profile.getLastUsedRegularProfile(), roundedBarTopResourceId,
                 separatorLineColor);
     }
 

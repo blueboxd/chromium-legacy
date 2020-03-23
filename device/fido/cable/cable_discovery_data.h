@@ -17,11 +17,6 @@ constexpr size_t kCableEphemeralIdSize = 16;
 constexpr size_t kCableSessionPreKeySize = 32;
 constexpr size_t kCableQRSecretSize = 16;
 constexpr size_t kCableNonceSize = 8;
-constexpr size_t kCableIdentityKeySeedSize = 32;
-constexpr size_t kCableCompressedPublicKeySize =
-    /* type byte */ 1 + /* field element */ (256 / 8);
-constexpr size_t kCableQRDataSize =
-    kCableCompressedPublicKeySize + kCableQRSecretSize;
 
 using CableEidArray = std::array<uint8_t, kCableEphemeralIdSize>;
 using CableSessionPreKeyArray = std::array<uint8_t, kCableSessionPreKeySize>;
@@ -40,8 +35,6 @@ using CablePskGeneratorKey = std::array<uint8_t, 32>;
 // CableAuthenticatorIdentityKey is a P-256 public value used to authenticate a
 // paired phone.
 using CableAuthenticatorIdentityKey = std::array<uint8_t, 65>;
-using CableIdentityKeySeed = std::array<uint8_t, kCableIdentityKeySeedSize>;
-using CableQRData = std::array<uint8_t, kCableQRDataSize>;
 
 // Encapsulates information required to discover Cable device per single
 // credential. When multiple credentials are enrolled to a single account
@@ -61,24 +54,13 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
                      const CableEidArray& client_eid,
                      const CableEidArray& authenticator_eid,
                      const CableSessionPreKeyArray& session_pre_key);
-  // Creates discovery data given a specific QR secret and identity key seed.
-  // This will be used on the QR-displaying-side of a QR handshake. See
-  // |DeriveQRSecret| and |DeriveIdentityKeySeed| for how to generate such
-  // secrets.
-  CableDiscoveryData(
-      base::span<const uint8_t, kCableQRSecretSize> qr_secret,
-      base::span<const uint8_t, kCableIdentityKeySeedSize> identity_key_seed);
+  // Creates discovery data given a specific QR secret. See |DeriveQRSecret| for
+  // how to generate such secrets.
+  explicit CableDiscoveryData(
+      base::span<const uint8_t, kCableQRSecretSize> qr_secret);
   CableDiscoveryData();
   CableDiscoveryData(const CableDiscoveryData& data);
   ~CableDiscoveryData();
-
-  // Creates discovery data given QR data, which contains a compressed public
-  // key and the QR secret. This will be used by the QR-scanning-side of a QR
-  // handshake. Returns |nullopt| if the embedded elliptic-curve point is
-  // invalid.
-  static base::Optional<CableDiscoveryData> FromQRData(
-      base::span<const uint8_t,
-                 kCableCompressedPublicKeySize + kCableQRSecretSize> qr_data);
 
   CableDiscoveryData& operator=(const CableDiscoveryData& other);
   bool operator==(const CableDiscoveryData& other) const;
@@ -97,19 +79,6 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
   // DeriveQRKeyMaterial returns a QR-secret given a generating key and a
   // timestamp.
   static std::array<uint8_t, kCableQRSecretSize> DeriveQRSecret(
-      base::span<const uint8_t, 32> qr_generator_key,
-      const int64_t tick);
-
-  // DeriveIdentityKeySeed returns a seed that can be used to create a P-256
-  // identity key for a handshake using |EC_KEY_derive_from_secret|.
-  static CableIdentityKeySeed DeriveIdentityKeySeed(
-      base::span<const uint8_t, 32> qr_generator_key,
-      const int64_t tick);
-
-  // DeriveQRData returns the QR data, a combination of QR secret and public
-  // identity key. This is base64url-encoded and placed in a caBLE v2 QR code
-  // with a prefix prepended.
-  static CableQRData DeriveQRData(
       base::span<const uint8_t, 32> qr_generator_key,
       const int64_t tick);
 
@@ -133,7 +102,6 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
     CableEidGeneratorKey eid_gen_key;
     CablePskGeneratorKey psk_gen_key;
     base::Optional<CableAuthenticatorIdentityKey> peer_identity;
-    base::Optional<CableIdentityKeySeed> local_identity_seed;
     // peer_name is an authenticator-controlled, UTF8-valid string containing
     // the self-reported, human-friendly name of a v2 authenticator. This need
     // not be filled in when handshaking but an authenticator may provide it
@@ -141,10 +109,6 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
     base::Optional<std::string> peer_name;
   };
   base::Optional<V2Data> v2;
-
- private:
-  void InitFromQRSecret(
-      base::span<const uint8_t, kCableQRSecretSize> qr_secret);
 };
 
 }  // namespace device

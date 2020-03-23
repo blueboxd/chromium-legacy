@@ -5642,7 +5642,7 @@ void Size::ApplyInherit(StyleResolverState& state) const {}
 void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   state.Style()->ResetPageSizeType();
   FloatSize size;
-  EPageSizeType page_size_type = EPageSizeType::kAuto;
+  PageSizeType page_size_type = PageSizeType::kAuto;
   const auto& list = To<CSSValueList>(value);
   if (list.length() == 2) {
     // <length>{2} | <page-size> <orientation>
@@ -5667,7 +5667,7 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
       if (To<CSSIdentifierValue>(second).GetValueID() == CSSValueID::kLandscape)
         size = size.TransposedSize();
     }
-    page_size_type = EPageSizeType::kResolved;
+    page_size_type = PageSizeType::kFixed;
   } else {
     DCHECK_EQ(list.length(), 1U);
     // <length> | auto | <page-size> | [ portrait | landscape]
@@ -5675,7 +5675,7 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     auto* first_primitive_value = DynamicTo<CSSPrimitiveValue>(first);
     if (first_primitive_value && first_primitive_value->IsLength()) {
       // <length>
-      page_size_type = EPageSizeType::kResolved;
+      page_size_type = PageSizeType::kFixed;
       float width = first_primitive_value->ComputeLength<float>(
           state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0));
       size = FloatSize(width, width);
@@ -5683,17 +5683,17 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
       const auto& ident = To<CSSIdentifierValue>(first);
       switch (ident.GetValueID()) {
         case CSSValueID::kAuto:
-          page_size_type = EPageSizeType::kAuto;
+          page_size_type = PageSizeType::kAuto;
           break;
         case CSSValueID::kPortrait:
-          page_size_type = EPageSizeType::kPortrait;
+          page_size_type = PageSizeType::kPortrait;
           break;
         case CSSValueID::kLandscape:
-          page_size_type = EPageSizeType::kLandscape;
+          page_size_type = PageSizeType::kLandscape;
           break;
         default:
           // <page-size>
-          page_size_type = EPageSizeType::kResolved;
+          page_size_type = PageSizeType::kFixed;
           size = GetPageSizeFromName(ident);
       }
     }

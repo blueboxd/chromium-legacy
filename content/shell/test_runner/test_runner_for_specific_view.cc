@@ -481,15 +481,6 @@ bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {
       blink::WebString::FromUTF8(command));
 }
 
-bool TestRunnerForSpecificView::HasCustomPageSizeStyle(int page_index) {
-  // TODO(dcheng): This class has many implicit assumptions that the frames it
-  // operates on are always local.
-  blink::WebFrame* frame = web_view()->MainFrame();
-  if (!frame || frame->IsWebRemoteFrame())
-    return false;
-  return frame->ToWebLocalFrame()->HasCustomPageSizeStyle(page_index);
-}
-
 void TestRunnerForSpecificView::ForceRedSelectionColors() {
   blink::SetSelectionColors(0xffee0000, 0xff00ee00, 0xff000000, 0xffc0c0c0);
 }

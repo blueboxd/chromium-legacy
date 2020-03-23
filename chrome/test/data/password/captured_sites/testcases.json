@@ -52,7 +52,7 @@
     { "scenario_dir":"sign_in_pass", "site_name":"nitro_type" },
     { "scenario_dir":"sign_in_pass", "site_name":"ok_ru" },
     { "scenario_dir":"sign_in_pass", "site_name":"paypal" },
-    { "scenario_dir":"sign_in_pass", "site_name":"pinterest" },
+    { "scenario_dir":"sign_in_pass", "site_name":"pinterest", "disabled":true, "bug_number":1061553 },
     { "scenario_dir":"sign_in_pass", "site_name":"quia" },
     { "scenario_dir":"sign_in_pass", "site_name":"quizlet" },
     { "scenario_dir":"sign_in_pass", "site_name":"rakuten" },

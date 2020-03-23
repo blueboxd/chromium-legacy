@@ -1608,9 +1608,8 @@ bool WebLocalFrameImpl::CapturePaintPreview(const WebRect& bounds,
   return success;
 }
 
-bool WebLocalFrameImpl::HasCustomPageSizeStyle(int page_index) {
-  return GetFrame()->GetDocument()->StyleForPage(page_index)->PageSizeType() !=
-         EPageSizeType::kAuto;
+PageSizeType WebLocalFrameImpl::GetPageSizeType(int page_index) {
+  return GetFrame()->GetDocument()->StyleForPage(page_index)->GetPageSizeType();
 }
 
 void WebLocalFrameImpl::PageSizeAndMarginsInPixels(int page_index,

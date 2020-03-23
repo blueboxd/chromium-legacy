@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_search_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_new_tab_button.h"
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
@@ -17,10 +17,10 @@ namespace {
 const CGFloat kSpotlightHeight = 36.0f;
 }  // namespace
 
-@implementation ToolbarSearchButton
+@implementation ToolbarNewTabButton
 
 + (instancetype)toolbarButtonWithImage:(UIImage*)image {
-  ToolbarSearchButton* button = [super toolbarButtonWithImage:image];
+  ToolbarNewTabButton* button = [super toolbarButtonWithImage:image];
   return button;
 }
 

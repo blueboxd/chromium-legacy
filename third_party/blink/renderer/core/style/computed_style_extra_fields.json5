@@ -657,10 +657,12 @@
     },
     {
       name: "PageSizeType",
-      field_template: "keyword",
-      keywords: ["auto", "landscape", "portrait", "resolved"],
+      field_template: "primitive",
       field_group: "*",
-      default_value: "auto",
+      type_name: "PageSizeType",
+      field_size: 2,
+      default_value: "PageSizeType::kAuto",
+      include_paths: ["third_party/blink/public/common/css/page_size_type.h"],
     },
     {
       name: "HasCurrentOpacityAnimation",

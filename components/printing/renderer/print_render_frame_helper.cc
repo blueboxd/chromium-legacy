@@ -379,7 +379,9 @@ bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,
     return false;
   bool frame_has_custom_page_size_style = false;
   for (int i = 0; i < total_page_count; ++i) {
-    if (frame->HasCustomPageSizeStyle(i)) {
+    if (frame->GetPageSizeType(i) != blink::PageSizeType::kAuto) {
+      // TODO(crbug.com/1016235): We should propagate the page size type all the
+      // way to the UI. See the crbug issue for details.
       frame_has_custom_page_size_style = true;
       break;
     }

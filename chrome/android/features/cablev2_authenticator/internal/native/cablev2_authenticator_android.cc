@@ -175,8 +175,6 @@ struct AuthenticatorState {
   base::Optional<device::cablev2::NonceAndEID> qr_advert;
   // qr_psk_gen_key contains the PSK generating key derived from the QR secret.
   base::Optional<device::CablePskGeneratorKey> qr_psk_gen_key;
-  // peer_identity is the public-key of the desktop from the scanned QR code.
-  base::Optional<bssl::UniquePtr<EC_POINT>> qr_peer_identity;
 };
 
 // Client represents the state of a single BLE peer.
@@ -275,16 +273,15 @@ class Client {
           handshake_result = device::cablev2::RespondToHandshake(
               auth_state_->pairing_data.v2->psk_gen_key,
               auth_state_->pairing_advert, auth_state_->identity_key.get(),
-              /*peer_identity=*/nullptr, /*pairing_data=*/nullptr,
-              message->second, &response);
+              /*pairing_data=*/nullptr, message->second, &response);
         } else if (auth_state_->qr_advert.has_value() &&
                    requested_eid == auth_state_->qr_advert->second) {
           // TODO: QR handshakes currently always send pairing data, but it's
           // optional in the protocol.
           handshake_result = device::cablev2::RespondToHandshake(
               *auth_state_->qr_psk_gen_key, *auth_state_->qr_advert,
-              /*identity=*/nullptr, auth_state_->qr_peer_identity->get(),
-              &auth_state_->pairing_data, message->second, &response);
+              /*identity=*/nullptr, &auth_state_->pairing_data, message->second,
+              &response);
         } else {
           FIDO_LOG(ERROR) << "Peer is connecting to unknown EID "
                           << base::HexEncode(requested_eid);
@@ -490,36 +487,21 @@ class CableInterface : public Client::Delegate {
 
     base::StringPiece qr_url_base64(qr_url);
     qr_url_base64 = qr_url_base64.substr(sizeof(kPrefix) - 1);
-    std::string qr_data_str;
+    std::string qr_secret_str;
     if (!base::Base64UrlDecode(qr_url_base64,
                                base::Base64UrlDecodePolicy::DISALLOW_PADDING,
-                               &qr_data_str) ||
-        qr_data_str.size() != device::kCableQRDataSize) {
+                               &qr_secret_str) ||
+        qr_secret_str.size() != device::kCableQRSecretSize) {
       FIDO_LOG(ERROR) << "QR decoding failed: " << qr_url;
       return;
     }
 
-    const base::Optional<device::CableDiscoveryData> discovery_data =
-        device::CableDiscoveryData::FromQRData(
-            base::span<const uint8_t, device::kCableQRDataSize>(
-                reinterpret_cast<const uint8_t*>(qr_data_str.data()),
-                qr_data_str.size()));
-    if (!discovery_data) {
-      FIDO_LOG(ERROR) << "Failed to decode QR data from: " << qr_url;
-      return;
-    }
+    uint8_t qr_secret[device::kCableQRSecretSize];
+    memcpy(qr_secret, qr_secret_str.data(), sizeof(qr_secret));
+    const device::CableDiscoveryData discovery_data(qr_secret);
+    auth_state_.qr_psk_gen_key.emplace(discovery_data.v2->psk_gen_key);
 
-    auth_state_.qr_psk_gen_key.emplace(discovery_data->v2->psk_gen_key);
-
-    bssl::UniquePtr<EC_GROUP> p256(
-        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
-    auth_state_.qr_peer_identity.emplace(EC_POINT_new(p256.get()));
-    CHECK(EC_POINT_oct2point(p256.get(), auth_state_.qr_peer_identity->get(),
-                             discovery_data->v2->peer_identity->data(),
-                             discovery_data->v2->peer_identity->size(),
-                             /*ctx=*/nullptr));
-
-    StartAdvertising(discovery_data->v2->eid_gen_key,
+    StartAdvertising(discovery_data.v2->eid_gen_key,
                      &auth_state_.qr_advert.emplace());
   }
 

@@ -58,7 +58,6 @@ ColorChooserAura* ColorChooserAura::Open(
   return new ColorChooserAura(web_contents, initial_color);
 }
 
-#if !defined(OS_WIN)
 namespace chrome {
 
 content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
@@ -67,4 +66,3 @@ content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
 }
 
 }  // namespace chrome
-#endif  // OS_WIN

@@ -164,6 +164,18 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   Feature& autoclick() const;
   Feature& caret_highlight() const;
   Feature& cursor_highlight() const;
+  FeatureWithDialog& dictation() const;
+  Feature& focus_highlight() const;
+  FeatureWithDialog& fullscreen_magnifier() const;
+  FeatureWithDialog& docked_magnifier() const;
+  FeatureWithDialog& high_contrast() const;
+  Feature& large_cursor() const;
+  Feature& mono_audio() const;
+  Feature& spoken_feedback() const;
+  Feature& select_to_speak() const;
+  Feature& sticky_keys() const;
+  Feature& switch_access() const;
+  Feature& virtual_keyboard() const;
 
   // The following functions read and write to their associated preference.
   // These values are then used to determine whether the accelerator
@@ -206,12 +218,12 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool IsEnterpriseIconVisibleForCursorHighlight();
 
   void SetDictationEnabled(bool enabled);
-  bool dictation_enabled() const { return dictation_enabled_; }
+  bool dictation_enabled() const { return dictation().enabled(); }
   bool IsDictationSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForDictation();
 
   void SetFocusHighlightEnabled(bool enabled);
-  bool focus_highlight_enabled() const { return focus_highlight_enabled_; }
+  bool focus_highlight_enabled() const { return focus_highlight().enabled(); }
   bool IsFocusHighlightSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForFocusHighlight();
 
@@ -226,28 +238,28 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool IsEnterpriseIconVisibleForDockedMagnifier();
 
   void SetHighContrastEnabled(bool enabled);
-  bool high_contrast_enabled() const { return high_contrast_enabled_; }
+  bool high_contrast_enabled() const { return high_contrast().enabled(); }
   bool IsHighContrastSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForHighContrast();
 
   void SetLargeCursorEnabled(bool enabled);
-  bool large_cursor_enabled() const { return large_cursor_enabled_; }
+  bool large_cursor_enabled() const { return large_cursor().enabled(); }
   bool IsLargeCursorSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForLargeCursor();
 
   void SetMonoAudioEnabled(bool enabled);
-  bool mono_audio_enabled() const { return mono_audio_enabled_; }
+  bool mono_audio_enabled() const { return mono_audio().enabled(); }
   bool IsMonoAudioSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForMonoAudio();
 
   void SetSpokenFeedbackEnabled(bool enabled,
                                 AccessibilityNotificationVisibility notify);
-  bool spoken_feedback_enabled() const { return spoken_feedback_enabled_; }
+  bool spoken_feedback_enabled() const { return spoken_feedback().enabled(); }
   bool IsSpokenFeedbackSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForSpokenFeedback();
 
   void SetSelectToSpeakEnabled(bool enabled);
-  bool select_to_speak_enabled() const { return select_to_speak_enabled_; }
+  bool select_to_speak_enabled() const { return select_to_speak().enabled(); }
   bool IsSelectToSpeakSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForSelectToSpeak();
 
@@ -255,17 +267,17 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   SelectToSpeakState GetSelectToSpeakState() const;
 
   void SetStickyKeysEnabled(bool enabled);
-  bool sticky_keys_enabled() const { return sticky_keys_enabled_; }
+  bool sticky_keys_enabled() const { return sticky_keys().enabled(); }
   bool IsStickyKeysSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForStickyKeys();
 
   void SetSwitchAccessEnabled(bool enabled);
-  bool switch_access_enabled() const { return switch_access_enabled_; }
+  bool switch_access_enabled() const { return switch_access().enabled(); }
   bool IsSwitchAccessSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForSwitchAccess();
 
   void SetVirtualKeyboardEnabled(bool enabled);
-  bool virtual_keyboard_enabled() const { return virtual_keyboard_enabled_; }
+  bool virtual_keyboard_enabled() const { return virtual_keyboard().enabled(); }
   bool IsVirtualKeyboardSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForVirtualKeyboard();
 
@@ -395,20 +407,11 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateAutoclickStabilizePositionFromPref();
   void UpdateAutoclickMovementThresholdFromPref();
   void UpdateAutoclickMenuPositionFromPref();
-  void UpdateDictationFromPref();
-  void UpdateFocusHighlightFromPref();
-  void UpdateHighContrastFromPref();
   void UpdateLargeCursorFromPref();
-  void UpdateMonoAudioFromPref();
-  void UpdateSpokenFeedbackFromPref();
-  void UpdateSelectToSpeakFromPref();
-  void UpdateStickyKeysFromPref();
-  void UpdateSwitchAccessFromPref();
   void UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand command);
   void UpdateSwitchAccessAutoScanEnabledFromPref();
   void UpdateSwitchAccessAutoScanSpeedFromPref();
   void UpdateSwitchAccessAutoScanKeyboardSpeedFromPref();
-  void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
   void UpdateShortcutsEnabledFromPref();
   void UpdateTabletModeShelfNavigationButtonsFromPref();
@@ -422,17 +425,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   std::unique_ptr<Feature> features_[kFeatureCount];
 
   base::TimeDelta autoclick_delay_;
-  bool dictation_enabled_ = false;
-  bool focus_highlight_enabled_ = false;
-  bool high_contrast_enabled_ = false;
-  bool large_cursor_enabled_ = false;
   int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
-  bool mono_audio_enabled_ = false;
-  bool spoken_feedback_enabled_ = false;
-  bool select_to_speak_enabled_ = false;
-  bool sticky_keys_enabled_ = false;
-  bool switch_access_enabled_ = false;
-  bool virtual_keyboard_enabled_ = false;
+
   bool dictation_active_ = false;
   bool shortcuts_enabled_ = true;
   bool tablet_mode_shelf_navigation_buttons_enabled_ = false;

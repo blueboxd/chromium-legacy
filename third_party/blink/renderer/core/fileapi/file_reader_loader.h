@@ -173,6 +173,9 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   mojo::SimpleWatcher handle_watcher_;
+  // TODO(crbug.com/937038, crbug.com/1049056): Make FileReaderLoaderClient
+  // GarbageCollected. It will then be possible to use the HeapMojoReceiver
+  // wrapper for receiver_.
   mojo::Receiver<mojom::blink::BlobReaderClient> receiver_{this};
   bool received_all_data_ = false;
   bool received_on_complete_ = false;

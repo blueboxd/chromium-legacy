@@ -464,7 +464,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   }
 
   OutputFrames frames_buffered() {
-    return OutputFrames(renderer_->algorithm_->frames_buffered());
+    return OutputFrames(renderer_->algorithm_->BufferedFrames());
   }
 
   OutputFrames buffer_playback_threshold() {

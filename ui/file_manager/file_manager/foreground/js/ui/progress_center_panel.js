@@ -302,10 +302,24 @@ class ProgressCenterPanel {
   static getToggleAnimation_(document) {
     for (let i = 0; i < document.styleSheets.length; i++) {
       const styleSheet = document.styleSheets[i];
-      for (let j = 0; j < styleSheet.cssRules.length; j++) {
+      let rules = null;
+      // External stylesheets may not be accessible due to CORS restrictions.
+      // This try/catch is the only way avoid an exception when iterating over
+      // stylesheets that include chrome://resources.
+      // See https://crbug.com/775525/ for details.
+      try {
+        rules = styleSheet.cssRules;
+      } catch (err) {
+        if (err.name == 'SecurityError') {
+          continue;
+        }
+        throw err;
+      }
+
+      for (let j = 0; j < rules.length; j++) {
         // HACK: closure does not define experimental CSSRules.
         const keyFramesRule = CSSRule.KEYFRAMES_RULE || 7;
-        const rule = styleSheet.cssRules[j];
+        const rule = rules[j];
         if (rule.type === keyFramesRule &&
             rule.name === 'progress-center-toggle') {
           return rule;

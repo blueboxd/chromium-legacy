@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_WEB_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_WEB_APPS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
@@ -30,6 +31,7 @@ class Profile;
 
 namespace web_app {
 class WebApp;
+class WebAppLaunchManager;
 class WebAppProvider;
 class WebAppRegistrar;
 }  // namespace web_app
@@ -161,6 +163,8 @@ class WebApps : public apps::mojom::Publisher,
   PausedApps paused_apps_;
 
   web_app::WebAppProvider* provider_ = nullptr;
+
+  std::unique_ptr<web_app::WebAppLaunchManager> web_app_launch_manager_;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
 

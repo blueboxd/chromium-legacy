@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from core import perf_benchmark
+from core import platforms
 
 import page_sets
 from telemetry import benchmark
@@ -13,6 +14,10 @@ from telemetry.web_perf import timeline_based_measurement
 class CrosUiSmoothnessBenchmark(perf_benchmark.PerfBenchmark):
   """Measures ChromeOS UI smoothness."""
   page_set = page_sets.CrosUiCasesPageSet
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.CHROMEOS]
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_CHROMEOS]
 
   @classmethod

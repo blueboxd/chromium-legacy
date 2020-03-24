@@ -198,6 +198,10 @@ bool PluginVmInstallerView::Cancel() {
       plugin_vm::RecordPluginVmSetupResultHistogram(
           plugin_vm::PluginVmSetupResult::kUserCancelledDownloadingPluginVmDlc);
       break;
+    case State::CHECKING_VMS:
+      plugin_vm::RecordPluginVmSetupResultHistogram(
+          plugin_vm::PluginVmSetupResult::kUserCancelledCheckingForExistingVm);
+      break;
     case State::DOWNLOADING:
       plugin_vm::RecordPluginVmSetupResultHistogram(
           plugin_vm::PluginVmSetupResult::
@@ -222,19 +226,6 @@ gfx::Size PluginVmInstallerView::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
 }
 
-void PluginVmInstallerView::OnVmExists() {
-  // This case should only occur if the user manually installed a VM via vmc,
-  // which is rare enough so we just re-use the regular success strings.
-  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
-  state_ = State::IMPORTED;
-  OnStateUpdated();
-
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kVmAlreadyExists);
-  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
-                                              setup_start_tick_);
-}
-
 void PluginVmInstallerView::OnDlcDownloadProgressUpdated(
     double progress,
     base::TimeDelta elapsed_time) {
@@ -248,16 +239,34 @@ void PluginVmInstallerView::OnDlcDownloadCompleted() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::DOWNLOADING_DLC);
 
-  state_ = State::DOWNLOADING;
+  state_ = State::CHECKING_VMS;
   OnStateUpdated();
+}
+
+void PluginVmInstallerView::OnExistingVmCheckCompleted(bool has_vm) {
+  DCHECK_EQ(state_, State::CHECKING_VMS);
+
+  if (has_vm) {
+    // This case should only occur if the user manually installed a VM via vmc,
+    // which is rare enough so we just re-use the regular success strings.
+    state_ = State::IMPORTED;
+    OnStateUpdated();
+
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kVmAlreadyExists);
+    plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
+                                                setup_start_tick_);
+  } else {
+    state_ = State::DOWNLOADING;
+    OnStateUpdated();
+  }
 }
 
 // TODO(timloh): Cancelling the installation immediately closes the dialog, but
 // getting back to a clean state could take several seconds. If a user then
 // re-opens the dialog, it could cause it to fail unexpectedly. We should make
-// use of these callback to avoid this (and possibly merge them into a single
-// callback).
-void PluginVmInstallerView::OnDlcDownloadCancelled() {
+// use of these callback to avoid this.
+void PluginVmInstallerView::OnCancelFinished() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -281,10 +290,6 @@ void PluginVmInstallerView::OnDownloadCompleted() {
 
   state_ = State::IMPORTING;
   OnStateUpdated();
-}
-
-void PluginVmInstallerView::OnDownloadCancelled() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void PluginVmInstallerView::OnDownloadFailed(
@@ -311,10 +316,6 @@ void PluginVmInstallerView::OnImportProgressUpdated(
   DCHECK_EQ(state_, State::IMPORTING);
 
   UpdateOperationProgress(percent_completed, 100.0, elapsed_time);
-}
-
-void PluginVmInstallerView::OnImportCancelled() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void PluginVmInstallerView::OnImportFailed(
@@ -359,6 +360,7 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
   switch (state_) {
     case State::STARTING:
     case State::DOWNLOADING_DLC:
+    case State::CHECKING_VMS:
     case State::DOWNLOADING:
     case State::IMPORTING:
       return l10n_util::GetStringUTF16(
@@ -382,6 +384,7 @@ base::string16 PluginVmInstallerView::GetMessage() const {
   switch (state_) {
     case State::STARTING:
     case State::DOWNLOADING_DLC:
+    case State::CHECKING_VMS:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_INSTALLER_START_DOWNLOADING_MESSAGE);
     case State::DOWNLOADING:
@@ -467,6 +470,7 @@ int PluginVmInstallerView::GetCurrentDialogButtons() const {
   switch (state_) {
     case State::STARTING:
     case State::DOWNLOADING_DLC:
+    case State::CHECKING_VMS:
     case State::DOWNLOADING:
     case State::IMPORTING:
       return ui::DIALOG_BUTTON_CANCEL;
@@ -489,6 +493,7 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
   switch (state_) {
     case State::STARTING:
     case State::DOWNLOADING_DLC:
+    case State::CHECKING_VMS:
     case State::DOWNLOADING:
     case State::IMPORTING: {
       DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
@@ -542,7 +547,8 @@ void PluginVmInstallerView::OnStateUpdated() {
 
   const bool progress_bar_visible =
       state_ == State::STARTING || state_ == State::DOWNLOADING_DLC ||
-      state_ == State::DOWNLOADING || state_ == State::IMPORTING;
+      state_ == State::CHECKING_VMS || state_ == State::DOWNLOADING ||
+      state_ == State::IMPORTING;
   progress_bar_->SetVisible(progress_bar_visible);
   // Values outside the range [0,1] display an infinite loading animation.
   progress_bar_->SetValue(-1);
@@ -593,8 +599,8 @@ void PluginVmInstallerView::UpdateOperationProgress(
     double units_processed,
     double total_units,
     base::TimeDelta elapsed_time) const {
-  DCHECK(state_ == State::DOWNLOADING_DLC || state_ == State::DOWNLOADING ||
-         state_ == State::IMPORTING);
+  DCHECK(state_ == State::DOWNLOADING_DLC || state_ == State::CHECKING_VMS ||
+         state_ == State::DOWNLOADING || state_ == State::IMPORTING);
 
   base::Optional<double> maybe_fraction_complete =
       GetFractionComplete(units_processed, total_units);

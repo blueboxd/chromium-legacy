@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "components/permissions/chooser_context_base.h"
+#include "content/public/browser/serial_delegate.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom-forward.h"
@@ -31,12 +32,7 @@ class Value;
 class SerialChooserContext : public permissions::ChooserContextBase,
                              public device::mojom::SerialPortManagerClient {
  public:
-  class PortObserver : public base::CheckedObserver {
-   public:
-    virtual void OnPortAdded(const device::mojom::SerialPortInfo& port) = 0;
-    virtual void OnPortRemoved(const device::mojom::SerialPortInfo& port) = 0;
-    virtual void OnPortManagerConnectionError() = 0;
-  };
+  using PortObserver = content::SerialDelegate::Observer;
 
   explicit SerialChooserContext(Profile* profile);
   ~SerialChooserContext() override;

@@ -6,5 +6,6 @@ import("//build/config/gclient_args.gni")
 
 declare_args() {
   # Enable libgav1 decoder.
-  enable_libgav1_decoder = false
+  enable_libgav1_decoder =
+      is_chromeos && (target_cpu == "arm" || target_cpu == "arm64")
 }

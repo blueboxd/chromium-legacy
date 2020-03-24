@@ -467,7 +467,7 @@ void AudioDecoderAndroid::OnBufferDecoded(
     RateShifterInfo* rate_info = &rate_shifter_info_.front();
     // Bypass rate shifter if the rate is 1.0, and there are no frames queued
     // in the rate shifter.
-    if (rate_info->rate == 1.0 && rate_shifter_->frames_buffered() == 0 &&
+    if (rate_info->rate == 1.0 && rate_shifter_->BufferedFrames() == 0 &&
         pending_output_frames_ == kNoPendingOutput &&
         rate_shifter_info_.size() == 1) {
       DCHECK_EQ(rate_info->output_frames, rate_info->input_frames);
@@ -518,7 +518,7 @@ void AudioDecoderAndroid::CheckBufferComplete() {
     // If the current rate is 1.0, drain any data in the rate shifter before
     // calling PushBufferComplete, so that the next PushBuffer call can skip the
     // rate shifter entirely.
-    rate_shifter_queue_full = (rate_shifter_->frames_buffered() > 0 ||
+    rate_shifter_queue_full = (rate_shifter_->BufferedFrames() > 0 ||
                                pending_output_frames_ != kNoPendingOutput);
   }
 
@@ -615,7 +615,7 @@ void AudioDecoderAndroid::PushRateShifted() {
     // been logically played; once we switch to passthrough mode (rate == 1.0),
     // that old data needs to be cleared out.
     if (rate_info->rate == 1.0) {
-      int extra_frames = rate_shifter_->frames_buffered() -
+      int extra_frames = rate_shifter_->BufferedFrames() -
                          static_cast<int>(rate_info->input_frames);
       if (extra_frames > 0) {
         // Clear out extra buffered data.
@@ -625,7 +625,7 @@ void AudioDecoderAndroid::PushRateShifted() {
             rate_shifter_->FillBuffer(dropped.get(), 0, extra_frames, 1.0f);
         DCHECK_EQ(extra_frames, cleared_frames);
       }
-      rate_info->input_frames = rate_shifter_->frames_buffered();
+      rate_info->input_frames = rate_shifter_->BufferedFrames();
     }
   }
 }

@@ -66,14 +66,15 @@ namespace plugin_vm {
 PluginVmInstaller::~PluginVmInstaller() = default;
 
 bool PluginVmInstaller::IsProcessing() {
-  return State::NOT_STARTED < state_ && state_ < State::CONFIGURED;
+  return state_ != State::kIdle;
 }
 
 void PluginVmInstaller::Start() {
   if (IsProcessing()) {
     LOG(ERROR) << "Download of a PluginVm image couldn't be started as"
                << " another PluginVm image is currently being processed "
-               << "in state " << GetStateName(state_);
+               << "in state " << GetStateName(state_) << ", "
+               << GetInstallingStateName(installing_state_);
     OnDownloadFailed(FailureReason::OPERATION_IN_PROGRESS);
     return;
   }
@@ -87,47 +88,62 @@ void PluginVmInstaller::Start() {
     return;
   }
 
-  // If there's an existing VM, we can complete without running the install
-  // flow.
-  PluginVmManager::GetForProfile(profile_)->UpdateVmState(
-      base::BindOnce(&PluginVmInstaller::OnUpdateVmState,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&PluginVmInstaller::StartDlcDownload,
-                     weak_ptr_factory_.GetWeakPtr()));
+  state_ = State::kInstalling;
+  StartDlcDownload();
 }
 
 void PluginVmInstaller::Cancel() {
-  switch (state_) {
-    case State::DOWNLOADING_DLC:
-      CancelDlcDownload();
+  if (state_ != State::kInstalling) {
+    LOG(ERROR) << "Tried to cancel installation from unexpected state "
+               << GetStateName(state_);
+    return;
+  }
+  state_ = State::kCancelling;
+  switch (installing_state_) {
+    case InstallingState::kCheckingForExistingVm:
+    case InstallingState::kDownloadingDlc:
+      // These can't be cancelled, so we wait for completion. For DLC, we also
+      // block progress callbacks.
       return;
-    case State::DOWNLOADING:
+    case InstallingState::kDownloadingImage:
       CancelDownload();
       return;
-    case State::IMPORTING:
+    case InstallingState::kImporting:
       CancelImport();
       return;
     default:
-      LOG(ERROR) << "Tried to cancel installation from unexpected state "
-                 << GetStateName(state_);
-      return;
+      NOTREACHED();
   }
 }
 
 void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
-  if (default_vm_exists) {
-    if (observer_)
-      observer_->OnVmExists();
-    profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
-                                     true);
-    state_ = State::CONFIGURED;
+  if (state_ == State::kCancelling) {
+    CancelFinished();
     return;
   }
-  StartDlcDownload();
+
+  if (default_vm_exists) {
+    if (observer_)
+      observer_->OnExistingVmCheckCompleted(/*has_vm=*/true);
+    profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
+                                     true);
+    InstallFinished();
+    return;
+  }
+
+  if (observer_)
+    observer_->OnExistingVmCheckCompleted(/*has_vm=*/false);
+  StartDownload();
+}
+
+void PluginVmInstaller::OnUpdateVmStateFailed() {
+  // Either the dispatcher failed to start or ListVms didn't work.
+  // PluginVmManager logs the details.
+  OnDownloadFailed(FailureReason::DISPATCHER_NOT_AVAILABLE);
 }
 
 void PluginVmInstaller::StartDlcDownload() {
-  state_ = State::DOWNLOADING_DLC;
+  installing_state_ = InstallingState::kDownloadingDlc;
 
   if (!GetPluginVmImageDownloadUrl().is_valid()) {
     OnDownloadFailed(FailureReason::INVALID_IMAGE_URL);
@@ -144,13 +160,9 @@ void PluginVmInstaller::StartDlcDownload() {
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginVmInstaller::CancelDlcDownload() {
-  state_ = State::DOWNLOAD_DLC_CANCELLED;
-}
-
 void PluginVmInstaller::StartDownload() {
-  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
-  state_ = State::DOWNLOADING;
+  DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
+  installing_state_ = InstallingState::kDownloadingImage;
 
   GURL url = GetPluginVmImageDownloadUrl();
   // This may have changed since running StartDlcDownload.
@@ -176,20 +188,20 @@ void PluginVmInstaller::StartDownload() {
 }
 
 void PluginVmInstaller::CancelDownload() {
-  state_ = State::DOWNLOAD_CANCELLED;
-
   if (using_drive_download_service_) {
     DCHECK(drive_download_service_);
     drive_download_service_->CancelDownload();
+    CancelFinished();
   } else {
+    // OnDownloadCancelled() is called after the download is cancelled.
     download_service_->CancelDownload(current_download_guid_);
   }
 }
 
 void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
-  if (state_ == State::DOWNLOAD_DLC_CANCELLED)
+  DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
+  if (state_ == State::kCancelling)
     return;
-  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
 
   if (observer_)
     observer_->OnDlcDownloadProgressUpdated(
@@ -199,25 +211,27 @@ void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
 void PluginVmInstaller::OnDlcDownloadCompleted(
     const std::string& err,
     const dlcservice::DlcModuleList& dlc_module_list) {
-  if (state_ == State::DOWNLOAD_DLC_CANCELLED) {
-    if (observer_)
-      observer_->OnDlcDownloadCancelled();
-    state_ = State::NOT_STARTED;
+  DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
+  if (state_ == State::kCancelling) {
+    CancelFinished();
     return;
   }
-  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
 
   // If success, continue to the next state.
   if (err == dlcservice::kErrorNone) {
     RecordPluginVmDlcUseResultHistogram(PluginVmDlcUseResult::kDlcSuccess);
     if (observer_)
       observer_->OnDlcDownloadCompleted();
-    StartDownload();
+
+    PluginVmManager::GetForProfile(profile_)->UpdateVmState(
+        base::BindOnce(&PluginVmInstaller::OnUpdateVmState,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&PluginVmInstaller::OnUpdateVmStateFailed,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
   // At this point, PluginVM DLC download failed.
-  state_ = State::DOWNLOAD_DLC_FAILED;
   PluginVmDlcUseResult result = PluginVmDlcUseResult::kInternalDlcError;
   FailureReason reason = FailureReason::DLC_INTERNAL;
 
@@ -246,6 +260,7 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   RecordPluginVmDlcUseResultHistogram(result);
   if (observer_)
     observer_->OnDownloadFailed(reason);
+  InstallFinished();
 }
 
 void PluginVmInstaller::OnDownloadStarted() {
@@ -281,7 +296,8 @@ void PluginVmInstaller::OnDownloadCompleted(
 }
 
 void PluginVmInstaller::OnDownloadCancelled() {
-  DCHECK_EQ(state_, State::DOWNLOAD_CANCELLED);
+  DCHECK_EQ(state_, State::kCancelling);
+  DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
 
   RemoveTemporaryImageIfExists();
   current_download_guid_.clear();
@@ -289,14 +305,11 @@ void PluginVmInstaller::OnDownloadCancelled() {
     drive_download_service_->ResetState();
     using_drive_download_service_ = false;
   }
-  if (observer_)
-    observer_->OnDownloadCancelled();
 
-  state_ = State::NOT_STARTED;
+  CancelFinished();
 }
 
 void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
-  state_ = State::DOWNLOAD_FAILED;
   RemoveTemporaryImageIfExists();
   current_download_guid_.clear();
 
@@ -307,11 +320,12 @@ void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
 
   if (observer_)
     observer_->OnDownloadFailed(reason);
+  InstallFinished();
 }
 
 void PluginVmInstaller::StartImport() {
-  DCHECK_EQ(state_, State::DOWNLOADING);
-  state_ = State::IMPORTING;
+  DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
+  installing_state_ = InstallingState::kImporting;
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
@@ -326,21 +340,7 @@ void PluginVmInstaller::DetectImageType() {
 }
 
 void PluginVmInstaller::OnImageTypeDetected() {
-  VLOG(1) << "Starting PluginVm dispatcher service";
-  chromeos::DBusThreadManager::Get()
-      ->GetDebugDaemonClient()
-      ->StartPluginVmDispatcher(
-          chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_),
-          base::BindOnce(&PluginVmInstaller::OnPluginVmDispatcherStarted,
-                         weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PluginVmInstaller::OnPluginVmDispatcherStarted(bool success) {
-  if (!success) {
-    LOG(ERROR) << "Failed to start PluginVm dispatcher service";
-    OnImported(FailureReason::DISPATCHER_NOT_AVAILABLE);
-    return;
-  }
+  VLOG(1) << "Waiting for Concierge to be available";
   GetConciergeClient()->WaitForServiceToBeAvailable(
       base::BindOnce(&PluginVmInstaller::OnConciergeAvailable,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -370,7 +370,7 @@ void PluginVmInstaller::OnConciergeAvailable(bool success) {
 
 base::Optional<base::ScopedFD> PluginVmInstaller::PrepareFD() {
   // In case import has been cancelled meantime.
-  if (state_ == State::IMPORT_CANCELLED || state_ == State::NOT_STARTED)
+  if (state_ != State::kInstalling)
     return base::nullopt;
 
   base::File file(downloaded_image_,
@@ -385,7 +385,7 @@ base::Optional<base::ScopedFD> PluginVmInstaller::PrepareFD() {
 
 void PluginVmInstaller::OnFDPrepared(base::Optional<base::ScopedFD> maybeFd) {
   // In case import has been cancelled meantime.
-  if (state_ == State::IMPORT_CANCELLED || state_ == State::NOT_STARTED)
+  if (state_ != State::kInstalling)
     return;
 
   if (!maybeFd.has_value()) {
@@ -534,11 +534,11 @@ void PluginVmInstaller::OnImported(
       LOG(ERROR) << "New VM creation failed";
     else
       LOG(ERROR) << "Image import failed";
-    state_ = State::IMPORT_FAILED;
     if (observer_) {
       observer_->OnImportFailed(*failure_reason);
     }
 
+    InstallFinished();
     return;
   }
 
@@ -550,12 +550,10 @@ void PluginVmInstaller::OnImported(
     else
       observer_->OnImported();
   }
-
-  state_ = State::CONFIGURED;
+  InstallFinished();
 }
 
 void PluginVmInstaller::CancelImport() {
-  state_ = State::IMPORT_CANCELLED;
   VLOG(1) << "Cancelling disk image import with command_uuid: "
           << current_import_command_uuid_;
 
@@ -568,7 +566,8 @@ void PluginVmInstaller::CancelImport() {
 
 void PluginVmInstaller::OnImportDiskImageCancelled(
     base::Optional<vm_tools::concierge::CancelDiskImageResponse> reply) {
-  DCHECK_EQ(state_, State::IMPORT_CANCELLED);
+  DCHECK_EQ(state_, State::kCancelling);
+  DCHECK_EQ(installing_state_, InstallingState::kImporting);
 
   RemoveTemporaryImageIfExists();
 
@@ -587,10 +586,8 @@ void PluginVmInstaller::OnImportDiskImageCancelled(
     return;
   }
 
-  if (observer_)
-    observer_->OnImportCancelled();
-  state_ = State::NOT_STARTED;
   VLOG(1) << "Import disk image request has been cancelled successfully";
+  CancelFinished();
 }
 
 void PluginVmInstaller::SetObserver(Observer* observer) {
@@ -639,28 +636,27 @@ GURL PluginVmInstaller::GetPluginVmImageDownloadUrl() {
 
 std::string PluginVmInstaller::GetStateName(State state) {
   switch (state) {
-    case State::NOT_STARTED:
-      return "NOT_STARTED";
-    case State::DOWNLOADING_DLC:
-      return "DOWNLOADING_DLC";
-    case State::DOWNLOAD_DLC_CANCELLED:
-      return "DOWNLOAD_DLC_CANCELLED";
-    case State::DOWNLOADING:
-      return "DOWNLOADING";
-    case State::DOWNLOAD_CANCELLED:
-      return "DOWNLOAD_CANCELLED";
-    case State::IMPORTING:
-      return "IMPORTING";
-    case State::IMPORT_CANCELLED:
-      return "IMPORT_CANCELLED";
-    case State::CONFIGURED:
-      return "CONFIGURED";
-    case State::DOWNLOAD_DLC_FAILED:
-      return "DOWNLOAD_DLC_FAILED";
-    case State::DOWNLOAD_FAILED:
-      return "DOWNLOAD_FAILED";
-    case State::IMPORT_FAILED:
-      return "IMPORT_FAILED";
+    case State::kIdle:
+      return "kIdle";
+    case State::kInstalling:
+      return "kInstalling";
+    case State::kCancelling:
+      return "kCancelling";
+  }
+}
+
+std::string PluginVmInstaller::GetInstallingStateName(InstallingState state) {
+  switch (state) {
+    case InstallingState::kInactive:
+      return "kInactive";
+    case InstallingState::kCheckingForExistingVm:
+      return "kCheckingForExistingVm";
+    case InstallingState::kDownloadingDlc:
+      return "kDownloadingDlc";
+    case InstallingState::kDownloadingImage:
+      return "kDownloadingImage";
+    case InstallingState::kImporting:
+      return "kImporting";
   }
 }
 
@@ -745,6 +741,20 @@ void PluginVmInstaller::OnTemporaryImageRemoved(bool success) {
   downloaded_image_size_ = -1;
   downloaded_image_.clear();
   creating_new_vm_ = false;
+}
+
+void PluginVmInstaller::CancelFinished() {
+  DCHECK_EQ(state_, State::kCancelling);
+  state_ = State::kIdle;
+  installing_state_ = InstallingState::kInactive;
+
+  if (observer_)
+    observer_->OnCancelFinished();
+}
+
+void PluginVmInstaller::InstallFinished() {
+  state_ = State::kIdle;
+  installing_state_ = InstallingState::kInactive;
 }
 
 }  // namespace plugin_vm

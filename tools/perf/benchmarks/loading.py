@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from core import perf_benchmark
+from core import platforms
 import page_sets
 
 from benchmarks import loading_metrics_category
@@ -41,6 +42,10 @@ class _LoadingBase(perf_benchmark.PerfBenchmark):
                 documentation_url='https://bit.ly/loading-benchmarks')
 class LoadingDesktop(_LoadingBase):
   """ A benchmark measuring loading performance of desktop sites. """
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.DESKTOP]
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   def CreateStorySet(self, options):
@@ -57,6 +62,10 @@ class LoadingDesktop(_LoadingBase):
                 documentation_url='https://bit.ly/loading-benchmarks')
 class LoadingMobile(_LoadingBase):
   """ A benchmark measuring loading performance of mobile sites. """
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.MOBILE]
   SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
 
   def CreateStorySet(self, options):

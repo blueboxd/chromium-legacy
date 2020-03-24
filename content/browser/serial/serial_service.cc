@@ -51,9 +51,17 @@ SerialService::SerialService(RenderFrameHost* render_frame_host)
 
   watchers_.set_disconnect_handler(base::BindRepeating(
       &SerialService::OnWatcherConnectionError, base::Unretained(this)));
+
+  SerialDelegate* delegate = GetContentClient()->browser()->GetSerialDelegate();
+  if (delegate)
+    delegate->AddObserver(render_frame_host_, this);
 }
 
 SerialService::~SerialService() {
+  SerialDelegate* delegate = GetContentClient()->browser()->GetSerialDelegate();
+  if (delegate)
+    delegate->RemoveObserver(render_frame_host_, this);
+
   // The remaining watchers will be closed from this end.
   if (!watchers_.empty())
     DecrementActiveFrameCount();
@@ -62,6 +70,11 @@ SerialService::~SerialService() {
 void SerialService::Bind(
     mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
   receivers_.Add(this, std::move(receiver));
+}
+
+void SerialService::SetClient(
+    mojo::PendingRemote<blink::mojom::SerialServiceClient> client) {
+  clients_.Add(std::move(client));
 }
 
 void SerialService::GetPorts(GetPortsCallback callback) {
@@ -114,6 +127,38 @@ void SerialService::GetPort(
   watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
   delegate->GetPortManager(render_frame_host_)
       ->GetPort(token, std::move(receiver), std::move(watcher));
+}
+
+void SerialService::OnPortAdded(const device::mojom::SerialPortInfo& port) {
+  SerialDelegate* delegate = GetContentClient()->browser()->GetSerialDelegate();
+  if (!delegate || !delegate->HasPortPermission(render_frame_host_, port))
+    return;
+
+  for (const auto& client : clients_)
+    client->OnPortAdded(ToBlinkType(port));
+}
+
+void SerialService::OnPortRemoved(const device::mojom::SerialPortInfo& port) {
+  SerialDelegate* delegate = GetContentClient()->browser()->GetSerialDelegate();
+  if (!delegate || !delegate->HasPortPermission(render_frame_host_, port))
+    return;
+
+  for (const auto& client : clients_)
+    client->OnPortRemoved(ToBlinkType(port));
+}
+
+void SerialService::OnPortManagerConnectionError() {
+  // Reflect the loss of the SerialPortManager connection into the renderer
+  // in order to force caches to be cleared and connections to be
+  // re-established.
+  receivers_.Clear();
+  clients_.Clear();
+  chooser_.reset();
+
+  if (!watchers_.empty()) {
+    watchers_.Clear();
+    DecrementActiveFrameCount();
+  }
 }
 
 void SerialService::FinishGetPorts(

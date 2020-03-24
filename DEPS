@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd1988219065ad7cf6e56f8c72682372ff41fe3ba',
+  'skia_revision': '6cb8168c2b9b757110883a6974e45c7f76db228c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'c17b51288b978cbfe0fd34da7aac5575b0cf2166',
+  'v8_revision': '12954138cf3144119782f13f9aeda5c20f4ef516',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -191,7 +191,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '4b8b078256411d0de000ecb95f30f03e00371157',
+  'swiftshader_revision': '6c11cf2ad9ca86db1372a74db59ba19a0c957ed7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '0769db92d4780901d31ffd066451f84c6cadd09e',
+  'devtools_frontend_revision': 'c01b1d98a3964f762e2f0a59aec574c8a50ffe5f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.

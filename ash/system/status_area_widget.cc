@@ -92,7 +92,6 @@ void StatusAreaWidget::Initialize() {
       Shell::Get()->session_controller()->login_status());
   UpdateLayout(/*animate=*/false);
 
-  ShelfConfig::Get()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
   // NOTE: Container may be hidden depending on login/display state.
@@ -102,7 +101,6 @@ void StatusAreaWidget::Initialize() {
 }
 
 StatusAreaWidget::~StatusAreaWidget() {
-  ShelfConfig::Get()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
@@ -413,10 +411,6 @@ void StatusAreaWidget::OnScrollEvent(ui::ScrollEvent* event) {
   shelf_->ProcessScrollEvent(event);
   if (!event->handled())
     views::Widget::OnScrollEvent(event);
-}
-
-void StatusAreaWidget::OnShelfConfigUpdated() {
-  UpdateCollapseState();
 }
 
 void StatusAreaWidget::UpdateAfterColorModeChange() {

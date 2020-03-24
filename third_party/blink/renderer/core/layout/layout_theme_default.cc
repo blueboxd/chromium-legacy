@@ -301,7 +301,8 @@ void LayoutThemeDefault::AdjustSearchFieldCancelButtonStyle(
 }
 
 void LayoutThemeDefault::AdjustMenuListStyle(ComputedStyle& style,
-                                             Element*) const {
+                                             Element* element) const {
+  LayoutTheme::AdjustMenuListStyle(style, element);
   // Height is locked to auto on all browsers.
   style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 }

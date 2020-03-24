@@ -1040,7 +1040,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       return 0;
     }
 
-    if (is_passthrough_ && algorithm_->frames_buffered() > 0) {
+    if (is_passthrough_ && algorithm_->BufferedFrames() > 0) {
       // TODO(tsunghung): For compressed bitstream formats, play zeroed buffer
       // won't generate delay. It could be discarded immediately. Need another
       // way to generate audio delay.
@@ -1059,7 +1059,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
       // bitstream cases. Fix |frames_requested| to avoid incorrent time
       // calculation of |audio_clock_| below.
       frames_requested = frames_written;
-    } else if (algorithm_->frames_buffered() > 0) {
+    } else if (algorithm_->BufferedFrames() > 0) {
       // Delay playback by writing silence if we haven't reached the first
       // timestamp yet; this can occur if the video starts before the audio.
       CHECK_NE(first_packet_timestamp_, kNoTimestamp);

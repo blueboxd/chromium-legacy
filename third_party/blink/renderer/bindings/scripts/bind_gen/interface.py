@@ -3332,6 +3332,85 @@ def generate_interface(interface):
                                 path_manager.gen_path_to(impl_source_path))
 
 
+def generate_init_idl_interfaces(web_idl_database):
+    # Filepaths
+    header_path = PathManager.component_path("modules",
+                                             "init_idl_interfaces.h")
+    source_path = PathManager.component_path("modules",
+                                             "init_idl_interfaces.cc")
+
+    # Root nodes
+    header_node = ListNode(tail="\n")
+    header_node.set_accumulator(CodeGenAccumulator())
+    header_node.set_renderer(MakoRenderer())
+    source_node = ListNode(tail="\n")
+    source_node.set_accumulator(CodeGenAccumulator())
+    source_node.set_renderer(MakoRenderer())
+
+    # Namespaces
+    header_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    header_bindings_ns = CxxNamespaceNode(name_style.namespace("bindings"))
+    source_bindings_ns = CxxNamespaceNode(name_style.namespace("bindings"))
+    header_blink_ns.body.append(header_bindings_ns)
+    source_blink_ns.body.append(source_bindings_ns)
+
+    # Function nodes
+    func_decl = CxxFuncDeclNode(
+        name="InitIDLInterfaces", arg_decls=[], return_type="void")
+    func_def = CxxFuncDefNode(
+        name="InitIDLInterfaces", arg_decls=[], return_type="void")
+    header_bindings_ns.body.extend([
+        TextNode("""\
+// Initializes cross-component trampolines of IDL interface implementations.\
+"""),
+        func_decl,
+    ])
+    source_bindings_ns.body.append(func_def)
+
+    # Assemble the parts.
+    header_node.extend([
+        make_copyright_header(),
+        EmptyNode(),
+        enclose_with_header_guard(
+            ListNode([
+                make_header_include_directives(header_node.accumulator),
+                EmptyNode(),
+                header_blink_ns,
+            ]), name_style.header_guard(header_path)),
+    ])
+    source_node.extend([
+        make_copyright_header(),
+        EmptyNode(),
+        TextNode("#include \"{}\"".format(header_path)),
+        EmptyNode(),
+        make_header_include_directives(source_node.accumulator),
+        EmptyNode(),
+        source_blink_ns,
+    ])
+
+    init_calls = []
+    for interface in web_idl_database.interfaces:
+        # 'Internals' is the only test-only interface that needs
+        # cross-component trampoline initialization.
+        if interface.identifier == "Internals":
+            continue
+
+        path_manager = PathManager(interface)
+        if path_manager.is_cross_components:
+            source_node.accumulator.add_include_header(
+                path_manager.impl_path(ext="h"))
+
+            class_name = v8_bridge_class_name(interface)
+            init_calls.append(_format("{}::Impl::Init();", class_name))
+    for init_call in sorted(init_calls):
+        func_def.body.append(TextNode(init_call))
+
+    # Write down to the files.
+    write_code_node_to_file(header_node, path_manager.gen_path_to(header_path))
+    write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
+
+
 def generate_interfaces(web_idl_database):
     # More processes do not mean better performance.  The default size was
     # chosen heuristically.
@@ -3345,3 +3424,5 @@ def generate_interfaces(web_idl_database):
     timeout_in_sec = 3600  # Just enough long time
     pool.map_async(generate_interface,
                    web_idl_database.interfaces).get(timeout_in_sec)
+
+    generate_init_idl_interfaces(web_idl_database)

@@ -67,6 +67,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/browser/ui/webui/settings/chromeos/quick_unlock_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/settings_user_action_tracker.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
@@ -241,6 +243,11 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath(
       "search/user_action_recorder.mojom-lite.js",
       IDR_OS_SETTINGS_USER_ACTION_RECORDER_MOJOM_LITE_JS);
+  html_source->AddResourcePath(
+      "search/search_result_icon.mojom-lite.js",
+      IDR_OS_SETTINGS_SEARCH_RESULT_ICON_MOJOM_LITE_JS);
+  html_source->AddResourcePath("search/search.mojom-lite.js",
+                               IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
 
   // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
   // as repeated keys used by the OS strings should override the same keys
@@ -472,6 +479,12 @@ void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<mojom::UserActionRecorder> receiver) {
   user_action_recorder_ =
       std::make_unique<SettingsUserActionTracker>(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<mojom::SearchHandler> receiver) {
+  SearchHandlerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
+      ->BindInterface(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(

@@ -271,6 +271,27 @@ class RemoteCall {
   }
 
   /**
+   * Wait for the |query| to match |count| elements.
+   *
+   * @param {string} appId App window Id.
+   * @param {string|!Array<string>} query Query to specify the element.
+   *     If query is an array, |query[0]| specifies the first
+   *     element(s), |query[1]| specifies elements inside the shadow DOM of
+   *     the first element, and so on.
+   * @param {number} count The expected element match count.
+   * @return {Promise} Promise to be fulfilled on success.
+   */
+  waitForElementsCount(appId, query, count) {
+    const caller = getCaller();
+    return repeatUntil(async () => {
+      const expect = `Waiting for [${query}] to match ${count} elements`;
+      const result =
+          await this.callRemoteTestUtil('countElements', appId, [query, count]);
+      return !result ? pending(caller, expect) : true;
+    });
+  }
+
+  /**
    * Sends a fake key down event.
    * @param {string} appId App window Id.
    * @param {string|!Array<string>} query Query to specify the element.

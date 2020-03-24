@@ -125,7 +125,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
   }
 
   base::TimeDelta BufferedTime() {
-    return AudioTimestampHelper::FramesToTime(algorithm_.frames_buffered(),
+    return AudioTimestampHelper::FramesToTime(algorithm_.BufferedFrames(),
                                               samples_per_second_);
   }
 
@@ -200,7 +200,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
   int ComputeConsumedFrames(int initial_frames_enqueued,
                             int initial_frames_buffered) {
     int frame_delta = frames_enqueued_ - initial_frames_enqueued;
-    int buffered_delta = algorithm_.frames_buffered() - initial_frames_buffered;
+    int buffered_delta = algorithm_.BufferedFrames() - initial_frames_buffered;
     int consumed = frame_delta - buffered_delta;
     CHECK_GE(consumed, 0);
     return consumed;
@@ -220,7 +220,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
                         int total_frames_requested,
                         int dest_offset) {
     int initial_frames_enqueued = frames_enqueued_;
-    int initial_frames_buffered = algorithm_.frames_buffered();
+    int initial_frames_buffered = algorithm_.BufferedFrames();
 
     std::unique_ptr<AudioBus> bus =
         AudioBus::Create(channels_, buffer_size_in_frames);
@@ -256,7 +256,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
       FillAlgorithmQueueUntilFull();
     }
 
-    EXPECT_EQ(algorithm_.frames_buffered() * channels_ * sizeof(float),
+    EXPECT_EQ(algorithm_.BufferedFrames() * channels_ * sizeof(float),
               static_cast<size_t>(algorithm_.GetMemoryUsage()));
 
     int frames_consumed =
@@ -311,7 +311,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
           bus.get(), 0, buffer_size_in_frames, playback_rate);
 
       total_frames_written += frames_written;
-    } while (frames_written && algorithm_.frames_buffered() > 0);
+    } while (frames_written && algorithm_.BufferedFrames() > 0);
 
     int input_frames_enqueued = frames_enqueued_ - initial_frames_enqueued;
 
@@ -861,7 +861,7 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_ChannelMask) {
 // |latency_hint_| is set.
 TEST_F(AudioRendererAlgorithmTest, NoLatencyHint) {
   // Queue is initially empty. Capacity is unset.
-  EXPECT_EQ(algorithm_.frames_buffered(), 0);
+  EXPECT_EQ(algorithm_.BufferedFrames(), 0);
   EXPECT_EQ(algorithm_.QueueCapacity(), 0);
 
   // Initialize sets capacity fills queue.
@@ -875,21 +875,21 @@ TEST_F(AudioRendererAlgorithmTest, NoLatencyHint) {
   // one frame below the capacity limit.
   std::unique_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
   int requested_frames =
-      (algorithm_.frames_buffered() - algorithm_.QueueCapacity()) + 1;
+      (algorithm_.BufferedFrames() - algorithm_.QueueCapacity()) + 1;
   const int frames_filled =
       algorithm_.FillBuffer(bus.get(), 0, requested_frames, 1);
   EXPECT_EQ(frames_filled, requested_frames);
-  EXPECT_EQ(algorithm_.frames_buffered(), algorithm_.QueueCapacity() - 1);
+  EXPECT_EQ(algorithm_.BufferedFrames(), algorithm_.QueueCapacity() - 1);
   EXPECT_FALSE(algorithm_.IsQueueFull());
   EXPECT_FALSE(algorithm_.IsQueueAdequateForPlayback());
 
   // Queue should again be "adequate for playback" and "full" it we add a single
-  // frame such that frames_buffered() == QueueCapacity().
+  // frame such that BufferedFrames() == QueueCapacity().
   DCHECK_EQ(sample_format_, kSampleFormatS16);
   algorithm_.EnqueueBuffer(MakeBuffer(1));
   EXPECT_TRUE(algorithm_.IsQueueFull());
   EXPECT_TRUE(algorithm_.IsQueueAdequateForPlayback());
-  EXPECT_EQ(algorithm_.frames_buffered(), algorithm_.QueueCapacity());
+  EXPECT_EQ(algorithm_.BufferedFrames(), algorithm_.QueueCapacity());
 
   // Increasing playback threshold should also increase capacity.
   int orig_capacity = algorithm_.QueueCapacity();
@@ -1079,7 +1079,7 @@ TEST_F(AudioRendererAlgorithmTest, ClampLatencyHint) {
   // well above the hinted value.
   EXPECT_EQ(algorithm_.QueueCapacity(), default_capacity);
   FillAlgorithmQueueUntilAdequate();
-  EXPECT_EQ(algorithm_.frames_buffered(), 2 * kBufferSize);
+  EXPECT_EQ(algorithm_.BufferedFrames(), 2 * kBufferSize);
 }
 
 }  // namespace media

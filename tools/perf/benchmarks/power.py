@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from core import perf_benchmark
+from core import platforms
 
 import page_sets
 from telemetry import benchmark
@@ -14,7 +15,11 @@ from telemetry.web_perf import timeline_based_measurement
 @benchmark.Info(emails=['brucedawson@chromium.org'],
                 documentation_url='https://bit.ly/power-benchmarks')
 class PowerDesktop(perf_benchmark.PerfBenchmark):
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
+  SUPPORTED_PLATFORM_TAGS = [platforms.DESKTOP]
 
   def CreateStorySet(self, options):
     return page_sets.DesktopPowerStorySet()

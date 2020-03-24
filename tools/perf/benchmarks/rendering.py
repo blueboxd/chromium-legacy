@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import sys
 from core import perf_benchmark
+from core import platforms as core_platforms
 
 import page_sets
 from page_sets.system_health import platforms
@@ -32,7 +33,8 @@ RENDERING_BENCHMARK_UMA = [
     'Graphics.Smoothness.PercentDroppedFrames.MainThread.RAF',
     'Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll',
     'Graphics.Smoothness.PercentDroppedFrames.MainThread.WheelScroll',
-    'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.CompositorAnimation',
+    ('Graphics.Smoothness.PercentDroppedFrames'
+     '.CompositorThread.CompositorAnimation'),
     'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.PinchZoom',
     'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll',
     'Graphics.Smoothness.PercentDroppedFrames.CompositorThread.WheelScroll',
@@ -72,7 +74,11 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
                 documentation_url='https://bit.ly/rendering-benchmarks',
                 component='Internals>GPU>Metrics')
 class RenderingDesktop(_RenderingBenchmark):
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_DESKTOP]
+  SUPPORTED_PLATFORM_TAGS = [core_platforms.DESKTOP]
   PLATFORM_NAME = platforms.DESKTOP
 
   @classmethod
@@ -95,7 +101,11 @@ class RenderingDesktop(_RenderingBenchmark):
                 documentation_url='https://bit.ly/rendering-benchmarks',
                 component='Internals>GPU>Metrics')
 class RenderingMobile(_RenderingBenchmark):
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
+  SUPPORTED_PLATFORM_TAGS = [core_platforms.MOBILE]
   PLATFORM_NAME = platforms.MOBILE
 
   @classmethod

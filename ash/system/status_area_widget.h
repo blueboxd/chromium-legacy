@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_component.h"
@@ -38,7 +37,6 @@ class VirtualKeyboardTray;
 // on secondary monitors at the login screen).
 class ASH_EXPORT StatusAreaWidget : public SessionObserver,
                                     public ShelfComponent,
-                                    public ShelfConfig::Observer,
                                     public views::Widget {
  public:
   // Whether the status area is collapsed or expanded. Currently, this is only
@@ -166,9 +164,6 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
-
-  // ShelfConfig::Observer:
-  void OnShelfConfigUpdated() override;
 
   // Adds a new tray button to the status area.
   void AddTrayButton(TrayBackgroundView* tray_button);

@@ -6,6 +6,7 @@ import os
 
 from core import path_util
 from core import perf_benchmark
+from core import platforms
 
 from telemetry import benchmark
 from telemetry import story
@@ -18,6 +19,10 @@ from contrib.media_router_benchmarks import media_router_pages
 class MediaRouterCPUMemoryCast(perf_benchmark.PerfBenchmark):
   """Obtains media performance for key user scenarios on desktop."""
 
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.DESKTOP]
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
   options = {'pageset_repeat': 1}
   page_set = media_router_pages.MediaRouterCPUMemoryPageSet
@@ -53,6 +58,10 @@ class MediaRouterCPUMemoryCast(perf_benchmark.PerfBenchmark):
 class NoMediaRouterCPUMemory(perf_benchmark.PerfBenchmark):
   """Benchmark for CPU and memory usage without Media Router."""
 
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.DESKTOP]
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
   options = {'pageset_repeat': 1}
   page_set = media_router_pages.CPUMemoryPageSet

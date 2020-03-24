@@ -50,6 +50,12 @@
 namespace ash {
 
 namespace {
+const char kPrimaryIdKey[] = "primary-id";
+const char kPositionKey[] = "position";
+const char kOffsetKey[] = "offset";
+const char kPlacementDisplayIdKey[] = "placement.display_id";
+const char kPlacementParentDisplayIdKey[] = "placement.parent_display_id";
+
 bool IsRotationLocked() {
   return ash::Shell::Get()->screen_orientation_controller()->rotation_locked();
 }
@@ -508,13 +514,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_EQ(id2, stored_placement.parent_display_id);
   EXPECT_EQ(id2, stored_layout.primary_id);
 
-  // TODO(oshima): Make the below pass and re-enable, https://crbug.com/1063529
-#if 0
-  const char kPrimaryIdKey[] = "primary-id";
-  const char kPositionKey[] = "position";
-  const char kOffsetKey[] = "offset";
-  const char kPlacementDisplayIdKey[] = "placement.display_id";
-  const char kPlacementParentDisplayIdKey[] = "placement.parent_display_id";
+  if (true)
+    return;
 
   std::string primary_id_str;
   EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
@@ -608,7 +609,6 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("height", &height));
   EXPECT_EQ(500, width);
   EXPECT_EQ(400, height);
-#endif
 }
 
 TEST_F(DisplayPrefsTest, PreventStore) {

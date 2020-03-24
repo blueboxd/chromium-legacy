@@ -461,7 +461,7 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
 
   const int frames_needed_to_scale =
       playback_rate_ * av_audio_context_->sample_rate / kAudioPacketsPerSecond;
-  while (frames_needed_to_scale <= audio_algo_.frames_buffered()) {
+  while (frames_needed_to_scale <= audio_algo_.BufferedFrames()) {
     if (!audio_algo_.FillBuffer(audio_fifo_input_bus_.get(), 0,
                                 audio_fifo_input_bus_->frames(),
                                 playback_rate_)) {

@@ -3175,6 +3175,7 @@ source_set("unit_tests") {
     "../ui/webui/settings/chromeos/internet_handler_unittest.cc",
     "../ui/webui/settings/chromeos/multidevice_handler_unittest.cc",
     "../ui/webui/settings/chromeos/os_settings_localized_strings_provider_unittest.cc",
+    "../ui/webui/settings/chromeos/search/search_handler_unittest.cc",
     "../ui/webui/settings/chromeos/search/settings_user_action_tracker_unittest.cc",
   ]
   if (use_cups) {

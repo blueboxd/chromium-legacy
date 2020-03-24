@@ -37,8 +37,11 @@ if (optimize_webui) {
       "chrome://os-settings/app-management/image_info.mojom-lite.js",
       "chrome://os-settings/app-management/image.mojom-lite.js",
       "chrome://os-settings/app-management/types.mojom-lite.js",
+      "chrome://os-settings/search/search.mojom-lite.js",
+      "chrome://os-settings/search/search_result_icon.mojom-lite.js",
       "chrome://os-settings/search/user_action_recorder.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom.html",
+      "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom.html",
       "chrome://resources/mojo/mojo/public/mojom/base/time.mojom.html",
     ]
 

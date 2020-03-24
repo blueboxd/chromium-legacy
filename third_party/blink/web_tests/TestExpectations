@@ -2906,7 +2906,6 @@ crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.h
 
 # Various menulist appearance failures in WPT
 crbug.com/968164 external/wpt/css/css-ui/appearance-menulist-button-002.html [ Failure ]
-crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ Failure ]
 
 # Implement text-decoration-thickness and text-decoration-offset
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]

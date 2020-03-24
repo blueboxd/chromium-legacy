@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_SERIAL_SERIAL_TEST_UTILS_H_
 #define CONTENT_BROWSER_SERIAL_SERIAL_TEST_UTILS_H_
 
+#include <memory>
+#include <vector>
+
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/serial_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,11 +27,13 @@ class MockSerialDelegate : public SerialDelegate {
   MOCK_METHOD0(RunChooserInternal, device::mojom::SerialPortInfoPtr());
   MOCK_METHOD1(CanRequestPortPermission, bool(RenderFrameHost* frame));
   MOCK_METHOD2(HasPortPermission,
-               bool(content::RenderFrameHost* frame,
+               bool(RenderFrameHost* frame,
                     const device::mojom::SerialPortInfo& port));
-  MOCK_METHOD1(
-      GetPortManager,
-      device::mojom::SerialPortManager*(content::RenderFrameHost* frame));
+  MOCK_METHOD1(GetPortManager,
+               device::mojom::SerialPortManager*(RenderFrameHost* frame));
+  MOCK_METHOD2(AddObserver, void(RenderFrameHost* frame, Observer* observer));
+  MOCK_METHOD2(RemoveObserver,
+               void(RenderFrameHost* frame, Observer* observer));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSerialDelegate);

@@ -402,12 +402,6 @@ void StyleAdjuster::AdjustOverflow(ComputedStyle& style) {
              style.OverflowX() != EOverflow::kVisible) {
     style.SetOverflowY(EOverflow::kAuto);
   }
-
-  // Menulists should have visible overflow
-  if (style.Appearance() == kMenulistPart) {
-    style.SetOverflowX(EOverflow::kVisible);
-    style.SetOverflowY(EOverflow::kVisible);
-  }
 }
 
 static void AdjustStyleForDisplay(ComputedStyle& style,

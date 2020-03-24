@@ -29,6 +29,10 @@ class PrefRegistrySyncable;
 namespace chromeos {
 namespace settings {
 
+namespace mojom {
+class SearchHandler;
+}  // namespace mojom
+
 // The WebUI handler for chrome://os-settings.
 class OSSettingsUI : public ui::MojoWebUIController {
  public:
@@ -48,6 +52,10 @@ class OSSettingsUI : public ui::MojoWebUIController {
   // Instantiates implementor of the mojom::UserActionRecorder mojo interface
   // passing the pending receiver that will be internally bound.
   void BindInterface(mojo::PendingReceiver<mojom::UserActionRecorder> receiver);
+
+  // Instantiates implementor of the mojom::SearchHandler mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<mojom::SearchHandler> receiver);
 
   // Instantiates implementor of the mojom::PageHandlerFactory mojo interface
   // passing the pending receiver that will be internally bound.

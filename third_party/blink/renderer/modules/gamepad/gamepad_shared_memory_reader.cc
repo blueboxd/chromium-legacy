@@ -10,12 +10,14 @@
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_listener.h"
 
 namespace blink {
 
-GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame) {
+GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame)
+    : receiver_(this, frame.DomWindow()) {
   frame.GetBrowserInterfaceBroker().GetInterface(
       gamepad_monitor_remote_.BindNewPipeAndPassReceiver());
   // See https://bit.ly/2S0zRAS for task types
@@ -25,7 +27,9 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame) {
       receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
-void GamepadSharedMemoryReader::Trace(Visitor* visitor) {}
+void GamepadSharedMemoryReader::Trace(Visitor* visitor) {
+  visitor->Trace(receiver_);
+}
 
 void GamepadSharedMemoryReader::SendStartMessage() {
   if (gamepad_monitor_remote_) {
@@ -72,7 +76,7 @@ void GamepadSharedMemoryReader::Stop() {
   SendStopMessage();
 }
 
-void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
+void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads* gamepads) {
   // Blink should have started observing at this point.
   CHECK(listener_);
 
@@ -112,7 +116,7 @@ void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
   }
 
   // New data was read successfully, copy it into the output buffer.
-  memcpy(&gamepads, &read_into, sizeof(gamepads));
+  memcpy(gamepads, &read_into, sizeof(*gamepads));
 
   if (!ever_interacted_with_) {
     // Clear the connected flag if the user hasn't interacted with any of the
@@ -120,7 +124,7 @@ void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
     // WebKit will only copy out data into the JS buffers for connected
     // gamepads so this is sufficient.
     for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; i++)
-      gamepads.items[i].connected = false;
+      gamepads->items[i].connected = false;
   }
 }
 

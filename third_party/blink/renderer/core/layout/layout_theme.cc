@@ -610,7 +610,12 @@ void LayoutTheme::AdjustButtonStyle(ComputedStyle& style) const {}
 
 void LayoutTheme::AdjustInnerSpinButtonStyle(ComputedStyle&) const {}
 
-void LayoutTheme::AdjustMenuListStyle(ComputedStyle&, Element*) const {}
+void LayoutTheme::AdjustMenuListStyle(ComputedStyle& style, Element*) const {
+  // Menulists should have visible overflow
+  // https://bugs.webkit.org/show_bug.cgi?id=21287
+  style.SetOverflowX(EOverflow::kVisible);
+  style.SetOverflowY(EOverflow::kVisible);
+}
 
 base::TimeDelta LayoutTheme::AnimationRepeatIntervalForProgressBar() const {
   return base::TimeDelta();

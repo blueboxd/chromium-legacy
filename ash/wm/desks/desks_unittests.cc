@@ -152,17 +152,25 @@ void ClickOnMiniView(const DeskMiniView* desk_mini_view,
 void LongGestureTap(const gfx::Point& screen_location,
                     ui::test::EventGenerator* event_generator,
                     bool release_touch = true) {
-  event_generator->set_current_screen_location(screen_location);
-  event_generator->PressTouch();
+  // Temporarily reconfigure gestures so that the long tap takes 2 milliseconds.
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
-  const int long_press_delay_ms = gesture_config->long_press_time_in_ms() +
-                                  gesture_config->show_press_delay_in_ms();
+  const int old_long_press_time_in_ms = gesture_config->long_press_time_in_ms();
+  const int old_show_press_delay_in_ms =
+      gesture_config->show_press_delay_in_ms();
+  gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_show_press_delay_in_ms(1);
+
+  event_generator->set_current_screen_location(screen_location);
+  event_generator->PressTouch();
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(long_press_delay_ms));
+      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(2));
   run_loop.Run();
+
+  gesture_config->set_long_press_time_in_ms(old_long_press_time_in_ms);
+  gesture_config->set_show_press_delay_in_ms(old_show_press_delay_in_ms);
+
   if (release_touch)
     event_generator->ReleaseTouch();
 }
@@ -2482,12 +2490,6 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
   auto* desk_3_mini_view = desks_bar_view->mini_views()[2].get();
-
-  // Override the long-tap delays.
-  ui::GestureConfiguration* gesture_config =
-      ui::GestureConfiguration::GetInstance();
-  gesture_config->set_long_press_time_in_ms(50);
-  gesture_config->set_show_press_delay_in_ms(50);
 
   // Long gesture tapping on one mini_view shows its close button, and hides
   // those of other mini_views.

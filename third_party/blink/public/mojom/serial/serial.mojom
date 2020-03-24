@@ -26,7 +26,13 @@ struct SerialPortFilter {
   bool has_product_id;
 };
 
+// This interface must be provided by the browser process in order for the
+// renderer process to implement the navigator.serial API.
 interface SerialService {
+  // Sets the client which will receive notifications of events from this
+  // service, such as when ports are added and removed from the system.
+  SetClient(pending_remote<SerialServiceClient> client);
+
   // Retrieves information about all ports available to this client.
   GetPorts() => (array<SerialPortInfo> ports);
 
@@ -37,4 +43,13 @@ interface SerialService {
   // port identified by |token|.
   GetPort(mojo_base.mojom.UnguessableToken token,
           pending_receiver<device.mojom.SerialPort> port_receiver);
+};
+
+// Client interface for receiving events from SerialService.
+interface SerialServiceClient {
+  // Called when a port described by |port_info| is added to the system.
+  OnPortAdded(SerialPortInfo port_info);
+
+  // Called when a port described by |port_info| is removed from the system.
+  OnPortRemoved(SerialPortInfo port_info);
 };

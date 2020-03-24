@@ -545,11 +545,10 @@ VAEntrypoint GetDefaultVaEntryPoint(VaapiWrapper::CodecMode mode,
   }
 }
 
-std::vector<VAEntrypoint>
-GetSupportedEntryPointsForProfile (const base::Lock* va_lock,
-                               VADisplay va_display,
-                               VaapiWrapper::CodecMode mode,
-                               VAProfile va_profile) {
+std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
+                                                   VADisplay va_display,
+                                                   VaapiWrapper::CodecMode mode,
+                                                   VAProfile va_profile) {
   va_lock->AssertAcquired();
 
   // Query the driver for supported entrypoints.
@@ -562,18 +561,30 @@ GetSupportedEntryPointsForProfile (const base::Lock* va_lock,
                                              &supported_entrypoints[0],
                                              &num_supported_entrypoints);
   if (va_res != VA_STATUS_SUCCESS) {
-    if (num_supported_entrypoints < 0) {
+    if (num_supported_entrypoints < 0 ||
+        num_supported_entrypoints > max_entrypoints) {
       LOG(ERROR) << "vaQueryConfigEntrypoints returned: "
                  << num_supported_entrypoints;
       return {};
     }
   }
-
-  // resize the supported_entrypoints so that the returned
-  // list will only have valid entries
   supported_entrypoints.resize(num_supported_entrypoints);
 
-  return supported_entrypoints;
+  // Filter out VAEntrypoints that are not used in Chrome.
+  constexpr VAEntrypoint kSupportedEntryPoints[] = {
+      VAEntrypointVLD,         // for video/jpeg decoding.
+      VAEntrypointEncSlice,    // for encoding.
+      VAEntrypointEncPicture,  // for JPEG encoding.
+      VAEntrypointEncSliceLP,  // for Low Power encoding.
+      VAEntrypointVideoProc,   // for pre/post-processing.
+  };
+  std::vector<VAEntrypoint> entrypoints;
+  std::copy_if(supported_entrypoints.begin(), supported_entrypoints.end(),
+               std::back_inserter(entrypoints),
+               [&kSupportedEntryPoints](VAEntrypoint entry_point) {
+                 return base::Contains(kSupportedEntryPoints, entry_point);
+               });
+  return entrypoints;
 }
 
 static bool GetRequiredAttribs(const base::Lock* va_lock,
@@ -774,8 +785,7 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
 
   for (const auto& va_profile : va_profiles) {
     const std::vector<VAEntrypoint> supported_entrypoints =
-        GetSupportedEntryPointsForProfile (va_lock_, va_display_, mode,
-                                           va_profile);
+        GetEntryPointsForProfile(va_lock_, va_display_, mode, va_profile);
     if (supported_entrypoints.empty())
       continue;
 

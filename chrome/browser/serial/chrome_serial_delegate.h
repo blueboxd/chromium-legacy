@@ -24,6 +24,10 @@ class ChromeSerialDelegate : public content::SerialDelegate {
                          const device::mojom::SerialPortInfo& port) override;
   device::mojom::SerialPortManager* GetPortManager(
       content::RenderFrameHost* frame) override;
+  void AddObserver(content::RenderFrameHost* frame,
+                   Observer* observer) override;
+  void RemoveObserver(content::RenderFrameHost* frame,
+                      Observer* observer) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSerialDelegate);

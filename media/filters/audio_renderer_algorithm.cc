@@ -13,7 +13,6 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
-#include "media/base/multi_channel_resampler.h"
 #include "media/filters/wsola_internals.h"
 
 namespace media {
@@ -263,6 +262,12 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     return ResampleAndFill(dest, dest_offset, requested_frames, playback_rate);
   }
 
+  // Destroy the resampler if it was used before, but it's no longer needed
+  // (e.g. before playback rate has changed). This ensures that we don't try to
+  // play later any samples still buffered in the resampler.
+  if (resampler_)
+    resampler_.reset();
+
   // Allocate structures on first non-1.0 playback rate; these can eat a fair
   // chunk of memory. ~56kB for stereo 48kHz, up to ~765kB for 7.1 192kHz.
   if (!ola_window_) {
@@ -398,7 +403,12 @@ void AudioRendererAlgorithm::IncreasePlaybackThreshold() {
 }
 
 int64_t AudioRendererAlgorithm::GetMemoryUsage() const {
-  return audio_buffer_.frames() * channels_ * sizeof(float);
+  return BufferedFrames() * channels_ * sizeof(float);
+}
+
+int AudioRendererAlgorithm::BufferedFrames() const {
+  return audio_buffer_.frames() +
+         (resampler_ ? static_cast<int>(resampler_->BufferedFrames()) : 0);
 }
 
 bool AudioRendererAlgorithm::CanPerformWsola() const {

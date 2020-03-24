@@ -47,8 +47,9 @@ enum class PluginVmSetupResult {
   kUserCancelledDownloadingPluginVmDlc = 7,
 
   kVmAlreadyExists = 8,
+  kUserCancelledCheckingForExistingVm = 9,
 
-  kMaxValue = kVmAlreadyExists,
+  kMaxValue = kUserCancelledCheckingForExistingVm,
 };
 
 enum class PluginVmDlcUseResult {

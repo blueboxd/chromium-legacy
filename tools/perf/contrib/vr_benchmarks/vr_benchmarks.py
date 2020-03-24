@@ -4,6 +4,8 @@
 
 from benchmarks import memory
 from core import perf_benchmark
+from core import platforms
+
 from telemetry import benchmark
 from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
@@ -93,6 +95,10 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
 
 class _BaseWebVRWebXRBenchmark(_BaseVRBenchmark):
 
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.ANDROID, platforms.WIN10]
   SUPPORTED_PLATFORMS = [
       story.expectations.ALL_ANDROID,
       story.expectations.WIN_10
@@ -140,6 +146,10 @@ class XrWebXrStatic(_BaseWebXRBenchmark):
 
 class _BaseBrowsingBenchmark(_BaseVRBenchmark):
 
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.ANDROID]
   SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
   def CreateCoreTimelineBasedMeasurementOptions(self):

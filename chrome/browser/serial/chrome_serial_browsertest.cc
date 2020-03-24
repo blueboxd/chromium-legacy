@@ -35,15 +35,19 @@ class SerialTest : public InProcessBrowserTest {
 
     mojo::PendingRemote<device::mojom::SerialPortManager> port_manager;
     port_manager_.AddReceiver(port_manager.InitWithNewPipeAndPassReceiver());
-    SerialChooserContextFactory::GetForProfile(browser()->profile())
-        ->SetPortManagerForTesting(std::move(port_manager));
+    context_ = SerialChooserContextFactory::GetForProfile(browser()->profile());
+    context_->SetPortManagerForTesting(std::move(port_manager));
 
     GURL url = embedded_test_server()->GetURL("localhost", "/simple_page.html");
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
+  device::FakeSerialPortManager& port_manager() { return port_manager_; }
+  SerialChooserContext* context() { return context_; }
+
  private:
   device::FakeSerialPortManager port_manager_;
+  SerialChooserContext* context_;
 };
 
 IN_PROC_BROWSER_TEST_F(SerialTest, NavigateWithChooserCrossOrigin) {
@@ -60,6 +64,37 @@ IN_PROC_BROWSER_TEST_F(SerialTest, NavigateWithChooserCrossOrigin) {
 
   observer.Wait();
   EXPECT_FALSE(chrome::IsDeviceChooserShowingForTesting(browser()));
+}
+
+IN_PROC_BROWSER_TEST_F(SerialTest, RemovePort) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create port and grant permission to it.
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  url::Origin origin = web_contents->GetMainFrame()->GetLastCommittedOrigin();
+  context()->GrantPortPermission(origin, origin, *port);
+  port_manager().AddPort(port.Clone());
+
+  // In order to ensure that the renderer is ready to receive events we must
+  // wait for the Promise returned by getPorts() to resolve before continuing.
+  EXPECT_EQ(true, content::EvalJs(web_contents, R"(
+      var removedPromise;
+      (async () => {
+        let ports = await navigator.serial.getPorts();
+        removedPromise = new Promise(resolve => {
+          navigator.serial.addEventListener(
+              'disconnect', e => {
+                resolve(e.port === ports[0]);
+              }, { once: true });
+        });
+        return true;
+      })())"));
+
+  port_manager().RemovePort(port->token);
+
+  EXPECT_EQ(true, content::EvalJs(web_contents, "removedPromise"));
 }
 
 }  // namespace

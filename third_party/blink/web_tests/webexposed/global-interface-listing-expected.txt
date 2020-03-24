@@ -7953,6 +7953,10 @@ interface Serial : EventTarget
     method requestPort
     setter onconnect
     setter ondisconnect
+interface SerialConnectionEvent : Event
+    attribute @@toStringTag
+    getter port
+    method constructor
 interface SerialPort
     attribute @@toStringTag
     getter readable

@@ -150,6 +150,7 @@ cr-menu.chrome-menu > [checked]::before {
 }
 
 .cr-dialog-buttons > button {
+  border-radius: 4px;
   font-weight: 500;
   margin-inline-end: 0;
   margin-inline-start: 5px;
@@ -161,24 +162,40 @@ cr-menu.chrome-menu > [checked]::before {
 
 .cr-dialog-buttons > button.cr-dialog-ok,
 .cr-dialog-buttons > button.cr-dialog-ok:hover {
-  background-color: rgb(51, 103, 214);
-  color: white;
+  background-color: var(--cros-default-button-background-color-primary);
+  color: var(--cros-default-button-label-color-primary);
   order: 1;
 }
 
+.cr-dialog-buttons > button.cr-dialog-ok:hover {
+  background:
+      linear-gradient(var(--cros-default-button-background-color-primary-hover-overlay),
+                      var(--cros-default-button-background-color-primary-hover-overlay)),
+              var(--cros-default-button-background-color-primary);
+}
+
+.cr-dialog-buttons > button.cr-dialog-ok[disabled],
+.cr-dialog-buttons > button.cr-dialog-ok[disabled]:hover {
+  background-color:
+      var(--cros-default-button-background-color-primary-disabled);
+  color: var(--cros-default-button-label-color-primary-disabled`);
+}
+
 .cr-dialog-buttons > button.cr-dialog-cancel {
-  color: rgb(100, 100, 100);
+  border: 1px solid var(--cros-default-button-stroke-color-secondary);
+  color: var(--cros-default-button-label-color-secondary);
   order: 0;
 }
 
 .cr-dialog-buttons > button.cr-dialog-cancel:hover {
-  color: rgb(51, 103, 214);
+  background: var(--cros-default-button-background-color-secondary-hover);
 }
 
-.cr-dialog-buttons > button[disabled],
-.cr-dialog-buttons > button[disabled]:hover {
-  background-color: rgb(234, 234, 234);
-  color: rgb(168, 168, 168);
+
+.cr-dialog-buttons > button.cr-dialog-cancel[disabled],
+.cr-dialog-buttons > button.cr-dialog-cancel[disabled]:hover  {
+  border: 1px solid var(--cros-default-button-stroke-color-secondary-disabled);
+  color: var(--cros-default-button-label-color-secondary-disabled);
 }
 
 .cr-dialog-buttons > button:focus:not(:active) {
@@ -230,11 +247,11 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-frame {
-  background-color: white;
+  background-color: var(--cros-default-bg-color);
   border-radius: 2px;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
               0 2px 6px 0 rgba(0, 0, 0, 0.1);
-  color: rgb(34, 34, 34);
+  color: var(--cros-default-text-color);
   cursor: default;
   display: flex;
   flex-direction: column;
@@ -298,7 +315,7 @@ html[dir='rtl'] .entry-name {
 
 .cr-dialog-text,
 .cr-dialog-title {
-  color: black;
+  color: var(--cros-default-text-color);
   overflow: hidden;
   text-overflow: ellipsis;
 }

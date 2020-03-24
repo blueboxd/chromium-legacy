@@ -4,7 +4,6 @@
 
 #include "chrome/browser/apps/app_service/web_apps.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -167,6 +167,9 @@ void WebApps::Initialize(
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
 
+  web_app_launch_manager_ =
+      std::make_unique<web_app::WebAppLaunchManager>(profile_);
+
   app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
                                  apps::mojom::AppType::kWeb);
   app_service_ = app_service.get();
@@ -240,7 +243,7 @@ void WebApps::Launch(const std::string& app_id,
       web_app::ConvertDisplayModeToAppLaunchContainer(display_mode));
 
   // The app will be created for the currently active profile.
-  apps::LaunchService::Get(profile_)->OpenApplication(params);
+  web_app_launch_manager_->OpenApplication(params);
 }
 
 void WebApps::LaunchAppWithIntent(const std::string& app_id,
@@ -252,8 +255,7 @@ void WebApps::LaunchAppWithIntent(const std::string& app_id,
   }
 
   AppLaunchParams params = CreateAppLaunchParamsForIntent(app_id, intent);
-
-  apps::LaunchService::Get(profile_)->OpenApplication(params);
+  web_app_launch_manager_->OpenApplication(params);
 }
 
 void WebApps::SetPermission(const std::string& app_id,

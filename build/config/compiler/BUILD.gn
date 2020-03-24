@@ -1591,10 +1591,8 @@ config("chromium_code") {
 
     # TODO(thakis): Enable this more often, https://crbug.com/346399
     # use_libfuzzer: https://crbug.com/1063180
-    # cros/arm has warnings in nacl code.
     if (!is_nacl && !use_libfuzzer &&
-        ((target_os == "chromeos" && target_cpu != "arm") ||
-         target_os == "fuchsia" || target_os == "linux")) {
+        (target_os == "fuchsia" || target_os == "linux")) {
       cflags += [ "-Wunreachable-code" ]
     }
 

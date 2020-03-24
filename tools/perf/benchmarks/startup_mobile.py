@@ -6,6 +6,7 @@ import contextlib
 import logging
 
 from core import perf_benchmark
+from core import platforms
 
 from telemetry.core import android_platform
 from telemetry.core import util as core_util
@@ -277,6 +278,10 @@ class _MobileStartupStorySet(story_module.StorySet):
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
   """Startup benchmark for Chrome on Android."""
 
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.ANDROID_NOT_WEBVIEW]
   SUPPORTED_PLATFORMS = [story_module.expectations.ANDROID_NOT_WEBVIEW]
 
   def CreateCoreTimelineBasedMeasurementOptions(self):

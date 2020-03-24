@@ -245,7 +245,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(std::move(init_cb))
                                          : std::move(init_cb);
   if (config.is_encrypted() || config.codec() != kCodecAV1) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kEncryptedContentUnsupported);
     return;
   }
 
@@ -264,7 +264,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (status != kLibgav1StatusOk) {
     MEDIA_LOG(ERROR, media_log_) << "libgav1::Decoder::Init() failed, "
                                  << "status=" << status;
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedConfigure);
     return;
   }
 
@@ -272,7 +272,7 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   state_ = DecoderState::kDecoding;
   color_space_ = config.color_space_info();
   natural_size_ = config.natural_size();
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void Gav1VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

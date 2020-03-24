@@ -151,6 +151,10 @@ class BubbleDialogDelegateView::AnchorViewObserver : public ViewObserver {
     parent_->OnAnchorBoundsChanged();
   }
 
+  void OnViewAddedToWidget(View* observed_view) override {
+    parent_->SetAnchorWidget(observed_view->GetWidget());
+  }
+
   // TODO(pbos): Consider observing View visibility changes and only updating
   // view bounds when the anchor is visible.
 
@@ -170,8 +174,6 @@ BubbleDialogDelegateView::~BubbleDialogDelegateView() {
 Widget* BubbleDialogDelegateView::CreateBubble(
     BubbleDialogDelegateView* bubble_delegate) {
   bubble_delegate->Init();
-  // Get the latest anchor widget from the anchor view at bubble creation time.
-  bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
 
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
@@ -449,49 +451,18 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
     anchor_view_observer_.reset();
   }
 
-  // When the anchor view gets set the associated anchor widget might
-  // change as well.
-  if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
-    if (anchor_widget()) {
-      if (GetWidget() && GetWidget()->IsVisible())
-        UpdateHighlightedButton(false);
-      paint_as_active_lock_.reset();
-      anchor_widget_->RemoveObserver(this);
-      anchor_widget_ = nullptr;
-    }
-    if (anchor_view) {
-      anchor_widget_ = anchor_view->GetWidget();
-      if (anchor_widget_) {
-        anchor_widget_->AddObserver(this);
-        const bool visible = GetWidget() && GetWidget()->IsVisible();
-        UpdateHighlightedButton(visible);
-        // Have the anchor widget's paint-as-active state track this view's
-        // widget - lock is only required if the bubble widget is active.
-        if (anchor_widget_->GetTopLevelWidget() && GetWidget() &&
-            GetWidget()->ShouldPaintAsActive()) {
-          paint_as_active_lock_ =
-              anchor_widget_->GetTopLevelWidget()->LockPaintAsActive();
-        }
-      }
-    }
-  }
+  SetAnchorWidget(anchor_view ? anchor_view->GetWidget() : nullptr);
+  if (!anchor_view)
+    return;
 
-  if (anchor_view) {
-    anchor_view_observer_ =
-        std::make_unique<AnchorViewObserver>(this, anchor_view);
-    // Do not update anchoring for NULL views; this could indicate
-    // that our NativeWindow is being destroyed, so it would be
-    // dangerous for us to update our anchor bounds at that
-    // point. (It's safe to skip this, since if we were to update the
-    // bounds when |anchor_view| is NULL, the bubble won't move.)
-    OnAnchorBoundsChanged();
-  }
+  anchor_view_observer_ =
+      std::make_unique<AnchorViewObserver>(this, anchor_view);
+  OnAnchorBoundsChanged();
 
-  if (anchor_view && focus_traversable_from_anchor_view_) {
-    // Make sure that focus can move into here from the anchor view (but not
-    // out, focus will cycle inside the dialog once it gets here).
+  // Make sure that focus can move into here from the anchor view (but not out,
+  // focus will cycle inside the dialog once it gets here).
+  if (focus_traversable_from_anchor_view_)
     anchor_view->SetProperty(kAnchoredDialogKey, this);
-  }
 }
 
 void BubbleDialogDelegateView::SetAnchorRect(const gfx::Rect& rect) {
@@ -555,6 +526,28 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
 void BubbleDialogDelegateView::OnDeactivate() {
   if (close_on_deactivate() && GetWidget())
     GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+}
+
+void BubbleDialogDelegateView::SetAnchorWidget(Widget* anchor_widget) {
+  if (anchor_widget_ == anchor_widget)
+    return;
+
+  if (anchor_widget_)
+    anchor_widget_->RemoveObserver(this);
+
+  UpdateHighlightedButton(GetWidget() && GetWidget()->IsVisible() &&
+                          anchor_widget);
+  // Have the anchor widget's paint-as-active state track this view's widget.
+  // Lock is only required if the bubble widget is active.
+  paint_as_active_lock_ =
+      (GetWidget() && GetWidget()->ShouldPaintAsActive() && anchor_widget &&
+       anchor_widget->GetTopLevelWidget())
+          ? anchor_widget->GetTopLevelWidget()->LockPaintAsActive()
+          : nullptr;
+  anchor_widget_ = anchor_widget;
+
+  if (anchor_widget_)
+    anchor_widget_->AddObserver(this);
 }
 
 void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {

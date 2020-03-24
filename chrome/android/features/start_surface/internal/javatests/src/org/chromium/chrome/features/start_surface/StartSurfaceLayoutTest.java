@@ -101,6 +101,8 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -129,7 +131,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "force-fieldtrials=Study/Group"})
-@Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
+@EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
         ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -287,11 +289,9 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
-        // clang-format on
         assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(0, mTabListDelegate.getCleanupDelayForTesting());
@@ -302,13 +302,11 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/991852 This test is flaky")
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
-        // clang-format on
         assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
 
         prepareTabs(2, 0, NTP_URL);
@@ -317,11 +315,9 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
-        // clang-format on
         assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(2000, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
@@ -332,12 +328,10 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
-        // clang-format on
         assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
@@ -345,11 +339,9 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
-        // clang-format on
         assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
@@ -360,12 +352,10 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
-        // clang-format on
         assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
@@ -421,7 +411,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToCurrentLive() throws InterruptedException {
         assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(1, 0, mUrl);
@@ -444,7 +434,7 @@ public class StartSurfaceLayoutTest {
      */
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToCurrentLiveDetached() throws Exception {
         assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         // This works on emulators but not on real devices. See crbug.com/986047.
@@ -483,7 +473,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
@@ -494,7 +484,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToOtherLive() throws InterruptedException {
         assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, mUrl);
@@ -503,7 +493,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
@@ -514,7 +504,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     public void testGridToTabToOtherFrozen() throws InterruptedException {
         assertFalse(TabFeatureUtilities.isTabToGtsAnimationEnabled());
         prepareTabs(2, 0, mUrl);
@@ -654,11 +644,9 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
-    // clang-format off
     @DisabledTest(message = "http://crbug/1005865 - Test was previously flaky but only on bots."
             + "Was not locally reproducible. Disabling until verified that it's deflaked on bots.")
     public void testIncognitoEnterGts() throws InterruptedException {
-        // clang-format on
         prepareTabs(1, 1, null);
         enterGTSWithThumbnailChecking();
         onView(withId(R.id.tab_list_view))
@@ -747,7 +735,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
                     ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForUndoableClosedTab() throws Exception {
         // clang-format on
@@ -768,7 +756,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForTabNotInCurrentModel() throws Exception {
         // clang-format on
@@ -785,11 +773,9 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature("TabSuggestion")
-    // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
+    @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_dismiss() throws InterruptedException {
-        // clang-format on
         prepareTabs(3, 0, null);
 
         // TODO(meiliang): Avoid using static variable for tracking state,
@@ -819,11 +805,9 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature("TabSuggestion")
-    // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
+    @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_review() throws InterruptedException {
-        // clang-format on
         prepareTabs(3, 0, null);
 
         CriteriaHelper.pollUiThread(
@@ -850,36 +834,29 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature("TabSuggestion")
-    // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS +
-            "/cleanup-delay/10000/baseline_tab_suggestions/true"})
+    @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000/baseline_tab_suggestions/true"})
     public void testShowOnlyOneTabSuggestionMessageCard_withSoftCleanup()
             throws InterruptedException {
-        // clang-format on
         verifyOnlyOneTabSuggestionMessageCardIsShowing();
     }
 
     @Test
     @MediumTest
     @Feature("TabSuggestion")
-    // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
+    @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testShowOnlyOneTabSuggestionMessageCard_withHardCleanup()
             throws InterruptedException {
-        // clang-format on
         verifyOnlyOneTabSuggestionMessageCardIsShowing();
     }
 
     @Test
     @MediumTest
     @Feature("TabSuggestion")
-    // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
+    @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCardDismissAfterTabClosing() throws InterruptedException {
-        // clang-format on
         prepareTabs(3, 0, mUrl);
         CriteriaHelper.pollUiThread(
                 ()
@@ -915,7 +892,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("NewTabTile")
     // clang-format off
-    @Features.DisableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
+    @DisableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
     @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/NewTabTile"
             + "/tab_grid_layout_android_new_tab/false"})
     public void testNewTabTile() throws InterruptedException {
@@ -969,11 +946,9 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature("TabSuggestion")
-    // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
+    @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_orientation() throws InterruptedException {
-        // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(3, 0, null);
 
@@ -1040,7 +1015,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("NewTabTile")
     // clang-format off
-    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
+    @DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
             ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
     @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/false"
             + "/tab_grid_layout_android_new_tab/false"})
@@ -1061,10 +1036,8 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testThumbnailAspectRatio_default() throws Exception {
-        // clang-format on
         prepareTabs(2, 0, mUrl);
         enterTabSwitcher(mActivityTestRule.getActivity());
         onView(withId(R.id.tab_list_view))
@@ -1073,7 +1046,6 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
     public void testThumbnailAspectRatio_point75() throws Exception {
         prepareTabs(2, 0, mUrl);
@@ -1092,10 +1064,8 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
     public void testThumbnailAspectRatio_fromTwoToPoint75() throws Exception {
-        // clang-format on
         prepareTabs(2, 0, mUrl);
         enterTabSwitcher(mActivityTestRule.getActivity());
         onView(withId(R.id.tab_list_view))
@@ -1118,10 +1088,8 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testThumbnailFetchingResult_defaultAspectRatio() throws Exception {
-        // clang-format on
         prepareTabs(2, 0, mUrl);
         int oldJpegCount = RecordHistogram.getHistogramValueCountForTesting(
                 TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
@@ -1195,10 +1163,8 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
     public void testThumbnailFetchingResult_changingAspectRatio() throws Exception {
-        // clang-format on
         prepareTabs(2, 0, mUrl);
         int oldJpegCount = RecordHistogram.getHistogramValueCountForTesting(
                 TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
@@ -1384,7 +1350,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testCloseTabViaCloseButton() throws Exception {
         // clang-format on
@@ -1398,11 +1364,9 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testSwipeToDismiss_GTS() throws Exception {
-        // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Create 3 tabs and merge the first two tabs into one group.
         createTabs(cta, false, 3);

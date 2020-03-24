@@ -49,7 +49,12 @@ class Gav1VideoDecoderTest : public testing::Test {
 
   void InitializeWithConfigWithResult(const VideoDecoderConfig& config,
                                       bool success) {
-    decoder_->Initialize(config, false, nullptr, NewExpectedBoolCB(success),
+    decoder_->Initialize(config, false, nullptr,
+                         base::BindOnce(
+                             [](bool success, Status status) {
+                               EXPECT_EQ(status.is_ok(), success);
+                             },
+                             success),
                          base::BindRepeating(&Gav1VideoDecoderTest::FrameReady,
                                              base::Unretained(this)),
                          base::NullCallback());

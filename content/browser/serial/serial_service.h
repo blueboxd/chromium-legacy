@@ -10,8 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/serial_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 
@@ -21,6 +23,7 @@ class RenderFrameHost;
 class SerialChooser;
 
 class SerialService : public blink::mojom::SerialService,
+                      public SerialDelegate::Observer,
                       public device::mojom::SerialPortConnectionWatcher {
  public:
   explicit SerialService(RenderFrameHost* render_frame_host);
@@ -29,12 +32,19 @@ class SerialService : public blink::mojom::SerialService,
   void Bind(mojo::PendingReceiver<blink::mojom::SerialService> receiver);
 
   // SerialService implementation
+  void SetClient(
+      mojo::PendingRemote<blink::mojom::SerialServiceClient> client) override;
   void GetPorts(GetPortsCallback callback) override;
   void RequestPort(std::vector<blink::mojom::SerialPortFilterPtr> filters,
                    RequestPortCallback callback) override;
   void GetPort(
       const base::UnguessableToken& token,
       mojo::PendingReceiver<device::mojom::SerialPort> receiver) override;
+
+  // SerialDelegate::Observer implementation
+  void OnPortAdded(const device::mojom::SerialPortInfo& port) override;
+  void OnPortRemoved(const device::mojom::SerialPortInfo& port) override;
+  void OnPortManagerConnectionError() override;
 
  private:
   void FinishGetPorts(GetPortsCallback callback,
@@ -48,6 +58,7 @@ class SerialService : public blink::mojom::SerialService,
   // RenderFrameHostImpl.
   RenderFrameHost* const render_frame_host_;
   mojo::ReceiverSet<blink::mojom::SerialService> receivers_;
+  mojo::RemoteSet<blink::mojom::SerialServiceClient> clients_;
 
   // The last shown serial port chooser UI.
   std::unique_ptr<SerialChooser> chooser_;

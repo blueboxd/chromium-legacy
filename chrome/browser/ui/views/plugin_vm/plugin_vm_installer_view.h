@@ -33,25 +33,24 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
-  void OnVmExists() override;
   void OnDlcDownloadProgressUpdated(double progress,
                                     base::TimeDelta elapsed_time) override;
   void OnDlcDownloadCompleted() override;
-  void OnDlcDownloadCancelled() override;
+  void OnExistingVmCheckCompleted(bool has_vm) override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                  int64_t content_length,
                                  base::TimeDelta elapsed_time) override;
   void OnDownloadCompleted() override;
-  void OnDownloadCancelled() override;
   void OnDownloadFailed(
       plugin_vm::PluginVmInstaller::FailureReason reason) override;
   void OnImportProgressUpdated(int percent_completed,
                                base::TimeDelta elapsed_time) override;
   void OnCreated() override;
   void OnImported() override;
-  void OnImportCancelled() override;
   void OnImportFailed(
       plugin_vm::PluginVmInstaller::FailureReason reason) override;
+
+  void OnCancelFinished() override;
 
   // Public for testing purposes.
   base::string16 GetBigMessage() const;
@@ -64,6 +63,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   enum class State {
     STARTING,         // View was just created, installation hasn't yet started
     DOWNLOADING_DLC,  // PluginVm DLC downloading and installing in progress.
+    CHECKING_VMS,     // Checking for existing VMs.
     DOWNLOADING,      // Image download (ISO or VM) is in progress.
     IMPORTING,        // Downloaded image is being imported.
     CREATED,          // A brand new VM has been created using ISO image.

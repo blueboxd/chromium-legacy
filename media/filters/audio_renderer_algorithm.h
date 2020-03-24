@@ -32,11 +32,11 @@
 #include "media/base/audio_buffer_queue.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log.h"
+#include "media/base/multi_channel_resampler.h"
 
 namespace media {
 
 class AudioBus;
-class MultiChannelResampler;
 
 class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
@@ -114,13 +114,14 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Returns an estimate of the amount of memory (in bytes) used for frames.
   int64_t GetMemoryUsage() const;
 
-  // Returns the number of frames left in |audio_buffer_|, which may be larger
-  // than QueueCapacity() in the event that EnqueueBuffer() delivered more data
-  // than |audio_buffer_| was intending to hold.
-  int frames_buffered() { return audio_buffer_.frames(); }
+  // Returns the total number of frames in |audio_buffer_| as well as
+  // unconsumed input frames in the |resampler_|. The returned value may be
+  // larger than QueueCapacity() in the event that EnqueueBuffer() delivered
+  // more data than |audio_buffer_| was intending to hold.
+  int BufferedFrames() const;
 
   // Returns the samples per second for this audio stream.
-  int samples_per_second() { return samples_per_second_; }
+  int samples_per_second() const { return samples_per_second_; }
 
   std::vector<bool> channel_mask_for_testing() { return channel_mask_; }
 

@@ -212,6 +212,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Called when a deactivation is detected.
   void OnDeactivate();
 
+  // Updates the anchoring widget.
+  void SetAnchorWidget(Widget* widget);
+
   // Update the button highlight, which may be the anchor view or an explicit
   // view set in |highlighted_button_tracker_|. This can be overridden to
   // provide different highlight effects.

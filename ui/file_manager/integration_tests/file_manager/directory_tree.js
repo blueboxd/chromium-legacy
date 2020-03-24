@@ -350,30 +350,6 @@
   }
 
   /**
-   * Wait for |query| to return |count| number of elements.
-   *
-   * @param {string} appId
-   * @param {!Array<string>} query
-   * @param {number} count
-   */
-  async function waitForElementsCount(appId, query, count) {
-    const caller = getCaller();
-
-    await repeatUntil(async () => {
-      const result = await remoteCall.callRemoteTestUtil(
-          'countElements', appId, [query, count]);
-
-      if (result) {
-        return true;
-      }
-
-      return pending(
-          caller,
-          `Waiting for "${query.join('\n')}" to return ${count} elements`);
-    });
-  }
-
-  /**
    * Tests that expanding a folder updates the its sub-folders expand icons.
    */
   testcase.directoryTreeExpandFolder = async () => {
@@ -403,7 +379,7 @@
     const querySubFolderExpandIcons =
         ['#directory-tree [entry-label="large-folder-0"] > ' +
          '.tree-children > .tree-item > .tree-row[has-children="true"]'];
-    await waitForElementsCount(
+    await remoteCall.waitForElementsCount(
         appId, querySubFolderExpandIcons, numberOfSubFolders);
 
     // Expand a sub-folder.
@@ -414,7 +390,7 @@
     const querySubSubFolderItems =
         ['#directory-tree [entry-label="sub-folder-0"] > ' +
          '.tree-children > .tree-item'];
-    await waitForElementsCount(
+    await remoteCall.waitForElementsCount(
         appId, querySubSubFolderItems, numberOfSubSubFolders);
 
     const testTime = Date.now() - start;

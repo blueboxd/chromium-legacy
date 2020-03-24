@@ -307,6 +307,7 @@ class FakeSerialService {
         new MojoInterfaceInterceptor(blink.mojom.SerialService.name);
     this.interceptor_.oninterfacerequest = e => this.bind(e.handle);
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.SerialService);
+    this.clients_ = [];
     this.nextToken_ = 0;
     this.reset();
   }
@@ -343,11 +344,25 @@ class FakeSerialService {
       fakePort: new FakeSerialPort(),
     };
     this.ports_.set(token, record);
+
+    for (let client of this.clients_) {
+      client.onPortAdded(info);
+    }
+
     return token;
   }
 
   removePort(token) {
+    let record = this.ports_.get(token);
+    if (record === undefined) {
+      return;
+    }
+
     this.ports_.delete(token);
+
+    for (let client of this.clients_) {
+      client.onPortRemoved(record.portInfo);
+    }
   }
 
   setSelectedPort(token) {
@@ -363,6 +378,10 @@ class FakeSerialService {
 
   bind(handle) {
     this.bindingSet_.addBinding(this, handle);
+  }
+
+  async setClient(client_remote) {
+    this.clients_.push(client_remote);
   }
 
   async getPorts() {

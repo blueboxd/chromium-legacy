@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_H_
 
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -24,9 +25,11 @@ class SerialPort;
 class SerialPortRequestOptions;
 
 class Serial final : public EventTargetWithInlineData,
-                     public ExecutionContextLifecycleObserver {
+                     public ExecutionContextLifecycleObserver,
+                     public mojom::blink::SerialServiceClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Serial);
+  USING_PRE_FINALIZER(Serial, Dispose);
 
  public:
   explicit Serial(ExecutionContext&);
@@ -38,6 +41,10 @@ class Serial final : public EventTargetWithInlineData,
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
+  // SerialServiceClient
+  void OnPortAdded(mojom::blink::SerialPortInfoPtr port_info) override;
+  void OnPortRemoved(mojom::blink::SerialPortInfoPtr port_info) override;
+
   // Web-exposed interfaces
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
@@ -46,10 +53,16 @@ class Serial final : public EventTargetWithInlineData,
                             const SerialPortRequestOptions*,
                             ExceptionState&);
 
+  void Dispose();
   void GetPort(
       const base::UnguessableToken& token,
       mojo::PendingReceiver<device::mojom::blink::SerialPort> receiver);
   void Trace(Visitor*) override;
+
+ protected:
+  // EventTarget
+  void AddedEventListener(const AtomicString& event_type,
+                          RegisteredEventListener&) override;
 
  private:
   void EnsureServiceConnection();
@@ -60,6 +73,7 @@ class Serial final : public EventTargetWithInlineData,
   void OnRequestPort(ScriptPromiseResolver*, mojom::blink::SerialPortInfoPtr);
 
   mojo::Remote<mojom::blink::SerialService> service_;
+  mojo::Receiver<mojom::blink::SerialServiceClient> receiver_{this};
   HeapHashSet<Member<ScriptPromiseResolver>> get_ports_promises_;
   HeapHashSet<Member<ScriptPromiseResolver>> request_port_promises_;
   HeapHashMap<String, WeakMember<SerialPort>> port_cache_;

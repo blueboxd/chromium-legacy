@@ -122,10 +122,11 @@ class AccessibilityHighlightControllerTest : public AshTestBase {
           bitmap.height() != bounds.height()) {
         LOG(INFO) << "Bitmap not correct size, trying to capture again";
         continue;
-      } else if (255 == SkColorGetA(bitmap.getColor(0, 0))) {
+      } else if (255 != SkColorGetA(bitmap.getColor(0, 0))) {
         LOG(INFO) << "Bitmap is transparent, trying to capture again";
-        break;
+        continue;
       }
+      break;
     }
   }
 

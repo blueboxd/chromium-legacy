@@ -10,7 +10,7 @@ import "mojo/public/mojom/base/string16.mojom";
 // LocalSearchService will run as a singleton service so that clients
 // can request Indices from it. LocalSearchService will be responsible for
 // creating Indices, but data update will be the responsibility of
-// clients.
+// clients. Runs in the browser process as a KeyedService.
 interface LocalSearchService {
   // Identifies a globally unique Index of related search data.
   enum IndexId {

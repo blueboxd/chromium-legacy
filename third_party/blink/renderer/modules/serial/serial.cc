@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
+#include "third_party/blink/renderer/modules/serial/serial_connection_event.h"
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -54,6 +55,16 @@ const AtomicString& Serial::InterfaceName() const {
 void Serial::ContextDestroyed() {
   for (auto& entry : port_cache_)
     entry.value->ContextDestroyed();
+}
+
+void Serial::OnPortAdded(mojom::blink::SerialPortInfoPtr port_info) {
+  DispatchEvent(*SerialConnectionEvent::Create(
+      event_type_names::kConnect, GetOrCreatePort(std::move(port_info))));
+}
+
+void Serial::OnPortRemoved(mojom::blink::SerialPortInfoPtr port_info) {
+  DispatchEvent(*SerialConnectionEvent::Create(
+      event_type_names::kDisconnect, GetOrCreatePort(std::move(port_info))));
 }
 
 ScriptPromise Serial::getPorts(ScriptState* script_state,
@@ -144,6 +155,10 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
   return resolver->Promise();
 }
 
+void Serial::Dispose() {
+  receiver_.reset();
+}
+
 void Serial::GetPort(
     const base::UnguessableToken& token,
     mojo::PendingReceiver<device::mojom::blink::SerialPort> receiver) {
@@ -159,6 +174,25 @@ void Serial::Trace(Visitor* visitor) {
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
+void Serial::AddedEventListener(const AtomicString& event_type,
+                                RegisteredEventListener& listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type, listener);
+
+  if (event_type != event_type_names::kConnect &&
+      event_type != event_type_names::kDisconnect) {
+    return;
+  }
+
+  ExecutionContext* context = GetExecutionContext();
+  if (!context ||
+      !context->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kSerial,
+                                 ReportOptions::kDoNotReport)) {
+    return;
+  }
+
+  EnsureServiceConnection();
+}
+
 void Serial::EnsureServiceConnection() {
   DCHECK(GetExecutionContext());
 
@@ -171,10 +205,13 @@ void Serial::EnsureServiceConnection() {
       service_.BindNewPipeAndPassReceiver(task_runner));
   service_.set_disconnect_handler(
       WTF::Bind(&Serial::OnServiceConnectionError, WrapWeakPersistent(this)));
+
+  service_->SetClient(receiver_.BindNewPipeAndPassRemote());
 }
 
 void Serial::OnServiceConnectionError() {
   service_.reset();
+  receiver_.reset();
 
   // Script may execute during a call to Resolve(). Swap these sets to prevent
   // concurrent modification.

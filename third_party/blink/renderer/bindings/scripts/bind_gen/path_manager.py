@@ -63,6 +63,14 @@ class PathManager(object):
         cls._is_initialized = True
 
     @classmethod
+    def component_path(cls, component, filepath):
+        """
+        Returns the relative path to |filepath| in |component|'s directory.
+        """
+        assert cls._is_initialized, cls._REQUIRE_INIT_MESSAGE
+        return posixpath.join(cls._component_reldirs[component], filepath)
+
+    @classmethod
     def gen_path_to(cls, path):
         """
         Returns the absolute path of |path| that must be relative to the root

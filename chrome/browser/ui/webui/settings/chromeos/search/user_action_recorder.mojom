@@ -4,7 +4,8 @@
 
 module chromeos.settings.mojom;
 
-// Records user actions within OS settings.
+// Records user actions within OS settings. Implemented in the browser process;
+// intended to be called from settings JS.
 interface UserActionRecorder {
   // Records that the settings window has been focused.
   RecordPageFocus();

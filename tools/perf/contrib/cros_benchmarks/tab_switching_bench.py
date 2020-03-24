@@ -5,6 +5,7 @@
 import os
 
 from core import perf_benchmark
+from core import platforms
 
 from contrib.cros_benchmarks import tab_switching_stories
 from telemetry import benchmark
@@ -31,6 +32,10 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
   $ ./run_benchmark --browser=cros-chrome --remote=DUT_IP
   cros_tab_switching.typical_24 --tabset-repeat=5
   """
+  # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
+  # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
+  # from expectations.config in SUPPORTED_PLATFORM_TAGS.
+  SUPPORTED_PLATFORM_TAGS = [platforms.CHROMEOS]
   SUPPORTED_PLATFORMS = [story.expectations.ALL_CHROMEOS]
 
 

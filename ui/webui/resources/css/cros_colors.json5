@@ -13,15 +13,27 @@
     /*
      * Recommended colors.
      */
-    cros_default_text_color: "$google_grey_900",
-    cros_default_text_color_secondary: "$google_grey_700",
+    cros_default_text_color: {
+      light: "$google_grey_900",
+      dark: "$google_grey_200",
+    },
+    cros_default_text_color_secondary: {
+      light: "$google_grey_700",
+      dark: "$google_grey_500",
+    },
 
-    cros_default_bg_color: "#ffffff",
+    cros_default_bg_color: {
+      light: "#ffffff",
+      dark: "$google_grey_900",
+    },
+
+    cros_default_button_color: {
+      light: "$google_blue_600",
+      dark: "$google_blue_300",
+    },
 
     cros_default_toolbar_bg_color: "#ffffff",
     cros_default_toolbar_search_bg_color: "$google_grey_100",
-
-    cros_default_button_color: "$google_blue_600",
 
     cros_menu_button_bg_color_active: "$google_blue_50",
     cros_menu_button_bg_color_hover: "$google_grey_100",
@@ -41,6 +53,48 @@
     cros_separator_color: "rgba(0, 0, 0, 0.12)",
 
     cros_link_color: "$google_blue_700",
+
+
+    /* button-primary */
+    cros_default_button_background_color_primary: "$cros_default_button_color",
+    cros_default_button_label_color_primary: {
+      light: "$google_grey_200",
+      dark: "$google_grey_900",
+    },
+    /* button-primary:hover */
+    /* TODO(calamity): Generate a linear-gradient() to use for compositing
+       backgrounds */
+    cros_default_button_background_color_primary_hover_overlay:
+        "rgba(0, 0, 0, 0.08)",
+    /* button-primary[disabled] */
+    cros_default_button_background_color_primary_disabled: {
+      light: "$google_grey_100",
+      dark: "$google_grey_800",
+    },
+    cros_default_button_label_color_primary_disabled: {
+      light: "$google_grey_600",
+      dark: "$google_grey_500",
+    },
+
+    /* button-secondary */
+    cros_default_button_label_color_secondary: "$cros_default_button_color",
+    cros_default_button_stroke_color_secondary: {
+      light: "$google_grey_300",
+      dark: "$google_grey_700",
+    },
+    /* button-secondary:hover */
+    cros_default_button_background_color_secondary_hover:
+        "rgba($cros_default_button_color_rgb, 0.04)",
+    /* button-secondary[disabled] */
+    cros_default_button_label_color_secondary_disabled: {
+      light: "$google_grey_600",
+      dark: "$google_grey_500",
+    },
+    cros_default_button_stroke_color_secondary_disabled: {
+      light: "$google_grey_100",
+      dark: "$google_grey_800",
+    },
+
 
     /*
      * One_offs.

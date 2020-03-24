@@ -15,6 +15,17 @@
 #include "chrome/browser/ui/serial/serial_chooser_controller.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+SerialChooserContext* GetChooserContext(content::RenderFrameHost* frame) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return SerialChooserContextFactory::GetForProfile(profile);
+}
+
+}  // namespace
+
 ChromeSerialDelegate::ChromeSerialDelegate() = default;
 
 ChromeSerialDelegate::~ChromeSerialDelegate() = default;
@@ -53,9 +64,15 @@ bool ChromeSerialDelegate::HasPortPermission(
 
 device::mojom::SerialPortManager* ChromeSerialDelegate::GetPortManager(
     content::RenderFrameHost* frame) {
-  auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
-  auto* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  auto* chooser_context = SerialChooserContextFactory::GetForProfile(profile);
-  return chooser_context->GetPortManager();
+  return GetChooserContext(frame)->GetPortManager();
+}
+
+void ChromeSerialDelegate::AddObserver(content::RenderFrameHost* frame,
+                                       Observer* observer) {
+  return GetChooserContext(frame)->AddPortObserver(observer);
+}
+
+void ChromeSerialDelegate::RemoveObserver(content::RenderFrameHost* frame,
+                                          Observer* observer) {
+  return GetChooserContext(frame)->RemovePortObserver(observer);
 }

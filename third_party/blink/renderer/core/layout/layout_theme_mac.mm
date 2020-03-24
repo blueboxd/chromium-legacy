@@ -771,6 +771,7 @@ static const IntSize* MenuListButtonSizes() {
 
 void LayoutThemeMac::AdjustMenuListStyle(ComputedStyle& style,
                                          Element* e) const {
+  LayoutTheme::AdjustMenuListStyle(style, e);
   NSControlSize control_size = ControlSizeForFont(style);
 
   style.ResetBorder();

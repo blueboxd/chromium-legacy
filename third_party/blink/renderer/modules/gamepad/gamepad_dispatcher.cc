@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 
 #include "device/gamepad/public/cpp/gamepads.h"
@@ -16,7 +18,7 @@ using device::mojom::blink::GamepadHapticsManager;
 
 void GamepadDispatcher::SampleGamepads(device::Gamepads& gamepads) {
   if (reader_) {
-    reader_->SampleGamepads(gamepads);
+    reader_->SampleGamepads(&gamepads);
   }
 }
 

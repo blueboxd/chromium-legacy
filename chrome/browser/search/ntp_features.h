@@ -23,6 +23,8 @@ extern const base::Feature kRealbox;
 
 extern const base::Feature kSearchSuggestChips;
 
+extern const base::Feature kDoodleNotifier;
+
 // Returns true if either kRealbox or omnibox::kZeroSuggestionsOnNTPRealbox
 // are enabled; or omnibox::kOnFocusSuggestions is enabled and configured to
 // show suggestions of some type in the NTP Realbox.

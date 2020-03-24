@@ -386,3 +386,9 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_ignore_one_write_error_after_mtu_probe,
     false)
+
+// If true, send H3 SETTINGs when 1-RTT write key is available (rather then both
+// keys are available).
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_send_settings_on_write_key_available,
+          false)

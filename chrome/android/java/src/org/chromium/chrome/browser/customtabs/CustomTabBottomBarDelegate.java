@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
@@ -45,6 +45,10 @@ import javax.inject.Inject;
 @ActivityScope
 public class CustomTabBottomBarDelegate implements FullscreenListener {
     private static final String TAG = "CustomTab";
+    private static final CachedMetrics.ActionEvent REMOTE_VIEWS_SHOWN =
+            new CachedMetrics.ActionEvent("CustomTabsRemoteViewsShown");
+    private static final CachedMetrics.ActionEvent REMOTE_VIEWS_UPDATED =
+            new CachedMetrics.ActionEvent("CustomTabsRemoteViewsUpdated");
     private static final int SLIDE_ANIMATION_DURATION_MS = 400;
 
     private final ChromeActivity<?> mActivity;
@@ -117,7 +121,7 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
 
         RemoteViews remoteViews = mDataProvider.getBottomBarRemoteViews();
         if (remoteViews != null) {
-            RecordUserAction.record("CustomTabsRemoteViewsShown");
+            REMOTE_VIEWS_SHOWN.record();
             mClickableIDs = mDataProvider.getClickableViewIDs();
             mClickPendingIntent = mDataProvider.getRemoteViewsPendingIntent();
             showRemoteViews(remoteViews);
@@ -162,7 +166,7 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
      */
     public boolean updateRemoteViews(RemoteViews remoteViews, int[] clickableIDs,
             PendingIntent pendingIntent) {
-        RecordUserAction.record("CustomTabsRemoteViewsUpdated");
+        REMOTE_VIEWS_UPDATED.record();
         if (remoteViews == null) {
             if (mBottomBarView == null) return false;
             hideBottomBar();

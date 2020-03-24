@@ -26,7 +26,7 @@ if (enable_android_cablev2_authenticator) {
       "//chrome/android:chrome_java",
       "//content/public/android:content_java",
       "//third_party/android_deps:android_support_v7_appcompat_java",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//ui/android:ui_full_java",
     ]
 
@@ -56,7 +56,7 @@ if (enable_android_cablev2_authenticator) {
     deps = [
       # This is needed to prevent a build-error. See comment in
       # https://chromium-review.googlesource.com/c/chromium/src/+/2079613/12/chrome/android/features/cablev2_authenticator/internal/BUILD.gn#9
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
   }
   source_set("jni_headers") {

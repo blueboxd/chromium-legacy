@@ -105,7 +105,8 @@ void SmsService::OnReceive(const std::string& one_time_code) {
   one_time_code_ = one_time_code;
 
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWebOtpBackend) == switches::kWebOtpBackendUserConsent) {
+          switches::kWebOtpBackend) !=
+      switches::kWebOtpBackendSmsVerification) {
     Process(SmsStatus::kSuccess, one_time_code_);
     return;
   }

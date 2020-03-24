@@ -21,7 +21,7 @@ serial_test(async (t, fake) => {
 
   const writer = writable.getWriter();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-  await promise_rejects(t, 'InvalidStateError', writer.write(data));
+  await promise_rejects_dom(t, 'InvalidStateError', writer.write(data));
 }, 'open() and close() set and unset SerialPort.writable');
 
 serial_test(async (t, fake) => {
@@ -31,7 +31,7 @@ serial_test(async (t, fake) => {
   assert_true(port.writable instanceof WritableStream);
 
   const writer = port.writable.getWriter();
-  await promise_rejects(t, new TypeError(), port.close());
+  await promise_rejects_js(t, TypeError, port.close());
 
   writer.releaseLock();
   await port.close();
@@ -86,7 +86,7 @@ serial_test(async (t, fake) => {
 
   fakePort.simulateSystemErrorOnWrite();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-  await promise_rejects(t, 'UnknownError', writer.write(data));
+  await promise_rejects_dom(t, 'UnknownError', writer.write(data));
 
   assert_true(port.writable instanceof WritableStream);
   assert_not_equals(port.writable, writable);
@@ -112,7 +112,7 @@ serial_test(async (t, fake) => {
 
   fakePort.simulateDisconnectOnWrite();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-  await promise_rejects(t, 'NetworkError', writer.write(data));
+  await promise_rejects_dom(t, 'NetworkError', writer.write(data));
   assert_equals(port.writable, null);
 
   await port.close();

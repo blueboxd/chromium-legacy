@@ -426,6 +426,7 @@ void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
                              /*delete_screenshot=*/true));
   animating_layer_ = window->layer();
   animating_layer_->GetAnimator()->AddObserver(this);
+  animating_layer_->AddObserver(this);
 }
 
 void TabletModeController::StopObservingAnimation(bool record_stats,
@@ -434,9 +435,17 @@ void TabletModeController::StopObservingAnimation(bool record_stats,
 
   ResetDestroyObserver();
 
-  if (animating_layer_)
-    animating_layer_->GetAnimator()->RemoveObserver(this);
-  animating_layer_ = nullptr;
+  if (animating_layer_) {
+    animating_layer_->GetAnimator()->StopAnimating();
+
+    // If the observed layer is part of a cross fade animation, stopping the
+    // animation will end up destroying the layer.
+    if (animating_layer_) {
+      animating_layer_->RemoveObserver(this);
+      animating_layer_->GetAnimator()->RemoveObserver(this);
+      animating_layer_ = nullptr;
+    }
+  }
 
   if (record_stats && fps_counter_)
     fps_counter_->LogUma();
@@ -693,6 +702,13 @@ void TabletModeController::OnLayerAnimationScheduled(
   // watching is still animating, abort and do not log stats as the stats will
   // not be accurate.
   StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
+}
+
+void TabletModeController::LayerDestroyed(ui::Layer* layer) {
+  DCHECK_EQ(animating_layer_, layer);
+  animating_layer_->RemoveObserver(this);
+  animating_layer_->GetAnimator()->RemoveObserver(this);
+  animating_layer_ = nullptr;
 }
 
 void TabletModeController::SetEnabledForDev(bool enabled) {

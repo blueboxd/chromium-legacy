@@ -162,11 +162,6 @@ class GLES2ImplementationWithGrContextSupport
                  GLboolean blue,
                  GLboolean alpha) override;
 
-  // Calls that invalidate kPathRendering_GrGLBackendState
-  void PathStencilFuncCHROMIUM(GLenum func, GLint ref, GLuint mask) override;
-  void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) override;
-  // Note: MatrixLoadIdentity omitted on purpose
-
   // Calls that invalidate different bits, depending on args
   void BindBuffer(GLenum target, GLuint buffer) override;
   void BindBufferBase(GLenum target, GLuint index, GLuint buffer) override;

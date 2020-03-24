@@ -55,7 +55,7 @@ enum class IdNamespaces {
   kNumIdNamespaces
 };
 
-enum RangeIdNamespaces { kPaths, kNumRangeIdNamespaces };
+enum RangeIdNamespaces { kNumRangeIdNamespaces = 1 };
 
 // These numbers must not change
 static_assert(static_cast<int>(SharedIdNamespaces::kBuffers) == 0,
@@ -80,7 +80,8 @@ static_assert(static_cast<int>(IdNamespaces::kTransformFeedbacks) == 3,
               "kTransformFeedbacks should equal 3");
 static_assert(static_cast<int>(IdNamespaces::kGpuFences) == 4,
               "kGpuFences should equal 4");
-static_assert(kPaths == 0, "kPaths should equal 0");
+static_assert(kNumRangeIdNamespaces == 1,
+              "kNumRangeIdNamespaces should equal 1");
 
 }  // namespace id_namespaces
 

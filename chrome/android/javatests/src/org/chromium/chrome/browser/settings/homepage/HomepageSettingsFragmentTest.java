@@ -18,7 +18,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -217,9 +216,9 @@ public class HomepageSettingsFragmentTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
+    @Features.EnableFeatures(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)
     public void testStartUp_Policies_Customized() {
         // Set mock policies
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
         mHomepageTestRule.setHomepagePolicyForTest(TEST_URL_BAR);
 
         launchSettingsActivity();
@@ -246,17 +245,14 @@ public class HomepageSettingsFragmentTest {
         Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH,
                 HomepageLocationType.POLICY_OTHER,
                 HomepageManager.getInstance().getHomepageLocationType());
-
-        // Reset policy
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     @Test
     @SmallTest
     @Feature({"Homepage"})
+    @Features.EnableFeatures(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)
     public void testStartUp_Policies_NTP() {
         // Set mock policies
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
         mHomepageTestRule.setHomepagePolicyForTest(CHROME_NTP);
 
         launchSettingsActivity();
@@ -278,18 +274,15 @@ public class HomepageSettingsFragmentTest {
                 mManagedText.isVisible());
         Assert.assertEquals(ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH, HomepageLocationType.POLICY_NTP,
                 HomepageManager.getInstance().getHomepageLocationType());
-
-        // Reset policy and feature flags
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     @Test
     @SmallTest
     @Feature({"Homepage"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @Features.EnableFeatures(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)
     public void testStartUp_Policies_Customized_BottomToolbar() {
         // Set mock policies
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
         mHomepageTestRule.setHomepagePolicyForTest(TEST_URL_BAR);
 
         HomepageSettings.setIsHomeButtonOnBottomToolbar(true);
@@ -318,7 +311,6 @@ public class HomepageSettingsFragmentTest {
                 HomepageManager.getInstance().getHomepageLocationType());
 
         // Reset policy
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
         HomepageSettings.setIsHomeButtonOnBottomToolbar(false);
     }
 

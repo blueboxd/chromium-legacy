@@ -15,29 +15,6 @@ namespace blink {
 
 namespace {
 
-static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
-  if (item.GetType() != DisplayItem::kBoxDecorationBackground &&
-      item.GetType() != DisplayItem::kDocumentBackground)
-    return SK_ColorTRANSPARENT;
-
-  const auto& drawing_item = static_cast<const DrawingDisplayItem&>(item);
-  const auto record = drawing_item.GetPaintRecord();
-  if (!record)
-    return SK_ColorTRANSPARENT;
-
-  for (cc::PaintOpBuffer::Iterator it(record.get()); it; ++it) {
-    const auto* op = *it;
-    if (op->GetType() == cc::PaintOpType::DrawRect ||
-        op->GetType() == cc::PaintOpType::DrawRRect) {
-      const auto& flags = static_cast<const cc::PaintOpWithFlags*>(op)->flags;
-      // Skip op with looper which may modify the color.
-      if (!flags.getLooper() && flags.getStyle() == cc::PaintFlags::kFill_Style)
-        return flags.getColor();
-    }
-  }
-  return SK_ColorTRANSPARENT;
-}
-
 // For PaintArtifact::AppendDebugDrawing().
 class DebugDrawingClient final : public DisplayItemClient {
  public:
@@ -119,11 +96,11 @@ sk_sp<PaintRecord> PaintArtifact::GetPaintRecord(
 
 SkColor PaintArtifact::SafeOpaqueBackgroundColor(
     const PaintChunkSubset& chunks) const {
-  // Find the background color from the first drawable display item.
+  // Find the background color from the first drawing display item.
   for (const auto& chunk : chunks) {
     for (const auto& item : display_item_list_.ItemsInPaintChunk(chunk)) {
-      if (item.DrawsContent())
-        return DisplayItemBackgroundColor(item);
+      if (item.IsDrawing() && item.DrawsContent())
+        return static_cast<const DrawingDisplayItem&>(item).BackgroundColor();
     }
   }
   return SK_ColorTRANSPARENT;

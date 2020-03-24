@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/power_monitor_test_base.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/observers/page_load_metrics_observer_content_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
@@ -41,6 +42,14 @@ class CorePageLoadMetricsObserverTest
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverContentTestHarness::SetUp();
     page_load_metrics::LargestContentfulPaintHandler::SetTestMode(true);
+
+    base::PowerMonitor::Initialize(
+        std::make_unique<base::PowerMonitorTestSource>());
+  }
+
+  void TearDown() override {
+    base::PowerMonitor::ShutdownForTesting();
+    page_load_metrics::PageLoadMetricsObserverContentTestHarness::TearDown();
   }
 
   void OnCpuTimingUpdate(RenderFrameHost* render_frame_host,

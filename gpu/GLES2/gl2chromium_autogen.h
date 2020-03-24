@@ -357,39 +357,6 @@
 #define glGetLastFlushIdCHROMIUM GLES2_GET_FUN(GetLastFlushIdCHROMIUM)
 #define glScheduleDCLayerCHROMIUM GLES2_GET_FUN(ScheduleDCLayerCHROMIUM)
 #define glSetActiveURLCHROMIUM GLES2_GET_FUN(SetActiveURLCHROMIUM)
-#define glMatrixLoadfCHROMIUM GLES2_GET_FUN(MatrixLoadfCHROMIUM)
-#define glMatrixLoadIdentityCHROMIUM GLES2_GET_FUN(MatrixLoadIdentityCHROMIUM)
-#define glGenPathsCHROMIUM GLES2_GET_FUN(GenPathsCHROMIUM)
-#define glDeletePathsCHROMIUM GLES2_GET_FUN(DeletePathsCHROMIUM)
-#define glIsPathCHROMIUM GLES2_GET_FUN(IsPathCHROMIUM)
-#define glPathCommandsCHROMIUM GLES2_GET_FUN(PathCommandsCHROMIUM)
-#define glPathParameterfCHROMIUM GLES2_GET_FUN(PathParameterfCHROMIUM)
-#define glPathParameteriCHROMIUM GLES2_GET_FUN(PathParameteriCHROMIUM)
-#define glPathStencilFuncCHROMIUM GLES2_GET_FUN(PathStencilFuncCHROMIUM)
-#define glStencilFillPathCHROMIUM GLES2_GET_FUN(StencilFillPathCHROMIUM)
-#define glStencilStrokePathCHROMIUM GLES2_GET_FUN(StencilStrokePathCHROMIUM)
-#define glCoverFillPathCHROMIUM GLES2_GET_FUN(CoverFillPathCHROMIUM)
-#define glCoverStrokePathCHROMIUM GLES2_GET_FUN(CoverStrokePathCHROMIUM)
-#define glStencilThenCoverFillPathCHROMIUM \
-  GLES2_GET_FUN(StencilThenCoverFillPathCHROMIUM)
-#define glStencilThenCoverStrokePathCHROMIUM \
-  GLES2_GET_FUN(StencilThenCoverStrokePathCHROMIUM)
-#define glStencilFillPathInstancedCHROMIUM \
-  GLES2_GET_FUN(StencilFillPathInstancedCHROMIUM)
-#define glStencilStrokePathInstancedCHROMIUM \
-  GLES2_GET_FUN(StencilStrokePathInstancedCHROMIUM)
-#define glCoverFillPathInstancedCHROMIUM \
-  GLES2_GET_FUN(CoverFillPathInstancedCHROMIUM)
-#define glCoverStrokePathInstancedCHROMIUM \
-  GLES2_GET_FUN(CoverStrokePathInstancedCHROMIUM)
-#define glStencilThenCoverFillPathInstancedCHROMIUM \
-  GLES2_GET_FUN(StencilThenCoverFillPathInstancedCHROMIUM)
-#define glStencilThenCoverStrokePathInstancedCHROMIUM \
-  GLES2_GET_FUN(StencilThenCoverStrokePathInstancedCHROMIUM)
-#define glBindFragmentInputLocationCHROMIUM \
-  GLES2_GET_FUN(BindFragmentInputLocationCHROMIUM)
-#define glProgramPathFragmentInputGenCHROMIUM \
-  GLES2_GET_FUN(ProgramPathFragmentInputGenCHROMIUM)
 #define glContextVisibilityHintCHROMIUM \
   GLES2_GET_FUN(ContextVisibilityHintCHROMIUM)
 #define glCoverageModulationCHROMIUM GLES2_GET_FUN(CoverageModulationCHROMIUM)

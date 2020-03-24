@@ -59,6 +59,9 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   theme->shortcut_background_color = ntp_theme.shortcut_color;
   theme->shortcut_text_color = ntp_theme.text_color;
   theme->is_dark = !color_utils::IsDark(ntp_theme.text_color);
+  if (ntp_theme.logo_alternate) {
+    theme->logo_color = ntp_theme.logo_color;
+  }
   if (!ntp_theme.custom_background_url.is_empty()) {
     theme->background_image_url = ntp_theme.custom_background_url;
   }
@@ -285,7 +288,7 @@ void NewTabPageHandler::GetDoodle(GetDoodleCallback callback) {
   }
   // This will trigger re-downloading the doodle and caching it. This means that
   // in regular mode a new doodle will be returned on subsequent NTP loads.
-  logo_service_->GetLogo(std::move(callbacks));
+  logo_service_->GetLogo(std::move(callbacks), /*for_webui_ntp=*/true);
 }
 
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {

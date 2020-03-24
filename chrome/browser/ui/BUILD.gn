@@ -1472,7 +1472,7 @@ jumbo_static_library("ui") {
       "//components/network_session_configurator/common",
       "//components/page_load_metrics/browser",
       "//components/profile_metrics",
-      "//components/search_provider_logos:search_provider_logos",
+      "//components/search_provider_logos",
       "//components/ui_metrics",
       "//components/url_formatter",
       "//components/vector_icons",

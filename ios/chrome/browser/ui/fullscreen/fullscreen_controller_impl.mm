@@ -138,9 +138,11 @@ FullscreenControllerImpl::FullscreenControllerImpl()
                 forSelector:@selector(broadcastExpandedToolbarHeight:)];
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastBottomToolbarHeight:)];
-  ios::GetChromeBrowserProvider()
-      ->GetFullscreenProvider()
-      ->InitializeFullscreen(this);
+  if (!fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    ios::GetChromeBrowserProvider()
+        ->GetFullscreenProvider()
+        ->InitializeFullscreen(this);
+  }
 }
 
 FullscreenControllerImpl::~FullscreenControllerImpl() {
@@ -174,6 +176,10 @@ ChromeBroadcaster* FullscreenControllerImpl::broadcaster() {
 }
 
 void FullscreenControllerImpl::SetWebStateList(WebStateList* web_state_list) {
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser())
+    // If FullscreenController is Browser-scoped, then WebStateList observation
+    // should last the entire lifetime of the Browser.
+    return;
   web_state_list_observer_.SetWebStateList(web_state_list);
 }
 

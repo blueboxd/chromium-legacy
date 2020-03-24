@@ -623,6 +623,10 @@ class LocalNtpSource::SearchConfigurationProvider
               omnibox::kOmniboxSuggestionTransparencyOptions));
     }
 
+    config_data.SetBoolean(
+        "doodleNotifierEnabled",
+        base::FeatureList::IsEnabled(ntp_features::kDoodleNotifier));
+
     // Serialize the dictionary.
     std::string js_text;
     JSONStringValueSerializer serializer(&js_text);
@@ -748,7 +752,7 @@ class LocalNtpSource::DesktopLogoObserver {
     if (!observing()) {
       ++version_started_;
     }
-    service->GetLogo(std::move(callbacks));
+    service->GetLogo(std::move(callbacks), /*for_webui_ntp=*/false);
   }
 
   bool observing() const {

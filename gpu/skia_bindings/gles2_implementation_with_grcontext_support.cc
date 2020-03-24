@@ -394,21 +394,6 @@ void GLES2ImplementationWithGrContextSupport::ColorMask(GLboolean red,
   ResetGrContextIfNeeded(kMisc_GrGLBackendState);
 }
 
-// Calls that invalidate kPathRendering_GrGLBackendState
-void GLES2ImplementationWithGrContextSupport::PathStencilFuncCHROMIUM(
-    GLenum func,
-    GLint ref,
-    GLuint mask) {
-  BaseClass::PathStencilFuncCHROMIUM(func, ref, mask);
-  ResetGrContextIfNeeded(kPathRendering_GrGLBackendState);
-}
-void GLES2ImplementationWithGrContextSupport::MatrixLoadfCHROMIUM(
-    GLenum matrixMode,
-    const GLfloat* m) {
-  BaseClass::MatrixLoadfCHROMIUM(matrixMode, m);
-  ResetGrContextIfNeeded(kPathRendering_GrGLBackendState);
-}
-
 // Calls that invalidate many flags
 void GLES2ImplementationWithGrContextSupport::BindBuffer(GLenum target,
                                                          GLuint buffer) {

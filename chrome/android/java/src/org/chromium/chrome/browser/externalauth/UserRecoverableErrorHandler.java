@@ -12,7 +12,7 @@ import android.content.DialogInterface;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -40,6 +40,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * subclassing this class.
  */
 public abstract class UserRecoverableErrorHandler {
+
+    private static final ActionEvent sModalDialogShownActionEvent =
+            new ActionEvent("Signin_Android_GmsUserRecoverableDialogShown");
+
+    private static final ActionEvent sModalDialogAcceptedActionEvent =
+            new ActionEvent("Signin_Android_GmsUserRecoverableDialogAccepted");
+
     /**
      * Handles the specified error code from Google Play Services.
      * This method must only be called on the UI thread.
@@ -123,7 +130,7 @@ public abstract class UserRecoverableErrorHandler {
             public void onDismiss(DialogInterface dialogInterface) {
                 if (mCancelled) return;
                 // Dialog is being dismissed without being cancelled - user accepted dialog action.
-                RecordUserAction.record("Signin_Android_GmsUserRecoverableDialogAccepted");
+                sModalDialogAcceptedActionEvent.record();
             }
 
             public static void createAndAttachToDialog(Dialog dialog) {
@@ -193,7 +200,7 @@ public abstract class UserRecoverableErrorHandler {
             if (mDialog != null && !mDialog.isShowing()) {
                 mDialog.setCancelable(mCancelable);
                 mDialog.show();
-                RecordUserAction.record("Signin_Android_GmsUserRecoverableDialogShown");
+                sModalDialogShownActionEvent.record();
             }
         }
 

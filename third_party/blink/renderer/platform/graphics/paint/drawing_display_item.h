@@ -30,41 +30,38 @@ class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
   DISABLE_CFI_PERF
   DrawingDisplayItem(const DisplayItemClient& client,
                      Type type,
-                     sk_sp<const PaintRecord> record,
-                     bool known_to_be_opaque = false);
+                     sk_sp<const PaintRecord> record);
 
   const sk_sp<const PaintRecord>& GetPaintRecord() const { return record_; }
 
-  bool KnownToBeOpaque() const {
-    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    return known_to_be_opaque_;
-  }
-
   bool Equals(const DisplayItem& other) const final;
 
+  bool KnownToBeOpaque() const {
+    if (!known_to_be_opaque_.has_value())
+      known_to_be_opaque_.emplace(CalculateKnownToBeOpaque(record_.get()));
+    return *known_to_be_opaque_;
+  }
+  void SetKnownToBeOpaqueForTesting() { known_to_be_opaque_.emplace(true); }
+
+  SkColor BackgroundColor() const;
+
  private:
-#if DCHECK_IS_ON()
-  void PropertiesAsJSON(JSONObject&) const final;
-#endif
+  bool CalculateKnownToBeOpaque(const PaintRecord*) const;
 
   sk_sp<const PaintRecord> record_;
-
-  // True if there are no transparent areas. Only used for CompositeAfterPaint.
-  const bool known_to_be_opaque_;
+  mutable base::Optional<bool> known_to_be_opaque_;
 };
 
 // TODO(dcheng): Move this ctor back inline once the clang plugin is fixed.
 DISABLE_CFI_PERF
 inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
                                               Type type,
-                                              sk_sp<const PaintRecord> record,
-                                              bool known_to_be_opaque)
+                                              sk_sp<const PaintRecord> record)
     : DisplayItem(client,
                   type,
                   sizeof(*this),
                   /* draws_content*/ record && record->size()),
-      record_(DrawsContent() ? std::move(record) : nullptr),
-      known_to_be_opaque_(known_to_be_opaque) {
+      record_(DrawsContent() ? std::move(record) : nullptr) {
   DCHECK(IsDrawingType(type));
 }
 

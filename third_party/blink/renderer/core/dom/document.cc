@@ -8664,15 +8664,16 @@ void Document::CountDeprecation(mojom::WebFeature feature) {
     }
   }
 
-  // Don't count or report usage of WebComponentsV0 for chrome:// URLs.
+  // Don't count usage of WebComponentsV0 for chrome:// URLs, but still report
+  // the deprecation messages.
   if (Url().ProtocolIs("chrome") &&
       (feature == WebFeature::kHTMLImports ||
        feature == WebFeature::kElementCreateShadowRoot ||
        feature == WebFeature::kDocumentRegisterElement)) {
-    return;
+    Deprecation::DeprecationWarningOnly(Loader(), feature);
+  } else {
+    Deprecation::CountDeprecation(Loader(), feature);
   }
-
-  Deprecation::CountDeprecation(Loader(), feature);
 }
 
 void Document::CountProperty(CSSPropertyID property) const {

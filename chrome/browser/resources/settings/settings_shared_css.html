@@ -126,7 +126,9 @@
 
       /* See also: .no-min-width below. */
       .text-elide {
-        @apply --cr-text-elide;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       /* By default, flexbox children have min-width calculated to be the width

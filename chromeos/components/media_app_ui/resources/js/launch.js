@@ -29,6 +29,13 @@ let fileToken = 0;
  */
 let currentlyWritableFileHandle = null;
 
+/**
+ * Reference to the directory handle that contains the first file in the most
+ * recent launch event.
+ * @type {?FileSystemDirectoryHandle}
+ */
+let currentDirectoryHandle = null;
+
 /** A pipe through which we can send messages to the guest frame. */
 const guestMessagePipe = new MessagePipe('chrome://media-app-guest');
 
@@ -42,13 +49,44 @@ guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
 
 guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   const overwrite = /** @type{OverwriteFileMessage} */ (message);
-  if (!currentlyWritableFileHandle || overwrite.token != fileToken) {
+  if (!currentlyWritableFileHandle || overwrite.token !== fileToken) {
     throw new Error('File not current.');
   }
   const writer = await currentlyWritableFileHandle.createWritable();
   await writer.write(overwrite.blob);
   await writer.truncate(overwrite.blob.size);
   await writer.close();
+});
+
+/** Handler to delete the currently focused file. */
+guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
+  const deleteMsg = /** @type{DeleteFileMessage} */ (message);
+
+  if (!currentlyWritableFileHandle || deleteMsg.token !== fileToken) {
+    throw new Error('File not current for delete.');
+  }
+
+  if (!currentDirectoryHandle) {
+    throw new Error('Delete for file without launch directory.');
+  }
+
+  // Get the name from the file reference. Handles file renames.
+  const currentFilename = (await currentlyWritableFileHandle.getFile()).name;
+
+  // Check the file to be deleted exists in the directory handle. Prevents
+  // deleting the wrong file / deleting a file that doesn't exist (this isn't
+  // a failure case in `removeEntry()` but should be handled with different UX
+  // in MediaApp).
+  const fileHandle = await currentDirectoryHandle.getFile(currentFilename);
+
+  const isSameFileHandle =
+      await fileHandle.isSameEntry(currentlyWritableFileHandle);
+  if (!isSameFileHandle) {
+    return {deleteResult: DeleteResult.FILE_MOVED};
+  }
+
+  await currentDirectoryHandle.removeEntry(currentFilename);
+  return {deleteResult: DeleteResult.SUCCESS};
 });
 
 /**
@@ -105,6 +143,7 @@ async function setCurrentDirectory(directory, focusFile) {
     }
   }
   entryIndex = currentFiles.findIndex(i => i.file.name == focusFile.name);
+  currentDirectoryHandle = directory;
 }
 
 /**

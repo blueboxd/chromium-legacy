@@ -23,8 +23,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
                                  DisplayItem::Type display_item_type)
     : context_(context),
       client_(display_item_client),
-      type_(display_item_type),
-      known_to_be_opaque_(false)
+      type_(display_item_type)
 #if DCHECK_IS_ON()
       ,
       initial_display_item_list_size_(
@@ -65,7 +64,7 @@ DrawingRecorder::~DrawingRecorder() {
 #endif
 
   context_.GetPaintController().CreateAndAppend<DrawingDisplayItem>(
-      client_, type_, context_.EndRecording(), known_to_be_opaque_);
+      client_, type_, context_.EndRecording());
 }
 
 }  // namespace blink

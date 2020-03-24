@@ -32,6 +32,11 @@ class SpeechMonitor : public content::TtsPlatform {
   SpeechMonitor();
   virtual ~SpeechMonitor();
 
+  // Blocing api.
+  // Use the following apis to write a synchronous test e.g.
+  // DoSomething();
+  // EXPECT_EQ("foo", speech_monitor_.GetNextUtterance());
+
   // Blocks until the next utterance is spoken, and returns its text.
   std::string GetNextUtterance();
   // Blocks until the next utterance is spoken, and returns its text.
@@ -47,6 +52,21 @@ class SpeechMonitor : public content::TtsPlatform {
 
   // Blocks until StopSpeaking() is called on TtsController.
   void BlockUntilStop();
+
+  // Non-blocking api.
+  // Use these apis if you want to write an async test e.g.
+  // speech_monitor_.ExpectSpeech("foo")
+  //                .Call([this]() { DoSomething(); })
+  //                .Replay();
+
+  // Adds an expectation of spoken text.
+  SpeechMonitor& ExpectSpeech(const std::string& text);
+
+  // Adds a call to be included in replay.
+  SpeechMonitor& Call(std::function<void()> func);
+
+  // Replays all expectations.
+  void Replay();
 
   // Delayed utterances.
   double GetDelayForLastUtteranceMS();
@@ -73,6 +93,8 @@ class SpeechMonitor : public content::TtsPlatform {
   void ClearError() override;
   void SetError(const std::string& error) override;
 
+  void MaybeContinueReplay();
+
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   // Our list of utterances and specified language.
   base::circular_deque<SpeechMonitorUtterance> utterance_queue_;
@@ -86,6 +108,12 @@ class SpeechMonitor : public content::TtsPlatform {
   double delay_for_last_utterance_MS_;
   // Stores the last time Speak() was called.
   std::chrono::steady_clock::time_point time_of_last_utterance_;
+
+  // Queue of expectations to be replayed.
+  std::vector<std::function<bool()>> replay_queue_;
+
+  // Blocks this test when replaying expectations.
+  scoped_refptr<content::MessageLoopRunner> replay_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);
 };

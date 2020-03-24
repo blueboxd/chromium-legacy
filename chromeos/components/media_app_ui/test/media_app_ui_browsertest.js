@@ -192,3 +192,42 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
   assertEquals(await writeResult.text(), 'Foo');
   testDone();
 });
+
+// Tests the IPC behind the implementation of ReceivedFile.deleteOriginalFile()
+// in the untrusted context.
+TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
+  const directory = createMockTestDirectory();
+  // Simulate steps taken to load a file via a launch event.
+  const firstFile = directory.files[0];
+  loadFile(await createTestImageFile(), firstFile);
+  setCurrentDirectory(directory, firstFile);
+  let testResponse;
+
+  // Nothing should be deleted initially.
+  assertEquals(null, directory.lastDeleted);
+
+  const messageDelete = {deleteLastFile: true};
+  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+
+  // Assertion will fail if exceptions from launch.js are thrown, no exceptions
+  // indicates the file was successfully deleted.
+  assertEquals(
+      testResponse.testQueryResult, 'deleteOriginalFile resolved success');
+  assertEquals(firstFile, directory.lastDeleted);
+  // File removed from `DirectoryHandle` internal state.
+  assertEquals(directory.files.length, 0);
+
+  // Even though the name is the same, the new file shouldn't shouldn't
+  // be deleted as it has a different `FileHandle` reference.
+  directory.addFileHandleForTest(new FakeFileSystemFileHandle());
+
+  // Try delete the first file again, should result in file moved.
+  const messageDeleteMoved = {deleteLastFile: true};
+  testResponse = await guestMessagePipe.sendMessage('test', messageDeleteMoved);
+
+  assertEquals(
+      testResponse.testQueryResult, 'deleteOriginalFile resolved file moved');
+  // New file not removed from `DirectoryHandle` internal state.
+  assertEquals(directory.files.length, 1);
+  testDone();
+});

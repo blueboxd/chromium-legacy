@@ -53,6 +53,7 @@ TEST_F(SadTabCoordinatorTest, Start) {
   // Verify SadTabViewController state.
   EXPECT_FALSE(view_controller.offTheRecord);
   EXPECT_FALSE(view_controller.repeatedFailure);
+  [coordinator stop];
 }
 
 // Tests stopping coordinator.
@@ -79,6 +80,7 @@ TEST_F(SadTabCoordinatorTest, Dismiss) {
 
   [coordinator sadTabTabHelperDismissSadTab:nullptr];
   EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+  [coordinator stop];
 }
 
 // Tests hiding Sad Tab.
@@ -92,6 +94,7 @@ TEST_F(SadTabCoordinatorTest, Hide) {
 
   [coordinator sadTabTabHelperDidHide:nullptr];
   EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+  [coordinator stop];
 }
 
 // Tests SadTabViewController state for the first failure in non-incognito mode.
@@ -115,6 +118,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInNonIncognito) {
   // Verify SadTabViewController state.
   EXPECT_FALSE(view_controller.offTheRecord);
   EXPECT_FALSE(view_controller.repeatedFailure);
+  [coordinator stop];
 }
 
 // Tests SadTabViewController state for the repeated failure in incognito mode.
@@ -140,6 +144,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInIncognito) {
   // Verify SadTabViewController state.
   EXPECT_TRUE(view_controller.offTheRecord);
   EXPECT_TRUE(view_controller.repeatedFailure);
+  [coordinator stop];
 }
 
 // Tests SadTabViewController state for the repeated failure in incognito mode.
@@ -161,6 +166,7 @@ TEST_F(SadTabCoordinatorTest, ShowFirstFailureInIncognito) {
   // Verify SadTabViewController state.
   EXPECT_TRUE(view_controller.offTheRecord);
   EXPECT_TRUE(view_controller.repeatedFailure);
+  [coordinator stop];
 }
 
 // Tests action button tap for the first failure.
@@ -187,6 +193,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureAction) {
   [view_controller.actionButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
   EXPECT_OCMOCK_VERIFY(coordinator.dispatcher);
+  [coordinator stop];
 }
 
 // Tests action button tap for the repeated failure.
@@ -215,6 +222,7 @@ TEST_F(SadTabCoordinatorTest, RepeatedFailureAction) {
   [view_controller.actionButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
   EXPECT_OCMOCK_VERIFY(coordinator.dispatcher);
+  [coordinator stop];
 }
 
 // Tests that view controller is not presented for the hidden web state.
@@ -230,4 +238,5 @@ TEST_F(SadTabCoordinatorTest, IgnoreSadTabFromHiddenWebState) {
 
   // Verify that view controller was not presented for the hidden web state.
   EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+  [coordinator stop];
 }

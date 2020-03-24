@@ -13,7 +13,6 @@
 #import "ios/web/public/web_state_user_data.h"
 
 @protocol SadTabTabHelperDelegate;
-class ScopedFullscreenDisabler;
 
 // SadTabTabHelper listens to RenderProcessGone events and presents a
 // SadTabView view appropriately.
@@ -77,10 +76,6 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Removes UIApplicationDidBecomeActiveNotification observer.
   void RemoveApplicationDidBecomeActiveObserver();
 
-  // Creates or resets the fullscreen disabler depending on whether the sad tab
-  // is currently visible.
-  void UpdateFullscreenDisabler();
-
   // WebStateObserver:
   void WasShown(web::WebState* web_state) override;
   void WasHidden(web::WebState* web_state) override;
@@ -112,9 +107,6 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   // true if Sad Tab is presented and presented for repeated load failure.
   bool repeated_failure_ = false;
-
-  // The fullscreen disabler for when the sad tab is visible.
-  std::unique_ptr<ScopedFullscreenDisabler> fullscreen_disabler_;
 
   // Stores the interval window in seconds during which a second
   // RenderProcessGone failure will be considered a repeat failure.

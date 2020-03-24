@@ -11,7 +11,8 @@ var TestMessageResponseData;
  *     pathToRoot: (Array<string>|undefined),
  *     property: (string|undefined),
  *     requestFullscreen: (boolean|undefined),
- *     overwriteLastFile: (string|undefined)
+ *     overwriteLastFile: (string|undefined),
+ *     deleteLastFile: (boolean|undefined)
  * }}
  */
 var TestMessageQueryData;

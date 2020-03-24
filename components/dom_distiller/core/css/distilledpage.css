@@ -173,7 +173,7 @@ body {
 
 .light th,
 .light td {
-  border-left: 1px solid #AAA;
+  border-inline-start: 2px solid #AAA;
 }
 
 .sepia tbody tr:nth-child(odd) {
@@ -182,7 +182,7 @@ body {
 
 .sepia th,
 .sepia td {
-  border-left: 1px solid rgb(147, 125, 102);
+  border-inline-start: 1px solid rgb(147, 125, 102);
 }
 
 .dark tbody tr:nth-child(odd) {
@@ -191,16 +191,16 @@ body {
 
 .dark th,
 .dark td {
-  border-left: 1px solid #555;
+  border-inline-start: 1px solid #555;
 }
 
 /* #content-wrap is added to be more specific than the color theme rules */
 #content-wrap th:first-child {
-  border-left: none;
+  border-inline-start: none;
 }
 
 #content-wrap td:first-child {
-  border-left: none;
+  border-inline-start: none;
 }
 
 
@@ -295,8 +295,8 @@ video::-webkit-media-controls-fullscreen-button {
 }
 
 blockquote {
-  border-left: 4px solid #888;
-  padding-left: 1em;
+  border-inline-start: 4px solid #888;
+  padding-inline-start: 1em;
 }
 
 cite {
@@ -350,7 +350,7 @@ video+[class*='caption'] {
 
 ol,
 ul {
-  margin-left: 1.296rem;
+  margin-inline-start: 1.296rem;
 }
 
 code,
@@ -388,8 +388,8 @@ body .hidden {
 
 .youtubeIframe {
   height: 100%;
-  left: 0;
   position: absolute;
+  start: 0;
   top: 0;
   width: 100%;
 }

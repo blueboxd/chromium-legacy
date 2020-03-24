@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
@@ -805,8 +806,13 @@ UIColor* BackgroundColor() {
     [self removeAutoscrollTimer];
 
   // Disable fullscreen during drags.
-  _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
-      FullscreenController::FromBrowserState(_browser->GetBrowserState()));
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
+        FullscreenController::FromBrowser(_browser));
+  } else {
+    _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
+        FullscreenController::FromBrowserState(_browser->GetBrowserState()));
+  }
 }
 
 - (void)continueDrag:(UILongPressGestureRecognizer*)gesture {

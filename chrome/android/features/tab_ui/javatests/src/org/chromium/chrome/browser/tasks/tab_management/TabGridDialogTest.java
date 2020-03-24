@@ -44,6 +44,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.support.test.espresso.Espresso;
@@ -124,6 +125,8 @@ public class TabGridDialogTest {
     @After
     public void tearDown() {
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(null);
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Test
@@ -487,9 +490,6 @@ public class TabGridDialogTest {
         mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
         assertTrue(isDialogShowing(cta));
         checkPopupPosition(cta, true, false);
-
-        // Reset orientation.
-        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
     }
 
     @Test

@@ -30,11 +30,13 @@ import org.chromium.base.NativeLibraryLoadedStatus.NativeLibraryLoadedStatusProv
 import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 
@@ -733,6 +735,11 @@ public class LibraryLoader {
                 Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
             }
         }
+    }
+
+    @CalledByNative
+    public static void onUmaRecordingReadyInRenderer() {
+        CachedMetrics.commitCachedMetrics();
     }
 
     // Android system sometimes fails to extract libraries from APK (https://crbug.com/806998).

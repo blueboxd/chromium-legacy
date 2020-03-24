@@ -16,6 +16,7 @@ source_set("non_modal") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:coordinators",
+    "//ios/chrome/browser/ui/fullscreen:feature_flags",
   ]
 }
 

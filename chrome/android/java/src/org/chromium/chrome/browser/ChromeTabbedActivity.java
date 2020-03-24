@@ -82,6 +82,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
+import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
 import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
@@ -2145,7 +2146,9 @@ public class ChromeTabbedActivity
         mNavigationSheet = NavigationSheet.create(
                 getWindow().getDecorView().findViewById(android.R.id.content), this,
                 this::getBottomSheetController);
-        mNavigationSheet.setDelegate(new TabbedSheetDelegate(tab));
+        mNavigationSheet.setDelegate(new TabbedSheetDelegate(tab, aTab -> {
+            HistoryManagerUtils.showHistoryManager(ChromeTabbedActivity.this, aTab);
+        }, getResources().getString(R.string.show_full_history)));
         if (!mNavigationSheet.startAndExpand(/* forward=*/false, /* animate=*/true)) {
             mNavigationSheet = null;
         } else {

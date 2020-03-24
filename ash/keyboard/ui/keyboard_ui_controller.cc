@@ -528,6 +528,21 @@ bool KeyboardUIController::IsKeyboardOverscrollEnabled() const {
 void KeyboardUIController::HideKeyboard(HideReason reason) {
   TRACE_EVENT0("vk", "HideKeyboard");
 
+  // Decide whether regaining focus in a web-based text field should cause
+  // the keyboard to come back.
+  switch (reason) {
+    case HIDE_REASON_SYSTEM_IMPLICIT:
+      time_of_last_blur_ = base::Time::Now();
+      break;
+
+    case HIDE_REASON_SYSTEM_TEMPORARY:
+    case HIDE_REASON_SYSTEM_EXPLICIT:
+    case HIDE_REASON_USER_EXPLICIT:
+    case HIDE_REASON_USER_IMPLICIT:
+      time_of_last_blur_ = base::Time::UnixEpoch();
+      break;
+  }
+
   switch (model_.state()) {
     case KeyboardUIState::kUnknown:
     case KeyboardUIState::kInitial:
@@ -551,21 +566,6 @@ void KeyboardUIController::HideKeyboard(HideReason reason) {
         case HIDE_REASON_USER_EXPLICIT:
         case HIDE_REASON_USER_IMPLICIT:
           LogKeyboardControlEvent(KeyboardControlEvent::kHideUser);
-          break;
-      }
-
-      // Decide whether regaining focus in a web-based text field should cause
-      // the keyboard to come back.
-      switch (reason) {
-        case HIDE_REASON_SYSTEM_IMPLICIT:
-          time_of_last_blur_ = base::Time::Now();
-          break;
-
-        case HIDE_REASON_SYSTEM_TEMPORARY:
-        case HIDE_REASON_SYSTEM_EXPLICIT:
-        case HIDE_REASON_USER_EXPLICIT:
-        case HIDE_REASON_USER_IMPLICIT:
-          time_of_last_blur_ = base::Time::UnixEpoch();
           break;
       }
 

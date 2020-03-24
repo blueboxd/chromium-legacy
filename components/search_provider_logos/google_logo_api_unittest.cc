@@ -42,25 +42,27 @@ TEST(GoogleNewLogoApiTest, UsesHttps) {
 TEST(GoogleNewLogoApiTest, AppendPreliminaryParamsParsing) {
   const std::string base_url = "http://foo.bar/";
   EXPECT_EQ(GURL("http://foo.bar/?async=ntp:1"),
-            AppendPreliminaryParamsToDoodleURL(false, GURL(base_url)));
+            AppendPreliminaryParamsToDoodleURL(false, false, GURL(base_url)));
   EXPECT_EQ(GURL("http://foo.bar/?test=param&async=ntp:1"),
-            AppendPreliminaryParamsToDoodleURL(false,
+            AppendPreliminaryParamsToDoodleURL(false, false,
                                                GURL(base_url + "?test=param")));
   EXPECT_EQ(GURL("http://foo.bar/?async=inside,ntp:1&test=param"),
             AppendPreliminaryParamsToDoodleURL(
-                false, GURL(base_url + "?async=inside&test=param")));
+                false, false, GURL(base_url + "?async=inside&test=param")));
   EXPECT_EQ(GURL("http://foo.bar/?async=inside,ntp:1&async=param"),
             AppendPreliminaryParamsToDoodleURL(
-                false, GURL(base_url + "?async=inside&async=param")));
+                false, false, GURL(base_url + "?async=inside&async=param")));
 }
 
 TEST(GoogleNewLogoApiTest, AppendPreliminaryParams) {
   const GURL logo_url("https://base.doo/target");
 
   EXPECT_EQ(GURL("https://base.doo/target?async=ntp:1"),
-            AppendPreliminaryParamsToDoodleURL(false, logo_url));
+            AppendPreliminaryParamsToDoodleURL(false, false, logo_url));
   EXPECT_EQ(GURL("https://base.doo/target?async=ntp:1,graybg:1"),
-            AppendPreliminaryParamsToDoodleURL(true, logo_url));
+            AppendPreliminaryParamsToDoodleURL(true, false, logo_url));
+  EXPECT_EQ(GURL("https://base.doo/target?async=ntp:2"),
+            AppendPreliminaryParamsToDoodleURL(false, true, logo_url));
 }
 
 TEST(GoogleNewLogoApiTest, AppendFingerprintParam) {

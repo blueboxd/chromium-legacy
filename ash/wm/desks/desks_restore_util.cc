@@ -55,7 +55,7 @@ void RestorePrimaryUserDesks() {
 
   // If we don't have any restore data, or the list is corrupt for some reason,
   // abort.
-  if (!restore_size || restore_size >= desks_util::kMaxNumberOfDesks)
+  if (!restore_size || restore_size > desks_util::kMaxNumberOfDesks)
     return;
 
   auto* desks_controller = DesksController::Get();

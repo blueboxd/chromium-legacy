@@ -68,7 +68,9 @@ class MockLogoService : public LogoService {
  public:
   MOCK_METHOD1(GetLogoPtr, void(LogoCallbacks* callbacks));
 
-  void GetLogo(LogoCallbacks callbacks) override { GetLogoPtr(&callbacks); }
+  void GetLogo(LogoCallbacks callbacks, bool for_webui_ntp) override {
+    GetLogoPtr(&callbacks);
+  }
   void GetLogo(LogoObserver* observer) override { NOTREACHED(); }
 };
 

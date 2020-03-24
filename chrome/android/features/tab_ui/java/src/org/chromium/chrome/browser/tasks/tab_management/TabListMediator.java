@@ -38,7 +38,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -787,7 +786,7 @@ class TabListMediator {
             };
         }
 
-        if (TabUiFeatureUtilities.isSearchTermChipEnabled()) {
+        if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue()) {
             mSearchChipIconDrawableId = getSearchChipIconDrawableId();
             mTemplateUrlObserver = () -> {
                 mSearchChipIconDrawableId = getSearchChipIconDrawableId();
@@ -1004,7 +1003,7 @@ class TabListMediator {
         mModel.get(index).model.set(TabProperties.TITLE, getLatestTitleForTab(tab));
         mModel.get(index).model.set(TabProperties.URL, getUrlForTab(tab));
 
-        if (TabUiFeatureUtilities.isSearchTermChipEnabled() && mUiType == UiType.CLOSABLE) {
+        if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue() && mUiType == UiType.CLOSABLE) {
             mModel.get(index).model.set(TabProperties.SEARCH_QUERY, getLastSearchTerm(tab));
             mModel.get(index).model.set(TabProperties.SEARCH_LISTENER,
                     SearchTermChipUtils.getSearchQueryListener(tab, mTabSelectedListener));
@@ -1203,7 +1202,7 @@ class TabListMediator {
                         .with(CARD_TYPE, TAB)
                         .build();
 
-        if (TabUiFeatureUtilities.isSearchTermChipEnabled() && mUiType == UiType.CLOSABLE) {
+        if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue() && mUiType == UiType.CLOSABLE) {
             tabInfo.set(TabProperties.SEARCH_QUERY, getLastSearchTerm(tab));
             tabInfo.set(TabProperties.SEARCH_LISTENER,
                     SearchTermChipUtils.getSearchQueryListener(tab, mTabSelectedListener));
@@ -1257,7 +1256,7 @@ class TabListMediator {
     }
 
     private String getLastSearchTerm(Tab tab) {
-        assert TabUiFeatureUtilities.isSearchTermChipEnabled();
+        assert TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue();
         if (mActionsOnAllRelatedTabs && TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 && getRelatedTabsForId(tab.getId()).size() > 1) {
             return null;
@@ -1267,7 +1266,7 @@ class TabListMediator {
 
     private int getSearchChipIconDrawableId() {
         int iconDrawableId;
-        if (isSearchChipAdaptiveIconEnabled()) {
+        if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE.getValue()) {
             iconDrawableId = TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
                     ? R.drawable.ic_logo_googleg_24dp
                     : R.drawable.ic_search;
@@ -1275,21 +1274,6 @@ class TabListMediator {
             iconDrawableId = R.drawable.ic_search;
         }
         return iconDrawableId;
-    }
-
-    private boolean isSearchChipAdaptiveIconEnabled() {
-        if (SearchTermChipUtils.sIsSearchChipAdaptiveIconEnabledForTesting != null) {
-            return SearchTermChipUtils.sIsSearchChipAdaptiveIconEnabledForTesting;
-        }
-        if (!TabUiFeatureUtilities.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
-                || !TabUiFeatureUtilities.isSearchTermChipEnabled()
-                || !ChromeFeatureList
-                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                                    "enable_search_term_chip_adaptive_icon")
-                            .equals("true")) {
-            return false;
-        }
-        return true;
     }
 
     private String getUrlForTab(Tab tab) {
@@ -1500,11 +1484,6 @@ class TabListMediator {
                 select.run(tabId);
                 navigateToLastSearchQuery(originalTab);
             };
-        }
-
-        @VisibleForTesting
-        static void setIsSearchChipAdaptiveIconEnabledForTesting(Boolean isEnabled) {
-            sIsSearchChipAdaptiveIconEnabledForTesting = isEnabled;
         }
     }
 }

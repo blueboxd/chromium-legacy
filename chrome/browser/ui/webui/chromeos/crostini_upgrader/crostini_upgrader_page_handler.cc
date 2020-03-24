@@ -87,22 +87,23 @@ void CrostiniUpgraderPageHandler::Cancel() {
 }
 
 void CrostiniUpgraderPageHandler::Launch() {
-  std::move(launch_callback_).Run(true);
+  std::move(launch_callback_).Run(restart_required_);
 }
 
 void CrostiniUpgraderPageHandler::CancelBeforeStart() {
   base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
                                 crostini::UpgradeDialogEvent::kNotStarted);
+  restart_required_ = false;
   upgrader_ui_delegate_->CancelBeforeStart();
   if (launch_callback_) {
     // Running launch closure - no upgrade wanted, no need to restart crostini.
-    std::move(launch_callback_).Run(false);
+    Launch();
   }
 }
 
 void CrostiniUpgraderPageHandler::Close() {
   if (launch_callback_) {
-    std::move(launch_callback_).Run(true);
+    Launch();
   }
   std::move(close_dialog_callback_).Run();
 }

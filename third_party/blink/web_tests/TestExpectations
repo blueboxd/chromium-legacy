@@ -5532,10 +5532,14 @@ crbug.com/915352 [ Mac10.10 ] virtual/threaded/external/wpt/animation-worklet/wo
 crbug.com/915352 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
 
 # Paint Timing failures
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-bg-image-set.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-bg-image-set.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html [ Pass Failure ]
 crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-opacity-descendant.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Pass Failure ]
 crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-display.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-pseudo-element-display.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/border-image.html [ Pass Failure ]
 crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/border-image.html [ Pass Failure ]

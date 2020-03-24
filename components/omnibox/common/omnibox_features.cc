@@ -130,17 +130,6 @@ const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
 const base::Feature kOmniboxSuggestionTransparencyOptions{
     "OmniboxSuggestionTransparencyOptions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature to enable clipboard provider to suggest copied text.
-// TODO(gangwu): Remove this feature flag after full launched in Android.
-const base::Feature kEnableClipboardProviderTextSuggestions{
-  "OmniboxEnableClipboardProviderTextSuggestions",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Feature to enable clipboard provider to suggest searching for copied images.
 const base::Feature kEnableClipboardProviderImageSuggestions{
   "OmniboxEnableClipboardProviderImageSuggestions",

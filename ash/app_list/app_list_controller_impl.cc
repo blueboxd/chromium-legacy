@@ -1483,6 +1483,14 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
 
   // Notify chrome of visibility changes.
   if (last_visible_ != real_visibility) {
+    // When showing the launcher with the virtual keyboard enabled, one feature
+    // called "transient blur" (which means that if focus was lost but regained
+    // a few seconds later, we would show the virtual keyboard again) may show
+    // the virtual keyboard, which is not what we want. So hide the virtual
+    // keyboard explicitly when the launcher shows.
+    if (real_visibility)
+      keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
+
     if (client_)
       client_->OnAppListVisibilityChanged(real_visibility);
 

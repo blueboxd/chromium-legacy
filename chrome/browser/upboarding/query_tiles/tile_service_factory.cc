@@ -5,6 +5,7 @@
 #include "chrome/browser/upboarding/query_tiles/tile_service_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 
 namespace upboarding {
@@ -22,7 +23,9 @@ TileService* TileServiceFactory::GetForKey(SimpleFactoryKey* key) {
 
 TileServiceFactory::TileServiceFactory()
     : SimpleKeyedServiceFactory("TileService",
-                                SimpleDependencyManager::GetInstance()) {}
+                                SimpleDependencyManager::GetInstance()) {
+  DependsOn(ImageFetcherServiceFactory::GetInstance());
+}
 
 TileServiceFactory::~TileServiceFactory() {}
 

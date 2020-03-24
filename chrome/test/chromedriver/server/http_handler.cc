@@ -1255,7 +1255,9 @@ HttpHandler::PrepareStandardResponse(
         inner_params->SetString("data.text", "");
       } else {
         std::string alertText = message.substr(first, last - first);
-        alertText = alertText.substr(alertText.find(":") + 2);
+        auto colon = alertText.find(":");
+        if (colon != std::string::npos && alertText.size() > (colon + 2))
+          alertText = alertText.substr(colon + 2);
         inner_params->SetString("data.text", alertText);
       }
     }

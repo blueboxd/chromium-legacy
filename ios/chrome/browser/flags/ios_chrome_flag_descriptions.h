@@ -172,11 +172,6 @@ extern const char
 extern const char kEnableClipboardProviderImageSuggestionsName[];
 extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 
-// Title and description for the flag to enable the clipboard provider to
-// suggest copied text
-extern const char kEnableClipboardProviderTextSuggestionsName[];
-extern const char kEnableClipboardProviderTextSuggestionsDescription[];
-
 // Title and description for the flag to enable the new error page workflow.
 extern const char kUseJSForErrorPageName[];
 extern const char kUseJSForErrorPageDescription[];

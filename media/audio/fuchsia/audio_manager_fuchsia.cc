@@ -48,10 +48,10 @@ AudioParameters AudioManagerFuchsia::GetInputStreamParameters(
   // TODO(crbug.com/852834): Fuchsia currently doesn't provide an API to get
   // device configuration. Update this method when that functionality is
   // implemented.
-  // Use 48kHz sample rate with 10ms buffer, which is consistent with
-  // the default configuration used on other platforms.
+  // Use 16kHz sample rate with 10ms buffer, which is consistent with
+  // the default configuration used in the AudioCapturer implementation.
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         CHANNEL_LAYOUT_MONO, 48000, 480);
+                         CHANNEL_LAYOUT_MONO, 16000, 160);
 }
 
 AudioParameters AudioManagerFuchsia::GetPreferredOutputStreamParameters(

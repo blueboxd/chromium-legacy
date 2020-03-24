@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/fullscreen/chrome_coordinator+fullscreen_disabling.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view_controller.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
@@ -43,6 +44,9 @@
                               ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
   }
 
+  // Creates a fullscreen disabler.
+  [self didStartFullscreenDisablingUI];
+
   _viewController = [[SadTabViewController alloc] init];
   _viewController.delegate = self;
   _viewController.overscrollDelegate = self.overscrollDelegate;
@@ -62,6 +66,8 @@
 - (void)stop {
   if (!_viewController)
     return;
+
+  [self didStopFullscreenDisablingUI];
 
   [_viewController willMoveToParentViewController:nil];
   [_viewController.view removeFromSuperview];

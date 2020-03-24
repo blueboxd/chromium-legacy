@@ -227,6 +227,7 @@ Refer to README.md for content description and update process.
  <item id="proxy_config_system" hash_code="11258689" type="0" content_hash_code="77057929" os_list="linux,windows" file_path="net/proxy_resolution/configured_proxy_resolution_service.cc"/>
  <item id="proxy_script_fetcher" hash_code="37531401" type="0" deprecated="2018-03-16" content_hash_code="31866133" file_path=""/>
  <item id="puch_client_channel" hash_code="34459548" type="0" deprecated="2020-01-23" content_hash_code="92475475" file_path=""/>
+ <item id="query_tiles_image_loader" hash_code="95103115" type="0" content_hash_code="75070538" os_list="linux,windows" file_path="chrome/browser/upboarding/query_tiles/cached_image_loader.cc"/>
  <item id="quic_chromium_incoming_pending_session" hash_code="120830730" type="0" content_hash_code="52904665" os_list="linux,windows" file_path="net/quic/quic_chromium_client_session.cc"/>
  <item id="quic_chromium_incoming_session" hash_code="87635401" type="0" content_hash_code="78573093" os_list="linux,windows" file_path="net/quic/quic_chromium_client_session.cc"/>
  <item id="quic_chromium_packet_writer" hash_code="20153177" type="0" content_hash_code="29657765" os_list="linux,windows" file_path="net/quic/quic_chromium_packet_writer.cc"/>

@@ -26,6 +26,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.g
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingRootException;
@@ -35,6 +36,7 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -88,6 +90,12 @@ public class TabGridIphTest {
                                             .getTabModelSelector()
                                             .getTabModelFilterProvider()
                                             .getCurrentTabModelFilter()::isTabModelRestored);
+    }
+
+    @After
+    public void tearDown() {
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Test
@@ -179,9 +187,6 @@ public class TabGridIphTest {
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
         mRenderTestRule.render(cta.findViewById(R.id.tab_grid_message_item), "iph_landscape");
-
-        // Reset orientation.
-        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
     }
 
     @Test

@@ -1885,7 +1885,8 @@ function renderTheme() {
   // includes non-white backgrounds, excluding dark mode gray if dark mode is
   // enabled.
   const isDefaultBackground = theme.usingDefaultTheme && !theme.imageUrl;
-  document.body.classList.toggle(CLASSES.USE_NOTIFIER, !isDefaultBackground);
+  const useNotifier = configData.doodleNotifierEnabled && !isDefaultBackground;
+  document.body.classList.toggle(CLASSES.USE_NOTIFIER, useNotifier);
 
   // If a custom background has been selected the image will be applied to the
   // custom-background element instead of the body.

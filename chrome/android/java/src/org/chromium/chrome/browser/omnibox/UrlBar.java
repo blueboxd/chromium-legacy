@@ -40,7 +40,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
@@ -54,6 +54,13 @@ public abstract class UrlBar extends AutocompleteEditText {
     private static final String TAG = "UrlBar";
 
     private static final boolean DEBUG = false;
+
+    private static final ActionEvent ACTION_LONG_PRESS_COPY =
+            new ActionEvent("Omnibox.LongPress.Copy");
+    private static final ActionEvent ACTION_LONG_PRESS_CUT =
+            new ActionEvent("Omnibox.LongPress.Cut");
+    private static final ActionEvent ACTION_LONG_PRESS_SHARE =
+            new ActionEvent("Omnibox.LongPress.Share");
 
     // TextView becomes very slow on long strings, so we limit maximum length
     // of what is displayed to the user, see limitDisplayableLength().
@@ -593,9 +600,9 @@ public abstract class UrlBar extends AutocompleteEditText {
         if ((id == android.R.id.cut || id == android.R.id.copy)
                 && !mUrlBarDelegate.shouldCutCopyVerbatim()) {
             if (id == android.R.id.cut) {
-                RecordUserAction.record("Omnibox.LongPress.Cut");
+                ACTION_LONG_PRESS_CUT.record();
             } else {
-                RecordUserAction.record("Omnibox.LongPress.Copy");
+                ACTION_LONG_PRESS_COPY.record();
             }
             String currentText = getText().toString();
             String replacementCutCopyText = mTextContextMenuDelegate.getReplacementCutCopyText(
@@ -623,7 +630,7 @@ public abstract class UrlBar extends AutocompleteEditText {
         }
 
         if (id == android.R.id.shareText) {
-            RecordUserAction.record("Omnibox.LongPress.Share");
+            ACTION_LONG_PRESS_SHARE.record();
         }
 
         return super.onTextContextMenuItem(id);

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -119,9 +120,6 @@ TEST_F(ClipboardProviderTest, HasMultipleMatches) {
 }
 
 TEST_F(ClipboardProviderTest, MatchesText) {
-  base::test::ScopedFeatureList feature_list;
-  base::Feature textFeature = omnibox::kEnableClipboardProviderTextSuggestions;
-  feature_list.InitAndEnableFeature(textFeature);
   auto template_url_service = std::make_unique<TemplateURLService>(
       /*initializers=*/nullptr, /*count=*/0);
   client_->set_template_url_service(std::move(template_url_service));
@@ -154,9 +152,6 @@ TEST_F(ClipboardProviderTest, MatchesImage) {
 }
 
 TEST_F(ClipboardProviderTest, DeleteMatch) {
-  base::test::ScopedFeatureList feature_list;
-  base::Feature textFeature = omnibox::kEnableClipboardProviderTextSuggestions;
-  feature_list.InitAndEnableFeature(textFeature);
   auto template_url_service = std::make_unique<TemplateURLService>(
       /*initializers=*/nullptr, /*count=*/0);
   client_->set_template_url_service(std::move(template_url_service));

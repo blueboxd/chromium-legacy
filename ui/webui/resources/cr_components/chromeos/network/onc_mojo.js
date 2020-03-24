@@ -747,15 +747,15 @@ class OncMojo {
         return {typeConfig: {cellular: {}}};
         break;
       case mojom.NetworkType.kEthernet:
-        return {typeConfig: {ethernet: {authentication: 'None'}}};
+        return {typeConfig: {ethernet: {}}};
         break;
       case mojom.NetworkType.kVPN:
-        return {typeConfig: {vpn: {type: mojom.VpnType.kOpenVPN}}};
+        return {typeConfig: {vpn: {}}};
         break;
       case mojom.NetworkType.kWiFi:
-        return {
-          typeConfig: {wifi: {ssid: '', security: mojom.SecurityType.kNone}}
-        };
+        // Note: wifi.security can not be changed, so |security| will be ignored
+        // for existing configurations.
+        return {typeConfig: {wifi: {security: mojom.SecurityType.kNone}}};
         break;
     }
     assertNotReached('Unexpected type: ' + type.toString());

@@ -3245,13 +3245,10 @@ if (is_android) {
     deps = [
       ":jni_java",
       "//third_party/android_deps:android_support_v4_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:androidx_collection_collection_java",
       "//third_party/android_deps:androidx_core_core_java",
       "//third_party/android_deps:androidx_multidex_multidex_java",
-
-      # TODO(bjoyce): Convert to androidx_annotation_annotation_java after
-      # net/android is converted.
-      "//third_party/android_deps:com_android_support_support_annotations_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
 
@@ -3352,6 +3349,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
+      "android/java/src/org/chromium/base/metrics/CachedMetrics.java",
       "android/java/src/org/chromium/base/metrics/CachingUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/NoopUmaRecorder.java",

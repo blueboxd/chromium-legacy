@@ -48,7 +48,14 @@ base::Optional<base::Value> GetSaveDataSavingsPercentEstimateFromFieldTrial() {
   if (origin_savings_estimate_json.empty())
     return base::nullopt;
 
-  return base::JSONReader::Read(origin_savings_estimate_json);
+  auto origin_savings_estimates =
+      base::JSONReader::Read(origin_savings_estimate_json);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "DataReductionProxy.ReportSaveDataSavings.ParseResult",
+      origin_savings_estimates && origin_savings_estimates->is_dict());
+
+  return origin_savings_estimates;
 }
 
 }  // namespace

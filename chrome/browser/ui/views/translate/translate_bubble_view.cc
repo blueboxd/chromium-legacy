@@ -1508,7 +1508,7 @@ std::unique_ptr<views::Button> TranslateBubbleView::CreateOptionsMenuButton() {
 }
 
 std::unique_ptr<views::Button> TranslateBubbleView::CreateCloseButton() {
-  auto close_button = views::BubbleFrameView::CreateCloseButton(this, false);
+  auto close_button = views::BubbleFrameView::CreateCloseButton(this);
   close_button->SetID(BUTTON_ID_CLOSE);
   return close_button;
 }

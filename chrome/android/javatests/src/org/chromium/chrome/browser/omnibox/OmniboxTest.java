@@ -356,68 +356,6 @@ public class OmniboxTest {
         checkAutocompleteText(suggestionsMap, "test", "testing", 4, 7);
     }
 
-    @Test
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
-    @MediumTest
-    @Feature({"Omnibox"})
-    @RetryOnFailure
-    public void testGrowingAutocompleteTextResults()
-            throws InterruptedException, ExecutionException {
-        Map<String, List<SuggestionsResult>> suggestionsMap = buildSuggestionMap(
-                new TestSuggestionResultsBuilder()
-                        .setTextShownFor("test")
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testing", null)
-                                .setAutocompleteText("i"))
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testz", null)
-                                .setAutocompleteText("in"))
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testblarg", null)
-                                .setAutocompleteText("ing for the win")));
-        checkAutocompleteText(suggestionsMap, "test", "testing for the win", 4, 19);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Omnibox"})
-    @RetryOnFailure
-    @DisabledTest
-    public void testShrinkingAutocompleteTextResults()
-            throws InterruptedException, ExecutionException {
-        Map<String, List<SuggestionsResult>> suggestionsMap = buildSuggestionMap(
-                new TestSuggestionResultsBuilder()
-                        .setTextShownFor("test")
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testing", null)
-                                .setAutocompleteText("ing is awesome"))
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testz", null)
-                                .setAutocompleteText("ing is hard"))
-                        .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "test", null)
-                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
-                                        "testblarg", null)
-                                .setAutocompleteText("ingz")));
-        checkAutocompleteText(suggestionsMap, "test", "testingz", 4, 8);
-    }
-
     private void checkAutocompleteText(
             Map<String, List<SuggestionsResult>> suggestionsMap,
             final String textToType, final String expectedAutocompleteText,

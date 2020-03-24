@@ -327,7 +327,7 @@ Region::Shape::SegmentIterator Region::Shape::SegmentsEnd(
   return segments_.data() + segment_index;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void Region::Shape::Dump() const {
   for (Shape::SpanIterator span = SpansBegin(), end = SpansEnd(); span != end;
        ++span) {
@@ -570,7 +570,7 @@ Region::Shape Region::Shape::SubtractShapes(const Shape& shape1,
   return ShapeOperation<SubtractOperation>(shape1, shape2);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void Region::Dump() const {
   printf("Bounds: (%d, %d, %d, %d)\n", bounds_.X(), bounds_.Y(),
          bounds_.Width(), bounds_.Height());

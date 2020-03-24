@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_function.h"
 
+#include <numeric>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -21,6 +27,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
@@ -36,6 +43,92 @@ using extensions::ExtensionAPI;
 using extensions::Feature;
 
 namespace {
+
+class ExtensionFunctionMemoryDumpProvider
+    : public base::trace_event::MemoryDumpProvider {
+ public:
+  ExtensionFunctionMemoryDumpProvider() {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "ExtensionFunctions", base::ThreadTaskRunnerHandle::Get());
+  }
+
+  ExtensionFunctionMemoryDumpProvider(
+      const ExtensionFunctionMemoryDumpProvider&) = delete;
+  ExtensionFunctionMemoryDumpProvider& operator=(
+      const ExtensionFunctionMemoryDumpProvider&) = delete;
+  ~ExtensionFunctionMemoryDumpProvider() override {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+
+  void AddFunctionName(const char* function_name) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(function_name);
+    auto it = function_map_.emplace(function_name, 0);
+    it.first->second++;
+  }
+
+  void RemoveFunctionName(const char* function_name) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(function_name);
+    auto it = function_map_.find(function_name);
+    DCHECK(it != function_map_.end());
+    DCHECK_GE(it->second, static_cast<uint64_t>(1));
+    if (it->second == 1)
+      function_map_.erase(it);
+    else
+      it->second--;
+  }
+
+  static ExtensionFunctionMemoryDumpProvider& GetInstance() {
+    static base::NoDestructor<ExtensionFunctionMemoryDumpProvider> tracker;
+    return *tracker;
+  }
+
+ private:
+  // base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    auto* dump = pmd->CreateAllocatorDump("extensions/functions");
+    uint64_t function_count =
+        std::accumulate(function_map_.begin(), function_map_.end(), 0,
+                        [](uint64_t total, auto& function_pair) {
+                          return total + function_pair.second;
+                        });
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    function_count);
+    // Collects the top 5 ExtensionFunctions with the most instances on memory
+    // dump.
+    std::vector<std::pair<const char*, uint64_t>> results(5);
+    std::partial_sort_copy(function_map_.begin(), function_map_.end(),
+                           results.begin(), results.end(),
+                           [](const auto& lhs, const auto& rhs) {
+                             return lhs.second > rhs.second;
+                           });
+    for (const auto& function_pair : results) {
+      if (function_pair.first) {
+        TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+                     "ExtensionFunction::OnMemoryDump", "function",
+                     function_pair.first, "count", function_pair.second);
+      }
+    }
+    return true;
+  }
+
+  // This map is keyed based on const char* pointer since all the strings used
+  // here are defined in the registry held by the caller. The value needs to be
+  // stored as pointer to be able to add privacy safe trace events.
+  std::map<const char*, uint64_t> function_map_;
+
+  // Makes sure all methods are called from the same thread.
+  base::ThreadChecker thread_checker_;
+};
+
+void EnsureMemoryDumpProviderExists() {
+  ALLOW_UNUSED_LOCAL(ExtensionFunctionMemoryDumpProvider::GetInstance());
+}
 
 // Logs UMA about the performance for a given extension function run.
 void LogUma(bool success,
@@ -283,9 +376,14 @@ class ExtensionFunction::RenderFrameHostTracker
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostTracker);
 };
 
-ExtensionFunction::ExtensionFunction() = default;
+ExtensionFunction::ExtensionFunction() {
+  EnsureMemoryDumpProviderExists();
+}
 
 ExtensionFunction::~ExtensionFunction() {
+  if (name())  // name_ may not be set in unit tests.
+    ExtensionFunctionMemoryDumpProvider::GetInstance().RemoveFunctionName(
+        name());
   if (dispatcher() && (render_frame_host() || is_from_service_worker())) {
     dispatcher()->OnExtensionFunctionCompleted(
         extension(), is_from_service_worker(), name());
@@ -307,6 +405,10 @@ bool ExtensionFunction::HasPermission() const {
           name_, extension_.get(), source_context_type_, source_url(),
           extensions::CheckAliasStatus::ALLOWED);
   return availability.is_available();
+}
+
+void ExtensionFunction::RespondWithError(const std::string& error) {
+  Respond(Error(error));
 }
 
 bool ExtensionFunction::PreRunValidation(std::string* error) {
@@ -345,8 +447,7 @@ bool ExtensionFunction::ShouldSkipQuotaLimiting() const {
 }
 
 void ExtensionFunction::OnQuotaExceeded(const std::string& violation_error) {
-  error_ = violation_error;
-  SendResponseImpl(false);
+  RespondWithError(violation_error);
 }
 
 void ExtensionFunction::SetArgs(base::Value args) {
@@ -361,6 +462,13 @@ const base::ListValue* ExtensionFunction::GetResultList() const {
 
 const std::string& ExtensionFunction::GetError() const {
   return error_;
+}
+
+void ExtensionFunction::SetName(const char* name) {
+  DCHECK_EQ(nullptr, name_) << "SetName() called twice!";
+  DCHECK_NE(nullptr, name) << "Passed in nullptr to SetName()!";
+  name_ = name;
+  ExtensionFunctionMemoryDumpProvider::GetInstance().AddFunctionName(name);
 }
 
 void ExtensionFunction::SetBadMessage() {

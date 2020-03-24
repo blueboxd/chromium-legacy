@@ -833,24 +833,6 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
 // eliminate LayoutObject dependency were done yet.
-bool NGBoxFragmentPainter::BackgroundIsKnownToBeOpaque(
-    const PaintInfo& paint_info) {
-  const LayoutBox& layout_box = ToLayoutBox(*box_fragment_.GetLayoutObject());
-
-  // If the box has multiple fragments, its VisualRect is the bounding box of
-  // all fragments' visual rects, which is likely to cover areas that are not
-  // covered by painted background.
-  if (layout_box.FirstFragment().NextFragment())
-    return false;
-
-  PhysicalRect bounds = IsPaintingScrollingBackground(paint_info)
-                            ? layout_box.PhysicalLayoutOverflowRect()
-                            : layout_box.PhysicalSelfVisualOverflowRect();
-  return layout_box.BackgroundIsKnownToBeOpaqueInRect(bounds);
-}
-
-// TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
-// eliminate LayoutObject dependency were done yet.
 void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
     const PhysicalRect& paint_rect,
@@ -877,11 +859,6 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   DrawingRecorder recorder(paint_info.context, background_client,
                            DisplayItem::kBoxDecorationBackground);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      paint_rect.EdgesOnPixelBoundaries() &&
-      BackgroundIsKnownToBeOpaque(paint_info))
-    recorder.SetKnownToBeOpaque();
 
   const NGBorderEdges& border_edges = BorderEdges();
   if (box_decoration_data.ShouldPaintShadow()) {

@@ -109,7 +109,8 @@ TEST_F(IdleManagerTest, AddMonitor) {
   loop.Run();
 }
 
-TEST_F(IdleManagerTest, Idle) {
+// Disabled test: https://crbug.com/1062668
+TEST_F(IdleManagerTest, DISABLED_Idle) {
   mojo::Remote<blink::mojom::IdleManager> service_remote;
 
   auto impl = std::make_unique<IdleManager>();
@@ -215,7 +216,8 @@ TEST_F(IdleManagerTest, UnlockingScreen) {
   }
 }
 
-TEST_F(IdleManagerTest, LockingScreen) {
+// Disabled test: https://crbug.com/1062668
+TEST_F(IdleManagerTest, DISABLED_LockingScreen) {
   mojo::Remote<blink::mojom::IdleManager> service_remote;
 
   auto impl = std::make_unique<IdleManager>();
@@ -261,7 +263,8 @@ TEST_F(IdleManagerTest, LockingScreen) {
   }
 }
 
-TEST_F(IdleManagerTest, LockingScreenThenIdle) {
+// Disabled test: https://crbug.com/1062668
+TEST_F(IdleManagerTest, DISABLED_LockingScreenThenIdle) {
   mojo::Remote<blink::mojom::IdleManager> service_remote;
 
   auto impl = std::make_unique<IdleManager>();

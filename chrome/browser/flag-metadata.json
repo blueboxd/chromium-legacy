@@ -167,7 +167,7 @@
   {
     "name": "arc-print-spooler-experiment",
     "owners": [ "jschettler@google.com", "bmgordon@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 84
   },
   {
     "name": "arc-usb-host",

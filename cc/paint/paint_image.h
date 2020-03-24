@@ -297,6 +297,8 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_;
   }
 
+  bool IsOpaque() const { return GetSkImage() && GetSkImage()->isOpaque(); }
+
   std::string ToString() const;
 
  private:

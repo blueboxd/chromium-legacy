@@ -135,7 +135,7 @@ Logo GetSampleLogo(const GURL& logo_url, base::Time response_time) {
       response_time + base::TimeDelta::FromHours(19);
   logo.metadata.fingerprint = "8bc33a80";
   logo.metadata.source_url =
-      AppendPreliminaryParamsToDoodleURL(false, logo_url);
+      AppendPreliminaryParamsToDoodleURL(false, false, logo_url);
   logo.metadata.on_click_url = GURL("https://www.google.com/search?q=potato");
   logo.metadata.alt_text = "A logo about potatoes";
   logo.metadata.animated_url = GURL("https://www.google.com/logos/doodle.png");
@@ -155,7 +155,7 @@ Logo GetSampleLogoWithoutDarkImage(const GURL& logo_url,
       response_time + base::TimeDelta::FromHours(19);
   logo.metadata.fingerprint = "8bc33a80";
   logo.metadata.source_url =
-      AppendPreliminaryParamsToDoodleURL(false, logo_url);
+      AppendPreliminaryParamsToDoodleURL(false, false, logo_url);
   logo.metadata.on_click_url = GURL("https://www.google.com/search?q=potato");
   logo.metadata.alt_text = "A logo about potatoes";
   logo.metadata.animated_url = GURL("https://www.google.com/logos/doodle.png");
@@ -170,7 +170,7 @@ Logo GetSampleLogo2(const GURL& logo_url, base::Time response_time) {
   logo.metadata.expiration_time = base::Time();
   logo.metadata.fingerprint = "71082741021409127";
   logo.metadata.source_url =
-      AppendPreliminaryParamsToDoodleURL(false, logo_url);
+      AppendPreliminaryParamsToDoodleURL(false, false, logo_url);
   logo.metadata.on_click_url = GURL("https://example.com/page25");
   logo.metadata.alt_text = "The logo for example.com";
   logo.metadata.mime_type = "image/jpeg";
@@ -459,7 +459,8 @@ void LogoServiceImplTest::SetServerResponseWhenFingerprint(
     int error_code,
     net::HttpStatusCode response_code) {
   GURL url_with_fp = AppendFingerprintParamToDoodleURL(
-      AppendPreliminaryParamsToDoodleURL(false, DoodleURL()), fingerprint);
+      AppendPreliminaryParamsToDoodleURL(false, false, DoodleURL()),
+      fingerprint);
 
   auto head = network::mojom::URLResponseHead::New();
   std::string headers(base::StringPrintf(
@@ -481,7 +482,7 @@ const GURL& LogoServiceImplTest::DoodleURL() const {
 }
 
 void LogoServiceImplTest::GetLogo(LogoCallbacks callbacks) {
-  logo_service_->GetLogo(std::move(callbacks));
+  logo_service_->GetLogo(std::move(callbacks), /*for_webui_ntp=*/false);
   task_environment_.RunUntilIdle();
 }
 
@@ -525,9 +526,11 @@ TEST_F(LogoServiceImplTest, CTARequestedBackgroundCanUpdate) {
   std::string response =
       ServerResponse(GetSampleLogo(DoodleURL(), test_clock_.Now()));
   GURL query_with_gray_background = AppendFingerprintParamToDoodleURL(
-      AppendPreliminaryParamsToDoodleURL(true, DoodleURL()), std::string());
+      AppendPreliminaryParamsToDoodleURL(true, false, DoodleURL()),
+      std::string());
   GURL query_without_gray_background = AppendFingerprintParamToDoodleURL(
-      AppendPreliminaryParamsToDoodleURL(false, DoodleURL()), std::string());
+      AppendPreliminaryParamsToDoodleURL(false, false, DoodleURL()),
+      std::string());
 
   use_gray_background_ = false;
   test_url_loader_factory_.ClearResponses();
@@ -538,7 +541,7 @@ TEST_F(LogoServiceImplTest, CTARequestedBackgroundCanUpdate) {
     EXPECT_CALL(fresh, Run(_, _));
     LogoCallbacks callbacks;
     callbacks.on_fresh_decoded_logo_available = fresh.Get();
-    logo_service_->GetLogo(std::move(callbacks));
+    logo_service_->GetLogo(std::move(callbacks), /*for_webui_ntp=*/false);
     task_environment_.RunUntilIdle();
   }
   EXPECT_EQ(latest_url_.query().find("graybg:1"), std::string::npos);
@@ -552,7 +555,7 @@ TEST_F(LogoServiceImplTest, CTARequestedBackgroundCanUpdate) {
     EXPECT_CALL(fresh, Run(_, _));
     LogoCallbacks callbacks;
     callbacks.on_fresh_decoded_logo_available = fresh.Get();
-    logo_service_->GetLogo(std::move(callbacks));
+    logo_service_->GetLogo(std::move(callbacks), /*for_webui_ntp=*/false);
     task_environment_.RunUntilIdle();
   }
   EXPECT_NE(latest_url_.query().find("graybg:1"), std::string::npos);
@@ -662,7 +665,7 @@ TEST_F(LogoServiceImplTest, AcceptMinimalLogoResponse) {
   Logo logo;
   logo.image = MakeBitmap(1, 2);
   logo.metadata.source_url =
-      AppendPreliminaryParamsToDoodleURL(false, DoodleURL());
+      AppendPreliminaryParamsToDoodleURL(false, false, DoodleURL());
   logo.metadata.can_show_after_expiration = true;
   logo.metadata.mime_type = "image/png";
 
@@ -993,7 +996,7 @@ void EnqueueCallbacks(LogoServiceImpl* logo_service,
       std::move((*cached_callbacks)[start_index]);
   callbacks.on_fresh_decoded_logo_available =
       std::move((*fresh_callbacks)[start_index]);
-  logo_service->GetLogo(std::move(callbacks));
+  logo_service->GetLogo(std::move(callbacks), /*for_webui_ntp=*/false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&EnqueueCallbacks, logo_service, cached_callbacks,
@@ -1043,7 +1046,7 @@ TEST_F(LogoServiceImplTest, DeleteCallbacksWhenLogoURLChanged) {
   LogoCallbacks first_callbacks;
   first_callbacks.on_cached_decoded_logo_available = first_cached.Get();
   first_callbacks.on_fresh_decoded_logo_available = first_fresh.Get();
-  logo_service_->GetLogo(std::move(first_callbacks));
+  logo_service_->GetLogo(std::move(first_callbacks), /*for_webui_ntp=*/false);
 
   // Change default search engine; new DSE has a doodle URL.
   AddSearchEngine("cr", "Chromium", "https://www.chromium.org/?q={searchTerms}",
@@ -1061,7 +1064,7 @@ TEST_F(LogoServiceImplTest, DeleteCallbacksWhenLogoURLChanged) {
   LogoCallbacks second_callbacks;
   second_callbacks.on_cached_decoded_logo_available = second_cached.Get();
   second_callbacks.on_fresh_decoded_logo_available = second_fresh.Get();
-  logo_service_->GetLogo(std::move(second_callbacks));
+  logo_service_->GetLogo(std::move(second_callbacks), /*for_webui_ntp=*/false);
 
   task_environment_.RunUntilIdle();
 }

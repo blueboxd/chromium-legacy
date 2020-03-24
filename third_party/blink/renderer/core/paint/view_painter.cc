@@ -358,9 +358,6 @@ void ViewPainter::PaintRootElementGroup(
     context.GetPaintController().SetFirstPainted();
 
   if (combined_background_color.Alpha()) {
-    if (!combined_background_color.HasAlpha() &&
-        RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-      recorder.SetKnownToBeOpaque();
     context.FillRect(
         paint_rect, combined_background_color,
         (should_draw_background_in_separate_buffer || should_clear_canvas)

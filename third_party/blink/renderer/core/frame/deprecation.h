@@ -44,6 +44,7 @@ class CORE_EXPORT Deprecation final {
   static void CountDeprecation(ExecutionContext*, WebFeature);
   static void CountDeprecation(const Document&, WebFeature);
   static void CountDeprecation(DocumentLoader*, WebFeature);
+  static void DeprecationWarningOnly(DocumentLoader*, WebFeature);
 
   // TODO(crbug.com/1029822): Temporary helpers to ease migrating
   // ExecutionContext to LocalDOMWindow.
@@ -68,6 +69,8 @@ class CORE_EXPORT Deprecation final {
   // Generates a deprecation report, to be routed to the Reporting API and any
   // ReportingObservers. Also sends the deprecation message to the console.
   static void GenerateReport(const LocalFrame*, WebFeature);
+
+  static void CountDeprecation(DocumentLoader*, WebFeature, bool count_usage);
 
   // To minimize the report/console spam from frames coming and going, report
   // each deprecation at most once per page load per renderer process.

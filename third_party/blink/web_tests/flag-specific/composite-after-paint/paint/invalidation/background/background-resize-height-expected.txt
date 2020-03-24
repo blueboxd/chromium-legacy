@@ -10,8 +10,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image'",
       "position": [8, 8],
       "bounds": [110, 44],
-      "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "invalidations": [
         [50, 0, 60, 44],
         [0, 40, 60, 4]
@@ -21,8 +19,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image size-contain'",
       "position": [108, 8],
       "bounds": [110, 44],
-      "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "invalidations": [
         [0, 0, 60, 44],
         [50, 40, 60, 4]
@@ -32,8 +28,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image percent-height'",
       "position": [208, 8],
       "bounds": [110, 44],
-      "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "invalidations": [
         [0, 0, 60, 44],
         [50, 40, 60, 4]
@@ -43,8 +37,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image bottom'",
       "position": [308, 8],
       "bounds": [110, 44],
-      "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "invalidations": [
         [50, 0, 60, 44],
         [0, 0, 60, 44]
@@ -63,7 +55,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image repeat-round'",
       "position": [508, 8],
       "bounds": [60, 44],
-      "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "invalidations": [
         [0, 0, 60, 44]
@@ -74,7 +65,6 @@
       "position": [8, 108],
       "bounds": [110, 44],
       "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "invalidations": [
         [50, 0, 60, 44],
         [0, 0, 60, 44]
@@ -84,7 +74,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test generated size-contain'",
       "position": [108, 108],
       "bounds": [160, 44],
-      "backgroundColor": "#000000",
       "invalidations": [
         [100, 0, 60, 44],
         [0, 0, 60, 44]
@@ -94,8 +83,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test generated top'",
       "position": [258, 108],
       "bounds": [110, 44],
-      "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "invalidations": [
         [50, 0, 60, 44],
         [0, 0, 60, 44]
@@ -105,7 +92,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test generated center'",
       "position": [358, 108],
       "bounds": [110, 44],
-      "backgroundColor": "#000000",
+      "contentsOpaque": true,
       "invalidations": [
         [50, 0, 60, 44],
         [0, 0, 60, 44]
@@ -115,7 +102,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test generated repeat-space'",
       "position": [458, 108],
       "bounds": [110, 44],
-      "backgroundColor": "#000000",
+      "contentsOpaque": true,
       "invalidations": [
         [50, 0, 60, 44],
         [0, 0, 60, 44]

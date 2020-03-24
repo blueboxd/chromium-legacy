@@ -42,7 +42,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
@@ -76,8 +75,6 @@ public class StartSurfaceTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
-
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
@@ -112,7 +109,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
-        "/hide_switch_when_no_incognito_tabs/true"})
+            "/hide_switch_when_no_incognito_tabs/true"})
     public void testShowAndHideOmniboxOnlySurface() {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -341,7 +338,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single" +
-        "/exclude_mv_tiles/true/hide_switch_when_no_incognito_tabs/true"})
+            "/exclude_mv_tiles/true/hide_switch_when_no_incognito_tabs/true"})
     public void testShowAndHideHomePageInSingleSurfaceWithNoMVTiles() {
         // clang-format on
         // TODO(crbug.com/1025296): Set cached flag before starting the activity and mimic clicking

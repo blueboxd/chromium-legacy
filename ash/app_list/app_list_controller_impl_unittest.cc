@@ -21,6 +21,7 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
@@ -56,6 +57,12 @@
 namespace ash {
 
 namespace {
+
+void PressHomeButton() {
+  Shell::Get()->app_list_controller()->ToggleAppList(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      AppListShowSource::kShelfButton, base::TimeTicks());
+}
 
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -129,6 +136,13 @@ class AppListControllerImplTest : public AshTestBase {
           new AppListItem("app_id" + base::UTF16ToUTF8(base::FormatNumber(i))));
       Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
     }
+  }
+
+  bool IsAppListBoundsAnimationRunning() {
+    AppListView* app_list_view = GetAppListTestHelper()->GetAppListView();
+    ui::Layer* widget_layer =
+        app_list_view ? app_list_view->GetWidget()->GetLayer() : nullptr;
+    return widget_layer && !widget_layer->GetAnimator()->is_animating();
   }
 
  private:
@@ -426,6 +440,68 @@ TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
   EXPECT_TRUE(GetAppListView());
   EXPECT_EQ(
       0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
+}
+
+// Verifiy that when showing the launcher, the virtual keyboard dismissed before
+// will not show automatically due to the feature called "transient blur" (see
+// https://crbug.com/1057320).
+TEST_F(AppListControllerImplTest,
+       TransientBlurIsNotTriggeredWhenShowingLauncher) {
+  // Enable animation.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Enable virtual keyboard.
+  KeyboardController* const keyboard_controller =
+      Shell::Get()->keyboard_controller();
+  keyboard_controller->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kCommandLineEnabled);
+
+  // Create |window1| which contains a textfield as child view.
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 200, 200));
+  auto* widget = views::Widget::GetWidgetForNativeView(window1.get());
+  std::unique_ptr<views::Textfield> text_field =
+      std::make_unique<views::Textfield>();
+
+  // Note that the bounds of |text_field| cannot be too small. Otherwise, it
+  // may not receive the gesture event.
+  text_field->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  const auto* text_field_p = text_field.get();
+  widget->GetRootView()->AddChildView(std::move(text_field));
+  wm::ActivateWindow(window1.get());
+  widget->Show();
+
+  // Create |window2|.
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(200, 0, 200, 200));
+  window2->Show();
+
+  // Tap at the textfield in |window1|. The virtual keyboard should be visible.
+  const gfx::Point tap_point = text_field_p->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->GestureTapAt(tap_point);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // Tap at the center of |window2| to hide the virtual keyboard.
+  GetEventGenerator()->GestureTapAt(window2->GetBoundsInScreen().CenterPoint());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+
+  // Press the home button to show the launcher. Wait for the animation of
+  // launcher to finish. Note that the launcher does not exist before toggling
+  // the home button.
+  PressHomeButton();
+  const base::TimeDelta delta = base::TimeDelta::FromMilliseconds(200);
+  do {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), delta);
+    run_loop.Run();
+  } while (IsAppListBoundsAnimationRunning());
+
+  // Expect that the virtual keyboard is invisible when the launcher shows.
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
 }
 
 // Tests that full screen apps list opens when user touches on or near the

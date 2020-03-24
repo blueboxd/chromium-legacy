@@ -1596,49 +1596,6 @@ TEST_P(FeatureInfoTest, BlendEquationAdvancedDisabled) {
   EXPECT_FALSE(info_->feature_flags().blend_equation_advanced_coherent);
 }
 
-TEST_P(FeatureInfoTest, InitializeCHROMIUM_path_rendering) {
-  SetupInitExpectationsWithGLVersion(
-      "GL_ARB_compatibility GL_NV_path_rendering GL_EXT_direct_state_access "
-      "GL_NV_framebuffer_mixed_samples",
-      "", "4.3");
-  EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
-  EXPECT_TRUE(
-      gfx::HasExtension(info_->extensions(), "GL_CHROMIUM_path_rendering"));
-}
-
-TEST_P(FeatureInfoTest, InitializeCHROMIUM_path_rendering2) {
-  SetupInitExpectationsWithGLVersion(
-      "GL_NV_path_rendering GL_NV_framebuffer_mixed_samples", "",
-      "OpenGL ES 3.1");
-  EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
-  EXPECT_TRUE(
-      gfx::HasExtension(info_->extensions(), "GL_CHROMIUM_path_rendering"));
-}
-
-TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering) {
-  SetupInitExpectationsWithGLVersion("GL_ARB_compatibility", "", "4.3");
-  EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
-  EXPECT_FALSE(
-      gfx::HasExtension(info_->extensions(), "GL_CHROMIUM_path_rendering"));
-}
-
-TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering2) {
-  SetupInitExpectationsWithGLVersion(
-      "GL_ARB_compatibility GL_NV_path_rendering", "", "4.3");
-  EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
-  EXPECT_FALSE(
-      gfx::HasExtension(info_->extensions(), "GL_CHROMIUM_path_rendering"));
-}
-
-TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering3) {
-  // Missing framebuffer mixed samples.
-  SetupInitExpectationsWithGLVersion("GL_NV_path_rendering", "",
-                                     "OpenGL ES 3.1");
-  EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
-  EXPECT_FALSE(
-      gfx::HasExtension(info_->extensions(), "GL_CHROMIUM_path_rendering"));
-}
-
 TEST_P(FeatureInfoTest, InitializeNoKHR_blend_equation_advanced) {
   SetupInitExpectationsWithGLVersion("GL_ARB_compatibility", "", "4.3");
   EXPECT_FALSE(info_->feature_flags().blend_equation_advanced);

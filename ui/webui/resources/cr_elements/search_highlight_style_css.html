@@ -18,9 +18,11 @@
         color: var(--google-grey-900);
         max-width: 100px;
         min-width: 64px;
+        overflow: hidden;
         padding: 4px 10px;
         text-align: center;
-        @apply --cr-text-elide;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       /* Provides the arrow which points at the anchor element. */

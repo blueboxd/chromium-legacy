@@ -130,6 +130,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   void RemovedFromWidget() override;
   void AddedToWidget() override;
   const char* GetClassName() const final;
+  void OnThemeChanged() override;
 
   // views::SlideOutControllerDelegate:
   ui::Layer* GetSlideOutLayer() override;
@@ -191,6 +192,9 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   // Returns if the control buttons should be shown.
   bool ShouldShowControlButtons() const;
+
+  // Sets the border if |is_nested_| is true.
+  void SetNestedBorderIfNecessary();
 
   std::string notification_id_;
   views::ScrollView* scroller_ = nullptr;

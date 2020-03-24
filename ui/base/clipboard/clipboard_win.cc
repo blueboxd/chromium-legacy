@@ -178,7 +178,8 @@ bool BitmapHasInvalidPremultipliedColors(const SkPixmap& pixmap) {
 void MakeBitmapOpaque(SkPixmap* pixmap) {
   for (int x = 0; x < pixmap->width(); ++x) {
     for (int y = 0; y < pixmap->height(); ++y) {
-      *pixmap->writable_addr32(x, y) = SkColorSetA(*pixmap->addr32(x, y), 0xFF);
+      *pixmap->writable_addr32(x, y) =
+          SkColorSetA(*pixmap->addr32(x, y), SK_AlphaOPAQUE);
     }
   }
 }

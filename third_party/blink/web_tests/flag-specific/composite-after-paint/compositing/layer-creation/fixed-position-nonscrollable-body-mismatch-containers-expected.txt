@@ -32,7 +32,6 @@ Even though the fixed-position element's container is nonscrollable, it should s
       "position": [1, 1],
       "bounds": [285, 800],
       "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "transform": 1
     },
     {

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -21,6 +22,7 @@
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/sms_fetcher.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
@@ -139,6 +141,12 @@ class SmsServiceTest : public RenderViewHostTestHarness {
  protected:
   SmsServiceTest() = default;
   ~SmsServiceTest() override = default;
+
+  void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kWebOtpBackend, switches::kWebOtpBackendSmsVerification);
+  }
 
   void ExpectDestroyedReasonCount(SmsReceiverDestroyedReason bucket,
                                   int32_t count) {

@@ -20,6 +20,7 @@ class WebState;
 @protocol SideSwipeToolbarSnapshotProviding;
 @protocol TabStripHighlighting;
 class Browser;
+class FullscreenController;
 
 // Notification sent when the user starts a side swipe (on tablet).
 extern NSString* const kSideSwipeWillStartNotification;
@@ -75,6 +76,8 @@ extern NSString* const kSideSwipeDidStopNotification;
 
 @property(nonatomic, weak) id<SnapshotGeneratorDelegate> snapshotDelegate;
 @property(nonatomic, weak) id<TabStripHighlighting> tabStripDelegate;
+
+@property(nonatomic, assign) FullscreenController* fullscreenController;
 
 // Initializer.
 - (instancetype)initWithBrowser:(Browser*)browser;

@@ -24,21 +24,26 @@ GURL GetUrl() {
 
 namespace chromeos {
 
-void CrostiniUpgraderDialog::Show(base::OnceClosure launch_closure) {
+void CrostiniUpgraderDialog::Show(base::OnceClosure launch_closure,
+                                  bool only_run_launch_closure_on_restart) {
   auto* instance = SystemWebDialogDelegate::FindInstance(GetUrl().spec());
   if (instance) {
     instance->Focus();
     return;
   }
 
-  instance = new CrostiniUpgraderDialog(std::move(launch_closure));
+  instance = new CrostiniUpgraderDialog(std::move(launch_closure),
+                                        only_run_launch_closure_on_restart);
   instance->ShowSystemDialog();
   base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
                                 crostini::UpgradeDialogEvent::kDialogShown);
 }
 
-CrostiniUpgraderDialog::CrostiniUpgraderDialog(base::OnceClosure launch_closure)
+CrostiniUpgraderDialog::CrostiniUpgraderDialog(
+    base::OnceClosure launch_closure,
+    bool only_run_launch_closure_on_restart)
     : SystemWebDialogDelegate{GetUrl(), /*title=*/{}},
+      only_run_launch_closure_on_restart_(only_run_launch_closure_on_restart),
       launch_closure_{std::move(launch_closure)} {}
 
 CrostiniUpgraderDialog::~CrostiniUpgraderDialog() = default;
@@ -71,12 +76,15 @@ bool CrostiniUpgraderDialog::CanCloseDialog() const {
 namespace {
 void RunLaunchClosure(base::WeakPtr<crostini::CrostiniManager> crostini_manager,
                       base::OnceClosure launch_closure,
+                      bool only_run_launch_closure_on_restart,
                       bool restart_required) {
   if (!crostini_manager) {
     return;
   }
   if (!restart_required) {
-    std::move(launch_closure).Run();
+    if (!only_run_launch_closure_on_restart) {
+      std::move(launch_closure).Run();
+    }
     return;
   }
   crostini_manager->RestartCrostini(
@@ -106,9 +114,9 @@ void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
                             crostini::kCrostiniDefaultContainerName));
 
   upgrader_ui_ = static_cast<CrostiniUpgraderUI*>(webui->GetController());
-  upgrader_ui_->set_launch_callback(
-      base::BindOnce(&RunLaunchClosure, crostini_manager->GetWeakPtr(),
-                     std::move(launch_closure_)));
+  upgrader_ui_->set_launch_callback(base::BindOnce(
+      &RunLaunchClosure, crostini_manager->GetWeakPtr(),
+      std::move(launch_closure_), only_run_launch_closure_on_restart_));
   return SystemWebDialogDelegate::OnDialogShown(webui);
 }
 

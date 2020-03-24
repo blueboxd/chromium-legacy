@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
-#include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
@@ -534,8 +533,6 @@ gpu::ContextResult ContextGroup::Initialize(
   // Managers are not used by the passthrough command decoder. Save memory by
   // not allocating them.
   if (!use_passthrough_cmd_decoder_) {
-    path_manager_ = std::make_unique<PathManager>();
-
     program_manager_ = std::make_unique<ProgramManager>(
         program_cache_, max_varying_vectors_, max_draw_buffers_,
         max_dual_source_draw_buffers_, max_vertex_attribs_, gpu_preferences_,
@@ -607,12 +604,6 @@ void ContextGroup::Destroy(DecoderContext* decoder, bool have_context) {
       texture_manager_->MarkContextLost();
     texture_manager_->Destroy();
     texture_manager_.reset();
-    ReportProgress();
-  }
-
-  if (path_manager_ != nullptr) {
-    path_manager_->Destroy(have_context);
-    path_manager_.reset();
     ReportProgress();
   }
 

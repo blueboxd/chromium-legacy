@@ -44,7 +44,8 @@ class TestChunkerOpaqueDisplayItem : public DrawingDisplayItem {
   explicit TestChunkerOpaqueDisplayItem(
       const DisplayItemClient& client,
       DisplayItem::Type type = DisplayItem::kDrawingFirst)
-      : DrawingDisplayItem(client, type, nullptr, /*known_to_be_opaque*/ true) {
+      : DrawingDisplayItem(client, type, nullptr) {
+    SetKnownToBeOpaqueForTesting();
   }
 };
 

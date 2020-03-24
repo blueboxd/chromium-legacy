@@ -5,7 +5,10 @@
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_app_interface.h"
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
@@ -29,8 +32,18 @@
     return UIEdgeInsetsZero;
   ChromeBrowserState* browserState =
       ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
-  FullscreenController* fullscreenController =
-      FullscreenController::FromBrowserState(browserState);
+  FullscreenController* fullscreenController;
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    // TODO: (crbug.com/1063516): Retrieve Browser-scoped FullscreenController
+    // in a better way.
+    std::set<Browser*> browsers =
+        BrowserListFactory::GetForBrowserState(browserState)
+            ->AllRegularBrowsers();
+    DCHECK(browsers.size() == 1);
+    fullscreenController = FullscreenController::FromBrowser(*browsers.begin());
+  } else {
+    fullscreenController = FullscreenController::FromBrowserState(browserState);
+  }
   if (!fullscreenController)
     return UIEdgeInsetsZero;
   return fullscreenController->GetCurrentViewportInsets();

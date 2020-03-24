@@ -205,11 +205,6 @@ const char kEnableClipboardProviderImageSuggestionsName[] =
 const char kEnableClipboardProviderImageSuggestionsDescription[] =
     "Enable suggesting a search for the image copied to the clipboard";
 
-const char kEnableClipboardProviderTextSuggestionsName[] =
-    "Enable copied text provider";
-const char kEnableClipboardProviderTextSuggestionsDescription[] =
-    "Enable suggesting a search for text copied to the clipboard";
-
 const char kUseJSForErrorPageName[] = "Enable new error page workflow";
 const char kUseJSForErrorPageDescription[] =
     "Use JavaScript for the error pages";

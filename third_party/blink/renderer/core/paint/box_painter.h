@@ -51,7 +51,6 @@ class BoxPainter {
                                const DisplayItemClient& background_client);
 
  private:
-  bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
   void PaintBackground(const PaintInfo&,
                        const PhysicalRect&,
                        const Color& background_color,

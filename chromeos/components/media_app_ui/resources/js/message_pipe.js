@@ -317,8 +317,8 @@ class MessagePipe {
       error = err;
       sawError = true;
       /** @type{GenericErrorResponse} */
-      const errorRespose = {message: error.message || ''};
-      response = errorRespose;
+      const errorResponse = {message: error.message || ''};
+      response = errorResponse;
     }
 
     this.postToTarget_(error ? ERROR_TYPE : RESPONSE_TYPE, response, messageId);

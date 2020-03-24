@@ -137,8 +137,8 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
   state = static_cast<apps::InstanceState>(
       state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
   app_service_controller_->app_service_instance_helper()->OnInstances(
-      task_id_to_arc_app_window_info_[task_id]->app_shelf_id().ToString(),
-      window, std::string(), state);
+      task_id_to_arc_app_window_info_[task_id]->app_shelf_id().app_id(), window,
+      std::string(), state);
   arc_window_candidates_.erase(window);
 }
 

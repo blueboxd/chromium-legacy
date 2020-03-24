@@ -4,7 +4,7 @@
 
 /**
  * The last file loaded into the guest, updated via a spy on loadFile().
- * @type{?Promise<!ReceivedFile>}
+ * @type {?Promise<!ReceivedFile>}
  */
 let lastReceivedFile = null;
 
@@ -16,7 +16,7 @@ let lastReceivedFile = null;
  * @return {Promise<!Element>}
  */
 async function waitForNode(query, opt_path) {
-  /** @type{!HTMLElement|!ShadowRoot} */
+  /** @type {!HTMLElement|!ShadowRoot} */
   let node = document.body;
   const parent = opt_path ? opt_path.shift() : undefined;
   if (parent) {
@@ -61,7 +61,7 @@ async function runTestQuery(data) {
       try {
         await element.requestFullscreen();
         result = 'hooray';
-      } catch (/** @type{TypeError} */ typeError) {
+      } catch (/** @type {TypeError} */ typeError) {
         result = typeError.message;
       }
     }
@@ -70,6 +70,18 @@ async function runTestQuery(data) {
     const ensureLoaded = await lastReceivedFile;
     await ensureLoaded.overwriteOriginal(testBlob);
     result = 'overwriteOriginal resolved';
+  } else if (data.deleteLastFile) {
+    try {
+      const ensureLoaded = await lastReceivedFile;
+      const deleteResult = await ensureLoaded.deleteOriginalFile();
+      if (deleteResult === DeleteResult.FILE_MOVED) {
+        result = 'deleteOriginalFile resolved file moved';
+      } else {
+        result = 'deleteOriginalFile resolved success';
+      }
+    } catch (/** @type{Error} */ error) {
+      result = `deleteOriginalFile failed Error: ${error}`;
+    }
   }
 
   return {testQueryResult: result};
@@ -79,7 +91,7 @@ async function runTestQuery(data) {
 // parsed and executed.
 window.addEventListener('DOMContentLoaded', () => {
   parentMessagePipe.registerHandler('test', (data) => {
-    return runTestQuery(/** @type{TestMessageQueryData} */ (data));
+    return runTestQuery(/** @type {TestMessageQueryData} */ (data));
   });
   // Turn off error rethrowing for tests so the test runner doesn't mark
   // our error handling tests as failed.

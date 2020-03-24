@@ -38,6 +38,7 @@ import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -58,6 +59,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -88,6 +90,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestin
 import org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageService;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCoordinator;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -186,6 +189,12 @@ public class StartSurfaceLayoutTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
+    }
+
+    @After
+    public void tearDown() {
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Test
@@ -990,9 +999,6 @@ public class StartSurfaceLayoutTest {
 
         onView(withId(R.id.tab_list_view))
                 .check(MessageCardWidthAssertion.checkMessageItemSpanSize(3, 3));
-
-        // Reset device orientation.
-        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
     }
 
     private static class MessageCardWidthAssertion implements ViewAssertion {
@@ -1484,6 +1490,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
     public void testSearchTermChip_noChip() throws InterruptedException {
+        assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
         prepareTabs(1, 0, mUrl);
         enterGTSWithThumbnailChecking();
 
@@ -1495,6 +1502,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
     public void testSearchTermChip_withChip() throws InterruptedException {
+        assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
         // Make sure we support RTL and CJKV languages.
         String searchTermWithSpecialCodePoints = "a\n ئۇيغۇرچە\u200E漢字";
         // Special code points like new line (\n) and left-to-right marker (‎‎‎\u200E) should
@@ -1566,9 +1574,13 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({BASE_PARAMS + "/enable_search_term_chip/true/enable_search_term_chip_adaptive_icon/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS +
+            "/enable_search_term_chip/true/enable_search_term_chip_adaptive_icon/true"})
     public void testSearchTermChip_adaptiveIcon() throws InterruptedException {
+        // clang-format on
+        assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue());
+        assertTrue(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE.getValue());
         String searchTerm = "hello world";
 
         // Do search, and verify the chip is still not shown.

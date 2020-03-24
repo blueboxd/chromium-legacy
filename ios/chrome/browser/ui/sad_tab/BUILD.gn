@@ -43,6 +43,7 @@ source_set("coordinator") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/fullscreen:coordinators",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web",

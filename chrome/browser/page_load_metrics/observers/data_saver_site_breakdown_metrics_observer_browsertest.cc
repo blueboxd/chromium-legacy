@@ -9,10 +9,12 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -240,6 +242,11 @@ struct SaveDataSavingsEstimate {
   std::string data_savings_percent;
 };
 
+// Prints readable output on test failures.
+void PrintTo(const SaveDataSavingsEstimate& estimate, std::ostream* os) {
+  *os << "'" << estimate.host << "' : " << estimate.data_savings_percent;
+}
+
 struct SaveDataSingleTestCase {
   std::string test_host;
   double expected_savings_percent;
@@ -262,29 +269,49 @@ std::string ConvertSaveDataSavingsEstimateToJson(
 }
 
 struct SaveDataTestCase {
-  // One of the origin_savings_estimate fields will be populated.
+  // One of the origin_savings_estimate_* fields will be populated.
   std::string origin_savings_estimate_raw_json;
   std::vector<SaveDataSavingsEstimate> origin_savings_estimate_list;
-
+  bool is_valid_json;
   std::vector<SaveDataSingleTestCase> tests;
 } kSaveDataTestCases[] = {
     // No savings recorded without field trial config.
-    {"", {}, {{"foo.com", 0.0}}},
+    {"", {}, false, {{"foo.com", 0.0}}},
 
     // No savings recorded with invalid field trial parameter.
-    {"invalid json", {}, {{"foo.com", 0.0}}},
+    {"invalid json", {}, false, {{"foo.com", 0.0}}},
+
+    // JSON not a dictionary
+    {"[\"valid\", \"json\", \"but\", \"an\", \"array\", \"type\"]",
+     {},
+     false,
+     {{"foo.com", 0.0}}},
 
     {"",
      {{"saving.com", "10"}},
+     true,
      {{{"saving.com", 10.0}, {"notsaving.com", 0.0}}}},
 
     {"",
-     {{"saving.com", "20"}, {"savingfloatingpoint.edu", "15.7"}},
-     {{{"saving.com", 20.0},
-       {"savingfloatingpoint.edu", 15.7},
+     {{"www.saving.com", "20"}, {"m.savingfloatingpoint.edu", "15.7"}},
+     true,
+     {{{"www.saving.com", 20.0},
+       {"m.savingfloatingpoint.edu", 15.7},
        {"notsaving.com", 0.0}}}}
 
 };
+
+// Prints readable output on test failures.
+void PrintTo(const SaveDataTestCase& test, std::ostream* os) {
+  *os << "{ origin_savings_estimate_raw_json='"
+      << test.origin_savings_estimate_raw_json
+      << "', origin_savings_estimate_list={";
+  for (const auto& estimate : test.origin_savings_estimate_list) {
+    PrintTo(estimate, os);
+    *os << ", ";
+  }
+  *os << " }, is_valid_json=" << test.is_valid_json << " }";
+}
 
 // Browser tests with Lite mode not enabled.
 class SaveDataSavingsEstimateBrowserTest
@@ -308,10 +335,19 @@ class SaveDataSavingsEstimateBrowserTest
           {});
     }
     DataSaverSiteBreakdownMetricsObserverBrowserTest::SetUp();
+    if (!estimates_json.empty()) {
+      histogram_tester_.ExpectUniqueSample(
+          "DataReductionProxy.ReportSaveDataSavings.ParseResult",
+          GetParam().is_valid_json, 1);
+    } else {
+      histogram_tester_.ExpectTotalCount(
+          "DataReductionProxy.ReportSaveDataSavings.ParseResult", 0);
+    }
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histogram_tester_;
 };
 
 INSTANTIATE_TEST_SUITE_P(SaveDataSavingsEstimateBrowserTest,
@@ -319,7 +355,7 @@ INSTANTIATE_TEST_SUITE_P(SaveDataSavingsEstimateBrowserTest,
                          ::testing::ValuesIn(kSaveDataTestCases));
 
 IN_PROC_BROWSER_TEST_P(SaveDataSavingsEstimateBrowserTest,
-                       NavigateToSimplePage) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(NavigateToSimplePage)) {
   WaitForDBToInitialize();
 
   for (const auto& test : GetParam().tests) {

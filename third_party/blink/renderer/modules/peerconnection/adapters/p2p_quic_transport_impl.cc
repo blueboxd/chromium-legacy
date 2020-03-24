@@ -547,6 +547,23 @@ void P2PQuicTransportImpl::SetDefaultEncryptionLevel(
   }
 }
 
+void P2PQuicTransportImpl::OnOneRttKeysAvailable() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  QuicSession::OnOneRttKeysAvailable();
+  DCHECK(IsEncryptionEstablished());
+  DCHECK(OneRttKeysAvailable());
+  P2PQuicNegotiatedParams negotiated_params;
+  // The guaranteed largest message payload will not change throughout the
+  // connection.
+  uint16_t max_datagram_length =
+      quic::QuicSession::GetGuaranteedLargestMessagePayload();
+  if (max_datagram_length > 0) {
+    // Datagrams are supported in this case.
+    negotiated_params.set_max_datagram_length(max_datagram_length);
+  }
+  delegate_->OnConnected(negotiated_params);
+}
+
 void P2PQuicTransportImpl::OnCanWrite() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   while (!datagram_buffer_.empty()) {

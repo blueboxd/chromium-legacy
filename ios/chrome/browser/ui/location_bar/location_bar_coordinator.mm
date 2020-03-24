@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
@@ -190,8 +191,13 @@ const int kLocationAuthorizationStatusCount = 5;
       static_cast<id<InfobarCommands, BrowserCoordinatorCommands>>(
           self.browser->GetCommandDispatcher());
   buttonFactory.delegate = self.badgeMediator;
-  FullscreenController* fullscreenController =
-      FullscreenController::FromBrowserState(self.browserState);
+  FullscreenController* fullscreenController;
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    fullscreenController = FullscreenController::FromBrowser(self.browser);
+  } else {
+    fullscreenController =
+        FullscreenController::FromBrowserState(self.browserState);
+  }
   _badgeFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
       fullscreenController, self.badgeViewController);
 

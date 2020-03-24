@@ -118,20 +118,6 @@ void BoxPainter::PaintBoxDecorationBackground(
     RecordScrollHitTestData(paint_info, *background_client);
 }
 
-bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
-  // If the box has multiple fragments, its VisualRect is the bounding box of
-  // all fragments' visual rects, which is likely to cover areas that are not
-  // covered by painted background.
-  if (layout_box_.FirstFragment().NextFragment())
-    return false;
-
-  PhysicalRect bounds =
-      BoxDecorationData::IsPaintingScrollingBackground(paint_info, layout_box_)
-          ? layout_box_.PhysicalLayoutOverflowRect()
-          : layout_box_.PhysicalSelfVisualOverflowRect();
-  return layout_box_.BackgroundIsKnownToBeOpaqueInRect(bounds);
-}
-
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
     const PhysicalRect& paint_rect,
@@ -155,11 +141,6 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   DrawingRecorder recorder(paint_info.context, background_client,
                            DisplayItem::kBoxDecorationBackground);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      paint_rect.EdgesOnPixelBoundaries() &&
-      BackgroundIsKnownToBeOpaque(paint_info))
-    recorder.SetKnownToBeOpaque();
 
   bool needs_end_layer = false;
   // FIXME: Should eventually give the theme control over whether the box

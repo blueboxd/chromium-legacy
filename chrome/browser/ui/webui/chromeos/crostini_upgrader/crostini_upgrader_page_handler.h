@@ -70,6 +70,10 @@ class CrostiniUpgraderPageHandler
   mojo::Remote<chromeos::crostini_upgrader::mojom::Page> page_;
   base::OnceClosure close_dialog_callback_;
   base::OnceCallback<void(bool)> launch_callback_;
+  // Will we need to restart the container as part of launch_callback?
+  // |restart_required_| is true unless the user cancels before starting the
+  // upgrade.
+  bool restart_required_ = true;
 
   base::WeakPtrFactory<CrostiniUpgraderPageHandler> weak_ptr_factory_{this};
 

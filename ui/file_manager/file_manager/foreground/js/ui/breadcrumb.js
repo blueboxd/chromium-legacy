@@ -27,6 +27,7 @@ const breadCrumbTemplate = `
       -webkit-mask-position: center;
       -webkit-mask-repeat: no-repeat;
       background-color: currentColor;
+      cursor: default;
       display: inline-flex;
       height: 20px;
       padding: 8px 0;
@@ -57,6 +58,7 @@ const breadCrumbTemplate = `
 
       /* elide wide text */
       max-width: 200px;
+      outline: none;
       overflow: hidden;
       padding: 0px 8px;
 
@@ -97,24 +99,26 @@ const breadCrumbTemplate = `
       width: 36px;
     }
 
+    button:not([disabled]):not(:active):hover {
+      background-color: rgba(0, 0, 0, 4%);
+    }
+
+    :host-context(:root.pointer-active) button:not(:active):hover {
+      background-color: unset;
+      cursor: default;
+    }
+
+    :host-context(:root.focus-outline-visible) > button:focus {
+      background-color: unset;
+      border: 1px solid var(--google-blue-600);
+    }
+
     :host([checked]) button[elider] {
       background-color: rgba(0, 0, 0, 12%);
     }
 
-    button:not([disabled]):hover {
-      background-color: rgba(0, 0, 0, 4%);
-    }
-
-    button[id]:focus, button[elider]:focus {
-      background-color: unset;
-      border: 1px solid var(--google-blue-600);
-      outline: none;
-    }
-
-    button[id]:active, button[elider]:active {
+    button:active {
       background-color: rgba(0, 0, 0, 12%);
-      border: 1px solid transparent;
-      outline: none;
     }
 
     /**
@@ -131,15 +135,14 @@ const breadCrumbTemplate = `
       min-width: 14em;  /* menu width */
       max-width: 14em;
       text-align: start;
-      outline: none;
     }
 
-    #elider-menu button:focus {
-      background-color: rgba(0, 0, 0, 12%);
+    :host-context(:root.focus-outline-visible) #elider-menu button:hover {
+      background-color: unset;
     }
 
-    #elider-menu button:active {
-      background-color: rgba(0, 0, 0, 20%);
+    :host-context(:root.focus-outline-visible) #elider-menu button:focus {
+      background-color: rgba(0, 0, 0, 4%);
     }
   </style>
 

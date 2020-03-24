@@ -252,7 +252,7 @@ public class TabListMediatorUnitTest {
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
 
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
-        TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(true);
+        TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.setForTesting(true);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE, TAB1_URL);
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE, TAB2_URL);
         mViewHolder1 = prepareViewHolder(TAB1_ID, POSITION1);
@@ -318,7 +318,6 @@ public class TabListMediatorUnitTest {
 
         mModel = new TabListModel();
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
-        TabListMediator.SearchTermChipUtils.setIsSearchChipAdaptiveIconEnabledForTesting(false);
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, false, null, mGridCardOnClickListenerProvider, null,
@@ -332,7 +331,6 @@ public class TabListMediatorUnitTest {
     public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, null);
-        TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(null);
         TabAttributeCache.clearAllForTesting();
         getGroupTitleSharedPreferences().edit().clear();
     }
@@ -1913,7 +1911,6 @@ public class TabListMediatorUnitTest {
     public void testSearchChipAdaptiveIcon_Disabled() {
         // Mock that google is the default search engine, and the search chip adaptive icon field
         // is set as false.
-        TabListMediator.SearchTermChipUtils.setIsSearchChipAdaptiveIconEnabledForTesting(false);
         doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
 
         // Re-initialize the mediator to setup TemplateUrlServiceObserver if needed.
@@ -1937,7 +1934,7 @@ public class TabListMediatorUnitTest {
     public void testSearchChipAdaptiveIcon_ChangeWithSetting() {
         // Mock that google is the default search engine, and the search chip adaptive icon is
         // turned on.
-        TabListMediator.SearchTermChipUtils.setIsSearchChipAdaptiveIconEnabledForTesting(true);
+        TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE.setForTesting(true);
         doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
 
         // Re-initialize the mediator to setup TemplateUrlServiceObserver if needed.
@@ -2076,7 +2073,6 @@ public class TabListMediatorUnitTest {
         // TODO(crbug.com/1058196): avoid re-instanciate TabListMediator by using annotation.
         CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, true);
 
-        TabListMediator.SearchTermChipUtils.setIsSearchChipAdaptiveIconEnabledForTesting(false);
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, actionOnRelatedTabs, null, null, handler,

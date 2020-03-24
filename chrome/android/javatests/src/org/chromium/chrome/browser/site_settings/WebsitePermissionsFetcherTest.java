@@ -17,6 +17,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -35,9 +37,15 @@ import java.util.concurrent.TimeUnit;
  * Tests for WebsitePermissionsFetcher.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        WebsitePermissionsFetcherTest.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES})
 public class WebsitePermissionsFetcherTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+
+    /** Command line flag to enable experimental web platform features in tests. */
+    public static final String ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES =
+            "enable-experimental-web-platform-features";
 
     private static final String[] PERMISSION_URLS = {
             "http://www.google.com/",
@@ -621,12 +629,14 @@ public class WebsitePermissionsFetcherTest {
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
         String googleOrigin = "https://google.com";
-        ArrayList<Integer> permissionInfoTypes = new ArrayList<>(
-                Arrays.asList(PermissionInfo.Type.AUGMENTED_REALITY, PermissionInfo.Type.CAMERA,
-                        PermissionInfo.Type.CLIPBOARD, PermissionInfo.Type.GEOLOCATION,
-                        PermissionInfo.Type.MICROPHONE, PermissionInfo.Type.NOTIFICATION,
-                        PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER, PermissionInfo.Type.SENSORS,
-                        PermissionInfo.Type.VIRTUAL_REALITY));
+        ArrayList<Integer> permissionInfoTypes = new ArrayList<>(Arrays.asList(
+                PermissionInfo.Type.AUGMENTED_REALITY, PermissionInfo.Type.CAMERA,
+                PermissionInfo.Type.CLIPBOARD, PermissionInfo.Type.GEOLOCATION,
+                PermissionInfo.Type.MICROPHONE, PermissionInfo.Type.NFC,
+                PermissionInfo.Type.NOTIFICATION, PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER,
+                PermissionInfo.Type.SENSORS, PermissionInfo.Type.VIRTUAL_REALITY));
+        // MIDI is excluded from the above list because it does not have a top level category.
+        Assert.assertEquals(11, PermissionInfo.Type.NUM_ENTRIES);
 
         for (@PermissionInfo.Type int type : permissionInfoTypes) {
             PermissionInfo fakePermissionInfo =
@@ -656,9 +666,11 @@ public class WebsitePermissionsFetcherTest {
         String preferenceSource = "preference";
         ArrayList<Integer> contentSettingExceptionTypes = new ArrayList<>(Arrays.asList(
                 ContentSettingException.Type.ADS, ContentSettingException.Type.AUTOMATIC_DOWNLOADS,
-                ContentSettingException.Type.BACKGROUND_SYNC, ContentSettingException.Type.COOKIE,
-                ContentSettingException.Type.JAVASCRIPT, ContentSettingException.Type.POPUP,
-                ContentSettingException.Type.SOUND));
+                ContentSettingException.Type.BACKGROUND_SYNC,
+                ContentSettingException.Type.BLUETOOTH_SCANNING,
+                ContentSettingException.Type.COOKIE, ContentSettingException.Type.JAVASCRIPT,
+                ContentSettingException.Type.POPUP, ContentSettingException.Type.SOUND));
+        Assert.assertEquals(8, ContentSettingException.Type.NUM_ENTRIES);
 
         for (@ContentSettingsType int type : contentSettingExceptionTypes) {
             @ContentSettingsType

@@ -31,11 +31,12 @@ apps::mojom::ReplacedAppPreferencesPtr PreferredAppsList::AddPreferredApp(
   while (iter != preferred_apps->end()) {
     if (apps_util::FiltersHaveOverlap((*iter)->intent_filter, intent_filter)) {
       // Add the to be removed preferred app into a map, key by app_id.
-      auto entry = replaced_preference_map.find(app_id);
+      const std::string replaced_app_id = (*iter)->app_id;
+      auto entry = replaced_preference_map.find(replaced_app_id);
       if (entry == replaced_preference_map.end()) {
         std::vector<apps::mojom::IntentFilterPtr> intent_filter_vector;
         intent_filter_vector.push_back((*iter)->intent_filter->Clone());
-        replaced_preference_map.emplace(app_id,
+        replaced_preference_map.emplace(replaced_app_id,
                                         std::move(intent_filter_vector));
       } else {
         entry->second.push_back((*iter)->intent_filter->Clone());

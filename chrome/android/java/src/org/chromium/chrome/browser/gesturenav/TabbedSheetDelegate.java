@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.history.HistoryManagerUtils;
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
@@ -21,12 +19,13 @@ public class TabbedSheetDelegate implements NavigationSheet.Delegate {
     private static final int FULL_HISTORY_ENTRY_INDEX = -1;
 
     private final Tab mTab;
+    private final Consumer<Tab> mShowHistoryManager;
     private final String mFullHistoryMenu;
 
-    public TabbedSheetDelegate(Tab tab) {
+    public TabbedSheetDelegate(Tab tab, Consumer<Tab> showHistoryManager, String historyMenu) {
         mTab = tab;
-        mFullHistoryMenu =
-                ((TabImpl) tab).getActivity().getResources().getString(R.string.show_full_history);
+        mShowHistoryManager = showHistoryManager;
+        mFullHistoryMenu = historyMenu;
     }
 
     @Override
@@ -42,7 +41,7 @@ public class TabbedSheetDelegate implements NavigationSheet.Delegate {
     @Override
     public void navigateToIndex(int index) {
         if (index == FULL_HISTORY_ENTRY_INDEX) {
-            HistoryManagerUtils.showHistoryManager(((TabImpl) mTab).getActivity(), mTab);
+            mShowHistoryManager.accept(mTab);
         } else {
             mTab.getWebContents().getNavigationController().goToNavigationIndex(index);
         }

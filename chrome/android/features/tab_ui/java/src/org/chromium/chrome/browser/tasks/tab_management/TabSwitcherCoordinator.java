@@ -172,7 +172,7 @@ public class TabSwitcherCoordinator
             }
         }
 
-        if (TabUiFeatureUtilities.isSearchTermChipEnabled()
+        if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue()
                 && mode != TabListCoordinator.TabListMode.CAROUSEL) {
             mTabAttributeCache = new TabAttributeCache(mTabModelSelector);
         }
@@ -193,8 +193,12 @@ public class TabSwitcherCoordinator
     @Override
     public void initWithNative(Context context, TabContentManager tabContentManager,
             DynamicResourceLoader dynamicResourceLoader) {
-        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, mContainer, mTabModelSelector, tabContentManager, null, mMode);
+        // For tab switcher in carousel mode, the selection editor should still follow grid style.
+        int selectionEditorMode = mMode == TabListCoordinator.TabListMode.CAROUSEL
+                ? TabListCoordinator.TabListMode.GRID
+                : mMode;
+        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(context, mContainer,
+                mTabModelSelector, tabContentManager, null, selectionEditorMode);
         mMediator.initWithNative(mTabSelectionEditorCoordinator.getController());
 
         mTabListCoordinator.initWithNative(dynamicResourceLoader);

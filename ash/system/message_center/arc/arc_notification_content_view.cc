@@ -317,6 +317,15 @@ ArcNotificationContentView::GetControlButtonsView() {
   return floating_control_buttons_widget_ ? &control_buttons_view_ : nullptr;
 }
 
+void ArcNotificationContentView::VisibilityChanged(View* starting_from,
+                                                   bool is_visible) {
+  // Need to explicitly set visibility for control_buttons_view_ to
+  // make sure they don't capture focus when the notification is not
+  // visible due to the message center being collapsed.
+  control_buttons_view_.SetVisible(is_visible);
+  UpdateControlButtonsVisibility();
+}
+
 void ArcNotificationContentView::UpdateControlButtonsVisibility() {
   if (!control_buttons_view_.parent())
     return;
@@ -329,9 +338,10 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
   DCHECK(floating_control_buttons_widget_);
 
   const bool target_visibility =
-      control_buttons_view_.IsAnyButtonFocused() ||
-      (message_view_->GetMode() != message_center::MessageView::Mode::SETTING &&
-       IsMouseHovered());
+      GetVisible() && (control_buttons_view_.IsAnyButtonFocused() ||
+                       (message_view_->GetMode() !=
+                            message_center::MessageView::Mode::SETTING &&
+                        IsMouseHovered()));
 
   if (target_visibility == floating_control_buttons_widget_->IsVisible())
     return;

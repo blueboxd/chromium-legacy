@@ -8,7 +8,7 @@
 <script>
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
-  await promise_rejects(t, 'InvalidStateError', port.getSignals());
+  await promise_rejects_dom(t, 'InvalidStateError', port.getSignals());
 }, 'getSignals() rejects if the port is not open');
 
 serial_test(async (t, fake) => {

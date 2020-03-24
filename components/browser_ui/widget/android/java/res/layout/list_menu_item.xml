@@ -28,4 +28,11 @@
         android:singleLine="false"
         android:textAppearance="@style/TextAppearance.ListMenuItem" />
 
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/menu_item_end_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:tint="@color/default_icon_color_secondary" />
+
 </LinearLayout>

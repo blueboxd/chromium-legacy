@@ -165,24 +165,25 @@ TEST_F(AppMenuModelTest, Basics) {
 
   // Choose something from the bookmark submenu and make sure it makes it back
   // to the delegate as well.
-  int bookmarksModelIndex = -1;
+  int bookmarks_model_index = -1;
   for (int i = 0; i < itemCount; ++i) {
     if (model.GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
       // The bookmarks submenu comes after the Tabs and Downloads items.
-      bookmarksModelIndex = i + 2;
+      bookmarks_model_index = i + 2;
       break;
     }
   }
-  EXPECT_GT(bookmarksModelIndex, -1);
-  ui::MenuModel* bookmarksModel = model.GetSubmenuModelAt(bookmarksModelIndex);
-  EXPECT_TRUE(bookmarksModel);
+  EXPECT_GT(bookmarks_model_index, -1);
+  ui::MenuModel* bookmarks_model =
+      model.GetSubmenuModelAt(bookmarks_model_index);
+  EXPECT_TRUE(bookmarks_model);
   // The bookmarks model may be empty until we tell it we're going to show it.
-  bookmarksModel->MenuWillShow();
-  EXPECT_GT(bookmarksModel->GetItemCount(), 1);
+  bookmarks_model->MenuWillShow();
+  EXPECT_GT(bookmarks_model->GetItemCount(), 1);
 
   // Bookmark manager item.
-  bookmarksModel->ActivatedAt(4);
-  EXPECT_TRUE(bookmarksModel->IsEnabledAt(4));
+  bookmarks_model->ActivatedAt(4);
+  EXPECT_TRUE(bookmarks_model->IsEnabledAt(4));
   EXPECT_EQ(model.execute_count_, 1);
   EXPECT_EQ(model.enable_count_, 1);
 }

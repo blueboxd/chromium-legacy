@@ -3557,7 +3557,6 @@
                         "NtpRealboxMatchOmniboxTheme",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
-                        "OmniboxEnableClipboardProviderTextSuggestions",
                         "OmniboxLocalEntitySuggestions",
                         "OmniboxMaxURLMatches",
                         "OmniboxOnFocusSuggestions",

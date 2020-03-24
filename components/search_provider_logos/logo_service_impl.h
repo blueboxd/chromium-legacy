@@ -78,7 +78,7 @@ class LogoServiceImpl : public LogoService,
   // At least one callback must be non-null. All non-null callbacks will be
   // invoked exactly once.
   void GetLogo(LogoObserver* observer) override;
-  void GetLogo(LogoCallbacks callbacks) override;
+  void GetLogo(LogoCallbacks callbacks, bool for_webui_ntp) override;
 
   // Overrides the cache used to store logos.
   void SetLogoCacheForTests(std::unique_ptr<LogoCache> cache);

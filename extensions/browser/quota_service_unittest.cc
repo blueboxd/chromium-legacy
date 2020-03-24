@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,7 +60,7 @@ class MockMapper : public QuotaLimitHeuristic::BucketMapper {
 
 class MockFunction : public ExtensionFunction {
  public:
-  explicit MockFunction(const char* name) { set_name(name); }
+  explicit MockFunction(const char* name) { SetName(name); }
 
   ResponseAction Run() override { return RespondLater(); }
 

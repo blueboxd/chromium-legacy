@@ -109,7 +109,7 @@ SkColor Tween::ColorValueBetween(double value, SkColor start, SkColor target) {
   float target_a = SkColorGetA(target) / 255.f;
   float blended_a = FloatValueBetween(value, start_a, target_a);
   if (blended_a <= 0.f)
-    return SkColorSetARGB(0, 0, 0, 0);
+    return SK_ColorTRANSPARENT;
   blended_a = std::min(blended_a, 1.f);
 
   uint8_t blended_r =

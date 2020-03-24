@@ -10,7 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.supplier.Supplier;
 
 import java.util.LinkedHashSet;
@@ -27,6 +27,15 @@ import java.util.function.Consumer;
  */
 @TargetApi(29)
 public abstract class DirectActionCoordinator {
+    /**
+     * Tracks calls to {@link #onGetDirectActions}.
+     *
+     * <p>This corresponds to a user triggering the assist app while a Chrome activity is in the
+     * foreground.
+     */
+    private static final CachedMetrics.ActionEvent LIST_ACTION_EVENT =
+            new CachedMetrics.ActionEvent("Android.DirectAction.List");
+
     private final Set<DirectActionHandler> mHandlers = new LinkedHashSet<>();
 
     /**
@@ -55,7 +64,7 @@ public abstract class DirectActionCoordinator {
             }
         }
         reporter.report();
-        RecordUserAction.record("Android.DirectAction.List");
+        LIST_ACTION_EVENT.record();
     }
 
     /** Performs an action and reports the result to the callback. */

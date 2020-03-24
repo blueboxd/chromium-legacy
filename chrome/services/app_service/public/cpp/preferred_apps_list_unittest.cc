@@ -187,3 +187,111 @@ TEST_F(PreferredAppListTest, OverwritePreferredApp) {
 
   EXPECT_EQ(kAppId2, preferred_apps_.FindPreferredAppForUrl(filter_url));
 }
+
+// Test that when overlap happens, the previous setting will be removed.
+TEST_F(PreferredAppListTest, OverlapPreferredApp) {
+  GURL filter_url_1 = GURL("https://www.google.com/abc");
+  GURL filter_url_2 = GURL("http://www.google.com.au/abc");
+  auto intent_filter_1 = apps_util::CreateIntentFilterForUrlScope(filter_url_1);
+  intent_filter_1->conditions[0]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.scheme(),
+                                    apps::mojom::PatternMatchType::kNone));
+  intent_filter_1->conditions[1]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.host(),
+                                    apps::mojom::PatternMatchType::kNone));
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter_1);
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url_2));
+
+  GURL filter_url_3 = GURL("https://www.abc.com/abc");
+  auto intent_filter_2 = apps_util::CreateIntentFilterForUrlScope(filter_url_3);
+  intent_filter_2->conditions[0]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.scheme(),
+                                    apps::mojom::PatternMatchType::kNone));
+  intent_filter_2->conditions[1]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.host(),
+                                    apps::mojom::PatternMatchType::kNone));
+  preferred_apps_.AddPreferredApp(kAppId2, intent_filter_2);
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(kAppId2, preferred_apps_.FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(kAppId2, preferred_apps_.FindPreferredAppForUrl(filter_url_3));
+}
+
+// Test that the replaced app preferences is correct.
+TEST_F(PreferredAppListTest, ReplacedAppPreference) {
+  GURL filter_url_1 = GURL("https://www.google.com/abc");
+  GURL filter_url_2 = GURL("http://www.google.com.au/abc");
+  auto intent_filter_1 = apps_util::CreateIntentFilterForUrlScope(filter_url_1);
+  intent_filter_1->conditions[0]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.scheme(),
+                                    apps::mojom::PatternMatchType::kNone));
+  intent_filter_1->conditions[1]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.host(),
+                                    apps::mojom::PatternMatchType::kNone));
+  auto replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId1, intent_filter_1);
+  EXPECT_EQ(0u, replaced_app_preferences->replaced_preference.size());
+
+  GURL filter_url_3 = GURL("https://www.abc.com/abc");
+  auto intent_filter_2 = apps_util::CreateIntentFilterForUrlScope(filter_url_3);
+  intent_filter_2->conditions[0]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.scheme(),
+                                    apps::mojom::PatternMatchType::kNone));
+  intent_filter_2->conditions[1]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_2.host(),
+                                    apps::mojom::PatternMatchType::kNone));
+  replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId2, intent_filter_2);
+  EXPECT_EQ(1u, replaced_app_preferences->replaced_preference.size());
+  EXPECT_TRUE(replaced_app_preferences->replaced_preference.find(kAppId1) !=
+              replaced_app_preferences->replaced_preference.end());
+
+  GURL filter_url_4 = GURL("http://www.example.com/abc");
+  auto intent_filter_3 = apps_util::CreateIntentFilterForUrlScope(filter_url_3);
+  intent_filter_3->conditions[0]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_4.scheme(),
+                                    apps::mojom::PatternMatchType::kNone));
+  intent_filter_3->conditions[1]->condition_values.push_back(
+      apps_util::MakeConditionValue(filter_url_4.host(),
+                                    apps::mojom::PatternMatchType::kNone));
+
+  // Test when replacing multiple preferred app entries with same app id.
+  replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId1, intent_filter_1);
+  EXPECT_EQ(1u, replaced_app_preferences->replaced_preference.size());
+  EXPECT_TRUE(replaced_app_preferences->replaced_preference.find(kAppId2) !=
+              replaced_app_preferences->replaced_preference.end());
+
+  replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId1, intent_filter_3);
+  EXPECT_EQ(0u, replaced_app_preferences->replaced_preference.size());
+
+  replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId2, intent_filter_2);
+  EXPECT_EQ(1u, replaced_app_preferences->replaced_preference.size());
+  auto entry = replaced_app_preferences->replaced_preference.find(kAppId1);
+  EXPECT_TRUE(entry != replaced_app_preferences->replaced_preference.end());
+  EXPECT_EQ(2u, entry->second.size());
+
+  // Test when replacing multiple preferred app entries with different app id.
+  replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId1, intent_filter_1);
+  EXPECT_EQ(1u, replaced_app_preferences->replaced_preference.size());
+  EXPECT_TRUE(replaced_app_preferences->replaced_preference.find(kAppId2) !=
+              replaced_app_preferences->replaced_preference.end());
+
+  replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId2, intent_filter_3);
+  EXPECT_EQ(0u, replaced_app_preferences->replaced_preference.size());
+
+  replaced_app_preferences =
+      preferred_apps_.AddPreferredApp(kAppId3, intent_filter_2);
+  EXPECT_EQ(2u, replaced_app_preferences->replaced_preference.size());
+  entry = replaced_app_preferences->replaced_preference.find(kAppId1);
+  EXPECT_TRUE(entry != replaced_app_preferences->replaced_preference.end());
+  EXPECT_EQ(1u, entry->second.size());
+  entry = replaced_app_preferences->replaced_preference.find(kAppId2);
+  EXPECT_TRUE(entry != replaced_app_preferences->replaced_preference.end());
+  EXPECT_EQ(1u, entry->second.size());
+}

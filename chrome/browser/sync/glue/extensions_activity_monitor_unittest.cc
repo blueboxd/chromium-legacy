@@ -52,7 +52,7 @@ template <class T>
 void FireBookmarksApiEvent(
     const scoped_refptr<Extension>& extension, int repeats) {
   scoped_refptr<T> bookmarks_function(new T());
-  bookmarks_function->set_name(T::function_name());
+  bookmarks_function->SetName(T::function_name());
   for (int i = 0; i < repeats; i++) {
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,

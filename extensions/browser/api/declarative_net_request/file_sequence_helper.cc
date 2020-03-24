@@ -8,9 +8,11 @@
 #include <set>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -34,49 +36,56 @@ namespace {
 namespace dnr_api = extensions::api::declarative_net_request;
 
 // A class to help in re-indexing multiple rulesets.
-class ReindexHelper {
+class ReindexHelper : public base::RefCountedThreadSafe<ReindexHelper> {
  public:
-  // Starts re-indexing rulesets. Must be called on the extension file task
-  // runner.
   using ReindexCallback = base::OnceCallback<void(LoadRequestData)>;
-  static void Start(LoadRequestData data, ReindexCallback callback) {
-    auto* helper = new ReindexHelper(std::move(data), std::move(callback));
-    helper->Start();
-  }
-
- private:
-  // We manage our own lifetime.
   ReindexHelper(LoadRequestData data, ReindexCallback callback)
       : data_(std::move(data)), callback_(std::move(callback)) {}
-  ~ReindexHelper() = default;
 
+  // Starts re-indexing rulesets. Must be called on the extension file task
+  // runner.
   void Start() {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
-    // Post tasks to reindex individual rulesets.
-    bool did_post_task = false;
+    std::vector<RulesetInfo*> rulesets_to_reindex;
     for (auto& ruleset : data_.rulesets) {
       if (ruleset.did_load_successfully())
         continue;
 
-      // Using Unretained is safe since this class manages its own lifetime and
-      // |this| won't be deleted until the |callback| returns.
-      auto callback = base::BindOnce(&ReindexHelper::OnReindexCompleted,
-                                     base::Unretained(this), &ruleset);
-      callback_count_++;
-      did_post_task = true;
-      ruleset.source().IndexAndPersistJSONRuleset(&decoder_,
-                                                  std::move(callback));
+      rulesets_to_reindex.push_back(&ruleset);
     }
 
-    // It's possible that the callbacks return synchronously and we are deleted
-    // at this point. Hence don't use any member variables here. Also, if we
-    // don't post any task, we'll leak. Ensure that's not the case.
-    DCHECK(did_post_task);
+    // |done_closure| will be invoked once |barrier_closure| is run
+    // |rulesets_to_reindex.size()| times.
+    base::OnceClosure done_closure =
+        base::BindOnce(&ReindexHelper::OnAllRulesetsReindexed, this);
+    base::RepeatingClosure barrier_closure = base::BarrierClosure(
+        rulesets_to_reindex.size(), std::move(done_closure));
+
+    // Post tasks to reindex individual rulesets.
+    for (RulesetInfo* ruleset : rulesets_to_reindex) {
+      auto callback = base::BindOnce(&ReindexHelper::OnReindexCompleted, this,
+                                     ruleset, barrier_closure);
+      ruleset->source().IndexAndPersistJSONRuleset(&decoder_,
+                                                   std::move(callback));
+    }
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<ReindexHelper>;
+  ~ReindexHelper() = default;
+
+  // Callback invoked when reindexing of all rulesets is completed.
+  void OnAllRulesetsReindexed() {
+    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
+
+    // Our job is done.
+    std::move(callback_).Run(std::move(data_));
   }
 
   // Callback invoked when a single ruleset is re-indexed.
   void OnReindexCompleted(RulesetInfo* ruleset,
+                          base::OnceClosure done_closure,
                           IndexAndPersistJSONRulesetResult result) {
     DCHECK(ruleset);
 
@@ -108,19 +117,11 @@ class ReindexHelper {
         "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
         reindexing_success);
 
-    callback_count_--;
-    DCHECK_GE(callback_count_, 0);
-
-    if (callback_count_ == 0) {
-      // Our job is done.
-      std::move(callback_).Run(std::move(data_));
-      delete this;
-    }
+    std::move(done_closure).Run();
   }
 
   LoadRequestData data_;
   ReindexCallback callback_;
-  int callback_count_ = 0;
 
   // We use a single shared Data Decoder service instance to process all of the
   // rulesets for this ReindexHelper.
@@ -393,7 +394,10 @@ void FileSequenceHelper::LoadRulesets(
   auto reindex_callback =
       base::BindOnce(&FileSequenceHelper::OnRulesetsReindexed,
                      weak_factory_.GetWeakPtr(), std::move(ui_callback));
-  ReindexHelper::Start(std::move(load_data), std::move(reindex_callback));
+
+  auto reindex_helper = base::MakeRefCounted<ReindexHelper>(
+      std::move(load_data), std::move(reindex_callback));
+  reindex_helper->Start();
 }
 
 void FileSequenceHelper::UpdateDynamicRules(

@@ -2,8 +2,40 @@
   :host {
     height: 230px;
   }
+
+  #singleColoredLogo,
+  #multiColoredLogo {
+    height: 92px;
+    margin-top: 108px;
+    width: 272px;
+  }
+
+  #singleColoredLogo {
+    -webkit-mask-image: url(chrome://resources/images/google_logo.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--ntp-logo-color);
+  }
+
+  #multiColoredLogo {
+    background-image: url(chrome://resources/images/google_logo.svg);
+  }
+
+  #iframe {
+    height: 200px;
+    width: 500px;
+  }
 </style>
-<img src="[[doodle_.content.image]]" hidden="[[!doodle_.content.image]]"></img>
-<ntp-untrusted-iframe path="iframe?[[doodle_.content.url.url]]"
-    hidden="[[!doodle_.content.url]]">
-</ntp-untrusted-iframe>
+<iron-pages selected="[[mode_]]" attr-for-selected="id">
+  <div id="logo">
+    <!-- TODO(crbug.com/1039910): Add flower if doodle available. -->
+    <div id="singleColoredLogo" hidden="[[!singleColored]]"></div>
+    <div id="multiColoredLogo" hidden="[[singleColored]]"></div>
+  </div>
+  <div id="doodle">
+    <img id="image" src="[[imageUrl_]]" hidden="[[!imageUrl_]]"></img>
+    <ntp-untrusted-iframe id="iframe" path="[[iframeUrl_]]"
+        hidden="[[!iframeUrl_]]">
+    </ntp-untrusted-iframe>
+  </div>
+</iron-pages>

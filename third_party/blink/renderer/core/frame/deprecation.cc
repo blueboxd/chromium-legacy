@@ -611,6 +611,17 @@ void Deprecation::CountDeprecation(Document* document, WebFeature feature) {
 }
 
 void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
+  Deprecation::CountDeprecation(loader, feature, /*count_usage=*/true);
+}
+
+void Deprecation::DeprecationWarningOnly(DocumentLoader* loader,
+                                         WebFeature feature) {
+  Deprecation::CountDeprecation(loader, feature, /*count_usage=*/false);
+}
+
+void Deprecation::CountDeprecation(DocumentLoader* loader,
+                                   WebFeature feature,
+                                   bool count_usage) {
   if (!loader)
     return;
   LocalFrame* frame = loader->GetFrame();
@@ -622,7 +633,8 @@ void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
     return;
 
   page->GetDeprecation().SetReported(feature);
-  UseCounter::Count(loader, feature);
+  if (count_usage)
+    UseCounter::Count(loader, feature);
   GenerateReport(frame, feature);
 }
 

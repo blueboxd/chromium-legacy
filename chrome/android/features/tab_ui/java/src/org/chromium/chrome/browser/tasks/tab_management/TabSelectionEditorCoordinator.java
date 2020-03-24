@@ -120,6 +120,8 @@ class TabSelectionEditorCoordinator {
         mContext = context;
         mParentView = parentView;
         mTabModelSelector = tabModelSelector;
+        assert mode == TabListCoordinator.TabListMode.GRID
+                || mode == TabListCoordinator.TabListMode.LIST;
 
         mTabListCoordinator = new TabListCoordinator(mode, context, mTabModelSelector,
                 tabContentManager::getTabThumbnailWithCallback, null, false, null, null,

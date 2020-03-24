@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
@@ -218,5 +219,10 @@ public class LanguageListBaseAdapter extends DragReorderableListAdapter<Language
     @Override
     protected boolean isPassivelyDraggable(ViewHolder viewHolder) {
         return viewHolder instanceof LanguageRowViewHolder;
+    }
+
+    @VisibleForTesting
+    public List<LanguageItem> getLanguageItemList() {
+        return mElements;
     }
 }

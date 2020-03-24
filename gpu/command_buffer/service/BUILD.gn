@@ -190,8 +190,6 @@ target(link_target_type, "gles2_sources") {
     "passthrough_discardable_manager.h",
     "passthrough_program_cache.cc",
     "passthrough_program_cache.h",
-    "path_manager.cc",
-    "path_manager.h",
     "program_cache.cc",
     "program_cache.h",
     "program_manager.cc",

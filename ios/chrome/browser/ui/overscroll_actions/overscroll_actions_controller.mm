@@ -876,6 +876,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // as when an overscroll that begins just as the last incognito tab is closed.
   if (!disablingFullscreen || !self.browserState)
     return;
+
+  // TODO: (crbug.com/1063521): Retrieve FullscreenController using Browser.
   FullscreenController* fullscreenController =
       FullscreenController::FromBrowserState(self.browserState);
   // Disabling fullscreen will show the toolbars, which may potentially produce

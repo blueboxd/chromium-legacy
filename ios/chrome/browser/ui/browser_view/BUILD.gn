@@ -231,6 +231,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/browser_container:ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/download:features",
+    "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/test",
     "//ios/chrome/browser/ui/util",

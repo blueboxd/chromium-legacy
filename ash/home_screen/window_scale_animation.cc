@@ -4,7 +4,6 @@
 
 #include "ash/home_screen/window_scale_animation.h"
 
-#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
@@ -74,16 +73,6 @@ void WindowScaleAnimation::OnImplicitAnimationsCompleted() {
   if (scale_type_ == WindowScaleType::kScaleDownToShelf) {
     // Minimize the dragged window after transform animation is completed.
     window_util::MinimizeAndHideWithoutAnimation({window_});
-
-    // When showing home launcher by the gesture swipe up from shelf, one
-    // feature called "transient blur" (which means that if focus was lost but
-    // regained a few seconds later, we would show the virtual keyboard again)
-    // may show the virtual keyboard, which is not what we want. So hide the
-    // virtual keyboard explicitly.
-    keyboard::KeyboardUIController* keyboard_ui_controller =
-        keyboard::KeyboardUIController::Get();
-    if (keyboard_ui_controller)
-      keyboard_ui_controller->HideKeyboardExplicitlyBySystem();
 
     // Reset its transform to identity transform and its original backdrop mode.
     window_->layer()->SetTransform(gfx::Transform());

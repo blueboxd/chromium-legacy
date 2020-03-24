@@ -1561,7 +1561,10 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
                 open_vpn.user_authentication_type, &open_vpn_dict);
       type_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
     }
-    SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type), &type_dict);
+    if (vpn.type) {
+      SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type->value),
+                &type_dict);
+    }
   } else if (properties->type_config->is_wifi()) {
     type = mojom::NetworkType::kWiFi;
     const mojom::WiFiConfigProperties& wifi =

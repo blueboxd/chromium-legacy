@@ -27,10 +27,11 @@ SmsProvider::~SmsProvider() = default;
 std::unique_ptr<SmsProvider> SmsProvider::Create(RenderFrameHost* rfh) {
 #if defined(OS_ANDROID)
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWebOtpBackend) == switches::kWebOtpBackendUserConsent) {
-    return std::make_unique<SmsProviderGmsUserConsent>(rfh);
+          switches::kWebOtpBackend) ==
+      switches::kWebOtpBackendSmsVerification) {
+    return std::make_unique<SmsProviderGmsVerification>();
   }
-  return std::make_unique<SmsProviderGmsVerification>();
+  return std::make_unique<SmsProviderGmsUserConsent>(rfh);
 #else
   return nullptr;
 #endif

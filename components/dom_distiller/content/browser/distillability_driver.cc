@@ -46,7 +46,7 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
 };
 
 DistillabilityDriver::DistillabilityDriver(content::WebContents* web_contents)
-    : latest_result_(base::nullopt) {
+    : latest_result_(base::nullopt), web_contents_(web_contents) {
   if (!web_contents)
     return;
 }
@@ -60,8 +60,25 @@ void DistillabilityDriver::CreateDistillabilityService(
       std::move(receiver));
 }
 
+void DistillabilityDriver::SetIsDangerousCallback(
+    base::RepeatingCallback<bool(content::WebContents*)> is_dangerous_check) {
+  is_dangerous_check_ = std::move(is_dangerous_check);
+}
+
 void DistillabilityDriver::OnDistillability(
     const DistillabilityResult& result) {
+  if (result.is_distillable) {
+    if (!is_dangerous_check_ || !is_dangerous_check_.Run(web_contents_)) {
+      DistillabilityResult not_distillable;
+      not_distillable.is_distillable = false;
+      not_distillable.is_last = result.is_last;
+      not_distillable.is_mobile_friendly = result.is_mobile_friendly;
+      latest_result_ = not_distillable;
+      for (auto& observer : observers_)
+        observer.OnResult(not_distillable);
+      return;
+    }
+  }
   latest_result_ = result;
   for (auto& observer : observers_)
     observer.OnResult(result);

@@ -63,6 +63,18 @@ class AppElement extends PolymerElement {
         computed: 'computeBackgroundImagePath_(theme_)',
         type: String,
       },
+
+      /** @private */
+      doodleAllowed_: {
+        computed: 'computeDoodleAllowed_(showBackgroundImage_, theme_)',
+        type: Boolean,
+      },
+
+      /** @private */
+      singleColoredLogo_: {
+        computed: 'computeSingleColoredLogo_(theme_)',
+        type: Boolean,
+      },
     };
   }
 
@@ -152,6 +164,24 @@ class AppElement extends PolymerElement {
       return '';
     }
     return `image?${this.theme_.backgroundImageUrl.url}`;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeDoodleAllowed_() {
+    return !this.showBackgroundImage_ &&
+        (!this.theme_ ||
+         this.theme_.type === newTabPage.mojom.ThemeType.DEFAULT);
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSingleColoredLogo_() {
+    return this.theme_ && !!this.theme_.logoColor;
   }
 
   /**

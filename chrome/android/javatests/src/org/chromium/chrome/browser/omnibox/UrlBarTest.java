@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.text.Editable;
+import android.text.Selection;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
@@ -198,6 +199,25 @@ public class UrlBarTest extends DummyUiActivityTestCase {
 
     private AutocompleteState setSelection(final int selectionStart, final int selectionEnd) {
         return getAutocompleteState(() -> mUrlBar.setSelection(selectionStart, selectionEnd));
+    }
+
+    private void assertAutocompleteSelectionRange(
+            int expectedSelectionStart, int expectedSelectionEnd) {
+        int[] selection = getSelectionRange();
+        Assert.assertEquals("Selection start did not match", expectedSelectionStart, selection[0]);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)) {
+            Assert.assertEquals("Selection end did not match", expectedSelectionEnd, selection[1]);
+        }
+    }
+
+    private int[] getSelectionRange() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            int[] selection = new int[2];
+            CharSequence text = mUrlBar.getText();
+            selection[0] = Selection.getSelectionStart(text);
+            selection[1] = Selection.getSelectionEnd(text);
+            return selection;
+        });
     }
 
     @Test
@@ -857,5 +877,31 @@ public class UrlBarTest extends DummyUiActivityTestCase {
 
         setTextAndVerifyNoAutocomplete("");
         Mockito.verify(listener).onTextChanged("", "");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testSetAutocompleteText_ShrinkingText() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        setTextAndVerifyNoAutocomplete("test");
+        setAutocomplete("test", "ing is awesome");
+        setAutocomplete("test", "ing is hard");
+        setAutocomplete("test", "ingz");
+        assertAutocompleteSelectionRange(4, 8);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testSetAutocompleteText_GrowingText() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        setTextAndVerifyNoAutocomplete("test");
+        setAutocomplete("test", "ingz");
+        setAutocomplete("test", "ing is hard");
+        setAutocomplete("test", "ing is awesome");
+        assertAutocompleteSelectionRange(4, 18);
     }
 }

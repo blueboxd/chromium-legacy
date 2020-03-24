@@ -82,9 +82,10 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   if (item.DrawsContent())
     chunk.drawable_bounds.Unite(item.VisualRect());
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      item.IsDrawing() &&
-      static_cast<const DrawingDisplayItem&>(item).KnownToBeOpaque())
+  constexpr wtf_size_t kMaxRegionComplexity = 10;
+  if (item.IsDrawing() &&
+      static_cast<const DrawingDisplayItem&>(item).KnownToBeOpaque() &&
+      last_chunk_known_to_be_opaque_region_.Complexity() < kMaxRegionComplexity)
     last_chunk_known_to_be_opaque_region_.Unite(item.VisualRect());
 
   chunk.outset_for_raster_effects =

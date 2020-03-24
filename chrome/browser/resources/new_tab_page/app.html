@@ -52,7 +52,7 @@
     width: 100%;
   }
 
-  ntp-logo {
+  #logo {
     margin-bottom: 8px;
   }
 
@@ -165,14 +165,17 @@
     style="background-color: [[rgbOrInherit_(theme_.backgroundColor)]];
         --ntp-theme-text-color: [[rgbOrInherit_(theme_.shortcutTextColor)]];
         --ntp-theme-shortcut-background-color:
-              [[rgbOrInherit_(theme_.shortcutBackgroundColor)]];">
+              [[rgbOrInherit_(theme_.shortcutBackgroundColor)]];
+        --ntp-logo-color: [[rgbOrInherit_(theme_.logoColor)]];">
   <ntp-untrusted-iframe id="backgroundImage" path="[[backgroundImagePath_]]"
       hidden="[[!showBackgroundImage_]]">
   </ntp-untrusted-iframe>
   <div id="backgroundGradient" hidden="[[!showBackgroundImage_]]"></div>
   <div id="content">
     <div id="oneGoogleBarSpacer"></div>
-    <ntp-logo></ntp-logo>
+    <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
+        single-colored$="[[singleColoredLogo_]]">
+    </ntp-logo>
     <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_">
     </ntp-fakebox>
     <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]">

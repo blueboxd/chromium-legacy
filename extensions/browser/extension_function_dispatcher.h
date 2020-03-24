@@ -135,11 +135,6 @@ class ExtensionFunctionDispatcher
       void* profile_id,
       const ExtensionFunction::ResponseCallback& callback);
 
-  // Helper to run the response callback with an access denied error. Can be
-  // called on any thread.
-  static void SendAccessDenied(
-      const ExtensionFunction::ResponseCallback& callback);
-
   void DispatchWithCallbackInternal(
       const ExtensionHostMsg_Request_Params& params,
       content::RenderFrameHost* render_frame_host,

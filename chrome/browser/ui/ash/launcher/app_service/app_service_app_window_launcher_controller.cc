@@ -38,6 +38,19 @@
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+// Returns the app id from the app id or the shelf group id.
+std::string GetAppId(const std::string& id) {
+  const arc::ArcAppShelfId arc_app_shelf_id =
+      arc::ArcAppShelfId::FromString(id);
+  if (!arc_app_shelf_id.valid() || !arc_app_shelf_id.has_shelf_group_id())
+    return id;
+  return arc_app_shelf_id.app_id();
+}
+
+}  // namespace
+
 AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner),
@@ -185,7 +198,7 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
   // set it as |kVisible|, otherwise, clear the visible bit.
   apps::InstanceState state =
       app_service_instance_helper_->CalculateVisibilityState(window, visible);
-  app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
+  app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
                                             shelf_id.launch_id, state);
 
   if (!visible || shelf_id.app_id == extension_misc::kChromeAppId)
@@ -220,8 +233,9 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   }
 
   // Delete the instance from InstanceRegistry.
-  app_service_instance_helper_->OnInstances(
-      shelf_id.app_id, window, std::string(), apps::InstanceState::kDestroyed);
+  app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
+                                            std::string(),
+                                            apps::InstanceState::kDestroyed);
 
   auto app_window_it = aura_window_to_app_window_.find(window);
   if (app_window_it == aura_window_to_app_window_.end())
@@ -413,7 +427,7 @@ void AppServiceAppWindowLauncherController::SetWindowActivated(
 
   apps::InstanceState state =
       app_service_instance_helper_->CalculateActivatedState(window, active);
-  app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
+  app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
                                             std::string(), state);
 }
 

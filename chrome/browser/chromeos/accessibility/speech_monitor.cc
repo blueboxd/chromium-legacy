@@ -121,6 +121,8 @@ void SpeechMonitor::WillSpeakUtteranceWithVoice(
   utterance_queue_.emplace_back(utterance->GetText(), utterance->GetLang());
   if (loop_runner_.get())
     loop_runner_->Quit();
+
+  MaybeContinueReplay();
 }
 
 bool SpeechMonitor::LoadBuiltInTtsEngine(
@@ -150,6 +152,51 @@ double SpeechMonitor::CalculateUtteranceDelayMS() {
 
 double SpeechMonitor::GetDelayForLastUtteranceMS() {
   return delay_for_last_utterance_MS_;
+}
+
+SpeechMonitor& SpeechMonitor::ExpectSpeech(const std::string& text) {
+  CHECK(!replay_loop_runner_.get());
+  replay_queue_.push_back([this, text]() {
+    for (auto it = utterance_queue_.begin(); it != utterance_queue_.end();
+         it++) {
+      if (it->text == text) {
+        utterance_queue_.erase(it);
+        return true;
+      }
+    }
+    return false;
+  });
+  return *this;
+}
+
+SpeechMonitor& SpeechMonitor::Call(std::function<void()> func) {
+  CHECK(!replay_loop_runner_.get());
+  replay_queue_.push_back([func]() {
+    func();
+    return true;
+  });
+  return *this;
+}
+
+void SpeechMonitor::Replay() {
+  MaybeContinueReplay();
+}
+
+void SpeechMonitor::MaybeContinueReplay() {
+  auto it = replay_queue_.begin();
+  while (it != replay_queue_.end()) {
+    if ((*it)())
+      it = replay_queue_.erase(it);
+    else
+      break;
+  }
+
+  if (replay_queue_.size() > 0 && !replay_loop_runner_.get()) {
+    replay_loop_runner_ = new content::MessageLoopRunner();
+    replay_loop_runner_->Run();
+  } else if (replay_queue_.empty() && replay_loop_runner_.get()) {
+    replay_loop_runner_->Quit();
+  }
 }
 
 }  // namespace chromeos

@@ -15,7 +15,7 @@ suite('NewTabPageLogoTest', () => {
    */
   let testProxy;
 
-  async function createLogo(doodle) {
+  async function createLogo(doodle = null) {
     testProxy.handler.setResultFor('getDoodle', Promise.resolve({
       doodle: doodle,
     }));
@@ -37,11 +37,11 @@ suite('NewTabPageLogoTest', () => {
     const logo = await createLogo({content: {image: 'data:foo'}});
 
     // Assert.
-    const img = logo.shadowRoot.querySelector('img');
-    const iframe = logo.shadowRoot.querySelector('ntp-untrusted-iframe');
-    assertEquals(img.src, 'data:foo');
-    assertNotStyle(img, 'display', 'none');
-    assertStyle(iframe, 'display', 'none');
+    assertNotStyle(logo.$.doodle, 'display', 'none');
+    assertStyle(logo.$.logo, 'display', 'none');
+    assertEquals(logo.$.image.src, 'data:foo');
+    assertNotStyle(logo.$.image, 'display', 'none');
+    assertStyle(logo.$.iframe, 'display', 'none');
   });
 
   test('setting interactive doodle shows iframe', async () => {
@@ -49,10 +49,61 @@ suite('NewTabPageLogoTest', () => {
     const logo = await createLogo({content: {url: {url: 'https://foo.com'}}});
 
     // Assert.
-    const iframe = logo.shadowRoot.querySelector('ntp-untrusted-iframe');
-    const img = logo.shadowRoot.querySelector('img');
-    assertEquals(iframe.path, 'iframe?https://foo.com');
-    assertNotStyle(iframe, 'display', 'none');
-    assertStyle(img, 'display', 'none');
+    assertNotStyle(logo.$.doodle, 'display', 'none');
+    assertStyle(logo.$.logo, 'display', 'none');
+    assertEquals(logo.$.iframe.path, 'iframe?https://foo.com');
+    assertNotStyle(logo.$.iframe, 'display', 'none');
+    assertStyle(logo.$.image, 'display', 'none');
+  });
+
+  test('disallowing doodle shows logo', async () => {
+    // Act.
+    const logo = await await createLogo({content: {image: 'data:foo'}});
+    logo.doodleAllowed = false;
+
+    // Assert.
+    assertNotStyle(logo.$.logo, 'display', 'none');
+    assertStyle(logo.$.doodle, 'display', 'none');
+  });
+
+  test('before doodle loaded shows nothing', () => {
+    // Act.
+    testProxy.handler.setResultFor('getDoodle', new Promise(() => {}));
+    const logo = document.createElement('ntp-logo');
+    document.body.appendChild(logo);
+
+    // Assert.
+    assertStyle(logo.$.logo, 'display', 'none');
+    assertStyle(logo.$.doodle, 'display', 'none');
+  });
+
+  test('unavailable doodle shows logo', async () => {
+    // Act.
+    const logo = await createLogo();
+
+    // Assert.
+    assertNotStyle(logo.$.logo, 'display', 'none');
+    assertStyle(logo.$.doodle, 'display', 'none');
+  });
+
+  test('not setting-single colored shows multi-colored logo', async () => {
+    // Act.
+    const logo = await createLogo();
+
+    // Assert.
+    assertNotStyle(logo.$.multiColoredLogo, 'display', 'none');
+    assertStyle(logo.$.singleColoredLogo, 'display', 'none');
+  });
+
+  test('setting single-colored shows single-colored logo', async () => {
+    // Act.
+    const logo = await createLogo();
+    logo.singleColored = true;
+    logo.style.setProperty('--ntp-logo-color', 'red');
+
+    // Assert.
+    assertNotStyle(logo.$.singleColoredLogo, 'display', 'none');
+    assertStyle(logo.$.singleColoredLogo, 'background-color', 'rgb(255, 0, 0)');
+    assertStyle(logo.$.multiColoredLogo, 'display', 'none');
   });
 });

@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/features.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,10 @@ class BrowserCoordinatorTest : public PlatformTest {
 // Tests if the URL to open the downlads directory from files.app is valid.
 TEST_F(BrowserCoordinatorTest, ShowDownloadsFolder) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kOpenDownloadsInFilesApp);
+  feature_list.InitWithFeaturesAndParameters(
+      {{kOpenDownloadsInFilesApp, {}},
+       {fullscreen::features::kFullscreenControllerBrowserScoped, {}}},
+      {});
 
   base::FilePath download_dir;
   GetDownloadsDirectory(&download_dir);

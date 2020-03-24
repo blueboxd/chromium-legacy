@@ -445,8 +445,12 @@ void CrostiniHandler::LaunchTerminal() {
 void CrostiniHandler::HandleRequestContainerUpgradeView(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetList().size());
-  chromeos::CrostiniUpgraderDialog::Show(base::BindOnce(
-      &CrostiniHandler::LaunchTerminal, weak_ptr_factory_.GetWeakPtr()));
+  chromeos::CrostiniUpgraderDialog::Show(
+      base::BindOnce(&CrostiniHandler::LaunchTerminal,
+                     weak_ptr_factory_.GetWeakPtr()),
+      // If the user cancels the upgrade, we won't need to restart Crostini and
+      // we don't want to run the launch closure which would launch Terminal.
+      /*only_run_launch_closure_on_restart=*/true);
 }
 
 void CrostiniHandler::OnCrostiniExportImportOperationStatusChanged(

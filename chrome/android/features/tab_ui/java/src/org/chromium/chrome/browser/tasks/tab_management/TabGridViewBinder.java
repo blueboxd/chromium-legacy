@@ -127,7 +127,7 @@ class TabGridViewBinder {
                         (int) res.getDimension(R.dimen.tab_list_selected_inset));
                 view.setForeground(model.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
-            if (TabUiFeatureUtilities.isSearchTermChipEnabled()) {
+            if (TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue()) {
                 ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
                 searchButton.getPrimaryTextView().setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                 searchButton.getPrimaryTextView().setEllipsize(TextUtils.TruncateAt.END);
@@ -194,8 +194,7 @@ class TabGridViewBinder {
             updateColor(view, model.get(TabProperties.IS_INCOGNITO), TabProperties.UiType.CLOSABLE);
         } else if (TabProperties.ACCESSIBILITY_DELEGATE == propertyKey) {
             view.setAccessibilityDelegate(model.get(TabProperties.ACCESSIBILITY_DELEGATE));
-        } else if (TabUiFeatureUtilities.isSearchTermChipEnabled()
-                && TabProperties.SEARCH_QUERY == propertyKey) {
+        } else if (TabProperties.SEARCH_QUERY == propertyKey) {
             String query = model.get(TabProperties.SEARCH_QUERY);
             ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
             if (TextUtils.isEmpty(query)) {
@@ -204,8 +203,7 @@ class TabGridViewBinder {
                 searchButton.setVisibility(View.VISIBLE);
                 searchButton.getPrimaryTextView().setText(query);
             }
-        } else if (TabUiFeatureUtilities.isSearchTermChipEnabled()
-                && TabProperties.SEARCH_LISTENER == propertyKey) {
+        } else if (TabProperties.SEARCH_LISTENER == propertyKey) {
             TabListMediator.TabActionListener listener = model.get(TabProperties.SEARCH_LISTENER);
             ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
             if (listener == null) {
@@ -216,8 +214,7 @@ class TabGridViewBinder {
                 int tabId = model.get(TabProperties.TAB_ID);
                 listener.run(tabId);
             });
-        } else if (TabUiFeatureUtilities.isSearchTermChipEnabled()
-                && TabProperties.SEARCH_CHIP_ICON_DRAWABLE_ID == propertyKey) {
+        } else if (TabProperties.SEARCH_CHIP_ICON_DRAWABLE_ID == propertyKey) {
             ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
             int iconDrawableId = model.get(TabProperties.SEARCH_CHIP_ICON_DRAWABLE_ID);
             boolean shouldTint = iconDrawableId != R.drawable.ic_logo_googleg_24dp;

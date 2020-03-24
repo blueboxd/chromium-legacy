@@ -12,10 +12,26 @@
  * @enum {string}
  */
 const Message = {
+  DELETE_FILE: 'delete-file',
   LOAD_FILE: 'load-file',
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
   OVERWRITE_FILE: 'overwrite-file',
 };
+
+/**
+ * Enum for valid results of deleting a file.
+ * @enum {number}
+ */
+const DeleteResult = {
+  SUCCESS: 0,
+  FILE_MOVED: 1,
+};
+
+/** @typedef {{ token: number }} */
+let DeleteFileMessage;
+
+/** @typedef {{ deleteResult: DeleteResult }}  */
+let DeleteFileResponse;
 
 /** @typedef {{token: number, file: !File}} */
 let OpenFileMessage;

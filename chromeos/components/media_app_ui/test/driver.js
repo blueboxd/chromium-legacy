@@ -15,10 +15,10 @@ class GuestDriver {
    *   tagName if unspecified.
    */
   async waitForElementInGuest(query, opt_property, opt_commands = {}) {
-    /** @type{TestMessageQueryData} */
+    /** @type {TestMessageQueryData} */
     const message = {testQuery: query, property: opt_property};
 
-    const result = /** @type{TestMessageResponseData} */ (
+    const result = /** @type {TestMessageResponseData} */ (
         await guestMessagePipe.sendMessage(
             'test', {...message, ...opt_commands}));
     return result.testQueryResult;
@@ -30,7 +30,7 @@ class FakeWritableFileStream {
   constructor(/** !Blob= */ data = new Blob()) {
     this.data = data;
 
-    /** @type{function(!Blob)} */
+    /** @type {function(!Blob)} */
     this.resolveClose;
 
     this.closePromise = new Promise((/** function(!Blob) */ resolve) => {
@@ -60,33 +60,101 @@ class FakeWritableFileStream {
   }
 }
 
-/** @implements FileSystemFileHandle  */
-class FakeFileSystemFileHandle {
+/** @implements FileSystemHandle  */
+class FakeFileSystemHandle {
   constructor() {
     this.isFile = true;
     this.isDirectory = false;
-    this.name = 'fakefile';
+    this.name = '';
+  }
+  /** @override */
+  async isSameEntry(other) {
+    return this === other;
+  }
+  /** @override */
+  async queryPermission(descriptor) {}
+  /** @override */
+  async requestPermission(descriptor) {}
+}
 
-    /** @type{?FakeWritableFileStream} */
+/** @implements FileSystemFileHandle  */
+class FakeFileSystemFileHandle extends FakeFileSystemHandle {
+  constructor() {
+    super();
+    /** @type {?FakeWritableFileStream} */
     this.lastWritable;
   }
-
-  /** @override */
-  queryPermission(descriptor) {}
-  /** @override */
-  requestPermission(descriptor) {}
   /** @override */
   createWriter(options) {
     throw new Error('createWriter() deprecated.')
   }
   /** @override */
-  createWritable(options) {
+  async createWritable(options) {
     this.lastWritable = new FakeWritableFileStream();
-    return Promise.resolve(this.lastWritable);
+    return this.lastWritable;
   }
   /** @override */
-  getFile() {
-    console.error('getFile() not implemented');
-    return Promise.resolve(new File([], 'fake-file'));
+  async getFile() {
+    return new File([], this.name);
   }
+}
+
+/** @implements FileSystemDirectoryHandle  */
+class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
+  constructor() {
+    super();
+    this.isFile = false;
+    this.isDirectory = true;
+    this.name = 'fake-dir';
+    /**
+     * Internal state mocking file handles in a directory handle.
+     * @type {!Array<!FakeFileSystemFileHandle>}
+     */
+    this.files = [];
+    /**
+     * Used to spy on the last deleted file.
+     * @type {?FakeFileSystemFileHandle}
+     */
+    this.lastDeleted = null;
+  }
+  /**
+   * Use to populate `FileSystemFileHandle`s for tests.
+   * @param {!FakeFileSystemFileHandle} fileHandle
+   */
+  addFileHandleForTest(fileHandle) {
+    this.files.push(fileHandle);
+  }
+  /** @override */
+  getFile(name, options) {
+    const fileHandler = this.files.find(f => f.name === name);
+    return fileHandler ? Promise.resolve(fileHandler) :
+                         Promise.reject(new Error(`File ${name} not found`));
+  }
+  /** @override */
+  getDirectory(name, options) {}
+  /**
+   * @override
+   * @return {!AsyncIterable<!FileSystemHandle>}
+   * @suppress {reportUnknownTypes} suppress [JSC_UNKNOWN_EXPR_TYPE] for `yield
+   * file`.
+   */
+  async * getEntries() {
+    for (const file of this.files) {
+      yield file;
+    }
+  }
+  /** @override */
+  async removeEntry(name, options) {
+    // Remove file handle from internal state.
+    const fileHandleIndex = this.files.findIndex(f => f.name === name);
+    // Store the file removed for spying in tests.
+    this.lastDeleted = this.files.splice(fileHandleIndex, 1)[0];
+  }
+}
+
+/** Creates a mock directory with a single file in it. */
+function createMockTestDirectory() {
+  const directory = new FakeFileSystemDirectoryHandle();
+  directory.addFileHandleForTest(new FakeFileSystemFileHandle());
+  return directory;
 }

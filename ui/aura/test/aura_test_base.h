@@ -29,8 +29,6 @@ class FocusClient;
 
 namespace test {
 
-class AuraTestContextFactory;
-
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
 class AuraTestBase : public testing::Test {
@@ -71,7 +69,6 @@ class AuraTestBase : public testing::Test {
   bool setup_called_ = false;
   bool teardown_called_ = false;
   std::unique_ptr<AuraTestHelper> helper_;
-  std::unique_ptr<AuraTestContextFactory> mus_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };

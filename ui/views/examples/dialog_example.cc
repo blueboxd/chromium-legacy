@@ -49,7 +49,6 @@ class DialogExample::Delegate : public virtual DialogType {
     Label* body = new Label(parent_->body_->GetText());
     body->SetMultiLine(true);
     body->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    body->SetBackground(CreateSolidBackground(SkColorSetRGB(0, 255, 255)));
     this->AddChildView(body);
 
     if (parent_->has_extra_button_->GetChecked()) {

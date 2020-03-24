@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -279,12 +280,6 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
 
 base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
     const AutocompleteInput& input) {
-  // Only try text match if feature is enabled
-  if (!base::FeatureList::IsEnabled(
-          omnibox::kEnableClipboardProviderTextSuggestions)) {
-    return base::nullopt;
-  }
-
   base::Optional<base::string16> optional_text =
       clipboard_content_->GetRecentTextFromClipboard();
   if (!optional_text)
@@ -329,16 +324,6 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
 
   match.keyword = default_url->keyword();
   match.transition = ui::PAGE_TRANSITION_GENERATED;
-
-  // Some users may be in a counterfactual study arm in which we perform all
-  // necessary work but do not forward the autocomplete matches.
-  bool in_counterfactual_group = base::GetFieldTrialParamByFeatureAsBool(
-      omnibox::kEnableClipboardProviderTextSuggestions,
-      "ClipboardProviderTextSuggestionsCounterfactualArm", false);
-  field_trial_triggered_ = true;
-  field_trial_triggered_in_session_ = true;
-  if (in_counterfactual_group)
-    return base::nullopt;
 
   return match;
 }

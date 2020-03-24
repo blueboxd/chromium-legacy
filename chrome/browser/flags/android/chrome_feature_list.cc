@@ -101,6 +101,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAllowRemoteContextForNotifications,
     &kAndroidBlockIntentNonSafelistedHeaders,
     &kAndroidNightModeTabReparenting,
+    &kAndroidPartnerCustomizationPhenotype,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidSearchEngineChoiceNotification,
@@ -286,6 +287,9 @@ const base::Feature kFocusOmniboxInIncognitoTabIntents{
 
 const base::Feature kAllowRemoteContextForNotifications{
     "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAndroidPartnerCustomizationPhenotype{
+    "AndroidPartnerCustomizationPhenotype", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this.
 const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",

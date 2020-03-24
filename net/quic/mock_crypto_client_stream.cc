@@ -142,7 +142,10 @@ bool MockCryptoClientStream::CryptoConnect() {
             ENCRYPTION_ZERO_RTT,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
+      if (session()->connection()->version().handshake_protocol ==
+          quic::PROTOCOL_QUIC_CRYPTO) {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
+      }
       break;
     }
 
@@ -183,7 +186,12 @@ bool MockCryptoClientStream::CryptoConnect() {
             ENCRYPTION_FORWARD_SECURE,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
+      if (session()->connection()->version().handshake_protocol ==
+          quic::PROTOCOL_TLS1_3) {
+        session()->OnOneRttKeysAvailable();
+      } else {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+      }
         session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
         session()->NeuterHandshakeData();
       break;
@@ -260,9 +268,14 @@ void MockCryptoClientStream::NotifySessionOneRttKeyAvailable() {
           ENCRYPTION_FORWARD_SECURE,
           std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
     }
+    if (session()->connection()->version().handshake_protocol ==
+        quic::PROTOCOL_TLS1_3) {
+      session()->OnOneRttKeysAvailable();
+    } else {
       session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-      session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
-      session()->NeuterHandshakeData();
+    }
+    session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
+    session()->NeuterHandshakeData();
 }
 
 // static

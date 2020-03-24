@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -90,9 +91,14 @@
   self.orchestrator.editViewAnimatee =
       [self.locationBarCoordinator editViewAnimatee];
 
-  _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
-      FullscreenController::FromBrowserState(self.browserState),
-      self.viewController);
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
+        FullscreenController::FromBrowser(self.browser), self.viewController);
+  } else {
+    _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
+        FullscreenController::FromBrowserState(self.browserState),
+        self.viewController);
+  }
 
   [super start];
   self.started = YES;
@@ -154,7 +160,11 @@
 }
 
 - (void)exitFullscreen {
-  FullscreenController::FromBrowserState(self.browserState)->ExitFullscreen();
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
+  } else {
+    FullscreenController::FromBrowserState(self.browserState)->ExitFullscreen();
+  }
 }
 
 #pragma mark - FakeboxFocuser

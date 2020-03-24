@@ -132,9 +132,6 @@ http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
 http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
-# Wrong contentsOpaque of the scrollbar layer with transparent track.
-fast/frames/transparent-scrollbar.html [ Failure ]
-
 # Crash on non-contiguous effect on multiple columns
 fast/multicol/composited-layer-will-change.html [ Crash ]
 paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]

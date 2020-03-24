@@ -88,6 +88,8 @@ struct Theme {
   skia.mojom.SkColor shortcut_text_color;
   // True if the theme is dark (e.g. NTP background color is dark).
   bool is_dark;
+  // Color of Google logo. If not set show the logo multi-colored.
+  skia.mojom.SkColor? logo_color;
   // URL to the background image. Can point to untrusted content.
   url.mojom.Url? background_image_url;
   // Human readable attributions of the background image.

@@ -198,6 +198,7 @@ android_library("javatests") {
     "java/src/org/chromium/components/browser_ui/widget/RadioButtonWithEditTextTest.java",
     "java/src/org/chromium/components/browser_ui/widget/WrappingLayoutTest.java",
     "java/src/org/chromium/components/browser_ui/widget/highlight/ViewHighlighterTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/listmenu/ListMenuRenderTest.java",
     "java/src/org/chromium/components/browser_ui/widget/scrim/ScrimTest.java",
     "java/src/org/chromium/components/browser_ui/widget/text/ChromeTextInputLayoutRenderTest.java",
   ]

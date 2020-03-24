@@ -122,8 +122,6 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        TabUiFeatureUtilities.setTabThumbnailAspectRatioForTesting(1.0d);
-        TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(true);
         ViewGroup view = new LinearLayout(getActivity());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -585,8 +583,6 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mStripMCP.destroy();
         mGridMCP.destroy();
         mSelectableMCP.destroy();
-        TabUiFeatureUtilities.setTabThumbnailAspectRatioForTesting(null);
-        TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(null);
         super.tearDownTest();
     }
 }

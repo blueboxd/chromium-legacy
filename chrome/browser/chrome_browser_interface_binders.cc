@@ -25,6 +25,7 @@
 #include "chrome/browser/soda/soda_service.h"
 #include "chrome/browser/soda/soda_service_factory.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
@@ -47,6 +48,8 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/security_state/content/content_utils.h"
+#include "components/security_state/core/security_state.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
@@ -216,6 +219,14 @@ void BindDistillabilityService(
       dom_distiller::DistillabilityDriver::FromWebContents(web_contents);
   if (!driver)
     return;
+  driver->SetIsDangerousCallback(
+      base::BindRepeating([](content::WebContents* contents) {
+        // SecurityStateTabHelper uses chrome-specific
+        // GetVisibleSecurityState to determine if a page is DANGEROUS.
+        return SecurityStateTabHelper::FromWebContents(contents)
+                   ->GetSecurityLevel() !=
+               security_state::SecurityLevel::DANGEROUS;
+      }));
   driver->CreateDistillabilityService(std::move(receiver));
 }
 

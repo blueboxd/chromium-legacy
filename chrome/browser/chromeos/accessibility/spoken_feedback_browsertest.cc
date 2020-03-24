@@ -728,22 +728,19 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextTabRecovery) {
 
   // Press Search+H to go to the next heading
   SendKeyPressWithSearch(ui::VKEY_H);
-  while ("Middle" != speech_monitor_.GetNextUtterance()) {
-  }
-
-  // To ensure that the setSequentialFocusNavigationStartingPoint has
-  // executed before pressing Tab, the page has an event handler waiting
-  // for the 'blur' event on the button, and when it loses focus it
-  // triggers a live region announcement that we wait for, here.
-  while ("button lost focus" != speech_monitor_.GetNextUtterance()) {
-  }
-
-  // Now we know that focus has left the button, so the sequential focus
-  // navigation starting point must be on the heading. Press Tab and
-  // ensure that we land on the first link past the heading.
-  SendKeyPress(ui::VKEY_TAB);
-  while ("44" != speech_monitor_.GetNextUtterance()) {
-  }
+  speech_monitor_
+      .ExpectSpeech("Middle")
+      // To ensure that the setSequentialFocusNavigationStartingPoint has
+      // executed before pressing Tab, the page has an event handler waiting
+      // for the 'blur' event on the button, and when it loses focus it
+      // triggers a live region announcement that we wait for, here.
+      .ExpectSpeech("button lost focus")
+      // Now we know that focus has left the button, so the sequential focus
+      // navigation starting point must be on the heading. Press Tab and
+      // ensure that we land on the first link past the heading.
+      .Call([this]() { SendKeyPress(ui::VKEY_TAB); })
+      .ExpectSpeech("44")
+      .Replay();
 }
 
 //
@@ -770,9 +767,7 @@ class GuestSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
 IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
   EnableChromeVox();
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
-  while (speech_monitor_.GetNextUtterance() != "Reload") {
-  }
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  speech_monitor_.ExpectSpeech("Reload").ExpectSpeech("Button").Replay();
 }
 
 //
@@ -866,7 +861,6 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest,
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
                        MoveByCharacterPhoneticSpeechAndHints) {
   EnableChromeVox();
-
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html,<button autofocus>Click me</button>"));
   EXPECT_EQ("Web Content", speech_monitor_.GetNextUtterance());
@@ -920,36 +914,30 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html,<button autofocus>Click me</button>"));
 
-  // Included to reduce flakiness.
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate") {
-  }
   // Reset Tts settings using hotkey and assert speech output.
-  SendKeyPressWithSearchAndControlAndShift(ui::VKEY_OEM_5);
-  while (speech_monitor_.GetNextUtterance() !=
-         "Reset text to speech settings to default values") {
-  }
-  // Increase speech rate.
-  SendKeyPressWithSearch(ui::VKEY_OEM_4);
-  while (speech_monitor_.GetNextUtterance() != "Rate 19 percent") {
-  }
-  // Increase speech pitch.
-  SendKeyPressWithSearch(ui::VKEY_OEM_6);
-  while (speech_monitor_.GetNextUtterance() != "Pitch 50 percent") {
-  }
-  // Reset Tts settings again.
-  SendKeyPressWithSearchAndControlAndShift(ui::VKEY_OEM_5);
-  while (speech_monitor_.GetNextUtterance() !=
-         "Reset text to speech settings to default values") {
-  }
-  // Ensure that increasing speech rate and pitch jump to the same values as
-  // before.
-  SendKeyPressWithSearch(ui::VKEY_OEM_4);
-  while (speech_monitor_.GetNextUtterance() != "Rate 19 percent") {
-  }
-  SendKeyPressWithSearch(ui::VKEY_OEM_6);
-  while (speech_monitor_.GetNextUtterance() != "Pitch 50 percent") {
-  }
+  speech_monitor_
+      .Call([this]() {
+        SendKeyPressWithSearchAndControlAndShift(ui::VKEY_OEM_5);
+      })
+      .ExpectSpeech("Reset text to speech settings to default values")
+      // Increase speech rate.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_OEM_4); })
+      .ExpectSpeech("Rate 19 percent")
+      // Increase speech pitch.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_OEM_6); })
+      .ExpectSpeech("Pitch 50 percent")
+      // Reset Tts settings again.
+      .Call([this]() {
+        SendKeyPressWithSearchAndControlAndShift(ui::VKEY_OEM_5);
+      })
+      .ExpectSpeech("Reset text to speech settings to default values")
+      // Ensure that increasing speech rate and pitch jump to the same values as
+      // before.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_OEM_4); })
+      .ExpectSpeech("Rate 19 percent")
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_OEM_6); })
+      .ExpectSpeech("Pitch 50 percent")
+      .Replay();
 }
 
 }  // namespace chromeos

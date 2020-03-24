@@ -8,6 +8,23 @@ import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {assertNotStyle, assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
+/** @return {!newTabPage.mojom.Theme} */
+function createTheme() {
+  return {
+    type: newTabPage.mojom.ThemeType.DEFAULT,
+    info: {chromeThemeId: 0},
+    backgroundColor: {value: 0xffff0000},
+    shortcutBackgroundColor: {value: 0xff00ff00},
+    shortcutTextColor: {value: 0xff0000ff},
+    isDark: false,
+    logoColor: null,
+    backgroundImageUrl: null,
+    backgroundImageAttribution1: '',
+    backgroundImageAttribution2: '',
+    backgroundImageAttributionUrl: null,
+  };
+}
+
 suite('NewTabPageAppTest', () => {
   /** @type {!AppElement} */
   let app;
@@ -58,18 +75,7 @@ suite('NewTabPageAppTest', () => {
   test('setting theme updates customize dialog', async () => {
     // Arrange.
     app.$.customizeButton.click();
-    const theme = {
-      type: newTabPage.mojom.ThemeType.DEFAULT,
-      info: {chromeThemeId: 0},
-      backgroundColor: {value: 0xffff0000},
-      shortcutBackgroundColor: {value: 0xff00ff00},
-      shortcutTextColor: {value: 0xff0000ff},
-      isDark: false,
-      backgroundImageUrl: null,
-      backgroundImageAttribution1: '',
-      backgroundImageAttribution2: '',
-      backgroundImageAttributionUrl: null,
-    };
+    const theme = createTheme();
 
     // Act.
     testProxy.callbackRouterRemote.setTheme(theme);
@@ -82,14 +88,7 @@ suite('NewTabPageAppTest', () => {
 
   test('setting theme updates ntp', async () => {
     // Act.
-    testProxy.callbackRouterRemote.setTheme({
-      type: newTabPage.mojom.ThemeType.DEFAULT,
-      info: {chromeThemeId: 0},
-      backgroundColor: {value: 0xffff0000},
-      shortcutBackgroundColor: {value: 0xff00ff00},
-      shortcutTextColor: {value: 0xff0000ff},
-      isDark: false,
-    });
+    testProxy.callbackRouterRemote.setTheme(createTheme());
     await testProxy.callbackRouterRemote.$.flushForTesting();
 
     // Assert.
@@ -103,6 +102,8 @@ suite('NewTabPageAppTest', () => {
     assertStyle(app.$.backgroundGradient, 'display', 'none');
     assertStyle(app.$.backgroundImageAttribution, 'display', 'none');
     assertStyle(app.$.backgroundImageAttribution2, 'display', 'none');
+    assertTrue(app.$.logo.doodleAllowed);
+    assertFalse(app.$.logo.singleColored);
   });
 
   test('open voice search event opens voice search overlay', async () => {
@@ -114,20 +115,10 @@ suite('NewTabPageAppTest', () => {
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
   });
 
-  test('setting background images shows iframe and gradient', async () => {
-    // Act.
-    const theme = {
-      type: newTabPage.mojom.ThemeType.DEFAULT,
-      info: {chromeThemeId: 0},
-      backgroundColor: {value: 0xffff0000},
-      shortcutBackgroundColor: {value: 0xff00ff00},
-      shortcutTextColor: {value: 0xff0000ff},
-      isDark: false,
-      backgroundImageUrl: {url: 'https://img.png'},
-      backgroundImageAttribution1: '',
-      backgroundImageAttribution2: '',
-      backgroundImageAttributionUrl: null,
-    };
+  test('setting background image shows image, disallows doodle', async () => {
+    // Arrange.
+    const theme = createTheme();
+    theme.backgroundImageUrl = {url: 'https://img.png'};
 
     // Act.
     testProxy.callbackRouterRemote.setTheme(theme);
@@ -138,22 +129,15 @@ suite('NewTabPageAppTest', () => {
     assertNotStyle(app.$.backgroundGradient, 'display', 'none');
     assertNotStyle(app.$.backgroundImageAttribution, 'text-shadow', 'none');
     assertEquals(app.$.backgroundImage.path, 'image?https://img.png');
+    assertFalse(app.$.logo.doodleAllowed);
   });
 
   test('setting attributions shows attributions', async function() {
-    // Act.
-    const theme = {
-      type: newTabPage.mojom.ThemeType.DEFAULT,
-      info: {chromeThemeId: 0},
-      backgroundColor: {value: 0xffff0000},
-      shortcutBackgroundColor: {value: 0xff00ff00},
-      shortcutTextColor: {value: 0xff0000ff},
-      isDark: false,
-      backgroundImageUrl: null,
-      backgroundImageAttribution1: 'foo',
-      backgroundImageAttribution2: 'bar',
-      backgroundImageAttributionUrl: {url: 'https://info.com'},
-    };
+    // Arrange.
+    const theme = createTheme();
+    theme.backgroundImageAttribution1 = 'foo';
+    theme.backgroundImageAttribution2 = 'bar';
+    theme.backgroundImageAttributionUrl = {url: 'https://info.com'};
 
     // Act.
     testProxy.callbackRouterRemote.setTheme(theme);
@@ -167,5 +151,32 @@ suite('NewTabPageAppTest', () => {
         'https://info.com');
     assertEquals(app.$.backgroundImageAttribution1.textContent.trim(), 'foo');
     assertEquals(app.$.backgroundImageAttribution2.textContent.trim(), 'bar');
+  });
+
+  test('setting non-default theme disallows doodle', async function() {
+    // Arrange.
+    const theme = createTheme();
+    theme.type = newTabPage.mojom.ThemeType.CHROME;
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertFalse(app.$.logo.doodleAllowed);
+  });
+
+  test('setting logo color colors logo', async function() {
+    // Arrange.
+    const theme = createTheme();
+    theme.logoColor = {value: 0xffff0000};
+
+    // Act.
+    testProxy.callbackRouterRemote.setTheme(theme);
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertTrue(app.$.logo.singleColored);
+    assertStyle(app.$.logo, '--ntp-logo-color', 'rgb(255, 0, 0)');
   });
 });

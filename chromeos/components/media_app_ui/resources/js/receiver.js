@@ -59,6 +59,17 @@ class ReceivedFile {
     this.size = blob.size;
     this.mimeType = blob.type;
   }
+
+  /**
+   * @override
+   * @return {!Promise<number>}
+   */
+  async deleteOriginalFile() {
+    const deleteResponse =
+        /** @type {!DeleteFileResponse} */ (await parentMessagePipe.sendMessage(
+            Message.DELETE_FILE, {token: this.token}));
+    return deleteResponse.deleteResult;
+  }
 }
 
 parentMessagePipe.registerHandler(Message.LOAD_FILE, (message) => {

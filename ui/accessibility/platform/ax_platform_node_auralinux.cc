@@ -3755,7 +3755,6 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
 void AXPlatformNodeAuraLinux::OnNameChanged() {
   AtkObject* atk_object = GetOrCreateAtkObject();
   if (!atk_object) {
-    CHECK(false);
     return;
   }
   std::string previous_accessible_name = accessible_name_;

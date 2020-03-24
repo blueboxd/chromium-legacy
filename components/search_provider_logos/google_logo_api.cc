@@ -102,8 +102,9 @@ GURL AppendFingerprintParamToDoodleURL(const GURL& logo_url,
 }
 
 GURL AppendPreliminaryParamsToDoodleURL(bool gray_background,
+                                        bool for_webui_ntp,
                                         const GURL& logo_url) {
-  std::string api_params = "ntp:1";
+  std::string api_params = for_webui_ntp ? "ntp:2" : "ntp:1";
   if (gray_background) {
     api_params += ",graybg:1";
   }

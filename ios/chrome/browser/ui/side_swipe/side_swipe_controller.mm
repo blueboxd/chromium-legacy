@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_gesture_recognizer.h"
@@ -186,6 +187,12 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
     _scopedWebStateObserver =
         std::make_unique<ScopedObserver<web::WebState, web::WebStateObserver>>(
             _webStateObserverBridge.get());
+    if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+      _fullscreenController = FullscreenController::FromBrowser(self.browser);
+    } else {
+      _fullscreenController =
+          FullscreenController::FromBrowserState(self.browserState);
+    }
     if (self.activeWebState)
       _scopedWebStateObserver->Add(self.activeWebState);
   }
@@ -392,8 +399,8 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
     // Disable fullscreen while the side swipe gesture is occurring.
-    _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
-        FullscreenController::FromBrowserState(self.browserState));
+    _fullscreenDisabler =
+        std::make_unique<ScopedFullscreenDisabler>(self.fullscreenController);
     SnapshotTabHelper::FromWebState(self.activeWebState)
         ->UpdateSnapshotWithCallback(nil);
     [[NSNotificationCenter defaultCenter]
@@ -485,7 +492,7 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
     // Make sure the Toolbar is visible by disabling Fullscreen.
     _animatedFullscreenDisabler =
         std::make_unique<AnimatedScopedFullscreenDisabler>(
-            FullscreenController::FromBrowserState(self.browserState));
+            self.fullscreenController);
     _animatedFullscreenDisabler->StartAnimation();
 
     _inSwipe = YES;
@@ -557,9 +564,7 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
 
     // Add horizontal stack view controller.
     CGFloat headerHeight =
-        FullscreenController::FromBrowserState(self.browserState)
-            ->GetMaxViewportInsets()
-            .top;
+        self.fullscreenController->GetMaxViewportInsets().top;
 
     if (_tabSideSwipeView) {
       [_tabSideSwipeView setFrame:frame];

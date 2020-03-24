@@ -82,6 +82,12 @@ class FileSystemHandle {
   }
 
   /**
+   * @param {FileSystemHandle} other
+   * @return {Promise<boolean>}
+   */
+  isSameEntry(other) {}
+
+  /**
    * @param {FileSystemHandlePermissionDescriptor} descriptor
    * @return {!Promise<PermissionState>}
    */

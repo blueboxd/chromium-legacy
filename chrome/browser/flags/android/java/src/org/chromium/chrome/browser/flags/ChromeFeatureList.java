@@ -217,6 +217,8 @@ public abstract class ChromeFeatureList {
             "AndroidBlockIntentNonSafelistedHeaders";
     public static final String ANDROID_NIGHT_MODE_TAB_REPARENTING =
             "AndroidNightModeTabReparenting";
+    public static final String ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE =
+            "AndroidPartnerCustomizationPhenotype";
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
     public static final String ANDROID_PAY_INTEGRATION_V2 = "AndroidPayIntegrationV2";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =

@@ -16,6 +16,7 @@
 
 class Browser;
 class ChromeBrowserState;
+class FullscreenController;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol BrowsingDataCommands;
@@ -87,6 +88,9 @@ class ChromeBrowserState;
 
 // The Browser's ChromeBrowserState.
 @property(nonatomic, assign, readonly) ChromeBrowserState* browserState;
+
+// The FullscreenController.
+@property(nonatomic, assign) FullscreenController* fullscreenController;
 
 // The container used for infobar banner overlays.
 @property(nonatomic, strong)

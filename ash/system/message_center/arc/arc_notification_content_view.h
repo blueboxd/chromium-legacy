@@ -108,6 +108,7 @@ class ArcNotificationContentView
   void OnAccessibilityEvent(ax::mojom::Event event) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // aura::WindowObserver
   void OnWindowBoundsChanged(aura::Window* window,

@@ -155,9 +155,9 @@ void TouchSelectionMenuViews::OnPaint(gfx::Canvas* canvas) {
   for (auto i = children().cbegin(); i != std::prev(children().cend()); ++i) {
     const View* child = *i;
     int x = child->bounds().right() + kSpacingBetweenButtons / 2;
-    constexpr SkColor kButtonSeparatorColor = SkColorSetA(SK_ColorBLACK, 13);
     canvas->FillRect(gfx::Rect(x, 0, 1, child->height()),
-                     kButtonSeparatorColor);
+                     GetNativeTheme()->GetSystemColor(
+                         ui::NativeTheme::kColorId_SeparatorColor));
   }
 }
 

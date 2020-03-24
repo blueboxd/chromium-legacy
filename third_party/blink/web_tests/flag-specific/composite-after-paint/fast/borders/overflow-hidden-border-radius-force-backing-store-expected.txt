@@ -10,7 +10,6 @@
       "name": "LayoutNGBlockFlow DIV id='content'",
       "bounds": [285, 1000],
       "contentsOpaque": true,
-      "backgroundColor": "#000000",
       "transform": 1
     }
   ],

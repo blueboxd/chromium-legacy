@@ -50,6 +50,7 @@ source_set("tabs") {
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/favicon/resources:default_world_favicon",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/open_in",

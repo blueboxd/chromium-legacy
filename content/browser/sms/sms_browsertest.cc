@@ -46,6 +46,8 @@ class SmsBrowserTest : public ContentBrowserTest {
                                     "SmsReceiver");
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitchASCII(switches::kWebOtpBackend,
+                                    switches::kWebOtpBackendSmsVerification);
     cert_verifier_.SetUpCommandLine(command_line);
   }
 

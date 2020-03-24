@@ -3469,6 +3469,7 @@ test("unit_tests") {
     "../browser/ui/webui/interventions_internals/interventions_internals_page_handler_unittest.cc",
     "../browser/ui/webui/local_state/local_state_ui_unittest.cc",
     "../browser/ui/webui/log_web_ui_url_unittest.cc",
+    "../browser/upboarding/query_tiles/cached_image_loader_unittest.cc",
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
     "../browser/vr/metrics/session_tracker_unittest.cc",
     "../browser/vr/vr_tab_helper_unittest.cc",

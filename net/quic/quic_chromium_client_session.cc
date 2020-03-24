@@ -1553,6 +1553,18 @@ void QuicChromiumClientSession::SetDefaultEncryptionLevel(
   quic::QuicSpdySession::SetDefaultEncryptionLevel(level);
 }
 
+void QuicChromiumClientSession::OnOneRttKeysAvailable() {
+  if (!callback_.is_null()) {
+    // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
+    // could be called because there are no error events in CryptoHandshakeEvent
+    // enum. If error events are added to CryptoHandshakeEvent, then the
+    // following code needs to changed.
+    std::move(callback_).Run(OK);
+  }
+  OnCryptoHandshakeComplete();
+  quic::QuicSpdySession::OnOneRttKeysAvailable();
+}
+
 void QuicChromiumClientSession::OnCryptoHandshakeMessageSent(
     const quic::CryptoHandshakeMessage& message) {
   logger_->OnCryptoHandshakeMessageSent(message);

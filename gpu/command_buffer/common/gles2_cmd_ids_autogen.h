@@ -319,57 +319,34 @@
   OP(FlushDriverCachesCHROMIUM)                                /* 560 */ \
   OP(ScheduleDCLayerCHROMIUM)                                  /* 561 */ \
   OP(SetActiveURLCHROMIUM)                                     /* 562 */ \
-  OP(MatrixLoadfCHROMIUMImmediate)                             /* 563 */ \
-  OP(MatrixLoadIdentityCHROMIUM)                               /* 564 */ \
-  OP(GenPathsCHROMIUM)                                         /* 565 */ \
-  OP(DeletePathsCHROMIUM)                                      /* 566 */ \
-  OP(IsPathCHROMIUM)                                           /* 567 */ \
-  OP(PathCommandsCHROMIUM)                                     /* 568 */ \
-  OP(PathParameterfCHROMIUM)                                   /* 569 */ \
-  OP(PathParameteriCHROMIUM)                                   /* 570 */ \
-  OP(PathStencilFuncCHROMIUM)                                  /* 571 */ \
-  OP(StencilFillPathCHROMIUM)                                  /* 572 */ \
-  OP(StencilStrokePathCHROMIUM)                                /* 573 */ \
-  OP(CoverFillPathCHROMIUM)                                    /* 574 */ \
-  OP(CoverStrokePathCHROMIUM)                                  /* 575 */ \
-  OP(StencilThenCoverFillPathCHROMIUM)                         /* 576 */ \
-  OP(StencilThenCoverStrokePathCHROMIUM)                       /* 577 */ \
-  OP(StencilFillPathInstancedCHROMIUM)                         /* 578 */ \
-  OP(StencilStrokePathInstancedCHROMIUM)                       /* 579 */ \
-  OP(CoverFillPathInstancedCHROMIUM)                           /* 580 */ \
-  OP(CoverStrokePathInstancedCHROMIUM)                         /* 581 */ \
-  OP(StencilThenCoverFillPathInstancedCHROMIUM)                /* 582 */ \
-  OP(StencilThenCoverStrokePathInstancedCHROMIUM)              /* 583 */ \
-  OP(BindFragmentInputLocationCHROMIUMBucket)                  /* 584 */ \
-  OP(ProgramPathFragmentInputGenCHROMIUM)                      /* 585 */ \
-  OP(ContextVisibilityHintCHROMIUM)                            /* 586 */ \
-  OP(CoverageModulationCHROMIUM)                               /* 587 */ \
-  OP(BlendBarrierKHR)                                          /* 588 */ \
-  OP(BindFragDataLocationIndexedEXTBucket)                     /* 589 */ \
-  OP(BindFragDataLocationEXTBucket)                            /* 590 */ \
-  OP(GetFragDataIndexEXT)                                      /* 591 */ \
-  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate)     /* 592 */ \
-  OP(OverlayPromotionHintCHROMIUM)                             /* 593 */ \
-  OP(SwapBuffersWithBoundsCHROMIUMImmediate)                   /* 594 */ \
-  OP(SetDrawRectangleCHROMIUM)                                 /* 595 */ \
-  OP(SetEnableDCLayersCHROMIUM)                                /* 596 */ \
-  OP(InitializeDiscardableTextureCHROMIUM)                     /* 597 */ \
-  OP(UnlockDiscardableTextureCHROMIUM)                         /* 598 */ \
-  OP(LockDiscardableTextureCHROMIUM)                           /* 599 */ \
-  OP(TexStorage2DImageCHROMIUM)                                /* 600 */ \
-  OP(SetColorSpaceMetadataCHROMIUM)                            /* 601 */ \
-  OP(WindowRectanglesEXTImmediate)                             /* 602 */ \
-  OP(CreateGpuFenceINTERNAL)                                   /* 603 */ \
-  OP(WaitGpuFenceCHROMIUM)                                     /* 604 */ \
-  OP(DestroyGpuFenceCHROMIUM)                                  /* 605 */ \
-  OP(SetReadbackBufferShadowAllocationINTERNAL)                /* 606 */ \
-  OP(FramebufferTextureMultiviewOVR)                           /* 607 */ \
-  OP(MaxShaderCompilerThreadsKHR)                              /* 608 */ \
-  OP(CreateAndTexStorage2DSharedImageINTERNALImmediate)        /* 609 */ \
-  OP(BeginSharedImageAccessDirectCHROMIUM)                     /* 610 */ \
-  OP(EndSharedImageAccessDirectCHROMIUM)                       /* 611 */ \
-  OP(BeginBatchReadAccessSharedImageCHROMIUM)                  /* 612 */ \
-  OP(EndBatchReadAccessSharedImageCHROMIUM)                    /* 613 */
+  OP(ContextVisibilityHintCHROMIUM)                            /* 563 */ \
+  OP(CoverageModulationCHROMIUM)                               /* 564 */ \
+  OP(BlendBarrierKHR)                                          /* 565 */ \
+  OP(BindFragDataLocationIndexedEXTBucket)                     /* 566 */ \
+  OP(BindFragDataLocationEXTBucket)                            /* 567 */ \
+  OP(GetFragDataIndexEXT)                                      /* 568 */ \
+  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate)     /* 569 */ \
+  OP(OverlayPromotionHintCHROMIUM)                             /* 570 */ \
+  OP(SwapBuffersWithBoundsCHROMIUMImmediate)                   /* 571 */ \
+  OP(SetDrawRectangleCHROMIUM)                                 /* 572 */ \
+  OP(SetEnableDCLayersCHROMIUM)                                /* 573 */ \
+  OP(InitializeDiscardableTextureCHROMIUM)                     /* 574 */ \
+  OP(UnlockDiscardableTextureCHROMIUM)                         /* 575 */ \
+  OP(LockDiscardableTextureCHROMIUM)                           /* 576 */ \
+  OP(TexStorage2DImageCHROMIUM)                                /* 577 */ \
+  OP(SetColorSpaceMetadataCHROMIUM)                            /* 578 */ \
+  OP(WindowRectanglesEXTImmediate)                             /* 579 */ \
+  OP(CreateGpuFenceINTERNAL)                                   /* 580 */ \
+  OP(WaitGpuFenceCHROMIUM)                                     /* 581 */ \
+  OP(DestroyGpuFenceCHROMIUM)                                  /* 582 */ \
+  OP(SetReadbackBufferShadowAllocationINTERNAL)                /* 583 */ \
+  OP(FramebufferTextureMultiviewOVR)                           /* 584 */ \
+  OP(MaxShaderCompilerThreadsKHR)                              /* 585 */ \
+  OP(CreateAndTexStorage2DSharedImageINTERNALImmediate)        /* 586 */ \
+  OP(BeginSharedImageAccessDirectCHROMIUM)                     /* 587 */ \
+  OP(EndSharedImageAccessDirectCHROMIUM)                       /* 588 */ \
+  OP(BeginBatchReadAccessSharedImageCHROMIUM)                  /* 589 */ \
+  OP(EndBatchReadAccessSharedImageCHROMIUM)                    /* 590 */
 
 enum CommandId {
   kOneBeforeStartPoint =

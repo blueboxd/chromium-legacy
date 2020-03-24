@@ -15,8 +15,6 @@ source_set("internal") {
     "image_decoder.h",
     "image_info_store.cc",
     "image_info_store.h",
-    "image_loader.cc",
-    "image_loader.h",
     "proto_conversion.cc",
     "proto_conversion.h",
     "query_tile_store.cc",

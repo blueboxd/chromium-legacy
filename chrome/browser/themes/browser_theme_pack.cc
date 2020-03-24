@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -110,8 +111,7 @@ struct PersistingImagesTable {
   // someone adds a new resource.
   int idr_id;
 
-  // String to check for when parsing theme manifests or null if this isn't
-  // supposed to be changeable by the user.
+  // String to check for when parsing theme manifests.
   const char* const key;
 };
 
@@ -149,37 +149,20 @@ constexpr PersistingImagesTable kPersistingImages[] = {
     {PRS_THEME_WINDOW_CONTROL_BACKGROUND, IDR_THEME_WINDOW_CONTROL_BACKGROUND,
      "theme_window_control_background"},
 };
-const size_t kPersistingImagesLength = base::size(kPersistingImages);
-
-int GetPersistentIDByNameHelper(const std::string& key,
-                                const PersistingImagesTable* image_table,
-                                size_t image_table_size) {
-  for (size_t i = 0; i < image_table_size; ++i) {
-    if (image_table[i].key &&
-        base::LowerCaseEqualsASCII(key, image_table[i].key)) {
-      return image_table[i].persistent_id;
-    }
-  }
-  return -1;
-}
 
 int GetPersistentIDByName(const std::string& key) {
-  return GetPersistentIDByNameHelper(key,
-                                     kPersistingImages,
-                                     kPersistingImagesLength);
+  auto* it = std::find_if(std::begin(kPersistingImages),
+                          std::end(kPersistingImages), [&](const auto& image) {
+                            return base::LowerCaseEqualsASCII(key, image.key);
+                          });
+  return it == std::end(kPersistingImages) ? -1 : it->persistent_id;
 }
 
 int GetPersistentIDByIDR(int idr) {
-  static std::map<int,int>* lookup_table = new std::map<int,int>();
-  if (lookup_table->empty()) {
-    for (size_t i = 0; i < kPersistingImagesLength; ++i) {
-      int idr = kPersistingImages[i].idr_id;
-      int prs_id = kPersistingImages[i].persistent_id;
-      (*lookup_table)[idr] = prs_id;
-    }
-  }
-  auto it = lookup_table->find(idr);
-  return (it == lookup_table->end()) ? -1 : it->second;
+  auto* it =
+      std::find_if(std::begin(kPersistingImages), std::end(kPersistingImages),
+                   [&](const auto& image) { return image.idr_id == idr; });
+  return it == std::end(kPersistingImages) ? -1 : it->persistent_id;
 }
 
 // Returns the maximum persistent id.
@@ -800,11 +783,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 
 // static
 bool BrowserThemePack::IsPersistentImageID(int id) {
-  for (size_t i = 0; i < kPersistingImagesLength; ++i)
-    if (kPersistingImages[i].idr_id == id)
-      return true;
-
-  return false;
+  return GetPersistentIDByIDR(id) != -1;
 }
 
 // static

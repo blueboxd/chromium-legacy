@@ -6,6 +6,8 @@
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -16,8 +18,12 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/pref_names.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/button_test_api.h"
 
@@ -25,6 +31,7 @@ namespace {
 
 const char* kSimpleArticlePath = "/dom_distiller/simple_article.html";
 const char* kNonArticlePath = "/dom_distiller/non_og_article.html";
+const char* kArticleTitle = "Test Page Title";
 
 class TestDistillabilityObserver
     : public dom_distiller::DistillabilityObserver {
@@ -224,6 +231,64 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTestWithSettings,
   is_visible_after_navigation_back_to_non_distillable_page =
       reader_mode_icon_->GetVisible();
   EXPECT_FALSE(is_visible_after_navigation_back_to_non_distillable_page);
+}
+
+IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
+                       DangerousPagesNotDistillable) {
+  std::unique_ptr<net::EmbeddedTestServer> https_server_expired;
+  https_server_expired.reset(
+      new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+  https_server_expired->SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server_expired->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+
+  TestDistillabilityObserver observer(web_contents);
+  dom_distiller::DistillabilityResult expected_result;
+  expected_result.is_distillable = true;
+  expected_result.is_last = false;
+  expected_result.is_mobile_friendly = false;
+
+  // Check test setup by ensuring the icon is shown with the normal test
+  // server.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSimpleArticlePath));
+  EXPECT_NE(security_state::DANGEROUS, helper->GetSecurityLevel());
+  observer.WaitForResult(expected_result);
+  EXPECT_TRUE(reader_mode_icon_->GetVisible());
+
+  // Set security state to DANGEROUS for the test by using an expired
+  // certificate.
+  ASSERT_TRUE(https_server_expired->Start());
+  content::TitleWatcher title_watcher(web_contents,
+                                      base::ASCIIToUTF16(kArticleTitle));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired->GetURL(kSimpleArticlePath));
+
+  // Proceed through the intersitial warning page.
+  web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  security_interstitials::SecurityInterstitialTabHelper* interstitial_helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          web_contents);
+  interstitial_helper
+      ->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
+      ->CommandReceived(
+          base::NumberToString(security_interstitials::CMD_PROCEED));
+  nav_observer.Wait();
+
+  // Check we are on the right page.
+  ASSERT_EQ(base::ASCIIToUTF16(kArticleTitle), title_watcher.WaitAndGetTitle());
+
+  // Check security state is DANGEROUS per https_server_expired_.
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
+  expected_result.is_distillable = false;
+
+  // The page should not be distillable.
+  observer.WaitForResult(expected_result);
+  EXPECT_FALSE(reader_mode_icon_->GetVisible());
 }
 
 }  // namespace

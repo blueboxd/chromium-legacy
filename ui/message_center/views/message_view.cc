@@ -38,8 +38,6 @@ namespace message_center {
 
 namespace {
 
-constexpr SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
-
 // Creates a text for spoken feedback from the data contained in the
 // notification.
 base::string16 CreateAccessibleName(const Notification& notification) {
@@ -136,8 +134,7 @@ void MessageView::SetIsNested() {
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
   slide_out_controller_.set_update_opacity(false);
 
-  SetBorder(views::CreateRoundedRectBorder(
-      kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
+  SetNestedBorderIfNecessary();
   if (GetControlButtonsView())
     GetControlButtonsView()->ShowCloseButton(GetMode() != Mode::PINNED);
 }
@@ -323,6 +320,11 @@ void MessageView::AddedToWidget() {
     focus_manager_->AddFocusChangeListener(this);
 }
 
+void MessageView::OnThemeChanged() {
+  InkDropHostView::OnThemeChanged();
+  SetNestedBorderIfNecessary();
+}
+
 ui::Layer* MessageView::GetSlideOutLayer() {
   return is_nested_ ? layer() : GetWidget()->GetLayer();
 }
@@ -454,6 +456,14 @@ bool MessageView::ShouldShowControlButtons() const {
 #else
   return true;
 #endif
+}
+
+void MessageView::SetNestedBorderIfNecessary() {
+  if (is_nested_) {
+    SkColor border_color = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
+    SetBorder(views::CreateRoundedRectBorder(
+        kNotificationBorderThickness, kNotificationCornerRadius, border_color));
+  }
 }
 
 void MessageView::UpdateControlButtonsVisibility() {

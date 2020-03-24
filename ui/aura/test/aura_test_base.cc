@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "ui/aura/client/window_parenting_client.h"
-#include "ui/aura/test/aura_test_context_factory.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"

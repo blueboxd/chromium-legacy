@@ -26,6 +26,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.r
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyShowingPopupTabList;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
@@ -33,6 +34,7 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -79,6 +81,12 @@ public class TabGroupPopupUiTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    @After
+    public void tearDown() {
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+    }
 
     @Test
     @MediumTest

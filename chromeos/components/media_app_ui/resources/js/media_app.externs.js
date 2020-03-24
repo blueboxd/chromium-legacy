@@ -52,6 +52,14 @@ mediaApp.AbstractFile.prototype.mimeType;
 mediaApp.AbstractFile.prototype.overwriteOriginal;
 
 /**
+ * A function that will delete the original file. Returns a promise that
+ * resolves to an enum value (see DeleteResult in message_types) reflecting the
+ * result of the deletion (SUCCESS, FILE_MOVED), rejected if the deletion fails.
+ * @type {function(): Promise<number>|undefined}
+ */
+mediaApp.AbstractFile.prototype.deleteOriginalFile;
+
+/**
  * Wraps an HTML FileList object.
  * @record
  * @struct

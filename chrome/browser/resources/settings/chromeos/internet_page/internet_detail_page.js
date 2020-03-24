@@ -1255,7 +1255,6 @@ Polymer({
     // configurations are set.
     const vpnConfig = config.typeConfig.vpn;
     if (vpnConfig) {
-      vpnConfig.type = this.managedProperties_.typeProperties.vpn.type;
       if (vpnConfig.openVpn && vpnConfig.openVpn.saveCredentials == undefined) {
         vpnConfig.openVpn.saveCredentials = false;
       }

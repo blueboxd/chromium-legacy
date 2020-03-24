@@ -17,6 +17,7 @@
       "name": "LayoutNGBlockFlow DIV class='blended'",
       "position": [8, 8],
       "bounds": [160, 90],
+      "contentsOpaque": true,
       "backgroundColor": "#0000FF"
     },
     {

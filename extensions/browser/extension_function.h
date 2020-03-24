@@ -112,6 +112,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // checks in Run(), such as for specific host permissions or user gestures.
   bool HasPermission() const;
 
+  // Sends |error| as an error response.
+  void RespondWithError(const std::string& error);
+
   // The result of a function call.
   //
   // Use NoArguments(), OneArgument(), ArgumentList(), or Error()
@@ -225,7 +228,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   // Specifies the name of the function. A long-lived string (such as a string
   // literal) must be provided.
-  void set_name(const char* name) { name_ = name; }
+  virtual void SetName(const char* name);
   const char* name() const { return name_; }
 
   void set_profile_id(void* profile_id) { profile_id_ = profile_id; }

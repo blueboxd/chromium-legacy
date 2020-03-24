@@ -4,6 +4,9 @@
 
 #include "ui/native_theme/native_theme.h"
 
+#include <ostream>
+
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
@@ -18,6 +21,25 @@ constexpr const char* kColorIdStringName[] = {
     NATIVE_THEME_COLOR_IDS
 #undef OP
 };
+
+struct PrintableSkColor {
+  bool operator==(const PrintableSkColor& other) const {
+    return color == other.color;
+  }
+
+  bool operator!=(const PrintableSkColor& other) const {
+    return !operator==(other);
+  }
+
+  const SkColor color;
+};
+
+std::ostream& operator<<(std::ostream& os, PrintableSkColor printable_color) {
+  SkColor color = printable_color.color;
+  return os << base::StringPrintf("SkColorARGB(0x%02x, 0x%02x, 0x%02x, 0x%02x)",
+                                  SkColorGetA(color), SkColorGetR(color),
+                                  SkColorGetG(color), SkColorGetB(color));
+}
 
 class NativeThemeRedirectedEquivalenceTest
     : public testing::TestWithParam<NativeTheme::ColorId> {
@@ -42,11 +64,11 @@ TEST_P(NativeThemeRedirectedEquivalenceTest, NativeUiGetSystemColor) {
   NativeTheme* native_theme = NativeTheme::GetInstanceForNativeUi();
   NativeTheme::ColorId color_id = GetParam();
 
-  SkColor original = native_theme->GetSystemColor(color_id);
+  PrintableSkColor original{native_theme->GetSystemColor(color_id)};
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kColorProviderRedirection);
-  SkColor redirected = native_theme->GetSystemColor(color_id);
+  PrintableSkColor redirected{native_theme->GetSystemColor(color_id)};
 
   EXPECT_EQ(original, redirected);
 }

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
@@ -38,6 +39,9 @@ import org.chromium.components.feature_engagement.Tracker;
  * toolbar and the tab switcher mode bottom toolbar.
  */
 class BottomToolbarCoordinator {
+    private static final CachedMetrics.ActionEvent ACCELERATOR_BUTTON_TAP_ACTION =
+            new CachedMetrics.ActionEvent("MobileToolbarOmniboxAcceleratorTap");
+
     /** The browsing mode bottom toolbar component */
     private final BrowsingModeBottomToolbarCoordinator mBrowsingModeCoordinator;
 
@@ -90,7 +94,7 @@ class BottomToolbarCoordinator {
 
         final OnClickListener searchAcceleratorListener = v -> {
             recordBottomToolbarUseForIPH();
-            RecordUserAction.record("MobileToolbarOmniboxAcceleratorTap");
+            ACCELERATOR_BUTTON_TAP_ACTION.record();
 
             // Only switch to HomePage when overview is showing.
             if (mOverviewModeBehavior != null && mOverviewModeBehavior.overviewVisible()) {

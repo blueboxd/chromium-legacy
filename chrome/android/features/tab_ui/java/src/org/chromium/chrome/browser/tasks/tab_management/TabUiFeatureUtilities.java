@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -44,25 +43,17 @@ public class TabUiFeatureUtilities {
             new DoubleCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, THUMBNAIL_ASPECT_RATIO_PARAM, 1.0);
 
-    private static Boolean sSearchTermChipEnabledForTesting;
+    public static final String SEARCH_CHIP_PARAM = "enable_search_term_chip";
+    public static final BooleanCachedFieldTrialParameter ENABLE_SEARCH_CHIP =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, SEARCH_CHIP_PARAM, false);
+
+    public static final String SEARCH_CHIP_ADAPTIVE_PARAM = "enable_search_term_chip_adaptive_icon";
+    public static final BooleanCachedFieldTrialParameter ENABLE_SEARCH_CHIP_ADAPTIVE =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, SEARCH_CHIP_ADAPTIVE_PARAM, false);
+
     private static Boolean sTabManagementModuleSupportedForTesting;
-    private static Double sTabThumbnailAspectRatioForTesting;
-
-    /**
-     * Set whether the search term chip in Grid tab switcher is enabled for testing.
-     */
-    public static void setSearchTermChipEnabledForTesting(@Nullable Boolean enabled) {
-        sSearchTermChipEnabledForTesting = enabled;
-    }
-
-    /**
-     * @return Whether the search term chip in Grid tab switcher is enabled.
-     */
-    public static boolean isSearchTermChipEnabled() {
-        if (sSearchTermChipEnabledForTesting != null) return sSearchTermChipEnabledForTesting;
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "enable_search_term_chip", false);
-    }
 
     /**
      * Set whether the tab management module is supported for testing.
@@ -141,22 +132,10 @@ public class TabUiFeatureUtilities {
      * @return Whether the thumbnail_aspect_ratio field trail is set.
      */
     public static boolean isTabThumbnailAspectRatioNotOne() {
-        double aspectRatio;
-        if (sTabThumbnailAspectRatioForTesting != null) {
-            aspectRatio = sTabThumbnailAspectRatioForTesting;
-        } else {
-            aspectRatio = THUMBNAIL_ASPECT_RATIO.getValue();
-        }
-
-        return Double.compare(1.0, aspectRatio) != 0;
+        return Double.compare(1.0, THUMBNAIL_ASPECT_RATIO.getValue()) != 0;
     }
 
     public static boolean isTabGridLayoutAndroidNewTabTileEnabled() {
         return TextUtils.equals(TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE.getValue(), "NewTabTile");
-    }
-
-    @VisibleForTesting
-    public static void setTabThumbnailAspectRatioForTesting(Double value) {
-        sTabThumbnailAspectRatioForTesting = value;
     }
 }

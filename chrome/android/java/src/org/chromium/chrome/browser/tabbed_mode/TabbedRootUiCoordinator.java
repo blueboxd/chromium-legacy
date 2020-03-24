@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
+import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -168,9 +169,18 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         super.onLayoutManagerAvailable(layoutManager);
 
         initStatusIndicatorCoordinator(layoutManager);
+
+        // clang-format off
         HistoryNavigationCoordinator.create(mActivity.getLifecycleDispatcher(),
                 mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
-                mActivity.getInsetObserverView());
+                mActivity.getInsetObserverView(),
+                mActivity::backShouldCloseTab,
+                mActivity::onBackPressed,
+                tab -> HistoryManagerUtils.showHistoryManager(mActivity, tab),
+                mActivity.getResources().getString(R.string.show_full_history),
+                () -> mActivity.isActivityFinishingOrDestroyed() ? null
+                                                                 : getBottomSheetController());
+        // clang-format on
     }
 
     @Override

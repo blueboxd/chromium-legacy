@@ -25,6 +25,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -71,7 +72,8 @@ class ASH_EXPORT TabletModeController
       public WindowTreeHostManager::Observer,
       public SessionObserver,
       public ui::InputDeviceEventObserver,
-      public ui::LayerAnimationObserver {
+      public ui::LayerAnimationObserver,
+      public ui::LayerObserver {
  public:
   // Enable or disable using a screenshot for testing as it makes the
   // initialization flow async, which makes most tests harder to write.
@@ -157,6 +159,9 @@ class ASH_EXPORT TabletModeController
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
+
+  // ui::LayerObserver:
+  void LayerDestroyed(ui::Layer* layer) override;
 
   void increment_app_window_drag_count() { ++app_window_drag_count_; }
   void increment_app_window_drag_in_splitview_count() {
@@ -447,6 +452,8 @@ class ASH_EXPORT TabletModeController
   // everything in the screen rotation container except the top window. It helps
   // with animation performance because it fully occludes all windows except the
   // animating window for the duration of the animation.
+  // TODO(sammiequon): See if we can move screenshot and tablet mode transition
+  // animation related code into a separate class/file.
   std::unique_ptr<ui::Layer> screenshot_layer_;
 
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;

@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_container.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
@@ -73,10 +74,16 @@
   DCHECK(self.positioner);
 
   // Creates the LegacyInfobarContainerVC.
+  FullscreenController* controller;
+  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
+    controller = FullscreenController::FromBrowser(self.browser);
+  } else {
+    controller =
+        FullscreenController::FromBrowserState(self.browser->GetBrowserState());
+  }
   LegacyInfobarContainerViewController* legacyContainer =
       [[LegacyInfobarContainerViewController alloc]
-          initWithFullscreenController:FullscreenController::FromBrowserState(
-                                           self.browser->GetBrowserState())];
+          initWithFullscreenController:controller];
   [self.baseViewController addChildViewController:legacyContainer];
   // TODO(crbug.com/892376): Shouldn't modify the BaseVC hierarchy, BVC
   // needs to handle this.

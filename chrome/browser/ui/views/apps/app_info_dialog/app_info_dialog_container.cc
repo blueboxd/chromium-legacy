@@ -31,7 +31,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #endif
 
@@ -112,8 +111,8 @@ class AppListDialogContainer : public BaseDialogContainer,
   explicit AppListDialogContainer(std::unique_ptr<views::View> dialog_body)
       : BaseDialogContainer(std::move(dialog_body), base::RepeatingClosure()) {
     SetBackground(std::make_unique<AppListOverlayBackground>());
-    close_button_ = AddChildView(views::BubbleFrameView::CreateCloseButton(
-        this, GetNativeTheme()->ShouldUseDarkColors()));
+    close_button_ =
+        AddChildView(views::BubbleFrameView::CreateCloseButton(this));
   }
   ~AppListDialogContainer() override {}
 

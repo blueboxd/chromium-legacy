@@ -302,7 +302,7 @@ void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
 
   OnMessageCenterScrolled();
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+  if (features::IsUnifiedMessageCenterRefactorEnabled() && !collapsed()) {
     views::View* first_view = GetFirstFocusableChild();
     views::View* last_view = GetLastFocusableChild();
 
@@ -519,8 +519,10 @@ void UnifiedMessageCenterView::NotifyRectBelowScroll() {
 }
 
 void UnifiedMessageCenterView::FocusOut(bool reverse) {
-  if (message_center_bubble_)
-    message_center_bubble_->FocusOut(reverse);
+  if (message_center_bubble_ && message_center_bubble_->FocusOut(reverse)) {
+    GetFocusManager()->ClearFocus();
+    GetFocusManager()->SetStoredFocusView(nullptr);
+  }
 }
 
 void UnifiedMessageCenterView::FocusEntered(bool reverse) {
@@ -542,14 +544,24 @@ views::View* UnifiedMessageCenterView::GetFirstFocusableChild() {
 }
 
 views::View* UnifiedMessageCenterView::GetLastFocusableChild() {
-  views::FocusTraversable* dummy_focus_traversable;
-  views::View* dummy_focus_traversable_view;
-  return focus_search_->FindNextFocusableView(
+  views::FocusTraversable* focus_traversable = nullptr;
+  views::View* dummy_focus_traversable_view = nullptr;
+  views::View* last_view = focus_search_->FindNextFocusableView(
       nullptr, views::FocusSearch::SearchDirection::kBackwards,
       views::FocusSearch::TraversalDirection::kDown,
       views::FocusSearch::StartingViewPolicy::kSkipStartingView,
       views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
-      &dummy_focus_traversable, &dummy_focus_traversable_view);
+      &focus_traversable, &dummy_focus_traversable_view);
+
+  if (last_view || !focus_traversable)
+    return last_view;
+
+  return focus_traversable->GetFocusSearch()->FindNextFocusableView(
+      nullptr, views::FocusSearch::SearchDirection::kBackwards,
+      views::FocusSearch::TraversalDirection::kDown,
+      views::FocusSearch::StartingViewPolicy::kSkipStartingView,
+      views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
+      &focus_traversable, &dummy_focus_traversable_view);
 }
 
 }  // namespace ash

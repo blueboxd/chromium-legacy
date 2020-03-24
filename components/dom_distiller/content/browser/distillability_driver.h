@@ -34,6 +34,12 @@ class DistillabilityDriver
     return latest_result_;
   }
 
+  // Sets a callback which can be used to determine the security of a page,
+  // to decide whether it can be distilled. DANGEROUS pages are never
+  // distillable.
+  void SetIsDangerousCallback(
+      base::RepeatingCallback<bool(content::WebContents*)> is_dangerous_check);
+
   UMAHelper::DistillabilityDriverTimer& GetTimer() { return timer_; }
 
  private:
@@ -57,6 +63,9 @@ class DistillabilityDriver
   // WebContents when the page is distillable or distilled, creating useful
   // metrics for the ReaderMode experiment.
   UMAHelper::DistillabilityDriverTimer timer_;
+
+  content::WebContents* web_contents_;
+  base::RepeatingCallback<bool(content::WebContents*)> is_dangerous_check_;
 
   base::WeakPtrFactory<DistillabilityDriver> weak_factory_{this};
 

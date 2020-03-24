@@ -24,6 +24,7 @@ group("query_tiles") {
 
 source_set("public") {
   sources = [
+    "image_loader.h",
     "query_tile_entry.cc",
     "query_tile_entry.h",
     "tile_service.h",
@@ -47,10 +48,7 @@ source_set("public") {
 }
 
 source_set("factory") {
-  sources = [
-    "tile_service_factory.cc",
-    "tile_service_factory.h",
-  ]
+  sources = []
 
   deps = [
     ":public",

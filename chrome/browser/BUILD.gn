@@ -3005,6 +3005,7 @@ jumbo_static_library("browser") {
       "//chrome/common:non_code_constants",
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/autofill_assistant/browser",
+      "//components/browser_ui/util/android",
       "//components/cbor",
       "//components/cdm/browser",
       "//components/content_capture/android",

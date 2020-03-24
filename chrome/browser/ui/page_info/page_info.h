@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -32,9 +31,7 @@ namespace permissions {
 class ChooserContextBase;
 }
 
-class StatefulSSLHostStateDelegate;
 class HostContentSettingsMap;
-class Profile;
 class PageInfoDelegate;
 class PageInfoUI;
 class PageInfoBubbleViewBrowserTest;
@@ -144,9 +141,7 @@ class PageInfo : public content::WebContentsObserver {
 
   // Creates a PageInfo for the passed |url| using the given |ssl| status
   // object to determine the status of the site's connection.
-  PageInfo(Profile* profile,
-           std::unique_ptr<PageInfoDelegate> delegate,
-           TabSpecificContentSettings* tab_specific_content_settings,
+  PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
            content::WebContents* web_contents,
            const GURL& url,
            security_state::SecurityLevel security_level,
@@ -195,12 +190,9 @@ class PageInfo : public content::WebContentsObserver {
   void OnWhitelistPasswordReuseButtonPressed(
       content::WebContents* web_contents);
 
-  // Return the object name of the ChooserContextBase corresponding to the
-  // content settings type, |type|. Returns an empty string for content settings
+  // Return a pointer to the ChooserContextBase corresponding to the
+  // content settings type, |type|. Returns nullptr for content settings
   // for which there's no ChooserContextBase.
-  base::string16 GetChooserContextObjectName(ContentSettingsType type,
-                                             const base::Value& object);
-
   permissions::ChooserContextBase* GetChooserContextFromUIInfo(
       const ChooserUIInfo& ui_info) const;
 
@@ -249,6 +241,10 @@ class PageInfo : public content::WebContentsObserver {
   // function WILL record an event. Callers should check conditions beforehand.
   void RecordPasswordReuseEvent();
 #endif
+
+  // Helper function to get the |HostContentSettingsMap| associated with
+  // |PageInfo|.
+  HostContentSettingsMap* GetContentSettings() const;
 
   // Helper function to get the Safe Browsing status and details by malicious
   // content status.
@@ -325,23 +321,7 @@ class PageInfo : public content::WebContentsObserver {
   // the UI.
   base::string16 organization_name_;
 
-  // The |HostContentSettingsMap| is the service that provides and manages
-  // content settings (aka. site permissions).
-  HostContentSettingsMap* content_settings_;
-
-  // Service for managing SSL error page bypasses. Used to revoke bypass
-  // decisions by users.
-  StatefulSSLHostStateDelegate* stateful_ssl_host_state_delegate_;
-
-  // The TabSpecificContentSettings for this site, used to propagate changes
-  // from the UI back to the model. This is held as a raw pointer because the
-  // lifetime of TabSpecificContentSettings is tightly bound to that of the
-  // observed WebContents.
-  TabSpecificContentSettings* tab_specific_content_settings_;
-
   bool did_revoke_user_ssl_decisions_;
-
-  Profile* profile_;
 
   security_state::SecurityLevel security_level_;
 

@@ -112,7 +112,7 @@ class UserSettingsEventLoggerTest : public AshTestBase {
 
  protected:
   void FastForwardBySeconds(const int seconds) {
-    task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
   }
 
   std::vector<const ukm::mojom::UkmEntry*> GetUkmEntries() {
@@ -123,7 +123,7 @@ class UserSettingsEventLoggerTest : public AshTestBase {
   // Volume features are logged at the end of the timer delay.
   void LogVolumeAndWait(const int previous_level, const int current_level) {
     logger_->LogVolumeUkmEvent(previous_level, current_level);
-    task_environment_->FastForwardBy(kSliderDelay);
+    task_environment()->FastForwardBy(kSliderDelay);
   }
 
   void LogBrightness(const int current_level,
@@ -142,7 +142,7 @@ class UserSettingsEventLoggerTest : public AshTestBase {
   void LogBrightnessAndWait(const int current_level,
                             const bool initiated_by_user = true) {
     LogBrightness(current_level, initiated_by_user);
-    task_environment_->FastForwardBy(kSliderDelay);
+    task_environment()->FastForwardBy(kSliderDelay);
   }
 
   void LogSharedFeatures() {
@@ -360,13 +360,13 @@ TEST_F(UserSettingsEventLoggerTest, TestLogVolumeFeatures) {
 TEST_F(UserSettingsEventLoggerTest, TestVolumeDelay) {
   // Only log an event if there is a pause of |kSliderDelay|.
   logger_->LogVolumeUkmEvent(10, 11);
-  task_environment_->FastForwardBy(kSliderDelay / 2);
+  task_environment()->FastForwardBy(kSliderDelay / 2);
   logger_->LogVolumeUkmEvent(11, 12);
   logger_->LogVolumeUkmEvent(12, 13);
   logger_->LogVolumeUkmEvent(13, 14);
-  task_environment_->FastForwardBy(kSliderDelay / 2);
+  task_environment()->FastForwardBy(kSliderDelay / 2);
   logger_->LogVolumeUkmEvent(14, 15);
-  task_environment_->FastForwardBy(kSliderDelay);
+  task_environment()->FastForwardBy(kSliderDelay);
 
   const auto& entries = GetUkmEntries();
   ASSERT_EQ(1ul, entries.size());
@@ -434,14 +434,14 @@ TEST_F(UserSettingsEventLoggerTest, TestBrightnessDelay) {
 
   // Only log an event if there is a pause of |kSliderDelay|.
   LogBrightness(11);
-  task_environment_->FastForwardBy(kSliderDelay / 2);
+  task_environment()->FastForwardBy(kSliderDelay / 2);
   LogBrightness(12);
-  task_environment_->FastForwardBy(kSliderDelay / 2);
+  task_environment()->FastForwardBy(kSliderDelay / 2);
   LogBrightness(13);
   LogBrightness(14, false);
   LogBrightness(15);
   LogBrightness(16, false);
-  task_environment_->FastForwardBy(kSliderDelay);
+  task_environment()->FastForwardBy(kSliderDelay);
 
   LogBrightnessAndWait(17);
 

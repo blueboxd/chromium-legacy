@@ -113,7 +113,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -142,7 +142,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdateWithSlowReboot) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -185,7 +185,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -211,7 +211,7 @@ TEST_F(UpdateNotificationControllerTest,
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -228,7 +228,7 @@ TEST_F(UpdateNotificationControllerTest,
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification disappears.
   EXPECT_FALSE(HasNotification());
@@ -247,7 +247,7 @@ TEST_F(UpdateNotificationControllerTest,
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -271,7 +271,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterRollback) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -295,7 +295,7 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -319,7 +319,7 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification's title and body have changed.
   ASSERT_TRUE(HasNotification());
@@ -344,7 +344,7 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification's title and body have changed.
   ASSERT_TRUE(HasNotification());
@@ -362,7 +362,7 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
   // Showing Update Notification posts a task to check for slow boot request
   // and use the result of that check to generate appropriate notification. Wait
   // until everything is complete and then check if the notification is visible.
-  task_environment_->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // The notification has the default text.
   ASSERT_TRUE(HasNotification());

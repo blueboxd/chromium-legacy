@@ -383,22 +383,18 @@ void StyleEngine::AddedCustomElementDefaultStyles(
 
 namespace {
 
-bool ClearMediaQueryDependentRuleSets(
-    const ActiveStyleSheetVector& active_style_sheets) {
-  bool needs_active_style_update = false;
+bool HasMediaQueries(const ActiveStyleSheetVector& active_style_sheets) {
   for (const auto& active_sheet : active_style_sheets) {
     if (const MediaQuerySet* media_queries =
             active_sheet.first->MediaQueries()) {
       if (!media_queries->QueryVector().IsEmpty())
-        needs_active_style_update = true;
+        return true;
     }
     StyleSheetContents* contents = active_sheet.first->Contents();
-    if (contents->HasMediaQueries()) {
-      needs_active_style_update = true;
-      contents->ClearRuleSet();
-    }
+    if (contents->HasMediaQueries())
+      return true;
   }
-  return needs_active_style_update;
+  return false;
 }
 
 bool HasSizeDependentMediaQueries(
@@ -424,7 +420,7 @@ bool StyleEngine::MediaQueryAffectingValueChanged(
     return HasSizeDependentMediaQueries(active_sheets);
 
   DCHECK(change == MediaValueChange::kOther);
-  return ClearMediaQueryDependentRuleSets(active_sheets);
+  return HasMediaQueries(active_sheets);
 }
 
 void StyleEngine::MediaQueryAffectingValueChanged(TreeScope& tree_scope,

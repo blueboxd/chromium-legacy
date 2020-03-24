@@ -52,15 +52,9 @@
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace {
-
-// The default WebAPK server URL.
-constexpr char kDefaultServerUrl[] =
-    "https://webapk.googleapis.com/v1/webApks/"
-    "?alt=proto&key=AIzaSyAoI6v-F31-3t9NunLYEiKcPIqgTJIUZBw";
 
 // The MIME type of the POST data sent to the server.
 constexpr char kProtoMimeType[] = "application/x-protobuf";
@@ -104,15 +98,6 @@ class CacheClearer : public content::BrowsingDataRemover::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(CacheClearer);
 };
-
-// Returns the WebAPK server URL based on the command line.
-GURL GetServerUrl() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  GURL command_line_url(
-      command_line->GetSwitchValueASCII(switches::kWebApkServerUrl));
-  return command_line_url.is_valid() ? command_line_url
-                                     : GURL(kDefaultServerUrl);
-}
 
 webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
     WebApkUpdateReason update_reason) {
@@ -526,12 +511,12 @@ void WebApkInstaller::OnResult(WebApkInstallResult result) {
 
 WebApkInstaller::WebApkInstaller(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
-      server_url_(GetServerUrl()),
       webapk_server_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
       webapk_version_(0),
       relax_updates_(false),
       task_type_(UNDEFINED) {
   CreateJavaRef();
+  server_url_ = GetServerUrl();
 }
 
 void WebApkInstaller::CreateJavaRef() {
@@ -724,4 +709,17 @@ void WebApkInstaller::SendRequest(
       GetURLLoaderFactory(browser_context_),
       base::BindOnce(&WebApkInstaller::OnURLLoaderComplete,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+GURL WebApkInstaller::GetServerUrl() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  GURL command_line_url(
+      command_line->GetSwitchValueASCII(switches::kWebApkServerUrl));
+
+  if (command_line_url.is_valid())
+    return command_line_url;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return GURL(base::android::ConvertJavaStringToUTF8(
+      env, Java_WebApkInstaller_getWebApkServerUrl(env, java_ref_)));
 }

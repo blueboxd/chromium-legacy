@@ -470,10 +470,6 @@ VISIT_PROTO_FIELDS(const sync_pb::FaviconTrackingSpecifics& proto) {
   VISIT(is_bookmarked);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::FieldTrial& proto) {
-  VISIT_REP(variation_ids);
-}
-
 VISIT_PROTO_FIELDS(const sync_pb::GcmChannelFlags& proto) {
   VISIT(enabled);
 }
@@ -534,18 +530,6 @@ VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectives& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::KeystoreEncryptionFlags& proto) {
   VISIT(enabled);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::LanguageDetection::Language& proto) {
-  VISIT(language_code);
-  VISIT(is_reliable);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::LanguageDetection& proto) {
-  VISIT_REP(detected_languages);
-  VISIT(adopted_language_code);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::LinkedAppIconInfo& proto) {
@@ -941,31 +925,9 @@ VISIT_PROTO_FIELDS(const sync_pb::TimeRangeDirective& proto) {
   VISIT(end_time_usec);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Translation& proto) {
-  VISIT(from_language_code);
-  VISIT(to_language_code);
-  VISIT_ENUM(interaction);
-}
-
 VISIT_PROTO_FIELDS(const sync_pb::UrlDirective& proto) {
   VISIT(url);
   VISIT(end_time_usec);
-}
-
-// TODO(vitaliii): Delete once UserEventSpecifics::UserConsent is completely
-// deprecated.
-VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::UserConsent& proto) {
-  VISIT_ENUM(feature);
-  VISIT_REP(description_grd_ids);
-  VISIT(confirmation_grd_id);
-  VISIT(locale);
-  VISIT_ENUM(status);
-  VISIT(account_id);
-  VISIT(sync_consent);
-  VISIT(arc_backup_and_restore_consent);
-  VISIT(arc_location_service_consent);
-  VISIT(arc_play_terms_of_service_consent);
-  VISIT(arc_metrics_and_usage_consent);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::TypeHint& proto) {
@@ -989,17 +951,12 @@ VISIT_PROTO_FIELDS(const sync_pb::UniquePosition& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserConsentSpecifics& proto) {
-  VISIT_ENUM(feature);
-  VISIT_REP(description_grd_ids);
-  VISIT(confirmation_grd_id);
   VISIT(locale);
-  VISIT_ENUM(status);
   VISIT(account_id);
   VISIT(sync_consent);
   VISIT(arc_backup_and_restore_consent);
   VISIT(arc_location_service_consent);
   VISIT(arc_play_terms_of_service_consent);
-  VISIT(arc_metrics_and_usage_consent);
 }
 
 VISIT_PROTO_FIELDS(
@@ -1010,12 +967,6 @@ VISIT_PROTO_FIELDS(
 
 VISIT_PROTO_FIELDS(
     const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent& proto) {
-  VISIT_REP(description_grd_ids);
-  VISIT_ENUM(status);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserConsentTypes::ArcMetricsAndUsageConsent& proto) {
   VISIT_REP(description_grd_ids);
   VISIT_ENUM(status);
 }
@@ -1045,10 +996,6 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(navigation_id);
   VISIT(session_id);
   VISIT(test_event);
-  VISIT(field_trial_event);
-  VISIT(language_detection_event);
-  VISIT(translation_event);
-  VISIT(user_consent);
   VISIT(gaia_password_reuse_event);
   VISIT(gaia_password_captured_event);
 }

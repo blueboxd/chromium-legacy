@@ -68,10 +68,9 @@ const CGFloat kSelectionAnimationScale = 26;
 // The duration of the animations played when the threshold is met.
 const CGFloat kSelectionAnimationDuration = 0.5;
 
-UIColor* const kPageBackgroundColor = [UIColor colorNamed:kBackgroundColor];
-UIColor* const kSelectionCircleColor =
-    [UIColor colorNamed:kTextfieldBackgroundColor];
-UIColor* const kArrowColor = [UIColor colorNamed:kToolbarButtonColor];
+UIColor* SelectionCircleColor() {
+  return [UIColor colorNamed:kTextfieldBackgroundColor];
+}
 }
 
 @interface SideSwipeNavigationView () {
@@ -107,14 +106,14 @@ UIColor* const kArrowColor = [UIColor colorNamed:kToolbarButtonColor];
                         image:(UIImage*)image {
   self = [super initWithFrame:frame];
   if (self) {
-    self.backgroundColor = kPageBackgroundColor;
+    self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
     _canNavigate = canNavigate;
     if (canNavigate) {
       image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       const CGRect imageSize = CGRectMake(0, 0, 24, 24);
       _arrowView = [[UIImageView alloc] initWithImage:image];
-      _arrowView.tintColor = kArrowColor;
+      _arrowView.tintColor = [UIColor colorNamed:kToolbarButtonColor];
       _selectionCircleLayer = [self newSelectionCircleLayer];
       [_arrowView setFrame:imageSize];
     }
@@ -167,7 +166,7 @@ UIColor* const kArrowColor = [UIColor colorNamed:kToolbarButtonColor];
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
                 previousTraitCollection]) {
-      _selectionCircleLayer.fillColor = kSelectionCircleColor.CGColor;
+      _selectionCircleLayer.fillColor = SelectionCircleColor().CGColor;
     }
   }
 }
@@ -243,7 +242,7 @@ UIColor* const kArrowColor = [UIColor colorNamed:kToolbarButtonColor];
     [_selectionCircleLayer removeAnimationForKey:@"transform"];
     [_selectionCircleLayer setOpacity:0];
     [_arrowView setAlpha:0];
-    self.backgroundColor = kSelectionCircleColor;
+    self.backgroundColor = SelectionCircleColor();
     block();
 
   }];
@@ -426,11 +425,11 @@ UIColor* const kArrowColor = [UIColor colorNamed:kToolbarButtonColor];
   selectionCircleLayer.bounds = bounds;
   selectionCircleLayer.backgroundColor = UIColor.clearColor.CGColor;
   if (@available(iOS 13, *)) {
-    UIColor* resolvedColor = [kSelectionCircleColor
+    UIColor* resolvedColor = [SelectionCircleColor()
         resolvedColorWithTraitCollection:self.traitCollection];
     selectionCircleLayer.fillColor = resolvedColor.CGColor;
   } else {
-    selectionCircleLayer.fillColor = kSelectionCircleColor.CGColor;
+    selectionCircleLayer.fillColor = SelectionCircleColor().CGColor;
   }
   selectionCircleLayer.opacity = 0;
   selectionCircleLayer.transform =

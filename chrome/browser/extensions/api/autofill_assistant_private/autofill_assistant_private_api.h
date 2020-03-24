@@ -149,9 +149,14 @@ class AutofillAssistantPrivateEventRouter
                              peek_mode) override;
   void OnOverlayColorsChanged(
       const autofill_assistant::UiDelegate::OverlayColors& colors) override;
-  void OnFormChanged(const autofill_assistant::FormProto* form) override;
+  void OnFormChanged(
+      const autofill_assistant::FormProto* form,
+      const autofill_assistant::FormProto::Result* result) override;
   void OnClientSettingsChanged(
       const autofill_assistant::ClientSettings& settings) override;
+  void OnGenericUserInterfaceChanged(
+      const autofill_assistant::GenericUserInterfaceProto* generic_ui) override;
+
   void OnExpandBottomSheet() override;
   void OnCollapseBottomSheet() override;
 
@@ -191,17 +196,20 @@ class AutofillAssistantPrivateAPI : public BrowserContextKeyedAPI,
   // autofill_assistant::Client:
   void AttachUI() override;
   void DestroyUI() override;
-  std::string GetApiKey() override;
-  std::string GetAccountEmailAddress() override;
+  std::string GetApiKey() const override;
+  std::string GetAccountEmailAddress() const override;
   autofill_assistant::AccessTokenFetcher* GetAccessTokenFetcher() override;
-  autofill::PersonalDataManager* GetPersonalDataManager() override;
-  autofill_assistant::WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
-  std::string GetServerUrl() override;
-  std::string GetLocale() override;
-  std::string GetCountryCode() override;
-  autofill_assistant::DeviceContext GetDeviceContext() override;
+  autofill::PersonalDataManager* GetPersonalDataManager() const override;
+  password_manager::PasswordManagerClient* GetPasswordManagerClient()
+      const override;
+  autofill_assistant::WebsiteLoginFetcher* GetWebsiteLoginFetcher()
+      const override;
+  std::string GetServerUrl() const override;
+  std::string GetLocale() const override;
+  std::string GetCountryCode() const override;
+  autofill_assistant::DeviceContext GetDeviceContext() const override;
   void Shutdown(autofill_assistant::Metrics::DropOutReason reason) override;
-  content::WebContents* GetWebContents() override;
+  content::WebContents* GetWebContents() const override;
 
   // BrowserContextKeyedAPI:
   void Shutdown() override;

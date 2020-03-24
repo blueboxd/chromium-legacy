@@ -18,8 +18,6 @@
 #include "ash/wm/desks/desks_util.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/template_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/traits_bag.h"
@@ -82,15 +80,13 @@ class AshTestBase : public testing::Test {
   // specified.
   template <typename... TaskEnvironmentTraits>
   NOINLINE explicit AshTestBase(TaskEnvironmentTraits&&... traits)
-      : task_environment_(base::in_place,
-                          base::test::TaskEnvironment::MainThreadType::UI,
-                          std::forward<TaskEnvironmentTraits>(traits)...) {}
+      : AshTestBase(std::make_unique<base::test::TaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::UI,
+            std::forward<TaskEnvironmentTraits>(traits)...)) {}
 
-  // Alternatively a subclass may pass this tag to ask this AshTestBase not to
-  // instantiate a TaskEnvironment. The subclass is then responsible to
-  // instantiate one before AshTestBase::SetUp().
-  struct SubclassManagesTaskEnvironment {};
-  explicit AshTestBase(SubclassManagesTaskEnvironment tag);
+  // Alternatively a subclass may pass a TaskEnvironment directly.
+  explicit AshTestBase(
+      std::unique_ptr<base::test::TaskEnvironment> task_environment);
 
   ~AshTestBase() override;
 
@@ -216,6 +212,9 @@ class AshTestBase : public testing::Test {
   void set_start_session(bool start_session) { start_session_ = start_session; }
   void DisableProvideLocalState();
 
+  base::test::TaskEnvironment* task_environment() {
+    return task_environment_.get();
+  }
   AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
 
   TestScreenshotDelegate* GetScreenshotDelegate();
@@ -286,6 +285,10 @@ class AshTestBase : public testing::Test {
   // |SetUp()| doesn't activate session if this is set to false.
   bool start_session_ = true;
 
+  // |task_environment_| is initialized-once at construction time but
+  // subclasses may elect to provide their own.
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+
   // Must be initialized at construction because some tests rely on AshTestBase
   // methods before AshTestBase::SetUp().
   AshTestHelper ash_test_helper_;
@@ -295,12 +298,6 @@ class AshTestBase : public testing::Test {
   // protected so it can be accesssed by test subclasses to drive the task
   // environment.
  protected:
-  // |task_environment_| is initialized-once at construction time but
-  // subclasses may elect to provide their own. Declare it last to ensure its
-  // initialization/destruction semantics are identical in the
-  // SubclassManagesTaskEnvironment mode.
-  base::Optional<base::test::TaskEnvironment> task_environment_;
-
   // A pref service used for local state. Reset it by
   // DisableProvideLocalState() if a test provides its own local state.
   std::unique_ptr<TestingPrefServiceSimple> local_state_ =
@@ -311,8 +308,7 @@ class AshTestBase : public testing::Test {
   // creating the ash shell.
   bool register_local_state_ = true;
 
-  // Private again for DISALLOW_COPY_AND_ASSIGN; additional members should be
-  // added in the first private section to be before |task_environment_|.
+  // Private again for DISALLOW_COPY_AND_ASSIGN.
  private:
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

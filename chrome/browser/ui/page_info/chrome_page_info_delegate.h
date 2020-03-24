@@ -7,7 +7,6 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -24,6 +23,13 @@ class ChromePasswordProtectionService;
 
 class Profile;
 
+namespace permissions {
+class PermissionDecisionAutoBlocker;
+}  // namespace permissions
+
+class StatefulSSLHostStateDelegate;
+class TabSpecificContentSettings;
+
 class ChromePageInfoDelegate : public PageInfoDelegate {
  public:
   explicit ChromePageInfoDelegate(content::WebContents* web_contents);
@@ -33,6 +39,7 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   permissions::ChooserContextBase* GetChooserContext(
       ContentSettingsType type) override;
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) override;
+  void ContentSettingChangedViaPageInfo(ContentSettingsType type) override;
   int GetFirstPartyAllowedCookiesCount(const GURL& site_url) override;
   int GetFirstPartyBlockedCookiesCount(const GURL& site_url) override;
   int GetThirdPartyAllowedCookiesCount(const GURL& site_url) override;
@@ -48,12 +55,19 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
       ContentSettingsType type,
       const GURL& site_url) override;
 
- private:
-  TabSpecificContentSettings* tab_specific_content_settings() const {
-    TabSpecificContentSettings::CreateForWebContents(web_contents_);
-    return TabSpecificContentSettings::FromWebContents(web_contents_);
-  }
+#if !defined(OS_ANDROID)
+  bool CreateInfoBarDelegate() override;
+  void ShowSiteSettings(const GURL& site_url) override;
+#endif
 
+  permissions::PermissionDecisionAutoBlocker* GetPermissionDecisionAutoblocker()
+      override;
+  StatefulSSLHostStateDelegate* GetStatefulSSLHostStateDelegate() override;
+  HostContentSettingsMap* GetContentSettings() override;
+  bool IsContentDisplayedInVrHeadset() override;
+
+ private:
+  TabSpecificContentSettings* GetTabSpecificContentSettings() const;
   const LocalSharedObjectsContainer& GetAllowedObjects(const GURL& site_url);
   const LocalSharedObjectsContainer& GetBlockedObjects(const GURL& site_url);
   Profile* GetProfile() const;

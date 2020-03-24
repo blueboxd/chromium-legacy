@@ -61,7 +61,7 @@ class MediaGalleriesDialogTest : public testing::Test {
  private:
   // TODO(gbillock): Get rid of this mock; make something specialized.
   NiceMock<MediaGalleriesDialogControllerMock> controller_;
-  ChromeTestViewsDelegate test_views_delegate_;
+  ChromeTestViewsDelegate<> test_views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogTest);
 };

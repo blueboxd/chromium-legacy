@@ -4,9 +4,8 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_test_util.h"
 
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "ui/views/test/scoped_views_test_helper.h"
-#include "ui/views/test/test_views_delegate.h"
 
 namespace {
 
@@ -15,7 +14,7 @@ std::unique_ptr<views::ScopedViewsTestHelper> views_helper_;
 // ViewsDelegate to provide context to dialog creation functions which do not
 // allow InitParams to be set, and pass a null |context| argument to
 // DialogDelegate::CreateDialogWidget().
-class TestViewsDelegateWithContext : public views::TestViewsDelegate {
+class TestViewsDelegateWithContext : public ChromeTestViewsDelegate<> {
  public:
   TestViewsDelegateWithContext() {}
 
@@ -27,7 +26,7 @@ class TestViewsDelegateWithContext : public views::TestViewsDelegate {
       views::internal::NativeWidgetDelegate* delegate) override {
     if (!params->context)
       params->context = context_;
-    TestViewsDelegate::OnBeforeWidgetInit(params, delegate);
+    ChromeTestViewsDelegate::OnBeforeWidgetInit(params, delegate);
   }
 
  private:
@@ -47,8 +46,6 @@ void SetUpViewsEnvironmentForTesting() {
   views_helper_ =
       std::make_unique<views::ScopedViewsTestHelper>(std::move(views_delegate));
   views_delegate_weak->set_context(views_helper_->GetContext());
-  views_delegate_weak->set_layout_provider(
-      ChromeLayoutProvider::CreateLayoutProvider());
 }
 
 void TearDownViewsEnvironmentForTesting() {

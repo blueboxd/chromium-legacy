@@ -10,7 +10,7 @@
 bluetooth_test(t => {
   return setBluetoothFakeAdapter('EmptyNameHeartRateAdapter')
       .then(
-          () => promise_rejects(
+          () => promise_rejects_dom(
               t, 'NotFoundError',
               requestDeviceWithTrustedClick(
                   {filters: [{name: 'a', services: ['heart_rate']}]})));

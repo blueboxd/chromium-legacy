@@ -1501,16 +1501,29 @@ def make_overload_dispatcher_function_def(cg_context, function_name):
     body = func_def.body
 
     if cg_context.operation_group:
+        body.append(make_operation_entry(cg_context))
+        body.append(EmptyNode())
         body.append(make_cooperative_scheduling_safepoint(cg_context))
         body.append(EmptyNode())
 
     if cg_context.constructor_group:
-        body.append(make_check_constructor_call(cg_context))
+        body.append(make_constructor_entry(cg_context))
         body.append(EmptyNode())
 
     body.append(make_overload_dispatcher(cg_context))
 
     return func_def
+
+
+def make_constructor_entry(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    return SequenceNode([
+        make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
+        EmptyNode(),
+        make_check_constructor_call(cg_context),
+    ])
 
 
 def make_constructor_function_def(cg_context, function_name):
@@ -1522,9 +1535,11 @@ def make_constructor_function_def(cg_context, function_name):
     func_def = _make_empty_callback_def(cg_context, function_name)
     body = func_def.body
 
+    if len(cg_context.constructor_group) == 1:
+        body.append(make_constructor_entry(cg_context))
+        body.append(EmptyNode())
+
     body.extend([
-        make_runtime_call_timer_scope(cg_context),
-        make_bindings_trace_event(cg_context),
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
@@ -1606,6 +1621,15 @@ def make_exposed_construct_callback_def(cg_context, function_name):
     return func_def
 
 
+def make_operation_entry(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    return SequenceNode([
+        make_runtime_call_timer_scope(cg_context),
+        make_bindings_trace_event(cg_context),
+    ])
+
+
 def make_operation_function_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
@@ -1613,9 +1637,11 @@ def make_operation_function_def(cg_context, function_name):
     func_def = _make_empty_callback_def(cg_context, function_name)
     body = func_def.body
 
+    if not cg_context.operation_group or len(cg_context.operation_group) == 1:
+        body.append(make_operation_entry(cg_context))
+        body.append(EmptyNode())
+
     body.extend([
-        make_runtime_call_timer_scope(cg_context),
-        make_bindings_trace_event(cg_context),
         make_report_deprecate_as(cg_context),
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),

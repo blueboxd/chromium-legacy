@@ -8,11 +8,12 @@
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
 
+constexpr base::FilePath::CharType kHelpAppGuestTestApi[] = FILE_PATH_LITERAL(
+    "chromeos/components/help_app_ui/test/guest_query_receiver.js");
+
 HelpAppUiBrowserTest::HelpAppUiBrowserTest()
-    : SandboxedWebUiAppTestBase(
-          chromeos::kChromeUIHelpAppURL,
-          chromeos::kChromeUIHelpAppUntrustedURL,
-          base::FilePath(FILE_PATH_LITERAL("chromeos/components/help_app_ui/"
-                                           "test/guest_query_receiver.js"))) {}
+    : SandboxedWebUiAppTestBase(chromeos::kChromeUIHelpAppURL,
+                                chromeos::kChromeUIHelpAppUntrustedURL,
+                                {base::FilePath(kHelpAppGuestTestApi)}) {}
 
 HelpAppUiBrowserTest::~HelpAppUiBrowserTest() = default;

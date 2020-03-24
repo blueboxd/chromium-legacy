@@ -222,7 +222,6 @@ enum Role {
   kLabelText,
   kLayoutTable,
   kLayoutTableCell,
-  kLayoutTableColumn,
   kLayoutTableRow,
   kLegend,
   kLineBreak,

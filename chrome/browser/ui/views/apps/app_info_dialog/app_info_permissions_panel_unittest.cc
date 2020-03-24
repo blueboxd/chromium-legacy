@@ -57,7 +57,7 @@ class AppInfoPermissionsPanelTest : public testing::Test {
 
   // We need the UI thread in order to construct UI elements in the view.
   content::BrowserTaskEnvironment task_environment_;
-  ChromeTestViewsDelegate views_delegate_;
+  ChromeTestViewsDelegate<> views_delegate_;
   TestingProfile profile_;  // Needs BrowserThread::UI.
 };
 

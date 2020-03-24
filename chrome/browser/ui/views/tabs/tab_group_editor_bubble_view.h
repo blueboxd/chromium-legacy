@@ -32,30 +32,28 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   static constexpr int TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW = 16;
   static constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 17;
 
-  // Shows the editor for |group| using a TabGroupHeader anchor. Should be used
-  // in most cases to allow focus handling between the header and the bubble.
-  // Returns an *unowned* pointer to the bubble's widget.
-  static views::Widget* Show(const Browser* browser,
-                             const tab_groups::TabGroupId& group,
-                             TabGroupHeader* anchor_view,
-                             bool stop_context_menu_propagation = false);
-
-  // Shows the editor for |group| using a rect as an anchor. Should only be used
-  // if the TabGroupHeader is not available as an anchor, e.g. in WebUI. Returns
-  // an *unowned* pointer to the bubble's widget.
-  static views::Widget* ShowWithRect(const Browser* browser,
-                                     const tab_groups::TabGroupId& group,
-                                     gfx::Rect anchor_rect);
+  // Shows the editor for |group|. Returns a *non-owning* pointer to the
+  // bubble's widget.
+  static views::Widget* Show(
+      const Browser* browser,
+      const tab_groups::TabGroupId& group,
+      TabGroupHeader* header_view,
+      base::Optional<gfx::Rect> anchor_rect = base::nullopt,
+      // If not provided, will be set to |header_view|.
+      views::View* anchor_view = nullptr,
+      bool stop_context_menu_propagation = false);
 
   // views::BubbleDialogDelegateView:
   ui::ModalType GetModalType() const override;
   views::View* GetInitiallyFocusedView() override;
+  gfx::Rect GetAnchorRect() const override;
 
  private:
   TabGroupEditorBubbleView(const Browser* browser,
                            const tab_groups::TabGroupId& group,
-                           TabGroupHeader* anchor_view,
+                           views::View* anchor_view,
                            base::Optional<gfx::Rect> anchor_rect,
+                           TabGroupHeader* header_view,
                            bool stop_context_menu_propagation);
   ~TabGroupEditorBubbleView() override;
 
@@ -110,7 +108,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
    public:
     explicit ButtonListener(const Browser* browser,
                             tab_groups::TabGroupId group,
-                            TabGroupHeader* anchor_view);
+                            TabGroupHeader* header_view);
 
     // views::ButtonListener:
     void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -118,7 +116,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
    private:
     const Browser* const browser_;
     const tab_groups::TabGroupId group_;
-    TabGroupHeader* anchor_view_;
+    TabGroupHeader* header_view_;
   };
 
   ButtonListener button_listener_;
@@ -126,6 +124,10 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   std::vector<tab_groups::TabGroupColorId> color_ids_;
   std::vector<std::pair<SkColor, base::string16>> colors_;
   ColorPickerView* color_selector_;
+
+  // If true will use the |anchor_rect_| provided in the constructor, otherwise
+  // fall back to using the anchor view bounds.
+  const bool use_set_anchor_rect_;
 
   // Creates the set of tab group colors to display and returns the color that
   // is initially selected.

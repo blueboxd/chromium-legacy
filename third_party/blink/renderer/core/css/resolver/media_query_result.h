@@ -44,6 +44,22 @@ class MediaQueryResult {
   bool result_;
 };
 
+class MediaQuerySetResult {
+  DISALLOW_NEW();
+
+ public:
+  MediaQuerySetResult(const MediaQuerySet& media_queries, bool result)
+      : media_queries_(&media_queries), result_(result) {}
+
+  const MediaQuerySet& MediaQueries() const { return *media_queries_; }
+
+  bool Result() const { return result_; }
+
+ private:
+  scoped_refptr<const MediaQuerySet> media_queries_;
+  bool result_;
+};
+
 }  // namespace blink
 
 #endif

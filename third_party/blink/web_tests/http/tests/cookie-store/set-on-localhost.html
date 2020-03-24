@@ -40,7 +40,7 @@ promise_test(async t => {
 }, 'cookieStore.set(options) with "secure: false" sets an insecure cookie');
 
 promise_test(async t => {
-  await promise_rejects(t, new TypeError(),
+  await promise_rejects_js(t, TypeError,
       cookieStore.set({
         name: 'cookie-name', value: 'cookie-value', secure: true
       }));
@@ -60,7 +60,7 @@ promise_test(async t => {
 promise_test(async t => {
   await cookieStore.delete('cookie-name');
 
-  await promise_rejects(t, new TypeError(),
+  await promise_rejects_js(t, TypeError,
       cookieStore.set('cookie-name', 'cookie-value', { secure: true }));
 }, `cookieStore.set(name, value, options) with "secure: true" throws an
     exception`);

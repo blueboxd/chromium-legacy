@@ -52,23 +52,15 @@
 views::Widget* TabGroupEditorBubbleView::Show(
     const Browser* browser,
     const tab_groups::TabGroupId& group,
-    TabGroupHeader* anchor_view,
+    TabGroupHeader* header_view,
+    base::Optional<gfx::Rect> anchor_rect,
+    views::View* anchor_view,
     bool stop_context_menu_propagation) {
-  views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
-      new TabGroupEditorBubbleView(browser, group, anchor_view, base::nullopt,
-                                   stop_context_menu_propagation));
-  widget->Show();
-  return widget;
-}
-
-// static
-views::Widget* TabGroupEditorBubbleView::ShowWithRect(
-    const Browser* browser,
-    const tab_groups::TabGroupId& group,
-    gfx::Rect anchor_rect) {
+  // If |header_view| is not null, use |header_view| as the |anchor_view|.
   views::Widget* const widget =
       BubbleDialogDelegateView::CreateBubble(new TabGroupEditorBubbleView(
-          browser, group, nullptr, anchor_rect, false));
+          browser, group, header_view ? header_view : anchor_view, anchor_rect,
+          header_view, stop_context_menu_propagation));
   widget->Show();
   return widget;
 }
@@ -81,22 +73,34 @@ views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
   return title_field_;
 }
 
+gfx::Rect TabGroupEditorBubbleView::GetAnchorRect() const {
+  // We want to avoid calling BubbleDialogDelegateView::GetAnchorRect() if
+  // |anchor_rect_| has been set. This is because the default behavior uses the
+  // anchor view's bounds and also updates |anchor_rect_| to the views bounds.
+  // It does this so that the bubble does not jump when the anchoring view is
+  // deleted.
+  if (use_set_anchor_rect_)
+    return anchor_rect().value();
+  return BubbleDialogDelegateView::GetAnchorRect();
+}
+
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     const Browser* browser,
     const tab_groups::TabGroupId& group,
-    TabGroupHeader* anchor_view,
+    views::View* anchor_view,
     base::Optional<gfx::Rect> anchor_rect,
+    TabGroupHeader* header_view,
     bool stop_context_menu_propagation)
     : browser_(browser),
       group_(group),
       title_field_controller_(this),
-      button_listener_(browser, group, anchor_view) {
-  // Either |anchor_view| or |anchor_rect| should be defined. |anchor_rect| is
-  // only used in situations were the available Views are different, e.g. WebUI.
-  DCHECK(anchor_view || anchor_rect.has_value());
-  if (anchor_view)
-    SetAnchorView(anchor_view);
-  else
+      button_listener_(browser, group, header_view),
+      use_set_anchor_rect_(anchor_rect) {
+  // |anchor_view| should always be defined as it will be used to source the
+  // |anchor_widget_|.
+  DCHECK(anchor_view);
+  SetAnchorView(anchor_view);
+  if (anchor_rect)
     SetAnchorRect(anchor_rect.value());
 
   set_margins(gfx::Insets());
@@ -340,8 +344,8 @@ void TabGroupEditorBubbleView::TitleField::ShowContextMenu(
 TabGroupEditorBubbleView::ButtonListener::ButtonListener(
     const Browser* browser,
     tab_groups::TabGroupId group,
-    TabGroupHeader* anchor_view)
-    : browser_(browser), group_(group), anchor_view_(anchor_view) {}
+    TabGroupHeader* header_view)
+    : browser_(browser), group_(group), header_view_(header_view) {}
 
 void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     views::Button* sender,
@@ -359,8 +363,8 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     case TAB_GROUP_HEADER_CXMENU_UNGROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_Ungroup"));
-      if (anchor_view_)
-        anchor_view_->RemoveObserverFromWidget(sender->GetWidget());
+      if (header_view_)
+        header_view_->RemoveObserverFromWidget(sender->GetWidget());
       model->RemoveFromGroup(tabs_in_group);
       break;
     case TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP:

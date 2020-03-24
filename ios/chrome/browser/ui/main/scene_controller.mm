@@ -337,8 +337,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
                                           : ApplicationMode::NORMAL)];
 
-  [self.browserViewWrangler updateDeviceSharingManager];
-
   if (!self.mainController.startupParameters) {
     // The startup parameters may create new tabs or navigations. If the restore
     // infobar is displayed now, it may be dismissed immediately and the user

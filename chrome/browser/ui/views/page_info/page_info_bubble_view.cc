@@ -519,9 +519,8 @@ PageInfoBubbleView::PageInfoBubbleView(
   // |TabSpecificContentSettings| and need to create one; otherwise, noop.
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
-      profile, std::make_unique<ChromePageInfoDelegate>(web_contents),
-      TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
-      url, security_level, visible_security_state);
+      std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents, url,
+      security_level, visible_security_state);
   presenter_->InitializeUiState(this);
 }
 

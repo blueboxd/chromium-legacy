@@ -226,7 +226,9 @@ class HangWatcherRealTimeTest : public testing::Test {
   base::ScopedClosureRunner unregister_thread_closure_;
 };
 
-TEST_F(HangWatcherRealTimeTest, PeriodicCallsCount) {
+// TODO(https://crbug.com/1064116): Fix this test not to rely on timely task
+// execution, which results in flakiness on slower bots.
+TEST_F(HangWatcherRealTimeTest, DISABLED_PeriodicCallsCount) {
   // These values are chosen to execute fast enough while running the unit tests
   // but be large enough to buffer against clock precision problems.
   const base::TimeDelta kMonitoringPeriod(

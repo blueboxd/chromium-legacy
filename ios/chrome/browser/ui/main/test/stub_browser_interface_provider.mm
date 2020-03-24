@@ -21,8 +21,4 @@
   }
   return self;
 }
-
-- (void)cleanDeviceSharingManager {
-  // no-op
-}
 @end

@@ -143,7 +143,6 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kLabelText, NSAccessibilityGroupRole},
       {ax::mojom::Role::kLayoutTable, NSAccessibilityGroupRole},
       {ax::mojom::Role::kLayoutTableCell, NSAccessibilityGroupRole},
-      {ax::mojom::Role::kLayoutTableColumn, NSAccessibilityGroupRole},
       {ax::mojom::Role::kLayoutTableRow, NSAccessibilityGroupRole},
       {ax::mojom::Role::kLegend, NSAccessibilityGroupRole},
       {ax::mojom::Role::kLineBreak, NSAccessibilityGroupRole},

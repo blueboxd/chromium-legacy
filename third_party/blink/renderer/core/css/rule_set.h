@@ -284,6 +284,8 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
            HasV0BoundaryCrossingRules();
   }
 
+  bool DidMediaQueryResultsChange(const MediaQueryEvaluator& evaluator) const;
+
 #ifndef NDEBUG
   void Show() const;
 #endif
@@ -304,6 +306,8 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   void AddKeyframesRule(StyleRuleKeyframes*);
   void AddPropertyRule(StyleRuleProperty*);
 
+  bool MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
+                             const MediaQuerySet* media_queries);
   void AddChildRules(const HeapVector<Member<StyleRuleBase>>&,
                      const MediaQueryEvaluator& medium,
                      AddRuleFlags);
@@ -349,6 +353,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   HeapVector<MinimalRuleData> deep_combinator_or_shadow_pseudo_rules_;
   HeapVector<MinimalRuleData> content_pseudo_element_rules_;
   HeapVector<MinimalRuleData> slotted_pseudo_element_rules_;
+  Vector<MediaQuerySetResult> media_query_set_results_;
 
   unsigned rule_count_;
   Member<PendingRuleMaps> pending_rules_;

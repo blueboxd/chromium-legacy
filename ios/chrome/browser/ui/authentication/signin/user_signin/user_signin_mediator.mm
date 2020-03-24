@@ -76,7 +76,6 @@
 - (void)cancelSignin {
   if (self.isAuthenticationInProgress) {
     [self cancelAndDismissAuthenticationFlow];
-    [self.delegate userSigninMediatorNeedPrimaryButtonUpdate];
   } else {
     [self.delegate userSigninMediatorSigninFinishedWithResult:
                        SigninCoordinatorResultCanceledByUser];

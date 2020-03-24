@@ -354,7 +354,6 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kLabelText, "Label"},
     {ax::mojom::Role::kLayoutTable, "LayoutTable"},
     {ax::mojom::Role::kLayoutTableCell, "LayoutCellTable"},
-    {ax::mojom::Role::kLayoutTableColumn, "LayoutColumnTable"},
     {ax::mojom::Role::kLayoutTableRow, "LayoutRowTable"},
     {ax::mojom::Role::kLegend, "Legend"},
     {ax::mojom::Role::kLink, "Link"},
@@ -3689,7 +3688,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kInlineTextBox:
     case ax::mojom::Role::kLabelText:
     case ax::mojom::Role::kLayoutTable:
-    case ax::mojom::Role::kLayoutTableColumn:
     case ax::mojom::Role::kLayoutTableRow:
     case ax::mojom::Role::kLegend:
     case ax::mojom::Role::kList:

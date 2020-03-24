@@ -29,6 +29,9 @@ class SyncSetupServiceMock : public SyncSetupService {
 
   MOCK_METHOD0(PrepareForFirstSyncSetup, void());
 
+  MOCK_METHOD1(SetFirstSetupComplete,
+               void(syncer::SyncFirstSetupCompleteSource));
+
   // Allow the real SyncSetupService::HasFinishedInitialSetup() to be used when
   // mocking HasFinishedInitialSetup().
   bool SyncSetupServiceHasFinishedInitialSetup();

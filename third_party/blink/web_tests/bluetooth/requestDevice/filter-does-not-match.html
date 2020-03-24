@@ -93,7 +93,7 @@ bluetooth_test(t => {
     let test_promises = Promise.resolve();
     test_specs.forEach(args => {
       test_promises = test_promises.then(
-          () => promise_rejects(
+          () => promise_rejects_dom(
               t, 'NotFoundError', requestDeviceWithTrustedClick(args)));
     });
     return test_promises;

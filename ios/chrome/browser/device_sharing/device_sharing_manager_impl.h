@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 
+class Browser;
 class ChromeBrowserState;
 class PrefChangeRegistrar;
 @class HandoffManager;
@@ -23,12 +24,14 @@ class DeviceSharingManagerImpl : public DeviceSharingManager {
   DeviceSharingManagerImpl& operator=(const DeviceSharingManagerImpl&) = delete;
   ~DeviceSharingManagerImpl() override;
 
-  void UpdateActiveUrl(const GURL& active_url) override;
-  void ClearActiveUrl() override;
+  void SetActiveBrowser(Browser* browser) override;
+  void UpdateActiveUrl(Browser* browser, const GURL& active_url) override;
+  void ClearActiveUrl(Browser* browser) override;
 
  private:
   // Allow tests to inspect the handoff manager.
   friend class DeviceSharingManagerImplTest;
+  friend class DeviceSharingBrowserAgentTest;
   friend class DeviceSharingAppInterfaceWrapper;
 
   void UpdateHandoffManager();
@@ -40,6 +43,9 @@ class DeviceSharingManagerImpl : public DeviceSharingManager {
 
   // Responsible for maintaining all state related to the Handoff feature.
   __strong HandoffManager* handoff_manager_;
+
+  // The current active browser.
+  Browser* active_browser_ = nullptr;
 };
 
 #endif  // IOS_CHROME_BROWSER_DEVICE_SHARING_DEVICE_SHARING_MANAGER_IMPL_H_

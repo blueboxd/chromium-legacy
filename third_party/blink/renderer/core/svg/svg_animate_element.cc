@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
@@ -488,11 +489,10 @@ void SVGAnimateElement::ApplyResultsToTarget() {
     MutableCSSPropertyValueSet* properties =
         target_element->EnsureAnimatedSMILStyleProperties();
     auto animated_value_string = animated_value_->ValueAsString();
-    auto secure_context_mode =
-        target_element->GetDocument().GetSecureContextMode();
-    auto set_result =
-        properties->SetProperty(css_property_id_, animated_value_string, false,
-                                secure_context_mode, nullptr);
+    auto& document = target_element->GetDocument();
+    auto set_result = properties->SetProperty(
+        css_property_id_, animated_value_string, false,
+        document.GetSecureContextMode(), document.ElementSheet().Contents());
     if (set_result.did_change) {
       target_element->SetNeedsStyleRecalc(
           kLocalStyleChange,

@@ -11,6 +11,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    PrefsBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -79,6 +80,13 @@ Polymer({
      * @private {?PasswordManagerProxy.CompromisedCredential}
      */
     activePassword_: Object,
+
+    /** @private */
+    showNoCompromisedPasswordsLabel_: {
+      type: Boolean,
+      computed:
+          'computeShowNoCompromisedPasswordsLabel(syncStatus_, prefs.*, status_, leakedPasswords)',
+    }
   },
 
   /**
@@ -536,5 +544,26 @@ Polymer({
     this.leakedPasswords = resultList.concat(addedResults);
   },
 
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowNoCompromisedPasswordsLabel() {
+    // Check if user isn't signed in.
+    if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
+      return false;
+    }
+
+    // Check if breach detection is turned off in settings.
+    if (!this.prefs ||
+        !this.getPref('profile.password_manager_leak_detection').value) {
+      return false;
+    }
+
+    // Return true if there was a successful check and no compromised passwords
+    // were found.
+    return !this.hasLeakedCredentials_(this.leakedPasswords) &&
+        this.showsTimestamp_(this.status_);
+  },
 });
 })();

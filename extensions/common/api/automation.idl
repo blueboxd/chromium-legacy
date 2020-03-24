@@ -194,7 +194,6 @@
     labelText,
     layoutTable,
     layoutTableCell,
-    layoutTableColumn,
     layoutTableRow,
     legend,
     lineBreak,

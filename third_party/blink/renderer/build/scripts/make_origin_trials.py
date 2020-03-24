@@ -47,6 +47,9 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
         }
         self._implied_mappings = self._make_implied_mappings()
         self._trial_to_features_map = self._make_trial_to_features_map()
+        self._max_features_per_trial = max(
+            len(features)
+            for features in self._trial_to_features_map.itervalues())
         self._set_trial_types()
 
     @property
@@ -116,6 +119,7 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
             'origin_trial_features': self._origin_trial_features,
             'implied_origin_trial_features': self._implied_mappings,
             'trial_to_features_map': self._trial_to_features_map,
+            'max_features_per_trial': self._max_features_per_trial,
             'input_files': self._input_files,
         }
 

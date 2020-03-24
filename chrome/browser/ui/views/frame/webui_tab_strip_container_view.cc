@@ -564,7 +564,7 @@ void WebUITabStripContainerView::ShowEditDialogForGroupAtPoint(
     tab_groups::TabGroupId group) {
   ConvertPointToScreen(this, &point);
   rect.set_origin(point);
-  TabGroupEditorBubbleView::ShowWithRect(browser_, group, rect);
+  TabGroupEditorBubbleView::Show(browser_, group, nullptr, rect, this);
 }
 
 TabStripUILayout WebUITabStripContainerView::GetLayout() {

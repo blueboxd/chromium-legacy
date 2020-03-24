@@ -16,8 +16,7 @@ bool WebOriginTrials::isTrialEnabled(const WebDocument* web_document, const WebS
   if (!web_document) return false;
   if (!origin_trials::IsTrialValid(trial))
     return false;
-  const Vector<OriginTrialFeature>& features = origin_trials::FeaturesForTrial(trial);
-  for (OriginTrialFeature feature : features) {
+  for (OriginTrialFeature feature : origin_trials::FeaturesForTrial(trial)) {
     switch (feature) {
     {% for feature in features %}
     {% if feature.origin_trial_feature_name %}

@@ -2144,9 +2144,89 @@
       },
     },
 
+    'gpu_gl_renderer_full_telemetry_tests': {
+      'context_lost': {
+        'name': 'gl_renderer_context_lost_tests',
+        'args': [
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+      },
+      'depth_capture': {
+        'name': 'gl_renderer_depth_capture_tests',
+        'args': [
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+      },
+      'gpu_process': {
+        'name': 'gl_renderer_gpu_process_launch_tests',
+        'args': [
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+      },
+      'hardware_accelerated_feature': {
+        'name': 'gl_renderer_hardware_accelerated_feature_tests',
+        'args': [
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+      },
+      'maps': {
+        'name': 'gl_renderer_maps_pixel_tests',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'precommit_args': [
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'mixins': ['chrome-gpu-gold-service-account'],
+      },
+      'pixel': {
+        'name': 'gl_renderer_pixel_skia_gold_tests',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'precommit_args': [
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'mixins': ['chrome-gpu-gold-service-account'],
+      },
+      'screenshot_sync': {
+        'name': 'gl_renderer_screenshot_sync_tests',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+      },
+    },
+
     # Very small set of test that exercise GLRenderer and produce pixels for CQ.
     # For use where SkiaRenderer is enabled by field trial or default.
-    'gpu_gl_renderer_telemetry_tests': {
+    'gpu_gl_renderer_small_telemetry_tests': {
       'gl_renderer_screenshot_sync': {
         'args': [
           '--dont-restore-color-profile-after-test',
@@ -4185,7 +4265,7 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
-      'gpu_gl_renderer_telemetry_tests',
+      'gpu_gl_renderer_small_telemetry_tests',
     ],
 
     'gpu_dawn_deps_isolated_scripts': [

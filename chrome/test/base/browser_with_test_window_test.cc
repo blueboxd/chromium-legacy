@@ -25,19 +25,16 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/views/test/test_views_delegate.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "content/public/browser/context_factory.h"
-#else
-#include "ui/views/test/test_views_delegate.h"
 #endif
 #endif
 
@@ -51,9 +48,12 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if defined(OS_CHROMEOS)
+  test_views_delegate_ =
+      std::make_unique<ChromeTestViewsDelegate<ash::AshTestViewsDelegate>>();
   ash_test_helper_.SetUp();
 #elif defined(TOOLKIT_VIEWS)
-  views_test_helper_.reset(new views::ScopedViewsTestHelper());
+  views_test_helper_.reset(new views::ScopedViewsTestHelper(
+      std::make_unique<ChromeTestViewsDelegate<>>()));
 #endif
 
   // This must be created after ash_test_helper_ is set up so that it doesn't
@@ -62,9 +62,6 @@ void BrowserWithTestWindowTest::SetUp() {
 
 #if defined(TOOLKIT_VIEWS)
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
-
-  test_views_delegate()->set_layout_provider(
-      ChromeLayoutProvider::CreateLayoutProvider());
 #endif
 
   profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -113,6 +110,7 @@ void BrowserWithTestWindowTest::TearDown() {
   // as part of the teardown will avoid unexpected test failures.
   chromeos::KioskAppManager::Shutdown();
 
+  test_views_delegate_.reset();
   ash_test_helper_.TearDown();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset();

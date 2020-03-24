@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/device_sharing/device_sharing_manager_impl.h"
 
-#include "components/handoff/handoff_manager.h"
+#import "components/handoff/handoff_manager.h"
 #import "components/handoff/pref_names_ios.h"
 #import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
@@ -25,21 +25,32 @@ DeviceSharingManagerImpl::DeviceSharingManagerImpl(
       base::Bind(&DeviceSharingManagerImpl::UpdateHandoffManager,
                  base::Unretained(this)));
   UpdateHandoffManager();
-  ClearActiveUrl();
+  [handoff_manager_ updateActiveURL:GURL()];
 }
 
 DeviceSharingManagerImpl::~DeviceSharingManagerImpl() {}
 
-void DeviceSharingManagerImpl::UpdateActiveUrl(const GURL& active_url) {
+void DeviceSharingManagerImpl::SetActiveBrowser(Browser* browser) {
+  active_browser_ = browser;
+}
+
+void DeviceSharingManagerImpl::UpdateActiveUrl(Browser* browser,
+                                               const GURL& active_url) {
+  if (browser != active_browser_)
+    return;
+
   if (active_url.is_empty()) {
-    ClearActiveUrl();
+    ClearActiveUrl(browser);
     return;
   }
 
   [handoff_manager_ updateActiveURL:active_url];
 }
 
-void DeviceSharingManagerImpl::ClearActiveUrl() {
+void DeviceSharingManagerImpl::ClearActiveUrl(Browser* browser) {
+  if (browser != active_browser_)
+    return;
+
   [handoff_manager_ updateActiveURL:GURL()];
 }
 

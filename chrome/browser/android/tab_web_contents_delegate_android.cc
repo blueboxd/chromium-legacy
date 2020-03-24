@@ -49,6 +49,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/browser_ui/util/android/url_constants.h"
 #include "components/find_in_page/find_notification_details.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/infobars/core/infobar.h"
@@ -213,10 +214,10 @@ bool TabWebContentsDelegateAndroid::ShouldFocusLocationBarByDefault(
   if (entry) {
     GURL url = entry->GetURL();
     GURL virtual_url = entry->GetVirtualURL();
-    if ((url.SchemeIs(chrome::kChromeUINativeScheme) &&
-        url.host_piece() == chrome::kChromeUINewTabHost) ||
-        (virtual_url.SchemeIs(chrome::kChromeUINativeScheme) &&
-        virtual_url.host_piece() == chrome::kChromeUINewTabHost)) {
+    if ((url.SchemeIs(browser_ui::kChromeUINativeScheme) &&
+         url.host_piece() == chrome::kChromeUINewTabHost) ||
+        (virtual_url.SchemeIs(browser_ui::kChromeUINativeScheme) &&
+         virtual_url.host_piece() == chrome::kChromeUINewTabHost)) {
       return true;
     }
   }

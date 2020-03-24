@@ -102,7 +102,7 @@ TEST_F(AmbientContainerViewTest, TimerRunningWhenShowing) {
   // Download |kImageBufferLength| / 2 + 1 images to fill buffer in PhotoModel,
   // in order to return false in |ShouldFetchImmediately()| and start timer.
   const int num_image_to_load = kImageBufferLength / 2 + 1;
-  task_environment_->FastForwardBy(kAnimationDuration * num_image_to_load);
+  task_environment()->FastForwardBy(kAnimationDuration * num_image_to_load);
 
   EXPECT_TRUE(GetTimer().IsRunning());
 
@@ -121,7 +121,7 @@ TEST_F(AmbientContainerViewTest, MouseClickClosesWidgetAndStopsTimer) {
   // Download |kImageBufferLength| / 2 + 1 images to fill buffer in PhotoModel,
   // in order to return false in |ShouldFetchImmediately()| and start timer.
   const int num_image_to_load = kImageBufferLength / 2 + 1;
-  task_environment_->FastForwardBy(kAnimationDuration * num_image_to_load);
+  task_environment()->FastForwardBy(kAnimationDuration * num_image_to_load);
   EXPECT_TRUE(GetTimer().IsRunning());
 
   // Simulate mouse click to close the widget.

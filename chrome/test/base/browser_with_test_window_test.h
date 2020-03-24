@@ -186,7 +186,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 #if defined(TOOLKIT_VIEWS)
   views::TestViewsDelegate* test_views_delegate() {
 #if defined(OS_CHROMEOS)
-    return ash_test_helper_.test_views_delegate();
+    return test_views_delegate_.get();
 #else
     return views_test_helper_->test_views_delegate();
 #endif
@@ -226,6 +226,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
 #if defined(OS_CHROMEOS)
   ash::AshTestHelper ash_test_helper_;
+  std::unique_ptr<views::TestViewsDelegate> test_views_delegate_;
 #elif defined(TOOLKIT_VIEWS)
   std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_;
 #endif

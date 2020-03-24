@@ -123,10 +123,10 @@ promise_test(async t => {
   const transferred = await transfer(orig);
   const writer = transferred.getWriter();
   // A WritableStream object cannot be cloned.
-  await promise_rejects(t, 'DataCloneError', writer.write(new WritableStream()),
-                        'the write should reject');
-  await promise_rejects(t, 'DataCloneError', writer.closed,
-                        'the stream should be errored');
+  await promise_rejects_dom(t, 'DataCloneError', writer.write(new WritableStream()),
+                            'the write should reject');
+  await promise_rejects_dom(t, 'DataCloneError', writer.closed,
+                            'the stream should be errored');
   await delay(0);
   assert_equals(orig.events.length, 2, 'abort should have been called');
   assert_equals(orig.events[0], 'abort', 'first event should be abort');

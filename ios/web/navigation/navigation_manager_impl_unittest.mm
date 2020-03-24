@@ -575,7 +575,7 @@ TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   // Under back-forward navigation, both WKBackForwardList and WKWebView.URL are
   // updated before |didStartProvisionalNavigation| callback, which calls
   // AddPendingItem. Simulate this behavior.
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([NSURL URLWithString:@"http://www.url.com/1"]);
   mock_wk_list_.currentItem = wk_item1;
   mock_wk_list_.backList = @[ wk_item0 ];
@@ -1572,7 +1572,7 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentType) {
   navigation_manager()->GetPendingItem()->SetVirtualURL(virtual_url);
   [mock_wk_list_ setCurrentURL:@"http://www.1.com"];
   navigation_manager()->CommitPendingItem();
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.1.com"]);
 
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
@@ -2080,7 +2080,7 @@ TEST_F(NavigationManagerTest, PendingItemIsNotVisibleIfNotNewNavigation) {
   navigation_manager()->CommitPendingItem();
 
   // Move pending item back to index 0.
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([NSURL URLWithString:@"http://www.url.com/0"]);
   [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"
                   backListURLs:nil
@@ -2094,10 +2094,10 @@ TEST_F(NavigationManagerTest, PendingItemIsNotVisibleIfNotNewNavigation) {
 
   delegate_.SetWebState(&web_state_);
   web_state_.SetLoading(true);
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   ASSERT_TRUE(navigation_manager()->GetVisibleItem());
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   EXPECT_EQ("http://www.url.com/1",
             navigation_manager()->GetVisibleItem()->GetURL().spec());
@@ -2120,10 +2120,10 @@ TEST_F(NavigationManagerTest, VisibleItemDefaultsToLastCommittedItem) {
       web::NavigationInitiationType::RENDERER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   ASSERT_TRUE(navigation_manager()->GetVisibleItem());
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   EXPECT_EQ("http://www.url.com/0",
             navigation_manager()->GetVisibleItem()->GetURL().spec());

@@ -30,7 +30,6 @@
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,6 +47,8 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/vr_web_contents_observer.h"
 #include "chrome/common/url_constants.h"
+#include "components/browser_ui/util/android/url_constants.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -1013,7 +1014,7 @@ bool VrShell::ShouldDisplayURL() const {
   GURL url = entry->GetVirtualURL();
   // URL is of the form chrome-native://.... This is not useful for the user.
   // Hide it.
-  if (url.SchemeIs(chrome::kChromeUINativeScheme)) {
+  if (url.SchemeIs(browser_ui::kChromeUINativeScheme)) {
     return false;
   }
   // URL is of the form chrome://....
@@ -1206,9 +1207,7 @@ std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents_);
   auto page_info = std::make_unique<PageInfo>(
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      std::make_unique<ChromePageInfoDelegate>(web_contents_),
-      TabSpecificContentSettings::FromWebContents(web_contents_), web_contents_,
+      std::make_unique<ChromePageInfoDelegate>(web_contents_), web_contents_,
       entry->GetVirtualURL(), helper->GetSecurityLevel(),
       *helper->GetVisibleSecurityState());
   page_info->InitializeUiState(this);

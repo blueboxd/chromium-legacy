@@ -9,6 +9,6 @@
 ChromeViewsTestBase::~ChromeViewsTestBase() = default;
 
 void ChromeViewsTestBase::SetUp() {
-  set_views_delegate(std::make_unique<ChromeTestViewsDelegate>());
+  set_views_delegate(std::make_unique<ChromeTestViewsDelegate<>>());
   views::ViewsTestBase::SetUp();
 }

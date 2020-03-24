@@ -34,7 +34,7 @@ class ReloadButtonTest : public ChromeRenderViewHostTestHarness {
   ReloadButton* reload() { return &reload_; }
 
  private:
-  ChromeTestViewsDelegate views_delegate_;
+  ChromeTestViewsDelegate<> views_delegate_;
   ReloadButton reload_;
 };
 

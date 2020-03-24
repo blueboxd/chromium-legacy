@@ -96,7 +96,7 @@ class HungPluginTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override;
 
  private:
-  ChromeTestViewsDelegate views_delegate_;
+  ChromeTestViewsDelegate<> views_delegate_;
 };
 
 void HungPluginTabHelperTest::SetUp() {

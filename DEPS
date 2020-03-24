@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '12954138cf3144119782f13f9aeda5c20f4ef516',
+  'v8_revision': '4b239414f0edd1fd78482527b24d249cb4da896a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '20983e35b3f96a86526542f6b477cad2777fad5b',
+  'angle_revision': '954f3d834ee3da0403a36c003eda82d719240dde',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '3decd1af6bde6185b745e0fe5e2cdb66ef27e1d3',
+  'swiftshader_revision': '540bdf92531d0c325d7b5c770ec33e869b56059f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'f021bbb3a0e9fce7089de056ec66d1ae5fc7afc7',
+  'devtools_frontend_revision': '98583637e9c4901ed5587a65b5992668e705b15f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -286,7 +286,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '60104cd97446877dad8ed1010a635218937a2f18',
+  'spv_tools_revision': '1346dd5de119d603686e260daf08f36958909a23',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -933,7 +933,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'fa1c3c4e673cf12ffa22b8fbe4a7c79314571f1b',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '1f0fcbe5a30fdc9632a8bff36277103fabf0797c',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '393c564ae0b4e1b81383f4b9bb863f75e93a7ea8',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1228,7 +1228,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '82dd375715f3741bb9128f85459904a89f14f37f',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '643201ce76ac5a0bcb1e6804016ec5285a55f190',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1448,7 +1448,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '84ee597cdeae08bb26e578fc66a35bcf35f633f4',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'ea6ae4a323074aefd2a976eb26e6dc99ce49bfda',
+    Var('webrtc_git') + '/src.git' + '@' + 'aec63e0715ae7f0a61a72f760ee224e763d989e5',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1ecfc8d921d5d9a808377baa10dd4a94e08897c7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cb8c88a27f5b42afd807b16bf8ea35f389b1d494',
     'condition': 'checkout_src_internal',
   },
 

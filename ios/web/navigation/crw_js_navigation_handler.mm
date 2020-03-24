@@ -177,6 +177,16 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
   NSString* stateObject = base::SysUTF8ToNSString(*stateObjectJSON);
 
+  int currentIndex = self.navigationManagerImpl->GetIndexOfItem(navItem);
+  if (currentIndex > 0) {
+    web::NavigationItem* previousItem =
+        self.navigationManagerImpl->GetItemAtIndex(currentIndex - 1);
+    web::UserAgentType userAgent = previousItem->GetUserAgentForInheritance();
+    if (userAgent != web::UserAgentType::NONE) {
+      navItem->SetUserAgentType(userAgent,
+                                /*update_inherited_user_agent =*/true);
+    }
+  }
   // If the user interacted with the page, categorize it as a link navigation.
   // If not, categorize it is a client redirect as it occurred without user
   // input and should not be added to the history stack.

@@ -33,15 +33,15 @@ std::unique_ptr<UserEventSpecifics> AsTest(
   return specifics;
 }
 
-std::unique_ptr<UserEventSpecifics> AsDetection(
+std::unique_ptr<UserEventSpecifics> AsGaiaPasswordReuseEvent(
     std::unique_ptr<UserEventSpecifics> specifics) {
-  specifics->mutable_language_detection_event();
+  specifics->mutable_gaia_password_reuse_event();
   return specifics;
 }
 
-std::unique_ptr<UserEventSpecifics> AsTrial(
+std::unique_ptr<UserEventSpecifics> AsGaiaPasswordCaptured(
     std::unique_ptr<UserEventSpecifics> specifics) {
-  specifics->mutable_field_trial_event();
+  specifics->mutable_gaia_password_captured_event();
   return specifics;
 }
 
@@ -121,15 +121,15 @@ TEST_F(UserEventServiceImplTest, ShouldRecordHasNavigationId) {
 
   // Verify logic for types that must have a navigation id.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
-  service.RecordUserEvent(AsDetection(Event()));
+  service.RecordUserEvent(AsGaiaPasswordReuseEvent(Event()));
   EXPECT_CALL(*mock_processor(), Put(_, _, _));
-  service.RecordUserEvent(WithNav(AsDetection(Event())));
+  service.RecordUserEvent(WithNav(AsGaiaPasswordReuseEvent(Event())));
 
   // Verify logic for types that cannot have a navigation id.
   EXPECT_CALL(*mock_processor(), Put(_, _, _));
-  service.RecordUserEvent(AsTrial(Event()));
+  service.RecordUserEvent(AsGaiaPasswordCaptured(Event()));
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
-  service.RecordUserEvent(WithNav(AsTrial(Event())));
+  service.RecordUserEvent(WithNav(AsGaiaPasswordCaptured(Event())));
 }
 
 TEST_F(UserEventServiceImplTest, SessionIdIsDifferent) {

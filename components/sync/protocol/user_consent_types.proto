@@ -61,17 +61,6 @@ message UserConsentTypes {
     optional ConsentStatus status = 3;
   }
 
-  // The user consent for Metrics and Usage reporting on Android for Chrome OS.
-  message ArcMetricsAndUsageConsent {
-    // Ids of the strings of the setting text presented to the user.
-    repeated int32 description_grd_ids = 1;
-
-    // Id of the string of the UI element the user clicked when consenting.
-    optional int32 confirmation_grd_id = 2;
-
-    optional ConsentStatus status = 3;
-  }
-
   // The user consent for the Play terms of service is determined by the user
   // action on the ARC setup dialog that presents the Play Terms of Service.
   message ArcPlayTermsOfServiceConsent {

@@ -66,14 +66,6 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::BlockedState state);
 
 const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state);
 
-const char* ProtoEnumToString(sync_pb::UserConsentSpecifics::Feature feature);
-
-const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::Translation::Interaction interaction);
-
-const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::UserConsent::Feature feature);
-
 const char* ProtoEnumToString(sync_pb::UserConsentTypes::ConsentStatus status);
 
 const char* ProtoEnumToString(

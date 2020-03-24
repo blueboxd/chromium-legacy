@@ -8,6 +8,6 @@
 <script>
 promise_test(async t => {
   await PermissionsHelper.setPermission('clipboard-read-write', 'denied');
-  await promise_rejects(t, 'NotAllowedError', navigator.clipboard.readText());
+  await promise_rejects_dom(t, 'NotAllowedError', navigator.clipboard.readText());
 }, 'navigator.clipboard.readText() fails when permission denied');
 </script>

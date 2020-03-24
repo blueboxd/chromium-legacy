@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/browser/image_decoder",
   "-chrome/browser/ui/views",
+  "+components/browser_ui/util/android/url_constants.h",
   "+components/country_codes",
   "+components/page_load_metrics/browser",
   "+mash/public/mojom",

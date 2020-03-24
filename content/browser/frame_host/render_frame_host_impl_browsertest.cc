@@ -2811,6 +2811,28 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_FALSE(iframe->AccessibilityIsMainFrame());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       RequestSnapshotAXTreeAfterRenderProcessHostDeath) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  auto* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+
+  // Kill the renderer process.
+  RenderProcessHostWatcher crash_observer(
+      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  rfh->GetProcess()->Shutdown(0);
+  crash_observer.Wait();
+
+  // Call RequestAXSnapshotTree method. The browser process should not crash.
+  rfh->RequestAXTreeSnapshot(
+      base::BindOnce([](const ui::AXTreeUpdate& snapshot) { NOTREACHED(); }),
+      ui::AXMode::kWebContents);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Pass if this didn't crash.
+}
+
 void FileChooserCallback(base::RunLoop* run_loop,
                          blink::mojom::FileChooserResultPtr result) {
   run_loop->Quit();

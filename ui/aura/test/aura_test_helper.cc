@@ -83,7 +83,6 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   wm_state_ = std::make_unique<wm::WMState>();
   // Needs to be before creating WindowTreeClient.
   focus_client_ = std::make_unique<TestFocusClient>();
-  capture_client_ = std::make_unique<client::DefaultCaptureClient>();
 
   if (!env) {
     // Some tests suites create Env globally rather than per test.
@@ -123,7 +122,8 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   host_->window()->SetEventTargeter(std::make_unique<WindowTargeter>());
 
   client::SetFocusClient(root_window(), focus_client_.get());
-  client::SetCaptureClient(root_window(), capture_client());
+  capture_client_ =
+      std::make_unique<client::DefaultCaptureClient>(root_window());
   parenting_client_ =
       std::make_unique<TestWindowParentingClient>(root_window());
 
@@ -139,7 +139,7 @@ void AuraTestHelper::TearDown() {
   teardown_called_ = true;
   parenting_client_.reset();
   client::SetFocusClient(root_window(), nullptr);
-  client::SetCaptureClient(root_window(), nullptr);
+  capture_client_.reset();
   host_.reset();
 
   if (display::Screen::GetScreen() == test_screen_.get())
@@ -147,7 +147,6 @@ void AuraTestHelper::TearDown() {
   test_screen_.reset();
 
   focus_client_.reset();
-  capture_client_.reset();
 
   ui::ShutdownInputMethodForTesting();
 

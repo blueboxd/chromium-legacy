@@ -106,8 +106,8 @@ class AssistantAlarmTimerControllerTest : public AshTestBase {
   // API will hang when |time_delta| is sufficiently large, ultimately resulting
   // in unittest timeout.
   void AdvanceClock(base::TimeDelta time_delta) {
-    task_environment_->AdvanceClock(time_delta);
-    task_environment_->RunUntilIdle();
+    task_environment()->AdvanceClock(time_delta);
+    task_environment()->RunUntilIdle();
   }
 
   AssistantAlarmTimerController* controller() { return controller_; }

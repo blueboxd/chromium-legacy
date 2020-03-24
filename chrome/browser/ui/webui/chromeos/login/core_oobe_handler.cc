@@ -202,8 +202,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableDockedMagnifier);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
-  AddRawCallback("skipToLoginForTesting",
-                 &CoreOobeHandler::HandleSkipToLoginForTesting);
+  AddCallback("skipToLoginForTesting",
+              &CoreOobeHandler::HandleSkipToLoginForTesting);
   AddCallback("skipToUpdateForTesting",
               &CoreOobeHandler::HandleSkipToUpdateForTesting);
   AddCallback("launchHelpApp", &CoreOobeHandler::HandleLaunchHelpApp);
@@ -408,18 +408,9 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
   }
 }
 
-void CoreOobeHandler::HandleSkipToLoginForTesting(const base::ListValue* args) {
-  LoginScreenContext context;
-
-  // Parse |args|.
-  if (args->GetSize() > 0) {
-    std::string email;
-    if (args->GetString(0, &email))
-      context.set_email(email);
-  }
-
+void CoreOobeHandler::HandleSkipToLoginForTesting() {
   if (WizardController::default_controller())
-    WizardController::default_controller()->SkipToLoginForTesting(context);
+    WizardController::default_controller()->SkipToLoginForTesting();
 }
 
 void CoreOobeHandler::HandleSkipToUpdateForTesting() {

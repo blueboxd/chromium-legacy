@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
@@ -103,15 +104,18 @@ TEST_F(CSSStyleSheetTest,
 }
 
 TEST_F(CSSStyleSheetTest, AdoptedStyleSheetMediaQueryEvalChange) {
-  SetBodyInnerHTML("<div id=green></div>");
+  SetBodyInnerHTML("<div id=green></div><div id=blue></div>");
 
   Element* green = GetDocument().getElementById("green");
+  Element* blue = GetDocument().getElementById("blue");
 
   CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
   CSSStyleSheet* sheet =
       CSSStyleSheet::Create(GetDocument(), init, ASSERT_NO_EXCEPTION);
-  sheet->replaceSync("@media (max-width: 300px) { #green { color: green } }",
-                     ASSERT_NO_EXCEPTION);
+  sheet->replaceSync(
+      "@media (max-width: 300px) {#green{color:green}} @media "
+      "(prefers-reduced-motion: reduce) {#blue{color:blue}}",
+      ASSERT_NO_EXCEPTION);
 
   HeapVector<Member<CSSStyleSheet>> empty_adopted_sheets;
   HeapVector<Member<CSSStyleSheet>> adopted_sheets;
@@ -147,6 +151,26 @@ TEST_F(CSSStyleSheetTest, AdoptedStyleSheetMediaQueryEvalChange) {
   EXPECT_EQ(
       MakeRGB(0, 128, 0),
       green->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(Color::kBlack, blue->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  GetDocument().SetAdoptedStyleSheets(empty_adopted_sheets);
+  GetDocument().GetSettings()->SetPrefersReducedMotion(true);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(Color::kBlack, green->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+  EXPECT_EQ(Color::kBlack, blue->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  GetDocument().SetAdoptedStyleSheets(adopted_sheets);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(
+      MakeRGB(0, 128, 0),
+      green->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 255), blue->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
 }
 
 }  // namespace blink

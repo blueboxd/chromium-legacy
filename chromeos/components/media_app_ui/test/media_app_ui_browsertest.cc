@@ -10,8 +10,12 @@
 
 namespace {
 
-// // Path to the JS that is injected into the guest frame when it navigates.
-constexpr base::FilePath::CharType kTestScriptPath[] = FILE_PATH_LITERAL(
+// File containing the test utility library, shared with integration tests.
+constexpr base::FilePath::CharType kTestLibraryPath[] = FILE_PATH_LITERAL(
+    "chromeos/components/media_app_ui/test/dom_testing_helpers.js");
+
+// File containing the query handlers for JS unit tests.
+constexpr base::FilePath::CharType kGuestQueryHandler[] = FILE_PATH_LITERAL(
     "chromeos/components/media_app_ui/test/guest_query_receiver.js");
 
 }  // namespace
@@ -19,12 +23,13 @@ constexpr base::FilePath::CharType kTestScriptPath[] = FILE_PATH_LITERAL(
 MediaAppUiBrowserTest::MediaAppUiBrowserTest()
     : SandboxedWebUiAppTestBase(chromeos::kChromeUIMediaAppURL,
                                 chromeos::kChromeUIMediaAppGuestURL,
-                                base::FilePath(kTestScriptPath)) {}
+                                {base::FilePath(kTestLibraryPath),
+                                 base::FilePath(kGuestQueryHandler)}) {}
 
 MediaAppUiBrowserTest::~MediaAppUiBrowserTest() = default;
 
 // static
 std::string MediaAppUiBrowserTest::AppJsTestLibrary() {
   return SandboxedWebUiAppTestBase::LoadJsTestLibrary(
-      base::FilePath(kTestScriptPath));
+      base::FilePath(kTestLibraryPath));
 }

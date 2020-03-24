@@ -23,25 +23,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_database_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
-#include "chrome/browser/vr/vr_tab_helper.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/browser_ui/util/android/url_constants.h"
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -58,6 +43,7 @@
 #include "components/permissions/permission_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/content/password_protection/password_protection_service.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/core/features.h"
@@ -68,7 +54,9 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -88,10 +76,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -324,9 +309,7 @@ const char kPageInfoTimeNoActionPrefix[] =
 }  // namespace
 
 PageInfo::PageInfo(
-    Profile* profile,
     std::unique_ptr<PageInfoDelegate> delegate,
-    TabSpecificContentSettings* tab_specific_content_settings,
     content::WebContents* web_contents,
     const GURL& url,
     security_state::SecurityLevel security_level,
@@ -340,12 +323,7 @@ PageInfo::PageInfo(
       safety_tip_info_({security_state::SafetyTipStatus::kUnknown, GURL()}),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button_(false),
-      content_settings_(HostContentSettingsMapFactory::GetForProfile(profile)),
-      stateful_ssl_host_state_delegate_(
-          StatefulSSLHostStateDelegateFactory::GetForProfile(profile)),
-      tab_specific_content_settings_(tab_specific_content_settings),
       did_revoke_user_ssl_decisions_(false),
-      profile_(profile),
       security_level_(security_level),
       visible_security_state_for_metrics_(visible_security_state),
       show_change_password_buttons_(false),
@@ -507,7 +485,7 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
 
 void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
                                        ContentSetting setting) {
-  tab_specific_content_settings_->ContentSettingChangedViaPageInfo(type);
+  delegate_->ContentSettingChangedViaPageInfo(type);
 
   // Count how often a permission for a specific content type is changed using
   // the Page Info UI.
@@ -530,10 +508,10 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   // total count of permission changes in another histogram makes it easier to
   // compare it against other kinds of actions in Page Info.
   RecordPageInfoAction(PAGE_INFO_CHANGED_PERMISSION);
+  HostContentSettingsMap* content_settings = GetContentSettings();
   if (type == ContentSettingsType::SOUND) {
-    ContentSetting default_setting =
-        content_settings_->GetDefaultContentSetting(ContentSettingsType::SOUND,
-                                                    nullptr);
+    ContentSetting default_setting = content_settings->GetDefaultContentSetting(
+        ContentSettingsType::SOUND, nullptr);
     bool mute = (setting == CONTENT_SETTING_BLOCK) ||
                 (setting == CONTENT_SETTING_DEFAULT &&
                  default_setting == CONTENT_SETTING_BLOCK);
@@ -547,17 +525,18 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   }
 
   permissions::PermissionUmaUtil::ScopedRevocationReporter
-      scoped_revocation_reporter(profile_, site_url_, site_url_, type,
+      scoped_revocation_reporter(web_contents()->GetBrowserContext(), site_url_,
+                                 site_url_, type,
                                  permissions::PermissionSourceUI::OIB);
 
   // The permission may have been blocked due to being under embargo, so if it
   // was changed away from BLOCK, clear embargo status if it exists.
   if (setting != CONTENT_SETTING_BLOCK) {
-    PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
-        ->RemoveEmbargoByUrl(site_url_, type);
+    delegate_->GetPermissionDecisionAutoblocker()->RemoveEmbargoByUrl(site_url_,
+                                                                      type);
   }
-  content_settings_->SetNarrowestContentSetting(site_url_, site_url_, type,
-                                                setting);
+  content_settings->SetNarrowestContentSetting(site_url_, site_url_, type,
+                                               setting);
 
   // When the sound setting is changed, no reload is necessary.
   if (type != ContentSettingsType::SOUND)
@@ -587,20 +566,17 @@ void PageInfo::OnUIClosing(bool* reload_prompt) {
   NOTREACHED();
 #else
   if (show_info_bar_ && web_contents() && !web_contents()->IsBeingDestroyed()) {
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents());
-    if (infobar_service) {
-      PageInfoInfoBarDelegate::Create(infobar_service);
-      if (reload_prompt)
-        *reload_prompt = true;
-    }
+    if (delegate_->CreateInfoBarDelegate() && reload_prompt)
+      *reload_prompt = true;
   }
 #endif
 }
 
 void PageInfo::OnRevokeSSLErrorBypassButtonPressed() {
-  DCHECK(stateful_ssl_host_state_delegate_);
-  stateful_ssl_host_state_delegate_->RevokeUserAllowExceptionsHard(
+  auto* stateful_ssl_host_state_delegate =
+      delegate_->GetStatefulSSLHostStateDelegate();
+  DCHECK(stateful_ssl_host_state_delegate);
+  stateful_ssl_host_state_delegate->RevokeUserAllowExceptionsHard(
       site_url().host());
   did_revoke_user_ssl_decisions_ = true;
 }
@@ -609,8 +585,7 @@ void PageInfo::OpenSiteSettingsView() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  chrome::ShowSiteSettings(chrome::FindBrowserWithWebContents(web_contents()),
-                           site_url());
+  delegate_->ShowSiteSettings(site_url());
   RecordPageInfoAction(PAGE_INFO_SITE_SETTINGS_OPENED);
 #endif
 }
@@ -665,7 +640,7 @@ void PageInfo::ComputeUIInputs(
 
   bool is_chrome_ui_native_scheme = false;
 #if defined(OS_ANDROID)
-  is_chrome_ui_native_scheme = url.SchemeIs(chrome::kChromeUINativeScheme);
+  is_chrome_ui_native_scheme = url.SchemeIs(browser_ui::kChromeUINativeScheme);
 #endif
 
   security_level_ = security_level;
@@ -910,7 +885,7 @@ void PageInfo::ComputeUIInputs(
   // Check if a user decision has been made to allow or deny certificates with
   // errors on this site.
   StatefulSSLHostStateDelegate* delegate =
-      StatefulSSLHostStateDelegateFactory::GetForProfile(profile_);
+      delegate_->GetStatefulSSLHostStateDelegate();
   DCHECK(delegate);
   // Only show an SSL decision revoke button if the user has chosen to bypass
   // SSL host errors for this host in the past, and we're not presently on a
@@ -927,6 +902,7 @@ void PageInfo::PresentSitePermissions() {
   ChosenObjectInfoList chosen_object_info_list;
 
   PageInfoUI::PermissionInfo permission_info;
+  HostContentSettingsMap* content_settings = GetContentSettings();
   for (size_t i = 0; i < base::size(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
 
@@ -934,7 +910,7 @@ void PageInfo::PresentSitePermissions() {
 
     // TODO(crbug.com/1030245) Investigate why the value is queried from the low
     // level routine GetWebsiteSettings.
-    std::unique_ptr<base::Value> value = content_settings_->GetWebsiteSetting(
+    std::unique_ptr<base::Value> value = content_settings->GetWebsiteSetting(
         site_url_, site_url_, permission_info.type, std::string(), &info);
     DCHECK(value.get());
     if (value->type() == base::Value::Type::INTEGER) {
@@ -945,7 +921,8 @@ void PageInfo::PresentSitePermissions() {
     }
 
     permission_info.source = info.source;
-    permission_info.is_incognito = profile_->IsOffTheRecord();
+    permission_info.is_incognito =
+        web_contents()->GetBrowserContext()->IsOffTheRecord();
 
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
         info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
@@ -953,8 +930,8 @@ void PageInfo::PresentSitePermissions() {
       permission_info.setting = CONTENT_SETTING_DEFAULT;
     } else {
       permission_info.default_setting =
-          content_settings_->GetDefaultContentSetting(permission_info.type,
-                                                      NULL);
+          content_settings->GetDefaultContentSetting(permission_info.type,
+                                                     NULL);
     }
 
     // For permissions that are still prompting the user and haven't been
@@ -978,7 +955,7 @@ void PageInfo::PresentSitePermissions() {
 
     // TODO(crbug.com/1058597): Remove the call to |delegate_| once
     // TabSpecificContentSettings has been componentized.
-    if (ShouldShowPermission(permission_info, site_url_, content_settings_,
+    if (ShouldShowPermission(permission_info, site_url_, content_settings,
                              web_contents(),
                              delegate_->HasContentSettingChangedViaPageInfo(
                                  permission_info.type))) {
@@ -1055,7 +1032,7 @@ void PageInfo::PresentSiteIdentity() {
 void PageInfo::PresentPageFeatureInfo() {
   PageInfoUI::PageFeatureInfo info;
   info.is_vr_presentation_in_headset =
-      vr::VrTabHelper::IsContentDisplayedInHeadset(web_contents());
+      delegate_->IsContentDisplayedInVrHeadset();
 
   ui_->SetPageFeatureInfo(info);
 }
@@ -1073,6 +1050,10 @@ void PageInfo::RecordPasswordReuseEvent() {
           ->reused_password_account_type_for_last_shown_warning());
 }
 #endif
+
+HostContentSettingsMap* PageInfo::GetContentSettings() const {
+  return delegate_->GetContentSettings();
+}
 
 std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   std::vector<ContentSettingsType> permission_list;

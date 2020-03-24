@@ -6,14 +6,13 @@
 
 #include "base/bind_helpers.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/scoped_views_test_helper.h"
-#include "ui/views/test/test_views_delegate.h"
 
 namespace {
 
@@ -44,8 +43,6 @@ class SafetyTipPageInfoBubbleViewTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    views_helper_.test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
     views::Widget::InitParams parent_params;
     parent_params.context = views_helper_.GetContext();
     parent_window_ = new views::Widget();
@@ -65,7 +62,8 @@ class SafetyTipPageInfoBubbleViewTest : public testing::Test {
 
  protected:
   ScopedWebContentsTestHelper web_contents_helper_;
-  views::ScopedViewsTestHelper views_helper_;
+  views::ScopedViewsTestHelper views_helper_{
+      std::make_unique<ChromeTestViewsDelegate<>>()};
 
   PageInfoBubbleViewBase* bubble_ = nullptr;
   views::Widget* parent_window_ = nullptr;  // Weak. Owned by the NativeWidget.

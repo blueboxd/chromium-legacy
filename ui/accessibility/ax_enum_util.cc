@@ -483,8 +483,6 @@ const char* ToString(ax::mojom::Role role) {
       return "layoutTable";
     case ax::mojom::Role::kLayoutTableCell:
       return "layoutTableCell";
-    case ax::mojom::Role::kLayoutTableColumn:
-      return "layoutTableColumn";
     case ax::mojom::Role::kLayoutTableRow:
       return "layoutTableRow";
     case ax::mojom::Role::kLegend:
@@ -869,8 +867,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kLayoutTable;
   if (0 == strcmp(role, "layoutTableCell"))
     return ax::mojom::Role::kLayoutTableCell;
-  if (0 == strcmp(role, "layoutTableColumn"))
-    return ax::mojom::Role::kLayoutTableColumn;
   if (0 == strcmp(role, "layoutTableRow"))
     return ax::mojom::Role::kLayoutTableRow;
   if (0 == strcmp(role, "legend"))

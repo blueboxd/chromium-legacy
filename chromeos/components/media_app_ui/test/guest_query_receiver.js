@@ -9,41 +9,6 @@
 let lastReceivedFile = null;
 
 /**
- * Repeatedly runs a query selector until it finds an element.
- *
- * @param {string} query
- * @param {!Array<string>=} opt_path
- * @return {Promise<!Element>}
- */
-async function waitForNode(query, opt_path) {
-  /** @type {!HTMLElement|!ShadowRoot} */
-  let node = document.body;
-  const parent = opt_path ? opt_path.shift() : undefined;
-  if (parent) {
-    const element = await waitForNode(parent, opt_path);
-    if (!(element instanceof HTMLElement) || !element.shadowRoot) {
-      throw new Error('Path not a shadow root HTMLElement');
-    }
-    node = element.shadowRoot;
-  }
-  const existingElement = node.querySelector(query);
-  if (existingElement) {
-    return Promise.resolve(existingElement);
-  }
-  console.log('Waiting for ' + query);
-  return new Promise(resolve => {
-    const observer = new MutationObserver((mutationList, observer) => {
-      const element = node.querySelector(query);
-      if (element) {
-        resolve(element);
-        observer.disconnect();
-      }
-    });
-    observer.observe(node, {childList: true, subtree: true});
-  });
-}
-
-/**
  * Acts on received TestMessageQueryData.
  *
  * @param {TestMessageQueryData} data
@@ -87,9 +52,7 @@ async function runTestQuery(data) {
   return {testQueryResult: result};
 }
 
-// Wait until dom content has loaded to make sure receiver.js has been
-// parsed and executed.
-window.addEventListener('DOMContentLoaded', () => {
+function installTestHandlers() {
   parentMessagePipe.registerHandler('test', (data) => {
     return runTestQuery(/** @type {TestMessageQueryData} */ (data));
   });
@@ -112,6 +75,13 @@ window.addEventListener('DOMContentLoaded', () => {
     lastReceivedFile = realLoadFile(token, file);
     return lastReceivedFile;
   }
-});
+}
+
+// Ensure content and all scripts have loaded before installing test handlers.
+if (document.readyState !== 'complete') {
+  window.addEventListener('load', installTestHandlers);
+} else {
+  installTestHandlers();
+}
 
 //# sourceURL=guest_query_receiver.js

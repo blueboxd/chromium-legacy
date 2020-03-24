@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+PASS # AUDIT TASK RUNNER STARTED.
+PASS Executing "constructor-error"
+PASS Executing "process-error"
+PASS Audit report
+PASS > [constructor-error] 
+FAIL X onprocessorerror argument should be an ErrorEvent when
+                        the constructor of AudioWorkletProcessor has
+                        an error. is not true. Got false. assert_true: expected true got false
+FAIL < [constructor-error] 1 out of 1 assertions were failed. assert_true: expected true got false
+PASS > [process-error] 
+FAIL X onprocessorerror argument should be an ErrorEvent when
+                        the process method of the AudioWorkletProcessor method
+                        has an error is not true. Got false. assert_true: expected true got false
+FAIL < [process-error] 1 out of 1 assertions were failed. assert_true: expected true got false
+FAIL # AUDIT TASK RUNNER FINISHED: 2 out of 2 tasks were failed. assert_true: expected true got false
+Harness: the test ran to completion.
+

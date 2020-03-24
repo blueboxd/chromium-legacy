@@ -544,7 +544,7 @@ promise_test(t => {
         controller.error();
     }, 1);
     var response = new Response(stream);
-    return promise_rejects(t, TypeError(), response.text());
+    return promise_rejects_js(t, TypeError, response.text());
   }, 'Response constructed with an errored stream');
 
 promise_test(t => {
@@ -552,7 +552,7 @@ promise_test(t => {
     var stream = new ReadableStream({start: c => controller = c});
     setTimeout(() => controller.enqueue(), 1);
     var response = new Response(stream);
-    return promise_rejects(t, TypeError(), response.text());
+    return promise_rejects_js(t, TypeError, response.text());
   }, 'Response constructed stream with an undefined chunk');
 
 promise_test(t => {
@@ -560,7 +560,7 @@ promise_test(t => {
     var stream = new ReadableStream({start: c => controller = c});
     setTimeout(() => controller.enqueue(null), 1);
     var response = new Response(stream);
-    return promise_rejects(t, TypeError(), response.text());
+    return promise_rejects_js(t, TypeError, response.text());
   }, 'Response constructed stream with a null chunk');
 
 promise_test(t => {
@@ -568,7 +568,7 @@ promise_test(t => {
     var stream = new ReadableStream({start: c => controller = c});
     setTimeout(() => controller.enqueue('hello'), 1);
     var response = new Response(stream);
-    return promise_rejects(t, TypeError(), response.text());
+    return promise_rejects_js(t, TypeError, response.text());
   }, 'Response constructed stream with a string chunk');
 
 done();

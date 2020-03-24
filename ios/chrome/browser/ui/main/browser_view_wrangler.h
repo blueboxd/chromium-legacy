@@ -11,12 +11,11 @@
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 @protocol ApplicationCommands;
+class AppUrlLoadingService;
 @class BrowserCoordinator;
 @protocol BrowsingDataCommands;
 class ChromeBrowserState;
 @protocol WebStateListObserving;
-
-class AppUrlLoadingService;
 
 namespace {
 
@@ -55,10 +54,6 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
 // be nil. This should be done before the main interface is accessed, usually
 // immediately after initialization.
 - (void)createMainBrowser;
-
-// Update the device sharing manager. This should be done after updates to the
-// tab model. This class creates and manages the state of the sharing manager.
-- (void)updateDeviceSharingManager;
 
 // Destroy and rebuild the incognito Browser.
 - (void)destroyAndRebuildIncognitoBrowser;

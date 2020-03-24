@@ -117,7 +117,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
   }
 
   void ForwardTimeInMs(int time_in_ms) {
-    task_environment_->FastForwardBy(
+    task_environment()->FastForwardBy(
         base::TimeDelta::FromMilliseconds(time_in_ms));
   }
 

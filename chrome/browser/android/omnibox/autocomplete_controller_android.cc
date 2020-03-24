@@ -34,6 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/browser_ui/util/android/url_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -209,9 +210,8 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
 
   // If omnibox text is empty, set it to the current URL for the purposes of
   // populating the verbatim match.
-  if (omnibox_text.empty() &&
-      !current_url.SchemeIs(content::kChromeUIScheme) &&
-      !current_url.SchemeIs(chrome::kChromeUINativeScheme))
+  if (omnibox_text.empty() && !current_url.SchemeIs(content::kChromeUIScheme) &&
+      !current_url.SchemeIs(browser_ui::kChromeUINativeScheme))
     omnibox_text = url;
 
   input_ = AutocompleteInput(

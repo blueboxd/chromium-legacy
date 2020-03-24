@@ -424,7 +424,7 @@ void WizardController::Init(OobeScreenId first_screen) {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeSkipToLogin)) {
-    SkipToLoginForTesting(LoginScreenContext());
+    SkipToLoginForTesting();
   }
 }
 
@@ -607,10 +607,11 @@ void WizardController::OnOwnershipStatusCheckDone(
   if (status == DeviceSettingsService::OWNERSHIP_NONE)
     ShowPackagedLicenseScreen();
   else
-    ShowLoginScreen(LoginScreenContext());
+    ShowLoginScreen();
 }
 
-void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
+void WizardController::ShowLoginScreen() {
+  LoginScreenContext context;
   // This may be triggered by multiply asynchronous events from the JS side.
   if (login_screen_started_)
     return;
@@ -770,11 +771,10 @@ void WizardController::ShowPackagedLicenseScreen() {
   if (should_show_packaged_license_screen())
     SetCurrentScreen(GetScreen(PackagedLicenseView::kScreenId));
   else
-    ShowLoginScreen(LoginScreenContext());
+    ShowLoginScreen();
 }
 
-void WizardController::SkipToLoginForTesting(
-    const LoginScreenContext& context) {
+void WizardController::SkipToLoginForTesting() {
   VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
 
@@ -1006,7 +1006,7 @@ void WizardController::OnEnrollmentDone() {
   else if (WebKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid())
     AutoLaunchWebKioskApp();
   else
-    ShowLoginScreen(LoginScreenContext());
+    ShowLoginScreen();
 }
 
 void WizardController::OnEnableAdbSideloadingScreenExit() {
@@ -1024,7 +1024,7 @@ void WizardController::OnEnableDebuggingScreenExit() {
 void WizardController::OnKioskEnableScreenExit() {
   OnScreenExit(KioskEnableScreenView::kScreenId, 0 /* exit_code */);
 
-  ShowLoginScreen(LoginScreenContext());
+  ShowLoginScreen();
 }
 
 void WizardController::OnKioskAutolaunchScreenExit(
@@ -1037,7 +1037,7 @@ void WizardController::OnKioskAutolaunchScreenExit(
       AutoLaunchKioskApp();
       break;
     case KioskAutolaunchScreen::Result::CANCELED:
-      ShowLoginScreen(LoginScreenContext());
+      ShowLoginScreen();
       break;
   }
 }
@@ -1068,7 +1068,7 @@ void WizardController::OnDemoSetupScreenExit(DemoSetupScreen::Result result) {
   switch (result) {
     case DemoSetupScreen::Result::COMPLETED:
       PerformOOBECompletedActions();
-      ShowLoginScreen(LoginScreenContext());
+      ShowLoginScreen();
       break;
     case DemoSetupScreen::Result::CANCELED:
       ShowWelcomeScreen();
@@ -1249,7 +1249,7 @@ void WizardController::OnPackagedLicenseScreenExit(
   OnScreenExit(PackagedLicenseView::kScreenId, 0 /* exit_code */);
   switch (result) {
     case PackagedLicenseScreen::Result::DONT_ENROLL:
-      ShowLoginScreen(LoginScreenContext());
+      ShowLoginScreen();
       break;
     case PackagedLicenseScreen::Result::ENROLL:
       ShowEnrollmentScreen();
@@ -1485,7 +1485,7 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
   } else if (screen == NetworkScreenView::kScreenId) {
     ShowNetworkScreen();
   } else if (screen == OobeScreen::SCREEN_SPECIAL_LOGIN) {
-    ShowLoginScreen(LoginScreenContext());
+    ShowLoginScreen();
   } else if (screen == PackagedLicenseView::kScreenId) {
     ShowPackagedLicenseScreen();
   } else if (screen == UpdateView::kScreenId) {

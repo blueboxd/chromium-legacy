@@ -22,6 +22,10 @@ class DeviceSharingManagerFactory : public BrowserStateKeyedServiceFactory {
   // Getter for singleton instance.
   static DeviceSharingManagerFactory* GetInstance();
 
+  // Returns the default factory used to build DeviceSharingManagers. Can be
+  // registered with SetTestingFactory to use real instances during testing.
+  static TestingFactory GetDefaultFactory();
+
   // Not copyable or moveable.
   DeviceSharingManagerFactory(const DeviceSharingManagerFactory&) = delete;
   DeviceSharingManagerFactory& operator=(const DeviceSharingManagerFactory&) =

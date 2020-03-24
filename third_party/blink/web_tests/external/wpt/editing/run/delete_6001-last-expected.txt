@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 751 tests; 714 PASS, 37 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 787 tests; 750 PASS, 37 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["defaultparagraphseparator","div"],["delete",""]] "<p>foo<ol><li>bar<li>ba[z</ol><p>q]uz" queryCommandState("delete") before
 PASS [["defaultparagraphseparator","div"],["delete",""]] "<p>foo<ol><li>bar<li>ba[z</ol><p>q]uz" queryCommandValue("delete") before
 PASS [["defaultparagraphseparator","div"],["delete",""]] "<p>foo<ol><li>bar<li>ba[z</ol><p>q]uz" queryCommandIndeterm("delete") after
@@ -751,5 +751,41 @@ PASS [["delete",""]] "<div><b>[foo]</b></div>" queryCommandValue("delete") befor
 PASS [["delete",""]] "<div><b>[foo]</b></div>" queryCommandIndeterm("delete") after
 PASS [["delete",""]] "<div><b>[foo]</b></div>" queryCommandState("delete") after
 PASS [["delete",""]] "<div><b>[foo]</b></div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" compare innerHTML
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div><div><p>foo</p></div></div><div></div><div><div>[]bar</div></div></div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" compare innerHTML
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>foo</div><div></div><div>[]bar</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" compare innerHTML
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>foo</div><span></span><div>[]bar</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>": execCommand("delete", false, "") return value
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" checks for modifications to non-editable content
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" compare innerHTML
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandState("delete") before
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandValue("delete") before
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandState("delete") after
+PASS [["delete",""]] "<div>foo</div><!-- comment --><div>[]bar</div>" queryCommandValue("delete") after
 Harness: the test ran to completion.
 

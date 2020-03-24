@@ -146,7 +146,6 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     ASSERT_TRUE(cert_);
 
-    TabSpecificContentSettings::CreateForWebContents(web_contents());
     MockInfoBarService::CreateForWebContents(web_contents());
 
     // Setup mock ui.
@@ -211,9 +210,6 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   const PermissionInfoList& last_permission_info_list() {
     return last_permission_info_list_;
   }
-  TabSpecificContentSettings* tab_specific_content_settings() {
-    return TabSpecificContentSettings::FromWebContents(web_contents());
-  }
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());
   }
@@ -221,9 +217,8 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   PageInfo* page_info() {
     if (!page_info_.get()) {
       page_info_ = std::make_unique<PageInfo>(
-          profile(), std::make_unique<ChromePageInfoDelegate>(web_contents()),
-          tab_specific_content_settings(), web_contents(), url(),
-          security_level(), visible_security_state());
+          std::make_unique<ChromePageInfoDelegate>(web_contents()),
+          web_contents(), url(), security_level(), visible_security_state());
       page_info_->InitializeUiState(mock_ui());
     }
     return page_info_.get();
@@ -309,7 +304,7 @@ TEST_F(PageInfoTest, NonFactoryDefaultAndRecentlyChangedPermissionsShown) {
             last_permission_info_list().size());
 
   // Change the default setting for Javascript away from the factory default.
-  page_info()->content_settings_->SetDefaultContentSetting(
+  page_info()->GetContentSettings()->SetDefaultContentSetting(
       ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
   page_info()->PresentSitePermissions();
   EXPECT_EQ(expected_visible_permissions.size(),

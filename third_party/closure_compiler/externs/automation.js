@@ -195,7 +195,6 @@ chrome.automation.RoleType = {
   LABEL_TEXT: 'labelText',
   LAYOUT_TABLE: 'layoutTable',
   LAYOUT_TABLE_CELL: 'layoutTableCell',
-  LAYOUT_TABLE_COLUMN: 'layoutTableColumn',
   LAYOUT_TABLE_ROW: 'layoutTableRow',
   LEGEND: 'legend',
   LINE_BREAK: 'lineBreak',

@@ -301,22 +301,6 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
   return "";
 }
 
-const char* ProtoEnumToString(sync_pb::UserConsentSpecifics::Feature feature) {
-  ASSERT_ENUM_BOUNDS(sync_pb::UserConsentSpecifics, Feature,
-                     FEATURE_UNSPECIFIED, ASSISTANT_ACTIVITY_CONTROL);
-  switch (feature) {
-    ENUM_CASE(sync_pb::UserConsentSpecifics, FEATURE_UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, CHROME_SYNC);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, PLAY_STORE);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, BACKUP_AND_RESTORE);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, GOOGLE_LOCATION_SERVICE);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, CHROME_UNIFIED_CONSENT);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, ASSISTANT_ACTIVITY_CONTROL);
-  }
-  NOTREACHED();
-  return "";
-}
-
 const char* ProtoEnumToString(sync_pb::UserConsentTypes::ConsentStatus status) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserConsentTypes, ConsentStatus,
                      CONSENT_STATUS_UNSPECIFIED, GIVEN);
@@ -324,47 +308,6 @@ const char* ProtoEnumToString(sync_pb::UserConsentTypes::ConsentStatus status) {
     ENUM_CASE(sync_pb::UserConsentTypes, CONSENT_STATUS_UNSPECIFIED);
     ENUM_CASE(sync_pb::UserConsentTypes, NOT_GIVEN);
     ENUM_CASE(sync_pb::UserConsentTypes, GIVEN);
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::Translation::Interaction interaction) {
-  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::Translation, Interaction,
-                     UNKNOWN, INITIALIZATION_ERROR);
-  switch (interaction) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, UNKNOWN);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, ACCEPT);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, DECLINE);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, IGNORED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, DISMISSED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, MANUAL);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, TRANSLATION_REVERTED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation,
-              AUTO_TRANSLATION_BY_PREF);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation,
-              AUTO_TRANSLATION_BY_LINK);
-    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, INITIALIZATION_ERROR);
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::UserConsent::Feature feature) {
-  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::UserConsent, Feature,
-                     FEATURE_UNSPECIFIED, ASSISTANT_ACTIVITY_CONTROL);
-  switch (feature) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, FEATURE_UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, CHROME_SYNC);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, PLAY_STORE);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, BACKUP_AND_RESTORE);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent,
-              GOOGLE_LOCATION_SERVICE);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, CHROME_UNIFIED_CONSENT);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent,
-              ASSISTANT_ACTIVITY_CONTROL);
   }
   NOTREACHED();
   return "";

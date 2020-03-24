@@ -580,14 +580,7 @@ bool IsStructure(const ax::mojom::Role role) {
 }
 
 bool IsTableColumn(ax::mojom::Role role) {
-  switch (role) {
-    case ax::mojom::Role::kColumn:
-      return true;
-    case ax::mojom::Role::kLayoutTableColumn:
-      return kExposeLayoutTableAsDataTable;
-    default:
-      return false;
-  }
+  return role == ax::mojom::Role::kColumn;
 }
 
 bool IsTableHeader(ax::mojom::Role role) {

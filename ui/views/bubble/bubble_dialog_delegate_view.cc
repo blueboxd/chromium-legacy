@@ -349,12 +349,14 @@ void BubbleDialogDelegateView::SetArrowWithoutResizing(
 }
 
 gfx::Rect BubbleDialogDelegateView::GetAnchorRect() const {
+  // TODO(tluk) eliminate the need for GetAnchorRect() to return an empty rect
+  // if neither an |anchor_rect_| or an anchor view have been set.
   if (!GetAnchorView())
-    return anchor_rect_;
+    return anchor_rect_.value_or(gfx::Rect());
 
   anchor_rect_ = GetAnchorView()->GetAnchorBoundsInScreen();
-  anchor_rect_.Inset(anchor_view_insets_);
-  return anchor_rect_;
+  anchor_rect_->Inset(anchor_view_insets_);
+  return anchor_rect_.value();
 }
 
 void BubbleDialogDelegateView::OnBeforeBubbleWidgetInit(

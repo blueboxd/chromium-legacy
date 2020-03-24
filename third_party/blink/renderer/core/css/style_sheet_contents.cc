@@ -601,13 +601,8 @@ void StyleSheetContents::ClearReferencedFromResource() {
 
 RuleSet& StyleSheetContents::EnsureRuleSet(const MediaQueryEvaluator& medium,
                                            AddRuleFlags add_rule_flags) {
-  if (rule_set_ &&
-      (medium.DidResultsChange(
-           rule_set_->Features().ViewportDependentMediaQueryResults()) ||
-       medium.DidResultsChange(
-           rule_set_->Features().DeviceDependentMediaQueryResults()))) {
+  if (rule_set_ && rule_set_->DidMediaQueryResultsChange(medium))
     rule_set_ = nullptr;
-  }
   if (!rule_set_) {
     rule_set_ = MakeGarbageCollected<RuleSet>();
     rule_set_->AddRulesFromSheet(this, medium, add_rule_flags);

@@ -628,6 +628,7 @@ jumbo_static_library("ui") {
     deps += [
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//chrome/browser/ui/webui/snippets_internals:mojo_bindings",
+      "//components/browser_ui/util/android",
     ]
     if (enable_feed_in_chrome) {
       deps += [ "//chrome/browser/ui/webui/feed_internals:mojo_bindings" ]

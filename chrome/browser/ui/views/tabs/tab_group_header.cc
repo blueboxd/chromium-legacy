@@ -237,7 +237,8 @@ void TabGroupHeader::ShowContextMenuForViewImpl(
     return;
 
   editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-      tab_strip_->controller()->GetBrowser(), group().value(), this, true));
+      tab_strip_->controller()->GetBrowser(), group().value(), this,
+      base::nullopt, nullptr, true));
 }
 
 int TabGroupHeader::CalculateWidth() const {

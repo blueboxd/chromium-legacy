@@ -22673,6 +22673,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Sync_NavigateToSyncAdvancedPage">
+  <obsolete>
+    Deprecated as of 03/2020. Navigation to settings routes are recorded in
+    WebUI.Settings.PathVisited histogram.
+  </obsolete>
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>

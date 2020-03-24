@@ -267,7 +267,7 @@ cr.define('cr.ui', function() {
     }
 
     Oobe.disableSigninUI();
-    chrome.send('skipToLoginForTesting', [username]);
+    chrome.send('skipToLoginForTesting');
 
     if (!enterpriseEnroll) {
       chrome.send('completeLogin', [gaia_id, username, password, false]);

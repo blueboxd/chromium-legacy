@@ -39,7 +39,7 @@ const RadioButtonNames = {
 Polymer({
   is: 'settings-sync-controls',
 
-  behaviors: [WebUIListenerBehavior, settings.RouteObserverBehavior],
+  behaviors: [WebUIListenerBehavior],
 
   properties: {
     hidden: {
@@ -100,14 +100,6 @@ Polymer({
     const router = settings.Router.getInstance();
     if (router.getCurrentRoute() === router.getRoutes().SYNC_ADVANCED) {
       this.browserProxy_.didNavigateToSyncPage();
-    }
-  },
-
-  /** @protected */
-  currentRouteChanged() {
-    const router = settings.Router.getInstance();
-    if (router.getCurrentRoute() === router.getRoutes().SYNC_ADVANCED) {
-      chrome.metricsPrivate.recordUserAction('Sync_NavigateToSyncAdvancedPage');
     }
   },
 

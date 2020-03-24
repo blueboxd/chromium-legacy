@@ -41,6 +41,7 @@ AutofillAssistantPrivateCreateFunction::
 ExtensionFunction::ResponseAction
 AutofillAssistantPrivateCreateFunction::Run() {
   auto* web_contents = GetActiveWebContents(this);
+  CHECK(web_contents);
   AutofillAssistantPrivateAPI::GetFactoryInstance()
       ->Get(browser_context())
       ->CreateAutofillAssistantController(web_contents);
@@ -205,10 +206,14 @@ void AutofillAssistantPrivateEventRouter::OnOverlayColorsChanged(
     const autofill_assistant::UiDelegate::OverlayColors& colors) {}
 
 void AutofillAssistantPrivateEventRouter::OnFormChanged(
-    const autofill_assistant::FormProto* form) {}
+    const autofill_assistant::FormProto* form,
+    const autofill_assistant::FormProto::Result* result) {}
 
 void AutofillAssistantPrivateEventRouter::OnClientSettingsChanged(
     const autofill_assistant::ClientSettings& settings) {}
+
+void AutofillAssistantPrivateEventRouter::OnGenericUserInterfaceChanged(
+    const autofill_assistant::GenericUserInterfaceProto* generic_ui) {}
 
 void AutofillAssistantPrivateEventRouter::OnExpandBottomSheet() {}
 
@@ -309,13 +314,13 @@ void AutofillAssistantPrivateAPI::AttachUI() {}
 
 void AutofillAssistantPrivateAPI::DestroyUI() {}
 
-std::string AutofillAssistantPrivateAPI::GetApiKey() {
+std::string AutofillAssistantPrivateAPI::GetApiKey() const {
   // TODO(crbug.com/1015753): Use chromium's keys and also consider the
   // autofill-assistant-key here to override that particular key.
   return "invalid";
 }
 
-std::string AutofillAssistantPrivateAPI::GetAccountEmailAddress() {
+std::string AutofillAssistantPrivateAPI::GetAccountEmailAddress() const {
   return "joe@example.com";
 }
 
@@ -325,33 +330,39 @@ AutofillAssistantPrivateAPI::GetAccessTokenFetcher() {
 }
 
 autofill::PersonalDataManager*
-AutofillAssistantPrivateAPI::GetPersonalDataManager() {
+AutofillAssistantPrivateAPI::GetPersonalDataManager() const {
   return autofill::PersonalDataManagerFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context_));
 }
 
-autofill_assistant::WebsiteLoginFetcher*
-AutofillAssistantPrivateAPI::GetWebsiteLoginFetcher() {
+password_manager::PasswordManagerClient*
+AutofillAssistantPrivateAPI::GetPasswordManagerClient() const {
+  // TODO(crbug.com/1015753): Support credential leak flows.
   return nullptr;
 }
 
-std::string AutofillAssistantPrivateAPI::GetServerUrl() {
+autofill_assistant::WebsiteLoginFetcher*
+AutofillAssistantPrivateAPI::GetWebsiteLoginFetcher() const {
+  return nullptr;
+}
+
+std::string AutofillAssistantPrivateAPI::GetServerUrl() const {
   // TODO(crbug.com/1015753): Consider the autofill-assistant-url for endpoint
   // overrides and share the kDefaultAutofillAssistantServerUrl to expose it
   // here.
   return "https://automate-pa.googleapis.com";
 }
 
-std::string AutofillAssistantPrivateAPI::GetLocale() {
+std::string AutofillAssistantPrivateAPI::GetLocale() const {
   return "en-us";
 }
 
-std::string AutofillAssistantPrivateAPI::GetCountryCode() {
+std::string AutofillAssistantPrivateAPI::GetCountryCode() const {
   return "us";
 }
 
 autofill_assistant::DeviceContext
-AutofillAssistantPrivateAPI::GetDeviceContext() {
+AutofillAssistantPrivateAPI::GetDeviceContext() const {
   return autofill_assistant::DeviceContext();
 }
 
@@ -363,7 +374,7 @@ void AutofillAssistantPrivateAPI::Shutdown(
 // to use this method in this context.
 // TODO(crbug.com/1015753): Revisit the interfaces used for this extension API
 // and introduce new, more concise ones if needed.
-content::WebContents* AutofillAssistantPrivateAPI::GetWebContents() {
+content::WebContents* AutofillAssistantPrivateAPI::GetWebContents() const {
   if (!active_autofill_assistant_)
     return nullptr;
   return active_autofill_assistant_->controller->GetWebContents();

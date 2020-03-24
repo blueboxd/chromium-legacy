@@ -82,7 +82,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   void SetHighlightedButton(Button* highlighted_button);
 
   // The anchor rect is used in the absence of an assigned anchor view.
-  const gfx::Rect& anchor_rect() const { return anchor_rect_; }
+  const base::Optional<gfx::Rect>& anchor_rect() const { return anchor_rect_; }
 
   // Set the desired arrow for the bubble and updates the bubble's bounds
   // accordingly. The arrow will be mirrored for RTL.
@@ -243,7 +243,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   ViewTracker highlighted_button_tracker_;
 
   // The anchor rect used in the absence of an anchor view.
-  mutable gfx::Rect anchor_rect_;
+  mutable base::Optional<gfx::Rect> anchor_rect_;
 
   // The arrow's default location on the bubble post-RTL mirroring if needed.
   BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;

@@ -14,6 +14,15 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+std::unique_ptr<KeyedService> BuildDeviceSharingManager(
+    web::BrowserState* context) {
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
+  return std::make_unique<DeviceSharingManagerImpl>(browser_state);
+}
+}
+
 // static
 DeviceSharingManager* DeviceSharingManagerFactory::GetForBrowserState(
     ChromeBrowserState* browser_state) {
@@ -27,6 +36,12 @@ DeviceSharingManagerFactory* DeviceSharingManagerFactory::GetInstance() {
   return instance.get();
 }
 
+// static
+BrowserStateKeyedServiceFactory::TestingFactory
+DeviceSharingManagerFactory::GetDefaultFactory() {
+  return base::BindRepeating(&BuildDeviceSharingManager);
+}
+
 DeviceSharingManagerFactory::DeviceSharingManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "DeviceSharingManager",
@@ -35,9 +50,7 @@ DeviceSharingManagerFactory::DeviceSharingManagerFactory()
 std::unique_ptr<KeyedService>
 DeviceSharingManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ChromeBrowserState* browser_state =
-      ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<DeviceSharingManagerImpl>(browser_state);
+  return BuildDeviceSharingManager(context);
 }
 
 web::BrowserState* DeviceSharingManagerFactory::GetBrowserStateToUse(

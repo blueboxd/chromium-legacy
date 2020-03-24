@@ -73,11 +73,9 @@ bool PasswordManagerClient::WasLastNavigationHTTPError() const {
   return false;
 }
 
-#if defined(OS_ANDROID)
 bool PasswordManagerClient::WasCredentialLeakDialogShown() const {
   return false;
 }
-#endif
 
 net::CertStatus PasswordManagerClient::GetMainFrameCertStatus() const {
   return 0;

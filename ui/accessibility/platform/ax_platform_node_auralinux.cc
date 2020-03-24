@@ -2710,8 +2710,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kLayoutTableCell:
       return ATK_ROLE_SECTION;
-    case ax::mojom::Role::kLayoutTableColumn:
-      return ATK_ROLE_SECTION;
     case ax::mojom::Role::kLayoutTableRow:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kLineBreak:

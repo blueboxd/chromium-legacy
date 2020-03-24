@@ -226,8 +226,6 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("LayoutTable");
     case ax::mojom::Role::kLayoutTableCell:
       return result.append("LayoutTableCell");
-    case ax::mojom::Role::kLayoutTableColumn:
-      return result.append("LayoutTableColumn");
     case ax::mojom::Role::kLayoutTableRow:
       return result.append("LayoutTableRow");
     case ax::mojom::Role::kLegend:

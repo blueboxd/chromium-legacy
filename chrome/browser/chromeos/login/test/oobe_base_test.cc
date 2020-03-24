@@ -154,7 +154,7 @@ void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
 void OobeBaseTest::WaitForSigninScreen() {
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller)
-    wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+    wizard_controller->SkipToLoginForTesting();
 
   WizardController::SkipPostLoginScreensForTesting();
 

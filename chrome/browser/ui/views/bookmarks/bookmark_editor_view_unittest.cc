@@ -144,7 +144,7 @@ class BookmarkEditorViewTest : public testing::Test {
     model_->AddURL(of1, 0, ASCIIToUTF16("of1a"), GURL(test_base + "of1a"));
   }
 
-  ChromeTestViewsDelegate views_delegate_;
+  ChromeTestViewsDelegate<> views_delegate_;
 
   std::unique_ptr<BookmarkEditorView> editor_;
 };

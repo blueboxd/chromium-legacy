@@ -49,7 +49,6 @@ class DemoSetupController;
 class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;
-class LoginScreenContext;
 class SimpleGeolocationProvider;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
@@ -116,7 +115,7 @@ class WizardController {
       base::Optional<DemoSession::DemoModeConfig> demo_config = base::nullopt);
 
   // Advances to login/update screen. Should be used in for testing only.
-  void SkipToLoginForTesting(const LoginScreenContext& context);
+  void SkipToLoginForTesting();
   void SkipToUpdateForTesting();
 
   // Skip update, go straight to enrollment after EULA is accepted.
@@ -198,7 +197,7 @@ class WizardController {
   void ShowPackagedLicenseScreen();
 
   // Shows images login screen.
-  void ShowLoginScreen(const LoginScreenContext& context);
+  void ShowLoginScreen();
 
   // Shows default screen depending on device ownership.
   void OnOwnershipStatusCheckDone(

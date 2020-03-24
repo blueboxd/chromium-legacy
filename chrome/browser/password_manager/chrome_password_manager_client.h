@@ -254,8 +254,8 @@ class ChromePasswordManagerClient
   }
 
   bool WasCredentialLeakDialogShown() const override;
-  void SetCredentialLeakDialogWasShownForTesting() {
-    was_leak_dialog_shown_ = true;
+  void SetCredentialLeakDialogWasShownForTesting(bool value) {
+    was_leak_dialog_shown_ = value;
   }
 #endif
 

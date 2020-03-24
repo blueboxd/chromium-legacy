@@ -4890,9 +4890,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kLayoutTableCell:
       return ROLE_SYSTEM_CELL;
 
-    case ax::mojom::Role::kLayoutTableColumn:
-      return ROLE_SYSTEM_COLUMN;
-
     case ax::mojom::Role::kLayoutTableRow:
       return ROLE_SYSTEM_ROW;
 
@@ -5720,9 +5717,6 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kLayoutTableCell:
       return L"gridcell";
 
-    case ax::mojom::Role::kLayoutTableColumn:
-      return L"region";
-
     case ax::mojom::Role::kLayoutTableRow:
       return L"row";
 
@@ -6389,9 +6383,6 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kLayoutTableCell:
       return UIA_DataItemControlTypeId;
-
-    case ax::mojom::Role::kLayoutTableColumn:
-      return UIA_PaneControlTypeId;
 
     case ax::mojom::Role::kLayoutTableRow:
       return UIA_DataItemControlTypeId;

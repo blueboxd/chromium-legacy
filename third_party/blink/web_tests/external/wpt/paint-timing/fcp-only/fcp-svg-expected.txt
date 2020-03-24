@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL First contentful paint fires when SVG becomes contentful. assert_equals: First contentful paint marked too early.  expected 0 but got 1
+Harness: the test ran to completion.
+

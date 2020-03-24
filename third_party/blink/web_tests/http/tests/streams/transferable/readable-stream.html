@@ -195,8 +195,8 @@ promise_test(async t => {
   const rs = await recordingTransferredReadableStream();
   const reader = rs.getReader();
   rs.controller.enqueue(new ReadableStream());
-  await promise_rejects(t, 'DataCloneError', reader.read(),
-                        'closed promise should reject');
+  await promise_rejects_dom(t, 'DataCloneError', reader.read(),
+                            'closed promise should reject');
   assert_throws_js(TypeError, () => rs.controller.enqueue(),
                    'original stream should be errored');
 }, 'transferring a non-serializable chunk should error both sides');

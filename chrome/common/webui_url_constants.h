@@ -187,7 +187,6 @@ extern const char kChromeUINativeExploreURL[];
 extern const char kChromeUINativeHistoryURL[];
 extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativePhysicalWebDiagnosticsURL[];
-extern const char kChromeUINativeScheme[];
 extern const char kChromeUIPhysicalWebDiagnosticsHost[];
 extern const char kChromeUISnippetsInternalsHost[];
 extern const char kChromeUIWebApksHost[];

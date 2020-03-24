@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/page_info/page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_ui_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/permissions/permission_manager.h"

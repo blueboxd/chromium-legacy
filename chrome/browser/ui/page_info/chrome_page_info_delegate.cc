@@ -7,16 +7,24 @@
 #include "build/build_config.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/common/url_constants.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -25,6 +33,9 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #endif
 
 ChromePageInfoDelegate::ChromePageInfoDelegate(
@@ -35,13 +46,25 @@ Profile* ChromePageInfoDelegate::GetProfile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
+TabSpecificContentSettings*
+ChromePageInfoDelegate::GetTabSpecificContentSettings() const {
+  // When |web_contents| is not from a Tab, |web_contents| does not have a
+  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
+  TabSpecificContentSettings::CreateForWebContents(web_contents_);
+  return TabSpecificContentSettings::FromWebContents(web_contents_);
+}
+
 permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(
     ContentSettingsType type) {
   switch (type) {
     case ContentSettingsType::USB_CHOOSER_DATA:
       return UsbChooserContextFactory::GetForProfile(GetProfile());
     case ContentSettingsType::BLUETOOTH_CHOOSER_DATA:
-      return BluetoothChooserContextFactory::GetForProfile(GetProfile());
+      if (base::FeatureList::IsEnabled(
+              features::kWebBluetoothNewPermissionsBackend)) {
+        return BluetoothChooserContextFactory::GetForProfile(GetProfile());
+      }
+      return nullptr;
     case ContentSettingsType::SERIAL_CHOOSER_DATA:
 #if !defined(OS_ANDROID)
       return SerialChooserContextFactory::GetForProfile(GetProfile());
@@ -57,18 +80,23 @@ permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(
 
 bool ChromePageInfoDelegate::HasContentSettingChangedViaPageInfo(
     ContentSettingsType type) {
-  return tab_specific_content_settings()->HasContentSettingChangedViaPageInfo(
+  return GetTabSpecificContentSettings()->HasContentSettingChangedViaPageInfo(
       type);
+}
+
+void ChromePageInfoDelegate::ContentSettingChangedViaPageInfo(
+    ContentSettingsType type) {
+  GetTabSpecificContentSettings()->ContentSettingChangedViaPageInfo(type);
 }
 
 const LocalSharedObjectsContainer& ChromePageInfoDelegate::GetAllowedObjects(
     const GURL& site_url) {
-  return tab_specific_content_settings()->allowed_local_shared_objects();
+  return GetTabSpecificContentSettings()->allowed_local_shared_objects();
 }
 
 const LocalSharedObjectsContainer& ChromePageInfoDelegate::GetBlockedObjects(
     const GURL& site_url) {
-  return tab_specific_content_settings()->blocked_local_shared_objects();
+  return GetTabSpecificContentSettings()->blocked_local_shared_objects();
 }
 
 int ChromePageInfoDelegate::GetFirstPartyAllowedCookiesCount(
@@ -144,4 +172,38 @@ permissions::PermissionResult ChromePageInfoDelegate::GetPermissionStatus(
   // ContentSettingTypes that aren't permissions.
   return PermissionManagerFactory::GetForProfile(GetProfile())
       ->GetPermissionStatus(type, site_url, site_url);
+}
+#if !defined(OS_ANDROID)
+bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  if (infobar_service) {
+    PageInfoInfoBarDelegate::Create(infobar_service);
+    return true;
+  }
+  return false;
+}
+
+void ChromePageInfoDelegate::ShowSiteSettings(const GURL& site_url) {
+  chrome::ShowSiteSettings(chrome::FindBrowserWithWebContents(web_contents_),
+                           site_url);
+}
+#endif
+
+permissions::PermissionDecisionAutoBlocker*
+ChromePageInfoDelegate::GetPermissionDecisionAutoblocker() {
+  return PermissionDecisionAutoBlockerFactory::GetForProfile(GetProfile());
+}
+
+StatefulSSLHostStateDelegate*
+ChromePageInfoDelegate::GetStatefulSSLHostStateDelegate() {
+  return StatefulSSLHostStateDelegateFactory::GetForProfile(GetProfile());
+}
+
+HostContentSettingsMap* ChromePageInfoDelegate::GetContentSettings() {
+  return HostContentSettingsMapFactory::GetForProfile(GetProfile());
+}
+
+bool ChromePageInfoDelegate::IsContentDisplayedInVrHeadset() {
+  return vr::VrTabHelper::IsContentDisplayedInHeadset(web_contents_);
 }

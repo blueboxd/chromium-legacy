@@ -146,7 +146,7 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
 
   std::unique_ptr<ViewEventTestPlatformPart> platform_part_;
 
-  ChromeTestViewsDelegate views_delegate_;
+  ChromeTestViewsDelegate<> views_delegate_;
 
   base::RunLoop run_loop_;
 

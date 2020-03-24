@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 418 tests; 382 PASS, 36 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 454 tests; 418 PASS, 36 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL [["forwarddelete",""]] "<ol><li>foo[<li>]bar</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>foobar</li></ol>" but got "<ol><li>foo</li><li>bar</li></ol>"
 PASS [["forwarddelete",""]] "<ol><li>foo[<li>]bar</ol>" queryCommandIndeterm("forwarddelete") before
 PASS [["forwarddelete",""]] "<ol><li>foo[<li>]bar</ol>" queryCommandState("forwarddelete") before
@@ -418,5 +418,41 @@ PASS [["forwarddelete",""]] "<div><b>[foo]</b></div>" queryCommandValue("forward
 PASS [["forwarddelete",""]] "<div><b>[foo]</b></div>" queryCommandIndeterm("forwarddelete") after
 PASS [["forwarddelete",""]] "<div><b>[foo]</b></div>" queryCommandState("forwarddelete") after
 PASS [["forwarddelete",""]] "<div><b>[foo]</b></div>" queryCommandValue("forwarddelete") after
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>": execCommand("forwarddelete", false, "") return value
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" checks for modifications to non-editable content
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" compare innerHTML
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" queryCommandIndeterm("forwarddelete") before
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" queryCommandState("forwarddelete") before
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" queryCommandValue("forwarddelete") before
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" queryCommandIndeterm("forwarddelete") after
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" queryCommandState("forwarddelete") after
+PASS [["forwarddelete",""]] "<div><div><p>foo[]</p></div></div><div></div><div><div>bar</div></div></div>" queryCommandValue("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>": execCommand("forwarddelete", false, "") return value
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" checks for modifications to non-editable content
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" compare innerHTML
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" queryCommandIndeterm("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" queryCommandState("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" queryCommandValue("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" queryCommandIndeterm("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" queryCommandState("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><div></div><div>bar</div>" queryCommandValue("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>": execCommand("forwarddelete", false, "") return value
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" checks for modifications to non-editable content
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" compare innerHTML
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" queryCommandIndeterm("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" queryCommandState("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" queryCommandValue("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" queryCommandIndeterm("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" queryCommandState("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><span></span><div>bar</div>" queryCommandValue("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>": execCommand("forwarddelete", false, "") return value
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" checks for modifications to non-editable content
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" compare innerHTML
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" queryCommandIndeterm("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" queryCommandState("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" queryCommandValue("forwarddelete") before
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" queryCommandIndeterm("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" queryCommandState("forwarddelete") after
+PASS [["forwarddelete",""]] "<div>foo[]</div><!-- comment --><div>bar</div>" queryCommandValue("forwarddelete") after
 Harness: the test ran to completion.
 

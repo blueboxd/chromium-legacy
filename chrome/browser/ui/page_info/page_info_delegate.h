@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_DELEGATE_H_
 
 #include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 
@@ -17,11 +17,18 @@ namespace safe_browsing {
 class PasswordProtectionService;
 }  // namespace safe_browsing
 
-// PageInfoDelegate allows an embedder to customize PageInfo logic.
+namespace permissions {
+class PermissionDecisionAutoBlocker;
+}  // namespace permissions
+
 namespace permissions {
 class ChooserContextBase;
 }
 
+class HostContentSettingsMap;
+class StatefulSSLHostStateDelegate;
+
+// PageInfoDelegate allows an embedder to customize PageInfo logic.
 class PageInfoDelegate {
  public:
   virtual ~PageInfoDelegate() = default;
@@ -35,6 +42,10 @@ class PageInfoDelegate {
   // Whether the content setting of type |type| has changed via Page Info UI.
   virtual bool HasContentSettingChangedViaPageInfo(
       ContentSettingsType type) = 0;
+
+  // Notifies the delegate that the content setting of type |type| has changed
+  // via Page Info UI.
+  virtual void ContentSettingChangedViaPageInfo(ContentSettingsType type) = 0;
 
   // Get counts of allowed and blocked cookies.
   virtual int GetFirstPartyAllowedCookiesCount(const GURL& site_url) = 0;
@@ -56,6 +67,25 @@ class PageInfoDelegate {
   virtual permissions::PermissionResult GetPermissionStatus(
       ContentSettingsType type,
       const GURL& site_url) = 0;
+#if !defined(OS_ANDROID)
+  // Creates an InfoBarService and an InfoBarDelegate using it, if possible.
+  // Returns true if an InfoBarDelegate was created, false otherwise.
+  virtual bool CreateInfoBarDelegate() = 0;
+
+  virtual void ShowSiteSettings(const GURL& site_url) = 0;
+#endif
+  virtual permissions::PermissionDecisionAutoBlocker*
+  GetPermissionDecisionAutoblocker() = 0;
+
+  // Service for managing SSL error page bypasses. Used to revoke bypass
+  // decisions by users.
+  virtual StatefulSSLHostStateDelegate* GetStatefulSSLHostStateDelegate() = 0;
+
+  // The |HostContentSettingsMap| is the service that provides and manages
+  // content settings (aka. site permissions).
+  virtual HostContentSettingsMap* GetContentSettings() = 0;
+
+  virtual bool IsContentDisplayedInVrHeadset() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_DELEGATE_H_

@@ -16,6 +16,13 @@ android_library("java") {
   ]
 }
 
+static_library("android") {
+  sources = [
+    "url_constants.cc",
+    "url_constants.h",
+  ]
+}
+
 java_library("junit") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true

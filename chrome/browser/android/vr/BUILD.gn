@@ -115,6 +115,8 @@ static_library("vr_android") {
     "//chrome/browser/vr:vr_common",
     "//chrome/common",
     "//chrome/common:constants",
+    "//components/browser_ui/util/android",
+    "//components/content_settings/core/browser",
     "//components/language/core/browser",
     "//components/omnibox/browser",
     "//components/permissions",

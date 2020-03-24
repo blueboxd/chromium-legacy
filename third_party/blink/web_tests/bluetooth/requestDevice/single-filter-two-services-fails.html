@@ -13,7 +13,7 @@ bluetooth_test(t => {
   // service.
   return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
       .then(
-          () => promise_rejects(
+          () => promise_rejects_dom(
               t, 'NotFoundError',
               requestDeviceWithTrustedClick(
                   {filters: [{services: ['heart_rate', 'battery_service']}]})));

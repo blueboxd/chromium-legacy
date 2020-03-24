@@ -5,13 +5,17 @@
 #ifndef CHROME_TEST_VIEWS_CHROME_TEST_VIEWS_DELEGATE_H_
 #define CHROME_TEST_VIEWS_CHROME_TEST_VIEWS_DELEGATE_H_
 
-#include "build/build_config.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/views/test/test_views_delegate.h"
 
 // A TestViewsDelegate specific to Chrome tests.
-class ChromeTestViewsDelegate : public views::TestViewsDelegate {
+template <class T = views::TestViewsDelegate>
+class ChromeTestViewsDelegate : public T {
  public:
-  ChromeTestViewsDelegate();
+  ChromeTestViewsDelegate() {
+    T::set_layout_provider(ChromeLayoutProvider::CreateLayoutProvider());
+  }
+
   ~ChromeTestViewsDelegate() override = default;
 };
 

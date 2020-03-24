@@ -320,10 +320,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
     } else if (auto* page_rule = DynamicTo<StyleRulePage>(rule)) {
       AddPageRule(page_rule);
     } else if (auto* media_rule = DynamicTo<StyleRuleMedia>(rule)) {
-      if (!media_rule->MediaQueries() ||
-          medium.Eval(*media_rule->MediaQueries(),
-                      &features_.ViewportDependentMediaQueryResults(),
-                      &features_.DeviceDependentMediaQueryResults()))
+      if (MatchMediaForAddRules(medium, media_rule->MediaQueries()))
         AddChildRules(media_rule->ChildRules(), medium, add_rule_flags);
     } else if (auto* font_face_rule = DynamicTo<StyleRuleFontFace>(rule)) {
       AddFontFaceRule(font_face_rule);
@@ -338,6 +335,18 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
   }
 }
 
+bool RuleSet::MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
+                                    const MediaQuerySet* media_queries) {
+  if (!media_queries)
+    return true;
+  bool match_media = evaluator.Eval(
+      *media_queries, &features_.ViewportDependentMediaQueryResults(),
+      &features_.DeviceDependentMediaQueryResults());
+  media_query_set_results_.push_back(
+      MediaQuerySetResult(*media_queries, match_media));
+  return match_media;
+}
+
 void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
                                 const MediaQueryEvaluator& medium,
                                 AddRuleFlags add_rule_flags) {
@@ -350,11 +359,9 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
   for (unsigned i = 0; i < import_rules.size(); ++i) {
     StyleRuleImport* import_rule = import_rules[i].Get();
     if (import_rule->GetStyleSheet() &&
-        (!import_rule->MediaQueries() ||
-         medium.Eval(*import_rule->MediaQueries(),
-                     &features_.ViewportDependentMediaQueryResults(),
-                     &features_.DeviceDependentMediaQueryResults())))
+        MatchMediaForAddRules(medium, import_rule->MediaQueries())) {
       AddRulesFromSheet(import_rule->GetStyleSheet(), medium, add_rule_flags);
+    }
   }
 
   AddChildRules(sheet->ChildRules(), medium, add_rule_flags);
@@ -411,6 +418,15 @@ void RuleSet::CompactRules() {
   part_pseudo_rules_.ShrinkToFit();
   content_pseudo_element_rules_.ShrinkToFit();
   slotted_pseudo_element_rules_.ShrinkToFit();
+}
+
+bool RuleSet::DidMediaQueryResultsChange(
+    const MediaQueryEvaluator& evaluator) const {
+  for (const auto& result : media_query_set_results_) {
+    if (result.Result() != evaluator.Eval(result.MediaQueries()))
+      return true;
+  }
+  return false;
 }
 
 void MinimalRuleData::Trace(Visitor* visitor) {

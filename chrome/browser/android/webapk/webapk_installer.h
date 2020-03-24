@@ -22,19 +22,20 @@
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "url/gurl.h"
 
 namespace base {
 class ElapsedTimer;
 class FilePath;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
 namespace network {
 class SimpleURLLoader;
-}
+}  // namespace network
 
 // The enum values are persisted to logs |WebApkInstallSpaceStatus| in
 // enums.xml, therefore they should never be reused nor renumbered.
@@ -190,6 +191,9 @@ class WebApkInstaller {
   // successful request the WebAPK server responds with a token to send to
   // Google Play.
   void SendRequest(std::unique_ptr<std::string> serialized_proto);
+
+  // Returns the WebAPK server URL based on the command line.
+  GURL GetServerUrl();
 
   content::BrowserContext* browser_context_;
 

@@ -120,8 +120,7 @@ class SyncConsentTest : public OobeBaseTest {
   }
 
   void LoginToSyncConsentScreen() {
-    WizardController::default_controller()->SkipToLoginForTesting(
-        LoginScreenContext());
+    WizardController::default_controller()->SkipToLoginForTesting();
     WaitForGaiaPageEvent("ready");
     LoginDisplayHost::default_host()
         ->GetOobeUI()

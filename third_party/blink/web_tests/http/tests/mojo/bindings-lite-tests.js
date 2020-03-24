@@ -56,7 +56,7 @@ promise_test(async (t) => {
   await remote.ping();
   remote.$.close();
 
-  await promise_rejects(t, new Error(), remote.ping());
+  await promise_rejects_js(t, Error, remote.ping());
 }, 'after the pipe is closed all future calls should fail');
 
 promise_test(async (t) => {
@@ -73,7 +73,7 @@ promise_test(async (t) => {
   remote.$.close();
 
   for (const promise of promises) {
-    await promise_rejects(t, new Error(), promise);
+    await promise_rejects_js(t, Error, promise);
   }
 }, 'closing the pipe drops any pending messages');
 

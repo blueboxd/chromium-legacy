@@ -103,10 +103,6 @@ class AshTestHelper {
 
   PrefService* GetLocalStatePrefService();
 
-  AshTestViewsDelegate* test_views_delegate() {
-    return test_views_delegate_.get();
-  }
-
   display::Display GetSecondaryDisplay() const;
 
   TestSessionControllerClient* test_session_controller_client() {

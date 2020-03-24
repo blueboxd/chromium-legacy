@@ -1903,20 +1903,28 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
   const std::string required_platform_version_string =
       chromeos::KioskAppManager::Get()
           ->GetAutoLaunchAppRequiredPlatformVersion();
-  if (required_platform_version_string.empty())
-    return false;
-
-  const base::Version required_platfrom_version(
-      required_platform_version_string);
-
   em::OsUpdateStatus* os_update_status = status->mutable_os_update_status();
-  os_update_status->set_new_required_platform_version(
-      required_platfrom_version.GetString());
 
   const update_engine::StatusResult update_engine_status =
       chromeos::DBusThreadManager::Get()
           ->GetUpdateEngineClient()
           ->GetLastStatus();
+
+  base::Optional<base::Version> required_platform_version;
+
+  if (required_platform_version_string.empty()) {
+    // If this is non-Kiosk session, the OS is considered as up-to-date if the
+    // status of UpdateEngineClient is idle.
+    if (update_engine_status.current_operation() ==
+        update_engine::Operation::IDLE)
+      required_platform_version = base::Version(platform_version);
+  } else {
+    // If this is Kiosk session, |required_platform_version| can be searched
+    // from the KioskAppClient instance.
+    required_platform_version = base::Version(required_platform_version_string);
+    os_update_status->set_new_required_platform_version(
+        required_platform_version->GetString());
+  }
 
   // Get last reboot timestamp.
   const base::Time last_reboot_timestamp =
@@ -1934,7 +1942,8 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
   os_update_status->set_last_checked_timestamp(
       last_checked_timestamp.ToJavaTime());
 
-  if (platform_version == required_platfrom_version) {
+  if (required_platform_version &&
+      platform_version == *required_platform_version) {
     os_update_status->set_update_status(em::OsUpdateStatus::OS_UP_TO_DATE);
     return true;
   }

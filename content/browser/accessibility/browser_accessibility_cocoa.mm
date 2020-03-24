@@ -983,8 +983,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSArray*)children {
   if (![self instanceActive])
     return nil;
-  if ([self internalRole] == ax::mojom::Role::kLayoutTableColumn)
-    return nil;
   if (!_children) {
     uint32_t childCount = _owner->PlatformChildCount();
     _children.reset([[NSMutableArray alloc] initWithCapacity:childCount]);

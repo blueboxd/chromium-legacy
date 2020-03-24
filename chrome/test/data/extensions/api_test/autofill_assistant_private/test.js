@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const expectedMessages = ['Opening localhost…', 'This is a test status.'];
+const expectedMessages = ['Opening version…', 'This is a test status.'];
 
 function actionsChangedListener(actions) {
   chrome.test.assertEq(2, actions.length);

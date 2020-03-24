@@ -258,12 +258,10 @@ class PasswordManagerClient {
   // Returns true if last navigation page had HTTP error i.e 5XX or 4XX
   virtual bool WasLastNavigationHTTPError() const;
 
-#if defined(OS_ANDROID)
   // Returns true if a credential leak dialog was shown. Used by Autofill
   // Assistance to verify a password change intent. TODO(b/151391231): Remove
   // when proper intent signing is implemented.
   virtual bool WasCredentialLeakDialogShown() const;
-#endif
 
   // Obtains the cert status for the main frame.
   virtual net::CertStatus GetMainFrameCertStatus() const;

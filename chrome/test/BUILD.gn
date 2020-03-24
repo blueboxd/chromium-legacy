@@ -344,7 +344,6 @@ static_library("test_support") {
       "../browser/ui/views/web_apps/web_app_frame_toolbar_test.h",
       "views/accessibility_checker.cc",
       "views/accessibility_checker.h",
-      "views/chrome_test_views_delegate.cc",
       "views/chrome_test_views_delegate.h",
       "views/chrome_views_test_base.cc",
       "views/chrome_views_test_base.h",

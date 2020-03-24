@@ -15,11 +15,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_list.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
+#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -57,9 +57,6 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   ~DesktopMediaPickerViewsTest() override = default;
 
   void SetUp() override {
-    test_helper_.test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
-
 #if defined(OS_MACOSX)
     // These tests create actual child Widgets, which normally have a closure
     // animation on Mac; inhibit it here to avoid the tests flakily hanging.
@@ -108,7 +105,8 @@ class DesktopMediaPickerViewsTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  views::ScopedViewsTestHelper test_helper_;
+  views::ScopedViewsTestHelper test_helper_{
+      std::make_unique<ChromeTestViewsDelegate<>>()};
   std::map<DesktopMediaID::Type, FakeDesktopMediaList*> media_lists_;
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;
   DesktopMediaPickerViewsTestApi test_api_;

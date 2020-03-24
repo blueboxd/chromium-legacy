@@ -76,10 +76,10 @@ TEST_F(ForceDelayObserverTest, Basic) {
   delegate.AddEnterAnimationObserver(std::move(observer));
   EXPECT_EQ(1u, delegate.num_enter_observers());
 
-  task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate.num_enter_observers());
-  task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(55));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(55));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, delegate.num_enter_observers());
 }

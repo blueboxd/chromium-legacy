@@ -210,6 +210,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/incognito/IncognitoDataTestUtils.java",
   "javatests/src/org/chromium/chrome/browser/incognito/IncognitoHistoryLeakageTest.java",
   "javatests/src/org/chromium/chrome/browser/incognito/IncognitoNotificationServiceTest.java",
+  "javatests/src/org/chromium/chrome/browser/incognito/IncognitoPermissionLeakageTest.java",
   "javatests/src/org/chromium/chrome/browser/incognito/IncognitoTabLauncherTest.java",
   "javatests/src/org/chromium/chrome/browser/infobar/InfoBarAppearanceTest.java",
   "javatests/src/org/chromium/chrome/browser/infobar/InfoBarContainerTest.java",

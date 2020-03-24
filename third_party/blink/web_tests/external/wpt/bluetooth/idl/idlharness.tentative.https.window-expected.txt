@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 206 tests; 149 PASS, 57 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 205 tests; 149 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -75,8 +75,7 @@ PASS BluetoothDevice interface: existence and properties of interface prototype 
 PASS BluetoothDevice interface: attribute id
 PASS BluetoothDevice interface: attribute name
 PASS BluetoothDevice interface: attribute gatt
-FAIL BluetoothDevice interface: operation watchAdvertisements() assert_own_property: interface prototype object missing non-static operation expected property "watchAdvertisements" missing
-FAIL BluetoothDevice interface: operation unwatchAdvertisements() assert_own_property: interface prototype object missing non-static operation expected property "unwatchAdvertisements" missing
+FAIL BluetoothDevice interface: operation watchAdvertisements(optional WatchAdvertisementsOptions) assert_own_property: interface prototype object missing non-static operation expected property "watchAdvertisements" missing
 FAIL BluetoothDevice interface: attribute watchingAdvertisements assert_true: The prototype object must have a property "watchingAdvertisements" expected true got false
 FAIL BluetoothDevice interface: attribute onadvertisementreceived assert_true: The prototype object must have a property "onadvertisementreceived" expected true got false
 PASS BluetoothDevice interface: attribute ongattserverdisconnected

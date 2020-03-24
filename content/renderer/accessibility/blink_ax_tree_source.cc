@@ -509,7 +509,6 @@ void BlinkAXTreeSource::GetChildren(
     // Skip table headers and columns, they're only needed on Mac
     // and soon we'll get rid of this code entirely.
     if (child.Role() == ax::mojom::Role::kColumn ||
-        child.Role() == ax::mojom::Role::kLayoutTableColumn ||
         child.Role() == ax::mojom::Role::kTableHeaderContainer)
       continue;
 

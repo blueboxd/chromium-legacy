@@ -10,8 +10,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
-#import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
-#import "ios/chrome/browser/device_sharing/device_sharing_manager_factory.h"
+#import "ios/chrome/browser/device_sharing/device_sharing_browser_agent.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
@@ -24,7 +23,6 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
-#import "ios/chrome/browser/web_state_list/active_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/web_state.h"
@@ -93,7 +91,7 @@
 
 @end
 
-@interface BrowserViewWrangler () <WebStateListObserving, CRWWebStateObserver> {
+@interface BrowserViewWrangler () {
   ChromeBrowserState* _browserState;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   __weak id<BrowsingDataCommands> _browsingDataCommandEndpoint;
@@ -102,15 +100,7 @@
 
   std::unique_ptr<Browser> _mainBrowser;
   std::unique_ptr<Browser> _otrBrowser;
-  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
-  // Bridge to observe WebState from Objective-C. This observer will be used to
-  // only monitor active webStates.
-  std::unique_ptr<web::WebStateObserverBridge> _activeWebStateObserver;
-  // Forwards observer methods for The active WebState in each WebStateList
-  // monitored by the BrowserViewWrangler.
-  std::map<WebStateList*, std::unique_ptr<ActiveWebStateObservationForwarder>>
-      _activeWebStateObservationForwarders;
 }
 
 @property(nonatomic, strong, readwrite) WrangledBrowser* mainInterface;
@@ -161,11 +151,8 @@
     _applicationCommandEndpoint = applicationCommandEndpoint;
     _browsingDataCommandEndpoint = browsingDataCommandEndpoint;
     _appURLLoadingService = appURLLoadingService;
-    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _webStateListForwardingObserver =
         std::make_unique<WebStateListObserverBridge>(observer);
-    _activeWebStateObserver =
-        std::make_unique<web::WebStateObserverBridge>(self);
   }
   return self;
 }
@@ -217,8 +204,9 @@
 
   _currentInterface = interface;
 
-  // The internal state of the Handoff Manager depends on the current BVC.
-  [self updateDeviceSharingManager];
+  // Update the shared active URL for the new interface.
+  DeviceSharingBrowserAgent::FromBrowser(_currentInterface.browser)
+      ->UpdateForActiveBrowser();
 }
 
 - (id<BrowserInterface>)incognitoInterface {
@@ -259,8 +247,6 @@
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     breakpad::StopMonitoringURLsForWebStateList(webStateList);
     [tabModel disconnect];
-    _activeWebStateObservationForwarders[webStateList] = nullptr;
-    webStateList->RemoveObserver(_webStateListObserver.get());
     webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
@@ -273,36 +259,10 @@
     WebStateList* webStateList = self.otrBrowser->GetWebStateList();
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     [tabModel disconnect];
-    _activeWebStateObservationForwarders[webStateList] = nullptr;
-    webStateList->RemoveObserver(_webStateListObserver.get());
     webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
   _otrBrowser = std::move(otrBrowser);
-}
-
-#pragma mark - BrowserViewInformation methods
-
-#pragma mark - WebStateListObserving
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  if (_isShutdown)
-    return;
-
-  [self updateDeviceSharingManager];
-}
-
-#pragma mark - CRWWebStateObserver
-
-- (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  // Active WebState has update the active URL. Update the DeviceSharingManager
-  // state.
-  [self updateDeviceSharingManager];
 }
 
 #pragma mark - Mode Switching
@@ -327,20 +287,6 @@
 }
 
 #pragma mark - Other public methods
-
-- (void)updateDeviceSharingManager {
-  DeviceSharingManager* deviceSharingManager =
-      DeviceSharingManagerFactory::GetForBrowserState(_browserState);
-  web::WebState* activeWebState =
-      self.currentInterface.tabModel.webStateList->GetActiveWebState();
-  // Set the active URL if there's an active webstate and the current BVC is not
-  // OTR.
-  if (activeWebState && !self.currentInterface.incognito) {
-    deviceSharingManager->UpdateActiveUrl(activeWebState->GetVisibleURL());
-  } else {
-    deviceSharingManager->ClearActiveUrl();
-  }
-}
 
 - (void)destroyAndRebuildIncognitoBrowser {
   // It is theoretically possible that a Tab has been added to |_otrTabModel|
@@ -464,10 +410,6 @@
 }
 
 - (void)addObserversToWebStateList:(WebStateList*)webStateList {
-  _activeWebStateObservationForwarders[webStateList] =
-      std::make_unique<ActiveWebStateObservationForwarder>(
-          webStateList, _activeWebStateObserver.get());
-  webStateList->AddObserver(_webStateListObserver.get());
   webStateList->AddObserver(_webStateListForwardingObserver.get());
   breakpad::MonitorTabStateForWebStateList(webStateList);
 }

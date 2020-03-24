@@ -313,7 +313,8 @@ TEST(TrustTokenKeyCommitmentParsing, RejectsKeyWithMalformedExpiry) {
   EXPECT_FALSE(TrustTokenKeyCommitmentParser().Parse(input));
 }
 
-TEST(TrustTokenKeyCommitmentParsing, IgnoreKeyWithExpiryInThePast) {
+/// TODO(https://crbug.com/1064069): Flaky Parse() expectation mismatches.
+TEST(TrustTokenKeyCommitmentParsing, DISABLED_IgnoreKeyWithExpiryInThePast) {
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 

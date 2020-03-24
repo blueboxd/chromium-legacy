@@ -2548,7 +2548,7 @@ TEST_F(StyleEngineTest, InitialColorChange) {
 }
 
 TEST_F(StyleEngineTest,
-       MediaQueryAffectingValueChanged_InvalidateForChangedQueries) {
+       MediaQueryAffectingValueChanged_InvalidateForChangedSizeQueries) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       @media (min-width: 1000px) {
@@ -2578,6 +2578,82 @@ TEST_F(StyleEngineTest,
 
   GetDocument().View()->SetLayoutSizeFixedToFrameSize(false);
   GetDocument().View()->SetLayoutSize(IntSize(1100, 800));
+  UpdateAllLifecyclePhases();
+
+  // Only the single div element should have its style recomputed.
+  EXPECT_EQ(1u, GetStyleEngine().StyleForElementCount() - initial_count);
+  EXPECT_EQ(MakeRGB(0, 128, 0), div->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest,
+       MediaQueryAffectingValueChanged_InvalidateForChangedTypeQuery) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @media speech {
+        div { color: green }
+      }
+    </style>
+    <style>
+      @media (max-width: 100px) {
+        * { color: red }
+      }
+    </style>
+    <style>
+      @media print {
+        * { color: blue }
+      }
+    </style>
+    <div id="green"></div>
+    <span></span>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* div = GetDocument().getElementById("green");
+  EXPECT_EQ(Color::kBlack, div->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  unsigned initial_count = GetStyleEngine().StyleForElementCount();
+
+  GetDocument().GetSettings()->SetMediaTypeOverride("speech");
+  UpdateAllLifecyclePhases();
+
+  // Only the single div element should have its style recomputed.
+  EXPECT_EQ(1u, GetStyleEngine().StyleForElementCount() - initial_count);
+  EXPECT_EQ(MakeRGB(0, 128, 0), div->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest,
+       MediaQueryAffectingValueChanged_InvalidateForChangedReducedMotionQuery) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @media (prefers-reduced-motion: reduce) {
+        div { color: green }
+      }
+    </style>
+    <style>
+      @media (max-width: 100px) {
+        * { color: red }
+      }
+    </style>
+    <style>
+      @media print {
+        * { color: blue }
+      }
+    </style>
+    <div id="green"></div>
+    <span></span>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* div = GetDocument().getElementById("green");
+  EXPECT_EQ(Color::kBlack, div->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  unsigned initial_count = GetStyleEngine().StyleForElementCount();
+
+  GetDocument().GetSettings()->SetPrefersReducedMotion(true);
   UpdateAllLifecyclePhases();
 
   // Only the single div element should have its style recomputed.

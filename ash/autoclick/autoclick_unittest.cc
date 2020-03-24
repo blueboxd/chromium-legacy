@@ -140,7 +140,7 @@ class AutoclickTest : public AshTestBase {
   }
 
   void FastForwardBy(int milliseconds) {
-    task_environment_->FastForwardBy(
+    task_environment()->FastForwardBy(
         base::TimeDelta::FromMilliseconds(milliseconds));
   }
 

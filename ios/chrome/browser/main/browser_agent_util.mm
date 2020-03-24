@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
+#import "ios/chrome/browser/device_sharing/device_sharing_browser_agent.h"
 #include "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent_util.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
@@ -33,6 +34,7 @@ void AttachBrowserAgents(Browser* browser) {
   AttachInfobarOverlayBrowserAgent(browser);
   SyncedWindowDelegateBrowserAgent::CreateForBrowser(browser);
   WebUsageEnablerBrowserAgent::CreateForBrowser(browser);
+  DeviceSharingBrowserAgent::CreateForBrowser(browser);
   UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser);
 
   // UrlLoadingBrowserAgent requires UrlLoadingNotifierBrowserAgent.

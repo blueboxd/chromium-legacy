@@ -2252,6 +2252,19 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
   }
 }
 
+TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate_NonKiosk) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportOsUpdateStatus, true);
+  GetStatus();
+  ASSERT_TRUE(device_status_.has_os_update_status());
+  EXPECT_EQ(em::OsUpdateStatus::OS_UP_TO_DATE,
+            device_status_.os_update_status().update_status());
+  ASSERT_TRUE(device_status_.os_update_status().has_last_checked_timestamp());
+  ASSERT_TRUE(device_status_.os_update_status().has_last_reboot_timestamp());
+  ASSERT_FALSE(device_status_.os_update_status().has_new_platform_version());
+}
+
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
   MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -2296,6 +2309,59 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
   ASSERT_TRUE(device_status_.has_os_update_status());
   EXPECT_EQ(em::OsUpdateStatus::OS_UPDATE_NEED_REBOOT,
             device_status_.os_update_status().update_status());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus_NonKiosk) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportOsUpdateStatus, true);
+
+  update_engine::StatusResult update_status;
+  update_status.set_current_operation(update_engine::Operation::IDLE);
+
+  GetStatus();
+  ASSERT_TRUE(device_status_.has_os_update_status());
+  EXPECT_EQ(em::OsUpdateStatus::OS_UP_TO_DATE,
+            device_status_.os_update_status().update_status());
+  ASSERT_TRUE(device_status_.os_update_status().has_last_checked_timestamp());
+  ASSERT_TRUE(device_status_.os_update_status().has_last_reboot_timestamp());
+  ASSERT_FALSE(
+      device_status_.os_update_status().has_new_required_platform_version());
+
+  const update_engine::Operation kUpdateEngineOps[] = {
+      update_engine::Operation::DOWNLOADING,
+      update_engine::Operation::VERIFYING,
+      update_engine::Operation::FINALIZING,
+  };
+
+  for (size_t i = 0; i < base::size(kUpdateEngineOps); ++i) {
+    update_status.set_current_operation(kUpdateEngineOps[i]);
+    update_status.set_new_version("1235.1.2");
+    update_engine_client_->PushLastStatus(update_status);
+
+    GetStatus();
+    ASSERT_TRUE(device_status_.has_os_update_status());
+    EXPECT_EQ(em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_IN_PROGRESS,
+              device_status_.os_update_status().update_status());
+    EXPECT_EQ("1235.1.2",
+              device_status_.os_update_status().new_platform_version());
+    ASSERT_TRUE(device_status_.os_update_status().has_last_checked_timestamp());
+    ASSERT_TRUE(device_status_.os_update_status().has_last_reboot_timestamp());
+    ASSERT_FALSE(
+        device_status_.os_update_status().has_new_required_platform_version());
+  }
+
+  update_status.set_current_operation(
+      update_engine::Operation::UPDATED_NEED_REBOOT);
+  update_engine_client_->PushLastStatus(update_status);
+  GetStatus();
+  ASSERT_TRUE(device_status_.has_os_update_status());
+  EXPECT_EQ(em::OsUpdateStatus::OS_UPDATE_NEED_REBOOT,
+            device_status_.os_update_status().update_status());
+  ASSERT_TRUE(device_status_.os_update_status().has_last_checked_timestamp());
+  ASSERT_TRUE(device_status_.os_update_status().has_last_reboot_timestamp());
+  ASSERT_FALSE(
+      device_status_.os_update_status().has_new_required_platform_version());
 }
 
 TEST_F(DeviceStatusCollectorTest, NoLastCheckedTimestampByDefault) {

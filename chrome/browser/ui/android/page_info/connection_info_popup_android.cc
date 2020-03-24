@@ -9,9 +9,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/ConnectionInfoPopup_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/ui/page_info/page_info.h"
@@ -61,13 +59,8 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
 
-  // When |web_contents| is not from a Tab, |web_contents| does not have a
-  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
-  TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-      std::make_unique<ChromePageInfoDelegate>(web_contents),
-      TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
+      std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents,
       nav_entry->GetURL(), helper->GetSecurityLevel(),
       *helper->GetVisibleSecurityState());
   presenter_->InitializeUiState(this);

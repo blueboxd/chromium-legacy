@@ -115,8 +115,9 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 /////////////////////////////////////////////////////////////////////////////
 
-AshTestBase::AshTestBase(AshTestBase::SubclassManagesTaskEnvironment /* tag */)
-    : task_environment_(base::nullopt) {}
+AshTestBase::AshTestBase(
+    std::unique_ptr<base::test::TaskEnvironment> task_environment)
+    : task_environment_(std::move(task_environment)) {}
 
 AshTestBase::~AshTestBase() {
   CHECK(setup_called_)

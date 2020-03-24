@@ -15,7 +15,7 @@ namespace client {
 
 class AURA_EXPORT DefaultCaptureClient : public client::CaptureClient {
  public:
-  explicit DefaultCaptureClient(Window* root_window = nullptr);
+  explicit DefaultCaptureClient(Window* root_window);
   ~DefaultCaptureClient() override;
 
  protected:

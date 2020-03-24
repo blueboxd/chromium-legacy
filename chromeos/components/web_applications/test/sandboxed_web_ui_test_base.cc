@@ -16,12 +16,8 @@
 class SandboxedWebUiAppTestBase::TestCodeInjector
     : public content::TestNavigationObserver {
  public:
-  TestCodeInjector(const std::string& host_url,
-                   const std::string& sandboxed_url,
-                   const base::FilePath& script_path)
-      : TestNavigationObserver(GURL(host_url)),
-        sandboxed_url_(sandboxed_url),
-        script_path_(script_path) {
+  explicit TestCodeInjector(SandboxedWebUiAppTestBase* owner)
+      : TestNavigationObserver(GURL(owner->host_url_)), owner_(owner) {
     WatchExistingWebContents();
     StartWatchingNewWebContents();
   }
@@ -29,30 +25,29 @@ class SandboxedWebUiAppTestBase::TestCodeInjector
   // TestNavigationObserver:
   void OnDidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (navigation_handle->GetURL().GetOrigin() != GURL(sandboxed_url_))
+    if (navigation_handle->GetURL().GetOrigin() != GURL(owner_->sandboxed_url_))
       return;
 
-    auto* render_frame_host = navigation_handle->GetRenderFrameHost();
+    auto* guest_frame = navigation_handle->GetRenderFrameHost();
 
-    // Use ExecuteScript(), not ExecJs(), because of Content Security Policy
-    // directive: "script-src chrome://resources 'self'"
-    ASSERT_TRUE(content::ExecuteScript(render_frame_host,
-                                       LoadJsTestLibrary(script_path_)));
+    for (const auto& script : owner_->scripts_) {
+      // Use ExecuteScript(), not ExecJs(), because of Content Security Policy
+      // directive: "script-src chrome://resources 'self'"
+      ASSERT_TRUE(
+          content::ExecuteScript(guest_frame, LoadJsTestLibrary(script)));
+    }
     TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
   }
 
  private:
-  const std::string sandboxed_url_;
-  const base::FilePath script_path_;
+  SandboxedWebUiAppTestBase* const owner_;
 };
 
 SandboxedWebUiAppTestBase::SandboxedWebUiAppTestBase(
     const std::string& host_url,
     const std::string& sandboxed_url,
-    const base::FilePath& script_path)
-    : host_url_(host_url),
-      sandboxed_url_(sandboxed_url),
-      script_path_(script_path) {}
+    const std::vector<base::FilePath>& scripts)
+    : host_url_(host_url), sandboxed_url_(sandboxed_url), scripts_(scripts) {}
 
 SandboxedWebUiAppTestBase::~SandboxedWebUiAppTestBase() = default;
 
@@ -87,7 +82,6 @@ content::EvalJsResult SandboxedWebUiAppTestBase::EvalJsInAppFrame(
 }
 
 void SandboxedWebUiAppTestBase::SetUpOnMainThread() {
-  injector_ = std::make_unique<TestCodeInjector>(host_url_, sandboxed_url_,
-                                                 script_path_);
+  injector_ = std::make_unique<TestCodeInjector>(this);
   MojoWebUIBrowserTest::SetUpOnMainThread();
 }

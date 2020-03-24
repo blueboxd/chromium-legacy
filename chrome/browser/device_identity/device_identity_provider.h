@@ -8,15 +8,12 @@
 #include "base/macros.h"
 #include "components/invalidation/public/identity_provider.h"
 
-namespace chromeos {
-
 class DeviceOAuth2TokenService;
 
 // Identity provider implementation backed by DeviceOAuth2TokenService.
 class DeviceIdentityProvider : public invalidation::IdentityProvider {
  public:
-  explicit DeviceIdentityProvider(
-      chromeos::DeviceOAuth2TokenService* token_service);
+  explicit DeviceIdentityProvider(DeviceOAuth2TokenService* token_service);
   ~DeviceIdentityProvider() override;
 
   // IdentityProvider:
@@ -34,11 +31,9 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider {
  private:
   void OnRefreshTokenAvailable();
 
-  chromeos::DeviceOAuth2TokenService* token_service_;
+  DeviceOAuth2TokenService* token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceIdentityProvider);
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_DEVICE_IDENTITY_DEVICE_IDENTITY_PROVIDER_H_

@@ -80,8 +80,11 @@ public final class SearchEngineChoiceNotification {
     public static void handleSearchEngineChoice(Context context, SnackbarManager snackbarManager) {
         boolean searchEngineChoiceRequested = wasSearchEngineChoiceRequested();
         boolean searchEngineChoicePresented = wasSearchEngineChoicePresented();
+        boolean searchEngineChoiceAvailable =
+                !TemplateUrlServiceFactory.get().isDefaultSearchManaged();
 
-        if (searchEngineChoiceRequested && !searchEngineChoicePresented) {
+        if (searchEngineChoiceRequested && searchEngineChoiceAvailable
+                && !searchEngineChoicePresented) {
             snackbarManager.showSnackbar(buildSnackbarNotification(context));
             updateSearchEngineChoicePresented();
             SearchEngineChoiceMetrics.recordEvent(SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN);

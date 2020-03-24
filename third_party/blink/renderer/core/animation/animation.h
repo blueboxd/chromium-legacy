@@ -222,7 +222,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   const AnimationEffect* effect() const { return content_.Get(); }
   AnimationEffect* effect() { return content_.Get(); }
-  virtual void setEffect(AnimationEffect*);
+  void setEffect(AnimationEffect*);
 
   void setId(const String& id) { id_ = id; }
   const String& id() const { return id_; }
@@ -304,6 +304,11 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
   base::Optional<double> CurrentTimeInternal() const;
+  virtual AnimationEffect::EventDelegate* CreateEventDelegate(
+      Element* target,
+      const AnimationEffect::EventDelegate* old_event_delegate) {
+    return nullptr;
+  }
 
  private:
   void SetCurrentTimeInternal(double new_current_time);

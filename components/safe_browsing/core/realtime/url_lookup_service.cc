@@ -280,6 +280,9 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
 
   MayBeCacheRealTimeUrlVerdict(url, *response);
 
+  UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.RT.ThreatInfoSize",
+                           response->threat_info_size());
+
   base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
                  base::BindOnce(std::move(it->second), is_rt_lookup_successful,
                                 std::move(response)));

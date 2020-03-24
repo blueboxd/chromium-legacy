@@ -4,11 +4,7 @@
 
 package org.chromium.chrome.browser.widget;
 
-import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.SmallTest;
 import android.view.View;
@@ -18,22 +14,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.MathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
@@ -95,35 +86,6 @@ public class ScrimTest {
         ThreadUtils.runOnUiThreadBlocking(() -> mScrim.hideScrim(false));
         visibilityHelper.waitForCallback(callCount, 1);
         assertScrimVisibility(false);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Scrim"})
-    @DisabledTest(message = "crbug.com/877774")
-    public void testOmniboxScrim() {
-        assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
-        assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
-
-        final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-        ThreadUtils.runOnUiThreadBlocking(() -> OmniboxTestUtils.toggleUrlBarFocus(urlBar, true));
-        waitForScrimVisibilityChange(true);
-
-        assertScrimVisibility(true);
-        assertTrue("A view should be obscuring the tab.", isViewObscuringAllTabs());
-        assertThat("The scrim alpha should not be 0.", 0f, lessThan(mScrim.getAlpha()));
-
-        ThreadUtils.runOnUiThreadBlocking(() -> OmniboxTestUtils.toggleUrlBarFocus(urlBar, false));
-        waitForScrimVisibilityChange(false);
-
-        assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
-        assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
-    }
-
-    private boolean isViewObscuringAllTabs() {
-        return mActivityTestRule.getActivity().getTabObscuringHandler().areAllTabsObscured();
     }
 
     /**

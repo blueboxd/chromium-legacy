@@ -304,10 +304,16 @@ std::string FindScriptPath() {
 void ExecMe2MeScript(base::EnvironmentMap environment,
                      const struct passwd* pwinfo,
                      const std::vector<std::string>& script_args) {
-  // By convention, a login shell is signified by preceeding the shell name in
+  std::string login_shell = pwinfo->pw_shell;
+  if (login_shell.empty()) {
+    // According to "man 5 passwd", if the shell field is empty, it defaults to
+    // "/bin/sh".
+    login_shell = "/bin/sh";
+  }
+
+  // By convention, a login shell is signified by preceding the shell name in
   // argv[0] with a '-'.
-  std::string shell_name =
-      '-' + base::FilePath(pwinfo->pw_shell).BaseName().value();
+  std::string shell_name = '-' + base::FilePath(login_shell).BaseName().value();
 
   base::Optional<std::string> escaped_script_path =
       ShellEscapeArgument(FindScriptPath());
@@ -325,7 +331,7 @@ void ExecMe2MeScript(base::EnvironmentMap environment,
   environment["USER"] = pwinfo->pw_name;
   environment["LOGNAME"] = pwinfo->pw_name;
   environment["HOME"] = pwinfo->pw_dir;
-  environment["SHELL"] = pwinfo->pw_shell;
+  environment["SHELL"] = login_shell;
   if (!environment.count("PATH")) {
     environment["PATH"] = "/bin:/usr/bin";
   }
@@ -345,9 +351,9 @@ void ExecMe2MeScript(base::EnvironmentMap environment,
   }
   env_ptrs.push_back(nullptr);
 
-  execve(pwinfo->pw_shell, const_cast<char* const*>(arg_ptrs.data()),
+  execve(login_shell.c_str(), const_cast<char* const*>(arg_ptrs.data()),
          const_cast<char* const*>(env_ptrs.data()));
-  PLOG(FATAL) << "Failed to exec login shell " << pwinfo->pw_shell;
+  PLOG(FATAL) << "Failed to exec login shell " << login_shell;
 }
 
 // Relaunch the user session. When calling this function, the real UID must be

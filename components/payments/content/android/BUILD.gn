@@ -12,6 +12,7 @@ static_library("android") {
     "byte_buffer_helper.h",
     "currency_formatter_android.cc",
     "currency_formatter_android.h",
+    "error_message_util.cc",
     "origin_security_checker_android.cc",
     "payment_handler_host.cc",
     "payment_handler_host.h",
@@ -40,6 +41,7 @@ static_library("android") {
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
+    "java/src/org/chromium/components/payments/ErrorMessageUtil.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
     "java/src/org/chromium/components/payments/PaymentHandlerHost.java",
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
@@ -53,6 +55,7 @@ android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = [
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
+    "java/src/org/chromium/components/payments/ErrorMessageUtil.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
     "java/src/org/chromium/components/payments/PaymentDetailsConverter.java",
     "java/src/org/chromium/components/payments/PaymentHandlerHost.java",

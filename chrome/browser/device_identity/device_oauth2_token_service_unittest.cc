@@ -13,20 +13,9 @@
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/token_encryptor.h"
-#include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
-#include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -41,7 +30,64 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+class MockDeviceOAuth2TokenStore : public DeviceOAuth2TokenStore {
+ public:
+  MockDeviceOAuth2TokenStore() = default;
+  ~MockDeviceOAuth2TokenStore() override = default;
+
+  // DeviceOAuth2TokenStore:
+  void Init(InitCallback callback) override {
+    pending_init_callback_ = std::move(callback);
+  }
+  CoreAccountId GetAccountId() const override { return account_id_; }
+  std::string GetRefreshToken() const override { return refresh_token_; }
+
+  void SetAndSaveRefreshToken(const std::string& refresh_token,
+                              StatusCallback result_callback) override {
+    refresh_token_ = refresh_token;
+    pending_status_callback_ = std::move(result_callback);
+  }
+
+  void PrepareTrustedAccountId(TrustedAccountIdCallback callback) override {
+    pending_trusted_account_id_callback_ = std::move(callback);
+    TriggerTrustedAccountIdCallback(true);
+  }
+
+#if !defined(OS_CHROMEOS)
+  void SetAccountEmail(const std::string& account_email) override {
+    account_id_ = CoreAccountId::FromEmail(account_email);
+  }
+#endif
+
+  // Mock-specific functions:
+  void SetRefreshTokenForTesting(const std::string& token) {
+    refresh_token_ = token;
+  }
+
+  void SetAccountIdForTesting(CoreAccountId account_id) {
+    account_id_ = account_id;
+  }
+
+  void TriggerInitCallback(bool success, bool validation_required) {
+    std::move(pending_init_callback_).Run(success, validation_required);
+  }
+
+  void TriggerStatusCallback(bool success) {
+    std::move(pending_status_callback_).Run(success);
+  }
+
+  void TriggerTrustedAccountIdCallback(bool account_present) {
+    std::move(pending_trusted_account_id_callback_).Run(account_present);
+  }
+
+ private:
+  CoreAccountId account_id_;
+  std::string refresh_token_;
+
+  InitCallback pending_init_callback_;
+  StatusCallback pending_status_callback_;
+  TrustedAccountIdCallback pending_trusted_account_id_callback_;
+};
 
 class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
@@ -51,26 +97,16 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   // Most tests just want a noop crypto impl with a dummy refresh token value in
   // Local State (if the value is an empty string, it will be ignored).
   void SetUpDefaultValues() {
-    SetDeviceRefreshTokenInLocalState("device_refresh_token_4_test");
-    SetRobotAccountId("service_acct@g.com");
     CreateService();
+    token_store_->SetRefreshTokenForTesting("device_refresh_token_4_test");
+    SetRobotAccountId("service_acct@g.com");
     AssertConsumerTokensAndErrors(0, 0);
 
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void SetUpWithPendingSalt() {
-    FakeCryptohomeClient::Get()->set_system_salt(std::vector<uint8_t>());
-    FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
-    SetUpDefaultValues();
+    token_store_->TriggerInitCallback(true, true);
   }
 
   void SetRobotAccountId(const std::string& account_id) {
-    device_policy_.policy_data().set_service_account_identity(account_id);
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    DeviceSettingsService::Get()->Load();
-    content::RunAllTasksUntilIdle();
+    token_store_->SetAccountIdForTesting(CoreAccountId::FromEmail(account_id));
   }
 
   std::unique_ptr<OAuth2AccessTokenManager::Request> StartTokenRequest() {
@@ -78,48 +114,25 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
                                                     &consumer_);
   }
 
-  void SetUp() override {
-    CryptohomeClient::InitializeFake();
-    FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
-    FakeCryptohomeClient::Get()->set_system_salt(
-        FakeCryptohomeClient::GetStubSystemSalt());
-
-    SystemSaltGetter::Initialize();
-
-    scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_(
-        new ownership::MockOwnerKeyUtil());
-    owner_key_util_->SetPublicKeyFromPrivateKey(
-        *device_policy_.GetSigningKey());
-    DeviceSettingsService::Get()->SetSessionManager(&session_manager_client_,
-                                                    owner_key_util_);
-  }
+  void SetUp() override {}
 
   void TearDown() override {
     oauth2_service_.reset();
     base::ThreadPoolInstance::Get()->FlushForTesting();
-    DeviceSettingsService::Get()->UnsetSessionManager();
-    SystemSaltGetter::Shutdown();
-    CryptohomeClient::Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
+  MockDeviceOAuth2TokenStore* token_store() { return token_store_; }
+
   void CreateService() {
+    auto store = std::make_unique<MockDeviceOAuth2TokenStore>();
+    token_store_ = store.get();
+
     oauth2_service_.reset(new DeviceOAuth2TokenService(
-        test_url_loader_factory_.GetSafeWeakWrapper(),
-        std::unique_ptr<DeviceOAuth2TokenStore>(
-            new DeviceOAuth2TokenStoreChromeOS(
-                scoped_testing_local_state_.Get()))));
+        test_url_loader_factory_.GetSafeWeakWrapper(), std::move(store)));
     oauth2_service_->max_refresh_token_validation_retries_ = 0;
     oauth2_service_->GetAccessTokenManager()
         ->set_max_authorization_token_fetch_retries_for_testing(0);
-  }
-
-  // Utility method to set a value in Local State for the device refresh token
-  // (it must have a non-empty value or it won't be used).
-  void SetDeviceRefreshTokenInLocalState(const std::string& refresh_token) {
-    scoped_testing_local_state_.Get()->SetUserPref(
-        prefs::kDeviceRobotAnyApiRefreshToken,
-        std::make_unique<base::Value>(refresh_token));
   }
 
   std::string GetValidTokenInfoResponse(const std::string& email) {
@@ -135,7 +148,6 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   std::string GetRefreshToken() {
     if (!RefreshTokenIsAvailable())
       return std::string();
-
     return oauth2_service_->GetRefreshToken();
   }
 
@@ -175,17 +187,12 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   };
 
   content::BrowserTaskEnvironment task_environment_;
-  ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ScopedTestingLocalState scoped_testing_local_state_;
-  ScopedTestDeviceSettingsService scoped_device_settings_service_;
-  ScopedTestCrosSettings scoped_test_cros_settings_{
-      scoped_testing_local_state_.Get()};
   network::TestURLLoaderFactory test_url_loader_factory_;
-  FakeSessionManagerClient session_manager_client_;
-  policy::DevicePolicyBuilder device_policy_;
   std::unique_ptr<DeviceOAuth2TokenService, TokenServiceDeleter>
       oauth2_service_;
   TestingOAuth2AccessTokenManagerConsumer consumer_;
+  MockDeviceOAuth2TokenStore* token_store_;
 };
 
 void DeviceOAuth2TokenServiceTest::ReturnOAuthUrlFetchResults(
@@ -233,41 +240,6 @@ void DeviceOAuth2TokenServiceTest::AssertConsumerTokensAndErrors(
   EXPECT_EQ(num_errors, consumer_.number_of_errors_);
 }
 
-TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedToken) {
-  CreateService();
-
-  // The token service won't report there being a token if the robot account ID
-  // is not set, which would cause the expectation below to fail.
-  SetRobotAccountId("service_acct@g.com");
-
-  oauth2_service_->SetAndSaveRefreshToken(
-      "test-token", DeviceOAuth2TokenService::StatusCallback());
-  EXPECT_EQ("test-token", GetRefreshToken());
-}
-
-TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedTokenEarly) {
-  // Set a new refresh token without the system salt available.
-  SetUpWithPendingSalt();
-
-  oauth2_service_->SetAndSaveRefreshToken(
-      "test-token", DeviceOAuth2TokenService::StatusCallback());
-  EXPECT_EQ("test-token", GetRefreshToken());
-
-  // Make the system salt available.
-  FakeCryptohomeClient::Get()->set_system_salt(
-      FakeCryptohomeClient::GetStubSystemSalt());
-  FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
-  base::RunLoop().RunUntilIdle();
-
-  // The original token should still be present.
-  EXPECT_EQ("test-token", GetRefreshToken());
-
-  // Reloading shouldn't change the token either.
-  CreateService();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("test-token", GetRefreshToken());
-}
-
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Success) {
   SetUpDefaultValues();
   std::unique_ptr<OAuth2AccessTokenManager::Request> request =
@@ -280,16 +252,16 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Success) {
 }
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_SuccessAsyncLoad) {
-  SetUpWithPendingSalt();
+  CreateService();
+  token_store()->SetRefreshTokenForTesting("device_refresh_token_4_test");
+  SetRobotAccountId("service_acct@g.com");
 
   std::unique_ptr<OAuth2AccessTokenManager::Request> request =
       StartTokenRequest();
   PerformURLFetches();
   AssertConsumerTokensAndErrors(0, 0);
 
-  FakeCryptohomeClient::Get()->set_system_salt(
-      FakeCryptohomeClient::GetStubSystemSalt());
-  FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
+  token_store()->TriggerInitCallback(true, true);
   base::RunLoop().RunUntilIdle();
 
   PerformURLFetches();
@@ -309,10 +281,11 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Cancel) {
   // Test succeeds if this line is reached without a crash.
 }
 
-TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_NoSalt) {
-  FakeCryptohomeClient::Get()->set_system_salt(std::vector<uint8_t>());
-  FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
-  SetUpDefaultValues();
+TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_InitFailure) {
+  CreateService();
+  token_store()->SetRefreshTokenForTesting("device_refresh_token_4_test");
+  SetRobotAccountId("service_acct@g.com");
+  token_store()->TriggerInitCallback(false, true);
 
   EXPECT_FALSE(RefreshTokenIsAvailable());
 
@@ -439,30 +412,3 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Retry) {
   PerformURLFetches();
   AssertConsumerTokensAndErrors(1, 1);
 }
-
-TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
-  CreateService();
-
-  auto callback_that_should_not_be_called =
-      base::BindRepeating([]() { FAIL(); });
-  oauth2_service_->SetRefreshTokenAvailableCallback(
-      std::move(callback_that_should_not_be_called));
-
-  // Make a token available during enrollment. Verify that the token is not
-  // announced yet.
-  oauth2_service_->SetAndSaveRefreshToken(
-      "test-token", DeviceOAuth2TokenService::StatusCallback());
-
-  base::RunLoop run_loop;
-  auto callback_that_should_be_called_once =
-      base::BindRepeating([](base::RunLoop* loop) { loop->Quit(); }, &run_loop);
-  oauth2_service_->SetRefreshTokenAvailableCallback(
-      std::move(callback_that_should_be_called_once));
-
-  // Also make the robot account ID available. Verify that the token is
-  // announced now.
-  SetRobotAccountId("robot@example.com");
-  run_loop.Run();
-}
-
-}  // namespace chromeos

@@ -4,13 +4,8 @@
 
 #include "ash/app_list/app_list_util.h"
 
-#include "ash/app_list/views/app_list_main_view.h"
-#include "ash/app_list/views/app_list_view.h"
-#include "ash/app_list/views/contents_view.h"
-#include "ui/aura/window.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -103,21 +98,6 @@ bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
   // Move focus outside the textfield.
   textfield->GetFocusManager()->AdvanceFocus(move_focus_reverse);
   return true;
-}
-
-void UpdateActivationForAppListView(AppListView* app_list_view,
-                                    bool is_tablet_mode) {
-  views::Widget* widget = app_list_view->GetWidget();
-  const aura::Window* active_window =
-      wm::GetActivationClient(widget->GetNativeWindow()->GetRootWindow())
-          ->GetActiveWindow();
-
-  // After switching to tablet mode, other app windows may be active. Show the
-  // app list without activating it to avoid breaking other windows' state.
-  if (is_tablet_mode && active_window)
-    return;
-
-  widget->Show();
 }
 
 }  // namespace ash

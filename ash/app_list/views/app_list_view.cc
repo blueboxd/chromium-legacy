@@ -598,19 +598,13 @@ bool AppListView::ShortAnimationsForTesting() {
   return short_animations_for_testing;
 }
 
-void AppListView::InitView(
-    bool is_tablet_mode,
-    gfx::NativeView parent,
-    base::RepeatingClosure on_bounds_animation_ended_callback) {
+void AppListView::InitView(bool is_tablet_mode, gfx::NativeView parent) {
   base::AutoReset<bool> auto_reset(&is_building_, true);
   time_shown_ = base::Time::Now();
   UpdateAppListConfig(parent);
   InitContents(is_tablet_mode);
   InitWidget(parent);
   InitChildWidget();
-
-  on_bounds_animation_ended_callback_ =
-      std::move(on_bounds_animation_ended_callback);
 }
 
 void AppListView::InitContents(bool is_tablet_mode) {
@@ -731,8 +725,7 @@ void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {
   CloseKeyboardIfVisible();
 
   OnTabletModeChanged(is_tablet_mode);
-  // Widget may be activated by |on_bounds_animation_ended_callback_|.
-  GetWidget()->ShowInactive();
+  app_list_main_view_->ShowAppListWhenReady();
 
   UMA_HISTOGRAM_TIMES(kAppListCreationTimeHistogram,
                       base::Time::Now() - time_shown_.value());
@@ -2070,9 +2063,6 @@ void AppListView::OnBoundsAnimationCompleted() {
   // Layout if the animation was completed.
   if (!was_animation_interrupted)
     Layout();
-
-  if (on_bounds_animation_ended_callback_)
-    on_bounds_animation_ended_callback_.Run();
 }
 
 gfx::Rect AppListView::GetItemScreenBoundsInFirstGridPage(

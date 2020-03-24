@@ -107,11 +107,10 @@ import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
-import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -127,6 +126,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.util.TokenHolder;
 
 import java.util.List;
@@ -135,7 +135,7 @@ import java.util.List;
  * Contains logic for managing the toolbar visual component.  This class manages the interactions
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
-public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlFocusChangeListener,
+public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener,
                                        ThemeColorObserver, MenuButtonDelegate,
                                        AccessibilityUtil.Observer {
     /**
@@ -163,6 +163,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final ToolbarControlContainer mControlContainer;
     private final FullscreenListener mFullscreenListener;
     private final TabObscuringHandler mTabObscuringHandler;
+    private final ScrimCoordinator mScrimCoordinator;
 
     private BottomControlsCoordinator mBottomControlsCoordinator;
     private TabModelSelector mTabModelSelector;
@@ -253,6 +254,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param buttonDataProviders The list of button data providers for the optional toolbar button
      *         in the browsing mode toolbar, given in precedence order.
      * @param tabProvider The {@link ActivityTabProvider} for accessing current activity tab.
+     * @param scrimCoordinator A means of showing the scrim.
      */
     public ToolbarManager(ChromeActivity activity, ChromeFullscreenManager fullscreenManager,
             ToolbarControlContainer controlContainer, Invalidator invalidator,
@@ -261,12 +263,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             ObservableSupplierImpl<Boolean> bottomToolbarVisibilitySupplier,
             IdentityDiscController identityDiscController,
-            List<ButtonDataProvider> buttonDataProviders, ActivityTabProvider tabProvider) {
+            List<ButtonDataProvider> buttonDataProviders, ActivityTabProvider tabProvider,
+            ScrimCoordinator scrimCoordinator) {
         mActivity = activity;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
         mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
+        mScrimCoordinator = scrimCoordinator;
         mTabObscuringToken = TokenHolder.INVALID_TOKEN;
 
         mLocationBarModel = new LocationBarModel(activity);
@@ -294,40 +298,71 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mLocationBarFocusObserver = new UrlFocusChangeListener() {
             /** The params used to control how the scrim behaves when shown for the omnibox. */
-            private ScrimParams mScrimParams;
+            private PropertyModel mScrimModel;
 
             /** The light color to use for the scrim on the NTP. */
             private int mLightScrimColor;
 
             @Override
             public void onUrlFocusChange(boolean hasFocus) {
-                if (mScrimParams == null) {
+                if (mScrimModel == null) {
                     Resources res = mActivity.getResources();
                     int topMargin = res.getDimensionPixelSize(R.dimen.tab_strip_height);
                     mLightScrimColor = ApiCompatibilityUtils.getColor(
                             res, R.color.omnibox_focused_fading_background_color_light);
                     View scrimTarget = mActivity.getCompositorViewHolder();
-                    mScrimParams = new ScrimView.ScrimParams(
-                            scrimTarget, true, false, topMargin, ToolbarManager.this);
+
+                    Callback<Boolean> visibilityChangeCallback = (visible) -> {
+                        if (visible) {
+                            // It's possible for the scrim to unfocus and refocus without the
+                            // visibility actually changing. In this case we have to make sure we
+                            // unregister the previous token before acquiring a new one.
+                            // TODO(mdjones): Consider calling the visibility change event in the
+                            //                scrim between requests the show.
+                            int oldToken = mTabObscuringToken;
+                            mTabObscuringToken = mTabObscuringHandler.obscureAllTabs();
+                            if (oldToken != TokenHolder.INVALID_TOKEN) {
+                                mTabObscuringHandler.unobscureAllTabs(oldToken);
+                            }
+                        } else {
+                            mTabObscuringHandler.unobscureAllTabs(mTabObscuringToken);
+                            mTabObscuringToken = TokenHolder.INVALID_TOKEN;
+                        }
+                    };
+
+                    Runnable clickDelegate =
+                            () -> setUrlBarFocus(false, LocationBar.OmniboxFocusReason.UNFOCUS);
+
+                    mScrimModel = new PropertyModel.Builder(ScrimProperties.ALL_KEYS)
+                                          .with(ScrimProperties.ANCHOR_VIEW, scrimTarget)
+                                          .with(ScrimProperties.SHOW_IN_FRONT_OF_ANCHOR_VIEW, true)
+                                          .with(ScrimProperties.AFFECTS_STATUS_BAR, true)
+                                          .with(ScrimProperties.TOP_MARGIN, topMargin)
+                                          .with(ScrimProperties.CLICK_DELEGATE, clickDelegate)
+                                          .with(ScrimProperties.VISIBILITY_CALLBACK,
+                                                  visibilityChangeCallback)
+                                          .with(ScrimProperties.BACKGROUND_COLOR,
+                                                  ScrimProperties.INVALID_COLOR)
+                                          .build();
                 }
 
                 boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity);
-                mScrimParams.backgroundColor = !isTablet && !mLocationBarModel.isIncognito()
-                                && !mActivity.getNightModeStateProvider().isInNightMode()
-                        ? mLightScrimColor
-                        : null;
+                boolean useLightColor = !isTablet && !mLocationBarModel.isIncognito()
+                        && !mActivity.getNightModeStateProvider().isInNightMode();
+                mScrimModel.set(ScrimProperties.BACKGROUND_COLOR,
+                        useLightColor ? mLightScrimColor : ScrimProperties.INVALID_COLOR);
 
                 if (hasFocus && !showScrimAfterAnimationCompletes()) {
-                    mActivity.getScrim().showScrim(mScrimParams);
+                    mScrimCoordinator.showScrim(mScrimModel);
                 } else if (!hasFocus) {
-                    mActivity.getScrim().hideScrim(true);
+                    mScrimCoordinator.hideScrim(true);
                 }
             }
 
             @Override
             public void onUrlAnimationFinished(boolean hasFocus) {
                 if (hasFocus && showScrimAfterAnimationCompletes()) {
-                    mActivity.getScrim().showScrim(mScrimParams);
+                    mScrimCoordinator.showScrim(mScrimModel);
                 }
             }
 
@@ -748,30 +783,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         setMenuDelegatePhone(menuDelegate);
         setAppMenuHandler(appMenuHandler);
         mAppMenuPropertiesDelegate = appMenuCoordinator.getAppMenuPropertiesDelegate();
-    }
-
-    @Override
-    public void onScrimVisibilityChanged(boolean visible) {
-        if (visible) {
-            // It's possible for the scrim to unfocus and refocus without the visibility actually
-            // changing. In this case we have to make sure we unregister the previous token before
-            // acquiring a new one.
-            // TODO(mdjones): Consider calling the visibility change event in the scrim between
-            //                requests the show.
-            int oldToken = mTabObscuringToken;
-            mTabObscuringToken = mTabObscuringHandler.obscureAllTabs();
-            if (oldToken != TokenHolder.INVALID_TOKEN) {
-                mTabObscuringHandler.unobscureAllTabs(oldToken);
-            }
-        } else {
-            mTabObscuringHandler.unobscureAllTabs(mTabObscuringToken);
-            mTabObscuringToken = TokenHolder.INVALID_TOKEN;
-        }
-    }
-
-    @Override
-    public void onScrimClick() {
-        setUrlBarFocus(false, LocationBar.OmniboxFocusReason.UNFOCUS);
     }
 
     /**

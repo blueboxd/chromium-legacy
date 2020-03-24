@@ -52,7 +52,7 @@
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> حساس مواد پر مشتمل ہے، اور مسدود کر دیا گیا ہے۔</translation>
 <translation id="1061904396131502319">وقفے کا وقت تقریباً ہو گیا ہے</translation>
-<translation id="1064552680598333868">‏جب Linux دوبارہ شروع ہوگا تو مائیکروفون میں تبدیلیاں لاگو ہوں گی۔</translation>
+<translation id="1064552680598333868">‏اگلی بار Linux کے ری اسٹارٹ ہونے پر مائیکروفون میں تبدیلیاں لاگو ہوں گی۔</translation>
 <translation id="1067048845568873861">بنائی گئی</translation>
 <translation id="1067291318998134776">‏Linux (بی ٹا)</translation>
 <translation id="1067922213147265141">‏دیگر Google سروسز</translation>
@@ -2332,7 +2332,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4047726037116394521">ہوم پر جائیں</translation>
 <translation id="4050225813016893843">تصدیق کا طریقہ</translation>
 <translation id="4052120076834320548">چھوٹا</translation>
-<translation id="4056908315660577142">‏<ph name="APP_NAME" /> Chrome ایپس کے لیے آپ کے والدین کی سیٹ کی ہوئی آپ کی وقت کی حد پوری ہو گئی۔ اب آپ اسے <ph name="TIME_LIMIT" /> تک کل استعمال کر سکتے ہیں۔</translation>
+<translation id="4056908315660577142">‏<ph name="APP_NAME" /> Chrome ایپ کے لیے آپ کے والدین کی سیٹ کی ہوئی آپ کی وقت کی حد پوری ہو گئی۔ اب آپ اسے <ph name="TIME_LIMIT" /> تک کل استعمال کر سکتے ہیں۔</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">اسٹور میں دیکھیں</translation>
 <translation id="4058647953897694817">بلوٹوتھ کے ذریعے توثیق کریں</translation>
@@ -3421,7 +3421,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5593357315997824387">میری فائلز کی مطابقت پذیری کریں</translation>
 <translation id="5595152862129936745">بہت دور</translation>
 <translation id="5595485650161345191">پتے میں ترمیم کریں</translation>
-<translation id="5595727715083333657">‏آپ کا کنٹینر سائز تبدیل کرنے کو سپورٹ نہیں کرتا ہے۔ Linux (بی ٹا) کے لیے پہلے تقسیم کیے گئے جگہ کی مقدار کو ایڈجسٹ کرنے کے لیے بیک اپ لیں اور اسے نئے کنٹینر میں بحال کریں۔</translation>
+<translation id="5595727715083333657">‏آپ کا کنٹینر سائز تبدیل کرنے کو سپورٹ نہیں کرتا ہے۔ Linux (بی ٹا) کے لیے پہلے سے مختص کی گئی جگہ کی مقدار کو ایڈجسٹ کرنے کے لیے بیک اپ لیں اور اسے نئے کنٹینر میں بحال کریں۔</translation>
 <translation id="5596627076506792578">مزید اختیارات</translation>
 <translation id="5600706100022181951">‏موبائل ڈیٹا <ph name="UPDATE_SIZE_MB" /> MB استعمال کرتے ہوۓ اپڈیٹ ڈاؤن لوڈ ہو جائے گا۔ کیا آپ اسے جاری رکھنا چاہتے ہيں؟</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -3957,7 +3957,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6309510305002439352">مائیکروفون آف ہے</translation>
 <translation id="6311220991371174222">‏Chrome کو شروع نہیں کیا جا سکتا ہے کیوںکہ آپ کے پروفائل کو کھولتے وقت کچھ غلط ہوگیا۔ Chrome کو دوبارہ شروع کرنے کی کوشش کریں۔</translation>
 <translation id="6312403991423642364">نیٹ ورک کی نامعلوم خرابی</translation>
-<translation id="6312567056350025599">{NUM_DAYS,plural, =1{سیفٹی چیک 1 دن پہلے کیا گیا}other{سیفٹی چیک {NUM_DAYS} دن پہلے کیا گیا۔}}</translation>
+<translation id="6312567056350025599">{NUM_DAYS,plural, =1{سیفٹی چیک 1 دن پہلے کیا گیا}other{سیفٹی چیک {NUM_DAYS} دن پہلے کیا گیا}}</translation>
 <translation id="6312638141433622592">تعاون یافتہ ہونے پر، ریڈر وضع میں مضامین دکھانے کی پیشکش کریں</translation>
 <translation id="6313641880021325787">‏VR سے باہر نکلیں</translation>
 <translation id="6314819609899340042">آپ نے اس <ph name="IDS_SHORT_PRODUCT_NAME" /> آلہ پر ڈیبگ کرنے کی خصوصیت کامیابی کے ساتھ فعال کر دی ہے۔</translation>
@@ -4755,7 +4755,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400839060291901923">اپنے <ph name="PHONE_NAME" /> پر کنکشن سیٹ اپ کریں</translation>
 <translation id="7401778920660465883">یہ پیغام خارج کریں</translation>
-<translation id="7405938989981604410">{NUM_HOURS,plural, =1{سیفٹی چیک 1 گھنٹہ پہلے کیا گیا}other{سیفٹی چیک {NUM_HOURS} گھنٹہ پہلے کیا گیا}}</translation>
+<translation id="7405938989981604410">{NUM_HOURS,plural, =1{سیفٹی چیک 1 گھنٹہ پہلے کیا گیا}other{سیفٹی چیک {NUM_HOURS} گھنٹے پہلے کیا گیا}}</translation>
 <translation id="740624631517654988">پاپ اپ کو مسدود کر دیا گیا</translation>
 <translation id="7407430846095439694">درآمد کریں اور پابند بنائیں</translation>
 <translation id="7407504355934009739">زیادہ تر لوگ اس سائٹ سے اطلاعات کو مسدود کرتے ہیں</translation>

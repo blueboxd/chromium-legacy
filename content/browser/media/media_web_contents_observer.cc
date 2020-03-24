@@ -150,6 +150,12 @@ bool MediaWebContentsObserver::OnMessageReceived(
   return handled;
 }
 
+void MediaWebContentsObserver::MediaPictureInPictureChanged(
+    bool is_picture_in_picture) {
+  session_controllers_manager_.PictureInPictureStateChanged(
+      is_picture_in_picture);
+}
+
 void MediaWebContentsObserver::DidUpdateAudioMutingState(bool muted) {
   session_controllers_manager_.WebContentsMutedStateChanged(muted);
 }

@@ -28,6 +28,7 @@
 [
     Exposed=Window,
     DoNotCheckConstants,
+    RuntimeEnabled=AppCache,
     SecureContext=RestrictAppCacheToSecureContexts
 ] interface ApplicationCache : EventTarget {
     // update status

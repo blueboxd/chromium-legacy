@@ -188,14 +188,13 @@ void UkmManager::RecordAggregateThroughput(AggregationType aggregation_type,
 }
 
 void UkmManager::RecordLatencyUKM(
-    CompositorFrameReporter::DroppedFrameReportType report_type,
+    CompositorFrameReporter::FrameReportType report_type,
     const std::vector<CompositorFrameReporter::StageData>& stage_history,
     const base::flat_set<FrameSequenceTrackerType>* active_trackers,
     const viz::FrameTimingDetails& viz_breakdown) const {
   ukm::builders::Graphics_Smoothness_Latency builder(source_id_);
 
-  if (report_type ==
-      CompositorFrameReporter::DroppedFrameReportType::kDroppedFrame) {
+  if (report_type == CompositorFrameReporter::FrameReportType::kDroppedFrame) {
     builder.SetMissedFrame(true);
   }
 

@@ -51,6 +51,7 @@ id<GREYMatcher> SkipSigninButton() {
 
 - (void)tearDown {
   [super tearDown];
+  [FirstRunAppInterface setUMACollectionEnabled:NO];
   [FirstRunAppInterface resetUMACollectionEnabledByDefault];
 }
 
@@ -113,22 +114,21 @@ id<GREYMatcher> SkipSigninButton() {
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]
       performAction:grey_tap()];
 
-  GREYAssert([FirstRunAppInterface isUMACollectionEnabled] !=
-                 [FirstRunAppInterface isUMACollectionEnabledByDefault],
-             @"Metrics reporting pref is incorrect.");
+  GREYAssertNotEqual([FirstRunAppInterface isUMACollectionEnabled],
+                     [FirstRunAppInterface isUMACollectionEnabledByDefault],
+                     @"Metrics reporting pref is incorrect.");
 }
 
 // Dismisses the first run screens.
-// TODO(crbug.com/1061085): This test is flaky and has timeout.
-- (void)FLAKY_testDismissFirstRun {
+- (void)testDismissFirstRun {
   [FirstRunAppInterface showFirstRunUI];
 
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]
       performAction:grey_tap()];
 
-  GREYAssert([FirstRunAppInterface isUMACollectionEnabled] ==
-                 [FirstRunAppInterface isUMACollectionEnabledByDefault],
-             @"Metrics reporting does not match.");
+  GREYAssertEqual([FirstRunAppInterface isUMACollectionEnabled],
+                  [FirstRunAppInterface isUMACollectionEnabledByDefault],
+                  @"Metrics reporting does not match.");
 
   [[EarlGrey selectElementWithMatcher:SkipSigninButton()]
       performAction:grey_tap()];

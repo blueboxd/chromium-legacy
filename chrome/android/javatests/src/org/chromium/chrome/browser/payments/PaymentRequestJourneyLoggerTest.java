@@ -1107,7 +1107,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "https://android.com/pay", AppPresence.NO_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "androidPayBuy", mPaymentRequestTestRule.getShowFailed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Payment method not supported"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"The payment method", "not supported"});
 
         // Make sure that no journey metrics were logged.
         Assert.assertEquals(0,

@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Hierdie uitbreiding vereis geen spesiale toestemmings nie.</translation>
 <translation id="1616298854599875024">Kan nie uitbreiding "<ph name="IMPORT_NAME" />" invoer nie, want dit is nie 'n gedeelde module nie</translation>
 <translation id="1618268899808219593">Hulpsentrum</translation>
+<translation id="1620307519959413822">Verkeerde wagwoord. Probeer weer of klik Het Wagwoord Vergeet om dit terug te stel.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623132449929929218">Die prente is nie tans beskikbaar nie. Herkoppel asseblief aan die internet om die muurpapierversamelings te sien.</translation>
 <translation id="1627276047960621195">Lêerbeskrywers</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Hardewarehersiening</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Maak volskerm oop</translation>
+<translation id="1892341345406963517">Hallo, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Ander tale</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> oor</translation>
 <translation id="1895658205118569222">Skakel af</translation>
@@ -3133,6 +3135,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5213891612754844763">Wys instaanbedienerinstellings</translation>
 <translation id="5215502535566372932">Kies land</translation>
 <translation id="521582610500777512">Foto is weggegooi</translation>
+<translation id="5222403284441421673">Onveilige aflaai geblokkeer</translation>
 <translation id="5222676887888702881">Meld af</translation>
 <translation id="52232769093306234">Kon nie pak nie.</translation>
 <translation id="5225324770654022472">Wys programkortpad</translation>
@@ -3532,6 +3535,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5734362860645681824">Kommunikasies</translation>
 <translation id="5734697361979786483">Voeg lêerdeling by</translation>
 <translation id="5736796278325406685">Voer asseblief 'n geldige gebruikernaam in</translation>
+<translation id="5739017626473506901">Meld aan om <ph name="USER_NAME" /> te help om 'n skoolrekening by te voeg</translation>
 <translation id="5739235828260127894">Wag tans vir verifikasie. <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Baie groot</translation>
 <translation id="574209121243317957">Toonhoogte</translation>
@@ -5539,6 +5543,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" />-netwerk; koppel tans</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Vra eers (aanbeveel)</translation>
+<translation id="8417548266957501132">Ouerwagwoord</translation>
 <translation id="8417573335434189196">Beskerm jou nie teen gevaarlike webwerwe, aflaaie en uitbreidings nie. Chrome beveel nie hierdie instelling aan nie.</translation>
 <translation id="8418445294933751433">Wys as oortjie</translation>
 <translation id="8419098111404128271">Soekresultate vir "<ph name="SEARCH_TEXT" />"</translation>

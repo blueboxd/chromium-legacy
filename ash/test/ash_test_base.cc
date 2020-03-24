@@ -117,7 +117,9 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 AshTestBase::AshTestBase(
     std::unique_ptr<base::test::TaskEnvironment> task_environment)
-    : task_environment_(std::move(task_environment)) {}
+    : task_environment_(std::move(task_environment)) {
+  RegisterLocalStatePrefs(local_state_.registry(), true);
+}
 
 AshTestBase::~AshTestBase() {
   CHECK(setup_called_)
@@ -146,11 +148,7 @@ void AshTestBase::SetUp(std::unique_ptr<TestShellDelegate> delegate) {
   AshTestHelper::InitParams params;
   params.start_session = start_session_;
   params.delegate = std::move(delegate);
-  if (register_local_state_) {
-    DCHECK(local_state_.get());
-    RegisterLocalStatePrefs(local_state_->registry(), true);
-  }
-  params.local_state = local_state_.get();
+  params.local_state = local_state();
   ash_test_helper_.SetUp(std::move(params));
 
   Shell::GetPrimaryRootWindow()->Show();
@@ -374,11 +372,6 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
 void AshTestBase::ParentWindowInPrimaryRootWindow(aura::Window* window) {
   aura::client::ParentWindowWithContext(window, Shell::GetPrimaryRootWindow(),
                                         gfx::Rect());
-}
-
-void AshTestBase::DisableProvideLocalState() {
-  local_state_.reset();
-  register_local_state_ = false;
 }
 
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -490,11 +491,18 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
     }
   }
 
-  void VerifyFetchFromContentScriptWasBlocked(
+  void VerifyFetchFromContentScriptWasBlockedByCorb(
       const base::HistogramTester& histograms) {
     // Make sure that histograms logged in other processes (e.g. in
     // NetworkService process) get synced.
     SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+    if (IsCorbExpectedToBeTurnedOffAltogether()) {
+      EXPECT_EQ(0u,
+                histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser")
+                    .size());
+      return;
+    }
 
     histograms.ExpectBucketCount("SiteIsolation.XSD.Browser.Action",
                                  CORBAction::kResponseStarted, 1);
@@ -506,7 +514,7 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
     VerifyPassiveUmaForAllowlistForCors(histograms, base::nullopt);
   }
 
-  void VerifyFetchFromContentScriptWasAllowed(
+  void VerifyFetchFromContentScriptWasAllowedByCorb(
       const base::HistogramTester& histograms,
       bool expecting_sniffing = false) {
     // Make sure that histograms logged in other processes (e.g. in
@@ -561,12 +569,12 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
       } else {
         // Verify the fetch was blocked by CORB, but not blocked by CORS.
         EXPECT_EQ(std::string(), actual_fetch_result);
-        VerifyFetchFromContentScriptWasBlocked(histograms);
+        VerifyFetchFromContentScriptWasBlockedByCorb(histograms);
       }
     } else {
       // Verify the fetch was allowed.
       EXPECT_EQ(expected_fetch_result, actual_fetch_result);
-      VerifyFetchFromContentScriptWasAllowed(histograms);
+      VerifyFetchFromContentScriptWasAllowedByCorb(histograms);
     }
   }
 
@@ -665,6 +673,101 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
                                "nosniff.xml - body\n");
 }
 
+// Tests that extension permission to bypass CORS is revoked after the extension
+// is unloaded.  See also https://crbug.com/843381.
+IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+                       FromProgrammaticContentScript_UnloadedExtension) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const extensions::Extension* extension = InstallExtension();
+  ASSERT_TRUE(extension);
+
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that adds a link that initiates a fetch from
+  // cross-site.com.
+  GURL cross_site_resource(
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
+  {
+    const char kNewButtonScriptTemplate[] = R"(
+        function startFetch() {
+            %s
+        }
+
+        var link = document.createElement('a');
+        link.href = '#foo';
+        link.addEventListener('click', function() {
+            startFetch();
+        });
+        link.id = 'fetch-button';
+        link.innerText = 'start-fetch';
+
+        document.body.appendChild(link);
+        domAutomationController.send('READY');
+    )";
+    content::DOMMessageQueue queue;
+    ASSERT_TRUE(ExecuteContentScript(
+        active_web_contents(),
+        base::StringPrintf(kNewButtonScriptTemplate,
+                           CreateFetchScript(cross_site_resource).c_str())));
+    ASSERT_EQ("READY", PopString(&queue));
+  }
+
+  // Click the button - the fetch should work if the extension is allowlisted.
+  //
+  // Clicking the button will execute the 'click' handler belonging to the
+  // content script (i.e. the `startFetch` method defined in the
+  // kNewButtonScriptTemplate above).  Directly executing the script via
+  // content::ExecuteScript would have executed the script in the main world
+  // (which is not what we want).
+  const char kFetchInitiatingScript[] = R"(
+      document.getElementById('fetch-button').click();
+    )";
+  {
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    base::HistogramTester histograms;
+
+    content::DOMMessageQueue queue;
+    content::ExecuteScriptAsync(active_web_contents(), kFetchInitiatingScript);
+    std::string fetch_result = PopString(&queue);
+
+    VerifyFetchFromContentScript(histograms, fetch_result,
+                                 "nosniff.xml - body\n");
+  }
+
+  // Unload the extension and try fetching again.  The content script should
+  // still be present and work, but after the extension is unloaded, the fetch
+  // should always fail.  See also https://crbug.com/843381.
+  extension_service()->DisableExtension(extension->id(),
+                                        disable_reason::DISABLE_USER_ACTION);
+  EXPECT_FALSE(ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+      extension->id()));
+  {
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    base::HistogramTester histograms;
+
+    content::DOMMessageQueue queue;
+    content::ExecuteScriptAsync(active_web_contents(), kFetchInitiatingScript);
+    std::string fetch_result = PopString(&queue);
+
+    if (IsExtensionAllowlisted() && IsOutOfBlinkCorsEnabled()) {
+      // TODO(lukasza): https://crbug.com/1062043: Revoking of extension
+      // permissions doesn't cover
+      // URLLoaderFactoryParams::factory_bound_access_patterns.
+      EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+      VerifyFetchFromContentScriptWasAllowedByCorb(histograms);
+    } else {
+      EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
+      VerifyFetchFromContentScriptWasBlockedByCorb(histograms);
+    }
+  }
+}
+
 // Test that verifies the current, baked-in (but not necessarily desirable
 // behavior) where a content script injected by an extension can bypass
 // CORS (and CORB) for any hosts the extension has access to.
@@ -724,7 +827,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
 
   // Verify whether the fetch worked or not.
   EXPECT_EQ("cors-ok.txt - body\n", fetch_result);
-  VerifyFetchFromContentScriptWasAllowed(histograms);
+  VerifyFetchFromContentScriptWasAllowedByCorb(histograms);
 }
 
 // Tests that same-origin fetches (same-origin relative to the webpage the
@@ -753,8 +856,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
 
   // Verify that no blocking occurred.
   EXPECT_THAT(fetch_result, ::testing::StartsWith("nosniff.xml - body"));
-  VerifyFetchFromContentScriptWasAllowed(histograms,
-                                         false /* expecting_sniffing */);
+  VerifyFetchFromContentScriptWasAllowedByCorb(histograms,
+                                               false /* expecting_sniffing */);
 
   // Same-origin requests are not at risk of being broken.
   VerifyPassiveUmaForAllowlistForCors(histograms, false);
@@ -791,8 +894,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
         histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
   } else {
     // Verify that CORB sniffing allowed the response.
-    VerifyFetchFromContentScriptWasAllowed(histograms,
-                                           true /* expecting_sniffing */);
+    VerifyFetchFromContentScriptWasAllowedByCorb(histograms,
+                                                 true /* expecting_sniffing */);
   }
 
   if (ShouldAllowlistAlsoApplyToOorCors() &&
@@ -847,8 +950,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
         histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
   } else {
     // Verify that CORB sniffing allowed the response.
-    VerifyFetchFromContentScriptWasAllowed(histograms,
-                                           true /* expecting_sniffing */);
+    VerifyFetchFromContentScriptWasAllowedByCorb(histograms,
+                                                 true /* expecting_sniffing */);
   }
 
   if (ShouldAllowlistAlsoApplyToOorCors() &&

@@ -2539,6 +2539,36 @@ TEST_P(PaintArtifactCompositorTest,
       GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
 }
 
+TEST_P(PaintArtifactCompositorTest, DecompositeExoticBlendModeWithoutBackdrop) {
+  auto parent_effect = CreateOpacityEffect(
+      e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
+  EffectPaintPropertyNode::State blend_state1;
+  blend_state1.local_transform_space = &t0();
+  blend_state1.blend_mode = SkBlendMode::kScreen;
+  auto blend_effect1 =
+      EffectPaintPropertyNode::Create(*parent_effect, std::move(blend_state1));
+  EffectPaintPropertyNode::State blend_state2;
+  blend_state2.local_transform_space = &t0();
+  blend_state2.blend_mode = SkBlendMode::kScreen;
+  auto blend_effect2 =
+      EffectPaintPropertyNode::Create(*parent_effect, std::move(blend_state2));
+
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *blend_effect1)
+             .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray)
+             .Chunk(t0(), c0(), *blend_effect2)
+             .RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack)
+             .Build());
+
+  ASSERT_EQ(1u, LayerCount());
+  const auto* effect =
+      GetPropertyTrees().effect_tree.Node(LayerAt(0)->effect_tree_index());
+  EXPECT_EQ(1.0f, effect->opacity);
+  EXPECT_EQ(SkBlendMode::kSrcOver, effect->blend_mode);
+  // Don't need a render surface because all blend effects are decomposited.
+  EXPECT_FALSE(effect->HasRenderSurface());
+}
+
 TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
   // A 90 degree clockwise rotation about (100, 100).
   auto transform = CreateTransform(t0(), TransformationMatrix().Rotate(90),

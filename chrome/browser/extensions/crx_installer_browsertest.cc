@@ -530,21 +530,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
 // Tests that scopes are only granted if |record_oauth2_grant_| on the prompt is
 // true.
-#if defined(OS_WIN)
-#define MAYBE_GrantScopes DISABLED_GrantScopes
-#define MAYBE_GrantScopes_WithCallback DISABLED_GrantScopes_WithCallback
-#else
-#define MAYBE_GrantScopes GrantScopes
-#define MAYBE_GrantScopes_WithCallback GrantScopes_WithCallback
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
-                       MAYBE_GrantScopes) {
+                       GrantScopes) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall(
       "browsertest/scopes", CrxInstaller::InstallerResultCallback(), true));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
-                       MAYBE_GrantScopes_WithCallback) {
+                       GrantScopes_WithCallback) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall(
       "browsertest/scopes",
       base::BindOnce([](const base::Optional<CrxInstallError>& error) {

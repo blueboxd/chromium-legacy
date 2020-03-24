@@ -17,7 +17,7 @@
 #endif
 
 namespace {
-const char kPageNavigationUkmEvent[] = "PageLoad";
+const char kPageNavigationUkmEvent[] = "MainFrameNavigation";
 const char kPageNavigationUkmMetric[] = "DidCommit";
 const char kPageForegroundSessionUkmSearchMatchesEvent[] =
     "PageForegroundSession";
@@ -62,7 +62,7 @@ TEST_F(PageloadForegroundDurationTabHelperTest,
   // A successful navigation should be recorded
   const auto& post_navigation_entry =
       test_ukm_recorder_.GetEntriesByName(kPageNavigationUkmEvent);
-  EXPECT_EQ(1u, post_navigation_entry.size());
+  ASSERT_EQ(1u, post_navigation_entry.size());
   const ukm::mojom::UkmEntry* entry = post_navigation_entry[0];
   ASSERT_TRUE(entry);
   EXPECT_NE(ukm::kInvalidSourceId, entry->source_id);

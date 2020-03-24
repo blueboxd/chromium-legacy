@@ -13,6 +13,7 @@
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller_client.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "ash/session/fullscreen_controller.h"
 #include "ash/session/multiprofiles_intro_dialog.h"
 #include "ash/session/session_aborted_dialog.h"
 #include "ash/session/session_observer.h"
@@ -22,9 +23,7 @@
 #include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -39,7 +38,8 @@ using session_manager::SessionState;
 
 namespace ash {
 
-SessionControllerImpl::SessionControllerImpl() = default;
+SessionControllerImpl::SessionControllerImpl()
+    : fullscreen_controller_(std::make_unique<FullscreenController>(this)) {}
 
 SessionControllerImpl::~SessionControllerImpl() {
   // Abort pending start lock request.
@@ -367,17 +367,7 @@ void SessionControllerImpl::SetUserSessionOrder(
 }
 
 void SessionControllerImpl::PrepareForLock(PrepareForLockCallback callback) {
-  // If the active window is fullscreen, exit fullscreen to avoid the web page
-  // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
-  // visible while in fullscreen because the shelf makes it harder for a web
-  // page or app to mimick the lock screen.
-  WindowState* active_window_state = WindowState::ForActiveWindow();
-  if (active_window_state && active_window_state->IsFullscreen() &&
-      active_window_state->GetHideShelfWhenFullscreen()) {
-    const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-    active_window_state->OnWMEvent(&event);
-  }
-
+  FullscreenController::MaybeExitFullscreen();
   std::move(callback).Run();
 }
 

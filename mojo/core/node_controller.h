@@ -118,9 +118,13 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   void RequestShutdown(base::OnceClosure callback);
 
   // Notifies the NodeController that we received a bad message from the given
-  // node.
+  // node.  To avoid losing error reports the caller should ensure that the
+  // source node |HasBadMessageHandler| before calling |NotifyBadMessageFrom|.
   void NotifyBadMessageFrom(const ports::NodeName& source_node,
                             const std::string& error);
+
+  // Returns whether |source_node| exists and has a bad message handler.
+  bool HasBadMessageHandler(const ports::NodeName& source_node);
 
   // Force-closes the connection to another process to simulate connection
   // failures for testing. |process_id| must correspond to a process to which

@@ -129,6 +129,26 @@ public final class SearchEngineChoiceNotificationTest {
 
     @Test
     @SmallTest
+    public void handleSearchEngineChoice_ignoredWhenDefaultSearchManaged() {
+        doReturn(true).when(mTemplateUrlService).isDefaultSearchManaged();
+        SearchEngineChoiceNotification.receiveSearchEngineChoiceRequest();
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        assertFalse(prefs.contains(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
+
+        SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, null);
+
+        assertFalse(
+                "When search engine settings are controlled by policy, the call should be ignored.",
+                prefs.contains(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
+
+        assertEquals(0,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        "Android.SearchEngineChoice.Events",
+                        SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN));
+    }
+
+    @Test
+    @SmallTest
     public void handleSearchEngineChoice_performedFirstTime() {
         SearchEngineChoiceNotification.receiveSearchEngineChoiceRequest();
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);

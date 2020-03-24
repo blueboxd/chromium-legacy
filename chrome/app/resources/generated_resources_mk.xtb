@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Оваа наставка не бара специјални дозволи.</translation>
 <translation id="1616298854599875024">Екстензијата „<ph name="IMPORT_NAME" />" не може да се увезе бидејќи не е споделен модул</translation>
 <translation id="1618268899808219593">Центар за п&amp;омош</translation>
+<translation id="1620307519959413822">Погрешна лозинка. Обидете се повторно или кликнете на „Ја заборавив лозинката“ за да ја ресетирате.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623132449929929218">Сликите не се достапни во моментов. Повторно поврзете се на интернет за да ги видите колекциите со тапети.</translation>
 <translation id="1627276047960621195">Опишувачи на датотеки</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Ревизија на хардвер</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Отвори на цел екран</translation>
+<translation id="1892341345406963517">Здраво <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Други јазици</translation>
 <translation id="1895252664692693738">Уште <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Исклучување</translation>
@@ -3133,6 +3135,7 @@
 <translation id="5213891612754844763">Покажи ги поставките за прокси</translation>
 <translation id="5215502535566372932">Изберете држава</translation>
 <translation id="521582610500777512">Се отфрли фотографијата</translation>
+<translation id="5222403284441421673">Блокирано е небезбедно преземање</translation>
 <translation id="5222676887888702881">Одјави се</translation>
 <translation id="52232769093306234">Пакувањето не успеа.</translation>
 <translation id="5225324770654022472">Покажи кратенка за апликации</translation>
@@ -3531,6 +3534,7 @@
 <translation id="5734362860645681824">Комуникации</translation>
 <translation id="5734697361979786483">Додајте споделување датотеки</translation>
 <translation id="5736796278325406685">Внесете важечко корисничко име</translation>
+<translation id="5739017626473506901">Најавете се за да му помогнете на корисникот <ph name="USER_NAME" /> да додаде училишна сметка</translation>
 <translation id="5739235828260127894">Се чека потврда. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Многу голем</translation>
 <translation id="574209121243317957">Висина</translation>
@@ -5541,6 +5545,7 @@
 <translation id="8408068190360279472">Мрежа со <ph name="NETWORK_TYPE" />, се поврзува</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Прашај прво (препорачано)</translation>
+<translation id="8417548266957501132">Лозинка на родител</translation>
 <translation id="8417573335434189196">Не ве заштитува од опасни веб-сајтови, преземања или екстензии. Chrome не ја препорачува поставкава.</translation>
 <translation id="8418445294933751433">&amp;Прикажи како картичка</translation>
 <translation id="8419098111404128271">Резултати од пребарувањето за „<ph name="SEARCH_TEXT" />“</translation>

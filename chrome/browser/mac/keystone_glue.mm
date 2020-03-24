@@ -19,6 +19,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -39,40 +40,48 @@ namespace {
 
 namespace ksr = keystone_registration;
 
-// Constants for the brand file (uses an external file so it can survive
-// updates to Chrome.)
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define kStableBrandFileName @"Google Chrome Brand.plist"
-#define kCanaryBrandFileName @"Google Chrome Canary Brand.plist"
-#elif BUILDFLAG(CHROMIUM_BRANDING)
-#define kStableBrandFileName @"Chromium Brand.plist"
-#define kCanaryBrandFileName @"Chromium Canary Brand.plist"
-#else
-#error Unknown branding
-#endif
 
-// These directories are hardcoded in Keystone promotion preflight and the
-// Keystone install script, so NSSearchPathForDirectoriesInDomains isn't used
-// since the scripts couldn't use anything like that.
-NSString* kStableBrandUserFile = @"~/Library/Google/" kStableBrandFileName;
-NSString* kStableBrandSystemFile = @"/Library/Google/" kStableBrandFileName;
-NSString* kCanaryBrandUserFile = @"~/Library/Google/" kCanaryBrandFileName;
-NSString* kCanaryBrandSystemFile = @"/Library/Google/" kCanaryBrandFileName;
+// Functions to handle the brand file.
+//
+// Note that an external file is used so it can survive updates to Chrome.
+//
+// Note that these directories are hard-coded in Keystone scripts, so
+// NSSearchPathForDirectoriesInDomains isn't used since the scripts couldn't use
+// anything like that.
+
+NSString* BrandFileName(version_info::Channel channel) {
+  NSString* fragment;
+
+  switch (channel) {
+    case version_info::Channel::CANARY:
+      fragment = @" Canary";
+      break;
+    case version_info::Channel::DEV:
+      fragment = @" Dev";
+      break;
+    case version_info::Channel::BETA:
+      fragment = @" Beta";
+      break;
+    default:
+      fragment = @"";
+      break;
+  }
+
+  return [NSString stringWithFormat:@"Google Chrome%@ Brand.plist", fragment];
+}
 
 NSString* UserBrandFilePath(version_info::Channel channel) {
-  NSString* file = (channel == version_info::Channel::CANARY)
-                       ? kCanaryBrandUserFile
-                       : kStableBrandUserFile;
-  return [file stringByStandardizingPath];
+  return [[@"~/Library/Google/" stringByAppendingString:BrandFileName(channel)]
+      stringByStandardizingPath];
 }
 
 NSString* SystemBrandFilePath(version_info::Channel channel) {
-  NSString* file = (channel == version_info::Channel::CANARY)
-                       ? kCanaryBrandSystemFile
-                       : kStableBrandSystemFile;
-  return [file stringByStandardizingPath];
+  return [[@"/Library/Google/" stringByAppendingString:BrandFileName(channel)]
+      stringByStandardizingPath];
 }
+
+#endif
 
 // Adaptor for scheduling an Objective-C method call in ThreadPool.
 class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
@@ -198,8 +207,10 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 - (void)changePermissionsForPromotionWithTool:(NSString*)toolPath;
 - (void)changePermissionsForPromotionComplete;
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Returns the brand file path to use for Keystone.
 - (NSString*)brandFilePath;
+#endif
 
 // YES if no update installation has succeeded since a binary diff patch
 // installation failed. This signals the need to attempt a full installer
@@ -314,10 +325,8 @@ NSString* const kVersionKey = @"KSVersion";
   version_info::Channel channelType = chrome::GetChannelByName(channel);
   if (channelType == version_info::Channel::STABLE) {
     channel = base::SysNSStringToUTF8(ksr::KSRegistrationRemoveExistingTag);
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     DCHECK(chrome::GetChannelByName(channel) == version_info::Channel::STABLE)
         << "-channel name modification has side effect";
-#endif
   }
 
   _productID.reset([productID copy]);
@@ -326,6 +335,8 @@ NSString* const kVersionKey = @"KSVersion";
   _version.reset([version copy]);
   _channel = channel;
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 - (NSString*)brandFilePath {
   DCHECK(_version != nil) << "-loadParameters must be called first";
@@ -341,29 +352,22 @@ NSString* const kVersionKey = @"KSVersion";
   // Default to none.
   _brandFile.reset(@"", base::scoped_policy::RETAIN);
 
-  // Only the stable and canary channel can have independent brand codes.
+  // Only a side-by-side capable Chromium can have an independent brand code.
 
-  if (channel == version_info::Channel::DEV ||
-      channel == version_info::Channel::BETA) {
-    // If on the dev or beta channel, this installation may have replaced
-    // an older system-level installation. Check for a user brand file and
-    // nuke it if present. Don't try to remove the system brand file, there
-    // wouldn't be any permission to do so.
-    //
-    // Don't do this on the canary channel. The canary can run side-by-side
-    // with another Google Chrome installation whose brand code, if any,
-    // should remain intact.
+  if (!chrome::IsSideBySideCapable()) {
+    // If on the older dev or beta channels that were not side-by-side capable,
+    // this installation may have replaced an older system-level installation.
+    // Check for a user brand file and nuke it if present. Don't try to remove
+    // the system brand file, there wouldn't be any permission to do so.
+
+    // Don't do this on a side-by-side capable channel. Those can run
+    // side-by-side with another Google Chrome installation whose brand code, if
+    // any, should remain intact.
 
     if ([fm fileExistsAtPath:userBrandFile]) {
       [fm removeItemAtPath:userBrandFile error:NULL];
     }
-
-  } else if (channel == version_info::Channel::STABLE ||
-             channel == version_info::Channel::CANARY) {
-    // Stable and Canary use different app ids, so they can both have brand
-    // codes. Even if Canary does not actively use brand codes, we want to
-    // exercise the same logic, so that we can detect perf regressions early.
-
+  } else {
     // If there is a system brand file, use it.
     if ([fm fileExistsAtPath:systemBrandFile]) {
       // System
@@ -420,6 +424,8 @@ NSString* const kVersionKey = @"KSVersion";
   return _brandFile;
 }
 
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 - (BOOL)loadKeystoneRegistration {
   if (!_productID || !_appPath || !_url || !_version)
     return NO;
@@ -456,7 +462,10 @@ NSString* const kVersionKey = @"KSVersion";
   NSNumber* preserveTTToken = @YES;
   NSString* appInfoPlistPath = [self appInfoPlistPath];
   NSString* brandKey = kBrandKey;
-  NSString* brandPath = [self brandFilePath];
+  NSString* brandPath = @"";
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  brandPath = [self brandFilePath];
+#endif
 
   if ([brandPath length] == 0) {
     // Brand path and brand key must be cleared together or ksadmin seems
@@ -464,7 +473,7 @@ NSString* const kVersionKey = @"KSVersion";
     brandKey = @"";
   }
 
-  // Note that channel_ is permitted to be an empty string, but it must not be
+  // Note that _channel is permitted to be an empty string, but it must not be
   // nil.
   NSString* tagSuffix = [self tagSuffix];
   NSString* tagValue =
@@ -924,6 +933,7 @@ NSString* const kVersionKey = @"KSVersion";
 
   [self updateStatus:kAutoupdatePromoting version:nil error:nil];
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(mark): Remove when able!
   //
   // keystone_promote_preflight will copy the current brand information out to
@@ -1021,6 +1031,7 @@ NSString* const kVersionKey = @"KSVersion";
   if (synchronous) {
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 10, false);
   }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 - (void)promotionComplete:(NSNotification*)notification {
@@ -1144,6 +1155,8 @@ NSString* const kVersionKey = @"KSVersion";
 
 @end  // @implementation KeystoneGlue
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 namespace {
 
 std::string BrandCodeInternal() {
@@ -1164,12 +1177,17 @@ std::string BrandCodeInternal() {
 
 }  // namespace
 
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 namespace keystone_glue {
 
 std::string BrandCode() {
-  // |s_brand_code| is leaked.
-  static std::string* s_brand_code = new std::string(BrandCodeInternal());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  static base::NoDestructor<std::string> s_brand_code(BrandCodeInternal());
   return *s_brand_code;
+#else
+  return std::string();
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 bool KeystoneEnabled() {

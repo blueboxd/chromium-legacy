@@ -46,7 +46,7 @@ public class PaymentRequestPaymentAppTest {
     public void testNoSupportedPaymentMethods() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "Payment method not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     /**
@@ -61,7 +61,7 @@ public class PaymentRequestPaymentAppTest {
                 AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "Payment method not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     /**
@@ -76,7 +76,7 @@ public class PaymentRequestPaymentAppTest {
                 AppPresence.NO_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "Payment method not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     /** If the factory creates more payment apps after the UI has been dismissed, don't crash. */

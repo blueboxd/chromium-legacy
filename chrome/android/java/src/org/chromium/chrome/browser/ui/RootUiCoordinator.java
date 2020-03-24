@@ -406,7 +406,8 @@ public class RootUiCoordinator
                     toolbarContainer, mActivity.getCompositorViewHolder().getInvalidator(),
                     urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
                     mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
-                    mIdentityDiscController, mButtonDataProviders, mActivityTabProvider);
+                    mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
+                    mScrimCoordinator);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }

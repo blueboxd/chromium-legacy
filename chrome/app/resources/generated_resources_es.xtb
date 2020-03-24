@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Subir</translation>
 <translation id="1244265436519979884">Hay una restauración de Linux en curso</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
+<translation id="1246158006305844142">Tus aplicaciones y ajustes se sincronizarán en todos los dispositivos Chrome OS en los que hayas iniciado sesión con tu cuenta de Google. Para ver las opciones de sincronización del navegador, ve a la <ph name="LINK_BEGIN" />configuración de Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">¿Quieres quitar la sugerencia del portapapeles?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> se ha bloqueado porque está obsoleto</translation>
 <translation id="1251366534849411931">Falta una llave de apertura: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">No, gracias</translation>
 <translation id="1525740877599838384">Usar solo redes Wi‑Fi para determinar la ubicación</translation>
 <translation id="152629053603783244">Reiniciar Linux</translation>
+<translation id="1526335046150927198">Habilitar aceleración de desplazamiento del panel táctil</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
 <translation id="1529891865407786369">Fuente de alimentación</translation>
 <translation id="1530838837447122178">Abrir la configuración del ratón y del panel táctil</translation>
@@ -459,6 +461,7 @@
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
 <translation id="1616298854599875024">No se ha podido importar la extensión "<ph name="IMPORT_NAME" />" porque no es un módulo compartido</translation>
 <translation id="1618268899808219593">C&amp;entro de ayuda</translation>
+<translation id="1620307519959413822">La contraseña no es correcta. Vuelve a intentarlo o haz clic en He olvidado la contraseña para restablecerla.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623132449929929218">Las imágenes no están disponibles en este momento. Vuelve a conectarte a Internet para ver colecciones de fondos de pantalla.</translation>
 <translation id="1627276047960621195">Descriptores de archivo</translation>
@@ -677,6 +680,7 @@
 <translation id="1887850431809612466">Revisión de hardware</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Abrir en pantalla completa</translation>
+<translation id="1892341345406963517">Hola, <ph name="PARENT_NAME" />:</translation>
 <translation id="189358972401248634">Otros idiomas</translation>
 <translation id="1895252664692693738">Tiempo restante: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Cierre del navegador</translation>
@@ -1313,6 +1317,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
 <translation id="2727633948226935816">No volver a recordármelo</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
+<translation id="2729314457178420145">Borrar también los datos de navegación (<ph name="URL" />), lo que puede hacer que se cierre tu sesión en Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Creando copia de seguridad de las aplicaciones y archivos de Linux</translation>
 <translation id="273093730430620027">Esta página está accediendo a la cámara</translation>
 <translation id="2731392572903530958">Volv&amp;er a abrir ventana cerrada</translation>
@@ -2164,6 +2169,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3838486795898716504">Más <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Cookies y otros datos de sitios y complementos</translation>
 <translation id="383891835335927981">No se ha ampliado ni reducido ningún sitio web</translation>
+<translation id="3839509547554145593">Habilitar aceleración de desplazamiento del ratón</translation>
 <translation id="3839516600093027468">No permitir nunca que <ph name="HOST" /> vea el portapapeles</translation>
 <translation id="3841964634449506551">La contraseña no es válida</translation>
 <translation id="3842552989725514455">Fuente Serif</translation>
@@ -2774,6 +2780,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4699172675775169585">Archivos e imágenes almacenados en caché</translation>
 <translation id="4699357559218762027">(con inicio automático)</translation>
 <translation id="470074695271471509">¿Quieres cerrar sesión para terminar?</translation>
+<translation id="4701025263201366865">Inicio de sesión del padre o de la madre</translation>
 <translation id="4707302005824653064">El administrador (<ph name="CUSTODIAN_EMAIL" />) puede consultar los datos de uso y del historial a través de chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + Certificado de usuario</translation>
 <translation id="4708794300267213770">Mostrar la pantalla de bloqueo al activar el dispositivo</translation>
@@ -3081,6 +3088,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, búsqueda de <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Introduce el PIN de tu llave de seguridad. Si no sabes cuál es el PIN, tendrás que restablecer la llave de seguridad.</translation>
 <translation id="5139955368427980650">&amp;Abrir</translation>
+<translation id="5142793792982256885">Velocidad de desplazamiento del panel táctil</translation>
 <translation id="5142961317498132443">Autenticación</translation>
 <translation id="5143374789336132547">La extensión <ph name="EXTENSION_NAME" /> ha cambiado la página que se muestra al hacer clic en el botón Página de inicio.</translation>
 <translation id="5143712164865402236">Activar pantalla completa</translation>
@@ -3126,6 +3134,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5213891612754844763">Mostrar configuración de proxy</translation>
 <translation id="5215502535566372932">Selecciona un país</translation>
 <translation id="521582610500777512">Se ha descartado la foto</translation>
+<translation id="5222403284441421673">Se ha bloqueado una descarga no segura</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="52232769093306234">No se ha podido comprimir.</translation>
 <translation id="5225324770654022472">Mostrar acceso directo de aplicaciones</translation>
@@ -3524,6 +3533,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5734362860645681824">Comunicaciones</translation>
 <translation id="5734697361979786483">Añadir sistema de archivos compartidos</translation>
 <translation id="5736796278325406685">Introduce un nombre de usuario válido</translation>
+<translation id="5739017626473506901">Inicia sesión para ayudar a <ph name="USER_NAME" /> a añadir una cuenta de centro educativo</translation>
 <translation id="5739235828260127894">Esperando verificación. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" />.</translation>
 <translation id="5739458112391494395">Muy grande</translation>
 <translation id="574209121243317957">Tono</translation>
@@ -3643,6 +3653,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="5906655207909574370">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="5906732635754427568">Los datos asociados a esta aplicación se eliminarán de este dispositivo.</translation>
+<translation id="5908695239556627796">Velocidad de desplazamiento del ratón</translation>
 <translation id="5908769186679515905">Impedir que los sitios web ejecuten Flash</translation>
 <translation id="5910363049092958439">Guar&amp;dar imagen como...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> no tiene conexión</translation>
@@ -5090,6 +5101,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
     <ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> El sistema se reiniciará durante el proceso.</translation>
 <translation id="7828731929332799387">Se eliminarán todas las cookies y los datos de sitios web disponibles en contextos de terceros. ¿Quieres continuar?</translation>
 <translation id="7829298379596169484">Accediendo a la entrada de audio</translation>
+<translation id="7829877209233347340">Pídele a tu padre o a tu madre que inicie sesión para permitir que se añada una cuenta de centro educativo</translation>
 <translation id="7830594666202422257">Conectar a Linux</translation>
 <translation id="7831491651892296503">No se ha podido configurar la red</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5530,6 +5542,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8408068190360279472">Red <ph name="NETWORK_TYPE" />, conectando</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Preguntar antes (recomendado)</translation>
+<translation id="8417548266957501132">Contraseña parental</translation>
 <translation id="8417573335434189196">No te protege frente a descargas, extensiones ni sitios web peligrosos. Chrome no recomienda esta opción.</translation>
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
 <translation id="8419098111404128271">Resultados de búsqueda de "<ph name="SEARCH_TEXT" />"</translation>
@@ -5844,6 +5857,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8808686172382650546">Gato</translation>
 <translation id="8808744862003883508">En esta página aparecen todas las extensiones instaladas en Chrome.</translation>
 <translation id="8809147117840417135">Turquesa claro</translation>
+<translation id="8812593354822910461">Borrar también los datos de navegación (<ph name="URL" />), lo que cerrará tu sesión en <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">No se puede iniciar sesión como <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">hoja de papel</translation>
 <translation id="8813872945700551674">Ve a buscar a tu padre o a tu madre para que apruebe "<ph name="EXTENSION_NAME" />"</translation>
@@ -6133,6 +6147,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9203398526606335860">&amp;Perfiles habilitados</translation>
 <translation id="9203904171912129171">Selecciona un dispositivo</translation>
 <translation id="9203962528777363226">El administrador de este dispositivo ha desactivado la opción de añadir nuevos usuarios.</translation>
+<translation id="9209689095351280025">Los sitios web no pueden usar cookies para hacer un seguimiento de tu actividad en la Web.</translation>
 <translation id="9211177926627870898">Actualización necesaria</translation>
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Ponte en contacto con el representante del servicio de asistencia.</translation>
 <translation id="9214695392875603905">Cupcake</translation>

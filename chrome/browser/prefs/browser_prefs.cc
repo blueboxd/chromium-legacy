@@ -315,7 +315,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -377,8 +377,10 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/device_identity//device_oauth2_token_store_desktop.h"
 #include "chrome/browser/downgrade/downgrade_prefs.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
+
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -719,7 +721,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::DemoModeResourcesRemover::RegisterLocalStatePrefs(registry);
   chromeos::DemoSession::RegisterLocalStatePrefs(registry);
   chromeos::DemoSetupController::RegisterLocalStatePrefs(registry);
-  chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);
+  chromeos::DeviceOAuth2TokenStoreChromeOS::RegisterPrefs(registry);
   chromeos::device_settings_cache::RegisterPrefs(registry);
   chromeos::EasyUnlockService::RegisterPrefs(registry);
   chromeos::echo_offer::RegisterPrefs(registry);
@@ -806,6 +808,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
   downgrade::RegisterPrefs(registry);
+  DeviceOAuth2TokenStoreDesktop::RegisterPrefs(registry);
 #endif
 
   // Obsolete. See MigrateObsoleteBrowserPrefs().

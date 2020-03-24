@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/trust_tokens/trust_token_test_util.h"
+#include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "base/test/bind_test_util.h"
 
 namespace network {

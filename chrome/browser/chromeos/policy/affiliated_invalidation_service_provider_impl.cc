@@ -428,9 +428,8 @@ AffiliatedInvalidationServiceProviderImpl::
     DCHECK(url_loader_factory);
   }
 
-  device_identity_provider_ =
-      std::make_unique<chromeos::DeviceIdentityProvider>(
-          chromeos::DeviceOAuth2TokenServiceFactory::Get());
+  device_identity_provider_ = std::make_unique<DeviceIdentityProvider>(
+      DeviceOAuth2TokenServiceFactory::Get());
 
   device_instance_id_driver_ = std::make_unique<instance_id::InstanceIDDriver>(
       g_browser_process->gcm_driver());

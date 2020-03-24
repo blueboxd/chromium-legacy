@@ -116,11 +116,20 @@ struct QuickAnswer {
   std::unique_ptr<QuickAnswerImage> image;
 };
 
+// Information of the device that used by the user to send the request.
+struct DeviceProperties {
+  // Device language code.
+  std::string language;
+};
+
 // Structure to describe an quick answer request including selected content and
 // context.
 struct QuickAnswersRequest {
   // The selected Text.
   std::string selected_text;
+
+  // Device specific properties.
+  DeviceProperties device_properties;
 
   // TODO(llin): Add context and other targeted objects (e.g: images, links,
   // etc).

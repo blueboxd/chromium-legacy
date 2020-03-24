@@ -11,6 +11,7 @@
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
+#include "components/policy/core/common/features.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -111,6 +112,21 @@ void MachineLevelUserCloudPolicyManager::Shutdown() {
   if (external_data_manager_)
     external_data_manager_->Disconnect();
   CloudPolicyManager::Shutdown();
+}
+
+void MachineLevelUserCloudPolicyManager::OnStoreLoaded(
+    CloudPolicyStore* cloud_policy_store) {
+  DCHECK_EQ(store(), cloud_policy_store);
+  CloudPolicyManager::OnStoreLoaded(cloud_policy_store);
+
+  if (!base::FeatureList::IsEnabled(policy::features::kCBCMServiceAccounts))
+    return;
+
+  if (store()->policy() && store()->policy()->has_service_account_identity()) {
+    std::string service_account_id =
+        store()->policy()->service_account_identity();
+    client()->UpdateServiceAccount(service_account_id);
+  }
 }
 
 }  // namespace policy

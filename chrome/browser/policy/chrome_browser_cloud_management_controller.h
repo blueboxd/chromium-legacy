@@ -102,6 +102,7 @@ class ChromeBrowserCloudManagementController
   void OnPolicyFetched(CloudPolicyClient* client) override;
   void OnRegistrationStateChanged(CloudPolicyClient* client) override;
   void OnClientError(CloudPolicyClient* client) override;
+  void OnServiceAccountChanged(CloudPolicyClient* client) override;
 
   // Early cleanup during browser shutdown process
   void ShutDown();

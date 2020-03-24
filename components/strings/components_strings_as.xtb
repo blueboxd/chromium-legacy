@@ -313,6 +313,7 @@
 <translation id="2288422996159078444">আপুনি টাইপ কৰা যিকোনো পাঠ, আপুনি চোৱা যিকোনো পৃষ্ঠা অথবা ৱেবত কৰা অন্য যিকোনো কার্যকলাপ চাই থকা হৈছে। আপোনাৰ অজ্ঞাতে ছাইটসমূহত থকা সমল সলনি কৰা হ’ব পাৰে।</translation>
 <translation id="2289385804009217824">ট্ৰিম কৰক</translation>
 <translation id="2292556288342944218">আপোনাৰ ইণ্টাৰনেটৰ এক্সেছ অৱৰোধ কৰা হ’ল</translation>
+<translation id="2293443924986248631">অন কৰা থাকিলে ছাইটসমূহে সমগ্ৰ ৱেবত আপোনাক ট্ৰেক কৰা কুকিসমূহ ব্যৱহাৰ কৰিব নোৱাৰে। কিছুমান ছাইটত সুবিধাসমূহ ব্যাহত হ’ব পাৰে।</translation>
 <translation id="2297722699537546652">B5 (লেফাফা)</translation>
 <translation id="2300306941146563769">আপল'ড কৰা হোৱা নাই</translation>
 <translation id="2310021320168182093">Chou2 (লেফাফা)</translation>
@@ -724,6 +725,7 @@
 <translation id="4152318981910038897">{COUNT,plural, =1{পৃষ্ঠা ১}one{পৃষ্ঠা {COUNT}}other{পৃষ্ঠা {COUNT}}}</translation>
 <translation id="4154664944169082762">ফিংগাৰপ্ৰিণ্ট</translation>
 <translation id="4159784952369912983">বেঙুনীয়া</translation>
+<translation id="4163132590327127354">পঢ়াৰ বাবে সহজ কৰিবলৈ Chromeএ এই পৃষ্ঠাখন সৰলীকৃত কৰিছে।</translation>
 <translation id="4165986682804962316">ছাইটৰ ছেটিংসমূহ</translation>
 <translation id="4171400957073367226">সত্যাপনৰ স্বাক্ষৰটো বেয়া</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1020,6 +1022,11 @@
 <translation id="536296301121032821">নীতিৰ ছেটিংসমূহ ষ্ট’ৰ কৰিবলৈ সক্ষম নহ’ল</translation>
 <translation id="5371425731340848620">কাৰ্ড আপডে’ট কৰক</translation>
 <translation id="5377026284221673050">"আপোনাৰ ঘড়ী লেহেমীয়াকৈ চলি আছে" বা "আপোনাৰ ঘড়ী খৰকৈ চলি আছে " বা "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">আপুনি ব্যৱহাৰ কৰিবলৈ লোৱা ছাৰ্ভাৰ <ph name="ORIGIN" />এ এটা হেডাৰ ছেট কৰিছে যাৰ
+    বাবে এইটোলৈ কৰা সকলো অনুৰোধত এটা মূল নীতি প্ৰয়োগ কৰা হ’ব। কিন্তু
+    হেডাৰটো ভালকৈ বনোৱা হোৱা নাই, যিয়ে ব্ৰাউজাৰটোক আপুনি কৰা <ph name="SITE" />ৰ
+    অনুৰোধটো পৰিপূৰণ কৰাত বাধা দিছে। কোনো ছাইটৰ বাবে
+    সুৰক্ষা আৰু অন্য বৈশিষ্ট্যবোৰ কনফিগাৰ কৰিবলৈ ছাইট অপাৰেটৰসকলে মূল নীতিসমূহ ব্যৱহাৰ কৰিব পাৰে।</translation>
 <translation id="5386426401304769735">এই ছাইটটোৰ প্ৰমাণপত্ৰৰ চ্চেইনত SHA-1 ব্যৱহাৰ কৰি ছাইন কৰা এখন প্ৰমাণপত্ৰ আছে।</translation>
 <translation id="538659543871111977">A4-টেব</translation>
 <translation id="5396631636586785122">সোঁফালে কাষত চিলাওক</translation>
@@ -1559,6 +1566,7 @@
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">ফায়াৰৱাল বা এণ্টিভাইৰাছ ছফটৱেৰে সংযোগটো অৱৰোধ কৰিব পাৰে।</translation>
 <translation id="7759163816903619567">ড’মেইন প্ৰদৰ্শন কৰক:</translation>
+<translation id="776110834126722255">অপ্ৰচলিত</translation>
 <translation id="7761701407923456692">ছাৰ্ভাৰৰ প্ৰমাণপত্ৰ URLৰ সৈতে নিমিলে।</translation>
 <translation id="7763386264682878361">পৰিশোধ ঘোষণাৰ পার্ছাৰ</translation>
 <translation id="7764225426217299476">ঠিকনা যোগ কৰক</translation>

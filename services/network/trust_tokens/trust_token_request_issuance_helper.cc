@@ -25,7 +25,7 @@ namespace network {
 TrustTokenRequestIssuanceHelper::TrustTokenRequestIssuanceHelper(
     const url::Origin& top_level_origin,
     TrustTokenStore* token_store,
-    std::unique_ptr<KeyCommitmentGetter> key_commitment_getter,
+    std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
     std::unique_ptr<Cryptographer> cryptographer)
     : top_level_origin_(top_level_origin),
       token_store_(token_store),

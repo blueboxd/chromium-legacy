@@ -146,7 +146,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
     public void testNoSupportedPaymentMethods() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "Payment method not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     @Test

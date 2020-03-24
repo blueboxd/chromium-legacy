@@ -456,6 +456,9 @@ extern const char kEnablePixelCanvasRecordingDescription[];
 extern const char kEnablePreviewsCoinFlipName[];
 extern const char kEnablePreviewsCoinFlipDescription[];
 
+extern const char kEnableSRPIsolatedPrerendersName[];
+extern const char kEnableSRPIsolatedPrerendersDescription[];
+
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];

@@ -765,6 +765,16 @@ void CloudPolicyClient::ClientCertProvisioningDownloadCert(
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
+void CloudPolicyClient::UpdateServiceAccount(const std::string& account_email) {
+  // The service account identity is always set on policy data, so don't notify
+  // the observers if it's the same as it was during the previous fetch.
+  if (service_account_email_ == account_email)
+    return;
+
+  service_account_email_ = account_email;
+  NotifyServiceAccountChanged();
+}
+
 void CloudPolicyClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -1359,6 +1369,11 @@ void CloudPolicyClient::NotifyRegistrationStateChanged() {
 void CloudPolicyClient::NotifyClientError() {
   for (auto& observer : observers_)
     observer.OnClientError(this);
+}
+
+void CloudPolicyClient::NotifyServiceAccountChanged() {
+  for (auto& observer : observers_)
+    observer.OnServiceAccountChanged(this);
 }
 
 void CloudPolicyClient::CreateDeviceRegisterRequest(

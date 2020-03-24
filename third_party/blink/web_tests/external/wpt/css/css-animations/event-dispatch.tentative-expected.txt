@@ -25,6 +25,6 @@ PASS Restart animation after canceling animation immediately.
 PASS Call Animation.cancel after restarting animation immediately.
 FAIL Set timeline and play transition after clearing the timeline. promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<CSSAnimation>'"
 PASS Set null target effect after canceling the animation.
-FAIL Cancel the animation after clearing the target effect. assert_true: Timed out waiting for animationend expected true got false
+PASS Cancel the animation after clearing the target effect.
 Harness: the test ran to completion.
 

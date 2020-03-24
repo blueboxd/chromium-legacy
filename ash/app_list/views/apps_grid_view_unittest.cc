@@ -10,7 +10,6 @@
 #include <string>
 
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -202,10 +201,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     app_list_view_ = new AppListView(delegate_.get());
-    app_list_view_->InitView(
-        create_as_tablet_mode_, parent,
-        base::BindRepeating(&UpdateActivationForAppListView, app_list_view_,
-                            create_as_tablet_mode_));
+    app_list_view_->InitView(create_as_tablet_mode_, parent);
     app_list_view_->Show(false /*is_side_shelf*/, create_as_tablet_mode_);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
     apps_grid_view_ = contents_view_->GetAppsContainerView()->apps_grid_view();

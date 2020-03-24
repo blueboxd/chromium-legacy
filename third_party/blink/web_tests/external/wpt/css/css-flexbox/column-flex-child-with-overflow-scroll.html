@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
-<link href="resources/flexbox.css" rel="stylesheet">
+<title>Proper height of column flex children with overflow: scroll.</title>
+<link href="support/flexbox.css" rel="stylesheet">
+<link rel="help" href="https://www.w3.org/TR/css-flexbox-1/#flex-direction-property">
+<meta name="assert" content="This test ensures children of flexbox with flex-direction: column|column-reverse does not shrink their height after applying the overflow: scroll style."/>
 <style>
 div {
     box-sizing: border-box;
@@ -17,9 +20,9 @@ div {
     border: 2px solid red;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>
 <div class="flexbox column">

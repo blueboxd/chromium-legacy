@@ -98,7 +98,7 @@ void PageloadForegroundDurationTabHelper::DidFinishNavigation(
   int has_committed = navigation_context->HasCommitted() ? 1 : 0;
   ukm::SourceId source_id = ukm::GetSourceIdForWebStateDocument(web_state_);
   if (source_id != ukm::kInvalidSourceId) {
-    ukm::builders::PageLoad(source_id)
+    ukm::builders::MainFrameNavigation(source_id)
         .SetDidCommit(has_committed)
         .Record(ukm::UkmRecorder::Get());
   }

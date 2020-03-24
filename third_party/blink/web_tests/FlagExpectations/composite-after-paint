@@ -96,12 +96,6 @@ crbug.com/765003 paint/invalidation/compositing/should-not-repaint-composited-fi
 crbug.com/765003 paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
 crbug.com/765003 compositing/contents-opaque/layer-opacity.html [ Failure ]
 
-# Should allow DecompositeEffect() to upcast to an intermediate isolation group
-# that doesn't have a paint chunk.
-external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
-external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
-css3/blending/svg-isolation-add-clipper-text.html [ Failure ]
-
 # Extra layers for non-fast scrolling areas.
 compositing/overflow/textarea-scroll-touch.html [ Failure ]
 

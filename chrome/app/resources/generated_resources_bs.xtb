@@ -461,6 +461,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1616206807336925449">Za ovu ekstenziju nisu potrebna posebna odobrenja.</translation>
 <translation id="1616298854599875024">Nije moguće uvesti ekstenziju "<ph name="IMPORT_NAME" />" jer ovo nije dijeljeni modul.</translation>
 <translation id="1618268899808219593">C&amp;entar za pomoć</translation>
+<translation id="1620307519959413822">Pogrešna lozinka. Pokušajte ponovo ili kliknite na Zaboravili ste lozinku da je poništite.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623132449929929218">Slike trenutno nisu dostupne. Ponovo se povežite na internet da vidite kolekcije pozadinskih slika.</translation>
 <translation id="1627276047960621195">Deskriptori fajlova</translation>
@@ -679,6 +680,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1887850431809612466">Revizija hardvera</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Otvori preko cijelog ekrana</translation>
+<translation id="1892341345406963517">Zdravo, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Drugi jezici</translation>
 <translation id="1895252664692693738">Još <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Isključivanje</translation>
@@ -1341,7 +1343,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2753677631968972007">Ručno kontrolirajte odobrenja za web lokacije.</translation>
 <translation id="2755367719610958252">Upravljajte funkcijama pristupačnosti</translation>
 <translation id="275662540872599901">ekran je isključen</translation>
-<translation id="2757338480560142065">Provjerite je li lozinka koju želite sačuvati ista kao i lozinka za web lokaciju <ph name="WEBSITE" /></translation>
+<translation id="2757338480560142065">Provjerite podudara li se lozinka koju želite sačuvati s lozinkom za web lokaciju <ph name="WEBSITE" /></translation>
 <translation id="2762441749940182211">Kamera je blokirana</translation>
 <translation id="2765217105034171413">Malo</translation>
 <translation id="2766161002040448006">Pitaj roditelja</translation>
@@ -2335,7 +2337,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4047726037116394521">Odlazak na početnu stranicu</translation>
 <translation id="4050225813016893843">Metoda autentifikacije</translation>
 <translation id="4052120076834320548">Malo</translation>
-<translation id="4056908315660577142">Dostignuto je vremensko ograničenje koje je tvoj roditelj postavio za Chrome aplikaciju <ph name="APP_NAME" /> Sutra je možeš koristiti <ph name="TIME_LIMIT" />.</translation>
+<translation id="4056908315660577142">Dostignuto je vremensko ograničenje koje je tvoj roditelj postavio za Chrome aplikaciju <ph name="APP_NAME" />. Sutra je možeš koristiti <ph name="TIME_LIMIT" />.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" />, <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Pogledajte u web trgovini</translation>
 <translation id="4058647953897694817">Potvrdi putem Bluetootha</translation>
@@ -3133,6 +3135,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5213891612754844763">Prikaži postavke proksi servera</translation>
 <translation id="5215502535566372932">Odaberite zemlju</translation>
 <translation id="521582610500777512">Fotografija je odbačena</translation>
+<translation id="5222403284441421673">Nesigurno preuzimanje je blokirano</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="52232769093306234">Pakiranje nije uspjelo.</translation>
 <translation id="5225324770654022472">Prikaži prečicu do aplikacije</translation>
@@ -3241,7 +3244,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5353252989841766347">Izvezite lozinke iz Chromea</translation>
 <translation id="5355099869024327351">Dozvolite Asistentu da prikaže vaša obavještenja</translation>
 <translation id="5355926466126177564">Proširenje "<ph name="EXTENSION_NAME" />" promijenilo stranicu koja se prikazuje prilikom pretraživanja putem višenamjenskog okvira.</translation>
-<translation id="535911077628776608">Fajl <ph name="FILE_NAME" /> može biti opasan. Poslati Googleovoj Naprednoj zaštiti radi skeniranja? Pritisnite Shift + F6 da odete u područje trake preuzetih fajlova.</translation>
+<translation id="535911077628776608">Fajl <ph name="FILE_NAME" /> može biti opasan. Poslati Googleovoj Naprednoj zaštiti radi skeniranja? Pritisnite Shift + F6 da odete u područje trake preuzetih fajlova.</translation>
 <translation id="5359910752122114278">1 rezultat</translation>
 <translation id="5360150013186312835">Prikaži na alatnoj traci</translation>
 <translation id="5362741141255528695">Odaberite fajl privatnog ključa.</translation>
@@ -3531,6 +3534,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5734362860645681824">Komunikacije</translation>
 <translation id="5734697361979786483">Dodajte dijeljenje fajlova</translation>
 <translation id="5736796278325406685">Unesite važeće korisničko ime</translation>
+<translation id="5739017626473506901">Prijavite se da <ph name="USER_NAME" /> primi pomoć pri dodavanju školskog računa</translation>
 <translation id="5739235828260127894">Čeka se potvrda. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Vrlo velik</translation>
 <translation id="574209121243317957">Visina</translation>
@@ -5539,6 +5543,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8408068190360279472">Mreža <ph name="NETWORK_TYPE" />, povezivanje</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Prvo pitaj (preporučeno)</translation>
+<translation id="8417548266957501132">Lozinka roditelja</translation>
 <translation id="8417573335434189196">Ne štiti vas od opasnih web lokacija, preuzimanja ili ekstenzija. Chrome ne preporučuje ovu postavku.</translation>
 <translation id="8418445294933751433">&amp;Prikaži kao karticu</translation>
 <translation id="8419098111404128271">Rezultati pretraživanja za "<ph name="SEARCH_TEXT" />"</translation>

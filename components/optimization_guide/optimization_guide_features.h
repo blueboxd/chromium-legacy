@@ -36,6 +36,10 @@ size_t MaxHintsFetcherTopHostBlacklistSize();
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
 
+// The maximum number of URLs allowed to be requested by the client to the
+// remote Optimzation Guide Service.
+size_t MaxUrlsForOptimizationGuideServiceHintsFetch();
+
 // The maximum number of hosts allowed to be stored as covered by the hints
 // fetcher.
 size_t MaxHostsForRecordingSuccessfullyCovered();

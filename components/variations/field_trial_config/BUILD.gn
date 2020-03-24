@@ -35,11 +35,15 @@ action("field_trial_testing_config_action") {
     "--output=$out_name",
   ]
 
-  # At build-time, Android Chrome and WebView both use platform "android", but
-  # at run-time, variations has separate platforms "android" and
-  # "android_webview". So if building "android", also include WebView.
+  # At build-time, Android Chrome and WebView/WebLayer use the platform
+  # "android", but at run-time, variations has separate platforms "android",
+  # "android_webview" and "android_weblayer". So if building "android", also
+  # include WebView/WebLayer.
   if (platform == "android") {
-    args += [ "--platform=android_webview" ]
+    args += [
+      "--platform=android_weblayer",
+      "--platform=android_webview",
+    ]
   }
 }
 

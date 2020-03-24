@@ -384,15 +384,6 @@ bool ContentsView::IsShowingEmbeddedAssistantUI() const {
   return IsStateActive(AppListState::kStateEmbeddedAssistant);
 }
 
-void ContentsView::FocusEmbeddedAssistantPage() {
-  const int assistant_page =
-      GetPageIndexForState(AppListState::kStateEmbeddedAssistant);
-  DCHECK_GE(assistant_page, 0);
-  auto* page_view = GetPageView(assistant_page);
-  page_view->RequestFocus();
-  page_view->SetVisible(true);
-}
-
 void ContentsView::InitializeSearchBoxAnimation(AppListState current_state,
                                                 AppListState target_state) {
   SearchBoxView* search_box = GetSearchBoxView();

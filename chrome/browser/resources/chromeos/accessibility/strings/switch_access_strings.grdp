@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <grit-part>
   <message desc="The product name for Switch Access." name="IDS_SWITCH_ACCESS_NAME">
     Switch Access
   </message>
   <message desc="The description for Switch Access." name="IDS_SWITCH_ACCESS_DESCRIPTION">
-    Control the device with just 1 or 2 switches.
+    Control the device with just 1 or 2 switches
   </message>
   <message desc="The title of the Switch Access menu to select which action to perform on an element." name="IDS_SWITCH_ACCESS_MENU_TITLE">
     Switch Access Menu

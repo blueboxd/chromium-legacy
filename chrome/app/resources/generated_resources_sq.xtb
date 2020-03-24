@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Ngarko</translation>
 <translation id="1244265436519979884">Restaurimi i Linux aktualisht në vazhdim</translation>
 <translation id="1244303850296295656">Shtesa e paketës</translation>
+<translation id="1246158006305844142">Aplikacionet dhe cilësimet e tua do të sinkronizohen nëpër të gjitha pajisjet me sistem operativ Chrome ku je identifikuar me llogarinë tënde të Google. Për opsionet e sinkronizimit të shfletuesit, shko te<ph name="LINK_BEGIN" />cilësimet e Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Të hiqet sugjerimi nga kujtesa e fragmenteve?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> u bllokua sepse është i vjetruar</translation>
 <translation id="1251366534849411931">Kllapë gjarpërushe hapëse e pritshme: <ph name="ERROR_LINE" /></translation>
@@ -388,6 +389,7 @@
 <translation id="1524563461097350801">Jo, faleminderit</translation>
 <translation id="1525740877599838384">Përdor vetëm Wi-Fi për të përcaktuar vendndodhjen</translation>
 <translation id="152629053603783244">Rinis Linux</translation>
+<translation id="1526335046150927198">Aktivizo përshpejtimin e lëvizjes së bllokut me prekje</translation>
 <translation id="1526560967942511387">Dokument pa titull</translation>
 <translation id="1529891865407786369">Burimi i energjisë</translation>
 <translation id="1530838837447122178">Hap cilësimet e miut dhe bllokut me prekje</translation>
@@ -1310,6 +1312,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2725200716980197196">Lidhshmëria e rrjetit u restaurua</translation>
 <translation id="2727633948226935816">Mos më kujto më</translation>
 <translation id="2727712005121231835">Madhësia aktuale</translation>
+<translation id="2729314457178420145">Pastro gjithashtu të dhënat e shfletimit, (<ph name="URL" />)gjë që mund të të bëjë të dalësh nga Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Po rezervon aplikacionet dhe skedarët e Linux</translation>
 <translation id="273093730430620027">Kjo faqe po qaset te kamera jote.</translation>
 <translation id="2731392572903530958">H&amp;ape sërish dritaren e mbyllur</translation>
@@ -2161,6 +2164,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3838486795898716504">Më shumë <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Kukit, faqet e tjera dhe të dhënat e përbërësve shtesë</translation>
 <translation id="383891835335927981">Asnjë sajt nuk është zmadhuar apo zvogëluar</translation>
+<translation id="3839509547554145593">Aktivizo përshpejtimin e lëvizjes së miut</translation>
 <translation id="3839516600093027468">Blloko gjithmonë <ph name="HOST" /> që të mos shikojë kujtesën e fragmenteve</translation>
 <translation id="3841964634449506551">Fjalëkalimi është i pavlefshëm</translation>
 <translation id="3842552989725514455">Shkrimi serif</translation>
@@ -2772,6 +2776,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4699172675775169585">Imazhet dhe skedarët në memorien specifike</translation>
 <translation id="4699357559218762027">(nisur automatikisht)</translation>
 <translation id="470074695271471509">Do të dalësh për ta përfunduar?</translation>
+<translation id="4701025263201366865">Identifikimi i prindit</translation>
 <translation id="4707302005824653064">Përdorimi dhe historiku mund të rishikohen nga menaxheri (<ph name="CUSTODIAN_EMAIL" />) në chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + certifikatë përdoruesi</translation>
 <translation id="4708794300267213770">Shfaq ekranin e kyçjes kur zgjohet nga gjumi</translation>
@@ -3079,6 +3084,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, kërko në <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Fut kodin PIN për çelësin e sigurisë. Nëse nuk e di kodin PIN, do të duhet ta rivendosësh çelësin e sigurisë.</translation>
 <translation id="5139955368427980650">&amp;Hape</translation>
+<translation id="5142793792982256885">Shpejtësia e lëvizjes së bllokut me prekje</translation>
 <translation id="5142961317498132443">Vërtetimi</translation>
 <translation id="5143374789336132547">Shtesa <ph name="EXTENSION_NAME" /> ka ndryshuar se cila faqe shfaqet kur klikon te butoni Kreu.</translation>
 <translation id="5143712164865402236">Hyr në ekranin e plotë</translation>
@@ -3641,6 +3647,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5901630391730855834">E verdhë</translation>
 <translation id="5906655207909574370">Pothuajse i përditësuar! Rinise pajisjen për të përfunduar përditësimin.</translation>
 <translation id="5906732635754427568">Të dhënat e lidhura me këtë aplikacion do të hiqen nga kjo pajisje.</translation>
+<translation id="5908695239556627796">Shpejtësia e lëvizjes së miut</translation>
 <translation id="5908769186679515905">Blloko sajtet që të mos ekzekutojnë Flash</translation>
 <translation id="5910363049092958439">Ru&amp;aje imazhin si...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> është jashtë linje</translation>
@@ -5087,6 +5094,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
     <ph name="BEGIN_BOLD" />Shënim:<ph name="END_BOLD" />  Sistemi do të rifillojë punën gjatë procesit.</translation>
 <translation id="7828731929332799387">Kjo do të fshijë të gjitha kukit dhe të dhënat e sajtit që ofrohen në kontekstet e palëve të treta. Dëshiron të vazhdosh?</translation>
 <translation id="7829298379596169484">Po qaset në hyrjen e audios</translation>
+<translation id="7829877209233347340">Kërkoji prindit që të të japë leje për të shtuar një llogari shkolle</translation>
 <translation id="7830594666202422257">Lidhe me Linux</translation>
 <translation id="7831491651892296503">Gabim gjatë konfigurimit të rrjetit</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5840,6 +5848,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8808686172382650546">Macja</translation>
 <translation id="8808744862003883508">Në këtë faqe mund të shikosh të gjitha shtesat e instaluara në Chrome.</translation>
 <translation id="8809147117840417135">Gurkali e çelur</translation>
+<translation id="8812593354822910461">Pastro gjithashtu të dhënat e shfletimit, (<ph name="URL" />) gjë që mund të të bëjë të dalësh nga <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Nuk mund të identifikohet në <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">fletë letre</translation>
 <translation id="8813872945700551674">Kërkoji një prindi të miratojë "<ph name="EXTENSION_NAME" />"</translation>
@@ -6129,6 +6138,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="9203398526606335860">&amp;Profilizimi u aktivizua</translation>
 <translation id="9203904171912129171">Zgjidh një pajisje</translation>
 <translation id="9203962528777363226">Administratori i kësaj pajisjeje ka çaktivizuar shtimin e përdoruesve të rinj</translation>
+<translation id="9209689095351280025">Sajtet nuk mund të përdorin kuki që të monitorojnë nëpër ueb</translation>
 <translation id="9211177926627870898">Kërkohet përditësimi</translation>
 <translation id="9214520840402538427">Mos! Nisjes së atributeve të kohës së instalimit i ka përfunduar afati. Kontakto me përfaqësuesin e mbështetjes.</translation>
 <translation id="9214695392875603905">Kek në kupë</translation>

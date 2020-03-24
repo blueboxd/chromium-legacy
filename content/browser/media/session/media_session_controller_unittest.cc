@@ -66,6 +66,12 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
                                        multiplier);
   }
 
+  void SetWebContentsAudioMuted(bool muted) {
+    contents()->SetAudioMuted(muted);
+    // The following happens automatically in a running browser.
+    controller_->WebContentsMutedStateChanged(muted);
+  }
+
   void ResetHasSessionBit() { controller_->has_session_ = false; }
 
   template <typename T>
@@ -324,6 +330,104 @@ TEST_F(MediaSessionControllerTest, PictureInPictureAvailability) {
   controller_->OnPictureInPictureAvailabilityChanged(true);
   EXPECT_TRUE(controller_->IsPictureInPictureAvailable(
       controller_->get_player_id_for_testing()));
+}
+
+TEST_F(MediaSessionControllerTest, AddPlayerWhenUnmuted) {
+  SetWebContentsAudioMuted(true);
+
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ true, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  ASSERT_FALSE(media_session()->IsActive());
+
+  SetWebContentsAudioMuted(false);
+  EXPECT_TRUE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest, RemovePlayerWhenMuted) {
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ true, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  ASSERT_TRUE(media_session()->IsActive());
+
+  SetWebContentsAudioMuted(true);
+  EXPECT_FALSE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest, EnterLeavePictureInPictureMuted) {
+  SetWebContentsAudioMuted(true);
+
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ true, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  ASSERT_FALSE(media_session()->IsActive());
+
+  // Entering PictureInPicture means the user expects to control the media, so
+  // this should activate the session.
+  controller_->PictureInPictureStateChanged(true);
+  EXPECT_TRUE(media_session()->IsActive());
+
+  controller_->PictureInPictureStateChanged(false);
+  EXPECT_FALSE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest, MuteWithPictureInPicture) {
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ true, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  controller_->PictureInPictureStateChanged(true);
+  ASSERT_TRUE(media_session()->IsActive());
+
+  SetWebContentsAudioMuted(true);
+  EXPECT_TRUE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest, LeavePictureInPictureUnmuted) {
+  SetWebContentsAudioMuted(true);
+
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ true, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  ASSERT_FALSE(media_session()->IsActive());
+
+  controller_->PictureInPictureStateChanged(true);
+  SetWebContentsAudioMuted(false);
+
+  // Media was unmuted, so we now have audio focus, which should keep the
+  // session active.
+  controller_->PictureInPictureStateChanged(false);
+  EXPECT_TRUE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest, AddPlayerWhenAddingAudio) {
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ false, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  ASSERT_FALSE(media_session()->IsActive());
+
+  EXPECT_TRUE(controller_->Initialize(
+      /* has_audio = */ true, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  EXPECT_TRUE(media_session()->IsActive());
+}
+
+TEST_F(MediaSessionControllerTest,
+       AddPlayerWhenEnteringPictureInPictureWithNoAudio) {
+  ASSERT_TRUE(controller_->Initialize(
+      /* has_audio = */ false, /* is_remote = */ false,
+      media::MediaContentType::Persistent, nullptr,
+      /* is_pip_available = */ true));
+  ASSERT_FALSE(media_session()->IsActive());
+
+  controller_->PictureInPictureStateChanged(true);
+  EXPECT_TRUE(media_session()->IsActive());
 }
 
 }  // namespace content

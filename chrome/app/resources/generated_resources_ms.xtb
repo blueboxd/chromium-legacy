@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Sambungan ini tidak memerlukan kebenaran khas.</translation>
 <translation id="1616298854599875024">Tidak dapat mengimport sambungan "<ph name="IMPORT_NAME" />" kerana bukan modul kongsi</translation>
 <translation id="1618268899808219593">P&amp;usat Bantuan</translation>
+<translation id="1620307519959413822">Kata laluan salah. Cuba lagi atau klik Terlupa kata laluan untuk menetapkan semula kata laluan.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623132449929929218">Imej tidak tersedia pada masa ini. Sila sambung semula ke Internet untuk melihat koleksi kertas dinding.</translation>
 <translation id="1627276047960621195">Pemerihal Fail</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Semakan perkakasan</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Buka skrin penuh</translation>
+<translation id="1892341345406963517">Hai <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Bahasa lain</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> lagi</translation>
 <translation id="1895658205118569222">Tutup</translation>
@@ -3133,6 +3135,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5213891612754844763">Tunjukkan tetapan proksi</translation>
 <translation id="5215502535566372932">Pilih negara</translation>
 <translation id="521582610500777512">Foto telah dibuang</translation>
+<translation id="5222403284441421673">Muat turun yang tidak selamat disekat</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="52232769093306234">Gagal membungkus.</translation>
 <translation id="5225324770654022472">Paparkan pintasan apl</translation>
@@ -3531,6 +3534,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5734362860645681824">Komunikasi</translation>
 <translation id="5734697361979786483">Tambahkan perkongsian fail</translation>
 <translation id="5736796278325406685">Sila masukkan nama pengguna yang sah</translation>
+<translation id="5739017626473506901">Log masuk untuk membantu <ph name="USER_NAME" /> menambah akaun sekolah</translation>
 <translation id="5739235828260127894">Menunggu pengesahan. <ph name="LINK_BEGIN" />Ketahui lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Sangat besar</translation>
 <translation id="574209121243317957">Nada</translation>
@@ -5540,6 +5544,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8408068190360279472">Rangkaian <ph name="NETWORK_TYPE" />, menyambung</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Tanya dahulu (disyorkan)</translation>
+<translation id="8417548266957501132">Kata laluan ibu bapa</translation>
 <translation id="8417573335434189196">Tidak melindungi anda daripada tapak web, muat turun dan sambungan yang berbahaya. Chrome tidak mengesyorkan tetapan ini.</translation>
 <translation id="8418445294933751433">&amp;Paparkan sebagai tab</translation>
 <translation id="8419098111404128271">Hasil carian untuk '<ph name="SEARCH_TEXT" />'</translation>

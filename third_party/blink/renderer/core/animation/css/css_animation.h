@@ -49,6 +49,11 @@ class CORE_EXPORT CSSAnimation : public Animation {
   bool getIgnoreCSSPlayState() { return ignore_css_play_state_; }
   void resetIgnoreCSSPlayState() { ignore_css_play_state_ = false; }
 
+ protected:
+  AnimationEffect::EventDelegate* CreateEventDelegate(
+      Element* target,
+      const AnimationEffect::EventDelegate* old_event_delegate) override;
+
  private:
   void FlushStyles() const;
 
@@ -64,7 +69,7 @@ class CORE_EXPORT CSSAnimation : public Animation {
     bool was_paused_;
   };
 
-  String animation_name_;
+  AtomicString animation_name_;
 
   // When set, the web-animation API is overruling the animation-play-state
   // style.

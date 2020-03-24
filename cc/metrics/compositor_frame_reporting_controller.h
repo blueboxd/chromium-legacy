@@ -50,8 +50,8 @@ class CC_EXPORT CompositorFrameReportingController {
       const CompositorFrameReportingController&) = delete;
 
   // Events to signal Beginning/Ending of phases.
-  virtual void WillBeginImplFrame(const viz::BeginFrameId& id);
-  virtual void WillBeginMainFrame(const viz::BeginFrameId& id);
+  virtual void WillBeginImplFrame(const viz::BeginFrameArgs& args);
+  virtual void WillBeginMainFrame(const viz::BeginFrameArgs& args);
   virtual void BeginMainFrameAborted(const viz::BeginFrameId& id);
   virtual void WillInvalidateOnImplSide();
   virtual void WillCommit();

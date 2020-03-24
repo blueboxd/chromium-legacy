@@ -67,6 +67,8 @@ void CanvasResource::OnDestroy() {
     // no longer exists.
     Abandon();
   } else {
+    if (provider_)
+      provider_->OnDestroyResource();
     TearDown();
   }
 #if DCHECK_IS_ON()

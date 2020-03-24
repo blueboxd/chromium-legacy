@@ -225,6 +225,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   ResourceProviderType GetType() const { return type_; }
   bool HasRecordedDrawOps() const;
 
+  void OnDestroyResource();
+
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
   gpu::raster::RasterInterface* RasterInterface() const;
@@ -307,6 +309,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // The maximum number of draw ops executed on the canvas, after which the
   // underlying GrContext is flushed.
   static constexpr int kMaxDrawsBeforeContextFlush = 50;
+
+  size_t num_inflight_resources_ = 0;
+  size_t max_inflight_resources_ = 0;
 
   RestoreMatrixClipStackCb restore_clip_stack_callback_;
 

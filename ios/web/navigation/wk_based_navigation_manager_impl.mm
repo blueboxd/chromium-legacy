@@ -1138,7 +1138,6 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
     return item;
   }
 
-  // TODO(crbug.com/734150): Add a stat counter to track rebuilding frequency.
   WKBackForwardListItem* prev_wk_item =
       index == 0 ? nil : GetWKItemAtIndex(index - 1);
   std::unique_ptr<web::NavigationItemImpl> new_item =

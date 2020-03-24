@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_TEST_UTIL_H_
-#define SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_TEST_UTIL_H_
+#ifndef SERVICES_NETWORK_TRUST_TOKENS_TEST_TRUST_TOKEN_TEST_UTIL_H_
+#define SERVICES_NETWORK_TRUST_TOKENS_TEST_TRUST_TOKEN_TEST_UTIL_H_
 
 #include <memory>
 #include <string>
@@ -54,4 +54,4 @@ class TrustTokenRequestHelperTest : public ::testing::Test {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_TEST_UTIL_H_
+#endif  // SERVICES_NETWORK_TRUST_TOKENS_TEST_TRUST_TOKEN_TEST_UTIL_H_

@@ -6,18 +6,36 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
+#else
+#include "chrome/browser/device_identity/device_oauth2_token_store_desktop.h"
+#endif
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "components/policy/core/common/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-
-namespace chromeos {
 
 namespace {
 
 static DeviceOAuth2TokenService* g_device_oauth2_token_service_ = nullptr;
+
+std::unique_ptr<DeviceOAuth2TokenStore> CreatePlatformTokenStore(
+    PrefService* local_state) {
+#if defined(OS_CHROMEOS)
+  return std::make_unique<chromeos::DeviceOAuth2TokenStoreChromeOS>(
+      local_state);
+#elif defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  DCHECK(base::FeatureList::IsEnabled(policy::features::kCBCMServiceAccounts));
+  return std::make_unique<DeviceOAuth2TokenStoreDesktop>(local_state);
+#else
+  NOTREACHED();
+  return nullptr;
+#endif
+}
 
 }  // namespace
 
@@ -34,8 +52,7 @@ void DeviceOAuth2TokenServiceFactory::Initialize(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_device_oauth2_token_service_);
   g_device_oauth2_token_service_ = new DeviceOAuth2TokenService(
-      url_loader_factory, std::unique_ptr<DeviceOAuth2TokenStore>(
-                              new DeviceOAuth2TokenStoreChromeOS(local_state)));
+      url_loader_factory, CreatePlatformTokenStore(local_state));
 }
 
 // static
@@ -46,5 +63,3 @@ void DeviceOAuth2TokenServiceFactory::Shutdown() {
     g_device_oauth2_token_service_ = nullptr;
   }
 }
-
-}  // namespace chromeos

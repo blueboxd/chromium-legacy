@@ -5658,6 +5658,26 @@
             ]
         }
     ],
+    "TextureLayerSkipWaitForActivation": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "TextureLayerSkipWaitForActivation",
+                    "enable_features": [
+                        "TextureLayerSkipWaitForActivation"
+                    ]
+                }
+            ]
+        }
+    ],
     "ThirdPartyModulesBlocking": [
         {
             "platforms": [

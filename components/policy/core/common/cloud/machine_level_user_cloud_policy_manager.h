@@ -54,6 +54,9 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyManager
   void Shutdown() override;
 
  private:
+  // CloudPolicyStore::Observer:
+  void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
+
   std::unique_ptr<MachineLevelUserCloudPolicyStore> store_;
   std::unique_ptr<CloudExternalDataManager> external_data_manager_;
 

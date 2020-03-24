@@ -5,11 +5,15 @@
 #ifndef CHROME_RENDERER_CHROME_RENDER_FRAME_OBSERVER_H_
 #define CHROME_RENDERER_CHROME_RENDER_FRAME_OBSERVER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/prerender_types.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -76,11 +80,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   // IPC handlers
   void OnSetIsPrerendering(prerender::PrerenderMode mode,
                            const std::string& histogram_prefix);
-  void OnRequestThumbnailForContextNode(
-      int thumbnail_min_area_pixels,
-      const gfx::Size& thumbnail_max_size_pixels,
-      int callback_id);
-  void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
 
   // chrome::mojom::ChromeRenderFrame:
   void SetWindowFeatures(
@@ -110,12 +109,11 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   // TODO(dglazkov): This is incompatible with OOPIF and needs to be updated.
   void CapturePageText(TextCaptureType capture_type);
 
-  void CapturePageTextLater(TextCaptureType capture_type,
-                            base::TimeDelta delay);
-
   // Have the same lifetime as us.
   translate::TranslateAgent* translate_agent_;
-  safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
+#if BUILDFLAG(SAFE_BROWSING_CSD)
+  safe_browsing::PhishingClassifierDelegate* phishing_classifier_ = nullptr;
+#endif
 
   // Owned by ChromeContentRendererClient and outlive us.
   web_cache::WebCacheImpl* web_cache_impl_;

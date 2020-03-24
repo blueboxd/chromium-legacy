@@ -25,6 +25,14 @@ ResultExpr SodaProcessPolicy::EvaluateSyscall(int system_call_number) const {
     case __NR_eventfd2:
       return Allow();
 #endif
+#if defined(__NR_getdents64)
+    case __NR_getdents64:
+      return Allow();
+#endif
+#if defined(__NR_getdents)
+    case __NR_getdents:
+      return Allow();
+#endif
     default:
       auto* broker_process = SandboxLinux::GetInstance()->broker_process();
       if (broker_process->IsSyscallAllowed(system_call_number))

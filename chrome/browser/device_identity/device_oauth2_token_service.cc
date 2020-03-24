@@ -15,9 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/device_identity/device_oauth2_token_store.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -26,8 +24,6 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-
-namespace chromeos {
 
 struct DeviceOAuth2TokenService::PendingRequest {
   PendingRequest(
@@ -63,12 +59,6 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
   FlushPendingRequests(false, GoogleServiceAuthError::REQUEST_CANCELED);
-}
-
-// static
-void DeviceOAuth2TokenService::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kDeviceRobotAnyApiRefreshToken,
-                               std::string());
 }
 
 void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
@@ -136,6 +126,13 @@ bool DeviceOAuth2TokenService::RefreshTokenIsAvailable() const {
 OAuth2AccessTokenManager* DeviceOAuth2TokenService::GetAccessTokenManager() {
   return token_manager_.get();
 }
+
+#if !defined(OS_CHROMEOS)
+void DeviceOAuth2TokenService::SetServiceAccountEmail(
+    const std::string& account_email) {
+  store_->SetAccountEmail(account_email);
+}
+#endif
 
 void DeviceOAuth2TokenService::OnRefreshTokenResponse(
     const std::string& access_token,
@@ -385,5 +382,3 @@ void DeviceOAuth2TokenService::ReportServiceError(
   else
     FlushPendingRequests(false, error);
 }
-
-}  // namespace chromeos

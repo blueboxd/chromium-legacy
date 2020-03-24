@@ -34,7 +34,6 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
@@ -93,11 +92,8 @@ void AppListPresenterDelegateImpl::SetPresenter(
 
 void AppListPresenterDelegateImpl::Init(AppListView* view, int64_t display_id) {
   view_ = view;
-  view->InitView(
-      IsTabletMode(), controller_->GetContainerForDisplayId(display_id),
-      base::BindRepeating(
-          &AppListPresenterDelegateImpl::OnViewBoundsChangedAnimationEnded,
-          weak_ptr_factory_.GetWeakPtr()));
+  view->InitView(IsTabletMode(),
+                 controller_->GetContainerForDisplayId(display_id));
 
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
@@ -125,7 +121,6 @@ void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
   view_->SetShelfHasRoundedCorners(
       IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
   view_->Show(IsSideShelf(shelf), IsTabletMode());
-  view_->GetWidget()->ShowInactive();
 
   SnapAppListBoundsToDisplayEdge();
 
@@ -323,25 +318,6 @@ void AppListPresenterDelegateImpl::SnapAppListBoundsToDisplayEdge() {
   const gfx::Rect bounds =
       controller_->SnapBoundsToDisplayEdge(window->bounds());
   window->SetBounds(bounds);
-}
-
-void AppListPresenterDelegateImpl::OnViewBoundsChangedAnimationEnded() {
-  views::Widget* widget = view_->GetWidget();
-  // If we are currently dragging the applist from the shelf, do not update
-  // window activation to avoid redrawing during dragging which is also a heavy
-  // operation. The activation will be handled when this callback is run again
-  // after the state bounds animation finishes.
-  if (Shelf::ForWindow(widget->GetNativeWindow())
-          ->shelf_layout_manager()
-          ->IsDraggingApplist()) {
-    return;
-  }
-
-  // Deactivation after dragging or animating is not supported.
-  if (!is_visible_)
-    return;
-
-  UpdateActivationForAppListView(view_, IsTabletMode());
 }
 
 }  // namespace ash

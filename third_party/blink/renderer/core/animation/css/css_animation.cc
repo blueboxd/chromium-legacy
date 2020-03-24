@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
 
 #include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
@@ -50,6 +51,13 @@ void CSSAnimation::setStartTime(base::Optional<double> start_time_ms,
                                 ExceptionState& exception_state) {
   PlayStateTransitionScope scope(*this);
   Animation::setStartTime(start_time_ms, exception_state);
+}
+
+AnimationEffect::EventDelegate* CSSAnimation::CreateEventDelegate(
+    Element* target,
+    const AnimationEffect::EventDelegate* old_event_delegate) {
+  return CSSAnimations::CreateEventDelegate(target, animation_name_,
+                                            old_event_delegate);
 }
 
 void CSSAnimation::FlushStyles() const {

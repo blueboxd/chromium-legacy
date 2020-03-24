@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">De extensie vereist geen speciale rechten.</translation>
 <translation id="1616298854599875024">Kan '<ph name="IMPORT_NAME" />' niet importeren, omdat dit geen gedeelde module is</translation>
 <translation id="1618268899808219593">H&amp;elpcentrum</translation>
+<translation id="1620307519959413822">Onjuist wachtwoord. Probeer het opnieuw of klik op 'Wachtwoord vergeten' om het te resetten.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623132449929929218">De afbeeldingen zijn momenteel niet beschikbaar. Maak opnieuw verbinding om collecties van achtergronden te bekijken.</translation>
 <translation id="1627276047960621195">Bestandsdescriptors</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Hardwarerevisie</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Openen in volledig scherm</translation>
+<translation id="1892341345406963517">Hallo <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Andere talen</translation>
 <translation id="1895252664692693738">Nog <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Uitschakeling</translation>
@@ -3133,6 +3135,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5213891612754844763">Proxyinstellingen weergeven</translation>
 <translation id="5215502535566372932">Land selecteren</translation>
 <translation id="521582610500777512">Foto is geannuleerd</translation>
+<translation id="5222403284441421673">Onveilige download geblokkeerd</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="52232769093306234">Inpakken mislukt.</translation>
 <translation id="5225324770654022472">Snelle link voor apps weergeven</translation>
@@ -3531,6 +3534,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5734362860645681824">Communicatie</translation>
 <translation id="5734697361979786483">Fileshare toevoegen</translation>
 <translation id="5736796278325406685">Geef een geldige gebruikersnaam op</translation>
+<translation id="5739017626473506901">Log in om <ph name="USER_NAME" /> te helpen een schoolaccount toe te voegen</translation>
 <translation id="5739235828260127894">Wachten op verificatie. <ph name="LINK_BEGIN" />Meer informatie.<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Zeer groot</translation>
 <translation id="574209121243317957">Toonhoogte</translation>
@@ -5538,6 +5542,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8408068190360279472">Netwerk: <ph name="NETWORK_TYPE" />, verbinden</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Eerst vragen (aanbevolen)</translation>
+<translation id="8417548266957501132">Wachtwoord van ouder</translation>
 <translation id="8417573335434189196">Beschermt je niet tegen gevaarlijke websites, downloads of extensies. Chrome raadt deze instelling af.</translation>
 <translation id="8418445294933751433">Weergeven al&amp;s tabblad</translation>
 <translation id="8419098111404128271">Zoekresultaten voor '<ph name="SEARCH_TEXT" />'</translation>

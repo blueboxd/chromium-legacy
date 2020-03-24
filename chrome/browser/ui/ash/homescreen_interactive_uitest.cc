@@ -52,8 +52,7 @@ class HomescreenTest : public UIPerformanceTest {
   }
 };
 
-// Disabled: crbug.com/1060648
-IN_PROC_BROWSER_TEST_F(HomescreenTest, DISABLED_ShowHideLauncher) {
+IN_PROC_BROWSER_TEST_F(HomescreenTest, ShowHideLauncher) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
 
@@ -74,75 +73,13 @@ IN_PROC_BROWSER_TEST_F(HomescreenTest, DISABLED_ShowHideLauncher) {
   std::move(waiter).Run();
 
   // Hide the launcher by activating the browser window.
+  waiter = ash::ShellTestApi().CreateWaiterForFinishingWindowAnimation(
+      browser_window);
   ui_controls::SendKeyPress(browser_window, ui::VKEY_1,
                             /*control=*/false,
                             /*shift=*/false,
                             /*alt=*/true,
                             /*command=*/false);
   base::RunLoop().RunUntilIdle();
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
-}
-
-class HomescreenDragTest : public HomescreenTest {
- public:
-  HomescreenDragTest() {
-    // Gesture tested by this test is only enabled if
-    // kDragFromShelfToHomeOrOverview is disabled.
-    scoped_features_.InitWithFeatures(
-        {}, {ash::features::kDragFromShelfToHomeOrOverview,
-             chromeos::features::kShelfHotseat});
-  }
-  ~HomescreenDragTest() override = default;
-
-  HomescreenDragTest(const HomescreenDragTest& other) = delete;
-  HomescreenDragTest& operator=(const HomescreenDragTest& rhs) = delete;
-
-  std::vector<std::string> GetUMAHistogramNames() const override {
-    return {
-        "Ash.Homescreen.AnimationSmoothness",
-        "Apps.StateTransition.Drag.PresentationTime.TabletMode",
-        "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode",
-    };
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-};
-
-// TODO(http://crbug.com/1057864): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(HomescreenDragTest, DISABLED_DraggingPerformance) {
-  // First show the launcher so we can do drags.
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
-  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                            /*control=*/false,
-                            /*shift=*/false,
-                            /*alt=*/false,
-                            /*command=*/false);
-  base::RunLoop().RunUntilIdle();
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
-
-  // Drag down to somewhere above halfway, so the launcher remains shown on drag
-  // release.
-  gfx::Rect display_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
-          .bounds();
-  const gfx::Point start_point(display_bounds.CenterPoint().x(), 1);
-  gfx::Point end_point(display_bounds.CenterPoint().x(),
-                       display_bounds.CenterPoint().y() - 50);
-  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
-      std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
-  generator->Wait();
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
-
-  // Drag down to somewhere below halfway, so the launcher is hidden on drag
-  // release.
-  end_point.set_y(display_bounds.CenterPoint().y() + 50);
-  generator = ui_test_utils::DragEventGenerator::CreateForTouch(
-      std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
-  generator->Wait();
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
+  std::move(waiter).Run();
 }

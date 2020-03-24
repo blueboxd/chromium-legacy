@@ -33,6 +33,8 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
   ChromeWebContentsViewDelegateHandleOnPerformDrop() {
     EXPECT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("test-user");
+    scoped_feature_list_.InitAndEnableFeature(
+        safe_browsing::kContentComplianceEnabled);
   }
 
   void RunUntilDone() { run_loop_->Run(); }
@@ -45,18 +47,9 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
     return web_contents_.get();
   }
 
-  void EnableFeature(const base::Feature& feature) {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(feature);
-  }
-
   void EnableDeepScanning(bool enable, bool scan_succeeds) {
     SetScanPolicies(enable ? safe_browsing::CHECK_UPLOADS
                            : safe_browsing::CHECK_NONE);
-    if (!enable)
-      return;
-
-    EnableFeature(safe_browsing::kContentComplianceEnabled);
 
     run_loop_.reset(new base::RunLoop());
 

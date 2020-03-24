@@ -221,7 +221,7 @@ void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   chromeos::CryptohomeClient::InitializeFake();
   ASSERT_TRUE(profile_manager_.SetUp());
 
-  chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
+  DeviceOAuth2TokenServiceFactory::Initialize(
       test_url_loader_factory_.GetSafeWeakWrapper(),
       TestingBrowserProcess::GetGlobal()->local_state());
 
@@ -240,7 +240,7 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
   invalidation::ProfileInvalidationProviderFactory::GetInstance()
       ->RegisterTestingFactory(
           BrowserContextKeyedServiceFactory::TestingFactory());
-  chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
+  DeviceOAuth2TokenServiceFactory::Shutdown();
   chromeos::CryptohomeClient::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
 }

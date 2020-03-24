@@ -17,6 +17,7 @@ git diff
 import path_helpers
 import optparse
 import os
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -51,7 +52,18 @@ def MaybeRemoveTrailingPeriods(message):
 
 def MaybeRemoveUnusedMessage(root, message, removed_so_far):
   found = False
-  message_id = message.get('name').lower().replace('ids_chromevox_','')
+
+  # Always strip IDS_ and lowercase the message id.
+  base_message_id = re.sub('^ids_', '', message.get('name').lower())
+
+  # Get the unprefixed message id. This is used by various extensions like
+  # ChromeVox and STS.
+  message_id = re.sub('^(chromevox_|select_to_speak_|switch_access_)',
+                      '', base_message_id)
+
+  # This message is needed by the extension system.
+  if message_id == 'locale':
+    return False
 
   # Explicitly skip these messages in ChromeVox since they get programmatically
   # constructed. If the non _brl counterpart was removed though, also remove it.
@@ -79,7 +91,9 @@ def MaybeRemoveUnusedMessage(root, message, removed_so_far):
         continue
       with open(os.path.join(dir_name, fname), 'r') as f:
         for line in f:
-          index = line.find(message_id)
+          index = line.find(base_message_id)
+          if index == -1:
+            index = line.find(message_id)
 
           # Eliminate partial matches (e.g. for bar, foo_bar).
           if index > 0 and line[index - 1] == '_':

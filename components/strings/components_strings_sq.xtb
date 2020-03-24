@@ -313,6 +313,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2288422996159078444">Çdo gjë që shkruan, çdo faqe që shikon ose çdo aktivitet tjetër në ueb po shikohet. Përmbajtjet në sajte mund të ndryshohen pa dijeninë tënde.</translation>
 <translation id="2289385804009217824">Prerje</translation>
 <translation id="2292556288342944218">Qasja jote në internet është bllokuar</translation>
+<translation id="2293443924986248631">Kur është aktivizuar, sajtet nuk mund t'i përdorin kukit për të të monitoruar në ueb. Veçoritë në disa sajte mund të ndalojnë së funksionuari.</translation>
 <translation id="2297722699537546652">B5 (Zarf)</translation>
 <translation id="2300306941146563769">Pa ngarkuar</translation>
 <translation id="2310021320168182093">Chou2 (Zarf)</translation>
@@ -723,6 +724,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4152318981910038897">{COUNT,plural, =1{Faqja 1}other{Faqja {COUNT}}}</translation>
 <translation id="4154664944169082762">Gjurmë gishtash</translation>
 <translation id="4159784952369912983">Vjollcë</translation>
+<translation id="4163132590327127354">Chrome e ka thjeshtuar këtë faqe për ta bërë më të lehtë për t'u lexuar.</translation>
 <translation id="4165986682804962316">Cilësimet e sajtit</translation>
 <translation id="4171400957073367226">Nënshkrim vërtetimi i gabuar</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1022,6 +1024,10 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="536296301121032821">Dështoi në ruajtjen e cilësimeve të politikës.</translation>
 <translation id="5371425731340848620">Përditëso kartën</translation>
 <translation id="5377026284221673050">"Ora jote është prapa" ose "Ora jote është përpara" ose "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">Serveri ku po shkon, <ph name="ORIGIN" />, ka vendosur një titull
+    që kërkon që të aplikohet një politikë origjine për të gjitha kërkesat për të. Por
+    titulli është formuar gabimisht, gjë që e parandalon përmbushjen e
+    kërkesës sate për <ph name="SITE" />. Politikat e origjinës mund të përdoren nga operatorët e sajtit për të konfiguruar karakteristikat e sigurisë dhe karakteristika të tjera për një sajt.</translation>
 <translation id="5386426401304769735">Zinxhiri i certifikatës për këtë sajt përmban një certifikatë të nënshkruar me SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Qepje anësore djathtas</translation>
@@ -1567,6 +1573,7 @@ Detaje shtesë:
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Muri mbrojtës ose softueri i antivirusit mund ta ketë bllokuar lidhjen.</translation>
 <translation id="7759163816903619567">Shfaq domenin:</translation>
+<translation id="776110834126722255">E vjetruar</translation>
 <translation id="7761701407923456692">Certifikata e serverit nuk përputhet me URL-në.</translation>
 <translation id="7763386264682878361">Analizuesi i manifestit të pagesës</translation>
 <translation id="7764225426217299476">Shto adresë</translation>

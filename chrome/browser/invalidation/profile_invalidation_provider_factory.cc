@@ -125,8 +125,8 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   if (user_manager::UserManager::IsInitialized() &&
       user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
       connector->IsEnterpriseManaged()) {
-    identity_provider.reset(new chromeos::DeviceIdentityProvider(
-        chromeos::DeviceOAuth2TokenServiceFactory::Get()));
+    identity_provider = std::make_unique<DeviceIdentityProvider>(
+        DeviceOAuth2TokenServiceFactory::Get());
   }
 #endif  // defined(OS_CHROMEOS)
 

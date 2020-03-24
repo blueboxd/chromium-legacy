@@ -240,6 +240,10 @@ class CORE_EXPORT NGPhysicalFragment
     return IsCSSBox() && layout_object_->ShouldClipOverflow();
   }
 
+  bool IsFragmentationContextRoot() const {
+    return !IsColumnBox() && IsBlockFlow() && Style().SpecifiesColumns();
+  }
+
   // Return whether we can traverse this fragment and its children directly, for
   // painting, hit-testing and other layout read operations. If false is
   // returned, we need to traverse the layout object tree instead.
@@ -250,6 +254,16 @@ class CORE_EXPORT NGPhysicalFragment
   // This fragment is hidden for paint purpose, but exists for querying layout
   // information. Used for `text-overflow: ellipsis`.
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
+
+  // Return true if this fragment is monolithic, as far as block fragmentation
+  // is concerned.
+  bool IsMonolithic() const {
+    const LayoutObject* layout_object = GetLayoutObject();
+    if (!layout_object || !IsBox() || !layout_object->IsBox())
+      return false;
+    return ToLayoutBox(layout_object)->GetPaginationBreakability() ==
+           LayoutBox::kForbidBreaks;
+  }
 
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.

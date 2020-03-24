@@ -10,7 +10,7 @@
 namespace cc {
 
 void LatencyUkmReporter::ReportLatencyUkm(
-    CompositorFrameReporter::DroppedFrameReportType report_type,
+    CompositorFrameReporter::FrameReportType report_type,
     const std::vector<CompositorFrameReporter::StageData>& stage_history,
     const base::flat_set<FrameSequenceTrackerType>* active_trackers,
     const viz::FrameTimingDetails& viz_breakdown) {

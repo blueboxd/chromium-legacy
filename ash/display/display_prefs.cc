@@ -894,8 +894,4 @@ void DisplayPrefs::StoreDisplayMixedMirrorModeParamsForTest(
   StoreDisplayMixedMirrorModeParams(local_state_, mixed_params);
 }
 
-void DisplayPrefs::SetPrefServiceForTest(PrefService* local_state) {
-  local_state_ = local_state;
-}
-
 }  // namespace ash

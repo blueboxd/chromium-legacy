@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html>
-<link href="resources/flexbox.css" rel="stylesheet">
+<title>CSS Flexbox: minimum / maximum sizes with box-sizing: border-box</title>
+<link href="support/flexbox.css" rel="stylesheet">
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#box-model">
+<link rel="help" href="https://drafts.csswg.org/css2/visudet.html#min-max-widths">
+<meta name="assert" content="This test checks that a minimum and maximum sizes are correctly computed for flexbox children.">
+
 <style>
 .flexbox {
     background-color: teal;
@@ -9,9 +13,9 @@
     box-sizing: border-box;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>
 

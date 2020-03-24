@@ -6,6 +6,8 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
+#include "chrome/browser/upboarding/query_tiles/tile_service_factory_helper.h"
+#include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 
 namespace upboarding {
@@ -31,9 +33,11 @@ TileServiceFactory::~TileServiceFactory() {}
 
 std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
-  // TODO(shaktisahu): Create TileService instance.
-
-  return nullptr;
+  // TODO(xingliu): Use network only fetcher if needed.
+  auto* image_fetcher =
+      ImageFetcherServiceFactory::GetForKey(key)->GetImageFetcher(
+          image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
+  return CreateTileService(image_fetcher);
 }
 
 }  // namespace upboarding

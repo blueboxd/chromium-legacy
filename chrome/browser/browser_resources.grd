@@ -122,15 +122,6 @@
         <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
       </if>
 
-      <!-- App Management. -->
-      <if expr="chromeos">
-        <include name="IDR_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS" file="${root_gen_dir}\skia\public\mojom\bitmap.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS" file="${root_gen_dir}\skia\public\mojom\image_info.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS" file="${root_gen_dir}\ui\gfx\image\mojom\image.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_MOJO_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\app_management\app_management.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_APP_MANAGEMENT_TYPES_MOJO_LITE_JS" file="${root_gen_dir}\chrome\services\app_service\public\mojom\types.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-      </if>
-
       <if expr="not is_android">
         <!-- Page not available for guest. -->
         <include name="IDR_PAGE_NOT_AVAILABLE_FOR_GUEST_APP_HTML" file="resources\page_not_available_for_guest\app.html" type="BINDATA" />
@@ -445,11 +436,6 @@
         <include name="IDR_ADD_SUPERVISION_API_SERVER_JS" file="resources\chromeos\add_supervision\add_supervision_api_server.js" compress="gzip" type="BINDATA" />
         <include name="IDR_ADD_SUPERVISION_POST_MESSAGE_API_JS" file="resources\chromeos\add_supervision\post_message_api.js" compress="gzip" type="BINDATA" />
         <include name="IDR_ADD_SUPERVISION_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\chromeos\add_supervision\add_supervision.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-      </if>
-      <if expr="chromeos">
-        <include name="IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\search.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_OS_SETTINGS_SEARCH_RESULT_ICON_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\search_result_icon.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_OS_SETTINGS_USER_ACTION_RECORDER_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\user_action_recorder.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="chromeos">
         <!-- OOBE / Login resources -->

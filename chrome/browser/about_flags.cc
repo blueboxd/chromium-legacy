@@ -39,6 +39,7 @@
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
@@ -2431,6 +2432,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePreviewsCoinFlipName,
      flag_descriptions::kEnablePreviewsCoinFlipDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kCoinFlipHoldback)},
+    {"enable-google-srp-isolated-prerenders",
+     flag_descriptions::kEnableSRPIsolatedPrerendersName,
+     flag_descriptions::kEnableSRPIsolatedPrerendersDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kIsolatePrerenders)},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},

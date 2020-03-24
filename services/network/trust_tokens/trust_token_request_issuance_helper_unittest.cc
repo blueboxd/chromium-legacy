@@ -16,11 +16,12 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
+#include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
-#include "services/network/trust_tokens/trust_token_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -42,8 +43,7 @@ using UnblindedTokens =
 
 // FixedKeyCommitmentGetter returns the provided commitment result when
 // |Get| is called by the tested code.
-class FixedKeyCommitmentGetter
-    : public TrustTokenRequestIssuanceHelper::KeyCommitmentGetter {
+class FixedKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
  public:
   FixedKeyCommitmentGetter() = default;
   explicit FixedKeyCommitmentGetter(

@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -547,6 +548,7 @@ TEST_F(RealTimeUrlLookupServiceTest, TestCacheInCacheManager) {
 }
 
 TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_ResponseIsAlreadyCached) {
+  base::HistogramTester histograms;
   EnableRealTimeUrlLookup(/* is_with_token_enabled */ false);
   GURL url("http://example.test/");
   MayBeCacheRealTimeUrlVerdict(url, RTLookupResponse::ThreatInfo::DANGEROUS,
@@ -565,10 +567,17 @@ TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_ResponseIsAlreadyCached) {
   EXPECT_CALL(response_callback, Run(/* is_rt_lookup_successful */ true, _));
 
   task_environment_->RunUntilIdle();
+
+  // This metric is not recorded because the response is obtained from the
+  // cache.
+  histograms.ExpectUniqueSample("SafeBrowsing.RT.ThreatInfoSize",
+                                /* sample */ 0,
+                                /* expected_count */ 0);
 }
 
 TEST_F(RealTimeUrlLookupServiceTest,
        TestStartLookup_AttachTokenWhenWithTokenIsEnabled) {
+  base::HistogramTester histograms;
   EnableRealTimeUrlLookup(/* is_with_token_enabled */ true);
   SetupPrimaryAccount();
   GURL url("http://example.test/");
@@ -595,6 +604,10 @@ TEST_F(RealTimeUrlLookupServiceTest,
   std::unique_ptr<RTLookupResponse> cache_response =
       GetCachedRealTimeUrlVerdict(url);
   EXPECT_NE(nullptr, cache_response);
+
+  histograms.ExpectUniqueSample("SafeBrowsing.RT.ThreatInfoSize",
+                                /* sample */ 1,
+                                /* expected_count */ 1);
 }
 
 TEST_F(RealTimeUrlLookupServiceTest, TestStartLookup_NoTokenWhenNotSignedIn) {

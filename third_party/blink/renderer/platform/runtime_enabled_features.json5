@@ -159,6 +159,10 @@
       status: "experimental",
     },
     {
+      name: "AppCache",
+      status: "stable",
+    },
+    {
       // Use an aspect ratio from the HTML attributes even when we use sizing
       // from CSS.
       // https://github.com/WICG/intrinsicsize-attribute/issues/16
@@ -375,6 +379,9 @@
     {
       name: "CSS3TextBreakAnywhere",
       status: "stable",
+    },
+    {
+      name: "CSSAspectRatioProperty",
     },
     {
       name: "CSSCalcAsInt",

@@ -92,6 +92,8 @@ class XRWebGLLayer final : public ScriptWrappable {
   bool viewports_dirty_ = true;
   bool is_direct_draw_frame = false;
   bool ignore_depth_values_ = false;
+
+  uint32_t clean_frame_count = 0;
 };
 
 }  // namespace blink

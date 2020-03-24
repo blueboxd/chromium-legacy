@@ -24,8 +24,7 @@ namespace policy {
 
 ScreenshotDelegate::ScreenshotDelegate() {}
 
-ScreenshotDelegate::~ScreenshotDelegate() {
-}
+ScreenshotDelegate::~ScreenshotDelegate() {}
 
 bool ScreenshotDelegate::IsScreenshotAllowed() {
   BrowserPolicyConnectorChromeOS* connector =
@@ -52,8 +51,8 @@ void ScreenshotDelegate::TakeSnapshot(
 std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
     const GURL& upload_url,
     UploadJob::Delegate* delegate) {
-  chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
-      chromeos::DeviceOAuth2TokenServiceFactory::Get();
+  DeviceOAuth2TokenService* device_oauth2_token_service =
+      DeviceOAuth2TokenServiceFactory::Get();
 
   CoreAccountId robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();

@@ -18,6 +18,8 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/enterprise_reporting/report_generator.h"
 #include "chrome/browser/enterprise_reporting/report_scheduler.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -340,6 +342,12 @@ void ChromeBrowserCloudManagementController::OnClientError(
   // browser has been unenrolled.
   if (client->status() == DM_STATUS_SERVICE_DEVICE_NOT_FOUND)
     UnenrollBrowser();
+}
+
+void ChromeBrowserCloudManagementController::OnServiceAccountChanged(
+    CloudPolicyClient* client) {
+  DeviceOAuth2TokenServiceFactory::Get()->SetServiceAccountEmail(
+      client->service_account_email());
 }
 
 void ChromeBrowserCloudManagementController::ShutDown() {

@@ -58,6 +58,16 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "../os_settings_resources.grd"
 
+    deps = [
+      "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
+      "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js",
+    ]
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
     defines = chrome_grit_defines
     outputs = [
       "grit/os_settings_resources.h",

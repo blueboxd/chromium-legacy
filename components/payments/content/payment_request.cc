@@ -18,6 +18,7 @@
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
+#include "components/payments/core/error_message_util.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
@@ -47,27 +48,6 @@ using ::payments::mojom::HasEnrolledInstrumentQueryResult;
 bool IsGooglePaymentMethod(const std::string& method_name) {
   return method_name == methods::kGooglePay ||
          method_name == methods::kAndroidPay;
-}
-
-std::string GetNotSupportedErrorMessage(PaymentRequestSpec* spec) {
-  if (!spec || spec->payment_method_identifiers_set().empty())
-    return errors::kGenericPaymentMethodNotSupportedMessage;
-
-  std::vector<std::string> method_names(
-      spec->payment_method_identifiers_set().size());
-  std::transform(
-      spec->payment_method_identifiers_set().begin(),
-      spec->payment_method_identifiers_set().end(), method_names.begin(),
-      [](const std::string& method_name) { return "\"" + method_name + "\""; });
-
-  std::string output;
-  bool replaced = base::ReplaceChars(
-      method_names.size() == 1
-          ? errors::kSinglePaymentMethodNotSupportedFormat
-          : errors::kMultiplePaymentMethodsNotSupportedFormat,
-      "$", base::JoinString(method_names, ", "), &output);
-  DCHECK(replaced);
-  return output;
 }
 
 // Redact shipping address before exposing it in ShippingAddressChangeEvent.
@@ -580,7 +560,9 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED,
-                     GetNotSupportedErrorMessage(spec_.get()) +
+                     GetNotSupportedErrorMessage(
+                         spec_ ? spec_->payment_method_identifiers_set()
+                               : std::set<std::string>()) +
                          (error_message.empty() ? "" : " " + error_message));
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();

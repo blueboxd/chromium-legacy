@@ -273,7 +273,15 @@ void AppServiceInstanceRegistryHelper::SetWindowActivated(
     apps::InstanceState state = static_cast<apps::InstanceState>(
         apps::InstanceState::kStarted | apps::InstanceState::kRunning |
         apps::InstanceState::kActive | apps::InstanceState::kVisible);
-    OnInstances(GetAppId(contents), GetWindow(contents), std::string(), state);
+    auto* contents_window = GetWindow(contents);
+
+    // Get the app_id from the existed instance first. The app_id for PWAs could
+    // be changed based on the URL, e.g. google photos, which might cause
+    // instance app_id inconsistent DCHECK error.
+    std::string app_id =
+        proxy_->InstanceRegistry().GetShelfId(contents_window).app_id;
+    OnInstances(app_id.empty() ? GetAppId(contents) : app_id, contents_window,
+                std::string(), state);
     return;
   }
 

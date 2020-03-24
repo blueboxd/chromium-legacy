@@ -97,6 +97,9 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   std::unique_ptr<ResultLoader> CreateResultLoader(IntentType intent_type);
 
   void NotifyEligibilityChanged();
+  void IntentGeneratorCallback(const QuickAnswersRequest& quick_answers_request,
+                               const std::string& intent_text,
+                               IntentType intent_type);
 
   network::mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
   ash::AssistantState* assistant_state_ = nullptr;
@@ -110,6 +113,8 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   bool is_eligible_ = false;
   // Time when the quick answer is received.
   base::TimeTicks quick_answer_received_time_;
+
+  base::WeakPtrFactory<QuickAnswersClient> weak_factory_{this};
 };
 
 }  // namespace quick_answers

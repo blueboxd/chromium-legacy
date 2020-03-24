@@ -1424,6 +1424,7 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickMenuPositionFromPref();
   UpdateLargeCursorFromPref();
   UpdateShortcutsEnabledFromPref();
+  UpdateTabletModeShelfNavigationButtonsFromPref();
 }
 
 void AccessibilityControllerImpl::UpdateAutoclickDelayFromPref() {

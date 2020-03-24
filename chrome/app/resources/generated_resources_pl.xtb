@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">To rozszerzenie nie wymaga specjalnych uprawnień.</translation>
 <translation id="1616298854599875024">Nie można zaimportować rozszerzenia „<ph name="IMPORT_NAME" />”, ponieważ nie jest to moduł udostępniany</translation>
 <translation id="1618268899808219593">C&amp;entrum pomocy</translation>
+<translation id="1620307519959413822">Nieprawidłowe hasło. Spróbuj ponownie lub kliknij Nie pamiętam hasła, by je zresetować.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623132449929929218">Obrazy są obecnie niedostępne. Aby zobaczyć kolekcje tapet, połącz się ponownie z internetem.</translation>
 <translation id="1627276047960621195">Deskryptory plików</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Wersja sprzętu</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identyfikator: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Otwórz na pełnym ekranie</translation>
+<translation id="1892341345406963517">Cześć <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Inne języki</translation>
 <translation id="1895252664692693738">Jeszcze <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Wyłączenie</translation>
@@ -3133,6 +3135,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5213891612754844763">Pokaż ustawienia serwera proxy</translation>
 <translation id="5215502535566372932">Wybierz kraj</translation>
 <translation id="521582610500777512">Zdjęcie zostało odrzucone</translation>
+<translation id="5222403284441421673">Zablokowano pobieranie niebezpiecznego pliku</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="52232769093306234">Nie udało się spakować.</translation>
 <translation id="5225324770654022472">Pokaż skrót do aplikacji</translation>
@@ -3531,6 +3534,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5734362860645681824">Komunikacja</translation>
 <translation id="5734697361979786483">Dodaj udział plików</translation>
 <translation id="5736796278325406685">Wpisz prawidłową nazwę użytkownika</translation>
+<translation id="5739017626473506901">Zaloguj się, by pomóc użytkownikowi <ph name="USER_NAME" /> w dodawaniu konta szkolnego</translation>
 <translation id="5739235828260127894">Czekam na weryfikację. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Bardzo duża</translation>
 <translation id="574209121243317957">Ton</translation>
@@ -5539,6 +5543,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8408068190360279472">Sieć <ph name="NETWORK_TYPE" />, łączę</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Najpierw zapytaj (zalecane)</translation>
+<translation id="8417548266957501132">Hasło rodzica</translation>
 <translation id="8417573335434189196">Nie chroni przed niebezpiecznymi stronami, pobieranymi plikami ani rozszerzeniami. Chrome nie poleca tego ustawienia.</translation>
 <translation id="8418445294933751433">&amp;Pokaż jako kartę</translation>
 <translation id="8419098111404128271">Wyniki wyszukiwania dla „<ph name="SEARCH_TEXT" />”</translation>

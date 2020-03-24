@@ -36,6 +36,6 @@ public class PaymentRequestModifierTest implements MainActivityStartCallback {
     public void testNoCrash() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Payment method not supported"});
+                new String[] {"The payment method", "not supported"});
     }
 }

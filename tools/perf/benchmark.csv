@@ -50,6 +50,7 @@ resource_sizes_monochrome_minimal_apks,"agrieve@chromium.org, jbudorick@chromium
 resource_sizes_monochrome_public_minimal_apks,"agrieve@chromium.org, jbudorick@chromium.org",Build,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
 resource_sizes_system_webview_apk,"agrieve@chromium.org, jbudorick@chromium.org",Build,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
 resource_sizes_system_webview_google_apk,"agrieve@chromium.org, jbudorick@chromium.org",Build,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
+resource_sizes_trichrome_google,"agrieve@chromium.org, jbudorick@chromium.org",Build,https://chromium.googlesource.com/chromium/src/+/HEAD/tools/binary_size/README.md#resource_sizes_py,
 speedometer,hablich@chromium.org,Blink,,
 speedometer-future,hablich@chromium.org,Blink,,
 speedometer2,hablich@chromium.org,Blink,,

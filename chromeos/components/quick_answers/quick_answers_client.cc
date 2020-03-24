@@ -8,10 +8,10 @@
 
 #include "base/strings/stringprintf.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/understanding/intent_generator.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "third_party/icu/source/common/unicode/locid.h"
-#include "third_party/re2/src/re2/re2.h"
 
 namespace chromeos {
 namespace quick_answers {
@@ -19,26 +19,30 @@ namespace {
 
 using network::mojom::URLLoaderFactory;
 
-constexpr char kAddressRegex[] =
-    "^\\d+\\s[A-z]+\\s[A-z]+, ([A-z]|\\s)+, [A-z]{2}\\s[0-9]{5}";
-constexpr char kDirectionQueryRewriteTemplate[] = "Direction to %s";
+constexpr char kDictionaryQueryRewriteTemplate[] = "Define:%s";
 
 QuickAnswersClient::ResultLoaderFactoryCallback*
     g_testing_result_factory_callback = nullptr;
 
-const QuickAnswersRequest PreprocessRequest(
-    const QuickAnswersRequest& request) {
+const QuickAnswersRequest PreprocessRequest(const QuickAnswersRequest& request,
+                                            const std::string& intent_text,
+                                            IntentType intent_type) {
   QuickAnswersRequest processed_request = request;
-  // Temporarily classify text for demo purpose only. This will be replaced with
-  // TCLib when it is ready.
-  // TODO(llin): Query TCLib and rewrite the query based on TCLib result.
-  if (re2::RE2::FullMatch(request.selected_text, kAddressRegex)) {
-    // TODO(llin): Add localization string for query rewrite.
-    processed_request.selected_text =
-        base::StringPrintf(kDirectionQueryRewriteTemplate,
-                           processed_request.selected_text.c_str());
-  }
 
+  switch (intent_type) {
+    case IntentType::kUnit:
+      processed_request.selected_text = intent_text;
+      break;
+    case IntentType::kDictionary:
+      processed_request.selected_text = base::StringPrintf(
+          kDictionaryQueryRewriteTemplate, intent_text.c_str());
+      break;
+    case IntentType::kTranslation:
+      break;
+    case IntentType::kUnknown:
+      // TODO(llin): Update to NOTREACHED after integrating with TCLib.
+      break;
+  }
   return processed_request;
 }
 
@@ -100,14 +104,11 @@ void QuickAnswersClient::SendRequest(
     const QuickAnswersRequest& quick_answers_request) {
   RecordSelectedTextLength(quick_answers_request.selected_text.length());
 
-  // Preprocess the request.
-  auto& processed_request = PreprocessRequest(quick_answers_request);
-  delegate_->OnRequestPreprocessFinish(processed_request);
-
-  // TODO(llin): predict user intent based on the request.
-  result_loader_ = CreateResultLoader(IntentType::kUnknown);
-  // Load and parse search result.
-  result_loader_->Fetch(processed_request.selected_text);
+  // Generate intent from |quick_answers_request|.
+  IntentGenerator(base::BindOnce(&QuickAnswersClient::IntentGeneratorCallback,
+                                 weak_factory_.GetWeakPtr(),
+                                 quick_answers_request))
+      .GenerateIntent(quick_answers_request);
 }
 
 void QuickAnswersClient::OnQuickAnswerClick(ResultType result_type) {
@@ -151,6 +152,23 @@ void QuickAnswersClient::OnQuickAnswerReceived(
   DCHECK(delegate_);
   quick_answer_received_time_ = base::TimeTicks::Now();
   delegate_->OnQuickAnswerReceived(std::move(quick_answer));
+}
+
+void QuickAnswersClient::IntentGeneratorCallback(
+    const QuickAnswersRequest& quick_answers_request,
+    const std::string& intent_text,
+    IntentType intent_type) {
+  // Preprocess the request.
+  auto& processed_request =
+      PreprocessRequest(quick_answers_request, intent_text, intent_type);
+
+  delegate_->OnRequestPreprocessFinish(processed_request);
+
+  // TODO(llin): Only fetch answer if there is a intent generated after
+  // integrating with TCLib.
+  result_loader_ = CreateResultLoader(intent_type);
+  // Load and parse search result.
+  result_loader_->Fetch(processed_request.selected_text);
 }
 
 }  // namespace quick_answers

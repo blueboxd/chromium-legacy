@@ -11,6 +11,43 @@
     <output filename="os_settings_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
+    <includes>
+      <!-- App Management -->
+      <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS"
+               file="${root_gen_dir}\skia\public\mojom\bitmap.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS"
+               file="${root_gen_dir}\skia\public\mojom\image_info.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS"
+               file="${root_gen_dir}\ui\gfx\image\mojom\image.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_MOJO_LITE_JS"
+               file="${root_gen_dir}\chrome\browser\ui\webui\app_management\app_management.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_TYPES_MOJO_LITE_JS"
+               file="${root_gen_dir}\chrome\services\app_service\public\mojom\types.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+
+      <!-- Search -->
+      <include name="IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS"
+               file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\search.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_SEARCH_RESULT_ICON_MOJOM_LITE_JS"
+               file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\search_result_icon.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_USER_ACTION_RECORDER_MOJOM_LITE_JS"
+               file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\user_action_recorder.mojom-lite.js"
+               use_base_dir="false"
+               type="BINDATA" />
+    </includes>
     <structures>
       <structure name="IDR_OS_SETTINGS_LOCALIZED_LINK_JS"
                  file="chromeos/localized_link/localized_link.js"
@@ -884,16 +921,16 @@
       <structure name="IDR_OS_SETTINGS_CROSTINI_EXPORT_IMPORT_JS"
                  file="chromeos/crostini_page/crostini_export_import.js"
                  type="chrome_html" />
-       <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_HTML"
+      <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_HTML"
                   file="chromeos/crostini_page/crostini_port_forwarding.html"
                   type="chrome_html" />
-       <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_HTML"
+      <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_HTML"
                   file="chromeos/crostini_page/crostini_port_forwarding_add_port_dialog.html"
                   type="chrome_html" />
-       <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_JS"
+      <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_JS"
                   file="chromeos/crostini_page/crostini_port_forwarding_add_port_dialog.js"
                   type="chrome_html" />
-       <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_JS"
+      <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_JS"
                   file="chromeos/crostini_page/crostini_port_forwarding.js"
                   type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CROSTINI_MIC_SHARING_DIALOG_HTML"

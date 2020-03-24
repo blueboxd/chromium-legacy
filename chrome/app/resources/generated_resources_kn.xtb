@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
 <translation id="1244265436519979884">ಪ್ರಸ್ತುತವಾಗಿ Linux ಮರುಸ್ಥಾಪನೆ ಪ್ರಗತಿಯಲ್ಲಿದೆ</translation>
 <translation id="1244303850296295656">ವಿಸ್ತರಣೆ ದೋಷ</translation>
+<translation id="1246158006305844142">ನಿಮ್ಮ Google ಖಾತೆಯೊಂದಿಗೆ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದ ಎಲ್ಲಾ Chrome OS ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತದೆ. ಬ್ರೌಸರ್ ಸಿಂಕ್ ಆಯ್ಕೆಗಳಿಗಾಗಿ, <ph name="LINK_BEGIN" />Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ<ph name="LINK_END" /> ಹೋಗಿ.</translation>
 <translation id="1246905108078336582">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ಸಲಹೆಗಳನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> ತಡೆಹಿಡಿಯಲಾಗಿದೆ, ಹೀಗಾಗಿ ಅದನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="1251366534849411931">ಓಪನಿಂಗ್ ಕರ್ಲಿ ಬ್ರಾಕೆಟ್ ಅನ್ನು ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ: <ph name="ERROR_LINE" /></translation>
@@ -392,6 +393,7 @@
 <translation id="1524563461097350801">ಬೇಡ</translation>
 <translation id="1525740877599838384">ಸ್ಥಳವನ್ನು ನಿರ್ಧರಿಸಲು ವೈ-ಫೈ ಮಾತ್ರ ಬಳಸಿ</translation>
 <translation id="152629053603783244">Linux ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
+<translation id="1526335046150927198">ವೇಗವರ್ಧಕವನ್ನು ಸ್ಕ್ರಾಲ್ ಮಾಡಲು, ಟಚ್‌ಪ್ಯಾಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1526560967942511387">ಶೀರ್ಷಿಕೆರಹಿತ ದಾಖಲೆ</translation>
 <translation id="1529891865407786369">ಪವರ್ ಮೂಲ</translation>
 <translation id="1530838837447122178">ಮೌಸ್ ಮತ್ತು ಟಚ್‌ಪ್ಯಾಡ್ ಸಾಧನ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -844,7 +846,7 @@
 <translation id="2135787500304447609">&amp;ಪುನರಾರಂಭಿಸು</translation>
 <translation id="2136372518715274136">ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ</translation>
 <translation id="2136476978468204130">ನೀವು ನಮೂದಿಸಿದ ಪಾಸ್‌ಫ್ರೇಸ್ ತಪ್ಪಾಗಿದೆ</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.}=1{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ, 1 ಅನ್ನು ಹೊರತುಪಡಿಸಲಾಗಿದೆ}one{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ, {COUNT} ಗಳನ್ನು ಹೊರತುಪಡಿಸಲಾಗಿದೆ}other{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ, {COUNT} ಗಳನ್ನು ಹೊರತುಪಡಿಸಲಾಗಿದೆ}}</translation>
+<translation id="2137122615728646911">{COUNT,plural, =0{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.}=1{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ, 1 ವಿನಾಯಿತಿಯಿದೆ}one{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ, {COUNT} ವಿನಾಯಿತಿಯಿದೆ}other{ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ, {COUNT} ವಿನಾಯಿತಿಗಳಿವೆ}}</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />" ಗೆ ಸಂಪರ್ಕವು ಇನ್ನೂ ಪ್ರಗತಿಯಲ್ಲಿದೆ</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್, <ph name="NETWORK_NAME" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ, ಕನೆಕ್ಟ್</translation>
 <translation id="2139919072249842737">ಸೆಟಪ್ ಬಟನ್</translation>
@@ -1313,6 +1315,7 @@
 <translation id="2725200716980197196">ನೆಟ್‌ವರ್ಕ್‌ ಸಂಪರ್ಕತೆಯನ್ನು ಮರುಸ್ಥಾಪಿಲಾಗಿದೆ</translation>
 <translation id="2727633948226935816">ಮತ್ತೆ ನನಗೆ ಜ್ಞಾಪಿಸಬೇಡ</translation>
 <translation id="2727712005121231835">ವಾಸ್ತವಿಕ ಗಾತ್ರ</translation>
+<translation id="2729314457178420145">ನಿಮ್ಮನ್ನು Google.com ನಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಬಹುದಾದ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು (<ph name="URL" />) ಸಹ ತೆರವುಗೊಳಿಸಿ. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Linux ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಫೈಲ್‌ಗಳನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="273093730430620027">ಈ ಪುಟವು ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸುತ್ತಿದೆ.</translation>
 <translation id="2731392572903530958">ಮು&amp;ಚ್ಚಿದ ವಿಂಡೋವನ್ನು ಮತ್ತೆ ತೆರೆ</translation>
@@ -2164,6 +2167,7 @@
 <translation id="3838486795898716504">ಇನ್ನಷ್ಟು <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">ಕುಕೀಗಳು ಮತ್ತು ಇತರ ಸೈಟ್ ಹಾಗೂ ಪ್ಲಗಿನ್ ಡೇಟಾ</translation>
 <translation id="383891835335927981">ಯಾವುದೇ ಸೈಟ್‌ಗಳನ್ನು ಝೂಮ್ ಇನ್ ಅಥವಾ ಝೂಮ್ ಔಟ್ ಮಾಡಲಾಗಿಲ್ಲ</translation>
+<translation id="3839509547554145593">ಮೌಸ್ ಸ್ಕ್ರಾಲ್ ವೇಗವರ್ಧಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3839516600093027468"><ph name="HOST" /> ಕ್ಲಿಪ್‌ಬೋರ್ಡ್ ನೋಡುವುದನ್ನು ಯಾವಾಗಲೂ ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="3841964634449506551">ಪಾಸ್‌ವರ್ಡ್ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="3842552989725514455">Serif ಫಾಂಟ್</translation>
@@ -2629,7 +2633,7 @@
 <translation id="450099669180426158">ಆಶ್ಚರ್ಯಕರ ಚಿಹ್ನೆಯ ಐಕಾನ್</translation>
 <translation id="4501530680793980440">ತೆಗೆದುಹಾಕುವಿಕೆಯನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="4502423230170890588">ಈ ಸಾಧನದಿಂದ ತೆಗೆದುಹಾಕಿ</translation>
-<translation id="4504374760782163539">{COUNT,plural, =0{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ}=1{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ, 1 ಅನ್ನು ಹೊರತುಪಡಿಸಲಾಗಿದೆ}one{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ, {COUNT} ಗಳನ್ನು ಹೊರತುಪಡಿಸಲಾಗಿದೆ}other{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ, {COUNT} ಗಳನ್ನು ಹೊರತುಪಡಿಸಲಾಗಿದೆ}}</translation>
+<translation id="4504374760782163539">{COUNT,plural, =0{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ}=1{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ, 1 ವಿನಾಯಿತಿಯಿದೆ}one{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ, {COUNT} ವಿನಾಯಿತಿಗಳಿವೆ}other{ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ, {COUNT} ವಿನಾಯಿತಿಗಳಿವೆ}}</translation>
 <translation id="4504940961672722399">ಈ ಐಕಾನ್‌ ಕ್ಲಿಕ್ ಮಾಡುವುದರ ಮೂಲಕ ಅಥವಾ <ph name="EXTENSION_SHORTCUT" /> ಒತ್ತುವುದರ ಮೂಲಕ ಈ ವಿಸ್ತರಣೆಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="4508051413094283164">ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ</translation>
 <translation id="4508265954913339219">ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ</translation>
@@ -2775,6 +2779,7 @@
 <translation id="4699172675775169585">ಸಂಗ್ರಹಿಸಲಾಗಿರುವ ಚಿತ್ರಗಳು ಮತ್ತು ಫೈಲ್‌ಗಳು</translation>
 <translation id="4699357559218762027">(ಆಟೋ-ಲಾಂಚ್ ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="470074695271471509">ಪೂರ್ಣಗೊಳಿಸಲು ಸೈನ್ ಔಟ್ ಮಾಡುವುದೇ?</translation>
+<translation id="4701025263201366865">ಪೋಷಕರ ಸೈನ್ ಇನ್</translation>
 <translation id="4707302005824653064">ಬಳಕೆ ಮತ್ತು ಇತಿಹಾಸವನ್ನು chrome.com ನಲ್ಲಿ ನಿರ್ವಾಹಕರು (<ph name="CUSTODIAN_EMAIL" />) ಪರಿಶೀಲಿಸಬಹುದು.</translation>
 <translation id="4707579418881001319">L2TP/IPSec + ಬಳಕೆದಾರರ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="4708794300267213770">ನಿದ್ರಾವಸ್ಥೆಯಿಂದ ಹೊರಬರುವಾಗ ಲಾಕ್ ಪರದೆ ತೋರಿಸು</translation>
@@ -3083,6 +3088,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> ಹುಡುಕಾಟ</translation>
 <translation id="5139823398361067371">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಗಾಗಿ ಪಿನ್ ನಮೂದಿಸಿ. ನಿಮಗೆ ಪಿನ್ ತಿಳಿದಿಲ್ಲದಿದ್ದರೆ, ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಮರುಹೊಂದಿಸಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="5139955368427980650">&amp;ತೆರೆ</translation>
+<translation id="5142793792982256885">ಟಚ್‌ಪ್ಯಾಡ್ ಸ್ಕ್ರಾಲ್ ವೇಗ</translation>
 <translation id="5142961317498132443">ಪ್ರಮಾಣೀಕರಣ</translation>
 <translation id="5143374789336132547">ನೀವು ಹೋಮ್‌ನ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
 <translation id="5143712164865402236">ಪೂರ್ಣ ಪರದೆಯನ್ನು ನಮೂದಿಸಿ</translation>
@@ -3646,6 +3652,7 @@
 <translation id="5901630391730855834">ಹಳದಿ</translation>
 <translation id="5906655207909574370">ಬಹುಪಾಲು ನವೀಕೃತವಾಗಿದೆ! ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದನ್ನು ಮುಗಿಸಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="5906732635754427568">ಈ ಅಪ್ಲಿಕೇಶನ್‌ ಜೊತೆಗೆ ಸಂಯೋಜಿತವಾಗಿರುವ ಡೇಟಾವನ್ನು ಈ ಸಾಧನದಿಂದ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ.</translation>
+<translation id="5908695239556627796">ಮೌಸ್ ಸ್ಕ್ರಾಲ್ ವೇಗ</translation>
 <translation id="5908769186679515905">ಫ್ಲ್ಯಾಷ್ ರನ್ ಮಾಡುವಿಕೆಯಿಂದ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="5910363049092958439">ಇದರಂತೆ ಇಮೇಜ್ ಉ&amp;ಳಿಸಿ...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> ಸಾಧನ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದೆ</translation>
@@ -4035,7 +4042,7 @@
 <translation id="6414888972213066896">ಈ ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡುವುದು ಸರಿಯೇ ಎಂದು ನೀವು ನಿಮ್ಮ ಪೋಷಕರನ್ನು ಕೇಳಿರುವಿರಿ</translation>
 <translation id="6415900369006735853">ನಿಮ್ಮ ಫೋನ್‌ನ ಮೂಲಕ ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಗೊಳಿಸಿ</translation>
 <translation id="6416743254476733475">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಅನುಮತಿಸಿ ಅಥವಾ ನಿರ್ಬಂಧಿಸಿ.</translation>
-<translation id="6417265370957905582">Google ಸಹಾಯಕ</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> ನ ಹಿಂದೆ ಸ್ಥಾಪಿಸಿದ ಆವೃತ್ತಿಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="6418481728190846787">ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳ ಪ್ರವೇಶವನ್ನು ಶಾಶ್ವತವಾಗಿ ತೆಗೆಯಿರಿ</translation>
 <translation id="6418511932144861495">ಮಹತ್ವದ ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
@@ -4739,7 +4746,7 @@
 <translation id="7371006317849674875">ಪ್ರಾರಂಭ ಸಮಯ</translation>
 <translation id="7371490947952970241">ಈ ಸಾಧನದಲ್ಲಿ ಮುಖ್ಯ ಸ್ಥಳ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಆಫ್ ಮಾಡುವ ಮೂಲಕ ನೀವು ಸ್ಥಳವನ್ನು ಆಫ್ ಮಾಡಬಹುದು. ನೀವು ಸ್ಥಳ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ, ಸ್ಥಳಕ್ಕಾಗಿ ವೈ-ಫೈ, ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳು ಮತ್ತು ಸೆನ್ಸರ್‌ಗಳ ಬಳಕೆಯನ್ನು ಸಹ ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="7375053625150546623">EAP</translation>
-<translation id="7375235221357833624">{0,plural, =1{ಒಂದು ಘಂಟೆಯ ಒಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}one{# ಘಂಟೆಗಳ ಒಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}other{# ಘಂಟೆಗಳ ಒಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}}</translation>
+<translation id="7375235221357833624">{0,plural, =1{ಒಂದು ಗಂಟೆಯೊಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}one{# ಗಂಟೆಗಳೊಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}other{# ಗಂಟೆಗಳೊಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}}</translation>
 <translation id="7376553024552204454">ಮೌಸ್ ಕರ್ಸರ್ ಅನ್ನು ಸರಿಸುವಾಗ ಹೈಲೈಟ್ ಮಾಡಿ</translation>
 <translation id="7377451353532943397">ಸೆನ್ಸರ್‌ ಪ್ರವೇಶ ನಿರ್ಬಂಧಿಸುವುದನ್ನು ಮುಂದುವರಿಸಿ</translation>
 <translation id="73786666777299047">Chrome ವೆಬ್‌ ಸ್ಟೋರ್ ತೆರೆಯಿರಿ</translation>
@@ -4788,7 +4795,7 @@
 <translation id="7441830548568730290">ಇತರ ಬಳಕೆದಾರರು</translation>
 <translation id="7442465037756169001">ನಿಮ್ಮ Hangouts Meet hardware ಸೆಟಪ್‌ಗೆ ಎಲ್ಲ ರೀತಿಯಲ್ಲಿಯೂ ಸಿದ್ಧವಾಗಿದೆ.</translation>
 <translation id="744341768939279100">ಹೊಸ ಪ್ರೊಫೈಲ್ ರಚಿಸಿ</translation>
-<translation id="744366959743242014">ಡೇಟಾ ಲೋಡ್ ಮಾಡವುದು, ಕೆಲವು ಸೆಕೆಂಡ್‌ಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಬಹುದು.</translation>
+<translation id="744366959743242014">ಡೇಟಾ ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ, ಇದು ಕೆಲವು ಸೆಕೆಂಡ್‌ಗಳ ಕಾಲಾವಕಾಶವನ್ನು ತೆಗೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="7443806024147773267">ನಿಮ್ಮ Google ಖಾತೆಗೆ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗಲೆಲ್ಲಾ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿಗೆ ಪ್ರವೇಶ ಪಡೆಯಿರಿ</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="7448430327655618736">ಆ್ಯಪ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
@@ -5093,6 +5100,7 @@
     <ph name="BEGIN_BOLD" />ಗಮನಿಸಿ:<ph name="END_BOLD" /> ಪ್ರಕ್ರಿಯೆಯು ನಡೆಯುವಾಗ ಸಿಸ್ಟಂ ರೀಬೂಟ್ ಆಗುತ್ತದೆ.</translation>
 <translation id="7828731929332799387">ಇದು ಮೂರನೇ-ವ್ಯಕ್ತಿ ಸಂದರ್ಭಗಳಲ್ಲಿ ಲಭ್ಯವಿರುವ ಎಲ್ಲಾ ಕುಕೀಗಳು ಮತ್ತು ಸೈಟ್ ಡೇಟಾವನ್ನು ಅಳಿಸುತ್ತದೆ. ನೀವು ಮುಂದುವರಿಯಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="7829298379596169484">ಆಡಿಯೊ ಇನ್‌ಪುಟ್ ಪ್ರವೇಶಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="7829877209233347340">ಶಾಲಾ ಖಾತೆಯನ್ನು ಸೇರಿಸುವುದಕ್ಕೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಅನುಮತಿ ನೀಡುವುದಕ್ಕೆ ಪೋಷಕರಿಗೆ ಹೇಳಿ</translation>
 <translation id="7830594666202422257">Linux ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="7831491651892296503">ನೆಟ್‌ವರ್ಕ್‌ ಕಾನ್ಫಿಗರ್‌ ಮಾಡುವಲ್ಲಿ ದೋಷ</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5846,6 +5854,7 @@
 <translation id="8808686172382650546">ಬೆಕ್ಕು</translation>
 <translation id="8808744862003883508">Chrome ನಲ್ಲಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿರುವ ಎಲ್ಲಾ ವಿಸ್ತರಣೆಗಳನ್ನು ಈ ಪುಟದಲ್ಲಿ ನೀವು ನೋಡಬಹುದು.</translation>
 <translation id="8809147117840417135">ತಿಳಿ ಕೆನ್ನೀಲಿ</translation>
+<translation id="8812593354822910461">ನಿಮ್ಮನ್ನು <ph name="DOMAIN" /> ನಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಬಹುದಾದ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು (<ph name="URL" />) ಸಹ ತೆರವುಗೊಳಿಸಿ. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039"><ph name="USERNAME" /> ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="8813811964357448561">ಕಾಗದದ ಹಾಳೆ</translation>
 <translation id="8813872945700551674">"<ph name="EXTENSION_NAME" />" ಅನ್ನು ಅನುಮೋದಿಸಲು ಪೋಷಕರ ಬಳಿ ವಿನಂತಿಸಿ</translation>
@@ -6136,6 +6145,7 @@
 </translation>
 <translation id="9203904171912129171">ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="9203962528777363226">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರು ಸೇರಿಸುವ ಹೊಸ ಬಳಕೆದಾರರನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ</translation>
+<translation id="9209689095351280025">ವೆಬ್‌ನಾದ್ಯಂತ ನಿಮ್ಮನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುವ ಕುಕೀಗಳನ್ನು ವೆಬ್‌ಸೈಟ್‌ಗಳು ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="9211177926627870898">ಅಪ್‌ಡೇಟ್ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="9214520840402538427">ಓಹ್! ಇನ್‌ಸ್ಟಾಲೇಶನ್-ಟೈಮ್-ಆ್ಯಟ್ರಿಬ್ಯೂಷನ್ ಅವಧಿ ಮುಗಿದಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಬೆಂಬಲ ಪ್ರತಿನಿಧಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="9214695392875603905">Cupcake</translation>

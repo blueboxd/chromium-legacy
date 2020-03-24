@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.CurrencyFormatter;
+import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
@@ -2800,7 +2801,7 @@ public class PaymentRequestImpl
             } else {
                 if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
                 disconnectFromClientWithDebugMessage(
-                        ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE
+                        ErrorMessageUtil.getNotSupportedErrorMessage(mMethodData.keySet())
                                 + (TextUtils.isEmpty(mRejectShowErrorMessage)
                                                 ? ""
                                                 : " " + mRejectShowErrorMessage),
@@ -2828,7 +2829,7 @@ public class PaymentRequestImpl
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
         mRejectShowErrorMessage = ErrorStrings.STRICT_BASIC_CARD_SHOW_REJECT;
         disconnectFromClientWithDebugMessage(
-                ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE + " "
+                ErrorMessageUtil.getNotSupportedErrorMessage(mMethodData.keySet()) + " "
                         + mRejectShowErrorMessage,
                 PaymentErrorReason.NOT_SUPPORTED);
 

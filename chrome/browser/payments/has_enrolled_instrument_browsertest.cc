@@ -16,16 +16,6 @@
 namespace payments {
 namespace {
 
-// TODO(https://crbug.com/994799): Unify error messages between desktop and
-// Android.
-const char kNotSupportedMessage[] =
-#if defined(OS_ANDROID)
-    "NotSupportedError: Payment method not supported. "
-#else
-    "NotSupportedError: The payment method \"basic-card\" is not supported. "
-#endif  // OS_ANDROID
-    "User does not have valid information on file.";
-
 enum HasEnrolledInstrumentMode {
   STRICT_HAS_ENROLLED_INSTRUMENT,
   LEGACY_HAS_ENROLLED_INSTRUMENT,
@@ -52,8 +42,9 @@ class HasEnrolledInstrumentTest
     NavigateTo("/has_enrolled_instrument.html");
   }
 
-  const std::string& not_supported_message() const {
-    return not_supported_message_;
+  std::string not_supported_message() const {
+    return "NotSupportedError: The payment method \"basic-card\" is not "
+           "supported. User does not have valid information on file.";
   }
 
   // Helper function to test that all variations of hasEnrolledInstrument()
@@ -111,7 +102,6 @@ class HasEnrolledInstrumentTest
   }
 
  private:
-  std::string not_supported_message_ = kNotSupportedMessage;
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HasEnrolledInstrumentTest);
@@ -276,10 +266,9 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, InvalidEmailAddress) {
 
 // Run all tests with both values for
 // features::kStrictHasEnrolledAutofillInstrument.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    HasEnrolledInstrumentTest,
-    ::testing::Values(STRICT_HAS_ENROLLED_INSTRUMENT,
-                      LEGACY_HAS_ENROLLED_INSTRUMENT));
+INSTANTIATE_TEST_SUITE_P(All,
+                         HasEnrolledInstrumentTest,
+                         ::testing::Values(STRICT_HAS_ENROLLED_INSTRUMENT,
+                                           LEGACY_HAS_ENROLLED_INSTRUMENT));
 }  // namespace
 }  // namespace payments

@@ -64,6 +64,10 @@ class CONTENT_EXPORT MediaSessionController
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }
 
+  // Called when entering/leaving Picture-in-Picture for the given media
+  // player.
+  void PictureInPictureStateChanged(bool is_picture_in_picture);
+
   // Called when the WebContents is either muted or unmuted.
   void WebContentsMutedStateChanged(bool muted);
 
@@ -73,6 +77,12 @@ class CONTENT_EXPORT MediaSessionController
 
   // Called when the media picture-in-picture availability has changed.
   void OnPictureInPictureAvailabilityChanged(bool available);
+
+  bool IsMediaSessionNeeded() const;
+
+  // Determines whether a session is needed and adds or removes the player
+  // accordingly.
+  void AddOrRemovePlayer();
 
  private:
   friend class MediaSessionControllerTest;
@@ -92,6 +102,7 @@ class CONTENT_EXPORT MediaSessionController
   bool has_audio_ = false;
   bool is_remote_ = false;
   bool is_picture_in_picture_available_ = false;
+  bool is_picture_in_picture_active_ = false;
   media::MediaContentType media_content_type_ =
       media::MediaContentType::Persistent;
 

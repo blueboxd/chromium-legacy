@@ -203,7 +203,8 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
   return true;
 }
 
-bool PropertyTreeManager::DirectlySetScrollOffset(
+// static
+void PropertyTreeManager::DirectlySetScrollOffset(
     cc::LayerTreeHost& host,
     CompositorElementId element_id,
     const gfx::ScrollOffset& scroll_offset) {
@@ -213,7 +214,6 @@ bool PropertyTreeManager::DirectlySetScrollOffset(
       layer->SetNeedsPushProperties();
     host.SetNeedsCommit();
   }
-  return true;
 }
 
 cc::TransformTree& PropertyTreeManager::GetTransformTree() {

@@ -19,7 +19,24 @@ void BrowserStatePolicyConnector::Init(
     policy::SchemaRegistry* schema_registry,
     BrowserPolicyConnectorIOS* browser_policy_connector) {
   schema_registry_ = schema_registry;
-  policy_providers_ = browser_policy_connector->GetPolicyProviders();
+
+  // The object returned by GetPlatformConnector() may or may not be in the list
+  // returned by GetPolicyProviders().  Explicitly add it to |policy_providers_|
+  // here in case it will not be added by the loop below (for example, this
+  // could happen if the platform provider is overridden for testing)..
+  policy::ConfigurationPolicyProvider* platform_provider =
+      browser_policy_connector->GetPlatformProvider();
+  policy_providers_.push_back(platform_provider);
+
+  for (auto* provider : browser_policy_connector->GetPolicyProviders()) {
+    // Skip the platform provider since it was already handled above. Do not
+    // reorder any of the remaining providers because the ordering in this list
+    // determines the precedence of the providers.
+    if (provider != platform_provider) {
+      policy_providers_.push_back(provider);
+    }
+  }
+
   policy_service_ =
       std::make_unique<policy::PolicyServiceImpl>(policy_providers_);
 }

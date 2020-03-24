@@ -108,7 +108,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
         overlay_manager->CreateOverlayCandidates(surface_handle);
   }
 
-  if (features::ShouldUseRealBuffersForPageFlipTest()) {
+  if (overlay_enabled && features::ShouldUseRealBuffersForPageFlipTest()) {
     CHECK(shared_image_interface);
   } else {
     shared_image_interface = nullptr;

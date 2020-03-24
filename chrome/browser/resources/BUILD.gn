@@ -273,21 +273,24 @@ if (!is_android) {
 
 if (is_chromeos) {
   grit("os_settings_resources") {
-    deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
+    deps = [
+      "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
+      "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js",
+    ]
     if (optimize_webui) {
       # Required due to flattenhtml="true" on a generated file.
       enable_input_discovery_for_gn_analyze = false
       source = "settings/os_settings_resources_vulcanized.grd"
 
       deps += [ "//chrome/browser/resources/settings/chromeos:build" ]
-
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
     } else {
       source = "settings/os_settings_resources.grd"
     }
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
 
     defines = chrome_grit_defines
     outputs = [

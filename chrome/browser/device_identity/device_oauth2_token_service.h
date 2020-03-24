@@ -23,9 +23,6 @@ class SharedURLLoaderFactory;
 
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
-class PrefRegistrySimple;
-
-namespace chromeos {
 
 // DeviceOAuth2TokenService retrieves OAuth2 access tokens for a given
 // set of scopes using the device-level OAuth2 any-api refresh token
@@ -44,8 +41,6 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // completion via the given callback, passing true if the operation succeeded.
   void SetAndSaveRefreshToken(const std::string& refresh_token,
                               const StatusCallback& callback);
-
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Pull the robot account ID from device policy.
   CoreAccountId GetRobotAccountId() const;
@@ -78,6 +73,13 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
                              const std::string& access_token);
 
   OAuth2AccessTokenManager* GetAccessTokenManager();
+
+#if !defined(OS_CHROMEOS)
+  // Used on non-ChromeOS platforms to set the email associated with the
+  // current service account. On ChromeOS, this function isn't used because
+  // the service account identity comes from CrosSettings.
+  void SetServiceAccountEmail(const std::string& account_email);
+#endif
 
   // Can be used to override the robot account ID for testing purposes. Most
   // common use case is to easily inject a non-empty account ID to make the
@@ -193,7 +195,5 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenService);
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_DEVICE_IDENTITY_DEVICE_OAUTH2_TOKEN_SERVICE_H_

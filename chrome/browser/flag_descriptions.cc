@@ -639,6 +639,11 @@ const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
 const char kEnablePreviewsCoinFlipDescription[] =
     "Enable coin flip experimentation of Previews.";
 
+const char kEnableSRPIsolatedPrerendersName[] =
+    "Enable Navigation Predictor Isolated Prerenders";
+const char kEnableSRPIsolatedPrerendersDescription[] =
+    "Enable Navigation Predictions on the Google SRP to be fully isolated.";
+
 const char kDownloadAutoResumptionNativeName[] =
     "Enable download auto-resumption in native";
 const char kDownloadAutoResumptionNativeDescription[] =

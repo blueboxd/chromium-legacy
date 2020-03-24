@@ -205,8 +205,8 @@ void SystemLogDelegate::LoadSystemLogs(LogUploadCallback upload_callback) {
 std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
     const GURL& upload_url,
     UploadJob::Delegate* delegate) {
-  chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
-      chromeos::DeviceOAuth2TokenServiceFactory::Get();
+  DeviceOAuth2TokenService* device_oauth2_token_service =
+      DeviceOAuth2TokenServiceFactory::Get();
 
   CoreAccountId robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();

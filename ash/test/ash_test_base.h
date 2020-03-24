@@ -210,11 +210,11 @@ class AshTestBase : public testing::Test {
   static display::Display::Rotation GetCurrentInternalDisplayRotation();
 
   void set_start_session(bool start_session) { start_session_ = start_session; }
-  void DisableProvideLocalState();
 
   base::test::TaskEnvironment* task_environment() {
     return task_environment_.get();
   }
+  TestingPrefServiceSimple* local_state() { return &local_state_; }
   AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
 
   TestScreenshotDelegate* GetScreenshotDelegate();
@@ -282,34 +282,22 @@ class AshTestBase : public testing::Test {
 
   bool setup_called_ = false;
   bool teardown_called_ = false;
-  // |SetUp()| doesn't activate session if this is set to false.
+
+  // SetUp() doesn't activate session if this is set to false.
   bool start_session_ = true;
 
   // |task_environment_| is initialized-once at construction time but
   // subclasses may elect to provide their own.
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 
-  // Must be initialized at construction because some tests rely on AshTestBase
-  // methods before AshTestBase::SetUp().
+  // A pref service used for local state.
+  TestingPrefServiceSimple local_state_;
+
+  // Must be constructed after |task_environment_| but before SetUp().
   AshTestHelper ash_test_helper_;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
-  // protected so it can be accesssed by test subclasses to drive the task
-  // environment.
- protected:
-  // A pref service used for local state. Reset it by
-  // DisableProvideLocalState() if a test provides its own local state.
-  std::unique_ptr<TestingPrefServiceSimple> local_state_ =
-      std::make_unique<TestingPrefServiceSimple>();
-
-  // True to register pref service with ash during SetUp(). Set to false if
-  // a test wants to register and provide the local state data before
-  // creating the ash shell.
-  bool register_local_state_ = true;
-
-  // Private again for DISALLOW_COPY_AND_ASSIGN.
- private:
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };
 

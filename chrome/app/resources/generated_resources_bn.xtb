@@ -843,7 +843,7 @@
 <translation id="2135787500304447609">&amp;পুনঃসূচনা</translation>
 <translation id="2136372518715274136">নতুন পাসওয়ার্ড লিখুন</translation>
 <translation id="2136476978468204130">আপনার লেখা পাসফ্রেজটি ভুল</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{কুকি ব্লক করা আছে।}=1{১টি সাইটের কুকি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}one{{COUNT}টি সাইটের কুকি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}other{{COUNT}টি সাইটের কুকি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}}</translation>
+<translation id="2137122615728646911">{COUNT,plural, =0{কুকি ব্লক করা আছে।}=1{১টি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}one{{COUNT}টি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}other{{COUNT}টি ছাড়া বাকি সব সাইটের কুকি ব্লক করা আছে}}</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />" এর সাথে এখনও সংযোগ করা হচ্ছে</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />%, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে, কানেক্ট করুন</translation>
 <translation id="2139919072249842737">সেট-আপ করার বোতাম</translation>
@@ -2627,7 +2627,7 @@
 <translation id="450099669180426158">বিস্ময়বোধক চিহ্ন আইকন</translation>
 <translation id="4501530680793980440">সরানো নিশ্চিত করুন</translation>
 <translation id="4502423230170890588">এই ডিভাইস থেকে সরান</translation>
-<translation id="4504374760782163539">{COUNT,plural, =0{কুকি ব্যবহার করার অনুমতি দেওয়া আছে}=1{১টি সাইট ছাড়া বাকি সব সাইটকে কুকি ব্যবহার করার অনুমতি দেওয়া আছে}one{{COUNT}টি সাইট ছাড়া বাকি সব সাইটকে কুকি ব্যবহার করার অনুমতি দেওয়া আছে}other{{COUNT}টি সাইট ছাড়া বাকি সব সাইটকে কুকি ব্যবহার করার অনুমতি দেওয়া আছে}}</translation>
+<translation id="4504374760782163539">{COUNT,plural, =0{কুকি ব্যবহার করার অনুমতি দেওয়া আছে}=1{১টি ছাড়া বাকি সব সাইটকে কুকি ব্যবহার করার অনুমতি দেওয়া আছে}one{{COUNT}টি ছাড়া বাকি সব সাইটকে কুকি ব্যবহার করার অনুমতি দেওয়া আছে}other{{COUNT}টি ছাড়া বাকি সব সাইটকে কুকি ব্যবহার করার অনুমতি দেওয়া আছে}}</translation>
 <translation id="4504940961672722399">এই আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশনটি ব্যবহার করুন৷</translation>
 <translation id="4508051413094283164">সবগুলি ছদ্মবেশী উইন্ডোতে খুলুন</translation>
 <translation id="4508265954913339219">সক্রিয়করণ ব্যর্থ</translation>
@@ -3999,7 +3999,7 @@
 <translation id="6366190659675876144">স্ট্যান্ডার্ড সুরক্ষা</translation>
 <translation id="636850387210749493">এন্টারপ্রাইজ নথিভুক্তিকরণ</translation>
 <translation id="6370021412472292592">ম্যানিফেস্ট লোড করা যাবে না।</translation>
-<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{পাসওয়ার্ড পরিবর্তন করুন}one{পাসওয়ার্ডগুলি পরিবর্তন করুন}other{পাসওয়ার্ডগুলি পরিবর্তন করুন}}</translation>
+<translation id="6371486244597785139">{NUM_PASSWORDS,plural, =1{পাসওয়ার্ড পরিবর্তন করুন}one{পাসওয়ার্ড পরিবর্তন করুন}other{পাসওয়ার্ডগুলি পরিবর্তন করুন}}</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">আবার চেষ্টা করুন</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />'-এর জন্য ১টি ফলাফল</translation>
@@ -4033,7 +4033,7 @@
 <translation id="6414888972213066896">এই পৃষ্ঠাটিতে যাওয়া ঠিক হবে কিনা সেই বিষয়ে আপনি আপনার অভিভাবকের অনুমতি নিন৷</translation>
 <translation id="6415900369006735853">আপনার ফোনের মাধ্যমে ইন্টারনেটে কানেক্ট করুন</translation>
 <translation id="6416743254476733475">আপনার কম্পিউটারে অনুমতি দিন বা ব্লক করুন।</translation>
-<translation id="6417265370957905582">Google অ্যাসিস্ট্যান্ট</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> এর পূর্বে ইনস্টল করা সংস্করণে ফিরিয়ে নিয়ে যাওয়া হচ্ছে</translation>
 <translation id="6418481728190846787">সমস্ত অ্যাপ্লিকেশানের অ্যাক্সেস স্থায়ীভাবে সরান</translation>
 <translation id="6418511932144861495">জরুরী আপডেট ইনস্টল করুন</translation>
@@ -4821,7 +4821,7 @@
 <translation id="7489761397368794366">আপনার ডিভাইস থেকে কল করুন</translation>
 <translation id="749028671485790643">ব্যক্তি <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC ঠিকানা</translation>
-<translation id="7491963308094506985">{NUM_COOKIES,plural, =1{১টি কুকি}one{{NUM_COOKIES}টি সাইটের কুকি}other{{NUM_COOKIES}টি সাইটের কুকি}}</translation>
+<translation id="7491963308094506985">{NUM_COOKIES,plural, =1{১টি সাইটের কুকি}one{{NUM_COOKIES}টি সাইটের কুকি}other{{NUM_COOKIES}টি সাইটের কুকি}}</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> এক্সটেনশন হয়ত ব্যক্তিগত ডেটা যেমন পাসওয়ার্ড ও ক্রেডিট কার্ড নম্বরগুলি সহ আপনি যা টাইপ করেন সেসব পাঠ্য সংগ্রহ করতে পারে। আপনি কি এই এক্সটেনশন ব্যবহার করতে চান?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">আপনার পুরানো পাসওয়ার্ড ভুলে গেছেন?</translation>

@@ -202,9 +202,11 @@ public class SearchEngineAdapter extends BaseAdapter
         }
 
         if (mSelectedSearchEnginePosition == -1) {
-            throw new IllegalStateException("Default search engine, "
-                    + defaultSearchEngineTemplateUrl
-                    + ", index did not match any available search engines.");
+            throw new IllegalStateException(
+                    String.format("Default search engine is not found in available search engines:"
+                                    + " DSE is valid=%b, is managed=%b",
+                            defaultSearchEngineTemplateUrl != null,
+                            TemplateUrlServiceFactory.get().isDefaultSearchManaged()));
         }
 
         mInitialEnginePosition = mSelectedSearchEnginePosition;

@@ -10,10 +10,10 @@
 #include "components/cbor/writer.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
+#include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
 #include "services/network/trust_tokens/trust_token_request_signing_helper.h"
-#include "services/network/trust_tokens/trust_token_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {

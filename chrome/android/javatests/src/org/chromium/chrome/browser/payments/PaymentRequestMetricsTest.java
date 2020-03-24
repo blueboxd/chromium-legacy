@@ -329,7 +329,8 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                 "https://android.com/pay", AppPresence.NO_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "androidPayBuy", mPaymentRequestTestRule.getShowFailed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Payment method not supported"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"The payment method", "not supported"});
 
         // Make sure that it is not logged as an abort.
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(-1 /* none */);
@@ -369,7 +370,8 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     public void testMetrics_NoSupportedPaymentMethod() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "noSupported", mPaymentRequestTestRule.getShowFailed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Payment method not supported"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"The payment method", "not supported"});
 
         // Make sure that it is not logged as an abort.
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(-1 /* none */);

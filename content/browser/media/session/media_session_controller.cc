@@ -65,8 +65,7 @@ bool MediaSessionController::Initialize(
 
   // Don't bother with a MediaSession for remote players or without audio.  If
   // we already have a session from a previous call, release it.
-  if (!has_audio_ || is_remote ||
-      media_web_contents_observer_->web_contents()->IsAudioMuted()) {
+  if (!IsMediaSessionNeeded()) {
     has_session_ = false;
     media_session_->RemovePlayer(this, player_id_);
     return true;
@@ -155,19 +154,14 @@ void MediaSessionController::OnPlaybackPaused() {
     media_session_->OnPlayerPaused(this, player_id_);
 }
 
-void MediaSessionController::WebContentsMutedStateChanged(bool muted) {
-  if (!has_audio_ || is_remote_)
-    return;
+void MediaSessionController::PictureInPictureStateChanged(
+    bool is_picture_in_picture) {
+  is_picture_in_picture_active_ = is_picture_in_picture;
+  AddOrRemovePlayer();
+}
 
-  // We want to make sure we do not request audio focus on a muted tab as it
-  // would break user expectations by pausing/ducking other playbacks.
-  if (!muted && !has_session_) {
-    if (media_session_->AddPlayer(this, player_id_, media_content_type_))
-      has_session_ = true;
-  } else if (muted) {
-    has_session_ = false;
-    media_session_->RemovePlayer(this, player_id_);
-  }
+void MediaSessionController::WebContentsMutedStateChanged(bool muted) {
+  AddOrRemovePlayer();
 }
 
 void MediaSessionController::OnMediaPositionStateChanged(
@@ -180,6 +174,26 @@ void MediaSessionController::OnPictureInPictureAvailabilityChanged(
     bool available) {
   is_picture_in_picture_available_ = available;
   media_session_->OnPictureInPictureAvailabilityChanged();
+}
+
+bool MediaSessionController::IsMediaSessionNeeded() const {
+  // We want to make sure we do not request audio focus on a muted tab as it
+  // would break user expectations by pausing/ducking other playbacks.
+  const bool has_audio =
+      has_audio_ &&
+      !media_web_contents_observer_->web_contents()->IsAudioMuted();
+  return !is_remote_ && (has_audio || is_picture_in_picture_active_);
+}
+
+void MediaSessionController::AddOrRemovePlayer() {
+  const bool needs_session = IsMediaSessionNeeded();
+  if (needs_session && !has_session_) {
+    has_session_ =
+        media_session_->AddPlayer(this, player_id_, media_content_type_);
+  } else if (!needs_session && has_session_) {
+    has_session_ = false;
+    media_session_->RemovePlayer(this, player_id_);
+  }
 }
 
 }  // namespace content

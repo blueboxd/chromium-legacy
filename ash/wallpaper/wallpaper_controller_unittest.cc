@@ -8,7 +8,6 @@
 #include <cstdlib>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -2636,10 +2635,7 @@ class WallpaperControllerPrefTest : public AshTestBase {
 
   void SetUp() override {
     {
-      RegisterLocalStatePrefs(local_state_->registry(), true);
-      register_local_state_ = false;
-      DictionaryPrefUpdate update(local_state_.get(),
-                                  prefs::kDisplayProperties);
+      DictionaryPrefUpdate update(local_state(), prefs::kDisplayProperties);
 
       base::DictionaryValue* pref_data = update.Get();
 

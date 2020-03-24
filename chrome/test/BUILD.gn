@@ -3561,6 +3561,7 @@ test("unit_tests") {
 
   if (!is_android) {
     sources += [
+      "../browser/device_identity/device_oauth2_token_service_unittest.cc",
       "../browser/profiles/profile_avatar_icon_util_unittest.cc",
       "../browser/sharing/webrtc/sharing_service_host_unittest.cc",
       "../browser/sharing/webrtc/sharing_webrtc_connection_host_unittest.cc",
@@ -3588,7 +3589,7 @@ test("unit_tests") {
   }
   if (is_chromeos) {
     sources += [
-      "../browser/device_identity/device_oauth2_token_service_unittest.cc",
+      "../browser/device_identity/chromeos/device_oauth2_token_store_chromeos_unittest.cc",
       "../browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils_unittest.cc",
       "../browser/ui/webui/chromeos/edu_account_login_handler_unittest.cc",
       "../renderer/chromeos_delayed_callback_group_unittest.cc",
@@ -5260,6 +5261,7 @@ test("unit_tests") {
   }
   if (!is_android && !is_chromeos) {
     sources += [
+      "../browser/device_identity/device_oauth2_token_store_desktop_unittest.cc",
       "../browser/media/webrtc/native_desktop_media_list_unittest.cc",
       "../browser/metrics/upgrade_metrics_provider_unittest.cc",
       "../browser/policy/chrome_browser_cloud_management_register_watcher_unittest.cc",

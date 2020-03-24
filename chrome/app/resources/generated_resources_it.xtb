@@ -282,7 +282,7 @@
 <translation id="1386387014181100145">Salve.</translation>
 <translation id="138784436342154190">Ripristinare la pagina iniziale predefinita?</translation>
 <translation id="1390548061267426325">Apri in una scheda normale</translation>
-<translation id="1392232653471491344">Riavvio di Linux richiesto</translation>
+<translation id="1392232653471491344">È necessario riavviare Linux</translation>
 <translation id="1393283411312835250">Sole e nuvole</translation>
 <translation id="1393787139683794508">Verranno cancellati tutti i dati e i cookie memorizzati da <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1395730723686586365">Programma di aggiornamento avviato</translation>
@@ -311,7 +311,7 @@
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" /> per consentire l'accoppiamento</translation>
 <translation id="1422159345171879700">Carica script non sicuri</translation>
 <translation id="1426410128494586442">Sì</translation>
-<translation id="142655739075382478"><ph name="APP_NAME" /> è bloccata</translation>
+<translation id="142655739075382478">L'app <ph name="APP_NAME" /> è bloccata</translation>
 <translation id="1426870617281699524">Fai clic su Riprova e accetta la richiesta sul computer</translation>
 <translation id="1427269577154060167">Paese</translation>
 <translation id="142758023928848008">Attiva tasti bloccati (per eseguire scorciatoie da tastiera digitandole in sequenza)</translation>
@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Questa estensione non richiede autorizzazioni speciali.</translation>
 <translation id="1616298854599875024">Impossibile importare l'estensione "<ph name="IMPORT_NAME" />" perché non è un modulo condiviso</translation>
 <translation id="1618268899808219593">Centro assistenza</translation>
+<translation id="1620307519959413822">Password errata. Riprova o fai clic su Password dimenticata per reimpostarla.</translation>
 <translation id="1620510694547887537">Videocamera</translation>
 <translation id="1623132449929929218">Le immagini non sono al momento disponibili. Riconnettiti a Internet per visualizzare le raccolte di sfondi.</translation>
 <translation id="1627276047960621195">Descrittori di file</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Revisione hardware</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Apri a schermo intero</translation>
+<translation id="1892341345406963517">Ciao <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Altre lingue</translation>
 <translation id="1895252664692693738">Tempo rimanente: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Chiusura</translation>
@@ -1340,7 +1342,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2753677631968972007">Controlla manualmente le autorizzazioni del sito.</translation>
 <translation id="2755367719610958252">Gestisci funzioni di accessibilità</translation>
 <translation id="275662540872599901">schermo spento</translation>
-<translation id="2757338480560142065">Assicurati che la password che vuoi salvare corrisponda alla password di <ph name="WEBSITE" /></translation>
+<translation id="2757338480560142065">Assicurati che la password che stai salvando corrisponda alla password di <ph name="WEBSITE" /></translation>
 <translation id="2762441749940182211">Videocamera bloccata</translation>
 <translation id="2765217105034171413">Piccole</translation>
 <translation id="2766161002040448006">Rivolgiti a un genitore</translation>
@@ -2562,7 +2564,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4400963414856942668">Puoi fare clic sulla stella per aggiungere una scheda ai preferiti</translation>
 <translation id="4403775189117163360">Scegli una cartella diversa</translation>
 <translation id="4404136731284211429">Analizza di nuovo</translation>
-<translation id="4404843640767531781"><ph name="APP_NAME" /> è stata bloccata da un genitore. Chiedi al tuo genitore l'autorizzazione per poter usare l'app.</translation>
+<translation id="4404843640767531781">L'app <ph name="APP_NAME" /> è stata bloccata da un genitore. Chiedi al tuo genitore l'autorizzazione per poterla usare.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">G&amp;uida</translation>
 <translation id="4409697491990005945">Margini</translation>
@@ -3132,6 +3134,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5213891612754844763">Mostra impostazioni proxy</translation>
 <translation id="5215502535566372932">Seleziona il paese</translation>
 <translation id="521582610500777512">La foto è stata eliminata</translation>
+<translation id="5222403284441421673">Download non sicuro bloccato</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="52232769093306234">Compressione non riuscita.</translation>
 <translation id="5225324770654022472">Mostra scorciatoia app</translation>
@@ -3530,6 +3533,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5734362860645681824">Comunicazioni</translation>
 <translation id="5734697361979786483">Aggiungi condivisione file</translation>
 <translation id="5736796278325406685">Inserisci un nome utente valido</translation>
+<translation id="5739017626473506901">Accedi per aiutare <ph name="USER_NAME" /> ad aggiungere un account della scuola</translation>
 <translation id="5739235828260127894">In attesa di verifica. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Molto grandi</translation>
 <translation id="574209121243317957">Tono</translation>
@@ -4791,7 +4795,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7441830548568730290">Altri utenti</translation>
 <translation id="7442465037756169001">L'hardware Hangouts Meet è pronto per la configurazione.</translation>
 <translation id="744341768939279100">Crea un nuovo profilo</translation>
-<translation id="744366959743242014">Il caricamento dei dati potrebbe richiedere alcuni secondi.</translation>
+<translation id="744366959743242014">Caricamento dei dati in corso. L'operazione potrebbe richiedere alcuni secondi.</translation>
 <translation id="7443806024147773267">Puoi avere a disposizione le tue password ogni volta che accedi al tuo Account Google</translation>
 <translation id="7444983668544353857">Disabilita <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Installare automaticamente le app</translation>
@@ -4848,7 +4852,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7513029293694390567">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Se la funzione non è attiva, ti viene chiesta la conferma prima di ogni accesso ai siti web.</translation>
 <translation id="7514239104543605883">Copia sul tuo dispositivo</translation>
 <translation id="7514365320538308">Scarica</translation>
-<translation id="751523031290522286"><ph name="APP_NAME" /> è stata bloccata dal tuo amministratore. Chiedi all'amministratore l'autorizzazione per poter usare l'app.</translation>
+<translation id="751523031290522286">L'amministratore ha bloccato <ph name="APP_NAME" />. Chiedi all'amministratore l'autorizzazione per poter usare l'app.</translation>
 <translation id="7516981202574715431"><ph name="APP_NAME" /> in sospeso</translation>
 <translation id="7517063221058203587">{0,plural, =1{Aggiorna il dispositivo entro 1 minuto}other{Aggiorna il dispositivo entro # minuti}}</translation>
 <translation id="7520766081042531487">Portale in modalità di navigazione in incognito: <ph name="SUBFRAME_SITE" /></translation>
@@ -5537,6 +5541,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8408068190360279472">Rete <ph name="NETWORK_TYPE" />, collegamento in corso</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Chiedi prima (opzione consigliata)</translation>
+<translation id="8417548266957501132">Password genitore</translation>
 <translation id="8417573335434189196">Non ti protegge da estensioni, download o siti web pericolosi. Chrome sconsiglia questa impostazione.</translation>
 <translation id="8418445294933751433">&amp;Mostra come scheda</translation>
 <translation id="8419098111404128271">Risultati di ricerca per "<ph name="SEARCH_TEXT" />"</translation>

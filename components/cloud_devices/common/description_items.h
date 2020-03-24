@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CLOUD_DEVICES_COMMON_CAPABILITY_INTERFACES_H_
-#define COMPONENTS_CLOUD_DEVICES_COMMON_CAPABILITY_INTERFACES_H_
+#ifndef COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_ITEMS_H_
+#define COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_ITEMS_H_
 
 // Defines common templates that could be used to create device specific
 // capabilities and print tickets.
@@ -11,6 +11,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -44,6 +45,7 @@ template <class Option, class Traits>
 class ListCapability {
  public:
   ListCapability();
+  ListCapability(ListCapability&& other);
   ~ListCapability();
 
   bool LoadFrom(const CloudDeviceDescription& description);
@@ -66,7 +68,7 @@ class ListCapability {
   void AddOption(Option&& option) { options_.emplace_back(std::move(option)); }
 
  private:
-  typedef std::vector<Option> OptionVector;
+  using OptionVector = std::vector<Option>;
   OptionVector options_;
 
   DISALLOW_COPY_AND_ASSIGN(ListCapability);
@@ -232,4 +234,4 @@ class TicketItem {
 
 }  // namespace cloud_devices
 
-#endif  // COMPONENTS_CLOUD_DEVICES_COMMON_CAPABILITY_INTERFACES_H_
+#endif  // COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_ITEMS_H_

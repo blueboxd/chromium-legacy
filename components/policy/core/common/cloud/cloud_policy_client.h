@@ -111,6 +111,11 @@ class POLICY_EXPORT CloudPolicyClient {
 
     // Indicates there's been an error in a previously-issued request.
     virtual void OnClientError(CloudPolicyClient* client) = 0;
+
+    // Called when the Service Account Identity is set on a policy data object
+    // after a policy fetch. |service_account_email()| will return the new
+    // account's email.
+    virtual void OnServiceAccountChanged(CloudPolicyClient* client) {}
   };
 
   struct POLICY_EXPORT RegistrationParameters {
@@ -364,6 +369,10 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& public_key,
       ClientCertProvisioningDownloadCertCallback callback);
 
+  // Used the update the current service account email associated with this
+  // policy client and notify observers.
+  void UpdateServiceAccount(const std::string& account_email);
+
   // Adds an observer to be called back upon policy and state changes.
   void AddObserver(Observer* observer);
 
@@ -392,6 +401,10 @@ class POLICY_EXPORT CloudPolicyClient {
 
   void clear_public_key_version() {
     public_key_version_valid_ = false;
+  }
+
+  const std::string& service_account_email() const {
+    return service_account_email_;
   }
 
   // FetchPolicy() calls will request this policy type.
@@ -597,6 +610,7 @@ class POLICY_EXPORT CloudPolicyClient {
   void NotifyPolicyFetched();
   void NotifyRegistrationStateChanged();
   void NotifyClientError();
+  void NotifyServiceAccountChanged();
 
   // Data necessary for constructing policy requests.
   const std::string machine_id_;
@@ -686,6 +700,9 @@ class POLICY_EXPORT CloudPolicyClient {
   // during re-registration, which gets triggered by a failed policy fetch with
   // error |DM_STATUS_SERVICE_DEVICE_NOT_FOUND|.
   std::string reregistration_dm_token_;
+
+  // The Service Account email that was set on the last policy fetch.
+  std::string service_account_email_;
 
   // Used to create tasks which run delayed on the UI thread.
   base::WeakPtrFactory<CloudPolicyClient> weak_ptr_factory_{this};

@@ -250,13 +250,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
   EXPECT_TRUE(IsExtensionAtVersion(extension, "1.0"));
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/141913
-#define MAYBE_InstallRequiresConfirm DISABLED_InstallRequiresConfirm
-#else
-#define MAYBE_InstallRequiresConfirm InstallRequiresConfirm
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallRequiresConfirm) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallRequiresConfirm) {
   // Installing the extension without an auto confirming UI should result in
   // it being disabled, since good.crx has permissions that require approval.
   std::string id = "ldnnhddmnhbkjipkidpdiheffobcpfmf";

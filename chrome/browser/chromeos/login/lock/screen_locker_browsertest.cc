@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, LockScreenWhileAddingUser) {
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   // 1) If the active browser window is in fullscreen and the fullscreen window
   // does not have all the pixels (e.g. the shelf is auto hidden instead of
-  // hidden), locking the screen should not exit fullscreen. The shelf is
+  // hidden), locking the screen should exit fullscreen. The shelf is
   // auto hidden when in immersive fullscreen.
   ScreenLockerTester tester;
   BrowserWindow* browser_window = browser()->window();
@@ -139,30 +139,23 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   }
   {
     tester.Lock();
-    EXPECT_TRUE(browser_window->IsFullscreen());
-    EXPECT_FALSE(window_state->GetHideShelfWhenFullscreen());
+    EXPECT_FALSE(browser_window->IsFullscreen());
+    EXPECT_TRUE(window_state->GetHideShelfWhenFullscreen());
     EXPECT_TRUE(tester.IsLocked());
   }
   tester.SetUnlockPassword(user_manager::StubAccountId(), "pass");
   tester.UnlockWithPassword(user_manager::StubAccountId(), "pass");
   EXPECT_FALSE(tester.IsLocked());
-  {
-    FullscreenNotificationObserver fullscreen_waiter(browser());
-    browser()
-        ->exclusive_access_manager()
-        ->fullscreen_controller()
-        ->ToggleBrowserFullscreenMode();
-    fullscreen_waiter.Wait();
-    EXPECT_FALSE(browser_window->IsFullscreen());
-  }
+  EXPECT_FALSE(browser_window->IsFullscreen());
 
   // Browser window should be activated after screen locker is gone. Otherwise,
   // the rest of the test would fail.
   ASSERT_EQ(window_state, ash::WindowState::ForActiveWindow());
 
-  // 2) If the active browser window is in fullscreen and the fullscreen window
-  // has all of the pixels, locking the screen should exit fullscreen. The
-  // fullscreen window has all of the pixels when in tab fullscreen.
+  // 2) Similar to 1) if the active browser window is in fullscreen and the
+  // fullscreen window has all of the pixels, locking the screen should exit
+  // fullscreen. The fullscreen window has all of the pixels when in tab
+  // fullscreen.
   {
     FullscreenNotificationObserver fullscreen_waiter(browser());
     content::WebContents* web_contents =

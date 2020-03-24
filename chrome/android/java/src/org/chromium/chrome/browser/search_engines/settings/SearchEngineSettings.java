@@ -15,6 +15,8 @@ import org.chromium.chrome.R;
 
 /**
  * A preference fragment for selecting a default search engine.
+ * ATTENTION: User can't change search engine if it is controlled by an enterprise policy. Check
+ * TemplateUrlServiceFactory.get().isDefaultSearchManaged() before launching this fragment.
  *
  * TODO(crbug.com/988877): Add on scroll shadow to action bar.
  */

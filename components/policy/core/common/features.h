@@ -15,6 +15,9 @@ namespace features {
 // TODO(994227) Remove references to this now unused feature.
 POLICY_EXPORT extern const base::Feature kPolicyAtomicGroup;
 
+// Feature that controls whether the browser reads the service account
+// information from policy data.
+POLICY_EXPORT extern const base::Feature kCBCMServiceAccounts;
 }
 }  // namespace policy
 

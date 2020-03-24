@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -73,10 +72,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     views::test::WidgetTest::SetUp();
 
     app_list_view_ = new AppListView(&view_delegate_);
-    app_list_view_->InitView(
-        /*is_tablet_mode=*/false, GetContext(),
-        base::BindRepeating(&UpdateActivationForAppListView, app_list_view_,
-                            /*is_tablet_mode=*/false));
+    app_list_view_->InitView(/*is_tablet_mode=*/false, GetContext());
 
     widget_ = CreateTopLevelPlatformWidget();
     view_ =

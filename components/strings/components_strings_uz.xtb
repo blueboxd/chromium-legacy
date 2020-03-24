@@ -312,6 +312,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2288422996159078444">Internetdagi harakatlaringiz (qidirayotgan soʻrovlar, ochayotgan sahifalar va boshqa amallar) kuzatuv ostida, saytlar kontenti oʻzgarishi mumkin.</translation>
 <translation id="2289385804009217824">Qirqish</translation>
 <translation id="2292556288342944218">Internet taqiqlab qo‘yilgan</translation>
+<translation id="2293443924986248631">Yoqilsa, sizni internet boʻylab kuzatadigan cookie fayllardan saytlar foydalana olmaydi. Ayrim saytlardagi funksiyalar ishalamay qolishi mumkin.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Yuklanmagan</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -724,6 +725,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4152318981910038897">{COUNT,plural, =1{1-sahifa}other{{COUNT}-sahifa}}</translation>
 <translation id="4154664944169082762">Barmoq izlari</translation>
 <translation id="4159784952369912983">Siyohrang</translation>
+<translation id="4163132590327127354">Mutoalani osonlashtirish uchun bu sahifa Chrome tomonidan soddalashtirildi.</translation>
 <translation id="4165986682804962316">Sayt sozlamalari</translation>
 <translation id="4171400957073367226">Tasdiqlash imzosi noto‘g‘ri</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1024,6 +1026,11 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="536296301121032821">Tartib-qoida parametrlarini saqlab bo‘lmadi</translation>
 <translation id="5371425731340848620">Kartani yangilash</translation>
 <translation id="5377026284221673050">“Soatingiz orqada” yoki “Soatingiz oldinda” yoki “&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
+<translation id="5380442954567233718">Siz ochmoqchi boʻlgan <ph name="ORIGIN" /> serverida
+    barcha soʻrovlar manba siyosati tekshiruvidan oʻtishini talab qiluvchi sarlavha sozlangan. Lekin
+    sarlavha xato formatdaligi sababli brauzer <ph name="SITE" /> saytidagi soʻrovingizni
+    bajara olmaydi. Manba siyosatlari sayt operatorlari
+    tomonidan xavfsizlik kabi sayt parametrlarini sozlashda ishlatiladi.</translation>
 <translation id="5386426401304769735">Bu veb-saytning sertifikatlari zanjiridagi sertifikat SHA-1 algoritmi asosida yozilgan.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Oʻng chekkasini tikish</translation>
@@ -1569,6 +1576,7 @@ Batafsil axborot:
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Himoya devori yoki antivirus dasturi tarmoqqa ulanishni taqiqlab qo‘ygan bo‘lishi mumkin.</translation>
 <translation id="7759163816903619567">Domenni ko‘rsatish:</translation>
+<translation id="776110834126722255">Eskirgan</translation>
 <translation id="7761701407923456692">Server sertifikati URL manziliga mos kelmayapti.</translation>
 <translation id="7763386264682878361">To‘lov manifesti tahlilchisi</translation>
 <translation id="7764225426217299476">Manzil qo‘shish</translation>

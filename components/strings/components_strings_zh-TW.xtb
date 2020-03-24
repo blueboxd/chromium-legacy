@@ -313,6 +313,7 @@
 <translation id="2288422996159078444">你輸入的內容、瀏覽的網頁或任何其他網路活動都會遭到監視，而且網站內容可能會在你不知情的情況下遭到變更。</translation>
 <translation id="2289385804009217824">裁切</translation>
 <translation id="2292556288342944218">您的網際網路存取權遭到封鎖</translation>
+<translation id="2293443924986248631">開啟這項功能時，網站無法使用 Cookie 來追蹤你在網路上的活動。某些網站的功能可能無法正常運作。</translation>
 <translation id="2297722699537546652">B5 (信封)</translation>
 <translation id="2300306941146563769">未上傳</translation>
 <translation id="2310021320168182093">Chou2 (信封)</translation>
@@ -594,7 +595,7 @@
 <translation id="3587738293690942763">中間</translation>
 <translation id="3592413004129370115">Italian (信封)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
-<translation id="3603507503523709">系統管理員已封鎖應用程式</translation>
+<translation id="3603507503523709">已遭系統管理員封鎖的應用程式</translation>
 <translation id="3608932978122581043">送紙方向</translation>
 <translation id="3614103345592970299">粗細：2</translation>
 <translation id="361438452008624280">清單項目「<ph name="LANGUAGE_ID" />」：不明或不支援的語言。</translation>
@@ -723,6 +724,7 @@
 <translation id="4152318981910038897">{COUNT,plural, =1{第 1 頁}other{第 {COUNT} 頁}}</translation>
 <translation id="4154664944169082762">指紋</translation>
 <translation id="4159784952369912983">紫色</translation>
+<translation id="4163132590327127354">Chrome 已簡化這個頁面，讓內容更易於閱讀。</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4171400957073367226">驗證簽名無效</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -848,7 +850,7 @@
 <translation id="467662567472608290">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證含有錯誤。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="4677585247300749148"><ph name="URL" /> 要求回應無障礙事件</translation>
 <translation id="467809019005607715">Google 簡報</translation>
-<translation id="4680804919228900307">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即檢查已儲存在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" />，以及也使用這個密碼的其他網站上的密碼。</translation>
+<translation id="4680804919228900307">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即檢查為以下網站儲存的密碼：<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" />，以及使用這組密碼的其他網站。</translation>
 <translation id="4690462567478992370">停止使用無效的憑證</translation>
 <translation id="4691835149146451662">Architecture-A (信封)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1014,7 +1016,7 @@
 <translation id="5329858041417644019">你的瀏覽器未受管理</translation>
 <translation id="5332219387342487447">運送方式</translation>
 <translation id="5334013548165032829">詳細系統記錄</translation>
-<translation id="5340250774223869109">已封鎖應用程式</translation>
+<translation id="5340250774223869109">應用程式已遭封鎖</translation>
 <translation id="534295439873310000">NFC 裝置</translation>
 <translation id="5344579389779391559">進入接下來的頁面後，系統可能會向您收費</translation>
 <translation id="5346336634660260557">掃描剪貼簿內容，以及透過 Chrome 下載或上傳的檔案。</translation>
@@ -1022,6 +1024,7 @@
 <translation id="536296301121032821">無法儲存政策設定</translation>
 <translation id="5371425731340848620">更新信用卡</translation>
 <translation id="5377026284221673050">「你的時鐘時間過慢」、「你的時鐘時間過快」或 「&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;」</translation>
+<translation id="5380442954567233718">你要存取的伺服器「<ph name="ORIGIN" />」已設定標頭，指定所有收到的要求都必須套用來源政策。但標頭格式錯誤，因此瀏覽器無法完成你向「<ph name="SITE" />」提出的要求。網站業者可使用來源政策設定網站的安全性及其他屬性。</translation>
 <translation id="5386426401304769735">這個網站的憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">邊緣裝訂 (右側)</translation>
@@ -1428,7 +1431,7 @@
 <translation id="7219179957768738017">這個連線使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7220786058474068424">處理中</translation>
 <translation id="7221855153210829124">顯示通知</translation>
-<translation id="7229659723041939809">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即檢查已儲存在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" />，以及也使用這個密碼的其他網站上的密碼。</translation>
+<translation id="7229659723041939809">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即檢查為以下網站儲存的密碼：<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" />，以及使用這組密碼的其他網站。</translation>
 <translation id="7233592378249864828">列印確認工作表</translation>
 <translation id="7238585580608191973">SHA-256 指紋</translation>
 <translation id="7240120331469437312">憑證主體替代名稱</translation>
@@ -1496,7 +1499,7 @@
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="7495290002932347110">你使用的某個網站或應用程式發生資料侵害事件，因此你的密碼已遭洩露。Chrome 建議你立即檢查已儲存的密碼，並變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="7498234416455752244">繼續編輯</translation>
-<translation id="7503664977220660814">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即檢查已儲存在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />，以及也使用這個密碼的其他網站上的密碼。</translation>
+<translation id="7503664977220660814">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即檢查為以下網站儲存的密碼：<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />，以及使用這組密碼的其他網站。</translation>
 <translation id="7508255263130623398">傳回的政策裝置 ID 沒有任何內容，或是與目前的裝置 ID 不符</translation>
 <translation id="7508870219247277067">酪梨綠</translation>
 <translation id="7511955381719512146">目前使用的 Wi-Fi 網路可能會要求您造訪 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
@@ -1568,6 +1571,7 @@
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">防火牆或防毒軟體可能封鎖了連線。</translation>
 <translation id="7759163816903619567">顯示網域：</translation>
+<translation id="776110834126722255">已淘汰</translation>
 <translation id="7761701407923456692">伺服器憑證與網址不符。</translation>
 <translation id="7763386264682878361">付款資訊清單剖析器</translation>
 <translation id="7764225426217299476">新增地址</translation>
@@ -1593,7 +1597,7 @@
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">要離開網站嗎？</translation>
 <translation id="7865448901209910068">最佳速度</translation>
-<translation id="7874263914261512992">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即檢查已儲存在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />，以及也使用這個密碼的其他網站上的密碼。</translation>
+<translation id="7874263914261512992">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即檢查為以下網站儲存的密碼：<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />，以及使用這組密碼的其他網站。</translation>
 <translation id="7878562273885520351">你的密碼可能已經外洩</translation>
 <translation id="7882421473871500483">棕色</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
@@ -1730,7 +1734,7 @@
 <translation id="8474910779563686872">顯示開發人員詳細資料</translation>
 <translation id="8479754468255770962">釘裝 (左下方)</translation>
 <translation id="8483780878231876732">如要使用您的 Google 帳戶中的信用卡，請登入 Chrome</translation>
-<translation id="8485393050551136813">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即檢查已儲存在 <ph name="WEBSITE_1" /> 以及也使用這個密碼的其他網站上的密碼。</translation>
+<translation id="8485393050551136813">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即檢查為以下網站儲存的密碼：<ph name="WEBSITE_1" /> 和使用這組密碼的其他網站。</translation>
 <translation id="8488350697529856933">適用對象</translation>
 <translation id="8490137692873530638">堆疊出紙器 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的回應時間過長。</translation>
@@ -1780,7 +1784,7 @@
 <translation id="87601671197631245">這個網站的安全性設定過舊，因此你傳送給這個網站的的資訊 (例如密碼、訊息或信用卡資訊) 可能會外洩。</translation>
 <translation id="8761567432415473239">Google 安全瀏覽最近在「<ph name="SITE" />」<ph name="BEGIN_LINK" />發現了有害程式<ph name="END_LINK" />。</translation>
 <translation id="8763927697961133303">USB 裝置</translation>
-<translation id="8774457497170244317">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即檢查已儲存在 <ph name="WEBSITE_1" /> 以及也使用這個密碼的其他網站上的密碼。</translation>
+<translation id="8774457497170244317">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即檢查為以下網站儲存的密碼：<ph name="WEBSITE_1" /> 和使用這組密碼的其他網站。</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8792621596287649091">你可能會失去 <ph name="ORG_NAME" /> 帳戶存取權，或身分遭到冒用。Chromium 建議你立即變更密碼。</translation>

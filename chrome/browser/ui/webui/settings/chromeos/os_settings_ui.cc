@@ -230,15 +230,19 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 #endif
 
   html_source->AddResourcePath("app-management/app_management.mojom-lite.js",
-                               IDR_APP_MANAGEMENT_MOJO_LITE_JS);
-  html_source->AddResourcePath("app-management/types.mojom-lite.js",
-                               IDR_APP_MANAGEMENT_TYPES_MOJO_LITE_JS);
-  html_source->AddResourcePath("app-management/bitmap.mojom-lite.js",
-                               IDR_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS);
-  html_source->AddResourcePath("app-management/image.mojom-lite.js",
-                               IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
-  html_source->AddResourcePath("app-management/image_info.mojom-lite.js",
-                               IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
+                               IDR_OS_SETTINGS_APP_MANAGEMENT_MOJO_LITE_JS);
+  html_source->AddResourcePath(
+      "app-management/types.mojom-lite.js",
+      IDR_OS_SETTINGS_APP_MANAGEMENT_TYPES_MOJO_LITE_JS);
+  html_source->AddResourcePath(
+      "app-management/bitmap.mojom-lite.js",
+      IDR_OS_SETTINGS_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS);
+  html_source->AddResourcePath(
+      "app-management/image.mojom-lite.js",
+      IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
+  html_source->AddResourcePath(
+      "app-management/image_info.mojom-lite.js",
+      IDR_OS_SETTINGS_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
 
   html_source->AddResourcePath(
       "search/user_action_recorder.mojom-lite.js",

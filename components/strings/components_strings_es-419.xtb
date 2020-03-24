@@ -313,6 +313,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2288422996159078444">Todo lo que escribas, las páginas que visites o cualquier otra actividad que realices en la Web está visible. Además, se puede cambiar contenido en los sitios sin tu conocimiento.</translation>
 <translation id="2289385804009217824">Cortar</translation>
 <translation id="2292556288342944218">Se bloqueó tu acceso a Internet</translation>
+<translation id="2293443924986248631">Cuando esta opción está activada, los sitios no pueden usar cookies para rastrearte en la Web. Es posible que las características de algunos sitios no funcionen de forma adecuada.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">No se subió</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -728,6 +729,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4152318981910038897">{COUNT,plural, =1{Página 1}other{Página {COUNT}}}</translation>
 <translation id="4154664944169082762">Huellas digitales</translation>
 <translation id="4159784952369912983">Púrpura</translation>
+<translation id="4163132590327127354">Chrome simplificó esta página para facilitar la lectura.</translation>
 <translation id="4165986682804962316">Configuración de sitios</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida.</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1028,6 +1030,11 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="536296301121032821">Error al almacenar la configuración de la política</translation>
 <translation id="5371425731340848620">Actualizar tarjeta</translation>
 <translation id="5377026284221673050">"El reloj está atrasado", "El reloj está adelantado" o "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">El servidor <ph name="ORIGIN" /> al que te diriges estableció un encabezado
+    donde se indica que se aplicará una política de origen a todas las solicitudes. Sin embargo,
+    el encabezado tiene un formato no válido, por lo que el navegador no puede cumplir
+    con tu solicitud para <ph name="SITE" />. Los operadores de sitios pueden usar
+    las políticas de origen para configurar la seguridad y otras propiedades de un sitio.</translation>
 <translation id="5386426401304769735">La cadena del certificado de este sitio web contiene un certificado que se firmó con SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Costura de borde a la derecha</translation>
@@ -1574,6 +1581,7 @@ Detalles adicionales:
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Es posible que un software antivirus o un firewall hayan bloqueado la conexión.</translation>
 <translation id="7759163816903619567">Dominio para mostrar:</translation>
+<translation id="776110834126722255">Obsoleta</translation>
 <translation id="7761701407923456692">El certificado del servidor no coincide con la dirección URL.</translation>
 <translation id="7763386264682878361">Analizador del manifiesto de pagos</translation>
 <translation id="7764225426217299476">Agregar dirección</translation>

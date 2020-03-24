@@ -19,12 +19,15 @@ extern const base::FilePath::CharType kSodaBinaryRelativePath[];
 // directory. Note: SODA is currently only available in English.
 extern const base::FilePath::CharType kSodaConfigFileRelativePath[];
 
+// Get the absolute path of the SODA component directory.
+const base::FilePath GetSodaDirectory();
+
 // Get the directory containing the latest version of SODA. In most cases
 // there will only be one version of SODA, but it is possible for there to be
 // multiple versions if a newer version of SODA was recently downloaded before
 // the old version gets cleaned up. Returns an empty path if SODA is not
 // installed.
-const base::FilePath GetSodaDirectory();
+const base::FilePath GetLatestSodaDirectory();
 
 // Get the path to the SODA binary. Returns an empty path if SODA is not
 // installed.

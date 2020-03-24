@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -820,6 +821,7 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistUnavailable) {
 }
 
 TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
+  base::HistogramTester histograms;
   WaitForTasksOnTaskRunner();
 
   FullHash fh_malware("Malware");
@@ -864,6 +866,10 @@ TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
   EXPECT_EQ(fh_malware, matching_full_hash);
+
+  histograms.ExpectUniqueSample(
+      "SafeBrowsing.V4LocalDatabaseManager.ThreatInfoSize",
+      /* sample */ 2, /* expected_count */ 2);
 }
 
 TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {

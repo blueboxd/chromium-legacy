@@ -26,6 +26,8 @@ std::vector<BrokerFilePermission> GetSodaFilePermissions(
   if (!latest_version_dir.empty()) {
     permissions.push_back(BrokerFilePermission::ReadOnlyRecursive(
         latest_version_dir.AsEndingWithSeparator().value()));
+    permissions.push_back(
+        BrokerFilePermission::ReadOnly(latest_version_dir.value()));
   }
 
   return permissions;

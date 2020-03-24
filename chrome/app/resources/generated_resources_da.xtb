@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Denne udvidelse kræver ikke nogen særlige tilladelser.</translation>
 <translation id="1616298854599875024">Udvidelsen "<ph name="IMPORT_NAME" />" kan ikke importeres, da den ikke er delt</translation>
 <translation id="1618268899808219593">Hjælp</translation>
+<translation id="1620307519959413822">Forkert adgangskode. Prøv igen, eller klik på "Har du glemt din adgangskode?" for at nulstille koden.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623132449929929218">Billederne er ikke tilgængelige i øjeblikket. Opret internetforbindelse igen for at se samlingerne med baggrunde.</translation>
 <translation id="1627276047960621195">Filbeskrivelser</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Hardwarerevision</translation>
 <translation id="1890674179660343635">&lt;span&gt;Id: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Åbn fuld skærm</translation>
+<translation id="1892341345406963517">Hej <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Andre sprog</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> tilbage</translation>
 <translation id="1895658205118569222">Nedlukning</translation>
@@ -3133,6 +3135,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5213891612754844763">Vis proxyindstillinger</translation>
 <translation id="5215502535566372932">Vælg et land</translation>
 <translation id="521582610500777512">Billede blev kasseret</translation>
+<translation id="5222403284441421673">Download af usikkert indhold er blokeret</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="52232769093306234">Pakning mislykkedes.</translation>
 <translation id="5225324770654022472">Vis genvejen for apps</translation>
@@ -3531,6 +3534,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5734362860645681824">Kommunikation</translation>
 <translation id="5734697361979786483">Tilføj fildeling</translation>
 <translation id="5736796278325406685">Angiv et gyldigt brugernavn</translation>
+<translation id="5739017626473506901">Log ind for at hjælpe <ph name="USER_NAME" /> med at tilføje en skolekonto</translation>
 <translation id="5739235828260127894">Venter på bekræftelse. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Meget stor</translation>
 <translation id="574209121243317957">Toneleje</translation>
@@ -5539,6 +5543,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" />-netværk, opretter forbindelse</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Spørg først (anbefales)</translation>
+<translation id="8417548266957501132">Forælders adgangskode</translation>
 <translation id="8417573335434189196">Beskytter dig ikke mod skadelige websites, downloads eller udvidelser. Chrome anbefaler ikke denne indstilling.</translation>
 <translation id="8418445294933751433">&amp;Vis som fane</translation>
 <translation id="8419098111404128271">Søgeresultater for "<ph name="SEARCH_TEXT" />"</translation>

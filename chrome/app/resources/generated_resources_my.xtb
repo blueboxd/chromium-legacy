@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">ဤတိုးချဲ့လိုင်းသည် အထူးခွင့်ပြုချက် မလိုအပ်ပါ။</translation>
 <translation id="1616298854599875024">မျှဝေထားသည့် မော်ဂျူးမဟုတ်သောကြောင့် နောက်ဆက်တွဲ "<ph name="IMPORT_NAME" />" ကို မတင်သွင်းနိုင်ပါ</translation>
 <translation id="1618268899808219593">အကူ&amp;အညီ ဌာန</translation>
+<translation id="1620307519959413822">စကားဝှက် မမှန်ပါ။ ထပ်စမ်းကြည့်ပါ (သို့) စကားဝှက် ပြင်ဆင်သတ်မှတ်ရန် 'စကားဝှက်မေ့သွားသည်' ကိုနှိပ်ပါ။</translation>
 <translation id="1620510694547887537">ကင်မရာ</translation>
 <translation id="1623132449929929218">ပုံများလက်ရှိမရနိုင်ပါ။ နောက်ခံပုံစုစည်းမှုကို ကြည့်ရန် အင်တာနက်သို့ ပြန်လည်ချိတ်ဆက်ပါ။</translation>
 <translation id="1627276047960621195">ဖိုင် ဖေါ်ပြချက်များ</translation>
@@ -680,6 +681,7 @@
 <translation id="1887850431809612466">စက်ပစ္စည်း စိစစ်သုံးသပ်ခြင်း</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID-&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">မျက်နှာပြင် အပြည့် ဖွင့်ရန်</translation>
+<translation id="1892341345406963517">မင်္ဂလာပါ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">အခြား ဘာသာစကားများ</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> ကျန်သည်</translation>
 <translation id="1895658205118569222">ပိတ်ရန်</translation>
@@ -3133,6 +3135,7 @@
 <translation id="5213891612754844763">ပရောက်စီ ဆက်တင်များကို ပြရန်</translation>
 <translation id="5215502535566372932">နိုင်ငံ ရွေးပါ</translation>
 <translation id="521582610500777512">ဓာတ်ပုံကို လွှင့်ပစ်လိုက်ပါပြ</translation>
+<translation id="5222403284441421673">လုံခြုံမှုမရှိသည့် ဒေါင်းလုဒ်ကို ပိတ်ထားခြင်း</translation>
 <translation id="5222676887888702881">ထွက်ခွာရန်</translation>
 <translation id="52232769093306234">ထုပ်ပိုးခြင်း မအောင်မြင်ပါ။</translation>
 <translation id="5225324770654022472">အက်ပ်များ၏ ဖြတ်လမ်းကို ပြပေးရန်</translation>
@@ -3532,6 +3535,7 @@
 <translation id="5734362860645681824">ဆက်သွယ်မှုများ</translation>
 <translation id="5734697361979786483">ဖိုင်မျှဝေမှုကို ထည့်ရန်</translation>
 <translation id="5736796278325406685">မှန်ကန်သော အသုံးပြုသူအမည်ကို ထည့်သွင်းပါ</translation>
+<translation id="5739017626473506901"><ph name="USER_NAME" /> ကျောင်းအကောင့်ထည့်ရာတွင် ကူညီရန် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="5739235828260127894">စစ်ဆေးအတည်ပြုချက် စောင့်နေသည်။ <ph name="LINK_BEGIN" />ပိုမို လေ့လာရန်<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">အလွန်ကြီး</translation>
 <translation id="574209121243317957">အသံအနိမ့်အမြင့်</translation>
@@ -5536,6 +5540,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ကွန်ရက်၊ ချိတ်ဆက်နေသည်</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ဦးစွာ မေးပါ (အကြံပြုထား)</translation>
+<translation id="8417548266957501132">မိဘ၏ စကားဝှက်</translation>
 <translation id="8417573335434189196">အန္တရာယ်ရှိသော ဝဘ်ဆိုက်၊ ဒေါင်းလုဒ် သို့မဟုတ် နောက်ဆက်တွဲများ၏ ရန်မှ ကာကွယ်မပေးပါ။ Chrome သည် ဤဆက်တင်ကို အကြံမပြုပါ။</translation>
 <translation id="8418445294933751433">တဲပ် အနေဖြင့် &amp;ပြ</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' အတွက် ရှာဖွေမှု ရလဒ်များ</translation>

@@ -9,6 +9,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -24,6 +25,13 @@ DeviceOAuth2TokenStoreChromeOS::DeviceOAuth2TokenStoreChromeOS(
 
 DeviceOAuth2TokenStoreChromeOS::~DeviceOAuth2TokenStoreChromeOS() {
   FlushTokenSaveCallbacks(false);
+}
+
+// static
+void DeviceOAuth2TokenStoreChromeOS::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kDeviceRobotAnyApiRefreshToken,
+                               std::string());
 }
 
 void DeviceOAuth2TokenStoreChromeOS::Init(InitCallback callback) {
@@ -51,7 +59,7 @@ void DeviceOAuth2TokenStoreChromeOS::SetAndSaveRefreshToken(
   // If the robot account ID is not available yet, do not announce the token. It
   // will be done from OnServiceAccountIdentityChanged() once the robot account
   // ID becomes available as well.
-  if (!GetAccountId().empty())
+  if (observer() && !GetAccountId().empty())
     observer()->OnRefreshTokenAvailable();
 
   token_save_callbacks_.push_back(std::move(callback));
@@ -151,7 +159,7 @@ void DeviceOAuth2TokenStoreChromeOS::DidGetSystemSalt(
 }
 
 void DeviceOAuth2TokenStoreChromeOS::OnServiceAccountIdentityChanged() {
-  if (!GetAccountId().empty() && !refresh_token_.empty())
+  if (observer() && !GetAccountId().empty() && !refresh_token_.empty())
     observer()->OnRefreshTokenAvailable();
 }
 

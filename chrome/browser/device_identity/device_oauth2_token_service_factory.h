@@ -17,8 +17,6 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-namespace chromeos {
-
 class DeviceOAuth2TokenService;
 
 class DeviceOAuth2TokenServiceFactory {
@@ -50,7 +48,5 @@ class DeviceOAuth2TokenServiceFactory {
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenServiceFactory);
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_DEVICE_IDENTITY_DEVICE_OAUTH2_TOKEN_SERVICE_FACTORY_H_

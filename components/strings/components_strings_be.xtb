@@ -313,6 +313,7 @@
 <translation id="2288422996159078444">Уся інфармацыя, якую вы набіраеце, усе старонкі, якія вы праглядаеце, а таксама любыя іншыя вашы дзеянні ў інтэрнэце адсочваюцца. Змесціва сайтаў можа быць зменена без вашага ведама.</translation>
 <translation id="2289385804009217824">Абрэзка</translation>
 <translation id="2292556288342944218">Доступ да інтэрнэту заблакіраваны</translation>
+<translation id="2293443924986248631">Калі ўключыць гэту наладу, сайты не змогуць выкарыстоўваць файлы cookie для адсочвання вас у інтэрнэце. Функцыі на некаторых сайтах могуць перастаць працаваць.</translation>
 <translation id="2297722699537546652">B5 (канверт)</translation>
 <translation id="2300306941146563769">Не запампавана</translation>
 <translation id="2310021320168182093">Chou2 (канверт)</translation>
@@ -728,6 +729,7 @@
 <translation id="4152318981910038897">{COUNT,plural, =1{Старонка 1}one{Старонка {COUNT}}few{Старонка {COUNT}}many{Старонка {COUNT}}other{Старонка {COUNT}}}</translation>
 <translation id="4154664944169082762">Лічбавыя адбіткі</translation>
 <translation id="4159784952369912983">Фіялетавы</translation>
+<translation id="4163132590327127354">Chrome спрасціў гэту старонку для больш зручнага чытання.</translation>
 <translation id="4165986682804962316">Налады сайта</translation>
 <translation id="4171400957073367226">Подпіс спраўджання недапушчальны</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1028,6 +1030,11 @@
 <translation id="536296301121032821">Не ўдалося захаваць налады палітыкі</translation>
 <translation id="5371425731340848620">Абнавіць картку</translation>
 <translation id="5377026284221673050">"Ваш гадзіннік спазняецца", або "Ваш гадзіннік спяшаецца", або "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">Сервер, на які вы пераходзіце (<ph name="ORIGIN" />), мае загаловак, які патрабуе,
+    каб на ўсе запыты да сервера распаўсюджвалася палітыка крыніцы. Аднак
+    фармат загалоўка няправільны, што не дазваляе браўзеру
+    выканаць запыт сайта "<ph name="SITE" />". Палітыкі крыніцы могуць выкарыстоўвацца
+    аператарамі сайтаў для наладжвання бяспекі і іншых уласцівасцей сайта.</translation>
 <translation id="5386426401304769735">Ланцужок сертыфікатаў для гэтага сайта змяшчае сертыфікат, падпісаны з выкарыстаннем алгарытму SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Сшыванне па краі справа</translation>
@@ -1575,6 +1582,7 @@
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Падключэнне магло быць заблакіравана брандмаўэрам або антывірусам.</translation>
 <translation id="7759163816903619567">Бачны дамен:</translation>
+<translation id="776110834126722255">Састарэлая</translation>
 <translation id="7761701407923456692">Несупадзенне паміж сертыфікатам сервера і URL-адрасам.</translation>
 <translation id="7763386264682878361">Аналізатар плацежных маніфестаў</translation>
 <translation id="7764225426217299476">Дадаць адрас</translation>

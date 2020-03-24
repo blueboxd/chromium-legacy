@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">ატვირთვა</translation>
 <translation id="1244265436519979884">ამჟამად მიმდინარეობს Linux აღდგენა</translation>
 <translation id="1244303850296295656">გაფართოების შეცდომა</translation>
+<translation id="1246158006305844142">თქვენი აპები და პარამეტრები სინქრონიზებული იქნება თქვენს ყველა Chrome OS მოწყობილობასთან, რომელზეც შესული ხართ თქვენი Google ანგარიშით. ბრაუზერის სინქრონიზაციის პარამეტრების სანახავად გადადით <ph name="LINK_BEGIN" />Chrome-ის პარამეტრებზე<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">გსურთ შემოთავაზების გაცვლის ბუფერიდან ამოშლა?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> დაიბლოკა, რადგან ის მოძველებულია</translation>
 <translation id="1251366534849411931">მოსალოდნელი იყო გამხსნელი ფიგურული ფრჩხილი: <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">არა, გმადლობთ</translation>
 <translation id="1525740877599838384">მდებარეობის დასადგენად მხოლოდ Wi-Fi ქსელის გამოყენება</translation>
 <translation id="152629053603783244">Linux-ის გადატვირთვა</translation>
+<translation id="1526335046150927198">სენსორული კლავიატურით გადაადგილების დაჩქარების ჩართვა</translation>
 <translation id="1526560967942511387">უსათაურო დოკუმენტი</translation>
 <translation id="1529891865407786369">ელკვების წყარო</translation>
 <translation id="1530838837447122178">მაუსისა და სენსორული პანელის პარამეტრები</translation>
@@ -1312,6 +1314,7 @@
 <translation id="2725200716980197196">ქსელური კავშირი აღდგენილია</translation>
 <translation id="2727633948226935816">აღარ მოხდეს შეხსენება</translation>
 <translation id="2727712005121231835">ფაქტიური ზომა</translation>
+<translation id="2729314457178420145">დათვალიერების მონაცემების (<ph name="URL" />) გასუფთავებაც (შესაძლოა, გამოხვიდეთ Google.com-დან). <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">მიმდინარეობს Linux აპებისა და ფაილების სარეზერვო ასლების შექმნა</translation>
 <translation id="273093730430620027">ამ გვერდს აქვს წვდომა თქვენს კამერაზე.</translation>
 <translation id="2731392572903530958">დახურული ფანჯრის ხელახლა &amp;გახსნა</translation>
@@ -2163,6 +2166,7 @@
 <translation id="3838486795898716504">მეტი <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">ქუქი-ჩანაწერები, ასევე საიტების და დანამატების სხვა მონაცემები</translation>
 <translation id="383891835335927981">მასშტაბის გადიდება ან შემცირება არცერთ საიტზე არ მოხდარა</translation>
+<translation id="3839509547554145593">მაუსით გადაადგილების დაჩქარების ჩართვა</translation>
 <translation id="3839516600093027468">ყოველთვის აეკრძალოს <ph name="HOST" />-ს გაცვლის ბუფერის ნახვა</translation>
 <translation id="3841964634449506551">პაროლი არასწორია</translation>
 <translation id="3842552989725514455">Serif-შრიფტი</translation>
@@ -2774,6 +2778,7 @@
 <translation id="4699172675775169585">ქეშირებული სურათები და ფაილები</translation>
 <translation id="4699357559218762027">(ავტომატურად გაშვებული)</translation>
 <translation id="470074695271471509">გსურთ დასასრულებლად გასვლა?</translation>
+<translation id="4701025263201366865">შესვლა მშობლისთვის</translation>
 <translation id="4707302005824653064">მმართველს (<ph name="CUSTODIAN_EMAIL" />) შეუძლია გადახედოს გამოყენებას და ისტორიას საიტზე chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + მომხმარებლის სერტიფიკატი</translation>
 <translation id="4708794300267213770">ძილიდან გამოღვიძებისას ჩაკეტილი ეკრანის ჩვენება</translation>
@@ -3081,6 +3086,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> ძიება</translation>
 <translation id="5139823398361067371">შეიყვანეთ PIN-კოდი თქვენი უსაფრთხოების გასაღებისთვის. თუ PIN-კოდი არ იცით, მოგიწევთ უსაფრთხოების გასაღების გადაყენება.</translation>
 <translation id="5139955368427980650">&amp;გახსნა</translation>
+<translation id="5142793792982256885">სენსორული პანელით გადაადგილების სიჩქარე</translation>
 <translation id="5142961317498132443">ავტორიზაცია</translation>
 <translation id="5143374789336132547">გაფართოებამ „<ph name="EXTENSION_NAME" />“ თქვენ მიერ მთავარი გვერდის ღილაკზე დაწკაპუნებისას ნაჩვენები გვერდი შეცვალა.</translation>
 <translation id="5143712164865402236">სრულეკრანიან რეჟიმში შესვლა</translation>
@@ -3643,6 +3649,7 @@
 <translation id="5901630391730855834">ყვითელი</translation>
 <translation id="5906655207909574370">განახლება თითქმის მზად არის! დასასრულებლად, გადატვირთეთ თქვენი მოწყობილობა.</translation>
 <translation id="5906732635754427568">ამ აპთან დაკავშირებული მონაცემები ამ მოწყობილობიდან ამოიშლება.</translation>
+<translation id="5908695239556627796">მაუსით გადაადგილების სიჩქარე</translation>
 <translation id="5908769186679515905">საიტებისთვის Flash-ის გაშვების დაბლოკვა</translation>
 <translation id="5910363049092958439">გამოსახულების შენ&amp;ახვა, როგორც…</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> ხაზგარეშეა</translation>
@@ -5090,6 +5097,7 @@
     <ph name="BEGIN_BOLD" />შენიშვნა:<ph name="END_BOLD" /> პროცესის მსვლელობისას სისტემა გადაიტვირთება.</translation>
 <translation id="7828731929332799387">ეს ქმედება წაშლის ყველა იმ ქუქი-ჩანაწერსა და საიტების მონაცემს, რომელიც ხელმისაწვდომია მესამე მხარის კონტექსტებში. გსურთ გაგრძელება?</translation>
 <translation id="7829298379596169484">შემომავალ აუდიოზე წვდომა</translation>
+<translation id="7829877209233347340">სასწავლებლის ანგარიშის დამატების ნებართვის მოსანიჭებლად სთხოვეთ მშობელს სისტემაში შესვლა</translation>
 <translation id="7830594666202422257">Linux-თან დაკავშირება</translation>
 <translation id="7831491651892296503">შეცდომა ქსელის კონფიგურაციისას</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5842,6 +5850,7 @@
 <translation id="8808686172382650546">კატა</translation>
 <translation id="8808744862003883508">ამ გვერდზე შეგიძლიათ იხილოთ Chrome-ში დაინსტალირებული ყველა გაფართოება.</translation>
 <translation id="8809147117840417135">ღია ფირუზისფერი</translation>
+<translation id="8812593354822910461">დათვალიერების მონაცემების (<ph name="URL" />) გასუფთავებაც (შესაძლოა, გამოხვიდეთ <ph name="DOMAIN" />-დან). <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039"><ph name="USERNAME" />-ში შესვლა ვერ მოხერხდა</translation>
 <translation id="8813811964357448561">ფურცელი</translation>
 <translation id="8813872945700551674">სთხოვეთ მშობელს, დაადასტუროს „<ph name="EXTENSION_NAME" />“</translation>
@@ -6131,6 +6140,7 @@
 <translation id="9203398526606335860">&amp;პროფილირება ჩართულია</translation>
 <translation id="9203904171912129171">აირჩიეთ მოწყობილობა</translation>
 <translation id="9203962528777363226">ამ მოწყობილობის ადმინისტრატორმა გამორთო ახალი მომხმარებლების დამატების შესაძლებლობა</translation>
+<translation id="9209689095351280025">საიტები ვერ გამოიყენებს ქუქი-ჩანაწერებს ვებში თქვენთვის თვალის მისადევნებლად</translation>
 <translation id="9211177926627870898">საჭიროა განახლება</translation>
 <translation id="9214520840402538427">უპს! დაინსტალირების დროის ატრიბუტების ინიციალიზაცია ამოიწურა. დაუკავშირდით მხარდაჭერის თქვენს წარმომადგენელს.</translation>
 <translation id="9214695392875603905">კექსი</translation>

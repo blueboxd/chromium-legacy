@@ -103,8 +103,13 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   // Leaks the pipe handle instead of closing it on shutdown.
   void LeakHandleOnShutdown();
 
-  // Invokes the bad message callback for this channel, if any.
+  // Invokes the bad message callback for this channel.  To avoid losing error
+  // reports the caller should ensure that the channel |HasBadMessageHandler|
+  // before calling |NotifyBadMessage|.
   void NotifyBadMessage(const std::string& error);
+
+  // Returns whether the channel has a bad message handler.
+  bool HasBadMessageHandler() { return !process_error_callback_.is_null(); }
 
   void SetRemoteProcessHandle(ScopedProcessHandle process_handle);
   bool HasRemoteProcessHandle();

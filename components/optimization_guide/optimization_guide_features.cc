@@ -77,6 +77,12 @@ size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
       "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
+size_t MaxUrlsForOptimizationGuideServiceHintsFetch() {
+  return GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching,
+      "max_urls_for_optimization_guide_service_hints_fetch", 30);
+}
+
 size_t MaxHostsForRecordingSuccessfullyCovered() {
   return GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,

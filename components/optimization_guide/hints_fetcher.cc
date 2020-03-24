@@ -56,6 +56,10 @@ std::string GetStringNameForRequestContext(
 std::vector<GURL> GetValidURLsForFetching(const std::vector<GURL>& urls) {
   std::vector<GURL> valid_urls;
   for (const auto& url : urls) {
+    if (valid_urls.size() >=
+        features::MaxUrlsForOptimizationGuideServiceHintsFetch()) {
+      break;
+    }
     if (IsValidURLForURLKeyedHint(url))
       valid_urls.push_back(url);
   }
@@ -169,6 +173,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 
   DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
             filtered_hosts.size());
+  DCHECK_GE(features::MaxUrlsForOptimizationGuideServiceHintsFetch(),
+            valid_urls.size());
 
   if (optimization_types.empty()) {
     RecordRequestStatusHistogram(

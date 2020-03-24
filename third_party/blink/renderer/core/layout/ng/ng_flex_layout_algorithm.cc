@@ -324,6 +324,16 @@ double NGFlexLayoutAlgorithm::GetMainOverCrossAspectRatio(
   return ratio;
 }
 
+namespace {
+
+LayoutUnit CalculateFixedCrossSize(LayoutUnit available_size,
+                                   const MinMaxSizes& cross_axis_min_max,
+                                   LayoutUnit margin_sum) {
+  return cross_axis_min_max.ClampSizeToMinAndMax(available_size - margin_sum);
+}
+
+}  // namespace
+
 NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
     const NGBlockNode& flex_item,
     const NGPhysicalBoxStrut& physical_margins,
@@ -345,13 +355,14 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
     if (is_column_) {
       space_builder.SetIsFixedInlineSize(true);
       child_available_size.inline_size =
-          cross_axis_min_max.ClampSizeToMinAndMax(
-              child_available_size.inline_size - margins.InlineSum());
+          CalculateFixedCrossSize(child_available_size.inline_size,
+                                  cross_axis_min_max, margins.InlineSum());
     } else {
       space_builder.SetIsFixedBlockSize(true);
       DCHECK_NE(content_box_size_.block_size, kIndefiniteSize);
-      child_available_size.block_size = cross_axis_min_max.ClampSizeToMinAndMax(
-          child_available_size.block_size - margins.BlockSum());
+      child_available_size.block_size =
+          CalculateFixedCrossSize(child_available_size.block_size,
+                                  cross_axis_min_max, margins.BlockSum());
     }
   }
 
@@ -790,11 +801,19 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       space_builder.SetIsPaintedAtomically(true);
 
       LogicalSize available_size;
+      NGBoxStrut margins = flex_item.physical_margins.ConvertToLogical(
+          ConstraintSpace().GetWritingMode(), Style().Direction());
       if (is_column_) {
         available_size.inline_size = content_box_size_.inline_size;
         available_size.block_size =
             flex_item.flexed_content_size + flex_item.main_axis_border_padding;
         space_builder.SetIsFixedBlockSize(true);
+        if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node)) {
+          space_builder.SetIsFixedInlineSize(true);
+          available_size.inline_size = CalculateFixedCrossSize(
+              available_size.inline_size, flex_item.min_max_cross_sizes.value(),
+              margins.InlineSum());
+        }
         // https://drafts.csswg.org/css-flexbox/#definite-sizes
         // If the flex container has a definite main size, a flex item's
         // post-flexing main size is treated as definite, even though it can
@@ -808,14 +827,12 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
             flex_item.flexed_content_size + flex_item.main_axis_border_padding;
         available_size.block_size = content_box_size_.block_size;
         space_builder.SetIsFixedInlineSize(true);
-      }
-      if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node)) {
-        // TODO(dgrogan): These need margins subtracted and min/max sizes
-        // applied, like in BuildSpaceForIntrinsicBlockSize.
-        if (is_column_)
-          space_builder.SetIsFixedInlineSize(true);
-        else
+        if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node)) {
           space_builder.SetIsFixedBlockSize(true);
+          available_size.block_size = CalculateFixedCrossSize(
+              available_size.block_size, flex_item.min_max_cross_sizes.value(),
+              margins.BlockSum());
+        }
       }
 
       space_builder.SetNeedsBaseline(

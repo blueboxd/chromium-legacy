@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
@@ -33,11 +34,13 @@ using TP = ThemeProperties;
 
 // Maps scale factors (enum values) to file path.
 // A similar typedef in BrowserThemePack is private.
-using TestScaleFactorToFileMap = std::map<ui::ScaleFactor, base::FilePath>;
+using TestScaleFactorToFileMap =
+    base::flat_map<ui::ScaleFactor, base::FilePath>;
 
 // Maps image ids to maps of scale factors to file paths.
 // A similar typedef in BrowserThemePack is private.
-using TestFilePathMap = std::map<int, TestScaleFactorToFileMap>;
+using TestFilePathMap =
+    base::flat_map<BrowserThemePack::PersistentID, TestScaleFactorToFileMap>;
 
 // BrowserThemePackTest --------------------------------------------------------
 
@@ -648,9 +651,11 @@ TEST_F(BrowserThemePackTest, CanParsePaths) {
   // implementation details that shouldn't be exported.
   // By default the scale factor is for 100%.
   EXPECT_TRUE(base::FilePath(FILE_PATH_LITERAL("one")) ==
-              out_file_paths[12][ui::SCALE_FACTOR_100P]);
+              out_file_paths[static_cast<BrowserThemePack::PersistentID>(12)]
+                            [ui::SCALE_FACTOR_100P]);
   EXPECT_TRUE(base::FilePath(FILE_PATH_LITERAL("two")) ==
-              out_file_paths[5][ui::SCALE_FACTOR_100P]);
+              out_file_paths[static_cast<BrowserThemePack::PersistentID>(5)]
+                            [ui::SCALE_FACTOR_100P]);
 }
 
 TEST_F(BrowserThemePackTest, InvalidPathNames) {

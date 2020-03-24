@@ -140,7 +140,7 @@ class PropertyTreeManager {
       cc::LayerTreeHost&,
       const TransformPaintPropertyNode&);
 
-  static bool DirectlySetScrollOffset(cc::LayerTreeHost&,
+  static void DirectlySetScrollOffset(cc::LayerTreeHost&,
                                       CompositorElementId,
                                       const gfx::ScrollOffset&);
 

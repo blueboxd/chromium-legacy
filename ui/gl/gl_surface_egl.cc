@@ -265,6 +265,12 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   }
 
   bool GetMscRate(int32_t* numerator, int32_t* denominator) override {
+    // TODO(https://crbug.com/1064078): eglGetMscRateCHROMIUM is not universally
+    // available when the EGL_CHROMIUM_sync_control extension is present (for
+    // example, EGL Mesa).
+    if (!gl::g_driver_egl.fn.eglGetMscRateCHROMIUMFn)
+      return false;
+
     bool result = eglGetMscRateCHROMIUM(g_egl_display, surface_, numerator,
                                         denominator) == EGL_TRUE;
     return result;

@@ -528,84 +528,6 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
 }
 
-// Tests offsets with pending transient entries (specifically going back and
-// forward from a pending navigation entry that is added to the middle of the
-// navigation stack).
-TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
-  // This test directly manipulates the WKBackForwardListItem mocks stored in
-  // mock_wk_list_ so that the associated NavigationItem objects are retained
-  // throughout the test case.
-  WKBackForwardListItem* wk_item0 =
-      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/0"];
-  WKBackForwardListItem* wk_item1 =
-      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/1"];
-  WKBackForwardListItem* wk_item2 =
-      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/2"];
-
-  // Create a transient item in the middle of the navigation stack and go back
-  // to it (pending index is 1, current index is 2).
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_LINK,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
-
-  mock_wk_list_.currentItem = wk_item0;
-  mock_wk_list_.backList = nil;
-  mock_wk_list_.forwardList = nil;
-  navigation_manager()->CommitPendingItem();
-
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
-
-  mock_wk_list_.currentItem = wk_item1;
-  mock_wk_list_.backList = @[ wk_item0 ];
-  navigation_manager()->CommitPendingItem();
-
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_LINK,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
-
-  mock_wk_list_.currentItem = wk_item2;
-  mock_wk_list_.backList = @[ wk_item0, wk_item1 ];
-  navigation_manager()->CommitPendingItem();
-
-  // Under back-forward navigation, both WKBackForwardList and WKWebView.URL are
-  // updated before |didStartProvisionalNavigation| callback, which calls
-  // AddPendingItem. Simulate this behavior.
-  OCMStub([mock_web_view_ URL])
-      .andReturn([NSURL URLWithString:@"http://www.url.com/1"]);
-  mock_wk_list_.currentItem = wk_item1;
-  mock_wk_list_.backList = @[ wk_item0 ];
-  mock_wk_list_.forwardList = @[ wk_item2 ];
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  navigation_manager()->AddTransientItem(GURL("http://www.url.com/1"));
-
-  ASSERT_EQ(3, navigation_manager()->GetItemCount());
-  ASSERT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
-  ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
-  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
-  EXPECT_EQ(0, navigation_manager()->GetIndexForOffset(-1));
-
-  // TODO(crbug.com/734150): Investigate why this test still fails for the new
-  // navigation manager.
-  return;
-
-  // Now go forward to that middle transient item (pending index is 1,
-  // current index is 0).
-  SimulateGoToIndex(0);
-  EXPECT_EQ(3, navigation_manager()->GetItemCount());
-  EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
-  EXPECT_EQ(1, navigation_manager()->GetPendingItemIndex());
-  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
-  EXPECT_EQ(0, navigation_manager()->GetIndexForOffset(-1));
-}
-
 // Tests that when given a pending item, adding a new pending item replaces the
 // existing pending item if their URLs are different.
 TEST_F(NavigationManagerTest, ReplacePendingItemIfDiffernetURL) {
@@ -859,34 +781,6 @@ TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfFormSubmission) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetPendingItem()->GetTransitionType(),
       ui::PAGE_TRANSITION_FORM_SUBMIT));
-  EXPECT_EQ(1, navigation_manager()->GetItemCount());
-}
-
-// Tests that when the last committed item exists, adding a pending item with
-// the same URL fails if both the new item and the last committed item are form
-// submissions.
-// TODO(crbug.com/734150): Enable this test when form submission check is
-// implemented.
-TEST_F(NavigationManagerTest,
-       DISABLED_NotAddSameUrlPendingItemIfDuplicateFormSubmission) {
-  GURL existing_url = GURL("http://www.existing.com");
-  navigation_manager()->AddPendingItem(
-      existing_url, Referrer(), ui::PAGE_TRANSITION_FORM_SUBMIT,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
-
-  [mock_wk_list_ setCurrentURL:@"http://www.existing.com"];
-  navigation_manager()->CommitPendingItem();
-
-  ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
-  EXPECT_FALSE(navigation_manager()->GetPendingItem());
-  EXPECT_EQ(1, navigation_manager()->GetItemCount());
-
-  navigation_manager()->AddPendingItem(
-      existing_url, Referrer(), ui::PAGE_TRANSITION_FORM_SUBMIT,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  EXPECT_FALSE(navigation_manager()->GetPendingItem());
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
 }
 

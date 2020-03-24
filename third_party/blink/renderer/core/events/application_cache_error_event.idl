@@ -9,6 +9,7 @@
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22702
 
 [
+    RuntimeEnabled=AppCache,
     SecureContext=RestrictAppCacheToSecureContexts
 ] interface ApplicationCacheErrorEvent : Event {
     constructor(DOMString type, optional ApplicationCacheErrorEventInit eventInitDict = {});

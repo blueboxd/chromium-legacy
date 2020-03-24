@@ -699,6 +699,8 @@ void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
     SBThreatType* most_severe_threat_type,
     ThreatMetadata* metadata,
     FullHash* matching_full_hash) {
+  UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.V4LocalDatabaseManager.ThreatInfoSize",
+                           full_hash_infos.size());
   ThreatSeverity most_severe_yet = kLeastSeverity;
   for (const FullHashInfo& fhi : full_hash_infos) {
     ThreatSeverity severity = GetThreatSeverity(fhi.list_id);

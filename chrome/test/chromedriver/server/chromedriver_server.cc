@@ -447,6 +447,8 @@ void StartServerOnIOThread(uint16_t port,
     printf("Unable to start server with either IPv4 or IPv6. Exiting...\n");
     exit(1);
   }
+  printf("%s was started successfully.\n", kChromeDriverProductShortName);
+  fflush(stdout);
 }
 
 void RunServer(uint16_t port,

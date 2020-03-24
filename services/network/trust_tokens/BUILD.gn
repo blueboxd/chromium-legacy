@@ -26,6 +26,7 @@ source_set("trust_tokens") {
     "trust_token_http_headers.h",
     "trust_token_key_commitment_controller.cc",
     "trust_token_key_commitment_controller.h",
+    "trust_token_key_commitment_getter.h",
     "trust_token_key_commitment_parser.cc",
     "trust_token_key_commitment_parser.h",
     "trust_token_key_commitment_result.cc",
@@ -37,6 +38,8 @@ source_set("trust_tokens") {
     "trust_token_request_helper.h",
     "trust_token_request_issuance_helper.cc",
     "trust_token_request_issuance_helper.h",
+    "trust_token_request_redemption_helper.cc",
+    "trust_token_request_redemption_helper.h",
     "trust_token_request_signing_helper.cc",
     "trust_token_request_signing_helper.h",
     "trust_token_store.cc",
@@ -63,8 +66,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
-    "trust_token_test_util.cc",
-    "trust_token_test_util.h",
+    "test/trust_token_test_util.cc",
+    "test/trust_token_test_util.h",
   ]
 
   deps = [
@@ -93,6 +96,7 @@ source_set("tests") {
     "trust_token_persister_unittest.cc",
     "trust_token_request_canonicalizer_unittest.cc",
     "trust_token_request_issuance_helper_unittest.cc",
+    "trust_token_request_redemption_helper_unittest.cc",
     "trust_token_request_signing_helper_unittest.cc",
     "trust_token_store_unittest.cc",
     "types_unittest.cc",

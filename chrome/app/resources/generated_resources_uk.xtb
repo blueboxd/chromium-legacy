@@ -392,7 +392,7 @@
 <translation id="1524563461097350801">Ні, дякую</translation>
 <translation id="1525740877599838384">Визначати місцезнаходження лише за допомогою Wi-Fi</translation>
 <translation id="152629053603783244">Перезапустити Linux</translation>
-<translation id="1526335046150927198">Увімкнути прискорення прокрутки сенсорною панеллю</translation>
+<translation id="1526335046150927198">Увімкнути прискорення прокрутки за допомогою сенсорної панелі</translation>
 <translation id="1526560967942511387">Документ без імені</translation>
 <translation id="1529891865407786369">Джерело живлення</translation>
 <translation id="1530838837447122178">Відкрити налаштування миші та сенсорної панелі</translation>
@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Для цього розширення не потрібні спеціальні дозволи.</translation>
 <translation id="1616298854599875024">Не вдається імпортувати розширення <ph name="IMPORT_NAME" />, оскільки воно не є спільним модулем</translation>
 <translation id="1618268899808219593">Довідковий центр</translation>
+<translation id="1620307519959413822">Неправильний пароль. Повторіть спробу або натисніть "Забули пароль?", щоб скинути його.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623132449929929218">Зображення наразі недоступні. Щоб переглянути колекції фонових малюнків, підключіться до Інтернету знову.</translation>
 <translation id="1627276047960621195">Опис файлу</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Апаратне забезпечення</translation>
 <translation id="1890674179660343635">&lt;span&gt;Ідентифікатор: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Відкрити на весь екран</translation>
+<translation id="1892341345406963517">Вітаємо, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Інші мови</translation>
 <translation id="1895252664692693738">Залишилося <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Завершення роботи</translation>
@@ -3133,6 +3135,7 @@
 <translation id="5213891612754844763">Показати налаштування проксі</translation>
 <translation id="5215502535566372932">Вибрати країну</translation>
 <translation id="521582610500777512">Фотографію відхилено</translation>
+<translation id="5222403284441421673">Незахищене завантаження заблоковано</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="52232769093306234">Помилка пакування.</translation>
 <translation id="5225324770654022472">Показувати ярлики додатків</translation>
@@ -3531,6 +3534,7 @@
 <translation id="5734362860645681824">Зв’язок</translation>
 <translation id="5734697361979786483">Додати файлообмінник</translation>
 <translation id="5736796278325406685">Введіть дійсне ім’я користувача</translation>
+<translation id="5739017626473506901">Увійдіть, і тоді <ph name="USER_NAME" /> зможе додати обліковий запис навчального закладу</translation>
 <translation id="5739235828260127894">Очікується підтвердження. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Дуже великий</translation>
 <translation id="574209121243317957">Тон</translation>
@@ -5539,6 +5543,7 @@
 <translation id="8408068190360279472">Мережа <ph name="NETWORK_TYPE" />: підключення</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Спершу запитувати (рекомендується)</translation>
+<translation id="8417548266957501132">Пароль батьків</translation>
 <translation id="8417573335434189196">Не захищає від небезпечних веб-сайтів, завантажень і розширень. Chrome не радить це налаштування.</translation>
 <translation id="8418445294933751433">&amp;Показати як вкладку</translation>
 <translation id="8419098111404128271">Результати пошуку для запиту "<ph name="SEARCH_TEXT" />"</translation>

@@ -359,6 +359,12 @@ const base::Feature kNotificationContentImage{"NotificationContentImage",
 const base::Feature kNotificationTriggers{"NotificationTriggers",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Origin Isolation, via a header. See https://crbug.com/1042415
+// Note that the origin policy-based variant of origin isolation is controlled
+// by kOriginPolicy, instead.
+const base::Feature kOriginIsolationHeader{"OriginIsolationHeader",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Origin Policy. See https://crbug.com/751996
 const base::Feature kOriginPolicy{"OriginPolicy",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

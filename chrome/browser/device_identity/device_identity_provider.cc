@@ -7,8 +7,6 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 
-namespace chromeos {
-
 namespace {
 
 // An implementation of ActiveAccountAccessTokenFetcher that is backed by
@@ -83,7 +81,7 @@ void ActiveAccountAccessTokenFetcherImpl::HandleTokenRequestCompletion(
 }
 
 DeviceIdentityProvider::DeviceIdentityProvider(
-    chromeos::DeviceOAuth2TokenService* token_service)
+    DeviceOAuth2TokenService* token_service)
     : token_service_(token_service) {
   // TODO(blundell): Can |token_service_| ever actually be non-null?
   if (token_service_) {
@@ -147,5 +145,3 @@ void DeviceIdentityProvider::InvalidateAccessToken(
 void DeviceIdentityProvider::OnRefreshTokenAvailable() {
   ProcessRefreshTokenUpdateForAccount(GetActiveAccountId());
 }
-
-}  // namespace chromeos

@@ -105,7 +105,7 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSwipingFromLeftEdgeToGoBack{
-    "SwipingFromLeftEdgeToGoBack", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SwipingFromLeftEdgeToGoBack", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragFromShelfToHomeOrOverview{
     "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -206,11 +206,7 @@ bool IsBackgroundBlurEnabled() {
 }
 
 bool IsSwipingFromLeftEdgeToGoBackEnabled() {
-  // The kSwipingFromLeftEdgeToGoBack feature is only enabled on the devices
-  // that have hotseat enabled (i.e., on Krane and on Dogfood devices) in M80.
-  // See crbug.com/1030122 for details.
-  return base::FeatureList::IsEnabled(kSwipingFromLeftEdgeToGoBack) ||
-         chromeos::switches::ShouldShowShelfHotseat();
+  return base::FeatureList::IsEnabled(kSwipingFromLeftEdgeToGoBack);
 }
 
 bool IsDragFromShelfToHomeOrOverviewEnabled() {

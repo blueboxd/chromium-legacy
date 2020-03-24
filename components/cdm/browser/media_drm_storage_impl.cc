@@ -689,11 +689,12 @@ void MediaDrmStorageImpl::ClearMatchingLicenses(
   // Create a single thread task runner for MediaDrmBridge, for posting Java
   // callbacks immediately to avoid rentrancy issues.
   // TODO(yucliu): Remove task runner from MediaDrmBridge in this case.
-  base::ThreadPool::PostTaskAndReply(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&ClearMediaDrmLicensesBlocking,
-                     std::move(no_license_origin_ids)),
-      std::move(complete_cb));
+  base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::TaskPriority::USER_VISIBLE, base::MayBlock()})
+      ->PostTaskAndReply(FROM_HERE,
+                         base::BindOnce(&ClearMediaDrmLicensesBlocking,
+                                        std::move(no_license_origin_ids)),
+                         std::move(complete_cb));
 }
 #endif
 

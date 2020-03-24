@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">ទាញឡើង</translation>
 <translation id="1244265436519979884">បច្ចុប្បន្ននេះ ការស្ដារ Linux កំពុង​ដំណើរការ</translation>
 <translation id="1244303850296295656">កំហុសឆ្គងកម្មវិធីបន្ថែម</translation>
+<translation id="1246158006305844142">ការកំណត់ និងកម្មវិធី​របស់អ្នក​នឹងធ្វើសមកាលកម្ម​នៅលើ​ឧបករណ៍ Chrome OS ទាំងអស់ ដែលអ្នកចូល​ដោយប្រើ​គណនី Google របស់អ្នក។ សូម​ចូលទៅកាន់<ph name="LINK_BEGIN" />ការកំណត់ Chrome<ph name="LINK_END" /> សម្រាប់ជម្រើសសមកាលកម្ម​កម្មវិធីរុករកតាមអ៊ីនធឺណិត។</translation>
 <translation id="1246905108078336582">លុប​ការណែនាំ​ចេញពី​ឃ្លីបបត?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> ត្រូវបាន​ទប់ស្កាត់ ដោយសារ​វាត្រូវបាន​បញ្ឈប់</translation>
 <translation id="1251366534849411931">ត្រូវមានឃ្នាបបើក៖ <ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">ទេ អរគុណ</translation>
 <translation id="1525740877599838384">ប្រើ​តែ Wi-Fi ប៉ុណ្ណោះ​ដើម្បី​កំណត់​ទីតាំង</translation>
 <translation id="152629053603783244">ចាប់ផ្ដើម Linux ឡើងវិញ</translation>
+<translation id="1526335046150927198">បើកការ​បង្កើន​ល្បឿនរំកិល​ផ្ទាំងប៉ះ</translation>
 <translation id="1526560967942511387">ឯកសារគ្មានចំណងជើង</translation>
 <translation id="1529891865407786369">ប្រភព​ថាមពល</translation>
 <translation id="1530838837447122178">បើកការកំណត់កណ្តុរ និងឧបករណ៍ផ្ទាំងប៉ះ</translation>
@@ -459,6 +461,7 @@
 <translation id="1616206807336925449">កម្មវិធីបន្ថែមនេះមិនតម្រូវឲ្យមានការអនុញ្ញាតពិសេសអ្វីទេ។</translation>
 <translation id="1616298854599875024">មិនអាច​នាំចូល​កម្មវិធីបន្ថែម "<ph name="IMPORT_NAME" />" បាន​ទេ ដោយសារ​វា​មិនមែន​ជា​ម៉ូឌុល​ដែលបានចែករំលែក</translation>
 <translation id="1618268899808219593">មជ្ឈមណ្ឌលជំនួយ</translation>
+<translation id="1620307519959413822">ពាក្យសម្ងាត់​មិនត្រឹមត្រូវទេ។ សូម​ព្យាយាម​ម្ដងទៀត ឬ​ចុច "ភ្លេចពាក្យសម្ងាត់" ដើម្បី​កំណត់ពាក្យសម្ងាត់នេះ​ឡើងវិញ។</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
 <translation id="1623132449929929218">មិន​អាច​ប្រើ​រូបភាព​នេះនៅពេល​នេះ។ សូមភ្ជាប់​អ៊ីនធឺណិត​ឡើងវិញ ដើម្បី​មើលបណ្ដុំ​ផ្ទាំងរូបភាព។</translation>
 <translation id="1627276047960621195">អង្គពិពណ៌នាឯកសារ</translation>
@@ -677,6 +680,7 @@
 <translation id="1887850431809612466">ការផ្លាស់ប្តូរផ្នែករឹង</translation>
 <translation id="1890674179660343635">&lt;span&gt;លេខសម្គាល់៖ &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">បើកពេញអេក្រង់</translation>
+<translation id="1892341345406963517">សួស្ដី <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">ភាសាផ្សេងទៀត</translation>
 <translation id="1895252664692693738">នៅសល់ <ph name="TIME_LEFT" /> ទៀត</translation>
 <translation id="1895658205118569222">បិទ</translation>
@@ -1313,6 +1317,7 @@
 <translation id="2725200716980197196">ការភ្ជាប់បណ្តាញត្រូវបានស្តារ</translation>
 <translation id="2727633948226935816">កុំរំលឹកខ្ញុំម្តងទៀត</translation>
 <translation id="2727712005121231835">ទំហំពិតប្រាកដ</translation>
+<translation id="2729314457178420145">ក៏សម្អាត​ទិន្នន័យ​រុករក (<ph name="URL" />) ដែលអាច​នាំអ្នក​ចេញពី Google.com ផងដែរ។ <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">កំពុង​បម្រុងទុក​កម្មវិធី និង​ឯកសារ Linux</translation>
 <translation id="273093730430620027">ទំព័រនេះកំពុងចូលប្រើកាមេរ៉ារបស់អ្នក។</translation>
 <translation id="2731392572903530958">បើកផ្ទាំងដែលបានបិទឡើងវិញ</translation>
@@ -2164,6 +2169,7 @@
 <translation id="3838486795898716504">ច្រើនទៀត <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">ទិន្នន័យខូកឃី និងគេហទំព័រផ្សេងទៀត និងកម្មវិធីជំនួយ</translation>
 <translation id="383891835335927981">គ្មាន​ទំព័រ​ដែល​បាន​ពង្រីក ឬ​បង្រួម​ទេ</translation>
+<translation id="3839509547554145593">បើកការ​បង្កើន​ល្បឿនរំកិល​កណ្ដុរ</translation>
 <translation id="3839516600093027468">ទប់ស្កាត់មិន​ឱ្យ <ph name="HOST" /> មើល​​អង្គចងចាំ​ជានិច្ច</translation>
 <translation id="3841964634449506551">ពាក្យសម្ងាត់​មិនត្រឹមត្រូវ</translation>
 <translation id="3842552989725514455">ពុម្ពអក្សរ Serif</translation>
@@ -2775,6 +2781,7 @@
 <translation id="4699172675775169585">រូបភាព និងឯកសារដែលផ្ទុកក្នុងឃ្លាំងសម្ងាត់</translation>
 <translation id="4699357559218762027">(បានបើកដំណើរស្វ័យប្រវត្តិ)</translation>
 <translation id="470074695271471509">ចេញពីគណនី​ដើម្បី​បញ្ចប់?</translation>
+<translation id="4701025263201366865">ការចូលគណនីដោយមាតាបិតា</translation>
 <translation id="4707302005824653064">ការប្រើប្រាស់ និងប្រវត្តិអាចត្រូវបានពិនិត្យមើលដោយអ្នកគ្រប់គ្រង (<ph name="CUSTODIAN_EMAIL" />) នៅលើ chrome.com។</translation>
 <translation id="4707579418881001319">L2TP/IPsec + វិញ្ញាបនប័ត្រអ្នកប្រើ</translation>
 <translation id="4708794300267213770">បង្ហាញអេក្រង់ចាក់សោនៅពេលភ្ញាក់ពីដំណេក</translation>
@@ -3082,6 +3089,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, លទ្ធផល​ស្វែងរក​នៅលើ <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">បញ្ចូល​កូដ PIN សម្រាប់​សោសុវត្ថិភាព​របស់អ្នក​។ ប្រសិនបើអ្នក​មិន​ស្គាល់កូដ PIN អ្នក​នឹងត្រូវ​កំណត់​សោសុវត្ថិភាព​ឡើងវិញ។</translation>
 <translation id="5139955368427980650">បើក</translation>
+<translation id="5142793792982256885">ល្បឿនរំកិលផ្ទាំងប៉ះ</translation>
 <translation id="5142961317498132443">ការ​ផ្ទៀងផ្ទាត់​</translation>
 <translation id="5143374789336132547">កម្មវិធីបន្ថែម "<ph name="EXTENSION_NAME" />" បានប្តូរអ្វីដែលទំព័របានបង្ហាញនៅពេលអ្នកចុចប៊ូតុង ទំព័រដើម។</translation>
 <translation id="5143712164865402236">ចូលពេញអេក្រង់</translation>
@@ -3127,6 +3135,7 @@
 <translation id="5213891612754844763">បង្ហាញ​ការកំណត់​ប្រូកស៊ី</translation>
 <translation id="5215502535566372932">ជ្រើសរើសប្រទេស</translation>
 <translation id="521582610500777512">រូបភាពត្រូវបានច្រានចោល</translation>
+<translation id="5222403284441421673">បាន​ទប់ស្កាត់​ការទាញយក​ដែល​គ្មានសុវត្ថិភាព</translation>
 <translation id="5222676887888702881">ចាកចេញ</translation>
 <translation id="52232769093306234">មិនអាចវេចខ្ចប់បានទេ។</translation>
 <translation id="5225324770654022472">បង្ហាញផ្លូវកាត់កម្មវិធី</translation>
@@ -3526,6 +3535,7 @@
 <translation id="5734362860645681824">ការប្រាស្រ័យទាក់ទង</translation>
 <translation id="5734697361979786483">បញ្ចូលឧបករណ៍​ចែករំលែក​ឯកសារ</translation>
 <translation id="5736796278325406685">សូម​បញ្ចូលឈ្មោះ​អ្នកប្រើប្រាស់​ដែលត្រឹមត្រូវ</translation>
+<translation id="5739017626473506901">ចូល​គណនី ដើម្បី​ជួយ <ph name="USER_NAME" /> ក្នុងការ​បញ្ចូល​គណនី​សាលារៀន</translation>
 <translation id="5739235828260127894">កំពុង​រង់ចាំធ្វើ​ការផ្ទៀងផ្ទាត់។ <ph name="LINK_BEGIN" />ស្វែងយល់​បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ធំខ្លាំង</translation>
 <translation id="574209121243317957">កម្រិតកម្ពស់​សូរ</translation>
@@ -3645,6 +3655,7 @@
 <translation id="5901630391730855834">លឿង</translation>
 <translation id="5906655207909574370">ការអាប់ដេតជិតបញ្ចប់ហើយ! ចាប់ផ្តើមឧបករណ៍របស់អ្នកឡើងវិញដើម្បីបញ្ចប់ការអាប់ដេត។</translation>
 <translation id="5906732635754427568">ទិន្នន័យ​ដែល​ពាក់ព័ន្ធ​ជាមួយ​កម្មវិធីនេះ​នឹងត្រូវ​បាន​លុបចេញ​ពីឧបករណ៍​នេះ។</translation>
+<translation id="5908695239556627796">ល្បឿនរំកិលកណ្តុរ</translation>
 <translation id="5908769186679515905">រារាំងគេហទំព័រមិនឲ្យដំណើរការ Flash</translation>
 <translation id="5910363049092958439">រក្សាទុករូបភាពជា...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> គ្មានអ៊ីនធឺណិតទេ</translation>
@@ -5092,6 +5103,7 @@
     <ph name="BEGIN_BOLD" />ចំណាំ៖<ph name="END_BOLD" />  ប្រព័ន្ធ​នឹង​ចាប់ផ្ដើម​ឡើងវិញ​អំឡុង​ពេលការដំណើរការ។</translation>
 <translation id="7828731929332799387">សកម្មភាព​នេះនឹងលុបខូគីទាំងអស់ និងទិន្នន័យគេហទំព័រ​ដែលមាននៅក្នុងបរិបទភាគីទីបី។ តើ​អ្នក​ចង់​បន្ត​ដែរទេ?</translation>
 <translation id="7829298379596169484">ការចូលប្រើការបញ្ចូលសម្លេង</translation>
+<translation id="7829877209233347340">ស្នើសុំ​ឱ្យមាតាបិតា​ចូលគណនី ដើម្បីផ្ដល់ការអនុញ្ញាតឱ្យបញ្ចូល​គណនី​សាលារៀន</translation>
 <translation id="7830594666202422257">ភ្ជាប់ Linux</translation>
 <translation id="7831491651892296503">មានបញ្ហាក្នុងការកំណត់រចនាសម្ព័ន្ធបណ្តាញ</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5531,6 +5543,7 @@
 <translation id="8408068190360279472">បណ្ដាញ <ph name="NETWORK_TYPE" />, កំពុង​ភ្ជាប់</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">សួរជាមុនសិន (បានណែនាំ)</translation>
+<translation id="8417548266957501132">ពាក្យសម្ងាត់​របស់​មាតាបិតា</translation>
 <translation id="8417573335434189196">មិន​ការពារអ្នកពីគេហទំព័រ ការទាញយក ឬកម្មវិធី​បន្ថែមដែលមានគ្រោះថ្នាក់ទេ។ Chrome មិន​ណែនាំឱ្យប្រើ​ការកំណត់​នេះ​ទេ​។</translation>
 <translation id="8418445294933751433">បង្ហាញជាផ្ទាំង</translation>
 <translation id="8419098111404128271">លទ្ធផល​ស្វែងរក​សម្រាប់ '<ph name="SEARCH_TEXT" />'</translation>
@@ -5845,6 +5858,7 @@
 <translation id="8808686172382650546">ឆ្មា</translation>
 <translation id="8808744862003883508">នៅលើ​ទំព័រ​នេះ អ្នក​អាច​មើលឃើញ​កម្មវិធី​បន្ថែម​ទាំងអស់​ដែលដំឡើង​នៅក្នុង Chrome​។</translation>
 <translation id="8809147117840417135">បៃតង​ស្រាល</translation>
+<translation id="8812593354822910461">ក៏សម្អាត​ទិន្នន័យ​រុករក (<ph name="URL" />) ដែលនឹង​នាំអ្នក​ចេញពី <ph name="DOMAIN" /> ផងដែរ។ <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">មិនអាចចូល <ph name="USERNAME" /> បានទេ</translation>
 <translation id="8813811964357448561">ផ្ទាំងក្រដាស</translation>
 <translation id="8813872945700551674">ស្នើសុំឱ្យមាតាបិតាយល់ព្រមលើ "<ph name="EXTENSION_NAME" />"</translation>
@@ -6134,6 +6148,7 @@
 <translation id="9203398526606335860">បើកដំណើរការទម្រង់</translation>
 <translation id="9203904171912129171">ជ្រើសរើស​ឧបករណ៍</translation>
 <translation id="9203962528777363226">អ្នកគ្រប់គ្រងឧបករណ៍នេះបានបិទការបន្ថែមអ្នកប្រើថ្មី</translation>
+<translation id="9209689095351280025">គេហទំព័រ​មិន​អាចប្រើ​ខូគី ដែលតាមដាន​អ្នក​នៅលើអ៊ីនធឺណិតបានទេ</translation>
 <translation id="9211177926627870898">តម្រូវឱ្យ​ដំឡើង​កំណែ</translation>
 <translation id="9214520840402538427">អូ! ការចាប់ផ្តើម installation-time attributes បានអស់ពេល។ សូមទំនាក់ទំនងជំនួយការរបស់អ្នក។</translation>
 <translation id="9214695392875603905">នំខេកតូច</translation>

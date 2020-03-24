@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">Cargar</translation>
 <translation id="1244265436519979884">El restablecimiento de Linux está en curso</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
+<translation id="1246158006305844142">Se sincronizarán tus apps y opciones de configuración en todos los dispositivos con el Sistema operativo Chrome en los que hayas accedido con tu Cuenta de Google. Para ver las opciones de sincronización del navegador, ve a la <ph name="LINK_BEGIN" />configuración de Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">¿Quieres quitar la sugerencia del portapapeles?</translation>
 <translation id="1249643471736608405">Se bloqueó <ph name="PLUGIN_NAME" /> porque dejó de estar disponible</translation>
 <translation id="1251366534849411931">Llave de apertura esperada: <ph name="ERROR_LINE" /></translation>
@@ -388,6 +389,7 @@
 <translation id="1524563461097350801">No, gracias</translation>
 <translation id="1525740877599838384">Usar solo Wi-Fi para determinar la ubicación</translation>
 <translation id="152629053603783244">Reiniciar Linux</translation>
+<translation id="1526335046150927198">Habilitar la aceleración de desplazamiento en el panel táctil</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
 <translation id="1529891865407786369">Fuente de alimentación</translation>
 <translation id="1530838837447122178">Abrir configuración del mouse y el panel táctil</translation>
@@ -1310,6 +1312,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
 <translation id="2727633948226935816">No volver a recordarme</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
+<translation id="2729314457178420145">También quiero borrar los datos de navegación (<ph name="URL" />), lo que posiblemente me haga salir de Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Creando la copia de seguridad de las apps y los archivos de Linux</translation>
 <translation id="273093730430620027">Esta página está accediendo a la cámara.</translation>
 <translation id="2731392572903530958">Volv&amp;er a abrir una ventana cerrada</translation>
@@ -2161,6 +2164,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3838486795898716504">Más <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Cookies y otros datos de sitios y de complementos</translation>
 <translation id="383891835335927981">No se configuró el zoom para ningún sitio</translation>
+<translation id="3839509547554145593">Habilitar la aceleración de desplazamiento del mouse</translation>
 <translation id="3839516600093027468">Nunca permitir que <ph name="HOST" /> vea el portapapeles</translation>
 <translation id="3841964634449506551">La contraseña no es válida</translation>
 <translation id="3842552989725514455">Fuente Serif</translation>
@@ -2772,6 +2776,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4699172675775169585">Imágenes y archivos almacenados en caché</translation>
 <translation id="4699357559218762027">(con inicio automático)</translation>
 <translation id="470074695271471509">¿Quieres salir de tu cuenta para terminar?</translation>
+<translation id="4701025263201366865">Se requiere el acceso del padre o la madre</translation>
 <translation id="4707302005824653064">El administrador (<ph name="CUSTODIAN_EMAIL" />) puede revisar el uso y el historial en chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + certificado de usuario</translation>
 <translation id="4708794300267213770">Mostrar la pantalla bloqueada al salir del modo de suspensión</translation>
@@ -3079,6 +3084,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, búsqueda de <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Ingresa el PIN para tu llave de seguridad. Si no lo conoces, restablece la llave.</translation>
 <translation id="5139955368427980650">&amp;Abrir</translation>
+<translation id="5142793792982256885">Velocidad de desplazamiento del panel táctil</translation>
 <translation id="5142961317498132443">Autenticación</translation>
 <translation id="5143374789336132547">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al hacer clic en el botón Página prinicpal.</translation>
 <translation id="5143712164865402236">Ingresar a pantalla completa</translation>
@@ -3641,6 +3647,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="5906655207909574370">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="5906732635754427568">Los datos asociados a esta app se quitarán de este dispositivo.</translation>
+<translation id="5908695239556627796">Velocidad de desplazamiento del mouse</translation>
 <translation id="5908769186679515905">Bloquear la ejecución de Flash en los sitios</translation>
 <translation id="5910363049092958439">Gu&amp;ardar imagen como...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> está sin conexión</translation>
@@ -5088,6 +5095,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
     <ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> El sistema se reiniciará durante el proceso.</translation>
 <translation id="7828731929332799387">Esta acción borrará todas las cookies y datos de sitios disponibles en contextos de terceros. ¿Quieres continuar?</translation>
 <translation id="7829298379596169484">Accediendo a la entrada de audio</translation>
+<translation id="7829877209233347340">Pídele a tu padre o madre que acceda a su cuenta a fin de otorgarte permiso para agregar la cuenta de una institución educativa</translation>
 <translation id="7830594666202422257">Conectar a Linux</translation>
 <translation id="7831491651892296503">Se produjo un error cuando se configuraba la red</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5842,6 +5850,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8808686172382650546">Gato</translation>
 <translation id="8808744862003883508">En esta página, podrás ver todas las extensiones instaladas en Chrome.</translation>
 <translation id="8809147117840417135">Verde azulado claro</translation>
+<translation id="8812593354822910461">También quiero borrar los datos de navegación (<ph name="URL" />), lo que me hará salir de <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">No se puede acceder a <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">hoja de papel</translation>
 <translation id="8813872945700551674">Haz que tu padre o madre aprueben "<ph name="EXTENSION_NAME" />"</translation>
@@ -6131,6 +6140,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9203398526606335860">&amp;Perfiles activados</translation>
 <translation id="9203904171912129171">Seleccionar un dispositivo</translation>
 <translation id="9203962528777363226">El administrador de este dispositivo ha inhabilitado a nuevos usuarios para evitar que se agreguen.</translation>
+<translation id="9209689095351280025">Los sitios no pueden usar cookies para rastrearte en la Web</translation>
 <translation id="9211177926627870898">Actualización necesaria</translation>
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Comunícate con el representante de asistencia.</translation>
 <translation id="9214695392875603905">Cupcake</translation>

@@ -138,7 +138,7 @@ void DeviceAccountInitializer::OnNetworkError(int response_code) {
 
 void DeviceAccountInitializer::StoreToken() {
   handling_request_ = true;
-  chromeos::DeviceOAuth2TokenServiceFactory::Get()->SetAndSaveRefreshToken(
+  DeviceOAuth2TokenServiceFactory::Get()->SetAndSaveRefreshToken(
       robot_refresh_token_,
       base::AdaptCallbackForRepeating(base::BindOnce(
           &DeviceAccountInitializer::HandleStoreRobotAuthTokenResult,

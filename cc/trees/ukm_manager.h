@@ -49,7 +49,7 @@ class CC_EXPORT UkmManager {
   void RecordAggregateThroughput(AggregationType aggregation_type,
                                  int64_t throughput_percent) const;
   void RecordLatencyUKM(
-      CompositorFrameReporter::DroppedFrameReportType report_type,
+      CompositorFrameReporter::FrameReportType report_type,
       const std::vector<CompositorFrameReporter::StageData>& stage_history,
       const base::flat_set<FrameSequenceTrackerType>* active_trackers,
       const viz::FrameTimingDetails& viz_breakdown) const;

@@ -75,11 +75,8 @@ class ASH_EXPORT DisplayPrefs : public SessionObserver {
   // Loads display preferences from |local_state_|.
   void LoadDisplayPreferences();
 
-  // Sets |local_state| for testing.
-  void SetPrefServiceForTest(PrefService* local_state);
-
  private:
-  PrefService* local_state_ = nullptr;  // Non-owned and must out-live this.
+  PrefService* local_state_;  // Non-owned and must out-live this.
   bool store_requested_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayPrefs);

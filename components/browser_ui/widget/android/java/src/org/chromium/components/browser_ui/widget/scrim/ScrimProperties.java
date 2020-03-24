@@ -4,9 +4,12 @@
 
 package org.chromium.components.browser_ui.widget.scrim;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.GestureDetector;
 import android.view.View;
+
+import androidx.annotation.ColorInt;
 
 import org.chromium.base.Callback;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -20,6 +23,13 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /** The properties that can be used to describe the behavior of the scrim widget. */
 public class ScrimProperties {
+    /**
+     * An invalid color that can be specified for {@link #BACKGROUND_COLOR}. This will trigger the
+     * use of the default color set when the {@link ScrimCoordinator} was constructed.
+     */
+    @ColorInt
+    public static final int INVALID_COLOR = Color.TRANSPARENT;
+
     /**
      * The top margin of the scrim. This can be used to shrink the scrim to show items at the
      * top of the screen.

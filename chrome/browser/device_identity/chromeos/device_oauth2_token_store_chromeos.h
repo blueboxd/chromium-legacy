@@ -9,6 +9,8 @@
 
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 
 // ChromeOS specific implementation of the DeviceOAuth2TokenStore interface used
@@ -24,6 +26,13 @@ class DeviceOAuth2TokenStoreChromeOS : public DeviceOAuth2TokenStore {
 
   explicit DeviceOAuth2TokenStoreChromeOS(PrefService* local_state);
   ~DeviceOAuth2TokenStoreChromeOS() override;
+
+  DeviceOAuth2TokenStoreChromeOS(const DeviceOAuth2TokenStoreChromeOS& other) =
+      delete;
+  DeviceOAuth2TokenStoreChromeOS& operator=(
+      const DeviceOAuth2TokenStoreChromeOS& other) = delete;
+
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // DeviceOAuth2TokenStore:
   void Init(InitCallback callback) override;

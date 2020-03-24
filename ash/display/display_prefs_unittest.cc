@@ -114,10 +114,7 @@ class DisplayPrefsTest : public AshTestBase {
   ~DisplayPrefsTest() override {}
 
   void SetUp() override {
-    DisableProvideLocalState();
     AshTestBase::SetUp();
-    DisplayPrefs::RegisterLocalStatePrefs(local_state_.registry());
-    display_prefs()->SetPrefServiceForTest(&local_state_);
     observer_ = std::make_unique<DisplayConfigurationObserver>();
     observer_->OnDisplaysInitialized();
   }
@@ -229,15 +226,14 @@ class DisplayPrefsTest : public AshTestBase {
         .ToString();
   }
 
-  chromeos::DisplayPowerState GetRequestedPowerState() const {
-    return Shell::Get()->display_configurator()->GetRequestedPowerState();
+  display::DisplayConfigurator* display_configurator() {
+    return Shell::Get()->display_configurator();
   }
-  PrefService* local_state() { return &local_state_; }
+
   DisplayPrefs* display_prefs() { return Shell::Get()->display_prefs(); }
 
  private:
   std::unique_ptr<WindowTreeHostManager::Observer> observer_;
-  TestingPrefServiceSimple local_state_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayPrefsTest);
@@ -271,11 +267,12 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
 
   // requested_power_state_ should be chromeos::DISPLAY_POWER_ALL_ON at boot
   const base::Optional<chromeos::DisplayPowerState> requested_power_state =
-      Shell::Get()->display_configurator()->GetRequestedPowerStateForTest();
+      display_configurator()->GetRequestedPowerStateForTest();
   ASSERT_NE(base::nullopt, requested_power_state);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, *requested_power_state);
   // DisplayPowerState should be ignored at boot.
-  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, GetRequestedPowerState());
+  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON,
+            display_configurator()->GetRequestedPowerState());
 
   Shell::Get()->display_manager()->UpdateDisplays();
   // Check if the layout settings are notified to the system properly.
@@ -804,31 +801,32 @@ TEST_F(DisplayPrefsTest, StorePowerStateNormalUser) {
 TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
+  EXPECT_EQ("internal_off_external_on",
+            local_state()->GetString(prefs::kDisplayPowerState));
+  display_configurator()->reset_requested_power_state_for_test();
   LoadDisplayPreferences();
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            GetRequestedPowerState());
+            display_configurator()->GetRequestedPowerState());
 }
 
 TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
-  LoadDisplayPreferences();
-  // DisplayPowerState should be ignored at boot.
-  EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            GetRequestedPowerState());
-
-  display_prefs()->StoreDisplayPowerStateForTest(
-      chromeos::DISPLAY_POWER_ALL_OFF);
-  EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            GetRequestedPowerState());
   EXPECT_EQ("internal_off_external_on",
             local_state()->GetString(prefs::kDisplayPowerState));
 
-  // Don't try to load
+  // Don't save ALL_OFF.
+  display_prefs()->StoreDisplayPowerStateForTest(
+      chromeos::DISPLAY_POWER_ALL_OFF);
+  EXPECT_EQ("internal_off_external_on",
+            local_state()->GetString(prefs::kDisplayPowerState));
+
+  // Don't restore ALL_OFF.
   local_state()->SetString(prefs::kDisplayPowerState, "all_off");
+  display_configurator()->reset_requested_power_state_for_test();
   LoadDisplayPreferences();
-  EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            GetRequestedPowerState());
+  EXPECT_EQ(base::nullopt,
+            display_configurator()->GetRequestedPowerStateForTest());
 }
 
 // Tests that display configuration changes caused by TabletModeController

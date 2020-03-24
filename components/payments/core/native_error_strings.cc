@@ -217,5 +217,8 @@ const char kCanMakePaymentEventNoExplicitlyVerifiedMethods[] =
     "Browser did not fire \"canmakepayment\" event because the payment handler "
     "does not support any explicitly verified payment methods.";
 
+const char kGenericPaymentMethodNotSupportedMessage[] =
+    "Payment method not supported.";
+
 }  // namespace errors
 }  // namespace payments

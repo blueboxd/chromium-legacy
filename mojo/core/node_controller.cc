@@ -325,8 +325,14 @@ void NodeController::RequestShutdown(base::OnceClosure callback) {
 void NodeController::NotifyBadMessageFrom(const ports::NodeName& source_node,
                                           const std::string& error) {
   scoped_refptr<NodeChannel> peer = GetPeerChannel(source_node);
-  if (peer)
-    peer->NotifyBadMessage(error);
+  DCHECK(peer);
+  DCHECK(peer->HasBadMessageHandler());
+  peer->NotifyBadMessage(error);
+}
+
+bool NodeController::HasBadMessageHandler(const ports::NodeName& source_node) {
+  scoped_refptr<NodeChannel> peer = GetPeerChannel(source_node);
+  return peer ? peer->HasBadMessageHandler() : false;
 }
 
 void NodeController::ForceDisconnectProcessForTesting(

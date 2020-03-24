@@ -247,6 +247,9 @@ extern const char kCanMakePaymentEventNotInstalled[];
 // methods, i.e., not when "supportedOrigins": "*".
 extern const char kCanMakePaymentEventNoExplicitlyVerifiedMethods[];
 
+// A message about unsupported payment method.
+extern const char kGenericPaymentMethodNotSupportedMessage[];
+
 }  // namespace errors
 }  // namespace payments
 

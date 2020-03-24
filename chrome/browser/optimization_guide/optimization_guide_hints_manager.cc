@@ -740,12 +740,12 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   if (!IsGoogleURL(source_document_url))
     return;
 
-  // Extract the target hosts. Use a flat set to remove duplicates.
+  // Extract the target hosts and URLs. Use a flat set to remove duplicates.
   // |target_hosts_serialized| is the ordered list of non-duplicate hosts.
   // TODO(sophiechang): See if we can make this logic simpler.
   base::flat_set<std::string> target_hosts;
   std::vector<std::string> target_hosts_serialized;
-  base::flat_set<GURL> target_urls;
+  std::vector<GURL> target_urls;
   for (const auto& url : prediction->sorted_predicted_urls()) {
     if (!IsAllowedToFetchNavigationHints(url))
       continue;
@@ -762,7 +762,7 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
     DCHECK_EQ(target_hosts.size(), target_hosts_serialized.size());
 
     if (!hint_cache_->HasURLKeyedEntryForURL(url))
-      target_urls.insert(url);
+      target_urls.push_back(url);
   }
 
   if (target_hosts.empty() && target_urls.empty())
@@ -778,10 +778,8 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   // the page navigation context. However, since we do want to load the hints
   // returned, we pass this through to the page navigation callback.
   batch_update_hints_fetcher_->FetchOptimizationGuideServiceHints(
-      target_hosts_serialized,
-      std::vector<GURL>(target_urls.begin(), target_urls.end()),
-      registered_optimization_types_,
-      optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
+      target_hosts_serialized, target_urls, registered_optimization_types_,
+      optimization_guide::proto::CONTEXT_BATCH_UPDATE,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
           ui_weak_ptr_factory_.GetWeakPtr(), nullptr, base::nullopt,

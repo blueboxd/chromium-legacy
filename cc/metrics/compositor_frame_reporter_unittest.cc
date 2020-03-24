@@ -19,6 +19,8 @@
 namespace cc {
 namespace {
 
+base::TimeDelta INTERVAL = base::TimeDelta::FromMicroseconds(16);
+
 MATCHER(IsWhitelisted,
         base::StrCat({negation ? "isn't" : "is", " whitelisted"})) {
   return arg.IsWhitelisted();
@@ -31,6 +33,7 @@ class CompositorFrameReporterTest : public testing::Test {
       : pipeline_reporter_(
             std::make_unique<CompositorFrameReporter>(&active_trackers,
                                                       viz::BeginFrameId(),
+                                                      Now() + INTERVAL,
                                                       nullptr)) {
     AdvanceNowByMs(1);
   }

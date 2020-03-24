@@ -20,6 +20,11 @@ Please run extract_actions.py to add new actions and pretty-print this file.
 If a user action is not being used any more, put an <obsolete> tag under
 the <action> tag with necessary explanation. Don't delete things in this file.
 
+Please send CLs to chromium-metrics-reviews@google.com rather than to specific
+individuals. These CLs will be automatically reassigned to a reviewer within
+about 5 minutes. This approach helps the metrics team to load-balance incoming
+reviews. Googlers can read more about this at go/gwsq-gerrit.
+
 TODO(yiyaoliu):
 Currently, only file-level comments are supported. By running
 extract_actions.py, comments at other places will be deleted. Ideally, comments

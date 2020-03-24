@@ -184,7 +184,7 @@ class DeviceCloudPolicyManagerChromeOSTest
 
     // SystemSaltGetter is used in DeviceOAuth2TokenService.
     chromeos::SystemSaltGetter::Initialize();
-    chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
+    DeviceOAuth2TokenServiceFactory::Initialize(
         test_url_loader_factory_.GetSafeWeakWrapper(), &local_state_);
 
     url_fetcher_response_code_ = net::HTTP_OK;
@@ -205,7 +205,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     manager_.reset();
     install_attributes_.reset();
 
-    chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
+    DeviceOAuth2TokenServiceFactory::Shutdown();
     chromeos::SystemSaltGetter::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
@@ -685,8 +685,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       // Verify the state only if the task is not yet failed.
       // Note that, if the flow is not yet |done_| here, assume that it is
       // in the "succeeding" flow, so verify here, too.
-      chromeos::DeviceOAuth2TokenService* token_service =
-          chromeos::DeviceOAuth2TokenServiceFactory::Get();
+      DeviceOAuth2TokenService* token_service =
+          DeviceOAuth2TokenServiceFactory::Get();
 
       // For the refresh token for the robot account to be visible, the robot
       // account ID must not be empty.

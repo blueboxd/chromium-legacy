@@ -25,9 +25,14 @@ const base::FilePath GetSodaDirectory() {
   base::PathService::Get(component_updater::DIR_COMPONENT_USER,
                          &components_dir);
 
-  base::FileEnumerator enumerator(
-      components_dir.Append(kSodaInstallationRelativePath), false,
-      base::FileEnumerator::DIRECTORIES);
+  return components_dir.empty()
+             ? base::FilePath()
+             : components_dir.Append(kSodaInstallationRelativePath);
+}
+
+const base::FilePath GetLatestSodaDirectory() {
+  base::FileEnumerator enumerator(GetSodaDirectory(), false,
+                                  base::FileEnumerator::DIRECTORIES);
   base::FilePath latest_version_dir;
   for (base::FilePath version_dir = enumerator.Next(); !version_dir.empty();
        version_dir = enumerator.Next()) {
@@ -39,13 +44,14 @@ const base::FilePath GetSodaDirectory() {
 }
 
 const base::FilePath GetSodaBinaryPath() {
-  base::FilePath soda_dir = GetSodaDirectory();
-  return soda_dir.empty() ? soda_dir : soda_dir.Append(kSodaBinaryRelativePath);
+  base::FilePath soda_dir = GetLatestSodaDirectory();
+  return soda_dir.empty() ? base::FilePath()
+                          : soda_dir.Append(kSodaBinaryRelativePath);
 }
 
 const base::FilePath GetSodaConfigPath() {
-  base::FilePath soda_dir = GetSodaDirectory();
-  return soda_dir.empty() ? soda_dir
+  base::FilePath soda_dir = GetLatestSodaDirectory();
+  return soda_dir.empty() ? base::FilePath()
                           : soda_dir.Append(kSodaConfigFileRelativePath);
 }
 

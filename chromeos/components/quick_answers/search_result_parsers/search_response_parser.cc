@@ -88,8 +88,7 @@ bool SearchResponseParser::ProcessResult(const Value* result,
   if (!result_parser)
     return false;
 
-  result_parser->Parse(result, quick_answer);
-  return true;
+  return result_parser->Parse(result, quick_answer);
 }
 
 }  // namespace quick_answers

@@ -29,7 +29,7 @@ class FakeCompositorFrameReportingController
   FakeCompositorFrameReportingController& operator=(
       const FakeCompositorFrameReportingController& controller) = delete;
 
-  void WillBeginMainFrame(const viz::BeginFrameId& id) override;
+  void WillBeginMainFrame(const viz::BeginFrameArgs& args) override;
   void BeginMainFrameAborted(const viz::BeginFrameId& id) override;
   void WillCommit() override;
   void DidCommit() override;

@@ -100,9 +100,8 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   std::unique_ptr<api::identity::GetAuthToken::Params> params(
       api::identity::GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  interactive_ = params->details.get() &&
-      params->details->interactive.get() &&
-      *params->details->interactive;
+  interactive_ = params->details.get() && params->details->interactive.get() &&
+                 *params->details->interactive;
 
   should_prompt_for_scopes_ = interactive_;
   should_prompt_for_signin_ =
@@ -414,8 +413,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
   IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->Get(GetProfile());
   IdentityTokenCacheValue cache_entry = id_api->GetCachedToken(token_key_);
-  IdentityTokenCacheValue::CacheValueStatus cache_status =
-      cache_entry.status();
+  IdentityTokenCacheValue::CacheValueStatus cache_status = cache_entry.status();
 
   if (type == IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE) {
     switch (cache_status) {
@@ -545,8 +543,8 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
       break;
   }
 
-  CompleteFunctionWithError(
-      std::string(identity_constants::kAuthFailure) + error.ToString());
+  CompleteFunctionWithError(std::string(identity_constants::kAuthFailure) +
+                            error.ToString());
 }
 
 void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
@@ -659,7 +657,7 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowFailure(
         }
       }
       error = std::string(identity_constants::kAuthFailure) +
-          service_error.ToString();
+              service_error.ToString();
       break;
 
     case GaiaWebAuthFlow::OAUTH_ERROR:
@@ -824,9 +822,12 @@ void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
 }
 
 #if defined(OS_CHROMEOS)
+// Even though the DeviceOAuth2TokenService may be available on non-ChromeOS
+// platforms, its robot account is not made available because it should only be
+// used for very specific policy-related things. In fact, the device account on
+// desktop isn't scoped for anything other than policy invalidations.
 void IdentityGetAuthTokenFunction::StartDeviceAccessTokenRequest() {
-  chromeos::DeviceOAuth2TokenService* service =
-      chromeos::DeviceOAuth2TokenServiceFactory::Get();
+  DeviceOAuth2TokenService* service = DeviceOAuth2TokenServiceFactory::Get();
   // Since robot account refresh tokens are scoped down to [any-api] only,
   // request access token for [any-api] instead of login.
   OAuth2AccessTokenManager::ScopeSet scopes;
@@ -856,9 +857,9 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
     std::string app_client_secret;
-    if (chromeos::UserSessionManager::GetInstance()->
-            GetAppModeChromeClientOAuthInfo(&app_client_id,
-                                            &app_client_secret)) {
+    if (chromeos::UserSessionManager::GetInstance()
+            ->GetAppModeChromeClientOAuthInfo(&app_client_id,
+                                              &app_client_secret)) {
       token_key_account_access_token_fetcher_ =
           identity_manager->CreateAccessTokenFetcherForClient(
               token_key_.account_id, app_client_id, app_client_secret,

@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
@@ -56,6 +57,10 @@ class DataPack;
 // See CustomThemeSupplier constructor more more details.
 class BrowserThemePack : public CustomThemeSupplier {
  public:
+  // Public because these IDs are used both in private members of this class and
+  // free functions in browser_theme_pack.cc.
+  enum PersistentID : int;
+
   // Builds the theme from |extension| into |pack|. This may be done on a
   // separate thread as it takes so long. This can fail in the case where the
   // theme has invalid data, in which case |pack->is_valid()| will be false.
@@ -108,7 +113,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   friend class BrowserThemePackTest;
 
   // Cached images.
-  typedef std::map<int, gfx::Image> ImageCache;
+  typedef base::flat_map<PersistentID, gfx::Image> ImageCache;
 
   // The raw PNG memory associated with a certain id.
   typedef std::map<int, scoped_refptr<base::RefCountedMemory> > RawImages;
@@ -117,10 +122,10 @@ class BrowserThemePack : public CustomThemeSupplier {
   typedef std::map<uint16_t, base::StringPiece> RawDataForWriting;
 
   // Maps scale factors (enum values) to file paths.
-  typedef std::map<ui::ScaleFactor, base::FilePath> ScaleFactorToFileMap;
+  typedef base::flat_map<ui::ScaleFactor, base::FilePath> ScaleFactorToFileMap;
 
   // Maps image ids to maps of scale factors to file paths.
-  typedef std::map<int, ScaleFactorToFileMap> FilePathMap;
+  typedef base::flat_map<PersistentID, ScaleFactorToFileMap> FilePathMap;
 
   ~BrowserThemePack() override;
 
@@ -263,7 +268,8 @@ class BrowserThemePack : public CustomThemeSupplier {
 
   // Returns a unique id to use to store the raw bitmap for |prs_id| at
   // |scale_factor| in memory.
-  int GetRawIDByPersistentID(int prs_id, ui::ScaleFactor scale_factor) const;
+  int GetRawIDByPersistentID(PersistentID prs_id,
+                             ui::ScaleFactor scale_factor) const;
 
   // Returns true if the |key| specifies a valid scale (e.g. "100") and
   // the corresponding scale factor is currently in use. If true, returns
@@ -272,7 +278,7 @@ class BrowserThemePack : public CustomThemeSupplier {
                                      ui::ScaleFactor* scale_factor) const;
 
   // Generates raw images for any missing scale from an available scale.
-  void GenerateRawImageForAllSupportedScales(int prs_id);
+  void GenerateRawImageForAllSupportedScales(PersistentID prs_id);
 
   // Data pack, if we have one.
   // TODO(crbug.com/1057889): Destroy this on in the thread pool, make the rest

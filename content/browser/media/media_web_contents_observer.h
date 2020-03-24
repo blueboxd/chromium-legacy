@@ -80,6 +80,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
+  void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
   void DidUpdateAudioMutingState(bool muted) override;
 
   // TODO(zqzhang): this method is temporarily in MediaWebContentsObserver as

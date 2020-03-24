@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">This extension requires no special permissions.</translation>
 <translation id="1616298854599875024">Unable to import extension '<ph name="IMPORT_NAME" />' because it is not a shared module</translation>
 <translation id="1618268899808219593">Help Centre</translation>
+<translation id="1620307519959413822">Wrong password. Try again or click Forgot password to reset it.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623132449929929218">The images are currently unavailable. Please reconnect to the Internet to see wallpaper collections.</translation>
 <translation id="1627276047960621195">File Descriptors</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Hardware revision</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Open full screen</translation>
+<translation id="1892341345406963517">Hi <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Other languages</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> left</translation>
 <translation id="1895658205118569222">Shutdown</translation>
@@ -3133,6 +3135,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5213891612754844763">Show proxy settings</translation>
 <translation id="5215502535566372932">Select country</translation>
 <translation id="521582610500777512">Photo was discarded</translation>
+<translation id="5222403284441421673">Insecure download blocked</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="52232769093306234">Packing failed.</translation>
 <translation id="5225324770654022472">Show apps shortcut</translation>
@@ -3531,6 +3534,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5734362860645681824">Communications</translation>
 <translation id="5734697361979786483">Add file share</translation>
 <translation id="5736796278325406685">Please enter a valid username</translation>
+<translation id="5739017626473506901">Sign in to help <ph name="USER_NAME" /> add a school account</translation>
 <translation id="5739235828260127894">Waiting for verification. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Very large</translation>
 <translation id="574209121243317957">Pitch</translation>
@@ -5539,6 +5543,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> network, connecting</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Ask first (recommended)</translation>
+<translation id="8417548266957501132">Parent password</translation>
 <translation id="8417573335434189196">Does not protect you against dangerous websites, downloads or extensions. Chrome does not recommend this setting.</translation>
 <translation id="8418445294933751433">&amp;Show as tab</translation>
 <translation id="8419098111404128271">Search results for '<ph name="SEARCH_TEXT" />'</translation>

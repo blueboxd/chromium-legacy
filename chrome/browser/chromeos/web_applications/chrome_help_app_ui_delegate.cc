@@ -44,13 +44,16 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   source->AddString("boardName", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("chromeOSVersion", base::SysInfo::OperatingSystemVersion());
   std::string customization_id;
+  std::string hwid;
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  // Customization id does not exist for browser tests, but it is fine for this
-  // to be an empty string.
+  // MachineStatistics may not exist for browser tests, but it is fine for these
+  // to be empty strings.
   provider->GetMachineStatistic(chromeos::system::kCustomizationIdKey,
                                 &customization_id);
+  provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
   source->AddString("customizationId", customization_id);
+  source->AddString("hwid", hwid);
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   PrefService* pref_service = profile->GetPrefs();

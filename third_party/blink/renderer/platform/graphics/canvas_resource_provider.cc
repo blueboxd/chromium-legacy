@@ -1008,6 +1008,8 @@ CanvasResourceProvider::CanvasResourceProvider(
 }
 
 CanvasResourceProvider::~CanvasResourceProvider() {
+  UMA_HISTOGRAM_EXACT_LINEAR("Blink.Canvas.MaximumInflightResources",
+                             max_inflight_resources_, 20);
   if (context_provider_wrapper_)
     context_provider_wrapper_->RemoveObserver(this);
 }
@@ -1234,9 +1236,17 @@ void CanvasResourceProvider::ClearRecycledResources() {
   canvas_resources_.clear();
 }
 
+void CanvasResourceProvider::OnDestroyResource() {
+  --num_inflight_resources_;
+}
+
 scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
-  if (canvas_resources_.IsEmpty())
+  if (canvas_resources_.IsEmpty()) {
     canvas_resources_.push_back(CreateResource());
+    ++num_inflight_resources_;
+    if (num_inflight_resources_ > max_inflight_resources_)
+      max_inflight_resources_ = num_inflight_resources_;
+  }
 
   if (IsSingleBuffered()) {
     DCHECK_EQ(canvas_resources_.size(), 1u);

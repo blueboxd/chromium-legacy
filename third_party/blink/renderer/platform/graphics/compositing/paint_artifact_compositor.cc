@@ -746,14 +746,18 @@ bool PaintArtifactCompositor::DecompositeEffect(
   upcast_state->SetEffect(unaliased_parent_effect);
 
   // Exotic blending layer can be decomposited only if its parent group
-  // (which defines the scope of the blending) has only one layer before it,
+  // (which defines the scope of the blending) has zero or one layer before it,
   // and it can be merged into that layer.
   if (unaliased_effect.BlendMode() != SkBlendMode::kSrcOver) {
-    if (layer_index - 1 != first_layer_in_parent_group_index)
-      return false;
-    if (!pending_layers_[first_layer_in_parent_group_index].CanMerge(
-            layer, *upcast_state))
-      return false;
+    auto num_previous_siblings =
+        layer_index - first_layer_in_parent_group_index;
+    if (num_previous_siblings) {
+      if (num_previous_siblings > 1)
+        return false;
+      if (!pending_layers_[first_layer_in_parent_group_index].CanMerge(
+              layer, *upcast_state))
+        return false;
+    }
   }
 
   layer.Upcast(*upcast_state);

@@ -458,6 +458,7 @@
 <translation id="1616206807336925449">මෙම දිගුවට කිසිඳු විශේෂිත බලතලයක් අවශ්‍ය නොවේ.</translation>
 <translation id="1616298854599875024">බෙදා ගත් මොඩියුලයක් නොවන බැවින් "<ph name="IMPORT_NAME" />" දිගුව ආයාත කළ නොහැකිය</translation>
 <translation id="1618268899808219593">උපකාර මධ්‍යස්ථානය</translation>
+<translation id="1620307519959413822">වැරදි මුරපදය. නැවත උත්සාහ කරන්න හෝ යළි සැකසීමට මුරපදය අමතකයි ක්ලික් කරන්න.</translation>
 <translation id="1620510694547887537">කැමරාව</translation>
 <translation id="1623132449929929218">පින්තූර දැනට ලබා ගත නොහැක. වෝල්පේපර් එකතු බැලීමට කරණාකර අන්තර්ජාලයට සම්බන්ධ වන්න.</translation>
 <translation id="1627276047960621195">ගොනු සූචක</translation>
@@ -676,6 +677,7 @@
 <translation id="1887850431809612466">දෘඨාංග සංශෝධනය</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">සම්පූර්ණ තිරය විවෘත කරන්න</translation>
+<translation id="1892341345406963517">ආයුබෝවන් <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">වෙනත් භාෂා</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> ඉතුරුයි</translation>
 <translation id="1895658205118569222">වසා දමන්න</translation>
@@ -3131,6 +3133,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5213891612754844763">ප්‍රොක්සි සැකසීම් පෙන්වන්න</translation>
 <translation id="5215502535566372932">රට තෝරන්න</translation>
 <translation id="521582610500777512">ඡායාරූපය ඉවතලන ලදී</translation>
+<translation id="5222403284441421673">අනාරක්‍ෂිත බාගැනීම අවහිර කළා</translation>
 <translation id="5222676887888702881">පිටවීම</translation>
 <translation id="52232769093306234">ඇසුරුම්කරණය අසමත් විය.</translation>
 <translation id="5225324770654022472">යෙදුම් කෙටිමග පෙන්වන්න</translation>
@@ -3530,6 +3533,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5734362860645681824">සන්නිවේදන</translation>
 <translation id="5734697361979786483">ගොනු බෙදා ගැනීම එක් කරන්න</translation>
 <translation id="5736796278325406685">වලංගු පරිශීලක නාමයක් ඇතුළු කරන්න</translation>
+<translation id="5739017626473506901"><ph name="USER_NAME" /> හට පාසල් ගිණුමක් එක් කිරීමට උදවු කිරීමට පුරන්න</translation>
 <translation id="5739235828260127894">සත්‍යාපනය බලාපොරොත්තුවෙන් <ph name="LINK_BEGIN" />තවත් දැන ගන්න.<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ඉතා විශාල</translation>
 <translation id="574209121243317957">තාරතාව</translation>
@@ -5534,6 +5538,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ජාලය, සම්බන්ධ කෙරේ</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">පළමුව අසන්න (නිර්දේශිතයි)</translation>
+<translation id="8417548266957501132">මාපිය මුරපදය</translation>
 <translation id="8417573335434189196">අනතුරුදායක වෙබ් අඩවිවලට, බාගැනීම්වලට, හෝ දිගුවලට එරෙහිව ඔබව ආරක්‍ෂා නොකරයි. Chrome මෙම සැකසීම නිර්දේශ නොකරයි.</translation>
 <translation id="8418445294933751433">ටැබයක් ලෙස පෙන්වන්න</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' සඳහා සෙවීම් ප්‍රතිඵල</translation>

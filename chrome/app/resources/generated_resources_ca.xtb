@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Aquesta extensió no requereix cap permís especial.</translation>
 <translation id="1616298854599875024">L'extensió <ph name="IMPORT_NAME" /> no es pot importar perquè no és un mòdul compartit</translation>
 <translation id="1618268899808219593">Centre d'ajuda</translation>
+<translation id="1620307519959413822">La contrasenya no és correcta. Torna-ho a provar o fes clic a l'opció Has oblidat la contrasenya? per restablir-la.</translation>
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1623132449929929218">En aquests moments les imatges no estan disponibles. Torna't a connectar a Internet per veure les col·leccions de fons de pantalla.</translation>
 <translation id="1627276047960621195">Descriptors dels fitxers</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Revisió de maquinari</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identificador: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Obre en pantalla completa</translation>
+<translation id="1892341345406963517">Hola, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Altres idiomes</translation>
 <translation id="1895252664692693738">Temps restant: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Aturada</translation>
@@ -3130,6 +3132,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5213891612754844763">Mostra la configuració del servidor intermediari</translation>
 <translation id="5215502535566372932">Selecciona un país</translation>
 <translation id="521582610500777512">La foto s'ha descartat.</translation>
+<translation id="5222403284441421673">S'ha bloquejat una baixada no segura</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="52232769093306234">S'ha produït un error en l'empaquetat.</translation>
 <translation id="5225324770654022472">Mostra la drecera d'aplicacions 
@@ -3530,6 +3533,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5734362860645681824">Comunicacions</translation>
 <translation id="5734697361979786483">Afegeix l'ús compartit de fitxers</translation>
 <translation id="5736796278325406685">Introdueix un nom d'usuari vàlid</translation>
+<translation id="5739017626473506901">Inicia la sessió per ajudar <ph name="USER_NAME" /> a afegir un compte de centre educatiu</translation>
 <translation id="5739235828260127894">S'està esperant la verificació. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Molt gran</translation>
 <translation id="574209121243317957">To</translation>
@@ -5538,6 +5542,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8408068190360279472">Xarxa <ph name="NETWORK_TYPE" /> (connectant)</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Pregunta-m'ho abans (opció recomanada)</translation>
+<translation id="8417548266957501132">Contrasenya del pare o de la mare</translation>
 <translation id="8417573335434189196">No et protegeix contra llocs web, baixades ni extensions perillosos. Chrome no recomana aquesta opció de configuració.</translation>
 <translation id="8418445294933751433">&amp;Mostra com a pestanya</translation>
 <translation id="8419098111404128271">Resultats de la cerca per a "<ph name="SEARCH_TEXT" />"</translation>

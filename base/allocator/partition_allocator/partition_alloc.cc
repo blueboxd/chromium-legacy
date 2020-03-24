@@ -57,8 +57,8 @@ PartitionRootGeneric::PartitionRootGeneric() = default;
 PartitionRootGeneric::~PartitionRootGeneric() = default;
 PartitionAllocatorGeneric::PartitionAllocatorGeneric() = default;
 
-subtle::SpinLock& GetLock() {
-  static NoDestructor<subtle::SpinLock> s_initialized_lock;
+Lock& GetLock() {
+  static NoDestructor<Lock> s_initialized_lock;
   return *s_initialized_lock;
 }
 static bool g_initialized = false;
@@ -176,7 +176,7 @@ bool PartitionAllocHooks::ReallocOverrideHookIfEnabled(size_t* out,
 static void PartitionAllocBaseInit(internal::PartitionRootBase* root) {
   DCHECK(!root->initialized);
   {
-    subtle::SpinLock::Guard guard(GetLock());
+    AutoLock guard(GetLock());
     if (!g_initialized) {
       g_initialized = true;
       // We mark the sentinel bucket/page as free to make sure it is skipped by

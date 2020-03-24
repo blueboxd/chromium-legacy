@@ -40,26 +40,22 @@
     flex-grow: 1;
   }
 
-  .section {
-    @apply --cr-section;
-  }
-
-  .section.block {
+  .cr-section.block {
     box-sizing: border-box;
     display: block;
     padding-bottom: var(--cr-section-vertical-padding);
     padding-top: var(--cr-section-vertical-padding);
   }
 
-  .section.continuation {
+  .cr-section.continuation {
     border-top: none;
   }
 
-  .section.control-line {
+  .cr-section.control-line {
     justify-content: space-between;
   }
 
-  .section:first-child {
+  .cr-section:first-child {
     border: none;
   }
 
@@ -110,7 +106,6 @@
   }
 
   extensions-toggle-row {
-    @apply --cr-section;
     box-sizing: border-box;
     padding-inline-end: 0;
     padding-inline-start: 0;
@@ -151,7 +146,7 @@
         [[data.name]]
       </span>
     </div>
-    <div class="section continuation control-line" id="enable-section">
+    <div class="cr-section continuation control-line" id="enable-section">
       <span class$="[[computeEnabledStyle_(data.state)]]">
         [[computeEnabledText_(data.state, '$i18nPolymer{itemOn}',
             '$i18nPolymer{itemOff}')]]
@@ -183,7 +178,7 @@
     </div>
     <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
       <div id="runtime-warnings" hidden$="[[!data.runtimeWarnings.length]]"
-          class="section continuation warning control-line">
+          class="cr-section continuation warning control-line">
         <iron-icon class="warning-icon" icon="cr:error"></iron-icon>
         <span>
           <template is="dom-repeat" items="[[data.runtimeWarnings]]">
@@ -197,7 +192,7 @@
           </cr-button>
         </template>
       </div>
-      <div class="section continuation warning" id="suspicious-warning"
+      <div class="cr-section continuation warning" id="suspicious-warning"
           hidden$="[[!data.disableReasons.suspiciousInstall]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>
@@ -207,7 +202,7 @@
           </a>
         </span>
       </div>
-      <div class="section continuation warning control-line"
+      <div class="cr-section continuation warning control-line"
           id="corrupted-warning"
           hidden$="[[!showRepairButton_(data.disableReasons.corruptInstall)]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
@@ -217,18 +212,18 @@
           $i18n{itemRepair}
         </cr-button>
       </div>
-      <div class="section continuation warning" id="blacklisted-warning"
+      <div class="cr-section continuation warning" id="blacklisted-warning"
           hidden$="[[!data.blacklistText]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>[[data.blacklistText]]</span>
       </div>
-      <div class="section continuation warning" id="update-required-warning"
+      <div class="cr-section continuation warning" id="update-required-warning"
           hidden$="[[!data.disableReasons.updateRequired]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>$i18n{updateRequiredByPolicy}</span>
       </div>
     </div>
-    <div class="section continuation block">
+    <div class="cr-section continuation block">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemDescriptionLabel}
       </div>
@@ -236,13 +231,13 @@
         [[getDescription_(data.description, '$i18nPolymer{noDescription}')]]
       </div>
     </div>
-    <div class="section block">
+    <div class="cr-section block">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemVersion}
       </div>
       <div class="section-content">[[data.version]]</div>
     </div>
-    <div class="section block">
+    <div class="cr-section block">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemSize}
       </div>
@@ -252,14 +247,14 @@
         </paper-spinner-lite>
       </div>
     </div>
-    <div class="section block" id="id-section" hidden$="[[!inDevMode]]">
+    <div class="cr-section block" id="id-section" hidden$="[[!inDevMode]]">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemIdHeading}
       </div>
       <div class="section-content">[[data.id]]</div>
     </div>
     <template is="dom-if" if="[[inDevMode]]">
-      <div class="section block" id="inspectable-views">
+      <div class="cr-section block" id="inspectable-views">
         <div class="section-title" role="heading" aria-level="2">
           $i18n{itemInspectViews}
         </div>
@@ -280,7 +275,7 @@
         </div>
       </div>
     </template>
-    <div class="section block">
+    <div class="cr-section block">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemPermissions}
       </div>
@@ -304,7 +299,7 @@
         </ul>
       </div>
     </div>
-    <div class="section block">
+    <div class="cr-section block">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemSiteAccess}
       </div>
@@ -333,7 +328,7 @@
     </div>
     <template is="dom-if"
         if="[[hasDependentExtensions_(data.dependentExtensions.splices)]]">
-      <div class="section block">
+      <div class="cr-section block">
         <div class="section-title" role="heading" aria-level="2">
           $i18n{itemDependencies}
         </div>
@@ -353,6 +348,7 @@
               data.incognitoAccess.isEnabled, incognitoAvailable)]]">
           <extensions-toggle-row id="allow-incognito"
               checked="[[data.incognitoAccess.isActive]]"
+              class="hr"
               on-change="onAllowIncognitoChange_">
             <div>
               <div>$i18n{itemAllowIncognito}</div>
@@ -363,6 +359,7 @@
         <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
           <extensions-toggle-row id="allow-on-file-urls"
               checked="[[data.fileAccess.isActive]]"
+              class="hr"
               on-change="onAllowOnFileUrlsChange_">
             <span>$i18n{itemAllowOnFileUrls}</span>
           </extensions-toggle-row>
@@ -370,6 +367,7 @@
         <template is="dom-if" if="[[data.errorCollection.isEnabled]]">
           <extensions-toggle-row id="collect-errors"
             checked="[[data.errorCollection.isActive]]"
+            class="hr"
             on-change="onCollectErrorsChange_">
             <span>$i18n{itemCollectErrors}</span>
           </extensions-toggle-row>
@@ -391,7 +389,7 @@
     <cr-link-row class="hr" hidden="[[!data.webStoreUrl.length]]"
         id="viewInStore" label="$i18n{viewInStore}"
         on-click="onViewInStoreTap_" external></cr-link-row>
-    <div class="section block">
+    <div class="cr-section block">
       <div class="section-title" role="heading" aria-level="2">
         $i18n{itemSource}
       </div>

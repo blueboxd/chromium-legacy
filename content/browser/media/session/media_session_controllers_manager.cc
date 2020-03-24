@@ -120,6 +120,15 @@ void MediaSessionControllersManager::OnMediaPositionStateChanged(
   it->second->OnMediaPositionStateChanged(position);
 }
 
+void MediaSessionControllersManager::PictureInPictureStateChanged(
+    bool is_picture_in_picture) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  for (auto& entry : controllers_map_)
+    entry.second->PictureInPictureStateChanged(is_picture_in_picture);
+}
+
 void MediaSessionControllersManager::WebContentsMutedStateChanged(bool muted) {
   if (!IsMediaSessionEnabled())
     return;

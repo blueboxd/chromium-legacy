@@ -43,6 +43,8 @@ class APP_LIST_EXPORT AppListMainView
 
   void Init(int initial_apps_page, SearchBoxView* search_box_view);
 
+  void ShowAppListWhenReady();
+
   void ModelChanged();
 
   SearchBoxView* search_box_view() const { return search_box_view_; }

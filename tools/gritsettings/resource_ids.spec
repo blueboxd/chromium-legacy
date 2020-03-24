@@ -168,28 +168,29 @@
     "includes": [1740],
   },
   "chrome/browser/resources/settings/os_settings_resources.grd": {
-    "structures": [1760],
+    "includes": [1760],
+    "structures": [1780],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [1780],
+    "includes": [1800],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "includes": [1790],
-    "structures": [1800],
+    "includes": [1810],
+    "structures": [1820],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [1820],
-    "includes": [1840],
+    "structures": [1840],
+    "includes": [1860],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [1860],
-    "structures": [1880],
+    "includes": [1880],
+    "structures": [1900],
   },
   "chrome/browser/supervised_user/supervised_user_unscaled_resources.grd": {
-    "includes": [1890],
+    "includes": [1910],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [1900],
+    "includes": [1930],
   },
   # END chrome/browser section.
 

@@ -14,6 +14,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_result.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "url/origin.h"
@@ -38,18 +39,6 @@ class URLResponseHead;
 // signatures, and another to send blinded tokens to the issuer.
 class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
  public:
-  // Class KeyCommitmentGetter fetches key commitments asynchronously. These are
-  // used for precondition checking before issuance, and for validating
-  // received tokens in issuance responses.
-  class KeyCommitmentGetter {
-   public:
-    virtual ~KeyCommitmentGetter() = default;
-    virtual void Get(
-        const url::Origin& origin,
-        base::OnceCallback<void(std::unique_ptr<TrustTokenKeyCommitmentResult>)>
-            on_done) = 0;
-  };
-
   // Class Cryptographer executes the underlying cryptographic
   // operations required for issuance. The API is intended to correspond closely
   // to the BoringSSL API.
@@ -109,7 +98,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   TrustTokenRequestIssuanceHelper(
       const url::Origin& top_level_origin,
       TrustTokenStore* token_store,
-      std::unique_ptr<KeyCommitmentGetter> key_commitment_getter,
+      std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
       std::unique_ptr<Cryptographer> cryptographer);
   ~TrustTokenRequestIssuanceHelper() override;
 
@@ -170,7 +159,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   url::Origin issuer_;
   const url::Origin top_level_origin_;
   TrustTokenStore* const token_store_;
-  const std::unique_ptr<KeyCommitmentGetter> key_commitment_getter_;
+  const std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter_;
   const std::unique_ptr<Cryptographer> cryptographer_;
   base::WeakPtrFactory<TrustTokenRequestIssuanceHelper> weak_ptr_factory_{this};
 };

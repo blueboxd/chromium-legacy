@@ -8,13 +8,22 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
+#include "base/synchronization/lock.h"
 
 namespace base {
+
+namespace {
+
+Lock& GetLock() {
+  static NoDestructor<Lock> lock;
+  return *lock;
+}
+
+}  // namespace
 
 // This is the same PRNG as used by tcmalloc for mapping address randomness;
 // see http://burtleburtle.net/bob/rand/smallprng.html.
 struct RandomContext {
-  subtle::SpinLock lock;
   bool initialized;
   uint32_t a;
   uint32_t b;
@@ -22,45 +31,44 @@ struct RandomContext {
   uint32_t d;
 };
 
+static RandomContext g_context GUARDED_BY(GetLock());
+
 namespace {
 
-RandomContext* GetRandomContext() {
-  static NoDestructor<RandomContext> g_random_context;
-  RandomContext* x = g_random_context.get();
-  subtle::SpinLock::Guard guard(x->lock);
-  if (UNLIKELY(!x->initialized)) {
+RandomContext& GetRandomContext() EXCLUSIVE_LOCKS_REQUIRED(GetLock()) {
+  if (UNLIKELY(!g_context.initialized)) {
     const uint64_t r1 = RandUint64();
     const uint64_t r2 = RandUint64();
-    x->a = static_cast<uint32_t>(r1);
-    x->b = static_cast<uint32_t>(r1 >> 32);
-    x->c = static_cast<uint32_t>(r2);
-    x->d = static_cast<uint32_t>(r2 >> 32);
-    x->initialized = true;
+    g_context.a = static_cast<uint32_t>(r1);
+    g_context.b = static_cast<uint32_t>(r1 >> 32);
+    g_context.c = static_cast<uint32_t>(r2);
+    g_context.d = static_cast<uint32_t>(r2 >> 32);
+    g_context.initialized = true;
   }
-  return x;
+  return g_context;
 }
 
 }  // namespace
 
 uint32_t RandomValue() {
-  RandomContext* x = GetRandomContext();
-  subtle::SpinLock::Guard guard(x->lock);
+  AutoLock guard(GetLock());
+  RandomContext& x = GetRandomContext();
 #define rot(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
-  uint32_t e = x->a - rot(x->b, 27);
-  x->a = x->b ^ rot(x->c, 17);
-  x->b = x->c + x->d;
-  x->c = x->d + e;
-  x->d = e + x->a;
-  return x->d;
+  uint32_t e = x.a - rot(x.b, 27);
+  x.a = x.b ^ rot(x.c, 17);
+  x.b = x.c + x.d;
+  x.c = x.d + e;
+  x.d = e + x.a;
+  return x.d;
 #undef rot
 }
 
 void SetMmapSeedForTesting(uint64_t seed) {
-  RandomContext* x = GetRandomContext();
-  subtle::SpinLock::Guard guard(x->lock);
-  x->a = x->b = static_cast<uint32_t>(seed);
-  x->c = x->d = static_cast<uint32_t>(seed >> 32);
-  x->initialized = true;
+  AutoLock guard(GetLock());
+  RandomContext& x = GetRandomContext();
+  x.a = x.b = static_cast<uint32_t>(seed);
+  x.c = x.d = static_cast<uint32_t>(seed >> 32);
+  x.initialized = true;
 }
 
 }  // namespace base

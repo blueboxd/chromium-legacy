@@ -137,9 +137,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   static float GetTransitionProgressForState(AppListViewState state);
 
   // Initializes the view, only done once per session.
-  void InitView(bool is_tablet_mode,
-                gfx::NativeView parent,
-                base::RepeatingClosure on_bounds_animation_ended_callback);
+  void InitView(bool is_tablet_mode, gfx::NativeView parent);
 
   // Initializes the contents of the view.
   void InitContents(bool is_tablet_mode);
@@ -578,9 +576,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // If set, the app list config that should be used within the app list view
   // instead of the default instance.
   std::unique_ptr<AppListConfig> app_list_config_;
-
-  // Callback which is run when the bounds animation of the widget is ended.
-  base::RepeatingClosure on_bounds_animation_ended_callback_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_{this};
 

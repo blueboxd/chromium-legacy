@@ -113,7 +113,7 @@
 <translation id="1147991416141538220">Atzitzeko baimena eskatzeko, jarri gailuaren administratzailearekin harremanetan.</translation>
 <translation id="1149401351239820326">Iraungitze-hilabetea</translation>
 <translation id="1150565364351027703">Eguzkitako betaurrekoak</translation>
-<translation id="1151841030700667295">Webgune guztietako saioa amaituko da, baita irekita dauden fitxetakoa ere.</translation>
+<translation id="1151841030700667295">Webgune guztietan amaituko da saioa, baita irekita dauden fitxetan ere.</translation>
 <translation id="1151917987301063366">Eman beti sentsoreak erabiltzeko baimena <ph name="HOST" /> ostalariari</translation>
 <translation id="1153356358378277386">Parekatutako gailuak</translation>
 <translation id="1153636665119721804">Google-ren Babes aurreratua programa</translation>
@@ -1338,7 +1338,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2753677631968972007">Kontrolatu eskuz webgunearen baimenak.</translation>
 <translation id="2755367719610958252">Kudeatu erabilerraztasun-eginbideak</translation>
 <translation id="275662540872599901">pantaila itzalita dago</translation>
-<translation id="2757338480560142065">Ziurtatu gordetzen ari zaren pasahitza bat datorrela <ph name="WEBSITE" /> webguneko pasahitzarekin</translation>
+<translation id="2757338480560142065">Ziurtatu gordetzera zoazen pasahitza bat datorrela <ph name="WEBSITE" /> webguneko pasahitzarekin</translation>
 <translation id="2762441749940182211">Kamera blokeatuta dago</translation>
 <translation id="2765217105034171413">Txikia</translation>
 <translation id="2766161002040448006">Galdetu guraso bati</translation>
@@ -1591,7 +1591,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3090819949319990166">Ezin da kanpoko crx fitxategia <ph name="TEMP_CRX_FILE" /> fitxategian kopiatu.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" parekatu da</translation>
 <translation id="3092699946856346803">Sartu SIM txartela eta saiatu berriro</translation>
-<translation id="3099836255427453137">{NUM_EXTENSIONS,plural, =1{Luzapen kaltegarri bat desaktibatu egin da. Kendu ere egin dezakezu.}other{{NUM_EXTENSIONS} luzapen kaltegarri desaktibatu egin dira. Kendu ere egin ditzakezu.}}</translation>
+<translation id="3099836255427453137">{NUM_EXTENSIONS,plural, =1{Luzapen kaltegarri bat desaktibatu da. Kendu ere egin dezakezu.}other{{NUM_EXTENSIONS} luzapen kaltegarri desaktibatu dira. Kendu ere egin ditzakezu.}}</translation>
 <translation id="3101709781009526431">Data eta ordua</translation>
 <translation id="3103941660000130485">Errore bat gertatu da Linux bertsio-berritzean</translation>
 <translation id="310671807099593501">Webgunea Bluetooth konexioa erabiltzen ari da</translation>
@@ -1878,7 +1878,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3496213124478423963">Txikitu</translation>
 <translation id="3497560059572256875">Partekatu doodle-a</translation>
 <translation id="3498215018399854026">Ezin izan gara jarri harremanetan zure arduradunarekin. Saiatu berriro.</translation>
-<translation id="3500417806337761827">Errore bat gertatu da partekatzea muntatzean. ETEen partekatze gehiegi daude jada muntatuta.</translation>
+<translation id="3500417806337761827">Errore bat gertatu da partekatzea muntatzean. SMBko partekatze gehiegi daude jada muntatuta.</translation>
 <translation id="3505030558724226696">Baliogabetu gailurako sarbidea</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" luzapenak dituen baimenak</translation>
 <translation id="3507888235492474624">Bilatu berriro Bluetooth bidezko gailuak</translation>
@@ -3420,7 +3420,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5593357315997824387">Sinkronizatu fitxategiak</translation>
 <translation id="5595152862129936745">Oso urrun</translation>
 <translation id="5595485650161345191">Editatu helbidea</translation>
-<translation id="5595727715083333657">Edukiontziak ez du onartzen tamainaz aldatzea. Linux-ek (Beta) aldez aurretik esleituta duen biltegiratze-tamaina doitzeko, egin babeskopia bat eta, ondoren, leheneratu edukiontzi berri batean.</translation>
+<translation id="5595727715083333657">Edukiontziak ez du onartzen tamainaz aldatzea. Linux-ek (Beta) aldez aurretik esleituta duen biltegiratze-tamaina doitzeko, egin babeskopia bat eta, ondoren, lehenera ezazu edukiontzi berri batean.</translation>
 <translation id="5596627076506792578">Aukera gehiago</translation>
 <translation id="5600706100022181951">Datu-konexioaren <ph name="UPDATE_SIZE_MB" /> MB erabilita deskargatuko da eguneratzea. Aurrera egin nahi duzu?</translation>
 <translation id="5601503069213153581">PIN kodea</translation>
@@ -3849,7 +3849,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6160625263637492097">Eman autentifikatzeko ziurtagiriak</translation>
 <translation id="6163363155248589649">&amp;Normala</translation>
 <translation id="6163522313638838258">Zabaldu guztiak…</translation>
-<translation id="6164005077879661055">Erabiltzaile gainbegiratuarekin erlazionatutako fitxategi eta datu lokal guztiak behin betiko ezabatuko dira erabiltzaile gainbegiratua kentzean. Hala ere, erabiltzaile gainbegiratuak bisitatu dituen webguneak eta bere ezarpenak ikusten jarraitu ahal izango du kudeatzaileak <ph name="MANAGEMENT_URL" /> webgunean.</translation>
+<translation id="6164005077879661055">Erabiltzaile gainbegiratuarekin erlazionatutako fitxategi eta datu lokal guztiak betiko ezabatuko dira erabiltzaile gainbegiratua kentzean. Hala ere, erabiltzaile gainbegiratuak bisitatu dituen webguneak eta bere ezarpenak ikusten jarraitu ahal izango du kudeatzaileak <ph name="MANAGEMENT_URL" /> webgunean.</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
 <translation id="6166185671393271715">Inportatu pasahitzak Chrome-ra</translation>
 <translation id="6169040057125497443">Egiaztatu mikrofonoa.</translation>
@@ -4842,7 +4842,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="7513029293694390567">Hasi saioa automatikoki webguneetan gordetako kredentzialekin. Eginbidea desgaituta badago, zeu zarela berresteko eskatuko dizu webgune batean saioa hasten duzun bakoitzean.</translation>
 <translation id="7514239104543605883">Kopiatu zure gailuan</translation>
 <translation id="7514365320538308">Deskargatu</translation>
-<translation id="751523031290522286">Administratzaileak <ph name="APP_NAME" /> aplikazioa blokeatu du. Eskatu baimena aplikazio hau erabiltzeko.</translation>
+<translation id="751523031290522286">Administratzaileak <ph name="APP_NAME" /> aplikazioa blokeatu du. Eska iezaiozu baimena aplikazio hau erabiltzeko.</translation>
 <translation id="7516981202574715431"><ph name="APP_NAME" /> pausatuta dago</translation>
 <translation id="7517063221058203587">{0,plural, =1{Eguneratu gailua minutu bateko epean}other{Eguneratu gailua # minutuko epean}}</translation>
 <translation id="7520766081042531487">Ezkutuko moduaren ataria: <ph name="SUBFRAME_SITE" /></translation>

@@ -48,7 +48,10 @@ source_set("public") {
 }
 
 source_set("factory") {
-  sources = []
+  sources = [
+    "tile_service_factory_helper.cc",
+    "tile_service_factory_helper.h",
+  ]
 
   deps = [
     ":public",

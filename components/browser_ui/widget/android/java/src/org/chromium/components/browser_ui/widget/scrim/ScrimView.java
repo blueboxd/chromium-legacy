@@ -68,6 +68,12 @@ class ScrimView extends View {
     }
 
     @Override
+    public void setBackgroundColor(@ColorInt int color) {
+        super.setBackgroundColor(
+                color == ScrimProperties.INVALID_COLOR ? mDefaultBackgroundColor : color);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent e) {
         if (mEventDelegate != null) return mEventDelegate.onTouchEvent(e);
         return super.onTouchEvent(e);

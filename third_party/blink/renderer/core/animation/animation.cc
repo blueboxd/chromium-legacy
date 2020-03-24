@@ -838,6 +838,59 @@ void Animation::setEffect(AnimationEffect* new_effect) {
 
   // Notify of a potential state change.
   NotifyProbe();
+
+  // The remaining steps are for handling CSS animation and transition events.
+  // Both use an event delegate to dispatch events, which must be reattached to
+  // the new effect.
+
+  // When the animation no longer has an associated effect, calls to
+  // Animation::Update will no longer update the animation timing and,
+  // consequently, do not trigger animation or transition events.
+  // Each transitionrun or transitionstart requires a corresponding
+  // transitionend or transitioncancel.
+  // https://drafts.csswg.org/css-transitions-2/#event-dispatch
+  // Similarly, each animationstart requires a corresponding animationend or
+  // animationcancel.
+  // https://drafts.csswg.org/css-animations-2/#event-dispatch
+  AnimationEffect::EventDelegate* old_event_delegate =
+      old_effect ? old_effect->GetEventDelegate() : nullptr;
+  if (!new_effect && old_effect && old_event_delegate) {
+    // If the animation|transition has no target effect, the timing phase is set
+    // according to the first matching condition from below:
+    //   If the current time is unresolved,
+    //     The timing phase is ‘idle’.
+    //   If current time < 0,
+    //     The timing phase is ‘before’.
+    //   Otherwise,
+    //     The timing phase is ‘after’.
+    base::Optional<double> current_time = CurrentTimeInternal();
+    Timing::Phase phase;
+    if (!current_time)
+      phase = Timing::kPhaseNone;
+    else if (current_time < 0)
+      phase = Timing::kPhaseBefore;
+    else
+      phase = Timing::kPhaseAfter;
+    old_event_delegate->OnEventCondition(*old_effect, phase);
+    return;
+  }
+
+  if (!new_effect || !old_effect)
+    return;
+
+  // Use the original target for event targeting.
+  Element* target = To<KeyframeEffect>(old_effect)->target();
+  if (!target)
+    return;
+
+  // Attach an event delegate to the new effect.
+  AnimationEffect::EventDelegate* new_event_delegate =
+      CreateEventDelegate(target, old_event_delegate);
+  new_effect->SetEventDelegate(new_event_delegate);
+
+  // Force an update to the timing model to ensure correct ordering of
+  // animation or transition events.
+  Update(kTimingUpdateOnDemand);
 }
 
 String Animation::PlayStateString() const {

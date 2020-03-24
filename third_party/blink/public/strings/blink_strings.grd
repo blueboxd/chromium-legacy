@@ -776,155 +776,155 @@ below:
         Appears to be: <ph name="DESCRIPTION">$1<ex>A person at a podium</ex></ph>
       </message>
 
-      <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessible description of the AM/PM field in a date/time control">
+      <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessibility label of the AM/PM field in a date/time control">
         AM/PM
       </message>
 
-      <message name="IDS_AX_DAY_OF_MONTH_FIELD_TEXT" desc="Accessible description of the day of month field in a date/time control">
+      <message name="IDS_AX_DAY_OF_MONTH_FIELD_TEXT" desc="Accessibility label of the day of month field in a date/time control">
         Day
       </message>
 
-      <message name="IDS_AX_HOUR_FIELD_TEXT" desc="Accessible description of the hour field in a date/time control">
+      <message name="IDS_AX_HOUR_FIELD_TEXT" desc="Accessibility label of the hour field in a date/time control">
         Hours
       </message>
 
-      <message name="IDS_AX_MEDIA_DEFAULT" desc="Accessible description of a media control.">
+      <message name="IDS_AX_MEDIA_DEFAULT" desc="Accessibility label of a media control.">
         media control
       </message>
 
-      <message name="IDS_AX_MEDIA_AUDIO_ELEMENT" desc="Accessible description of audio">
+      <message name="IDS_AX_MEDIA_AUDIO_ELEMENT" desc="Accessibility label of audio">
         audio
       </message>
 
-      <message name="IDS_AX_MEDIA_VIDEO_ELEMENT" desc="Accessible description of video">
+      <message name="IDS_AX_MEDIA_VIDEO_ELEMENT" desc="Accessibility label of video">
         video
       </message>
 
-      <message name="IDS_AX_MEDIA_MUTE_BUTTON" desc="Accessibility role description for mute button">
+      <message name="IDS_AX_MEDIA_MUTE_BUTTON" desc="Accessibility label for mute button">
         mute
       </message>
 
-      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON" desc="Accessibility role description for turn mute off button">
+      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON" desc="Accessibility label for turn mute off button">
         unmute
       </message>
 
-      <message name="IDS_AX_MEDIA_PLAY_BUTTON" desc="Accessibility role description for play button">
+      <message name="IDS_AX_MEDIA_PLAY_BUTTON" desc="Accessibility label for play button">
         play
       </message>
 
-      <message name="IDS_AX_MEDIA_PAUSE_BUTTON" desc="Accessibility role description for pause button">
+      <message name="IDS_AX_MEDIA_PAUSE_BUTTON" desc="Accessibility label for pause button">
         pause
       </message>
 
-      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY" desc="Accessibility role description for elapsed time display">
+      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY" desc="Accessibility label for elapsed time display">
         elapsed time: <ph name="ELAPSED_TIME">$1<ex>0:25</ex></ph>
       </message>
 
-      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY" desc="Accessibility role description for time remaining display">
-        remaining time: <ph name="REMAINING_TIME">$1<ex>3:25</ex></ph>
+      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY" desc="Accessibility label for total time display">
+        total time: <ph name="REMAINING_TIME">$1<ex>3:25</ex></ph>
       </message>
 
-      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON" desc="Accessibility role description for enter fullscreen button">
+      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON" desc="Accessibility label for enter fullscreen button">
         enter full screen
       </message>
 
-      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON" desc="Accessibility role description for exit fullscreen button">
+      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON" desc="Accessibility label for exit fullscreen button">
         exit full screen
       </message>
 
-      <message name="IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON" desc="Accessibility role description for display cutout fullscreen button">
+      <message name="IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON" desc="Accessibility label for display cutout fullscreen button">
         toggle display cutout fullscreen
       </message>
 
-      <message name="IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON" desc="Accessibility role description for enter Picture-in-Picture button">
+      <message name="IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON" desc="Accessibility label for enter Picture-in-Picture button">
         enter picture-in-picture
       </message>
 
-      <message name="IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON" desc="Accessibility role description for exit Picture-in-Picture button">
+      <message name="IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON" desc="Accessibility label for exit Picture-in-Picture button">
         exit picture-in-picture
       </message>
 
-      <message name="IDS_AX_MEDIA_LOADING_PANEL" desc="Accessibility role description for the loading/buffering panel">
+      <message name="IDS_AX_MEDIA_LOADING_PANEL" desc="Accessibility label for the loading/buffering panel">
         buffering
       </message>
 
-      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility role description for show closed captions menu button">
+      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility label for show closed captions menu button">
         show closed captions menu
       </message>
 
-      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility role description for hide closed captions menu button">
+      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility label for hide closed captions menu button">
         hide closed captions menu
       </message>
 
-      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON" desc="Accessibility role description for remote playback button">
+      <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON" desc="Accessibility label for remote playback button">
         play on remote device
       </message>
 
-      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON" desc="Accessibility role description for remote playback control button">
+      <message name="IDS_AX_MEDIA_CAST_ON_BUTTON" desc="Accessibility label for remote playback control button">
         control remote playback
       </message>
 
-      <message name="IDS_AX_MEDIA_DOWNLOAD_BUTTON" desc="Media controls download button.">
+      <message name="IDS_AX_MEDIA_DOWNLOAD_BUTTON" desc="Accessibility label for media controls download button.">
         download media
       </message>
 
-      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON" desc="Media controls overflow button.">
+      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON" desc="Accessibility label for media controls overflow button.">
         show more media controls
       </message>
 
-      <message name="IDS_AX_MEDIA_AUDIO_ELEMENT_HELP" desc="Accessible help of audio controls">
+      <message name="IDS_AX_MEDIA_AUDIO_ELEMENT_HELP" desc="Accessibility label for help of audio controls">
         audio
       </message>
 
-      <message name="IDS_AX_MEDIA_VIDEO_ELEMENT_HELP" desc="Accessible help of video">
+      <message name="IDS_AX_MEDIA_VIDEO_ELEMENT_HELP" desc="Accessibility label for help of video">
         video
       </message>
 
-      <message name="IDS_AX_MEDIA_AUDIO_SLIDER_HELP" desc="Accessibility help description for audio timeline slider">
+      <message name="IDS_AX_MEDIA_AUDIO_SLIDER_HELP" desc="Accessibility label for audio timeline slider">
         audio time scrubber
       </message>
 
-      <message name="IDS_AX_MEDIA_VIDEO_SLIDER_HELP" desc="Accessibility help description for video timeline slider">
+      <message name="IDS_AX_MEDIA_VIDEO_SLIDER_HELP" desc="Accessibility label for video timeline slider">
         video time scrubber
       </message>
 
-      <message name="IDS_AX_MEDIA_VOLUME_SLIDER_HELP" desc="Accessibility help description for volume slider">
+      <message name="IDS_AX_MEDIA_VOLUME_SLIDER_HELP" desc="Accessibility label for volume slider">
         volume slider
       </message>
 
-      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP" desc="Accessibility help description for elapsed time display">
+      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP" desc="Accessibility label for elapsed time display">
         current time in seconds
       </message>
 
-      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="Accessibility help description for time remaining display">
+      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="Accessibility label for time remaining display">
         number of seconds of video remaining
       </message>
 
-      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="Accessibility help description for overflow button.">
+      <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="Accessibility label for overflow button.">
         more options
       </message>
 
-      <message name="IDS_AX_MILLISECOND_FIELD_TEXT" desc="Accessible description of the millisecond field in a date/time control">
+      <message name="IDS_AX_MILLISECOND_FIELD_TEXT" desc="Accessibility label for the millisecond field in a date/time control">
         Milliseconds
       </message>
 
-      <message name="IDS_AX_MINUTE_FIELD_TEXT" desc="Accessible description of the minute field in a date/time control">
+      <message name="IDS_AX_MINUTE_FIELD_TEXT" desc="Accessibility label for the minute field in a date/time control">
         Minutes
       </message>
 
-      <message name="IDS_AX_MONTH_FIELD_TEXT" desc="Accessible description of the month field in a date/time control">
+      <message name="IDS_AX_MONTH_FIELD_TEXT" desc="Accessibility label for the month field in a date/time control">
         Month
       </message>
 
-      <message name="IDS_AX_SECOND_FIELD_TEXT" desc="Accessible description of the second field in a date/time control">
+      <message name="IDS_AX_SECOND_FIELD_TEXT" desc="Accessibility label for the second field in a date/time control">
         Seconds
       </message>
 
-      <message name="IDS_AX_WEEK_OF_YEAR_FIELD_TEXT" desc="Accessible description of the week of year field in a date/time control">
+      <message name="IDS_AX_WEEK_OF_YEAR_FIELD_TEXT" desc="Accessibility label for the week of year field in a date/time control">
         Week
       </message>
 
-      <message name="IDS_AX_YEAR_FIELD_TEXT" desc="Accessible description of the year field in a date/time control">
+      <message name="IDS_AX_YEAR_FIELD_TEXT" desc="Accessibility label for the year field in a date/time control">
         Year
       </message>
 

@@ -93,11 +93,16 @@ class ParagraphUtils {
     } else if (
         node.role === RoleType.CHECK_BOX ||
         node.role === RoleType.MENU_ITEM_CHECK_BOX) {
-      const stateString = chrome.i18n.getMessage(
-          'select_to_speak_checkbox_' +
-          (node.checked === 'true' ?
-               'checked' :
-               (node.checked === 'mixed' ? 'mixed' : 'unchecked')));
+      let stateString;
+      if (node.checked === 'true') {
+        stateString =
+            chrome.i18n.getMessage('select_to_speak_checkbox_checked');
+      } else if (node.checked === 'mixed') {
+        stateString = chrome.i18n.getMessage('select_to_speak_checkbox_mixed');
+      } else {
+        stateString =
+            chrome.i18n.getMessage('select_to_speak_checkbox_unchecked');
+      }
       return !ParagraphUtils.isWhitespace(node.name) ?
           node.name + ' ' + stateString :
           stateString;

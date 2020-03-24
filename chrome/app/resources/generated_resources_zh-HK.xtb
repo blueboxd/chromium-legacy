@@ -192,6 +192,7 @@
 <translation id="1243314992276662751">上載</translation>
 <translation id="1244265436519979884">正在執行 Linux 還原</translation>
 <translation id="1244303850296295656">擴充功能錯誤</translation>
+<translation id="1246158006305844142">您的應用程式和設定將會同步至所有您使用 Google 帳戶登入的 Chrome 作業系統裝置。如要瞭解瀏覽器同步選項，請前往<ph name="LINK_BEGIN" />Chrome 設定<ph name="LINK_END" />。</translation>
 <translation id="1246905108078336582">要從剪貼簿中移除建議嗎？</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> 因已淘汰而被封鎖</translation>
 <translation id="1251366534849411931">缺少預期的開頭大括弧：<ph name="ERROR_LINE" /></translation>
@@ -391,6 +392,7 @@
 <translation id="1524563461097350801">不用了，謝謝</translation>
 <translation id="1525740877599838384">只使用 Wi-Fi 確定位置</translation>
 <translation id="152629053603783244">重新啟動 Linux</translation>
+<translation id="1526335046150927198">啟用觸控板捲動加速功能</translation>
 <translation id="1526560967942511387">無標題文件</translation>
 <translation id="1529891865407786369">電源</translation>
 <translation id="1530838837447122178">開啟滑鼠和觸控板裝置設定</translation>
@@ -459,6 +461,7 @@
 <translation id="1616206807336925449">這個擴充功能不需任何特殊權限。</translation>
 <translation id="1616298854599875024">「<ph name="IMPORT_NAME" />」擴充程式並非共用模組，因此無法匯入。</translation>
 <translation id="1618268899808219593">說明中心(&amp;E)</translation>
+<translation id="1620307519959413822">密碼錯誤，請再試一次，或按一下 [忘記密碼] 以重設密碼。</translation>
 <translation id="1620510694547887537">相機</translation>
 <translation id="1623132449929929218">目前無法提供相片，請重新連線至互聯網以查看桌布相片集。</translation>
 <translation id="1627276047960621195">檔案描述符</translation>
@@ -677,6 +680,7 @@
 <translation id="1887850431809612466">硬件版本</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">開啟全螢幕</translation>
+<translation id="1892341345406963517"><ph name="PARENT_NAME" />，您好</translation>
 <translation id="189358972401248634">其他語言</translation>
 <translation id="1895252664692693738">剩餘 <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">關閉</translation>
@@ -1312,6 +1316,7 @@
 <translation id="2725200716980197196">網絡連線已恢復</translation>
 <translation id="2727633948226935816">不要再提醒我</translation>
 <translation id="2727712005121231835">實際大小</translation>
+<translation id="2729314457178420145">一併清除瀏覽資料 (<ph name="URL" />)，此操作可能會將您登出 Google.com。<ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">正在備份 Linux 應用程式和檔案</translation>
 <translation id="273093730430620027">這個網頁正在存取您的相機。</translation>
 <translation id="2731392572903530958">重新開啟先前關閉的視窗(&amp;E)</translation>
@@ -2162,6 +2167,7 @@
 <translation id="3838486795898716504">更多<ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">Cookie、其他網站數據和外掛程式數據</translation>
 <translation id="383891835335927981">沒有已放大或縮小的網站</translation>
+<translation id="3839509547554145593">啟用滑鼠捲動加速功能</translation>
 <translation id="3839516600093027468">一律禁止 <ph name="HOST" /> 查看剪貼簿</translation>
 <translation id="3841964634449506551">密碼無效</translation>
 <translation id="3842552989725514455">Serif 字型</translation>
@@ -2773,6 +2779,7 @@
 <translation id="4699172675775169585">快取圖片和檔案</translation>
 <translation id="4699357559218762027">(自動啟動)</translation>
 <translation id="470074695271471509">要登出以完成程序嗎？</translation>
+<translation id="4701025263201366865">家長登入</translation>
 <translation id="4707302005824653064">管理員 (<ph name="CUSTODIAN_EMAIL" />) 可以在 chrome.com 瞭解這名使用者的使用情形和記錄。</translation>
 <translation id="4707579418881001319">L2TP/IPsec + 使用者憑證</translation>
 <translation id="4708794300267213770">從休眠狀態喚醒時顯示螢幕鎖定畫面</translation>
@@ -3080,6 +3087,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />，使用 <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> 的搜查結果</translation>
 <translation id="5139823398361067371">請輸入安全密鑰的 PIN。如果您不知道 PIN，請重設安全密鑰。</translation>
 <translation id="5139955368427980650">開啟(&amp;O)</translation>
+<translation id="5142793792982256885">觸控板捲動速度</translation>
 <translation id="5142961317498132443">驗證</translation>
 <translation id="5143374789336132547">擴充功能「<ph name="EXTENSION_NAME" />」已變更您按下 [主頁] 按鈕時所顯示的網頁。</translation>
 <translation id="5143712164865402236">進入全螢幕</translation>
@@ -3125,6 +3133,7 @@
 <translation id="5213891612754844763">顯示 Proxy 設定</translation>
 <translation id="5215502535566372932">選取國家/地區</translation>
 <translation id="521582610500777512">已捨棄相片</translation>
+<translation id="5222403284441421673">已封鎖不安全的下載</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="52232769093306234">無法封裝。</translation>
 <translation id="5225324770654022472">顯示應用程式捷徑</translation>
@@ -3523,6 +3532,7 @@
 <translation id="5734362860645681824">通訊工具</translation>
 <translation id="5734697361979786483">新增檔案共用</translation>
 <translation id="5736796278325406685">請輸入有效的使用者名稱</translation>
+<translation id="5739017626473506901">需要登入才能為 <ph name="USER_NAME" /> 新增學校帳戶</translation>
 <translation id="5739235828260127894">正在等待驗證。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">非常大</translation>
 <translation id="574209121243317957">音調</translation>
@@ -3642,6 +3652,7 @@
 <translation id="5901630391730855834">黃色</translation>
 <translation id="5906655207909574370">即將更新至最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5906732635754427568">系統會從裝置中移除與此應用程式相關的資料。</translation>
+<translation id="5908695239556627796">滑鼠捲動速度</translation>
 <translation id="5908769186679515905">禁止網站執行 Flash</translation>
 <translation id="5910363049092958439">另存圖片為(&amp;V)…</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> 已離線</translation>
@@ -5089,6 +5100,7 @@
     <ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />系統會在程序中途重新開機。</translation>
 <translation id="7828731929332799387">系統會刪除第三方內容中使用的所有 Cookie 和網站資料。要繼續嗎？</translation>
 <translation id="7829298379596169484">正在存取音訊輸入</translation>
+<translation id="7829877209233347340">請要求家長登入，授予新增學校帳戶的權限</translation>
 <translation id="7830594666202422257">連結至 Linux</translation>
 <translation id="7831491651892296503">設定網絡時發生錯誤</translation>
 <translation id="7831754656372780761">「<ph name="TAB_TITLE" />」<ph name="EMOJI_MUTING" /></translation>
@@ -5528,6 +5540,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" />網絡，正在連線</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">事先詢問 (建議)</translation>
+<translation id="8417548266957501132">家長密碼</translation>
 <translation id="8417573335434189196">無法防範危險網站、下載檔案或擴充程式。Chrome 不建議使用此設定。</translation>
 <translation id="8418445294933751433">顯示為分頁(&amp;S)</translation>
 <translation id="8419098111404128271">「<ph name="SEARCH_TEXT" />」嘅搜尋結果</translation>
@@ -5842,6 +5855,7 @@
 <translation id="8808686172382650546">Cat</translation>
 <translation id="8808744862003883508">此頁面顯示所有在 Chrome 安裝的擴充程式。</translation>
 <translation id="8809147117840417135">淺藍綠色</translation>
+<translation id="8812593354822910461">一併清除瀏覽資料 (<ph name="URL" />)，此操作會將您登出 <ph name="DOMAIN" />。<ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">無法登入 <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">紙張數目</translation>
 <translation id="8813872945700551674">要求家長核准安裝「<ph name="EXTENSION_NAME" />」</translation>
@@ -6131,6 +6145,7 @@
 <translation id="9203398526606335860">分析已啟用(&amp;P)</translation>
 <translation id="9203904171912129171">選取裝置</translation>
 <translation id="9203962528777363226">裝置管理員已停用新增使用者功能</translation>
+<translation id="9209689095351280025">網站不能使用 Cookie 追蹤您的網絡活動</translation>
 <translation id="9211177926627870898">必須更新</translation>
 <translation id="9214520840402538427">糟糕！系統嘗試初始設定安裝時間 (installation-time) 屬性，但是動作已逾時。請與您的支援代表聯絡。</translation>
 <translation id="9214695392875603905">紙杯蛋糕</translation>

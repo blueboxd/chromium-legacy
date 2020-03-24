@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -57,6 +58,99 @@ printer::TypedValueVendorCapability::ValueType ToCloudValueType(
 }
 #endif  // defined(OS_CHROMEOS)
 
+printer::MediaCapability GetMediaCapabilities(
+    const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
+  printer::MediaCapability media_capabilities;
+  bool is_default_set = false;
+
+  printer::Media default_media(semantic_info.default_paper.display_name,
+                               semantic_info.default_paper.vendor_id,
+                               semantic_info.default_paper.size_um.width(),
+                               semantic_info.default_paper.size_um.height());
+  default_media.MatchBySize();
+
+  for (const auto& paper : semantic_info.papers) {
+    gfx::Size paper_size = paper.size_um;
+    if (paper_size.width() > paper_size.height())
+      paper_size.SetSize(paper_size.height(), paper_size.width());
+    printer::Media new_media(paper.display_name, paper.vendor_id,
+                             paper_size.width(), paper_size.height());
+    new_media.MatchBySize();
+    if (!new_media.IsValid())
+      continue;
+
+    if (media_capabilities.Contains(new_media))
+      continue;
+
+    if (!default_media.IsValid())
+      default_media = new_media;
+    media_capabilities.AddDefaultOption(new_media, new_media == default_media);
+    is_default_set = is_default_set || (new_media == default_media);
+  }
+  if (!is_default_set && default_media.IsValid())
+    media_capabilities.AddDefaultOption(default_media, true);
+
+  return media_capabilities;
+}
+
+printer::DpiCapability GetDpiCapabilities(
+    const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
+  printer::DpiCapability dpi_capabilities;
+  bool is_default_set = false;
+
+  printer::Dpi default_dpi(semantic_info.default_dpi.width(),
+                           semantic_info.default_dpi.height());
+  for (const auto& dpi : semantic_info.dpis) {
+    printer::Dpi new_dpi(dpi.width(), dpi.height());
+    if (!new_dpi.IsValid())
+      continue;
+
+    if (dpi_capabilities.Contains(new_dpi))
+      continue;
+
+    if (!default_dpi.IsValid())
+      default_dpi = new_dpi;
+    dpi_capabilities.AddDefaultOption(new_dpi, new_dpi == default_dpi);
+    is_default_set = is_default_set || (new_dpi == default_dpi);
+  }
+  if (!is_default_set && default_dpi.IsValid())
+    dpi_capabilities.AddDefaultOption(default_dpi, true);
+
+  return dpi_capabilities;
+}
+
+#if defined(OS_CHROMEOS)
+printer::VendorCapabilities GetVendorCapabilities(
+    const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
+  printer::VendorCapabilities vendor_capabilities;
+  for (const auto& capability : semantic_info.advanced_capabilities) {
+    std::string capability_name = capability.display_name.empty()
+                                      ? capability.name
+                                      : capability.display_name;
+    if (capability.values.empty()) {
+      vendor_capabilities.AddOption(
+          printer::VendorCapability(capability.name, capability_name,
+                                    printer::TypedValueVendorCapability(
+                                        ToCloudValueType(capability.type))));
+      continue;
+    }
+
+    printer::SelectVendorCapability select_capability;
+    for (const auto& value : capability.values) {
+      std::string localized_value =
+          value.display_name.empty() ? value.name : value.display_name;
+      select_capability.AddDefaultOption(
+          printer::SelectVendorCapabilityOption(value.name, localized_value),
+          value.name == capability.default_value);
+    }
+    vendor_capabilities.AddOption(printer::VendorCapability(
+        capability.name, capability_name, std::move(select_capability)));
+  }
+
+  return vendor_capabilities;
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 base::Value PrinterSemanticCapsAndDefaultsToCdd(
@@ -104,53 +198,13 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   color.SaveTo(&description);
 
   if (!semantic_info.papers.empty()) {
-    printer::Media default_media(semantic_info.default_paper.display_name,
-                                 semantic_info.default_paper.vendor_id,
-                                 semantic_info.default_paper.size_um.width(),
-                                 semantic_info.default_paper.size_um.height());
-    default_media.MatchBySize();
-
-    printer::MediaCapability media;
-    bool is_default_set = false;
-    for (size_t i = 0; i < semantic_info.papers.size(); ++i) {
-      gfx::Size paper_size = semantic_info.papers[i].size_um;
-      if (paper_size.width() > paper_size.height())
-        paper_size.SetSize(paper_size.height(), paper_size.width());
-      printer::Media new_media(semantic_info.papers[i].display_name,
-                               semantic_info.papers[i].vendor_id,
-                               paper_size.width(), paper_size.height());
-      new_media.MatchBySize();
-      if (new_media.IsValid() && !media.Contains(new_media)) {
-        if (!default_media.IsValid())
-          default_media = new_media;
-        media.AddDefaultOption(new_media, new_media == default_media);
-        is_default_set = is_default_set || (new_media == default_media);
-      }
-    }
-    if (!is_default_set && default_media.IsValid())
-      media.AddDefaultOption(default_media, true);
-
+    printer::MediaCapability media = GetMediaCapabilities(semantic_info);
     DCHECK(media.IsValid());
     media.SaveTo(&description);
   }
 
   if (!semantic_info.dpis.empty()) {
-    printer::DpiCapability dpi;
-    printer::Dpi default_dpi(semantic_info.default_dpi.width(),
-                             semantic_info.default_dpi.height());
-    bool is_default_set = false;
-    for (size_t i = 0; i < semantic_info.dpis.size(); ++i) {
-      printer::Dpi new_dpi(semantic_info.dpis[i].width(),
-                           semantic_info.dpis[i].height());
-      if (new_dpi.IsValid() && !dpi.Contains(new_dpi)) {
-        if (!default_dpi.IsValid())
-          default_dpi = new_dpi;
-        dpi.AddDefaultOption(new_dpi, new_dpi == default_dpi);
-        is_default_set = is_default_set || (new_dpi == default_dpi);
-      }
-    }
-    if (!is_default_set && default_dpi.IsValid())
-      dpi.AddDefaultOption(default_dpi, true);
+    printer::DpiCapability dpi = GetDpiCapabilities(semantic_info);
     DCHECK(dpi.IsValid());
     dpi.SaveTo(&description);
   }
@@ -169,30 +223,8 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   if (base::FeatureList::IsEnabled(
           printing::features::kAdvancedPpdAttributes) &&
       !semantic_info.advanced_capabilities.empty()) {
-    printer::VendorCapabilities vendor_capabilities;
-    for (const auto& capability : semantic_info.advanced_capabilities) {
-      std::string capability_name = capability.display_name.empty()
-                                        ? capability.name
-                                        : capability.display_name;
-      if (!capability.values.empty()) {
-        printer::SelectVendorCapability select_capability;
-        for (const auto& value : capability.values) {
-          std::string localized_value =
-              value.display_name.empty() ? value.name : value.display_name;
-          select_capability.AddDefaultOption(
-              printer::SelectVendorCapabilityOption(value.name,
-                                                    localized_value),
-              value.name == capability.default_value);
-        }
-        vendor_capabilities.AddOption(printer::VendorCapability(
-            capability.name, capability_name, std::move(select_capability)));
-      } else {
-        vendor_capabilities.AddOption(
-            printer::VendorCapability(capability.name, capability_name,
-                                      printer::TypedValueVendorCapability(
-                                          ToCloudValueType(capability.type))));
-      }
-    }
+    printer::VendorCapabilities vendor_capabilities =
+        GetVendorCapabilities(semantic_info);
     vendor_capabilities.SaveTo(&description);
   }
 #endif  // defined(OS_CHROMEOS)

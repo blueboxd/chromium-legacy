@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -52,10 +51,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   void Init(AppListView* view, int64_t display_id) override {
     init_called_ = true;
     view_ = view;
-    view->InitView(
-        /*is_tablet_mode*/ false, container_,
-        base::BindRepeating(&UpdateActivationForAppListView, view_,
-                            /*is_tablet_mode=*/false));
+    view->InitView(/*is_tablet_mode=*/false, container_);
   }
   void ShowForDisplay(int64_t display_id) override {}
   void OnClosing() override { on_dismissed_called_ = true; }

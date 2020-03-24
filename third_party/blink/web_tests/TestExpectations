@@ -893,8 +893,6 @@ crbug.com/591099 [ Mac ] virtual/text-antialias/international/shape-across-eleme
 crbug.com/591099 [ Win ] virtual/text-antialias/international/shape-across-elements-simple.html [ Failure ]
 crbug.com/591099 [ Mac ] virtual/text-antialias/word-space-monospace.html [ Failure ]
 crbug.com/591099 [ Win ] virtual/text-antialias/word-space-monospace.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] editing/selection/4402375.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] fast/block/float/centered-float-avoidance-complexity.html [ Failure Timeout ]
 crbug.com/591099 [ Fuchsia ] fast/block/float/float-in-float-painting.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/css/clip-zooming.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/css/nth-child-dynamic.html [ Failure Timeout ]
@@ -906,20 +904,11 @@ crbug.com/591099 [ Fuchsia ] fast/inline/inline-box-background.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/layers/opacity-transforms.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/lists/003.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/lists/scrolled-marker-paint.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] fast/table/border-collapsing/004.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/003.html [ Failure Timeout ]
 crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/bidi-LDB-2-HTML.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/bidi-LDB-2-formatting-characters.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/bidi-neutral-directionality-paragraph-start.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] fast/writing-mode/english-lr-text.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] tables/mozilla/bugs/bug2479-3.html [ Failure Timeout ]
-crbug.com/591099 [ Fuchsia ] tables/mozilla/bugs/bug2479-4.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] tables/mozilla/bugs/bug59354.html [ Failure Timeout ]
-crbug.com/591099 [ Fuchsia ] tables/mozilla/bugs/bug7342.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] tables/mozilla/core/bloomberg.html [ Failure Timeout ]
 crbug.com/591099 [ Fuchsia ] tables/mozilla_expected_failures/bugs/bug1010.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
 crbug.com/591099 [ Mac ] css2.1/t1202-counter-09-b.html [ Failure ]
 crbug.com/591099 [ Mac ] css2.1/t1202-counters-09-b.html [ Failure ]
 crbug.com/591099 [ Mac ] external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]
@@ -5236,8 +5225,6 @@ crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-go
 
 # User Activation
 crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tentative.html [ Failure ]
-crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-crossorigin-parent-manual.sub.html [ Timeout ]
-crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-sameorigin-parent-manual.html [ Timeout ]
 
 # Sheriff 2018-07-05
 crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]
@@ -5576,6 +5563,8 @@ crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-gr
 crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-canvas-context.html [ Pass Failure ]
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Pass Failure ]
 crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate-descendant.html [ Pass Failure ]
+crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-whitespace.html [ Pass Failure ]
+crbug.com/1062984 virtual/paint-timing/external/wpt/paint-timing/fcp-only/fcp-whitespace.html [ Pass Failure ]
 
 # Sheriff 2019-03-01
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]

@@ -26,6 +26,7 @@ class PrefService;
 
 namespace ash {
 
+class FullscreenController;
 class SessionControllerClient;
 class SessionObserver;
 class TestSessionControllerClient;
@@ -307,6 +308,8 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   bool signin_screen_prefs_obtained_ = false;
 
   PrefService* last_active_user_prefs_ = nullptr;
+
+  std::unique_ptr<FullscreenController> fullscreen_controller_;
 
   base::WeakPtrFactory<SessionControllerImpl> weak_ptr_factory_{this};
 

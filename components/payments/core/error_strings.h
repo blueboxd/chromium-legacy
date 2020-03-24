@@ -35,9 +35,6 @@ extern const char kCannotUpdateWithoutInit[];
 // Mojo call PaymentRequest::Show() must precede PaymentRequest::UpdateWith().
 extern const char kCannotUpdateWithoutShow[];
 
-// A message about unsupported payment method.
-extern const char kGenericPaymentMethodNotSupportedMessage[];
-
 // Used when an invalid state is encountered generically.
 extern const char kInvalidState[];
 

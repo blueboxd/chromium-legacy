@@ -38,7 +38,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/testing_pref_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -582,15 +581,6 @@ TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
                                            aura::client::WINDOW_TYPE_UNKNOWN);
   window_->Init(ui::LAYER_NOT_DRAWN);
 }
-
-// Tests the local state code path.
-class ShellLocalStateTest : public AshTestBase {
- public:
-  ShellLocalStateTest() { DisableProvideLocalState(); }
-
- protected:
-  std::unique_ptr<TestingPrefServiceSimple> local_state_;
-};
 
 using ShellLoginTest = NoSessionAshTestBase;
 

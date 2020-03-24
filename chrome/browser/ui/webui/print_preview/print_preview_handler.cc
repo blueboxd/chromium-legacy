@@ -490,8 +490,8 @@ class PrintPreviewHandler::AccessTokenService
     const signin::ScopeSet scopes{cloud_devices::kCloudPrintAuthScope};
     DCHECK(!device_request_callback_);
 
-    chromeos::DeviceOAuth2TokenService* token_service =
-        chromeos::DeviceOAuth2TokenServiceFactory::Get();
+    DeviceOAuth2TokenService* token_service =
+        DeviceOAuth2TokenServiceFactory::Get();
     device_request_ = token_service->StartAccessTokenRequest(scopes, this);
     device_request_callback_ = std::move(callback);
   }

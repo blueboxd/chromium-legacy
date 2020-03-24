@@ -8,7 +8,6 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
-#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/test/app_list_test_model.h"
@@ -220,10 +219,7 @@ class PopulatedAppListTest : public AshTestBase,
  protected:
   void CreateAndOpenAppList() {
     app_list_view_ = new AppListView(app_list_test_delegate_.get());
-    app_list_view_->InitView(
-        false /*is_tablet_mode*/, GetContext(),
-        base::BindRepeating(&UpdateActivationForAppListView, app_list_view_,
-                            /*is_tablet_mode=*/false));
+    app_list_view_->InitView(/*is_tablet_mode=*/false, GetContext());
     app_list_view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);
   }
 

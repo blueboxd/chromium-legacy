@@ -73,6 +73,14 @@ class DeviceOAuth2TokenStore {
   // Invokes |callback| when the operation completes.
   virtual void PrepareTrustedAccountId(TrustedAccountIdCallback callback) = 0;
 
+#if !defined(OS_CHROMEOS)
+  // Requests that this store persist the current service account's associated
+  // email.
+  // On ChromeOS, the account email comes from CrosSettings so this should never
+  // be called.
+  virtual void SetAccountEmail(const std::string& account_email) = 0;
+#endif
+
   void SetObserver(Observer* observer) { observer_ = observer; }
   Observer* observer() { return observer_; }
 

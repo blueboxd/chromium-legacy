@@ -40,6 +40,8 @@
 namespace blink {
 
 ApplicationCache::ApplicationCache(LocalFrame* frame) : DOMWindowClient(frame) {
+  DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(
+      frame->GetDocument()->ToExecutionContext()));
   ApplicationCacheHostForFrame* cache_host = GetApplicationCacheHost();
   if (cache_host)
     cache_host->SetApplicationCache(this);

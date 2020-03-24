@@ -660,7 +660,6 @@ crbug.com/982194 external/wpt/html/semantics/grouping-content/the-li-element/gro
 crbug.com/982194 external/wpt/html/semantics/scripting-1/the-script-element/css-module/css-module-worker-test.html [ Pass ]
 crbug.com/982194 external/wpt/html/semantics/scripting-1/the-script-element/css-module/import-css-module-basic.html [ Pass ]
 crbug.com/982194 external/wpt/html/semantics/scripting-1/the-script-element/css-module/utf8.tentative.html [ Pass ]
-crbug.com/982194 external/wpt/html/user-activation/activation-hierarchy-parent-manual.sub.tentative.html [ Timeout ]
 crbug.com/982194 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Pass Timeout ]
 crbug.com/982194 external/wpt/infrastructure/assumptions/blank.html [ Failure ]
 crbug.com/982194 external/wpt/infrastructure/reftest/legacy/reftest_fuzzy_chain_ini.html [ Failure ]

@@ -72,6 +72,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     virtual ~EventDelegate() = default;
     virtual bool RequiresIterationEvents(const AnimationEffect&) = 0;
     virtual void OnEventCondition(const AnimationEffect&, Timing::Phase) = 0;
+    virtual bool IsAnimationEventDelegate() const { return false; }
     virtual bool IsTransitionEventDelegate() const { return false; }
     virtual void Trace(Visitor* visitor) {}
   };

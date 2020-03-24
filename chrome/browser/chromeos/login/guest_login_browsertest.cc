@@ -4,7 +4,10 @@
 
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/user_manager/user_manager.h"
 
@@ -64,6 +67,30 @@ IN_PROC_BROWSER_TEST_F(GuestLoginTest, Login) {
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   EXPECT_TRUE(user_manager->IsLoggedInAsGuest());
+}
+
+IN_PROC_BROWSER_TEST_F(GuestLoginTest, PRE_ExitFullscreenOnSuspend) {
+  base::RunLoop restart_job_waiter;
+  FakeSessionManagerClient::Get()->set_restart_job_callback(
+      restart_job_waiter.QuitClosure());
+
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickGuestButton());
+
+  restart_job_waiter.Run();
+  EXPECT_TRUE(FakeSessionManagerClient::Get()->restart_job_argv().has_value());
+}
+
+IN_PROC_BROWSER_TEST_F(GuestLoginTest, ExitFullscreenOnSuspend) {
+  login_manager_.WaitForActiveSession();
+  BrowserWindow* browser_window = browser()->window();
+  browser()
+      ->exclusive_access_manager()
+      ->fullscreen_controller()
+      ->ToggleBrowserFullscreenMode();
+  EXPECT_TRUE(browser_window->IsFullscreen());
+  FakePowerManagerClient::Get()->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
+  EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
 IN_PROC_BROWSER_TEST_F(GuestLoginWithLoginSwitchesTest, PRE_Login) {

@@ -425,6 +425,11 @@ class Desktop:
   def _init_child_env(self):
     self.child_env = dict(os.environ)
 
+    # Force GDK to use the X11 backend, as otherwise parts of the host that use
+    # GTK can end up connecting to an active Wayland display instead of the
+    # CRD X11 session.
+    self.child_env["GDK_BACKEND"] = "x11"
+
     # Ensure that the software-rendering GL drivers are loaded by the desktop
     # session, instead of any hardware GL drivers installed on the system.
     library_path = (

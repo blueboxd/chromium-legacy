@@ -313,6 +313,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2288422996159078444">Mọi thông tin bạn nhập, mọi trang bạn xem hoặc mọi hoạt động khác trên web đều sẽ bị theo dõi. Nội dung trên các trang web có thể bị thay đổi mà bạn không hề hay biết.</translation>
 <translation id="2289385804009217824">Cắt bỏ</translation>
 <translation id="2292556288342944218">Quyền truy cập Internet của bạn bị chặn</translation>
+<translation id="2293443924986248631">Khi tùy chọn này bật, các trang web không thể dùng cookie theo dõi bạn trên web. Do đó, các tính năng trên một số trang web có thể hoạt động không đúng cách.</translation>
 <translation id="2297722699537546652">B5 (Phong bì)</translation>
 <translation id="2300306941146563769">Chưa tải lên</translation>
 <translation id="2310021320168182093">Chou2 (Phong bì)</translation>
@@ -729,6 +730,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4152318981910038897">{COUNT,plural, =1{Trang 1}other{Trang {COUNT}}}</translation>
 <translation id="4154664944169082762">Dấu vân tay</translation>
 <translation id="4159784952369912983">Tím</translation>
+<translation id="4163132590327127354">Chrome đã đơn giản hóa trang này để dễ đọc hơn.</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
 <translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -855,7 +857,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="467662567472608290">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có lỗi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="4677585247300749148"><ph name="URL" /> muốn phản hồi các sự kiện trợ năng</translation>
 <translation id="467809019005607715">Google Trang trình bày</translation>
-<translation id="4680804919228900307">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên kiểm tra ngay những mật khẩu đã lưu trên <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
+<translation id="4680804919228900307">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
 <translation id="4690462567478992370">Dừng sử dụng chứng chỉ không hợp lệ</translation>
 <translation id="4691835149146451662">Architecture-A (Phong bì)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -1029,6 +1031,11 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
 <translation id="5371425731340848620">Cập nhật thẻ</translation>
 <translation id="5377026284221673050">"Đồng hồ của bạn chạy chậm" hoặc "Đồng hồ của bạn chạy nhanh" hay "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5380442954567233718">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã đặt tiêu đề
+    yêu cầu áp dụng một chính sách nguồn gốc cho tất cả các yêu cầu được gửi tới máy chủ đó. Tuy nhiên,
+    tiêu đề đó không đúng định dạng. Điều này khiến trình duyệt không hoàn thành được
+    yêu cầu truy cập vào <ph name="SITE" /> của bạn. Nhà điều hành trang web có thể
+    dựa vào chính sách nguồn gốc để định cấu hình bảo mật và các thuộc tính khác cho trang web.</translation>
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">May viền ở bên phải</translation>
@@ -1435,7 +1442,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="7219179957768738017">Kết nối sử dụng <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Đang xử lý</translation>
 <translation id="7221855153210829124">Hiển thị thông báo</translation>
-<translation id="7229659723041939809">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên kiểm tra ngay những mật khẩu đã lưu trên <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
+<translation id="7229659723041939809">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
 <translation id="7233592378249864828">In tờ xác nhận</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Tên Thay thế Đối tượng của Chứng chỉ</translation>
@@ -1503,7 +1510,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
 <translation id="7495290002932347110">Một sự cố rò rỉ dữ liệu xảy ra trên một trang web hoặc ứng dụng đã làm lộ mật khẩu của bạn. Bạn nên kiểm tra các mật khẩu đã lưu và đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="7498234416455752244">Tiếp tục chỉnh sửa</translation>
-<translation id="7503664977220660814">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên kiểm tra ngay những mật khẩu đã lưu trên <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
+<translation id="7503664977220660814">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
 <translation id="7508255263130623398">ID thiết bị thuộc chính sách trả lại trống hoặc không khớp với ID của thiết bị hiện tại</translation>
 <translation id="7508870219247277067">Xanh quả bơ</translation>
 <translation id="7511955381719512146">Wi-Fi mà bạn đang sử dụng có thể yêu cầu bạn phải truy cập <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -1575,6 +1582,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Tường lửa hoặc phần mềm diệt vi-rút có thể đã chặn kết nối.</translation>
 <translation id="7759163816903619567">Miền hiển thị:</translation>
+<translation id="776110834126722255">Không dùng nữa</translation>
 <translation id="7761701407923456692">Chứng chỉ của máy chủ không phù hợp với URL.</translation>
 <translation id="7763386264682878361">Trình phân tích cú pháp tệp kê khai thanh toán</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
@@ -1600,7 +1608,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Rời khỏi trang web?</translation>
 <translation id="7865448901209910068">Tốc độ tốt nhất</translation>
-<translation id="7874263914261512992">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên kiểm tra ngay những mật khẩu đã lưu trên <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
+<translation id="7874263914261512992">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
 <translation id="7878562273885520351">Mật khẩu của bạn có thể bị xâm phạm</translation>
 <translation id="7882421473871500483">Nâu</translation>
 <translation id="7887683347370398519">Kiểm tra CVC của bạn và thử lại</translation>
@@ -1737,7 +1745,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8474910779563686872">Hiển thị thông tin chi tiết của nhà phát triển</translation>
 <translation id="8479754468255770962">Dập ghim dưới cùng bên trái</translation>
 <translation id="8483780878231876732">Để sử dụng thẻ từ Tài khoản Google, hãy đăng nhập vào Chrome</translation>
-<translation id="8485393050551136813">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên kiểm tra ngay những mật khẩu đã lưu trên <ph name="WEBSITE_1" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
+<translation id="8485393050551136813">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
 <translation id="8488350697529856933">Áp dụng cho</translation>
 <translation id="8490137692873530638">Khay xếp chồng 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>
@@ -1788,7 +1796,7 @@ Thông tin chi tiết bổ sung:
 <translation id="87601671197631245">Trang web này dùng cấu hình bảo mật lỗi thời nên có thể làm lộ thông tin của bạn (chẳng hạn như mật khẩu, thư hoặc thẻ tín dụng) trong quá trình gửi các thông tin này đến trang web này.</translation>
 <translation id="8761567432415473239">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />tìm thấy chương trình độc hại<ph name="END_LINK" /> trên trang <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Thiết bị USB</translation>
-<translation id="8774457497170244317">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên kiểm tra ngay những mật khẩu đã lưu trên <ph name="WEBSITE_1" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
+<translation id="8774457497170244317">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
 <translation id="8792621596287649091">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>

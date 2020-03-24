@@ -78,7 +78,12 @@ class CORE_EXPORT CSSAnimations final {
   static AnimationEffect::EventDelegate* CreateEventDelegate(
       Element* element,
       const PropertyHandle& property_handle,
-      AnimationEffect::EventDelegate* old_event_delegate);
+      const AnimationEffect::EventDelegate* old_event_delegate);
+
+  static AnimationEffect::EventDelegate* CreateEventDelegate(
+      Element* element,
+      const AtomicString& animation_name,
+      const AnimationEffect::EventDelegate* old_event_delegate);
 
   // Specifies whether to process custom or standard CSS properties.
   enum class PropertyPass { kCustom, kStandard };
@@ -203,12 +208,24 @@ class CORE_EXPORT CSSAnimations final {
 
   class AnimationEventDelegate final : public AnimationEffect::EventDelegate {
    public:
-    AnimationEventDelegate(Element* animation_target, const AtomicString& name)
+    AnimationEventDelegate(
+        Element* animation_target,
+        const AtomicString& name,
+        Timing::Phase previous_phase = Timing::kPhaseNone,
+        base::Optional<double> previous_iteration = base::nullopt)
         : animation_target_(animation_target),
           name_(name),
-          previous_phase_(Timing::kPhaseNone) {}
+          previous_phase_(previous_phase),
+          previous_iteration_(previous_iteration) {}
     bool RequiresIterationEvents(const AnimationEffect&) override;
     void OnEventCondition(const AnimationEffect&, Timing::Phase) override;
+
+    bool IsAnimationEventDelegate() const override { return true; }
+    Timing::Phase getPreviousPhase() const { return previous_phase_; }
+    base::Optional<double> getPreviousIteration() const {
+      return previous_iteration_;
+    }
+
     void Trace(Visitor*) override;
 
    private:
@@ -257,6 +274,13 @@ class CORE_EXPORT CSSAnimations final {
   };
 
   DISALLOW_COPY_AND_ASSIGN(CSSAnimations);
+};
+
+template <>
+struct DowncastTraits<CSSAnimations::AnimationEventDelegate> {
+  static bool AllowFrom(const AnimationEffect::EventDelegate& delegate) {
+    return delegate.IsAnimationEventDelegate();
+  }
 };
 
 template <>

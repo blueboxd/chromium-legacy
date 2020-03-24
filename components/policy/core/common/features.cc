@@ -11,6 +11,9 @@ namespace features {
 const base::Feature kPolicyAtomicGroup{"PolicyAtomicGroup",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCBCMServiceAccounts{"CBCMServiceAccounts",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace policy

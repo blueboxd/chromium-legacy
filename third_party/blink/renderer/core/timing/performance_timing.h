@@ -130,15 +130,15 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // The duration between the hardware timestamp and being queued on the main
   // thread for the first click, tap, key press, cancellable touchstart, or
   // pointer down followed by a pointer up.
-  uint64_t FirstInputDelay() const;
+  base::Optional<base::TimeDelta> FirstInputDelay() const;
   // The timestamp of the event whose delay is reported by FirstInputDelay().
-  uint64_t FirstInputTimestamp() const;
+  base::Optional<base::TimeDelta> FirstInputTimestamp() const;
   // The longest duration between the hardware timestamp and being queued on the
   // main thread for the click, tap, key press, cancellable touchstart, or
   // pointer down followed by a pointer up.
-  uint64_t LongestInputDelay() const;
+  base::Optional<base::TimeDelta> LongestInputDelay() const;
   // The timestamp of the event whose delay is reported by LongestInputDelay().
-  uint64_t LongestInputTimestamp() const;
+  base::Optional<base::TimeDelta> LongestInputTimestamp() const;
   // The sum of all input delay.
   uint64_t TotalInputDelay() const;
   // The sum of all adjusted input delay.
@@ -175,6 +175,8 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   DocumentLoadTiming* GetDocumentLoadTiming() const;
   ResourceLoadTiming* GetResourceLoadTiming() const;
   InteractiveDetector* GetInteractiveDetector() const;
+  base::Optional<base::TimeDelta> MonotonicTimeToPseudoWallTime(
+      const base::Optional<base::TimeTicks>&) const;
 };
 
 }  // namespace blink

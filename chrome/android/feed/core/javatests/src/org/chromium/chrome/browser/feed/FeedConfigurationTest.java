@@ -30,7 +30,7 @@ public class FeedConfigurationTest {
     private static final double ASSERT_EQUALS_DOUBLE_DELTA = 0.001d;
 
     /** Default value for whether to use menu options to send user feedback. */
-    public static final boolean SEND_FEEDBACK_ENABLED_DEFAULT = false;
+    public static final boolean SEND_FEEDBACK_ENABLED_DEFAULT = true;
 
     @Test
     @Feature({"Feed"})

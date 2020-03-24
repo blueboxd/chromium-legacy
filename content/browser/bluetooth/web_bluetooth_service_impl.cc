@@ -478,10 +478,13 @@ void WebBluetoothServiceImpl::DidFinishNavigation(
 void WebBluetoothServiceImpl::OnVisibilityChanged(Visibility visibility) {
   if (visibility == content::Visibility::HIDDEN ||
       visibility == content::Visibility::OCCLUDED) {
-    allowed_scan_filters_.clear();
-    accept_all_advertisements_ = false;
-    scanning_clients_.clear();
+    ClearDeviceAdvertisementClients();
   }
+}
+
+void WebBluetoothServiceImpl::OnWebContentsLostFocus(
+    RenderWidgetHost* render_widget_host) {
+  ClearDeviceAdvertisementClients();
 }
 
 void WebBluetoothServiceImpl::AdapterPoweredChanged(
@@ -1961,10 +1964,14 @@ void WebBluetoothServiceImpl::ClearState() {
       new FrameConnectedBluetoothDevices(render_frame_host_));
   device_chooser_controller_.reset();
   device_scanning_prompt_controller_.reset();
+  ClearDeviceAdvertisementClients();
+  BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
+}
+
+void WebBluetoothServiceImpl::ClearDeviceAdvertisementClients() {
   scanning_clients_.clear();
   allowed_scan_filters_.clear();
   accept_all_advertisements_ = false;
-  BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
 }
 
 bool WebBluetoothServiceImpl::IsAllowedToAccessAtLeastOneService(

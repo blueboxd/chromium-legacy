@@ -276,6 +276,17 @@ TEST_F(HintsFetcherTest, FetchInProgress_HostsHintsRefreshed) {
   EXPECT_FALSE(FetchHints({"foo.com"}, {} /* urls */));
   EXPECT_FALSE(FetchHints({"bar.com"}, {} /* urls */));
   EXPECT_TRUE(FetchHints({"baz.com"}, {} /* urls */));
+  proto::GetHintsResponse response;
+  response.mutable_max_cache_duration()->set_seconds(60 * 60 * 24 * 20);
+  response.SerializeToString(&response_content);
+  SimulateResponse(response_content, net::HTTP_OK);
+
+  // Advance clock for the default duration that the hint normally expires
+  // under.
+  test_clock.Advance(features::StoredFetchedHintsFreshnessDuration());
+
+  // Max cache duration from response should be used for pref instead.
+  EXPECT_FALSE(FetchHints({"baz.com"}, {} /* urls */));
 }
 
 // Tests 404 response from request.

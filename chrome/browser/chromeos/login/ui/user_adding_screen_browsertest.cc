@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -10,7 +11,9 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -26,6 +29,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
+
+constexpr char kLoginFormatJS[] = R"({
+    var pod = $('pod-row').getPodWithUsername_('%s');
+    $('pod-row').focusPod(pod, true);
+    pod.passwordElement.value = '%s';
+    pod.passwordElement.dispatchEvent(
+        new Event('input', { bubbles: true, cancelable: true }));
+    pod.submitButton.click();
+  })";
+
+}  // namespace
 
 class UserAddingScreenTest : public LoginManagerTest,
                              public UserAddingScreen::Observer {
@@ -72,11 +88,26 @@ class UserAddingScreenTest : public LoginManagerTest,
     user->set_can_lock(can_lock);
   }
 
+  void UILoginUser(const AccountId& account_id, const std::string& password) {
+    // Wait for pods to load.
+    test::OobeJS().CreateWaiter("$(\'pod-row\').pods.length > 0")->Wait();
+
+    SetExpectedCredentials(CreateUserContext(account_id, password));
+    SessionStateWaiter waiter;
+
+    const std::string login_js = base::StringPrintf(
+        kLoginFormatJS, account_id.Serialize().c_str(), password.c_str());
+    test::ExecuteOobeJS(login_js);
+
+    waiter.Wait();
+  }
+
   int user_adding_started() { return user_adding_started_; }
 
   int user_adding_finished() { return user_adding_finished_; }
 
   std::vector<AccountId> test_users_;
+  std::vector<AccountId> users_in_session_order_;
 
  private:
   int user_adding_started_ = 0;
@@ -112,7 +143,9 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
   EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
             session_manager::SessionManager::Get()->session_state());
 
-  UserAddingScreen::Get()->Cancel();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::ClickCancelButton());
+
   WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, user_adding_finished());
@@ -137,20 +170,24 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
             session_manager::SessionManager::Get()->session_state());
 
   LoginUser(test_users_[0]);
+  users_in_session_order_.push_back(test_users_[0]);
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
-  for (int i = 1; i < 3; ++i) {
+  const int n = test_users_.size();
+  for (int i = 1; i < n; ++i) {
     UserAddingScreen::Get()->Start();
-    content::RunAllPendingInMessageLoop();
+    OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
     EXPECT_EQ(i, user_adding_started());
     EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
               session_manager::SessionManager::Get()->session_state());
-    AddUser(test_users_[i]);
-    WaitUntilUserAddingFinishedOrCancelled();
-    content::RunAllPendingInMessageLoop();
+    EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
+
+    UILoginUser(test_users_[n - i], kPassword);
+    users_in_session_order_.push_back(test_users_[n - i]);
+
     EXPECT_EQ(i, user_adding_finished());
     EXPECT_EQ(session_manager::SessionState::ACTIVE,
               session_manager::SessionManager::Get()->session_state());
@@ -205,21 +242,21 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(3UL, unlock_users.size());
   for (int i = 0; i < 3; ++i)
-    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
+    EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
 
   // This preference doesn't affect list of unlock users.
   prefs2->SetBoolean(ash::prefs::kEnableAutoScreenLock, true);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(3UL, unlock_users.size());
   for (int i = 0; i < 3; ++i)
-    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
+    EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
 
   // Now one of the users is unable to unlock.
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], false);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(2UL, unlock_users.size());
   for (int i = 0; i < 2; ++i)
-    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
+    EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], true);
 
   // Now one of the users has not-allowed policy.
@@ -231,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(2UL, unlock_users.size());
   for (int i = 0; i < 2; ++i)
-    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
+    EXPECT_EQ(users_in_session_order_[i], unlock_users[i]->GetAccountId());
 }
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
@@ -245,7 +282,10 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
 
   UserAddingScreen::Get()->Start();
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
-  UserAddingScreen::Get()->Cancel();
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::ClickCancelButton());
+
   WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
 
@@ -267,7 +307,10 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
 
   UserAddingScreen::Get()->Start();
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
-  UserAddingScreen::Get()->Cancel();
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsCancelButtonShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::ClickCancelButton());
+
   WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
 }

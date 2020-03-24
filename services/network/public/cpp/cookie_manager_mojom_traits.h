@@ -39,13 +39,23 @@ struct EnumTraits<network::mojom::CookieAccessSemantics,
 };
 
 template <>
-struct EnumTraits<network::mojom::CookieSameSiteContext,
-                  net::CookieOptions::SameSiteCookieContext> {
-  static network::mojom::CookieSameSiteContext ToMojom(
-      net::CookieOptions::SameSiteCookieContext input);
+struct EnumTraits<network::mojom::ContextType,
+                  net::CookieOptions::SameSiteCookieContext::ContextType> {
+  static network::mojom::ContextType ToMojom(
+      net::CookieOptions::SameSiteCookieContext::ContextType input);
+  static bool FromMojom(
+      network::mojom::ContextType input,
+      net::CookieOptions::SameSiteCookieContext::ContextType* output);
+};
 
-  static bool FromMojom(network::mojom::CookieSameSiteContext input,
-                        net::CookieOptions::SameSiteCookieContext* output);
+template <>
+struct EnumTraits<network::mojom::CrossSchemeness,
+                  net::CookieOptions::SameSiteCookieContext::CrossSchemeness> {
+  static network::mojom::CrossSchemeness ToMojom(
+      net::CookieOptions::SameSiteCookieContext::CrossSchemeness input);
+  static bool FromMojom(
+      network::mojom::CrossSchemeness input,
+      net::CookieOptions::SameSiteCookieContext::CrossSchemeness* output);
 };
 
 template <>
@@ -64,6 +74,23 @@ struct EnumTraits<network::mojom::CookieChangeCause, net::CookieChangeCause> {
 
   static bool FromMojom(network::mojom::CookieChangeCause input,
                         net::CookieChangeCause* output);
+};
+
+template <>
+struct StructTraits<network::mojom::CookieSameSiteContextDataView,
+                    net::CookieOptions::SameSiteCookieContext> {
+  static net::CookieOptions::SameSiteCookieContext::ContextType context(
+      net::CookieOptions::SameSiteCookieContext& s) {
+    return s.context;
+  }
+
+  static net::CookieOptions::SameSiteCookieContext::CrossSchemeness
+  cross_schemeness(net::CookieOptions::SameSiteCookieContext& s) {
+    return s.cross_schemeness;
+  }
+
+  static bool Read(network::mojom::CookieSameSiteContextDataView mojo_options,
+                   net::CookieOptions::SameSiteCookieContext* context);
 };
 
 template <>

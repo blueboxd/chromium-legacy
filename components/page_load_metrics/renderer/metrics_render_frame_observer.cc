@@ -381,21 +381,19 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     timing->input_to_navigation_start =
         ClampDelta(start, perf.InputForNavigationStart());
   }
-  if (perf.FirstInputDelay() > 0.0) {
-    timing->interactive_timing->first_input_delay =
-        base::TimeDelta::FromSecondsD(perf.FirstInputDelay());
+  if (perf.FirstInputDelay().has_value()) {
+    timing->interactive_timing->first_input_delay = *perf.FirstInputDelay();
   }
-  if (perf.FirstInputTimestamp() > 0.0) {
+  if (perf.FirstInputTimestamp().has_value()) {
     timing->interactive_timing->first_input_timestamp =
-        ClampDelta(perf.FirstInputTimestamp(), start);
+        ClampDelta((*perf.FirstInputTimestamp()).InSecondsF(), start);
   }
-  if (perf.LongestInputDelay() > 0.0) {
-    timing->interactive_timing->longest_input_delay =
-        base::TimeDelta::FromSecondsD(perf.LongestInputDelay());
+  if (perf.LongestInputDelay().has_value()) {
+    timing->interactive_timing->longest_input_delay = *perf.LongestInputDelay();
   }
-  if (perf.LongestInputTimestamp() > 0.0) {
+  if (perf.LongestInputTimestamp().has_value()) {
     timing->interactive_timing->longest_input_timestamp =
-        ClampDelta(perf.LongestInputTimestamp(), start);
+        ClampDelta((*perf.LongestInputTimestamp()).InSecondsF(), start);
   }
   if (perf.TotalInputDelay() > 0.0) {
     timing->interactive_timing->total_input_delay =

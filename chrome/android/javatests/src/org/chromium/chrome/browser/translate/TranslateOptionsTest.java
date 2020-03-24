@@ -67,6 +67,13 @@ public class TranslateOptionsTest {
         options.setSourceLanguage("en");
         options.setTargetLanguage("es");
         Assert.assertFalse(options.optionsChanged());
+
+        // Same target language as source
+        Assert.assertTrue(options.setTargetLanguage("en"));
+
+        // Same source and target
+        Assert.assertTrue(options.setTargetLanguage("es"));
+        Assert.assertTrue(options.setSourceLanguage("es"));
     }
 
     @Test
@@ -76,16 +83,8 @@ public class TranslateOptionsTest {
         TranslateOptions options = TranslateOptions.create(
                 "en", "es", LANGUAGES, CODES, ALWAYS_TRANSLATE, false, null);
 
-        // Same target language as source
-        Assert.assertFalse(options.setTargetLanguage("en"));
-        Assert.assertFalse(options.optionsChanged());
-
         // Target language does not exist
         Assert.assertFalse(options.setTargetLanguage("aaa"));
-        Assert.assertFalse(options.optionsChanged());
-
-        // Same source and target
-        Assert.assertFalse(options.setSourceLanguage("es"));
         Assert.assertFalse(options.optionsChanged());
 
         // Source language does not exist

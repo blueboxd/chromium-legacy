@@ -106,7 +106,6 @@ class QuicTestBase : public InProcessBrowserTest {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "quic-chain.pem");
     net::CertVerifyResult verify_result;
     verify_result.verified_cert = test_cert;
-    verify_result.is_issued_by_known_root = true;
     mock_cert_verifier_.mock_cert_verifier()->AddResultForCert(
         test_cert, verify_result, net::OK);
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);

@@ -314,7 +314,7 @@ void Internals::ResetToConsistentState(Page* page) {
 
 Internals::Internals(ExecutionContext* context)
     : runtime_flags_(InternalRuntimeFlags::create()),
-      document_(Document::From(context)) {
+      document_(To<LocalDOMWindow>(context)->document()) {
   document_->Fetcher()->EnableIsPreloadedForTest();
 }
 
@@ -1750,13 +1750,6 @@ unsigned Internals::mediaKeysCount() {
 unsigned Internals::mediaKeySessionCount() {
   return InstanceCounters::CounterValue(
       InstanceCounters::kMediaKeySessionCounter);
-}
-
-unsigned Internals::contextLifecycleStateObserverObjectCount(
-    Document* document) {
-  DCHECK(document);
-  return document->ToExecutionContext()
-      ->ContextLifecycleStateObserverCountForTesting();
 }
 
 static unsigned EventHandlerCount(
@@ -3250,13 +3243,13 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
   return document->IsPropertyCounted(
-      unresolvedCSSPropertyID(document->ToExecutionContext(), property_name));
+      unresolvedCSSPropertyID(document->GetExecutionContext(), property_name));
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
   return document->IsAnimatedPropertyCounted(
-      unresolvedCSSPropertyID(document->ToExecutionContext(), property_name));
+      unresolvedCSSPropertyID(document->GetExecutionContext(), property_name));
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {
@@ -3515,6 +3508,9 @@ void Internals::ResolveResourcePriority(ScriptPromiseResolver* resolver,
 }
 
 String Internals::getAgentId(DOMWindow* window) {
+  if (!window->IsLocalDOMWindow())
+    return String();
+
   // Sounds like there's no notion of "process ID" in Blink, but the main
   // thread's thread ID serves for that purpose.
   PlatformThreadId process_id = Thread::MainThread()->ThreadId();

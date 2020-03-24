@@ -12,7 +12,7 @@
 #endif
 
 #if BUILDFLAG(CLANG_PROFILING)
-#include "base/test/profiling_utils.h"
+#include "base/test/clang_profiling.h"
 extern "C" void __llvm_profile_reset_counters(void);
 #endif
 

@@ -21,7 +21,7 @@ CmaBackendFactoryImpl::~CmaBackendFactoryImpl() = default;
 
 std::unique_ptr<CmaBackend> CmaBackendFactoryImpl::CreateBackend(
     const MediaPipelineDeviceParams& params) {
-  return media_pipeline_backend_manager_->CreateCmaBackend(params);
+  return media_pipeline_backend_manager_->CreateBackend(params);
 }
 
 }  // namespace media

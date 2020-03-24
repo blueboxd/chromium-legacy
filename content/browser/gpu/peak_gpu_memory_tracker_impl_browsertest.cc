@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
@@ -46,6 +47,8 @@ class TestGpuService : public viz::mojom::GpuService {
                           GetPeakMemoryUsageCallback callback) override {
     base::flat_map<gpu::GpuPeakMemoryAllocationSource, uint64_t>
         allocation_per_source;
+    allocation_per_source[gpu::GpuPeakMemoryAllocationSource::UNKNOWN] =
+        kPeakMemory;
     std::move(callback).Run(kPeakMemory, allocation_per_source);
   }
 
@@ -211,6 +214,8 @@ IN_PROC_BROWSER_TEST_F(PeakGpuMemoryTrackerImplTest, PeakGpuMemoryCallback) {
   FlushRemoteForTesting();
   // No report in response to creation.
   histogram.ExpectTotalCount("Memory.GPU.PeakMemoryUsage.PageLoad", 0);
+  histogram.ExpectTotalCount(
+      "Memory.GPU.PeakMemoryAllocationSource.PageLoad.Unknown", 0);
   // However the serive should have started monitoring.
   EXPECT_TRUE(gpu_service()->peak_memory_monitor_started());
 
@@ -223,6 +228,9 @@ IN_PROC_BROWSER_TEST_F(PeakGpuMemoryTrackerImplTest, PeakGpuMemoryCallback) {
   run_loop.Run();
   histogram.ExpectUniqueSample("Memory.GPU.PeakMemoryUsage.PageLoad",
                                kPeakMemoryKB, 1);
+  histogram.ExpectUniqueSample(
+      "Memory.GPU.PeakMemoryAllocationSource.PageLoad.Unknown", kPeakMemoryKB,
+      1);
 }
 
 }  // namespace content

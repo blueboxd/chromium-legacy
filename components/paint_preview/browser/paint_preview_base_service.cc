@@ -93,12 +93,18 @@ void PaintPreviewBaseService::CapturePaintPreview(
   params.is_main_frame = (render_frame_host == web_contents->GetMainFrame());
   params.root_dir = root_dir;
 
+  // TODO(crbug/1064253): Consider moving to client so that this always happens.
+  // Although, it is harder to get this right in the client due to its
+  // lifecycle.
+  web_contents->IncrementCapturerCount(gfx::Size(), true);
+
   auto start_time = base::TimeTicks::Now();
   client->CapturePaintPreview(
       params, render_frame_host,
       base::BindOnce(&PaintPreviewBaseService::OnCaptured,
-                     weak_ptr_factory_.GetWeakPtr(), start_time,
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     web_contents->GetMainFrame()->GetFrameTreeNodeId(),
+                     start_time, std::move(callback)));
 }
 
 std::unique_ptr<PaintPreviewCompositorService>
@@ -109,11 +115,17 @@ PaintPreviewBaseService::StartCompositorService(
 }
 
 void PaintPreviewBaseService::OnCaptured(
+    int frame_tree_node_id,
     base::TimeTicks start_time,
     OnCapturedCallback callback,
     base::UnguessableToken guid,
     mojom::PaintPreviewStatus status,
     std::unique_ptr<PaintPreviewProto> proto) {
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (web_contents)
+    web_contents->DecrementCapturerCount(true);
+
   if (status != mojom::PaintPreviewStatus::kOk || !proto) {
     DVLOG(1) << "ERROR: Paint Preview failed to capture for document "
              << guid.ToString() << " with error " << status;

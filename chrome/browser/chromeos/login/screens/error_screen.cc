@@ -76,7 +76,8 @@ constexpr const char ErrorScreen::kUserActionNetworkConnected[] =
     "network-connected";
 
 ErrorScreen::ErrorScreen(ErrorScreenView* view)
-    : BaseScreen(ErrorScreenView::kScreenId), view_(view) {
+    : BaseScreen(ErrorScreenView::kScreenId, OobeScreenPriority::DEFAULT),
+      view_(view) {
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
   NetworkHandler::Get()->network_connection_handler()->AddObserver(this);

@@ -166,7 +166,7 @@ bool CookieChangeSubscription::ShouldObserveChangeTo(
 
   net::CookieOptions net_options;
   net_options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   return cookie.IncludeForRequestURL(url_, net_options, access_semantics)
       .IsInclude();

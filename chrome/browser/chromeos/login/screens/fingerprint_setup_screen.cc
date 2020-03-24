@@ -23,7 +23,8 @@ FingerprintSetupScreen* FingerprintSetupScreen::Get(ScreenManager* manager) {
 FingerprintSetupScreen::FingerprintSetupScreen(
     FingerprintSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(FingerprintSetupScreenView::kScreenId),
+    : BaseScreen(FingerprintSetupScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

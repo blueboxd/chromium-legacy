@@ -39,8 +39,6 @@ chrome_ios_eg_test("ios_chrome_integration_egtests") {
     "//ios/chrome/browser/ui/autofill/manual_fill:eg_tests",
     "//ios/chrome/browser/ui/content_suggestions:eg_tests",
   ]
-
-  xctest = false
 }
 
 chrome_ios_eg_test("ios_chrome_autofill_automation_egtests") {
@@ -73,12 +71,6 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
     "//ios/chrome/browser/ui/settings/language:eg_tests",
     "//ios/chrome/browser/ui/settings/password:eg_tests",
   ]
-
-  executable_args = [
-    "--args-json",
-    "{\"test_args\": [\"--enable-features=ClearSyncedData\",]}",
-  ]
-  xctest = false
 }
 
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
@@ -111,7 +103,6 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
   ]
 
   shards = 2
-  xctest = false
 }
 
 chrome_ios_eg_test("ios_chrome_web_egtests") {

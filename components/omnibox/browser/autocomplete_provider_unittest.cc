@@ -478,7 +478,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
 void AutocompleteProviderTest::ResetControllerWithType(int type) {
   EXPECT_FALSE(client_owned_);
   controller_.reset(
-      new AutocompleteController(base::WrapUnique(client_), nullptr, type));
+      new AutocompleteController(base::WrapUnique(client_), type));
   client_owned_ = true;
 }
 

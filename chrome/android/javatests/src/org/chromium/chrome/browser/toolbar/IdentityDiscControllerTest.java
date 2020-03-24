@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -46,6 +47,7 @@ public class IdentityDiscControllerTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky crbug.com/1064269")
     public void testIdentityDiscWithNavigation() {
         // User is signed in.
         SigninTestUtil.addAndSignInTestAccount();

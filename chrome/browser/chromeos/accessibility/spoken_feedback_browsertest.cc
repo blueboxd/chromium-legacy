@@ -100,6 +100,12 @@ void LoggedInSpokenFeedbackTest::SendKeyPressWithSearch(ui::KeyboardCode key) {
       nullptr, key, false, false, false, true)));
 }
 
+void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndControl(
+    ui::KeyboardCode key) {
+  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      nullptr, key, true, false, false, true)));
+}
+
 void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndControlAndShift(
     ui::KeyboardCode key) {
   ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
@@ -863,50 +869,62 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   EnableChromeVox();
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html,<button autofocus>Click me</button>"));
-  EXPECT_EQ("Web Content", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Click me", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
+  speech_monitor_.ExpectSpeech("Web Content")
+      .ExpectSpeech("Click me")
+      .ExpectSpeech("Button")
+      .ExpectSpeech("Press Search plus Space to activate")
 
-  // Move by character through the button.
-  // Assert that phonetic speech and hints are delayed.
-  SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT);
-  EXPECT_EQ("L", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("lima", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
-  SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT);
-  EXPECT_EQ("I", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("india", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
-  SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT);
-  EXPECT_EQ("C", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("charlie", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
-  SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT);
-  EXPECT_EQ("K", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("kilo", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
-              kExpectedPhoneticSpeechAndHintDelayMS);
+      // Move by character through the button.
+      // Assert that phonetic speech and hints are delayed.
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT); })
+      .ExpectSpeech("L")
+      .ExpectSpeech("lima")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .ExpectSpeech("Press Search plus Space to activate")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT); })
+      .ExpectSpeech("I")
+      .ExpectSpeech("india")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .ExpectSpeech("Press Search plus Space to activate")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT); })
+      .ExpectSpeech("C")
+      .ExpectSpeech("charlie")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .ExpectSpeech("Press Search plus Space to activate")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT); })
+      .ExpectSpeech("K")
+      .ExpectSpeech("kilo")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .ExpectSpeech("Press Search plus Space to activate")
+      .Call([this]() {
+        EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
+                    kExpectedPhoneticSpeechAndHintDelayMS);
+      })
+      .Replay();
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {

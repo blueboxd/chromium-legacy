@@ -1973,6 +1973,76 @@ TEST_F(TabletModeDesksTest, Backdrops) {
   EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
 }
 
+TEST_F(TabletModeDesksTest,
+       BackdropStackingAndMiniviewsUpdatesWithOverviewDragDrop) {
+  auto* controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
+  auto* desk_1_backdrop_controller =
+      GetDeskBackdropController(desk_1, Shell::GetPrimaryRootWindow());
+  auto* desk_2_backdrop_controller =
+      GetDeskBackdropController(desk_2, Shell::GetPrimaryRootWindow());
+
+  // Enter overview and expect that |desk_1| has a backdrop stacked under
+  // |window| while desk_2 has none.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
+  EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
+  EXPECT_EQ(window.get(), desk_1_backdrop_controller->window_having_backdrop());
+  EXPECT_FALSE(desk_2_backdrop_controller->window_having_backdrop());
+  EXPECT_TRUE(IsStackedBelow(desk_1_backdrop_controller->backdrop_window(),
+                             window.get()));
+
+  // Prepare to drag and drop |window| on desk_2's mini view.
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(1u, overview_grid->size());
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+
+  // Observe how many times a drag and drop operation updates the mini views.
+  TestDeskObserver observer1;
+  TestDeskObserver observer2;
+  desk_1->AddObserver(&observer1);
+  desk_2->AddObserver(&observer2);
+  {
+    // For this test to fail the stacking test below, we need to drag and drop
+    // while animations are enabled. https://crbug.com/1055732.
+    ui::ScopedAnimationDurationScaleMode normal_anim(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    DragItemToPoint(overview_item,
+                    desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                    GetEventGenerator());
+  }
+  // The backdrop should be destroyed for |desk_1|, and a new one should be
+  // created for |window| in desk_2 and should be stacked below it.
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
+  EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
+  ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
+  EXPECT_FALSE(desk_1_backdrop_controller->window_having_backdrop());
+  EXPECT_EQ(window.get(), desk_2_backdrop_controller->window_having_backdrop());
+  EXPECT_TRUE(IsStackedBelow(desk_2_backdrop_controller->backdrop_window(),
+                             window.get()));
+
+  // The mini views should only be updated once for both desks.
+  EXPECT_EQ(1, observer1.notify_counts());
+  EXPECT_EQ(1, observer2.notify_counts());
+  desk_1->RemoveObserver(&observer1);
+  desk_2->RemoveObserver(&observer2);
+}
+
 TEST_F(TabletModeDesksTest, NoDesksBarInTabletModeWithOneDesk) {
   // Initially there's only one desk.
   auto* controller = DesksController::Get();

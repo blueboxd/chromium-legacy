@@ -5,6 +5,8 @@
 package org.chromium.weblayer_private;
 
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
+import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
@@ -16,14 +18,22 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
     private TabImpl mTab;
+    private ExternalNavigationHandler mExternalNavHandler;
+    private ExternalNavigationDelegateImpl mExternalNavigationDelegate;
 
     /**
      * Default constructor of {@link InterceptNavigationDelegateImpl}.
      */
     InterceptNavigationDelegateImpl(TabImpl tab) {
         mTab = tab;
+        mExternalNavigationDelegate = new ExternalNavigationDelegateImpl(mTab);
+        mExternalNavHandler = new ExternalNavigationHandler(mExternalNavigationDelegate);
         InterceptNavigationDelegateImplJni.get().associateWithWebContents(
                 this, mTab.getWebContents());
+    }
+
+    public void onTabDestroyed() {
+        mExternalNavigationDelegate.onTabDestroyed();
     }
 
     /**
@@ -51,12 +61,9 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     }
 
     private boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent() {
-        if (mTab.getWebContents() == null) return false;
-
-        if (!mTab.getWebContents().getNavigationController().canGoToOffset(0)) return true;
-
-        // TODO(crbug.com/1031465): Adapt the TabRedirectHandler-dependent check that //chrome's
-        // InterceptNavigationDelegateImpl.java does in its version of this method?
+        // Closing of tabs as part of intent launching is not yet implemented in WebLayer; specify
+        // parameters such that this flow is never invoked.
+        // TODO(crbug.com/1031465): Adapt //chrome's logic for closing of tabs.
         return false;
     }
 
@@ -65,7 +72,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         boolean shouldCloseTab = shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
         ExternalNavigationParams params =
                 buildExternalNavigationParams(navigationParams, shouldCloseTab).build();
-        return ExternalNavigationHandler.shouldOverrideUrlLoading(mTab, params);
+        return (mExternalNavHandler.shouldOverrideUrlLoading(params)
+                != OverrideUrlLoadingResult.NO_OVERRIDE);
     }
 
     @NativeMethods

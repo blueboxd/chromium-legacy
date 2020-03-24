@@ -11,7 +11,8 @@ namespace chromeos {
 SupervisionTransitionScreen::SupervisionTransitionScreen(
     SupervisionTransitionScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(SupervisionTransitionScreenView::kScreenId),
+    : BaseScreen(SupervisionTransitionScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   if (view_)

@@ -36,7 +36,6 @@ namespace {
 
 constexpr char kTestUser[] = "test-user1@gmail.com";
 constexpr char kTestUserGaiaId[] = "test-user1@gmail.com";
-constexpr char kPassword[] = "test user password";
 
 
 // Used to wait for session manager to become active.

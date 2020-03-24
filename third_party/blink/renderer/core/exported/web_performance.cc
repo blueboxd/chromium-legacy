@@ -196,20 +196,20 @@ double WebPerformance::FirstInputOrScrollNotifiedTimestamp() const {
       private_->timing()->FirstInputOrScrollNotifiedTimestamp());
 }
 
-double WebPerformance::FirstInputDelay() const {
-  return MillisecondsToSeconds(private_->timing()->FirstInputDelay());
+base::Optional<base::TimeDelta> WebPerformance::FirstInputDelay() const {
+  return private_->timing()->FirstInputDelay();
 }
 
-double WebPerformance::FirstInputTimestamp() const {
-  return MillisecondsToSeconds(private_->timing()->FirstInputTimestamp());
+base::Optional<base::TimeDelta> WebPerformance::FirstInputTimestamp() const {
+  return private_->timing()->FirstInputTimestamp();
 }
 
-double WebPerformance::LongestInputDelay() const {
-  return MillisecondsToSeconds(private_->timing()->LongestInputDelay());
+base::Optional<base::TimeDelta> WebPerformance::LongestInputDelay() const {
+  return private_->timing()->LongestInputDelay();
 }
 
-double WebPerformance::LongestInputTimestamp() const {
-  return MillisecondsToSeconds(private_->timing()->LongestInputTimestamp());
+base::Optional<base::TimeDelta> WebPerformance::LongestInputTimestamp() const {
+  return private_->timing()->LongestInputTimestamp();
 }
 
 double WebPerformance::TotalInputDelay() const {

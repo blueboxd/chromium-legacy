@@ -352,12 +352,9 @@ class InvalidSearchProviderTest : public BaseSearchProviderTest {
  public:
   void SetUp() override {
     CustomizableSetUp(
-        /* search_url */ prefix + "{searchTerms}",
-        /* suggestions_url */ prefix + "{searchTerms}");
+        /* search_url */ "http://defaulturl/{searchTerms}",
+        /* suggestions_url */ "http://defaulturl/{searchTerms}");
   }
-
- protected:
-  static const std::string prefix;
 };
 
 // Implementation of classes --------------------------------------------------
@@ -366,7 +363,6 @@ class InvalidSearchProviderTest : public BaseSearchProviderTest {
 const char BaseSearchProviderTest::kNotApplicable[] = "Not Applicable";
 const BaseSearchProviderTest::ExpectedMatch
     BaseSearchProviderTest::kEmptyExpectedMatch = {kNotApplicable, false};
-const std::string InvalidSearchProviderTest::prefix = "http://defaulturl/";
 
 void BaseSearchProviderTest::CustomizableSetUp(
     const std::string& search_url,
@@ -1093,7 +1089,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   AutocompleteController controller(
       std::make_unique<TestAutocompleteProviderClient>(
           &profile_, &test_url_loader_factory_),
-      nullptr, AutocompleteProvider::TYPE_SEARCH);
+      AutocompleteProvider::TYPE_SEARCH);
   AutocompleteInput input(ASCIIToUTF16("k t"),
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
@@ -3766,7 +3762,7 @@ TEST_F(InvalidSearchProviderTest, DoesNotSendSuggestRequests) {
   QueryForInput(query, false, false);
 
   // Make sure the default provider's suggest service was not queried.
-  EXPECT_FALSE(test_url_loader_factory_.IsPending(prefix + "query"));
+  EXPECT_FALSE(test_url_loader_factory_.IsPending("http://defaulturl/query"));
 }
 
 // SearchProviderWarmUpTest --------------------------------------------------

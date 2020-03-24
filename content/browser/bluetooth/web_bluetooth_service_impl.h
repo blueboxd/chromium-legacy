@@ -105,6 +105,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
                            BluetoothScanningPermissionRevokedWhenTabOccluded);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            BluetoothScanningPermissionRevokedWhenBlocked);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           BluetoothScanningPermissionRevokedWhenFocusIsLost);
   friend class FrameConnectedBluetoothDevicesTest;
   friend class WebBluetoothServiceImplTest;
   using PrimaryServicesRequestCallback =
@@ -160,6 +162,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // is this->render_frame_host_ and not some other frame in the same tab.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(Visibility visibility) override;
+  void OnWebContentsLostFocus(RenderWidgetHost* render_widget_host) override;
 
   // BluetoothAdapter::Observer:
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
@@ -384,6 +387,9 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // Clears all state (maps, sets, etc).
   void ClearState();
+
+  // Clears state associated with Bluetooth LE Scanning.
+  void ClearDeviceAdvertisementClients();
 
   bool IsAllowedToAccessAtLeastOneService(
       const blink::WebBluetoothDeviceId& device_id);

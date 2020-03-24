@@ -30,6 +30,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/render_frame.h"
@@ -1976,6 +1977,36 @@ TEST_F(PasswordAutofillAgentTest, ClickAndSelect) {
   CheckSuggestions(kAliceUsername, true);
 
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+}
+
+// With butter, passwords fields should always trigger the popup so the user can
+// unlock account-stored suggestions from there.
+TEST_F(PasswordAutofillAgentTest, ShowPopupOnPasswordFieldWithoutSuggestions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+  ClearUsernameAndPasswordFields();
+  UpdateRendererIDs();
+
+  SimulateElementClick(kPasswordName);
+
+  EXPECT_CALL(fake_driver_, ShowPasswordSuggestions);
+  base::RunLoop().RunUntilIdle();
+}
+
+// Before butter, passwords fields should never trigger the popup on password
+// passwords fields without suggestions since it would not be helpful.
+TEST_F(PasswordAutofillAgentTest, NoPopupOnPasswordFieldWithoutSuggestions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+  ClearUsernameAndPasswordFields();
+  UpdateRendererIDs();
+
+  SimulateElementClick(kPasswordName);
+
+  EXPECT_CALL(fake_driver_, ShowPasswordSuggestions).Times(0);
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests the autosuggestions that are given when the element is clicked.

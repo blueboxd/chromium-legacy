@@ -132,10 +132,10 @@ class ResponseWaiter : private views::ViewObserver {
     DCHECK(observed_view == parent_view_);
 
     if (quit_loop_) {
-      FAIL() << parent_view_->GetClassName() << " is deleted "
-             << "before receiving the Assistant response.\n"
-             << "Expected any of " << FormatExpectedResponses() << ".\n"
-             << "Got \"" << GetResponseText() << "\"";
+      ADD_FAILURE() << parent_view_->GetClassName() << " is deleted "
+                    << "before receiving the Assistant response.\n"
+                    << "Expected any of " << FormatExpectedResponses() << ".\n"
+                    << "Got \"" << GetResponseText() << "\"";
       std::move(quit_loop_).Run();
     }
 

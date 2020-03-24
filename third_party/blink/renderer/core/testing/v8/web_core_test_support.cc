@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_origin_trials_test.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/internal_settings.h"
 #include "third_party/blink/renderer/core/testing/internals.h"
@@ -128,10 +129,8 @@ void ResetInternalsObject(v8::Local<v8::Context> context) {
 
   ScriptState* script_state = ScriptState::From(context);
   ScriptState::Scope scope(script_state);
-  Document* document = Document::From(ExecutionContext::From(script_state));
-  DCHECK(document);
-  LocalFrame* frame = document->GetFrame();
-  // Should the document have been detached, the page is assumed being destroyed
+  LocalFrame* frame = LocalDOMWindow::From(script_state)->GetFrame();
+  // Should the frame have been detached, the page is assumed being destroyed
   // (=> no reset required.)
   if (!frame)
     return;

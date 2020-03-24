@@ -152,10 +152,10 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
       const base::Optional<multidevice::RemoteDeviceRef>& expected_host) {
     EXPECT_EQ(
         expected_queue_size,
-        HasInstanceId()
-            ? fake_device_sync_client_->GetSetFeatureStatusInputsQueueSize()
-            : fake_device_sync_client_
-                  ->GetSetSoftwareFeatureStateInputsQueueSize());
+        features::ShouldUseV1DeviceSync()
+            ? fake_device_sync_client_
+                  ->GetSetSoftwareFeatureStateInputsQueueSize()
+            : fake_device_sync_client_->GetSetFeatureStatusInputsQueueSize());
     if (expected_queue_size > 0) {
       ASSERT_TRUE(expected_host);
       VerifyLatestEasyUnlockHostDisableRequest(*expected_host);
@@ -164,11 +164,11 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
 
   void InvokePendingEasyUnlockHostDisableRequestCallback(
       device_sync::mojom::NetworkRequestResult result_code) {
-    if (HasInstanceId()) {
-      fake_device_sync_client_->InvokePendingSetFeatureStatusCallback(
+    if (features::ShouldUseV1DeviceSync()) {
+      fake_device_sync_client_->InvokePendingSetSoftwareFeatureStateCallback(
           result_code);
     } else {
-      fake_device_sync_client_->InvokePendingSetSoftwareFeatureStateCallback(
+      fake_device_sync_client_->InvokePendingSetFeatureStatusCallback(
           result_code);
     }
   }
@@ -212,7 +212,7 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
   void VerifyLatestEasyUnlockHostDisableRequest(
       const multidevice::RemoteDeviceRef& expected_host) {
     // Verify inputs to SetSoftwareFeatureState().
-    if (expected_host.instance_id().empty()) {
+    if (features::ShouldUseV1DeviceSync()) {
       ASSERT_FALSE(
           fake_device_sync_client_->set_software_feature_state_inputs_queue()
               .empty());

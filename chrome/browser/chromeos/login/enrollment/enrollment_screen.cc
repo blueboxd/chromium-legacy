@@ -110,7 +110,7 @@ EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
 
 EnrollmentScreen::EnrollmentScreen(EnrollmentScreenView* view,
                                    const ScreenExitCallback& exit_callback)
-    : BaseScreen(EnrollmentScreenView::kScreenId),
+    : BaseScreen(EnrollmentScreenView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   retry_policy_.num_errors_to_ignore = 0;

@@ -22,7 +22,7 @@ using base::ScopedCFTypeRef;
 namespace {
 
 // Rotate a page by |num_rotations| * 90 degrees, counter-clockwise.
-void RotatePage(CGContextRef context, const CGRect rect, int num_rotations) {
+void RotatePage(CGContextRef context, const CGRect& rect, int num_rotations) {
   switch (num_rotations) {
     case 0:
       break;
@@ -58,9 +58,9 @@ void RotatePage(CGContextRef context, const CGRect rect, int num_rotations) {
 
 namespace printing {
 
-PdfMetafileCg::PdfMetafileCg() : page_is_open_(false) {}
+PdfMetafileCg::PdfMetafileCg() = default;
 
-PdfMetafileCg::~PdfMetafileCg() {}
+PdfMetafileCg::~PdfMetafileCg() = default;
 
 bool PdfMetafileCg::Init() {
   // Ensure that Init hasn't already been called.
@@ -107,16 +107,16 @@ bool PdfMetafileCg::InitFromData(const void* src_buffer,
 
 void PdfMetafileCg::StartPage(const gfx::Size& page_size,
                               const gfx::Rect& content_area,
-                              const float& scale_factor) {
+                              float scale_factor) {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 
-  double height = page_size.height();
-  double width = page_size.width();
+  page_is_open_ = true;
+  float height = page_size.height();
+  float width = page_size.width();
 
   CGRect bounds = CGRectMake(0, 0, width, height);
   CGContextBeginPage(context_, &bounds);
-  page_is_open_ = true;
   CGContextSaveGState(context_);
 
   // Move to the context origin.
@@ -159,7 +159,7 @@ bool PdfMetafileCg::FinishDocument() {
 
 bool PdfMetafileCg::RenderPage(unsigned int page_number,
                                CGContextRef context,
-                               const CGRect rect,
+                               const CGRect& rect,
                                const MacRenderPageParams& params) const {
   CGPDFDocumentRef pdf_doc = GetPDFDocument();
   if (!pdf_doc) {

@@ -39,7 +39,8 @@ void ArcTermsOfServiceScreen::MaybeLaunchArcSettings(Profile* profile) {
 ArcTermsOfServiceScreen::ArcTermsOfServiceScreen(
     ArcTermsOfServiceScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(ArcTermsOfServiceScreenView::kScreenId),
+    : BaseScreen(ArcTermsOfServiceScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

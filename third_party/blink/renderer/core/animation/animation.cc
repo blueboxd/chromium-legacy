@@ -423,7 +423,9 @@ bool Animation::PreCommit(
     int compositor_group,
     const PaintArtifactCompositor* paint_artifact_compositor,
     bool start_on_compositor) {
-  if (timeline_ && !timeline_->IsActive())
+  // TODO(crbug.com/916117): Revisit this condition as part of handling
+  // inactive timelines work.
+  if (timeline_ && timeline_->IsScrollTimeline() && !timeline_->IsActive())
     return false;
 
   bool soft_change =

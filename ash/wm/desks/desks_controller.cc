@@ -876,7 +876,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   // if windows from the removed desk moved to it.
   DCHECK(active_desk_->should_notify_content_changed());
   if (!removed_desk_windows.empty())
-    active_desk_->NotifyContentChanged(/*force_update_backdrops=*/true);
+    active_desk_->NotifyContentChanged();
 
   UpdateDesksDefaultNames();
 

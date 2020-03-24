@@ -22,6 +22,7 @@ include_rules = [
   "+components/permissions",
   "+components/pref_registry",
   "+components/prefs",
+  "+components/url_formatter",
   "+components/user_prefs",
   "+components/safe_browsing/core/common",
   "+components/safe_browsing/core/features.h",

@@ -21,7 +21,7 @@ namespace chromeos {
 
 DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
-    : BaseScreen(DemoSetupScreenView::kScreenId),
+    : BaseScreen(DemoSetupScreenView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

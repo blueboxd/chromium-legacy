@@ -65,7 +65,7 @@ HIDDetectionScreen::HIDDetectionScreen(
     HIDDetectionView* view,
     CoreOobeView* core_oobe_view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(HIDDetectionView::kScreenId),
+    : BaseScreen(HIDDetectionView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       core_oobe_view_(core_oobe_view),
       exit_callback_(exit_callback) {

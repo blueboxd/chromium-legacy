@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/shell/common/web_test.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -32,11 +32,12 @@ namespace content {
 // initialized and is managed by the registry of the RenderProcessHost.
 class WebTestClientImpl : public mojom::WebTestClient {
  public:
-  static void Create(int render_process_id,
-                     storage::QuotaManager* quota_manager,
-                     storage::DatabaseTracker* database_tracker,
-                     network::mojom::NetworkContext* network_context,
-                     mojo::PendingReceiver<mojom::WebTestClient> receiver);
+  static void Create(
+      int render_process_id,
+      storage::QuotaManager* quota_manager,
+      storage::DatabaseTracker* database_tracker,
+      network::mojom::NetworkContext* network_context,
+      mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver);
 
   WebTestClientImpl(int render_process_id,
                     storage::QuotaManager* quota_manager,

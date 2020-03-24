@@ -205,7 +205,7 @@ WebString BlinkTestRunner::RegisterIsolatedFileSystem(
   for (auto& filename : absolute_filenames)
     files.push_back(blink::WebStringToFilePath(filename));
   std::string filesystem_id;
-  GetWebTestClientRemote().RegisterIsolatedFileSystem(files, &filesystem_id);
+  GetWebTestClientRemote()->RegisterIsolatedFileSystem(files, &filesystem_id);
   return WebString::FromUTF8(filesystem_id);
 }
 
@@ -276,32 +276,32 @@ void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
 }
 
 void BlinkTestRunner::InspectSecondaryWindow() {
-  GetWebTestClientRemote().InspectSecondaryWindow();
+  GetWebTestClientRemote()->InspectSecondaryWindow();
 }
 
 void BlinkTestRunner::ClearAllDatabases() {
-  GetWebTestClientRemote().ClearAllDatabases();
+  GetWebTestClientRemote()->ClearAllDatabases();
 }
 
 void BlinkTestRunner::SetDatabaseQuota(int quota) {
-  GetWebTestClientRemote().SetDatabaseQuota(quota);
+  GetWebTestClientRemote()->SetDatabaseQuota(quota);
 }
 
 void BlinkTestRunner::SimulateWebNotificationClick(
     const std::string& title,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply) {
-  GetWebTestClientRemote().SimulateWebNotificationClick(
+  GetWebTestClientRemote()->SimulateWebNotificationClick(
       title, action_index.value_or(std::numeric_limits<int32_t>::min()), reply);
 }
 
 void BlinkTestRunner::SimulateWebNotificationClose(const std::string& title,
                                                    bool by_user) {
-  GetWebTestClientRemote().SimulateWebNotificationClose(title, by_user);
+  GetWebTestClientRemote()->SimulateWebNotificationClose(title, by_user);
 }
 
 void BlinkTestRunner::SimulateWebContentIndexDelete(const std::string& id) {
-  GetWebTestClientRemote().SimulateWebContentIndexDelete(id);
+  GetWebTestClientRemote()->SimulateWebContentIndexDelete(id);
 }
 
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
@@ -362,7 +362,7 @@ void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
 }
 
 void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
-  GetWebTestClientRemote().BlockThirdPartyCookies(block);
+  GetWebTestClientRemote()->BlockThirdPartyCookies(block);
 }
 
 std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
@@ -394,12 +394,12 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
 
 base::FilePath BlinkTestRunner::GetWritableDirectory() {
   base::FilePath result;
-  GetWebTestClientRemote().GetWritableDirectory(&result);
+  GetWebTestClientRemote()->GetWritableDirectory(&result);
   return result;
 }
 
 void BlinkTestRunner::SetFilePathForMockFileDialog(const base::FilePath& path) {
-  GetWebTestClientRemote().SetFilePathForMockFileDialog(path);
+  GetWebTestClientRemote()->SetFilePathForMockFileDialog(path);
 }
 
 void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
@@ -412,7 +412,7 @@ void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
   if (!interfaces->TestIsRunning())
     return;
 
-  GetWebTestClientRemote().WebTestRuntimeFlagsChanged(changed_values.Clone());
+  GetWebTestClientRemote()->WebTestRuntimeFlagsChanged(changed_values.Clone());
 }
 
 void BlinkTestRunner::TestFinished() {
@@ -427,7 +427,7 @@ void BlinkTestRunner::TestFinished() {
   // If we're not in the main frame, then ask the browser to redirect the call
   // to the main frame instead.
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
-    GetWebTestClientRemote().TestFinishedInSecondaryRenderer();
+    GetWebTestClientRemote()->TestFinishedInSecondaryRenderer();
     return;
   }
 
@@ -448,7 +448,7 @@ void BlinkTestRunner::TestFinished() {
   if (interfaces->TestRunner()->ShouldDumpAsAudio()) {
     CaptureLocalAudioDump();
 
-    GetWebTestClientRemote().InitiateCaptureDump(
+    GetWebTestClientRemote()->InitiateCaptureDump(
         browser_should_dump_back_forward_list,
         /*browser_should_capture_pixels=*/false);
     return;
@@ -461,7 +461,7 @@ void BlinkTestRunner::TestFinished() {
   CaptureLocalLayoutDump();
 
   if (!interfaces->TestRunner()->ShouldGeneratePixelResults()) {
-    GetWebTestClientRemote().InitiateCaptureDump(
+    GetWebTestClientRemote()->InitiateCaptureDump(
         browser_should_dump_back_forward_list,
         /*browser_should_capture_pixels=*/false);
     return;
@@ -481,7 +481,7 @@ void BlinkTestRunner::TestFinished() {
           web_frame->GetSelectionBoundsRectForTesting();
     }
   }
-  GetWebTestClientRemote().InitiateCaptureDump(
+  GetWebTestClientRemote()->InitiateCaptureDump(
       browser_should_dump_back_forward_list,
       !interfaces->TestRunner()->CanDumpPixelsFromRenderer());
 }
@@ -573,7 +573,7 @@ void BlinkTestRunner::CloseRemainingWindows() {
 }
 
 void BlinkTestRunner::DeleteAllCookies() {
-  GetWebTestClientRemote().DeleteAllCookies();
+  GetWebTestClientRemote()->DeleteAllCookies();
 }
 
 int BlinkTestRunner::NavigationEntryCount() {
@@ -608,12 +608,12 @@ void BlinkTestRunner::SetPermission(const std::string& name,
                                     const std::string& value,
                                     const GURL& origin,
                                     const GURL& embedding_origin) {
-  GetWebTestClientRemote().SetPermission(name, blink::ToPermissionStatus(value),
-                                         origin, embedding_origin);
+  GetWebTestClientRemote()->SetPermission(
+      name, blink::ToPermissionStatus(value), origin, embedding_origin);
 }
 
 void BlinkTestRunner::ResetPermissions() {
-  GetWebTestClientRemote().ResetPermissions();
+  GetWebTestClientRemote()->ResetPermissions();
 }
 
 void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
@@ -747,12 +747,20 @@ void BlinkTestRunner::HandleBlinkTestClientDisconnected() {
   blink_test_client_remote_.reset();
 }
 
-mojom::WebTestClient& BlinkTestRunner::GetWebTestClientRemote() {
+mojo::AssociatedRemote<mojom::WebTestClient>&
+BlinkTestRunner::GetWebTestClientRemote() {
   if (!web_test_client_remote_) {
-    RenderThread::Get()->BindHostReceiver(
-        web_test_client_remote_.BindNewPipeAndPassReceiver());
+    RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+        &web_test_client_remote_);
+    web_test_client_remote_.set_disconnect_handler(
+        base::BindOnce(&BlinkTestRunner::HandleWebTestClientDisconnected,
+                       base::Unretained(this)));
   }
-  return *web_test_client_remote_;
+  return web_test_client_remote_;
+}
+
+void BlinkTestRunner::HandleWebTestClientDisconnected() {
+  web_test_client_remote_.reset();
 }
 
 void BlinkTestRunner::OnSetupSecondaryRenderer() {

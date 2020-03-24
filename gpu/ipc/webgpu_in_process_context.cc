@@ -95,7 +95,7 @@ const GpuFeatureInfo& WebGPUInProcessContext::GetGpuFeatureInfo() const {
   return command_buffer_->GetGpuFeatureInfo();
 }
 
-webgpu::WebGPUImplementation* WebGPUInProcessContext::GetImplementation() {
+webgpu::WebGPUInterface* WebGPUInProcessContext::GetImplementation() {
   return webgpu_implementation_.get();
 }
 

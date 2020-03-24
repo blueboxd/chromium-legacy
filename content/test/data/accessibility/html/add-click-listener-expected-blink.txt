@@ -1,6 +1,7 @@
 rootWebArea name='Done'
-++genericContainer
+++genericContainer ignored name='Done'
 ++++genericContainer
-++++++button name='This should be accessible'
-++++++++staticText name='This should be accessible'
-++++++++++inlineTextBox name='This should be accessible'
+++++++genericContainer
+++++++++button name='This should be accessible'
+++++++++++staticText name='This should be accessible'
+++++++++++++inlineTextBox name='This should be accessible'

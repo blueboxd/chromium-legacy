@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(THREAD_SANITIZER)
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -481,3 +483,5 @@ TEST_F(ConcurrentMarkingTest, PopFromDeque) {
 
 }  // namespace concurrent_marking_test
 }  // namespace blink
+
+#endif  // defined(THREAD_SANITIZER)

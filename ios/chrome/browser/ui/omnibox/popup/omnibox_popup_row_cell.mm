@@ -58,6 +58,13 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 // Separator line for adjacent cells.
 @property(nonatomic, strong) UIView* separator;
 
+// Stores the extra constraints activated when the cell enters deletion mode.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* deletingLayoutGuideConstraints;
+// Stores the extra constrants activated when the cell is not in deletion mode.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* nonDeletingLayoutGuideConstraints;
+
 @end
 
 @implementation OmniboxPopupRowCell
@@ -124,6 +131,24 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   }
 }
 
+- (void)willTransitionToState:(UITableViewCellStateMask)state {
+  // |UITableViewCellStateDefaultMask| is actually 0, so it must be checked
+  // manually, and can't be checked with bitwise AND.
+  if (state == UITableViewCellStateDefaultMask) {
+    for (NSLayoutConstraint* constraint in self
+             .deletingLayoutGuideConstraints) {
+      DCHECK(constraint.active);
+    }
+    [self unfreezeLayoutGuidePositions];
+  } else if (state & UITableViewCellStateShowingDeleteConfirmationMask) {
+    for (NSLayoutConstraint* constraint in self
+             .nonDeletingLayoutGuideConstraints) {
+      DCHECK(constraint.active);
+    }
+    [self freezeLayoutGuidePositions];
+  }
+}
+
 #pragma mark - Property setter/getters
 
 - (void)setImageRetriever:(id<ImageRetriever>)imageRetriever {
@@ -141,6 +166,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   _omniboxSemanticContentAttribute = omniboxSemanticContentAttribute;
   self.contentView.semanticContentAttribute = omniboxSemanticContentAttribute;
   self.textStackView.semanticContentAttribute = omniboxSemanticContentAttribute;
+  // The layout guides may have been repositioned before this, so re-freeze.
+  if (self.showingDeleteConfirmation) {
+    [self unfreezeLayoutGuidePositions];
+    [self freezeLayoutGuidePositions];
+  }
 }
 
 - (BOOL)showsSeparator {
@@ -256,17 +286,81 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   stackViewToLayoutGuideTrailing.priority = higher;
   stackViewToCellTrailing.priority = highest;
 
-  [NSLayoutConstraint activateConstraints:@[
+  // These constraints need to be removed when freezing the position of these
+  // views. See -freezeLayoutGuidePositions for the reason why.
+  self.nonDeletingLayoutGuideConstraints = @[
     [self.leadingIconView.centerXAnchor
         constraintEqualToAnchor:imageLayoutGuide.centerXAnchor],
-    [self.leadingIconView.widthAnchor
-        constraintEqualToAnchor:imageLayoutGuide.widthAnchor],
-    [self.textStackView.leadingAnchor
-        constraintEqualToAnchor:textLayoutGuide.leadingAnchor],
     stackViewToLayoutGuideLeading,
     stackViewToLayoutGuideTrailing,
+  ];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [self.leadingIconView.widthAnchor
+        constraintEqualToAnchor:imageLayoutGuide.widthAnchor],
     stackViewToCellTrailing,
   ]];
+
+  [NSLayoutConstraint
+      activateConstraints:self.nonDeletingLayoutGuideConstraints];
+}
+
+// Freezes the position of any view that is positioned relative to the layout
+// guides. When the view enters deletion mode (swipe-to-delete), the layout
+// guides do not move. This means that the views in this cell positioned
+// relative to the layout guide also do not move with the swipe. This method
+// freezes those views with constraints relative to the cell content view so
+// they do move with the swipe-to-delete.
+- (void)freezeLayoutGuidePositions {
+  [NSLayoutConstraint
+      deactivateConstraints:self.nonDeletingLayoutGuideConstraints];
+
+  NamedGuide* imageLayoutGuide =
+      [NamedGuide guideWithName:kOmniboxLeadingImageGuide view:self];
+  NamedGuide* textLayoutGuide = [NamedGuide guideWithName:kOmniboxTextFieldGuide
+                                                     view:self];
+
+  // Layout guides should both be setup
+  DCHECK(imageLayoutGuide.isConstrained);
+  DCHECK(textLayoutGuide.isConstrained);
+
+  self.deletingLayoutGuideConstraints = @[
+    [self.leadingIconView.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:
+                           [self leadingSpaceForLayoutGuide:imageLayoutGuide]],
+    [self.textStackView.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:
+                           [self leadingSpaceForLayoutGuide:textLayoutGuide]],
+  ];
+
+  [NSLayoutConstraint activateConstraints:self.deletingLayoutGuideConstraints];
+}
+
+// Helper method for -freezeLayoutGuidePositions to calculate the actual
+// distance between the leading edge of a layout guide and the leading edge
+// of the cell's content view.
+- (CGFloat)leadingSpaceForLayoutGuide:(UILayoutGuide*)layoutGuide {
+  CGRect layoutGuideFrame =
+      [layoutGuide.owningView convertRect:layoutGuide.layoutFrame
+                                   toView:self.contentView];
+  return self.omniboxSemanticContentAttribute ==
+                 UISemanticContentAttributeForceRightToLeft
+             ? self.contentView.bounds.size.width - layoutGuideFrame.origin.x -
+                   layoutGuideFrame.size.width
+             : layoutGuideFrame.origin.x;
+}
+
+// Unfreezes the position of any view that is positioned relative to a layout
+// guide. See the comment on -freezeLayoutGuidePositions for why that is
+// necessary.
+- (void)unfreezeLayoutGuidePositions {
+  [NSLayoutConstraint
+      deactivateConstraints:self.deletingLayoutGuideConstraints];
+  self.deletingLayoutGuideConstraints = @[];
+  [NSLayoutConstraint
+      activateConstraints:self.nonDeletingLayoutGuideConstraints];
 }
 
 - (void)prepareForReuse {

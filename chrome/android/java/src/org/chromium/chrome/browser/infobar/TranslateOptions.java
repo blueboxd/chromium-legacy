@@ -257,8 +257,7 @@ public class TranslateOptions {
     }
 
     private boolean canSetLanguage(String sourceCode, String targetCode) {
-        return isValidLanguageCode(sourceCode) && isValidLanguageCode(targetCode)
-                && !sourceCode.equals(targetCode);
+        return isValidLanguageCode(sourceCode) && isValidLanguageCode(targetCode);
     }
 
     @Override

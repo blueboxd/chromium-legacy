@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<meta name="color-scheme" content="dark">
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
+<script src="../../../fast/forms/resources/common.js"></script>
+<body>
+<style>
+  #vertical {
+    -webkit-appearance: slider-vertical;
+  }
+</style>
+
+<!-- no style for reference -->
+<ul style="color:white">
+  <li>Range: <input  type="range" /><inpu style="color-scheme: dark" value=0 type="range" /><input style="color-scheme: dark" value=100 type="range" /></li>
+</ul >
+
+<ul  style="color:white">
+  <li>Range value=30: <input style="color-scheme: dark" type="range" value="30"/></li>
+</ul>
+
+<ul  style="color:white">
+  <li>Range vertical: <input style="color-scheme: dark" type="range" value="30" id="vertical" /></li>
+</ul>
+
+<!-- disabled -->
+<ul  style="color:white">
+  <li>Range disabled: <input style="color-scheme: dark" type="range" disabled/></li>
+</ul>
+
+<!-- hover -->
+<ul  style="color:white">
+  <li>Range hover: <input style="color-scheme: dark" type="range" id="hoverTarget"/></li>
+</ul>
+
+<!-- datalist -->
+<ul  style="color:white">
+  <li>Range datalist: <input style="color-scheme: dark" type="range" min="0" max="100" list="number" /></li>
+  <li>Range datalist disabled: <input style="color-scheme: dark" type="range" min="0" max="100" list="number" disabled /></li>
+  <datalist id="number">
+    <option>10</option>
+    <option>30</option>
+    <option>50</option>
+    <option>70</option>
+    <option>90</option>
+  </datalist>
+</ul>
+
+<!-- zoom -->
+<ul  style="color:white">
+  <li>Range zoom: 3: <input style="color-scheme: dark; zoom: 3;" type="range"/></li>
+  <li>Range zoom: 3 v2:<input style="color-scheme: dark; zoom: 3;" type="range" value=0 /></li>
+</ul>
+
+<ul  style="color:white">
+  <li>Range pressed: <input type="range" id="pressTarget" style="color-scheme: dark"/>
+  </li>
+</ul>
+
+<script>
+
+runAfterLayoutAndPaint(function() {
+  var target = document.getElementById('hoverTarget');
+  var target2 = document.getElementById('pressTarget');
+  internals.setPseudoClassState(target, ":hover", true)
+  internals.setPseudoClassState(target2, ":active", true)
+}, true);
+
+</script>
+
+</body>

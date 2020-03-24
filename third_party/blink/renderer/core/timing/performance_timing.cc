@@ -55,6 +55,8 @@ namespace blink {
 static uint64_t ToIntegerMilliseconds(base::TimeDelta duration) {
   // TODO(npm): add histograms to understand when/why |duration| is sometimes
   // negative.
+  // TODO(crbug.com/1063989): stop clamping when it is not needed (i.e. for
+  // methods which do not expose the timestamp to a web perf API).
   double clamped_seconds =
       Performance::ClampTimeResolution(duration.InSecondsF());
   return static_cast<uint64_t>(clamped_seconds * 1000.0);
@@ -411,37 +413,38 @@ uint64_t PerformanceTiming::FirstInputOrScrollNotifiedTimestamp() const {
       paint_timing_detector->FirstInputOrScrollNotifiedTimestamp());
 }
 
-uint64_t PerformanceTiming::FirstInputDelay() const {
+base::Optional<base::TimeDelta> PerformanceTiming::FirstInputDelay() const {
   const InteractiveDetector* interactive_detector = GetInteractiveDetector();
   if (!interactive_detector)
-    return 0;
+    return base::nullopt;
 
-  return ToIntegerMilliseconds(interactive_detector->GetFirstInputDelay());
+  return interactive_detector->GetFirstInputDelay();
 }
 
-uint64_t PerformanceTiming::FirstInputTimestamp() const {
+base::Optional<base::TimeDelta> PerformanceTiming::FirstInputTimestamp() const {
   const InteractiveDetector* interactive_detector = GetInteractiveDetector();
   if (!interactive_detector)
-    return 0;
+    return base::nullopt;
 
-  return MonotonicTimeToIntegerMilliseconds(
+  return MonotonicTimeToPseudoWallTime(
       interactive_detector->GetFirstInputTimestamp());
 }
 
-uint64_t PerformanceTiming::LongestInputDelay() const {
+base::Optional<base::TimeDelta> PerformanceTiming::LongestInputDelay() const {
   const InteractiveDetector* interactive_detector = GetInteractiveDetector();
   if (!interactive_detector)
-    return 0;
+    return base::nullopt;
 
-  return ToIntegerMilliseconds(interactive_detector->GetLongestInputDelay());
+  return interactive_detector->GetLongestInputDelay();
 }
 
-uint64_t PerformanceTiming::LongestInputTimestamp() const {
+base::Optional<base::TimeDelta> PerformanceTiming::LongestInputTimestamp()
+    const {
   const InteractiveDetector* interactive_detector = GetInteractiveDetector();
   if (!interactive_detector)
-    return 0;
+    return base::nullopt;
 
-  return MonotonicTimeToIntegerMilliseconds(
+  return MonotonicTimeToPseudoWallTime(
       interactive_detector->GetLongestInputTimestamp());
 }
 
@@ -598,6 +601,19 @@ PaintTimingDetector* PerformanceTiming::GetPaintTimingDetector() const {
     return nullptr;
 
   return &view->GetPaintTimingDetector();
+}
+
+base::Optional<base::TimeDelta>
+PerformanceTiming::MonotonicTimeToPseudoWallTime(
+    const base::Optional<base::TimeTicks>& time) const {
+  if (!time.has_value())
+    return base::nullopt;
+
+  const DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!timing)
+    return base::nullopt;
+
+  return timing->MonotonicTimeToPseudoWallTime(*time);
 }
 
 std::unique_ptr<TracedValue> PerformanceTiming::GetNavigationTracingData() {

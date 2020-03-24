@@ -27,11 +27,8 @@ class ShellContentClient : public ContentClient {
   base::DictionaryValue GetNetLogConstants() override;
   blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
-  void SetInWebTest(bool in_web_test);
-
  private:
   ShellOriginTrialPolicy origin_trial_policy_;
-  bool in_web_test_ = false;
 };
 
 }  // namespace content

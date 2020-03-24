@@ -133,19 +133,23 @@ void InteractiveDetector::StartOrPostponeCITimer(
   }
 }
 
-base::TimeDelta InteractiveDetector::GetFirstInputDelay() const {
+base::Optional<base::TimeDelta> InteractiveDetector::GetFirstInputDelay()
+    const {
   return page_event_times_.first_input_delay;
 }
 
-base::TimeTicks InteractiveDetector::GetFirstInputTimestamp() const {
+base::Optional<base::TimeTicks> InteractiveDetector::GetFirstInputTimestamp()
+    const {
   return page_event_times_.first_input_timestamp;
 }
 
-base::TimeDelta InteractiveDetector::GetLongestInputDelay() const {
+base::Optional<base::TimeDelta> InteractiveDetector::GetLongestInputDelay()
+    const {
   return page_event_times_.longest_input_delay;
 }
 
-base::TimeTicks InteractiveDetector::GetLongestInputTimestamp() const {
+base::Optional<base::TimeTicks> InteractiveDetector::GetLongestInputTimestamp()
+    const {
   return page_event_times_.longest_input_timestamp;
 }
 
@@ -239,7 +243,7 @@ void InteractiveDetector::HandleForInputDelay(
   pending_pointerdown_delay_ = base::TimeDelta();
   pending_pointerdown_timestamp_ = base::TimeTicks();
 
-  if (page_event_times_.first_input_delay.is_zero()) {
+  if (!page_event_times_.first_input_delay.has_value()) {
     page_event_times_.first_input_delay = delay;
     page_event_times_.first_input_timestamp = event_timestamp;
 
@@ -282,7 +286,8 @@ void InteractiveDetector::HandleForInputDelay(
 
   // Only update longest input delay if page was not backgrounded while the
   // input was queued.
-  if (delay > page_event_times_.longest_input_delay &&
+  if ((!page_event_times_.longest_input_delay.has_value() ||
+       delay > *page_event_times_.longest_input_delay) &&
       !PageWasBackgroundedSinceEvent(event_timestamp)) {
     page_event_times_.longest_input_delay = delay;
     page_event_times_.longest_input_timestamp = event_timestamp;

@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
-<link href="resources/flexbox.css" rel="stylesheet">
+<title>CSS Flexbox: box-sizing</title>
+<link href="support/flexbox.css" rel="stylesheet">
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#flex-flow-property">
+<link rel="help" href="https://drafts.csswg.org/css-sizing-3/#box-sizing">
+<meta name="assert" content="This test checks the interactions between the flex layout mode and the two possible values for the box-sizing property: border-box and content-box" />
+
 <style>
 .flexbox {
     border: 2px solid orange;
@@ -26,10 +31,10 @@
     padding: 3px;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
-<body onload="checkLayout('.flexbox')">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
+<body>
 <div id=log></div>
 
 All blue boxes are 100x100px with box-sizing: border-box and 2px border (4px border-top), we expect offsetWidth/Height to be <b>100x100</b>
@@ -97,6 +102,7 @@ All blue boxes are 100x100px with box-sizing: border-box and 2px border (4px bor
     }
     [].forEach.call(document.querySelectorAll(".flexbox > div"), addExpectedSizes);
     [].forEach.call(document.querySelectorAll(".border-box"), addExpectedSizes);
+    checkLayout('.flexbox');
 </script>
 </body>
 </html>

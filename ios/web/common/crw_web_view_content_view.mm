@@ -28,8 +28,10 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 @implementation CRWWebViewContentView
 @synthesize contentOffset = _contentOffset;
 @synthesize contentInset = _contentInset;
-@synthesize shouldUseViewContentInset = _shouldUseViewContentInset;
 @synthesize scrollView = _scrollView;
+@synthesize shouldUseViewContentInset = _shouldUseViewContentInset;
+@synthesize viewportEdgesAffectedBySafeArea = _viewportEdgesAffectedBySafeArea;
+@synthesize viewportInsets = _viewportInsets;
 @synthesize webView = _webView;
 
 - (instancetype)initWithWebView:(UIView*)webView
@@ -111,6 +113,13 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
     _shouldUseViewContentInset = shouldUseViewContentInset;
     self.contentInset = oldContentInset;
   }
+}
+
+#pragma mark - CRWViewportAdjusting
+
+// TODO(crbug.com/1064041): Implement.
+- (void)updateMinViewportInsets:(UIEdgeInsets)minInsets
+              maxViewportInsets:(UIEdgeInsets)maxInsets {
 }
 
 @end

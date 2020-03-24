@@ -232,7 +232,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
         "true" /* expected_cookie_value */,
         "https" /* expected_source_scheme */,
         false /* expected_modify_http_only */,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
         true /* success */);
 
     fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
@@ -294,7 +294,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
         "true" /* expected_cookie_value */,
         "https" /* expected_source_scheme */,
         false /* expected_modify_http_only */,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
         true /* success */);
 
     fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
@@ -369,7 +369,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
           migrated_to_app_url.GetContent() /* expected_cookie_value */,
           "https" /* expected_source_scheme */,
           false /* expected_modify_http_only */,
-          net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+          net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
           true /* success */);
 
       fake_cookie_manager_->InvokePendingDeleteCookiesCallback(

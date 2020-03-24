@@ -426,7 +426,6 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   auto cert = https_test_server().GetCertificate();
   net::CertVerifyResult verify_result;
   verify_result.cert_status = 0;
-  verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = cert;
   mock_cert_verifier()->AddResultForCert(cert.get(), verify_result, net::OK);
 

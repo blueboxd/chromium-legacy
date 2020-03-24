@@ -26,6 +26,8 @@ import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.find_in_page.FindInPageBridge;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindResultBar;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
@@ -35,6 +37,7 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
@@ -272,6 +275,17 @@ public final class TabImpl extends ITab.Stub {
         } else {
             if (webContentsVisible) mWebContents.onHide();
         }
+    }
+
+    public void loadUrl(LoadUrlParams loadUrlParams) {
+        String url = loadUrlParams.getUrl();
+        if (url == null || url.isEmpty()) return;
+
+        GURL fixedUrl = UrlFormatter.fixupUrl(url);
+        if (!fixedUrl.isValid()) return;
+
+        loadUrlParams.setUrl(fixedUrl.getSpec());
+        getWebContents().getNavigationController().loadUrl(loadUrlParams);
     }
 
     public WebContents getWebContents() {
@@ -532,6 +546,10 @@ public final class TabImpl extends ITab.Stub {
             mNewTabCallbackProxy.destroy();
             mNewTabCallbackProxy = null;
         }
+
+        mInterceptNavigationDelegate.onTabDestroyed();
+        mInterceptNavigationDelegate = null;
+
         // ObservableSupplierImpl.addObserver() posts a task to notify the observer, ensure the
         // callback isn't run after destroy() is called (otherwise we'll get crashes as the native
         // tab has been deleted).

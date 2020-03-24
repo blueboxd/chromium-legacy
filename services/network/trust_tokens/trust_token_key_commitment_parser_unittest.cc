@@ -313,10 +313,16 @@ TEST(TrustTokenKeyCommitmentParsing, RejectsKeyWithMalformedExpiry) {
   EXPECT_FALSE(TrustTokenKeyCommitmentParser().Parse(input));
 }
 
-/// TODO(https://crbug.com/1064069): Flaky Parse() expectation mismatches.
-TEST(TrustTokenKeyCommitmentParsing, DISABLED_IgnoreKeyWithExpiryInThePast) {
+TEST(TrustTokenKeyCommitmentParsing, IgnoreKeyWithExpiryInThePast) {
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
+  // Ensure that "one minute ago" yields a nonnegative number of microseconds
+  // past the Unix epoch.
+  env.AdvanceClock(std::max<base::TimeDelta>(
+      base::TimeDelta(), base::Time::UnixEpoch() +
+                             base::TimeDelta::FromMinutes(1) -
+                             base::Time::Now()));
 
   base::Time one_minute_before_now =
       base::Time::Now() - base::TimeDelta::FromMinutes(1);

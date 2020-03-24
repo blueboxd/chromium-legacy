@@ -10,6 +10,20 @@
 
 namespace chromeos {
 
+// Lists the priority of the OOBE screens with the highest priority at the top
+// and the lowest priority at the bottom. This is used to check if screen
+// transition is allowed as only higher or equal priority screen replaces the
+// current screen.
+enum OobeScreenPriority {
+  SCREEN_DEVICE_DISABLED = 1,
+  SCREEN_RESET,
+  SCREEN_WRONG_HWID,
+  SCREEN_ENABLE_DEBUGGING,
+  SCREEN_ADB_SIDELOADING,
+  SCREEN_UPDATE_REQUIRED,
+  DEFAULT = 100
+};
+
 struct StaticOobeScreenId;
 
 // Identifiers an OOBE screen.

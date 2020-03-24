@@ -17,9 +17,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/transport_security_state.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
 
 namespace {
@@ -143,7 +145,12 @@ IN_PROC_BROWSER_TEST_F(ExpectCTBrowserTest, TestDynamicExpectCTReporting) {
   scoped_refptr<net::X509Certificate> cert(test_server.GetCertificate());
   net::CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
-  verify_result.verified_cert = cert;
+  // TODO(https://crbug.com/848277): Until CT is unified with cert
+  // verification, the CertVerifier needs to simulate a publicly trusted
+  // certificate that was issued prior to CT being required, so that the
+  // connection is successfully made, but an Expect-CT report is triggered.
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "expired_cert.pem");
   verify_result.cert_status = 0;
   mock_cert_verifier()->AddResultForCert(cert, verify_result, net::OK);
 
@@ -183,7 +190,12 @@ IN_PROC_BROWSER_TEST_F(ExpectCTBrowserTest,
   scoped_refptr<net::X509Certificate> cert(test_server.GetCertificate());
   net::CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
-  verify_result.verified_cert = cert;
+  // TODO(https://crbug.com/848277): Until CT is unified with cert
+  // verification, the CertVerifier needs to simulate a publicly trusted
+  // certificate that was issued prior to CT being required, so that the
+  // connection is successfully made, but an Expect-CT report is triggered.
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "expired_cert.pem");
   verify_result.cert_status = 0;
   mock_cert_verifier()->AddResultForCert(cert, verify_result, net::OK);
 

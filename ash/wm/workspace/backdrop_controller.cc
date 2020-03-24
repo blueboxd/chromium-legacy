@@ -269,8 +269,12 @@ void BackdropController::OnPostWindowStateTypeChange(aura::Window* window) {
 }
 
 void BackdropController::OnDeskContentChanged() {
-  // Desk content changes may result in the need to update the backdrop even
-  // when overview is active, since the mini_view should show updated content.
+  // This should *only* be called while overview is active. Otherwise, the
+  // WorkspaceLayoutManager should take care of updating the backdrop.
+  DCHECK(InOverviewSession());
+
+  // Desk content changes may result in the need to update the backdrop when
+  // overview is active, since the mini_view should show updated content.
   // Example: when the last window needing backdrop is moved to another desk,
   // the backdrop should be destroyed from the source desk, while created for
   // the target desk, and the mini_views of both desks should be updated.
@@ -281,13 +285,6 @@ void BackdropController::UpdateBackdrop() {
   // Skip updating while overview mode is active, since the backdrop is hidden.
   if (pause_update_ || InOverviewSession())
     return;
-
-  base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
-
-  // Updating the back drop widget should not affect the shelf's auto hide
-  // state.
-  if (chromeos::switches::ShouldShowShelfHotseat())
-    auto_hide_lock.emplace(ash::Shelf::ForWindow(container_));
 
   UpdateBackdropInternal();
 }
@@ -397,6 +394,12 @@ void BackdropController::UpdateBackdropInternal() {
   // Skip the recursive updates.
   if (pause_update_)
     return;
+
+  // Updating the back drop widget should not affect the shelf's auto hide
+  // state.
+  base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    auto_hide_lock.emplace(ash::Shelf::ForWindow(container_));
 
   // We are either destroying the backdrop widget or changing the order of
   // windows which will cause recursion.
@@ -526,7 +529,11 @@ void BackdropController::Show() {
   DCHECK(backdrop_window_);
   DCHECK(window_having_backdrop_);
 
-  if (MaybeWaitForWindowAnimation())
+  // No need to wait for window animations while in overview, since the backdrop
+  // will be hidden anyways, but we still have to update its stacking and
+  // layout.
+  const bool in_overview = InOverviewSession();
+  if (!in_overview && MaybeWaitForWindowAnimation())
     return;
 
   Layout();
@@ -537,7 +544,7 @@ void BackdropController::Show() {
 
   // When overview is active, the backdrop should never be shown. However, it
   // must be laid out, since it should show up properly in the mini_views.
-  if (backdrop_->IsVisible() || InOverviewSession())
+  if (backdrop_->IsVisible() || in_overview)
     return;
 
   ScopedWindowVisibilityAnimationTypeResetter resetter{

@@ -1182,7 +1182,7 @@ void NetworkHandler::SetCookie(const std::string& name,
   net::CookieOptions options;
   // Permit it to set a SameSite cookie if it wants to.
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   options.set_include_httponly();
   storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
       *cookie, "https", options,
@@ -1219,7 +1219,7 @@ void NetworkHandler::SetCookies(
   options.set_include_httponly();
   // Permit it to set a SameSite cookie if it wants to.
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   for (const auto& cookie : net_cookies) {
     cookie_manager->SetCanonicalCookie(
         *cookie, "https", options,

@@ -133,6 +133,31 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSite) {
   }
 }
 
+TEST(CookieManagerTraitsTest, Roundtrips_ContextType) {
+  using ContextType = net::CookieOptions::SameSiteCookieContext::ContextType;
+  for (ContextType context_type :
+       {ContextType::CROSS_SITE, ContextType::SAME_SITE_LAX_METHOD_UNSAFE,
+        ContextType::SAME_SITE_LAX, ContextType::SAME_SITE_STRICT}) {
+    ContextType roundtrip;
+    ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::ContextType>(context_type,
+                                                                &roundtrip));
+    EXPECT_EQ(context_type, roundtrip);
+  }
+}
+
+TEST(CookieManagerTraitsTest, Roundtrips_CrossSchemeness) {
+  using CrossSchemeness =
+      net::CookieOptions::SameSiteCookieContext::CrossSchemeness;
+  for (CrossSchemeness cross_schemeness :
+       {CrossSchemeness::NONE, CrossSchemeness::INSECURE_SECURE,
+        CrossSchemeness::SECURE_INSECURE}) {
+    CrossSchemeness roundtrip;
+    ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CrossSchemeness>(
+        cross_schemeness, &roundtrip));
+    EXPECT_EQ(cross_schemeness, roundtrip);
+  }
+}
+
 TEST(CookieManagerTraitsTest, Roundtrips_CookieAccessSemantics) {
   for (net::CookieAccessSemantics access_semantics :
        {net::CookieAccessSemantics::UNKNOWN,
@@ -160,27 +185,26 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieChangeCause) {
 }
 
 TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
-  for (net::CookieOptions::SameSiteCookieContext context_state :
-       {net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-        net::CookieOptions::SameSiteCookieContext::
-            SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL,
-        net::CookieOptions::SameSiteCookieContext::
-            SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
-        net::CookieOptions::SameSiteCookieContext::
-            SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
-        net::CookieOptions::SameSiteCookieContext::
-            SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL,
-        net::CookieOptions::SameSiteCookieContext::
-            SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
-        net::CookieOptions::SameSiteCookieContext::
-            SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL}) {
-    net::CookieOptions::SameSiteCookieContext roundtrip;
-    ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieSameSiteContext>(
-        context_state, &roundtrip));
-    EXPECT_EQ(context_state, roundtrip);
+  using ContextType = net::CookieOptions::SameSiteCookieContext::ContextType;
+  using CrossSchemeness =
+      net::CookieOptions::SameSiteCookieContext::CrossSchemeness;
+  for (ContextType context_type :
+       {ContextType::CROSS_SITE, ContextType::SAME_SITE_LAX_METHOD_UNSAFE,
+        ContextType::SAME_SITE_LAX, ContextType::SAME_SITE_STRICT}) {
+    for (CrossSchemeness cross_schemeness :
+         {CrossSchemeness::NONE, CrossSchemeness::INSECURE_SECURE,
+          CrossSchemeness::SECURE_INSECURE}) {
+      net::CookieOptions::SameSiteCookieContext context_in(context_type,
+                                                           cross_schemeness),
+          copy;
+
+      EXPECT_TRUE(
+          mojo::test::SerializeAndDeserialize<mojom::CookieSameSiteContext>(
+              &context_in, &copy));
+
+      EXPECT_EQ(context_in.context, copy.context);
+      EXPECT_EQ(context_in.cross_schemeness, copy.cross_schemeness);
+    }
   }
 }
 
@@ -193,8 +217,10 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CookieOptions>(
         &least_trusted, &copy));
     EXPECT_TRUE(copy.exclude_httponly());
-    EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-              copy.same_site_cookie_context());
+    EXPECT_EQ(
+        net::CookieOptions::SameSiteCookieContext(
+            net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
+        copy.same_site_cookie_context());
     EXPECT_TRUE(copy.return_excluded_cookies());
   }
 
@@ -202,12 +228,12 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
     net::CookieOptions very_trusted, copy;
     very_trusted.set_include_httponly();
     very_trusted.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CookieOptions>(
         &very_trusted, &copy));
     EXPECT_FALSE(copy.exclude_httponly());
-    EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+    EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
               copy.same_site_cookie_context());
     EXPECT_FALSE(copy.return_excluded_cookies());
   }

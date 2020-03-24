@@ -33,6 +33,11 @@ Polymer({
      */
     compromisedPasswordsCount_: String,
 
+    // <if expr="not chromeos">
+    /** @private */
+    storedAccounts_: Array,
+    // </if>
+
     /**
      * An array of leaked passwords to display.
      * @type {!Array<!PasswordManagerProxy.CompromisedCredential>}
@@ -61,6 +66,18 @@ Polymer({
     suppressCheckupLink_: {
       type: Boolean,
       computed: 'suppressesCheckupLink_(status_, syncPrefs_, syncStatus_)',
+    },
+
+    /** @private */
+    isSignedOut_: {
+      type: Boolean,
+      computed: 'computeIsSignedOut_(syncStatus_, storedAccounts_)',
+    },
+
+    /** @private */
+    isButtonHidden_: {
+      type: Boolean,
+      computed: 'computeIsButtonHidden_(status_, isSignedOut_)',
     },
 
     /** @private {settings.SyncPrefs} */
@@ -150,6 +167,13 @@ Polymer({
         this.leakedCredentialsListener_);
     this.addWebUIListener('sync-status-changed', syncStatusChanged);
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
+
+    // For non-ChromeOS, also check whether accounts are available.
+    // <if expr="not chromeos">
+    const storedAccountsChanged = accounts => this.storedAccounts_ = accounts;
+    syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
+    this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
+    // </if>
 
     // Start the check if instructed to do so.
     const router = settings.Router.getInstance();
@@ -380,25 +404,25 @@ Polymer({
 
   /**
    * Returns true iff the check/stop button should be visible for a given state.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @return {!boolean}
    * @private
    */
-  isButtonHidden_(status) {
-    switch (status.state) {
+  computeIsButtonHidden_() {
+    switch (this.status_.state) {
       case CheckState.IDLE:
       case CheckState.CANCELED:
       case CheckState.RUNNING:
       case CheckState.OFFLINE:
-      case CheckState.SIGNED_OUT:
       case CheckState.OTHER_ERROR:
         return false;
+      case CheckState.SIGNED_OUT:
+        return this.isSignedOut_;
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
         return true;
     }
     assertNotReached(
-        'Can\'t determine button visibility for state: ' + status.state);
+        'Can\'t determine button visibility for state: ' + this.status_.state);
   },
 
   /**
@@ -491,6 +515,18 @@ Polymer({
    */
   waitsForFirstCheck_() {
     return !this.status_.elapsedTimeSinceLastCheck;
+  },
+
+  /**
+   * Returns true iff the user is signed in.
+   * @return {boolean}
+   * @private
+   */
+  computeIsSignedOut_() {
+    if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
+      return !this.storedAccounts_ || this.storedAccounts_.length == 0;
+    }
+    return !!this.syncStatus_.hasError;
   },
 
   /**

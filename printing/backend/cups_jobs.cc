@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "printing/backend/cups_deleters.h"
 #include "printing/backend/cups_ipp_helper.h"
+#include "printing/printer_status_chromeos.h"
 
 namespace printing {
 namespace {
@@ -110,9 +111,10 @@ constexpr int kHttpConnectTimeoutMs = 1000;
 constexpr std::array<const char* const, 3> kPrinterAttributes{
     {kPrinterState, kPrinterStateReasons, kPrinterStateMessage}};
 
-constexpr std::array<const char* const, 5> kPrinterInfo{
+constexpr std::array<const char* const, 8> kPrinterInfoAndStatus{
     {kPrinterMakeAndModel, kIppVersionsSupported, kIppFeaturesSupported,
-     kDocumentFormatSupported, kPwgRasterDocumentResolutionSupported}};
+     kDocumentFormatSupported, kPwgRasterDocumentResolutionSupported,
+     kPrinterState, kPrinterStateReasons, kPrinterStateMessage}};
 
 // Converts an IPP attribute |attr| to the appropriate JobState enum.
 CupsJob::JobState ToJobState(ipp_attribute_t* attr) {
@@ -352,12 +354,6 @@ CupsJob::CupsJob(const CupsJob& other) = default;
 
 CupsJob::~CupsJob() = default;
 
-PrinterStatus::PrinterStatus() = default;
-
-PrinterStatus::PrinterStatus(const PrinterStatus& other) = default;
-
-PrinterStatus::~PrinterStatus() = default;
-
 PrinterInfo::PrinterInfo() = default;
 
 PrinterInfo::~PrinterInfo() = default;
@@ -420,6 +416,8 @@ ScopedIppPtr GetPrinterAttributes(http_t* http,
 }
 
 void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status) {
+  *printer_status = PrinterStatus();
+
   for (ipp_attribute_t* attr = ippFirstAttribute(response); attr != nullptr;
        attr = ippNextAttribute(response)) {
     base::StringPiece name = ippGetName(attr);
@@ -446,7 +444,11 @@ PrinterQueryResult GetPrinterInfo(const std::string& address,
                                   const int port,
                                   const std::string& resource,
                                   bool encrypted,
-                                  PrinterInfo* printer_info) {
+                                  PrinterInfo* printer_info,
+                                  PrinterStatus* printer_status) {
+  DCHECK(printer_info);
+  DCHECK(printer_status);
+
   ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
       address.c_str(), port, nullptr, AF_INET,
       encrypted ? HTTP_ENCRYPTION_ALWAYS : HTTP_ENCRYPTION_IF_REQUESTED, 0,
@@ -467,13 +469,15 @@ PrinterQueryResult GetPrinterInfo(const std::string& address,
                          address.c_str(), port, path.c_str());
 
   ipp_status_t status;
-  ScopedIppPtr response =
-      GetPrinterAttributes(http.get(), printer_uri, resource,
-                           kPrinterInfo.size(), kPrinterInfo.data(), &status);
+  ScopedIppPtr response = GetPrinterAttributes(
+      http.get(), printer_uri, resource, kPrinterInfoAndStatus.size(),
+      kPrinterInfoAndStatus.data(), &status);
   if (StatusError(status) || response.get() == nullptr) {
     LOG(WARNING) << "Get attributes failure: " << status;
     return PrinterQueryResult::UNKNOWN_FAILURE;
   }
+
+  ParsePrinterStatus(response.get(), printer_status);
 
   if (ParsePrinterInfo(response.get(), printer_info)) {
     return PrinterQueryResult::SUCCESS;

@@ -31,6 +31,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
   void SendKeyPressWithControl(ui::KeyboardCode key);
   void SendKeyPressWithSearchAndShift(ui::KeyboardCode key);
   void SendKeyPressWithSearch(ui::KeyboardCode key);
+  void SendKeyPressWithSearchAndControl(ui::KeyboardCode key);
   void SendKeyPressWithSearchAndControlAndShift(ui::KeyboardCode key);
 
   void SendMouseMoveTo(const gfx::Point& location);

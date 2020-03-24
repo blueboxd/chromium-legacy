@@ -134,12 +134,8 @@ void HostBackendDelegateImpl::AttemptToSetMultiDeviceHostOnBackend(
   timer_->Stop();
 
   if (host_device) {
-    // If an Instance ID is available, use that to identify the device;
-    // otherwise, use the encoded public key.
     if (features::ShouldUseV1DeviceSync()) {
-      SetPendingHostRequest(host_device->instance_id().empty()
-                                ? host_device->GetDeviceId()
-                                : host_device->instance_id());
+      SetPendingHostRequest(host_device->GetDeviceId());
     } else {
       DCHECK(!host_device->instance_id().empty());
       SetPendingHostRequest(host_device->instance_id());
@@ -183,12 +179,10 @@ bool HostBackendDelegateImpl::HasPendingHostRequest() {
   // the persisted host ID will not be recognized, and the user will need to go
   // through setup again:
   //  * The device was actually removed from the user's account.
-  //  * Instance ID is persisted and v2 DeviceSync is rolled back.
   //  * A public key is persisted, v1 DeviceSync is disabled, and the v2 device
   //    data hasn't been decrypted.
-  //  * v1 and v2 DeviceSync are running in parallel, an Instance ID is
-  //    persisted, the device metadata is encrypted with a new group key,
-  //    resulting in v1 device data being used.
+  //  * Instance ID is persisted, v1 DeviceSync in re-enabled and the Instance
+  //    ID cannot be found in the device list.
   // We expect all of these scenarios to be very rare.
   SetPendingHostRequest(kNoPendingRequest);
   return false;
@@ -244,8 +238,7 @@ HostBackendDelegateImpl::FindDeviceById(const std::string& id) const {
   DCHECK(!id.empty());
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
     if (features::ShouldUseV1DeviceSync()) {
-      if (id == remote_device.instance_id() ||
-          id == remote_device.GetDeviceId())
+      if (id == remote_device.GetDeviceId())
         return remote_device;
     } else {
       if (id == remote_device.instance_id())
@@ -278,38 +271,22 @@ void HostBackendDelegateImpl::AttemptNetworkRequest(bool is_retry) {
                << (should_enable ? "enable" : "disable") << " the host.\n"
                << GenerateDeviceIdString(device_to_set);
 
-  // If the |device_to_set| has a non-trivial Instance ID, then it was returned
-  // from a v2 DeviceSync (Instance IDs are not part of the v1 protocol). In
-  // that case, exercise the v2 RPC SetFeatureStatus, even if v1 DeviceSync is
-  // still running in parallel. SetFeatureStatus and its v1 counterpart,
-  // SetSoftwareFeatureState, ultimately update the same backend database entry,
-  // so only one needs to be invoked.
   if (features::ShouldUseV1DeviceSync()) {
-    // In order to avoid a race condition in mutating the BetterTogether host
-    // state on the CryptAuth backend, we are assuming that all
-    // SetFeatureStatus() and SetSoftwareFeatureState() requests are added to
-    // the same queue and processed in order. The DeviceSync service
-    // implementation guarantees this ordering.
-    if (!device_to_set.instance_id().empty()) {
-      device_sync_client_->SetFeatureStatus(
-          device_to_set.instance_id(),
-          multidevice::SoftwareFeature::kBetterTogetherHost,
-          should_enable ? device_sync::FeatureStatusChange::kEnableExclusively
-                        : device_sync::FeatureStatusChange::kDisable,
-          base::BindOnce(
-              &HostBackendDelegateImpl::OnSetHostNetworkRequestFinished,
-              weak_ptr_factory_.GetWeakPtr(), device_to_set, should_enable));
-
-    } else {
-      DCHECK(!device_to_set.public_key().empty());
-      device_sync_client_->SetSoftwareFeatureState(
-          device_to_set.public_key(),
-          multidevice::SoftwareFeature::kBetterTogetherHost,
-          should_enable /* enabled */, should_enable /* is_exclusive */,
-          base::BindOnce(
-              &HostBackendDelegateImpl::OnSetHostNetworkRequestFinished,
-              weak_ptr_factory_.GetWeakPtr(), device_to_set, should_enable));
-    }
+    // Even if the |device_to_set| has a non-trivial Instance ID, we still
+    // invoke the v1 DeviceSync RPC to set the feature state. This ensures that
+    // GmsCore will be notified of the change regardless of what version of
+    // DeviceSync it is running. The v1 and v2 RPCs to change feature states
+    // ultimately update the same backend database entry. Note: The
+    // RemoteDeviceProvider guarantees that every device will have a public key
+    // while v1 DeviceSync is enabled.
+    DCHECK(!device_to_set.public_key().empty());
+    device_sync_client_->SetSoftwareFeatureState(
+        device_to_set.public_key(),
+        multidevice::SoftwareFeature::kBetterTogetherHost,
+        should_enable /* enabled */, should_enable /* is_exclusive */,
+        base::BindOnce(
+            &HostBackendDelegateImpl::OnSetHostNetworkRequestFinished,
+            weak_ptr_factory_.GetWeakPtr(), device_to_set, should_enable));
   } else {
     DCHECK(!device_to_set.instance_id().empty());
     device_sync_client_->SetFeatureStatus(

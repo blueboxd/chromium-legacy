@@ -14,7 +14,8 @@ namespace chromeos {
 KioskAutolaunchScreen::KioskAutolaunchScreen(
     KioskAutolaunchScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(KioskAutolaunchScreenView::kScreenId),
+    : BaseScreen(KioskAutolaunchScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

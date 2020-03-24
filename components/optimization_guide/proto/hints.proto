@@ -60,8 +60,6 @@ message GetHintsRequest {
 
 // Response to the GetHints request.
 message GetHintsResponse {
-  reserved 2;
-
   // An ordered list containing hints for key/optimization combinations.
   //
   // It is guaranteed that there will only be a single hint per key and key
@@ -75,6 +73,10 @@ message GetHintsResponse {
   // sports.cnn.com/foo. In this case, the client is expected to use the
   // hints from (HOST_SUFFIX,sports.cnn.com).
   repeated Hint hints = 1;
+
+  // The maximum duration in which the hints, or lack of hints, provided in
+  // this response are valid.
+  optional Duration max_cache_duration = 2;
 
   // A set of hint keys to remove from the client cache.
   //

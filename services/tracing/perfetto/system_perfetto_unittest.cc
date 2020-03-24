@@ -56,11 +56,15 @@ std::string RandomASCII(size_t length) {
 
 class SaveSystemProducerAndScopedRestore {
  public:
-  SaveSystemProducerAndScopedRestore()
-      : saved_producer_(
-            PerfettoTracedProcess::Get()->SetSystemProducerForTesting(
-                std::make_unique<DummyProducer>(
-                    PerfettoTracedProcess::GetTaskRunner()))) {}
+  SaveSystemProducerAndScopedRestore() {
+    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([this] {
+          saved_producer_ =
+              PerfettoTracedProcess::Get()->SetSystemProducerForTesting(
+                  std::make_unique<DummyProducer>(
+                      PerfettoTracedProcess::GetTaskRunner()));
+        }));
+  }
 
   ~SaveSystemProducerAndScopedRestore() {
     base::RunLoop destroy;
@@ -301,10 +305,11 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   base::RunLoop local_data_source_enabled_runloop;
   base::RunLoop local_data_source_disabled_runloop;
   base::RunLoop local_no_more_packets_runloop;
-  auto local_producer_client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 3,
-      local_data_source_enabled_runloop.QuitClosure(),
-      local_data_source_disabled_runloop.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> local_producer_client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 3,
+          local_data_source_enabled_runloop.QuitClosure(),
+          local_data_source_disabled_runloop.QuitClosure());
   MockConsumer local_consumer(
       {kPerfettoTestDataSourceName,
        base::StrCat({kPerfettoTestDataSourceName, "1"}),
@@ -317,7 +322,7 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
       });
   auto local_producer_host = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
-      local_producer_client.get());
+      **local_producer_client);
 
   system_consumer.WaitForAllDataSourcesStopped();
   system_data_source_disabled_runloop.Run();
@@ -367,7 +372,6 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   EXPECT_EQ(1u + 3u + 7u, local_consumer.received_test_packets());
   EXPECT_EQ(2u, system_consumer.received_test_packets());
 
-  PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
@@ -386,13 +390,14 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   // Now start the local trace and wait for the system trace to stop first.
   base::RunLoop local_data_source_enabled_runloop;
   base::RunLoop local_data_source_disabled_runloop;
-  auto local_producer_client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1,
-      local_data_source_enabled_runloop.QuitClosure(),
-      local_data_source_disabled_runloop.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> local_producer_client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1,
+          local_data_source_enabled_runloop.QuitClosure(),
+          local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
-      local_producer_client.get());
+      **local_producer_client);
 
   local_data_source_enabled_runloop.Run();
   local_consumer->WaitForAllDataSourcesStarted();
@@ -461,10 +466,12 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   // for the system producer.
   base::RunLoop local_data_source_reenabled_runloop;
   base::RunLoop local_data_source_redisabled_runloop;
-  local_producer_client->SetAgentEnabledCallback(
-      local_data_source_reenabled_runloop.QuitClosure());
-  local_producer_client->SetAgentDisabledCallback(
-      local_data_source_redisabled_runloop.QuitClosure());
+  (*local_producer_client)
+      ->SetAgentEnabledCallback(
+          local_data_source_reenabled_runloop.QuitClosure());
+  (*local_producer_client)
+      ->SetAgentDisabledCallback(
+          local_data_source_redisabled_runloop.QuitClosure());
 
   local_consumer->FreeBuffers();
   local_consumer->StartTracing();
@@ -481,7 +488,6 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   EXPECT_EQ(14u, local_consumer->received_test_packets());
   EXPECT_EQ(1u + 3u + 7u, system_consumer.received_test_packets());
 
-  PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
@@ -515,13 +521,14 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
   base::RunLoop local_data_source_enabled_runloop;
   base::RunLoop local_data_source_disabled_runloop;
   base::RunLoop local_no_more_packets_runloop;
-  auto local_producer_client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 3,
-      local_data_source_enabled_runloop.QuitClosure(),
-      local_data_source_disabled_runloop.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> local_producer_client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 3,
+          local_data_source_enabled_runloop.QuitClosure(),
+          local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
-      local_producer_client.get());
+      **local_producer_client);
   MockConsumer local_consumer(
       {kPerfettoTestDataSourceName,
        base::StrCat({kPerfettoTestDataSourceName, "1"}),
@@ -590,7 +597,6 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
   EXPECT_EQ(1u + 3u + 7u, local_consumer.received_test_packets());
   EXPECT_EQ((1u + 3u + 7u) * 2, system_consumer.received_test_packets());
 
-  PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
@@ -610,13 +616,14 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   base::RunLoop local_data_source_enabled_runloop;
   base::RunLoop local_data_source_disabled_runloop;
   base::RunLoop local_no_more_packets_runloop;
-  auto local_producer_client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 3,
-      local_data_source_enabled_runloop.QuitClosure(),
-      local_data_source_disabled_runloop.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> local_producer_client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 3,
+          local_data_source_enabled_runloop.QuitClosure(),
+          local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
-      local_producer_client.get());
+      **local_producer_client);
   MockConsumer local_consumer(
       {kPerfettoTestDataSourceName,
        base::StrCat({kPerfettoTestDataSourceName, "1"}),
@@ -695,7 +702,6 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   EXPECT_EQ(1u + 3u + 7u, local_consumer.received_test_packets());
   EXPECT_EQ(1u + 3u + 7u, system_consumer.received_test_packets());
 
-  PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
@@ -715,13 +721,13 @@ TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
   // Create local producer.
   base::RunLoop local_data_source_enabled_runloop;
   base::RunLoop local_data_source_disabled_runloop;
-  auto local_producer = std::make_unique<MockProducerClient>(
+  auto local_producer = MockProducerClient::Create(
       /* num_data_sources = */ 1,
       local_data_source_enabled_runloop.QuitClosure(),
       local_data_source_disabled_runloop.QuitClosure());
 
   // Setup startup tracing for local producer.
-  CHECK(local_producer->SetupStartupTracing());
+  CHECK((*local_producer)->SetupStartupTracing());
 
   // Attempt to start a system tracing session. Because startup tracing is
   // already active, the system producer shouldn't activate yet.
@@ -754,7 +760,7 @@ TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
       }));
   auto local_producer_host = std::make_unique<MockProducerHost>(
       kPerfettoProducerName, mojom::kTraceEventDataSourceName, local_service(),
-      local_producer.get());
+      **local_producer);
   local_data_source_enabled_runloop.Run();
   local_consumer->WaitForAllDataSourcesStarted();
 
@@ -797,7 +803,6 @@ TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
   // Local consumer should have received 1 packet from the |data_sources_[0]|.
   EXPECT_EQ(1u, system_consumer.received_test_packets());
 
-  PerfettoProducer::DeleteSoonForTesting(std::move(local_producer));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 

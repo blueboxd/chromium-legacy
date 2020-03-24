@@ -157,14 +157,6 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::BindRepeating(&WebTestBluetoothFakeAdapterSetterImpl::Create),
       ui_task_runner);
-  StoragePartition* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context());
-  registry->AddInterface(base::BindRepeating(&WebTestClientImpl::Create,
-                                             render_process_host->GetID(),
-                                             partition->GetQuotaManager(),
-                                             partition->GetDatabaseTracker(),
-                                             partition->GetNetworkContext()),
-                         ui_task_runner);
   registry->AddInterface(base::BindRepeating(&bluetooth::FakeBluetooth::Create),
                          ui_task_runner);
   // This class outlives |render_process_host|, which owns |registry|. Since
@@ -192,6 +184,13 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
   associated_registry->AddInterface(
       base::BindRepeating(&WebTestContentBrowserClient::BindBlinkTestController,
                           base::Unretained(this)));
+  StoragePartition* partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context());
+  associated_registry->AddInterface(base::BindRepeating(
+      &WebTestContentBrowserClient::BindWebTestController,
+      base::Unretained(this), render_process_host->GetID(),
+      partition->GetQuotaManager(), partition->GetDatabaseTracker(),
+      partition->GetNetworkContext()));
 }
 
 void WebTestContentBrowserClient::BindClientHintsControllerDelegate(
@@ -410,6 +409,16 @@ void WebTestContentBrowserClient::BindBlinkTestController(
     mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver) {
   if (BlinkTestController::Get())
     BlinkTestController::Get()->AddBlinkTestClientReceiver(std::move(receiver));
+}
+
+void WebTestContentBrowserClient::BindWebTestController(
+    int render_process_id,
+    storage::QuotaManager* quota_manager,
+    storage::DatabaseTracker* database_tracker,
+    network::mojom::NetworkContext* network_context,
+    mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver) {
+  WebTestClientImpl::Create(render_process_id, quota_manager, database_tracker,
+                            network_context, std::move(receiver));
 }
 
 }  // namespace content

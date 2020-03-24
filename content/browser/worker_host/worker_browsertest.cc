@@ -155,7 +155,9 @@ class WorkerTest : public ContentBrowserTest,
         cookie_manager.BindNewPipeAndPassReceiver());
     net::CookieOptions options;
     options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+        net::CookieOptions::SameSiteCookieContext(
+            net::CookieOptions::SameSiteCookieContext::ContextType::
+                SAME_SITE_LAX));
     std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
         ssl_server_.GetURL(host, "/"),
         std::string(kSameSiteCookie) + "; SameSite=Lax; Secure",

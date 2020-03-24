@@ -216,13 +216,15 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin,
   leveldb::Status s =
       IndexedDBClassFactory::Get()->leveldb_factory().DestroyLevelDB(
           idb_directory);
-  if (s.ok()) {
-    base::DeleteFileRecursively(GetBlobStorePath(origin));
+  bool success = s.ok();
+  if (success)
+    success = base::DeleteFileRecursively(GetBlobStorePath(origin));
+  QueryDiskAndUpdateQuotaUsage(origin);
+  if (success) {
     GetOriginSet()->erase(origin);
     origin_size_map_.erase(origin);
   }
-  QueryDiskAndUpdateQuotaUsage(origin);
-  std::move(callback).Run(s.ok());
+  std::move(callback).Run(success);
 }
 
 void IndexedDBContextImpl::ForceClose(const Origin& origin,

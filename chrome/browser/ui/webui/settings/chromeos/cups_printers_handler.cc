@@ -59,6 +59,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
+#include "printing/printer_status_chromeos.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -114,8 +115,8 @@ void QueryAutoconf(const std::string& printer_uri,
   // Behavior for querying a non-IPP uri is undefined and disallowed.
   if (!IsIppUri(printer_uri) || !optional.has_value()) {
     PRINTER_LOG(ERROR) << "Printer uri is invalid: " << printer_uri;
-    std::move(callback).Run(PrinterQueryResult::UNKNOWN_FAILURE, "", "", "", {},
-                            false);
+    std::move(callback).Run(PrinterQueryResult::UNKNOWN_FAILURE,
+                            printing::PrinterStatus(), "", "", "", {}, false);
     return;
   }
 
@@ -487,8 +488,8 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 
   if (printer_address.empty()) {
     // Run the failure callback.
-    OnAutoconfQueried(callback_id, PrinterQueryResult::UNKNOWN_FAILURE, "", "",
-                      "", {}, false);
+    OnAutoconfQueried(callback_id, PrinterQueryResult::UNKNOWN_FAILURE,
+                      printing::PrinterStatus(), "", "", "", {}, false);
     return;
   }
 
@@ -515,6 +516,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     const std::string& callback_id,
     Printer printer,
     PrinterQueryResult result,
+    const printing::PrinterStatus& printer_status,
     const std::string& make,
     const std::string& model,
     const std::string& make_and_model,
@@ -561,6 +563,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
 void CupsPrintersHandler::OnAutoconfQueried(
     const std::string& callback_id,
     PrinterQueryResult result,
+    const printing::PrinterStatus& printer_status,
     const std::string& make,
     const std::string& model,
     const std::string& make_and_model,

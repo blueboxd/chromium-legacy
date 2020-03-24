@@ -2882,6 +2882,21 @@
             ]
         }
     ],
+    "InterestFeedFeedback": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InterestFeedFeedback"
+                    ]
+                }
+            ]
+        }
+    ],
     "IsolatePasswordSites": [
         {
             "platforms": [

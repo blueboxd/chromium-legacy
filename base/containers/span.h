@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/template_util.h"
 
 namespace base {
 
@@ -29,17 +30,20 @@ class span;
 
 namespace internal {
 
+template <size_t I>
+using size_constant = std::integral_constant<size_t, I>;
+
 template <typename T>
-struct ExtentImpl : std::integral_constant<size_t, dynamic_extent> {};
+struct ExtentImpl : size_constant<dynamic_extent> {};
 
 template <typename T, size_t N>
-struct ExtentImpl<T[N]> : std::integral_constant<size_t, N> {};
+struct ExtentImpl<T[N]> : size_constant<N> {};
 
 template <typename T, size_t N>
-struct ExtentImpl<std::array<T, N>> : std::integral_constant<size_t, N> {};
+struct ExtentImpl<std::array<T, N>> : size_constant<N> {};
 
 template <typename T, size_t N>
-struct ExtentImpl<base::span<T, N>> : std::integral_constant<size_t, N> {};
+struct ExtentImpl<base::span<T, N>> : size_constant<N> {};
 
 template <typename T>
 using Extent = ExtentImpl<std::remove_cv_t<std::remove_reference_t<T>>>;
@@ -51,7 +55,7 @@ template <typename T, size_t Extent>
 struct IsSpanImpl<span<T, Extent>> : std::true_type {};
 
 template <typename T>
-using IsSpan = IsSpanImpl<std::decay_t<T>>;
+using IsNotSpan = negation<IsSpanImpl<std::decay_t<T>>>;
 
 template <typename T>
 struct IsStdArrayImpl : std::false_type {};
@@ -60,10 +64,10 @@ template <typename T, size_t N>
 struct IsStdArrayImpl<std::array<T, N>> : std::true_type {};
 
 template <typename T>
-using IsStdArray = IsStdArrayImpl<std::decay_t<T>>;
+using IsNotStdArray = negation<IsStdArrayImpl<std::decay_t<T>>>;
 
 template <typename T>
-using IsCArray = std::is_array<std::remove_reference_t<T>>;
+using IsNotCArray = negation<std::is_array<std::remove_reference_t<T>>>;
 
 template <typename From, typename To>
 using IsLegalDataConversion = std::is_convertible<From (*)[], To (*)[]>;
@@ -92,13 +96,11 @@ using EnableIfSpanCompatibleArray =
 // SFINAE check if Container can be converted to a span<T>.
 template <typename Container, typename T>
 using IsSpanCompatibleContainer =
-    std::conditional_t<!IsSpan<Container>::value &&
-                           !IsStdArray<Container>::value &&
-                           !IsCArray<Container>::value &&
-                           ContainerHasConvertibleData<Container, T>::value &&
-                           ContainerHasIntegralSize<Container>::value,
-                       std::true_type,
-                       std::false_type>;
+    conjunction<IsNotSpan<Container>,
+                IsNotStdArray<Container>,
+                IsNotCArray<Container>,
+                ContainerHasConvertibleData<Container, T>,
+                ContainerHasIntegralSize<Container>>;
 
 template <typename Container, typename T>
 using EnableIfSpanCompatibleContainer =

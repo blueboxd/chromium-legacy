@@ -86,19 +86,19 @@ class CORE_EXPORT InteractiveDetector
   // The duration between the hardware timestamp and being queued on the main
   // thread for the first click, tap, key press, cancelable touchstart, or
   // pointer down followed by a pointer up.
-  base::TimeDelta GetFirstInputDelay() const;
+  base::Optional<base::TimeDelta> GetFirstInputDelay() const;
 
   // The timestamp of the event whose delay is reported by GetFirstInputDelay().
-  base::TimeTicks GetFirstInputTimestamp() const;
+  base::Optional<base::TimeTicks> GetFirstInputTimestamp() const;
 
   // Queueing Time of the meaningful input event with longest delay. Meaningful
   // input events are click, tap, key press, cancellable touchstart, or pointer
   // down followed by a pointer up.
-  base::TimeDelta GetLongestInputDelay() const;
+  base::Optional<base::TimeDelta> GetLongestInputDelay() const;
 
   // The timestamp of the event whose delay is reported by
   // GetLongestInputDelay().
-  base::TimeTicks GetLongestInputTimestamp() const;
+  base::Optional<base::TimeTicks> GetLongestInputTimestamp() const;
 
   // The number of user interactions.
   uint64_t GetNumInputEvents() const;
@@ -147,10 +147,10 @@ class CORE_EXPORT InteractiveDetector
     // Interactive computation. This is used when reporting Time To Interactive
     // on a trace event.
     base::TimeTicks first_invalidating_input;
-    base::TimeDelta first_input_delay;
-    base::TimeDelta longest_input_delay;
-    base::TimeTicks first_input_timestamp;
-    base::TimeTicks longest_input_timestamp;
+    base::Optional<base::TimeDelta> first_input_delay;
+    base::Optional<base::TimeDelta> longest_input_delay;
+    base::Optional<base::TimeTicks> first_input_timestamp;
+    base::Optional<base::TimeTicks> longest_input_timestamp;
     base::TimeDelta total_input_delay;
     base::TimeDelta total_adjusted_input_delay;
     uint64_t num_input_events;

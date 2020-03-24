@@ -141,6 +141,13 @@ const CGFloat kTopAndBottomPadding = 8.0;
                              base::TimeTicks::Now() - self.viewAppearanceTime);
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+  [self.tableView setEditing:NO animated:NO];
+}
+
 #pragma mark - AutocompleteResultConsumer
 
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result

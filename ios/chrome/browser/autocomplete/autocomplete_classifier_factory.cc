@@ -28,7 +28,7 @@ std::unique_ptr<KeyedService> BuildAutocompleteClassifier(
   return std::make_unique<AutocompleteClassifier>(
       base::WrapUnique(new AutocompleteController(
           base::WrapUnique(new AutocompleteProviderClientImpl(browser_state)),
-          nullptr, AutocompleteClassifier::DefaultOmniboxProviders())),
+          AutocompleteClassifier::DefaultOmniboxProviders())),
       base::WrapUnique(new AutocompleteSchemeClassifierImpl));
 }
 

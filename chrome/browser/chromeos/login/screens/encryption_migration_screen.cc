@@ -14,7 +14,9 @@ namespace chromeos {
 
 EncryptionMigrationScreen::EncryptionMigrationScreen(
     EncryptionMigrationScreenView* view)
-    : BaseScreen(EncryptionMigrationScreenView::kScreenId), view_(view) {
+    : BaseScreen(EncryptionMigrationScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
+      view_(view) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);

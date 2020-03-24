@@ -86,7 +86,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeCookies: {
-      // TODO(crbug.com/1063824): Implement this.
+      [self.handler showCookiesInfo];
       break;
     }
     default:

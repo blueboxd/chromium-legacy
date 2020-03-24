@@ -38,7 +38,7 @@ NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
 
 NetworkScreen::NetworkScreen(NetworkScreenView* view,
                              const ScreenExitCallback& exit_callback)
-    : BaseScreen(NetworkScreenView::kScreenId),
+    : BaseScreen(NetworkScreenView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {

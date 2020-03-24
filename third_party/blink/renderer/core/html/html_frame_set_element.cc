@@ -202,7 +202,7 @@ void HTMLFrameSetElement::ParseAttribute(
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kLanguagechange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (RuntimeEnabledFeatures::PortalsEnabled() &&
+  } else if (RuntimeEnabledFeatures::PortalsEnabled(&GetDocument()) &&
              name == html_names::kOnportalactivateAttr) {
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kPortalactivate,

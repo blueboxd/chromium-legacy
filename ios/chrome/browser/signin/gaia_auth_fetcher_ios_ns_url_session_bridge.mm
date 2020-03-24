@@ -94,7 +94,7 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequest() {
   net::CookieOptions options;
   options.set_include_httponly();
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   cookie_manager->GetCookieList(
       GetRequest().url, options,
       base::BindOnce(
@@ -119,7 +119,7 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::SetCanonicalCookiesFromResponse(
     options.set_include_httponly();
     // Permit it to set a SameSite cookie if it wants to.
     options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     cookie_manager->SetCanonicalCookie(
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now()),
         base::SysNSStringToUTF8(response.URL.scheme), options,

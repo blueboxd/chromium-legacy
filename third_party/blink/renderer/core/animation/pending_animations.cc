@@ -49,7 +49,14 @@ void PendingAnimations::Add(Animation* animation) {
     document->View()->ScheduleAnimation();
 
   bool visible = document->GetPage() && document->GetPage()->IsPageVisible();
-  if (!visible && !timer_.IsActive()) {
+  if (!visible && !timer_.IsActive() &&
+      // TODO(crbug.com/916117): Firing a timer for animations linked to
+      // inactive timelines creates an unnecessary cycle of unsuccessfully
+      // starting such animations. Instead, let the animation frame call
+      // PendingAnimations::Update when the timeline becomes active.
+      // Revisit this condition and add a test as part of inactive timeline
+      // implementation.
+      animation->timeline() && animation->timeline()->IsActive()) {
     timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
@@ -77,8 +84,13 @@ bool PendingAnimations::Update(
         started_synchronized_on_compositor = true;
       }
 
-      if (!animation->timeline())
+      // TODO(crbug.com/916117): Revisit this condition as part of handling
+      // inactive timelines work.
+      if (!animation->timeline() || !animation->timeline()->IsActive()) {
+        DCHECK(!animation->timeline() ||
+               !animation->timeline()->IsScrollTimeline());
         continue;
+      }
 
       if (animation->Playing() && !animation->startTime()) {
         waiting_for_start_time.push_back(animation.Get());

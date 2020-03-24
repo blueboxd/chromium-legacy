@@ -42,7 +42,8 @@ void LogEvent(AdbSideloadingPromptEvent action) {
 EnableAdbSideloadingScreen::EnableAdbSideloadingScreen(
     EnableAdbSideloadingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(EnableAdbSideloadingScreenView::kScreenId),
+    : BaseScreen(EnableAdbSideloadingScreenView::kScreenId,
+                 OobeScreenPriority::SCREEN_ADB_SIDELOADING),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

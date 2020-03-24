@@ -35,6 +35,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -403,6 +404,14 @@ bool HasDocumentWithValidFrame(const WebInputElement& element) {
   return frame && frame->View();
 }
 
+bool ShowPopupWithoutPasswords(const WebInputElement& password_element) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    return false;
+  }
+  return !password_element.IsNull() && IsElementEditable(password_element);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -482,11 +491,10 @@ void PasswordAutofillAgent::FocusStateNotifier::FocusedInputChanged(
 }
 
 PasswordAutofillAgent::PasswordValueGatekeeper::PasswordValueGatekeeper()
-    : was_user_gesture_seen_(false) {
-}
+    : was_user_gesture_seen_(false) {}
 
-PasswordAutofillAgent::PasswordValueGatekeeper::~PasswordValueGatekeeper() {
-}
+PasswordAutofillAgent::PasswordValueGatekeeper::~PasswordValueGatekeeper() =
+    default;
 
 void PasswordAutofillAgent::PasswordValueGatekeeper::RegisterElement(
     WebInputElement* element) {
@@ -854,7 +862,7 @@ bool PasswordAutofillAgent::ShowSuggestions(
   FindPasswordInfoForElement(element, UseFallbackData(true), &username_element,
                              &password_element, &password_info);
 
-  if (!password_info) {
+  if (!password_info && !ShowPopupWithoutPasswords(password_element)) {
     MaybeCheckSafeBrowsingReputation(element);
     return false;
   }
@@ -885,8 +893,9 @@ bool PasswordAutofillAgent::ShowSuggestions(
   // If a username element is focused, show suggestions unless all possible
   // usernames are filtered.
   if (!element.IsPasswordFieldForAutofill()) {
-    if (show_all || CanShowUsernameSuggestion(password_info->fill_data,
-                                              element.Value().Utf16())) {
+    if (show_all ||
+        (password_info && CanShowUsernameSuggestion(password_info->fill_data,
+                                                    element.Value().Utf16()))) {
       ShowSuggestionPopup(element.Value().Utf16(), element, show_all,
                           OnPasswordField(false));
       return true;
@@ -896,9 +905,10 @@ bool PasswordAutofillAgent::ShowSuggestions(
 
   // If the element is a password field, do not to show a popup if the user has
   // already accepted a password suggestion on another password field.
-  if (password_info->password_field_suggestion_was_accepted &&
-      element != password_info->password_field)
+  if (password_info && password_info->password_field_suggestion_was_accepted &&
+      element != password_info->password_field) {
     return true;
+  }
 
   // Show suggestions for password fields only while they are empty.
   if (!element.IsAutofilled() && !element.Value().IsEmpty()) {

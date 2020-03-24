@@ -298,8 +298,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
   }
 
-  if (switches::IsRunWebTestsSwitchPresent())
-    content_client_->SetInWebTest(true);
   return false;
 }
 

@@ -12,6 +12,9 @@
 // Shows the site security information.
 - (void)showSiteSecurityInfo;
 
+// Shows the cookies information.
+- (void)showCookiesInfo;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_NAVIGATION_COMMANDS_H_

@@ -128,7 +128,8 @@ class PaintPreviewBaseService : public KeyedService {
       base::OnceClosure disconnect_handler);
 
  private:
-  void OnCaptured(base::TimeTicks start_time,
+  void OnCaptured(int frame_tree_node_id,
+                  base::TimeTicks start_time,
                   OnCapturedCallback callback,
                   base::UnguessableToken guid,
                   mojom::PaintPreviewStatus status,

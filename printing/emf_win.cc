@@ -342,7 +342,7 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
 
 void Emf::StartPage(const gfx::Size& /*page_size*/,
                     const gfx::Rect& /*content_area*/,
-                    const float& /*scale_factor*/) {}
+                    float /*scale_factor*/) {}
 
 bool Emf::FinishPage() {
   return true;

@@ -256,7 +256,6 @@
       relaunchPolicy:ForceRelaunchByCleanShutdown];
   [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
       assertWithMatcher:grey_notVisible()];
-  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests hard kill(crash) through AppLaunchManager.

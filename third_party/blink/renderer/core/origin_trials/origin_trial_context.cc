@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -326,28 +327,41 @@ void OriginTrialContext::AddForceEnabledTrials(
   }
 }
 
+bool OriginTrialContext::CanEnableTrialFromName(const StringView& trial_name) {
+  if (trial_name == "Portals" &&
+      !base::FeatureList::IsEnabled(features::kPortals)) {
+    return false;
+  }
+
+  return true;
+}
+
 bool OriginTrialContext::EnableTrialFromName(const String& trial_name,
                                              base::Time expiry_time) {
   bool did_enable_feature = false;
   for (OriginTrialFeature feature :
        origin_trials::FeaturesForTrial(trial_name)) {
-    if (origin_trials::FeatureEnabledForOS(feature)) {
-      did_enable_feature = true;
-      enabled_features_.insert(feature);
+    if (!origin_trials::FeatureEnabledForOS(feature))
+      continue;
 
-      // Use the latest expiry time for the feature.
-      if (GetFeatureExpiry(feature) < expiry_time)
-        feature_expiry_times_.Set(feature, expiry_time);
+    if (!CanEnableTrialFromName(trial_name))
+      continue;
 
-      // Also enable any features implied by this feature.
-      for (OriginTrialFeature implied_feature :
-           origin_trials::GetImpliedFeatures(feature)) {
-        enabled_features_.insert(implied_feature);
+    did_enable_feature = true;
+    enabled_features_.insert(feature);
 
-        // Use the latest expiry time for the implied feature.
-        if (GetFeatureExpiry(implied_feature) < expiry_time)
-          feature_expiry_times_.Set(implied_feature, expiry_time);
-      }
+    // Use the latest expiry time for the feature.
+    if (GetFeatureExpiry(feature) < expiry_time)
+      feature_expiry_times_.Set(feature, expiry_time);
+
+    // Also enable any features implied by this feature.
+    for (OriginTrialFeature implied_feature :
+         origin_trials::GetImpliedFeatures(feature)) {
+      enabled_features_.insert(implied_feature);
+
+      // Use the latest expiry time for the implied feature.
+      if (GetFeatureExpiry(implied_feature) < expiry_time)
+        feature_expiry_times_.Set(implied_feature, expiry_time);
     }
   }
   return did_enable_feature;

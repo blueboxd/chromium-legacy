@@ -60,7 +60,7 @@ class PRINTING_EXPORT Emf : public Metafile {
   // ignored.
   void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
-                 const float& scale_factor) override;
+                 float scale_factor) override;
   bool FinishPage() override;
   bool FinishDocument() override;
 

@@ -4700,6 +4700,47 @@
       },
     },
 
+    'ios13_sdk_simulator_tests': {
+      'ios_common_tests': {
+        'variants': [
+          'SIM_IPHONE_6S_13_3',
+          'SIM_IPHONE_X_12_4',
+        ],
+      },
+      'ios_eg2_tests': {
+        'variants': [
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_6_GEN_12_4',
+        ]
+      },
+      'ios_eg_cq_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_PRO_12_4',
+        ]
+      },
+      'ios_eg_tests': {
+        'variants': [
+          'SIM_IPHONE_7_13_3',
+          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_AIR_3RD_GEN_12_4',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'variants': [
+          'SIM_IPHONE_6S_PLUS_13_3',
+          'SIM_IPHONE_6S_13_3',
+          'SIM_IPHONE_6S_PLUS_12_4',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_AIR_2_12_4',
+        ],
+      },
+    },
+
     'ios_code_coverage_tests': {
       'ios_common_tests': {
         'variants': [

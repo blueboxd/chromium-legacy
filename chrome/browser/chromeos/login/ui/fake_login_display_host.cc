@@ -12,7 +12,7 @@ namespace chromeos {
 class FakeLoginDisplayHost::FakeBaseScreen : public chromeos::BaseScreen {
  public:
   explicit FakeBaseScreen(chromeos::OobeScreenId screen_id)
-      : BaseScreen(screen_id) {}
+      : BaseScreen(screen_id, OobeScreenPriority::DEFAULT) {}
 
   ~FakeBaseScreen() override = default;
 

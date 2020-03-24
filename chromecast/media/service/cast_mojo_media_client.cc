@@ -4,7 +4,7 @@
 
 #include "chromecast/media/service/cast_mojo_media_client.h"
 
-#include "chromecast/media/cma/backend/cma_backend_factory.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/cdm_factory.h"

@@ -12,15 +12,21 @@ namespace cc {
 class SwapPromiseManager;
 class LayerTreeHostImpl;
 
-// A SwapPromiseMonitor is used to monitor compositor state change that
-// should be associated with a SwapPromise, e.g. SetNeedsCommit() is
-// called on main thread or SetNeedsRedraw() is called on impl thread.
+// A SwapPromiseMonitor is used to monitor compositor state change that should
+// be associated with a SwapPromise, e.g. SetNeedsCommit() is called on main
+// thread or SetNeedsRedraw() is called on impl thread.
+//
 // Creating a SwapPromiseMonitor will insert itself into a SwapPromiseManager
 // or LayerTreeHostImpl. You must provide a pointer to the appropriate
-// structure to the monitor (and only one of the two). Notification of
-// compositor state change will be sent through OnSetNeedsCommitOnMain()
-// or OnSetNeedsRedrawOnImpl(). When SwapPromiseMonitor is destroyed, it
-// will unregister itself from SwapPromiseManager or LayerTreeHostImpl.
+// structure to the monitor (and only one of the two).
+//
+// Notification of compositor state change will be sent through
+// OnSetNeedsCommitOnMain() or OnSetNeedsRedrawOnImpl(). Note that multiple
+// notifications of the same type to the same monitor will only queue one
+// SwapPromise.
+//
+// When SwapPromiseMonitor is destroyed, it will unregister itself from
+// SwapPromiseManager or LayerTreeHostImpl.
 class CC_EXPORT SwapPromiseMonitor {
  public:
   // If the monitor lives on the main thread, pass in |swap_promise_manager|

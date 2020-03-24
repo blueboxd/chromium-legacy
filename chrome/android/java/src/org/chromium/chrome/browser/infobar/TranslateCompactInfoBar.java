@@ -459,12 +459,6 @@ public class TranslateCompactInfoBar extends InfoBar
 
     @Override
     public void onSourceMenuItemClicked(String code) {
-        // If source language is same as target language, the infobar will dismiss and no
-        // translation will be done.
-        if (mOptions.targetLanguageCode().equals(code)) {
-            closeInfobar(true);
-            return;
-        }
         // Reset source code in both UI and native.
         if (mNativeTranslateInfoBarPtr != 0 && mOptions.setSourceLanguage(code)) {
             recordInfobarLanguageData(

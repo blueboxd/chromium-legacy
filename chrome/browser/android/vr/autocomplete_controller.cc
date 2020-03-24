@@ -12,6 +12,7 @@
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/search_engines/util.h"
 
 namespace vr {
@@ -26,9 +27,15 @@ AutocompleteController::AutocompleteController(SuggestionCallback callback)
       suggestion_callback_(std::move(callback)) {
   auto client = std::make_unique<ChromeAutocompleteProviderClient>(profile_);
   client_ = client.get();
+
   autocomplete_controller_ = std::make_unique<::AutocompleteController>(
-      std::move(client), this,
-      AutocompleteClassifier::DefaultOmniboxProviders());
+      std::move(client), AutocompleteClassifier::DefaultOmniboxProviders());
+  autocomplete_controller_->AddObserver(this);
+
+  OmniboxControllerEmitter* emitter =
+      OmniboxControllerEmitter::GetForBrowserContext(profile_);
+  if (emitter)
+    autocomplete_controller_->AddObserver(emitter);
 }
 
 AutocompleteController::~AutocompleteController() = default;

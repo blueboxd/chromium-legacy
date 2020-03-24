@@ -152,10 +152,13 @@ void FillProcessData(
   if (!include_optional)
     return;
 
-  out_process->cpu.reset(
-      new double(task_manager->GetPlatformIndependentCPUUsage(id)));
-  out_process->network.reset(new double(static_cast<double>(
-      task_manager->GetProcessTotalNetworkUsage(id))));
+  const double cpu_usage = task_manager->GetPlatformIndependentCPUUsage(id);
+  if (!std::isnan(cpu_usage))
+    out_process->cpu.reset(new double(cpu_usage));
+
+  const int64_t network_usage = task_manager->GetProcessTotalNetworkUsage(id);
+  if (network_usage != -1)
+    out_process->network.reset(new double(static_cast<double>(network_usage)));
 
   int64_t v8_allocated = 0;
   int64_t v8_used = 0;

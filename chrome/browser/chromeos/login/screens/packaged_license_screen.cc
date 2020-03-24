@@ -18,7 +18,7 @@ namespace chromeos {
 PackagedLicenseScreen::PackagedLicenseScreen(
     PackagedLicenseView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(PackagedLicenseView::kScreenId),
+    : BaseScreen(PackagedLicenseView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   if (view_)

@@ -59,6 +59,7 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
@@ -591,8 +592,14 @@ void SearchTabHelper::QueryAutocomplete(const base::string16& input,
 
   if (!autocomplete_controller_) {
     autocomplete_controller_ = std::make_unique<AutocompleteController>(
-        std::make_unique<ChromeAutocompleteProviderClient>(profile()), this,
+        std::make_unique<ChromeAutocompleteProviderClient>(profile()),
         AutocompleteClassifier::DefaultOmniboxProviders());
+    autocomplete_controller_->AddObserver(this);
+
+    OmniboxControllerEmitter* emitter =
+        OmniboxControllerEmitter::GetForBrowserContext(profile());
+    if (emitter)
+      autocomplete_controller_->AddObserver(emitter);
   }
 
   if (time_of_first_autocomplete_query_.is_null() && !input.empty())

@@ -368,7 +368,8 @@ class UserSelectionScreen::DircryptoMigrationChecker {
 };
 
 UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
-    : BaseScreen(UserBoardView::kScreenId), display_type_(display_type) {}
+    : BaseScreen(UserBoardView::kScreenId, OobeScreenPriority::DEFAULT),
+      display_type_(display_type) {}
 
 UserSelectionScreen::~UserSelectionScreen() {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);

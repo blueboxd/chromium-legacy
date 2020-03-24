@@ -27,7 +27,7 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/isolated_context.h"
@@ -83,8 +83,8 @@ void WebTestClientImpl::Create(
     storage::QuotaManager* quota_manager,
     storage::DatabaseTracker* database_tracker,
     network::mojom::NetworkContext* network_context,
-    mojo::PendingReceiver<mojom::WebTestClient> receiver) {
-  mojo::MakeSelfOwnedReceiver(
+    mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver) {
+  mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<WebTestClientImpl>(render_process_id, quota_manager,
                                           database_tracker, network_context),
       std::move(receiver));

@@ -20,7 +20,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -29,11 +31,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
-
-#if defined(OS_WIN)
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
-#endif
 
 namespace {
 
@@ -58,6 +55,34 @@ class StarViewTest : public extensions::ExtensionBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(StarViewTest);
 };
+
+// Verifies clicking the star bookmarks the page.
+IN_PROC_BROWSER_TEST_F(StarViewTest, BookmarksUrlOnPress) {
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(browser()->profile());
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+
+  PageActionIconView* star_icon = GetStarIcon();
+  const GURL current_url =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL();
+
+  // The page should not initiall be bookmarked.
+  EXPECT_FALSE(bookmark_model->IsBookmarked(current_url));
+  EXPECT_FALSE(star_icon->active());
+
+  ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                               ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent released_event(
+      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+
+  static_cast<views::View*>(star_icon)->OnMousePressed(pressed_event);
+  static_cast<views::View*>(star_icon)->OnMouseReleased(released_event);
+
+  EXPECT_TRUE(bookmark_model->IsBookmarked(current_url));
+  EXPECT_TRUE(star_icon->active());
+}
 
 // Verify that clicking the bookmark star a second time hides the bookmark
 // bubble.

@@ -39,7 +39,8 @@ constexpr const char kBack[] = "back";
 TermsOfServiceScreen::TermsOfServiceScreen(
     TermsOfServiceScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(TermsOfServiceScreenView::kScreenId),
+    : BaseScreen(TermsOfServiceScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

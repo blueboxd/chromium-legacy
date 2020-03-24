@@ -28,6 +28,8 @@ class PageLoadMetricsTestWaiter
     kLoadEvent = 1 << 4,
     // kLoadTimingInfo waits for main frame timing info only.
     kLoadTimingInfo = 1 << 5,
+    kLargestContentfulPaint = 1 << 6,
+    kFirstInputOrScroll = 1 << 7,
   };
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;

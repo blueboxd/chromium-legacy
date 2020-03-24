@@ -26,7 +26,6 @@ TestOmniboxClient::TestOmniboxClient()
       autocomplete_classifier_(
           std::make_unique<AutocompleteController>(
               CreateAutocompleteProviderClient(),
-              nullptr,
               AutocompleteClassifier::DefaultOmniboxProviders()),
           std::make_unique<TestSchemeClassifier>()) {}
 

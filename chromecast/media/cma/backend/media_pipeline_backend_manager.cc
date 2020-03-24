@@ -76,7 +76,7 @@ MediaPipelineBackendManager::~MediaPipelineBackendManager() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 }
 
-std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
+std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   return std::make_unique<MediaPipelineBackendWrapper>(params, this,

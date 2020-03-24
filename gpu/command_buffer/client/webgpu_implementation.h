@@ -193,8 +193,6 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
       request_device_callback_map_;
   DawnDeviceClientID device_client_id_ = 0;
 
-  std::atomic_bool lost_{false};
-
   DISALLOW_COPY_AND_ASSIGN(WebGPUImplementation);
 };
 

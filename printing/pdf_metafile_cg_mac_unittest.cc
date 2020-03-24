@@ -19,7 +19,7 @@ TEST(PdfMetafileCgTest, Pdf) {
   // Test in-renderer constructor.
   PdfMetafileCg pdf;
   EXPECT_TRUE(pdf.Init());
-  EXPECT_TRUE(pdf.context() != NULL);
+  EXPECT_TRUE(pdf.context());
 
   // Render page 1.
   gfx::Rect rect_1(10, 10, 520, 700);

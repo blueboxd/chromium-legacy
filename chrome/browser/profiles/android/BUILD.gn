@@ -18,6 +18,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/cookies/CanonicalCookie.java",
     "java/src/org/chromium/chrome/browser/cookies/CookiesFetcher.java",
+    "java/src/org/chromium/chrome/browser/profiles/OriginalProfileSupplier.java",
     "java/src/org/chromium/chrome/browser/profiles/Profile.java",
     "java/src/org/chromium/chrome/browser/profiles/ProfileKey.java",
     "java/src/org/chromium/chrome/browser/profiles/ProfileManager.java",

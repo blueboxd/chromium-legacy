@@ -21,7 +21,9 @@ system::DeviceDisablingManager* DeviceDisablingManager() {
 }  // namespace
 
 DeviceDisabledScreen::DeviceDisabledScreen(DeviceDisabledScreenView* view)
-    : BaseScreen(DeviceDisabledScreenView::kScreenId), view_(view) {
+    : BaseScreen(DeviceDisabledScreenView::kScreenId,
+                 OobeScreenPriority::SCREEN_DEVICE_DISABLED),
+      view_(view) {
   view_->SetDelegate(this);
 }
 

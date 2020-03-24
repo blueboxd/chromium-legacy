@@ -186,8 +186,9 @@ class BlinkTestRunner : public RenderViewObserver,
   mojo::AssociatedRemote<mojom::BlinkTestClient>& GetBlinkTestClientRemote();
   mojo::AssociatedRemote<mojom::BlinkTestClient> blink_test_client_remote_;
 
-  mojom::WebTestClient& GetWebTestClientRemote();
-  mojo::Remote<mojom::WebTestClient> web_test_client_remote_;
+  void HandleWebTestClientDisconnected();
+  mojo::AssociatedRemote<mojom::WebTestClient>& GetWebTestClientRemote();
+  mojo::AssociatedRemote<mojom::WebTestClient> web_test_client_remote_;
 
   test_runner::TestPreferences prefs_;
 

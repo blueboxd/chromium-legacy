@@ -150,96 +150,88 @@ bool EnumTraits<network::mojom::CookieAccessSemantics,
   return false;
 }
 
-network::mojom::CookieSameSiteContext
-EnumTraits<network::mojom::CookieSameSiteContext,
-           net::CookieOptions::SameSiteCookieContext>::
-    ToMojom(net::CookieOptions::SameSiteCookieContext input) {
+network::mojom::ContextType
+EnumTraits<network::mojom::ContextType,
+           net::CookieOptions::SameSiteCookieContext::ContextType>::
+    ToMojom(net::CookieOptions::SameSiteCookieContext::ContextType input) {
   switch (input) {
-    case net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT:
-      return network::mojom::CookieSameSiteContext::SAME_SITE_STRICT;
-    case net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX:
-      return network::mojom::CookieSameSiteContext::SAME_SITE_LAX;
-    case net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE:
-      return network::mojom::CookieSameSiteContext::SAME_SITE_LAX_METHOD_UNSAFE;
-    case net::CookieOptions::SameSiteCookieContext::CROSS_SITE:
-      return network::mojom::CookieSameSiteContext::CROSS_SITE;
-    case net::CookieOptions::SameSiteCookieContext::
-        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
-      return network::mojom::CookieSameSiteContext::
-          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL;
-    case net::CookieOptions::SameSiteCookieContext::
-        SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL:
-      return network::mojom::CookieSameSiteContext::
-          SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL;
-    case net::CookieOptions::SameSiteCookieContext::
-        SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL:
-      return network::mojom::CookieSameSiteContext::
-          SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL;
-    case net::CookieOptions::SameSiteCookieContext::
-        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
-      return network::mojom::CookieSameSiteContext::
-          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL;
-    case net::CookieOptions::SameSiteCookieContext::
-        SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL:
-      return network::mojom::CookieSameSiteContext::
-          SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL;
-    case net::CookieOptions::SameSiteCookieContext::
-        SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL:
-      return network::mojom::CookieSameSiteContext::
-          SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL;
+    case net::CookieOptions::SameSiteCookieContext::ContextType::
+        SAME_SITE_STRICT:
+      return network::mojom::ContextType::SAME_SITE_STRICT;
+    case net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX:
+      return network::mojom::ContextType::SAME_SITE_LAX;
+    case net::CookieOptions::SameSiteCookieContext::ContextType::
+        SAME_SITE_LAX_METHOD_UNSAFE:
+      return network::mojom::ContextType::SAME_SITE_LAX_METHOD_UNSAFE;
+    case net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE:
+      return network::mojom::ContextType::CROSS_SITE;
     default:
       NOTREACHED();
-      return network::mojom::CookieSameSiteContext::CROSS_SITE;
+      return network::mojom::ContextType::CROSS_SITE;
   }
 }
 
-bool EnumTraits<network::mojom::CookieSameSiteContext,
-                net::CookieOptions::SameSiteCookieContext>::
-    FromMojom(network::mojom::CookieSameSiteContext input,
-              net::CookieOptions::SameSiteCookieContext* output) {
+bool EnumTraits<network::mojom::ContextType,
+                net::CookieOptions::SameSiteCookieContext::ContextType>::
+    FromMojom(network::mojom::ContextType input,
+              net::CookieOptions::SameSiteCookieContext::ContextType* output) {
   switch (input) {
-    case network::mojom::CookieSameSiteContext::SAME_SITE_STRICT:
-      *output = net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+    case network::mojom::ContextType::SAME_SITE_STRICT:
+      *output = net::CookieOptions::SameSiteCookieContext::ContextType::
+          SAME_SITE_STRICT;
       return true;
-    case network::mojom::CookieSameSiteContext::SAME_SITE_LAX:
-      *output = net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
+    case network::mojom::ContextType::SAME_SITE_LAX:
+      *output =
+          net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX;
       return true;
-    case network::mojom::CookieSameSiteContext::SAME_SITE_LAX_METHOD_UNSAFE:
-      *output = net::CookieOptions::SameSiteCookieContext::
+    case network::mojom::ContextType::SAME_SITE_LAX_METHOD_UNSAFE:
+      *output = net::CookieOptions::SameSiteCookieContext::ContextType::
           SAME_SITE_LAX_METHOD_UNSAFE;
       return true;
-    case network::mojom::CookieSameSiteContext::CROSS_SITE:
-      *output = net::CookieOptions::SameSiteCookieContext::CROSS_SITE;
+    case network::mojom::ContextType::CROSS_SITE:
+      *output =
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE;
       return true;
-    case network::mojom::CookieSameSiteContext::
-        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
-      *output = net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL;
+  }
+  return false;
+}
+
+network::mojom::CrossSchemeness
+EnumTraits<network::mojom::CrossSchemeness,
+           net::CookieOptions::SameSiteCookieContext::CrossSchemeness>::
+    ToMojom(net::CookieOptions::SameSiteCookieContext::CrossSchemeness input) {
+  switch (input) {
+    case net::CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE:
+      return network::mojom::CrossSchemeness::NONE;
+    case net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+        INSECURE_SECURE:
+      return network::mojom::CrossSchemeness::INSECURE_SECURE;
+    case net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+        SECURE_INSECURE:
+      return network::mojom::CrossSchemeness::SECURE_INSECURE;
+    default:
+      NOTREACHED();
+      return network::mojom::CrossSchemeness::NONE;
+  }
+}
+
+bool EnumTraits<network::mojom::CrossSchemeness,
+                net::CookieOptions::SameSiteCookieContext::CrossSchemeness>::
+    FromMojom(
+        network::mojom::CrossSchemeness input,
+        net::CookieOptions::SameSiteCookieContext::CrossSchemeness* output) {
+  switch (input) {
+    case network::mojom::CrossSchemeness::NONE:
+      *output =
+          net::CookieOptions::SameSiteCookieContext::CrossSchemeness::NONE;
       return true;
-    case network::mojom::CookieSameSiteContext::
-        SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL:
-      *output = net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL;
+    case network::mojom::CrossSchemeness::INSECURE_SECURE:
+      *output = net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+          INSECURE_SECURE;
       return true;
-    case network::mojom::CookieSameSiteContext::
-        SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL:
-      *output = net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL;
-      return true;
-    case network::mojom::CookieSameSiteContext::
-        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
-      *output = net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL;
-      return true;
-    case network::mojom::CookieSameSiteContext::
-        SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL:
-      *output = net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL;
-      return true;
-    case network::mojom::CookieSameSiteContext::
-        SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL:
-      *output = net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL;
+    case network::mojom::CrossSchemeness::SECURE_INSECURE:
+      *output = net::CookieOptions::SameSiteCookieContext::CrossSchemeness::
+          SECURE_INSECURE;
       return true;
   }
   return false;
@@ -299,6 +291,24 @@ bool EnumTraits<network::mojom::CookieChangeCause, net::CookieChangeCause>::
       break;
   }
   return false;
+}
+
+bool StructTraits<network::mojom::CookieSameSiteContextDataView,
+                  net::CookieOptions::SameSiteCookieContext>::
+    Read(network::mojom::CookieSameSiteContextDataView mojo_context,
+         net::CookieOptions::SameSiteCookieContext* context) {
+  net::CookieOptions::SameSiteCookieContext::ContextType context_type;
+  if (!mojo_context.ReadContext(&context_type))
+    return false;
+
+  net::CookieOptions::SameSiteCookieContext::CrossSchemeness cross_schemeness;
+  if (!mojo_context.ReadCrossSchemeness(&cross_schemeness))
+    return false;
+
+  *context =
+      net::CookieOptions::SameSiteCookieContext(context_type, cross_schemeness);
+
+  return true;
 }
 
 bool StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions>::

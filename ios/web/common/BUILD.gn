@@ -7,6 +7,8 @@ import("//ios/build/config.gni")
 source_set("common") {
   sources = [
     "crw_content_view.h",
+    "crw_viewport_adjustment.h",
+    "crw_viewport_adjustment_container.h",
     "crw_web_view_content_view.h",
     "crw_web_view_content_view.mm",
     "referrer_util.cc",

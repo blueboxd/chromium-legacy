@@ -1,8 +1,0 @@
-Tests that reparenting media elements also reparents ActiveDOMObject.
-
-Before Reparenting
-PASS: internals.contextLifecycleStateObserverObjectCount(document) should be '2' and is.
-PASS: internals.contextLifecycleStateObserverObjectCount(iframe) should be '7' and is.
-After Reparenting
-PASS: internals.contextLifecycleStateObserverObjectCount(document) should be '5' and is.
-PASS: internals.contextLifecycleStateObserverObjectCount(iframe) should be '5' and is.

@@ -222,6 +222,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   int64_t ReadUsageFromDisk(const url::Origin& origin) const;
   void EnsureDiskUsageCacheInitialized(const url::Origin& origin);
+  // Compares the disk usage stored in |origin_size_map_| with disk. If there
+  // is a difference, it updates |origin_size_map_| and notifies the quota
+  // system.
   void QueryDiskAndUpdateQuotaUsage(const url::Origin& origin);
   base::Time GetOriginLastModified(const url::Origin& origin);
 

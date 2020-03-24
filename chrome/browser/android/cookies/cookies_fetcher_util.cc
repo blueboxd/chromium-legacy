@@ -117,7 +117,7 @@ static void JNI_CookiesFetcher_RestoreCookies(
   net::CookieOptions options;
   options.set_include_httponly();
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   GetCookieServiceClient()->SetCanonicalCookie(
       *cookie, "https", options,
       network::mojom::CookieManager::SetCanonicalCookieCallback());

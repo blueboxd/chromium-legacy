@@ -12,6 +12,7 @@
 #include "content/public/common/client_hints.mojom.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/blink_test.mojom-forward.h"
+#include "content/shell/common/web_test.mojom-forward.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -19,6 +20,17 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_automation.mojom-forward.h"
+
+namespace network {
+namespace mojom {
+class NetworkContext;
+}  // namespace mojom
+}  // namespace network
+
+namespace storage {
+class DatabaseTracker;
+class QuotaManager;
+}  // namespace storage
 
 namespace content {
 
@@ -113,6 +125,13 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
   void BindBlinkTestController(
       mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver);
+
+  void BindWebTestController(
+      int render_process_id,
+      storage::QuotaManager* quota_manager,
+      storage::DatabaseTracker* database_tracker,
+      network::mojom::NetworkContext* network_context,
+      mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver);
 
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;

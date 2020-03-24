@@ -37,6 +37,10 @@ class LoginManagerTest : public MixinBasedInProcessBrowserTest {
   // TODO(dzhioev): Add the ability to register users without a PRE_* test.
   void RegisterUser(const AccountId& account_id);
 
+  static const char kPassword[];
+  UserContext CreateUserContext(const AccountId& account_id,
+                                const std::string& password);
+
   // Set expected credentials for next login attempt.
   void SetExpectedCredentials(const UserContext& user_context);
 

@@ -5385,7 +5385,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
 
-  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+  EXPECT_FALSE(interactive_detector->GetFirstInputDelay().has_value());
 
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5397,9 +5397,11 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
-  EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().has_value());
+  EXPECT_NEAR(50,
+              (*interactive_detector->GetFirstInputDelay()).InMillisecondsF(),
               0.01);
-  EXPECT_EQ(70, (interactive_detector->GetFirstInputTimestamp() - start_time)
+  EXPECT_EQ(70, (*interactive_detector->GetFirstInputTimestamp() - start_time)
                     .InMillisecondsF());
 
   // Sending a second event won't change the FirstInputDelay.
@@ -5413,9 +5415,10 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
-  EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
+  EXPECT_NEAR(50,
+              (*interactive_detector->GetFirstInputDelay()).InMillisecondsF(),
               0.01);
-  EXPECT_EQ(70, (interactive_detector->GetFirstInputTimestamp() - start_time)
+  EXPECT_EQ(70, (*interactive_detector->GetFirstInputTimestamp() - start_time)
                     .InMillisecondsF());
 }
 
@@ -5437,7 +5440,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
 
-  EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
+  EXPECT_FALSE(interactive_detector->GetLongestInputDelay().has_value());
 
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5472,7 +5475,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
       WebCoalescedInputEvent(key_event3));
 
   EXPECT_NEAR(100,
-              interactive_detector->GetLongestInputDelay().InMillisecondsF(),
+              (*interactive_detector->GetLongestInputDelay()).InMillisecondsF(),
               0.01);
   EXPECT_EQ(longest_input_timestamp,
             interactive_detector->GetLongestInputTimestamp());
@@ -5563,7 +5566,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
 
-  EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
+  EXPECT_FALSE(interactive_detector->GetLongestInputDelay().has_value());
 
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5593,8 +5596,9 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
-  EXPECT_NEAR(
-      50, interactive_detector->GetLongestInputDelay().InMillisecondsF(), 0.01);
+  EXPECT_NEAR(50,
+              (*interactive_detector->GetLongestInputDelay()).InMillisecondsF(),
+              0.01);
   EXPECT_EQ(key_event1_time, interactive_detector->GetLongestInputTimestamp());
 }
 
@@ -5632,7 +5636,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
+  EXPECT_FALSE(interactive_detector->GetLongestInputDelay().has_value());
 }
 
 // Tests page backgrounding outside of input queuing time does not affect
@@ -5654,7 +5658,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
 
-  EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
+  EXPECT_FALSE(interactive_detector->GetLongestInputDelay().has_value());
 
   web_view->SetVisibilityState(PageVisibilityState::kHidden,
                                /*initial_state=*/false);
@@ -5674,8 +5678,9 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  EXPECT_NEAR(
-      50, interactive_detector->GetLongestInputDelay().InMillisecondsF(), 0.01);
+  EXPECT_NEAR(50,
+              (*interactive_detector->GetLongestInputDelay()).InMillisecondsF(),
+              0.01);
   EXPECT_EQ(key_event_time, interactive_detector->GetLongestInputTimestamp());
 }
 
@@ -5718,7 +5723,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
 
   // We don't know if this pointer event will result in a scroll or not, so we
   // can't report its delay. We don't consider a scroll to be meaningful input.
-  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().is_zero());
+  EXPECT_FALSE(interactive_detector->GetFirstInputDelay().has_value());
 
   // When we receive a pointer up, we report the delay of the pointer down.
   WebPointerEvent pointer_up(
@@ -5729,9 +5734,10 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_up));
 
-  EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
+  EXPECT_NEAR(50,
+              (*interactive_detector->GetFirstInputDelay()).InMillisecondsF(),
               0.01);
-  EXPECT_EQ(70, (interactive_detector->GetFirstInputTimestamp() - start_time)
+  EXPECT_EQ(70, (*interactive_detector->GetFirstInputTimestamp() - start_time)
                     .InMillisecondsF());
 }
 
@@ -5797,8 +5803,9 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
+  EXPECT_TRUE(interactive_detector->GetFirstInputDelay().has_value());
   base::TimeDelta first_input_delay =
-      interactive_detector->GetFirstInputDelay();
+      *interactive_detector->GetFirstInputDelay();
   EXPECT_EQ(5000, first_input_delay.InMillisecondsF());
 
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.
@@ -5843,7 +5850,7 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
       WebCoalescedInputEvent(key_event));
 
   base::TimeDelta longest_input_delay =
-      interactive_detector->GetLongestInputDelay();
+      *interactive_detector->GetLongestInputDelay();
   EXPECT_EQ(5000, longest_input_delay.InMillisecondsF());
 
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.

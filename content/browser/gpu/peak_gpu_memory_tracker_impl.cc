@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -19,6 +20,61 @@
 namespace content {
 
 namespace {
+
+// These count values should be recalculated in case of changes to the number
+// of values in their respective enums.
+constexpr int kUsageTypeCount =
+    static_cast<int>(PeakGpuMemoryTracker::Usage::USAGE_MAX) + 1;
+constexpr int kAllocationSourceTypeCount =
+    static_cast<int>(gpu::GpuPeakMemoryAllocationSource::
+                         GPU_PEAK_MEMORY_ALLOCATION_SOURCE_MAX) +
+    1;
+constexpr int kAllocationSourceHistogramIndex =
+    kUsageTypeCount * kAllocationSourceTypeCount;
+
+// Histogram values based on UMA_HISTOGRAM_MEMORY_KB
+constexpr int kMemoryHistogramMin = 1000;
+constexpr int kMemoryHistogramMax = 500000;
+constexpr int kMemoryHistogramBucketCount = 50;
+
+constexpr const char* GetUsageName(PeakGpuMemoryTracker::Usage usage) {
+  switch (usage) {
+    case PeakGpuMemoryTracker::Usage::CHANGE_TAB:
+      return "ChangeTab";
+    case PeakGpuMemoryTracker::Usage::PAGE_LOAD:
+      return "PageLoad";
+    case PeakGpuMemoryTracker::Usage::SCROLL:
+      return "Scroll";
+  }
+}
+
+constexpr const char* GetAllocationSourceName(
+    gpu::GpuPeakMemoryAllocationSource source) {
+  switch (source) {
+    case gpu::GpuPeakMemoryAllocationSource::UNKNOWN:
+      return "Unknown";
+    case gpu::GpuPeakMemoryAllocationSource::COMMAND_BUFFER:
+      return "CommandBuffer";
+    case gpu::GpuPeakMemoryAllocationSource::SHARED_CONTEXT_STATE:
+      return "SharedContextState";
+    case gpu::GpuPeakMemoryAllocationSource::SHARED_IMAGE_STUB:
+      return "SharedImageStub";
+    case gpu::GpuPeakMemoryAllocationSource::SKIA:
+      return "Skia";
+  }
+}
+
+std::string GetPeakMemoryUsageUMAName(PeakGpuMemoryTracker::Usage usage) {
+  return base::StrCat({"Memory.GPU.PeakMemoryUsage.", GetUsageName(usage)});
+}
+
+std::string GetPeakMemoryAllocationSourceUMAName(
+    PeakGpuMemoryTracker::Usage usage,
+    gpu::GpuPeakMemoryAllocationSource source) {
+  return base::StrCat({"Memory.GPU.PeakMemoryAllocationSource.",
+                       GetUsageName(usage), ".",
+                       GetAllocationSourceName(source)});
+}
 
 // Callback provided to the GpuService, which will be notified of the
 // |peak_memory| used. This will then report that to UMA Histograms, for the
@@ -30,22 +86,27 @@ void PeakMemoryCallback(PeakGpuMemoryTracker::Usage usage,
                         const base::flat_map<gpu::GpuPeakMemoryAllocationSource,
                                              uint64_t>& allocation_per_source) {
   uint64_t memory_in_kb = peak_memory / 1024u;
-  switch (usage) {
-    case PeakGpuMemoryTracker::Usage::CHANGE_TAB:
-      UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.ChangeTab",
-                              memory_in_kb);
-      break;
-    case PeakGpuMemoryTracker::Usage::PAGE_LOAD:
-      UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.PageLoad",
-                              memory_in_kb);
-      break;
-    case PeakGpuMemoryTracker::Usage::SCROLL:
-      UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.Scroll",
-                              memory_in_kb);
-      break;
-  }
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      GetPeakMemoryUsageUMAName(usage), static_cast<int>(usage),
+      kUsageTypeCount, Add(memory_in_kb),
+      base::Histogram::FactoryGet(
+          GetPeakMemoryUsageUMAName(usage), kMemoryHistogramMin,
+          kMemoryHistogramMax, kMemoryHistogramBucketCount,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
 
-  // TODO(jonross): Report |allocation_per_source| to UMA is a follow up change.
+  for (auto& source : allocation_per_source) {
+    uint64_t source_memory_in_kb = source.second / 1024u;
+    STATIC_HISTOGRAM_POINTER_GROUP(
+        GetPeakMemoryAllocationSourceUMAName(usage, source.first),
+        static_cast<int>(usage) * kAllocationSourceTypeCount +
+            static_cast<int>(source.first),
+        kAllocationSourceHistogramIndex, Add(source_memory_in_kb),
+        base::Histogram::FactoryGet(
+            GetPeakMemoryAllocationSourceUMAName(usage, source.first),
+            kMemoryHistogramMin, kMemoryHistogramMax,
+            kMemoryHistogramBucketCount,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
 
   std::move(testing_callback).Run();
 }

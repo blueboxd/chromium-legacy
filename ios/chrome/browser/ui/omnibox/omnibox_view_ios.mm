@@ -710,6 +710,9 @@ void OmniboxViewIOS::OnSelectedMatchForAppending(const base::string16& str) {
   if ([field_ isPreEditing])
     [field_ exitPreEditState];
   this->SetUserText(str);
+  // Calling setText: does not trigger UIControlEventEditingChanged, so
+  // trigger that manually.
+  [field_ sendActionsForControlEvents:UIControlEventEditingChanged];
   this->FocusOmnibox();
 }
 

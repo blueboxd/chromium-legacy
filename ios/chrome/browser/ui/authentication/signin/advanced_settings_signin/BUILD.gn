@@ -39,3 +39,31 @@ source_set("constants") {
     "advanced_settings_signin_constants.mm",
   ]
 }
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "advanced_settings_signin_mediator_unittest.mm" ]
+  deps = [
+    ":advanced_settings_signin",
+    "//base/test:test_support",
+    "//components/autofill/core/common",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//components/sync/driver:test_support",
+    "//components/sync_preferences",
+    "//components/sync_preferences:test_support",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:test_support",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/sync:test_support",
+    "//ios/chrome/browser/ui/authentication",
+    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
+    "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/web/public/test",
+  ]
+}

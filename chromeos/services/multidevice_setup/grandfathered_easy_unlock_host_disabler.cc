@@ -121,36 +121,22 @@ void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
 
   PA_LOG(VERBOSE) << "Attempting to disable kSmartLockHost on device "
                   << host_to_disable->GetTruncatedDeviceIdForLogs();
-  // If the host has a non-trivial Instance ID, then it was returned from a v2
-  // DeviceSync (Instance IDs are not part of the v1 protocol). In that case,
-  // exercise the v2 RPC SetFeatureStatus, even if v1 DeviceSync is still
-  // running in parallel. SetFeatureStatus and its v1 counterpart,
-  // SetSoftwareFeatureState, ultimately update the same backend database entry,
-  // so only one needs to be invoked.
   if (features::ShouldUseV1DeviceSync()) {
-    // In order to avoid a race condition, we are assuming that all
-    // SetFeatureStatus() and SetSoftwareFeatureState() requests are added to
-    // the same queue and processed in order. The DeviceSync service
-    // implementation guarantees this ordering.
-    if (!host_to_disable->instance_id().empty()) {
-      device_sync_client_->SetFeatureStatus(
-          host_to_disable->instance_id(),
-          multidevice::SoftwareFeature::kSmartLockHost,
-          device_sync::FeatureStatusChange::kDisable,
-          base::BindOnce(&GrandfatheredEasyUnlockHostDisabler::
-                             OnDisableEasyUnlockHostResult,
-                         weak_ptr_factory_.GetWeakPtr(), *host_to_disable));
-
-    } else {
-      DCHECK(!host_to_disable->public_key().empty());
-      device_sync_client_->SetSoftwareFeatureState(
-          host_to_disable->public_key(),
-          multidevice::SoftwareFeature::kSmartLockHost, false /* enabled */,
-          false /* is_exclusive */,
-          base::BindOnce(&GrandfatheredEasyUnlockHostDisabler::
-                             OnDisableEasyUnlockHostResult,
-                         weak_ptr_factory_.GetWeakPtr(), *host_to_disable));
-    }
+    // Even if the host has a non-trivial Instance ID, we still invoke the v1
+    // DeviceSync RPC to set the feature state. This ensures that GmsCore will
+    // be notified of the change regardless of what version of DeviceSync it is
+    // running. The v1 and v2 RPCs to change feature states ultimately update
+    // the same backend database entry. Note: The RemoteDeviceProvider
+    // guarantees that every device will have a public key while v1 DeviceSync
+    // is enabled.
+    DCHECK(!host_to_disable->public_key().empty());
+    device_sync_client_->SetSoftwareFeatureState(
+        host_to_disable->public_key(),
+        multidevice::SoftwareFeature::kSmartLockHost, false /* enabled */,
+        false /* is_exclusive */,
+        base::BindOnce(
+            &GrandfatheredEasyUnlockHostDisabler::OnDisableEasyUnlockHostResult,
+            weak_ptr_factory_.GetWeakPtr(), *host_to_disable));
   } else {
     DCHECK(!host_to_disable->instance_id().empty());
     device_sync_client_->SetFeatureStatus(

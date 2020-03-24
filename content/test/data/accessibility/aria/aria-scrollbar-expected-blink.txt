@@ -1,4 +1,5 @@
 rootWebArea
 ++genericContainer ignored
-++++scrollBar vertical valueForRange=55.00 minValueForRange=0.00 maxValueForRange=100.00
-++++scrollBar horizontal valueForRange=55.00 minValueForRange=0.00 maxValueForRange=100.00
+++++genericContainer ignored
+++++++scrollBar vertical valueForRange=55.00 minValueForRange=0.00 maxValueForRange=100.00
+++++++scrollBar horizontal valueForRange=55.00 minValueForRange=0.00 maxValueForRange=100.00

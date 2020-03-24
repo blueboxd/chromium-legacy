@@ -97,7 +97,7 @@ void CmaBackendShim::InitializeOnMediaThread() {
       ConvertContentType(params_.content_type()), params_.device_id());
   device_params.audio_channel =
       ConvertChannelSelection(params_.channel_selection());
-  cma_backend_ = backend_manager_->CreateCmaBackend(device_params);
+  cma_backend_ = backend_manager_->CreateBackend(device_params);
 
   audio_decoder_ = cma_backend_->CreateAudioDecoder();
   if (!audio_decoder_) {

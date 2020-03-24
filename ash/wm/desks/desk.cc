@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
@@ -193,9 +194,8 @@ void Desk::AddWindowToDesk(aura::Window* window) {
   windows_.push_back(window);
   // No need to refresh the mini_views if the destroyed window doesn't show up
   // there in the first place.
-  // The WorkspaceLayoutManager updates the backdrop for us.
   if (!window->GetProperty(kHideInDeskMiniViewKey))
-    NotifyContentChanged(/*update_backdrops=*/false);
+    NotifyContentChanged();
 }
 
 void Desk::RemoveWindowFromDesk(aura::Window* window) {
@@ -203,9 +203,8 @@ void Desk::RemoveWindowFromDesk(aura::Window* window) {
   base::Erase(windows_, window);
   // No need to refresh the mini_views if the destroyed window doesn't show up
   // there in the first place.
-  // The WorkspaceLayoutManager updates the backdrop for us.
   if (!window->GetProperty(kHideInDeskMiniViewKey))
-    NotifyContentChanged(/*update_backdrops=*/false);
+    NotifyContentChanged();
 }
 
 base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
@@ -337,8 +336,8 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
     }
   }
 
-  NotifyContentChanged(/*update_backdrops=*/true);
-  target_desk->NotifyContentChanged(/*update_backdrops=*/true);
+  NotifyContentChanged();
+  target_desk->NotifyContentChanged();
 }
 
 void Desk::MoveWindowToDesk(aura::Window* window,
@@ -379,8 +378,8 @@ void Desk::MoveWindowToDesk(aura::Window* window,
       window_state->Unminimize();
   }
 
-  NotifyContentChanged(/*update_backdrops=*/true);
-  target_desk->NotifyContentChanged(/*update_backdrops=*/true);
+  NotifyContentChanged();
+  target_desk->NotifyContentChanged();
 }
 
 aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
@@ -389,14 +388,21 @@ aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
   return root->GetChildById(container_id_);
 }
 
-void Desk::NotifyContentChanged(bool update_backdrops) {
+void Desk::NotifyContentChanged() {
   if (!should_notify_content_changed_)
     return;
 
-  // If requested, update the backdrop availability and visibility first before
-  // notifying observers, so that the mini_views update *after* the backdrops
-  // do.
-  if (update_backdrops)
+  // Updating the backdrops below may lead to the removal or creation of
+  // backdrop windows in this desk, which can cause us to recurse back here.
+  // Disable this.
+  auto disable_recursion = GetScopedNotifyContentChangedDisabler();
+
+  // The availability and visibility of backdrops of all containers associated
+  // with this desk will be updated *before* notifying observer, so that the
+  // mini_views update *after* the backdrops do.
+  // This is *only* needed if the WorkspaceLayoutManager won't take care of this
+  // for us while overview is active.
+  if (Shell::Get()->overview_controller()->InOverviewSession())
     UpdateDeskBackdrops();
 
   for (auto& observer : observers_)

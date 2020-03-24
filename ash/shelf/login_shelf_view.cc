@@ -41,6 +41,7 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
@@ -573,21 +574,15 @@ bool LoginShelfView::LaunchAppForTesting(const std::string& app_id) {
          kiosk_apps_button_->LaunchAppForTesting(app_id);
 }
 
-bool LoginShelfView::SimulateAddUserButtonForTesting() {
-  views::View* add_user_button = GetViewByID(kAddUser);
-  if (!add_user_button->GetEnabled())
+bool LoginShelfView::SimulateButtonPressedForTesting(
+    LoginShelfView::ButtonId button_id) {
+  views::View* button = GetViewByID(button_id);
+  if (!button->GetEnabled())
     return false;
 
-  StartAddUser();
-  return true;
-}
-
-bool LoginShelfView::SimulateGuestButtonForTesting() {
-  views::View* guest_login_button = GetViewByID(kBrowseAsGuest);
-  if (!guest_login_button->GetEnabled())
-    return false;
-
-  Shell::Get()->login_screen_controller()->LoginAsGuest();
+  ButtonPressed(static_cast<LoginShelfButton*>(button),
+                ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(),
+                               gfx::PointF(), base::TimeTicks(), 0, 0));
   return true;
 }
 

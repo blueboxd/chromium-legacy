@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/page_info/page_info_cookies_view_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_mediator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_navigation_commands.h"
 #import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
@@ -97,6 +98,13 @@
           initWitDescription:description];
 
   viewController.handler = HandlerForProtocol(self.dispatcher, BrowserCommands);
+  [self.navigationController pushViewController:viewController animated:YES];
+}
+
+- (void)showCookiesInfo {
+  PageInfoCookiesViewController* viewController =
+      [[PageInfoCookiesViewController alloc]
+          initWithStyle:UITableViewStylePlain];
   [self.navigationController pushViewController:viewController animated:YES];
 }
 

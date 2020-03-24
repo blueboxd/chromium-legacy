@@ -1631,7 +1631,8 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
   return_excluded.set_return_excluded_cookies();
   return_excluded.set_exclude_httponly();
   return_excluded.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT));
 
   excluded_cookies = GetExcludedCookiesForURLWithOptions(
       cm.get(), http_www_foo_.url(), return_excluded);
@@ -3366,7 +3367,8 @@ TEST_F(CookieMonsterTest, RejectCreatedSameSiteCookieOnSet) {
   CookieMonster cm(nullptr, nullptr);
   CookieOptions env_cross_site;
   env_cross_site.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::CROSS_SITE);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE));
 
   CanonicalCookie::CookieInclusionStatus status;
   // Cookie can be created successfully; SameSite is not checked on Creation.
@@ -3428,7 +3430,8 @@ TEST_F(CookieMonsterTest, RejectCreatedHttpOnlyCookieOnSet) {
   // not allow httponly.
   CookieOptions options_no_httponly;
   options_no_httponly.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT));
   options_no_httponly.set_exclude_httponly();  // Default, but make it explicit.
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
   cm.SetCanonicalCookieAsync(std::move(cookie), "http", options_no_httponly,
@@ -3861,7 +3864,8 @@ TEST_F(CookieMonsterLegacyCookieAccessTest, RecentHttpSameSiteAccess) {
   CookieOptions http_lax_options;
   http_lax_options.set_include_httponly();
   http_lax_options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX));
   // This one only works because it's treated as Legacy, otherwise it would be
   // rejected for being SameSite=None without secure.
   EXPECT_TRUE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=1;SameSite=None",
@@ -3899,7 +3903,8 @@ TEST_F(CookieMonsterLegacyCookieAccessTest, RecentHttpSameSiteAccess) {
   CookieOptions exclude_http_lax_options;
   exclude_http_lax_options.set_exclude_httponly();
   exclude_http_lax_options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX));
   EXPECT_TRUE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=1",
                                  exclude_http_lax_options));
   // There is no recent eligible last access time, because we deleted the
@@ -3918,7 +3923,8 @@ TEST_F(CookieMonsterLegacyCookieAccessTest, RecentHttpSameSiteAccess) {
   CookieOptions http_strict_options;
   http_strict_options.set_include_httponly();
   http_strict_options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT));
   EXPECT_FALSE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=2;Secure",
                                   http_strict_options));
   EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 
+#include "base/strings/pattern.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/tts_controller.h"
 
 namespace chromeos {
@@ -13,6 +16,8 @@ const char kChromeVoxEnabledMessage[] = "ChromeVox spoken feedback is ready";
 const char kChromeVoxAlertMessage[] = "Alert";
 const char kChromeVoxUpdate1[] = "chrome vox Updated Press chrome vox o,";
 const char kChromeVoxUpdate2[] = "n to learn more about chrome vox Next.";
+
+constexpr int kPrintExpectationDelayMs = 3000;
 }  // namespace
 
 SpeechMonitor::SpeechMonitor() {
@@ -22,6 +27,8 @@ SpeechMonitor::SpeechMonitor() {
 SpeechMonitor::~SpeechMonitor() {
   content::TtsController::GetInstance()->SetTtsPlatform(
       content::TtsPlatform::GetInstance());
+  if (!replay_queue_.empty() || !replayed_queue_.empty())
+    CHECK(replay_called_) << "Expectation was made, but Replay() not called.";
 }
 
 std::string SpeechMonitor::GetNextUtterance() {
@@ -84,7 +91,6 @@ void SpeechMonitor::Speak(int utterance_id,
       utterance_id, content::TTS_EVENT_END, static_cast<int>(utterance.size()),
       0, std::string());
   std::move(on_speak_finished).Run(true);
-  delay_for_last_utterance_MS_ = CalculateUtteranceDelayMS();
   time_of_last_utterance_ = std::chrono::steady_clock::now();
 }
 
@@ -119,6 +125,7 @@ void SpeechMonitor::WillSpeakUtteranceWithVoice(
 
   VLOG(0) << "Speaking " << utterance->GetText();
   utterance_queue_.emplace_back(utterance->GetText(), utterance->GetLang());
+  delay_for_last_utterance_ms_ = CalculateUtteranceDelayMS();
   if (loop_runner_.get())
     loop_runner_->Quit();
 
@@ -151,52 +158,119 @@ double SpeechMonitor::CalculateUtteranceDelayMS() {
 }
 
 double SpeechMonitor::GetDelayForLastUtteranceMS() {
-  return delay_for_last_utterance_MS_;
+  return delay_for_last_utterance_ms_;
 }
 
 SpeechMonitor& SpeechMonitor::ExpectSpeech(const std::string& text) {
   CHECK(!replay_loop_runner_.get());
-  replay_queue_.push_back([this, text]() {
-    for (auto it = utterance_queue_.begin(); it != utterance_queue_.end();
-         it++) {
-      if (it->text == text) {
-        utterance_queue_.erase(it);
-        return true;
-      }
-    }
-    return false;
-  });
+  replay_queue_.push_back({[this, text]() {
+                             for (auto it = utterance_queue_.begin();
+                                  it != utterance_queue_.end(); it++) {
+                               if (it->text == text) {
+                                 // Erase all utterances that came before the
+                                 // match as well as the match itself.
+                                 utterance_queue_.erase(
+                                     utterance_queue_.begin(), it + 1);
+                                 return true;
+                               }
+                             }
+                             return false;
+                           },
+                           "ExpectSpeech(\"" + text + "\")"});
+  return *this;
+}
+
+SpeechMonitor& SpeechMonitor::ExpectSpeechPattern(const std::string& pattern) {
+  CHECK(!replay_loop_runner_.get());
+  replay_queue_.push_back({[this, pattern]() {
+                             for (auto it = utterance_queue_.begin();
+                                  it != utterance_queue_.end(); it++) {
+                               if (base::MatchPattern(it->text, pattern)) {
+                                 // Erase all utterances that came before the
+                                 // match as well as the match itself.
+                                 utterance_queue_.erase(
+                                     utterance_queue_.begin(), it + 1);
+                                 return true;
+                               }
+                             }
+                             return false;
+                           },
+                           "ExpectSpeechPattern(\"" + pattern + "\")"});
+  return *this;
+}
+
+SpeechMonitor& SpeechMonitor::ExpectNextSpeechIsNot(const std::string& text) {
+  CHECK(!replay_loop_runner_.get());
+  replay_queue_.push_back({[this, text]() {
+                             if (utterance_queue_.empty())
+                               return false;
+
+                             return text != utterance_queue_.front().text;
+                           },
+                           "ExpectNextSpeechIsNot(\"" + text + "\")"});
   return *this;
 }
 
 SpeechMonitor& SpeechMonitor::Call(std::function<void()> func) {
   CHECK(!replay_loop_runner_.get());
-  replay_queue_.push_back([func]() {
-    func();
-    return true;
-  });
+  replay_queue_.push_back({[func]() {
+                             func();
+                             return true;
+                           },
+                           "Call()"});
   return *this;
 }
 
 void SpeechMonitor::Replay() {
+  replay_called_ = true;
   MaybeContinueReplay();
 }
 
 void SpeechMonitor::MaybeContinueReplay() {
   auto it = replay_queue_.begin();
   while (it != replay_queue_.end()) {
-    if ((*it)())
+    if (it->first()) {
+      replayed_queue_.push_back(it->second);
       it = replay_queue_.erase(it);
-    else
+    } else {
       break;
+    }
   }
 
-  if (replay_queue_.size() > 0 && !replay_loop_runner_.get()) {
-    replay_loop_runner_ = new content::MessageLoopRunner();
-    replay_loop_runner_->Run();
+  if (replay_queue_.size() > 0) {
+    base::PostDelayedTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&SpeechMonitor::MaybePrintExpectations,
+                       base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(kPrintExpectationDelayMs));
+
+    if (!replay_loop_runner_.get()) {
+      replay_loop_runner_ = new content::MessageLoopRunner();
+      replay_loop_runner_->Run();
+    }
   } else if (replay_queue_.empty() && replay_loop_runner_.get()) {
     replay_loop_runner_->Quit();
   }
+}
+
+void SpeechMonitor::MaybePrintExpectations() {
+  if (CalculateUtteranceDelayMS() < kPrintExpectationDelayMs ||
+      replay_queue_.empty())
+    return;
+
+  if (last_replay_queue_size_ == replay_queue_.size())
+    return;
+
+  last_replay_queue_size_ = replay_queue_.size();
+  std::vector<std::string> replay_queue_descriptions;
+  for (const auto& pair : replay_queue_)
+    replay_queue_descriptions.push_back(pair.second);
+
+  LOG(ERROR) << "Still waiting for expectation(s).\n"
+             << "Unsatisfied expectations...\n"
+             << base::JoinString(replay_queue_descriptions, "\n") << "\n\n\n"
+             << "Satisfied expectations...\n"
+             << base::JoinString(replayed_queue_, "\n");
 }
 
 }  // namespace chromeos

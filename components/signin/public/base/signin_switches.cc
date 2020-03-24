@@ -13,19 +13,6 @@ const char kClearTokenService[] = "clear-token-service";
 // Disables sending signin scoped device id to LSO with refresh token request.
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
-#if !BUILDFLAG(ENABLE_MIRROR)
-// Command line flag for enabling account consistency. Default mode is disabled.
-// Mirror is a legacy mode in which Google accounts are always addded to Chrome,
-// and Chrome then adds them to the Google authentication cookies.
-// Dice is a new experiment in which Chrome is aware of the accounts in the
-// Google authentication cookies.
-const char kAccountConsistency[] = "account-consistency";
-
-// Values for the kAccountConsistency flag.
-const char kAccountConsistencyMirror[] = "mirror";
-const char kAccountConsistencyDice[] = "dice";
-#endif
-
 #if defined(OS_CHROMEOS)
 const base::Feature kAccountIdMigration{"AccountIdMigration",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

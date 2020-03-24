@@ -47,15 +47,17 @@ class MultiDeviceSetupHostBackendDelegateImplTest
 
   // testing::Test:
   void SetUp() override {
-    // Tests are run once to simulate when only v1 DeviceSync is operational and
-    // once to simulate when only v2 DeviceSync is operational. In the former
-    // case, only public keys are needed for the host verifier, and in the
-    // latter case, only Instance IDs are needed.
+    SetFeatureFlags(GetParam() /* use_v1_devicesync */);
+
+    // Tests are run once to simulate when v1 DeviceSync is enabled and once to
+    // simulate when it is disabled, leaving only v2 DeviceSync operational. In
+    // the former case, only public keys are needed, and in the latter case,
+    // only Instance IDs are needed.
     for (multidevice::RemoteDeviceRef device : test_devices_) {
-      if (DoTestDevicesHaveInstanceIds())
-        GetMutableRemoteDevice(device)->public_key.clear();
-      else
+      if (features::ShouldUseV1DeviceSync())
         GetMutableRemoteDevice(device)->instance_id.clear();
+      else
+        GetMutableRemoteDevice(device)->public_key.clear();
     }
 
     fake_eligible_host_devices_provider_ =
@@ -75,35 +77,6 @@ class MultiDeviceSetupHostBackendDelegateImplTest
   void TearDown() override {
     if (delegate_)
       delegate_->RemoveObserver(observer_.get());
-  }
-
-  bool DoTestDevicesHaveInstanceIds() { return GetParam(); }
-
-  void SetFeatureFlags(bool use_v1_devicesync, bool use_v2_devicesync) {
-    ASSERT_TRUE(use_v1_devicesync || use_v2_devicesync);
-
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-
-    // This flag has no direct effect of on the RemoteDeviceProvider; however,
-    // v2 Enrollment is a prerequisite for v2 DeviceSync.
-    enabled_features.push_back(chromeos::features::kCryptAuthV2Enrollment);
-
-    if (use_v1_devicesync) {
-      disabled_features.push_back(
-          chromeos::features::kDisableCryptAuthV1DeviceSync);
-    } else {
-      enabled_features.push_back(
-          chromeos::features::kDisableCryptAuthV1DeviceSync);
-    }
-
-    if (use_v2_devicesync) {
-      enabled_features.push_back(chromeos::features::kCryptAuthV2DeviceSync);
-    } else {
-      disabled_features.push_back(chromeos::features::kCryptAuthV2DeviceSync);
-    }
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   void CreateDelegate(
@@ -126,10 +99,10 @@ class MultiDeviceSetupHostBackendDelegateImplTest
   }
 
   int GetSetHostNetworkRequestCallbackQueueSize() {
-    return DoTestDevicesHaveInstanceIds()
-               ? fake_device_sync_client_->GetSetFeatureStatusInputsQueueSize()
-               : fake_device_sync_client_
-                     ->GetSetSoftwareFeatureStateInputsQueueSize();
+    return features::ShouldUseV1DeviceSync()
+               ? fake_device_sync_client_
+                     ->GetSetSoftwareFeatureStateInputsQueueSize()
+               : fake_device_sync_client_->GetSetFeatureStatusInputsQueueSize();
   }
 
   void InvokePendingSetHostNetworkRequestCallback(
@@ -138,11 +111,11 @@ class MultiDeviceSetupHostBackendDelegateImplTest
     size_t num_failure_events_before_call =
         observer_->num_failed_backend_requests();
 
-    if (DoTestDevicesHaveInstanceIds()) {
-      fake_device_sync_client_->InvokePendingSetFeatureStatusCallback(
+    if (features::ShouldUseV1DeviceSync()) {
+      fake_device_sync_client_->InvokePendingSetSoftwareFeatureStateCallback(
           result_code);
     } else {
-      fake_device_sync_client_->InvokePendingSetSoftwareFeatureStateCallback(
+      fake_device_sync_client_->InvokePendingSetFeatureStatusCallback(
           result_code);
     }
 
@@ -274,11 +247,32 @@ class MultiDeviceSetupHostBackendDelegateImplTest
   }
 
  private:
+  void SetFeatureFlags(bool use_v1_devicesync) {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    // These flags have no direct effect of on the host backend delegate;
+    // however, v2 Enrollment and DeviceSync must be enabled before v1
+    // DeviceSync can be disabled.
+    enabled_features.push_back(chromeos::features::kCryptAuthV2Enrollment);
+    enabled_features.push_back(chromeos::features::kCryptAuthV2DeviceSync);
+
+    if (use_v1_devicesync) {
+      disabled_features.push_back(
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
+    } else {
+      enabled_features.push_back(
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
+    }
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
   void VerifyLatestSetHostNetworkRequest(
       const multidevice::RemoteDeviceRef expected_host,
       bool expected_should_enable) {
     // Verify inputs to SetSoftwareFeatureState().
-    if (expected_host.instance_id().empty()) {
+    if (features::ShouldUseV1DeviceSync()) {
       ASSERT_FALSE(
           fake_device_sync_client_->set_software_feature_state_inputs_queue()
               .empty());
@@ -327,8 +321,6 @@ class MultiDeviceSetupHostBackendDelegateImplTest
 };
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, Success) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(base::nullopt /* initial_host */);
 
   // Set device 0.
@@ -372,8 +364,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, Success) {
 }
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, Failure) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(base::nullopt /* initial_host */);
 
   // Attempt to set device 0, but fail.
@@ -411,9 +401,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, Failure) {
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
        StartWithDevice_SimultaneousRequests) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
-
   // Start with device 0 as the active host.
   CreateDelegate(test_devices()[0] /* initial_host */);
 
@@ -476,8 +463,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
        SimultaneousRequestsToSameDevice) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(base::nullopt /* initial_host */);
 
   // Attempt to set device 0, but do not invoke the callback yet.
@@ -528,8 +513,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
        MultipleRequestsToSameDevice_FirstFail_ThenSucceed) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(base::nullopt /* initial_host */);
 
   // Attempt to set device 0, but fail.
@@ -560,13 +543,11 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
        InitialPendingRequestButNoInitialDevice) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(
       base::nullopt /* initial_host */,
-      DoTestDevicesHaveInstanceIds()
-          ? test_devices()[0].instance_id()
-          : test_devices()[0].GetDeviceId() /* initial_pending_host_request */);
+      features::ShouldUseV1DeviceSync()
+          ? test_devices()[0].GetDeviceId()
+          : test_devices()[0].instance_id() /* initial_pending_host_request */);
 
   // The delegate should have started a request as soon as it was created.
   // Simulate it succeeding.
@@ -582,8 +563,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
        InitialDeviceWithPendingRequestToRemoveIt) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(
       test_devices()[0] /* initial_host */,
       kPendingRemovalOfCurrentHost /* initial_pending_host_request */);
@@ -601,8 +580,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
 }
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, ChangedFromOtherDevice) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(base::nullopt /* initial_host */);
 
   // The device changed from another device (i.e.,
@@ -617,8 +594,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, ChangedFromOtherDevice) {
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
        PendingRequestCanceledIfDeviceToSetNoLongerExists) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(base::nullopt /* initial_host */,
                  "nonexistentDeviceId" /* initial_pending_host_request */);
 
@@ -629,8 +604,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
        PendingRequestCanceledIfDeviceToRemoveNoLongerExists) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
   CreateDelegate(
       base::nullopt /* initial_host */,
       kPendingRemovalOfCurrentHost /* initial_pending_host_request */);
@@ -641,9 +614,6 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest,
 }
 
 TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, TryToSetNonEligibleHost) {
-  SetFeatureFlags(!DoTestDevicesHaveInstanceIds() /* use_v1_devicesync */,
-                  DoTestDevicesHaveInstanceIds() /* use_v2_devicesync */);
-
   // Make all test devices ineligible.
   fake_eligible_host_devices_provider()->set_eligible_host_devices(
       multidevice::RemoteDeviceRefList());
@@ -654,74 +624,7 @@ TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, TryToSetNonEligibleHost) {
   EXPECT_EQ(0u, observer()->num_pending_host_request_changes());
 }
 
-// This tests additional logic for when v1 and v2 DeviceSync run in parallel.
-TEST_P(MultiDeviceSetupHostBackendDelegateImplTest, V1andV2DeviceSync) {
-  // Only run this test once, where device 0 has an Instance ID and device 1
-  // does not.
-  if (!DoTestDevicesHaveInstanceIds())
-    return;
-
-  SetFeatureFlags(true /* use_v1_devicesync */, true /* use_v2_devicesync */);
-
-  // Make device 1 a v1 DeviceSync device.
-  GetMutableRemoteDevice(test_devices()[1])->instance_id.clear();
-  GetMutableRemoteDevice(test_devices()[1])->public_key = "public_key";
-
-  CreateDelegate(base::nullopt /* initial_host */);
-
-  // Attempt to set device 0, which has an Instance ID, but do not invoke the
-  // callback yet. Device 0 is now the pending host.
-  AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
-  EXPECT_TRUE(delegate()->HasPendingHostRequest());
-  EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
-  EXPECT_EQ(base::nullopt, delegate()->GetMultiDeviceHostFromBackend());
-  EXPECT_EQ(1, fake_device_sync_client()->GetSetFeatureStatusInputsQueueSize());
-
-  // Now, attempt to set device 1, which does not have an Instance ID. Device 1
-  // is now the pending host, but no SetSoftwareFeatureState call was made since
-  // the SetFeatureStatus() callback hasn't been invoked yet.
-  AttemptToSetMultiDeviceHostOnBackend(test_devices()[1]);
-  EXPECT_TRUE(delegate()->HasPendingHostRequest());
-  EXPECT_EQ(test_devices()[1], delegate()->GetPendingHostRequest());
-  EXPECT_EQ(base::nullopt, delegate()->GetMultiDeviceHostFromBackend());
-  EXPECT_EQ(
-      1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
-
-  // Fire the callback for device 0 and have it succeed. This should affect the
-  // value of GetMultiDeviceHostFromBackend(); however, because device 0 is not
-  // the pending host, the observer should not be notified. Now that the device
-  // 0 request is finished, there should be a new request for device 1.
-  // Note: We are assuming that the feature setting requests are processed in
-  // the order they are called. This is an assumption made in the
-  // HostBackendDelegate implementation.
-  fake_device_sync_client()->InvokePendingSetFeatureStatusCallback(
-      device_sync::mojom::NetworkRequestResult::kSuccess);
-  EXPECT_EQ(0, fake_device_sync_client()->GetSetFeatureStatusInputsQueueSize());
-  EXPECT_EQ(
-      1,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
-  SimulateNewHostDevicesSynced(test_devices()[0] /* host_device_after_sync */,
-                               false /* expected_to_fulfill_pending_request */);
-  EXPECT_TRUE(delegate()->HasPendingHostRequest());
-  EXPECT_EQ(test_devices()[1], delegate()->GetPendingHostRequest());
-  EXPECT_EQ(test_devices()[0], delegate()->GetMultiDeviceHostFromBackend());
-
-  // Fire the callback for device 1, and have it succeed.
-  fake_device_sync_client()->InvokePendingSetSoftwareFeatureStateCallback(
-      device_sync::mojom::NetworkRequestResult::kSuccess);
-  EXPECT_EQ(0, fake_device_sync_client()->GetSetFeatureStatusInputsQueueSize());
-  EXPECT_EQ(
-      0,
-      fake_device_sync_client()->GetSetSoftwareFeatureStateInputsQueueSize());
-  SimulateNewHostDevicesSynced(test_devices()[1] /* host_device_after_sync */,
-                               true /* expected_to_fulfill_pending_request */);
-  EXPECT_FALSE(delegate()->HasPendingHostRequest());
-  EXPECT_EQ(test_devices()[1], delegate()->GetMultiDeviceHostFromBackend());
-}
-
-// Runs tests twice; once for devices that all have Instance IDs and once for
-// devices that do not.
+// Runs tests twice; once with v1 DeviceSync enabled and once with it disabled.
 // TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is disabled,
 // when all devices should have an Instance ID.
 INSTANTIATE_TEST_SUITE_P(All,

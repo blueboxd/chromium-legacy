@@ -35726,6 +35726,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Krb5 failed to parse"/>
 </enum>
 
+<enum name="KerberosEncryptionTypes">
+  <summary>
+    Encryption types that are allowed when requesting Kerberos tickets from a
+    Kerberos Authentication server. Any set of types can be mapped into one of
+    the categories below.
+  </summary>
+  <int value="0" label="All"/>
+  <int value="1" label="Strong"/>
+  <int value="2" label="Legacy"/>
+</enum>
+
 <enum name="KerberosErrorType">
   <int value="0" label="Success"/>
   <int value="1" label="Unspecified error"/>

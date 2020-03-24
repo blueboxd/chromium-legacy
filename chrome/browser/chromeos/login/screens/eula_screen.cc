@@ -30,7 +30,7 @@ bool g_usage_statistics_reporting_enabled = true;
 }  // namespace
 
 EulaScreen::EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback)
-    : BaseScreen(EulaView::kScreenId),
+    : BaseScreen(EulaView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback),
       password_fetcher_(this) {

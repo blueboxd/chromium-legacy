@@ -211,7 +211,7 @@ void CookieManagerImpl::GetCookieList(
       net::CookieOptions options;
       options.set_include_httponly();
       options.set_same_site_cookie_context(
-          net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+          net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
       cookie_manager_->GetCookieList(
           GURL(*url), options,

@@ -200,7 +200,7 @@ void OAuthMultiloginHelper::StartSettingCookies(
       options.set_include_httponly();
       // Permit it to set a SameSite cookie if it wants to.
       options.set_same_site_cookie_context(
-          net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+          net::CookieOptions::SameSiteCookieContext::MakeInclusive());
       cookie_manager->SetCanonicalCookie(
           cookie, "https", options,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(

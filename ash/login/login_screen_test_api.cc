@@ -162,6 +162,11 @@ bool LoginScreenTestApi::IsAddUserButtonShown() {
 }
 
 // static
+bool LoginScreenTestApi::IsCancelButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kCancel);
+}
+
+// static
 bool LoginScreenTestApi::IsParentAccessButtonShown() {
   return IsLoginShelfViewButtonShown(LoginShelfView::kParentAccess);
 }
@@ -204,13 +209,21 @@ bool LoginScreenTestApi::LaunchApp(const std::string& app_id) {
 // static
 bool LoginScreenTestApi::ClickAddUserButton() {
   LoginShelfView* view = GetLoginShelfView();
-  return view && view->SimulateAddUserButtonForTesting();
+  return view &&
+         view->SimulateButtonPressedForTesting(LoginShelfView::kAddUser);
+}
+
+// static
+bool LoginScreenTestApi::ClickCancelButton() {
+  LoginShelfView* view = GetLoginShelfView();
+  return view && view->SimulateButtonPressedForTesting(LoginShelfView::kCancel);
 }
 
 // static
 bool LoginScreenTestApi::ClickGuestButton() {
   LoginShelfView* view = GetLoginShelfView();
-  return view && view->SimulateGuestButtonForTesting();
+  return view &&
+         view->SimulateButtonPressedForTesting(LoginShelfView::kBrowseAsGuest);
 }
 
 // static

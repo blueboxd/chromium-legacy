@@ -17,6 +17,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 
@@ -34,7 +35,7 @@ class MediaResourceTracker;
 // feedback sounds should be enabled based on the currently active backends.
 // Volume feedback sounds are only enabled when there are no active audio
 // streams (apart from sound-effects streams).
-class MediaPipelineBackendManager {
+class MediaPipelineBackendManager : public media::CmaBackendFactory {
  public:
   class ActiveAudioStreamObserver {
    public:
@@ -89,12 +90,11 @@ class MediaPipelineBackendManager {
   MediaPipelineBackendManager(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       MediaResourceTracker* media_resource_tracker);
-  ~MediaPipelineBackendManager();
+  ~MediaPipelineBackendManager() override;
 
-  // Creates a CMA backend. Must be called on the same thread as
-  // |media_task_runner_|.
-  std::unique_ptr<CmaBackend> CreateCmaBackend(
-      const MediaPipelineDeviceParams& params);
+  // media::CmaBackendFactory implementation:
+  std::unique_ptr<CmaBackend> CreateBackend(
+      const MediaPipelineDeviceParams& params) override;
 
   // Inform that a backend previously created is destroyed.
   // Must be called on the same thread as |media_task_runner_|.

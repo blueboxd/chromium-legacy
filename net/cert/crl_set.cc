@@ -438,8 +438,22 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
     const std::string spki(reinterpret_cast<const char*>(issuer_spki->data),
                            sizeof(issuer_spki->data));
     std::vector<std::string> serials;
-    if (!serial_number.empty())
+    if (!serial_number.empty()) {
       serials.push_back(serial_number);
+      // |serial_number| is in DER-encoded form, which means it may have a
+      // leading 0x00 to indicate it is a positive INTEGER. CRLSets are stored
+      // without these leading 0x00, as handled in CheckSerial(), so remove
+      // that here. As DER-encoding means that any sequences of leading zeroes
+      // should be omitted, except to indicate sign, there should only ever
+      // be one, and the next byte should have the high bit set.
+      DCHECK_EQ(serials[0][0] & 0x80, 0);  // Negative serials are not allowed.
+      if (serials[0][0] == 0x00) {
+        serials[0].erase(0, 1);
+        // If there was a leading 0x00, then the high-bit of the next byte
+        // should have been set.
+        DCHECK(!serials[0].empty() && serials[0][0] & 0x80);
+      }
+    }
 
     crl_set->crls_.emplace(std::move(spki), std::move(serials));
   }

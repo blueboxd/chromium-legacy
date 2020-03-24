@@ -708,33 +708,38 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
   const base::TimeDelta kLongAge = kLaxAllowUnsafeMaxAge * 4;
   const base::TimeDelta kShortAge = kLaxAllowUnsafeMaxAge / 4;
 
+  using SameSiteCookieContext = CookieOptions::SameSiteCookieContext;
+
   // Test cases that are the same regardless of feature status or access
   // semantics:
   std::vector<IncludeForRequestURLTestCase> common_test_cases = {
       // Strict cookies:
       {"Common=1;SameSite=Strict", CookieSameSite::STRICT_MODE,
        CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
       {"Common=2;SameSite=Strict", CookieSameSite::STRICT_MODE,
        CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
       {"Common=3;SameSite=Strict", CookieSameSite::STRICT_MODE,
        CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)},
       {"Common=4;SameSite=Strict", CookieSameSite::STRICT_MODE,
        CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=5;SameSite=Strict", CookieSameSite::STRICT_MODE,
        CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+           SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -742,8 +747,9 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
                 WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL})},
       {"Common=6;SameSite=Strict", CookieSameSite::STRICT_MODE,
        CookieEffectiveSameSite::STRICT_MODE,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+           SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -752,26 +758,29 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
       // Lax cookies:
       {"Common=7;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
       {"Common=8;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)},
       {"Common=9;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=10;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=11;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+           SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -779,8 +788,9 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
                 WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL})},
       {"Common=12;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+           SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -788,8 +798,9 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
                 WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL})},
       {"Common=13;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+           SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -797,8 +808,9 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
                 WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL})},
       {"Common=14;SameSite=Lax", CookieSameSite::LAX_MODE,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+           SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -807,39 +819,45 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
       // None and Secure cookies:
       {"Common=15;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=16;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=17;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=18;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=19;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+           SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=20;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+           SameSiteCookieContext::CrossSchemeness::INSECURE_SECURE),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=21;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+           SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
        CanonicalCookie::CookieInclusionStatus()},
       {"Common=22;SameSite=None;Secure", CookieSameSite::NO_RESTRICTION,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::
-           SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+           SameSiteCookieContext::CrossSchemeness::SECURE_INSECURE),
        CanonicalCookie::CookieInclusionStatus()}};
 
   // Test cases where the default is None (either access semantics is LEGACY, or
@@ -848,7 +866,7 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
       // Unspecified cookies (without SameSite-by-default):
       {"DefaultNone=1", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -856,7 +874,8 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
                 WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT})},
       {"DefaultNone=2", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -864,11 +883,12 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
                 WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT})},
       {"DefaultNone=3", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
        CanonicalCookie::CookieInclusionStatus()},
       {"DefaultNone=4", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::NO_RESTRICTION,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
        CanonicalCookie::CookieInclusionStatus()}};
 
   // Test cases where the default is Lax (either access semantics is NONLEGACY,
@@ -877,7 +897,7 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
       // Unspecified recently-created cookies (with SameSite-by-default):
       {"DefaultLax=1", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::
                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
@@ -886,7 +906,8 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
        kShortAge},
       {"DefaultLax=2", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
@@ -895,16 +916,17 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
        kShortAge},
       {"DefaultLax=3", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
        CanonicalCookie::CookieInclusionStatus(), kShortAge},
       {"DefaultLax=4", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
        CanonicalCookie::CookieInclusionStatus(), kShortAge},
       // Unspecified not-recently-created cookies (with SameSite-by-default):
       {"DefaultLax=5", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::CROSS_SITE,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::CROSS_SITE),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::
                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
@@ -913,7 +935,8 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
        kLongAge},
       {"DefaultLax=6", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_LAX_METHOD_UNSAFE),
        CanonicalCookie::CookieInclusionStatus(
            CanonicalCookie::CookieInclusionStatus::
                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
@@ -922,11 +945,12 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
        kLongAge},
       {"DefaultLax=7", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+       SameSiteCookieContext(SameSiteCookieContext::ContextType::SAME_SITE_LAX),
        CanonicalCookie::CookieInclusionStatus(), kLongAge},
       {"DefaultLax=8", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE,
-       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+       SameSiteCookieContext(
+           SameSiteCookieContext::ContextType::SAME_SITE_STRICT),
        CanonicalCookie::CookieInclusionStatus(), kLongAge},
   };
 
@@ -1032,8 +1056,8 @@ TEST(CanonicalCookieTest, MultipleExclusionReasons) {
   base::Optional<base::Time> server_time = base::nullopt;
   CookieOptions options;
   options.set_exclude_httponly();
-  options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  options.set_same_site_cookie_context(CookieOptions::SameSiteCookieContext(
+      CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE));
 
   // Test IncludeForRequestURL()
   // Note: This is a cookie that should never exist normally, because Create()
@@ -1978,26 +2002,36 @@ TEST(CanonicalCookieTest, IsSetPermittedInContext) {
   CookieOptions context_cross_site;
   CookieOptions context_same_site_lax;
   context_same_site_lax.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX));
   CookieOptions context_same_site_strict;
   context_same_site_strict.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT));
   CookieOptions context_same_site_lax_to_secure;
   context_same_site_lax_to_secure.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+          CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              INSECURE_SECURE));
   CookieOptions context_same_site_strict_to_secure;
   context_same_site_strict_to_secure.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+          CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              INSECURE_SECURE));
   CookieOptions context_same_site_lax_to_insecure;
   context_same_site_lax_to_insecure.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+          CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              SECURE_INSECURE));
   CookieOptions context_same_site_strict_to_insecure;
   context_same_site_strict_to_insecure.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::
-          SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL);
+      CookieOptions::SameSiteCookieContext(
+          CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT,
+          CookieOptions::SameSiteCookieContext::CrossSchemeness::
+              SECURE_INSECURE));
 
   {
     CanonicalCookie cookie_same_site_unrestricted(

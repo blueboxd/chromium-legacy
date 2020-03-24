@@ -237,6 +237,8 @@ component("printing") {
       "backend/printing_restrictions.h",
       "printed_document_chromeos.cc",
       "printer_query_result_chromeos.h",
+      "printer_status_chromeos.cc",
+      "printer_status_chromeos.h",
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",
     ]

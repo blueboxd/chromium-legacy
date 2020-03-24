@@ -235,8 +235,15 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
   if (timing.paint_timing->first_meaningful_paint)
     matched_bits.Set(TimingField::kFirstMeaningfulPaint);
   if (metadata.behavior_flags &
-      blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlockReload)
+      blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlockReload) {
     matched_bits.Set(TimingField::kDocumentWriteBlockReload);
+  }
+  if (timing.paint_timing->largest_image_paint ||
+      timing.paint_timing->largest_text_paint) {
+    matched_bits.Set(TimingField::kLargestContentfulPaint);
+  }
+  if (timing.paint_timing->first_input_or_scroll_notified_timestamp)
+    matched_bits.Set(TimingField::kFirstInputOrScroll);
 
   return matched_bits;
 }

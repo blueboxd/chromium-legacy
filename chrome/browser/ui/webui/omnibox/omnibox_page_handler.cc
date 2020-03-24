@@ -354,6 +354,9 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
 
 void OmniboxPageHandler::ResetController() {
   controller_ = std::make_unique<AutocompleteController>(
-      std::make_unique<ChromeAutocompleteProviderClient>(profile_), this,
+      std::make_unique<ChromeAutocompleteProviderClient>(profile_),
       AutocompleteClassifier::DefaultOmniboxProviders());
+  // We will observe our internal AutocompleteController directly, so there's
+  // no reason to hook it up to the profile-keyed OmniboxControllerEmitter.
+  controller_->AddObserver(this);
 }

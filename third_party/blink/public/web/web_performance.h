@@ -98,10 +98,10 @@ class WebPerformance {
   BLINK_EXPORT double LargestTextPaint() const;
   BLINK_EXPORT uint64_t LargestTextPaintSize() const;
   BLINK_EXPORT double FirstInputOrScrollNotifiedTimestamp() const;
-  BLINK_EXPORT double FirstInputDelay() const;
-  BLINK_EXPORT double FirstInputTimestamp() const;
-  BLINK_EXPORT double LongestInputDelay() const;
-  BLINK_EXPORT double LongestInputTimestamp() const;
+  BLINK_EXPORT base::Optional<base::TimeDelta> FirstInputDelay() const;
+  BLINK_EXPORT base::Optional<base::TimeDelta> FirstInputTimestamp() const;
+  BLINK_EXPORT base::Optional<base::TimeDelta> LongestInputDelay() const;
+  BLINK_EXPORT base::Optional<base::TimeDelta> LongestInputTimestamp() const;
   BLINK_EXPORT double TotalInputDelay() const;
   BLINK_EXPORT double TotalAdjustedInputDelay() const;
   BLINK_EXPORT uint64_t NumInputEvents() const;

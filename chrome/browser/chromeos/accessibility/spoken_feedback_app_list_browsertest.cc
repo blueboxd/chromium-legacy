@@ -106,46 +106,32 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
 
-  while (!base::MatchPattern(speech_monitor_.GetNextUtterance(), "Launcher")) {
-  }
-
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Shelf", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Press space on the launcher button in shelf, this opens peeking launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Search your device,*"));
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
-
-  // Check that Launcher, partial view state is announced.
-  EXPECT_EQ("Launcher, partial view", speech_monitor_.GetNextUtterance());
-
-  // Send a key press to enable keyboard traversal
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-
-  // Move focus to expand all apps button;
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-  EXPECT_EQ("Expand to all apps", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Press space on expand arrow to go to fullscreen launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  EXPECT_EQ(
-      "Search your device, apps, and web."
-      " Use the arrow keys to navigate your apps.",
-      speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
-
-  // Check that Launcher, all apps state is announced.
-  EXPECT_EQ("Launcher, all apps", speech_monitor_.GetNextUtterance());
+  speech_monitor_.ExpectSpeechPattern("Launcher")
+      .ExpectSpeech("Button")
+      .ExpectSpeech("Shelf")
+      .ExpectSpeech("Tool bar")
+      // Press space on the launcher button in shelf, this opens peeking
+      // launcher.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); })
+      .ExpectSpeechPattern("Search your device,*")
+      .ExpectSpeech("Edit text")
+      // Check that Launcher, partial view state is announced.
+      .ExpectSpeech("Launcher, partial view")
+      // Send a key press to enable keyboard traversal
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); })
+      // Move focus to expand all apps button;
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); })
+      .ExpectSpeech("Expand to all apps")
+      .ExpectSpeech("Button")
+      // Press space on expand arrow to go to fullscreen launcher.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); })
+      .ExpectSpeech(
+          "Search your device, apps, and web."
+          " Use the arrow keys to navigate your apps.")
+      .ExpectSpeech("Edit text")
+      // Check that Launcher, all apps state is announced.
+      .ExpectSpeech("Launcher, all apps")
+      .Replay();
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
@@ -195,47 +181,32 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
 
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate") {
-  }
-
-  // Press space on the launcher button in shelf, this opens peeking launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
-  }
-
-  // Move focus to 1st suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 0", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to 2nd suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 1", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to 3rd suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 2", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to expand all apps button;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Expand to all apps", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to app list window;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Search your device,*"));
+  speech_monitor_
+      .ExpectSpeech("Press Search plus Space to activate")
+      // Press space on the launcher button in shelf, this opens peeking
+      // launcher.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); })
+      .ExpectSpeech("Launcher, partial view")
+      // Move focus to 1st suggestion chip;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Chip 0")
+      .ExpectSpeech("Button")
+      // Move focus to 2nd suggestion chip;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Chip 1")
+      .ExpectSpeech("Button")
+      // Move focus to 3rd suggestion chip;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Chip 2")
+      .ExpectSpeech("Button")
+      // Move focus to expand all apps button;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Expand to all apps")
+      .ExpectSpeech("Button")
+      // Move focus to app list window;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeechPattern("Search your device,*")
+      .Replay();
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
@@ -248,66 +219,45 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
 
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate") {
-  }
-
-  // Press space on the launcher button in shelf, this opens peeking launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, partial view") {
-  }
-
-  // Send a key press to enable keyboard traversal
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-
-  // Move focus to expand all apps button.
-  SendKeyPressWithSearchAndShift(ui::VKEY_TAB);
-  while (speech_monitor_.GetNextUtterance() !=
-         "Press Search plus Space to activate") {
-  }
-
-  // Press space on expand arrow to go to fullscreen launcher.
-  SendKeyPressWithSearch(ui::VKEY_SPACE);
-  while (speech_monitor_.GetNextUtterance() != "Launcher, all apps") {
-  }
-
-  // Move focus to the suggestion chip;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Chip 0", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to 1st app;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Item 0", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to 2nd app;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Item 1", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to 3rd app;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Item 2", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Press Search plus Space to activate",
-            speech_monitor_.GetNextUtterance());
-
-  // Move focus to app list window;
-  SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ(
-      "Search your device, apps, and web. Use the arrow keys to navigate your "
-      "apps.",
-      speech_monitor_.GetNextUtterance());
-
-  // Move focus to search box;
-  EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+  speech_monitor_
+      .ExpectSpeech("Press Search plus Space to activate")
+      // Press space on the launcher button in shelf, this opens peeking
+      // launcher.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); })
+      .ExpectSpeech("Launcher, partial view")
+      // Send a key press to enable keyboard traversal
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); })
+      // Move focus to expand all apps button.
+      .Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); })
+      .ExpectSpeech("Press Search plus Space to activate")
+      // Press space on expand arrow to go to fullscreen launcher.
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); })
+      .ExpectSpeech("Launcher, all apps")
+      // Move focus to the suggestion chip;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Chip 0")
+      .ExpectSpeech("Button")
+      // Move focus to 1st app;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Item 0")
+      .ExpectSpeech("Button")
+      // Move focus to 2nd app;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Item 1")
+      .ExpectSpeech("Button")
+      // Move focus to 3rd app;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech("Item 2")
+      .ExpectSpeech("Button")
+      // Move focus to app list window;
+      .Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); })
+      .ExpectSpeech(
+          "Search your device, apps, and web. Use the arrow keys to navigate "
+          "your "
+          "apps.")
+      // Move focus to search box;
+      .ExpectSpeech("Edit text")
+      .Replay();
 }
 
 // TODO(newcomer): reimplement this test once the AppListFocus changes are

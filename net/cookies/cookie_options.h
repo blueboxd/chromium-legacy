@@ -16,38 +16,70 @@ namespace net {
 
 class NET_EXPORT CookieOptions {
  public:
-  // Mask indicating insecure site-for-cookies and secure request/response.
-  static const int kToSecureMask = 1 << 5;
-  // Mask indicating secure site-for-cookies and insecure request/response.
-  static const int kToInsecureMask = kToSecureMask << 1;
 
   // Relation between the cookie and the navigational environment.
-  // CROSS_SITE to SAME_SITE_STRICT are ordered from least to most trusted
-  // environment. The remaining values are reiterations with additional bits for
-  // cross-scheme contexts. Don't renumber, used in histograms.
-  enum class SameSiteCookieContext {
-    CROSS_SITE = 0,
-    // Same rules as lax but the http method is unsafe.
-    SAME_SITE_LAX_METHOD_UNSAFE = 1,
-    SAME_SITE_LAX = 2,
-    SAME_SITE_STRICT = 3,
-    // The CROSS_SCHEME enums are for when the url and site_for_cookies
-    // differ in their schemes (http vs https). Their values are chosen such
-    // that the CROSS_SCHEME flag can be bitmasked out.
-    // SECURE_URL indicates either a request to a secure url or a response from
-    // a secure url, similarly for INSECURE.
-    SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL =
-        SAME_SITE_LAX_METHOD_UNSAFE | kToSecureMask,
-    SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL = SAME_SITE_LAX | kToSecureMask,
-    SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL = SAME_SITE_STRICT | kToSecureMask,
-    SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL =
-        SAME_SITE_LAX_METHOD_UNSAFE | kToInsecureMask,
-    SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL = SAME_SITE_LAX | kToInsecureMask,
-    SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL =
-        SAME_SITE_STRICT | kToInsecureMask,
+  class NET_EXPORT SameSiteCookieContext {
+   public:
+    // CROSS_SITE to SAME_SITE_STRICT are ordered from least to most trusted
+    // environment. Don't renumber, used in histograms.
+    enum class ContextType {
+      CROSS_SITE = 0,
+      // Same rules as lax but the http method is unsafe.
+      SAME_SITE_LAX_METHOD_UNSAFE = 1,
+      SAME_SITE_LAX = 2,
+      SAME_SITE_STRICT = 3,
 
-    // Keep last, used for histograms.
-    COUNT
+      // Keep last, used for histograms.
+      COUNT
+    };
+
+    // Used for when, and in what direction, same-site requests and responses
+    // are made in a cross-scheme context. Currently only used for metrics
+    // gathering and does not affect cookie behavior.
+    enum class CrossSchemeness {
+      NONE,
+      INSECURE_SECURE,  // Insecure site-for-cookies, secure request/response
+      SECURE_INSECURE   // Secure site-for-cookies, insecure request/response
+    };
+
+    SameSiteCookieContext() : SameSiteCookieContext(ContextType::CROSS_SITE) {}
+    explicit SameSiteCookieContext(
+        ContextType same_site_context,
+        CrossSchemeness cross_schemeness = CrossSchemeness::NONE)
+        : context(same_site_context), cross_schemeness(cross_schemeness) {}
+
+    bool IsDifferentScheme() const {
+      return cross_schemeness != SameSiteCookieContext::CrossSchemeness::NONE;
+    }
+
+    // Convenience method which returns a SameSiteCookieContext with the most
+    // inclusive context. This allows access to all SameSite cookies.
+    static SameSiteCookieContext MakeInclusive();
+
+    // The following functions are for conversion to the previous style of
+    // SameSiteCookieContext for metrics usage. This may be removed when the
+    // metrics using them are also removed.
+
+    // Used as the "COUNT" entry in a histogram enum.
+    static constexpr int64_t MetricCount() {
+      return (static_cast<int>(ContextType::SAME_SITE_STRICT) |
+              kToInsecureMask) +
+             1;
+    }
+    int64_t ConvertToMetricsValue() const;
+
+    ContextType context;
+
+    CrossSchemeness cross_schemeness;
+
+   private:
+    // The following variables are for conversion to the previous style of
+    // SameSiteCookieContext for metrics usage. This may be removed when the
+    // metrics using them are also removed.
+    // Mask indicating insecure site-for-cookies and secure request/response.
+    static const int kToSecureMask = 1 << 5;
+    // Mask indicating secure site-for-cookies and insecure request/response.
+    static const int kToInsecureMask = kToSecureMask << 1;
   };
 
   // Creates a CookieOptions object which:
@@ -77,31 +109,7 @@ class NET_EXPORT CookieOptions {
 
   // Strips off the cross-scheme bits to only return the same-site context.
   SameSiteCookieContext same_site_cookie_context() const {
-    return RemoveCrossSchemeBitmask(same_site_cookie_context_);
-  }
-
-  SameSiteCookieContext same_site_cookie_context_full() const {
     return same_site_cookie_context_;
-  }
-
-  static SameSiteCookieContext ApplyCrossSchemeBitmask(
-      SameSiteCookieContext context,
-      int mask) {
-    int return_value = static_cast<int>(context);
-    return_value = return_value | mask;
-    return static_cast<CookieOptions::SameSiteCookieContext>(return_value);
-  }
-
-  static SameSiteCookieContext RemoveCrossSchemeBitmask(
-      SameSiteCookieContext context) {
-    int return_value = static_cast<int>(context);
-    return_value = return_value & ~(kToSecureMask | kToInsecureMask);
-    return static_cast<CookieOptions::SameSiteCookieContext>(return_value);
-  }
-
-  bool IsDifferentScheme() const {
-    return static_cast<int>(same_site_cookie_context_) &
-           (kToSecureMask | kToInsecureMask);
   }
 
   void set_update_access_time() { update_access_time_ = true; }
@@ -126,6 +134,12 @@ class NET_EXPORT CookieOptions {
   bool update_access_time_;
   bool return_excluded_cookies_;
 };
+
+NET_EXPORT bool operator==(const CookieOptions::SameSiteCookieContext& lhs,
+                           const CookieOptions::SameSiteCookieContext& rhs);
+
+NET_EXPORT bool operator!=(const CookieOptions::SameSiteCookieContext& lhs,
+                           const CookieOptions::SameSiteCookieContext& rhs);
 
 }  // namespace net
 

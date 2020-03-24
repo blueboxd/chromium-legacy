@@ -10,9 +10,9 @@
 #include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_input_stream.h"
-#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/audio/alsa/alsa_input.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 

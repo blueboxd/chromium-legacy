@@ -101,7 +101,7 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
                   << "installation.";
   net::CookieOptions options;
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
           *net::CanonicalCookie::CreateSanitizedCookie(
@@ -317,7 +317,7 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
   // the user try to open old client.
   net::CookieOptions options;
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
           *net::CanonicalCookie::CreateSanitizedCookie(

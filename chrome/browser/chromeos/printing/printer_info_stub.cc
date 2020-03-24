@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "printing/printer_status_chromeos.h"
 
 namespace chromeos {
 
@@ -19,10 +20,10 @@ void QueryIppPrinter(const std::string& host,
   DCHECK(!host.empty());
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     printing::PrinterQueryResult::UNKNOWN_FAILURE, "Foo",
-                     "Bar", "Foo Bar", std::vector<std::string>{}, false));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                printing::PrinterQueryResult::UNKNOWN_FAILURE,
+                                printing::PrinterStatus(), "Foo", "Bar",
+                                "Foo Bar", std::vector<std::string>{}, false));
 }
 
 }  // namespace chromeos

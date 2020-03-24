@@ -37,32 +37,29 @@ namespace printing {
 class PRINTING_EXPORT MetafilePlayer {
  public:
 #if defined(OS_MACOSX)
-  // |shrink_to_fit| specifies whether the output should be shrunk to fit a
-  // destination page if the source PDF is bigger than the destination page in
-  // any dimension. If this is false, parts of the source PDF page that lie
-  // outside the bounds will be clipped.
-  // |stretch_to_fit| specifies whether the output should be stretched to fit
-  // the destination page if the source page size is smaller in all dimensions.
-  // |center_horizontally| specifies whether the output (after any scaling is
-  // done) should be centered horizontally within the destination page.
-  // |center_vertically| specifies whether the output (after any scaling is
-  // done) should be centered vertically within the destination page.
-  // Note that all scaling preserves the original aspect ratio of the page.
-  // |autorotate| specifies whether the source PDF should be autorotated to fit
-  // on the destination page.
   struct MacRenderPageParams {
-    MacRenderPageParams()
-        : shrink_to_fit(false),
-          stretch_to_fit(false),
-          center_horizontally(false),
-          center_vertically(false),
-          autorotate(false) {}
+    // Whether the output should be shrunk to fit a destination page if the
+    // source PDF is bigger than the destination page in any dimension. If this
+    // is false, parts of the source PDF page that lie outside the bounds will
+    // be clipped.
+    bool shrink_to_fit = false;
 
-    bool shrink_to_fit;
-    bool stretch_to_fit;
-    bool center_horizontally;
-    bool center_vertically;
-    bool autorotate;
+    // Whether the output should be stretched to fit the destination page if the
+    // source page size is smaller in all dimensions.
+    bool stretch_to_fit = false;
+
+    // Whether the output (after any scaling is done) should be centered
+    // horizontally within the destination page.
+    bool center_horizontally = false;
+
+    // Whether the output (after any scaling is done) should be centered
+    // vertically within the destination page. Note that all scaling preserves
+    // the original aspect ratio of the page.
+    bool center_vertically = false;
+
+    // Whether the source PDF should be autorotated to fit on the destination
+    // page.
+    bool autorotate = false;
   };
 #endif  // defined(OS_MACOSX)
   MetafilePlayer();
@@ -81,7 +78,7 @@ class PRINTING_EXPORT MetafilePlayer {
   // |params| to determine scaling, translation, and rotation.
   virtual bool RenderPage(unsigned int page_number,
                           printing::NativeDrawingContext context,
-                          const CGRect rect,
+                          const CGRect& rect,
                           const MacRenderPageParams& params) const = 0;
 #endif  // if defined(OS_WIN)
 
@@ -127,7 +124,7 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   // in points (=1/72 in).
   virtual void StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
-                         const float& scale_factor) = 0;
+                         float scale_factor) = 0;
 
   // Closes the current page and destroys the context used in rendering that
   // page. The results of current page will be appended into the underlying

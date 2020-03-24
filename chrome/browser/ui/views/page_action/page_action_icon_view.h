@@ -66,6 +66,7 @@ class PageActionIconView : public IconLabelBubbleView {
   // Sets the active state of the icon. An active icon will be displayed in a
   // "call to action" color.
   void SetActive(bool active);
+  bool active() const { return active_; }
 
   // Hide the icon on user input in progress and invokes UpdateImpl().
   void Update();
@@ -152,8 +153,6 @@ class PageActionIconView : public IconLabelBubbleView {
 
   // Returns the associated web contents from the delegate.
   content::WebContents* GetWebContents() const;
-
-  bool active() const { return active_; }
 
   // Delegate accessor for subclasses.
   Delegate* delegate() const { return delegate_; }

@@ -1038,6 +1038,10 @@ ci.fyi_ios_builder(
 
 ci.fyi_ios_builder(
     name = 'ios13-sdk-simulator',
+    executable = 'recipe:chromium',
+    properties = {
+        'xcode_build_version': '11c29'
+    }
 )
 
 

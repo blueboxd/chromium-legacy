@@ -61,6 +61,8 @@ class SpeechMonitor : public content::TtsPlatform {
 
   // Adds an expectation of spoken text.
   SpeechMonitor& ExpectSpeech(const std::string& text);
+  SpeechMonitor& ExpectSpeechPattern(const std::string& pattern);
+  SpeechMonitor& ExpectNextSpeechIsNot(const std::string& text);
 
   // Adds a call to be included in replay.
   SpeechMonitor& Call(std::function<void()> func);
@@ -72,6 +74,8 @@ class SpeechMonitor : public content::TtsPlatform {
   double GetDelayForLastUtteranceMS();
 
  private:
+  typedef std::pair<std::function<bool()>, std::string> ReplayArgs;
+
   // TtsPlatform implementation.
   bool PlatformImplAvailable() override;
   void Speak(int utterance_id,
@@ -94,6 +98,7 @@ class SpeechMonitor : public content::TtsPlatform {
   void SetError(const std::string& error) override;
 
   void MaybeContinueReplay();
+  void MaybePrintExpectations();
 
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   // Our list of utterances and specified language.
@@ -105,15 +110,24 @@ class SpeechMonitor : public content::TtsPlatform {
   // Calculates the milliseconds elapsed since the last call to Speak().
   double CalculateUtteranceDelayMS();
   // Stores the milliseconds elapsed since the last call to Speak().
-  double delay_for_last_utterance_MS_;
+  double delay_for_last_utterance_ms_;
   // Stores the last time Speak() was called.
   std::chrono::steady_clock::time_point time_of_last_utterance_;
 
   // Queue of expectations to be replayed.
-  std::vector<std::function<bool()>> replay_queue_;
+  std::vector<ReplayArgs> replay_queue_;
+
+  // Queue of expectations already satisfied.
+  std::vector<std::string> replayed_queue_;
 
   // Blocks this test when replaying expectations.
   scoped_refptr<content::MessageLoopRunner> replay_loop_runner_;
+
+  // Used to track the size of |replay_queue_| for knowing when to print errors.
+  size_t last_replay_queue_size_ = 0;
+
+  // Whether |Replay| was called.
+  bool replay_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);
 };

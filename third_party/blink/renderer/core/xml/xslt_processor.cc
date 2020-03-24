@@ -120,6 +120,7 @@ Document* XSLTProcessor::CreateDocumentFromSource(
       result->InitContentSecurityPolicy(csp);
     }
   } else {
+    init = init.WithContextDocument(owner_document->ContextDocument());
     result = LocalDOMWindow::CreateDocument(init, force_xhtml);
   }
 

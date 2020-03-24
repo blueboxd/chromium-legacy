@@ -1543,3 +1543,21 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, NtpProcesses) {
   // Verify that no processes were be unnecessarily terminated.
   EXPECT_EQ(0u, process_termination_tracker.size());
 }
+
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, JSPrintDuringSwap) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderProcessHostWatcher watcher(
+      contents->GetMainFrame()->GetProcess(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // This file will attempt a cross-process navigation.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/print_during_load_with_broken_pdf_then_navigate.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Ensure the first process did not crash when the queued print() fires during frame detach.
+  EXPECT_TRUE(WaitForLoadStop(contents));
+  watcher.Wait();
+  EXPECT_TRUE(watcher.did_exit_normally());
+}

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 
 namespace updater {
 
@@ -20,6 +21,9 @@ class App : public base::RefCountedThreadSafe<App> {
 
  protected:
   friend class base::RefCountedThreadSafe<App>;
+
+  static constexpr base::StringPiece kThreadPoolName = "Updater";
+
   App();
   virtual ~App();
 
@@ -28,6 +32,11 @@ class App : public base::RefCountedThreadSafe<App> {
   void Shutdown(int exitCode);
 
  private:
+  // Allows initialization of the thread pool for specific environments, in
+  // cases where the thread pool must be started with different init parameters,
+  // such as MTA for Windows COM servers.
+  virtual void InitializeThreadPool();
+
   // Implementations of App can override this to perform work on the main
   // sequence while blocking is still allowed.
   virtual void Initialize() {}

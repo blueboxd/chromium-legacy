@@ -36,10 +36,6 @@ class NET_EXPORT CertVerifyResult : public base::SupportsUserData {
 
   void Reset();
 
-  // Returns true if all the members of |this| are equal to |other|'s (including
-  // the |verified_cert| intermediates).
-  bool operator==(const CertVerifyResult& other) const;
-
   // The certificate chain that was constructed during verification.
   //
   // Note: Although |verified_cert| will match the originally supplied

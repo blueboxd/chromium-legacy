@@ -34,22 +34,6 @@
 
 namespace chromeos {
 
-namespace {
-
-UserContext CreateUserContext(const AccountId& account_id) {
-  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
-                           account_id);
-  user_context.SetKey(Key("password"));
-  if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser1) {
-    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken1);
-  } else if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser2) {
-    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken2);
-  }
-  return user_context;
-}
-
-}  // namespace
-
 LoginManagerTest::LoginManagerTest(bool should_launch_browser,
                                    bool should_initialize_webui)
     : should_launch_browser_(should_launch_browser),
@@ -93,8 +77,26 @@ void LoginManagerTest::RegisterUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
   users_pref->AppendIfNotPresent(
       std::make_unique<base::Value>(account_id.GetUserEmail()));
-  if (user_manager::UserManager::IsInitialized())
+  if (user_manager::UserManager::IsInitialized()) {
     user_manager::known_user::SaveKnownUser(account_id);
+    user_manager::UserManager::Get()->SaveUserOAuthStatus(
+        account_id, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+  }
+}
+
+constexpr char LoginManagerTest::kPassword[] = "password";
+
+UserContext LoginManagerTest::CreateUserContext(const AccountId& account_id,
+                                                const std::string& password) {
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           account_id);
+  user_context.SetKey(Key(password));
+  if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser1) {
+    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken1);
+  } else if (account_id.GetUserEmail() == FakeGaiaMixin::kEnterpriseUser2) {
+    user_context.SetRefreshToken(FakeGaiaMixin::kTestRefreshToken2);
+  }
+  return user_context;
 }
 
 void LoginManagerTest::SetExpectedCredentials(const UserContext& user_context) {
@@ -133,13 +135,13 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
 }
 
 void LoginManagerTest::LoginUser(const AccountId& account_id) {
-  const UserContext user_context = CreateUserContext(account_id);
+  const UserContext user_context = CreateUserContext(account_id, kPassword);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(TryToLogin(user_context));
 }
 
 void LoginManagerTest::AddUser(const AccountId& account_id) {
-  const UserContext user_context = CreateUserContext(account_id);
+  const UserContext user_context = CreateUserContext(account_id, kPassword);
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(AddUserToSession(user_context));
 }

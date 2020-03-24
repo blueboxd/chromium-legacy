@@ -117,7 +117,7 @@ bool MetafileSkia::InitFromData(const void* src_buffer,
 
 void MetafileSkia::StartPage(const gfx::Size& page_size,
                              const gfx::Rect& content_area,
-                             const float& scale_factor) {
+                             float scale_factor) {
   DCHECK_GT(page_size.width(), 0);
   DCHECK_GT(page_size.height(), 0);
   DCHECK_GT(scale_factor, 0.0f);
@@ -148,7 +148,7 @@ void MetafileSkia::StartPage(const gfx::Size& page_size,
 cc::PaintCanvas* MetafileSkia::GetVectorCanvasForNewPage(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
-    const float& scale_factor) {
+    float scale_factor) {
   StartPage(page_size, content_area, scale_factor);
   return data_->recorder.getRecordingCanvas();
 }
@@ -280,7 +280,7 @@ http://codereview.chromium.org/7200040/diff/1/webkit/plugins/ppapi/ppapi_plugin_
 */
 bool MetafileSkia::RenderPage(unsigned int page_number,
                               CGContextRef context,
-                              const CGRect rect,
+                              const CGRect& rect,
                               const MacRenderPageParams& params) const {
   DCHECK_GT(GetDataSize(), 0U);
   if (data_->pdf_cg.GetDataSize() == 0) {

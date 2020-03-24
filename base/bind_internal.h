@@ -321,21 +321,11 @@ template <typename Callable>
 struct IsCallableObject<Callable, void_t<decltype(&Callable::operator())>>
     : std::true_type {};
 
-// HasRefCountedTypeAsRawPtr selects true_type when any of the |Args| is a raw
-// pointer to a RefCounted type.
-// Implementation note: This non-specialized case handles zero-arity case only.
-// Non-zero-arity cases should be handled by the specialization below.
-template <typename... Args>
-struct HasRefCountedTypeAsRawPtr : std::false_type {};
-
-// Implementation note: Select true_type if the first parameter is a raw pointer
-// to a RefCounted type. Otherwise, skip the first parameter and check rest of
-// parameters recursively.
-template <typename T, typename... Args>
-struct HasRefCountedTypeAsRawPtr<T, Args...>
-    : std::conditional_t<NeedsScopedRefptrButGetsRawPtr<T>::value,
-                         std::true_type,
-                         HasRefCountedTypeAsRawPtr<Args...>> {};
+// HasRefCountedTypeAsRawPtr inherits from true_type when any of the |Args| is a
+// raw pointer to a RefCounted type.
+template <typename... Ts>
+struct HasRefCountedTypeAsRawPtr
+    : disjunction<NeedsScopedRefptrButGetsRawPtr<Ts>...> {};
 
 // ForceVoidReturn<>
 //
@@ -802,8 +792,7 @@ BanUnconstructedRefCountedReceiver(const Receiver& receiver, Unused&&...) {
 // This stores all the state passed into Bind().
 template <typename Functor, typename... BoundArgs>
 struct BindState final : BindStateBase {
-  using IsCancellable = std::integral_constant<
-      bool,
+  using IsCancellable = bool_constant<
       CallbackCancellationTraits<Functor,
                                  std::tuple<BoundArgs...>>::is_cancellable>;
 

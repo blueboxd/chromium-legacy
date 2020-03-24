@@ -31,7 +31,8 @@ constexpr const char kGestureBackPage[] = "gestureBack";
 GestureNavigationScreen::GestureNavigationScreen(
     GestureNavigationScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(GestureNavigationScreenView::kScreenId),
+    : BaseScreen(GestureNavigationScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

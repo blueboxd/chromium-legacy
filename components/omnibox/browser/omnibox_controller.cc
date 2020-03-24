@@ -23,8 +23,13 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
       popup_(nullptr),
       autocomplete_controller_(new AutocompleteController(
           client_->CreateAutocompleteProviderClient(),
-          this,
-          AutocompleteClassifier::DefaultOmniboxProviders())) {}
+          AutocompleteClassifier::DefaultOmniboxProviders())) {
+  autocomplete_controller_->AddObserver(this);
+
+  OmniboxControllerEmitter* emitter = client_->GetOmniboxControllerEmitter();
+  if (emitter)
+    autocomplete_controller_->AddObserver(emitter);
+}
 
 OmniboxController::~OmniboxController() {
 }
@@ -32,11 +37,6 @@ OmniboxController::~OmniboxController() {
 void OmniboxController::StartAutocomplete(
     const AutocompleteInput& input) const {
   ClearPopupKeywordMode();
-
-  if (client_->GetOmniboxControllerEmitter()) {
-    client_->GetOmniboxControllerEmitter()->NotifyOmniboxQuery(
-        autocomplete_controller_.get(), input);
-  }
 
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
@@ -46,10 +46,6 @@ void OmniboxController::StartAutocomplete(
 void OmniboxController::OnResultChanged(AutocompleteController* controller,
                                         bool default_match_changed) {
   DCHECK(controller == autocomplete_controller_.get());
-
-  if (client_->GetOmniboxControllerEmitter())
-    client_->GetOmniboxControllerEmitter()->NotifyOmniboxResultChanged(
-        default_match_changed, autocomplete_controller_.get());
 
   const bool was_open = popup_ && popup_->IsOpen();
   if (default_match_changed) {

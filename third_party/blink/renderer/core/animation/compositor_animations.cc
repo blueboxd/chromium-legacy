@@ -276,8 +276,10 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
                     layout_object->GetDocument()))
               reasons |= kUnsupportedCSSProperty;
             // TODO: Add support for keyframes containing different types
-            if (keyframes.front()->GetCompositorKeyframeValue()->GetType() !=
-                keyframe_value->GetType()) {
+            if (!keyframes.front() ||
+                !keyframes.front()->GetCompositorKeyframeValue() ||
+                keyframes.front()->GetCompositorKeyframeValue()->GetType() !=
+                    keyframe_value->GetType()) {
               reasons |= kMixedKeyframeValueTypes;
             }
           } else {

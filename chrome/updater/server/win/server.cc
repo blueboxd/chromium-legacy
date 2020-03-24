@@ -15,9 +15,14 @@
 #include <wrl/implements.h>
 #include <wrl/module.h>
 
+#include <algorithm>
+#include <memory>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
+#include "base/system/sys_info.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/app/app.h"
@@ -36,8 +41,9 @@ class ComServer : public App {
  private:
   ~ComServer() override = default;
 
+  // Overrides for App.
+  void InitializeThreadPool() override;
   void Initialize() override;
-
   void FirstTaskRun() override;
 
   // Registers and unregisters the out-of-process COM class factories.
@@ -110,6 +116,18 @@ HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
 
 ComServer::ComServer()
     : com_initializer_(base::win::ScopedCOMInitializer::kMTA) {}
+
+void ComServer::InitializeThreadPool() {
+  base::ThreadPoolInstance::Create(kThreadPoolName);
+
+  // Reuses the logic in base::ThreadPoolInstance::StartWithDefaultParams.
+  const int num_cores = base::SysInfo::NumberOfProcessors();
+  const int max_num_foreground_threads = std::max(3, num_cores - 1);
+  base::ThreadPoolInstance::InitParams init_params(max_num_foreground_threads);
+  init_params.common_thread_pool_environment = base::ThreadPoolInstance::
+      InitParams::CommonThreadPoolEnvironment::COM_MTA;
+  base::ThreadPoolInstance::Get()->Start(init_params);
+}
 
 HRESULT ComServer::RegisterClassObject() {
   auto& module = Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule();

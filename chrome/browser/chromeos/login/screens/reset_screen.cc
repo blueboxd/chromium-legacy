@@ -151,7 +151,7 @@ void ResetScreen::CheckIfPowerwashAllowed(
 ResetScreen::ResetScreen(ResetView* view,
                          ErrorScreen* error_screen,
                          const base::RepeatingClosure& exit_callback)
-    : BaseScreen(ResetView::kScreenId),
+    : BaseScreen(ResetView::kScreenId, OobeScreenPriority::SCREEN_RESET),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),

@@ -143,7 +143,7 @@ class SynchronousCookieManager {
         net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
     net::CookieOptions options;
     options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     if (modify_http_only)
       options.set_include_httponly();
     cookie_service_->SetCanonicalCookie(
@@ -166,7 +166,7 @@ class SynchronousCookieManager {
     base::RunLoop run_loop;
     net::CookieOptions options;
     options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     if (modify_http_only)
       options.set_include_httponly();
     net::CanonicalCookie::CookieInclusionStatus result_out(
@@ -264,7 +264,7 @@ class CookieManagerTest : public testing::Test {
         callback;
     net::CookieOptions options;
     options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     if (can_modify_httponly)
       options.set_include_httponly();
 
@@ -572,7 +572,7 @@ TEST_F(CookieManagerTest, GetCookieList) {
   // Want the SameSite=lax cookies, but not httponly ones.
   net::CookieOptions options;
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"), options);
 
@@ -622,7 +622,7 @@ TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
   // Retrieve without httponly cookies (default)
   net::CookieOptions options;
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   EXPECT_TRUE(options.exclude_httponly());
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
@@ -677,8 +677,10 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
 
   // Retrieve only unrestricted cookies.
   net::CookieOptions options;
-  EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-            options.same_site_cookie_context());
+  EXPECT_EQ(
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
+      options.same_site_cookie_context());
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(1u, cookies.size());
@@ -693,7 +695,9 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
 
   // Retrieve unrestricted and lax cookies.
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::
+              SAME_SITE_LAX));
   cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(2u, cookies.size());
@@ -707,7 +711,7 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
 
   // Retrieve everything.
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(3u, cookies.size());
@@ -735,7 +739,7 @@ TEST_F(CookieManagerTest, GetCookieListAccessTime) {
   // the access time is null.
   net::CookieOptions options;
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   options.set_do_not_update_access_time();
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(

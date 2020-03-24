@@ -23,7 +23,7 @@ constexpr const char kEnable[] = "enable";
 KioskEnableScreen::KioskEnableScreen(
     KioskEnableScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(KioskEnableScreenView::kScreenId),
+    : BaseScreen(KioskEnableScreenView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

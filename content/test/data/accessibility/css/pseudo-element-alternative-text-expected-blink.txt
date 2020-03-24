@@ -1,7 +1,8 @@
 rootWebArea
 ++genericContainer ignored
-++++genericContainer
-++++++image name='alternative text'
-++++++staticText name='DOM text'
-++++++++inlineTextBox name='DOM text'
-++++++image
+++++genericContainer ignored
+++++++genericContainer
+++++++++image name='alternative text'
+++++++++staticText name='DOM text'
+++++++++++inlineTextBox name='DOM text'
+++++++++image

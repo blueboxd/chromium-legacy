@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/web/common/crw_content_view.h"
+#import "ios/web/common/crw_viewport_adjustment_container.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
@@ -14,7 +15,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CRWWebControllerContainerView ()
+@interface CRWWebControllerContainerView () <CRWViewportAdjustmentContainer>
 
 // Redefine properties as readwrite.
 @property(nonatomic, strong, readwrite)
@@ -59,6 +60,14 @@
 }
 
 #pragma mark Accessors
+
+- (UIView<CRWViewportAdjustment>*)fullscreenViewportAdjuster {
+  if (![self.webViewContentView
+          conformsToProtocol:@protocol(CRWViewportAdjustment)]) {
+    return nil;
+  }
+  return self.webViewContentView;
+}
 
 - (void)setWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   if (![_webViewContentView isEqual:webViewContentView]) {

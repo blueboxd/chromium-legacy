@@ -31,12 +31,14 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/cursors.h"
 #include "ui/base/cursor/cursor.h"
 
@@ -222,12 +224,41 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
   }
 }
 
+bool CanScrollDirection(LayoutBox* layout_box,
+                        Page* page,
+                        ScrollOrientation orientation) {
+  DCHECK(layout_box);
+
+  bool can_scroll = orientation == ScrollOrientation::kHorizontalScroll
+                        ? layout_box->HasScrollableOverflowX()
+                        : layout_box->HasScrollableOverflowY();
+
+  if (page) {
+    // TODO: Consider only doing this when the layout_box is the document to
+    // correctly handle autoscrolling a DIV when pinch-zoomed.
+    // See comments on crrev.com/c/2109286
+    ScrollOffset maximum_scroll_offset =
+        page->GetVisualViewport().MaximumScrollOffset();
+    can_scroll =
+        can_scroll || (orientation == ScrollOrientation::kHorizontalScroll
+                           ? maximum_scroll_offset.Width() > 0
+                           : maximum_scroll_offset.Height() > 0);
+  }
+
+  return can_scroll;
+}
+
 void AutoscrollController::HandleMouseMoveForMiddleClickAutoscroll(
     LocalFrame* frame,
     const FloatPoint& position_global,
     bool is_middle_button) {
   if (!MiddleClickAutoscrollInProgress())
     return;
+
+  if (!autoscroll_layout_object_->CanBeScrolledAndHasScrollableArea()) {
+    StopMiddleClickAutoscroll(frame);
+    return;
+  }
 
   LocalFrameView* view = frame->View();
   if (!view)
@@ -250,13 +281,20 @@ void AutoscrollController::HandleMouseMoveForMiddleClickAutoscroll(
       pow(fabs(distance.Width()), kExponent) * kMultiplier * x_signum,
       pow(fabs(distance.Height()), kExponent) * kMultiplier * y_signum);
 
+  bool can_scroll_vertically =
+      CanScrollDirection(autoscroll_layout_object_, frame->GetPage(),
+                         ScrollOrientation::kVerticalScroll);
+  bool can_scroll_horizontally =
+      CanScrollDirection(autoscroll_layout_object_, frame->GetPage(),
+                         ScrollOrientation::kHorizontalScroll);
+
   if (velocity != last_velocity_) {
     last_velocity_ = velocity;
     if (middle_click_mode_ == kMiddleClickInitial)
       middle_click_mode_ = kMiddleClickHolding;
     page_->GetChromeClient().SetCursorOverridden(false);
-    view->SetCursor(MiddleClickAutoscrollCursor(
-        velocity, can_scroll_vertically_, can_scroll_horizontally_));
+    view->SetCursor(MiddleClickAutoscrollCursor(velocity, can_scroll_vertically,
+                                                can_scroll_horizontally));
     page_->GetChromeClient().SetCursorOverridden(true);
     page_->GetChromeClient().AutoscrollFling(velocity, frame);
   }
@@ -286,6 +324,7 @@ void AutoscrollController::StopMiddleClickAutoscroll(LocalFrame* frame) {
   autoscroll_type_ = kNoAutoscroll;
   page_->GetChromeClient().SetCursorOverridden(false);
   frame->LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
+  autoscroll_layout_object_ = nullptr;
 }
 
 bool AutoscrollController::MiddleClickAutoscrollInProgress() const {
@@ -294,21 +333,27 @@ bool AutoscrollController::MiddleClickAutoscrollInProgress() const {
 
 void AutoscrollController::StartMiddleClickAutoscroll(
     LocalFrame* frame,
+    LayoutBox* scrollable,
     const FloatPoint& position,
-    const FloatPoint& position_global,
-    bool scroll_vert,
-    bool scroll_horiz) {
+    const FloatPoint& position_global) {
   DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
+  DCHECK(scrollable);
   // We don't want to trigger the autoscroll or the middleClickAutoscroll if
   // it's already active.
   if (autoscroll_type_ != kNoAutoscroll)
     return;
 
+  autoscroll_layout_object_ = scrollable;
   autoscroll_type_ = kAutoscrollForMiddleClick;
   middle_click_mode_ = kMiddleClickInitial;
   middle_click_autoscroll_start_pos_global_ = position_global;
-  can_scroll_vertically_ = scroll_vert;
-  can_scroll_horizontally_ = scroll_horiz;
+
+  bool can_scroll_vertically =
+      CanScrollDirection(autoscroll_layout_object_, frame->GetPage(),
+                         ScrollOrientation::kVerticalScroll);
+  bool can_scroll_horizontally =
+      CanScrollDirection(autoscroll_layout_object_, frame->GetPage(),
+                         ScrollOrientation::kHorizontalScroll);
 
   UseCounter::Count(frame->GetDocument(),
                     WebFeature::kMiddleClickAutoscrollStart);
@@ -317,7 +362,7 @@ void AutoscrollController::StartMiddleClickAutoscroll(
 
   if (LocalFrameView* view = frame->View()) {
     view->SetCursor(MiddleClickAutoscrollCursor(
-        last_velocity_, can_scroll_vertically_, can_scroll_horizontally_));
+        last_velocity_, can_scroll_vertically, can_scroll_horizontally));
   }
   page_->GetChromeClient().SetCursorOverridden(true);
   page_->GetChromeClient().AutoscrollStart(

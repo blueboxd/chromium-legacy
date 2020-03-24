@@ -16,11 +16,17 @@
 
 namespace updater {
 
+constexpr base::StringPiece App::kThreadPoolName;
+
 App::App() = default;
 App::~App() = default;
 
+void App::InitializeThreadPool() {
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(kThreadPoolName);
+}
+
 int App::Run() {
-  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
+  InitializeThreadPool();
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   Initialize();
   int exit_code = 0;
@@ -36,7 +42,6 @@ int App::Run() {
     FirstTaskRun();
     runloop.Run();
   }
-
   Uninitialize();
 
   // Shutting down the thread pool involves joining threads.

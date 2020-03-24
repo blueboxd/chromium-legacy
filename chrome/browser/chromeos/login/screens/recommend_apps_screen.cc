@@ -12,7 +12,8 @@ namespace chromeos {
 RecommendAppsScreen::RecommendAppsScreen(
     RecommendAppsScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(RecommendAppsScreenView::kScreenId),
+    : BaseScreen(RecommendAppsScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

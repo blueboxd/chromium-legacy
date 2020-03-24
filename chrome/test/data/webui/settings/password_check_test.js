@@ -261,14 +261,28 @@ cr.define('settings_passwords_check', function() {
           .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
     });
 
-    // Test verifies that 'Try again' visible and working when users encounter a
+    // Test verifies that 'Try again' is hidden when users encounter a
     // not-signed-in error.
-    test('testShowRetryAfterSignOutError', function() {
+    test('testHideRetryAfterSignOutErrorUntilSignedInAgain', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.SIGNED_OUT);
       const section = createCheckPasswordSection();
+      cr.webUIListenerCallback('stored-accounts-updated', []);
+      // <if expr="chromeos">
+      sync_test_util.simulateSyncStatus({signedIn: false});
+      // </if>
       return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            Polymer.dom.flush();
+            expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+            cr.webUIListenerCallback(
+                'stored-accounts-updated', [{email: 'foo@bar.com'}]);
+            // <if expr="chromeos">
+            sync_test_util.simulateSyncStatus(
+                {signedIn: true, hasError: false});
+            // </if>
+          })
           .then(() => {
             assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(

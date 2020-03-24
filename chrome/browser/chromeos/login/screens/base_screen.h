@@ -21,7 +21,7 @@ namespace chromeos {
 // method called just once.
 class BaseScreen {
  public:
-  explicit BaseScreen(OobeScreenId screen_id);
+  BaseScreen(OobeScreenId screen_id, OobeScreenPriority screen_priority);
   virtual ~BaseScreen();
 
   // Makes wizard screen visible.
@@ -35,6 +35,9 @@ class BaseScreen {
 
   // Returns the identifier of the screen.
   OobeScreenId screen_id() const { return screen_id_; }
+
+  // Returns the priority of the screen.
+  OobeScreenPriority screen_priority() const { return screen_priority_; }
 
   // Change the configuration for the screen. |configuration| is unowned.
   virtual void SetConfiguration(base::Value* configuration);
@@ -68,6 +71,8 @@ class BaseScreen {
   base::Value* configuration_ = nullptr;
 
   const OobeScreenId screen_id_;
+
+  const OobeScreenPriority screen_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreen);
 };

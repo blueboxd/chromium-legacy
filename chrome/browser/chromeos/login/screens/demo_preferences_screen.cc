@@ -40,7 +40,8 @@ void SetApplicationLocaleAndInputMethod(const std::string& locale,
 DemoPreferencesScreen::DemoPreferencesScreen(
     DemoPreferencesScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(DemoPreferencesScreenView::kScreenId),
+    : BaseScreen(DemoPreferencesScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

@@ -247,6 +247,18 @@ INSTANTIATE_TEST_SUITE_P(
                      AccessibilityTreeFormatter::GetTestPasses().size()),
     DumpAccessibilityTreeTestPassToString());
 
+// TODO(crbug.com/1063155): put this back in sorted order once it passes
+// with the kEnableAccessibilityExposeHTMLElement flag.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaProgressbar) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-progressbar.html"));
+}
+
+// TODO(crbug.com/1063155): in process of refactoring all tests to enable the
+// kEnableAccessibilityExposeHTMLElement flag, without doing all at the
+// same time.
+#define DumpAccessibilityTreeTest DumpAccessibilityTreeTestWithHTMLElement
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSColor) {
   RunCSSTest(FILE_PATH_LITERAL("color.html"));
 }
@@ -938,11 +950,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaPressed) {
   RunAriaTest(FILE_PATH_LITERAL("aria-pressed.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaProgressbar) {
-  RunAriaTest(FILE_PATH_LITERAL("aria-progressbar.html"));
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRadio) {
   RunAriaTest(FILE_PATH_LITERAL("aria-radio.html"));
 }
@@ -1199,6 +1206,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityLabelWithSelectedAriaOption) {
   RunAriaTest(FILE_PATH_LITERAL("label-with-selected-option.html"));
 }
+
+// TODO(crbug.com/1063155) - see TODO with the same bug number above.
+#undef DumpAccessibilityTreeTest
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityArticle) {
   RunHtmlTest(FILE_PATH_LITERAL("article.html"));

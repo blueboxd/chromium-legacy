@@ -165,8 +165,8 @@ void PageTestBase::LoadAhem(LocalFrame& frame) {
   StringOrArrayBufferOrArrayBufferView buffer =
       StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(
           DOMArrayBuffer::Create(shared_buffer));
-  FontFace* ahem = FontFace::Create(document.ToExecutionContext(), "Ahem",
-                                    buffer, FontFaceDescriptors::Create());
+  FontFace* ahem = FontFace::Create(frame.DomWindow(), "Ahem", buffer,
+                                    FontFaceDescriptors::Create());
 
   ScriptState* script_state = ToScriptStateForMainWorld(&frame);
   DummyExceptionStateForTesting exception_state;

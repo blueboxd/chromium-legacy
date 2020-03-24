@@ -78,8 +78,4 @@ blink::OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
   return &origin_trial_policy_;
 }
 
-void ShellContentClient::SetInWebTest(bool in_web_test) {
-  in_web_test_ = in_web_test;
-}
-
 }  // namespace content

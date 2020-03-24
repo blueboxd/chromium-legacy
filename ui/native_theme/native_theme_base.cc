@@ -1631,20 +1631,22 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kPressedAccent:
     case kDisabledAccent:
     case kFill:
-    case kDisabledFill:
     case kLightenLayer:
     case kProgressValue:
-    case kSlider:
-    case kHoveredSlider:
-    case kPressedSlider:
-    case kDisabledSlider:
     case kAutoCompleteBackground:
     case kBackground:
       return SkColorSetRGB(0x3B, 0x3B, 0x3B);
-    case kDisabledBackground:
-      return SkColorSetARGB(0x4D ,0x3B, 0x3B, 0x3B);
     case kBorder:
+    case kSlider:
       return SkColorSetRGB(0xC3, 0xC3, 0xC3);
+    case kHoveredSlider:
+      return SkColorSetRGB(0xD8, 0xD8, 0xD8);
+    case kPressedSlider:
+      return SkColorSetRGB(0xB9, 0xB9, 0xB9);
+    case kDisabledSlider:
+      return SkColorSetRGB(0x70, 0x70, 0x70);
+    case kDisabledBackground:
+      return SkColorSetARGB(0x4D, 0x3B, 0x3B, 0x3B);
     case kHoveredBorder:
       return SkColorSetRGB(0xEA, 0xEA, 0xEA);
     case kPressedBorder:
@@ -1655,6 +1657,8 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
       return SkColorSetRGB(0x54, 0x54, 0x54);
     case kPressedFill:
       return SkColorSetRGB(0x45, 0x45, 0x45);
+    case kDisabledFill:
+      return SkColorSetARGB(0x4D, 0x3B, 0x3B, 0x3B);
     }
   NOTREACHED();
   return gfx::kPlaceholderColor;

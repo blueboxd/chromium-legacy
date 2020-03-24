@@ -31,11 +31,6 @@ namespace optimization_guide {
 
 namespace {
 
-// The duration that hosts placed in the HintsFetcherHostsSuccessfullyFetched
-// dictionary pref are considered valid.
-constexpr base::TimeDelta kHintsFetcherHostFetchedValidDuration =
-    base::TimeDelta::FromDays(7);
-
 // Returns the string that can be used to record histograms for the request
 // context.
 //
@@ -297,7 +292,13 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
         "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency." +
             GetStringNameForRequestContext(request_context_),
         fetch_latency);
-    UpdateHostsSuccessfullyFetched();
+    base::TimeDelta valid_duration =
+        features::StoredFetchedHintsFreshnessDuration();
+    if (get_hints_response->has_max_cache_duration()) {
+      valid_duration = base::TimeDelta::FromSeconds(
+          get_hints_response->max_cache_duration().seconds());
+    }
+    UpdateHostsSuccessfullyFetched(valid_duration);
     RecordRequestStatusHistogram(request_context_,
                                  HintsFetcherRequestStatus::kSuccess);
     std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
@@ -309,7 +310,8 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
   }
 }
 
-void HintsFetcher::UpdateHostsSuccessfullyFetched() {
+void HintsFetcher::UpdateHostsSuccessfullyFetched(
+    base::TimeDelta valid_duration) {
   DictionaryPrefUpdate hosts_fetched_list(
       pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
 
@@ -347,8 +349,7 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
   }
 
   // Add the covered hosts in |hosts_fetched_| to the dictionary pref.
-  base::Time host_invalid_time =
-      time_clock_->Now() + kHintsFetcherHostFetchedValidDuration;
+  base::Time host_invalid_time = time_clock_->Now() + valid_duration;
   for (const std::string& host : hosts_fetched_) {
     hosts_fetched_list->SetDoubleKey(
         HashHostForDictionary(host),

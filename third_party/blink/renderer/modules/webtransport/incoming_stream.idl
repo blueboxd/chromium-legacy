@@ -8,5 +8,5 @@
 interface mixin IncomingStream {
   readonly attribute ReadableStream readable;
   readonly attribute Promise<StreamAbortInfo> readingAborted;
-  void abortReading(optional StreamAbortInfo abortInfo);
+  void abortReading(optional StreamAbortInfo abortInfo = {});
 };

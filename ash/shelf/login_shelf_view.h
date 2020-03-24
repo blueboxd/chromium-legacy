@@ -122,8 +122,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Test API. Returns true if request was successful (i.e. button was
   // clickable).
   bool LaunchAppForTesting(const std::string& app_id);
-  bool SimulateAddUserButtonForTesting();
-  bool SimulateGuestButtonForTesting();
+  bool SimulateButtonPressedForTesting(ButtonId button);
 
   // Adds test delegate. Delegate will become owned by LoginShelfView.
   void InstallTestUiUpdateDelegate(

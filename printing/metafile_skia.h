@@ -42,7 +42,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 
   void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
-                 const float& scale_factor) override;
+                 float scale_factor) override;
   bool FinishPage() override;
   bool FinishDocument() override;
 
@@ -61,7 +61,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 #elif defined(OS_MACOSX)
   bool RenderPage(unsigned int page_number,
                   printing::NativeDrawingContext context,
-                  const CGRect rect,
+                  const CGRect& rect,
                   const MacRenderPageParams& params) const override;
 #endif
 
@@ -88,7 +88,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   // until FinishPage() or FinishDocument() is called.
   cc::PaintCanvas* GetVectorCanvasForNewPage(const gfx::Size& page_size,
                                              const gfx::Rect& content_area,
-                                             const float& scale_factor);
+                                             float scale_factor);
 
   // This is used for painting content of out-of-process subframes.
   // For such a subframe, since the content is in another process, we create a

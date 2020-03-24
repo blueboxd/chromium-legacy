@@ -73,17 +73,23 @@ enum CookieSameSite {
   // Reserved 3 (was EXTENDED_MODE), next number is 4.
 };
 
-enum CookieSameSiteContext {
+enum ContextType {
   CROSS_SITE,
   SAME_SITE_LAX_METHOD_UNSAFE,
   SAME_SITE_LAX,
-  SAME_SITE_STRICT,
-  SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL,
-  SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
-  SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
-  SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL,
-  SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
-  SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL
+  SAME_SITE_STRICT
+};
+
+enum CrossSchemeness {
+  NONE,
+  INSECURE_SECURE,
+  SECURE_INSECURE
+};
+
+// Keep defaults here in sync with net/cookies/cookie_options.h.
+struct CookieSameSiteContext {
+  ContextType context = CROSS_SITE;
+  CrossSchemeness cross_schemeness = NONE;
 };
 
 // What rules to apply when determining whether access to a particular cookie is
@@ -98,7 +104,7 @@ enum CookieAccessSemantics {
 // Keep defaults here in sync with net/cookies/cookie_options.cc.
 struct CookieOptions {
   bool exclude_httponly = true;
-  CookieSameSiteContext same_site_cookie_context = CROSS_SITE;
+  CookieSameSiteContext same_site_cookie_context;
   bool update_access_time = true;
   bool return_excluded_cookies = false;
 };

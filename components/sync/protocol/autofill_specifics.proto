@@ -106,6 +106,15 @@ message CloudTokenData {
   optional string instrument_token = 5;
 }
 
+message CardIssuer {
+  enum Issuer {
+    ISSUER_UNKNOWN = 0;
+    // Card where the issuer is Google.
+    GOOGLE = 1;
+  }
+  optional Issuer issuer = 1;
+}
+
 message WalletMaskedCreditCard {
   reserved 9;
   reserved "card_class";
@@ -161,6 +170,9 @@ message WalletMaskedCreditCard {
 
   // The card's nickname, if it exists.
   optional string nickname = 12;
+
+  // Issuer of the card.
+  optional CardIssuer card_issuer = 13;
 }
 
 // Different than an AutofillProfile because this represents some known address

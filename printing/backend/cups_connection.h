@@ -16,6 +16,7 @@
 #include "printing/backend/cups_deleters.h"
 #include "printing/backend/cups_jobs.h"
 #include "printing/backend/cups_printer.h"
+#include "printing/printer_status_chromeos.h"
 #include "printing/printing_export.h"
 #include "url/gurl.h"
 

@@ -140,6 +140,9 @@ enum RuntimeFeatureEnableOptions {
   // Enables the Blink feature when the base::Feature is enabled,
   // otherwise no change.
   kEnableOnly,
+  // Enables the Blink feature when the base::Feature is enabled
+  // via an override on the command-line, otherwise no change.
+  kEnableOnlyIfOverriddenFromCommandLine,
   // Disables the Blink feature when the base::Feature is *disabled*,
   // otherwise no change.
   kDisableOnly,
@@ -156,6 +159,34 @@ struct RuntimeFeatureToChromiumFeatureMap {
   const base::Feature& chromium_feature;
   const RuntimeFeatureEnableOptions option;
 };
+
+template <typename Enabler>
+void SetRuntimeFeatureFromChromiumFeature(const base::Feature& chromium_feature,
+                                          RuntimeFeatureEnableOptions option,
+                                          const Enabler& enabler) {
+  using FeatureList = base::FeatureList;
+  const bool feature_enabled = FeatureList::IsEnabled(chromium_feature);
+  switch (option) {
+    case kEnableOnly:
+      if (feature_enabled)
+        enabler(true);
+      break;
+    case kEnableOnlyIfOverriddenFromCommandLine:
+      if (FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+              chromium_feature.name, FeatureList::OVERRIDE_ENABLE_FEATURE)) {
+        DCHECK(feature_enabled);
+        enabler(true);
+      }
+      break;
+    case kDisableOnly:
+      if (!feature_enabled)
+        enabler(false);
+      break;
+    case kUseFeatureState:
+      enabler(feature_enabled);
+      break;
+  }
+}
 
 // Sets blink runtime features that are either directly
 // controlled by Chromium base::Feature or are overridden
@@ -238,7 +269,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      blink::features::kAllowSyncXHRInPageDismissal, kEnableOnly},
     {wf::EnableAutoplayIgnoresWebAudio, media::kAutoplayIgnoreWebAudio,
      kUseFeatureState},
-    {wf::EnablePortals, blink::features::kPortals, kEnableOnly},
+    {wf::EnablePortals, blink::features::kPortals,
+     kEnableOnlyIfOverriddenFromCommandLine},
     {wf::EnableImplicitRootScroller, blink::features::kImplicitRootScroller,
      kUseFeatureState},
     {wf::EnableCSSOMViewScrollCoordinates,
@@ -296,20 +328,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableTrustTokens, network::features::kTrustTokens, kEnableOnly},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
-    const bool featureEnabled =
-        base::FeatureList::IsEnabled(mapping.chromium_feature);
-    switch (mapping.option) {
-      case kEnableOnly:
-        if (featureEnabled)
-          mapping.feature_enabler(true);
-        break;
-      case kDisableOnly:
-        if (!featureEnabled)
-          mapping.feature_enabler(false);
-        break;
-      case kUseFeatureState:
-        mapping.feature_enabler(featureEnabled);
-    }
+    SetRuntimeFeatureFromChromiumFeature(
+        mapping.chromium_feature, mapping.option, mapping.feature_enabler);
   }
 
   // TODO(crbug/832393): Cleanup the inconsistency between custom WRF enabler
@@ -357,20 +377,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
-    const bool featureEnabled =
-        base::FeatureList::IsEnabled(mapping.chromium_feature);
-    switch (mapping.option) {
-      case kEnableOnly:
-        if (featureEnabled)
-          wf::EnableFeatureFromString(mapping.feature_enabler, true);
-        break;
-      case kDisableOnly:
-        if (!featureEnabled)
-          wf::EnableFeatureFromString(mapping.feature_enabler, false);
-        break;
-      case kUseFeatureState:
-        wf::EnableFeatureFromString(mapping.feature_enabler, featureEnabled);
-    }
+    SetRuntimeFeatureFromChromiumFeature(
+        mapping.chromium_feature, mapping.option, [&mapping](bool enabled) {
+          wf::EnableFeatureFromString(mapping.feature_enabler, enabled);
+        });
   }
 }
 

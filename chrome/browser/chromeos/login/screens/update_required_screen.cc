@@ -41,7 +41,8 @@ namespace chromeos {
 
 UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view,
                                            ErrorScreen* error_screen)
-    : BaseScreen(UpdateRequiredView::kScreenId),
+    : BaseScreen(UpdateRequiredView::kScreenId,
+                 OobeScreenPriority::SCREEN_UPDATE_REQUIRED),
       view_(view),
       error_screen_(error_screen),
       histogram_helper_(

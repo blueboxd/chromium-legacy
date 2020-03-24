@@ -49,7 +49,7 @@ WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
 
 WelcomeScreen::WelcomeScreen(WelcomeView* view,
                              const base::RepeatingClosure& exit_callback)
-    : BaseScreen(WelcomeView::kScreenId),
+    : BaseScreen(WelcomeView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   if (view_)

@@ -123,6 +123,10 @@ class CORE_EXPORT OriginTrialContext final
   void Trace(Visitor*);
 
  private:
+  // If this returns false, the trial cannot be enabled (e.g. due to it is
+  // invalid in the browser's present configuration).
+  bool CanEnableTrialFromName(const StringView& trial_name);
+
   // Enable features by trial name. Returns true or false to indicate whether
   // some features are enabled as the result.
   bool EnableTrialFromName(const String& trial_name, base::Time expiry_time);

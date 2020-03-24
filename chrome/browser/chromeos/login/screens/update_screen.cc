@@ -49,7 +49,7 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
 UpdateScreen::UpdateScreen(UpdateView* view,
                            ErrorScreen* error_screen,
                            const ScreenExitCallback& exit_callback)
-    : BaseScreen(UpdateView::kScreenId),
+    : BaseScreen(UpdateView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),

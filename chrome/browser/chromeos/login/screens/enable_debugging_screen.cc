@@ -12,7 +12,8 @@ namespace chromeos {
 EnableDebuggingScreen::EnableDebuggingScreen(
     EnableDebuggingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(EnableDebuggingScreenView::kScreenId),
+    : BaseScreen(EnableDebuggingScreenView::kScreenId,
+                 OobeScreenPriority::SCREEN_ENABLE_DEBUGGING),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

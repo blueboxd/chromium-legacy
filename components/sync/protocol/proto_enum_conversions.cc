@@ -457,6 +457,15 @@ const char* ProtoEnumToString(
   return "";
 }
 
+const char* ProtoEnumToString(sync_pb::CardIssuer::Issuer issuer) {
+  switch (issuer) {
+    ENUM_CASE(sync_pb::CardIssuer, ISSUER_UNKNOWN);
+    ENUM_CASE(sync_pb::CardIssuer, GOOGLE);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::WalletMetadataSpecifics, Type, UNKNOWN, ADDRESS);

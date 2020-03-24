@@ -46,7 +46,8 @@ AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     AutoEnrollmentCheckScreenView* view,
     ErrorScreen* error_screen,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(AutoEnrollmentCheckScreenView::kScreenId),
+    : BaseScreen(AutoEnrollmentCheckScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),

@@ -11,15 +11,20 @@
 #include "base/callback_forward.h"
 #include "printing/printer_query_result_chromeos.h"
 
+namespace printing {
+struct PrinterStatus;
+}  // namespace printing
+
 namespace chromeos {
 
-// Callback for basic printer information.  |success| indicates if the request
-// succeeded at all.  |make| represents the printer manufacturer.  |model| is
-// the printer model.  |make_and_model| is the raw printer-make-and-model value
-// from the printer. |autoconf| indicates if we think we can compute the
-// printer capabilites without a PPD.
+// Callback for basic printer information. |result| indicates if the request
+// succeeded at all. |status| contains current status. |make| represents the
+// printer manufacturer.  |model| is the printer model.  |make_and_model| is
+// the raw printer-make-and-model value from the printer. |autoconf| indicates
+// if we think we can compute the printer capabilities without a PPD.
 using PrinterInfoCallback =
-    base::OnceCallback<void(::printing::PrinterQueryResult result,
+    base::OnceCallback<void(printing::PrinterQueryResult result,
+                            const printing::PrinterStatus& status,
                             const std::string& make,
                             const std::string& model,
                             const std::string& make_and_model,

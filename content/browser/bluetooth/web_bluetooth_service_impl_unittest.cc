@@ -360,6 +360,23 @@ TEST_F(WebBluetoothServiceImplTest,
 }
 
 TEST_F(WebBluetoothServiceImplTest,
+       BluetoothScanningPermissionRevokedWhenFocusIsLost) {
+  blink::mojom::WebBluetoothLeScanFilterPtr filter = CreateScanFilter("a", "b");
+  base::Optional<WebBluetoothServiceImpl::ScanFilters> filters;
+  filters.emplace();
+  filters->push_back(filter.Clone());
+  FakeWebBluetoothScanClientImpl client_impl;
+  RequestScanningStartAndSimulatePromptEvent(
+      *filter, &client_impl, content::BluetoothScanningPrompt::Event::kAllow);
+  EXPECT_TRUE(service_->AreScanFiltersAllowed(filters));
+
+  main_test_rfh()->GetRenderWidgetHost()->LostFocus();
+
+  // The previously granted Bluetooth scanning permission should be revoked.
+  EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));
+}
+
+TEST_F(WebBluetoothServiceImplTest,
        BluetoothScanningPermissionRevokedWhenBlocked) {
   blink::mojom::WebBluetoothLeScanFilterPtr filter_1 =
       CreateScanFilter("a", "b");

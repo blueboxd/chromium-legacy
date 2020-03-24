@@ -18,7 +18,6 @@ cast_source_set("backend") {
     "audio_decoder_software_wrapper.h",
     "audio_decoder_wrapper.cc",
     "audio_decoder_wrapper.h",
-    "cma_backend_factory.h",
     "cma_backend_factory_impl.cc",
     "cma_backend_factory_impl.h",
     "media_pipeline_backend_manager.cc",

@@ -28,11 +28,12 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
       list_controller_(list_controller),
       controller_(std::make_unique<AutocompleteController>(
           std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          this,
           is_zero_state_enabled_
               ? AutocompleteClassifier::DefaultOmniboxProviders()
               : AutocompleteClassifier::DefaultOmniboxProviders() &
-                    ~AutocompleteProvider::TYPE_ZERO_SUGGEST)) {}
+                    ~AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
+  controller_->AddObserver(this);
+}
 
 OmniboxProvider::~OmniboxProvider() {}
 

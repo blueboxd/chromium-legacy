@@ -125,7 +125,7 @@ class HintsFetcher {
   // each host is the time that the hints fetched for each host will expire.
   // |hosts_fetched_| is cleared once the hosts are stored
   // in the pref.
-  void UpdateHostsSuccessfullyFetched();
+  void UpdateHostsSuccessfullyFetched(base::TimeDelta valid_duration);
 
   // Returns the subset of hosts from |hosts| for which the hints should be
   // refreshed. The count of returned hosts is limited to

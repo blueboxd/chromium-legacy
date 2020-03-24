@@ -41,6 +41,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/location_bar_model.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
@@ -119,7 +120,6 @@ class ZeroSuggestPrefetcher {
 ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
     : controller_(new AutocompleteController(
           std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          nullptr,  // We only want to warm up the cache, don't need the result.
           AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
   AutocompleteInput input(base::string16(), metrics::OmniboxEventProto::NTP,
                           ChromeAutocompleteSchemeClassifier(profile));
@@ -141,10 +141,16 @@ void ZeroSuggestPrefetcher::SelfDestruct() {
 AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
     : autocomplete_controller_(new AutocompleteController(
           std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          this,
           AutocompleteClassifier::DefaultOmniboxProviders())),
       inside_synchronous_start_(false),
-      profile_(profile) {}
+      profile_(profile) {
+  autocomplete_controller_->AddObserver(this);
+
+  OmniboxControllerEmitter* emitter =
+      OmniboxControllerEmitter::GetForBrowserContext(profile_);
+  if (emitter)
+    autocomplete_controller_->AddObserver(emitter);
+}
 
 void AutocompleteControllerAndroid::Start(JNIEnv* env,
                                           const JavaRef<jobject>& obj,

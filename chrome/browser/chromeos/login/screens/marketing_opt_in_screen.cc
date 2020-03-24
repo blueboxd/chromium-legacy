@@ -28,7 +28,8 @@ MarketingOptInScreen::MarketingOptInScreen(
     MarketingOptInScreenView* view,
     bool is_fullscreen,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(MarketingOptInScreenView::kScreenId),
+    : BaseScreen(MarketingOptInScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       is_fullscreen_(is_fullscreen),
       exit_callback_(exit_callback) {

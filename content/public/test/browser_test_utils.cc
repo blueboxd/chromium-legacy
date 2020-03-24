@@ -1879,7 +1879,7 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
   // Allow access to SameSite cookies in tests.
   net::CookieOptions options;
   options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   cookie_manager->GetCookieList(
       url, options,
       base::BindOnce(

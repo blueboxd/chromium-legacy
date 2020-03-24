@@ -25,6 +25,7 @@ struct GpuFeatureInfo;
 struct SharedMemoryLimits;
 
 namespace webgpu {
+class WebGPUInterface;
 class WebGPUImplementation;
 }  // namespace webgpu
 
@@ -51,7 +52,7 @@ class WebGPUInProcessContext {
 
   // Allows direct access to the WebGPUImplementation so a
   // WebGPUInProcessContext can be used without making it current.
-  gpu::webgpu::WebGPUImplementation* GetImplementation();
+  gpu::webgpu::WebGPUInterface* GetImplementation();
   base::TestSimpleTaskRunner* GetTaskRunner();
 
   // Test only functions.

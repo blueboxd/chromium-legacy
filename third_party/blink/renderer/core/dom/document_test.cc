@@ -1200,6 +1200,25 @@ TEST_F(DocumentTest, FindInPageUkm) {
   EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(entries[1], "DidSearch"));
 }
 
+TEST_F(DocumentTest, AtPageMarginWithDeviceScaleFactor) {
+  GetDocument().GetFrame()->SetPageZoomFactor(2);
+  SetBodyInnerHTML("<style>@page { margin: 50px; size: 400px 10in; }</style>");
+
+  constexpr FloatSize initial_page_size(800, 600);
+
+  GetDocument().GetFrame()->StartPrinting(initial_page_size, initial_page_size);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  DoubleSize page_size;
+  int margin[4];
+  GetDocument().PageSizeAndMarginsInPixels(0, page_size, margin[0], margin[1],
+                                           margin[2], margin[3]);
+
+  for (int side_margin : margin)
+    EXPECT_EQ(50, side_margin);
+  EXPECT_EQ(DoubleSize(400, 960), page_size);
+}
+
 /**
  * Tests for viewport-fit propagation.
  */

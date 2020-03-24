@@ -10,10 +10,10 @@ CRLSet from it.
 The input is taken on stdin and is a dict with the following keys:
   - BlockedBySPKI: An array of strings, where each string is a filename
       containing a PEM certificate, from which an SPKI will be extracted.
-  - BlockedByHash: A dict of string to an array of ints, where the string is
-      a filename containing a PEM format certificate, and the ints are the
-      serial numbers. The listed serial numbers will be blocked when issued by
-      the given certificate.
+  - BlockedByHash: A dict of string to an array of strings. The dict key is
+      a filename containing a PEM certificate, representing the issuer cert,
+      while the array of strings contain the filenames of PEM format
+      certificates whose serials are blocked.
   - LimitedSubjects: A dict of string to an array of strings, where the key is
       a filename containing a PEM format certificate, and the strings are the
       filenames of PEM format certificates. Certificates that share a Subject
@@ -130,6 +130,10 @@ class ASN1Iterator(object):
     """Returns the raw data of the current element"""
     return self._contents
 
+  def encoded_value(self):
+    """Returns the encoded value of the current element (i.e. without header)"""
+    return self._contents[self._header_length:]
+
 
 def _der_cert_to_spki(der_bytes):
   """Returns the subjectPublicKeyInfo of a DER-encoded certificate
@@ -209,6 +213,38 @@ def pem_cert_file_to_subject_hash(pem_filename):
   return der_cert_to_subject_hash(_pem_cert_to_binary(pem_filename))
 
 
+def der_cert_to_serial(der_bytes):
+  """Gets the serial of a DER-encoded certificate, omitting leading 0x00
+
+  Args:
+    der_bytes: A DER-encoded certificates (RFC 5280)
+
+  Returns:
+    The encoded serial number value (omitting tag and length), and omitting
+    any leading 0x00 used to indicate it is a positive INTEGER.
+  """
+  iterator = ASN1Iterator(der_bytes)
+  iterator.step_into()  # enter certificate structure
+  iterator.step_into()  # enter TBSCertificate
+  iterator.step_over()  # over version
+  raw_serial = iterator.encoded_value()
+  if raw_serial[0] == chr(0x00) and len(raw_serial) > 1:
+    raw_serial = raw_serial[1:]
+  return raw_serial
+
+
+def pem_cert_file_to_serial(pem_filename):
+  """Gets the DER-encoded serial of a cert in a file, omitting leading 0x00
+
+  Args:
+    pem_filename: A file containing a PEM-encoded certificate.
+
+  Returns:
+    The DER-encoded serial as a byte sequence
+  """
+  return der_cert_to_serial(_pem_cert_to_binary(pem_filename))
+
+
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option('-o', '--output',
@@ -223,8 +259,11 @@ def main():
       pem_cert_file_to_spki_hash(pem_file).encode('base64').strip()
       for pem_file in config.get('BlockedBySPKI', [])]
   parents = {
-    pem_cert_file_to_spki_hash(pem_file): serials
-    for pem_file, serials in config.get('BlockedByHash', {}).iteritems()
+      pem_cert_file_to_spki_hash(pem_file): [
+          pem_cert_file_to_serial(issued_cert_file)
+          for issued_cert_file in issued_certs
+      ]
+      for pem_file, issued_certs in config.get('BlockedByHash', {}).iteritems()
   }
   limited_subjects = {
     pem_cert_file_to_subject_hash(pem_file).encode('base64').strip(): [
@@ -260,9 +299,7 @@ def main():
       if not serial:
         raw_serial = ['\x00']
       else:
-        while serial:
-          raw_serial.insert(0, chr(serial & 0xff))
-          serial >>= 8
+        raw_serial = serial
 
     outfile.write(struct.pack('<B', len(raw_serial)))
     outfile.write(''.join(raw_serial))

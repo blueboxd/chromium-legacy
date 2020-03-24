@@ -207,7 +207,6 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
 
 AutocompleteController::AutocompleteController(
     std::unique_ptr<AutocompleteProviderClient> provider_client,
-    Observer* observer,
     int provider_types)
     : provider_client_(std::move(provider_client)),
       document_provider_(nullptr),
@@ -222,11 +221,6 @@ AutocompleteController::AutocompleteController(
       first_query_(true),
       search_service_worker_signal_sent_(false),
       template_url_service_(provider_client_->GetTemplateURLService()) {
-  // TODO(tommycli): We should make a separate AddObserver method on this class
-  // and take |observer| out of the constructor. Tests pass nullptr anyways.
-  if (observer)
-    observers_.AddObserver(observer);
-
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
     providers_.push_back(new BookmarkProvider(provider_client_.get()));
@@ -325,6 +319,10 @@ AutocompleteController::~AutocompleteController() {
   // shutdown too, so we don't ask Stop() to clear |result_| (and notify).
   result_.Reset();  // Not really necessary.
   Stop(false);
+}
+
+void AutocompleteController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
 void AutocompleteController::Start(const AutocompleteInput& input) {

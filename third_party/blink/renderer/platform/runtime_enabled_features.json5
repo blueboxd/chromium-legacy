@@ -1357,6 +1357,7 @@
     {
       name: "Portals",
       status: "test",
+      origin_trial_feature_name: "Portals",
     },
     {
       name: "PostAnimationFrame",

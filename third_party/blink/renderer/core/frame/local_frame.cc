@@ -883,7 +883,7 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
     }
   }
 
-  document->MediaQueryAffectingValueChanged();
+  document->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   document->GetStyleEngine().MarkViewportStyleDirty();
   document->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
@@ -892,7 +892,7 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
 }
 
 void LocalFrame::DeviceScaleFactorChanged() {
-  GetDocument()->MediaQueryAffectingValueChanged();
+  GetDocument()->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   GetDocument()->GetStyleEngine().MarkViewportStyleDirty();
   GetDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));

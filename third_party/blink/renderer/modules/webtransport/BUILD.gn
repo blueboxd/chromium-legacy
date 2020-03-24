@@ -6,10 +6,14 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("webtransport") {
   sources = [
+    "incoming_stream.cc",
+    "incoming_stream.h",
     "outgoing_stream.cc",
     "outgoing_stream.h",
     "quic_transport.cc",
     "quic_transport.h",
+    "receive_stream.cc",
+    "receive_stream.h",
     "send_stream.cc",
     "send_stream.h",
     "web_transport_close_proxy.h",
@@ -19,6 +23,7 @@ blink_modules_sources("webtransport") {
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
+    "incoming_stream_test.cc",
     "mock_web_transport_close_proxy.cc",
     "mock_web_transport_close_proxy.h",
     "outgoing_stream_test.cc",

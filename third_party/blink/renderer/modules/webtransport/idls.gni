@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 modules_idl_files = [
+  "incoming_stream.idl",
   "outgoing_stream.idl",
   "quic_transport.idl",
+  "receive_stream.idl",
   "send_stream.idl",
 ]
 

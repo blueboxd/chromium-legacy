@@ -217,6 +217,7 @@ void ProcessorEntityTracker::UpdateOrOverrideStorageKey(
     const std::string& storage_key) {
   ProcessorEntity* entity = GetEntityForTagHash(client_tag_hash);
   DCHECK(entity);
+  // If the entity already had a storage key, clear it.
   const std::string previous_storage_key = entity->storage_key();
   DCHECK_NE(previous_storage_key, storage_key);
   if (!previous_storage_key.empty()) {
@@ -227,6 +228,8 @@ void ProcessorEntityTracker::UpdateOrOverrideStorageKey(
          storage_key_to_tag_hash_.end());
   // Populate the new storage key in the existing entity.
   entity->SetStorageKey(storage_key);
+  DCHECK(storage_key_to_tag_hash_.find(storage_key) ==
+         storage_key_to_tag_hash_.end());
   storage_key_to_tag_hash_[storage_key] = client_tag_hash;
 }
 

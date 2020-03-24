@@ -313,6 +313,10 @@ const char kOpenDownloadsInFilesAppDescription[] =
     "the tools menu or after pressing the 'Open in downloads' button invoked "
     "by pressing 'Open In...' after download completes.";
 
+const char kPageInfoChromeGuardName[] = "Third-party cookie blocking UI";
+const char kPageInfoChromeGuardDescription[] =
+    "Allows user to manage third-party cookie blocking from the page info";
+
 const char kPageInfoRefactoringName[] = "New design of the page info";
 const char kPageInfoRefactoringDescription[] =
     "Uses the new design for the page security info.";

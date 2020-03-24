@@ -15,10 +15,11 @@
   // for simplicity.
 
   // From UnidirectionalStreamsTransport
-  // TODO(ricea): Change this to Promise<SendStream> once the IDL compiler is
-  // fixed. See https://crbug.com/1047113.
   [CallWith=ScriptState, RaisesException, MeasureAs=QuicTransportStreamApis] Promise<SendStream>
       createSendStream();
+  // TODO(ricea): This should probably be changed to an attribute in the
+  // standard.
+  [MeasureAs=QuicTransportStreamApis] ReadableStream receiveStreams();
 
   // From DatagramTransport mixin
   [MeasureAs=QuicTransportDatagramApis] WritableStream sendDatagrams();

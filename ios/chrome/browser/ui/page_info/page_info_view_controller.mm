@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 
+#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_navigation_commands.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -15,12 +16,16 @@
 
 namespace {
 
+// TODO(crbug.com/1063824): Update this.
+NSString* const kPageInfoCookiesImageName = @"";
+
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierContent = kSectionIdentifierEnumZero,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSecurity = kItemTypeEnumZero,
+  ItemTypeCookies,
 };
 
 }  // namespace
@@ -53,6 +58,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.tableViewModel addItem:securityItem
        toSectionWithIdentifier:SectionIdentifierContent];
 
+  if (base::FeatureList::IsEnabled(kPageInfoChromeGuard)) {
+    // Create the Chrome Guard item.
+    TableViewDetailIconItem* CookiesItem =
+        [[TableViewDetailIconItem alloc] initWithType:ItemTypeCookies];
+    CookiesItem.text = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_TITLE);
+    CookiesItem.detailText =
+        l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_DESCRIPTION);
+    CookiesItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    CookiesItem.iconImageName = kPageInfoCookiesImageName;
+    [self.tableViewModel addItem:CookiesItem
+         toSectionWithIdentifier:SectionIdentifierContent];
+  }
+
   [self.tableView reloadData];
 }
 
@@ -65,6 +83,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (itemType) {
     case ItemTypeSecurity: {
       [self.handler showSiteSecurityInfo];
+      break;
+    }
+    case ItemTypeCookies: {
+      // TODO(crbug.com/1063824): Implement this.
       break;
     }
     default:

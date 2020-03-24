@@ -124,22 +124,4 @@ ActiveSheetsChange CompareActiveStyleSheets(
              : kActiveSheetsChanged;
 }
 
-bool ClearMediaQueryDependentRuleSets(
-    const ActiveStyleSheetVector& active_style_sheets) {
-  bool needs_active_style_update = false;
-  for (const auto& active_sheet : active_style_sheets) {
-    if (const MediaQuerySet* media_queries =
-            active_sheet.first->MediaQueries()) {
-      if (!media_queries->QueryVector().IsEmpty())
-        needs_active_style_update = true;
-    }
-    StyleSheetContents* contents = active_sheet.first->Contents();
-    if (contents->HasMediaQueries()) {
-      needs_active_style_update = true;
-      contents->ClearRuleSet();
-    }
-  }
-  return needs_active_style_update;
-}
-
 }  // namespace blink

@@ -772,15 +772,32 @@ IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG x_left,
       return S_FALSE;
     }
 
-    // Check if the hit child is a descendant. If it's not a descendant,
-    // just ignore the result and stick with the current result.
-    // Ideally this shouldn't happen - see http://crbug.com/1061323
     AXPlatformNode* hit_child_node =
         AXPlatformNode::FromNativeViewAccessible(hit_child);
-    if (!hit_child_node || !hit_child_node->IsDescendantOf(current_result))
+    if (!hit_child_node)
       break;
 
+    // If we get the same node, we're done.
     if (hit_child_node == current_result)
+      break;
+
+    // Prevent cycles / loops.
+    //
+    // This is a workaround for a bug where a hit test in web content might
+    // return a node that's not a strict descendant. To catch that case
+    // without disallowing other valid cases of hit testing, add the
+    // following check:
+    //
+    // If the hit child comes from the same HWND, but it's not a descendant,
+    // just ignore the result and stick with the current result. Note that
+    // GetTargetForNativeAccessibilityEvent returns a node's owning HWND.
+    //
+    // Ideally this shouldn't happen - see http://crbug.com/1061323
+    bool is_descendant = hit_child_node->IsDescendantOf(current_result);
+    bool is_same_hwnd =
+        hit_child_node->GetDelegate()->GetTargetForNativeAccessibilityEvent() ==
+        current_result->GetDelegate()->GetTargetForNativeAccessibilityEvent();
+    if (!is_descendant && is_same_hwnd)
       break;
 
     // Continue to check recursively. That's because HitTestSync may have

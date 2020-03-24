@@ -458,7 +458,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("toolbarDeleteEntry"),
                       TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
                       TestCase("toolbarAltACommand").FilesNg(),
-                      TestCase("toolbarRefreshButtonHiddenInRecents")));
+                      TestCase("toolbarRefreshButtonHiddenInRecents"),
+                      TestCase("toolbarMultiMenuFollowsButton")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     QuickView, /* quick_view.js */

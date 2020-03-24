@@ -74,6 +74,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -271,6 +272,7 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
+    @FlakyTest(message = "crbug.com/1064157 This test is flaky")
     public void testRenderGrid_3NativeTabs() throws InterruptedException, IOException {
         // clang-format on
         assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());

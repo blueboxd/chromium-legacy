@@ -54,6 +54,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 @property(nonatomic, strong, readonly) UserSigninLogger* logger;
 // Sign-in intent.
 @property(nonatomic, assign, readonly) UserSigninIntent signinIntent;
+// Whether an account has been added during sign-in flow.
+@property(nonatomic, assign) BOOL addedAccount;
 
 @end
 
@@ -232,6 +234,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
       ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
         if (signinResult == SigninCoordinatorResultSuccess) {
           weakSelf.unifiedConsentCoordinator.selectedIdentity = identity;
+          weakSelf.addedAccount = YES;
         }
         [weakSelf.addAccountSigninCoordinator stop];
         weakSelf.addAccountSigninCoordinator = nil;
@@ -279,6 +282,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (void)userSigninMediatorSigninFinishedWithResult:
     (SigninCoordinatorResult)signinResult {
   [self.logger logSigninCompletedWithResult:signinResult
+                               addedAccount:self.addedAccount
                       advancedSettingsShown:self.unifiedConsentCoordinator
                                                 .settingsLinkWasTapped];
 
@@ -290,11 +294,18 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                                        identity:identity
                           settingsLinkWasTapped:settingsWasTapped];
   };
-  // The caller is responsible for cleaning up the base view controller for
-  // first run sign-in.
-  if (self.signinIntent != UserSigninIntentFirstRun) {
-    [self.viewController dismissViewControllerAnimated:YES
-                                            completion:completion];
+  switch (self.signinIntent) {
+    case UserSigninIntentFirstRun: {
+      // The caller is responsible for cleaning up the base view controller for
+      // first run sign-in.
+      break;
+    }
+    case UserSigninIntentSignin:
+    case UserSigninIntentUpgrade: {
+      [self.viewController dismissViewControllerAnimated:YES
+                                              completion:completion];
+      break;
+    }
   }
 }
 

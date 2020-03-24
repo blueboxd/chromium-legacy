@@ -50,10 +50,6 @@ void TreeScopeStyleSheetCollection::AddStyleSheetCandidateNode(Node& node) {
     style_sheet_candidate_nodes_.Add(&node);
 }
 
-bool TreeScopeStyleSheetCollection::MediaQueryAffectingValueChanged() {
-  return ClearMediaQueryDependentRuleSets(active_author_style_sheets_);
-}
-
 void TreeScopeStyleSheetCollection::ApplyActiveStyleSheetChanges(
     StyleSheetCollection& new_collection) {
   GetDocument().GetStyleEngine().ApplyRuleSetChanges(

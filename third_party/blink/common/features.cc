@@ -496,5 +496,8 @@ const base::FeatureParam<int> kFontPreloadingDelaysRenderingParam{
 
 const base::Feature kFlexNG{"FlexNG", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

@@ -10,4 +10,8 @@
 // Feature to enable the new design of the page info.
 extern const base::Feature kPageInfoRefactoring;
 
+// Feature to allow user to manage third-party cookie blocking from the page
+// info.
+extern const base::Feature kPageInfoChromeGuard;
+
 #endif  // IOS_CHROME_BROWSER_UI_PAGE_INFO_FEATURES_H_

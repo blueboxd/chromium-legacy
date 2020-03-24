@@ -36,9 +36,7 @@ NFCProxy* NFCProxy::From(LocalDOMWindow& window) {
 
 // NFCProxy
 NFCProxy::NFCProxy(LocalDOMWindow& window)
-    : PageVisibilityObserver(window.GetFrame()->GetPage()),
-      Supplement<LocalDOMWindow>(window),
-      client_receiver_(this) {}
+    : Supplement<LocalDOMWindow>(window), client_receiver_(this) {}
 
 NFCProxy::~NFCProxy() = default;
 
@@ -49,7 +47,6 @@ void NFCProxy::Dispose() {
 void NFCProxy::Trace(Visitor* visitor) {
   visitor->Trace(writers_);
   visitor->Trace(readers_);
-  PageVisibilityObserver::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
@@ -155,21 +152,6 @@ void NFCProxy::OnReaderRegistered(
 
   // It's good the watch request has been accepted, next we just wait for
   // message notifications in OnWatch().
-}
-
-void NFCProxy::PageVisibilityChanged() {
-  // If service is not initialized, there cannot be any pending NFC activities.
-  if (!nfc_remote_)
-    return;
-
-  // NFC operations should be suspended.
-  // https://w3c.github.io/web-nfc/#nfc-suspended
-  // TODO(https://crbug.com/520391): Suspend/Resume NFC in the browser process
-  // instead to prevent a compromised renderer from using NFC in the background.
-  if (!GetPage()->IsPageVisible())
-    nfc_remote_->SuspendNFCOperations();
-  else
-    nfc_remote_->ResumeNFCOperations();
 }
 
 void NFCProxy::EnsureMojoConnection() {

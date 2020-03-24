@@ -26,6 +26,7 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -71,13 +72,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
-
-namespace {
-
-const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-}
 
 ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            bool parser_inserted,
@@ -982,7 +976,8 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   // keep the resource in the memory cache.
   if (resource_keep_alive_ &&
       !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse() &&
-      !base::FeatureList::IsEnabled(kKeepScriptResourceAlive)) {
+      !base::FeatureList::IsEnabled(
+          blink::features::kKeepScriptResourceAlive)) {
     resource_keep_alive_ = nullptr;
   }
 

@@ -885,8 +885,8 @@ MediaQueryMatcher& Document::GetMediaQueryMatcher() {
   return *media_query_matcher_;
 }
 
-void Document::MediaQueryAffectingValueChanged() {
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+void Document::MediaQueryAffectingValueChanged(MediaValueChange change) {
+  GetStyleEngine().MediaQueryAffectingValueChanged(change);
   if (NeedsLayoutTreeUpdate())
     evaluate_media_queries_on_style_recalc_ = true;
   else
@@ -8596,7 +8596,7 @@ void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
 void Document::ColorSchemeChanged() {
   UpdateForcedColors();
   GetStyleEngine().ColorSchemeChanged();
-  MediaQueryAffectingValueChanged();
+  MediaQueryAffectingValueChanged(MediaValueChange::kOther);
 }
 
 void Document::VisionDeficiencyChanged() {

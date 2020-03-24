@@ -228,25 +228,6 @@ bool SaveUpdateWithAccountStoreBubbleController::ShouldShowFooter() const {
          IsSyncUser(GetProfile());
 }
 
-int SaveUpdateWithAccountStoreBubbleController::GetTopIllustration(
-    bool dark_mode) const {
-  DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
-         state_ == password_manager::ui::PENDING_PASSWORD_STATE);
-  int image = base::GetFieldTrialParamByFeatureAsInt(
-      password_manager::features::kPasswordSaveIllustration, "image", 1);
-  switch (image) {
-    case 1:
-      return dark_mode ? IDR_SAVE_PASSWORD1_DARK : IDR_SAVE_PASSWORD1;
-    case 2:
-      return dark_mode ? IDR_SAVE_PASSWORD2_DARK : IDR_SAVE_PASSWORD2;
-    case 3:
-      return dark_mode ? IDR_SAVE_PASSWORD3_DARK : IDR_SAVE_PASSWORD3;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 bool SaveUpdateWithAccountStoreBubbleController::RevealPasswords() {
   bool reveal_immediately = !password_revealing_requires_reauth_ ||
                             (delegate_ && delegate_->AuthenticateUser());

@@ -6222,6 +6222,7 @@ interface QuicTransport
     method constructor
     method createSendStream
     method receiveDatagrams
+    method receiveStreams
     method sendDatagrams
 interface RTCCertificate
     attribute @@toStringTag
@@ -6605,6 +6606,12 @@ interface ReadableStreamDefaultReader
     method constructor
     method read
     method releaseLock
+interface ReceiveStream
+    attribute @@toStringTag
+    getter readable
+    getter readingAborted
+    method abortReading
+    method constructor
 interface RelativeOrientationSensor : OrientationSensor
     attribute @@toStringTag
     method constructor

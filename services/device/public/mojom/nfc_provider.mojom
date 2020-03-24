@@ -11,4 +11,11 @@ interface NFCProvider {
   // is used to obtain the Activity that this NFC instance should use on
   // Android (see NFCDelegate.java).
   GetNFCForHost(int32 host_id, NFC& nfc);
+
+  // Suspends all pending NFC operations. Could be used when web page
+  // visibility is lost.
+  SuspendNFCOperations();
+
+  // Resumes all suspended NFC operations.
+  ResumeNFCOperations();
 };

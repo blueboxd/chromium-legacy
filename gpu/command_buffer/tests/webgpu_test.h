@@ -27,7 +27,7 @@ void OnRequestDeviceCallback(bool is_request_device_success,
 
 namespace webgpu {
 
-class WebGPUInterface;
+class WebGPUImplementation;
 
 }  // namespace webgpu
 
@@ -51,7 +51,7 @@ class WebGPUTest : public testing::Test {
 
   void Initialize(const Options& options);
 
-  webgpu::WebGPUInterface* webgpu() const;
+  webgpu::WebGPUImplementation* webgpu() const;
   SharedImageInterface* GetSharedImageInterface() const;
 
   void RunPendingTasks();
@@ -63,13 +63,14 @@ class WebGPUTest : public testing::Test {
   };
   DeviceAndClientID GetNewDeviceAndClientID();
 
+  const uint32_t kAdapterServiceID = 0u;
+
  private:
   std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<WebGPUInProcessContext> context_;
   bool is_initialized_ = false;
 
   webgpu::DawnDeviceClientID next_device_client_id_ = 1;
-  const uint32_t kAdapterServiceID = 0u;
 };
 
 }  // namespace gpu

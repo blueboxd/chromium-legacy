@@ -25,9 +25,12 @@ class WebTransportCloseProxy : public GarbageCollected<WebTransportCloseProxy> {
   // called by QuicTransport objects. May execute user JavaScript.
   virtual void OnIncomingStreamClosed(bool fin_received) = 0;
 
-  // Send a Fin signal to the network service. This is used by OutgoingStream
-  // and IncomingStream.
+  // Send a Fin signal to the network service. This is used by OutgoingStream.
   virtual void SendFin() = 0;
+
+  // Cause QuicTransport to drop reference to a stream. This is used by
+  // IncomingStream.
+  virtual void ForgetStream() = 0;
 
   // Called from QuicTransport whenever the mojo connection is torn down. Should
   // close and free data pipes. May execute user JavaScript.

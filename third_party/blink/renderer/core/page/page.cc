@@ -657,8 +657,10 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
     case SettingsDelegate::kMediaQueryChange:
       for (Frame* frame = MainFrame(); frame;
            frame = frame->Tree().TraverseNext()) {
-        if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-          local_frame->GetDocument()->MediaQueryAffectingValueChanged();
+        if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+          local_frame->GetDocument()->MediaQueryAffectingValueChanged(
+              MediaValueChange::kOther);
+        }
       }
       break;
     case SettingsDelegate::kAccessibilityStateChange:

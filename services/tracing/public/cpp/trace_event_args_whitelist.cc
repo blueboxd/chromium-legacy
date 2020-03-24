@@ -91,7 +91,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"ui", "RenderTextHarfBuzz::FallbackFont", kFallbackFontAllowedArgs},
     {"ui", "RenderTextHarfBuzz::GetFallbackFonts",
      kGetFallbackFontsAllowedArgs},
-    {"ui", "UserEvent", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction", nullptr},
     {TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "SequenceManager::PostTask",
      kTopLevelFlowAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("lifecycles"), "task_posted_to_disabled_queue",

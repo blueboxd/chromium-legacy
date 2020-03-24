@@ -44,6 +44,7 @@
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/media_value_change.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
@@ -300,7 +301,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   MediaQueryMatcher& GetMediaQueryMatcher();
 
-  void MediaQueryAffectingValueChanged();
+  void MediaQueryAffectingValueChanged(MediaValueChange change);
 
   using TreeScope::getElementById;
 

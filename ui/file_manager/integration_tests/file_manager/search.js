@@ -172,22 +172,14 @@
     // Open Files app on Downloads.
     const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
-    // Measure the width of the search box when it's collapsed.
-    const collapsedSearchBox = await remoteCall.waitForElementStyles(
-        appId, '#search-wrapper', ['width']);
+    // Search box should start collapsed.
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
 
     // Click the toolbar search button.
     await remoteCall.waitAndClickElement(appId, '#search-button');
 
     // Wait for the search box to expand.
-    const caller = getCaller();
-    await repeatUntil(async () => {
-      const element = await remoteCall.waitForElementStyles(
-          appId, '#search-wrapper', ['width']);
-      if (collapsedSearchBox.renderedWidth > element.renderedWidth) {
-        return pending(caller, 'Waiting for the search box to expand');
-      }
-    });
+    await remoteCall.waitForElementLost(appId, '#search-wrapper[collapsed]');
 
     // Verify the search input has focus.
     const input =
@@ -201,13 +193,8 @@
         result, 'tabKeyDispatched', 'Tab key dispatch failure');
 
     // Check: the search box should collapse.
-    await repeatUntil(async () => {
-      const element = await remoteCall.waitForElementStyles(
-          appId, '#search-wrapper', ['width']);
-      if (collapsedSearchBox.renderedWidth < element.renderedWidth) {
-        return pending(caller, 'Waiting for the search box to collapse');
-      }
-    });
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
   };
 
   /**
@@ -219,6 +206,9 @@
     // Open Files app on Downloads.
     const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
+    // Search box should start collapsed.
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
     // Measure the width of the search box when it's collapsed.
     const collapsedSearchBox = await remoteCall.waitForElementStyles(
         appId, '#search-wrapper', ['width']);
@@ -226,7 +216,10 @@
     // Click the toolbar search button.
     await remoteCall.waitAndClickElement(appId, '#search-button');
 
-    // Wait search box to expand.
+    // Wait for the search box to expand.
+    await remoteCall.waitForElementLost(appId, '#search-wrapper[collapsed]');
+
+    // Check: The search box width should have increased.
     const caller = getCaller();
     await repeatUntil(async () => {
       const element = await remoteCall.waitForElementStyles(
@@ -240,6 +233,9 @@
     await remoteCall.waitAndClickElement(appId, '#search-button');
 
     // Check: the search box should collapse.
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
+    // Check: the search box width should decrease.
     await repeatUntil(async () => {
       const element = await remoteCall.waitForElementStyles(
           appId, '#search-wrapper', ['width']);

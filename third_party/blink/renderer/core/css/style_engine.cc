@@ -381,6 +381,62 @@ void StyleEngine::AddedCustomElementDefaultStyles(
   global_rule_set_->MarkDirty();
 }
 
+namespace {
+
+bool ClearMediaQueryDependentRuleSets(
+    const ActiveStyleSheetVector& active_style_sheets) {
+  bool needs_active_style_update = false;
+  for (const auto& active_sheet : active_style_sheets) {
+    if (const MediaQuerySet* media_queries =
+            active_sheet.first->MediaQueries()) {
+      if (!media_queries->QueryVector().IsEmpty())
+        needs_active_style_update = true;
+    }
+    StyleSheetContents* contents = active_sheet.first->Contents();
+    if (contents->HasMediaQueries()) {
+      needs_active_style_update = true;
+      contents->ClearRuleSet();
+    }
+  }
+  return needs_active_style_update;
+}
+
+bool HasSizeDependentMediaQueries(
+    const ActiveStyleSheetVector& active_style_sheets) {
+  for (const auto& active_sheet : active_style_sheets) {
+    if (active_sheet.first->HasMediaQueryResults())
+      return true;
+    StyleSheetContents* contents = active_sheet.first->Contents();
+    if (!contents->HasRuleSet())
+      continue;
+    if (contents->GetRuleSet().Features().HasMediaQueryResults())
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
+bool StyleEngine::MediaQueryAffectingValueChanged(
+    const ActiveStyleSheetVector& active_sheets,
+    MediaValueChange change) {
+  if (change == MediaValueChange::kSize)
+    return HasSizeDependentMediaQueries(active_sheets);
+
+  DCHECK(change == MediaValueChange::kOther);
+  return ClearMediaQueryDependentRuleSets(active_sheets);
+}
+
+void StyleEngine::MediaQueryAffectingValueChanged(TreeScope& tree_scope,
+                                                  MediaValueChange change) {
+  auto* collection = StyleSheetCollectionFor(tree_scope);
+  DCHECK(collection);
+  if (MediaQueryAffectingValueChanged(collection->ActiveAuthorStyleSheets(),
+                                      change)) {
+    SetNeedsActiveStyleUpdate(tree_scope);
+  }
+}
+
 void StyleEngine::MediaQueriesChangedInScope(TreeScope& tree_scope) {
   if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver())
     resolver->SetNeedsAppendAllSheets();
@@ -405,14 +461,11 @@ bool StyleEngine::ShouldUpdateShadowTreeStyleSheetCollection() const {
 }
 
 void StyleEngine::MediaQueryAffectingValueChanged(
-    UnorderedTreeScopeSet& tree_scopes) {
+    UnorderedTreeScopeSet& tree_scopes,
+    MediaValueChange change) {
   for (TreeScope* tree_scope : tree_scopes) {
     DCHECK(tree_scope != document_);
-    auto* collection = To<ShadowTreeStyleSheetCollection>(
-        StyleSheetCollectionFor(*tree_scope));
-    DCHECK(collection);
-    if (collection->MediaQueryAffectingValueChanged())
-      SetNeedsActiveStyleUpdate(*tree_scope);
+    MediaQueryAffectingValueChanged(*tree_scope, change);
   }
 }
 
@@ -425,7 +478,8 @@ void StyleEngine::RemoveTextTrack(TextTrack* text_track) {
 }
 
 void StyleEngine::MediaQueryAffectingValueChanged(
-    HeapHashSet<Member<TextTrack>>& text_tracks) {
+    HeapHashSet<Member<TextTrack>>& text_tracks,
+    MediaValueChange change) {
   if (text_tracks.IsEmpty())
     return;
 
@@ -451,13 +505,12 @@ void StyleEngine::MediaQueryAffectingValueChanged(
   }
 }
 
-void StyleEngine::MediaQueryAffectingValueChanged() {
-  if (ClearMediaQueryDependentRuleSets(active_user_style_sheets_))
+void StyleEngine::MediaQueryAffectingValueChanged(MediaValueChange change) {
+  if (MediaQueryAffectingValueChanged(active_user_style_sheets_, change))
     MarkUserStyleDirty();
-  if (GetDocumentStyleSheetCollection().MediaQueryAffectingValueChanged())
-    SetNeedsActiveStyleUpdate(GetDocument());
-  MediaQueryAffectingValueChanged(active_tree_scopes_);
-  MediaQueryAffectingValueChanged(text_tracks_);
+  MediaQueryAffectingValueChanged(GetDocument(), change);
+  MediaQueryAffectingValueChanged(active_tree_scopes_, change);
+  MediaQueryAffectingValueChanged(text_tracks_, change);
   if (resolver_)
     resolver_->UpdateMediaType();
 }
@@ -1391,7 +1444,7 @@ void StyleEngine::InitialStyleChanged() {
 
   // Media queries may rely on the initial font size relative lengths which may
   // have changed.
-  MediaQueryAffectingValueChanged();
+  MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   MarkViewportStyleDirty();
   MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kSettings));

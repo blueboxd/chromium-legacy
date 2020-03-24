@@ -79,6 +79,19 @@ void NFCHost::RenderFrameHostChanged(RenderFrameHost* old_host,
     Close();
 }
 
+void NFCHost::OnVisibilityChanged(Visibility visibility) {
+  // For cases NFC not initialized, such as the permission has been revoked.
+  if (!nfc_provider_)
+    return;
+
+  // NFC operations should be suspended.
+  // https://w3c.github.io/web-nfc/#nfc-suspended
+  if (visibility == Visibility::VISIBLE)
+    nfc_provider_->ResumeNFCOperations();
+  else
+    nfc_provider_->SuspendNFCOperations();
+}
+
 void NFCHost::OnPermissionStatusChange(blink::mojom::PermissionStatus status) {
   if (status != blink::mojom::PermissionStatus::GRANTED)
     Close();

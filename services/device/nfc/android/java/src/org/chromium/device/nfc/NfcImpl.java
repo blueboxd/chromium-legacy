@@ -303,22 +303,6 @@ public class NfcImpl implements Nfc {
         }
     }
 
-    /**
-     * Suspends all pending operations. Should be called when web page visibility is lost.
-     */
-    @Override
-    public void suspendNfcOperations() {
-        disableReaderMode();
-    }
-
-    /**
-     * Resumes all pending watch / push operations. Should be called when web page becomes visible.
-     */
-    @Override
-    public void resumeNfcOperations() {
-        enableReaderModeIfNeeded();
-    }
-
     @Override
     public void close() {
         mDelegate.stopTrackingActivityForHost(mHostId);
@@ -329,6 +313,20 @@ public class NfcImpl implements Nfc {
     public void onConnectionError(MojoException e) {
         // We do nothing here since close() is always called no matter the connection gets closed
         // normally or abnormally.
+    }
+
+    /**
+     * Suspends all pending operations.
+     */
+    public void suspendNfcOperations() {
+        disableReaderMode();
+    }
+
+    /**
+     * Resumes all pending watch / push operations.
+     */
+    public void resumeNfcOperations() {
+        enableReaderModeIfNeeded();
     }
 
     /**

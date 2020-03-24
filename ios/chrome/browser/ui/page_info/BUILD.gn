@@ -31,6 +31,7 @@ source_set("page_info") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fancy_ui",
+    "//ios/chrome/browser/ui/page_info:features",
     "//ios/chrome/browser/ui/page_info/requirements",
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/table_view",

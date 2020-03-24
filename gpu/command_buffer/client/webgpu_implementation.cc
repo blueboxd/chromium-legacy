@@ -51,8 +51,6 @@ WebGPUCommandSerializer::~WebGPUCommandSerializer() {}
 
 // This function can only be called once for each WebGPUCommandSerializer
 // object (before any call of GetCmdSpace()).
-// TODO(jiawei.shao@intel.com): early return and directly call the callback
-// function when the connection to the GPU process has been lost.
 void WebGPUCommandSerializer::RequestDeviceCreation(
     uint32_t requested_adapter_id,
     const WGPUDeviceProperties& requested_device_properties) {
@@ -345,11 +343,19 @@ void WebGPUImplementation::SetGLError(GLenum error,
 }
 
 // GpuControlClient implementation.
+// TODO(jiawei.shao@intel.com): do other clean-ups when the context is lost.
 void WebGPUImplementation::OnGpuControlLostContext() {
-  NOTIMPLEMENTED();
+  OnGpuControlLostContextMaybeReentrant();
+
+  // This should never occur more than once.
+  DCHECK(!lost_context_callback_run_);
+  lost_context_callback_run_ = true;
+  if (!lost_context_callback_.is_null()) {
+    std::move(lost_context_callback_).Run();
+  }
 }
 void WebGPUImplementation::OnGpuControlLostContextMaybeReentrant() {
-  NOTIMPLEMENTED();
+  lost_ = true;
 }
 void WebGPUImplementation::OnGpuControlErrorMessage(const char* message,
                                                     int32_t id) {
@@ -553,6 +559,10 @@ bool WebGPUImplementation::RequestAdapterAsync(
     PowerPreference power_preference,
     base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
         request_adapter_callback) {
+  if (lost_) {
+    return false;
+  }
+
   // Now that we declare request_adapter_serial as an uint64, it can't overflow
   // because we just increment an uint64 by one.
   DawnRequestAdapterSerial request_adapter_serial = NextRequestAdapterSerial();
@@ -579,6 +589,10 @@ bool WebGPUImplementation::RequestDeviceAsync(
     base::OnceCallback<void(bool, DawnDeviceClientID)>
         request_device_callback) {
 #if BUILDFLAG(USE_DAWN)
+  if (lost_) {
+    return false;
+  }
+
   // Now that we declare device_client_id as an uint64, it can't overflow
   // because we just increment an uint64 by one.
   DawnDeviceClientID device_client_id = NextDeviceClientID();

@@ -1022,12 +1022,16 @@ void TraceEventDataSource::OnMetricsSampleCallback(
 void TraceEventDataSource::OnUserActionSampleCallback(
     const std::string& action,
     base::TimeTicks action_time) {
+  bool privacy_filtering_enabled =
+      TraceEventDataSource::GetInstance()->IsPrivacyFilteringEnabled();
   TRACE_EVENT_INSTANT(
       TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction",
       TRACE_EVENT_SCOPE_GLOBAL, [&](perfetto::EventContext ctx) {
         perfetto::protos::pbzero::ChromeUserEvent* new_sample =
             ctx.event()->set_chrome_user_event();
-        // TODO(ssid): Set action string in non filtered mode.
+        if (!privacy_filtering_enabled) {
+          new_sample->set_action(action);
+        }
         new_sample->set_action_hash(base::HashMetricName(action));
       });
 }
@@ -1116,6 +1120,11 @@ void TraceEventDataSource::EmitTrackDescriptor() {
 
   trace_packet = TracePacketHandle();
   trace_writer_->Flush();
+}
+
+bool TraceEventDataSource::IsPrivacyFilteringEnabled() {
+  AutoLockWithDeferredTaskPosting lock(lock_);
+  return privacy_filtering_enabled_;
 }
 
 }  // namespace tracing

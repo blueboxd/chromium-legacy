@@ -663,7 +663,7 @@
 
     'tryserver.chromium.android': {
       'android-asan': 'android_clang_asan_release_trybot',
-      'android-bfcache-debug': 'android_debug_static_bot',
+      'android-bfcache-rel': 'android_release_trybot',
       'android-opus-kitkat-arm-rel': 'android_release_trybot',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.

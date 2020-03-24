@@ -492,10 +492,10 @@ void PasswordSaveUpdateWithAccountStoreView::AddedToWidget() {
 
 void PasswordSaveUpdateWithAccountStoreView::OnThemeChanged() {
   PasswordBubbleViewBase::OnThemeChanged();
-  if (int id = controller_.GetTopIllustration(
-          color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor()))) {
-    GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
-  }
+  int id = color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor())
+               ? IDR_SAVE_PASSWORD_DARK
+               : IDR_SAVE_PASSWORD;
+  GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
 }
 
 void PasswordSaveUpdateWithAccountStoreView::TogglePasswordVisibility() {

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "third_party/blink/renderer/modules/webtransport/quic_transport.h"
 #include "third_party/blink/renderer/modules/webtransport/web_transport_close_proxy.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -28,6 +29,8 @@ class CloseProxy : public WebTransportCloseProxy {
   }
 
   void SendFin() override { quic_transport_->SendFin(stream_id_); }
+
+  void ForgetStream() override { NOTREACHED(); }
 
   void Reset() override { outgoing_stream_->Reset(); }
 

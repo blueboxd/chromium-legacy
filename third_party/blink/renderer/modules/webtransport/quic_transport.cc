@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webtransport/receive_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/send_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/web_transport_close_proxy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -160,6 +161,74 @@ class QuicTransport::DatagramUnderlyingSource final
   Member<QuicTransport> quic_transport_;
 };
 
+class QuicTransport::ReceivedStreamsUnderlyingSource final
+    : public UnderlyingSourceBase {
+ public:
+  ReceivedStreamsUnderlyingSource(ScriptState* script_state,
+                                  QuicTransport* quic_transport)
+      : UnderlyingSourceBase(script_state),
+        script_state_(script_state),
+        quic_transport_(quic_transport) {}
+
+  ScriptPromise pull(ScriptState* script_state) override {
+    if (!is_opened_) {
+      is_pull_waiting_ = true;
+      return ScriptPromise::CastUndefined(script_state);
+    }
+
+    quic_transport_->quic_transport_->AcceptUnidirectionalStream(WTF::Bind(
+        &ReceivedStreamsUnderlyingSource::OnAcceptUnidirectionalStreamResponse,
+        WrapWeakPersistent(this)));
+
+    return ScriptPromise::CastUndefined(script_state);
+  }
+
+  // Used by QuicTransport to error the stream.
+  void Error(v8::Local<v8::Value> reason) { Controller()->Error(reason); }
+
+  // Used by QuicTransport to close the stream.
+  void Close() { Controller()->Close(); }
+
+  // Used by QuicTransport to notify that the QuicTransport interface is
+  // available.
+  void NotifyOpened() {
+    is_opened_ = true;
+
+    if (is_pull_waiting_) {
+      ScriptState::Scope scope(script_state_);
+      pull(script_state_);
+      is_pull_waiting_ = false;
+    }
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(script_state_);
+    visitor->Trace(quic_transport_);
+    UnderlyingSourceBase::Trace(visitor);
+  }
+
+ private:
+  void OnAcceptUnidirectionalStreamResponse(
+      uint32_t stream_id,
+      mojo::ScopedDataPipeConsumerHandle readable) {
+    ScriptState::Scope scope(script_state_);
+    auto* receive_stream = MakeGarbageCollected<ReceiveStream>(
+        script_state_, quic_transport_, stream_id, std::move(readable));
+    receive_stream->Init();
+    // 0xfffffffe and 0xffffffff are reserved values in stream_map_.
+    CHECK_LT(stream_id, 0xfffffffe);
+    quic_transport_->stream_map_.insert(
+        stream_id, receive_stream->GetWebTransportCloseProxy());
+
+    Controller()->Enqueue(receive_stream);
+  }
+
+  const Member<ScriptState> script_state_;
+  const Member<QuicTransport> quic_transport_;
+  bool is_opened_ = false;
+  bool is_pull_waiting_ = false;
+};
+
 QuicTransport* QuicTransport::Create(ScriptState* script_state,
                                      const String& url,
                                      ExceptionState& exception_state) {
@@ -232,6 +301,8 @@ void QuicTransport::close(const WebTransportCloseInfo* close_info) {
     received_datagrams_controller_ = nullptr;
   }
 
+  received_streams_underlying_source_->Close();
+
   // If we don't manage to close the writable stream here, then it will
   // error when a write() is attempted.
   if (!WritableStream::IsLocked(outgoing_datagrams_) &&
@@ -266,6 +337,8 @@ void QuicTransport::OnConnectionEstablished(
 
   DCHECK(!quic_transport_);
   quic_transport_.Bind(std::move(quic_transport), task_runner);
+
+  received_streams_underlying_source_->NotifyOpened();
 
   ready_resolver_->Resolve();
 }
@@ -328,6 +401,10 @@ void QuicTransport::SendFin(uint32_t stream_id) {
   stream_map_.erase(stream_id);
 }
 
+void QuicTransport::ForgetStream(uint32_t stream_id) {
+  stream_map_.erase(stream_id);
+}
+
 void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(received_datagrams_);
   visitor->Trace(received_datagrams_controller_);
@@ -339,6 +416,8 @@ void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(closed_resolver_);
   visitor->Trace(closed_);
   visitor->Trace(stream_map_);
+  visitor->Trace(received_streams_);
+  visitor->Trace(received_streams_underlying_source_);
   ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -416,6 +495,12 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
       MakeGarbageCollected<DatagramUnderlyingSource>(script_state_, this), 1);
   outgoing_datagrams_ = WritableStream::CreateWithCountQueueingStrategy(
       script_state_, MakeGarbageCollected<DatagramUnderlyingSink>(this), 1);
+
+  received_streams_underlying_source_ =
+      MakeGarbageCollected<ReceivedStreamsUnderlyingSource>(script_state_,
+                                                            this);
+  received_streams_ = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state_, received_streams_underlying_source_, 1);
 }
 
 void QuicTransport::ResetAll() {
@@ -451,6 +536,7 @@ void QuicTransport::OnConnectionError() {
       received_datagrams_controller_->Error(reason);
       received_datagrams_controller_ = nullptr;
     }
+    received_streams_underlying_source_->Error(reason);
     WritableStreamDefaultController::ErrorIfNeeded(
         script_state_, outgoing_datagrams_->Controller(), reason);
     ready_resolver_->Reject(reason);

@@ -5581,15 +5581,10 @@ crbug.com/931533 virtual/audio-service/media/video-played-collapse.html [ Pass F
 crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [ Pass Failure Crash ]
 
 # Sheriff 2019-03-14
-crbug.com/836242 [ Linux ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
-crbug.com/836242 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
-crbug.com/836242 [ Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/806357 virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash Timeout ]
 crbug.com/941931 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
 crbug.com/941931 [ Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
 crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversized-images.html [ Pass Failure ]
-
-# Sheriff 2019-03-15
 
 # Trooper 2019-03-19
 crbug.com/943388 [ Win ] http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]

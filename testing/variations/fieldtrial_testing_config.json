@@ -4994,27 +4994,6 @@
             ]
         }
     ],
-    "SavePasswordIllustration": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "image": "1"
-                    },
-                    "enable_features": [
-                        "SavePasswordIllustration"
-                    ]
-                }
-            ]
-        }
-    ],
     "ScriptStreamingOnPreload": [
         {
             "platforms": [

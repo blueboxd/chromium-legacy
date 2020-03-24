@@ -51,9 +51,6 @@ class SaveUpdateWithAccountStoreBubbleController
   // to Google account.
   bool ShouldShowFooter() const;
 
-  // Returns the ID of the picture to show above the title.
-  int GetTopIllustration(bool dark_mode) const;
-
   // Returns true if passwords revealing is not locked or re-authentication is
   // not available on the given platform. Otherwise, the method schedules
   // re-authentication and bubble reopen (the current bubble will be destroyed),

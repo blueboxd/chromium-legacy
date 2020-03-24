@@ -251,7 +251,7 @@ TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
   if (web_view_->MainFrameImpl()) {
     if (Document* document =
             web_view_->MainFrameImpl()->GetFrame()->GetDocument())
-      document->MediaQueryAffectingValueChanged();
+      document->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   }
 
   if (params.viewport_offset.x() >= 0)
@@ -277,7 +277,7 @@ void DevToolsEmulator::DisableDeviceEmulation() {
   if (web_view_->MainFrameImpl()) {
     if (Document* document =
             web_view_->MainFrameImpl()->GetFrame()->GetDocument())
-      document->MediaQueryAffectingValueChanged();
+      document->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   }
 
   TransformationMatrix matrix = ResetViewport();

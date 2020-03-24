@@ -36,6 +36,7 @@ using signin_metrics::PromoAction;
 }
 
 - (void)logSigninCompletedWithResult:(SigninCoordinatorResult)signinResult
+                        addedAccount:(BOOL)addedAccount
                advancedSettingsShown:(BOOL)advancedSettingsShown {
   switch (signinResult) {
     case SigninCoordinatorResultSuccess: {

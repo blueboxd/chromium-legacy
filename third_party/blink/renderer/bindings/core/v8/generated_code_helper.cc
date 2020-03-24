@@ -169,14 +169,24 @@ base::Optional<size_t> FindIndexInEnumStringTable(
   if (exception_state.HadException())
     return base::nullopt;
 
+  base::Optional<size_t> index =
+      FindIndexInEnumStringTable(str_value, enum_value_table);
+
+  if (!index.has_value()) {
+    exception_state.ThrowTypeError("The provided value '" + str_value +
+                                   "' is not a valid enum value of type " +
+                                   enum_type_name + ".");
+  }
+  return index;
+}
+
+base::Optional<size_t> FindIndexInEnumStringTable(
+    const String& str_value,
+    base::span<const char* const> enum_value_table) {
   for (size_t i = 0; i < enum_value_table.size(); ++i) {
     if (Equal(str_value.Impl(), enum_value_table[i]))
       return i;
   }
-
-  exception_state.ThrowTypeError("The provided value '" + str_value +
-                                 "' is not a valid enum value of type " +
-                                 enum_type_name + ".");
   return base::nullopt;
 }
 

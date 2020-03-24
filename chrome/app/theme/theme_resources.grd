@@ -258,12 +258,8 @@
         <structure type="chrome_scaled_image" name="IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT" file="common/safety_tip_lookalike_illustration_light.png" />
         <structure type="chrome_scaled_image" name="IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK" file="common/safety_tip_suspicious_illustration_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT" file="common/safety_tip_suspicious_illustration_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD1" file="common/save_password1.png" />
-        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD1_DARK" file="common/save_password1_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD2" file="common/save_password2.png" />
-        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD2_DARK" file="common/save_password2_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD3" file="common/save_password3.png" />
-        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD3_DARK" file="common/save_password3_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD" file="common/save_password.png" />
+        <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_DARK" file="common/save_password_dark.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP" file="screen_capture_notification_grip.png" />
       <if expr="chromeos">

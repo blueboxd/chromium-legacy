@@ -263,6 +263,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   uint32_t IncrementSessionIdOrClearStartupFlagWhileLocked();
   void SetStartupTracingFlagsWhileLocked();
   bool IsStartupTracingActive() const;
+  bool IsPrivacyFilteringEnabled();  // Takes the |lock_|.
 
   bool disable_interning_ = false;
   base::OnceClosure stop_complete_callback_;

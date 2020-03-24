@@ -1230,6 +1230,7 @@ interface QuicTransport
     method constructor
     method createSendStream
     method receiveDatagrams
+    method receiveStreams
     method sendDatagrams
 interface ReadableStream
     attribute @@toStringTag
@@ -1247,6 +1248,12 @@ interface ReadableStreamDefaultReader
     method constructor
     method read
     method releaseLock
+interface ReceiveStream
+    attribute @@toStringTag
+    getter readable
+    getter readingAborted
+    method abortReading
+    method constructor
 interface Request
     attribute @@toStringTag
     getter bodyUsed

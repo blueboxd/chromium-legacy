@@ -144,13 +144,6 @@ interface NFC {
 
   // Cancels all watch operations.
   CancelAllWatches () => (NDEFError? error);
-
-  // Suspends all pending NFC operations. Could be used when web page
-  // visibility is lost.
-  SuspendNFCOperations();
-
-  // Resumes all suspended NFC operations.
-  ResumeNFCOperations();
 };
 
 interface NFCClient {

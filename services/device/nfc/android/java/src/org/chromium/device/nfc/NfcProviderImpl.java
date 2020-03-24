@@ -52,6 +52,26 @@ public class NfcProviderImpl implements NfcProvider {
     }
 
     /**
+     * Suspends the NFC usage. Should be called when web page visibility is lost.
+     */
+    @Override
+    public void suspendNfcOperations() {
+        if (mNfcImpl != null) {
+            mNfcImpl.suspendNfcOperations();
+        }
+    }
+
+    /**
+     * Resumes the NFC usage. Should be called when web page becomes visible.
+     */
+    @Override
+    public void resumeNfcOperations() {
+        if (mNfcImpl != null) {
+            mNfcImpl.resumeNfcOperations();
+        }
+    }
+
+    /**
      * A factory for implementations of the NfcProvider interface.
      */
     public static class Factory implements InterfaceFactory<NfcProvider> {

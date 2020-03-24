@@ -3186,6 +3186,11 @@
      "expiry_milestone": 85
   },
   {
+    "name": "page-info-chrome-guard",
+       "owners": ["ewannpv", "gambard" ],
+       "expiry_milestone": 85
+  },
+  {
     "name": "page-info-refactoring",
     "owners": [ "ewannpv", "gambard" ],
     "expiry_milestone": 84

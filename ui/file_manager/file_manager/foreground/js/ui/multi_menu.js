@@ -60,6 +60,12 @@ cr.define('cr.ui', () => {
       /** @private {?cr.ui.Menu} */
       this.menu_ = null;
 
+      /** @private {?ResizeObserver} */
+      this.observer_ = null;
+
+      /** @private {?Element} */
+      this.observedElement_ = null;
+
       throw new Error('Designed to decorate elements');
     }
 
@@ -120,6 +126,12 @@ cr.define('cr.ui', () => {
       if ((menu = this.getAttribute('menu'))) {
         this.menu = menu;
       }
+
+      // Align the menu if the button moves. When the button moves, the parent
+      // container resizes.
+      this.observer_ = new ResizeObserver(() => {
+        this.positionMenu_();
+      });
 
       // An event tracker for events we only connect to while the menu is
       // displayed.
@@ -517,6 +529,8 @@ cr.define('cr.ui', () => {
       this.showingEvents_.add(win, 'resize', this);
       this.showingEvents_.add(this.menu, 'contextmenu', this);
       this.showingEvents_.add(this.menu, 'activate', this);
+      this.observedElement_ = this.parentElement;
+      this.observer_.observe(this.observedElement_);
       this.positionMenu_();
 
       if (shouldSetFocus) {
@@ -595,6 +609,8 @@ cr.define('cr.ui', () => {
       if (shouldTakeFocus) {
         this.focus();
       }
+
+      this.observer_.unobserve(this.observedElement_);
 
       const event = new UIEvent(
           'menuhide', {bubbles: true, cancelable: false, view: window});

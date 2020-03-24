@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/mock_callback.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -19,11 +20,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_receive_stream.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_send_stream.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_close_info.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -31,11 +34,14 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webtransport/receive_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/send_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -118,6 +124,9 @@ class MockQuicTransport : public network::mojom::blink::QuicTransport {
 
 class QuicTransportTest : public ::testing::Test {
  public:
+  using AcceptUnidirectionalStreamCallback =
+      base::OnceCallback<void(uint32_t, mojo::ScopedDataPipeConsumerHandle)>;
+
   void AddBinder(const V8TestingScope& scope) {
     interface_broker_ =
         &scope.GetExecutionContext()->GetBrowserInterfaceBroker();
@@ -156,6 +165,12 @@ class QuicTransportTest : public ::testing::Test {
 
     mock_quic_transport_ = std::make_unique<StrictMock<MockQuicTransport>>(
         quic_transport_to_pass.InitWithNewPipeAndPassReceiver());
+
+    // This is called on every connection, so expect it in every test.
+    EXPECT_CALL(*mock_quic_transport_, AcceptUnidirectionalStream(_))
+        .WillRepeatedly([this](AcceptUnidirectionalStreamCallback callback) {
+          pending_accept_callbacks_.push_back(std::move(callback));
+        });
 
     handshake_client->OnConnectionEstablished(
         std::move(quic_transport_to_pass),
@@ -196,6 +211,56 @@ class QuicTransportTest : public ::testing::Test {
     return send_stream;
   }
 
+  mojo::ScopedDataPipeProducerHandle DoAcceptUnidirectionalStream() {
+    MojoCreateDataPipeOptions options;
+    options.struct_size = sizeof(MojoCreateDataPipeOptions);
+    options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+    options.element_num_bytes = 1;
+    options.capacity_num_bytes = 0;
+
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
+    if (result != MOJO_RESULT_OK) {
+      ADD_FAILURE() << "CreateDataPipe() returned " << result;
+    }
+
+    std::move(pending_accept_callbacks_.front())
+        .Run(next_stream_id_++, std::move(consumer));
+    pending_accept_callbacks_.pop_front();
+
+    return producer;
+  }
+
+  ReceiveStream* ReadReceiveStream(const V8TestingScope& scope,
+                                   QuicTransport* quic_transport) {
+    ReadableStream* streams = quic_transport->receiveStreams();
+    auto* script_state = scope.GetScriptState();
+    auto* reader = streams->getReader(script_state, ASSERT_NO_EXCEPTION);
+
+    ScriptPromise read_promise =
+        reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+    ScriptPromiseTester read_tester(script_state, read_promise);
+    read_tester.WaitUntilSettled();
+    EXPECT_TRUE(read_tester.IsFulfilled());
+
+    v8::Local<v8::Value> result = read_tester.Value().V8Value();
+    DCHECK(result->IsObject());
+    v8::Local<v8::Value> v8value;
+    bool done = false;
+    EXPECT_TRUE(
+        V8UnpackIteratorResult(script_state, result.As<v8::Object>(), &done)
+            .ToLocal(&v8value));
+    EXPECT_FALSE(done);
+
+    ReceiveStream* receive_stream =
+        V8ReceiveStream::ToImplWithTypeCheck(scope.GetIsolate(), v8value);
+    EXPECT_TRUE(receive_stream);
+
+    return receive_stream;
+  }
+
   void BindConnector(mojo::ScopedMessagePipeHandle handle) {
     connector_.Bind(mojo::PendingReceiver<mojom::blink::QuicTransportConnector>(
         std::move(handle)));
@@ -209,6 +274,7 @@ class QuicTransportTest : public ::testing::Test {
   }
 
   BrowserInterfaceBrokerProxy* interface_broker_ = nullptr;
+  WTF::Deque<AcceptUnidirectionalStreamCallback> pending_accept_callbacks_;
   QuicTransportConnector connector_;
   std::unique_ptr<MockQuicTransport> mock_quic_transport_;
   mojo::Remote<network::mojom::blink::QuicTransportClient> client_remote_;
@@ -805,6 +871,113 @@ TEST_F(QuicTransportTest, CreateSendStreamAbortedByClose) {
   tester.WaitUntilSettled();
 
   EXPECT_TRUE(tester.IsRejected());
+}
+
+// ReceiveStream functionality is thoroughly tested in incoming_stream_test.cc.
+// This test just verifies that the creation is done correctly.
+TEST_F(QuicTransportTest, CreateReceiveStream) {
+  V8TestingScope scope;
+
+  auto* script_state = scope.GetScriptState();
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  mojo::ScopedDataPipeProducerHandle producer = DoAcceptUnidirectionalStream();
+
+  ReceiveStream* receive_stream = ReadReceiveStream(scope, quic_transport);
+
+  const char data[] = "what";
+  uint32_t num_bytes = 4u;
+
+  EXPECT_EQ(
+      producer->WriteData(data, &num_bytes, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE),
+      MOJO_RESULT_OK);
+  EXPECT_EQ(num_bytes, 4u);
+
+  producer.reset();
+  quic_transport->OnIncomingStreamClosed(/*stream_id=*/0, true);
+
+  auto* reader =
+      receive_stream->readable()->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise read_promise = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester read_tester(script_state, read_promise);
+  read_tester.WaitUntilSettled();
+  EXPECT_TRUE(read_tester.IsFulfilled());
+  auto read_result = read_tester.Value().V8Value();
+  ASSERT_TRUE(read_result->IsObject());
+  v8::Local<v8::Value> value;
+  bool done = false;
+  ASSERT_TRUE(
+      V8UnpackIteratorResult(script_state, read_result.As<v8::Object>(), &done)
+          .ToLocal(&value));
+  DOMUint8Array* u8array =
+      V8Uint8Array::ToImplWithTypeCheck(scope.GetIsolate(), value);
+  ASSERT_TRUE(u8array);
+  EXPECT_THAT(base::make_span(static_cast<uint8_t*>(u8array->Data()),
+                              u8array->byteLengthAsSizeT()),
+              ElementsAre('w', 'h', 'a', 't'));
+}
+
+TEST_F(QuicTransportTest, CreateReceiveStreamThenClose) {
+  V8TestingScope scope;
+
+  auto* script_state = scope.GetScriptState();
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  mojo::ScopedDataPipeProducerHandle producer = DoAcceptUnidirectionalStream();
+
+  ReceiveStream* receive_stream = ReadReceiveStream(scope, quic_transport);
+
+  auto* reader =
+      receive_stream->readable()->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise read_promise = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester read_tester(script_state, read_promise);
+
+  quic_transport->close(nullptr);
+
+  read_tester.WaitUntilSettled();
+  EXPECT_TRUE(read_tester.IsRejected());
+  DOMException* exception = V8DOMException::ToImplWithTypeCheck(
+      scope.GetIsolate(), read_tester.Value().V8Value());
+  ASSERT_TRUE(exception);
+  EXPECT_EQ(exception->code(),
+            static_cast<uint16_t>(DOMExceptionCode::kNetworkError));
+
+  // TODO(ricea): Fix this message if possible.
+  EXPECT_EQ(exception->message(),
+            "The stream was aborted by the remote server");
+}
+
+TEST_F(QuicTransportTest, CreateReceiveStreamThenRemoteClose) {
+  V8TestingScope scope;
+
+  auto* script_state = scope.GetScriptState();
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  mojo::ScopedDataPipeProducerHandle producer = DoAcceptUnidirectionalStream();
+
+  ReceiveStream* receive_stream = ReadReceiveStream(scope, quic_transport);
+
+  auto* reader =
+      receive_stream->readable()->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise read_promise = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester read_tester(script_state, read_promise);
+
+  client_remote_.reset();
+
+  read_tester.WaitUntilSettled();
+  EXPECT_TRUE(read_tester.IsRejected());
+  DOMException* exception = V8DOMException::ToImplWithTypeCheck(
+      scope.GetIsolate(), read_tester.Value().V8Value());
+  ASSERT_TRUE(exception);
+  EXPECT_EQ(exception->code(),
+            static_cast<uint16_t>(DOMExceptionCode::kNetworkError));
+
+  // TODO(ricea): Fix this message if possible.
+  EXPECT_EQ(exception->message(),
+            "The stream was aborted by the remote server");
 }
 
 }  // namespace

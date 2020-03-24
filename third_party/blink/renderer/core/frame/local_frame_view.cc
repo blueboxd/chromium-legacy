@@ -621,7 +621,7 @@ void LocalFrameView::PerformPreLayoutTasks() {
        document->GetStyleEngine().MediaQueryAffectedByViewportChange()) ||
       (was_resized && main_frame_rotation &&
        document->GetStyleEngine().MediaQueryAffectedByDeviceChange())) {
-    document->MediaQueryAffectingValueChanged();
+    document->MediaQueryAffectingValueChanged(MediaValueChange::kSize);
   } else if (was_resized) {
     document->EvaluateMediaQueryList();
   }
@@ -1177,8 +1177,10 @@ void LocalFrameView::SetDisplayMode(blink::mojom::DisplayMode mode) {
 
   display_mode_ = mode;
 
-  if (frame_->GetDocument())
-    frame_->GetDocument()->MediaQueryAffectingValueChanged();
+  if (frame_->GetDocument()) {
+    frame_->GetDocument()->MediaQueryAffectingValueChanged(
+        MediaValueChange::kOther);
+  }
 }
 
 void LocalFrameView::SetDisplayShape(DisplayShape display_shape) {
@@ -1187,14 +1189,17 @@ void LocalFrameView::SetDisplayShape(DisplayShape display_shape) {
 
   display_shape_ = display_shape;
 
-  if (frame_->GetDocument())
-    frame_->GetDocument()->MediaQueryAffectingValueChanged();
+  if (frame_->GetDocument()) {
+    frame_->GetDocument()->MediaQueryAffectingValueChanged(
+        MediaValueChange::kOther);
+  }
 }
 
 void LocalFrameView::SetMediaType(const AtomicString& media_type) {
   DCHECK(frame_->GetDocument());
   media_type_ = media_type;
-  frame_->GetDocument()->MediaQueryAffectingValueChanged();
+  frame_->GetDocument()->MediaQueryAffectingValueChanged(
+      MediaValueChange::kOther);
 }
 
 AtomicString LocalFrameView::MediaType() const {

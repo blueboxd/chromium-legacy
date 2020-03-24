@@ -99,6 +99,10 @@ class CORE_EXPORT RuleFeatureSet {
   MediaQueryResultList& DeviceDependentMediaQueryResults() {
     return device_dependent_media_query_results_;
   }
+  bool HasMediaQueryResults() const {
+    return !viewport_dependent_media_query_results_.IsEmpty() ||
+           !device_dependent_media_query_results_.IsEmpty();
+  }
 
   // Collect descendant and sibling invalidation sets.
   void CollectInvalidationSetsForClass(InvalidationLists&,

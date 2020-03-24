@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -21,10 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -68,36 +65,6 @@ class PasswordManagerSyncTest : public SyncTest {
 
     test_signin_client_factory_ =
         secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
-
-    will_create_browser_context_services_subscription_ =
-        BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::BindRepeating(&PasswordManagerSyncTest::
-                                        OnWillCreateBrowserContextServices));
-  }
-
-  static void OnWillCreateBrowserContextServices(
-      content::BrowserContext* context) {
-    // Use TestPasswordStore to remove a possible race. Normally the
-    // PasswordStore does its database manipulation on a background thread,
-    // which creates a possible race during navigation. Specifically the
-    // PasswordManager will ignore any forms in a page if the load from the
-    // PasswordStore has not completed.
-    // TODO(crbug.com/1058339): Investigate whether these test doubles are
-    // really required, or whether we can use the real stores and add some
-    // waiting logic.
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        context,
-        base::BindRepeating(&password_manager::BuildPasswordStoreWithArgs<
-                                content::BrowserContext,
-                                password_manager::TestPasswordStore, bool>,
-                            /*is_account_store=*/false));
-    AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
-        context,
-        base::BindRepeating(&password_manager::BuildPasswordStoreWithArgs<
-                                content::BrowserContext,
-                                password_manager::TestPasswordStore, bool>,
-                            /*is_account_store=*/true));
   }
 
   void SetUpOnMainThread() override {
@@ -152,6 +119,9 @@ class PasswordManagerSyncTest : public SyncTest {
     scoped_refptr<password_manager::PasswordStore> password_store =
         passwords_helper::GetPasswordStore(0);
     password_store->AddLogin(CreateTestPasswordForm(username, password));
+    // Do a roundtrip to the DB thread, to make sure the new password is stored
+    // before doing anything else that might depend on it.
+    GetAllLoginsFromProfilePasswordStore();
   }
 
   // Synchronously reads all credentials from the profile password store and
@@ -204,10 +174,6 @@ class PasswordManagerSyncTest : public SyncTest {
 
   secondary_account_helper::ScopedSigninClientFactory
       test_signin_client_factory_;
-
-  std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
 };
 
 #if !defined(OS_CHROMEOS)

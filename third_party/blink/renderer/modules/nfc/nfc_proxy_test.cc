@@ -146,8 +146,6 @@ class FakeNfcService : public device::mojom::blink::NFC {
     watches_.clear();
     std::move(callback).Run(nullptr);
   }
-  void SuspendNFCOperations() override {}
-  void ResumeNFCOperations() override {}
 
   device::mojom::blink::NDEFErrorPtr watch_error_;
   device::mojom::blink::NDEFMessagePtr tag_message_;

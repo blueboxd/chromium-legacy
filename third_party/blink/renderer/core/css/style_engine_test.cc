@@ -1251,7 +1251,7 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
 TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementNoMedia) {
   GetDocument().body()->setInnerHTML("<style>div{color:pink}</style>");
   UpdateAllLifecyclePhases();
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+  GetStyleEngine().MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
@@ -1259,7 +1259,7 @@ TEST_F(StyleEngineTest,
        MediaQueryAffectingValueChanged_StyleElementMediaNoValue) {
   GetDocument().body()->setInnerHTML("<style media>div{color:pink}</style>");
   UpdateAllLifecyclePhases();
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+  GetStyleEngine().MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
@@ -1267,7 +1267,7 @@ TEST_F(StyleEngineTest,
        MediaQueryAffectingValueChanged_StyleElementMediaEmpty) {
   GetDocument().body()->setInnerHTML("<style media=''>div{color:pink}</style>");
   UpdateAllLifecyclePhases();
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+  GetStyleEngine().MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
@@ -1280,7 +1280,7 @@ TEST_F(StyleEngineTest,
   GetDocument().body()->setInnerHTML(
       "<style media=',,'>div{color:pink}</style>");
   UpdateAllLifecyclePhases();
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+  GetStyleEngine().MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
@@ -1288,7 +1288,7 @@ TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementMediaAll) {
   GetDocument().body()->setInnerHTML(
       "<style media='all'>div{color:pink}</style>");
   UpdateAllLifecyclePhases();
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+  GetStyleEngine().MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
@@ -1297,7 +1297,7 @@ TEST_F(StyleEngineTest,
   GetDocument().body()->setInnerHTML(
       "<style media='not all'>div{color:pink}</style>");
   UpdateAllLifecyclePhases();
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+  GetStyleEngine().MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
@@ -1305,7 +1305,7 @@ TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementMediaType) {
   GetDocument().body()->setInnerHTML(
       "<style media='print'>div{color:pink}</style>");
   UpdateAllLifecyclePhases();
-  GetStyleEngine().MediaQueryAffectingValueChanged();
+  GetStyleEngine().MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
@@ -2545,6 +2545,45 @@ TEST_F(StyleEngineTest, InitialColorChange) {
   ASSERT_TRUE(initial_style);
   EXPECT_EQ(Color::kWhite,
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest,
+       MediaQueryAffectingValueChanged_InvalidateForChangedQueries) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @media (min-width: 1000px) {
+        div { color: green }
+      }
+    </style>
+    <style>
+      @media (min-width: 1200px) {
+        * { color: red }
+      }
+    </style>
+    <style>
+      @media print {
+        * { color: blue }
+      }
+    </style>
+    <div id="green"></div>
+    <span></span>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* div = GetDocument().getElementById("green");
+  EXPECT_EQ(Color::kBlack, div->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  unsigned initial_count = GetStyleEngine().StyleForElementCount();
+
+  GetDocument().View()->SetLayoutSizeFixedToFrameSize(false);
+  GetDocument().View()->SetLayoutSize(IntSize(1100, 800));
+  UpdateAllLifecyclePhases();
+
+  // Only the single div element should have its style recomputed.
+  EXPECT_EQ(1u, GetStyleEngine().StyleForElementCount() - initial_count);
+  EXPECT_EQ(MakeRGB(0, 128, 0), div->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
 }
 
 class ParameterizedStyleEngineTest

@@ -1162,6 +1162,12 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OVERSCROLL_RELOAD_LABEL" desc="The text to use for the tooltip for the overscroll reload action. [Length: 20em] [iOS only]">
         Reload
       </message>
+      <message name="IDS_IOS_PAGE_INFO_COOKIES_DESCRIPTION" desc="Description of the button opening the third-party cookies information (in page info)">
+        Bloking third-party cookies
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_COOKIES_TITLE" desc="Title of the button opening the third-party cookies information (in page info)">
+        Cookies
+      </message>
       <message name="IDS_IOS_PAGE_INFO_OFFLINE_PAGE" desc="Message to display in the page info bubble when the page you are on is an offline page.">
         This page has been saved to your Reading List.
       </message>

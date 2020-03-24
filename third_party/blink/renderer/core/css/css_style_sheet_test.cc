@@ -12,8 +12,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_css_style_sheet.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_css_style_sheet_init.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
@@ -97,6 +100,53 @@ TEST_F(CSSStyleSheetTest,
   WebHeap::CollectAllGarbageForTesting();
   EXPECT_EQ(sheet->adopted_tree_scopes_.size(), 1u);
   EXPECT_EQ(shadow_b.AdoptedStyleSheets().size(), 1u);
+}
+
+TEST_F(CSSStyleSheetTest, AdoptedStyleSheetMediaQueryEvalChange) {
+  SetBodyInnerHTML("<div id=green></div>");
+
+  Element* green = GetDocument().getElementById("green");
+
+  CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
+  CSSStyleSheet* sheet =
+      CSSStyleSheet::Create(GetDocument(), init, ASSERT_NO_EXCEPTION);
+  sheet->replaceSync("@media (max-width: 300px) { #green { color: green } }",
+                     ASSERT_NO_EXCEPTION);
+
+  HeapVector<Member<CSSStyleSheet>> empty_adopted_sheets;
+  HeapVector<Member<CSSStyleSheet>> adopted_sheets;
+  adopted_sheets.push_back(sheet);
+
+  GetDocument().SetAdoptedStyleSheets(adopted_sheets);
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(sheet->Contents());
+  ASSERT_TRUE(sheet->Contents()->HasRuleSet());
+  RuleSet* rule_set = &sheet->Contents()->GetRuleSet();
+
+  EXPECT_EQ(Color::kBlack, green->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  GetDocument().SetAdoptedStyleSheets(empty_adopted_sheets);
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(sheet->Contents()->HasRuleSet());
+  EXPECT_EQ(rule_set, &sheet->Contents()->GetRuleSet());
+  EXPECT_EQ(Color::kBlack, green->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  GetDocument().View()->SetLayoutSizeFixedToFrameSize(false);
+  GetDocument().View()->SetLayoutSize(IntSize(200, 500));
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().SetAdoptedStyleSheets(adopted_sheets);
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(sheet->Contents()->HasRuleSet());
+  EXPECT_NE(rule_set, &sheet->Contents()->GetRuleSet());
+  EXPECT_EQ(
+      MakeRGB(0, 128, 0),
+      green->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 }  // namespace blink

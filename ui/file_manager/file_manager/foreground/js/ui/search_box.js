@@ -62,10 +62,9 @@ class SearchBox extends cr.EventTarget {
     this.clearButton_ = assert(element.querySelector('.clear'));
 
     /** @private {boolean} */
-    this.collapsed_ = true;
-
-    /** @private {boolean} */
     this.isClicking_ = false;
+
+    this.collapsed = true;
 
     // Register events.
     this.inputElement.addEventListener('input', this.onInput_.bind(this));
@@ -86,14 +85,14 @@ class SearchBox extends cr.EventTarget {
     this.autocompleteList.addEventListener('mousedown', dispatchItemSelect);
 
     document.addEventListener('mousedown', () => {
-      if (this.collapsed_) {
+      if (this.collapsed) {
         return;
       }
       this.isClicking_ = true;
     }, {capture: true, passive: true});
 
     document.addEventListener('mouseup', () => {
-      if (this.collapsed_) {
+      if (this.collapsed) {
         return;
       }
       this.isClicking_ = false;
@@ -107,6 +106,23 @@ class SearchBox extends cr.EventTarget {
 
     // Append dynamically created element.
     element.parentNode.appendChild(this.autocompleteList);
+  }
+
+  /** @private {boolean} */
+  get collapsed() {
+    return this.searchWrapper.hasAttribute('collapsed');
+  }
+
+  /**
+   * @private
+   * @param {boolean} collapsed
+   */
+  set collapsed(collapsed) {
+    if (collapsed) {
+      this.searchWrapper.setAttribute('collapsed', true);
+    } else {
+      this.searchWrapper.removeAttribute('collapsed');
+    }
   }
 
   /**
@@ -171,7 +187,10 @@ class SearchBox extends cr.EventTarget {
       return;
     }
 
-    this.collapsed_ = false;
+    this.inputElement.addEventListener('transitionend', () => {
+      this.collapsed = false;
+    }, {once: true});
+
     this.isClicking_ = false;
     this.element.classList.toggle('has-cursor', true);
     this.searchWrapper.classList.toggle('has-cursor', true);
@@ -202,7 +221,9 @@ class SearchBox extends cr.EventTarget {
     this.inputElement.disabled = this.inputElement.value.length == 0;
     this.element.classList.toggle('hide-pending', false);
     this.searchWrapper.classList.toggle('hide-pending', false);
-    this.collapsed_ = true;
+    this.inputElement.addEventListener('transitionend', () => {
+      this.collapsed = true;
+    }, {once: true});
   }
 
   /**

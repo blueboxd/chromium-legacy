@@ -202,25 +202,6 @@ bool SaveUpdateBubbleController::ShouldShowFooter() const {
          IsSyncUser(GetProfile());
 }
 
-int SaveUpdateBubbleController::GetTopIllustration(bool dark_mode) const {
-  if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
-      state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    int image = base::GetFieldTrialParamByFeatureAsInt(
-        password_manager::features::kPasswordSaveIllustration, "image", 0);
-    switch (image) {
-      case 1:
-        return dark_mode ? IDR_SAVE_PASSWORD1_DARK : IDR_SAVE_PASSWORD1;
-      case 2:
-        return dark_mode ? IDR_SAVE_PASSWORD2_DARK : IDR_SAVE_PASSWORD2;
-      case 3:
-        return dark_mode ? IDR_SAVE_PASSWORD3_DARK : IDR_SAVE_PASSWORD3;
-      default:
-        return 0;
-    }
-  }
-  return 0;
-}
-
 bool SaveUpdateBubbleController::ReplaceToShowPromotionIfNeeded() {
   Profile* profile = GetProfile();
   if (!profile)

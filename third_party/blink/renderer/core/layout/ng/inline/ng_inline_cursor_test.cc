@@ -459,6 +459,21 @@ TEST_P(NGInlineCursorTest, NextWithEllipsis) {
   EXPECT_THAT(list, ElementsAre("#linebox", "abcdefghi", "abcd", u"#'\u2026'"));
 }
 
+TEST_P(NGInlineCursorTest, NextWithEllipsisInlineBoxOnly) {
+  LoadAhem();
+  InsertStyleElement(
+      "#root {"
+      "font: 10px/1 Ahem;"
+      "width: 5ch;"
+      "overflow: hidden;"
+      "text-overflow: ellipsis;"
+      "}"
+      "span { border: solid 10ch blue; }");
+  NGInlineCursor cursor = SetupCursor("<div id=root><span></span></div>");
+  Vector<String> list = ToDebugStringList(cursor);
+  EXPECT_THAT(list, ElementsAre("#linebox", "LayoutInline SPAN"));
+}
+
 TEST_P(NGInlineCursorTest, NextWithListItem) {
   NGInlineCursor cursor = SetupCursor("<ul><li id=root>abc</li></ul>");
   Vector<String> list = ToDebugStringList(cursor);

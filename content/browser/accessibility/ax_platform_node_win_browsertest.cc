@@ -8,6 +8,7 @@
 #include "content/browser/accessibility/accessibility_content_browsertest.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test_utils.h"
@@ -427,4 +428,84 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
       UIA_AutomationIdPropertyId, scoped_variant.Receive()));
   EXPECT_EQ(0, expected_scoped_variant.Compare(scoped_variant));
 }
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
+                       HitTestOnAncestorOfWebRoot) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+
+  // Load the page.
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<html><head><title>Accessibility Test</title></head>"
+      "<body>"
+      "<button>This is a button</button>"
+      "</body></html>";
+  GURL url(url_str);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  waiter.WaitForNotification();
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  BrowserAccessibilityManager* manager =
+      web_contents->GetRootBrowserAccessibilityManager();
+
+  // Find a node to hit test. Note that this is a really simple page,
+  // so synchronous hit testing will work fine.
+  BrowserAccessibility* node = manager->GetRoot();
+  while (node && node->GetRole() != ax::mojom::Role::kButton)
+    node = manager->NextInTreeOrder(node);
+  DCHECK(node);
+
+  // Get the screen bounds of the hit target and find the point in the middle.
+  gfx::Rect bounds = node->GetClippedScreenBoundsRect();
+  gfx::Point point = bounds.CenterPoint();
+
+  // Get the root AXPlatformNodeWin.
+  ui::AXPlatformNodeWin* root_platform_node =
+      static_cast<ui::AXPlatformNodeWin*>(
+          ui::AXPlatformNode::FromNativeViewAccessible(
+              manager->GetRoot()->GetNativeViewAccessible()));
+
+  // First test that calling accHitTest on the root node returns the button.
+  {
+    base::win::ScopedVariant hit_child_variant;
+    ASSERT_EQ(S_OK, root_platform_node->accHitTest(
+                        point.x(), point.y(), hit_child_variant.Receive()));
+    ASSERT_EQ(VT_DISPATCH, hit_child_variant.type());
+    ASSERT_NE(nullptr, hit_child_variant.ptr());
+    ComPtr<IAccessible> accessible;
+    ASSERT_HRESULT_SUCCEEDED(V_DISPATCH(hit_child_variant.ptr())
+                                 ->QueryInterface(IID_PPV_ARGS(&accessible)));
+    ui::AXPlatformNode* hit_child =
+        ui::AXPlatformNode::FromNativeViewAccessible(accessible.Get());
+    ASSERT_NE(nullptr, hit_child);
+    EXPECT_EQ(node->GetId(), hit_child->GetDelegate()->GetData().id);
+  }
+
+  // Now test it again, but this time caliing accHitTest on the parent
+  // IAccessible of the web root node.
+  {
+    RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+        shell()->web_contents()->GetRenderWidgetHostView());
+    IAccessible* ancestor = rwhva->GetParentNativeViewAccessible();
+
+    base::win::ScopedVariant hit_child_variant;
+    ASSERT_EQ(S_OK, ancestor->accHitTest(point.x(), point.y(),
+                                         hit_child_variant.Receive()));
+    ASSERT_EQ(VT_DISPATCH, hit_child_variant.type());
+    ASSERT_NE(nullptr, hit_child_variant.ptr());
+    ComPtr<IAccessible> accessible;
+    ASSERT_HRESULT_SUCCEEDED(V_DISPATCH(hit_child_variant.ptr())
+                                 ->QueryInterface(IID_PPV_ARGS(&accessible)));
+    ui::AXPlatformNode* hit_child =
+        ui::AXPlatformNode::FromNativeViewAccessible(accessible.Get());
+    ASSERT_NE(nullptr, hit_child);
+    EXPECT_EQ(node->GetId(), hit_child->GetDelegate()->GetData().id);
+  }
+}
+
 }  // namespace content

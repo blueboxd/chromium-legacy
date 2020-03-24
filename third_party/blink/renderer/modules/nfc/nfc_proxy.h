@@ -8,7 +8,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
-#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -23,7 +22,6 @@ class NDEFWriter;
 // This is a proxy class used by NDEFWriter(s) and NDEFReader(s) to connect
 // to implementation of device::mojom::blink::NFC interface.
 class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
-                                      public PageVisibilityObserver,
                                       public Supplement<LocalDOMWindow>,
                                       public device::mojom::blink::NFCClient {
   USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
@@ -66,9 +64,6 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
                           uint32_t watch_id,
                           device::mojom::blink::NFC::WatchCallback,
                           device::mojom::blink::NDEFErrorPtr);
-
-  // Implementation of PageVisibilityObserver.
-  void PageVisibilityChanged() override;
 
   void EnsureMojoConnection();
 

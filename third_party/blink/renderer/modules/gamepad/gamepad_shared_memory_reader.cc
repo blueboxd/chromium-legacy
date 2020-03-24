@@ -123,8 +123,9 @@ void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads* gamepads) {
     // gamepads to prevent fingerprinting. The actual data is not cleared.
     // WebKit will only copy out data into the JS buffers for connected
     // gamepads so this is sufficient.
-    for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; i++)
-      gamepads->items[i].connected = false;
+    for (auto& item : gamepads->items) {
+      item.connected = false;
+    }
   }
 }
 

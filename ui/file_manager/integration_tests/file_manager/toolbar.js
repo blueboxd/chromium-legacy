@@ -143,3 +143,50 @@ testcase.toolbarAltACommand = async () => {
   const cssClasses = focusedElement.attributes['class'] || '';
   chrome.test.assertTrue(cssClasses.includes('menu-button'));
 };
+
+/**
+ * Tests that the menu drop down follows the button if the button moves. This
+ * happens when the search box is expanded and then collapsed.
+ */
+testcase.toolbarMultiMenuFollowsButton = async () => {
+  const entry = ENTRIES.hello;
+
+  // Open Files app on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+  // Override the tasks so the "Open" button becomes a dropdown button.
+  await remoteCall.callRemoteTestUtil(
+      'overrideTasks', appId, [DOWNLOADS_FAKE_TASKS]);
+
+  // Select an entry in the file list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  // Click the toolbar search button.
+  await remoteCall.waitAndClickElement(appId, '#search-button');
+
+  // Wait for the search box to expand.
+  await remoteCall.waitForElementLost(appId, '#search-wrapper[collapsed]');
+
+  // Click the toolbar "Open" dropdown button.
+  await remoteCall.simulateUiClick(appId, '#tasks');
+
+  // Wait for the search box to collapse.
+  await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
+  // Check that the dropdown menu and "Open" button are aligned.
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    const openButton =
+        await remoteCall.waitForElementStyles(appId, '#tasks', ['width']);
+    const menu =
+        await remoteCall.waitForElementStyles(appId, '#tasks-menu', ['width']);
+
+    if (openButton.renderedLeft !== menu.renderedLeft) {
+      return pending(
+          caller,
+          `Waiting for the menu and button to be aligned: ` +
+              `${openButton.renderedLeft} != ${menu.renderedLeft}`);
+    }
+  });
+};

@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
+#import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/upgrade_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 
@@ -55,7 +56,7 @@ using signin_metrics::PromoAction;
     upgradeSigninPromoCoordinatorWithBaseViewController:
         (UIViewController*)viewController
                                                 browser:(Browser*)browser {
-  UserSigninLogger* logger = [[UserSigninLogger alloc]
+  UpgradeSigninLogger* logger = [[UpgradeSigninLogger alloc]
       initWithAccessPoint:AccessPoint::ACCESS_POINT_SIGNIN_PROMO
               promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO];
   return [[UserSigninCoordinator alloc]

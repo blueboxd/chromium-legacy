@@ -59,6 +59,7 @@ class MODULES_EXPORT QuicTransport final
 
   // QuicTransport IDL implementation.
   ScriptPromise createSendStream(ScriptState*, ExceptionState&);
+  ReadableStream* receiveStreams() { return received_streams_; }
 
   WritableStream* sendDatagrams() { return outgoing_datagrams_; }
   ReadableStream* receiveDatagrams() { return received_datagrams_; }
@@ -86,12 +87,16 @@ class MODULES_EXPORT QuicTransport final
   // Forwards a SendFin() message to the mojo interface.
   void SendFin(uint32_t stream_id);
 
+  // Removes the reference to a stream.
+  void ForgetStream(uint32_t stream_id);
+
   // ScriptWrappable implementation
   void Trace(Visitor* visitor) override;
 
  private:
   class DatagramUnderlyingSink;
   class DatagramUnderlyingSource;
+  class ReceivedStreamsUnderlyingSource;
 
   void Init(const String& url, ExceptionState&);
 
@@ -140,6 +145,11 @@ class MODULES_EXPORT QuicTransport final
   // Tracks resolvers for in-progress createSendStream() operations so they can
   // be rejected
   HeapHashSet<Member<ScriptPromiseResolver>> create_send_stream_resolvers_;
+
+  // The [[ReceivedStreams]] slot.
+  // https://wicg.github.io/web-transport/#dom-quictransport-receivedstreams-slot
+  Member<ReadableStream> received_streams_;
+  Member<ReceivedStreamsUnderlyingSource> received_streams_underlying_source_;
 };
 
 }  // namespace blink

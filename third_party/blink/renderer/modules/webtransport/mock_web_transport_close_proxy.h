@@ -20,6 +20,7 @@ class MockWebTransportCloseProxy : public WebTransportCloseProxy {
 
   MOCK_METHOD1(OnIncomingStreamClosed, void(bool));
   MOCK_METHOD0(SendFin, void());
+  MOCK_METHOD0(ForgetStream, void());
   MOCK_METHOD0(Reset, void());
 };
 

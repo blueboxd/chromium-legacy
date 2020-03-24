@@ -430,6 +430,7 @@ js_library("multi_menu") {
     "//ui/webui/resources/js/cr/ui:menu_item",
     "//ui/webui/resources/js/cr/ui:position_util",
   ]
+  externs_list = [ "$externs_path/pending.js" ]
 }
 
 js_unittest("multi_menu_unittest") {

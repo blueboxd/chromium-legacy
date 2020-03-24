@@ -10,3 +10,6 @@
 
 const base::Feature kPageInfoRefactoring{"PageInfoRefactoring",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPageInfoChromeGuard{"PageInfoChromeGuard",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};

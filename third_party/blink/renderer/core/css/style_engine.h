@@ -156,7 +156,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
 
   RuleSet* RuleSetForSheet(CSSStyleSheet&);
-  void MediaQueryAffectingValueChanged();
+  void MediaQueryAffectingValueChanged(MediaValueChange change);
   void UpdateActiveStyleSheetsInImport(
       StyleEngine& master_engine,
       DocumentStyleSheetCollector& parent_collector);
@@ -415,8 +415,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
 
-  void MediaQueryAffectingValueChanged(UnorderedTreeScopeSet&);
-  void MediaQueryAffectingValueChanged(HeapHashSet<Member<TextTrack>>&);
+  bool MediaQueryAffectingValueChanged(const ActiveStyleSheetVector&,
+                                       MediaValueChange);
+  void MediaQueryAffectingValueChanged(TreeScope&, MediaValueChange);
+  void MediaQueryAffectingValueChanged(UnorderedTreeScopeSet&,
+                                       MediaValueChange);
+  void MediaQueryAffectingValueChanged(HeapHashSet<Member<TextTrack>>&,
+                                       MediaValueChange);
+
   const RuleFeatureSet& GetRuleFeatureSet() const {
     DCHECK(IsMaster());
     DCHECK(global_rule_set_);

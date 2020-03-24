@@ -27,9 +27,6 @@ CompareActiveStyleSheets(const ActiveStyleSheetVector& old_style_sheets,
                          const ActiveStyleSheetVector& new_style_sheets,
                          HeapHashSet<Member<RuleSet>>& changed_rule_sets);
 
-bool ClearMediaQueryDependentRuleSets(
-    const ActiveStyleSheetVector& active_style_sheets);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ACTIVE_STYLE_SHEETS_H_

@@ -366,7 +366,7 @@ ScriptValue OutgoingStream::CreateAbortException(IsLocalAbort is_local_abort) {
 }
 
 void OutgoingStream::ErrorStreamAbortAndReset(IsLocalAbort is_local_abort) {
-  DVLOG(1) << "OutgoingStream::AbortStream() this=" << this;
+  DVLOG(1) << "OutgoingStream::ErrorStreamAbortAndReset() this=" << this;
 
   ScriptValue exception = CreateAbortException(is_local_abort);
 

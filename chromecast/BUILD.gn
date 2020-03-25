@@ -660,7 +660,7 @@ if (is_android) {
       "//base:base_java",
       "//chromecast/android:libcast_shell_android",
       "//chromecast/browser/android:cast_shell_java",
-      "//components/crash/content/app:chrome_crashpad_handler_named_as_so",
+      "//components/crash/core/app:chrome_crashpad_handler_named_as_so",
     ]
 
     loadable_modules = [ "$root_out_dir/libchrome_crashpad_handler.so" ]

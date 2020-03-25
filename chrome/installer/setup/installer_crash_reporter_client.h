@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 
 class InstallerCrashReporterClient
     : public crash_reporter::CrashReporterClient {

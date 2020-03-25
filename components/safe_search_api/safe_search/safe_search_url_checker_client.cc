@@ -32,15 +32,12 @@ namespace {
 const char kSafeSearchApiUrl[] =
     "https://safesearch.googleapis.com/v1:classify";
 const char kDataContentType[] = "application/x-www-form-urlencoded";
-const char kDataFormat[] = "key=%s&urls=%s&region_code=%s";
+const char kDataFormat[] = "key=%s&urls=%s";
 
 // Builds the POST data for SafeSearch API requests.
-std::string BuildRequestData(const std::string& api_key,
-                             const GURL& url,
-                             const std::string& region_code) {
+std::string BuildRequestData(const std::string& api_key, const GURL& url) {
   std::string query = net::EscapeQueryParamValue(url.spec(), true);
-  return base::StringPrintf(kDataFormat, api_key.c_str(), query.c_str(),
-                            region_code.c_str());
+  return base::StringPrintf(kDataFormat, api_key.c_str(), query.c_str());
 }
 
 // Parses a SafeSearch API |response| and stores the result in |is_porn|,
@@ -98,11 +95,9 @@ SafeSearchURLCheckerClient::Check::~Check() = default;
 SafeSearchURLCheckerClient::SafeSearchURLCheckerClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    const std::string& country,
     const std::string& api_key)
     : url_loader_factory_(std::move(url_loader_factory)),
       traffic_annotation_(traffic_annotation),
-      country_(country),
       api_key_(api_key) {}
 
 SafeSearchURLCheckerClient::~SafeSearchURLCheckerClient() = default;
@@ -117,8 +112,8 @@ void SafeSearchURLCheckerClient::CheckURL(const GURL& url,
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation_);
-  simple_url_loader->AttachStringForUpload(
-      BuildRequestData(api_key_, url, country_), kDataContentType);
+  simple_url_loader->AttachStringForUpload(BuildRequestData(api_key_, url),
+                                           kDataContentType);
   checks_in_progress_.push_front(std::make_unique<Check>(
       url, std::move(simple_url_loader), std::move(callback)));
   auto it = checks_in_progress_.begin();

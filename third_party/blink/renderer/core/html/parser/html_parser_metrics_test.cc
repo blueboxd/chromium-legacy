@@ -82,7 +82,10 @@ TEST_F(HTMLParserMetricsTest, ReportSingleChunk) {
   EXPECT_EQ(parsing_time_min_buckets.size(), 1u);
   EXPECT_EQ(parsing_time_total_buckets.size(), 1u);
   EXPECT_GT(parsing_time_max_buckets[0].min, 0);
-  EXPECT_EQ(parsing_time_max_buckets[0], parsing_time_min_buckets[0]);
+  // Parsing time max has more buckets, with more buckets closely spaced at the
+  // low end of time. So the bucket number should be higher than that for
+  // the min value.
+  EXPECT_GT(parsing_time_max_buckets[0].min, parsing_time_min_buckets[0].min);
   // Can't compare total buckets with max/min because different histogram
   // max values mean different bucket widths.
 }
@@ -161,8 +164,8 @@ TEST_F(HTMLParserMetricsTest, HistogramReportsTwoChunks) {
   EXPECT_EQ(yield_time_min_buckets.size(), 1u);
   EXPECT_EQ(yield_time_average_buckets.size(), 1u);
   EXPECT_GT(yield_time_max_buckets[0].min, 0);
-  EXPECT_EQ(yield_time_max_buckets[0], yield_time_min_buckets[0]);
-  EXPECT_EQ(yield_time_max_buckets[0], yield_time_average_buckets[0]);
+  EXPECT_GT(yield_time_max_buckets[0].min, yield_time_min_buckets[0].min);
+  EXPECT_GT(yield_time_max_buckets[0].min, yield_time_average_buckets[0].min);
 }
 
 TEST_F(HTMLParserMetricsTest, UkmStoresValuesCorrectly) {

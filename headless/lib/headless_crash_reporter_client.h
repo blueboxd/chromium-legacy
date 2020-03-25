@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 
 namespace headless {
 

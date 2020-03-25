@@ -559,8 +559,17 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
         return normal_capabilities;
       if (!stretch_from->IsPercentage() || !stretch_to->IsPercentage())
         return normal_capabilities;
-      capabilities.width = {FontSelectionValue(stretch_from->GetFloatValue()),
-                            FontSelectionValue(stretch_to->GetFloatValue())};
+      // https://drafts.csswg.org/css-fonts/#font-prop-desc
+      // "User agents must swap the computed value of the startpoint and
+      // endpoint of the range in order to forbid decreasing ranges."
+      if (stretch_from->GetFloatValue() < stretch_to->GetFloatValue()) {
+        capabilities.width = {FontSelectionValue(stretch_from->GetFloatValue()),
+                              FontSelectionValue(stretch_to->GetFloatValue())};
+      } else {
+        capabilities.width = {
+            FontSelectionValue(stretch_to->GetFloatValue()),
+            FontSelectionValue(stretch_from->GetFloatValue())};
+      }
     } else if (auto* stretch_primitive_value =
                    DynamicTo<CSSPrimitiveValue>(stretch_.Get())) {
       float stretch_value = stretch_primitive_value->GetFloatValue();
@@ -613,9 +622,18 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
                 To<CSSPrimitiveValue>(range_value->GetObliqueValues()->Item(0));
             const auto& range_end =
                 To<CSSPrimitiveValue>(range_value->GetObliqueValues()->Item(1));
-            capabilities.slope = {
-                FontSelectionValue(range_start.GetFloatValue()),
-                FontSelectionValue(range_end.GetFloatValue())};
+            // https://drafts.csswg.org/css-fonts/#font-prop-desc
+            // "User agents must swap the computed value of the startpoint and
+            // endpoint of the range in order to forbid decreasing ranges."
+            if (range_start.GetFloatValue() < range_end.GetFloatValue()) {
+              capabilities.slope = {
+                  FontSelectionValue(range_start.GetFloatValue()),
+                  FontSelectionValue(range_end.GetFloatValue())};
+            } else {
+              capabilities.slope = {
+                  FontSelectionValue(range_end.GetFloatValue()),
+                  FontSelectionValue(range_start.GetFloatValue())};
+            }
           }
         }
       }
@@ -658,8 +676,17 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
       if (!weight_from->IsNumber() || !weight_to->IsNumber() ||
           weight_from->GetFloatValue() < 1 || weight_to->GetFloatValue() > 1000)
         return normal_capabilities;
-      capabilities.weight = {FontSelectionValue(weight_from->GetFloatValue()),
-                             FontSelectionValue(weight_to->GetFloatValue())};
+      // https://drafts.csswg.org/css-fonts/#font-prop-desc
+      // "User agents must swap the computed value of the startpoint and
+      // endpoint of the range in order to forbid decreasing ranges."
+      if (weight_from->GetFloatValue() < weight_to->GetFloatValue()) {
+        capabilities.weight = {FontSelectionValue(weight_from->GetFloatValue()),
+                               FontSelectionValue(weight_to->GetFloatValue())};
+      } else {
+        capabilities.weight = {
+            FontSelectionValue(weight_to->GetFloatValue()),
+            FontSelectionValue(weight_from->GetFloatValue())};
+      }
     } else if (auto* weight_primitive_value =
                    DynamicTo<CSSPrimitiveValue>(weight_.Get())) {
       float weight_value = weight_primitive_value->GetFloatValue();

@@ -67,7 +67,7 @@ source_set("common") {
     "//android_webview:common_jni_headers",
     "//base",
     "//components/cdm/common",
-    "//components/crash/content/app",
+    "//components/crash/core/app",
     "//components/crash/core/common:crash_key",
     "//components/gwp_asan/common",
     "//components/services/heap_profiling/public/cpp",

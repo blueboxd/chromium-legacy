@@ -214,7 +214,15 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
 
-  // Step 12. "If the algorithm asynchronously completes with null, then:"
+  // Step 12. "If the algorithm asynchronously completes with null or with
+  // script whose error to rethrow is non-null, then:"
+  //
+  // The case |error to rethrow| is non-null indicates the parse error.
+  // Parsing the script should be done during fetching according to the spec
+  // but it is done in EvaluateClassicScript() for classic scripts.
+  // Therefore, we cannot catch parse error events here.
+  // TODO(https://crbug.com/1058259) Catch parse error events for classic
+  // shared workers.
   if (classic_script_loader->Failed()) {
     // Step 12.1. "Queue a task to fire an event named error at worker."
     // Step 12.2. "Run the environment discarding steps for inside settings."

@@ -2809,6 +2809,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "new-signin-architecture",
+    "owners": ["chrome-ios-signin@google.com", "fernandex"],
+    "expiry_milestone": 86
+  },
+  {
     "name": "new-tabstrip-animation",
     "owners": [ "tbergquist" ],
     "expiry_milestone": 81

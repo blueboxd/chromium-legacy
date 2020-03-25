@@ -134,7 +134,7 @@
 
 #if defined(OS_LINUX)
 #include "chrome/common/chrome_paths.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/upload_list/crash_upload_list.h"
 #endif  // defined(OS_LINUX)
 

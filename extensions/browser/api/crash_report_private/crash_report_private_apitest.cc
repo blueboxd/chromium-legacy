@@ -4,7 +4,7 @@
 
 #include "base/system/sys_info.h"
 #include "base/test/simple_test_clock.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/crash_report_private/crash_report_private_api.h"
 #include "extensions/browser/browsertest_util.h"

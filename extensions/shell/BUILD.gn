@@ -202,7 +202,7 @@ source_set("app_shell_lib") {
     ]
     deps += [
       "//build:branding_buildflags",
-      "//components/crash/content/app",
+      "//components/crash/core/app",
       "//components/crash/core/common",
       "//components/upload_list",
       "//components/version_info:generate_version_info",

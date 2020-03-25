@@ -13,7 +13,7 @@ include_rules = [
   "+components/component_updater",
   "+components/constrained_window",
   "+components/content_settings/core/browser",
-  "+components/crash/content/app",
+  "+components/crash/core/app",
   "+components/domain_reliability",
   "+components/download/public/common",
   "+components/favicon/core",

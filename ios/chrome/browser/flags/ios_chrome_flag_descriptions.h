@@ -325,6 +325,10 @@ extern const char kSSLCommittedInterstitialsDescription[];
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
 
+// Title and description for the flag to enable the new sign-in architecture.
+extern const char kNewSigninArchitectureName[];
+extern const char kNewSigninArchitectureDescription[];
+
 // Title and description for the flag to allow syncing DeviceInfo in
 // transport-only mode.
 extern const char kSyncDeviceInfoInTransportModeName[];

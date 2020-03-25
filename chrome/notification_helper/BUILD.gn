@@ -25,8 +25,8 @@ executable("notification_helper") {
     "//build/win:default_exe_manifest",
     "//chrome/common:version_header",
     "//chrome/install_static:primary_module",
-    "//components/crash/content/app",
-    "//components/crash/content/app:crash_export_thunks",
+    "//components/crash/core/app",
+    "//components/crash/core/app:crash_export_thunks",
     "//components/version_info:channel",
   ]
 

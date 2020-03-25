@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 
 namespace chromecast {
 

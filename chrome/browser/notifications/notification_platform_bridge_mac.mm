@@ -37,7 +37,7 @@
 #import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

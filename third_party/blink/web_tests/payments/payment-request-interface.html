@@ -270,7 +270,7 @@ test(function() {
 }, 'Array value for payment method specific data parameter should not throw');
 
 promise_test(function(t) {
-    return promise_rejects(t, 'InvalidStateError', new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails()).abort());
+    return promise_rejects_dom(t, 'InvalidStateError', new PaymentRequest([{'supportedMethods': 'foo'}], buildDetails()).abort());
 }, 'abort() without show() should reject with error');
 
 generate_tests(assert_throws, [

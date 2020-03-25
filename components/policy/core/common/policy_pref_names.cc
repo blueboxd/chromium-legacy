@@ -15,6 +15,10 @@ const char kLastPolicyStatisticsUpdate[] = "policy.last_statistics_update";
 // See the SafeSitesFilterBehavior policy for details.
 const char kSafeSitesFilterBehavior[] = "policy.safe_sites_filter_behavior";
 
+// A list of system features to be disabled (see policy
+// "SystemFeaturesDisableList").
+const char kSystemFeaturesDisableList[] = "policy.system_features_disable_list";
+
 // Blocks access to the listed host patterns.
 const char kUrlBlacklist[] = "policy.url_blacklist";
 

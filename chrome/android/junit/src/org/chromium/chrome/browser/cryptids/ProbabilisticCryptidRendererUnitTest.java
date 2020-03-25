@@ -68,10 +68,40 @@ public class ProbabilisticCryptidRendererUnitTest {
         Assert.assertEquals(MAX_PROBABILITY, probPostRampup);
     }
 
+    @Test
+    @SmallTest
+    public void testPrefStorageDefaultValue() {
+        ProbabilisticCryptidRenderer render = new ProbabilisticCryptidRenderer();
+        long defaultRenderTimestamp = render.getLastRenderTimestampMillis();
+
+        long howLongSinceDefaultTime = System.currentTimeMillis() - defaultRenderTimestamp;
+        // We expect |howLongSinceDefaultTime| to be one moratorium length, because the default
+        // case should be rigged up to start users at the end of the moratorium.
+        long delta = howLongSinceDefaultTime - render.getRenderingMoratoriumLengthMillis();
+        Assert.assertTrue(String.format("Delta %d was larger than 10 seconds (10000)", delta),
+                delta < 10000); // Allow a 10 second grace period in case the test is slow.
+    }
+
+    @Test
+    @SmallTest
+    public void testPrefStorage() {
+        ProbabilisticCryptidRenderer render = new ProbabilisticCryptidRenderer();
+        // Set the last render event to be a crazy long time ago, ensuring max probability.
+        render.recordRenderEvent(1);
+        Assert.assertEquals(render.getMaxProbability(), render.calculateProbability());
+
+        // Immediately after an event, the probability should have dropped to 0.
+        render.recordRenderEvent();
+        Assert.assertEquals(0, render.calculateProbability());
+    }
+
     // Aggregator tests: these tests run |NUM_RUNS| invocations of shouldUseCryptidRendering to
     // verify that the number of trues returned is consistent with our assumptions about how often
     // this should happen, within |TOLERANCE|.
 
+    /**
+     * This fake bypasses any calls to pref logic, and also uses a seeded RNG.
+     */
     private static class FakeProbabilisticCrpytidRenderer extends ProbabilisticCryptidRenderer {
         public FakeProbabilisticCrpytidRenderer(long lastRenderDeltaFromNow) {
             mLastRenderTimestamp = System.currentTimeMillis() + lastRenderDeltaFromNow;

@@ -35,7 +35,7 @@ class PrefRegistrySyncable;
 namespace autofill {
 struct FormData;
 class FormStructure;
-}
+}  // namespace autofill
 
 namespace password_manager {
 
@@ -46,6 +46,18 @@ class PasswordFormManagerForUI;
 class PasswordFormManager;
 class PasswordManagerMetricsRecorder;
 struct PossibleUsernameData;
+
+// Define the modes of collaboration between Password Manager and Autofill
+// Assistant (who handles form submissions, whether to show prompts or not).
+enum class AutofillAssistantMode {
+  // Autofill Assistant is not running. Password Manager operates in the regular
+  // mode - it handles submissions and shows prompts.
+  kNotRunning = 0,
+  // Autofill Assistant runs a manually curated script. The password manager
+  // is basically off - it does not handle submissions and therefore does not
+  // show prompts. The script does all the work instead.
+  kManuallyCuratedScript
+};
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
@@ -178,6 +190,11 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Notifies that Credential Management API function store() is called.
   void NotifyStorePasswordCalled();
+
+  void set_autofill_assistance_mode(
+      AutofillAssistantMode autofill_assistant_mode) {
+    autofill_assistant_mode_ = autofill_assistant_mode;
+  }
 
 #if defined(OS_IOS)
   // TODO(https://crbug.com/866444): Use these methods instead olds ones when
@@ -353,6 +370,11 @@ class PasswordManager : public FormSubmissionObserver {
   LeakDetectionDelegate leak_delegate_;
 
   base::Optional<PossibleUsernameData> possible_username_;
+
+  // By default Autofill Assistant is not running. Password Manager handles
+  // submissions and shows prompts.
+  AutofillAssistantMode autofill_assistant_mode_ =
+      AutofillAssistantMode::kNotRunning;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

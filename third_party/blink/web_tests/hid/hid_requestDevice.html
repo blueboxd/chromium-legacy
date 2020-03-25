@@ -14,7 +14,7 @@ const kTestVendorId = 0x1234;
 const kTestProductId = 0xabcd;
 
 promise_test((t) => {
-  return promise_rejects(
+  return promise_rejects_dom(
       t, 'SecurityError', navigator.hid.requestDevice({filters: []}));
 }, 'requestDevice() rejects without a user gesture');
 

@@ -186,7 +186,7 @@ if (!is_android && !is_mac) {
         "//chrome/installer/util:constants",
         "//chrome/installer/util:did_run_support",
         "//components/browser_watcher:browser_watcher_client",
-        "//components/crash/content/app:run_as_crashpad_handler",
+        "//components/crash/core/app:run_as_crashpad_handler",
         "//components/crash/core/common",
         "//components/flags_ui:switches",
         "//content:sandbox_helper_win",
@@ -371,7 +371,7 @@ if (is_win) {
       "//chrome/install_static:install_static_util",
       "//chrome/install_static:secondary_module",
       "//components/browser_watcher:stability_client",
-      "//components/crash/content/app",
+      "//components/crash/core/app",
       "//components/policy:generated",
       "//content/app/resources",
       "//content/public/common:service_names",
@@ -444,7 +444,7 @@ if (is_win) {
         "//chrome/install_static:install_static_util",
         "//chrome/install_static:secondary_module",
         "//components/browser_watcher:browser_watcher_client",
-        "//components/crash/content/app",
+        "//components/crash/core/app",
         "//content/public/app:child",
         "//content/public/common:service_names",
         "//headless:headless_shell_child_lib",
@@ -764,7 +764,7 @@ if (is_win) {
 
     public_deps = [
       "//chrome/app_shim:app_mode_loader",
-      "//components/crash/content/app:chrome_crashpad_handler",
+      "//components/crash/core/app:chrome_crashpad_handler",
     ]
 
     foreach(helper_params, content_mac_helpers) {
@@ -1028,7 +1028,7 @@ if (is_win) {
       "//chrome/app:command_ids",
       "//chrome/common:buildflags",
       "//chrome/common/profiler",
-      "//components/crash/content/app",
+      "//components/crash/core/app",
       "//components/policy:generated",
       "//content/public/app:both",
       "//content/public/common:service_names",
@@ -1194,7 +1194,7 @@ if (is_win) {
         ":chrome_app",
         ":chrome_framework",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
-        "//components/crash/content/app:chrome_crashpad_handler",
+        "//components/crash/core/app:chrome_crashpad_handler",
         "//third_party/breakpad:dump_syms",
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
@@ -1225,7 +1225,7 @@ if (is_win) {
         ":chrome_app",
         ":chrome_framework",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
-        "//components/crash/content/app:chrome_crashpad_handler",
+        "//components/crash/core/app:chrome_crashpad_handler",
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]

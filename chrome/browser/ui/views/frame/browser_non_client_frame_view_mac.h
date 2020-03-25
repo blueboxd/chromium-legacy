@@ -16,7 +16,7 @@ namespace views {
 class Label;
 }
 
-@class FullscreenToolbarControllerViews;
+@class FullscreenToolbarController;
 
 class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
  public:
@@ -77,7 +77,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
 
   views::Label* window_title_ = nullptr;
 
-  base::scoped_nsobject<FullscreenToolbarControllerViews>
+  base::scoped_nsobject<FullscreenToolbarController>
       fullscreen_toolbar_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMac);

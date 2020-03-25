@@ -290,7 +290,7 @@ jumbo_source_set("headless_shared_sources") {
     deps += [ "//components/crash/content/browser" ]
   }
   if (is_component_build && is_win) {
-    deps += [ "//components/crash/content/app:crash_export_thunks" ]
+    deps += [ "//components/crash/core/app:crash_export_thunks" ]
   }
 
   if (is_linux && !is_chromeos) {
@@ -446,7 +446,7 @@ jumbo_component("headless_non_renderer") {
       deps += [ "//components/crash/content/browser" ]
     }
     if (is_win) {
-      deps += [ "//components/crash/content/app:crash_export_thunks" ]
+      deps += [ "//components/crash/core/app:crash_export_thunks" ]
     }
 
     if (enable_basic_printing) {
@@ -594,7 +594,7 @@ test("headless_unittests") {
   }
 
   if (is_win) {
-    deps += [ "//components/crash/content/app:crash_export_thunks" ]
+    deps += [ "//components/crash/core/app:crash_export_thunks" ]
   }
 
   if (enable_basic_printing) {
@@ -611,7 +611,7 @@ if (is_mac) {
   copy("mac_helpers") {
     sources = [ "$root_out_dir/chrome_crashpad_handler" ]
 
-    deps = [ "//components/crash/content/app:chrome_crashpad_handler" ]
+    deps = [ "//components/crash/core/app:chrome_crashpad_handler" ]
 
     outputs = [ "$root_out_dir/Helpers/{{source_file_part}}" ]
   }
@@ -817,8 +817,8 @@ jumbo_static_library("headless_shell_lib") {
     defines = [ "HEADLESS_USE_CRASHPAD" ]
 
     deps += [
-      "//components/crash/content/app:crash_export_thunks",
-      "//components/crash/content/app:run_as_crashpad_handler",
+      "//components/crash/core/app:crash_export_thunks",
+      "//components/crash/core/app:run_as_crashpad_handler",
       "//content:sandbox_helper_win",
       "//sandbox",
     ]

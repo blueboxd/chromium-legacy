@@ -267,7 +267,7 @@ static_library("common") {
 
   deps = [
     "//build:branding_buildflags",
-    "//components/crash/content/app",
+    "//components/crash/core/app",
     "//components/google/core/common",
     "//components/metrics:call_stack_profile_builder",
     "//components/page_load_metrics/common:common",
@@ -435,7 +435,7 @@ static_library("common") {
     deps += [
       "//chrome/chrome_elf:chrome_elf_main_include",
       "//chrome/common/win:eventlog_messages",
-      "//components/crash/content/app:crash_export_thunk_include",
+      "//components/crash/core/app:crash_export_thunk_include",
     ]
 
     public_deps += [

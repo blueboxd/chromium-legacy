@@ -68,9 +68,9 @@ executable("gcp_setup") {
     "../gaiacp:common",
     "//build:branding_buildflags",
     "//chrome/common:version_header",
-    "//components/crash/content/app:app",
-    "//components/crash/content/app:crash_export_thunks",
-    "//components/crash/content/app:run_as_crashpad_handler",
+    "//components/crash/core/app:app",
+    "//components/crash/core/app:crash_export_thunks",
+    "//components/crash/core/app:run_as_crashpad_handler",
     "//components/crash/core/common",
     "//content/public/common:static_switches",
   ]

@@ -22,7 +22,7 @@
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
-#include "components/crash/content/app/crash_switches.h"
+#include "components/crash/core/app/crash_switches.h"
 #include "content/public/common/content_switches.h"
 
 namespace credential_provider {

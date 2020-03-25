@@ -68,7 +68,7 @@
 #endif
 
 #if !defined(OS_FUCHSIA)
-#include "components/crash/content/app/crashpad.h"  // nogncheck
+#include "components/crash/core/app/crashpad.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)

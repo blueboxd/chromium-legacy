@@ -214,8 +214,8 @@
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_LINUX)
-#include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/breakpad_linux.h"
+#include "components/crash/core/app/crashpad.h"
 #endif
 
 #if defined(OS_MACOSX)

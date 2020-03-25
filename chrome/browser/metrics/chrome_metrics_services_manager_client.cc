@@ -45,8 +45,8 @@
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
-#include "components/crash/content/app/crash_export_thunks.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crash_export_thunks.h"
+#include "components/crash/core/app/crashpad.h"
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)

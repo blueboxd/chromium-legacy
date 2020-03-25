@@ -60,8 +60,8 @@ hid_test(async (t, fake) => {
   const {device, fakeConnection} = await addAndOpenDevice(fake);
   // Simulate write() failure.
   fakeConnection.queueExpectedWrite(false, kReportId, kReportBytes);
-  await promise_rejects(t, 'NotAllowedError',
-                        device.sendReport(kReportId, kReportBytes));
+  await promise_rejects_dom(t, 'NotAllowedError',
+                            device.sendReport(kReportId, kReportBytes));
   fakeConnection.assertExpectationsMet();
 }, 'Failed sendReport rejects');
 
@@ -78,8 +78,8 @@ hid_test(async (t, fake) => {
   const {device, fakeConnection} = await addAndOpenDevice(fake);
   // Simulate getFeatureReport() failure.
   fakeConnection.queueExpectedGetFeatureReport(false, kReportId, kReportBytes);
-  await promise_rejects(t, 'NotAllowedError',
-                        device.receiveFeatureReport(kReportId));
+  await promise_rejects_dom(t, 'NotAllowedError',
+                            device.receiveFeatureReport(kReportId));
   fakeConnection.assertExpectationsMet();
 }, 'Failed receiveFeatureReport rejects');
 
@@ -95,8 +95,8 @@ hid_test(async (t, fake) => {
   const {device, fakeConnection} = await addAndOpenDevice(fake);
   // Simulate sendFeatureReport() failure.
   fakeConnection.queueExpectedSendFeatureReport(false, kReportId, kReportBytes);
-  await promise_rejects(t, 'NotAllowedError',
-                        device.sendFeatureReport(kReportId, kReportBytes));
+  await promise_rejects_dom(t, 'NotAllowedError',
+                            device.sendFeatureReport(kReportId, kReportBytes));
   fakeConnection.assertExpectationsMet();
 }, 'Failed sendFeatureReport rejects');
 

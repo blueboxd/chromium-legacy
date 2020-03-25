@@ -282,8 +282,8 @@ cast_source_set("browser") {
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     deps += [
-      "//components/crash/content/app",
       "//components/crash/content/browser",
+      "//components/crash/core/app",
     ]
 
     # TODO(crbug.com/933142): Fuchsia needs its own methods to bridge with heap

@@ -3668,6 +3668,18 @@
     ]
   },
 
+  "SystemFeaturesDisableList": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "SystemFeaturesDisableList": ["settings"]
+        },
+        "prefs": { "policy.system_features_disable_list": { "local_state": true } }
+      }
+    ]
+  },
+
   "SessionLengthLimit": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

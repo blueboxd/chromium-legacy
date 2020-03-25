@@ -29,7 +29,7 @@
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/utility/chrome_content_utility_client.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/network_service_test_helper.h"

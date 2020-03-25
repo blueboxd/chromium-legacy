@@ -19,7 +19,7 @@ static_library("child") {
       "v8_crashpad_support_win.h",
     ]
     deps += [
-      "//components/crash/content/app:crash_export_thunk_include",
+      "//components/crash/core/app:crash_export_thunk_include",
       "//gin",
       "//v8",
     ]

@@ -524,7 +524,7 @@ source_set("browser_tests") {
       "//chromeos/dbus/upstart",
       "//chromeos/login/login_state",
       "//chromeos/network",
-      "//components/crash/content/app:app",
+      "//components/crash/core/app:app",
     ]
   }
 }

@@ -41,4 +41,7 @@ extern const base::Feature kClearSyncedData;
 // Verify if the crash in https://crbug.com/816427 is fixed on iOS 12.
 extern const base::Feature kFirstResponderSendAction;
 
+// Feature flag to enable the new sign-in architecture.
+extern const base::Feature kNewSigninArchitecture;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

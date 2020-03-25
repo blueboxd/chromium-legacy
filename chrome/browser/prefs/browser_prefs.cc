@@ -177,6 +177,7 @@
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #else
@@ -775,6 +776,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
   policy::TPMAutoUpdateModePolicyHandler::RegisterPrefs(registry);
   policy::WebUsbAllowDevicesForUrlsPolicyHandler::RegisterPrefs(registry);
+  policy::SystemFeaturesDisableListPolicyHandler::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
   UpgradeDetectorChromeos::RegisterPrefs(registry);
   syncer::PerUserTopicSubscriptionManager::RegisterPrefs(registry);

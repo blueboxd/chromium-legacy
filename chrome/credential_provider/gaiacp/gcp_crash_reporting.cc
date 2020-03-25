@@ -14,7 +14,7 @@
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting_utils.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "content/public/common/content_switches.h"
 
 namespace {

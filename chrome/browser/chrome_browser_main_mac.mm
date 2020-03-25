@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
 #include "components/os_crypt/os_crypt.h"
 #include "content/public/common/main_function_params.h"

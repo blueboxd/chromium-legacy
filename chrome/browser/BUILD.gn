@@ -2332,6 +2332,10 @@ jumbo_static_library("browser") {
       "android/autofill_assistant/client_android.h",
       "android/autofill_assistant/generic_ui_controller_android.cc",
       "android/autofill_assistant/generic_ui_controller_android.h",
+      "android/autofill_assistant/generic_ui_events_android.cc",
+      "android/autofill_assistant/generic_ui_events_android.h",
+      "android/autofill_assistant/generic_ui_interactions_android.cc",
+      "android/autofill_assistant/generic_ui_interactions_android.h",
       "android/autofill_assistant/interaction_handler_android.cc",
       "android/autofill_assistant/interaction_handler_android.h",
       "android/autofill_assistant/ui_controller_android.cc",
@@ -4396,8 +4400,8 @@ jumbo_static_library("browser") {
       "//chrome/app/chrome_crash_reporter_client.h",
     ]
     deps += [
-      "//components/crash/content/app",
       "//components/crash/content/browser",
+      "//components/crash/core/app",
       "//components/version_info:generate_version_info",
     ]
   }

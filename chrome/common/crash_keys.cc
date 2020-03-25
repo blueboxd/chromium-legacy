@@ -20,7 +20,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/chrome_switches.h"
-#include "components/crash/content/app/crash_switches.h"
+#include "components/crash/core/app/crash_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_switches.h"
 #endif

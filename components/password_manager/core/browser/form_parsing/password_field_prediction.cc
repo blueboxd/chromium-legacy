@@ -9,12 +9,38 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 
+using autofill::AutofillField;
 using autofill::FieldSignature;
 using autofill::FormData;
 using autofill::FormStructure;
 using autofill::ServerFieldType;
 
 namespace password_manager {
+
+namespace {
+
+ServerFieldType GetServerType(const AutofillField& field) {
+  // The main server predictions is in |field.server_type()| but the server can
+  // send additional predictions in |field.server_predictions()|. This function
+  // chooses relevant for Password Manager predictions.
+
+  // 1. If there is cvc prediction returns it.
+  for (const auto& predictions : field.server_predictions()) {
+    if (predictions.type() == autofill::CREDIT_CARD_VERIFICATION_CODE)
+      return ServerFieldType(predictions.type());
+  }
+
+  // 2. If there is password related prediction returns it.
+  for (const auto& predictions : field.server_predictions()) {
+    ServerFieldType type = ServerFieldType(predictions.type());
+    if (DeriveFromServerFieldType(type) != CredentialFieldType::kNone)
+      return type;
+  }
+
+  // 3. Returns the main prediction.
+  return field.server_type();
+}
+}  // namespace
 
 CredentialFieldType DeriveFromServerFieldType(ServerFieldType type) {
   switch (type) {
@@ -67,7 +93,7 @@ FormPredictions ConvertToFormPredictions(int driver_id,
 
   std::vector<PasswordFieldPrediction> field_predictions;
   for (const auto& field : form_structure) {
-    ServerFieldType server_type = field->server_type();
+    ServerFieldType server_type = GetServerType(*field);
 
     if (!explicit_confirmation_hint_present &&
         (server_type == autofill::ACCOUNT_CREATION_PASSWORD ||

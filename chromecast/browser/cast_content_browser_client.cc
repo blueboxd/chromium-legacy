@@ -93,12 +93,12 @@
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX)
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/cdm_message_filter_android.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // defined(OS_ANDROID)

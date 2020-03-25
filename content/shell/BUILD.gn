@@ -248,9 +248,9 @@ jumbo_static_library("content_shell_lib") {
     "//cc",
     "//cc/paint",
     "//components/cdm/renderer",
-    "//components/crash/content/app",
-    "//components/crash/content/app:test_support",
     "//components/crash/content/browser",
+    "//components/crash/core/app",
+    "//components/crash/core/app:test_support",
     "//components/crash/core/common:crash_key",
     "//components/download/content/factory",
     "//components/download/public/background_service:public",
@@ -325,9 +325,9 @@ jumbo_static_library("content_shell_lib") {
 
   if (is_fuchsia) {
     deps -= [
-      "//components/crash/content/app",
-      "//components/crash/content/app:test_support",
       "//components/crash/content/browser",
+      "//components/crash/core/app",
+      "//components/crash/core/app:test_support",
     ]
     deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy" ]
   }
@@ -675,7 +675,7 @@ if (is_mac) {
     testonly = true
     sources = [ "$root_out_dir/chrome_crashpad_handler" ]
     outputs = [ "{{bundle_contents_dir}}/Helpers/{{source_file_part}}" ]
-    public_deps = [ "//components/crash/content/app:chrome_crashpad_handler" ]
+    public_deps = [ "//components/crash/core/app:chrome_crashpad_handler" ]
     foreach(helper_params, content_mac_helpers) {
       sources += [
         "$root_out_dir/${content_shell_helper_name}${helper_params[2]}.app",

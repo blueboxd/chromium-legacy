@@ -579,6 +579,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"safe-browsing-available", flag_descriptions::kSafeBrowsingAvailableName,
      flag_descriptions::kSafeBrowsingAvailableDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingAvailableOnIOS)},
+    {"new-signin-architecture", flag_descriptions::kNewSigninArchitectureName,
+     flag_descriptions::kNewSigninArchitectureDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kNewSigninArchitecture)},
 };
 
 // Add all switches from experimental flags to |command_line|.

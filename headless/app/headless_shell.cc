@@ -49,8 +49,8 @@
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_WIN)
-#include "components/crash/content/app/crash_switches.h"
-#include "components/crash/content/app/run_as_crashpad_handler_win.h"
+#include "components/crash/core/app/crash_switches.h"
+#include "components/crash/core/app/run_as_crashpad_handler_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 

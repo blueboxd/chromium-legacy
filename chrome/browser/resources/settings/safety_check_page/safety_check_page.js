@@ -54,6 +54,17 @@ const ParentStatus = {
 };
 
 /**
+ * UI states a safety check child can be in. Defines the basic UI of the child.
+ * @enum {number}
+ */
+const ChildUiStatus = {
+  RUNNING: 0,
+  SAFE: 1,
+  INFO: 2,
+  WARNING: 3,
+};
+
+/**
  * @typedef {{
  *   newState: settings.SafetyCheckUpdatesStatus,
  *   displayString: string,
@@ -351,6 +362,60 @@ Polymer({
   },
 
   /**
+   * Returns the default icon for a safety check child in the specified state.
+   * @private
+   * @param {ChildUiStatus} childUiStatus
+   * @return {?string}
+   */
+  getChildUiIcon_: function(childUiStatus) {
+    switch (childUiStatus) {
+      case ChildUiStatus.RUNNING:
+        return null;
+      case ChildUiStatus.SAFE:
+        return 'cr:check';
+      case ChildUiStatus.INFO:
+        return 'cr:info';
+      case ChildUiStatus.WARNING:
+        return 'cr:warning';
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * Returns the default icon src for animated icons for a safety check child
+   * in the specified state.
+   * @private
+   * @param {ChildUiStatus} childUiStatus
+   * @return {?string}
+   */
+  getChildUiIconSrc_: function(childUiStatus) {
+    if (childUiStatus == ChildUiStatus.RUNNING) {
+      return 'chrome://resources/images/throbber_small.svg';
+    }
+    return null;
+  },
+
+  /**
+   * Returns the default icon class for a safety check child in the specified
+   * state.
+   * @private
+   * @param {ChildUiStatus} childUiStatus
+   * @return {string}
+   */
+  getChildUiIconClass_: function(childUiStatus) {
+    switch (childUiStatus) {
+      case ChildUiStatus.RUNNING:
+      case ChildUiStatus.SAFE:
+        return 'icon-blue';
+      case ChildUiStatus.WARNING:
+        return 'icon-red';
+      default:
+        return '';
+    }
+  },
+
+  /**
    * @private
    * @return {boolean}
    */
@@ -373,22 +438,22 @@ Polymer({
   },
 
   /**
+   * @return {ChildUiStatus}
    * @private
-   * @return {?string}
    */
-  getUpdatesIcon_: function() {
+  getUpdatesUiStatus_: function() {
     switch (this.updatesStatus_) {
       case settings.SafetyCheckUpdatesStatus.CHECKING:
       case settings.SafetyCheckUpdatesStatus.UPDATING:
-        return null;
+        return ChildUiStatus.RUNNING;
       case settings.SafetyCheckUpdatesStatus.UPDATED:
-        return 'cr:check';
+        return ChildUiStatus.SAFE;
       case settings.SafetyCheckUpdatesStatus.RELAUNCH:
       case settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN:
       case settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE:
-        return 'cr:info';
+        return ChildUiStatus.INFO;
       case settings.SafetyCheckUpdatesStatus.FAILED:
-        return 'cr:warning';
+        return ChildUiStatus.WARNING;
       default:
         assertNotReached();
     }
@@ -398,14 +463,16 @@ Polymer({
    * @private
    * @return {?string}
    */
+  getUpdatesIcon_: function() {
+    return this.getChildUiIcon_(this.getUpdatesUiStatus_());
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
   getUpdatesIconSrc_: function() {
-    switch (this.updatesStatus_) {
-      case settings.SafetyCheckUpdatesStatus.CHECKING:
-      case settings.SafetyCheckUpdatesStatus.UPDATING:
-        return 'chrome://resources/images/throbber_small.svg';
-      default:
-        return null;
-    }
+    return this.getChildUiIconSrc_(this.getUpdatesUiStatus_());
   },
 
   /**
@@ -413,16 +480,7 @@ Polymer({
    * @return {string}
    */
   getUpdatesIconClass_: function() {
-    switch (this.updatesStatus_) {
-      case settings.SafetyCheckUpdatesStatus.CHECKING:
-      case settings.SafetyCheckUpdatesStatus.UPDATED:
-      case settings.SafetyCheckUpdatesStatus.UPDATING:
-        return 'icon-blue';
-      case settings.SafetyCheckUpdatesStatus.FAILED:
-        return 'icon-red';
-      default:
-        return '';
-    }
+    return this.getChildUiIconClass_(this.getUpdatesUiStatus_());
   },
 
   /**
@@ -436,22 +494,22 @@ Polymer({
 
   /**
    * @private
-   * @return {?string}
+   * @return {ChildUiStatus}
    */
-  getPasswordsIcon_: function() {
+  getPasswordsUiStatus_: function() {
     switch (this.passwordsStatus_) {
       case settings.SafetyCheckPasswordsStatus.CHECKING:
-        return null;
+        return ChildUiStatus.RUNNING;
       case settings.SafetyCheckPasswordsStatus.SAFE:
-        return 'cr:check';
+        return ChildUiStatus.SAFE;
       case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-        return 'cr:warning';
+        return ChildUiStatus.WARNING;
       case settings.SafetyCheckPasswordsStatus.OFFLINE:
       case settings.SafetyCheckPasswordsStatus.NO_PASSWORDS:
       case settings.SafetyCheckPasswordsStatus.SIGNED_OUT:
       case settings.SafetyCheckPasswordsStatus.QUOTA_LIMIT:
       case settings.SafetyCheckPasswordsStatus.ERROR:
-        return 'cr:info';
+        return ChildUiStatus.INFO;
       default:
         assertNotReached();
     }
@@ -461,13 +519,16 @@ Polymer({
    * @private
    * @return {?string}
    */
+  getPasswordsIcon_: function() {
+    return this.getChildUiIcon_(this.getPasswordsUiStatus_());
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
   getPasswordsIconSrc_: function() {
-    switch (this.passwordsStatus_) {
-      case settings.SafetyCheckPasswordsStatus.CHECKING:
-        return 'chrome://resources/images/throbber_small.svg';
-      default:
-        return null;
-    }
+    return this.getChildUiIconSrc_(this.getPasswordsUiStatus_());
   },
 
   /**
@@ -475,15 +536,7 @@ Polymer({
    * @return {string}
    */
   getPasswordsIconClass_: function() {
-    switch (this.passwordsStatus_) {
-      case settings.SafetyCheckPasswordsStatus.CHECKING:
-      case settings.SafetyCheckPasswordsStatus.SAFE:
-        return 'icon-blue';
-      case settings.SafetyCheckPasswordsStatus.COMPROMISED:
-        return 'icon-red';
-      default:
-        return '';
-    }
+    return this.getChildUiIconClass_(this.getPasswordsUiStatus_());
   },
 
   /** @private */
@@ -528,18 +581,18 @@ Polymer({
 
   /**
    * @private
-   * @return {?string}
+   * @return {ChildUiStatus}
    */
-  getSafeBrowsingIcon_: function() {
+  getSafeBrowsingUiStatus_: function() {
     switch (this.safeBrowsingStatus_) {
       case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
-        return null;
+        return ChildUiStatus.RUNNING;
       case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
-        return 'cr:check';
+        return ChildUiStatus.SAFE;
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:
-        return 'cr:info';
+        return ChildUiStatus.INFO;
       default:
         assertNotReached();
     }
@@ -549,13 +602,16 @@ Polymer({
    * @private
    * @return {?string}
    */
+  getSafeBrowsingIcon_: function() {
+    return this.getChildUiIcon_(this.getSafeBrowsingUiStatus_());
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
   getSafeBrowsingIconSrc_: function() {
-    switch (this.safeBrowsingStatus_) {
-      case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
-        return 'chrome://resources/images/throbber_small.svg';
-      default:
-        return null;
-    }
+    return this.getChildUiIconSrc_(this.getSafeBrowsingUiStatus_());
   },
 
   /**
@@ -563,13 +619,7 @@ Polymer({
    * @return {string}
    */
   getSafeBrowsingIconClass_: function() {
-    switch (this.safeBrowsingStatus_) {
-      case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
-      case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
-        return 'icon-blue';
-      default:
-        return '';
-    }
+    return this.getChildUiIconClass_(this.getSafeBrowsingUiStatus_());
   },
 
   /** @private */
@@ -610,24 +660,24 @@ Polymer({
 
   /**
    * @private
-   * @return {?string}
+   * @return {ChildUiStatus}
    */
-  getExtensionsIcon_: function() {
+  getExtensionsUiStatus_: function() {
     switch (this.extensionsStatus_) {
       case settings.SafetyCheckExtensionsStatus.CHECKING:
-        return null;
+        return ChildUiStatus.RUNNING;
       case settings.SafetyCheckExtensionsStatus.ERROR:
       case settings.SafetyCheckExtensionsStatus
           .BLOCKLISTED_REENABLED_ALL_BY_ADMIN:
-        return 'cr:info';
+        return ChildUiStatus.INFO;
       case settings.SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS:
       case settings.SafetyCheckExtensionsStatus.BLOCKLISTED_ALL_DISABLED:
-        return 'cr:check';
+        return ChildUiStatus.SAFE;
       case settings.SafetyCheckExtensionsStatus
           .BLOCKLISTED_REENABLED_ALL_BY_USER:
       case settings.SafetyCheckExtensionsStatus
           .BLOCKLISTED_REENABLED_SOME_BY_USER:
-        return 'cr:warning';
+        return ChildUiStatus.WARNING;
       default:
         assertNotReached();
     }
@@ -637,13 +687,16 @@ Polymer({
    * @private
    * @return {?string}
    */
+  getExtensionsIcon_: function() {
+    return this.getChildUiIcon_(this.getExtensionsUiStatus_());
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
   getExtensionsIconSrc_: function() {
-    switch (this.extensionsStatus_) {
-      case settings.SafetyCheckExtensionsStatus.CHECKING:
-        return 'chrome://resources/images/throbber_small.svg';
-      default:
-        return null;
-    }
+    return this.getChildUiIconSrc_(this.getExtensionsUiStatus_());
   },
 
   /**
@@ -651,19 +704,7 @@ Polymer({
    * @return {string}
    */
   getExtensionsIconClass_: function() {
-    switch (this.extensionsStatus_) {
-      case settings.SafetyCheckExtensionsStatus.CHECKING:
-      case settings.SafetyCheckExtensionsStatus.NO_BLOCKLISTED_EXTENSIONS:
-      case settings.SafetyCheckExtensionsStatus.BLOCKLISTED_ALL_DISABLED:
-        return 'icon-blue';
-      case settings.SafetyCheckExtensionsStatus
-          .BLOCKLISTED_REENABLED_ALL_BY_USER:
-      case settings.SafetyCheckExtensionsStatus
-          .BLOCKLISTED_REENABLED_SOME_BY_USER:
-        return 'icon-red';
-      default:
-        return '';
-    }
+    return this.getChildUiIconClass_(this.getExtensionsUiStatus_());
   },
 
   /**

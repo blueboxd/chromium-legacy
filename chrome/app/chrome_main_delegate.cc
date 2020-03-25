@@ -44,7 +44,7 @@
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
@@ -139,7 +139,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #include "v8/include/v8-wasm-trap-handler-posix.h"
 #include "v8/include/v8.h"
 #endif
@@ -151,7 +151,7 @@
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID) || \
     defined(OS_LINUX)
 #include "chrome/browser/policy/policy_path_parser.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)

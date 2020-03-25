@@ -392,7 +392,7 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
@@ -456,14 +456,14 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "components/crash/content/app/crash_switches.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crash_switches.h"
+#include "components/crash/core/app/crashpad.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #if !defined(OS_ANDROID)
 #include "base/debug/leak_annotations.h"
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #endif  // !defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #endif

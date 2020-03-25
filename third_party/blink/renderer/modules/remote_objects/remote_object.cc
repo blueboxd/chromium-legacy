@@ -124,10 +124,10 @@ mojom::blink::RemoteInvocationArgumentPtr JSValueToMojom(
 
         nested_arguments.push_back(std::move(nested_argument));
       }
-
-      return mojom::blink::RemoteInvocationArgument::NewArrayValue(
-          std::move(nested_arguments));
     }
+
+    return mojom::blink::RemoteInvocationArgument::NewArrayValue(
+        std::move(nested_arguments));
   }
 
   return nullptr;

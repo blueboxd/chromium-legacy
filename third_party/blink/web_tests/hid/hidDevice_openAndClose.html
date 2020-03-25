@@ -64,7 +64,7 @@ hid_test(async (t, fake) => {
   assert_false(device.opened);
 
   await device.open();
-  return promise_rejects(t, 'InvalidStateError', device.open());
+  return promise_rejects_dom(t, 'InvalidStateError', device.open());
 }, 'Opening a device twice is an error');
 
 hid_test(async (t, fake) => {
@@ -81,7 +81,7 @@ hid_test(async (t, fake) => {
   assert_false(device.opened);
 
   const firstRequest = device.open();
-  await promise_rejects(t, 'InvalidStateError', device.open());
+  await promise_rejects_dom(t, 'InvalidStateError', device.open());
   await firstRequest;
 }, 'Opening a device twice simultaneously is an error');
 

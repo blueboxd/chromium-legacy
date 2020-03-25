@@ -86,8 +86,8 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/crash/content/app/crash_switches.h"
-#include "components/crash/content/app/run_as_crashpad_handler_win.h"
+#include "components/crash/core/app/crash_switches.h"
+#include "components/crash/core/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

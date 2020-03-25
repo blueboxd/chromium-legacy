@@ -37,7 +37,7 @@ source_set("process_setup") {
     ]
     deps += [
       "//chromecast/crash",
-      "//components/crash/content/app",
+      "//components/crash/core/app",
     ]
   }
 }

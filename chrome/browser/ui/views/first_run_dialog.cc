@@ -17,7 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -32,7 +32,7 @@
 #if defined(OS_WIN)
 #include "components/crash/content/app/breakpad_win.h"
 #elif defined(OS_LINUX)
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #endif
 
 namespace {

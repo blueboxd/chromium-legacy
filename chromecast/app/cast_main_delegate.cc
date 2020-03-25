@@ -29,7 +29,7 @@
 #include "chromecast/gpu/cast_content_gpu_client.h"
 #include "chromecast/renderer/cast_content_renderer_client.h"
 #include "chromecast/utility/cast_content_utility_client.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"

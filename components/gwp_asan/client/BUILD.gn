@@ -47,7 +47,7 @@ component("client") {
   ]
 
   if (is_android) {
-    deps += [ "//components/crash/content/app" ]
+    deps += [ "//components/crash/core/app" ]
   }
 }
 

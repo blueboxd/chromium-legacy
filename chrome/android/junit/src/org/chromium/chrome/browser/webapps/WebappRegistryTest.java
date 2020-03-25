@@ -666,19 +666,19 @@ public class WebappRegistryTest {
 
     @Test
     @Feature({"WebApk"})
-    public void testHasWebApkForUrl() throws Exception {
-        final String startUrl = START_URL;
-        final String testUrl = START_URL + "/index.html";
+    public void testHasWebApkForOrigin() throws Exception {
+        final String startUrl = START_URL + "/test_page.html";
+        final String testOrigin = START_URL;
 
-        assertFalse(WebappRegistry.getInstance().hasWebApkForUrl(testUrl));
+        assertFalse(WebappRegistry.getInstance().hasAtLeastOneWebApkForOrigin(testOrigin));
 
         String webappId = "webapp";
         registerWebapp(webappId, createShortcutWebappInfo(startUrl));
-        assertFalse(WebappRegistry.getInstance().hasWebApkForUrl(testUrl));
+        assertFalse(WebappRegistry.getInstance().hasAtLeastOneWebApkForOrigin(testOrigin));
 
         WebApkInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk", startUrl).build();
         registerWebapp(webApkInfo.id(), webApkInfo);
-        assertTrue(WebappRegistry.getInstance().hasWebApkForUrl(testUrl));
+        assertTrue(WebappRegistry.getInstance().hasAtLeastOneWebApkForOrigin(testOrigin));
     }
 
     private Set<String> addWebappsToRegistry(String... webapps) {

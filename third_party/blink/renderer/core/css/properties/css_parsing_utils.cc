@@ -1413,12 +1413,13 @@ String ConcatenateFamilyName(CSSParserTokenRange& range) {
   return builder.ToString();
 }
 
-CSSValueList* CombineToRangeListOrNull(const CSSPrimitiveValue* range_start,
-                                       const CSSPrimitiveValue* range_end) {
+CSSValueList* CombineToRangeList(const CSSPrimitiveValue* range_start,
+                                 const CSSPrimitiveValue* range_end) {
   DCHECK(range_start);
   DCHECK(range_end);
-  if (range_end->GetFloatValue() < range_start->GetFloatValue())
-    return nullptr;
+  // Reversed ranges are valid, let them pass through here and swap them in
+  // FontFace to keep serialisation of the value as specified.
+  // https://drafts.csswg.org/css-fonts/#font-prop-desc
   CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
   value_list->Append(*range_start);
   value_list->Append(*range_end);
@@ -1462,7 +1463,7 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   if (!end_angle || !IsAngleWithinLimits(end_angle))
     return nullptr;
 
-  CSSValueList* range_list = CombineToRangeListOrNull(start_angle, end_angle);
+  CSSValueList* range_list = CombineToRangeList(start_angle, end_angle);
   if (!range_list)
     return nullptr;
   return MakeGarbageCollected<cssvalue::CSSFontStyleRangeValue>(
@@ -1499,7 +1500,7 @@ CSSValue* ConsumeFontStretch(CSSParserTokenRange& range,
   if (!end_percent)
     return nullptr;
 
-  return CombineToRangeListOrNull(start_percent, end_percent);
+  return CombineToRangeList(start_percent, end_percent);
 }
 
 CSSValue* ConsumeFontWeight(CSSParserTokenRange& range,
@@ -1537,7 +1538,7 @@ CSSValue* ConsumeFontWeight(CSSParserTokenRange& range,
       end_weight->GetFloatValue() > 1000)
     return nullptr;
 
-  return CombineToRangeListOrNull(start_weight, end_weight);
+  return CombineToRangeList(start_weight, end_weight);
 }
 
 CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange& range,

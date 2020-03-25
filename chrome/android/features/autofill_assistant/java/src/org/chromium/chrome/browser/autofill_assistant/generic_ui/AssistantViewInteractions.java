@@ -26,15 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** JNI bridge between {@code interaction_handler_android} and Java. */
+/** JNI bridge between {@code generic_ui_interactions_android} and Java. */
 @JNINamespace("autofill_assistant")
 public class AssistantViewInteractions {
-    @CalledByNative
-    private static void setOnClickListener(
-            View view, String identifier, AssistantGenericUiDelegate delegate) {
-        view.setOnClickListener(unused -> delegate.onViewClicked(identifier));
-    }
-
     @CalledByNative
     private static void showListPopup(Context context, String[] itemNames,
             @PopupItemType int[] itemTypes, int[] selectedItems, boolean multiple,

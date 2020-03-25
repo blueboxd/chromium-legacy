@@ -19883,6 +19883,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="686" label="ReportDeviceBacklightInfo"/>
   <int value="687" label="ScrollToTextFragmentEnabled"/>
   <int value="688" label="ManagedGuestSessionAutoLaunchNotificationReduced"/>
+  <int value="689" label="SystemFeaturesDisableList"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">

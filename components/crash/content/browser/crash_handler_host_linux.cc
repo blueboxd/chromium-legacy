@@ -53,7 +53,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"  // nogncheck
 #include "third_party/crashpad/crashpad/util/posix/signals.h"      // nogncheck
 #endif
@@ -173,7 +173,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // for writing the minidump as well as a file descriptor and a credentials
   // block so that they can't lie about their pid.
   //
-  // The message sender is in components/crash/content/app/breakpad_linux.cc.
+  // The message sender is in components/crash/core/app/breakpad_linux.cc.
 
   struct msghdr msg = {nullptr};
   struct iovec iov[kCrashIovSize];

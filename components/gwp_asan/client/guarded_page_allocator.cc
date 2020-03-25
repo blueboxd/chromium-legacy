@@ -22,7 +22,7 @@
 #include "components/gwp_asan/common/pack_stack_trace.h"
 
 #if defined(OS_ANDROID)
-#include "components/crash/content/app/crashpad.h"  // nogncheck
+#include "components/crash/core/app/crashpad.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)

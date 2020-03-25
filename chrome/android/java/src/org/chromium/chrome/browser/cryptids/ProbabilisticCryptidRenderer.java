@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.cryptids;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Allows for cryptids to be displayed on the New Tab Page under certain probabilistic conditions.
@@ -25,15 +27,28 @@ public class ProbabilisticCryptidRenderer {
      */
     public boolean shouldUseCryptidRendering() {
         // TODO: This should be disabled unless enabled by variations.
-        return getRandom() < calculateProbability(getLastRenderTimestampMillis(),
-                       System.currentTimeMillis(), getRenderingMoratoriumLengthMillis(),
-                       getRampUpLengthMillis(), getMaxProbability());
+        return getRandom() < calculateProbability();
+    }
+
+    /**
+     * Records the current timestamp as the last render time in the appropriate pref.
+     */
+    public void recordRenderEvent() {
+        recordRenderEvent(System.currentTimeMillis());
     }
 
     // Protected for testing
     protected long getLastRenderTimestampMillis() {
-        // TODO: Store last instance timestamp in a pref and return it.
-        return 0;
+        long lastRenderTimestamp = SharedPreferencesManager.getInstance().readLong(
+                ChromePreferenceKeys.CRYPTID_LAST_RENDER_TIMESTAMP,
+                /* defaultValue = */ 0);
+        if (lastRenderTimestamp == 0) {
+            // If no render has ever been recorded, set the timestamp such that the current time is
+            // the end of the moratorium period.
+            lastRenderTimestamp = System.currentTimeMillis() - getRenderingMoratoriumLengthMillis();
+            recordRenderEvent(lastRenderTimestamp);
+        }
+        return lastRenderTimestamp;
     }
 
     protected long getRenderingMoratoriumLengthMillis() {
@@ -53,6 +68,12 @@ public class ProbabilisticCryptidRenderer {
 
     protected int getRandom() {
         return (int) (Math.random() * DENOMINATOR);
+    }
+
+    @VisibleForTesting
+    void recordRenderEvent(long timestamp) {
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.CRYPTID_LAST_RENDER_TIMESTAMP, timestamp);
     }
 
     /**
@@ -89,5 +110,14 @@ public class ProbabilisticCryptidRenderer {
 
         float fractionOfRampUp = (float) (currentTimestamp - windowStartTimestamp) / rampUpLength;
         return (int) Math.round(fractionOfRampUp * maxProbability);
+    }
+
+    /**
+     * Convenience method calling the static method above using the appropriate values.
+     */
+    @VisibleForTesting
+    int calculateProbability() {
+        return calculateProbability(getLastRenderTimestampMillis(), System.currentTimeMillis(),
+                getRenderingMoratoriumLengthMillis(), getRampUpLengthMillis(), getMaxProbability());
     }
 }

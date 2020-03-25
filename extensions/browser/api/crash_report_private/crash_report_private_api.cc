@@ -9,7 +9,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
-#include "components/crash/content/app/client_upload_info.h"
+#include "components/crash/core/app/client_upload_info.h"
 #include "components/feedback/anonymizer_tool.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

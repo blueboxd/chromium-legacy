@@ -77,8 +77,8 @@
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "components/crash/content/app/crash_switches.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crash_switches.h"
+#include "components/crash/core/app/crashpad.h"
 #include "content/public/common/content_descriptors.h"
 #endif
 

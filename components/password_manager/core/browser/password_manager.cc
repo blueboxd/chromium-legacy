@@ -828,6 +828,9 @@ void PasswordManager::OnPasswordFormsRendered(
 }
 
 void PasswordManager::OnLoginSuccessful() {
+  if (autofill_assistant_mode_ == AutofillAssistantMode::kManuallyCuratedScript)
+    return;
+
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(

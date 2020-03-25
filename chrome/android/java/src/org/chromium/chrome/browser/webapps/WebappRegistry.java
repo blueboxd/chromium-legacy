@@ -196,10 +196,10 @@ public class WebappRegistry {
     }
 
     /**
-     * Returns true if a WebAPK is found whose scope matches the provided URL.
-     * @param url The URL to search a WebAPK for.
+     * Returns true if a WebAPK is found whose scope matches |origin|.
+     * @param origin The origin to search a WebAPK for.
      */
-    public boolean hasWebApkForUrl(String url) {
+    public boolean hasAtLeastOneWebApkForOrigin(String origin) {
         for (HashMap.Entry<String, WebappDataStorage> entry : mStorages.entrySet()) {
             WebappDataStorage storage = entry.getValue();
             if (!storage.getId().startsWith(WebApkConstants.WEBAPK_ID_PREFIX)) continue;
@@ -209,7 +209,7 @@ public class WebappRegistry {
             // Scope shouldn't be empty.
             assert (!scope.isEmpty());
 
-            if (url.startsWith(scope)) return true;
+            if (scope.startsWith(origin)) return true;
         }
         return false;
     }

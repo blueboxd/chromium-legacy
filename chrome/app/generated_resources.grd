@@ -7000,16 +7000,16 @@ the Bookmarks menu.">
 
       <!-- Sharing features. -->
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT_UNKNOWN_DEVICE" desc="Title text displayed in a Remote Copy (for text content) notification when the source device name is unknown.">
-        Text shared from other device
+        Text copied from other device
       </message>
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT" desc="Title text displayed in a Remote Copy (for text content) notification when the source device name is known.">
-        Text shared from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
+        Text copied from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
       </message>
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT_UNKNOWN_DEVICE" desc="Title text displayed in a Remote Copy (for image content) notification when the source device name is unknown.">
-        Image shared from other device
+        Image copied from other device
       </message>
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT" desc="Title text displayed in a Remote Copy (for image content) notification when the source device name is known.">
-        Image shared from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
+        Image copied from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
       </message>
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION" desc="Second line of text displayed in a Remote Copy notification.">
         Press <ph name="MODIFIER_KEY_DESCRIPTION">$1<ex>Ctrl+V</ex></ph> to paste

@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/user_data_dir.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/version_info/channel.h"
 
 NotificationHelperCrashReporterClient::NotificationHelperCrashReporterClient() =

@@ -4,7 +4,7 @@
 
 // This module contains the necessary code to register the Breakpad exception
 // handler. This implementation is based on Chrome crash reporting code. See:
-//   - src/components/crash/content/app/breakpad_win.cc
+//   - src/components/crash/core/app/breakpad_win.cc
 //   - src/chrome/installer/setup/setup_main.cc
 
 #include "remoting/base/breakpad.h"

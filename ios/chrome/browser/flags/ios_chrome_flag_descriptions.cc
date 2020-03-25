@@ -375,6 +375,11 @@ const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
 
+const char kNewSigninArchitectureName[] = "Enable new sign-in architecture";
+const char kNewSigninArchitectureDescription[] =
+    "When enabled uses the new sign-in architecture based on core Bling "
+    "design paradigms.";
+
 const char kSyncDeviceInfoInTransportModeName[] =
     "Enable syncing DeviceInfo in transport-only sync mode.";
 const char kSyncDeviceInfoInTransportModeDescription[] =

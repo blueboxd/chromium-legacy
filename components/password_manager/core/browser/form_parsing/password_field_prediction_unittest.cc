@@ -16,6 +16,7 @@
 using autofill::ACCOUNT_CREATION_PASSWORD;
 using autofill::AutofillField;
 using autofill::CONFIRMATION_PASSWORD;
+using autofill::CREDIT_CARD_VERIFICATION_CODE;
 using autofill::EMAIL_ADDRESS;
 using autofill::FormData;
 using autofill::FormFieldData;
@@ -44,6 +45,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     ServerFieldType input_type;
     ServerFieldType expected_type;
     bool may_use_prefilled_placeholder;
+    std::vector<ServerFieldType> additional_types;
   } test_fields[] = {
       {"full_name", "text", UNKNOWN_TYPE, UNKNOWN_TYPE, false},
       // Password Manager is interested only in credential related types.
@@ -51,7 +53,19 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       {"username", "text", USERNAME, USERNAME, true},
       {"Password", "password", PASSWORD, PASSWORD, false},
       {"confirm_password", "password", CONFIRMATION_PASSWORD,
-       CONFIRMATION_PASSWORD, true}};
+       CONFIRMATION_PASSWORD, true},
+      // username in |additional_types| takes precedence.
+      {"email", "text", EMAIL_ADDRESS, USERNAME, false, {USERNAME}},
+      // cvc in |additional_types| takes precedence.
+      {"cvc",
+       "password",
+       PASSWORD,
+       CREDIT_CARD_VERIFICATION_CODE,
+       false,
+       {CREDIT_CARD_VERIFICATION_CODE}},
+      // non-password, non-cvc types in |additional_types| are ignored.
+      {"email", "text", UNKNOWN_TYPE, UNKNOWN_TYPE, false, {EMAIL_ADDRESS}},
+  };
 
   FormData form_data;
   for (size_t i = 0; i < base::size(test_fields); ++i) {
@@ -68,10 +82,16 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     AutofillField* field = form_structure.field(i);
     field->set_server_type(test_fields[i].input_type);
 
-    FieldPrediction prediction;
-    prediction.set_may_use_prefilled_placeholder(
+    std::vector<FieldPrediction> predictions(1);
+    predictions[0].set_may_use_prefilled_placeholder(
         test_fields[i].may_use_prefilled_placeholder);
-    field->set_server_predictions({prediction});
+
+    for (ServerFieldType type : test_fields[i].additional_types) {
+      FieldPrediction additional_prediction;
+      additional_prediction.set_type(type);
+      predictions.push_back(additional_prediction);
+    }
+    field->set_server_predictions(predictions);
   }
 
   constexpr int driver_id = 1000;

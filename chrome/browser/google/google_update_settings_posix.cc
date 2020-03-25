@@ -13,7 +13,7 @@
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 
 namespace {
 

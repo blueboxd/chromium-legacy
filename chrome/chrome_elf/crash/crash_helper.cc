@@ -13,7 +13,7 @@
 
 #include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/chrome_elf/hook_util/hook_util.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 

@@ -10,14 +10,15 @@
 namespace policy {
 namespace policy_prefs {
 
+POLICY_EXPORT extern const char kCloudManagementEnrollmentMandatory[];
+POLICY_EXPORT extern const char kCloudPolicyOverridesPlatformPolicy[];
 POLICY_EXPORT extern const char kLastPolicyStatisticsUpdate[];
+POLICY_EXPORT extern const char kNativeWindowOcclusionEnabled[];
 POLICY_EXPORT extern const char kSafeSitesFilterBehavior[];
+POLICY_EXPORT extern const char kSystemFeaturesDisableList[];
 POLICY_EXPORT extern const char kUrlBlacklist[];
 POLICY_EXPORT extern const char kUrlWhitelist[];
 POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
-POLICY_EXPORT extern const char kCloudManagementEnrollmentMandatory[];
-POLICY_EXPORT extern const char kCloudPolicyOverridesPlatformPolicy[];
-POLICY_EXPORT extern const char kNativeWindowOcclusionEnabled[];
 
 }  // namespace policy_prefs
 }  // namespace policy

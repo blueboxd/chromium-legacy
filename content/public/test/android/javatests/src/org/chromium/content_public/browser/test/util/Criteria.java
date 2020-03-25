@@ -4,6 +4,9 @@
 
 package org.chromium.content_public.browser.test.util;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+
 import java.util.concurrent.Callable;
 
 /**
@@ -78,6 +81,21 @@ public abstract class Criteria {
      * @return A Criteria that will check the equality of the passed in data.
      */
     public static <T> Criteria equals(T expectedValue, Callable<T> actualValueCallable) {
-        return new EqualityCriteria<T>(expectedValue, actualValueCallable);
+        return new MatcherCriteria<>(actualValueCallable, Matchers.equalTo(expectedValue));
+    }
+
+    /**
+     * Constructs a Criteria that determines if the actual value matches the specified matching
+     * criteria.
+     *
+     * @param <T> The type of value whose equality will be tested.
+     * @param actualValueCallable A {@link Callable} that provides a way of getting the current
+     *                            actual value.
+     * @param matcher Determines if the current value matches the desired expectation.
+     * @return A Criteria that will determine if the current value matches the expected criteria.
+     */
+    public static <T> Criteria checkThat(
+            Callable<T> actualValueCallable, Matcher<? super T> matcher) {
+        return new MatcherCriteria<>(actualValueCallable, matcher);
     }
 }

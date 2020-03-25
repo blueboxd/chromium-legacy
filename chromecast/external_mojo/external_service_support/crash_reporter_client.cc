@@ -6,7 +6,7 @@
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "chromecast/crash/linux/crash_util.h"
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 
 namespace chromecast {
 namespace external_service_support {

@@ -12,7 +12,7 @@ promise_test(async t => {
 
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
-  return promise_rejects(t, "NotAllowedError", navigator.wakeLock.request('screen'));
+  return promise_rejects_dom(t, "NotAllowedError", navigator.wakeLock.request('screen'));
 }, "navigator.wakeLock.request('screen') fails when the document is hidden");
 
 // This test currently checks for Chromium-specific behavior: WakeLock::request()
@@ -31,7 +31,7 @@ promise_test(async t => {
   const screenLock = navigator.wakeLock.request('screen');
   window.testRunner.setPageVisibility('hidden');
   assert_true(document.hidden);
-  return promise_rejects(t, "NotAllowedError", screenLock);
+  return promise_rejects_dom(t, "NotAllowedError", screenLock);
 }, "navigator.wakeLock.request('screen') aborts when the page is hidden");
 
 promise_test(async t => {

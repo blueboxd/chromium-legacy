@@ -141,8 +141,8 @@ static_library("test_support") {
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     deps += [
-      "//components/crash/content/app",
-      "//components/crash/content/app:test_support",
+      "//components/crash/core/app",
+      "//components/crash/core/app:test_support",
     ]
   }
 

@@ -104,7 +104,7 @@ GeneralAudienceBrowsingService::CreateSafeSearchURLChecker() {
   return std::make_unique<safe_search_api::URLChecker>(
       std::make_unique<safe_search_api::SafeSearchURLCheckerClient>(
           shared_url_loader_factory_, CreateNetworkTrafficAnnotationTag(),
-          std::string(), api_key_),
+          api_key_),
       /* cache size */ 1000);
 }
 

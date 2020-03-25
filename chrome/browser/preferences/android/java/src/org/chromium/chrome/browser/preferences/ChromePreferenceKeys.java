@@ -190,6 +190,8 @@ public final class ChromePreferenceKeys {
     public static final String CRASH_UPLOAD_SUCCESS_OTHER = "other_crash_success_upload";
     public static final String CRASH_UPLOAD_SUCCESS_RENDERER = "renderer_crash_success_upload";
 
+    public static final String CRYPTID_LAST_RENDER_TIMESTAMP = "Chrome.Cryptid.LastRenderTimestamp";
+
     public static final KeyPrefix CUSTOM_TABS_DEX_LAST_UPDATE_TIME_PREF_PREFIX =
             new KeyPrefix("pref_local_custom_tabs_module_dex_last_update_time_*");
     public static final String CUSTOM_TABS_LAST_URL = "pref_last_custom_tab_url";
@@ -674,6 +676,7 @@ public final class ChromePreferenceKeys {
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
+                CRYPTID_LAST_RENDER_TIMESTAMP,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FLAGS_CACHED.pattern(),
                 FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,

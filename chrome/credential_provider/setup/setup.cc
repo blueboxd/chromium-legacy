@@ -39,8 +39,8 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/setup/gcp_installer_crash_reporting.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
-#include "components/crash/content/app/crash_switches.h"
-#include "components/crash/content/app/run_as_crashpad_handler_win.h"
+#include "components/crash/core/app/crash_switches.h"
+#include "components/crash/core/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
 
 using credential_provider::GetGlobalFlagOrDefault;

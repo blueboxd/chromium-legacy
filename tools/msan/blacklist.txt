@@ -14,7 +14,7 @@ fun:longest_match
 
 # False positives due to use of linux_syscall_support. http://crbug.com/394028
 src:*/third_party/breakpad/breakpad/src/*
-src:*/components/crash/content/app/breakpad_linux.cc
+src:*/components/crash/core/app/breakpad_linux.cc
 
 # Reports from sigaltstack instrumentation. https://crbug.com/1050279
 fun:NaClSignalStackRegister

@@ -180,6 +180,10 @@ class ButtonTest : public ViewsTestBase {
 
     button_ = std::make_unique<TestButton>(false);
     widget_->SetContentsView(button_.get());
+
+    event_generator_ =
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget()));
+    event_generator_->set_assume_window_at_origin(false);
   }
 
   void TearDown() override {
@@ -219,6 +223,7 @@ class ButtonTest : public ViewsTestBase {
   Widget* widget() { return widget_.get(); }
   TestButton* button() { return button_.get(); }
   TestButtonObserver* button_observer() { return button_observer_.get(); }
+  ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
   void SetDraggedView(View* dragged_view) {
     widget_->dragged_view_ = dragged_view;
   }
@@ -227,18 +232,18 @@ class ButtonTest : public ViewsTestBase {
   std::unique_ptr<Widget> widget_;
   std::unique_ptr<TestButton> button_;
   std::unique_ptr<TestButtonObserver> button_observer_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonTest);
 };
 
 // Tests that hover state changes correctly when visiblity/enableness changes.
 TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-
-  generator.PressLeftButton();
+  event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
+  event_generator()->PressLeftButton();
   EXPECT_EQ(Button::STATE_PRESSED, button()->state());
 
-  generator.ReleaseLeftButton();
+  event_generator()->ReleaseLeftButton();
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 
   button()->SetEnabled(false);
@@ -305,8 +310,7 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
 // Tests that the hover state is preserved during a view hierarchy update of a
 // button's child View.
 TEST_F(ButtonTest, HoverStatePreservedOnDescendantViewHierarchyChange) {
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
+  event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
 
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
   Label* child = new Label(base::string16());
@@ -456,12 +460,11 @@ TEST_F(ButtonTest, ButtonClickTogglesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.set_current_screen_location(gfx::Point(50, 50));
-  generator.PressLeftButton();
+  event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
+  event_generator()->PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
-  generator.ReleaseLeftButton();
+  event_generator()->ReleaseLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 }
 
@@ -471,9 +474,8 @@ TEST_F(ButtonTest, CaptureLossHidesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.set_current_screen_location(gfx::Point(50, 50));
-  generator.PressLeftButton();
+  event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
+  event_generator()->PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
   EXPECT_EQ(Button::ButtonState::STATE_PRESSED, button()->state());
@@ -543,8 +545,7 @@ TEST_F(ButtonTest, HideInkDropHighlightOnDisable) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.MoveMouseToInHost(10, 10);
+  event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(ink_drop->is_hovered());
   button()->SetEnabled(false);
   EXPECT_FALSE(ink_drop->is_hovered());
@@ -578,8 +579,8 @@ TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
   // Make sure that the button ink drop is hidden after the button gets removed.
   widget()->SetContentsView(&test_container);
   test_container.AddChildView(button());
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.MoveMouseToInHost(2, 2);
+  event_generator()->MoveMouseTo(button()->GetBoundsInScreen().origin());
+  event_generator()->MoveMouseBy(2, 2);
   EXPECT_TRUE(ink_drop->is_hovered());
   // Set ink-drop state to ACTIVATED to make sure that removing the container
   // sets it back to HIDDEN.
@@ -599,7 +600,7 @@ TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
   // Trigger hovering and then remove from the indirect parent. This should
   // propagate down to Button which should remove the highlight effect.
   EXPECT_FALSE(ink_drop->is_hovered());
-  generator.MoveMouseToInHost(10, 10);
+  event_generator()->MoveMouseBy(8, 8);
   EXPECT_TRUE(ink_drop->is_hovered());
   // Set ink-drop state to ACTIVATED to make sure that removing the container
   // sets it back to HIDDEN.
@@ -864,9 +865,9 @@ TEST_F(ButtonTest, ChangingHighlightStateNotifiesListener) {
 // and that the |observed_button| is passed to observer correctly.
 TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
   CreateButtonWithObserver();
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
-  generator.PressLeftButton();
+  event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
+  event_generator()->PressLeftButton();
   EXPECT_EQ(button_observer()->observed_button(), button());
   EXPECT_TRUE(button_observer()->state_changed());
 
@@ -874,7 +875,7 @@ TEST_F(ButtonTest, ClickingButtonNotifiesObserverOfStateChanges) {
   EXPECT_EQ(button_observer()->observed_button(), nullptr);
   EXPECT_FALSE(button_observer()->state_changed());
 
-  generator.ReleaseLeftButton();
+  event_generator()->ReleaseLeftButton();
   EXPECT_EQ(button_observer()->observed_button(), button());
   EXPECT_TRUE(button_observer()->state_changed());
 }

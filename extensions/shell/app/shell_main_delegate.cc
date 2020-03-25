@@ -45,8 +45,8 @@
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "components/crash/content/app/breakpad_linux.h"         // nogncheck
-#include "components/crash/content/app/crash_reporter_client.h"  // nogncheck
+#include "components/crash/core/app/breakpad_linux.h"         // nogncheck
+#include "components/crash/core/app/crash_reporter_client.h"  // nogncheck
 #include "extensions/shell/app/shell_crash_reporter_client.h"
 #endif
 

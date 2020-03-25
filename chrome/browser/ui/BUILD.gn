@@ -638,7 +638,7 @@ jumbo_static_library("ui") {
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     deps += [
-      "//components/crash/content/app",
+      "//components/crash/core/app",
       "//components/crash/core/browser",
     ]
   }
@@ -2401,12 +2401,8 @@ jumbo_static_library("ui") {
       "cocoa/fullscreen/fullscreen_toolbar_animation_controller.mm",
       "cocoa/fullscreen/fullscreen_toolbar_controller.h",
       "cocoa/fullscreen/fullscreen_toolbar_controller.mm",
-      "cocoa/fullscreen/fullscreen_toolbar_controller_views.h",
-      "cocoa/fullscreen/fullscreen_toolbar_controller_views.mm",
       "cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h",
       "cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.mm",
-      "cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h",
-      "cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.mm",
       "cocoa/handoff_active_url_observer.cc",
       "cocoa/handoff_active_url_observer.h",
       "cocoa/handoff_active_url_observer_bridge.h",

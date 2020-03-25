@@ -272,7 +272,7 @@ static_library("test_support") {
     ]
     deps += [ "//build:branding_buildflags" ]
     public_deps += [
-      "//components/crash/content/app",
+      "//components/crash/core/app",
       "//third_party/breakpad",
     ]
   }
@@ -281,7 +281,7 @@ static_library("test_support") {
     sources += [ "//chrome/app/chrome_crash_reporter_client_win.cc" ]
     public_deps += [
       "//chrome/install_static/test:test_support",
-      "//components/crash/content/app",
+      "//components/crash/core/app",
       "//third_party/wtl",
     ]
   }

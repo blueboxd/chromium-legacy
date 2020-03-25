@@ -74,7 +74,7 @@ shared_library("chrome_elf") {
     ":third_party_dlls",
     "//chrome/install_static:install_static_util",
     "//chrome/install_static:primary_module",
-    "//components/crash/content/app:crash_export_thunks",
+    "//components/crash/core/app:crash_export_thunks",
   ]
 
   configs += [ "//build/config/win:windowed" ]
@@ -115,7 +115,7 @@ static_library("crash") {
     "//base",  # This needs to go.  DEP of app, crash_keys, client.
     "//base:base_static",  # pe_image
     "//chrome/install_static:install_static_util",
-    "//components/crash/content/app",
+    "//components/crash/core/app",
     "//components/crash/core/common",  # crash_keys
     "//components/version_info:channel",
     "//content/public/common:result_codes",
@@ -270,7 +270,7 @@ test("chrome_elf_unittests") {
     "//chrome/common:version_header",
     "//chrome/install_static:install_static_util",
     "//chrome/install_static/test:test_support",
-    "//components/crash/content/app:test_support",
+    "//components/crash/core/app:test_support",
     "//sandbox",
     "//testing/gtest",
   ]
@@ -335,6 +335,6 @@ executable("third_party_dlls_test_exe") {
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
     "//chrome/install_static:install_static_util",
-    "//components/crash/content/app:crash_export_stubs",
+    "//components/crash/core/app:crash_export_stubs",
   ]
 }

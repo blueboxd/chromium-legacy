@@ -103,6 +103,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/secondary_google_account_signin_policy_handler.h"
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
@@ -1609,6 +1610,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       WebUsbAllowDevicesForUrlsPolicyHandler::CreateForDevicePolicy(
           chrome_schema));
+  handlers->AddHandler(
+      std::make_unique<SystemFeaturesDisableListPolicyHandler>());
 #if defined(USE_CUPS)
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kPrintingAPIExtensionsWhitelist,

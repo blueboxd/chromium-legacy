@@ -45,19 +45,19 @@ void HTMLParserMetrics::AddYieldInterval(base::TimeDelta elapsed_time) {
 }
 
 void HTMLParserMetrics::ReportMetricsAtParseEnd() {
-  // Report the histograms
+  // The various histogram limits were chosen based on initial UKM data.
   UMA_HISTOGRAM_COUNTS_1000("Blink.HTMLParsing.ChunkCount", chunk_count_);
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "Blink.HTMLParsing.ParsingTimeMax", max_parsing_time_,
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(100), 100);
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Blink.HTMLParsing.ParsingTimeMin", min_parsing_time_,
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(100), 100);
+      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(100),
+      1000);
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Blink.HTMLParsing.ParsingTimeMin",
+                                          min_parsing_time_,
+                                          base::TimeDelta::FromMicroseconds(1),
+                                          base::TimeDelta::FromSeconds(1), 100);
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "Blink.HTMLParsing.ParsingTimeTotal", accumulated_parsing_time_,
-      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(100),
       1000);
   UMA_HISTOGRAM_COUNTS_1M("Blink.HTMLParsing.TokensParsedMax",
                           max_tokens_parsed_);
@@ -70,16 +70,16 @@ void HTMLParserMetrics::ReportMetricsAtParseEnd() {
   if (max_yield_interval_ != base::TimeDelta()) {
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Blink.HTMLParsing.YieldedTimeMax", max_yield_interval_,
-        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(1),
-        100);
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(100),
+        1000);
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Blink.HTMLParsing.YieldedTimeMin", min_yield_interval_,
-        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(1),
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
         100);
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Blink.HTMLParsing.YieldedTimeAverage",
         accumulated_yield_intervals_ / yield_count_,
-        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(1),
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
         100);
   }
 

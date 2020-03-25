@@ -43,7 +43,7 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #endif
 
 using content::WebContents;

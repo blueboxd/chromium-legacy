@@ -69,6 +69,7 @@ include_rules = [
   "+components/cookie_config",
   "+components/crash/content/app",
   "+components/crash/content/browser",
+  "+components/crash/core/app",
   "+components/crash/core/browser",
   "+components/crash/core/common",
   "+components/crx_file",

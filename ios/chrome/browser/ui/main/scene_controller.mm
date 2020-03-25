@@ -1485,6 +1485,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ChromeBrowserState*)browserState {
+  UMA_HISTOGRAM_BOOLEAN("Signin.SignedInAccountsViewImpression", true);
   UIViewController* accountsViewController =
       [[SignedInAccountsViewController alloc]
           initWithBrowserState:browserState

@@ -39,8 +39,8 @@
 
 #if defined(HEADLESS_USE_BREAKPAD)
 #include "base/debug/leak_annotations.h"
-#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #include "content/public/common/content_descriptors.h"
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 

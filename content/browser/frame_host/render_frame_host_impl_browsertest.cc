@@ -4040,6 +4040,9 @@ class MockInnerObject : public blink::mojom::RemoteObject {
 
 class MockObject : public blink::mojom::RemoteObject {
  public:
+  explicit MockObject(
+      mojo::PendingReceiver<blink::mojom::RemoteObject> receiver)
+      : receiver_(this, std::move(receiver)) {}
   void HasMethod(const std::string& name, HasMethodCallback callback) override {
     bool has_method =
         std::find(kMainObject.methods.begin(), kMainObject.methods.end(),
@@ -4061,6 +4064,9 @@ class MockObject : public blink::mojom::RemoteObject {
       result->value = blink::mojom::RemoteInvocationResultValue::NewNumberValue(
           kMainObject.id);
     } else if (name == "readArray") {
+      EXPECT_EQ(1U, arguments.size());
+      EXPECT_TRUE(arguments[0]->is_array_value());
+      num_elements_received_ = arguments[0]->get_array_value().size();
       result->value =
           blink::mojom::RemoteInvocationResultValue::NewBooleanValue(true);
     } else if (name == "getInnerObject") {
@@ -4069,6 +4075,12 @@ class MockObject : public blink::mojom::RemoteObject {
     }
     std::move(callback).Run(std::move(result));
   }
+
+  int get_num_elements_received() const { return num_elements_received_; }
+
+ private:
+  int num_elements_received_ = 0;
+  mojo::Receiver<blink::mojom::RemoteObject> receiver_;
 };
 
 class MockObjectHost : public blink::mojom::RemoteObjectHost {
@@ -4077,8 +4089,7 @@ class MockObjectHost : public blink::mojom::RemoteObjectHost {
       int32_t object_id,
       mojo::PendingReceiver<blink::mojom::RemoteObject> receiver) override {
     if (object_id == kMainObject.id) {
-      mojo::MakeSelfOwnedReceiver(std::make_unique<MockObject>(),
-                                  std::move(receiver));
+      mock_object_ = std::make_unique<MockObject>(std::move(receiver));
     } else if (object_id == kInnerObject.id) {
       mojo::MakeSelfOwnedReceiver(std::make_unique<MockInnerObject>(),
                                   std::move(receiver));
@@ -4093,14 +4104,19 @@ class MockObjectHost : public blink::mojom::RemoteObjectHost {
     return receiver_.BindNewPipeAndPassRemote();
   }
 
+  MockObject* GetMockObject() const { return mock_object_.get(); }
+
  private:
   mojo::Receiver<blink::mojom::RemoteObjectHost> receiver_{this};
+  std::unique_ptr<MockObject> mock_object_;
 };
 
 class RemoteObjectInjector : public WebContentsObserver {
  public:
   explicit RemoteObjectInjector(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
+
+  const MockObjectHost& GetObjectHost() const { return host_; }
 
  private:
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
@@ -4185,6 +4201,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   std::string kScript = "testObject.readArray([6, 8, 2]);";
   EXPECT_TRUE(EvalJs(web_contents, kScript).error.empty());
+  EXPECT_EQ(
+      3, injector.GetObjectHost().GetMockObject()->get_num_elements_received());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

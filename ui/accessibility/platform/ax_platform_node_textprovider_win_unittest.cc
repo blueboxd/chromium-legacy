@@ -291,7 +291,7 @@ TEST_F(AXPlatformNodeTextProviderTest, NearestTextIndexToPoint) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kStaticText;
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.relative_bounds.bounds = gfx::RectF(1, 1, 2, 2);
   root_data.child_ids.push_back(2);
 

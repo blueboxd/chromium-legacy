@@ -230,7 +230,23 @@
    *     updated.
    */
   changeCompromisedCredential(credential, newPassword) {}
+
+  /**
+   * Records a given interaction on the Password Check page.
+   * @param {!PasswordManagerProxy.PasswordCheckInteraction} interaction
+   */
+  recordPasswordCheckInteraction(interaction) {}
+
+  /**
+   * Records the referrer of a given navigation to the Password Check page.
+   * @param {!PasswordManagerProxy.PasswordCheckReferrer} referrer
+   */
+  recordPasswordCheckReferrer(referrer) {}
 }
+
+// TODO(https://crbug.com/1047726): Instead of exposing these classes on
+// PasswordManagerProxy, they should be living in their own "settings.passwords"
+// namespace and be exported by this file.
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
 PasswordManagerProxy.PasswordUiEntry;
@@ -257,6 +273,48 @@ PasswordManagerProxy.CompromisedCredentials;
 
 /** @typedef {chrome.passwordsPrivate.PasswordCheckStatus} */
 PasswordManagerProxy.PasswordCheckStatus;
+
+/**
+ * Represents different interactions the user can perform on the Password Check
+ * page.
+ *
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ *
+ * Needs to stay in sync with PasswordCheckInteraction in enums.xml.
+ *
+ * @enum {number}
+ */
+PasswordManagerProxy.PasswordCheckInteraction = {
+  START_CHECK_AUTOMATICALLY: 0,
+  START_CHECK_MANUALLY: 1,
+  STOP_CHECK: 2,
+  CHANGE_PASSWORD: 3,
+  EDIT_PASSWORD: 4,
+  REMOVE_PASSWORD: 5,
+  // Must be last.
+  COUNT: 6,
+};
+
+/**
+ * Represents different referrers when navigating to the Password Check page.
+ *
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ *
+ * Needs to stay in sync with PasswordCheckReferrer in enums.xml and
+ * password_check_referrer.h.
+ *
+ * @enum {number}
+ */
+PasswordManagerProxy.PasswordCheckReferrer = {
+  SAFETY_CHECK: 0,            // Web UI, recorded in JavaScript.
+  PASSWORD_SETTINGS: 1,       // Web UI, recorded in JavaScript.
+  PHISH_GUARD_DIALOG: 2,      // Native UI, recorded in C++.
+  PASSWORD_BREACH_DIALOG: 3,  // Native UI, recorded in C++.
+  // Must be last.
+  COUNT: 4,
+};
 
 /**
  * Implementation that accesses the private API.
@@ -459,6 +517,20 @@ PasswordManagerProxy.PasswordCheckStatus;
       chrome.passwordsPrivate.changeCompromisedCredential(
           credential, newPassword, resolve);
     });
+  }
+
+  /** override */
+  recordPasswordCheckInteraction(interaction) {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'PasswordManager.BulkCheck.UserAction', interaction,
+        PasswordManagerProxy.PasswordCheckInteraction.COUNT);
+  }
+
+  /** override */
+  recordPasswordCheckReferrer(referrer) {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'PasswordManager.BulkCheck.PasswordCheckReferrer', referrer,
+        PasswordManagerProxy.PasswordCheckReferrer.COUNT);
   }
 }
 

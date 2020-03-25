@@ -62,6 +62,7 @@ jumbo_component("ime") {
     "ime_candidate_window_handler_interface.h",
     "ime_engine_handler_interface.h",
     "ime_input_context_handler_interface.h",
+    "ime_suggestion_window_handler_interface.h",
     "input_method.h",
     "input_method_base.cc",
     "input_method_base.h",

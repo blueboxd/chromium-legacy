@@ -75,7 +75,7 @@ public class ShareButtonController implements ButtonDataProvider {
         });
 
         mButtonData = new ButtonData(false,
-                AppCompatResources.getDrawable(mContext, R.drawable.ic_share_white_24dp),
+                AppCompatResources.getDrawable(mContext, R.drawable.ic_toolbar_share_24dp),
                 mOnClickListener, R.string.share, true, null);
     }
 

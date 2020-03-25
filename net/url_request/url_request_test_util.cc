@@ -389,7 +389,6 @@ TestNetworkDelegate::TestNetworkDelegate()
       blocked_get_cookies_count_(0),
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
-      before_send_headers_with_proxy_count_(0),
       before_start_transaction_count_(0),
       headers_received_count_(0),
       has_load_timing_info_before_redirect_(false),
@@ -455,21 +454,6 @@ int TestNetworkDelegate::OnBeforeStartTransaction(
   next_states_[req_id] = kStageHeadersReceived | kStageCompletedError;
   before_start_transaction_count_++;
   return OK;
-}
-
-void TestNetworkDelegate::OnBeforeSendHeaders(
-    URLRequest* request,
-    const ProxyInfo& proxy_info,
-    const ProxyRetryInfoMap& proxy_retry_info,
-    HttpRequestHeaders* headers) {
-  if (!proxy_info.is_http() && !proxy_info.is_https() && !proxy_info.is_quic())
-    return;
-  if (!request || request->url().SchemeIs("https") ||
-      request->url().SchemeIsWSOrWSS()) {
-    return;
-  }
-  ++before_send_headers_with_proxy_count_;
-  last_observed_proxy_ = proxy_info.proxy_server().host_port_pair();
 }
 
 int TestNetworkDelegate::OnHeadersReceived(

@@ -87,8 +87,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void BeforeDoInternalWork() override;
   void BeforeWait() override;
   MessagePump::Delegate::NextWorkInfo DoSomeWork() override;
-  bool DoWork() override;
-  bool DoDelayedWork(TimeTicks* next_run_time) override;
   bool DoIdleWork() override;
 
   // RunLoop::Delegate implementation.

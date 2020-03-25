@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
@@ -76,7 +77,15 @@ bool DevToolsPageHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidDevToolsPage);
     return false;
   }
-  manifest_url->url_ = extension->GetResourceURL(devtools_str);
+  GURL url = extension->GetResourceURL(devtools_str);
+  const bool is_extension_url =
+      url.SchemeIs(kExtensionScheme) && url.host_piece() == extension->id();
+  // TODO(caseq): using http(s) is unsupported and will be disabled in m83.
+  if (!is_extension_url && !url.SchemeIsHTTPOrHTTPS()) {
+    *error = base::ASCIIToUTF16(errors::kInvalidDevToolsPage);
+    return false;
+  }
+  manifest_url->url_ = std::move(url);
   extension->SetManifestData(keys::kDevToolsPage, std::move(manifest_url));
   PermissionsParser::AddAPIPermission(extension, APIPermission::kDevtools);
   return true;

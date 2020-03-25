@@ -52,6 +52,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/native_io/native_io_context.h"
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/quota/quota_context.h"
@@ -1480,6 +1481,7 @@ void StoragePartitionImpl::Initialize() {
       quota_manager_proxy.get(), weak_factory_.GetWeakPtr());
 
   dedicated_worker_service_ = std::make_unique<DedicatedWorkerServiceImpl>();
+  native_io_context_ = std::make_unique<NativeIOContext>(path);
 
   shared_worker_service_ = std::make_unique<SharedWorkerServiceImpl>(
       this, service_worker_context_, appcache_service_);
@@ -1835,6 +1837,11 @@ ConversionManager* StoragePartitionImpl::GetConversionManager() {
 ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
   DCHECK(initialized_);
   return content_index_context_.get();
+}
+
+NativeIOContext* StoragePartitionImpl::GetNativeIOContext() {
+  DCHECK(initialized_);
+  return native_io_context_.get();
 }
 
 leveldb_proto::ProtoDatabaseProvider*

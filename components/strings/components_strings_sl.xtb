@@ -1034,7 +1034,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5380442954567233718">Strežnik, na katerega greste, <ph name="ORIGIN" />, je nastavil glavo,
     ki zahteva, da se za vse zahteve, ki so mu poslane, uporabi pravilnik o izvoru. Vendar
     je glava popačena, zaradi česar brskalnik ne more
-    izpolniti vaše zahteve za <ph name="SITE" />. Pravilnike izvora lahko uporabljajo
+    izpolniti vaše zahteve za <ph name="SITE" />. Pravilnike o izvoru lahko uporabljajo
     ponudniki spletnih mest zaradi konfiguriranja varnosti in drugih lastnosti spletnega mesta.</translation>
 <translation id="5386426401304769735">Veriga potrdil za to spletno mesto vsebuje potrdilo, podpisano z algoritmom SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>

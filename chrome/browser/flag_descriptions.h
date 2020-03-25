@@ -96,9 +96,6 @@ extern const char kUseMessagesStagingUrlDescription[];
 extern const char kAndroidPictureInPictureAPIName[];
 extern const char kAndroidPictureInPictureAPIDescription[];
 
-extern const char kAndroidSiteSettingsUIRefreshName[];
-extern const char kAndroidSiteSettingsUIRefreshDescription[];
-
 extern const char kAutofillAlwaysReturnCloudTokenizedCardName[];
 extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
 
@@ -2024,6 +2021,9 @@ extern const char kImeMozcProtoDescription[];
 
 extern const char kImeNativeDecoderName[];
 extern const char kImeNativeDecoderDescription[];
+
+extern const char kLimitAltTabToActiveDeskName[];
+extern const char kLimitAltTabToActiveDeskDescription[];
 
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];

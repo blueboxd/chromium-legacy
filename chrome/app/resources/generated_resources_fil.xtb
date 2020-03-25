@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Hindi nangangailangan ang extension na ito ng mga espesyal na pahintulot.</translation>
 <translation id="1616298854599875024">Hindi ma-import ang extension na "<ph name="IMPORT_NAME" />" dahil hindi ito nakabahaging module</translation>
 <translation id="1618268899808219593">Help Center</translation>
+<translation id="1620307519959413822">Mali ang password. Subukan ulit o i-click ang Nakalimutan ang password para ma-reset ito.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623132449929929218">Kasalukuyang hindi available ang mga larawan. Kumonektang muli sa internet para makita ang mga koleksyon ng wallpaper.</translation>
 <translation id="1627276047960621195">Mga Descriptor ng File</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Rebisyon ng hardware</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Buksan sa buong screen</translation>
+<translation id="1892341345406963517">Kumusta <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Iba pang mga wika</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> ang natitira</translation>
 <translation id="1895658205118569222">Shutdown</translation>
@@ -3133,6 +3135,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5213891612754844763">Ipakita ang mga setting ng proxy</translation>
 <translation id="5215502535566372932">Pumili ng bansa</translation>
 <translation id="521582610500777512">Na-discard ang larawan</translation>
+<translation id="5222403284441421673">Na-block ang hindi secure na pag-download</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="52232769093306234">Hindi nagtagumpay ang pag-pack.</translation>
 <translation id="5225324770654022472">Ipakita ang shortcut ng mga app</translation>
@@ -3531,6 +3534,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5734362860645681824">Komunikasyon</translation>
 <translation id="5734697361979786483">Magdagdag ng file share</translation>
 <translation id="5736796278325406685">Mangyaring maglagay ng wastong username</translation>
+<translation id="5739017626473506901">Mag-sign in para matulungan si <ph name="USER_NAME" /> na magdagdag ng pampaaralang account</translation>
 <translation id="5739235828260127894">Naghihintay ng pag-verify. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Napakalaki</translation>
 <translation id="574209121243317957">Pitch</translation>
@@ -5539,6 +5543,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> network, kumokonekta</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Magtanong muna (inirerekomenda)</translation>
+<translation id="8417548266957501132">Parent password</translation>
 <translation id="8417573335434189196">Hindi ka pinoprotektahan laban sa mga mapanganib na website, download, o extension. Hindi inirerekomenda ng Chrome ang setting na ito.</translation>
 <translation id="8418445294933751433">&amp;Ipakita bilang tab</translation>
 <translation id="8419098111404128271">Mga resulta ng paghahanap para sa '<ph name="SEARCH_TEXT" />'</translation>

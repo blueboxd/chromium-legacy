@@ -37,6 +37,7 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/native_io/native_io.mojom-forward.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"

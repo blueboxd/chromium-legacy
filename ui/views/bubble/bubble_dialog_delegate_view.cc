@@ -45,15 +45,28 @@ class BubbleWidget : public Widget {
   BubbleWidget() = default;
 
   // Widget:
+  // TODO(tluk) Fix child windows so that they inherit the theme properties of
+  // their parent. Currently this only fixes the problem for bubble dialogs
+  // anchored to another window. (https://crbug.com/948859)
   const ui::ThemeProvider* GetThemeProvider() const override {
-    BubbleDialogDelegateView* const bubble_delegate =
-        static_cast<BubbleDialogDelegateView*>(widget_delegate());
-    if (!bubble_delegate || !bubble_delegate->anchor_widget())
-      return Widget::GetThemeProvider();
-    return bubble_delegate->anchor_widget()->GetThemeProvider();
+    const Widget* anchor_widget = GetAnchorWidget();
+    return anchor_widget ? anchor_widget->GetThemeProvider()
+                         : Widget::GetThemeProvider();
+  }
+
+  const ui::NativeTheme* GetNativeTheme() const override {
+    const Widget* anchor_widget = GetAnchorWidget();
+    return anchor_widget ? anchor_widget->GetNativeTheme()
+                         : Widget::GetNativeTheme();
   }
 
  private:
+  const Widget* GetAnchorWidget() const {
+    BubbleDialogDelegateView* const bubble_delegate =
+        static_cast<BubbleDialogDelegateView*>(widget_delegate());
+    return bubble_delegate ? bubble_delegate->anchor_widget() : nullptr;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
 };
 

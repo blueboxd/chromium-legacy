@@ -66,10 +66,9 @@ const int kTimeToRememberReportsMins = 60;
 const size_t kReportCacheKeyLength = 16;
 
 // Override for CheckCTRequirements() for unit tests. Possible values:
-//  -1: Unless a delegate says otherwise, do not require CT.
-//   0: Use the default implementation (e.g. production)
-//   1: Unless a delegate says otherwise, require CT.
-int g_ct_required_for_testing = 0;
+//   false: Use the default implementation (e.g. production)
+//   true: Unless a delegate says otherwise, require CT.
+bool g_ct_required_for_testing = false;
 
 // The date (as the number of seconds since the Unix Epoch) to enforce CT for
 // new certificates.
@@ -520,7 +519,7 @@ TransportSecurityState::CheckCTRequirements(
   // CT is not required if the certificate does not chain to a publicly
   // trusted root certificate. Testing can override this, as certain tests
   // rely on using a non-publicly-trusted root.
-  if (!is_issued_by_known_root && g_ct_required_for_testing == 0)
+  if (!is_issued_by_known_root && !g_ct_required_for_testing)
     return CT_NOT_REQUIRED;
 
   // A connection is considered compliant if it has sufficient SCTs or if the
@@ -570,12 +569,6 @@ TransportSecurityState::CheckCTRequirements(
       }
       break;
   }
-
-  // Allow unittests to override the default result.
-  if (g_ct_required_for_testing)
-    return (g_ct_required_for_testing == 1
-                ? (complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET)
-                : CT_NOT_REQUIRED);
 
   // This is provided as a means for CAs to test their own issuance practices
   // prior to Certificate Transparency becoming mandatory. A parameterized
@@ -630,7 +623,7 @@ TransportSecurityState::CheckCTRequirements(
     // stated policies.
     found = true;
   }
-  if (found)
+  if (found || g_ct_required_for_testing)
     return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
 
   return CT_NOT_REQUIRED;
@@ -1124,12 +1117,8 @@ void TransportSecurityState::ProcessExpectCTHeader(
 }
 
 // static
-void TransportSecurityState::SetShouldRequireCTForTesting(bool* required) {
-  if (!required) {
-    g_ct_required_for_testing = 0;
-    return;
-  }
-  g_ct_required_for_testing = *required ? 1 : -1;
+void TransportSecurityState::SetRequireCTForTesting(bool required) {
+  g_ct_required_for_testing = required;
 }
 
 void TransportSecurityState::ClearReportCachesForTesting() {

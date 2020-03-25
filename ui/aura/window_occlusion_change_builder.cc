@@ -27,7 +27,6 @@ class DefaultWindowOcclusionChangeBuilder
       auto it = changes_.find(window);
       if (it == changes_.end())
         continue;
-
       window->SetOcclusionInfo(it->second.occlusion_state,
                                it->second.occluded_region);
     }

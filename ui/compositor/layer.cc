@@ -712,15 +712,8 @@ bool Layer::GetTargetTransformRelativeTo(const Layer* ancestor,
 }
 
 void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
-  if (fills_bounds_opaquely_ == fills_bounds_opaquely)
-    return;
-
-  fills_bounds_opaquely_ = fills_bounds_opaquely;
-
-  cc_layer_->SetContentsOpaque(fills_bounds_opaquely);
-
-  if (delegate_)
-    delegate_->OnLayerFillsBoundsOpaquelyChanged();
+  SetFillsBoundsOpaquelyWithReason(fills_bounds_opaquely,
+                                   PropertyChangeReason::NOT_FROM_ANIMATION);
 }
 
 void Layer::SetFillsBoundsCompletely(bool fills_bounds_completely) {
@@ -1446,7 +1439,7 @@ void Layer::SetColorFromAnimation(SkColor color, PropertyChangeReason reason) {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
   cc_layer_->SetBackgroundColor(color);
   cc_layer_->SetSafeOpaqueBackgroundColor(color);
-  SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
+  SetFillsBoundsOpaquelyWithReason(SkColorGetA(color) == 0xFF, reason);
 }
 
 void Layer::SetClipRectFromAnimation(const gfx::Rect& clip_rect,
@@ -1654,6 +1647,19 @@ void Layer::GetFlattenedWeakList(
 
   for (auto* child : children_)
     child->GetFlattenedWeakList(flattened_list);
+}
+
+void Layer::SetFillsBoundsOpaquelyWithReason(bool fills_bounds_opaquely,
+                                             PropertyChangeReason reason) {
+  if (fills_bounds_opaquely_ == fills_bounds_opaquely)
+    return;
+
+  fills_bounds_opaquely_ = fills_bounds_opaquely;
+
+  cc_layer_->SetContentsOpaque(fills_bounds_opaquely);
+
+  if (delegate_)
+    delegate_->OnLayerFillsBoundsOpaquelyChanged(reason);
 }
 
 }  // namespace ui

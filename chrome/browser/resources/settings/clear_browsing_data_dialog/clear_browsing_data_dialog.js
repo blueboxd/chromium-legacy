@@ -383,6 +383,8 @@ Polymer({
 
     const uncheckedAppCount = this.installedApps_.filter(app => !app.isChecked)
         .length;
+    chrome.metricsPrivate.recordBoolean(
+        'History.ClearBrowsingData.InstalledAppExcluded', !!uncheckedAppCount);
     chrome.metricsPrivate.recordCount(
         'History.ClearBrowsingData.InstalledDeselectedNum', uncheckedAppCount);
     chrome.metricsPrivate.recordPercentage(

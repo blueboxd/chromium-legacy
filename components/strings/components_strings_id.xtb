@@ -1031,7 +1031,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5371425731340848620">Perbarui kartu</translation>
 <translation id="5377026284221673050">"Jam Anda terlalu lambat" atau "Jam Anda terlalu cepat" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5380442954567233718">Server yang akan Anda akses, <ph name="ORIGIN" />, telah menetapkan header
-    yang mengharuskan kebijakan asal diterapkan ke semua permintaannya. Namun,
+    yang mengharuskan kebijakan asal diterapkan ke semua permintaan yang ditujukan kepadanya. Namun,
     format header tersebut salah, yang membuat browser tidak dapat memenuhi
     permintaan Anda untuk <ph name="SITE" />. Kebijakan asal dapat digunakan oleh
     operator situs guna mengonfigurasi keamanan dan properti lainnya untuk sebuah situs.</translation>

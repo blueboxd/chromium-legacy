@@ -192,7 +192,7 @@
 <translation id="1243314992276662751">Hochladen</translation>
 <translation id="1244265436519979884">Wiederherstellung für Linux wird gerade ausgeführt</translation>
 <translation id="1244303850296295656">Erweiterungsfehler</translation>
-<translation id="1246158006305844142">Ihre Apps und Einstellungen werden auf allen Chrome OS-Geräten synchronisiert, bei denen Sie mit Ihrem Google-Konto angemeldet sind. <ph name="LINK_BEGIN" />Rufen Sie die Chrome-Einstellungen auf<ph name="LINK_END" />, um die Optionen zur Browsersynchronisation zu sehen.</translation>
+<translation id="1246158006305844142">Ihre Apps und Einstellungen werden auf allen Chrome OS-Geräten synchronisiert, bei denen Sie mit Ihrem Google-Konto angemeldet sind. Die Optionen zur Browsersynchronisation finden Sie in den <ph name="LINK_BEGIN" />Chrome-Einstellungen<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Vorschlag aus Zwischenablage entfernen?</translation>
 <translation id="1249643471736608405">Das Plug-in <ph name="PLUGIN_NAME" /> wurde blockiert, weil es eingestellt wurde</translation>
 <translation id="1251366534849411931">Erwartete öffnende geschweifte Klammer: <ph name="ERROR_LINE" /></translation>
@@ -458,6 +458,7 @@
 <translation id="1616206807336925449">Diese Erweiterung erfordert keine speziellen Berechtigungen.</translation>
 <translation id="1616298854599875024">Die Erweiterung "<ph name="IMPORT_NAME" />" konnte nicht importiert werden, da es sich nicht um ein freigegebenes Modul handelt</translation>
 <translation id="1618268899808219593">H&amp;ilfe</translation>
+<translation id="1620307519959413822">Falsches Passwort. Versuchen Sie es noch einmal oder klicken Sie auf "Passwort vergessen?", um es zurückzusetzen.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623132449929929218">Die Bilder sind momentan nicht verfügbar. Verbinden Sie sich noch einmal, um die Sammlungen anzusehen.</translation>
 <translation id="1627276047960621195">Dateideskriptoren</translation>
@@ -676,6 +677,7 @@
 <translation id="1887850431809612466">Hardware-Version</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">In Vollbildmodus öffnen</translation>
+<translation id="1892341345406963517">Hallo <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Sonstige Sprachen</translation>
 <translation id="1895252664692693738">Noch <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Herunterfahren</translation>
@@ -3129,6 +3131,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5213891612754844763">Proxyeinstellungen anzeigen</translation>
 <translation id="5215502535566372932">Land auswählen</translation>
 <translation id="521582610500777512">Das Foto wurde verworfen.</translation>
+<translation id="5222403284441421673">Unsicherer Download blockiert</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="52232769093306234">Fehler bei der Paketerstellung.</translation>
 <translation id="5225324770654022472">Verknüpfung "Apps" anzeigen</translation>
@@ -3527,6 +3530,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5734362860645681824">Kommunikation</translation>
 <translation id="5734697361979786483">Dateifreigabe hinzufügen</translation>
 <translation id="5736796278325406685">Bitte geben Sie einen gültigen Nutzernamen ein</translation>
+<translation id="5739017626473506901">Melden Sie sich an, damit <ph name="USER_NAME" /> ein Konto einer Bildungseinrichtung hinzufügen kann</translation>
 <translation id="5739235828260127894">Bestätigung steht aus. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Sehr groß</translation>
 <translation id="574209121243317957">Tonhöhe</translation>
@@ -5094,7 +5098,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
     <ph name="BEGIN_BOLD" />Hinweis<ph name="END_BOLD" />: Das System wird während des Vorgangs neu gestartet.</translation>
 <translation id="7828731929332799387">Dadurch werden alle Cookies und Websitedaten von Drittanbietern gelöscht. Möchten Sie fortfahren?</translation>
 <translation id="7829298379596169484">Zugriff auf Audio-Eingang</translation>
-<translation id="7829877209233347340">Elternteil bitten, sich anzumelden, um das Hinzufügen eines Kontos einer Bildungseinrichtung zu erlauben</translation>
+<translation id="7829877209233347340">Es muss sich zuerst ein Elternteil anmelden und seine Zustimmung geben, damit das Konto einer Bildungseinrichtung hinzugefügt werden kann</translation>
 <translation id="7830594666202422257">Mit Linux verbinden</translation>
 <translation id="7831491651892296503">Fehler bei der Netzwerkkonfiguration</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5534,6 +5538,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8408068190360279472">Netzwerk: <ph name="NETWORK_TYPE" />, Verbindung wird hergestellt</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Zuerst fragen (empfohlen)</translation>
+<translation id="8417548266957501132">Elternpasswort</translation>
 <translation id="8417573335434189196">Damit sind Sie nicht vor schädlichen Websites, Downloads oder Erweiterungen geschützt. Wir raten von dieser Einstellung ab.</translation>
 <translation id="8418445294933751433">Al&amp;s Tab anzeigen</translation>
 <translation id="8419098111404128271">Suchergebnisse für "<ph name="SEARCH_TEXT" />"</translation>

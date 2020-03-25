@@ -30,6 +30,9 @@
           '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
           '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
         ],
+        'swarming': {
+          'shards': 2,
+        },
         'test': 'chrome_public_test_vr_apk',
       },
       'chrome_public_test_vr_apk-ddready-ddview': {
@@ -46,7 +49,7 @@
         ],
         'mixins': ['chrome-gold-service-account'],
         'swarming': {
-          'shards': 2,
+          'shards': 4,
         },
         'test': 'chrome_public_test_vr_apk',
       },
@@ -3218,14 +3221,11 @@
           '--test-launcher-retry-limit=0',
           '--enable-pixel-output-in-tests',
         ],
-        # Temporarily disable args so Gold will not make comments.
-        # TODO(crbug.com/1059469): Re-enable once we stabilize the system so that it won't
-        # comment on non-related changes.
-        # 'precommit_args': [
-        #   '--issue=${patch_issue}',
-        #   '--patchset=${patch_set}',
-        #   '--jobid=${buildbucket_build_id}',
-        # ],
+        'precommit_args': [
+          '--issue=${patch_issue}',
+          '--patchset=${patch_set}',
+          '--jobid=${buildbucket_build_id}',
+        ],
         'experiment_percentage': 100,
         'test': 'browser_tests',
         'mixins': ['chrome-gold-service-account'],

@@ -288,11 +288,6 @@ void ThrottlingNetworkTransaction::SetResponseHeadersCallback(
   network_transaction_->SetResponseHeadersCallback(std::move(callback));
 }
 
-void ThrottlingNetworkTransaction::SetBeforeHeadersSentCallback(
-    const BeforeHeadersSentCallback& callback) {
-  network_transaction_->SetBeforeHeadersSentCallback(callback);
-}
-
 int ThrottlingNetworkTransaction::ResumeNetworkStart() {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;

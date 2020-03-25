@@ -105,7 +105,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidSearchEngineChoiceNotification,
-    &kAndroidSiteSettingsUIRefresh,
     &kBookmarksShowInFolder,
     &kCastDeviceFilter,
     &kCloseTabSuggestions,
@@ -298,8 +297,6 @@ const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
 const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAndroidSiteSettingsUIRefresh{
-    "AndroidSiteSettingsUIRefresh", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};

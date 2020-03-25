@@ -29,6 +29,7 @@ class WifiConfigurationSyncServiceFactory
   static chromeos::sync_wifi::WifiConfigurationSyncService* GetForProfile(
       Profile* profile);
   static WifiConfigurationSyncServiceFactory* GetInstance();
+  static bool ShouldRunInProfile(const Profile* profile);
 
  private:
   friend struct base::DefaultSingletonTraits<

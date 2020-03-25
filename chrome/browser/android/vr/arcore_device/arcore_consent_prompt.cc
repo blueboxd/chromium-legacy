@@ -16,7 +16,7 @@ using base::android::AttachCurrentThread;
 namespace vr {
 
 ArCoreConsentPrompt::ArCoreConsentPrompt()
-    : XrConsentHelper(), weak_ptr_factory_(this) {}
+    : content::XrConsentHelper(), weak_ptr_factory_(this) {}
 
 ArCoreConsentPrompt::~ArCoreConsentPrompt() {
   if (!jdelegate_.is_null()) {
@@ -27,8 +27,8 @@ ArCoreConsentPrompt::~ArCoreConsentPrompt() {
 void ArCoreConsentPrompt::ShowConsentPrompt(
     int render_process_id,
     int render_frame_id,
-    XrConsentPromptLevel consent_level,
-    OnUserConsentCallback response_callback) {
+    content::XrConsentPromptLevel consent_level,
+    content::OnXrUserConsentCallback response_callback) {
   DCHECK(!on_user_consent_callback_);
   on_user_consent_callback_ = std::move(response_callback);
   consent_level_ = consent_level;

@@ -458,6 +458,7 @@
 <translation id="1616206807336925449">Kjo shtesë nuk kërkon leje të veçanta.</translation>
 <translation id="1616298854599875024">Importimi i shtesës "<ph name="IMPORT_NAME" />" është i pamundur, sepse nuk është një modul i ndarë.</translation>
 <translation id="1618268899808219593">Qendra e n&amp;dihmës</translation>
+<translation id="1620307519959413822">Fjalëkalim i gabuar. Provo përsëri ose kliko te "Harrova fjalëkalimin" për ta rivendosur.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623132449929929218">Imazhet nuk ofrohen për momentin. Rilidhu me internetin për të parë koleksionet e imazheve të sfondit.</translation>
 <translation id="1627276047960621195">Përshkruesit e skedarëve</translation>
@@ -676,6 +677,7 @@
 <translation id="1887850431809612466">Rishikimi i harduerit</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID-ja: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Hap ekranin e plotë</translation>
+<translation id="1892341345406963517">Përshëndetje <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Gjuhë të tjera</translation>
 <translation id="1895252664692693738">Koha e mbetur: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Mbyllja</translation>
@@ -3130,6 +3132,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5213891612754844763">Shfaq cilësimet e përfaqësuesit</translation>
 <translation id="5215502535566372932">Zgjidh vendin</translation>
 <translation id="521582610500777512">Fotografia u hoq</translation>
+<translation id="5222403284441421673">Një shkarkim i pasigurt u bllokua</translation>
 <translation id="5222676887888702881">Dil</translation>
 <translation id="52232769093306234">Paketimi dështoi.</translation>
 <translation id="5225324770654022472">Shfaq shkurtoren e aplikacioneve</translation>
@@ -3528,6 +3531,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5734362860645681824">Komunikimet</translation>
 <translation id="5734697361979786483">Shto një ndarje të skedarit</translation>
 <translation id="5736796278325406685">Fut një emër të vlefshëm përdoruesi</translation>
+<translation id="5739017626473506901">Identifikohu për të ndihmuar që <ph name="USER_NAME" /> të shtojë një llogari të shkollës</translation>
 <translation id="5739235828260127894">Në pritje të verifikimit. <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Shumë të mëdha</translation>
 <translation id="574209121243317957">Tonaliteti</translation>
@@ -5534,6 +5538,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8408068190360279472">Rrjeti <ph name="NETWORK_TYPE" />, po lidhet</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Pyet në fillim (rekomandohet)</translation>
+<translation id="8417548266957501132">Fjalëkalimi i prindit</translation>
 <translation id="8417573335434189196">Nuk të mbron kundër faqeve të internetit, shkarkimeve ose shtesave të rrezikshme. Chrome nuk e rekomandon këtë cilësim.</translation>
 <translation id="8418445294933751433">&amp;Shfaq si skedë</translation>
 <translation id="8419098111404128271">Rezultatet e kërkimit për "<ph name="SEARCH_TEXT" />"</translation>

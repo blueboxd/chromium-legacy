@@ -21,9 +21,6 @@
 # crbug/1032118
 -org.chromium.chrome.browser.notifications.StandardNotificationBuilderTest.testSetAll
 
-# crbug/1036551
--org.chromium.chrome.browser.tabmodel.TabModelMergingTest.testMergeOnColdStartIntoChromeTabbedActivity2
-
 # crbug/1036459
 -org.chromium.chrome.browser.ntp.NewTabPageTest.testFocusFakebox
 

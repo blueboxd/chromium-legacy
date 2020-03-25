@@ -25,6 +25,7 @@ MediaHistoryUI::MediaHistoryUI(content::WebUI* web_ui)
   // Setup the data source behind chrome://media-history.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaHistoryHost));
+  source->AddResourcePath("media-data-table.js", IDR_MEDIA_DATA_TABLE_JS);
   source->AddResourcePath("media-history.js", IDR_MEDIA_HISTORY_JS);
   source->AddResourcePath(
       "services/media_session/public/mojom/media_session.mojom-lite.js",

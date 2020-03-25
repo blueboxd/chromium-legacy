@@ -108,6 +108,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/mime_registry_impl.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/native_io/native_io_context.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -2026,6 +2027,16 @@ void RenderProcessHostImpl::BindNativeFileSystemManager(
           // the Quarantine Service.
           origin.GetURL(), GetID(), MSG_ROUTING_NONE),
       std::move(receiver));
+}
+
+void RenderProcessHostImpl::BindNativeIOHost(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* storage_partition =
+      static_cast<StoragePartitionImpl*>(GetStoragePartition());
+  storage_partition->GetNativeIOContext()->BindReceiver(origin,
+                                                        std::move(receiver));
 }
 
 void RenderProcessHostImpl::SetClockForTesting(base::TickClock* clock) {

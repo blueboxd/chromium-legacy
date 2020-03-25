@@ -1034,7 +1034,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
     donde se indica que se aplicará una política de origen a todas las solicitudes. Sin embargo,
     el encabezado tiene un formato no válido, por lo que el navegador no puede cumplir
     con tu solicitud para <ph name="SITE" />. Los operadores de sitios pueden usar
-    las políticas de origen para configurar la seguridad y otras propiedades de un sitio.</translation>
+    políticas de origen para configurar la seguridad y otras propiedades de un sitio.</translation>
 <translation id="5386426401304769735">La cadena del certificado de este sitio web contiene un certificado que se firmó con SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Costura de borde a la derecha</translation>

@@ -1420,8 +1420,14 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
     if (extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
-            .is_empty())
+            .is_empty()) {
       continue;
+    }
+    GURL url =
+        extensions::chrome_manifest_urls::GetDevToolsPage(extension.get());
+    const bool is_extension_url = url.SchemeIs(extensions::kExtensionScheme) &&
+                                  url.host_piece() == extension->id();
+    CHECK(is_extension_url || url.SchemeIsHTTPOrHTTPS());
 
     // Each devtools extension will need to be able to run in the devtools
     // process. Grant the devtools process the ability to request URLs from the
@@ -1432,10 +1438,7 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
 
     std::unique_ptr<base::DictionaryValue> extension_info(
         new base::DictionaryValue());
-    extension_info->SetString(
-        "startPage",
-        extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
-            .spec());
+    extension_info->SetString("startPage", url.spec());
     extension_info->SetString("name", extension->name());
     extension_info->SetBoolean("exposeExperimentalAPIs",
                                extension->permissions_data()->HasAPIPermission(

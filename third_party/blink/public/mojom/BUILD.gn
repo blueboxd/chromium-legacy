@@ -99,6 +99,7 @@ mojom("mojom_platform") {
     "native_file_system/native_file_system_file_writer.mojom",
     "native_file_system/native_file_system_manager.mojom",
     "native_file_system/native_file_system_transfer_token.mojom",
+    "native_io/native_io.mojom",
     "notifications/notification.mojom",
     "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",

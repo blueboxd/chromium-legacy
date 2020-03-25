@@ -880,6 +880,18 @@ interface MojoWatcher
     attribute @@toStringTag
     method cancel
     method constructor
+interface NativeIOFile
+    attribute @@toStringTag
+    method close
+    method constructor
+    method read
+    method write
+interface NativeIOManager
+    attribute @@toStringTag
+    method constructor
+    method delete
+    method getAll
+    method open
 interface NavigationPreloadManager
     attribute @@toStringTag
     method constructor
@@ -3714,6 +3726,7 @@ interface WorkerGlobalScope : EventTarget
     getter indexedDB
     getter isSecureContext
     getter location
+    getter nativeIO
     getter navigator
     getter onerror
     getter onlanguagechange

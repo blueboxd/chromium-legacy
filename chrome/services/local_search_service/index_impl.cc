@@ -16,7 +16,7 @@ namespace local_search_service {
 
 namespace {
 
-using Hits = std::vector<mojom::RangePtr>;
+using Hits = std::vector<local_search_service::Range>;
 
 void TokenizeSearchTags(
     const std::vector<base::string16>& search_tags,
@@ -54,8 +54,10 @@ bool IsItemRelevant(
                          partial_match_penalty_rate)) {
       *relevance_score = match.relevance();
       for (const auto& hit : match.hits()) {
-        mojom::RangePtr range = mojom::Range::New(hit.start(), hit.end());
-        hits->push_back(std::move(range));
+        local_search_service::Range range;
+        range.start = hit.start();
+        range.end = hit.end();
+        hits->push_back(range);
       }
       return true;
     }
@@ -63,12 +65,20 @@ bool IsItemRelevant(
   return false;
 }
 
-// Compares mojom::ResultPtr by |score|.
-bool CompareResultPtr(const mojom::ResultPtr& r1, const mojom::ResultPtr& r2) {
-  return r1->score > r2->score;
+// Compares Results by |score|.
+bool CompareResults(const local_search_service::Result& r1,
+                    const local_search_service::Result& r2) {
+  return r1.score > r2.score;
 }
 
 }  // namespace
+
+local_search_service::Data::Data() = default;
+local_search_service::Data::Data(const Data& data) = default;
+local_search_service::Data::~Data() = default;
+local_search_service::Result::Result() = default;
+local_search_service::Result::Result(const Result& result) = default;
+local_search_service::Result::~Result() = default;
 
 IndexImpl::IndexImpl() = default;
 
@@ -79,31 +89,57 @@ void IndexImpl::BindReceiver(mojo::PendingReceiver<mojom::Index> receiver) {
 }
 
 void IndexImpl::GetSize(GetSizeCallback callback) {
-  std::move(callback).Run(data_.size());
+  const uint64_t size = GetSize();
+  std::move(callback).Run(size);
+}
+
+uint64_t IndexImpl::GetSize() {
+  return data_.size();
 }
 
 void IndexImpl::AddOrUpdate(std::vector<mojom::DataPtr> data,
                             AddOrUpdateCallback callback) {
-  for (const auto& item : data) {
-    const auto& id = item->id;
-    // Keys shouldn't be empty.
-    if (id.empty())
+  std::vector<local_search_service::Data> data_in;
+  for (const auto& d : data) {
+    if (d->id.empty())
       receivers_.ReportBadMessage("Empty ID in updated data");
+
+    local_search_service::Data d_in;
+    d_in.id = d->id;
+    d_in.search_tags = d->search_tags;
+    data_in.push_back(d_in);
+  }
+
+  AddOrUpdate(data_in);
+  std::move(callback).Run();
+}
+
+void IndexImpl::AddOrUpdate(
+    const std::vector<local_search_service::Data>& data) {
+  for (const auto& item : data) {
+    const auto& id = item.id;
+    DCHECK(!id.empty());
 
     // If a key already exists, it will overwrite earlier data.
     data_[id] = std::vector<std::unique_ptr<TokenizedString>>();
-    TokenizeSearchTags(item->search_tags, &data_[id]);
+    TokenizeSearchTags(item.search_tags, &data_[id]);
   }
-  std::move(callback).Run();
 }
 
 void IndexImpl::Delete(const std::vector<std::string>& ids,
                        DeleteCallback callback) {
-  uint32_t num_deleted = 0u;
   for (const auto& id : ids) {
-    // Keys shouldn't be empty.
     if (id.empty())
       receivers_.ReportBadMessage("Empty ID in deleted data");
+  }
+  const uint32_t num_deleted = Delete(ids);
+  std::move(callback).Run(num_deleted);
+}
+
+uint32_t IndexImpl::Delete(const std::vector<std::string>& ids) {
+  uint32_t num_deleted = 0u;
+  for (const auto& id : ids) {
+    DCHECK(!id.empty());
 
     const auto& it = data_.find(id);
     if (it != data_.end()) {
@@ -112,30 +148,87 @@ void IndexImpl::Delete(const std::vector<std::string>& ids,
       ++num_deleted;
     }
   }
-  std::move(callback).Run(num_deleted);
+  return num_deleted;
 }
 
 void IndexImpl::Find(const base::string16& query,
                      int32_t max_latency_in_ms,
                      int32_t max_results,
                      FindCallback callback) {
-  if (query.empty()) {
-    std::move(callback).Run(mojom::ResponseStatus::EMPTY_QUERY, base::nullopt);
-    return;
+  std::vector<local_search_service::Result> results;
+  const auto response = Find(query, max_latency_in_ms, max_results, &results);
+
+  mojom::ResponseStatus mresponse = mojom::ResponseStatus::UNKNOWN_ERROR;
+  switch (response) {
+    case local_search_service::ResponseStatus::kEmptyQuery:
+      mresponse = mojom::ResponseStatus::EMPTY_QUERY;
+      break;
+    case local_search_service::ResponseStatus::kEmptyIndex:
+      mresponse = mojom::ResponseStatus::EMPTY_INDEX;
+      break;
+    case local_search_service::ResponseStatus::kSuccess:
+      mresponse = mojom::ResponseStatus::SUCCESS;
+      break;
+    default:
+      break;
   }
-  if (data_.empty()) {
-    std::move(callback).Run(mojom::ResponseStatus::EMPTY_INDEX, base::nullopt);
+
+  if (mresponse != mojom::ResponseStatus::SUCCESS) {
+    std::move(callback).Run(mresponse, base::nullopt);
     return;
   }
 
-  std::vector<mojom::ResultPtr> results = GetSearchResults(query);
-  std::move(callback).Run(mojom::ResponseStatus::SUCCESS, std::move(results));
+  std::vector<mojom::ResultPtr> mresults;
+  for (const auto& r : results) {
+    mojom::ResultPtr mr = mojom::Result::New();
+    mr->id = r.id;
+    mr->score = r.score;
+    std::vector<mojom::RangePtr> mhits;
+    for (const auto& hit : r.hits) {
+      mojom::RangePtr range = mojom::Range::New(hit.start, hit.end);
+      mhits.push_back(std::move(range));
+    }
+    mr->hits = std::move(mhits);
+    mresults.push_back(std::move(mr));
+  }
+
+  std::move(callback).Run(mojom::ResponseStatus::SUCCESS, std::move(mresults));
+}
+
+local_search_service::ResponseStatus IndexImpl::Find(
+    const base::string16& query,
+    int32_t max_latency_in_ms,
+    int32_t max_results,
+    std::vector<local_search_service::Result>* results) {
+  DCHECK(results);
+  results->clear();
+  if (query.empty()) {
+    return local_search_service::ResponseStatus::kEmptyQuery;
+  }
+  if (data_.empty()) {
+    return local_search_service::ResponseStatus::kEmptyIndex;
+  }
+
+  *results = GetSearchResults(query);
+  return local_search_service::ResponseStatus::kSuccess;
 }
 
 void IndexImpl::SetSearchParams(mojom::SearchParamsPtr search_params,
                                 SetSearchParamsCallback callback) {
-  search_params_ = std::move(search_params);
+  local_search_service::SearchParams search_params_in;
+  search_params_in.relevance_threshold = search_params->relevance_threshold;
+  search_params_in.partial_match_penalty_rate =
+      search_params->partial_match_penalty_rate;
+  search_params_in.use_prefix_only = search_params->use_prefix_only;
+  search_params_in.use_weighted_ratio = search_params->use_weighted_ratio;
+  search_params_in.use_edit_distance = search_params->use_edit_distance;
+  SetSearchParams(search_params_in);
   std::move(callback).Run();
+}
+
+void IndexImpl::SetSearchParams(
+    const local_search_service::SearchParams& search_params) {
+  search_params_ = search_params;
 }
 
 void IndexImpl::GetSearchParamsForTesting(double* relevance_threshold,
@@ -149,36 +242,36 @@ void IndexImpl::GetSearchParamsForTesting(double* relevance_threshold,
   DCHECK(use_weighted_ratio);
   DCHECK(use_edit_distance);
 
-  *relevance_threshold = search_params_->relevance_threshold;
-  *partial_match_penalty_rate = search_params_->partial_match_penalty_rate;
-  *use_prefix_only = search_params_->use_prefix_only;
-  *use_weighted_ratio = search_params_->use_weighted_ratio;
-  *use_edit_distance = search_params_->use_edit_distance;
+  *relevance_threshold = search_params_.relevance_threshold;
+  *partial_match_penalty_rate = search_params_.partial_match_penalty_rate;
+  *use_prefix_only = search_params_.use_prefix_only;
+  *use_weighted_ratio = search_params_.use_weighted_ratio;
+  *use_edit_distance = search_params_.use_edit_distance;
 }
 
-std::vector<mojom::ResultPtr> IndexImpl::GetSearchResults(
+std::vector<local_search_service::Result> IndexImpl::GetSearchResults(
     const base::string16& query) const {
-  std::vector<mojom::ResultPtr> results;
+  std::vector<local_search_service::Result> results;
   const TokenizedString tokenized_query(query);
 
   for (const auto& item : data_) {
     double relevance_score = 0.0;
     Hits hits;
     if (IsItemRelevant(
-            tokenized_query, item.second, search_params_->relevance_threshold,
-            search_params_->use_prefix_only, search_params_->use_weighted_ratio,
-            search_params_->use_edit_distance,
-            search_params_->partial_match_penalty_rate, &relevance_score,
+            tokenized_query, item.second, search_params_.relevance_threshold,
+            search_params_.use_prefix_only, search_params_.use_weighted_ratio,
+            search_params_.use_edit_distance,
+            search_params_.partial_match_penalty_rate, &relevance_score,
             &hits)) {
-      mojom::ResultPtr result = mojom::Result::New();
-      result->id = item.first;
-      result->score = relevance_score;
-      result->hits = std::move(hits);
-      results.push_back(std::move(result));
+      local_search_service::Result result;
+      result.id = item.first;
+      result.score = relevance_score;
+      result.hits = hits;
+      results.push_back(result);
     }
   }
 
-  std::sort(results.begin(), results.end(), CompareResultPtr);
+  std::sort(results.begin(), results.end(), CompareResults);
   return results;
 }
 

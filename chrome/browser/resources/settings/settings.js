@@ -50,7 +50,7 @@ export {OpenWindowProxyImpl} from './open_window_proxy.m.js';
 export {PageStatus, StatusAction, SyncBrowserProxyImpl} from './people_page/sync_browser_proxy.m.js';
 export {ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_proxy.m.js';
 export {pageVisibility} from './page_visibility.m.js';
-export {PasswordManagerImpl} from './autofill_page/password_manager_proxy.m.js';
+export {PasswordManagerProxy, PasswordManagerImpl} from './autofill_page/password_manager_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.m.js';
 export {routes} from './route.m.js';

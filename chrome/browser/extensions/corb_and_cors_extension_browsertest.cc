@@ -50,9 +50,20 @@ namespace extensions {
 namespace {
 
 enum TestParam {
+  // Whether the extension under test is "allowlisted" (see
+  // GetExtensionsAllowlist in
+  // //extensions/browser/url_loader_factory_manager.cc).
   kAllowlisted = 1 << 0,
+
+  // Whether network::features::kOutOfBlinkCors is enabled.
   kOutOfBlinkCors = 1 << 1,
+
+  // Whether network::features::kCorbAllowlistAlsoAppliesToOorCors is enabled.
   kAllowlistForCors = 1 << 2,
+
+  // Whether network::features::
+  // kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess is
+  // enabled.
   kDeriveOriginFromUrl = 1 << 3,
 };
 
@@ -160,6 +171,7 @@ class CorbAndCorsExtensionBrowserTest
     return (GetParam() & TestParam::kOutOfBlinkCors) != 0;
   }
 
+  // This returns true if content scripts are not exempt from CORS.
   bool ShouldAllowlistAlsoApplyToOorCors() {
     return (GetParam() & TestParam::kAllowlistForCors) != 0;
   }
@@ -181,6 +193,8 @@ class CorbAndCorsExtensionBrowserTest
           }],
     )";
 
+    // Note that the hardcoded "key" below matches kExpectedHashedExtensionId
+    // (used by the test suite for allowlisting the extension as needed).
     const char kManifestTemplate[] = R"(
         {
           "name": "CrossOriginReadBlockingTest - Extension",
@@ -212,26 +226,9 @@ class CorbAndCorsExtensionBrowserTest
           CreateFetchScript(resource_to_fetch_from_declarative_content_script));
     }
     extension_ = LoadExtension(dir_.UnpackedPath());
+    DCHECK(extension_);
 
-    // The allowlist is populated via
-    // 1. Field trial param (only if ShouldAllowlistAlsoApplyToOorCors)
-    // 2. Hardcoded list (all cases).
-    // If path #1 is unavailable (i.e. if base::FieldTrialParams was not
-    // populated in the constructor of the test suite), then the test needs to
-    // modify the hardcoded list via Add/RemoveExtensionFromAllowlistForTesting.
-    if (!ShouldAllowlistAlsoApplyToOorCors()) {
-      if (IsExtensionAllowlisted()) {
-        URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(*extension_);
-      } else {
-        URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
-            *extension_);
-      }
-    }
-
-    // Sanity check that the field trial param (which has to be registered via
-    // ScopedFeatureList early) uses the right extension id hash.
-    EXPECT_EQ(kExpectedHashedExtensionId, extension_->hashed_id().value());
-
+    AllowlistExtensionIfNeeded(*extension_);
     return extension_;
   }
 
@@ -322,6 +319,10 @@ class CorbAndCorsExtensionBrowserTest
   //                           should not be blocked
   // 2. Other extension: Fetches from content scripts should be blocked by
   //    either: only CORB or CORS+CORB.
+  //
+  // This verification helper might not work for non-CORB-eligible resources
+  // like MIME types not covered by CORB (e.g. application/octet-stream) or
+  // same-origin responses.
   void VerifyFetchFromContentScript(const base::HistogramTester& histograms,
                                     const std::string& actual_fetch_result,
                                     const std::string& expected_fetch_result) {
@@ -359,6 +360,27 @@ class CorbAndCorsExtensionBrowserTest
 
   content::WebContents* active_web_contents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  const Extension* InstallExtensionWithPermissionToAllUrls() {
+    // Note that the hardcoded "key" below matches kExpectedHashedExtensionId
+    // (used by the test suite for allowlisting the extension as needed).
+    const char kManifest[] = R"(
+        {
+          "name": "CrossOriginReadBlockingTest - Extension/AllUrls",
+          "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjzv7dI7Ygyh67VHE1DdidudpYf8PFfv8iucWvzO+3xpF/Dm5xNo7aQhPNiEaNfHwJQ7lsp4gc+C+4bbaVewBFspTruoSJhZc5uEfqxwovJwN+v1/SUFXTXQmQBv6gs0qZB4gBbl4caNQBlqrFwAMNisnu1V6UROna8rOJQ90D7Nv7TCwoVPKBfVshpFjdDOTeBg4iLctO3S/06QYqaTDrwVceSyHkVkvzBY6tc6mnYX0RZu78J9iL8bdqwfllOhs69cqoHHgrLdI6JdOyiuh6pBP6vxMlzSKWJ3YTNjaQTPwfOYaLMuzdl0v+YdzafIzV9zwe4Xiskk+5JNGt8b2rQIDAQAB",
+          "version": "1.0",
+          "manifest_version": 2,
+          "permissions": [ "tabs", "<all_urls>" ],
+          "background": {"scripts": ["background_script.js"]}
+        } )";
+    dir_.WriteManifest(kManifest);
+    dir_.WriteFile(FILE_PATH_LITERAL("background_script.js"), "");
+    extension_ = LoadExtension(dir_.UnpackedPath());
+    DCHECK(extension_);
+
+    AllowlistExtensionIfNeeded(*extension_);
+    return extension_;
   }
 
   bool RegisterServiceWorkerForExtension(
@@ -463,6 +485,27 @@ class CorbAndCorsExtensionBrowserTest
   }
 
  private:
+  void AllowlistExtensionIfNeeded(const Extension& extension) {
+    // Sanity check that the field trial param (which has to be registered via
+    // ScopedFeatureList early) uses the right extension id hash.
+    EXPECT_EQ(kExpectedHashedExtensionId, extension.hashed_id().value());
+
+    if (ShouldAllowlistAlsoApplyToOorCors()) {
+      // Allowlist has already been populated via field trial param (see the
+      // constructor of CrossOriginReadBlockingExtensionAllowlistingTest).
+      return;
+    }
+
+    // If field trial param cannot be used, fall back to allowlisting via
+    // URLLoaderFactoryManager's test support methods.
+    if (IsExtensionAllowlisted()) {
+      URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(extension);
+    } else {
+      URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
+          extension);
+    }
+  }
+
   // Executes |regular_script| in |web_contents|.
   //
   // This is an implementation of FetchCallback.
@@ -724,6 +767,33 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
       VerifyFetchFromContentScriptWasBlockedByCorb(histograms);
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
+                       FromProgrammaticContentScript_PermissionToAllUrls) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(InstallExtensionWithPermissionToAllUrls());
+
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that performs a cross-origin fetch to
+  // cross-site.com.
+  base::HistogramTester histograms;
+  GURL cross_site_resource(
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
+  std::string fetch_result =
+      FetchViaContentScript(cross_site_resource, active_web_contents());
+
+  // Verify whether the fetch worked or not (expectations differ depending on
+  // various factors - see the body of VerifyFetchFromContentScript).
+  VerifyFetchFromContentScript(histograms, fetch_result,
+                               "nosniff.xml - body\n");
 }
 
 // Test that verifies the current, baked-in (but not necessarily desirable

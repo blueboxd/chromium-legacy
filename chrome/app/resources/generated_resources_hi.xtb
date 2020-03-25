@@ -39,6 +39,7 @@
 <translation id="1042174272890264476">आपके कंप्यूटर में पहले से ही <ph name="SHORT_PRODUCT_NAME" /> की RLZ लाइब्रेरी होती है. किसी खास प्रचार कैंपेन में इस्तेमाल हुई खोजों और <ph name="SHORT_PRODUCT_NAME" /> के इस्तेमाल को मापने के लिए, RLZ एक बिना-विशिष्ट, बिना निजी तौर वाला टैग तय करता है. कभी-कभी ये लेबल <ph name="PRODUCT_NAME" /> में 'Google सर्च' क्वेरी में दिखाई देते हैं.</translation>
 <translation id="1043818413152647937">क्या आप इन ऐप्लिकेशन से डेटा भी मिटाना चाहते हैं?</translation>
 <translation id="1046635659603195359">ऐसा लगता है कि आपने पहले ही किसी दूसरे डिवाइस पर अपनी Google Assistant की मदद से Voice Match सेट अप कर लिया है. इस डिवाइस पर आवाज़ का नमूना बनाने के लिए इन पुरानी रिकॉर्डिंग का इस्तेमाल किया जा सकता है. इसमें एक मिनट से भी कम समय लगेगा.</translation>
+<translation id="104710386808485638">क्या आप Linux को रीस्टार्ट करना चाहते हैं?</translation>
 <translation id="1047431265488717055">लिंक ले&amp;ख को कॉपी करें</translation>
 <translation id="1048286738600630630">डिसप्ले</translation>
 <translation id="1049743911850919806">गुप्त</translation>
@@ -119,6 +120,7 @@
 <translation id="1161575384898972166">क्लाइंट प्रमाणपत्र निर्यात करने के लिए, कृपया <ph name="TOKEN_NAME" /> में साइन इन करें.</translation>
 <translation id="1163931534039071049">फ़्रेम का स्रोत &amp;देखें</translation>
 <translation id="1164674268730883318"><ph name="DEVICE_TYPE" /> के लिए Smart Lock बंद करें?</translation>
+<translation id="1164891049599601209">यह पासवर्ड धोखाधड़ी वाली साइट पर डाला गया था</translation>
 <translation id="1164899421101904659">पिन अनलॉक कुंजी डालें</translation>
 <translation id="1165039591588034296">गड़बड़ी</translation>
 <translation id="1166212789817575481">दाईं ओर के टैब बंद करें</translation>
@@ -189,6 +191,7 @@
 <translation id="1243314992276662751">अपलोड करें</translation>
 <translation id="1244265436519979884">फ़िलहाल, Linux की बहाल करने की प्रक्रिया जारी है</translation>
 <translation id="1244303850296295656">एक्‍सटेंशन गड़बड़ी</translation>
+<translation id="1246158006305844142">आपके ऐप्लिकेशन और सेटिंग उन सभी Chrome OS डिवाइस में सिंक हो जाएंगी जिनमें आपने अपने Google खाते से साइन किया है. ब्राउज़र को सिंक करने के विकल्पों के लिए,<ph name="LINK_BEGIN" />Chrome की सेटिंग<ph name="LINK_END" /> पर जाएं.</translation>
 <translation id="1246905108078336582">क्लिपबोर्ड से सुझाव हटाना चाहते हैं?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> अब काम नहीं करता, इसलिए इसे ब्लॉक कर दिया गया</translation>
 <translation id="1251366534849411931">शुरुआत में दिखने वाले ज़रूरी कर्ली ब्रेस: <ph name="ERROR_LINE" /></translation>
@@ -387,6 +390,7 @@
 <translation id="1524563461097350801">नहीं, रहने दें</translation>
 <translation id="1525740877599838384">स्थान तय करने के लिए सिर्फ़ वाई-फ़ाई का इस्तेमाल करें</translation>
 <translation id="152629053603783244">Linux को रीस्टार्ट करें</translation>
+<translation id="1526335046150927198">टचपैड पर स्क्रोल की रफ़्तार बढ़ाने की सुविधा चालू करें</translation>
 <translation id="1526560967942511387">शीर्षक रहित दस्तावेज़</translation>
 <translation id="1529891865407786369">पावर स्रोत</translation>
 <translation id="1530838837447122178">माउस और टचपैड डिवाइस सेटिंग खोलें</translation>
@@ -401,6 +405,7 @@
 <translation id="1545177026077493356">स्वचालित किओस्क मोड</translation>
 <translation id="1545775234664667895">थीम "<ph name="THEME_NAME" />" स्थापित की गई</translation>
 <translation id="1546280085599573572">इस एक्सटेंशन ने यह बदल दिया है कि जब आप 'होम बटन' पर क्लिक करते हैं तब कौन सा पेज दिखाया जाए.</translation>
+<translation id="1546452108651444655"><ph name="CHILD_NAME" /> एक <ph name="EXTENSION_TYPE" /> इंस्टॉल करना चाहता है जो ये काम कर सकता है:</translation>
 <translation id="1549275686094429035">एआरसी चालू है</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> ऐक्‍सेस करना चाहता है <ph name="VOLUME_NAME" />. वह आपकी फ़ाइलों में बदलाव कर सकता है या उन्‍हें मिटा सकता है.</translation>
 <translation id="1553538517812678578">असीमित</translation>
@@ -500,6 +505,7 @@
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">क्या आप वाकई बाहर निकलना चाहते हैं?</translation>
 <translation id="167983332380191032">प्रबंधक सेवा ने एचटीटीपी गड़बड़ी भेजी है.</translation>
+<translation id="1680841347983561661">कृपया Google Play को कुछ देर बाद शुरू करें.</translation>
 <translation id="1680849702532889074">आपका Linux ऐप्लिकेशन इंस्टॉल करते समय कोई गड़बड़ी हुई.</translation>
 <translation id="16815041330799488">साइटों को क्लिपबोर्ड पर कॉपी किए गए लेख और इमेज न देखने दें</translation>
 <translation id="1682548588986054654">नई &amp;गुप्त विंडो</translation>
@@ -913,6 +919,7 @@
 <translation id="2220572644011485463">पिन या पासवर्ड</translation>
 <translation id="2224444042887712269">यह सेटिंग <ph name="OWNER_EMAIL" /> से संबंधित है.</translation>
 <translation id="2224551243087462610">फ़ोल्डर के नाम में बदलाव करें</translation>
+<translation id="2225864335125757863">अपने खाते को सुरक्षित रखने के लिए, इन पासवर्ड को तुरंत बदलें:</translation>
 <translation id="2226449515541314767">इस साइट को MIDI डिवाइस का पूरा नियंत्रण रखने से ब्लॉक कर दिया गया है.</translation>
 <translation id="222704500187107962">आपके मौजूदा गुप्त सेशन से बाहर आने के बाद यह अपवाद अपने-आप हट जाएगा</translation>
 <translation id="2227179592712503583">सुझाव हटाएं</translation>
@@ -1038,6 +1045,7 @@
 <translation id="2387052489799050037">होम पेज पर जाएं</translation>
 <translation id="2387458720915042159">प्रॉक्सी कनेक्शन प्रकार</translation>
 <translation id="2391419135980381625">मानक फ़ॉन्ट</translation>
+<translation id="2392163307141705938">आप उस समयसीमा तक पहुंच गए हैं जो आपके माता-पिता ने <ph name="IDS_SHORT_PRODUCT_NAME" /> के लिए तय की थी.</translation>
 <translation id="2392369802118427583">सक्रिय करें</translation>
 <translation id="2394566832561516196">अगली बार फिर से लोड करने पर सेटिंग साफ़ हो जाएंगी.</translation>
 <translation id="2395616325548404795">आपका <ph name="DEVICE_TYPE" /> डिवाइस एंटरप्राइज़ प्रबंधन के लिए सफलतापूर्वक नामांकित हो गया है, लेकिन वह अपनी एसेट और स्‍थान की जानकारी भेजने में विफल रहा है. कृपया इस डिवाइस के लिए अपने Admin console से यह जानकारी मैन्‍युअल रूप से डालें.</translation>
@@ -1106,6 +1114,7 @@
 <translation id="247949520305900375">ऑडियो शेयर करें</translation>
 <translation id="2480868415629598489">अपने कॉपी किए हुए और चिपकाए हुए डेटा में बदलाव करें</translation>
 <translation id="2482878487686419369">सूचनाएं</translation>
+<translation id="2483610039979585156">आप जब तक <ph name="ORIGIN" /> वाले सभी टैब बंद नहीं कर देते, <ph name="ORIGIN" /> <ph name="FILENAME" /> में बदलाव कर सकता है</translation>
 <translation id="2484959914739448251">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />अपना लंबा पासवर्ड डालें<ph name="END_LINK" />.</translation>
 <translation id="2485005079599453134">इस डिवाइस पर सेव किया गया पासवर्ड</translation>
 <translation id="2485422356828889247">विस्थापित करें</translation>
@@ -1300,6 +1309,7 @@
 <translation id="2725200716980197196">नेटवर्क कनेक्टिविटी पुनर्स्थापित हो गई</translation>
 <translation id="2727633948226935816">मुझे फिर से याद न दिलाएं</translation>
 <translation id="2727712005121231835">वास्तविक आकार</translation>
+<translation id="2729314457178420145">ब्राउज़िंग डेटा (<ph name="URL" />) भी मिटाएं, इससे आप Google.com से साइन आउट हो सकते हैं. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Linux ऐप्लिकेशन और फ़ाइलों का बैक अप लिया जा रहा है</translation>
 <translation id="273093730430620027">यह पेज आपका कैमरा ऐक्सेस कर रहा है.</translation>
 <translation id="2731392572903530958">बंद की गई विंडो पु&amp;न: खोलें</translation>
@@ -1318,6 +1328,7 @@
 <translation id="274290345632688601">Linux ऐप्लिकेशन और फ़ाइलें इंपोर्ट की जा रही हैं</translation>
 <translation id="2743387203779672305">क्लिपबोर्ड में कॉपी करें</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
+<translation id="2748061034695037846"><ph name="DOMAIN" /> को रोका गया</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> में साइन इन करें</translation>
 <translation id="2749881179542288782">वर्तनी के साथ व्याकरण की जाँच करें</translation>
 <translation id="2751739896257479635">EAP चरण 2 प्रमाणीकरण</translation>
@@ -1327,6 +1338,7 @@
 <translation id="2757338480560142065">पक्का करें कि आप जो पासवर्ड सेव कर रहे हैं वह <ph name="WEBSITE" /> के आपके पासवर्ड से मेल खाता हो</translation>
 <translation id="2762441749940182211">कैमरा ब्लॉक किया गया है</translation>
 <translation id="2765217105034171413">छोटा</translation>
+<translation id="2766161002040448006">माता-पिता से पूछें</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश किया गया.</translation>
 <translation id="2770465223704140727">सूची से निकालें</translation>
 <translation id="2770690685823456775">अपने पासवर्ड किसी दूसरे फ़ोल्डर में निर्यात करें</translation>
@@ -1583,6 +1595,7 @@
 <translation id="3115580024857770654">सभी छिपाएं</translation>
 <translation id="3117362587799608430">डॉक पूरी तरह काम नहीं करता</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" />सहायता</translation>
+<translation id="3118654181216384296">कृपया Linux को कुछ देर बाद शुरू करें.</translation>
 <translation id="3120430004221004537">दी गई कार्रवाई के लिए इस पर सुरक्षित करने का तरीका काफी नहीं है: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">इस <ph name="IDS_SHORT_PRODUCT_NAME" /> डिवाइस को रीसेट करें</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1592,6 +1605,7 @@
 <translation id="3127156390846601284">यह ऐसे किसी भी डेटा को मिटा देगा जिसे दिखाई गईं सभी साइट के लिए आपके डिवाइस पर स्टोर किया गया है. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="3127860049873093642">चार्ज होने और परफ़ॉर्मेंस से जुड़ी समस्याओं से बचने के लिए, डिवाइस के साथ काम करने वाला Dell या यूएसबी टाइप-सी पावर अडैप्टर इस्तेमाल करें.</translation>
 <translation id="3129173833825111527">बायां हाशिया</translation>
+<translation id="3129215702932019810">ऐप्लिकेशन को लॉन्च करने में गड़बड़ी हुई</translation>
 <translation id="3130528281680948470">आपका डिवाइस रीसेट कर दिया जाएगा और सभी उपयोगकर्ता खाते और स्‍थानीय डेटा हटा दिए जाएंगे. इसे पहले जैसा नहीं किया जा सकता.</translation>
 <translation id="313205617302240621">पासवर्ड भूल गए?</translation>
 <translation id="3132996321662585180">हर रोज़ रीफ्रेश करें</translation>
@@ -1811,6 +1825,7 @@
 <translation id="3441653493275994384">स्क्रीन</translation>
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="344630545793878684">अपना डेटा कई वेबसाइटों पर पढ़ें</translation>
+<translation id="3448086340637592206">Google Chrome और Chrome OS की दूसरी शर्तें</translation>
 <translation id="3448492834076427715">खाता अपडेट करें</translation>
 <translation id="3449393517661170867">टैब की गई नई विंडो</translation>
 <translation id="3449839693241009168">आदेशों को <ph name="EXTENSION_NAME" /> पर भेजने के लिए <ph name="SEARCH_KEY" /> दबाएं</translation>
@@ -2136,6 +2151,7 @@
 <translation id="3838486795898716504">ज़्यादा <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">कुकी और अन्‍य साइट और प्‍लग इन डेटा</translation>
 <translation id="383891835335927981">कोई भी साइट ज़ूम इन या ज़ूम आउट नहीं की गई है</translation>
+<translation id="3839509547554145593">माउस पर स्क्रोल की रफ़्तार बढ़ाने की सुविधा चालू करें</translation>
 <translation id="3839516600093027468"><ph name="HOST" /> को क्लिपबोर्ड देखने से हमेशा ब्लॉक करें</translation>
 <translation id="3841964634449506551">पासवर्ड अमान्य है</translation>
 <translation id="3842552989725514455">Serif फ़ॉन्ट</translation>
@@ -2167,6 +2183,7 @@
 <translation id="3873423927483480833">पिन दिखाएं</translation>
 <translation id="3873915545594852654">एआरसी++ के साथ कोई समस्या हुई.</translation>
 <translation id="3879748587602334249">डाउनलोड मैनेजर</translation>
+<translation id="3881321138433527084">'सुरक्षित ब्राउज़िंग' बंद है. वेब पर सुरक्षित तरीके से काम करने के लिए, इसे चालू करें.</translation>
 <translation id="3882165008614329320">कैमरा या फ़ाइल से मौजूदा वीडियो</translation>
 <translation id="3886446263141354045">यह साइट एक्सेस करने का आपका अनुरोध <ph name="NAME" /> को भेज दिया गया है</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> से नोट लेना</translation>
@@ -2511,6 +2528,7 @@
 <translation id="4384652540891215547">एक्सटेंशन सक्रिय करें</translation>
 <translation id="438503109373656455">साराटोगा</translation>
 <translation id="4387004326333427325">प्रमाणीकरण प्रमाणपत्र को दूरस्थ रूप से अस्वीकार किया गया</translation>
+<translation id="4387890294700445764">चोरी या हैक हुए पासवर्ड</translation>
 <translation id="4389091756366370506">उपयोगकर्ता <ph name="VALUE" /></translation>
 <translation id="4390000551125140321">{0,plural, =1{गुप्त मोड}one{# गुप्त मोड विंडो खोलें}other{# गुप्त मोड विंडो खोलें}}</translation>
 <translation id="439266289085815679">ब्लूटूथ कॉन्फ़िगरेशन को <ph name="USER_EMAIL" /> से नियंत्रित किया जाता है.</translation>
@@ -2544,6 +2562,7 @@
 <translation id="4429030830601238961">यह डेटा आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. इसलिए, इसे चिपकाया नहीं जा सकता.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4430369329743628066">बुकमार्क जोड़ा गया</translation>
+<translation id="4432621511648257259">पासवर्ड गलत है</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
 <translation id="443454694385851356">विरासती (असुरक्षित)</translation>
 <translation id="443475966875174318">उन ऐप्लिकेशन को अपडेट करें या हटाएं, जो मेल नहीं खाती हैं</translation>
@@ -2732,6 +2751,7 @@
 <translation id="4699172675775169585">कैश इमेज और फ़ाइलें</translation>
 <translation id="4699357559218762027">(अपने-आप-लॉन्च किया गया)</translation>
 <translation id="470074695271471509">प्रक्रिया पूरी करने के लिए साइन आउट करें?</translation>
+<translation id="4701025263201366865">माता-पिता साइन इन करें</translation>
 <translation id="4707302005824653064">प्रबंधक (<ph name="CUSTODIAN_EMAIL" />) द्वारा chrome.com पर उपयोग और इतिहास की समीक्षा की जा सकती है.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + उपयोगकर्ता प्रमाणपत्र</translation>
 <translation id="4708794300267213770">निष्क्रिय से बाहर आने पर लॉक स्क्रीन दिखाएं</translation>
@@ -2823,6 +2843,7 @@
 <translation id="4850669014075537160">स्क्रॉल करना</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4853020600495124913">&amp;नई विंडो में खोलें</translation>
+<translation id="4854317507773910281">अनुमति मांगने के लिए माता-पिता का खाता चुनें</translation>
 <translation id="485480310608090163">ज़्यादा सेटिंग और अनुमतियां</translation>
 <translation id="4856478137399998590">आपकी मोबाइल डेटा सेवा सक्रिय कर दी गई है और उपयोग के लिए तैयार है</translation>
 <translation id="4856855265648545577">टैबलेट मोड में, 'शेल्फ़' में लॉन्चर, वापस जाएं, और खास जानकारी वाले बटन दिखाएं. ये बटन, ChromeVox (बोलकर दिया गया जवाब) या 'ऐक्सेस करने का तरीका बदलें' सुविधा हाेने पर ही चालू हाेते हैं.</translation>
@@ -2965,6 +2986,7 @@
 <translation id="504561833207953641">मौजूदा ब्राउज़र सत्र में खुल रहा है.</translation>
 <translation id="5047421709274785093">गति और लाइट सेंसर का उपयोग करने से साइटों को रोकें</translation>
 <translation id="5050042263972837708">समूह नाम</translation>
+<translation id="5051073330196664891">Google के सभी उत्पादों के लिए एक जैसी सेवा की शर्तें (uToS)</translation>
 <translation id="5051836348807686060">आपकी चुनी गई भाषा के लिए वर्तनी जाँचने की सुविधा काम नहीं करती है</translation>
 <translation id="5052499409147950210">साइट में बदलाव करें</translation>
 <translation id="5053604404986157245">यादृच्छिक रूप से जनरेट किया गया TPM पासवर्ड उपलब्ध नहीं है. Powerwash के बाद ऐसा होना सामान्य बात है.</translation>
@@ -3003,6 +3025,7 @@
 <translation id="5097002363526479830">नेटवर्क से कनेक्ट करने में विफल '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">सभी बुकमार्क खोलें</translation>
 <translation id="5101839224773798795">कर्सर के रुक जाने पर अपने आप क्लिक होने की सुविधा</translation>
+<translation id="5107443654503185812">एक एक्सटेंशन ने 'सुरक्षित ब्राउज़िंग' सुविधा बंद कर दी है</translation>
 <translation id="5108967062857032718">सेटिंग - Android ऐप्लिकेशन निकालें</translation>
 <translation id="5109044022078737958">मिया</translation>
 <translation id="5111646998522066203">गुप्त मोड से बाहर निकलें</translation>
@@ -3033,6 +3056,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> खोजें</translation>
 <translation id="5139823398361067371">अपनी सुरक्षा कुंजी का पिन डालें. अगर आपको पिन नहीं पता है, तो सुरक्षा कुंजी रीसेट करनी होगी.</translation>
 <translation id="5139955368427980650">&amp;खोलें</translation>
+<translation id="5142793792982256885">टचपैड पर स्क्रोल की रफ़्तार</translation>
 <translation id="5142961317498132443">पहचान करना</translation>
 <translation id="5143374789336132547">एक्सटेंशन <ph name="EXTENSION_NAME" /> ने यह बदल दिया है कि जब आप होम बटन क्लिक करते हैं तब कौन सा पेज दिखाया जाए.</translation>
 <translation id="5143712164865402236">फ़ुल स्क्रीन में प्रवेश करें</translation>
@@ -3092,6 +3116,7 @@
 <translation id="523505283826916779">सुलभता सेटिंग</translation>
 <translation id="5235750401727657667">नया टैब खोलते समय दिखाई देने वाला पेज बदलें</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ऐप्लिकेशन को अपने आप हटा दिया गया था.</translation>
+<translation id="5239730228370806996">खींचकर छोड़ा गया यह डेटा, आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. क्या आप फिर भी आगे बढ़ना चाहते हैं?</translation>
 <translation id="5241128660650683457">जिन वेबसाइट पर आप जाते हैं, उन पर मौजूद अपना सारा डेटा पढ़ें</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" को चालू करें?</translation>
 <translation id="5243522832766285132">कृपया कुछ देर बाद कोशिश करें</translation>
@@ -3368,7 +3393,7 @@
 <translation id="5593357315997824387">मेरी फ़ाइलों को सिंक करें</translation>
 <translation id="5595152862129936745">बहुत दूर</translation>
 <translation id="5595485650161345191">पते में बदलाव करें</translation>
-<translation id="5595727715083333657">आपके कंटेनर में साइज़ बदलने की सुविधा नहीं है. Linux (बीटा) के लिए पहले से तय की गई जगह में बदलाव करने के लिए, उसका बैक अप लें. इसके बाद, उसे नए कंटेनर में फिर से सेव करें.</translation>
+<translation id="5595727715083333657">आपके कंटेनर में साइज़ बदलने की सुविधा नहीं है. Linux (बीटा वर्शन) के लिए पहले से तय की गई जगह में बदलाव करने के लिए, उसका बैक अप लें. इसके बाद, उसे नए कंटेनर में फिर से सेव करें.</translation>
 <translation id="5596627076506792578">ज़्यादा विकल्प</translation>
 <translation id="5600706100022181951">अपडेट को डाउनलोड करने में <ph name="UPDATE_SIZE_MB" /> एमबी मोबाइल डेटा का इस्तेमाल होगा. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="5601503069213153581">पिन</translation>
@@ -3386,6 +3411,7 @@
 <translation id="5618075537869101857">अरे नहीं, कियोस्क ऐप्स  लॉन्च नहीं किया जा सका.</translation>
 <translation id="5618333180342767515">(इसमें कुछ मिनट लग सकते हैं.)</translation>
 <translation id="56197088284879152">दूरस्थ डिवाइस के लिए कनेक्शन अत्यधिक धीमा है: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="5620163320393916465">पासवर्ड सेव नहीं किए गए हैं</translation>
 <translation id="5620549857835247159">टैबलेट मोड में, 'शेल्फ़' में लॉन्चर, वापस जाएं, और खास जानकारी वाले बटन दिखाएं.</translation>
 <translation id="5620568081365989559">DevTools <ph name="FOLDER_PATH" /> का पूरा एक्सेस चाहता है. पक्का करें कि आप किसी भी संवेदनशील जानकारी को न बताएं.</translation>
 <translation id="5620612546311710611">इस्तेमाल के आंकड़े</translation>
@@ -3481,6 +3507,7 @@
 <translation id="5747785204778348146">डेवलपर - अस्थिर</translation>
 <translation id="5747809636523347288"><ph name="URL" /> चिपकाएं और इस पर जाएं</translation>
 <translation id="5750324801516359607">दूर</translation>
+<translation id="5751887393582880060">यह अपलोड आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. क्या आप फिर भी आगे बढ़ना चाहते हैं?</translation>
 <translation id="5756163054456765343">&amp;सहायता केंद्र</translation>
 <translation id="5759728514498647443">  <ph name="APP_NAME" /> के माध्‍यम से प्रिंट करने के लिए भेजे जाने वाले दस्‍तावेज़ <ph name="APP_NAME" /> द्वारा पढ़े जा सकते हैं.</translation>
 <translation id="5763751966069581670">कोई USB डिवाइस नहीं मि‍ला</translation>
@@ -3590,6 +3617,7 @@
 <translation id="5901630391730855834">पीला</translation>
 <translation id="5906655207909574370">करीब अप टू डेट हो गया है! अपडेट करना पूरा करने के लिए अपना डिवाइस फिर से प्रारंभ करें.</translation>
 <translation id="5906732635754427568">इस ऐप्लिकेशन से जुड़े डेटा को इस डिवाइस से हटा दिया जाएगा.</translation>
+<translation id="5908695239556627796">माउस पर स्क्रोल की रफ़्तार</translation>
 <translation id="5908769186679515905">साइट को Flash चलाने से रोकें</translation>
 <translation id="5910363049092958439">इमेज को इस रूप में सेव करें...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> ऑफ़लाइन है</translation>
@@ -3693,6 +3721,7 @@
 <translation id="6040852767465482106">अनाम पहचान</translation>
 <translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />Google की जगह की जानकारी सेवा, आपके डिवाइस की जगह का पता लगाने के लिए वाई-फ़ाई, मोबाइल नेटवर्क और सेंसर जैसे स्रोतों का इस्तेमाल करती है.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />आप अपने डिवाइस पर जगह की मुख्य सेटिंग बंद करके जगह की जानकारी वाली सेवा को बंद कर सकते हैं. आप जगह की सेटिंग में जाकर वाई-फ़ाई, मोबाइल नेटवर्क और जगह की जानकारी का पता लगाने वाले सेंसर का इस्तेमाल करना बंद भी कर सकते हैं.<ph name="END_PARAGRAPH2" /></translation>
+<translation id="6041150002191391409">आप जब तक <ph name="ORIGIN" /> वाले सभी टैब बंद नहीं कर देते, <ph name="ORIGIN" /> को <ph name="FOLDERNAME" /> में मौजूद फ़ाइलें दिखती रहेंगी</translation>
 <translation id="6041155700700864984">पूर्णस्‍क्रीन से बाहर निकलें</translation>
 <translation id="604124094241169006">स्वचालित</translation>
 <translation id="6042308850641462728">और ज़्यादा</translation>
@@ -3831,6 +3860,7 @@
 <translation id="622537739776246443">प्रोफ़ाइल मिटा दी जाएगी</translation>
 <translation id="6225475702458870625">आपके <ph name="PHONE_NAME" /> से डेटा कनेक्शन उपलब्ध है</translation>
 <translation id="6226777517901268232">निजी कुंजी फ़ाइल (वैकल्पिक)</translation>
+<translation id="6227280783235722609">एक्सटेंशन</translation>
 <translation id="6228691855869374890">इस साइट के पास MIDI डिवाइस का पूरा नियंत्रण है.</translation>
 <translation id="6228720835160974792">इस इमेज के लिए क्यूआर कोड जनरेट करें</translation>
 <translation id="6229890768313448549">Google Play सेवा की शर्तें लोड नहीं की जा सकतीं. कृपया फिर से कोशिश करें.</translation>
@@ -3882,6 +3912,7 @@
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> को आमतौर पर डाउनलोड नहीं किया जाता और यह खतरनाक हो सकता है.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{आपके नेटवर्क पर नया प्रिंटर}one{आपके नेटवर्क पर नए प्रिंटर}other{आपके नेटवर्क पर नए प्रिंटर}}</translation>
 <translation id="6286708577777130801">सहेजे गए पासवर्ड के विवरण</translation>
+<translation id="6291163159361301370">Linux शुरू करने के लिए, <ph name="ORGANIZATION_NAME" /> चाहता है कि आप अपने डेटा का बैक अप ले लें. साथ ही, इस Chromebook को फ़ैक्ट्री सेटिंग पर रीसेट कर लें.</translation>
 <translation id="6291949900244949761">जब कोई साइट USB डिवाइस एक्सेस करना चाहे, तो इसके लिए पूछें (सुझाया गया)</translation>
 <translation id="6291953229176937411">खोजकर्ता में &amp;दिखाएं</translation>
 <translation id="6295158916970320988">सभी साइटें</translation>
@@ -4588,6 +4619,7 @@
 <translation id="7258225044283673131">ऐप्लिकेशन काम नहीं कर रहा है. ऐप्लिकेशन को बंद करने के लिए "ज़बरदस्ती बंद करें" चुनें.</translation>
 <translation id="7258697411818564379">आपका पिन जोड़ दिया गया है</translation>
 <translation id="7262004276116528033">यह साइन इन सेवा <ph name="SAML_DOMAIN" /> की मदद से होस्‍ट की गई है</translation>
+<translation id="7266898409676782635"><ph name="DEVICE_TYPE" /> के इस्तेमाल से जुड़ी सलाह, ऑफ़र, और अपडेट पाएं. साथ ही, सुझाव, शिकायत या राय शेयर करें. जब चाहें, तब सदस्यता छोड़ें.</translation>
 <translation id="7268127947535186412">डिवाइस के मालिक इस सेटिंग का प्रबंधन करते हैं.</translation>
 <translation id="7270858098575133036">जब साइट MIDI डिवाइस को एक्सेस करने के लिए सिस्टम के खास संदेशों का उपयोग करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="7272674038937250585">कोई विवरण नहीं दिया गया है</translation>
@@ -4661,11 +4693,12 @@
 <translation id="7364796246159120393">फ़ाइल चुनें</translation>
 <translation id="7366415735885268578">साइट जोड़ें</translation>
 <translation id="7366909168761621528">ब्राउज़िंग डेटा</translation>
+<translation id="7367714965999718019">क्यूआर कोड जनरेटर</translation>
 <translation id="736877393389250337"><ph name="URL" /> <ph name="ALTERNATIVE_BROWSER_NAME" /> में नहीं खोला जा सकता है. कृपया अपने सिस्टम एडमिन से संपर्क करें.</translation>
 <translation id="7370592524170198497">ईथरनेट EAP:</translation>
 <translation id="7371006317849674875">शुरू करने का समय</translation>
 <translation id="7375053625150546623">EAP</translation>
-<translation id="7375235221357833624">{0,plural, =1{1 घंटे के अंदर डिवाइस अपडेट करें}one{# घंटे के अंदर डिवाइस अपडेट करें}other{# घंटों के अंदर डिवाइस अपडेट करें}}</translation>
+<translation id="7375235221357833624">{0,plural, =1{1 घंटे के अंदर डिवाइस अपडेट करें}one{# घंटे के अंदर डिवाइस अपडेट करें}other{# घंटे के अंदर डिवाइस अपडेट करें}}</translation>
 <translation id="7376553024552204454">माउस कर्सर के हिलने पर उसे हाइलाइट करें</translation>
 <translation id="7377451353532943397">सेंसर का ऐक्सेस ब्लॉक करते रहें</translation>
 <translation id="73786666777299047">Chrome वेब स्टोर खोलें</translation>
@@ -4929,7 +4962,9 @@
 <translation id="7737238973539693982">Linux (बीटा) मिटाएं</translation>
 <translation id="7740996059027112821">मानक</translation>
 <translation id="7744047395460924128">अपना प्रिंटिंग इतिहास देखें</translation>
+<translation id="7744192722284567281">यह पासवर्ड आपके हैक हो चुके डेटा में शामिल है</translation>
 <translation id="7750228210027921155">पिक्चर में पिक्चर</translation>
+<translation id="7751229152614300329">'सुरक्षित ब्राउज़िंग' अप-टू-डेट है. यह आपको नुकसान पहुंचाने वाली साइटों और डाउनलोड से बचाती है</translation>
 <translation id="7751260505918304024">सभी दिखाएं</translation>
 <translation id="7754704193130578113">डाउनलोड करने से पहले, हर फ़ाइल को सेव करने की जगह के बारें में पूछें</translation>
 <translation id="7755287808199759310">आपका अभिभावक इसे आपके लिए अनवरोधित कर सकता है</translation>
@@ -5014,6 +5049,7 @@
     <ph name="BEGIN_BOLD" />नोट:<ph name="END_BOLD" />  इस प्रक्रिया के दौरान सिस्टम फिर चालू होगा.</translation>
 <translation id="7828731929332799387">इससे तीसरे पक्ष से जुड़ी सभी उपलब्ध कुकी और साइट डेटा मिट जाएंगे. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="7829298379596169484">ऑडियो इनपुट ऐक्सेस हो रहा है</translation>
+<translation id="7829877209233347340">स्कूल वाला खाता जोड़ने की अनुमति देने के लिए, अपने माता-पिता से साइन इन करने को कहें</translation>
 <translation id="7830594666202422257">Linux से कनेक्ट करें</translation>
 <translation id="7831491651892296503">नेटवर्क कॉन्फ़िगर करने में गड़बड़ी</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5077,6 +5113,7 @@
 <translation id="7910768399700579500">&amp;नया फ़ोल्डर</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">सर्वर पर आपका पासवर्ड बदल दिया गया है. कृपया साइन आउट करके फिर से साइन इन करें.</translation>
+<translation id="7914583336730284547">खींचकर छोड़ी गई ये फ़ाइलें, आपके संगठन की सुरक्षा नीतियों का उल्लंघन करती हैं. क्या आप फिर भी आगे बढ़ना चाहते हैं?</translation>
 <translation id="7915457674565721553">'माता-पिता के नियंत्रण में' सुविधा सेट करने के लिए इंटरनेट से कनेक्ट करें</translation>
 <translation id="7915471803647590281">कृपया फ़ीडबैक भेजने से पहले हमें बताएं कि क्‍या हो रहा है.</translation>
 <translation id="7918257978052780342">नामांकित करें</translation>
@@ -5175,6 +5212,7 @@
 <translation id="8028803902702117856">डाउनलोड हो रही है <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">आकार</translation>
 <translation id="8030656706657716245">प्रिंटर जोड़ें</translation>
+<translation id="8030852056903932865">अनुमति दें</translation>
 <translation id="8032244173881942855">टैब कास्ट करने में असमर्थ.</translation>
 <translation id="8033827949643255796">चयनित</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{सभी को &amp;गुप्त विंडो में खोलें}=1{&amp;गुप्त विंडों में खोलें}one{सभी (#) को &amp;गुप्त विंडो में खोलें}other{सभी (#) को &amp;गुप्त विंडो में खोलें}}</translation>
@@ -5500,6 +5538,7 @@
 <translation id="8472623782143987204">हार्डवेयर-समर्थित</translation>
 <translation id="8473863474539038330">पते वगैरह</translation>
 <translation id="8475313423285172237">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने एक्सटेंशन जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
+<translation id="8476659515398963495">चिपकाया गया यह डेटा, आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. क्या आप फिर भी आगे बढ़ना चाहते हैं?</translation>
 <translation id="8477241577829954800">अधिक्रमित किया गया</translation>
 <translation id="8477384620836102176">&amp;सामान्य</translation>
 <translation id="8480082892550707549">भले ही आपने पहले इस वेबसाइट से फ़ाइलें डाउनलोड की हैं, फिर भी साइट अस्थायी रूप से असुरक्षित (हैक की हुई) हो सकती है. इस फ़ाइल को बाद में डाउनलोड करने की कोशिश करें.</translation>
@@ -5551,6 +5590,7 @@
 <translation id="8546930481464505581">छूने वाले बार को पसंद के मुताबिक बनाएं</translation>
 <translation id="8547013269961688403">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू करें</translation>
 <translation id="85486688517848470">शीर्ष-पंक्ति वाली कुंजियों का व्यवहार स्विच करने के लिए खोज की दबाए रखें</translation>
+<translation id="8550165047974571882">आप जब तक <ph name="ORIGIN" /> वाले सभी टैब बंद नहीं कर देते, <ph name="ORIGIN" /> <ph name="FOLDERNAME" /> में मौजूद फ़ाइलों में बदलाव कर सकता है</translation>
 <translation id="8551388862522347954">लाइसेंस</translation>
 <translation id="8553342806078037065">अन्य लोगों को प्रबंधित करें</translation>
 <translation id="8554899698005018844">कोई भाषा नहीं</translation>
@@ -5610,6 +5650,7 @@
 <translation id="8637688295594795546">सिस्टम अपडेट उपलब्ध है. डाउनलोड करने के लिए तैयार हो रहा है...</translation>
 <translation id="8639047128869322042">नुकसान पहुंचाने वाला सॉफ़्टवेयर ढूंढा जा रहा है...</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - पोर्ट</translation>
+<translation id="8641606876632989680">जब आप किसी हैक या चोरी हो चुके पासवर्ड से साइन इन करेंगे, तो Chrome आपको इसकी सूचना देगा</translation>
 <translation id="8642900771896232685">2 सेकंड</translation>
 <translation id="8642947597466641025">लेख को बड़ा करें</translation>
 <translation id="8643443571868262066"><ph name="FILE_NAME" /> खतरनाक हो सकती है. क्या आप इसे स्कैनिंग के लिए 'Google बेहतर सुरक्षा' को भेजना चाहते हैं?</translation>
@@ -5707,6 +5748,7 @@
 <translation id="874689135111202667">{0,plural, =1{इस साइट पर एक फ़ाइल अपलोड करें?}one{इस साइट पर # फ़ाइलें अपलोड करें?}other{इस साइट पर # फ़ाइलें अपलोड करें?}}</translation>
 <translation id="8748384418490037181">Smart Lock के विकल्प</translation>
 <translation id="8749863574775030885">ऐसा वेंडर जिसकी जानकारी नहीं है, उसके USB डिवाइस को ऐक्‍सेस करें</translation>
+<translation id="8750133148106010815">Google Play शुरू करने के लिए, <ph name="ORGANIZATION_NAME" /> चाहता है कि आप अपने डेटा का बैक अप ले लें. साथ ही, इस Chromebook को फ़ैक्ट्री सेटिंग पर रीसेट कर लें.</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> सीरियल पोर्ट से कनेक्ट करना चाहता है</translation>
 <translation id="8754200782896249056">&lt;p&gt;<ph name="PRODUCT_NAME" /> जिस 'डेस्कटॉप वातावरण' पर काम करता है, उस पर इसे चलाते समय, सिस्टम प्रॉक्सी सेटिंग का उपयोग किया जाएगा.  हालांकि, या तो आपके सिस्टम पर यह सुविधा नहीं है या आपके सिस्टम कॉन्फ़िगरेशन को लॉन्च करने में कोई समस्या थी.&lt;/p&gt;
 
@@ -5759,8 +5801,10 @@
 <translation id="8808686172382650546">बिल्ली</translation>
 <translation id="8808744862003883508">इस पेज पर, Chrome में इंस्टॉल किए गए सभी एक्सटेंशन दिखेंगे.</translation>
 <translation id="8809147117840417135">हल्का नीला-हरा</translation>
+<translation id="8812593354822910461">ब्राउज़िंग डेटा (<ph name="URL" />) भी मिटाएं, इससे आप <ph name="DOMAIN" /> से साइन आउट हो जाएंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039"><ph name="USERNAME" /> में साइन इन नहीं किया जा सकता</translation>
 <translation id="8813811964357448561">कागज़</translation>
+<translation id="8813872945700551674">"<ph name="EXTENSION_NAME" />" को इंस्टॉल करने की अनुमति पाने के लिए, माता-पिता से संपर्क करें</translation>
 <translation id="8813969267212093033">सिस्टम का टेक्स्ट इस भाषा में दिखाया गया है</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>
 <translation id="8814687660896548945">कृपया इंतज़ार करें, संग्रह स्‍कैन किया जा रहा है...</translation>
@@ -6041,6 +6085,8 @@
 <translation id="9203398526606335860">&amp;प्रोफ़ाइलिंग सक्षम</translation>
 <translation id="9203904171912129171">डिवाइस चुनें</translation>
 <translation id="9203962528777363226">इस डिवाइस के व्यवस्थापक ने नए उपयोगकर्ता जोड़े जाना अक्षम कर दिया है</translation>
+<translation id="9209689095351280025">साइटें उन कुकी का इस्तेमाल नहीं कर सकतीं जो आपको वेब पर ट्रैक करती हैं</translation>
+<translation id="9211177926627870898">अपडेट ज़रूरी है</translation>
 <translation id="9214520840402538427">ओह!  इंस्टॉलेशन-समय विशेषताएं शुरू करने की समय सीमा खत्म हो गई है. कृपया अपने सहायता प्रतिनिधि से संपर्क करें.</translation>
 <translation id="9214695392875603905">कपकेक</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" जोड़ा गया</translation>

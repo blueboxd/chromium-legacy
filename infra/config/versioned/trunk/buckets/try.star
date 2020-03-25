@@ -517,6 +517,7 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = 'ios-simulator-full-configs',
+    executable = 'recipe:chromium_trybot',
     tryjob = try_.job(
         location_regexp = [
             '.+/[+]/ios/.+',

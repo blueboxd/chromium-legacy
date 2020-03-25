@@ -90,7 +90,7 @@ class ExtensionTabUtil {
   static int GetWindowId(const Browser* browser);
   static int GetWindowIdOfTabStripModel(const TabStripModel* tab_strip_model);
   static int GetTabId(const content::WebContents* web_contents);
-  static std::string GetTabStatusText(bool is_loading);
+  static std::string GetTabStatusText(content::WebContents* web_contents);
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
   static std::unique_ptr<base::ListValue> CreateTabList(
       const Browser* browser,
@@ -237,6 +237,11 @@ class ExtensionTabUtil {
   // Returns true if the given Browser can report tabs to extensions.
   // Example of Browsers which don't support tabs include apps and devtools.
   static bool BrowserSupportsTabs(Browser* browser);
+
+  // Determines the loading status of the given |contents|. This needs to access
+  // some non-const member functions of |contents|, but actually leaves it
+  // unmodified.
+  static api::tabs::TabStatus GetLoadingStatus(content::WebContents* contents);
 };
 
 }  // namespace extensions

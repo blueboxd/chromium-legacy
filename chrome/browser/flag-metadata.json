@@ -204,6 +204,11 @@
     "expiry_milestone": -1
   },
   {
+    "name" : "ash-limit-alt-tab-to-active-desk",
+    "owners": [ "afakhry", "tclaiborne" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "ash-swap-side-volume-buttons-for-orientation",
     "owners": [ "minch" ],
     "expiry_milestone": 78

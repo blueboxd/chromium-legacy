@@ -511,6 +511,8 @@ jumbo_source_set("browser_sources") {
   if (enable_vr) {
     sources += [
       "browser_xr_runtime.h",
+      "xr_consent_helper.h",
+      "xr_consent_prompt_level.h",
       "xr_install_helper.h",
       "xr_integration_client.cc",
       "xr_integration_client.h",

@@ -220,10 +220,6 @@ gfx::Rect RasterSource::RecordedViewport() const {
   return recorded_viewport_;
 }
 
-bool RasterSource::HasText() const {
-  return display_list_ && display_list_->HasText();
-}
-
 void RasterSource::AsValueInto(base::trace_event::TracedValue* array) const {
   if (display_list_.get())
     viz::TracedValue::AppendIDRef(display_list_.get(), array);

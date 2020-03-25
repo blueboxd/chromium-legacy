@@ -2516,8 +2516,7 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   ASSERT_TRUE(https_server_ok.Start());
 
   // Require CT for all hosts (in the absence of policy).
-  bool required = true;
-  SetShouldRequireCTForTesting(&required);
+  SetRequireCTForTesting(true);
 
   ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
 
@@ -2559,7 +2558,7 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
                                https_server_ok.GetURL("/title1.html"));
 
   SimulateNetworkServiceCrash();
-  SetShouldRequireCTForTesting(&required);
+  SetRequireCTForTesting(true);
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/simple.html"));
@@ -2578,8 +2577,7 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   ASSERT_TRUE(https_server_ok.Start());
 
   // Require CT for all hosts (in the absence of policy).
-  bool required = true;
-  SetShouldRequireCTForTesting(&required);
+  SetRequireCTForTesting(true);
 
   ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
 

@@ -313,7 +313,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2288422996159078444">Alt du skriver, alle sider du besøker, og all annen aktivitet på nettet blir overvåket. Innholdet på nettsteder kan bli endret uten at du vet om det.</translation>
 <translation id="2289385804009217824">Beskjær</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
-<translation id="2293443924986248631">Når dette er på, kan ikke nettsteder bruke informasjonskapsler som sporer deg overalt på nettet. Det kan hende at funksjoner på enkelte nettsteder slutter å fungere.</translation>
+<translation id="2293443924986248631">Når dette er på, kan ikke nettsteder bruke informasjonskapsler som sporer deg på nettet. Det kan hende at funksjoner på enkelte nettsteder slutter å fungere.</translation>
 <translation id="2297722699537546652">B5 (konvolutt)</translation>
 <translation id="2300306941146563769">Ikke lastet opp</translation>
 <translation id="2310021320168182093">Chou2 (konvolutt)</translation>
@@ -1031,9 +1031,10 @@ brukere av denne nettleseren.</translation>
 <translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
 <translation id="5371425731340848620">Oppdater kortet</translation>
 <translation id="5377026284221673050">«Klokken går for sent», «Klokken går for fort» eller «&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;»</translation>
-<translation id="5380442954567233718">Tjeneren du er på vei til (<ph name="ORIGIN" />), har angitt et hode
+<translation id="5380442954567233718">Tjeneren du er på vei til (<ph name="ORIGIN" />), har angitt en header
     som krever at en opphavsregel brukes for alle forespørsler som sendes til den. Men
-    hodet har feil format, og dette forhindrer nettleseren fra å utføre
+    headeren har feil format, og dette forhindrer nettleseren fra å 
+effektuere
     forespørselen din til <ph name="SITE" />. Nettstedsoperatører kan bruke
     opphavsregler til å konfigurere sikkerhet og andre egenskaper for nettsteder.</translation>
 <translation id="5386426401304769735">Sertifikatkjeden for dette nettstedet inneholder et sertifikat som er signert med SHA-1.</translation>

@@ -1112,6 +1112,10 @@
       origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
+      name: "NativeIO",
+      status: "experimental",
+    },
+    {
       name: "NavigatorContentUtils",
       // Android does not yet support NavigatorContentUtils.
       status: {"Android": "", "default": "stable"},

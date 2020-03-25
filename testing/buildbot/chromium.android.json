@@ -21498,7 +21498,8 @@
               "os": "Android"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk",
         "test_target": "//chrome/android:chrome_public_test_vr_apk"
@@ -21550,7 +21551,7 @@
             }
           ],
           "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 4
         },
         "test": "chrome_public_test_vr_apk",
         "test_target": "//chrome/android:chrome_public_test_vr_apk"
@@ -21889,7 +21890,8 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk",
         "test_target": "//chrome/android:chrome_public_test_vr_apk"
@@ -21950,7 +21952,7 @@
             }
           ],
           "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 4
         },
         "test": "chrome_public_test_vr_apk",
         "test_target": "//chrome/android:chrome_public_test_vr_apk"
@@ -37659,7 +37661,8 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "chrome_public_test_vr_apk",
         "test_target": "//chrome/android:chrome_public_test_vr_apk"
@@ -37721,7 +37724,7 @@
             }
           ],
           "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 4
         },
         "test": "chrome_public_test_vr_apk",
         "test_target": "//chrome/android:chrome_public_test_vr_apk"

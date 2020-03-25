@@ -62,7 +62,6 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.MutableResolvedSearchTerm;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -514,8 +513,10 @@ public class ContextualSearchManagerTest {
      */
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
-        fakeResponse(new ResolvedSearchTerm(isNetworkUnavailable, responseCode, searchTerm,
-                displayText, alternateTerm, doPreventPreload));
+        fakeResponse(new ResolvedSearchTerm
+                             .Builder(isNetworkUnavailable, responseCode, searchTerm, displayText,
+                                     alternateTerm, doPreventPreload)
+                             .build());
     }
 
     /**
@@ -2304,10 +2305,11 @@ public class ContextualSearchManagerTest {
         clickWordNode("intelligence");
         waitForPanelToPeek();
 
-        MutableResolvedSearchTerm resolvedSearchTerm =
-                new ContextualSearchFakeServer.MutableResolvedSearchTerm(
-                        false, 200, "Intelligence", "United States Intelligence");
-        resolvedSearchTerm.setSelectionStartAdjust(-14);
+        ResolvedSearchTerm resolvedSearchTerm =
+                new ResolvedSearchTerm
+                        .Builder(false, 200, "Intelligence", "United States Intelligence")
+                        .setSelectionStartAdjust(-14)
+                        .build();
         fakeResponse(resolvedSearchTerm);
         waitForSelectionToBe("United States Intelligence");
     }

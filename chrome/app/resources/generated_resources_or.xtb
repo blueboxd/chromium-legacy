@@ -457,6 +457,7 @@
 <translation id="1616206807336925449">ଏହି ଏକ୍ସଟେନ୍‍ସନ୍‍ ପାଇଁ କୌଣସି ବିଶେଷ ଅନୁମତିର ଆବଶ୍ୟକତା ନାହିଁ।</translation>
 <translation id="1616298854599875024">ଏକ୍ସଟେନ୍‌ସନ୍ <ph name="IMPORT_NAME" /> ଇମ୍ପୋର୍ଟ କରାଯାଇପାରିଲା ନାହିଁଁ କାରଣ ଏହା ଏକ ସେୟାର୍ କରାଯାଇଥିବା ମଡ୍ୟୁଲ୍ ନୁହେଁ</translation>
 <translation id="1618268899808219593">&amp;ସହାୟତା କେନ୍ଦ୍ର</translation>
+<translation id="1620307519959413822">ପାସୱାର୍ଡ ଭୁଲ ଅଛି। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ଏହାକୁ ରିସେଟ୍ କରିବା ପାଇଁ 'ପାସୱାର୍ଡ ଭୁଲି ଯାଇଛି'କୁ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
 <translation id="1623132449929929218">ବର୍ତ୍ତମାନ ଛବିଗୁଡ଼ିକ ଉପଲବ୍ଧ ନାହିଁ ୱାଲ୍‌ପେପର୍ ସଂଗ୍ରହଗୁଡ଼ିକୁ ଦେଖିବାକୁ ଇର୍ଣ୍ଟନେଟ୍ ସହିତ ପୁଣି ସଂଯୋଗ କରନ୍ତୁ।</translation>
 <translation id="1627276047960621195">ଫାଇଲ୍ ଡେସ୍କ୍ରିପ୍ଟର୍</translation>
@@ -675,6 +676,7 @@
 <translation id="1887850431809612466">ହାର୍ଡୱେୟାର୍ ପୁନରାବୃତ୍ତି</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ ଖୋଲନ୍ତୁ</translation>
+<translation id="1892341345406963517">ନମସ୍କାର <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">ଅନ୍ୟ ଭାଷାଗୁଡ଼ିକ</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> ବାକି ଅଛି</translation>
 <translation id="1895658205118569222">ବନ୍ଦ କରନ୍ତୁ</translation>
@@ -3127,6 +3129,7 @@
 <translation id="5213891612754844763">ପ୍ରୋକ୍ସି ସେଟିଂସ୍‌ ଦେଖାନ୍ତୁ</translation>
 <translation id="5215502535566372932">ଦେଶ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="521582610500777512">ଫଟୋକୁ ଅଗ୍ରାହ୍ୟ କରାଯାଇଥିଲା</translation>
+<translation id="5222403284441421673">ଅସୁରକ୍ଷିତ ଡାଉନଲୋଡ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="5222676887888702881">ସାଇନ୍ ଆଉଟ୍ କରନ୍ତୁ</translation>
 <translation id="52232769093306234">ପ୍ୟାକିଂ ବିଫଳ ହେଲା।</translation>
 <translation id="5225324770654022472">ଆପ୍ସ ସର୍ଟକଟ୍ ଦେଖାନ୍ତୁ</translation>
@@ -3525,6 +3528,7 @@
 <translation id="5734362860645681824">ଯୋଗାଯୋଗ</translation>
 <translation id="5734697361979786483">ଫାଇଲ୍ ସେୟାର୍ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="5736796278325406685">ଦୟାକରି ଏକ ବୈଧ ଉପଯୋଗକର୍ତ୍ତାନାମ ଲେଖନ୍ତୁ</translation>
+<translation id="5739017626473506901"><ph name="USER_NAME" /> ଏକ ସ୍କୁଲ୍ ଆକାଉଣ୍ଟ ଯୋଗ କରିବାରେ ସାହାଯ୍ୟ କରିବାକୁ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ</translation>
 <translation id="5739235828260127894">ଯାଞ୍ଚକରଣ ପାଇଁ ଅପେକ୍ଷାରତ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ବହୁତ ବଡ଼</translation>
 <translation id="574209121243317957">ସ୍ୱରର ଉଚ୍ଚତା</translation>
@@ -5532,6 +5536,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ନେଟ୍‍ୱାର୍କ, ସଂଯୁକ୍ତ ହେଉଛି</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ପ୍ରଥମେ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
+<translation id="8417548266957501132">ବାପାମା ସେଟିଂସ୍</translation>
 <translation id="8417573335434189196">ବିପଦଜନକ ୱେବସାଇଟ୍, ଡାଉନଲୋଡ୍ କିମ୍ବା ଏକ୍ସଟେନ୍ସନଗୁଡ଼ିକ ଠାରୁ ଆପଣଙ୍କୁ ରକ୍ଷା କରେ ନାହିଁ। Chrome ଏହି ସେଟିଂକୁ ସୁପାରିଶ କରେ ନାହିଁ।</translation>
 <translation id="8418445294933751433">&amp;ଟ୍ୟାବ୍ ଭାବେ ଦେଖାନ୍ତୁ</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' ପାଇଁ ସନ୍ଧାନ ଫଳାଫଳ</translation>

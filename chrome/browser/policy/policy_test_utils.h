@@ -38,7 +38,7 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetScreenshotPolicy(bool enabled);
 
-  void SetShouldRequireCTForTesting(bool* required);
+  void SetRequireCTForTesting(bool required);
 
   scoped_refptr<const extensions::Extension> LoadUnpackedExtension(
       const base::FilePath::StringType& name);

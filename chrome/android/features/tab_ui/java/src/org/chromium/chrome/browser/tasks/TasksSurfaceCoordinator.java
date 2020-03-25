@@ -105,7 +105,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         ChromeActivity activity = (ChromeActivity) context;
         ((TabSwitcherCoordinator) mTabSwitcher)
                 .initWithNative(activity, activity.getTabContentManager(),
-                        activity.getCompositorViewHolder().getDynamicResourceLoader());
+                        activity.getCompositorViewHolder().getDynamicResourceLoader(), activity);
 
         mMediator.initWithNative(fakeboxDelegate);
     }

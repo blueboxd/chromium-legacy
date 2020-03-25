@@ -31,8 +31,13 @@ Polymer({
     },
   },
 
+  /** @private {?PasswordManagerProxy} */
+  passwordManager_: null,
+
   /** @override */
   attached() {
+    // Set the manager. These can be overridden by tests.
+    this.passwordManager_ = PasswordManagerImpl.getInstance();
     this.$.dialog.showModal();
   },
 
@@ -54,7 +59,9 @@ Polymer({
    * @private
    */
   onSave_() {
-    PasswordManagerImpl.getInstance()
+    this.passwordManager_.recordPasswordCheckInteraction(
+        PasswordManagerProxy.PasswordCheckInteraction.EDIT_PASSWORD);
+    this.passwordManager_
         .changeCompromisedCredential(
             assert(this.item), this.$.passwordInput.value)
         .then(() => {

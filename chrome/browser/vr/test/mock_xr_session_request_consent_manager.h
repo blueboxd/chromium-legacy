@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_TEST_MOCK_XR_SESSION_REQUEST_CONSENT_MANAGER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
+#include "chrome/browser/vr/consent/xr_session_request_consent_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace vr {
@@ -20,8 +20,8 @@ class MockXRSessionRequestConsentManager
   MOCK_METHOD3(ShowDialogAndGetConsent,
                TabModalConfirmDialog*(
                    content::WebContents* web_contents,
-                   XrConsentPromptLevel consent_level,
-                   base::OnceCallback<void(XrConsentPromptLevel, bool)>
+                   content::XrConsentPromptLevel consent_level,
+                   base::OnceCallback<void(content::XrConsentPromptLevel, bool)>
                        response_callback));
 
  private:

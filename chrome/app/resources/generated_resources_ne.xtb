@@ -457,6 +457,7 @@
 <translation id="1616206807336925449">यस विस्तारलाई  कुनै विशेष अनुमति आवश्यक पर्दैन।</translation>
 <translation id="1616298854599875024">विस्तार "<ph name="IMPORT_NAME" />" कुनै साझेदारी गरिएको मोड्युल नभएका कारण यसलाई आयात गर्न सकिएन</translation>
 <translation id="1618268899808219593">मद्द&amp;त केन्द्र</translation>
+<translation id="1620307519959413822">गलत पासवर्ड। फेरि प्रयास गर्नुहोस् वा यसलाई रिसेट गर्न पासवर्ड बिर्सें नामक लिंकमा क्लिक गर्नुहोस्।</translation>
 <translation id="1620510694547887537">क्यामेरा</translation>
 <translation id="1623132449929929218">छविहरू अहिले उपलब्ध छैनन्। वालपेपरका सङ्ग्रहहरू हेर्न कृपया इन्टरनेटमा पुनः जडान गर्नुहोस्‌।</translation>
 <translation id="1627276047960621195">फाइल डेस्क्रिप्टरहरू</translation>
@@ -675,6 +676,7 @@
 <translation id="1887850431809612466">हार्डवेयरको पुनरावृत्ति</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">पूर्ण स्क्रिनमा खोल्नुहोस्</translation>
+<translation id="1892341345406963517">नमस्ते <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">अन्य भाषाहरू</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> बाँकी</translation>
 <translation id="1895658205118569222">बन्द गर्नुहोस्</translation>
@@ -3129,6 +3131,7 @@
 <translation id="5213891612754844763">प्रोक्सी सम्बन्धी सेटिङहरू देखाउनुहोस्‌</translation>
 <translation id="5215502535566372932">देश छनौट गर्नुहोस्</translation>
 <translation id="521582610500777512">तस्बिर नष्ट गरिएको थियो</translation>
+<translation id="5222403284441421673">असुरक्षित सामग्री डाउनलोड गर्ने कार्यलाई रोक लगाइएको छ</translation>
 <translation id="5222676887888702881">साइन आउट गर्नुहोस्</translation>
 <translation id="52232769093306234">प्याकिङ गर्न सकिएन।</translation>
 <translation id="5225324770654022472">एप्स शर्टकट देखाउनुहोस्</translation>
@@ -3527,6 +3530,7 @@
 <translation id="5734362860645681824">सञ्चारहरू</translation>
 <translation id="5734697361979786483">फाइल आदान प्रदान गर्ने सुविधा थप्नुहोस्</translation>
 <translation id="5736796278325406685">कृपया एउटा मान्य प्रयोगकर्ता नाम थप्नुहोस्</translation>
+<translation id="5739017626473506901"><ph name="USER_NAME" /> लाई विद्यालयको खाता थप्न मद्दत गर्न साइन इन गर्नुहोस्</translation>
 <translation id="5739235828260127894">पुष्टिका लागि प्रतीक्षा गर्दै। <ph name="LINK_BEGIN" />थप जान्नुहोस्।<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">धेरै ठूलो</translation>
 <translation id="574209121243317957">पिच</translation>
@@ -5533,6 +5537,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> नेटवर्क, जोड्दै</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">पहिलो (सिफारिस गरिएको) सोध्नुहोस्</translation>
+<translation id="8417548266957501132">अभिभावकको पासवर्ड</translation>
 <translation id="8417573335434189196">तपाईंलाई जोखिमपूर्ण वेबसाइट, डाउनलोड र एक्स्टेन्सनहरूबाट सुरक्षा प्रदान गर्दैन। Chrome यो सेटिङ लागू गर्न सिफारिस गर्दैन।</translation>
 <translation id="8418445294933751433">&amp;ट्याबको रूपमा देखाउनुहोस्</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' सम्बन्धी खोजका परिणामहरू</translation>

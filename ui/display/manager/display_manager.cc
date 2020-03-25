@@ -842,18 +842,20 @@ void DisplayManager::OnNativeDisplaysChanged(
 #if defined(OS_CHROMEOS)
   if (!configure_displays_ && new_display_info_list.size() > 1 &&
       hardware_mirroring_display_id_list.empty()) {
-    // Mirror mode is set by DisplayConfigurator on the device. Emulate it when
-    // running on linux desktop. Do not emulate it when hardware mirroring is
-    // on (This only happens in test).
     DisplayIdList list = GenerateDisplayIdList(
         new_display_info_list.begin(), new_display_info_list.end(),
         [](const ManagedDisplayInfo& display_info) {
           return display_info.id();
         });
+    // Mirror mode is set by DisplayConfigurator on the device. Emulate it when
+    // running on linux desktop.  Carry over HW mirroring state only in unified
+    // desktop so that it can switch to software mirroring to avoid exiting
+    // unified desktop.
+    // Note that this is only for testing.
     bool should_enable_software_mirroring =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kEnableSoftwareMirroring) ||
-        ShouldSetMirrorModeOn(list);
+        ShouldSetMirrorModeOn(list, unified_desktop_enabled_);
     SetSoftwareMirroring(should_enable_software_mirroring);
   }
 #endif
@@ -1299,7 +1301,9 @@ std::string DisplayManager::GetDisplayNameForId(int64_t id) const {
   return base::StringPrintf("Display %d", static_cast<int>(id));
 }
 
-bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
+bool DisplayManager::ShouldSetMirrorModeOn(
+    const DisplayIdList& new_id_list,
+    bool should_check_hardware_mirroring) {
   DCHECK(new_id_list.size() > 1);
   if (layout_store_->forced_mirror_mode_for_tablet())
     return true;
@@ -1329,7 +1333,8 @@ bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
   }
   // Mirror mode should remain unchanged as long as there are more than one
   // connected displays.
-  return IsInMirrorMode();
+  return IsInSoftwareMirrorMode() ||
+         (should_check_hardware_mirroring && IsInHardwareMirrorMode());
 }
 
 void DisplayManager::SetMirrorMode(

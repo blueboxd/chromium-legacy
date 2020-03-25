@@ -2,108 +2,135 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(https://crbug.com/1059352): Factor out the sortable table.
-
 'use strict';
 
 // Allow a function to be provided by tests, which will be called when
 // the page has been populated with media feeds details.
-const pageIsPopulatedResolver = new PromiseResolver();
+const mediaFeedsPageIsPopulatedResolver = new PromiseResolver();
 function whenPageIsPopulatedForTest() {
-  return pageIsPopulatedResolver.promise;
+  return mediaFeedsPageIsPopulatedResolver.promise;
 }
 
 (function() {
 
-let detailsProvider = null;
-let info = null;
-let feedTableBody = null;
-let sortReverse = true;
-let sortKey = 'id';
+let delegate = null;
+let feedsTable = null;
+let store = null;
 
-/**
- * Creates a single row in the feeds table.
- * @param {!mediaFeeds.mojom.MediaFeed} rowInfo The info to create the row.
- * @return {!Node}
- */
-function createRow(rowInfo) {
-  const template = $('datarow');
-  const td = template.content.querySelectorAll('td');
+/** @implements {cr.ui.MediaDataTableDelegate} */
+class MediaFeedsTableDelegate {
+  /**
+   * Formats a field to be displayed in the data table and inserts it into the
+   * element.
+   * @param {Element} td
+   * @param {?Object} data
+   * @param {string} key
+   */
+  insertDataField(td, data, key) {
+    if (data === undefined || data === null) {
+      return;
+    }
 
-  td[0].textContent = rowInfo.id;
-  td[1].textContent = rowInfo.url.url;
-  td[2].textContent = rowInfo.displayName;
-  td[3].textContent = convertMojoTimeToJS(rowInfo.lastDiscoveryTime).toString();
+    if (key === 'url') {
+      // Format a mojo GURL.
+      td.textContent = data.url;
+    } else if (
+        key === 'lastDiscoveryTime' || key === 'lastFetchTime' ||
+        key === 'cacheExpiryTime') {
+      // Format a mojo time.
+      td.textContent =
+          convertMojoTimeToJS(/** @type {mojoBase.mojom.Time} */ (data))
+              .toString();
+    } else if (key === 'userStatus') {
+      // Format a FeedUserStatus.
+      if (data == mediaFeeds.mojom.FeedUserStatus.kAuto) {
+        td.textContent = 'Auto';
+      } else if (data == mediaFeeds.mojom.FeedUserStatus.kDisabled) {
+        td.textContent = 'Disabled';
+      }
+    } else if (key === 'lastFetchResult') {
+      // Format a FetchResult.
+      if (data == mediaFeeds.mojom.FetchResult.kNone) {
+        td.textContent = 'None';
+      } else if (data == mediaFeeds.mojom.FetchResult.kSuccess) {
+        td.textContent = 'Success';
+      } else if (data == mediaFeeds.mojom.FetchResult.kFailedBackendError) {
+        td.textContent = 'Failed (Backend Error)';
+      } else if (data == mediaFeeds.mojom.FetchResult.kFailedNetworkError) {
+        td.textContent = 'Failed (Network Error)';
+      }
+    } else if (key === 'lastFetchContentTypes') {
+      // Format a MediaFeedItemType.
+      const contentTypes = [];
+      const itemType = parseInt(data, 10);
 
-  if (rowInfo.lastFetchTime != null) {
-    td[4].textContent = convertMojoTimeToJS(rowInfo.lastFetchTime).toString();
+      if (itemType & mediaFeeds.mojom.MediaFeedItemType.kVideo) {
+        contentTypes.push('Video');
+      } else if (itemType & mediaFeeds.mojom.MediaFeedItemType.kTVSeries) {
+        contentTypes.push('TV Series');
+      } else if (itemType & mediaFeeds.mojom.MediaFeedItemType.kMovie) {
+        contentTypes.push('Movie');
+      }
+
+      td.textContent =
+          contentTypes.length === 0 ? 'None' : contentTypes.join(',');
+    } else if (key === 'logos') {
+      // Format an array of mojo media images.
+      data.forEach((image) => {
+        const a = document.createElement('a');
+        a.href = image.src.url;
+        a.textContent = image.src.url;
+        a.target = '_blank';
+        td.appendChild(a);
+        td.appendChild(document.createElement('br'));
+      });
+    } else {
+      td.textContent = data;
+    }
   }
 
-  if (rowInfo.userStatus == mediaFeeds.mojom.FeedUserStatus.kAuto) {
-    td[5].textContent = 'Auto';
-  } else if (rowInfo.userStatus == mediaFeeds.mojom.FeedUserStatus.kDisabled) {
-    td[5].textContent = 'Disabled';
+  /**
+   * Compares two objects based on |sortKey|.
+   * @param {string} sortKey The name of the property to sort by.
+   * @param {?Object} a The first object to compare.
+   * @param {?Object} b The second object to compare.
+   * @return {number} A negative number if |a| should be ordered
+   *     before |b|, a positive number otherwise.
+   */
+  compareTableItem(sortKey, a, b) {
+    const val1 = a[sortKey];
+    const val2 = b[sortKey];
+
+    if (sortKey === 'url') {
+      return val1.url > val2.url ? 1 : -1;
+    } else if (
+        sortKey === 'id' || sortKey === 'displayName' ||
+        sortKey === 'userStatus' || sortKey === 'lastFetchResult' ||
+        sortKey === 'fetchFailedCount' || sortKey === 'lastFetchItemCount' ||
+        sortKey === 'lastFetchPlayNextCount' ||
+        sortKey === 'lastFetchContentTypes') {
+      return val1 > val2 ? 1 : -1;
+    } else if (
+        sortKey === 'lastDiscoveryTime' || sortKey === 'lastFetchTime' ||
+        sortKey === 'cacheExpiryTime') {
+      return val1.internalValue > val2.internalValue ? 1 : -1;
+    }
+
+    assertNotReached('Unsupported sort key: ' + sortKey);
+    return 0;
   }
-
-  if (rowInfo.lastFetchResult == mediaFeeds.mojom.FetchResult.kNone) {
-    td[6].textContent = 'None';
-  } else if (rowInfo.lastFetchResult == mediaFeeds.mojom.FetchResult.kSuccess) {
-    td[6].textContent = 'Success';
-  } else if (
-      rowInfo.lastFetchResult ==
-      mediaFeeds.mojom.FetchResult.kFailedBackendError) {
-    td[6].textContent = 'Failed (Backend Error)';
-  } else if (
-      rowInfo.lastFetchResult ==
-      mediaFeeds.mojom.FetchResult.kFailedNetworkError) {
-    td[6].textContent = 'Failed (Network Error)';
-  }
-
-  td[7].textContent = rowInfo.fetchFailedCount;
-
-  if (rowInfo.cacheExpiryTime != null) {
-    td[8].textContent = convertMojoTimeToJS(rowInfo.cacheExpiryTime).toString();
-  }
-
-  td[9].textContent = rowInfo.lastFetchItemCount;
-  td[10].textContent = rowInfo.lastFetchPlayNextCount;
-
-  const contentTypes = [];
-  if (rowInfo.lastFetchContentTypes &
-      mediaFeeds.mojom.MediaFeedItemType.kVideo) {
-    contentTypes.push('Video');
-  } else if (
-      rowInfo.lastFetchContentTypes &
-      mediaFeeds.mojom.MediaFeedItemType.kTVSeries) {
-    contentTypes.push('TV Series');
-  } else if (
-      rowInfo.lastFetchContentTypes &
-      mediaFeeds.mojom.MediaFeedItemType.kMovie) {
-    contentTypes.push('Movie');
-  }
-
-  td[11].textContent =
-      contentTypes.length === 0 ? 'None' : contentTypes.join(',');
-
-  // Format an array of mojo media images.
-  rowInfo.logos.forEach((image) => {
-    const a = document.createElement('a');
-    a.href = image.src.url;
-    a.textContent = image.src.url;
-    a.target = '_blank';
-    td[12].appendChild(a);
-    td[12].appendChild(document.createElement('br'));
-  });
-
-  return document.importNode(template.content, true);
 }
 
 /**
  * Converts a mojo time to a JS time.
- * @param {!mojoBase.mojom.Time} mojoTime
+ * @param {mojoBase.mojom.Time} mojoTime
  * @return {Date}
  */
 function convertMojoTimeToJS(mojoTime) {
+  if (mojoTime === null) {
+    return new Date();
+  }
+
   // The new Date().getTime() returns the number of milliseconds since the
   // UNIX epoch (1970-01-01 00::00:00 UTC), while |internalValue| of the
   // device.mojom.Geoposition represents the value of microseconds since the
@@ -119,108 +146,22 @@ function convertMojoTimeToJS(mojoTime) {
 }
 
 /**
- * Remove all rows from the feeds table.
- */
-function clearTable() {
-  feedTableBody.innerHTML = '';
-}
-
-/**
- * Sort the feed info based on |sortKey| and |sortReverse|.
- */
-function sortInfo() {
-  info.sort((a, b) => {
-    return (sortReverse ? -1 : 1) * compareTableItem(sortKey, a, b);
-  });
-}
-
-/**
- * Compares two MediaFeed objects based on |sortKey|.
- * @param {string} sortKey The name of the property to sort by.
- * @param {mediaFeeds.mojom.MediaFeed} a First object to compare.
- * @param {mediaFeeds.mojom.MediaFeed} b Second object to compare.
- * @return {number|boolean} A negative number if |a| should be ordered before
- *     |b|, a positive number otherwise.
- */
-function compareTableItem(sortKey, a, b) {
-  if (sortKey == 'url') {
-    return a.url.url > b.url.url ? 1 : -1;
-  } else if (sortKey == 'id') {
-    return a.id > b.id;
-  } else if (sortKey == 'lastDiscoveryTime') {
-    return (
-        a.lastDiscoveryTime.internalValue > b.lastDiscoveryTime.internalValue);
-  } else if (sortKey == 'displayName') {
-    return a.displayName > b.displayName;
-  } else if (sortKey == 'userStatus') {
-    return a.userStatus > b.userStatus;
-  } else if (sortKey == 'lastFetchResult') {
-    return a.lastFetchResult > b.lastFetchResult;
-  } else if (sortKey == 'fetchFailedCount') {
-    return a.fetchFailedCount > b.fetchFailedCount;
-  } else if (sortKey == 'cacheExpiryTime') {
-    return a.cacheExpiryTime > b.cacheExpiryTime;
-  } else if (sortKey == 'lastFetchItemCount') {
-    return a.lastFetchItemCount > b.lastFetchItemCount;
-  } else if (sortKey == 'lastFetchPlayNextCount') {
-    return a.lastFetchPlayNextCount > b.lastFetchPlayNextCount;
-  } else if (sortKey == 'lastFetchContentTypes') {
-    return a.lastFetchContentTypes > b.lastFetchContentTypes;
-  }
-
-  assertNotReached('Unsupported sort key: ' + sortKey);
-  return 0;
-}
-
-/**
- * Regenerates the feed table from |info|.
- */
-function renderTable() {
-  clearTable();
-  sortInfo();
-  info.forEach(rowInfo => feedTableBody.appendChild(createRow(rowInfo)));
-}
-
-/**
  * Retrieve feed info and render the feed table.
  */
-function updateFeedTable() {
-  detailsProvider.getMediaFeeds().then(response => {
-    info = response.feeds;
-    renderTable();
-    pageIsPopulatedResolver.resolve();
+function updateFeedsTable() {
+  store.getMediaFeeds().then(response => {
+    feedsTable.setData(response.feeds);
+    mediaFeedsPageIsPopulatedResolver.resolve();
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  detailsProvider = mediaFeeds.mojom.MediaFeedsStore.getRemote();
+  store = mediaFeeds.mojom.MediaFeedsStore.getRemote();
 
-  feedTableBody = $('feed-table-body');
-  updateFeedTable();
+  delegate = new MediaFeedsTableDelegate();
+  feedsTable = new cr.ui.MediaDataTable($('feeds-table'), delegate);
 
-  // Set table header sort handlers.
-  const feedTableHeader = $('feed-table-header');
-  const headers = feedTableHeader.children;
-  for (let i = 0; i < headers.length; i++) {
-    headers[i].addEventListener('click', (e) => {
-      const newSortKey = e.target.getAttribute('sort-key');
-      if (sortKey == newSortKey) {
-        sortReverse = !sortReverse;
-      } else {
-        sortKey = newSortKey;
-        sortReverse = false;
-      }
-      const oldSortColumn = document.querySelector('.sort-column');
-      oldSortColumn.classList.remove('sort-column');
-      e.target.classList.add('sort-column');
-      if (sortReverse) {
-        e.target.setAttribute('sort-reverse', '');
-      } else {
-        e.target.removeAttribute('sort-reverse');
-      }
-      renderTable();
-    });
-  }
+  updateFeedsTable();
 
   // Add handler to 'copy all to clipboard' button
   const copyAllToClipboardButton = $('copy-all-to-clipboard');

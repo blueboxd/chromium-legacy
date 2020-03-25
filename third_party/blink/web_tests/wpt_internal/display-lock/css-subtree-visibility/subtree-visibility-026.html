@@ -7,6 +7,7 @@
 <meta name="assert" content="subtree-visibility visible does not add containment">
 <meta name="assert" content="subtree-visibility hidden adds containment">
 <meta name="assert" content="subtree-visibility auto adds containment">
+<meta name="assert" content="subtree-visibility auto visibility switches after rAF callbacks of the frame that produces the painted output">
 
 <style>
 .auto {
@@ -39,12 +40,25 @@ async_test((t) => {
   setUp(async_container);
   async_container.classList.add("auto");
   t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style"));
+  // Considering this as frame 1:
+  // At frame 2, the container has size-containment, and intersection
+  //   observations will be delivered at the end of that frame.
+  // At frame 3, the container still has size-containment, because visiblility
+  //   switch happens after rAF-callbacks have run.
+  // At frame 4, the container is no longer size-contained since it is visible.
   requestAnimationFrame(() => {
+    // Frame 2 checks:
+    t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style"));
+
     requestAnimationFrame(() => {
-      // Since container is in the viewport it will not have size containment
-      // when the UA detects it's in the viewport.
-      t.step(() => assert_equals(getComputedStyle(async_container).contain, "layout style"));
-      t.done();
+      // Frame 3 checks:
+      t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style"));
+
+      requestAnimationFrame(() => {
+        // Frame 4 checks:
+        t.step(() => assert_equals(getComputedStyle(async_container).contain, "layout style"));
+        t.done();
+      });
     });
   });
 }, "subtree-visibility: auto adds contain: size layout style;");

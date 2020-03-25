@@ -9,7 +9,13 @@
     {
       "name": "LayoutNGBlockFlow DIV id='masked'",
       "bounds": [400, 200],
+      "contentsOpaque": true,
       "backgroundColor": "#000000",
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='masked'",
+      "bounds": [400, 200],
       "transform": 1
     }
   ],

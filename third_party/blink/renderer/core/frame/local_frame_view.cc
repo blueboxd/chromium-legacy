@@ -2296,6 +2296,18 @@ bool LocalFrameView::UpdateLifecyclePhases(
     });
   }
 
+  {
+    TRACE_EVENT0(
+        "blink",
+        "LocalFrameView::UpdateLifecyclePhases - start of lifecycle tasks");
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      WTF::Vector<base::OnceClosure> tasks;
+      frame_view.start_of_lifecycle_tasks_.swap(tasks);
+      for (auto& task : tasks)
+        std::move(task).Run();
+    });
+  }
+
   // Run the lifecycle updates.
   UpdateLifecyclePhasesInternal(target_state);
 
@@ -4452,6 +4464,10 @@ void LocalFrameView::RegisterForLifecycleNotifications(
 void LocalFrameView::UnregisterFromLifecycleNotifications(
     LifecycleNotificationObserver* observer) {
   lifecycle_observers_.erase(observer);
+}
+
+void LocalFrameView::EnqueueStartOfLifecycleTask(base::OnceClosure closure) {
+  start_of_lifecycle_tasks_.push_back(std::move(closure));
 }
 
 #if DCHECK_IS_ON()

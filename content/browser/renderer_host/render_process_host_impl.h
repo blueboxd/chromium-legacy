@@ -83,6 +83,7 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/native_io/native_io.mojom-forward.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
@@ -544,6 +545,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver)
       override;
+
+  // Binds |receiver| to a NativeIOHost instance indirectly owned by the
+  // StoragePartition. Used by frames and workers via BrowserInterfaceBroker.
+  void BindNativeIOHost(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver);
 
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();

@@ -1232,7 +1232,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, MemoryCacheAdBytesRecorded) {
 
 // UKM metrics for ad page load are recorded correctly.
 // TODO(crbug.com/1043619) test is flaky on bots.
-TEST_F(AdsPageLoadMetricsObserverTest, DISABLED_AdPageLoadUKM) {
+TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);

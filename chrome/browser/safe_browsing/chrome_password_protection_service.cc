@@ -37,6 +37,7 @@
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -969,6 +970,8 @@ void ChromePasswordProtectionService::OpenChangePasswordUrl(
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     // Opens chrome://settings/passwords/check in a new tab.
     chrome::ShowPasswordCheck(chrome::FindBrowserWithWebContents(web_contents));
+    password_manager::LogPasswordCheckReferrer(
+        password_manager::PasswordCheckReferrer::kPhishGuardDialog);
 #endif
   }
 }

@@ -876,7 +876,6 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool loading_status_set = params->query_info.status != tabs::TAB_STATUS_NONE;
-  bool loading = params->query_info.status == tabs::TAB_STATUS_LOADING;
 
   URLPatternSet url_patterns;
   if (params->query_info.url.get()) {
@@ -1033,8 +1032,11 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
         }
       }
 
-      if (loading_status_set && loading != web_contents->IsLoading())
+      if (loading_status_set &&
+          params->query_info.status !=
+              ExtensionTabUtil::GetLoadingStatus(web_contents)) {
         continue;
+      }
 
       result->Append(CreateTabObjectHelper(web_contents, extension(),
                                            source_context_type(), tab_strip, i)

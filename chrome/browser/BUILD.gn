@@ -5416,8 +5416,10 @@ jumbo_static_library("browser") {
 
     if (is_win) {
       sources += [
-        "vr/service/xr_session_request_consent_manager_impl.cc",
-        "vr/service/xr_session_request_consent_manager_impl.h",
+        "vr/consent/win_xr_consent_helper.cc",
+        "vr/consent/win_xr_consent_helper.h",
+        "vr/consent/xr_session_request_consent_manager_impl.cc",
+        "vr/consent/xr_session_request_consent_manager_impl.h",
         "vr/ui_host/vr_ui_host_impl.cc",
         "vr/ui_host/vr_ui_host_impl.h",
       ]
@@ -5441,7 +5443,6 @@ jumbo_static_library("browser") {
       "vr/service/browser_xr_runtime_impl.h",
       "vr/service/vr_service_impl.cc",
       "vr/service/vr_service_impl.h",
-      "vr/service/xr_consent_helper.h",
       "vr/service/xr_runtime_manager_impl.cc",
       "vr/service/xr_runtime_manager_impl.h",
       "vr/xr_runtime_manager_statics.h",
@@ -5920,6 +5921,8 @@ static_library("test_support") {
       "chromeos/input_method/mock_input_method_engine.h",
       "chromeos/input_method/mock_input_method_manager_impl.cc",
       "chromeos/input_method/mock_input_method_manager_impl.h",
+      "chromeos/input_method/mock_suggestion_window_controller.cc",
+      "chromeos/input_method/mock_suggestion_window_controller.h",
       "chromeos/login/screens/mock_device_disabled_screen_view.cc",
       "chromeos/login/screens/mock_device_disabled_screen_view.h",
       "chromeos/login/session/user_session_manager_test_api.cc",

@@ -208,25 +208,6 @@ std::vector<PoolingTestParams> GetPoolingTestParams() {
 
 }  // namespace
 
-class HeadersHandler {
- public:
-  HeadersHandler() : was_proxied_(false) {}
-
-  bool was_proxied() { return was_proxied_; }
-
-  void OnBeforeHeadersSent(const ProxyInfo& proxy_info,
-                           HttpRequestHeaders* request_headers) {
-    if (!proxy_info.is_http() && !proxy_info.is_https() &&
-        !proxy_info.is_quic()) {
-      return;
-    }
-    was_proxied_ = true;
-  }
-
- private:
-  bool was_proxied_;
-};
-
 class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
  public:
   TestSocketPerformanceWatcher(bool* should_notify_updated_rtt,
@@ -735,15 +716,10 @@ class QuicNetworkTransactionTest
                                                  bool used_proxy,
                                                  uint16_t port) {
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-    HeadersHandler headers_handler;
-    trans.SetBeforeHeadersSentCallback(
-        base::Bind(&HeadersHandler::OnBeforeHeadersSent,
-                   base::Unretained(&headers_handler)));
     RunTransaction(&trans);
     CheckWasHttpResponse(&trans);
     CheckResponsePort(&trans, port);
     CheckResponseData(&trans, expected);
-    EXPECT_EQ(used_proxy, headers_handler.was_proxied());
     if (used_proxy) {
       EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_https());
     } else {
@@ -1010,15 +986,10 @@ class QuicNetworkTransactionTest
       const std::string& status_line,
       const quic::ParsedQuicVersion& version) {
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-    HeadersHandler headers_handler;
-    trans.SetBeforeHeadersSentCallback(
-        base::Bind(&HeadersHandler::OnBeforeHeadersSent,
-                   base::Unretained(&headers_handler)));
     RunTransaction(&trans);
     CheckWasQuicResponse(&trans, status_line, version);
     CheckResponsePort(&trans, port);
     CheckResponseData(&trans, expected);
-    EXPECT_EQ(used_proxy, headers_handler.was_proxied());
     if (used_proxy) {
       EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_quic());
     } else {
@@ -8261,15 +8232,10 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
   request_.url = GURL("https://mail.example.org/");
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler;
-  trans.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler)));
   RunTransaction(&trans);
   CheckWasHttpResponse(&trans);
   CheckResponsePort(&trans, 70);
   CheckResponseData(&trans, "0123456789");
-  EXPECT_TRUE(headers_handler.was_proxied());
   EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_quic());
 
   // Causes MockSSLClientSocket to disconnect, which causes the underlying QUIC
@@ -8378,15 +8344,10 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
 
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler;
-  trans.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler)));
   RunTransaction(&trans);
   CheckWasSpdyResponse(&trans);
   CheckResponsePort(&trans, 70);
   CheckResponseData(&trans, "0123456789");
-  EXPECT_TRUE(headers_handler.was_proxied());
   EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_quic());
 
   // Causes MockSSLClientSocket to disconproxyconnecthttpnect, which causes the
@@ -8534,28 +8495,18 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
 
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans_1(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler_1;
-  trans_1.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler_1)));
   RunTransaction(&trans_1);
   CheckWasHttpResponse(&trans_1);
   CheckResponsePort(&trans_1, 70);
   CheckResponseData(&trans_1, "0123456789");
-  EXPECT_TRUE(headers_handler_1.was_proxied());
   EXPECT_TRUE(trans_1.GetResponseInfo()->proxy_server.is_quic());
 
   request_.url = GURL("https://mail.example.org/2");
   HttpNetworkTransaction trans_2(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler_2;
-  trans_2.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler_2)));
   RunTransaction(&trans_2);
   CheckWasHttpResponse(&trans_2);
   CheckResponsePort(&trans_2, 70);
   CheckResponseData(&trans_2, "0123456");
-  EXPECT_TRUE(headers_handler_2.was_proxied());
   EXPECT_TRUE(trans_2.GetResponseInfo()->proxy_server.is_quic());
 
   // Causes MockSSLClientSocket to disconnect, which causes the underlying QUIC
@@ -8744,28 +8695,18 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
 
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans_1(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler_1;
-  trans_1.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler_1)));
   RunTransaction(&trans_1);
   CheckWasHttpResponse(&trans_1);
   CheckResponsePort(&trans_1, 70);
   CheckResponseData(&trans_1, "0123456789");
-  EXPECT_TRUE(headers_handler_1.was_proxied());
   EXPECT_TRUE(trans_1.GetResponseInfo()->proxy_server.is_quic());
 
   request_.url = GURL("https://different.example.org/");
   HttpNetworkTransaction trans_2(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler_2;
-  trans_2.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler_2)));
   RunTransaction(&trans_2);
   CheckWasSpdyResponse(&trans_2);
   CheckResponsePort(&trans_2, 70);
   CheckResponseData(&trans_2, "0123456");
-  EXPECT_TRUE(headers_handler_2.was_proxied());
   EXPECT_TRUE(trans_2.GetResponseInfo()->proxy_server.is_quic());
 
   // Causes MockSSLClientSocket to disconnect, which causes the underlying QUIC
@@ -8825,15 +8766,10 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectFailure) {
 
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler;
-  trans.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler)));
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, callback.WaitForResult());
-  EXPECT_EQ(false, headers_handler.was_proxied());
 
   EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
@@ -8876,10 +8812,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyQuicConnectionError) {
 
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler;
-  trans.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler)));
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -9026,10 +8958,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
 
   request_.url = GURL("https://mail.example.org/");
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler;
-  trans.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler)));
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -9042,7 +8970,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
   CheckWasHttpResponse(&trans);
   CheckResponsePort(&trans, 70);
   CheckResponseData(&trans, "0123456789");
-  EXPECT_EQ(true, headers_handler.was_proxied());
   EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_quic());
 
   // Causes MockSSLClientSocket to disconnect, which causes the underlying QUIC
@@ -9104,10 +9031,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
   request_.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
                                    kRequestUserAgent);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-  HeadersHandler headers_handler;
-  trans.SetBeforeHeadersSentCallback(
-      base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                          base::Unretained(&headers_handler)));
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -9400,10 +9323,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
     request_.load_flags = LOAD_DO_NOT_SEND_AUTH_DATA;
     {
       HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-      HeadersHandler headers_handler;
-      trans.SetBeforeHeadersSentCallback(
-          base::BindRepeating(&HeadersHandler::OnBeforeHeadersSent,
-                              base::Unretained(&headers_handler)));
       RunTransaction(&trans);
 
       const HttpResponseInfo* response = trans.GetResponseInfo();

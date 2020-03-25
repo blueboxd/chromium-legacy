@@ -1032,7 +1032,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="536296301121032821">Mistókst að vista reglustillingar</translation>
 <translation id="5371425731340848620">Uppfæra kort</translation>
 <translation id="5377026284221673050">„Klukkan er á eftir“, „Klukkan þín er á undan“ eða „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
-<translation id="5380442954567233718">Netþjónninn sem þú hefur valið, <ph name="ORIGIN" />, er með stilltan haus
+<translation id="5380442954567233718">Netþjónninn sem þú valdir, <ph name="ORIGIN" />, er með stilltan haus
     þar sem farið er fram á að upprunaregla sé notuð við allar aðgangsbeiðnir. En
     hausinn er gallaður, sem kemur í veg fyrir að vafrinn geti uppfyllt
     beiðni þína fyrir <ph name="SITE" />. Upprunareglur geta verið notaðar af

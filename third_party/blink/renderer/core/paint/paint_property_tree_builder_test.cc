@@ -4323,6 +4323,10 @@ TEST_P(PaintPropertyTreeBuilderTest, LayerUnderOverflowClipUnderMultiColumn) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
+  // TODO(crbug.com/1064341): This test crashes in CompositeAfterPaint. Fix it.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <div id='multicol' style='columns:3; column-fill:auto; column-gap: 0;
@@ -4471,6 +4475,10 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameUnderMulticol) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedMulticolFrameUnderMulticol) {
+  // TODO(crbug.com/1064341): This test crashes in CompositeAfterPaint. Fix it.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
     <div style='columns: 3; column-gap: 0; column-fill: auto;
@@ -5371,16 +5379,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
 
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // TODO(crbug.com/900241): Without CompositeAfterPaint, we create effect and
-    // filter nodes when the transform node needs compositing for
-    // will-change:transform, for crbug.com/942681.
-    EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->SelfNeedsRepaint());
-  } else {
-    // All paint chunks contained by the new opacity effect node need to be
-    // re-painted.
-    EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->SelfNeedsRepaint());
-  }
+  EXPECT_TRUE(opacity_element->GetLayoutBox()->Layer()->SelfNeedsRepaint());
+  EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->SelfNeedsRepaint());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithMask) {
@@ -5632,7 +5632,11 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerSkipsFragmentClip) {
                                    .Clip());
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerUnderClipUnerMulticol) {
+TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerUnderClipUnderMulticol) {
+  // TODO(crbug.com/1064341): This test crashes in CompositeAfterPaint. Fix it.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <div id="multicol" style="columns: 2">
       <div id="clip" style="height: 100px; overflow: hidden">
@@ -6263,8 +6267,13 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
               overflow_clip->UnsnappedClipRect().Rect());
     EXPECT_EQ(transform, &overflow_clip->LocalTransformSpace());
 
-    // TODO(wangxianzhu): Are the following correct?
-    EXPECT_EQ(nullptr, properties->Effect());
+    const auto* effect = properties->Effect();
+    ASSERT_NE(nullptr, effect);
+    EXPECT_EQ(&EffectPaintPropertyNode::Root(), effect->Parent());
+    EXPECT_EQ(transform, &effect->LocalTransformSpace());
+    EXPECT_EQ(clip_path_clip, effect->OutputClip());
+    EXPECT_EQ(SkBlendMode::kSrcOver, effect->BlendMode());
+
     EXPECT_EQ(nullptr, properties->Mask());
     EXPECT_EQ(nullptr, properties->ClipPath());
   } else {

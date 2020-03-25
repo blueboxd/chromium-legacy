@@ -125,7 +125,7 @@
 <translation id="1165039591588034296">Błąd</translation>
 <translation id="1166212789817575481">Zamknij karty po prawej</translation>
 <translation id="1167199480815330007">Znajdź 6-cyfrowy kod PIN z tyłu klucza bezpieczeństwa</translation>
-<translation id="1168020859489941584">Otwieranie w ciągu <ph name="TIME_REMAINING" />...</translation>
+<translation id="1168020859489941584">Otworzę za <ph name="TIME_REMAINING" />…</translation>
 <translation id="1168100932582989117">Serwery nazw Google</translation>
 <translation id="1171135284592304528">Gdy obiekt wybrany za pomocą klawiatury zmienia się, podświetlaj go</translation>
 <translation id="1171515578268894665"><ph name="ORIGIN" /> chce się połączyć z urządzeniem HID</translation>

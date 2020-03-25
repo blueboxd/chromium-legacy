@@ -256,8 +256,6 @@ class CC_PAINT_EXPORT PaintOp {
   bool HasDiscardableImages() const { return false; }
   bool HasDiscardableImagesFromFlags() const { return false; }
 
-  bool HasText() const { return false; }
-
   // Returns the number of bytes used by this op in referenced sub records
   // and display lists.  This doesn't count other objects like paths or blobs.
   size_t AdditionalBytesUsed() const { return 0; }
@@ -674,7 +672,6 @@ class CC_PAINT_EXPORT DrawRecordOp final : public PaintOp {
   bool HasDiscardableImages() const;
   int CountSlowPaths() const;
   bool HasNonAAPaint() const;
-  bool HasText() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
   sk_sp<const PaintRecord> record;
@@ -763,7 +760,6 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
                               const PlaybackParams& params);
   bool IsValid() const { return flags.IsValid(); }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
-  bool HasText() const { return true; }
   HAS_SERIALIZATION_FUNCTIONS();
 
   sk_sp<SkTextBlob> blob;
@@ -988,7 +984,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   int numSlowPaths() const { return num_slow_paths_; }
   bool HasNonAAPaint() const { return has_non_aa_paint_; }
   bool HasDiscardableImages() const { return has_discardable_images_; }
-  bool HasText() const { return has_text_; }
 
   bool operator==(const PaintOpBuffer& other) const;
   bool operator!=(const PaintOpBuffer& other) const {
@@ -1049,8 +1044,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
     has_discardable_images_ |= op->HasDiscardableImages();
     has_discardable_images_ |= op->HasDiscardableImagesFromFlags();
-
-    has_text_ |= (op->HasText());
 
     subrecord_bytes_used_ += op->AdditionalBytesUsed();
     subrecord_op_count_ += op->AdditionalOpCount();
@@ -1279,7 +1272,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   bool has_non_aa_paint_ : 1;
   bool has_discardable_images_ : 1;
-  bool has_text_ : 1;
 };
 
 }  // namespace cc

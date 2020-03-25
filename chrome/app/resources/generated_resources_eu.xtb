@@ -1317,7 +1317,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2725200716980197196">Sareko konexioa berrezarri da</translation>
 <translation id="2727633948226935816">Ez gogorarazi berriro</translation>
 <translation id="2727712005121231835">Benetako tamaina</translation>
-<translation id="2729314457178420145">Garbitu arakatze-datuak ere (<ph name="URL" />); Google.com webguneko saioa ixtea eragin dezake horrek. <ph name="LEARN_MORE" /></translation>
+<translation id="2729314457178420145">Garbitu arakatze-datuak ere (<ph name="URL" />); baliteke Google.com webguneko saioa amaitzea. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Linux-eko aplikazio eta fitxategien babeskopia egiten</translation>
 <translation id="273093730430620027">Orria zure kamera atzitzen ari da.</translation>
 <translation id="2731392572903530958">Ir&amp;eki berriro leihoa</translation>
@@ -1883,7 +1883,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3496213124478423963">Txikitu</translation>
 <translation id="3497560059572256875">Partekatu doodle-a</translation>
 <translation id="3498215018399854026">Ezin izan gara jarri harremanetan zure arduradunarekin. Saiatu berriro.</translation>
-<translation id="3500417806337761827">Errore bat gertatu da partekatzea muntatzean. SMBko partekatze gehiegi daude jada muntatuta.</translation>
+<translation id="3500417806337761827">Errore bat gertatu da fitxategiak partekatzeko biltegia muntatzean. SMBko fitxategiak partekatzeko biltegi gehiegi daude jada muntatuta.</translation>
 <translation id="3505030558724226696">Baliogabetu gailurako sarbidea</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" luzapenak dituen baimenak</translation>
 <translation id="3507888235492474624">Bilatu berriro Bluetooth bidezko gailuak</translation>
@@ -5102,7 +5102,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
     <ph name="BEGIN_BOLD" />Oharra:<ph name="END_BOLD" /> sistema berrabiarazi egingo da prozesuan zehar.</translation>
 <translation id="7828731929332799387">Cookie eta webguneen datu guztiak ezabatuko ditu hirugarrenen testuinguruetatik. Aurrera egin nahi duzu?</translation>
 <translation id="7829298379596169484">Audio-sarrera atzitzen</translation>
-<translation id="7829877209233347340">Eskatu guraso bati saioa hasteko, eskolako kontu bat gehitzeko baimena eman diezazun</translation>
+<translation id="7829877209233347340">Eskatu guraso bati saioa hasteko, ikastetxeko kontu bat gehitzeko baimena eman diezazun</translation>
 <translation id="7830594666202422257">Konektatu Linux-era</translation>
 <translation id="7831491651892296503">Errore bat gertatu da sarea konfiguratzean</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5857,7 +5857,7 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8808686172382650546">Katua</translation>
 <translation id="8808744862003883508">Chrome-n instalatuta dauden luzapen guztiak ikus ditzakezu orri honetan.</translation>
 <translation id="8809147117840417135">Anil argia</translation>
-<translation id="8812593354822910461">Garbitu arakatze-datuak ere (<ph name="URL" />); <ph name="DOMAIN" /> webguneko saioa ixtea eragin dezake horrek. <ph name="LEARN_MORE" /></translation>
+<translation id="8812593354822910461">Garbitu arakatze-datuak ere (<ph name="URL" />); hala, <ph name="DOMAIN" /> webguneko saioa amaituko da. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Ezin da hasi saioa <ph name="USERNAME" /> kontuan</translation>
 <translation id="8813811964357448561">paper-orria</translation>
 <translation id="8813872945700551674">Eskatu guraso bati "<ph name="EXTENSION_NAME" />" onartzeko</translation>

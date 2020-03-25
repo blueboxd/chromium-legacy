@@ -180,19 +180,10 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run();
   }
 
-  void SetShouldRequireCT(ShouldRequireCT required,
-                          SetShouldRequireCTCallback callback) override {
-    if (required == NetworkServiceTest::ShouldRequireCT::RESET) {
-      net::TransportSecurityState::SetShouldRequireCTForTesting(nullptr);
-      std::move(callback).Run();
-      return;
-    }
-
-    bool ct = true;
-    if (NetworkServiceTest::ShouldRequireCT::DONT_REQUIRE == required)
-      ct = false;
-
-    net::TransportSecurityState::SetShouldRequireCTForTesting(&ct);
+  void SetRequireCT(RequireCT required,
+                    SetRequireCTCallback callback) override {
+    net::TransportSecurityState::SetRequireCTForTesting(
+        required == NetworkServiceTest::RequireCT::REQUIRE);
     std::move(callback).Run();
   }
 

@@ -20,6 +20,7 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/mock_suggestion_window_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
@@ -135,8 +136,8 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   InputMethodManagerImplTest()
       : delegate_(nullptr),
         candidate_window_controller_(nullptr),
-        keyboard_(nullptr) {
-  }
+        suggestion_window_controller_(nullptr),
+        keyboard_(nullptr) {}
 
   ~InputMethodManagerImplTest() override = default;
 
@@ -147,6 +148,9 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     manager_.reset(new InputMethodManagerImpl(
         std::unique_ptr<InputMethodDelegate>(delegate_), false));
     manager_->GetInputMethodUtil()->UpdateHardwareLayoutCache();
+    suggestion_window_controller_ = new MockSuggestionWindowController;
+    manager_->SetSuggestionWindowControllerForTesting(
+        suggestion_window_controller_);
     candidate_window_controller_ = new MockCandidateWindowController;
     manager_->SetCandidateWindowControllerForTesting(
         candidate_window_controller_);
@@ -177,6 +181,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
 
     delegate_ = nullptr;
     candidate_window_controller_ = nullptr;
+    suggestion_window_controller_ = nullptr;
     keyboard_ = nullptr;
     manager_.reset();
   }
@@ -367,6 +372,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   std::unique_ptr<InputMethodManagerImpl> manager_;
   FakeInputMethodDelegate* delegate_;
   MockCandidateWindowController* candidate_window_controller_;
+  MockSuggestionWindowController* suggestion_window_controller_;
   std::unique_ptr<MockInputMethodEngine> mock_engine_handler_;
   FakeImeKeyboard* keyboard_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;

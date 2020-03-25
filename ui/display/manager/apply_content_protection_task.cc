@@ -53,24 +53,23 @@ void ApplyContentProtectionTask::Run() {
   // updated the state.
   for (DisplaySnapshot* display : hdcp_capable_displays) {
     native_display_delegate_->GetHDCPState(
-        *display,
-        base::BindOnce(&ApplyContentProtectionTask::OnGetHDCPState,
-                       weak_ptr_factory_.GetWeakPtr(), display->display_id()));
+        *display, base::BindOnce(&ApplyContentProtectionTask::OnGetHDCPState,
+                                 weak_ptr_factory_.GetWeakPtr(), display));
   }
 }
 
-void ApplyContentProtectionTask::OnGetHDCPState(int64_t display_id,
+void ApplyContentProtectionTask::OnGetHDCPState(DisplaySnapshot* display,
                                                 bool success,
                                                 HDCPState state) {
   success_ &= success;
 
   bool hdcp_enabled = state != HDCP_STATE_UNDESIRED;
-  bool hdcp_requested =
-      GetDesiredProtectionMask(display_id) & CONTENT_PROTECTION_METHOD_HDCP;
+  bool hdcp_requested = GetDesiredProtectionMask(display->display_id()) &
+                        CONTENT_PROTECTION_METHOD_HDCP;
 
   if (hdcp_enabled != hdcp_requested) {
     hdcp_requests_.emplace_back(
-        display_id, hdcp_requested ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED);
+        display, hdcp_requested ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED);
   }
 
   pending_requests_--;
@@ -92,25 +91,9 @@ void ApplyContentProtectionTask::OnGetHDCPState(int64_t display_id,
     return;
   }
 
-  std::vector<DisplaySnapshot*> displays = layout_manager_->GetDisplayStates();
-  std::vector<DisplaySnapshot*> hdcped_displays;
-  // Lookup the displays again since display configuration may have changed.
   for (const auto& pair : hdcp_requests_) {
-    auto it = std::find_if(displays.begin(), displays.end(),
-                           [id = pair.first](DisplaySnapshot* display) {
-                             return id == display->display_id();
-                           });
-    if (it == displays.end()) {
-      std::move(callback_).Run(Status::FAILURE);
-      return;
-    }
-
-    hdcped_displays.push_back(*it);
-  }
-
-  for (size_t i = 0; i < hdcp_requests_.size(); ++i) {
     native_display_delegate_->SetHDCPState(
-        *hdcped_displays[i], hdcp_requests_[i].second,
+        *pair.first, pair.second,
         base::BindOnce(&ApplyContentProtectionTask::OnSetHDCPState,
                        weak_ptr_factory_.GetWeakPtr()));
   }

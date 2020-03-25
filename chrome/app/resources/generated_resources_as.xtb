@@ -458,6 +458,7 @@
 <translation id="1616206807336925449">এই এক্সটেনশ্বনটোৰ বাবে কোনো বিশেষ অনুমতি ল'ব নালাগে।</translation>
 <translation id="1616298854599875024">এক্সটেনশ্বন "<ph name="IMPORT_NAME" />" আমদানি কৰিব পৰা নগ'ল কাৰণ এইটো এটা শ্বেয়াৰ কৰা মডিউল নহয়</translation>
 <translation id="1618268899808219593">স&amp;হায়তা কেন্দ্ৰ</translation>
+<translation id="1620307519959413822">ভুল পাছৱৰ্ড। পুনৰ চেষ্টা কৰক অথবা সেইটো ৰিছেট কৰিবলৈ পাছৱৰ্ড পাহৰিলোঁত ক্লিক কৰক।</translation>
 <translation id="1620510694547887537">কেমেৰা</translation>
 <translation id="1623132449929929218">বর্তমান প্ৰতিচ্ছবিসমূহ নাই ৱেলপেপাৰৰ সংগ্ৰহসমূহ চাবলৈ ইণ্টাৰনেটলৈ পুনৰ সংযোগ কৰক।</translation>
 <translation id="1627276047960621195">ফাইলৰ বিৱৰণ</translation>
@@ -676,6 +677,7 @@
 <translation id="1887850431809612466">হাৰ্ডৱেৰৰ পুনৰীক্ষণ</translation>
 <translation id="1890674179660343635">&lt;span&gt;আইডি: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">সম্পূৰ্ণ স্ক্রীণ হিচাপে খোলক</translation>
+<translation id="1892341345406963517">নমস্কাৰ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">অন্য ভাষা</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> বাকী আছে</translation>
 <translation id="1895658205118569222">শ্বাটডাউন</translation>
@@ -3126,6 +3128,7 @@
 <translation id="5213891612754844763">প্ৰক্সি ছেটিংসমূহ দেখুৱাওক</translation>
 <translation id="5215502535566372932">দেশ বাছনি কৰক</translation>
 <translation id="521582610500777512">ফট’ পৰিত্যাগ কৰা হৈছিল</translation>
+<translation id="5222403284441421673">অসুৰক্ষিত ডাউনল’ড অৱৰোধ কৰা হৈছে</translation>
 <translation id="5222676887888702881">ছাইন আউট কৰক</translation>
 <translation id="52232769093306234">পেকিং বিফল হ'ল।</translation>
 <translation id="5225324770654022472">এপ্‌সমূহৰ শ্বৰ্টকাট দেখুৱাওক</translation>
@@ -3523,6 +3526,7 @@
 <translation id="5734362860645681824">যোগাযোগ</translation>
 <translation id="5734697361979786483">ফাইল শ্বেয়াৰ কৰা সুবিধাটো যোগ কৰক</translation>
 <translation id="5736796278325406685">অনুগ্ৰহ কৰি এটা মান্য ব্যৱহাৰকাৰীৰ নাম দিয়ক</translation>
+<translation id="5739017626473506901">বিদ্যালয়ৰ এটা একাউণ্ট যোগ দিয়াত <ph name="USER_NAME" />ক সহায় কৰিবলৈ ছাইন ইন কৰক</translation>
 <translation id="5739235828260127894">সত্যাপনৰ বাবে অপেক্ষা কৰি আছে। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">যথেষ্ট ডাঙৰ</translation>
 <translation id="574209121243317957">পিচ্চ</translation>
@@ -5522,6 +5526,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> নেটৱৰ্ক, সংযোগ কৰি থকা হৈছে</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">প্ৰথমে সোধক (চুপাৰিছ কৰা)</translation>
+<translation id="8417548266957501132">অভিভাৱকৰ পাছৱৰ্ড</translation>
 <translation id="8417573335434189196">আপোনাক বিপজ্জনক ৱেবছাইটসমূহ, ডাউনল'ডসমূহ অথবা এক্সটেনশ্বনসমূহৰ পৰা সুৰক্ষা প্ৰদান নকৰে। Chromeএ এই ছেটিংটো চুপাৰিছ নকৰে।</translation>
 <translation id="8418445294933751433">টেব হিচাপে &amp;দেখুৱাওক</translation>
 <translation id="8419098111404128271">’<ph name="SEARCH_TEXT" />’ৰ সন্ধানৰ ফলাফল</translation>

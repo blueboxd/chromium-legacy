@@ -287,6 +287,7 @@
 <translation id="3058498974290601450">आप सेटिंग में किसी भी समय सिंक चालू कर सकते हैं</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> बुकमार्क}one{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}other{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}}</translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
+<translation id="3114012059975132928">वीडियो प्लेयर</translation>
 <translation id="3123473560110926937">कुछ साइटों पर ब्लॉक किए गए हैं</translation>
 <translation id="3123734510202723619">एलान</translation>
 <translation id="3137521801621304719">गुप्त मोड छोड़ें</translation>
@@ -353,6 +354,7 @@
 <translation id="3587482841069643663">सभी</translation>
 <translation id="358794129225322306">किसी साइट को अपने आप एक से ज़्यादा फ़ाइलें लोड करने की मंज़ूरी दें.</translation>
 <translation id="3590487821116122040">ऐसी 'साइट मेमोरी' जो Chrome के हिसाब से ज़रूरी नहीं है (जैसे कि ऐसी साइट जिनमें कोई भी सेटिंग नहीं सेव की गई है या जिन पर आप अक्सर नहीं जाते हैं)</translation>
+<translation id="3594780231884063836">वीडियो म्यूट करें</translation>
 <translation id="3599863153486145794">साइन इन किए हुए सभी डिवाइसों से इतिहास साफ़ कर देता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकते हैं.</translation>
 <translation id="3600792891314830896">आवाज़ चलाने वाली साइटों की आवाज़ बंद करें</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
@@ -606,6 +608,7 @@
 <translation id="5456381639095306749">पेज डाउनलोड करें</translation>
 <translation id="548278423535722844">मैप ऐप्लिकेशन में खोलें</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
+<translation id="5489227211564503167"><ph name="TOTAL_TIME" /> में से <ph name="ELAPSED_TIME" /> का समय बीत चुका है.</translation>
 <translation id="5494752089476963479">तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक करें</translation>
 <translation id="5500777121964041360">शायद, यह सुविधा आपके देश में उपलब्ध न हाे</translation>
 <translation id="5505264765875738116">साइटें आपको सूचनाएं भेजने के लिए नहीं पूछ सकती हैं</translation>
@@ -665,6 +668,7 @@
 <translation id="5864419784173784555">दूसरे डाउनलोड का इंतज़ार किया जा रहा है…</translation>
 <translation id="5865733239029070421">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट अपने आप भेजती है</translation>
 <translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
+<translation id="5876056640971328065">वीडियो रोकें</translation>
 <translation id="5884076754568147479">टास्क पूरे करने में आपकी मदद के लिए, Google उन साइटों के यूआरएल और सामग्री का इस्तेमाल करेगा जिनसे आपने Assistant को जोड़ा है. साथ ही, वह उस जानकारी का भी इस्तेमाल करेगा जिसे आपने Assistant की मदद से सबमिट किया है</translation>
 <translation id="5902828464777634901">कुकी सहित, ऐसा सारा डेटा मिटा दिया जाएगा, जिसे इस वेबसाइट ने सेव किया है.</translation>
 <translation id="5919204609460789179">सिंक शुरू करने के लिए <ph name="PRODUCT_NAME" /> अपडेट करें</translation>
@@ -727,6 +731,7 @@
 <translation id="6381421346744604172">वेबसाइटों को गहरा करने का विकल्प</translation>
 <translation id="6388207532828177975">साफ़ करें और रीसेट करें</translation>
 <translation id="6395288395575013217">लिंक</translation>
+<translation id="6397616442223433927">इंटरनेट कनेक्शन फिर से जुड़ गया</translation>
 <translation id="6404511346730675251">बुकमार्क में बदलाव करें</translation>
 <translation id="6406506848690869874">सिंक</translation>
 <translation id="6410973561433500075">क्या आप <ph name="DOMAIN" /> से एआर (ऑगमेंटेड रिएलिटी) में जाना चाहते हैं?</translation>
@@ -795,6 +800,7 @@
 <translation id="6846298663435243399">लोड हो रहा है...</translation>
 <translation id="6850409657436465440">आपका डाउनलोड अब भी जारी है</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टैब बंद किए गए</translation>
+<translation id="6864395892908308021">इस डिवाइस के साथ NFC काम नहीं कर सकता</translation>
 <translation id="6864459304226931083">इमेज डाउनलोड करें</translation>
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाले फ़ॉर्म का डेटा</translation>
 <translation id="6884306546558072722">ऑफ़लाइन फ़ीड देखते रहें</translation>
@@ -916,6 +922,7 @@
 <translation id="7810647596859435254">इसमें खोलें…</translation>
 <translation id="7821588508402923572">बचाया गया डेटा यहां दिखाई देगा</translation>
 <translation id="7828557259026017104">आप जिन वेबसाइटों पर जाते हैं उनकी बनाई फ़ाइलें कुकी कहलाती हैं. आपकी प्राथमिकताओं को याद रखने के लिए, साइटें उनका इस्तेमाल करती हैं. अन्य साइटें, तीसरे पक्ष की कुकी बनाती हैं. इन साइटों पर विज्ञापन या इमेज जैसी कुछ सामग्री होती हैं. ये उस वेबपेज पर दिखती है जिस पर आप जाते हैं.</translation>
+<translation id="783819812427904514">वीडियो अनम्यूट करें</translation>
 <translation id="784934925303690534">समय सीमा</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
 <translation id="7875915731392087153">ईमेल बनाएं</translation>

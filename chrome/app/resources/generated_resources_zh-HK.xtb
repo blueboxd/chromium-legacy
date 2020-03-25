@@ -1316,7 +1316,7 @@
 <translation id="2725200716980197196">網絡連線已恢復</translation>
 <translation id="2727633948226935816">不要再提醒我</translation>
 <translation id="2727712005121231835">實際大小</translation>
-<translation id="2729314457178420145">一併清除瀏覽資料 (<ph name="URL" />)，此操作可能會將您登出 Google.com。<ph name="LEARN_MORE" /></translation>
+<translation id="2729314457178420145">一併清除瀏覽資料 (<ph name="URL" />) 可能會將您登出 Google.com。<ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">正在備份 Linux 應用程式和檔案</translation>
 <translation id="273093730430620027">這個網頁正在存取您的相機。</translation>
 <translation id="2731392572903530958">重新開啟先前關閉的視窗(&amp;E)</translation>
@@ -5855,7 +5855,7 @@
 <translation id="8808686172382650546">Cat</translation>
 <translation id="8808744862003883508">此頁面顯示所有在 Chrome 安裝的擴充程式。</translation>
 <translation id="8809147117840417135">淺藍綠色</translation>
-<translation id="8812593354822910461">一併清除瀏覽資料 (<ph name="URL" />)，此操作會將您登出 <ph name="DOMAIN" />。<ph name="LEARN_MORE" /></translation>
+<translation id="8812593354822910461">一併清除瀏覽資料 (<ph name="URL" />) 會將您登出 <ph name="DOMAIN" />。<ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">無法登入 <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">紙張數目</translation>
 <translation id="8813872945700551674">要求家長核准安裝「<ph name="EXTENSION_NAME" />」</translation>

@@ -22,6 +22,10 @@ component("chromeos") {
     "ime/input_method_menu_item.h",
     "ime/input_method_menu_manager.cc",
     "ime/input_method_menu_manager.h",
+    "ime/suggestion_view.cc",
+    "ime/suggestion_view.h",
+    "ime/suggestion_window_view.cc",
+    "ime/suggestion_window_view.h",
     "user_activity_power_manager_notifier.cc",
     "user_activity_power_manager_notifier.h",
   ]

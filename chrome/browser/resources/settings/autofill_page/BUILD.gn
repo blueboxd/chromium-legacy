@@ -123,6 +123,8 @@ js_library("password_remove_confirmation_dialog") {
 js_library("password_check_list_item") {
   deps = [
     ":password_manager_proxy",
+    "..:open_window_proxy",
+    "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
@@ -551,7 +553,8 @@ polymer_modulizer("password_check_list_item") {
   html_type = "dom-module"
   auto_imports = [
     "chrome/browser/resources/settings/open_window_proxy.html|OpenWindowProxyImpl",
-    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerProxy",
+    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
+    "ui/webui/resources/html/assert.html|assert",
   ]
   namespace_rewrites = settings_namespace_rewrites
 }

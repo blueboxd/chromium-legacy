@@ -72,7 +72,8 @@ extension pages as panels and sidebars to the DevTools window using the
 
 <p class="note">The <code>devtools_page</code> field must point to an HTML page.
 This differs from the <code>background</code> field, used for specifying a background page,
-which lets you specify JavaScript files directly.</p>
+which lets you specify JavaScript files directly. The DevTools page must be
+local to your extension, so it is best to specify it using a relative URL.</p>
 
 <p>The <code>chrome.devtools.*</code> API modules are available only to the pages
 loaded within the DevTools window. Content scripts and other extension pages do not

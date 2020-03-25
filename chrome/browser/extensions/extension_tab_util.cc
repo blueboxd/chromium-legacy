@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -37,7 +38,9 @@
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/constants.h"
@@ -159,6 +162,12 @@ ExtensionTabUtil::ScrubTabBehaviorType GetScrubTabBehaviorImpl(
   }
 
   return ExtensionTabUtil::kDontScrubTab;
+}
+
+bool HasValidMainFrameProcess(content::WebContents* contents) {
+  content::RenderFrameHost* main_frame_host = contents->GetMainFrame();
+  content::RenderProcessHost* process_host = main_frame_host->GetProcess();
+  return process_host->IsReady() && process_host->IsInitializedAndNotDead();
 }
 
 }  // namespace
@@ -376,9 +385,18 @@ int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
   return sessions::SessionTabHelper::IdForTab(web_contents).id();
 }
 
-std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
-  return is_loading ? tabs_constants::kStatusValueLoading
-                    : tabs_constants::kStatusValueComplete;
+std::string ExtensionTabUtil::GetTabStatusText(WebContents* web_contents) {
+  switch (GetLoadingStatus(web_contents)) {
+    case api::tabs::TAB_STATUS_UNLOADED:
+      return tabs_constants::kStatusValueUnloaded;
+    case api::tabs::TAB_STATUS_LOADING:
+      return tabs_constants::kStatusValueLoading;
+    case api::tabs::TAB_STATUS_COMPLETE:
+      return tabs_constants::kStatusValueComplete;
+    case api::tabs::TAB_STATUS_NONE:
+      NOTREACHED();
+  }
+  return std::string();
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
@@ -408,13 +426,12 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
     int tab_index) {
   if (!tab_strip)
     ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index);
-  bool is_loading = contents->IsLoading();
   auto tab_object = std::make_unique<api::tabs::Tab>();
   tab_object->id = std::make_unique<int>(GetTabIdForExtensions(contents));
   tab_object->index = tab_index;
   tab_object->window_id = GetWindowIdOfTab(contents);
   tab_object->status =
-      std::make_unique<std::string>(GetTabStatusText(is_loading));
+      std::make_unique<std::string>(GetTabStatusText(contents));
   tab_object->active = tab_strip && tab_index == tab_strip->active_index();
   tab_object->selected = tab_strip && tab_index == tab_strip->active_index();
   tab_object->highlighted = tab_strip && tab_strip->IsTabSelected(tab_index);
@@ -431,13 +448,20 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
     audible = contents->IsCurrentlyAudible();
   }
   tab_object->audible = std::make_unique<bool>(audible);
-  auto* tab_lifeycle_unit_external =
+  auto* tab_lifecycle_unit_external =
       resource_coordinator::TabLifecycleUnitExternal::FromWebContents(contents);
+
+  // Note that while a discarded tab *must* have an unloaded status, its
+  // possible for an unloaded tab to not be discarded (session restored tabs
+  // whose loads have been deferred, for example).
   tab_object->discarded =
-      tab_lifeycle_unit_external && tab_lifeycle_unit_external->IsDiscarded();
+      tab_lifecycle_unit_external && tab_lifecycle_unit_external->IsDiscarded();
+  DCHECK(!tab_object->discarded ||
+         *tab_object->status == tabs_constants::kStatusValueUnloaded);
   tab_object->auto_discardable =
-      !tab_lifeycle_unit_external ||
-      tab_lifeycle_unit_external->IsAutoDiscardable();
+      !tab_lifecycle_unit_external ||
+      tab_lifecycle_unit_external->IsAutoDiscardable();
+
   tab_object->muted_info = CreateMutedInfo(contents);
   tab_object->incognito = contents->GetBrowserContext()->IsOffTheRecord();
   gfx::Size contents_size = contents->GetContainerBounds().size();
@@ -902,6 +926,19 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
 // static
 bool ExtensionTabUtil::BrowserSupportsTabs(Browser* browser) {
   return browser && !browser->is_type_devtools();
+}
+
+// static
+api::tabs::TabStatus ExtensionTabUtil::GetLoadingStatus(WebContents* contents) {
+  if (contents->IsLoading())
+    return api::tabs::TAB_STATUS_LOADING;
+
+  // Anything that isn't backed by a process is considered unloaded.
+  if (!HasValidMainFrameProcess(contents))
+    return api::tabs::TAB_STATUS_UNLOADED;
+
+  // Otherwise its considered loaded.
+  return api::tabs::TAB_STATUS_COMPLETE;
 }
 
 }  // namespace extensions

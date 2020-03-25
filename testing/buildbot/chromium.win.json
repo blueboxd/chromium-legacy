@@ -1763,6 +1763,11 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "pixel_browser_tests",
+        "precommit_args": [
+          "--issue=${patch_issue}",
+          "--patchset=${patch_set}",
+          "--jobid=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

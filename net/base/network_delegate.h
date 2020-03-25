@@ -43,7 +43,6 @@ class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class IPEndPoint;
-class ProxyInfo;
 class URLRequest;
 
 class NET_EXPORT NetworkDelegate {
@@ -60,10 +59,6 @@ class NET_EXPORT NetworkDelegate {
   int NotifyBeforeStartTransaction(URLRequest* request,
                                    CompletionOnceCallback callback,
                                    HttpRequestHeaders* headers);
-  void NotifyBeforeSendHeaders(URLRequest* request,
-                               const ProxyInfo& proxy_info,
-                               const ProxyRetryInfoMap& proxy_retry_info,
-                               HttpRequestHeaders* headers);
   int NotifyHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
@@ -153,17 +148,6 @@ class NET_EXPORT NetworkDelegate {
   virtual int OnBeforeStartTransaction(URLRequest* request,
                                        CompletionOnceCallback callback,
                                        HttpRequestHeaders* headers) = 0;
-
-  // Called after a connection is established , and just before headers are sent
-  // to the destination server (i.e., not called for HTTP CONNECT requests). For
-  // non-tunneled requests using HTTP proxies, |headers| will include any
-  // proxy-specific headers as well. Allows the delegate to read/write |headers|
-  // before they get sent out. |headers| is valid only for the duration of the
-  // call.
-  virtual void OnBeforeSendHeaders(URLRequest* request,
-                                   const ProxyInfo& proxy_info,
-                                   const ProxyRetryInfoMap& proxy_retry_info,
-                                   HttpRequestHeaders* headers) = 0;
 
   // Called for HTTP requests when the headers have been received.
   // |original_response_headers| contains the headers as received over the

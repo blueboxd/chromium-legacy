@@ -165,6 +165,43 @@ suite('SafetyCheckUiTests', function() {
     }
   });
 
+  test('passwordButtonWhenPasswordCheckIsOn', async function() {
+    loadTimeData.overrideValues({enablePasswordCheck: true});
+
+    const passwordManager = new TestPasswordManagerProxy();
+    PasswordManagerImpl.instance_ = passwordManager;
+
+    fireSafetyCheckPasswordsEvent(
+        settings.SafetyCheckPasswordsStatus.COMPROMISED);
+    Polymer.dom.flush();
+
+    page.$$('#safetyCheckPasswordsButton').click();
+    assertEquals(
+        settings.routes.CHECK_PASSWORDS,
+        settings.Router.getInstance().currentRoute);
+    const referrer =
+        await passwordManager.whenCalled('recordPasswordCheckReferrer');
+    assertEquals(
+        PasswordManagerProxy.PasswordCheckReferrer.SAFETY_CHECK, referrer);
+  });
+
+  test('passwordButtonWhenPasswordCheckIsOff', function() {
+    loadTimeData.overrideValues({enablePasswordCheck: false});
+
+    const passwordManager = new TestPasswordManagerProxy();
+    PasswordManagerImpl.instance_ = passwordManager;
+
+    fireSafetyCheckPasswordsEvent(
+        settings.SafetyCheckPasswordsStatus.COMPROMISED);
+    Polymer.dom.flush();
+
+    page.$$('#safetyCheckPasswordsButton').click();
+    assertEquals(
+        settings.routes.PASSWORDS, settings.Router.getInstance().currentRoute);
+    assertEquals(
+        0, passwordManager.getCallCount('recordPasswordCheckReferrer'));
+  });
+
   test('safeBrowsingCheckingUiTest', function() {
     fireSafetyCheckSafeBrowsingEvent(
         settings.SafetyCheckSafeBrowsingStatus.CHECKING);

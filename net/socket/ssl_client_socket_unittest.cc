@@ -4356,10 +4356,9 @@ TEST_P(SSLClientSocketVersionTest, CTRequiredHistogramNonCompliantLocalRoot) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the CT requirement and failure to comply.
-  base::ScopedClosureRunner cleanup(base::BindOnce(
-      &TransportSecurityState::SetShouldRequireCTForTesting, nullptr));
-  bool require_ct = true;
-  TransportSecurityState::SetShouldRequireCTForTesting(&require_ct);
+  base::ScopedClosureRunner cleanup(
+      base::BindOnce(&TransportSecurityState::SetRequireCTForTesting, false));
+  TransportSecurityState::SetRequireCTForTesting(true);
   MockRequireCTDelegate require_ct_delegate;
   transport_security_state_->SetRequireCTDelegate(&require_ct_delegate);
   EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))

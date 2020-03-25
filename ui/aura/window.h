@@ -601,7 +601,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                           ui::PropertyChangeReason reason) override;
   void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;
   void OnLayerAlphaShapeChanged() override;
-  void OnLayerFillsBoundsOpaquelyChanged() override;
+  void OnLayerFillsBoundsOpaquelyChanged(
+      ui::PropertyChangeReason reason) override;
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;

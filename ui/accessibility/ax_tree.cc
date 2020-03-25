@@ -1108,7 +1108,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   for (AXNode::AXID node_id :
        update_state.invalidate_unignored_cached_values_ids) {
     AXNode* node = GetFromId(node_id);
-    while (node && node->data().HasState(ax::mojom::State::kIgnored))
+    while (node && node->data().IsIgnored())
       node = node->parent();
     if (node && updated_unignored_cached_values_ids.insert(node->id()).second)
       node->UpdateUnignoredCachedValues();
@@ -1379,8 +1379,7 @@ bool AXTree::ComputePendingChangesToNode(const AXNodeData& new_data,
 
   // If the node has changed ignored state or there are any differences in
   // its children, then its unignored cached values must be invalidated.
-  const bool ignored_changed = old_data.HasState(ax::mojom::State::kIgnored) !=
-                               new_data.HasState(ax::mojom::State::kIgnored);
+  const bool ignored_changed = old_data.IsIgnored() != new_data.IsIgnored();
   if (!create_or_destroy_ids.empty() || ignored_changed) {
     update_state->invalidate_unignored_cached_values_ids.insert(new_data.id);
 

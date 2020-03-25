@@ -1,0 +1,27 @@
+This is a testharness.js-based test.
+PASS Run idlharness tests in a worker.
+PASS idl_test setup
+PASS idl_test validation
+PASS Partial interface Navigator: original interface defined
+PASS Partial interface Navigator: member names are unique
+PASS Partial interface mixin NavigatorID: member names are unique
+PASS Navigator includes NavigatorID: member names are unique
+PASS Navigator includes NavigatorLanguage: member names are unique
+PASS Navigator includes NavigatorOnLine: member names are unique
+PASS Navigator includes NavigatorContentUtils: member names are unique
+PASS Navigator includes NavigatorCookies: member names are unique
+PASS Navigator includes NavigatorPlugins: member names are unique
+PASS Navigator includes NavigatorConcurrentHardware: member names are unique
+FAIL WakeLock interface: existence and properties of interface object assert_false: expected false got true
+PASS WakeLock must be primary interface of navigator.wakeLock
+PASS Stringification of navigator.wakeLock
+FAIL WakeLock interface: navigator.wakeLock must not have property "request" assert_false: expected false got true
+FAIL WakeLockSentinel interface: existence and properties of interface object assert_false: expected false got true
+PASS WakeLockSentinel must be primary interface of sentinel
+PASS Stringification of sentinel
+FAIL WakeLockSentinel interface: sentinel must not have property "type" assert_false: expected false got true
+FAIL WakeLockSentinel interface: sentinel must not have property "release" assert_false: expected false got true
+FAIL WakeLockSentinel interface: sentinel must not have property "onrelease" assert_false: expected false got true
+PASS Navigator interface: existence and properties of interface object
+Harness: the test ran to completion.
+

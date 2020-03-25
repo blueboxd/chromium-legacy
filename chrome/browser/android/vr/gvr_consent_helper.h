@@ -8,10 +8,10 @@
 #include "base/android/jni_android.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/vr/service/xr_consent_helper.h"
+#include "content/public/browser/xr_consent_helper.h"
 
 namespace vr {
-class GvrConsentHelper : public XrConsentHelper {
+class GvrConsentHelper : public content::XrConsentHelper {
  public:
   GvrConsentHelper();
 
@@ -19,16 +19,17 @@ class GvrConsentHelper : public XrConsentHelper {
 
   // Caller must ensure not to call this a second time before the first dialog
   // is dismissed.
-  void ShowConsentPrompt(int render_process_id,
-                         int render_frame_id,
-                         XrConsentPromptLevel consent_level,
-                         OnUserConsentCallback response_callback) override;
+  void ShowConsentPrompt(
+      int render_process_id,
+      int render_frame_id,
+      content::XrConsentPromptLevel consent_level,
+      content::OnXrUserConsentCallback response_callback) override;
   void OnUserConsentResult(JNIEnv* env, jboolean is_granted);
 
  private:
-  XrConsentPromptLevel consent_level_;
+  content::XrConsentPromptLevel consent_level_;
 
-  OnUserConsentCallback on_user_consent_callback_;
+  content::OnXrUserConsentCallback on_user_consent_callback_;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_;
 
   base::WeakPtrFactory<GvrConsentHelper> weak_ptr_{this};

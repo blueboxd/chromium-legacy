@@ -491,7 +491,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
           profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
-        base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
+        base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations) &&
+        WifiConfigurationSyncServiceFactory::ShouldRunInProfile(profile_)) {
       // Use the same delegate in full-sync and transport-only modes.
       syncer::ModelTypeControllerDelegate* delegate =
           GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS).get();

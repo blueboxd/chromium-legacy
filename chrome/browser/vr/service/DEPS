@@ -12,25 +12,12 @@ include_rules = [
   "+chrome/browser/vr/metrics/session_metrics_helper.h",
   "+chrome/browser/vr/vr_export.h",
   "+chrome/browser/vr/xr_runtime_manager_statics.h",
-
-  # TODO(alcooper): Disabling the XRDeviceConsentPrompt needs to be moved to
-  # either content (or chrome_xr_integration_client with the consent helpers).
-  "+chrome/common/chrome_switches.h",
 ]
 
 specific_include_rules = {
-  "browser_xr_runtime_impl.cc": [
-    # Consent Prompt impls will be moving into the XrIntegrationClient.
-    "+chrome/browser/android/vr/gvr_consent_helper.h",
-    "+chrome/browser/android/vr/arcore_device/arcore_consent_prompt.h",
-  ],
   "vr_service_impl\.*": [
     # Permissions Infra will be replaced with content corresponding values.
     "+chrome/browser/profiles/profile.h",
     "+chrome/browser/permissions/permission_manager_factory.h",
-  ],
-  # XRSessionRequestConsentManger won't be moving.
-  "xr_session_request_consent_manager_impl.cc" : [
-    "+chrome/browser/ui",
   ]
 }

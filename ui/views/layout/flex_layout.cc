@@ -35,6 +35,16 @@ struct FlexChildData {
   explicit FlexChildData(const FlexSpecification& flex) : flex(flex) {}
   FlexChildData(FlexChildData&& other) = default;
 
+  std::string ToString() const {
+    std::ostringstream oss;
+    oss << "{ preferred " << preferred_size.ToString() << " current "
+        << current_size.ToString() << " margins " << margins.ToString()
+        << (using_default_margins ? " (using default)" : "") << " padding "
+        << internal_padding.ToString() << " bounds " << actual_bounds.ToString()
+        << " }";
+    return oss.str();
+  }
+
   NormalizedSize preferred_size;
   NormalizedSize current_size;
   NormalizedInsets margins;
@@ -255,6 +265,22 @@ struct FlexLayout::FlexLayoutData {
   ~FlexLayoutData() = default;
 
   size_t num_children() const { return child_data.size(); }
+
+  std::string ToString() const {
+    std::ostringstream oss;
+    oss << "{ " << total_size.ToString() << " " << layout.ToString() << " {";
+    bool first = true;
+    for (const FlexChildData& flex_child : child_data) {
+      if (first)
+        first = false;
+      else
+        oss << ", ";
+      oss << flex_child.ToString();
+    }
+    oss << "} margin " << interior_margin.ToString() << " insets "
+        << host_insets.ToString() << "}";
+    return oss.str();
+  }
 
   ProposedLayout layout;
 

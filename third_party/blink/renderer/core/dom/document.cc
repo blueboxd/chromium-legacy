@@ -8495,22 +8495,28 @@ IntersectionObserver& Document::EnsureDisplayLockActivationObserver() {
         {Length::Percent(50.f)}, {std::numeric_limits<float>::min()}, this,
         WTF::BindRepeating(&Document::ProcessDisplayLockActivationObservation,
                            WrapWeakPersistent(this)),
-        IntersectionObserver::kPostTaskToDeliver);
+        IntersectionObserver::kDeliverDuringPostLifecycleSteps);
   }
   return *display_lock_activation_observer_;
 }
 
 void Document::ProcessDisplayLockActivationObservation(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  DCHECK(View());
   for (auto& entry : entries) {
     auto* context = entry->target()->GetDisplayLockContext();
     DCHECK(context);
     if (entry->isIntersecting()) {
-      context->NotifyIsIntersectingViewport();
+      View()->EnqueueStartOfLifecycleTask(
+          WTF::Bind(&DisplayLockContext::NotifyIsIntersectingViewport,
+                    WrapWeakPersistent(context)));
     } else {
-      context->NotifyIsNotIntersectingViewport();
+      View()->EnqueueStartOfLifecycleTask(
+          WTF::Bind(&DisplayLockContext::NotifyIsNotIntersectingViewport,
+                    WrapWeakPersistent(context)));
     }
   }
+  View()->ScheduleAnimation();
 }
 
 void Document::ExecuteJavaScriptUrls() {

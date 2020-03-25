@@ -5,7 +5,7 @@
 /** @fileoverview Runs the Polymer Password Settings tests. */
 
 // clang-format off
-// #import {PasswordManagerImpl, routes, Router} from 'chrome://settings/settings.js';
+// #import {PasswordManagerProxy, PasswordManagerImpl, routes, Router} from 'chrome://settings/settings.js';
 // #import {getToastManager} from 'chrome://settings/lazy_load.js';
 // #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
@@ -1020,22 +1020,32 @@ cr.define('settings_passwords_section', function() {
       });
     });
 
-    test('clickingCheckPasswordsButtonStartsCheck', function() {
+    test('clickingCheckPasswordsButtonStartsCheck', async function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
       passwordsSection.$$('#checkPasswordsButton').click();
       const router = settings.Router.getInstance();
       assertEquals(settings.routes.CHECK_PASSWORDS, router.currentRoute);
       assertEquals('true', router.getQueryParameters().get('start'));
+      const referrer =
+          await passwordManager.whenCalled('recordPasswordCheckReferrer');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckReferrer.PASSWORD_SETTINGS,
+          referrer);
     });
 
-    test('clickingCheckPasswordsRowStartsCheck', function() {
+    test('clickingCheckPasswordsRowStartsCheck', async function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
       passwordsSection.$$('#checkPasswordsLinkRow').click();
       const router = settings.Router.getInstance();
       assertEquals(settings.routes.CHECK_PASSWORDS, router.currentRoute);
       assertEquals('true', router.getQueryParameters().get('start'));
+      const referrer =
+          await passwordManager.whenCalled('recordPasswordCheckReferrer');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckReferrer.PASSWORD_SETTINGS,
+          referrer);
     });
   });
   // #cr_define_end

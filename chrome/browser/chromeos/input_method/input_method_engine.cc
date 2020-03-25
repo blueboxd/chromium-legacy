@@ -43,6 +43,7 @@ namespace {
 const char kErrorNotActive[] = "IME is not active.";
 const char kErrorWrongContext[] = "Context is not active.";
 const char kCandidateNotFound[] = "Candidate not found.";
+const char kSuggestionNotFound[] = "Suggestion not found.";
 
 // The default entry number of a page in CandidateWindowProperty.
 const int kDefaultPageSize = 9;
@@ -218,6 +219,67 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
     cw_handler->UpdateLookupTable(candidate_window_, window_visible_);
+  return true;
+}
+
+bool InputMethodEngine::SetSuggestion(int context_id,
+                                      const base::string16& text,
+                                      std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  IMESuggestionWindowHandlerInterface* sw_handler =
+      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
+  if (sw_handler)
+    sw_handler->Show(text);
+  return true;
+}
+
+bool InputMethodEngine::DismissSuggestion(int context_id, std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  IMESuggestionWindowHandlerInterface* sw_handler =
+      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
+  if (sw_handler)
+    sw_handler->Hide();
+  return true;
+}
+
+bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  IMESuggestionWindowHandlerInterface* sw_handler =
+      ui::IMEBridge::Get()->GetSuggestionWindowHandler();
+  if (sw_handler) {
+    base::string16 suggestion_text = sw_handler->GetText();
+    if (suggestion_text.empty()) {
+      *error = kSuggestionNotFound;
+      return false;
+    }
+    CommitText(context_id_, (base::UTF16ToUTF8(suggestion_text)).c_str(),
+               error);
+    sw_handler->Hide();
+  }
   return true;
 }
 

@@ -1297,10 +1297,10 @@ TEST_F(AXTreeSourceArcTest, SerializeVirtualNode) {
 
   // Node inside a WebView is not ignored even if it's not set importance.
   CallSerializeNode(button1, &data);
-  ASSERT_FALSE(data->HasState(ax::mojom::State::kIgnored));
+  ASSERT_FALSE(data->IsIgnored());
 
   CallSerializeNode(button2, &data);
-  ASSERT_FALSE(data->HasState(ax::mojom::State::kIgnored));
+  ASSERT_FALSE(data->IsIgnored());
 
   // Children are not reordered under WebView.
   std::vector<AccessibilityInfoDataWrapper*> children;

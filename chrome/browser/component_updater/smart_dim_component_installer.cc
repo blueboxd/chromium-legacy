@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/smart_dim_component_installer.h"
 
 #include <cstddef>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -13,11 +14,13 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/component_updater/component_updater_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -41,34 +44,38 @@ const uint8_t kSmartDimPublicKeySHA256[32] = {
 
 const char kMLSmartDimManifestName[] = "Smart Dim";
 
-void UpdateSmartDimMlAgent(const base::FilePath& meta_json_path,
-                           const base::FilePath& preprocessor_pb_path,
-                           const base::FilePath& model_path) {
-  auto& smart_dim_ml_agent =
-      *chromeos::power::ml::SmartDimMlAgent::GetInstance();
-  // If IsDownloadWorkerReady(), newly downloaded components will take effect
-  // on next reboot. This makes sure the updating happens at most once.
-  if (smart_dim_ml_agent.IsDownloadWorkerReady()) {
-    DVLOG(1) << "Download_worker in SmartDimMlAgent is ready, does nothing.";
-    return;
-  }
+// The contents of metadata JSON, preprocessor proto and model flatbuffer.
+using ComponentFileContents =
+    base::Optional<std::tuple<std::string, std::string, std::string>>;
 
-  if (meta_json_path.empty() || preprocessor_pb_path.empty() ||
-      model_path.empty()) {
-    DLOG(ERROR) << "Necessary paths are empty!";
-    return;
-  }
-
+// Read files from the component to strings, should be called from a blocking
+// task runner.
+ComponentFileContents ReadComponentFiles(
+    const base::FilePath& meta_json_path,
+    const base::FilePath& preprocessor_pb_path,
+    const base::FilePath& model_path) {
   std::string metadata_json, preprocessor_proto, model_flatbuffer;
   if (!base::ReadFileToString(meta_json_path, &metadata_json) ||
       !base::ReadFileToString(preprocessor_pb_path, &preprocessor_proto) ||
       !base::ReadFileToString(model_path, &model_flatbuffer)) {
     DLOG(ERROR) << "Failed reading component files.";
-    return;
+    return base::nullopt;
   }
 
-  smart_dim_ml_agent.OnComponentReady(metadata_json, preprocessor_proto,
-                                      model_flatbuffer);
+  return std::make_tuple(std::move(metadata_json),
+                         std::move(preprocessor_proto),
+                         std::move(model_flatbuffer));
+}
+
+void UpdateSmartDimMlAgent(ComponentFileContents result) {
+  if (result == base::nullopt)
+    return;
+
+  std::string metadata_json, preprocessor_proto, model_flatbuffer;
+  std::tie(metadata_json, preprocessor_proto, model_flatbuffer) =
+      result.value();
+  chromeos::power::ml::SmartDimMlAgent::GetInstance()->OnComponentReady(
+      metadata_json, preprocessor_proto, model_flatbuffer);
 }
 
 }  // namespace
@@ -103,15 +110,27 @@ void SmartDimComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // If IsDownloadWorkerReady(), newly downloaded components will take effect
+  // on next reboot. This makes sure the updating happens at most once.
+  if (chromeos::power::ml::SmartDimMlAgent::GetInstance()
+          ->IsDownloadWorkerReady()) {
+    DVLOG(1) << "Download_worker in SmartDimMlAgent is ready, does nothing.";
+    return;
+  }
+
+  DCHECK(!install_dir.empty());
   DVLOG(1) << "Component ready, version " << version.GetString() << " in "
            << install_dir.value();
-  base::PostTask(
+
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
-          &UpdateSmartDimMlAgent, install_dir.Append(kSmartDimMetaJsonFileName),
+          &ReadComponentFiles, install_dir.Append(kSmartDimMetaJsonFileName),
           install_dir.Append(kSmartDimFeaturePreprocessorConfigFileName),
-          install_dir.Append(kSmartDimModelFileName)));
+          install_dir.Append(kSmartDimModelFileName)),
+      base::BindOnce(&UpdateSmartDimMlAgent));
 }
 
 // Called during startup and installation before ComponentReady().

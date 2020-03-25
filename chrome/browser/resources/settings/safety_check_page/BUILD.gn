@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":safety_check_browser_proxy",
     ":safety_check_page",
     "..:lifetime_browser_proxy",
+    "../autofill_page:password_manager_proxy",
   ]
 }
 
@@ -20,6 +21,7 @@ js_library("safety_check_page") {
     "..:open_window_proxy",
     "..:route",
     "..:router",
+    "../autofill_page:password_manager_proxy",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",

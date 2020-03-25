@@ -31,6 +31,35 @@
 namespace gpu {
 namespace raster {
 
+namespace {
+
+GLenum SkColorTypeToGLDataFormat(SkColorType color_type) {
+  switch (color_type) {
+    case kRGBA_8888_SkColorType:
+      return GL_RGBA;
+    case kBGRA_8888_SkColorType:
+      return GL_BGRA_EXT;
+    default:
+      DLOG(ERROR) << "Unknown SkColorType " << color_type;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+GLenum SkColorTypeToGLDataType(SkColorType color_type) {
+  switch (color_type) {
+    case kRGBA_8888_SkColorType:
+    case kBGRA_8888_SkColorType:
+      return GL_UNSIGNED_BYTE;
+    default:
+      DLOG(ERROR) << "Unknown SkColorType " << color_type;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+}  // namespace
+
 RasterImplementationGLES::RasterImplementationGLES(
     gles2::GLES2Interface* gl,
     ContextSupport* context_support)
@@ -132,6 +161,27 @@ void RasterImplementationGLES::CopySubTexture(
   EndSharedImageAccessDirectCHROMIUM(texture_ids[0]);
   EndSharedImageAccessDirectCHROMIUM(texture_ids[1]);
   gl_->DeleteTextures(2, texture_ids);
+}
+
+void RasterImplementationGLES::WritePixels(const gpu::Mailbox& dest_mailbox,
+                                           int dst_x_offset,
+                                           int dst_y_offset,
+                                           GLenum texture_target,
+                                           const SkImageInfo& src_info,
+                                           const void* src_pixels) {
+  GLuint texture_id = CreateAndConsumeForGpuRaster(dest_mailbox);
+  BeginSharedImageAccessDirectCHROMIUM(
+      texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+
+  gl_->BindTexture(texture_target, texture_id);
+  gl_->TexSubImage2D(texture_target, 0, dst_x_offset, dst_y_offset,
+                     src_info.width(), src_info.height(),
+                     SkColorTypeToGLDataFormat(src_info.colorType()),
+                     SkColorTypeToGLDataType(src_info.colorType()), src_pixels);
+  gl_->BindTexture(texture_target, 0);
+
+  EndSharedImageAccessDirectCHROMIUM(texture_id);
+  DeleteGpuRasterTexture(texture_id);
 }
 
 void RasterImplementationGLES::BeginRasterCHROMIUM(

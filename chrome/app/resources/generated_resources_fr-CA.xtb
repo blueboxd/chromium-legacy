@@ -192,7 +192,7 @@
 <translation id="1243314992276662751">Téléverser</translation>
 <translation id="1244265436519979884">Restauration Linux en cours…</translation>
 <translation id="1244303850296295656">Erreur au niveau des extensions</translation>
-<translation id="1246158006305844142">Vos applications et vos paramètres seront synchronisés sur tous les appareils Chrome OS sur lesquels vous êtes connectés avec votre compte Google. Pour voir les options de synchronisation du navigateur, accédez aux <ph name="LINK_BEGIN" />paramètres de Chrome<ph name="LINK_END" />.</translation>
+<translation id="1246158006305844142">Vos applications et vos paramètres seront synchronisés sur tous les appareils Chrome OS sur lesquels vous êtes connecté avec votre compte Google. Pour voir les options de synchronisation du navigateur, accédez aux <ph name="LINK_BEGIN" />paramètres de Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Supprimer la suggestion du presse-papiers?</translation>
 <translation id="1249643471736608405">Le plugiciel <ph name="PLUGIN_NAME" /> a été bloqué, car il est discontinué</translation>
 <translation id="1251366534849411931">Accolade ouvrante attendue : <ph name="ERROR_LINE" /></translation>

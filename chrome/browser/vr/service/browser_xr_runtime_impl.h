@@ -11,9 +11,9 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
-#include "chrome/browser/vr/service/xr_consent_helper.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/xr_consent_helper.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "device/vr/vr_device.h"
@@ -62,8 +62,8 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
                       RequestSessionCallback callback);
   void ShowConsentPrompt(int render_process_id,
                          int render_frame_id,
-                         XrConsentPromptLevel consent_level,
-                         OnUserConsentCallback consent_callback);
+                         content::XrConsentPromptLevel consent_level,
+                         content::OnXrUserConsentCallback consent_callback);
   void EnsureInstalled(int render_process_id,
                        int render_frame_id,
                        base::OnceCallback<void(bool)> install_callback);
@@ -119,7 +119,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
       this};
 
   base::ObserverList<Observer> observers_;
-  std::unique_ptr<XrConsentHelper> consent_helper_;
+  std::unique_ptr<content::XrConsentHelper> consent_helper_;
   std::unique_ptr<content::XrInstallHelper> install_helper_;
   base::OnceCallback<void(bool)> install_finished_callback_;
 

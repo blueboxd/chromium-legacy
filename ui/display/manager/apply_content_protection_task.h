@@ -36,7 +36,7 @@ class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask
   void Run() override;
 
  private:
-  void OnGetHDCPState(int64_t display_id, bool success, HDCPState state);
+  void OnGetHDCPState(DisplaySnapshot* display, bool success, HDCPState state);
   void OnSetHDCPState(bool success);
 
   uint32_t GetDesiredProtectionMask(int64_t display_id) const;
@@ -47,7 +47,7 @@ class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask
   const ContentProtectionManager::ContentProtections requests_;
   ResponseCallback callback_;
 
-  std::vector<std::pair<int64_t, HDCPState>> hdcp_requests_;
+  std::vector<std::pair<DisplaySnapshot*, HDCPState>> hdcp_requests_;
 
   bool success_ = true;
   size_t pending_requests_ = 0;

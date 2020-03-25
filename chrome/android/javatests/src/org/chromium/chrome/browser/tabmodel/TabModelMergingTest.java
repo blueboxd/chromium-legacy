@@ -394,6 +394,7 @@ public class TabModelMergingTest {
         // Send a main intent to restart ChromeTabbedActivity2.
         Intent CTA2MainIntent = new Intent(Intent.ACTION_MAIN);
         CTA2MainIntent.setClassName(CTA2PackageName, CTA2ClassName);
+        CTA2MainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         InstrumentationRegistry.getInstrumentation().startActivitySync(CTA2MainIntent);
 
         mNewCTA2CallbackHelper.waitForCallback(0);

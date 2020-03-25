@@ -2150,6 +2150,16 @@ template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Trace(VisitorDispatcher visitor) const {
+  // bail out for concurrent marking
+  if (visitor->ConcurrentTracingBailOut(
+          {this, [](blink::Visitor* visitor, const void* object) {
+             reinterpret_cast<
+                 const HashTable<Key, Value, Extractor, HashFunctions, Traits,
+                                 KeyTraits, Allocator>*>(object)
+                 ->Trace(visitor);
+           }}))
+    return;
+
   static_assert(WTF::IsWeak<ValueType>::value ||
                     IsTraceableInCollectionTrait<Traits>::value,
                 "Value should not be traced");

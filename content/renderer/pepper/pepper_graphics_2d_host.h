@@ -33,7 +33,7 @@ class Rect;
 }
 
 namespace viz {
-class ContextProvider;
+class RasterContextProvider;
 class SingleReleaseCallback;
 struct TransferableResource;
 }
@@ -185,7 +185,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // has been destroyed.
   static void ReleaseTextureCallback(
       base::WeakPtr<PepperGraphics2DHost> host,
-      scoped_refptr<viz::ContextProvider> context,
+      scoped_refptr<viz::RasterContextProvider> context,
       const gfx::Size& size,
       const gpu::Mailbox& mailbox,
       const gpu::SyncToken& sync_token,
@@ -234,7 +234,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   bool is_gpu_compositing_disabled_ = false;
   // The shared main thread context provider, used to upload 2d pepper frames
   // if the compositor is expecting gpu content.
-  scoped_refptr<viz::ContextProvider> main_thread_context_;
+  scoped_refptr<viz::RasterContextProvider> main_thread_context_;
   struct SharedImageInfo {
     SharedImageInfo(gpu::SyncToken sync_token,
                     gpu::Mailbox mailbox,

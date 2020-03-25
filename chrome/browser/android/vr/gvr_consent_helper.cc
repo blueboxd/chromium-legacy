@@ -13,7 +13,7 @@ using base::android::AttachCurrentThread;
 
 namespace vr {
 
-GvrConsentHelper::GvrConsentHelper() : XrConsentHelper() {}
+GvrConsentHelper::GvrConsentHelper() : content::XrConsentHelper() {}
 
 GvrConsentHelper::~GvrConsentHelper() {
   if (!jdelegate_.is_null()) {
@@ -24,8 +24,8 @@ GvrConsentHelper::~GvrConsentHelper() {
 void GvrConsentHelper::ShowConsentPrompt(
     int render_process_id,
     int render_frame_id,
-    XrConsentPromptLevel consent_level,
-    OnUserConsentCallback on_user_consent_callback) {
+    content::XrConsentPromptLevel consent_level,
+    content::OnXrUserConsentCallback on_user_consent_callback) {
   DCHECK(!on_user_consent_callback_);
   on_user_consent_callback_ = std::move(on_user_consent_callback);
   consent_level_ = consent_level;

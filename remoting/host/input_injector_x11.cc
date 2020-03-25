@@ -317,6 +317,12 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
       SetLockStates(caps_lock, num_lock);
     }
 
+    // We turn autorepeat off when we initially connect, but in can get
+    // re-enabled when, e.g., the desktop environment reapplies its settings.
+    if (IsAutoRepeatEnabled()) {
+      SetAutoRepeatEnabled(false);
+    }
+
     pressed_keys_.insert(keycode);
   } else {
     pressed_keys_.erase(keycode);

@@ -54,8 +54,8 @@ TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
 
   MakeStaticText(&update.nodes[4], 5, "d");
   MakeStaticText(&update.nodes[5], 6, "e");
-  MakeGroup(&update.nodes[3], 4, {5, 6});
 
+  MakeGroup(&update.nodes[3], 4, {5, 6});
   MakeGroup(&update.nodes[0], 1, {2, 3, 4});
 
   AXTree tree(update);

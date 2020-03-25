@@ -34,7 +34,6 @@ class HttpResponseHeaders;
 class HttpResponseInfo;
 class HttpTransaction;
 class HttpUserAgentSettings;
-class ProxyInfo;
 class SSLPrivateKey;
 class UploadDataStream;
 
@@ -119,8 +118,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void OnStartCompleted(int result);
   void OnReadCompleted(int result);
   void NotifyBeforeStartTransactionCallback(int result);
-  void NotifyBeforeSendHeadersCallback(const ProxyInfo& proxy_info,
-                                       HttpRequestHeaders* request_headers);
 
   void RestartTransactionWithAuth(const AuthCredentials& credentials);
 

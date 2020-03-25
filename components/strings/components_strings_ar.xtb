@@ -313,7 +313,7 @@
 <translation id="2288422996159078444">تتم مراقبة أي نص تكتبه أو أي صفحات تطّلع عليها أو أي نشاط آخر تجريه على الإنترنت، ويمكن أن يتم تغيير المحتوى على المواقع الإلكترونية بدون معرفتك.</translation>
 <translation id="2289385804009217824">قطع</translation>
 <translation id="2292556288342944218">تم حظر دخولك إلى الإنترنت</translation>
-<translation id="2293443924986248631">عند تفعيل هذه الميزة، لا يمكن للمواقع الإلكترونية استخدام ملفات تعريف الارتباط التي تتبع خطواتك على الإنترنت. وقد تتوقف الميزات عن العمل في بعض المواقع الإلكترونية.</translation>
+<translation id="2293443924986248631">عند تفعيل هذه الميزة، لا يمكن للمواقع الإلكترونية استخدام ملفات تعريف الارتباط لتتبّع نشاط تصفحّك على الإنترنت. وقد تتوقف الميزات عن العمل في بعض المواقع الإلكترونية.</translation>
 <translation id="2297722699537546652">‏B5 (مغلف)</translation>
 <translation id="2300306941146563769">لم يتم التحميل</translation>
 <translation id="2310021320168182093">‏Chou2 (مغلف)</translation>
@@ -730,7 +730,7 @@
 <translation id="4152318981910038897">{COUNT,plural, =1{الصفحة 1}zero{الصفحة {COUNT}}two{الصفحة {COUNT}}few{الصفحة {COUNT}}many{الصفحة {COUNT}}other{الصفحة {COUNT}}}</translation>
 <translation id="4154664944169082762">بصمات الأصابع</translation>
 <translation id="4159784952369912983">أرجواني</translation>
-<translation id="4163132590327127354">‏بسّط Chrome هذه الصفحة لتسهيل قراءتها.</translation>
+<translation id="4163132590327127354">‏بسّط Chrome عرض هذه الصفحة لتسهيل قراءتها.</translation>
 <translation id="4165986682804962316">إعدادات المواقع الإلكترونية</translation>
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>

@@ -39,6 +39,8 @@ source_set("feed_core_v2") {
     "stream_model/feature_tree.h",
     "stream_model_update_request.cc",
     "stream_model_update_request.h",
+    "tasks/load_stream_task.cc",
+    "tasks/load_stream_task.h",
   ]
   deps = [
     "//components/feed/core:feed_core",

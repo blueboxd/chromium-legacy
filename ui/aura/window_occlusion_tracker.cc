@@ -369,6 +369,10 @@ bool WindowOcclusionTracker::RecomputeOcclusionImpl(
     return false;
   }
 
+  // TODO: While considering that a window whose color is animated doesn't
+  // occlude other windows helps reduce the number of times that occlusion is
+  // recomputed, it isn't necessary to consider that the window whose color is
+  // animated itself is non-occluded.
   if (WindowIsAnimated(window) || WindowIsExcluded(window)) {
     SetWindowAndDescendantsAreOccluded(window, /* is_occluded */ false,
                                        /* is_parent_visible */ true);
@@ -879,9 +883,17 @@ void WindowOcclusionTracker::OnWindowAlphaShapeSet(Window* window) {
   });
 }
 
-void WindowOcclusionTracker::OnWindowTransparentChanged(Window* window) {
+void WindowOcclusionTracker::OnWindowTransparentChanged(
+    Window* window,
+    ui::PropertyChangeReason reason) {
+  // Call MaybeObserveAnimatedWindow() outside the lambda so that the window can
+  // be marked as animated even when its root is dirty.
+  const bool animation_started =
+      (reason == ui::PropertyChangeReason::FROM_ANIMATION) &&
+      MaybeObserveAnimatedWindow(window);
   MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
-    return WindowOpacityChangeMayAffectOcclusionStates(window);
+    return animation_started ||
+           WindowOpacityChangeMayAffectOcclusionStates(window);
   });
 }
 

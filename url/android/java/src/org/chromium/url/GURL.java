@@ -16,6 +16,10 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+
+import java.util.Random;
 
 /**
  * A Java wrapper for GURL, Chromium's URL parsing library.
@@ -34,6 +38,15 @@ public class GURL {
     private static final String TAG = "GURL";
     /* package */ static final int SERIALIZER_VERSION = 1;
     /* package */ static final char SERIALIZER_DELIMITER = '\0';
+
+    @FunctionalInterface
+    public interface ReportDebugThrowableCallback {
+        void run(Throwable throwable);
+    }
+
+    // Right now this is only collecting reports on Canary which has a relatively small population.
+    private static final int DEBUG_REPORT_PERCENTAGE = 10;
+    private static ReportDebugThrowableCallback sReportCallback;
 
     // TODO(https://crbug.com/1039841): Right now we return a new String with each request for a
     //      GURL component other than the spec itself. Should we cache return Strings (as
@@ -68,6 +81,16 @@ public class GURL {
     protected GURL() {}
 
     /**
+     * Enables debug stack trace gathering for GURL.
+     *
+     * TODO(https://crbug.com/783819): Remove this when the the fraction of users hitting this
+     * drops.
+     */
+    public static void setReportDebugThrowableCallback(ReportDebugThrowableCallback callback) {
+        sReportCallback = callback;
+    }
+
+    /**
      * Ensures that the native library is sufficiently loaded for GURL usage.
      *
      * This function is public so that GURL-related usage like the UrlFormatter also counts towards
@@ -75,6 +98,13 @@ public class GURL {
      */
     public static void ensureNativeInitializedForGURL() {
         if (LibraryLoader.getInstance().isInitialized()) return;
+        if (sReportCallback != null && new Random().nextInt(100) < DEBUG_REPORT_PERCENTAGE) {
+            final Throwable throwable = new Throwable("This is not a crash, please ignore.");
+            // This isn't an assert, because by design this is possible, but this path is getting
+            // hit much more than expected and getting stack traces from the wild will help debug.
+            PostTask.postTask(
+                    TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> { sReportCallback.run(throwable); });
+        }
         long time = SystemClock.elapsedRealtime();
         LibraryLoader.getInstance().ensureMainDexInitialized();
         RecordHistogram.recordTimesHistogram("Startup.Android.GURLEnsureMainDexInitialized",

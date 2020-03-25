@@ -317,24 +317,6 @@ void URLRequestHttpJob::GetConnectionAttempts(ConnectionAttempts* out) const {
     out->clear();
 }
 
-void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
-    const ProxyInfo& proxy_info,
-    HttpRequestHeaders* request_headers) {
-  DCHECK(request_headers);
-  DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
-  if (proxy_info.is_empty()) {
-    SetProxyServer(ProxyServer::Direct());
-  } else {
-    SetProxyServer(proxy_info.proxy_server());
-  }
-  if (network_delegate()) {
-    network_delegate()->NotifyBeforeSendHeaders(
-        request_, proxy_info,
-        request_->context()->proxy_resolution_service()->proxy_retry_info(),
-        request_headers);
-  }
-}
-
 void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
   DCHECK_EQ(0, num_cookie_lines_left_);
@@ -468,9 +450,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
     }
 
     if (rv == OK) {
-      transaction_->SetBeforeHeadersSentCallback(
-          base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
-                     base::Unretained(this)));
       transaction_->SetRequestHeadersCallback(request_headers_callback_);
       transaction_->SetResponseHeadersCallback(response_headers_callback_);
 

@@ -458,6 +458,7 @@
 <translation id="1616206807336925449">ഈ വിപുലീകരണത്തിന് പ്രത്യേക അനുമതികളൊന്നും ആവശ്യമില്ല.</translation>
 <translation id="1616298854599875024">വിപുലീകരണം "<ph name="IMPORT_NAME" /> ഒരു പങ്കിട്ട മൊഡ്യൂൾ അല്ലാത്തതിനാൽ ഇമ്പോർട്ട് ചെയ്യാനാവില്ല</translation>
 <translation id="1618268899808219593">സഹായ കേന്ദ്രം</translation>
+<translation id="1620307519959413822">പാസ്‌വേഡ് തെറ്റാണ്. വീണ്ടും ശ്രമിക്കുക അല്ലെങ്കിൽ റീസെറ്റ് ചെയ്യുന്നതിനായി 'പാസ്‌വേഡ് മറന്നു' ക്ലിക്ക് ചെയ്യുക.</translation>
 <translation id="1620510694547887537">ക്യാമറ</translation>
 <translation id="1623132449929929218">ചിത്രങ്ങൾ നിലവിൽ ലഭ്യമല്ല. വാൾപേപ്പർ ശേഖരങ്ങൾ കാണുന്നതിന് ഇന്റർനെറ്റുമായി വീണ്ടും കണക്റ്റ് ചെയ്യുക.</translation>
 <translation id="1627276047960621195">ഫയൽ ഡിസ്‌ക്രിപറ്ററുകൾ</translation>
@@ -676,6 +677,7 @@
 <translation id="1887850431809612466">ഹാർഡ്‌വെയർ അവലോകനം</translation>
 <translation id="1890674179660343635">&lt;span&gt;ഐഡി: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">പൂര്‍ണ്ണ സ്ക്രീനില്‍ തുറക്കുക</translation>
+<translation id="1892341345406963517">ഹായ് <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">മറ്റ് ഭാഷകൾ</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> ശേഷിക്കുന്നു</translation>
 <translation id="1895658205118569222">ഷട്ട്‌ഡൗൺ ചെയ്യുക</translation>
@@ -3129,6 +3131,7 @@
 <translation id="5213891612754844763">പ്രോക്‌സി ക്രമീകരണങ്ങൾ കാണിക്കുക</translation>
 <translation id="5215502535566372932">രാജ്യം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="521582610500777512">ഫോട്ടോ നിരസിച്ചു</translation>
+<translation id="5222403284441421673">സുരക്ഷിതമല്ലാത്ത ഡൗൺലോഡ് ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="5222676887888702881">സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="52232769093306234">പായ്ക്ക് ചെയ്യുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="5225324770654022472">ആപ്പുകളുടെ കുറുക്കുവഴികൾ കാണിക്കുക</translation>
@@ -3528,6 +3531,7 @@
 <translation id="5734362860645681824">കമ്മ്യൂണിക്കേഷനുകൾ</translation>
 <translation id="5734697361979786483">ഫയൽ പങ്കിടൽ ചേർക്കുക</translation>
 <translation id="5736796278325406685">ശരിയായ ഉപയോക്തൃനാമം നൽകുക</translation>
+<translation id="5739017626473506901">സ്‌കൂൾ അക്കൗണ്ട് ചേർക്കുന്നതിന് <ph name="USER_NAME" /> എന്നയാളെ സഹായിക്കാൻ സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="5739235828260127894">പരിശോധിച്ചുറപ്പിക്കാൻ കാത്തിരിക്കുന്നു. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">വളരെ വലുത്</translation>
 <translation id="574209121243317957">പിച്ച്</translation>
@@ -5537,6 +5541,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> നെറ്റ്‍വർക്ക്, കണക്റ്റ് ചെയ്യുന്നു</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ആദ്യം ചോദിക്കുക (ശുപാർശ ചെയ്‌തത്)</translation>
+<translation id="8417548266957501132">രക്ഷിതാവിന്റെ പാസ്‌വേഡ്</translation>
 <translation id="8417573335434189196">അപകടകരമായ വെബ്‌സൈറ്റുകൾ ഡൗൺലോഡുകൾ അല്ലെങ്കിൽ വിപുലീകരണങ്ങളിൽ നിന്ന് നിങ്ങളെ പരിരക്ഷിക്കില്ല. Chrome ഈ ക്രമീകരണം ശുപാർശ ചെയ്യുന്നില്ല.</translation>
 <translation id="8418445294933751433">&amp;ടാബായി കാണിക്കുക</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' എന്നതിനുള്ള തിരയൽ ഫലം</translation>

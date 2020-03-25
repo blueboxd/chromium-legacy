@@ -1003,20 +1003,13 @@ const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
     {"ZeroSuggestVariant:7:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:8:*", "RemoteNoUrl"}};
 #else   // !defined(OS_ANDROID)
-const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal[] = {
-        {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"}};
-const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal[] = {
-        {"ZeroSuggestVariant:15:*", "RemoteNoUrl,Local"}};
-const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamExtensionNTPOmniboxRemoteLocal[] = {
-        {"ZeroSuggestVariant:1:*", "RemoteNoUrl,Local"}};
-const FeatureEntry::FeatureParam
-    kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal[] = {
-        *kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
-        *kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal,
-        *kOmniboxOnFocusSuggestionsParamExtensionNTPOmniboxRemoteLocal};
+const FeatureEntry::FeatureParam kNTPOmniboxZPSRemoteLocal[] = {
+    {"ZeroSuggestVariant:1:*", "RemoteNoUrl,Local"},
+    {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"}};
+const FeatureEntry::FeatureParam kNTPOmniboxRealboxZPSRemoteLocal[] = {
+    {"ZeroSuggestVariant:1:*", "RemoteNoUrl,Local"},
+    {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"},
+    {"ZeroSuggestVariant:15:*", "RemoteNoUrl,Local"}};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
@@ -1033,22 +1026,19 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
     {"ZPS on NTP: Onboarding", kOmniboxNTPZPSRemote,
      base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3316638"},
 #else   // !defined(OS_ANDROID)
-    {"NTP Omnibox - Remote,Local",
-     kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal),
+    {"NTP Omnibox - Remote History, Local History", kNTPOmniboxZPSRemoteLocal,
+     base::size(kNTPOmniboxZPSRemoteLocal), "t3316133" /* variation_id */},
+    {"NTP Omnibox - Remote History + PZPS, Local History",
+     kNTPOmniboxZPSRemoteLocal, base::size(kNTPOmniboxZPSRemoteLocal),
+     "t3317462" /* variation_id */},
+    {"NTP Omnibox/Realbox - Remote History, Local History",
+     kNTPOmniboxRealboxZPSRemoteLocal,
+     base::size(kNTPOmniboxRealboxZPSRemoteLocal),
      "t3316133" /* variation_id */},
-    {"NTP Realbox - Remote,Local",
-     kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal),
-     "t3316133" /* variation_id */},
-    {"Extension NTP Omnibox - Remote,Local",
-     kOmniboxOnFocusSuggestionsParamExtensionNTPOmniboxRemoteLocal,
-     base::size(kOmniboxOnFocusSuggestionsParamExtensionNTPOmniboxRemoteLocal),
-     "t3316133" /* variation_id */},
-    {"Everywhere - Remote,Local",
-     kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal),
-     "t3316133" /* variation_id */},
+    {"NTP Omnibox/Realbox - Remote History + PZPS, Local History",
+     kNTPOmniboxRealboxZPSRemoteLocal,
+     base::size(kNTPOmniboxRealboxZPSRemoteLocal),
+     "t3317462" /* variation_id */},
 #endif  // defined(OS_ANDROID)
 };
 
@@ -1987,6 +1977,10 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableUseHDRTransferFunction)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
+    {"ash-limit-alt-tab-to-active-desk",
+     flag_descriptions::kLimitAltTabToActiveDeskName,
+     flag_descriptions::kLimitAltTabToActiveDeskDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLimitAltTabToActiveDesk)},
     {"ash-enable-unified-desktop",
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
@@ -3942,10 +3936,6 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kUseAngleChoices)},
 #endif
 #if defined(OS_ANDROID)
-    {"android-site-settings-ui-refresh",
-     flag_descriptions::kAndroidSiteSettingsUIRefreshName,
-     flag_descriptions::kAndroidSiteSettingsUIRefreshDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidSiteSettingsUIRefresh)},
     {"draw-vertically-edge-to-edge",
      flag_descriptions::kDrawVerticallyEdgeToEdgeName,
      flag_descriptions::kDrawVerticallyEdgeToEdgeDescription, kOsAndroid,

@@ -232,9 +232,9 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   bool restrict_frame_data_ = false;
 
-  base::TimeTicks arcore_update_completed_;
   base::TimeTicks arcore_update_next_expected_;
-  base::TimeDelta arcore_update_interval_;
+  base::TimeDelta arcore_last_frame_timestamp_;
+  base::TimeDelta arcore_frame_interval_;
   FPSMeter fps_meter_;
 
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};

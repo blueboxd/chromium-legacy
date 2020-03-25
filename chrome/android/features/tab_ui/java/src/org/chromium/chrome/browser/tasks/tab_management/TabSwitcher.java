@@ -17,6 +17,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
@@ -47,7 +48,8 @@ public interface TabSwitcher {
      * Called when the native initialization is completed.
      */
     void initWithNative(Context context, TabContentManager tabContentManager,
-            DynamicResourceLoader dynamicResourceLoader);
+            DynamicResourceLoader dynamicResourceLoader,
+            SnackbarManager.SnackbarManageable snackbarManageable);
 
     // TODO(960196): Remove the following interfaces when the associated bug is resolved.
     /**

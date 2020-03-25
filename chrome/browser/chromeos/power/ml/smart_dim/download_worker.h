@@ -44,8 +44,6 @@ class DownloadWorker : public SmartDimWorker {
   std::string metrics_model_name_;
 
   void LoadModelAndCreateGraphExecutor(const std::string& model_flatbuffer);
-  void LoadMetaInfoFromJson(const std::string& metadata_json,
-                            const std::string& model_flatbuffer);
   void OnJsonParsed(const std::string& model_flatbuffer,
                     const data_decoder::DataDecoder::ValueOrError result);
 

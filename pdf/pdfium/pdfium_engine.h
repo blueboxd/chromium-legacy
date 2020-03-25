@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_loader.h"
+#include "pdf/document_metadata.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/pdfium/pdfium_page.h"
@@ -102,6 +103,7 @@ class PDFiumEngine : public PDFEngine,
   std::string GetLinkAtPosition(const pp::Point& point) override;
   bool HasPermission(DocumentPermission permission) const override;
   void SelectAll() override;
+  const DocumentMetadata& GetDocumentMetadata() const override;
   int GetNumberOfPages() override;
   pp::VarArray GetBookmarks() override;
   base::Optional<PDFEngine::NamedDestination> GetNamedDestination(
@@ -130,7 +132,6 @@ class PDFiumEngine : public PDFEngine,
   bool GetPageSizeAndUniformity(pp::Size* size) override;
   void AppendBlankPages(size_t num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
-  std::string GetMetadata(const std::string& key) override;
   std::vector<uint8_t> GetSaveData() override;
   void SetCaretPosition(const pp::Point& position) override;
   void MoveRangeSelectionExtent(const pp::Point& extent) override;
@@ -571,6 +572,14 @@ class PDFiumEngine : public PDFEngine,
   // already in view.
   void ScrollIntoView(const pp::Rect& rect);
 
+  // Fetches and populates the fields of |doc_metadata_|. To be called after the
+  // document is loaded.
+  void LoadDocumentMetadata();
+
+  // Retrieves the unparsed value of |field| in the document information
+  // dictionary.
+  std::string GetMetadataByField(FPDF_BYTESTRING field) const;
+
   PDFEngine::Client* const client_;
 
   // The current document layout.
@@ -740,6 +749,9 @@ class PDFiumEngine : public PDFEngine,
 
   // Shadow matrix for generating the page shadow bitmap.
   std::unique_ptr<draw_utils::ShadowMatrix> page_shadow_;
+
+  // Stores parsed document metadata.
+  DocumentMetadata doc_metadata_;
 
   // While true, the document try to be opened and parsed after download each
   // part. Else the document will be opened and parsed only on finish of

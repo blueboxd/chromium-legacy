@@ -23,8 +23,7 @@ void ParseGlyphs(const cc::PaintOpBuffer* buffer,
       // Recurse into nested records if they contain text blobs (equivalent to
       // nested SkPictures).
       auto* record_op = static_cast<cc::DrawRecordOp*>(*it);
-      if (record_op->HasText())
-        ParseGlyphs(record_op->record.get(), tracker);
+      ParseGlyphs(record_op->record.get(), tracker);
     }
   }
 }

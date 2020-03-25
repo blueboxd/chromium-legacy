@@ -7,6 +7,7 @@
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/metrics/task_switch_source.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -90,7 +91,7 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 void WindowCycleController::StartCycling() {
   WindowCycleList::WindowList window_list =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
-          kAllDesks);
+          features::IsAltTabLimitedToActiveDesk() ? kActiveDesk : kAllDesks);
   // Window cycle list windows will handle showing their transient related
   // windows, so if a window in |window_list| has a transient root also in
   // |window_list|, we can remove it as the transient root will handle showing

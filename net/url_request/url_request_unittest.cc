@@ -3287,12 +3287,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
     EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
                           http_test_server()->host_port_pair()),
               r->proxy_server());
-    // before_send_headers_with_proxy_count only increments for headers sent
-    // through an untunneled proxy.
-    EXPECT_EQ(1, network_delegate.before_send_headers_with_proxy_count());
-    EXPECT_TRUE(network_delegate.last_observed_proxy().Equals(
-        http_test_server()->host_port_pair()));
-
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(redirect_url, r->url());
     EXPECT_EQ(original_url, r->original_url());
@@ -3343,11 +3337,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
     EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
                           http_test_server()->host_port_pair()),
               r->proxy_server());
-    // before_send_headers_with_proxy_count only increments for headers sent
-    // through an untunneled proxy.
-    EXPECT_EQ(1, network_delegate.before_send_headers_with_proxy_count());
-    EXPECT_TRUE(network_delegate.last_observed_proxy().Equals(
-        http_test_server()->host_port_pair()));
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(redirect_url, r->url());
     EXPECT_EQ(original_url, r->original_url());
@@ -3442,12 +3431,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestOnHeadersReceived) {
     EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
                           http_test_server()->host_port_pair()),
               r->proxy_server());
-    // before_send_headers_with_proxy_count only increments for headers sent
-    // through an untunneled proxy.
-    EXPECT_EQ(2, network_delegate.before_send_headers_with_proxy_count());
-    EXPECT_TRUE(network_delegate.last_observed_proxy().Equals(
-        http_test_server()->host_port_pair()));
-
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(redirect_url, r->url());
     EXPECT_EQ(original_url, r->original_url());

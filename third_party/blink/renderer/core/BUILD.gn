@@ -1537,6 +1537,8 @@ jumbo_source_set("unit_test_support") {
   sources = [
     "testing/core_unit_test_helper.cc",
     "testing/core_unit_test_helper.h",
+    "testing/module_test_base.cc",
+    "testing/module_test_base.h",
     "testing/page_test_base.cc",
     "testing/page_test_base.h",
     "testing/scoped_fake_plugin_registry.cc",

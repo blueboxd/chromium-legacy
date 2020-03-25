@@ -1031,7 +1031,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5377026284221673050">„Ora este setată în trecut”, „Ora este setată în viitor” sau „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5380442954567233718">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a setat un antet care solicită
     ca o politică de origine să fie aplicată tuturor solicitărilor către el. Dar
-    antetul este deteriorat, ceea ce împiedică browserul să îți îndeplinească
+    antetul are o formă necorespunzătoare, ceea ce împiedică browserul să îți îndeplinească
     solicitarea pentru <ph name="SITE" />. Politicile de origine pot fi folosite de
     operatorii de site pentru a configura securitatea și alte proprietăți ale site-ului.</translation>
 <translation id="5386426401304769735">Lanțul de certificate pentru acest site conține un certificat semnat folosind SHA-1.</translation>

@@ -4611,7 +4611,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7193051357671784796">Ezt az alkalmazást a szervezete adta hozzá. A telepítés befejezéséhez indítsa újra az alkalmazást.</translation>
 <translation id="7193374945610105795">Nincsenek mentett jelszavak a(z) <ph name="ORIGIN" /> webhelyhez</translation>
 <translation id="7196913789568937443">Biztonsági másolat készítése a Google Drive-ra. Bármikor könnyedén helyreállíthatja adatait, illetve lecserélheti eszközét. A biztonsági másolat alkalmazásadatokat tartalmaz. A biztonsági másolatokat a Google szerveire tölti fel a rendszer, és az Ön Google-fiókjához használt jelszóval titkosítja. <ph name="BEGIN_LINK1" />További információ<ph name="END_LINK1" />.</translation>
-<translation id="7197190419934240522">Böngészés során mindig hozzájut a Google Keresés találataihoz és a Google okos megoldásaihoz</translation>
+<translation id="7197190419934240522">Böngészés során mindig hozzájut a Google Kereső találataihoz és a Google okos megoldásaihoz</translation>
 <translation id="7197632491113152433"><ph name="NUMBER_OF_APPS" /> olyan alkalmazást találtunk a fiókjában, amely használható ezen az eszközön.</translation>
 <translation id="7199158086730159431">Súgó</translation>
 <translation id="7200083590239651963">Konfiguráció kiválasztása</translation>
@@ -4807,7 +4807,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7454548535253569100">Portál: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7456142309650173560">fejlesztői</translation>
 <translation id="7456847797759667638">Hely megnyitása...</translation>
-<translation id="7458168200501453431">A Google Keresés által használttal megegyező helyesírás-ellenőrzést használ. A begépelt szöveget a böngésző elküldi a Google-nak.</translation>
+<translation id="7458168200501453431">A Google Kereső által használttal megegyező helyesírás-ellenőrzést használ. A begépelt szöveget a böngésző elküldi a Google-nak.</translation>
 <translation id="7460045493116006516">Jelenleg telepített téma</translation>
 <translation id="7461924472993315131">Rögzítés</translation>
 <translation id="7462086387939910706">A Chrome nem tudja ellenőrizni a jelszavakat, mert túl sok van belőlük.</translation>

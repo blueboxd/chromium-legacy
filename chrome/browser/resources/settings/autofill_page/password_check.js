@@ -178,6 +178,9 @@ Polymer({
     // Start the check if instructed to do so.
     const router = settings.Router.getInstance();
     if (router.getQueryParameters().get('start') == 'true') {
+      this.passwordManager_.recordPasswordCheckInteraction(
+          PasswordManagerProxy.PasswordCheckInteraction
+              .START_CHECK_AUTOMATICALLY);
       this.passwordManager_.startBulkPasswordCheck();
     }
   },
@@ -199,6 +202,8 @@ Polymer({
   onPasswordCheckButtonClick_() {
     switch (this.status_.state) {
       case CheckState.RUNNING:
+        this.passwordManager_.recordPasswordCheckInteraction(
+            PasswordManagerProxy.PasswordCheckInteraction.STOP_CHECK);
         this.passwordManager_.stopBulkPasswordCheck();
         return;
       case CheckState.IDLE:
@@ -206,6 +211,8 @@ Polymer({
       case CheckState.OFFLINE:
       case CheckState.SIGNED_OUT:
       case CheckState.OTHER_ERROR:
+        this.passwordManager_.recordPasswordCheckInteraction(
+            PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY);
         this.passwordManager_.startBulkPasswordCheck();
         return;
       case CheckState.NO_PASSWORDS:

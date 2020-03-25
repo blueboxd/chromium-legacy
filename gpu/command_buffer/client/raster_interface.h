@@ -12,6 +12,8 @@
 #include "gpu/command_buffer/client/interface_base.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
+struct SkImageInfo;
+
 namespace cc {
 class DisplayItemList;
 class ImageProvider;
@@ -53,6 +55,14 @@ class RasterInterface : public InterfaceBase {
                               GLsizei height,
                               GLboolean unpack_flip_y,
                               GLboolean unpack_premultiply_alpha) = 0;
+
+  virtual void WritePixels(const gpu::Mailbox& dest_mailbox,
+                           int dst_x_offset,
+                           int dst_y_offset,
+                           GLenum texture_target,
+                           const SkImageInfo& src_info,
+                           const void* src_pixels) = 0;
+
   // OOP-Raster
   virtual void BeginRasterCHROMIUM(GLuint sk_color,
                                    GLuint msaa_sample_count,

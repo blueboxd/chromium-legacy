@@ -3958,7 +3958,7 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateBeforeDestroyingNode) {
 }
 
 // Tests that the IsInListMarker() method returns true if the current node is a
-// list marker or if it's a descendant node of a list marker..
+// list marker or if it's a descendant node of a list marker.
 TEST(AXTreeTest, TestIsInListMarker) {
   // This test uses the template of a list of one element: "1. List item"
   AXTreeUpdate tree_update;

@@ -5397,6 +5397,18 @@ interface NamedNodeMap
     method removeNamedItemNS
     method setNamedItem
     method setNamedItemNS
+interface NativeIOFile
+    attribute @@toStringTag
+    method close
+    method constructor
+    method read
+    method write
+interface NativeIOManager
+    attribute @@toStringTag
+    method constructor
+    method delete
+    method getAll
+    method open
 interface NavigationPreloadManager
     attribute @@toStringTag
     method constructor
@@ -11688,6 +11700,7 @@ interface webkitURL
     getter locationbar
     getter menubar
     getter name
+    getter nativeIO
     getter navigator
     getter offscreenBuffering
     getter onabort

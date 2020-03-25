@@ -691,8 +691,7 @@ static CompositingReasons CompositingReasonsForTransformProperty() {
   // will-change:opacity to avoid raster invalidation (caused by otherwise a
   // created/deleted effect node) when we start/stop an opacity animation.
   // https://crbug.com/942681
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    reasons |= CompositingReason::kWillChangeOpacity;
+  reasons |= CompositingReason::kWillChangeOpacity;
   return reasons;
 }
 
@@ -851,8 +850,9 @@ static bool NeedsClipPathClip(const LayoutObject& object) {
   return false;
 }
 
-// TODO(crbug.com/900241): Remove this function and let the caller use
-// CompositingReason::kDirectReasonForEffectProperty directly.
+// TODO(crbug.com/900241): When this bug is fixed, we should let NeedsEffect()
+// use CompositingReason::kDirectReasonForEffectProperty directly instead of
+// calling this function. We should still call this function in UpdateEffect().
 static CompositingReasons CompositingReasonsForEffectProperty() {
   CompositingReasons reasons =
       CompositingReason::kDirectReasonsForEffectProperty;
@@ -864,8 +864,9 @@ static CompositingReasons CompositingReasonsForEffectProperty() {
   // will-change:transform to avoid raster invalidation (caused by otherwise a
   // created/deleted effect node) when we start/stop a transform animation.
   // https://crbug.com/942681
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    reasons |= CompositingReason::kWillChangeTransform;
+  // In CompositeAfterPaint, this also avoids decomposition of the effect when
+  // the object is forced compositing with will-change:transform.
+  reasons |= CompositingReason::kWillChangeTransform;
   return reasons;
 }
 
@@ -1173,8 +1174,9 @@ static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
   return page->GetLinkHighlight().NeedsHighlightEffect(object);
 }
 
-// TODO(crbug.com/900241): Remove this function and let the caller use
-// CompositingReason::kDirectReasonForFilterProperty directly.
+// TODO(crbug.com/900241): When this bug is fixed, we should let NeedsFilter()
+// use CompositingReason::kDirectReasonForFilterProperty directly instead of
+// calling this function. We should still call this function in UpdateFilter().
 static CompositingReasons CompositingReasonsForFilterProperty() {
   CompositingReasons reasons =
       CompositingReason::kDirectReasonsForFilterProperty;
@@ -1186,10 +1188,10 @@ static CompositingReasons CompositingReasonsForFilterProperty() {
   // created for will-change:transform/opacity to avoid raster invalidation
   // (caused by otherwise a created/deleted filter node) when we start/stop a
   // transform/opacity animation. https://crbug.com/942681
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    reasons |= CompositingReason::kWillChangeTransform |
-               CompositingReason::kWillChangeOpacity;
-  }
+  // In CompositeAfterPaint, this also avoids decomposition of the filter when
+  // the object is forced compositing with will-change:transform/opacity.
+  reasons |= CompositingReason::kWillChangeTransform |
+             CompositingReason::kWillChangeOpacity;
   return reasons;
 }
 

@@ -14,10 +14,10 @@
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
-#include "chrome/browser/vr/service/xr_consent_helper.h"
-#include "chrome/browser/vr/service/xr_consent_prompt_level.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/xr_consent_helper.h"
+#include "content/public/browser/xr_consent_prompt_level.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -42,8 +42,6 @@ class BrowserXRRuntimeImpl;
 class VRServiceImpl : public device::mojom::VRService,
                       content::WebContentsObserver {
  public:
-  static bool IsXrDeviceConsentPromptDisabledForTesting();
-
   explicit VRServiceImpl(content::RenderFrameHost* render_frame_host);
 
   // Constructor for tests.
@@ -123,9 +121,9 @@ class VRServiceImpl : public device::mojom::VRService,
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
 
   bool IsConsentGrantedForDevice(device::mojom::XRDeviceId device_id,
-                                 XrConsentPromptLevel consent_level);
+                                 content::XrConsentPromptLevel consent_level);
   void AddConsentGrantedDevice(device::mojom::XRDeviceId device_id,
-                               XrConsentPromptLevel consent_level);
+                               content::XrConsentPromptLevel consent_level);
 
   // The following steps are ordered in the general flow for "RequestSession"
   // If the WebXrPermissionsAPI is enabled ShowConsentPrompt will result in a
@@ -138,10 +136,10 @@ class VRServiceImpl : public device::mojom::VRService,
                          BrowserXRRuntimeImpl* runtime);
 
   void OnConsentResult(SessionRequestData request,
-                       XrConsentPromptLevel consent_level,
+                       content::XrConsentPromptLevel consent_level,
                        bool is_consent_granted);
   void OnPermissionResult(SessionRequestData request,
-                          XrConsentPromptLevel consent_level,
+                          content::XrConsentPromptLevel consent_level,
                           ContentSetting setting_value);
 
   void EnsureRuntimeInstalled(SessionRequestData request,
@@ -178,7 +176,7 @@ class VRServiceImpl : public device::mojom::VRService,
   bool in_focused_frame_ = false;
   bool frames_throttled_ = false;
 
-  std::map<device::mojom::XRDeviceId, XrConsentPromptLevel>
+  std::map<device::mojom::XRDeviceId, content::XrConsentPromptLevel>
       consent_granted_devices_;
 
   base::WeakPtrFactory<VRServiceImpl> weak_ptr_factory_{this};

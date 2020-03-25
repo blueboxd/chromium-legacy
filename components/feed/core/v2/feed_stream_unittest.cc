@@ -13,9 +13,11 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
+#include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
@@ -34,13 +36,20 @@ class TestSurface : public FeedStream::SurfaceInterface {
   // FeedStream::SurfaceInterface.
   void InitialStreamState(const feedui::StreamUpdate& stream_update) override {
     initial_state = stream_update;
+    if (on_initial_stream_state)
+      on_initial_stream_state.Run();
   }
   void StreamUpdate(const feedui::StreamUpdate& stream_update) override {
     update = stream_update;
+    if (on_stream_update)
+      on_stream_update.Run();
   }
 
   base::Optional<feedui::StreamUpdate> initial_state;
   base::Optional<feedui::StreamUpdate> update;
+
+  base::RepeatingClosure on_initial_stream_state;
+  base::RepeatingClosure on_stream_update;
 };
 
 class TestFeedNetwork : public FeedNetwork {
@@ -48,11 +57,47 @@ class TestFeedNetwork : public FeedNetwork {
   // FeedNetwork implementation.
   void SendQueryRequest(
       const feedwire::Request& request,
-      base::OnceCallback<void(QueryRequestResult)> callback) override {}
+      base::OnceCallback<void(QueryRequestResult)> callback) override {
+    ++send_query_call_count;
+    // Emulate a successful response.
+    // The response body is currently an empty message, because most of the
+    // time we want to inject a translated response for ease of test-writing.
+    query_request_sent = request;
+    QueryRequestResult result;
+    result.status_code = 200;
+    result.response_body = std::make_unique<feedwire::Response>();
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
+  }
   void SendActionRequest(
       const feedwire::ActionRequest& request,
       base::OnceCallback<void(ActionRequestResult)> callback) override {}
   void CancelRequests() override {}
+
+  base::Optional<feedwire::Request> query_request_sent;
+  int send_query_call_count = 0;
+};
+
+// Forwards to |FeedStream::WireResponseTranslator| unless a response is
+// injected.
+class TestWireResponseTranslator : public FeedStream::WireResponseTranslator {
+ public:
+  std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
+      feedwire::Response response,
+      base::TimeDelta response_time) override {
+    if (injected_response_) {
+      return std::move(injected_response_);
+    }
+    return FeedStream::WireResponseTranslator::TranslateWireResponse(
+        std::move(response), response_time);
+  }
+  void InjectResponse(std::unique_ptr<StreamModelUpdateRequest> response) {
+    injected_response_ = std::move(response);
+  }
+  bool InjectedResponseConsumed() const { return !injected_response_; }
+
+ private:
+  std::unique_ptr<StreamModelUpdateRequest> injected_response_;
 };
 
 class FakeRefreshTaskScheduler : public RefreshTaskScheduler {
@@ -94,20 +139,30 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     stream_ = std::make_unique<FeedStream>(
         &refresh_scheduler_, &event_observer_, this, &profile_prefs_, &network_,
         &clock_, &tick_clock_, task_environment_.GetMainThreadTaskRunner());
+    stream_->SetWireResponseTranslatorForTesting(&response_translator_);
   }
 
   // FeedStream::Delegate.
   bool IsEulaAccepted() override { return true; }
   bool IsOffline() override { return false; }
+
+  // For test access.
+  bool IsTaskQueueIdle() const {
+    return !stream_->GetTaskQueueForTesting()->HasPendingTasks() &&
+           !stream_->GetTaskQueueForTesting()->HasRunningTask();
+  }
+
  protected:
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestEventObserver event_observer_;
   TestingPrefServiceSimple profile_prefs_;
   TestFeedNetwork network_;
+  TestWireResponseTranslator response_translator_;
   base::SimpleTestClock clock_;
   base::SimpleTestTickClock tick_clock_;
   FakeRefreshTaskScheduler refresh_scheduler_;
   std::unique_ptr<FeedStream> stream_;
-  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(FeedStreamTest, IsArticlesListVisibleByDefault) {
@@ -282,6 +337,56 @@ TEST_F(FeedStreamTest, DetachSurface) {
       MakeOperation(MakeRemove(MakeClusterId(1))),
   });
   EXPECT_FALSE(surface.update);
+}
+
+TEST_F(FeedStreamTest, AttachSurfaceTriggersModelLoad) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+
+  base::RunLoop run_loop;
+  surface.on_initial_stream_state = run_loop.QuitClosure();
+  run_loop.Run();
+
+  EXPECT_TRUE(network_.query_request_sent);
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_TRUE(surface.initial_state);
+  ASSERT_EQ(2, surface.initial_state->updated_slices().size());
+}
+
+TEST_F(FeedStreamTest, DetachSurfaceWhileLoadingModel) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  stream_->DetachSurface(&surface);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(network_.query_request_sent);
+  EXPECT_FALSE(surface.initial_state);
+}
+
+TEST_F(FeedStreamTest, AttachMultipleSurfacesLoadsModelOnce) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface;
+  TestSurface other_surface;
+  stream_->AttachSurface(&surface);
+  stream_->AttachSurface(&other_surface);
+
+  {
+    base::RunLoop run_loop;
+    surface.on_initial_stream_state = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(1, network_.send_query_call_count);
+  base::RunLoop().RunUntilIdle();  // Make sure tasks are complete.
+
+  // After load, another surface doesn't trigger any tasks.
+  TestSurface later_surface;
+  stream_->AttachSurface(&later_surface);
+
+  EXPECT_TRUE(IsTaskQueueIdle());
 }
 
 }  // namespace

@@ -155,7 +155,8 @@ inline FormSubmission::FormSubmission(
     ClientNavigationReason reason,
     std::unique_ptr<ResourceRequest> resource_request,
     Frame* target_frame,
-    WebFrameLoadType load_type)
+    WebFrameLoadType load_type,
+    Document* origin_document)
     : method_(method),
       action_(action),
       target_(target),
@@ -167,7 +168,8 @@ inline FormSubmission::FormSubmission(
       reason_(reason),
       resource_request_(std::move(resource_request)),
       target_frame_(target_frame),
-      load_type_(load_type) {}
+      load_type_(load_type),
+      origin_document_(origin_document) {}
 
 inline FormSubmission::FormSubmission(const String& result)
     : method_(kDialogMethod), result_(result) {}
@@ -322,12 +324,14 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
       copied_attributes.Method(), action_url, target_or_base_target,
       encoding_type, form, std::move(form_data), event,
       frame_request.GetNavigationPolicy(), triggering_event_info, reason,
-      std::move(resource_request), target_frame, load_type);
+      std::move(resource_request), target_frame, load_type,
+      frame_request.OriginDocument());
 }
 
 void FormSubmission::Trace(Visitor* visitor) {
   visitor->Trace(form_);
   visitor->Trace(target_frame_);
+  visitor->Trace(origin_document_);
 }
 
 void FormSubmission::Navigate() {
@@ -338,7 +342,7 @@ void FormSubmission::Navigate() {
   }
   resource_request_->SetUrl(request_url);
 
-  FrameLoadRequest frame_request(&form_->GetDocument(), *resource_request_);
+  FrameLoadRequest frame_request(origin_document_.Get(), *resource_request_);
   frame_request.SetNavigationPolicy(navigation_policy_);
   frame_request.SetClientRedirectReason(reason_);
   frame_request.SetForm(form_);

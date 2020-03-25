@@ -117,13 +117,6 @@ int NetworkServiceNetworkDelegate::OnBeforeStartTransaction(
   return net::OK;
 }
 
-void NetworkServiceNetworkDelegate::OnBeforeSendHeaders(
-    net::URLRequest* request,
-    const net::ProxyInfo& proxy_info,
-    const net::ProxyRetryInfoMap& proxy_retry_info,
-    net::HttpRequestHeaders* headers) {
-}
-
 int NetworkServiceNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,

@@ -19,6 +19,10 @@ specific_include_rules = {
     "+ash/shell.h",
     "+ash/wm/window_util.h",
   ],
+  "suggestion_window_controller_impl\.cc": [
+    "+ash/shell.h",
+    "+ash/wm/window_util.h",
+  ],
 
   # TODO(erikwright): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,

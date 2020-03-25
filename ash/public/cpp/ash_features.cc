@@ -36,6 +36,9 @@ const base::Feature kDragToSnapInClamshellMode{
 const base::Feature kEnableOverviewRoundedCorners{
     "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLimitAltTabToActiveDesk{"LimitAltTabToActiveDesk",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -115,6 +118,10 @@ const base::Feature kHideShelfControlsInTabletMode{
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
+}
+
+bool IsAltTabLimitedToActiveDesk() {
+  return base::FeatureList::IsEnabled(kLimitAltTabToActiveDesk);
 }
 
 bool IsAutoNightLightEnabled() {

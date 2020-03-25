@@ -510,9 +510,7 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
             // Categories that support adding exceptions also manage the 'Add site' preference.
             // This should only be used for settings that have host-pattern based exceptions.
             if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
-                    || (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                            && ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH))
+                    || mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
                     || mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
                     || mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
                 if ((boolean) newValue) {
@@ -685,14 +683,9 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         boolean exception = false;
         if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
             exception = true;
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
-                && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)
-                        || !WebsitePreferenceBridge.isCategoryEnabled(
-                                ContentSettingsType.JAVASCRIPT))) {
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
             exception = true;
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)) {
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !WebsitePreferenceBridge.isCategoryEnabled(
@@ -910,10 +903,7 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         boolean permissionBlockedByOs = mCategory.showPermissionBlockedMessage(getActivity());
         // For these categories, no binary, tri-state or custom toggles should be shown.
         boolean hideMainToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
-                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)
-                || (permissionBlockedByOs
-                        && !ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH));
+                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE);
         boolean hideSecondaryToggles = hideMainToggles || permissionBlockedByOs;
 
         if (hideMainToggles) {
@@ -1011,8 +1001,7 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
     }
 
     private void maybeShowOsWarning(PreferenceScreen screen) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)
-                && isBlocked()) {
+        if (isBlocked()) {
             return;
         }
 

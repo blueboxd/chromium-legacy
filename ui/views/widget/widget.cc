@@ -31,6 +31,7 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/any_widget_observer_singleton.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -379,6 +380,9 @@ void Widget::Init(InitParams params) {
 
   if (delegate)
     delegate->OnWidgetInitialized();
+
+  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetInitialized(
+      this);
 }
 
 void Widget::ShowEmojiPanel() {
@@ -598,6 +602,8 @@ void Widget::CloseWithReason(ClosedReason closed_reason) {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetClosing(this);
 
+  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetClosing(this);
+
   if (widget_delegate_)
     widget_delegate_->WindowWillClose();
 
@@ -611,6 +617,7 @@ void Widget::Close() {
 void Widget::CloseNow() {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetClosing(this);
+  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetClosing(this);
   native_widget_->CloseNow();
 }
 
@@ -643,10 +650,12 @@ void Widget::Show() {
   } else {
     native_widget_->Show(preferred_show_state, gfx::Rect());
   }
+  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetShown(this);
 }
 
 void Widget::Hide() {
   native_widget_->Hide();
+  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetHidden(this);
 }
 
 void Widget::ShowInactive() {

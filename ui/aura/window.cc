@@ -1330,7 +1330,8 @@ void Window::OnLayerAlphaShapeChanged() {
     observer.OnWindowAlphaShapeSet(this);
 }
 
-void Window::OnLayerFillsBoundsOpaquelyChanged() {
+void Window::OnLayerFillsBoundsOpaquelyChanged(
+    ui::PropertyChangeReason reason) {
   // Let observers know that this window's transparent status has changed.
   // Transparent status can affect the occlusion computed for windows.
   WindowOcclusionTracker::ScopedPause pause_occlusion_tracking;
@@ -1340,7 +1341,7 @@ void Window::OnLayerFillsBoundsOpaquelyChanged() {
     DCHECK(opaque_regions_for_occlusion_.empty());
 
   for (WindowObserver& observer : observers_)
-    observer.OnWindowTransparentChanged(this);
+    observer.OnWindowTransparentChanged(this, reason);
 }
 
 void Window::OnLayerTransformed(const gfx::Transform& old_transform,

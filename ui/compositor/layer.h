@@ -598,6 +598,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // rooted from |this|.
   void GetFlattenedWeakList(std::vector<base::WeakPtr<Layer>>* flattened_list);
 
+  // Same as SetFillsBoundsOpaque but with a reason how it's changed.
+  void SetFillsBoundsOpaquelyWithReason(bool fills_bounds_opaquely,
+                                        PropertyChangeReason reason);
+
   const LayerType type_;
 
   Compositor* compositor_;

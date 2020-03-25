@@ -411,22 +411,6 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
         layout->GetDefaultFlexRule());
   }
 
-  // Returns the ideal size for a child view based on its preferred size and the
-  // available space. Views which are too wide to be displayed are dropped out.
-  //
-  // Because we prefer height consistency (see GetFlexRule()), we'll roll our
-  // own simple flex rule. The alternative is kPreferredSnapToZero which can
-  // drop views out for being too tall as well as too wide.
-  //
-  // TODO(crbug.com/1063455): replace with a standard flex rule when single-axis
-  // flex rules are available.
-  static gfx::Size GetChildFlexRule(const views::View* view,
-                                    const views::SizeBounds& bounds) {
-    const gfx::Size preferred = view->GetPreferredSize();
-    return (bounds.width() && *bounds.width() < preferred.width()) ? gfx::Size()
-                                                                   : preferred;
-  }
-
   ContentSettingsContainer* content_settings_container() {
     return content_settings_container_;
   }
@@ -603,11 +587,11 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
       .SetCollapseMargins(true)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetDefault(
-          views::kFlexBehaviorKey,
-          views::FlexSpecification(
-              base::BindRepeating(&ToolbarButtonContainer::GetChildFlexRule))
-              .WithWeight(0))
+      .SetDefault(views::kFlexBehaviorKey,
+                  views::FlexSpecification(
+                      views::LayoutOrientation::kHorizontal,
+                      views::MinimumFlexSizeRule::kPreferredSnapToZero)
+                      .WithWeight(0))
       .SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse);
 
   const auto* app_controller = browser_view_->browser()->app_controller();
@@ -753,15 +737,16 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
     left_container_->SetProperty(
         views::kFlexBehaviorKey,
         views::FlexSpecification(
-            views::MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
-            views::MaximumFlexSizeRule::kPreferred)
+            views::LayoutOrientation::kHorizontal,
+            views::MinimumFlexSizeRule::kScaleToMinimumSnapToZero)
             .WithOrder(2));
   }
 
   center_container_ = AddChildView(std::make_unique<views::View>());
   center_container_->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+      views::FlexSpecification(views::LayoutOrientation::kHorizontal,
+                               views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded)
           .WithOrder(3));
 

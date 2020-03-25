@@ -227,6 +227,22 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
       info.enclosing_stacking_composited_layer;
   PaintLayer* enclosing_squashing_composited_layer =
       info.enclosing_squashing_composited_layer;
+
+  if (layer->NeedsCompositingInputsUpdate()) {
+    if (enclosing_stacking_composited_layer) {
+      enclosing_stacking_composited_layer->GetCompositedLayerMapping()
+          ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
+    }
+
+    if (enclosing_squashing_composited_layer) {
+      enclosing_squashing_composited_layer->GetCompositedLayerMapping()
+          ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
+    }
+
+    update_type = kForceUpdate;
+  }
+
+
   switch (layer->GetCompositingState()) {
     case kNotComposited:
       break;
@@ -240,17 +256,19 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
       break;
   }
 
+  // invalidate again after the switch, in case
+  // enclosing_stacking_composited_layer or
+  // enclosing_squashing_composited_layer was previously null.
   if (layer->NeedsCompositingInputsUpdate()) {
     if (enclosing_stacking_composited_layer) {
       enclosing_stacking_composited_layer->GetCompositedLayerMapping()
           ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
     }
+
     if (enclosing_squashing_composited_layer) {
       enclosing_squashing_composited_layer->GetCompositedLayerMapping()
           ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
     }
-
-    update_type = kForceUpdate;
   }
 
   if (style.GetPosition() == EPosition::kAbsolute) {

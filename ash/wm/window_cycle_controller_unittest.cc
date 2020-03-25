@@ -10,6 +10,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
@@ -30,6 +31,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -696,7 +698,6 @@ TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
 }
 
 TEST_F(WindowCycleControllerTest, CycleShowsAllDesksWindows) {
-  // Create two desks with two windows in each.
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   auto* desks_controller = DesksController::Get();
@@ -756,6 +757,74 @@ TEST_F(WindowCycleControllerTest, CycleShowsAllDesksWindows) {
         "Ash.WindowCycleController.DesksSwitchDistance",
         /*desk distance of 2 - 1 = */ 1, /*expected_count=*/1);
   }
+}
+
+class LimitedWindowCycleControllerTest : public WindowCycleControllerTest {
+ public:
+  LimitedWindowCycleControllerTest() = default;
+  LimitedWindowCycleControllerTest(const LimitedWindowCycleControllerTest&) =
+      delete;
+  LimitedWindowCycleControllerTest& operator=(
+      const LimitedWindowCycleControllerTest&) = delete;
+  ~LimitedWindowCycleControllerTest() override = default;
+
+  // WindowCycleControllerTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kLimitAltTabToActiveDesk);
+    WindowCycleControllerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(LimitedWindowCycleControllerTest, CycleShowsActiveDeskWindows) {
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(3u, desks_controller->desks().size());
+  const Desk* desk_2 = desks_controller->desks()[1].get();
+  ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, desks_controller->active_desk());
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 300, 200));
+  const Desk* desk_3 = desks_controller->desks()[2].get();
+  ActivateDesk(desk_3);
+  EXPECT_EQ(desk_3, desks_controller->active_desk());
+  auto win3 = CreateAppWindow(gfx::Rect(10, 30, 400, 200));
+
+  WindowCycleController* cycle_controller =
+      Shell::Get()->window_cycle_controller();
+
+  // Should contain only windows from |desk_3|.
+  cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  auto cycle_windows = GetWindows(cycle_controller);
+  EXPECT_EQ(1u, cycle_windows.size());
+  EXPECT_TRUE(base::Contains(cycle_windows, win3.get()));
+  cycle_controller->CompleteCycling();
+  EXPECT_EQ(win3.get(), window_util::GetActiveWindow());
+
+  // Should contain only windows from |desk_2|.
+  ActivateDesk(desk_2);
+  cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  cycle_windows = GetWindows(cycle_controller);
+  EXPECT_EQ(1u, cycle_windows.size());
+  EXPECT_TRUE(base::Contains(cycle_windows, win2.get()));
+  cycle_controller->CompleteCycling();
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
+
+  // Should contain only windows from |desk_1|.
+  const Desk* desk_1 = desks_controller->desks()[0].get();
+  ActivateDesk(desk_1);
+  cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  cycle_windows = GetWindows(cycle_controller);
+  EXPECT_EQ(2u, cycle_windows.size());
+  EXPECT_TRUE(base::Contains(cycle_windows, win0.get()));
+  EXPECT_TRUE(base::Contains(cycle_windows, win1.get()));
+  cycle_controller->CompleteCycling();
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 }
 
 }  // namespace ash

@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">ეს გაფართოება არ მოითხოვს სპეციალურ უფლებებს.</translation>
 <translation id="1616298854599875024">გაფართოების „<ph name="IMPORT_NAME" />“ იმპორტირება ვერ მოხერხდა, რადგან ის არ არის გაზიარებული მოდული</translation>
 <translation id="1618268899808219593">დახმარ&amp;ების ცენტრი</translation>
+<translation id="1620307519959413822">პაროლი არასწორია. სცადეთ ხელახლა, ან შეხებით აირჩიეთ „პაროლი დამავიწყდა“ მის გადასაყენებლად.</translation>
 <translation id="1620510694547887537">კამერა</translation>
 <translation id="1623132449929929218">სურათები ამჟამად მიუწვდომელია. ფონების კოლექციების სანახავად საჭიროა ხელახლა დაკავშირება ინტერნეტთან.</translation>
 <translation id="1627276047960621195">ფაილური დესკრიპტორები</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">აპარატურის ვერსია</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">სრული ეკრანის გახსნა</translation>
+<translation id="1892341345406963517">გამარჯობა, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">სხვა ენები</translation>
 <translation id="1895252664692693738">დარჩენილია <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">გათიშვა</translation>
@@ -3132,6 +3134,7 @@
 <translation id="5213891612754844763">პროქსი-სერვერის პარამეტრების ჩვენება</translation>
 <translation id="5215502535566372932">აირჩიეთ ქვეყანა</translation>
 <translation id="521582610500777512">ფოტო გაუქმდა</translation>
+<translation id="5222403284441421673">არაუსაფრთხო ჩამოტვირთვა დაბლოკილია</translation>
 <translation id="5222676887888702881">გამოსვლა</translation>
 <translation id="52232769093306234">შეფუთვა ვერ მოხერხდა.</translation>
 <translation id="5225324770654022472">პროგრამების მალსახმობის ჩვენება</translation>
@@ -3530,6 +3533,7 @@
 <translation id="5734362860645681824">კომუნიკაციები</translation>
 <translation id="5734697361979786483">ფაილის გაზიარების დამატება</translation>
 <translation id="5736796278325406685">გთხოვთ, შეიყვანოთ სწორი მომხმარებლის სახელი</translation>
+<translation id="5739017626473506901">შედით სისტემაში, რომ დაეხმაროთ <ph name="USER_NAME" />-ს სასწავლებლის ანგარიშის დამატებაში</translation>
 <translation id="5739235828260127894">დადასტურების მოლოდინში. <ph name="LINK_BEGIN" />შეიტყვეთ მეტი<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ძალიან დიდი</translation>
 <translation id="574209121243317957">სიმაღლე</translation>
@@ -5536,6 +5540,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ქსელი, მიმდინარეობს დაკავშირება</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ჯერ მკითხეთ (რეკომენდებულია)</translation>
+<translation id="8417548266957501132">მშობლის პაროლი</translation>
 <translation id="8417573335434189196">არ დაგიცავთ სახიფათო ვებსაიტებისგან, ჩამოტვირთვებისა თუ გაფართოებებისგან. Chrome არ გირჩევთ ამ პარამეტრის გამოყენებას.</translation>
 <translation id="8418445294933751433">ჩ&amp;ვენება ჩანართის სახით</translation>
 <translation id="8419098111404128271">ძიების შედეგები მოთხოვნაზე „<ph name="SEARCH_TEXT" />“</translation>

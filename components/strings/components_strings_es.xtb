@@ -1034,7 +1034,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="5380442954567233718">El servidor al que te diriges (<ph name="ORIGIN" />) ha establecido un encabezado
     que requiere aplicar una política de origen a todas las solicitudes que reciba. Sin embargo,
     el encabezado tiene errores, lo que impide al navegador procesar
-    tu solicitud de ir a <ph name="SITE" />. Los operadores de sitio web
+    tu solicitud de ir a <ph name="SITE" />. Los operadores de sitios web
     pueden usar las políticas de origen para configurar la seguridad y otras propiedades de un sitio web.</translation>
 <translation id="5386426401304769735">La cadena de certificados de este sitio web contiene un certificado firmado con SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>

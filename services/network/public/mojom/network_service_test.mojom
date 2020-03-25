@@ -60,14 +60,13 @@ interface NetworkServiceTest {
       int32 rv) => ();
 
   // Toggles requiring CT for testing
-  enum ShouldRequireCT {
-    RESET = 0,
+  enum RequireCT {
+    DEFAULT = 0,
     REQUIRE = 1,
-    DONT_REQUIRE = 2,
   };
 
   [Sync]
-  SetShouldRequireCT(ShouldRequireCT required) => ();
+  SetRequireCT(RequireCT required) => ();
 
   // Set the global transport security state preloaded static data source to
   // the unittest_default source, with the reporting URIs rewritten to use

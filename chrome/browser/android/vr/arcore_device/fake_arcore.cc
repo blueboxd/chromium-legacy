@@ -196,6 +196,10 @@ mojom::VRPosePtr FakeArCore::Update(bool* camera_updated) {
   return pose;
 }
 
+base::TimeDelta FakeArCore::GetFrameTimestamp() {
+  return base::TimeTicks::Now() - base::TimeTicks();
+}
+
 float FakeArCore::GetEstimatedFloorHeight() {
   return 2.0;
 }

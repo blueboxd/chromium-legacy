@@ -53,7 +53,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
                 activity.getFullscreenManager(), activity,
-                activity.getMenuOrKeyboardActionController(), activity, containerView,
+                activity.getMenuOrKeyboardActionController(), containerView,
                 activity.getShareDelegateSupplier(),
                 TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()
                                 && SysUtils.isLowEndDevice()
@@ -66,7 +66,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
                 activity.getFullscreenManager(), activity,
-                activity.getMenuOrKeyboardActionController(), activity, containerView,
+                activity.getMenuOrKeyboardActionController(), containerView,
                 activity.getShareDelegateSupplier(), TabListCoordinator.TabListMode.CAROUSEL);
     }
 

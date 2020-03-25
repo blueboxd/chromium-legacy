@@ -313,7 +313,7 @@
 <translation id="2288422996159078444">您输入的任何内容、查看的任何网页或从事的任何其他网络活动都在被监视。网站上的内容可能会在您不知情的情况下遭到改动。</translation>
 <translation id="2289385804009217824">裁切</translation>
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
-<translation id="2293443924986248631">当此设置处于开启状态时，网站无法使用 Cookie 来跟踪您在网上的活动。某些网站上的功能可能会无法正常运作。</translation>
+<translation id="2293443924986248631">开启此设置后，网站无法使用 Cookie 来跟踪您在网上的活动。某些网站上的功能可能会无法正常运作。</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">未上传</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -720,7 +720,7 @@
 <translation id="4152318981910038897">{COUNT,plural, =1{第 1 页}other{第 {COUNT} 页}}</translation>
 <translation id="4154664944169082762">指纹</translation>
 <translation id="4159784952369912983">紫色</translation>
-<translation id="4163132590327127354">Chrome 简化了该页面，以使它更易于阅读。</translation>
+<translation id="4163132590327127354">Chrome 简化了该页面，让内容更易于阅读。</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4171400957073367226">验证签名无效</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1020,7 +1020,7 @@
 <translation id="536296301121032821">无法存储策略设置</translation>
 <translation id="5371425731340848620">更新信用卡</translation>
 <translation id="5377026284221673050">“您的时钟慢了”、“您的时钟快了”或“&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
-<translation id="5380442954567233718">您要访问的服务器 <ph name="ORIGIN" /> 已设置一个头文件，其中要求收到的所有请求都应用一项来源政策。但该头文件的格式不正确，导致浏览器无法实现您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全属性及其他属性。</translation>
+<translation id="5380442954567233718">您要访问的服务器 <ph name="ORIGIN" /> 已设置一个标头，其中要求收到的所有请求都应用一项来源政策。但该标头的格式不正确，导致浏览器无法实现您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全属性及其他属性。</translation>
 <translation id="5386426401304769735">此网站的证书链包含使用 SHA-1 签署的证书。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">边缘装订（右侧）</translation>

@@ -641,7 +641,6 @@ java_cpp_enum("chrome_vr_android_java_enums_srcjar") {
     "//chrome/browser/android/vr/vr_core_info.h",
     "//chrome/browser/android/vr/vr_shell_delegate.h",
     "//chrome/browser/vr/metrics/consent_flow_metrics_helper.h",
-    "//chrome/browser/vr/service/xr_consent_prompt_level.h",
     "//chrome/browser/vr/text_edit_action.h",
     "//chrome/browser/vr/ui_test_input.h",
     "//chrome/browser/vr/ui_unsupported_mode.h",

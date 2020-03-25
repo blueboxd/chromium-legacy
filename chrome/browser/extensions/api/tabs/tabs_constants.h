@@ -72,6 +72,7 @@ extern const char kShowStateValueFullscreen[];
 extern const char kShowStateValueLockedFullscreen[];
 extern const char kStatusValueComplete[];
 extern const char kStatusValueLoading[];
+extern const char kStatusValueUnloaded[];
 extern const char kWindowTypeValueNormal[];
 extern const char kWindowTypeValuePopup[];
 extern const char kWindowTypeValueApp[];

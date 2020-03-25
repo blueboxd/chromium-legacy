@@ -220,19 +220,6 @@ bool FindMultipleClickBoundary(bool is_double_click, base::char16 cur) {
   return false;
 }
 
-std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
-  size_t size = FPDF_GetMetaText(doc, key.c_str(), nullptr, 0);
-  if (size == 0)
-    return std::string();
-
-  base::string16 value;
-  PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> string_adapter(
-      &value, size, false);
-  string_adapter.Close(
-      FPDF_GetMetaText(doc, key.c_str(), string_adapter.GetData(), size));
-  return base::UTF16ToUTF8(value);
-}
-
 gin::IsolateHolder* g_isolate_holder = nullptr;
 
 bool IsV8Initialized() {
@@ -617,10 +604,6 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
   client_->Invalidate(GetPageScreenRect(index));
 }
 
-std::string PDFiumEngine::GetMetadata(const std::string& key) {
-  return GetDocumentMetadata(doc(), key);
-}
-
 std::vector<uint8_t> PDFiumEngine::GetSaveData() {
   PDFiumMemBufferFileWrite output_file_write;
   if (!FPDF_SaveAsCopy(doc(), &output_file_write, 0))
@@ -730,6 +713,8 @@ void PDFiumEngine::FinishLoadingDocument() {
 
   if (need_update)
     LoadPageInfo();
+
+  LoadDocumentMetadata();
 
   if (called_do_document_action_)
     return;
@@ -2081,6 +2066,11 @@ void PDFiumEngine::SelectAll() {
     if (page->available())
       selection_.push_back(PDFiumRange(page.get(), 0, page->GetCharCount()));
   }
+}
+
+const DocumentMetadata& PDFiumEngine::GetDocumentMetadata() const {
+  DCHECK(document_loaded_);
+  return doc_metadata_;
 }
 
 int PDFiumEngine::GetNumberOfPages() {
@@ -3700,6 +3690,33 @@ void PDFiumEngine::GetSelection(uint32_t* selection_start_page_index,
   } else {
     *selection_end_char_index = selection_[len - 1].char_count();
   }
+}
+
+void PDFiumEngine::LoadDocumentMetadata() {
+  DCHECK(document_loaded_);
+
+  // Document information dictionary entries
+  doc_metadata_.title = GetMetadataByField("Title");
+  doc_metadata_.author = GetMetadataByField("Author");
+  doc_metadata_.subject = GetMetadataByField("Subject");
+  doc_metadata_.creator = GetMetadataByField("Creator");
+  doc_metadata_.producer = GetMetadataByField("Producer");
+}
+
+std::string PDFiumEngine::GetMetadataByField(FPDF_BYTESTRING field) const {
+  DCHECK(doc());
+
+  size_t size =
+      FPDF_GetMetaText(doc(), field, /*buffer=*/nullptr, /*buflen=*/0);
+  if (size == 0)
+    return std::string();
+
+  base::string16 value;
+  PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> string_adapter(
+      &value, size, /*check_expected_size=*/false);
+  string_adapter.Close(
+      FPDF_GetMetaText(doc(), field, string_adapter.GetData(), size));
+  return base::UTF16ToUTF8(value);
 }
 
 #if defined(PDF_ENABLE_XFA)

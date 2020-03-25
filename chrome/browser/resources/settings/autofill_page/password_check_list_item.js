@@ -39,10 +39,11 @@ Polymer({
    * @private
    */
   onChangePasswordClick_() {
-    const url = this.item.changePasswordUrl;
-    if (url) {
-      settings.OpenWindowProxyImpl.getInstance().openURL(url);
-    }
+    const url = assert(this.item.changePasswordUrl);
+    settings.OpenWindowProxyImpl.getInstance().openURL(url);
+
+    PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
+        PasswordManagerProxy.PasswordCheckInteraction.CHANGE_PASSWORD);
   },
 
   /**

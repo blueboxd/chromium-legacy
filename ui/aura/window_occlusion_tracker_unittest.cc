@@ -1464,9 +1464,7 @@ TEST_P(WindowOcclusionTrackerOpacityTest,
 // Verify that no crash occurs if an animation completes on a non-tracked
 // window's layer after the window has been removed from a root with a tracked
 // window and deleted.
-// TODO(crbug.com/1057024): Alpha in SOLID_COLOR layer doesn't work with
-// animation. Fix it and use WindowOcclusionTrackerOpacityTest.
-TEST_F(WindowOcclusionTrackerTest,
+TEST_P(WindowOcclusionTrackerOpacityTest,
        DeleteNonTrackedAnimatedWindowRemovedFromTrackedRoot) {
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
@@ -1486,7 +1484,8 @@ TEST_F(WindowOcclusionTrackerTest,
   // stops being animated.
   delegate->set_expectation(Window::OcclusionState::VISIBLE,
                             SkRegion(SkIRect::MakeXYWH(10, 0, 10, 10)));
-  Window* window = CreateUntrackedWindow(gfx::Rect(10, 0, 10, 10));
+  Window* window =
+      CreateUntrackedWindow(gfx::Rect(10, 0, 10, 10), nullptr, layer_type());
   EXPECT_FALSE(delegate->is_expecting_call());
 
   window->layer()->SetAnimator(test_controller.animator());
@@ -1497,7 +1496,9 @@ TEST_F(WindowOcclusionTrackerTest,
   // of its LayerAnimator (after |observer|). Upon beginning animation, the
   // window should no longer affect the occluded region.
   delegate->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  window->layer()->SetOpacity(0.5f);
+  SetOpacity(window, 0.1);
+  // Drive the animation so that the color's alpha value changes.
+  test_controller.Step(kTransitionDuration / 2);
   EXPECT_FALSE(delegate->is_expecting_call());
 
   // Remove the non-tracked window from its root. WindowOcclusionTracker should
@@ -1510,6 +1511,50 @@ TEST_F(WindowOcclusionTrackerTest,
   // WindowOcclusionTracker will not try to access |window| after that (if it
   // does, the test will crash).
   window->layer()->GetAnimator()->StopAnimating();
+}
+
+TEST_P(WindowOcclusionTrackerOpacityTest,
+       OpacityAnimationShouldNotOccludeWindow) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::LayerAnimatorTestController test_controller(
+      ui::LayerAnimator::CreateImplicitAnimator());
+  ui::ScopedLayerAnimationSettings layer_animation_settings(
+      test_controller.animator());
+  layer_animation_settings.SetTransitionDuration(kTransitionDuration);
+
+  // Create a tracked window. Expect it to be non-occluded.
+  MockWindowDelegate* delegate = new MockWindowDelegate();
+  delegate->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  auto* foo = CreateTrackedWindow(delegate, gfx::Rect(0, 0, 10, 10));
+  foo->SetName("A");
+  EXPECT_FALSE(delegate->is_expecting_call());
+
+  // Create a non-tracked window which occludes the tracked window.
+  delegate->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  Window* window =
+      CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10), nullptr, layer_type());
+  window->SetName("B");
+  EXPECT_FALSE(delegate->is_expecting_call());
+
+  // Set the opacity to make the tracked window VISIBLE.
+  delegate->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  SetOpacity(window, 0.1);
+  EXPECT_FALSE(delegate->is_expecting_call());
+
+  // Animate the window. WindowOcclusionTracker should add itself as an observer
+  // of its LayerAnimator (after |observer|). Upon beginning animation, the
+  // window should no longer affect the occluded region.
+  window->layer()->SetAnimator(test_controller.animator());
+  delegate->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  SetOpacity(window, 1.0);
+  EXPECT_TRUE(delegate->is_expecting_call());
+  // Drive the animation so that the color's alpha value changes.
+  test_controller.Step(kTransitionDuration / 2);
+  EXPECT_TRUE(delegate->is_expecting_call());
+  window->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(delegate->is_expecting_call());
+  window->layer()->SetAnimator(nullptr);
 }
 
 namespace {

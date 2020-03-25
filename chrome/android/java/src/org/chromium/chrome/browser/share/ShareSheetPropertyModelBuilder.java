@@ -101,6 +101,7 @@ class ShareSheetPropertyModelBuilder {
                                 RecordHistogram.recordEnumeratedHistogram(
                                         "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex,
                                         MAX_NUM_APPS + 1);
+                                ShareSheetCoordinator.recordTimeToShare();
                                 ActivityInfo ai = info.activityInfo;
 
                                 ComponentName component =

@@ -297,7 +297,7 @@
 #if BUILDFLAG(ENABLE_VR)
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #if defined(OS_WIN)
-#include "chrome/browser/vr/service/xr_session_request_consent_manager_impl.h"
+#include "chrome/browser/vr/consent/xr_session_request_consent_manager_impl.h"
 #endif
 #endif
 

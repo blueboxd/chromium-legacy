@@ -54,6 +54,8 @@ if (enable_pdf) {
       "document_loader.h",
       "document_loader_impl.cc",
       "document_loader_impl.h",
+      "document_metadata.cc",
+      "document_metadata.h",
       "draw_utils/coordinates.cc",
       "draw_utils/coordinates.h",
       "draw_utils/shadow.cc",

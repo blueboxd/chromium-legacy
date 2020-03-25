@@ -34,6 +34,7 @@ namespace {
   DO(ArFrame_create)                                               \
   DO(ArFrame_destroy)                                              \
   DO(ArFrame_getLightEstimate)                                     \
+  DO(ArFrame_getTimestamp)                                         \
   DO(ArFrame_getUpdatedAnchors)                                    \
   DO(ArFrame_getUpdatedTrackables)                                 \
   DO(ArFrame_hitTestRay)                                           \
@@ -273,6 +274,13 @@ void ArFrame_getLightEstimate(const ArSession* session,
                               ArLightEstimate* out_light_estimate) {
   return g_arcore_api->impl_ArFrame_getLightEstimate(session, frame,
                                                      out_light_estimate);
+}
+
+void ArFrame_getTimestamp(const ArSession* session,
+                          const ArFrame* frame,
+                          int64_t* out_timestamp_ns) {
+  return g_arcore_api->impl_ArFrame_getTimestamp(session, frame,
+                                                 out_timestamp_ns);
 }
 
 void ArFrame_getUpdatedAnchors(const ArSession* session,

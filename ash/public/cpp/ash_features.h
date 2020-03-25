@@ -44,6 +44,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
 // has landed.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableOverviewRoundedCorners;
 
+// Limits the windows listed in Alt-Tab to the ones in the currently active
+// desk.
+ASH_PUBLIC_EXPORT extern const base::Feature kLimitAltTabToActiveDesk;
+
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
@@ -147,6 +151,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
 ASH_PUBLIC_EXPORT extern const base::Feature kHideShelfControlsInTabletMode;
 
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
+
+ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
 
 ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
 

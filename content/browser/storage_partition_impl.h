@@ -72,6 +72,7 @@ class PrefetchURLLoaderService;
 class GeneratedCodeCacheContext;
 class NativeFileSystemEntryFactory;
 class NativeFileSystemManagerImpl;
+class NativeIOContext;
 class QuotaContext;
 
 class CONTENT_EXPORT StoragePartitionImpl
@@ -196,6 +197,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
   QuotaContext* GetQuotaContext();
   ConversionManager* GetConversionManager();
+  NativeIOContext* GetNativeIOContext();
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
@@ -494,6 +496,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
   std::unique_ptr<ConversionManager> conversion_manager_;
+  std::unique_ptr<NativeIOContext> native_io_context_;
 
   // ReceiverSet for DomStorage, using the
   // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The

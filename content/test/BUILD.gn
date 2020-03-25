@@ -1721,6 +1721,7 @@ test("content_unittests") {
     "../browser/native_file_system/native_file_system_file_writer_impl_unittest.cc",
     "../browser/native_file_system/native_file_system_handle_base_unittest.cc",
     "../browser/native_file_system/native_file_system_manager_impl_unittest.cc",
+    "../browser/native_io/native_io_context_unittest.cc",
     "../browser/net/cross_origin_embedder_policy_reporter_unittest.cc",
     "../browser/net/network_quality_observer_impl_unittest.cc",
     "../browser/network_context_client_base_impl_unittest.cc",

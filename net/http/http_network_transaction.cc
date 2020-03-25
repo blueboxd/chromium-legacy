@@ -518,11 +518,6 @@ void HttpNetworkTransaction::SetBeforeNetworkStartCallback(
   before_network_start_callback_ = callback;
 }
 
-void HttpNetworkTransaction::SetBeforeHeadersSentCallback(
-    const BeforeHeadersSentCallback& callback) {
-  before_headers_sent_callback_ = callback;
-}
-
 void HttpNetworkTransaction::SetRequestHeadersCallback(
     RequestHeadersCallback callback) {
   DCHECK(!stream_);
@@ -975,9 +970,6 @@ int HttpNetworkTransaction::BuildRequestHeaders(
         &request_headers_);
 
   request_headers_.MergeFrom(request_->extra_headers);
-
-  if (!before_headers_sent_callback_.is_null())
-    before_headers_sent_callback_.Run(proxy_info_, &request_headers_);
 
   response_.did_use_http_auth =
       request_headers_.HasHeader(HttpRequestHeaders::kAuthorization) ||

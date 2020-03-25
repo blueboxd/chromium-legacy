@@ -41,6 +41,7 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -498,6 +499,8 @@ void ManagePasswordsUIController::NavigateToPasswordCheckup() {
           password_manager::features::kPasswordCheck)) {
     chrome::ShowPasswordCheck(
         chrome::FindBrowserWithWebContents(web_contents()));
+    password_manager::LogPasswordCheckReferrer(
+        password_manager::PasswordCheckReferrer::kPasswordBreachDialog);
   } else {
     NavigateToPasswordCheckupPage(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext()));

@@ -1024,7 +1024,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="536296301121032821">Échec de stockage des paramètres de la règle</translation>
 <translation id="5371425731340848620">Mettre à jour la carte</translation>
 <translation id="5377026284221673050">« Votre horloge est en retard », « Votre horloge est en avance » ou « &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt; »</translation>
-<translation id="5380442954567233718">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête qui exige d'une politique d'origine soit appliquée à toutes les demandes adressées à lui. Mais l'en-tête est formaté de manière incorrecte, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des politiques d'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
+<translation id="5380442954567233718">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête qui exige qu'une politique d'origine soit appliquée à toutes les demandes adressées à lui. Mais l'en-tête est formaté de manière incorrecte, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des politiques d'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
 <translation id="5386426401304769735">La chaîne de certificat pour ce site contient un certificat qui a été signé avec SHA-1.</translation>
 <translation id="538659543871111977">A4 à onglet</translation>
 <translation id="5396631636586785122">Agrafage par le bord droit</translation>

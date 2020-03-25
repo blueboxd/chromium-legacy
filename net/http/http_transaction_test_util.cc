@@ -532,9 +532,6 @@ void MockNetworkTransaction::SetBeforeNetworkStartCallback(
   before_network_start_callback_ = callback;
 }
 
-void MockNetworkTransaction::SetBeforeHeadersSentCallback(
-    const BeforeHeadersSentCallback& callback) {}
-
 int MockNetworkTransaction::ResumeNetworkStart() {
   DCHECK(!resume_start_callback_.is_null());
   CallbackLater(std::move(resume_start_callback_), OK);

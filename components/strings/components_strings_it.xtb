@@ -978,7 +978,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5179510805599951267">Non in <ph name="ORIGINAL_LANGUAGE" />? Segnala questo errore</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="519422657042045905">Annotazione non disponibile</translation>
-<translation id="5196187217592847346">Enterprise Service Hooks</translation>
+<translation id="5196187217592847346">Hook del servizio Chrome Enterprise</translation>
 <translation id="5201306358585911203">Una pagina incorporata in questa pagina dice</translation>
 <translation id="5205222826937269299">Nome obbligatorio</translation>
 <translation id="5209518306177824490">Impronta digitale SHA-1</translation>
@@ -1030,7 +1030,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5377026284221673050">"L'orologio è indietro", "L'orologio è avanti" oppure "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5380442954567233718">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha impostato un'intestazione
     che richiede una norma di partenza da applicare a tutte le richieste. Tuttavia
-    l'intestazione non è corretta e impedisce al browser di soddisfare
+    l'intestazione non è valida e impedisce al browser di soddisfare
     la tua richiesta per <ph name="SITE" />. Le norme di partenza possono essere usate dagli
     operatori del sito per configurare la sicurezza e altre proprietà del sito.</translation>
 <translation id="5386426401304769735">Il certificato di questo sito contiene un certificato che è stato firmato utilizzando SHA-1.</translation>

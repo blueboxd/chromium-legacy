@@ -128,7 +128,7 @@ cr.define('autofill_test_util', function() {
     return {
       id: id,
       formattedOrigin: url,
-      changePasswordUrl: 'http://${url}/',
+      changePasswordUrl: `http://${url}/`,
       username: username,
       elapsedTimeSinceCompromise:
           (Math.floor(Math.random() * 60)).toString() + ' min ago',

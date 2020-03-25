@@ -1613,7 +1613,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3127156390846601284">Verranno eliminati tutti i dati memorizzati sul dispositivo relativi a tutti i siti mostrati. Vuoi continuare?</translation>
 <translation id="3127860049873093642">Per evitare problemi di ricarica e prestazioni, usa un alimentatore Dell o USB Type-C compatibile.</translation>
 <translation id="3129173833825111527">Margine sinistro</translation>
-<translation id="3129215702932019810">Errore durante il lancio dell'applicazione</translation>
+<translation id="3129215702932019810">Errore durante l'avvio dell'applicazione</translation>
 <translation id="3130528281680948470">Il dispositivo verrà ripristinato e tutti gli account utente e i dati locali verranno rimossi. L'operazione non può essere annullata.</translation>
 <translation id="313205617302240621">Hai dimenticato la password?</translation>
 <translation id="3132996321662585180">Aggiorna ogni giorno</translation>
@@ -3542,7 +3542,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5747785204778348146">Sviluppatore - non stabile</translation>
 <translation id="5747809636523347288">I&amp;ncolla e vai all'indirizzo <ph name="URL" /></translation>
 <translation id="5750324801516359607">Lontano</translation>
-<translation id="5751887393582880060">Questo aggiornamento viola le norme di sicurezza della tua organizzazione. Procedere comunque?</translation>
+<translation id="5751887393582880060">Questo caricamento viola le norme di sicurezza della tua organizzazione. Procedere comunque?</translation>
 <translation id="5756163054456765343">Centro assistenza</translation>
 <translation id="5759728514498647443">I documenti inviati alla stampante tramite <ph name="APP_NAME" /> possono essere letti da <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nessun dispositivo USB trovato</translation>

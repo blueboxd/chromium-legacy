@@ -628,10 +628,7 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
  public:
   using OffsetRange = typename Base::OffsetRange;
 
-  VectorBuffer() : Base(InlineBuffer(), inlineCapacity) {
-    // Make sure the inline buffer is clear.
-    Base::ClearUnusedSlots(InlineBuffer(), InlineBuffer() + inlineCapacity);
-  }
+  VectorBuffer() : Base(InlineBuffer(), inlineCapacity) {}
 
   VectorBuffer(HashTableDeletedValueType value) : Base(value) {}
   bool IsHashTableDeletedValue() const {
@@ -640,8 +637,6 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
 
   explicit VectorBuffer(wtf_size_t capacity)
       : Base(InlineBuffer(), inlineCapacity) {
-    // Make sure the inline buffer is clear.
-    Base::ClearUnusedSlots(InlineBuffer(), InlineBuffer() + inlineCapacity);
     if (capacity > inlineCapacity)
       Base::AllocateBuffer(capacity);
   }
@@ -2069,7 +2064,7 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
       return;
     // Inline buffer requires tracing immediately.
     const T* buffer_begin = buffer;
-    const T* buffer_end = buffer + inlineCapacity;
+    const T* buffer_end = buffer + size();
     if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
       for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
            buffer_entry++) {

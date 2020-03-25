@@ -73,7 +73,7 @@ public class TabSwitcherCoordinator
     private NewTabTileCoordinator mNewTabTileCoordinator;
     private TabAttributeCache mTabAttributeCache;
     private ViewGroup mContainer;
-    private SnackbarManager.SnackbarManageable mSnackbarManageable;
+    private TabCreatorManager mTabCreatorManager;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -96,14 +96,13 @@ public class TabSwitcherCoordinator
     public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
             ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
-            MenuOrKeyboardActionController menuOrKeyboardActionController,
-            SnackbarManager.SnackbarManageable snackbarManageable, ViewGroup container,
+            MenuOrKeyboardActionController menuOrKeyboardActionController, ViewGroup container,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             @TabListCoordinator.TabListMode int mode) {
         mMode = mode;
         mTabModelSelector = tabModelSelector;
         mContainer = container;
-        mSnackbarManageable = snackbarManageable;
+        mTabCreatorManager = tabCreatorManager;
 
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
@@ -140,12 +139,9 @@ public class TabSwitcherCoordinator
                     ((ChromeTabbedActivity) context).getCompositorViewHolder(), this, mMediator,
                     this::getTabGridDialogAnimationSourceView, shareDelegateSupplier);
 
-            mUndoGroupSnackbarController =
-                    new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
             mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
         } else {
             mTabGridDialogCoordinator = null;
-            mUndoGroupSnackbarController = null;
         }
 
         if (mode == TabListCoordinator.TabListMode.GRID) {
@@ -156,19 +152,9 @@ public class TabSwitcherCoordinator
             }
 
             if (TabUiFeatureUtilities.isTabGridLayoutAndroidNewTabTileEnabled()) {
-                mNewTabTileCoordinator =
-                        new NewTabTileCoordinator(tabModelSelector, tabCreatorManager);
                 mTabListCoordinator.registerItemType(TabProperties.UiType.NEW_TAB_TILE,
                         new LayoutViewBuilder(R.layout.new_tab_tile_card_item),
                         NewTabTileViewBinder::bind);
-            }
-
-            if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
-                    && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
-                mTabGridIphDialogCoordinator = new TabGridIphDialogCoordinator(context, container);
-                IphMessageService iphMessageService =
-                        new IphMessageService(mTabGridIphDialogCoordinator.getIphController());
-                mMessageCardProviderCoordinator.subscribeMessageService(iphMessageService);
             }
         }
 
@@ -192,7 +178,8 @@ public class TabSwitcherCoordinator
 
     @Override
     public void initWithNative(Context context, TabContentManager tabContentManager,
-            DynamicResourceLoader dynamicResourceLoader) {
+            DynamicResourceLoader dynamicResourceLoader,
+            SnackbarManager.SnackbarManageable snackbarManageable) {
         // For tab switcher in carousel mode, the selection editor should still follow grid style.
         int selectionEditorMode = mMode == TabListCoordinator.TabListMode.CAROUSEL
                 ? TabListCoordinator.TabListMode.GRID
@@ -209,6 +196,13 @@ public class TabSwitcherCoordinator
 
         mMultiThumbnailCardProvider.initWithNative();
 
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+            mUndoGroupSnackbarController =
+                    new UndoGroupSnackbarController(context, mTabModelSelector, snackbarManageable);
+        } else {
+            mUndoGroupSnackbarController = null;
+        }
+
         if (mMode == TabListCoordinator.TabListMode.GRID) {
             if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
                 mTabSuggestionsOrchestrator =
@@ -219,6 +213,19 @@ public class TabSwitcherCoordinator
                 mTabSuggestionsOrchestrator.addObserver(tabSuggestionMessageService);
                 mMessageCardProviderCoordinator.subscribeMessageService(
                         tabSuggestionMessageService);
+            }
+
+            if (TabUiFeatureUtilities.isTabGridLayoutAndroidNewTabTileEnabled()) {
+                mNewTabTileCoordinator =
+                        new NewTabTileCoordinator(mTabModelSelector, mTabCreatorManager);
+            }
+
+            if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
+                    && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
+                mTabGridIphDialogCoordinator = new TabGridIphDialogCoordinator(context, mContainer);
+                IphMessageService iphMessageService =
+                        new IphMessageService(mTabGridIphDialogCoordinator.getIphController());
+                mMessageCardProviderCoordinator.subscribeMessageService(iphMessageService);
             }
         }
     }

@@ -155,7 +155,7 @@
 <translation id="2100273922101894616">Automatikus bejelentkezés</translation>
 <translation id="2100314319871056947">Próbálja meg kisebb részletekben megosztani a szöveget</translation>
 <translation id="2107397443965016585">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára védett tartalmak lejátszását (ajánlott)</translation>
-<translation id="2109711654079915747">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
+<translation id="2109711654079915747">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Kereső számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
 
 A kereséshez koppintson a kívánt szóra. A keresés finomításához ujja nyomva tartásával több vagy kevesebb szót is kiválaszthat. A keresés módosításához nyissa meg a panelt, koppintson az új lapon való megnyitás ikonjára, majd végezze el a módosításokat a keresőmezőben.</translation>
 <translation id="2111511281910874386">Ugrás az oldalhoz</translation>
@@ -202,7 +202,7 @@ A kereséshez koppintson a kívánt szóra. A keresés finomításához ujja nyo
 <translation id="2434158240863470628">Letöltés befejezve <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Helyhozzáférés</translation>
 <translation id="2450083983707403292">Szeretné újra elkezdeni a(z) <ph name="FILE_NAME" /> letöltését?</translation>
-<translation id="2450907520913474542">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
+<translation id="2450907520913474542">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Kereső számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
 
 A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válasszon ki több vagy kevesebb szót. A keresés módosításához nyissa meg a panelt, koppintson az új lapon való megnyitás ikonjára, majd végezze el a módosításokat a keresőmezőben.</translation>
 <translation id="246532703174860178">Megosztás</translation>
@@ -977,7 +977,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8116925261070264013">Némítva</translation>
 <translation id="8127542551745560481">Kezdőoldal szerkesztése</translation>
 <translation id="813082847718468539">Az oldalinformációk megtekintése</translation>
-<translation id="8137558756159375272">Az Érintéssel keresés elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Keresés számára. A funkciót a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> szakaszban kikapcsolhatja.</translation>
+<translation id="8137558756159375272">Az Érintéssel keresés elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Kereső számára. A funkciót a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> szakaszban kikapcsolhatja.</translation>
 <translation id="8156139159503939589">Milyen nyelveken olvas?</translation>
 <translation id="8168435359814927499">Tartalom</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> fájl maradt</translation>

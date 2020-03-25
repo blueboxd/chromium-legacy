@@ -541,10 +541,13 @@ Polymer({
 
   /** @private */
   onPasswordsButtonClick_: function() {
-    settings.Router.getInstance().navigateTo(
-        loadTimeData.getBoolean('enablePasswordCheck') ?
-            settings.routes.CHECK_PASSWORDS :
-            settings.routes.PASSWORDS);
+    if (loadTimeData.getBoolean('enablePasswordCheck')) {
+      settings.Router.getInstance().navigateTo(settings.routes.CHECK_PASSWORDS);
+      PasswordManagerImpl.getInstance().recordPasswordCheckReferrer(
+          PasswordManagerProxy.PasswordCheckReferrer.SAFETY_CHECK);
+    } else {
+      settings.Router.getInstance().navigateTo(settings.routes.PASSWORDS);
+    }
   },
 
   /**

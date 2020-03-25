@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "components/feed/core/common/enums.h"
 #include "components/feed/core/common/user_classifier.h"
+#include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/master_refresh_throttler.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/offline_pages/task/task_queue.h"
@@ -29,6 +30,7 @@ namespace feed {
 class StreamModel;
 class FeedNetwork;
 class RefreshTaskScheduler;
+struct StreamModelUpdateRequest;
 
 // Implements FeedStreamApi. |FeedStream| additionally exposes functionality
 // needed by other classes within the Feed component.
@@ -51,6 +53,17 @@ class FeedStream : public FeedStreamApi,
     virtual void OnMaybeTriggerRefresh(TriggerType trigger,
                                        bool clear_all_before_refresh) = 0;
     virtual void OnClearAll(base::TimeDelta time_since_last_clear) = 0;
+  };
+
+  // Forwards to |feed::TranslateWireResponse()| by default. Can be overridden
+  // for testing.
+  class WireResponseTranslator {
+   public:
+    WireResponseTranslator() = default;
+    ~WireResponseTranslator() = default;
+    virtual std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
+        feedwire::Response response,
+        base::TimeDelta response_time);
   };
 
   FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
@@ -107,6 +120,10 @@ class FeedStream : public FeedStreamApi,
   // State shared for the sake of implementing FeedStream. Typically these
   // functions are used by tasks.
 
+  void LoadModel(std::unique_ptr<StreamModel> model);
+
+  FeedNetwork* GetNetwork() { return feed_network_; }
+
   // Returns the computed UserClass for the active user.
   UserClass GetUserClass();
 
@@ -116,16 +133,28 @@ class FeedStream : public FeedStreamApi,
   // Loads |model|. Should be used for testing in place of typical model
   // loading from network or storage.
   void LoadModelForTesting(std::unique_ptr<StreamModel> model);
+  offline_pages::TaskQueue* GetTaskQueueForTesting();
 
   // Returns the model if it is loaded, or null otherwise.
   StreamModel* GetModel() { return model_.get(); }
+
+  WireResponseTranslator* GetWireResponseTranslator() const {
+    return wire_response_translator_;
+  }
+
+  void SetWireResponseTranslatorForTesting(
+      WireResponseTranslator* wire_response_translator) {
+    wire_response_translator_ = wire_response_translator;
+  }
 
  private:
   class ModelMonitor;
   void MaybeTriggerRefresh(TriggerType trigger,
                            bool clear_all_before_refresh = false);
-  void LoadModel(std::unique_ptr<StreamModel> model);
+  void TriggerStreamLoad();
   void UnloadModel();
+
+  void LoadStreamTaskComplete();
 
   // Determines whether or not a fetch should be allowed.
   // If a fetch is allowed, quota is reserved with the assumption that a fetch
@@ -134,6 +163,8 @@ class FeedStream : public FeedStreamApi,
 
   void ClearAll();
 
+  // Unowned.
+
   RefreshTaskScheduler* refresh_task_scheduler_;
   EventObserver* stream_event_observer_;
   Delegate* delegate_;
@@ -141,10 +172,14 @@ class FeedStream : public FeedStreamApi,
   FeedNetwork* feed_network_;
   const base::Clock* clock_;
   const base::TickClock* tick_clock_;
+  WireResponseTranslator* wire_response_translator_;
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   offline_pages::TaskQueue task_queue_;
+  // Whether the model is being loaded. Used to prevent multiple simultaneous
+  // attempts to load the model.
+  bool model_loading_in_progress_ = false;
   // Monitors |model_|. Null when |model_| is null.
   std::unique_ptr<ModelMonitor> model_monitor_;
   // The stream model. Null if not yet loaded.

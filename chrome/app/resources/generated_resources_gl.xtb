@@ -460,6 +460,7 @@
 <translation id="1616206807336925449">Esta extensión non necesita permisos especiais.</translation>
 <translation id="1616298854599875024">Non se puido importar a extensión "<ph name="IMPORT_NAME" />" porque non é un módulo compartido</translation>
 <translation id="1618268899808219593">C&amp;entro de axuda</translation>
+<translation id="1620307519959413822">O contrasinal é incorrecto. Téntao de novo ou fai clic en Esqueciches o contrasinal? se queres restablecelo.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623132449929929218">Actualmente as imaxes non están dispoñibles. Volve conectarte a Internet para ver as coleccións de fondos de pantalla.</translation>
 <translation id="1627276047960621195">Descritores de ficheiro</translation>
@@ -678,6 +679,7 @@
 <translation id="1887850431809612466">Revisión do hardware</translation>
 <translation id="1890674179660343635">&lt;span&gt;Código de identificación: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Abrir pantalla completa</translation>
+<translation id="1892341345406963517">Ola, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Outros idiomas</translation>
 <translation id="1895252664692693738">Tempo restante: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Apagar</translation>
@@ -3132,6 +3134,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5213891612754844763">Mostrar configuración de proxy</translation>
 <translation id="5215502535566372932">Seleccionar país</translation>
 <translation id="521582610500777512">Descartouse a foto</translation>
+<translation id="5222403284441421673">Bloqueouse unha descarga non segura</translation>
 <translation id="5222676887888702881">Pechar sesión</translation>
 <translation id="52232769093306234">Produciuse un erro na compresión.</translation>
 <translation id="5225324770654022472">Mostrar o atallo das aplicacións</translation>
@@ -3530,6 +3533,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5734362860645681824">Comunicacións</translation>
 <translation id="5734697361979786483">Engadir un ficheiro compartido</translation>
 <translation id="5736796278325406685">Introduce un nome de usuario válido</translation>
+<translation id="5739017626473506901">Inicia sesión para axudarlle a <ph name="USER_NAME" /> a engadir unha conta de centro educativo</translation>
 <translation id="5739235828260127894">Esperando pola verificación. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Moi grande</translation>
 <translation id="574209121243317957">Ton</translation>
@@ -5537,6 +5541,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8408068190360279472">Rede de tipo <ph name="NETWORK_TYPE" />, conectando</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Preguntar primeiro (recomendado)</translation>
+<translation id="8417548266957501132">Contrasinal do pai ou nai</translation>
 <translation id="8417573335434189196">Non te protexe contra sitios web, descargas ou extensións perigosos. Chrome non recomenda esta configuración.</translation>
 <translation id="8418445294933751433">&amp;Mostrar como pestana</translation>
 <translation id="8419098111404128271">Resultados da busca para "<ph name="SEARCH_TEXT" />"</translation>

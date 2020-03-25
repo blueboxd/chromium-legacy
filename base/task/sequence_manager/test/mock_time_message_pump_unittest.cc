@@ -24,8 +24,6 @@ class MockMessagePumpDelegate : public MessagePump::Delegate {
  public:
   MOCK_METHOD0(BeforeDoInternalWork, void());
   MOCK_METHOD0(BeforeWait, void());
-  MOCK_METHOD0(DoWork, bool());
-  MOCK_METHOD1(DoDelayedWork, bool(TimeTicks*));
   MOCK_METHOD0(DoSomeWork, NextWorkInfo());
   MOCK_METHOD0(DoIdleWork, bool());
 };

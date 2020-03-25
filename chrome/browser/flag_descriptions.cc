@@ -115,12 +115,6 @@ const char kAndroidPictureInPictureAPIName[] =
 const char kAndroidPictureInPictureAPIDescription[] =
     "Enable Picture-in-Picture Web API for Android";
 
-const char kAndroidSiteSettingsUIRefreshName[] =
-    "Android Site Settings UI changes.";
-const char kAndroidSiteSettingsUIRefreshDescription[] =
-    "Enable the new UI "
-    "changes in Site Settings in Android.";
-
 const char kDnsHttpssvcName[] = "Support for HTTPSSVC records in DNS.";
 const char kDnsHttpssvcDescription[] =
     "When enabled, Chrome may query a configured DoH server for HTTPSSVC "
@@ -3483,6 +3477,12 @@ const char kImeMozcProtoDescription[] =
 const char kImeNativeDecoderName[] = "Enable native decoders in IME Service";
 const char kImeNativeDecoderDescription[] =
     "Enable native decoders in IME service to deprecate NaCl decoders";
+
+const char kLimitAltTabToActiveDeskName[] =
+    "Limit Alt-Tab windows to active desk";
+const char kLimitAltTabToActiveDeskDescription[] =
+    "Limits the windows listed in Alt-Tab to the ones in the currently active "
+    "virtual desk";
 
 const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =

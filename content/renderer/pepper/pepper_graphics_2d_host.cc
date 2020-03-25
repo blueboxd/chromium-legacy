@@ -31,7 +31,7 @@
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -585,7 +585,7 @@ void PepperGraphics2DHost::ReleaseSoftwareCallback(
 // static
 void PepperGraphics2DHost::ReleaseTextureCallback(
     base::WeakPtr<PepperGraphics2DHost> host,
-    scoped_refptr<viz::ContextProvider> context,
+    scoped_refptr<viz::RasterContextProvider> context,
     const gfx::Size& size,
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
@@ -608,7 +608,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   // reuse the shared images, they are invalid. If the compositing mode changed,
   // the context will be lost also, so we get both together.
   if (!main_thread_context_ ||
-      main_thread_context_->ContextGL()->GetGraphicsResetStatusKHR() !=
+      main_thread_context_->RasterInterface()->GetGraphicsResetStatusKHR() !=
           GL_NO_ERROR) {
     recycled_shared_images_.clear();
     main_thread_context_ = nullptr;
@@ -639,7 +639,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   // When gpu compositing, the compositor expects gpu resources, so we copy the
   // |image_data_| into a texture.
   if (main_thread_context_) {
-    auto* gl = main_thread_context_->ContextGL();
+    auto* ri = main_thread_context_->RasterInterface();
     auto* sii = main_thread_context_->SharedImageInterface();
 
     // The bitmap in |image_data_| uses the skia N32 byte order.
@@ -700,19 +700,15 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
       src = swizzled.get();
     }
 
-    gl->WaitSyncTokenCHROMIUM(in_sync_token.GetConstData());
-    GLuint texture_id =
-        gl->CreateAndTexStorage2DSharedImageCHROMIUM(gpu_mailbox.name);
-    gl->BeginSharedImageAccessDirectCHROMIUM(
-        texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-    gl->BindTexture(texture_target, texture_id);
-    gl->TexSubImage2D(texture_target, 0, 0, 0, size.width(), size.height(),
-                      viz::GLDataFormat(format), viz::GLDataType(format), src);
-    gl->BindTexture(texture_target, 0);
-    gl->EndSharedImageAccessDirectCHROMIUM(texture_id);
-    gl->DeleteTextures(1, &texture_id);
+    SkImageInfo src_info =
+        SkImageInfo::Make(size.width(), size.height(),
+                          viz::ResourceFormatToClosestSkColorType(true, format),
+                          kUnknown_SkAlphaType);
+    ri->WaitSyncTokenCHROMIUM(in_sync_token.GetConstData());
+    ri->WritePixels(gpu_mailbox, 0, 0, texture_target, src_info, src);
+
     gpu::SyncToken out_sync_token;
-    gl->GenUnverifiedSyncTokenCHROMIUM(out_sync_token.GetData());
+    ri->GenUnverifiedSyncTokenCHROMIUM(out_sync_token.GetData());
 
     image_data_->Unmap();
     swizzled.reset();

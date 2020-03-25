@@ -20,9 +20,12 @@ namespace local_search_service {
 
 class IndexImpl;
 
+enum class IndexId { kCrosSettings = 0 };
+
 // Actual implementation of LocalSearchService.
 // It creates and owns content-specific Indices. Clients can call it |GetIndex|
 // method to get an Index for a given index id.
+// In-process clients can call |GetIndexImpl| directly.
 class LocalSearchServiceImpl : public mojom::LocalSearchService {
  public:
   LocalSearchServiceImpl();
@@ -34,10 +37,13 @@ class LocalSearchServiceImpl : public mojom::LocalSearchService {
   void GetIndex(mojom::LocalSearchService::IndexId index_id,
                 mojo::PendingReceiver<mojom::Index> index) override;
 
+  // Only to be used by in-process clients.
+  IndexImpl* GetIndexImpl(local_search_service::IndexId index_id);
+
  private:
+  IndexImpl* IndexLookupOrCreate(local_search_service::IndexId index_id);
   mojo::ReceiverSet<mojom::LocalSearchService> receivers_;
-  std::map<mojom::LocalSearchService::IndexId, std::unique_ptr<IndexImpl>>
-      indices_;
+  std::map<local_search_service::IndexId, std::unique_ptr<IndexImpl>> indices_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSearchServiceImpl);
 };

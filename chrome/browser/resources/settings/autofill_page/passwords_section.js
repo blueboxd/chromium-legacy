@@ -386,6 +386,8 @@ Polymer({
   onCheckPasswordsClick_() {
     settings.Router.getInstance().navigateTo(
         settings.routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
+    this.passwordManager_.recordPasswordCheckReferrer(
+        PasswordManagerProxy.PasswordCheckReferrer.PASSWORD_SETTINGS);
   },
 
   // <if expr="chromeos">

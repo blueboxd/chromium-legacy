@@ -1644,6 +1644,12 @@ class DisplayLockContextRenderingTest : public RenderingTest,
   void LockImmediate(DisplayLockContext* context) {
     context->SetRequestedState(ESubtreeVisibility::kHidden);
   }
+  void RunStartOfLifecycleTasks() {
+    auto start_of_lifecycle_tasks =
+        GetDocument().View()->TakeStartOfLifecycleTasksForTest();
+    for (auto& task : start_of_lifecycle_tasks)
+      std::move(task).Run();
+  }
 };
 
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
@@ -1786,12 +1792,19 @@ TEST_F(DisplayLockContextRenderingTest,
   auto* unrelated_element = GetDocument().getElementById("unrelated");
   auto* outer_element = GetDocument().getElementById("outer");
 
-  UpdateAllLifecyclePhasesForTest();
-  // Intersection observer notifications run as a task.
-  test::RunPendingTasks();
+  // Since visibility switch happens at the start of the next lifecycle, we
+  // should have clean layout for now.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
 
-  // The intersection observation will unlock inner, which will cause a dirty
-  // layout bit to be propagated.
+  RunStartOfLifecycleTasks();
+
+  // Now that the intersection observer notifications switch the visibility of
+  // the context, we expect to see dirty layout bits to be propagated.
   EXPECT_TRUE(outer_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
   EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
@@ -1835,8 +1848,8 @@ TEST_F(DisplayLockContextRenderingTest,
   // Inner context should not be observing the lifecycle.
   EXPECT_FALSE(IsObservingLifecycle(inner_context));
 
-  // Run intersection observer notifications.
-  test::RunPendingTasks();
+  // Process any visibility changes.
+  RunStartOfLifecycleTasks();
 
   // Run the following checks a few times since we should be observing
   // lifecycle.
@@ -1878,8 +1891,8 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
 
-  // Run intersection observer notifications.
-  test::RunPendingTasks();
+  // Process visibility changes.
+  RunStartOfLifecycleTasks();
 
   // We now should know we're visible and so we're not observing the lifecycle.
   EXPECT_FALSE(IsObservingLifecycle(inner_context));
@@ -1918,12 +1931,19 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   auto* unrelated_element = GetDocument().getElementById("unrelated");
   auto* outer_element = GetDocument().getElementById("outer");
 
-  UpdateAllLifecyclePhasesForTest();
-  // Intersection observer notifications run as a task.
-  test::RunPendingTasks();
+  // Since visibility switch happens at the start of the next lifecycle, we
+  // should have clean layout for now.
+  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
 
-  // The intersection observation will unlock inner, which will cause a dirty
-  // layout bit to be propagated.
+  RunStartOfLifecycleTasks();
+
+  // Now that the intersection observer notifications switch the visibility of
+  // the context, we expect to see dirty layout bits to be propagated.
   EXPECT_TRUE(outer_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
   EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
@@ -1967,8 +1987,8 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   // Inner context should not be observing the lifecycle.
   EXPECT_FALSE(IsObservingLifecycle(inner_context));
 
-  // Run intersection observer notifications.
-  test::RunPendingTasks();
+  // Process any visibility changes.
+  RunStartOfLifecycleTasks();
 
   // It shouldn't change the fact that we're layout clean.
   EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
@@ -2011,8 +2031,8 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
 
-  // Run intersection observer notifications.
-  test::RunPendingTasks();
+  // Process any visibility changes.
+  RunStartOfLifecycleTasks();
 
   // We're still invisible, and we don't know that we're not nested so we're
   // still observing the lifecycle.

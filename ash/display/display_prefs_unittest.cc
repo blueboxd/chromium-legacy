@@ -50,6 +50,8 @@
 namespace ash {
 
 namespace {
+const char kPrimaryIdKey[] = "primary-id";
+
 bool IsRotationLocked() {
   return ash::Shell::Get()->screen_orientation_controller()->rotation_locked();
 }
@@ -505,14 +507,6 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_EQ(id2, stored_placement.parent_display_id);
   EXPECT_EQ(id2, stored_layout.primary_id);
 
-  // TODO(oshima): Make the below pass and re-enable, https://crbug.com/1063529
-#if 0
-  const char kPrimaryIdKey[] = "primary-id";
-  const char kPositionKey[] = "position";
-  const char kOffsetKey[] = "offset";
-  const char kPlacementDisplayIdKey[] = "placement.display_id";
-  const char kPlacementParentDisplayIdKey[] = "placement.parent_display_id";
-
   std::string primary_id_str;
   EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
   EXPECT_EQ(base::NumberToString(id2), primary_id_str);
@@ -521,24 +515,17 @@ TEST_F(DisplayPrefsTest, BasicStores) {
       display::test::CreateDisplayLayout(Shell::Get()->display_manager(),
                                          display::DisplayPlacement::BOTTOM,
                                          20));
-
+  // Test Hardware Mirroring scenario.
   UpdateDisplay("1+0-200x200*2,1+0-200x200");
-  // Mirrored.
-  int offset = 0;
-  std::string position;
-  EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
-  EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
-  EXPECT_EQ("bottom", position);
-  EXPECT_TRUE(layout_value->GetInteger(kOffsetKey, &offset));
-  EXPECT_EQ(20, offset);
-  std::string id;
-  EXPECT_TRUE(layout_value->GetString(kPlacementDisplayIdKey, &id));
-  EXPECT_EQ(base::NumberToString(id1), id);
-  EXPECT_TRUE(layout_value->GetString(kPlacementParentDisplayIdKey, &id));
-  EXPECT_EQ(base::NumberToString(id2), id);
+  EXPECT_FALSE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_TRUE(display_manager()->IsInHardwareMirrorMode());
 
-  EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
-  EXPECT_EQ(base::NumberToString(id2), primary_id_str);
+  EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
+  EXPECT_TRUE(display::JsonToDisplayLayout(*layout_value, &stored_layout));
+  EXPECT_EQ(display::DisplayPlacement::BOTTOM, stored_placement.position);
+  EXPECT_EQ(20, stored_placement.offset);
+  EXPECT_EQ(id1, stored_placement.display_id);
+  EXPECT_EQ(id2, stored_placement.parent_display_id);
 
   EXPECT_TRUE(properties->GetDictionary(base::NumberToString(id1), &property));
   EXPECT_FALSE(property->GetInteger("width", &width));
@@ -547,7 +534,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   external_display_mirror_info =
       local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
   EXPECT_EQ(1U, external_display_mirror_info->GetSize());
-  EXPECT_EQ(base::NumberToString(id2),
+  // ExternalDisplayInfo stores ID without output index.
+  EXPECT_EQ(base::NumberToString(display::GetDisplayIdWithoutOutputIndex(id2)),
             external_display_mirror_info->GetList()[0].GetString());
 
   // External display's selected resolution must not change
@@ -564,15 +552,18 @@ TEST_F(DisplayPrefsTest, BasicStores) {
       1.0f, 60.f, false);
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   // Update key as the 2nd display gets new id.
   id2 = display_manager_test.GetSecondaryDisplay().id();
   key = base::NumberToString(id1) + "," + base::NumberToString(id2);
+
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
-  EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
-  EXPECT_EQ("right", position);
-  EXPECT_TRUE(layout_value->GetInteger(kOffsetKey, &offset));
-  EXPECT_EQ(0, offset);
+  EXPECT_TRUE(display::JsonToDisplayLayout(*layout_value, &stored_layout));
+  EXPECT_EQ(display::DisplayPlacement::RIGHT, stored_placement.position);
+  EXPECT_EQ(0, stored_placement.offset);
+  EXPECT_EQ(id1, stored_placement.parent_display_id);
+  EXPECT_EQ(id2, stored_placement.display_id);
   EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
   EXPECT_EQ(base::NumberToString(id1), primary_id_str);
 
@@ -588,14 +579,14 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");
+
   // Update key as the 2nd display gets new id.
   id2 = display_manager_test.GetSecondaryDisplay().id();
   key = base::NumberToString(id1) + "," + base::NumberToString(id2);
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
-  EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
-  EXPECT_EQ("right", position);
-  EXPECT_TRUE(layout_value->GetInteger(kOffsetKey, &offset));
-  EXPECT_EQ(0, offset);
+  EXPECT_TRUE(display::JsonToDisplayLayout(*layout_value, &stored_layout));
+  EXPECT_EQ(display::DisplayPlacement::RIGHT, stored_placement.position);
+  EXPECT_EQ(0, stored_placement.offset);
   EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
   EXPECT_EQ(base::NumberToString(id1), primary_id_str);
 
@@ -605,7 +596,6 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("height", &height));
   EXPECT_EQ(500, width);
   EXPECT_EQ(400, height);
-#endif
 }
 
 TEST_F(DisplayPrefsTest, PreventStore) {

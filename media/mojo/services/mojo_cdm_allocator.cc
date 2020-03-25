@@ -38,9 +38,14 @@ class MojoCdmBuffer : public cdm::Buffer {
 
     // cdm::Buffer interface limits capacity to uint32.
     DCHECK_LE(capacity, std::numeric_limits<uint32_t>::max());
-    return new MojoCdmBuffer(std::move(buffer),
-                             base::checked_cast<uint32_t>(capacity),
-                             std::move(mojo_shared_buffer_done_cb));
+
+    auto mapping = buffer->Map(capacity);
+    if (!mapping)
+      return nullptr;
+
+    return new MojoCdmBuffer(
+        std::move(buffer), base::checked_cast<uint32_t>(capacity),
+        std::move(mapping), std::move(mojo_shared_buffer_done_cb));
   }
 
   // cdm::Buffer implementation.
@@ -75,13 +80,13 @@ class MojoCdmBuffer : public cdm::Buffer {
  private:
   MojoCdmBuffer(mojo::ScopedSharedBufferHandle buffer,
                 uint32_t capacity,
+                mojo::ScopedSharedBufferMapping mapping,
                 MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
                     mojo_shared_buffer_done_cb)
       : buffer_(std::move(buffer)),
         mojo_shared_buffer_done_cb_(std::move(mojo_shared_buffer_done_cb)),
-        capacity_(capacity),
-        size_(0) {
-    mapping_ = buffer_->Map(capacity_);
+        mapping_(std::move(mapping)),
+        capacity_(capacity) {
     DCHECK(mapping_);
   }
 
@@ -95,8 +100,8 @@ class MojoCdmBuffer : public cdm::Buffer {
       mojo_shared_buffer_done_cb_;
 
   mojo::ScopedSharedBufferMapping mapping_;
-  uint32_t capacity_;
-  uint32_t size_;
+  const uint32_t capacity_;
+  uint32_t size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmBuffer);
 };

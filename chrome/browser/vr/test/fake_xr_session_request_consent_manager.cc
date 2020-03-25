@@ -27,8 +27,9 @@ FakeXRSessionRequestConsentManager::~FakeXRSessionRequestConsentManager() =
 TabModalConfirmDialog*
 FakeXRSessionRequestConsentManager::ShowDialogAndGetConsent(
     content::WebContents* web_contents,
-    XrConsentPromptLevel consent_level,
-    base::OnceCallback<void(XrConsentPromptLevel, bool)> response_callback) {
+    content::XrConsentPromptLevel consent_level,
+    base::OnceCallback<void(content::XrConsentPromptLevel, bool)>
+        response_callback) {
   shown_count_++;
   auto* confirm_dialog = consent_manager_->ShowDialogAndGetConsent(
       web_contents, consent_level, std::move(response_callback));

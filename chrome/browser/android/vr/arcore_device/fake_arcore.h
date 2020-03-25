@@ -31,6 +31,7 @@ class FakeArCore : public ArCore {
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update(bool* camera_updated) override;
+  base::TimeDelta GetFrameTimestamp() override;
 
   void Pause() override;
   void Resume() override;

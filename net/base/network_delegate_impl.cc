@@ -21,12 +21,6 @@ int NetworkDelegateImpl::OnBeforeStartTransaction(
   return OK;
 }
 
-void NetworkDelegateImpl::OnBeforeSendHeaders(
-    URLRequest* request,
-    const ProxyInfo& proxy_info,
-    const ProxyRetryInfoMap& proxy_retry_info,
-    HttpRequestHeaders* headers) {}
-
 int NetworkDelegateImpl::OnHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,

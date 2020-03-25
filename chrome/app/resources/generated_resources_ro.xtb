@@ -192,7 +192,7 @@
 <translation id="1243314992276662751">Încărcați</translation>
 <translation id="1244265436519979884">O restabilire Linux este în desfășurare</translation>
 <translation id="1244303850296295656">Eroare privind extensiile</translation>
-<translation id="1246158006305844142">Aplicațiile și setările se vor sincroniza pe toate dispozitivele cu sistemul de operare Chrome pe care te-ai conectat cu contul Google. Pentru opțiunile de sincronizare a browserului, accesează <ph name="LINK_BEGIN" />Setările Chrome<ph name="LINK_END" />.</translation>
+<translation id="1246158006305844142">Aplicațiile și setările se vor sincroniza pe toate dispozitivele cu sistemul de operare Chrome pe care te-ai conectat folosind contul Google. Pentru opțiunile de sincronizare a browserului, accesează <ph name="LINK_BEGIN" />Setările Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">Elimini sugestia din clipboard?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> a fost blocat deoarece este învechit</translation>
 <translation id="1251366534849411931">Se așteaptă o acoladă de deschidere: <ph name="ERROR_LINE" /></translation>
@@ -680,7 +680,7 @@
 <translation id="1887850431809612466">Versiune hardware</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Deschide ecranul complet</translation>
-<translation id="1892341345406963517">Bună, <ph name="PARENT_NAME" /></translation>
+<translation id="1892341345406963517">Bună, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Alte limbi</translation>
 <translation id="1895252664692693738">Timp rămas: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Închideți</translation>
@@ -5543,7 +5543,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8408068190360279472">Rețea <ph name="NETWORK_TYPE" />, se stabilește conexiunea</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Mai întâi întreabă (recomandat)</translation>
-<translation id="8417548266957501132">Parola părinte</translation>
+<translation id="8417548266957501132">Parola părintelui</translation>
 <translation id="8417573335434189196">Nu te protejează împotriva site-urilor, descărcărilor sau extensiilor periculoase. Chrome nu recomandă această setare.</translation>
 <translation id="8418445294933751433">&amp;Afișează ca filă</translation>
 <translation id="8419098111404128271">Rezultatele de căutare pentru „<ph name="SEARCH_TEXT" />”</translation>

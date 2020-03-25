@@ -192,7 +192,7 @@
 <translation id="1243314992276662751">ਅਪਲੋਡ ਕਰੋ</translation>
 <translation id="1244265436519979884">ਇਸ ਵੇਲੇ Linux ਦੀ ਮੁੜ-ਬਹਾਲੀ ਜਾਰੀ ਹੈ</translation>
 <translation id="1244303850296295656">ਐਕਸਟੈਂਸ਼ਨ ਗੜਬੜ</translation>
-<translation id="1246158006305844142">ਜਿੱਥੇ ਤੁਸੀਂ ਆਪਣੇ Google ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਹੋ, ਉੱਥੇ ਤੁਹਾਡੀਆਂ ਐਪਾਂ ਅਤੇ ਸੈਟਿੰਗਾਂ ਦਾ ਸਾਰੇ Chrome OS ਡੀਵਾਈਸਾਂ ਨਾਲ ਸਮਕਾਲੀਕਰਨ ਕੀਤਾ ਜਾਵੇਗਾ। ਬ੍ਰਾਊਜ਼ਰ ਸਮਕਾਲੀਕਰਨ ਵਿਕਲਪਾਂ ਲਈ, <ph name="LINK_BEGIN" />Chrome ਸੈਟਿੰਗਾਂ<ph name="LINK_END" /> 'ਤੇ ਜਾਓ।</translation>
+<translation id="1246158006305844142">ਤੁਹਾਡੀਆਂ ਐਪਾਂ ਅਤੇ ਸੈਟਿੰਗਾਂ ਦਾ ਉਹਨਾਂ ਸਾਰੇ Chrome OS ਡੀਵਾਈਸਾਂ ਨਾਲ ਸਮਕਾਲੀਕਰਨ ਕੀਤਾ ਜਾਵੇਗਾ, ਜਿੱਥੇ ਤੁਸੀਂ ਆਪਣੇ Google ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਹੋ। ਬ੍ਰਾਊਜ਼ਰ ਸਮਕਾਲੀਕਰਨ ਵਿਕਲਪਾਂ ਲਈ, <ph name="LINK_BEGIN" />Chrome ਸੈਟਿੰਗਾਂ<ph name="LINK_END" /> 'ਤੇ ਜਾਓ।</translation>
 <translation id="1246905108078336582">ਕੀ ਕਲਿੱਪਬੋਰਡ ਤੋਂ ਸੁਝਾਅ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> ਨੂੰ ਨਾਪਸੰਦ ਹੋਣ ਕਰਕੇ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="1251366534849411931">ਕੁੰਡਲਦਾਰ ਬ੍ਰੇਸ ਦੀ ਸੰਭਾਵੀ ਸ਼ੁਰੂਆਤ: <ph name="ERROR_LINE" /></translation>
@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">ਇਸ ਐਕਸਟੈਂਸ਼ਨ ਲਈ ਕੋਈ ਖ਼ਾਸ ਇਜਾਜ਼ਤਾਂ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ।</translation>
 <translation id="1616298854599875024">"<ph name="IMPORT_NAME" />" ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਆਯਾਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ, ਕਿਉਂਕਿ ਇਹ ਇੱਕ ਸਾਂਝਾ ਕੀਤਾ ਗਿਆ ਮਾਡਿਊਲ ਨਹੀਂ ਹੈ</translation>
 <translation id="1618268899808219593">ਸ&amp;ਹਾਇਤਾ ਕੇਂਦਰ</translation>
+<translation id="1620307519959413822">ਗਲਤ ਪਾਸਵਰਡ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਪਾਸਵਰਡ ਰੀਸੈੱਟ ਕਰਨ ਲਈ 'ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ' 'ਤੇ ਕਲਿੱਕ ਕਰੋ।</translation>
 <translation id="1620510694547887537">ਕੈਮਰਾ</translation>
 <translation id="1623132449929929218">ਚਿੱਤਰ ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ ਹਨ। ਵਾਲਪੇਪਰ ਸੰਗ੍ਰਹਿ ਦੇਖਣ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਇੰਟਰਨੈੱਟ ਨਾਲ ਮੁੜ-ਕਨੈਕਟ ਕਰੋ।</translation>
 <translation id="1627276047960621195">ਫ਼ਾਈਲ ਵਰਣਨਕਰਤਾ</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">ਹਾਰਡਵੇਅਰ ਸੰਸ਼ੋਧਨ</translation>
 <translation id="1890674179660343635">&lt;span&gt;ਆਈ ਡੀ: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">ਪੂਰੀ ਸਕ੍ਰੀਨ ਖੋਲ੍ਹੋ</translation>
+<translation id="1892341345406963517">ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">ਹੋਰ ਭਾਸ਼ਾਵਾਂ</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> ਬਾਕੀ</translation>
 <translation id="1895658205118569222">ਸ਼ਟਡਾਊਨ</translation>
@@ -3131,6 +3133,7 @@
 <translation id="5213891612754844763">ਪ੍ਰੌਕਸੀ ਸੈਟਿੰਗਾਂ ਦਿਖਾਓ</translation>
 <translation id="5215502535566372932">ਦੇਸ਼ ਚੁਣੋ</translation>
 <translation id="521582610500777512">ਫ਼ੋਟੋ ਬਰਖ਼ਾਸਤ ਕੀਤੀ ਗਈ ਸੀ</translation>
+<translation id="5222403284441421673">ਅਸੁਰੱਖਿਅਤ ਡਾਊਨਲੋਡ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="5222676887888702881">ਸਾਈਨ-ਆਊਟ ਕਰੋ</translation>
 <translation id="52232769093306234">ਪੈਕਿੰਗ ਅਸਫਲ ਰਹੀ।</translation>
 <translation id="5225324770654022472">ਐਪ ਸ਼ਾਰਟਕੱਟ ਦਿਖਾਓ</translation>
@@ -3529,6 +3532,7 @@
 <translation id="5734362860645681824">ਸੰਚਾਰ</translation>
 <translation id="5734697361979786483">ਫ਼ਾਈਲ ਸਾਂਝਾਕਰਨ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="5736796278325406685">ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਵਰਤੋਂਕਾਰ ਨਾਮ ਦਾਖਲ ਕਰੋ</translation>
+<translation id="5739017626473506901">ਸਕੂਲੀ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰਨ ਵਿੱਚ <ph name="USER_NAME" /> ਦੀ ਮਦਦ ਕਰਨ ਲਈ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="5739235828260127894">ਪੁਸ਼ਟੀਕਰਨ ਦੀ ਉਡੀਕ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ਬਹੁਤ ਵੱਡਾ</translation>
 <translation id="574209121243317957">ਪਿਚ</translation>
@@ -5534,6 +5538,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ਨੈੱਟਵਰਕ, ਕਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਪੁਛੋ ( ਸਿਫ਼ਾਰਸ਼  ਕੀਤੇ)</translation>
+<translation id="8417548266957501132">ਮਾਂ-ਪਿਓ ਦਾ ਪਾਸਵਰਡ</translation>
 <translation id="8417573335434189196">ਤੁਹਾਨੂੰ ਖਤਰਨਾਕ ਵੈੱਬਸਾਈਟਾਂ, ਡਾਊਨਲੋਡਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਰੱਖਿਆ ਜਾਂਦਾ। Chrome ਇਸ ਸੈਟਿੰਗ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ ਕਰਦਾ।</translation>
 <translation id="8418445294933751433">&amp;ਟੈਬ ਦੇ ਤੌਰ ਤੇ ਦਿਖਾਓ</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' ਦੇ ਖੋਜ ਨਤੀਜੇ</translation>

@@ -218,11 +218,10 @@ void BrowserAccessibilityManagerAuraLinux::OnNodeDataWillChange(
   // Since AuraLinux needs to send the children-changed::remove event with the
   // index in parent, the event must be fired before the node becomes ignored.
   // children-changed:add is handled with the generated Event::IGNORED_CHANGED.
-  if (!old_node_data.HasState(ax::mojom::State::kIgnored) &&
-      new_node_data.HasState(ax::mojom::State::kIgnored)) {
+  if (!old_node_data.IsIgnored() && new_node_data.IsIgnored()) {
     BrowserAccessibility* obj = GetFromID(old_node_data.id);
     if (obj && obj->IsNative() && obj->GetParent()) {
-      DCHECK(!obj->HasState(ax::mojom::State::kIgnored));
+      DCHECK(!obj->IsIgnored());
       g_signal_emit_by_name(obj->GetParent(), "children-changed::remove",
                             obj->GetIndexInParent(),
                             obj->GetNativeViewAccessible());

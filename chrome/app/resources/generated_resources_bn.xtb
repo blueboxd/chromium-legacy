@@ -192,7 +192,7 @@
 <translation id="1243314992276662751">আপলোড</translation>
 <translation id="1244265436519979884">বর্তমানে Linux ফিরিয়ে আনার কাজ চলছে</translation>
 <translation id="1244303850296295656">এক্সটেনশন সমস্যা</translation>
-<translation id="1246158006305844142">আপনার Google অ্যাকাউন্ট দিয়ে করা সমস্ত Chrome OS ডিভাইসে আপনার অ্যাপ এবং সেটিংস সিঙ্ক হয়ে যাবে। ব্রাউজার সিঙ্ক করার বিকল্পের জন্য, <ph name="LINK_BEGIN" />Chrome সেটিংসে যান<ph name="LINK_END" />।</translation>
+<translation id="1246158006305844142">আপনার Google অ্যাকাউন্ট দিয়ে সাইন-ইন করা সমস্ত Chrome OS ডিভাইসে আপনার অ্যাপ এবং সেটিংস সিঙ্ক হয়ে যাবে। ব্রাউজারে উপলভ্য সিঙ্ক করার বিকল্পটির জন্য, <ph name="LINK_BEGIN" />Chrome সেটিংসে যান<ph name="LINK_END" />।</translation>
 <translation id="1246905108078336582">ক্লিপবোর্ড থেকে সাজেশন সরাতে চান?</translation>
 <translation id="1249643471736608405">বন্ধ করে দেওয়া হয়েছে বলে <ph name="PLUGIN_NAME" /> ব্লক করা হয়েছে</translation>
 <translation id="1251366534849411931">প্রত্যাশিত শুরুর সেকেন্ড ব্র্যাকেট: <ph name="ERROR_LINE" /></translation>
@@ -392,7 +392,7 @@
 <translation id="1524563461097350801">না থাক</translation>
 <translation id="1525740877599838384">লোকেশন নির্ধারণ করার জন্য ওয়াই-ফাই ব্যবহার করুন</translation>
 <translation id="152629053603783244">Linux রিস্টার্ট করুন</translation>
-<translation id="1526335046150927198">টাচপ্যাড স্ক্রল অ্যাক্সিলারেশন চালু করুন</translation>
+<translation id="1526335046150927198">টাচপ্যাডের মাধ্যমে স্ক্রল করার ক্ষেত্রে অ্যাক্সিলারেশন চালু করুন</translation>
 <translation id="1526560967942511387">শিরোনামহীন ডকুমেন্ট</translation>
 <translation id="1529891865407786369">বিদ্যুতের উৎস</translation>
 <translation id="1530838837447122178">মাউস এবং টাচপ্যাড ডিভাইস সেটিংস খুলুন</translation>
@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">এই এক্সটেনশনটির কোনও বিশেষ অনুমতির প্রয়োজন নেই।</translation>
 <translation id="1616298854599875024">এটি একটি শেয়ার করা মডিউল না হওয়ার কারণে <ph name="IMPORT_NAME" /> এক্সটেনশন ইমপোর্ট করা যাচ্ছে না</translation>
 <translation id="1618268899808219593">সহায়তা কেন্দ্র</translation>
+<translation id="1620307519959413822">ভুল পাসওয়ার্ড। আবার চেষ্টা করুন বা এটি রিসেট করতে 'পাসওয়ার্ড ভুলে গেছি' লিঙ্কে ক্লিক করুন।</translation>
 <translation id="1620510694547887537">ক্যামেরা</translation>
 <translation id="1623132449929929218">ছবিটি বর্তমানে পাওয়া যাচ্ছে না। ওয়ালপেপারের কালেকশনগুলি দেখতে ইন্টারনেটে কানেক্ট করুন।</translation>
 <translation id="1627276047960621195">ফাইল বর্ণনাকারী</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">হার্ডওয়্যার পুনর্বিবেচনাগুলি</translation>
 <translation id="1890674179660343635">&lt;span&gt;আইডি: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">পূর্ণ স্ক্রিন খুলুন</translation>
+<translation id="1892341345406963517">হাই <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">অন্যান্য ভাষা</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> বাকি আছে</translation>
 <translation id="1895658205118569222">বন্ধ করুন</translation>
@@ -2166,7 +2168,7 @@
 <translation id="3838486795898716504">আরও <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">কুকিজ এবং অন্যান্য সাইট এবং প্লাগ-ইন ডেটা</translation>
 <translation id="383891835335927981">কোনো সাইটের জুম বাড়ানো বা কমানো হয়নি</translation>
-<translation id="3839509547554145593">মাউস স্ক্রল অ্যাক্সিলারেশন চালু করুন</translation>
+<translation id="3839509547554145593">মাউসের মাধ্যমে স্ক্রল করার ক্ষেত্রে অ্যাক্সিলারেশন চালু করুন</translation>
 <translation id="3839516600093027468">ক্লিপবোর্ড দেখা থেকে <ph name="HOST" /> কে সবসময় ব্লক করুন</translation>
 <translation id="3841964634449506551">ভুল পাসওয়ার্ড লেখা হয়েছে</translation>
 <translation id="3842552989725514455">Serif হরফ</translation>
@@ -3085,7 +3087,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> সার্চ</translation>
 <translation id="5139823398361067371">আপনার 'নিরাপত্তা কী'-এর পিন লিখুন। পিন না জানা থাকলে, আপনাকে নিরাপত্তা কী রিসেট করতে হবে।</translation>
 <translation id="5139955368427980650">&amp;খুলুন</translation>
-<translation id="5142793792982256885">টাচপ্যাড স্ক্রল স্পিড</translation>
+<translation id="5142793792982256885">টাচপ্যাডের মাধ্যমে স্ক্রল করার স্পিড</translation>
 <translation id="5142961317498132443">প্রমাণীকরণ</translation>
 <translation id="5143374789336132547">আপনি হোম বোতাম ক্লিক করলে কোন পৃষ্ঠা দেখানো হবে তা <ph name="EXTENSION_NAME" /> এক্সটেনশনটি পরিবর্তন করেছে।</translation>
 <translation id="5143712164865402236">পূর্ণ স্ক্রিনে প্রবেশ করুন</translation>
@@ -3131,6 +3133,7 @@
 <translation id="5213891612754844763">প্রক্সি সেটিংস দেখুন</translation>
 <translation id="5215502535566372932">দেশ বেছে নিন</translation>
 <translation id="521582610500777512">ফটো বাতিল হয়েছে</translation>
+<translation id="5222403284441421673">ডাউনলোড হওয়া অসুরক্ষিত ফাইল ব্লক করা হয়েছে</translation>
 <translation id="5222676887888702881">সাইন-আউট করুন</translation>
 <translation id="52232769093306234">প্যাকিং করা যায়নি।</translation>
 <translation id="5225324770654022472">অ্যাপ্লিকেশানগুলির শর্টকাট দেখান</translation>
@@ -3530,6 +3533,7 @@
 <translation id="5734362860645681824">যোগাযোগগুলি</translation>
 <translation id="5734697361979786483">'ফাইল শেয়ার' যোগ করুন</translation>
 <translation id="5736796278325406685">অনুগ্রহ করে একটি সঠিক ইউজারনেম লিখুন</translation>
+<translation id="5739017626473506901">একটি স্কুল অ্যাকাউন্ট যোগ করার জন্য <ph name="USER_NAME" />-কে সাহায্য করতে সাইন-ইন করুন</translation>
 <translation id="5739235828260127894">যাচাইকরণের জন্য অপেক্ষা করা হচ্ছে। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">খুব বড়</translation>
 <translation id="574209121243317957">পিচ</translation>
@@ -3649,7 +3653,7 @@
 <translation id="5901630391730855834">হলুদ</translation>
 <translation id="5906655207909574370">প্রায় আপ-টু-ডেট হয়েছে! আপডেট শেষ করতে আপনার ডিভাইস আবার চালু করুন।</translation>
 <translation id="5906732635754427568">এই অ্যাপ্লিকেশান সংশ্লিষ্ট ডেটা এই ডিভাইস থেকে সরিয়ে ফেলা হবে।</translation>
-<translation id="5908695239556627796">মাউস স্ক্রল স্পিড</translation>
+<translation id="5908695239556627796">মাউসের মাধ্যমে স্ক্রল করার স্পিড</translation>
 <translation id="5908769186679515905">সাইটগুলিকে Flash চালানোর বিষয়ে অবরুদ্ধ করুন</translation>
 <translation id="5910363049092958439">এই ভাবে ছবি সেভ করুন...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> এখন অফলাইন</translation>
@@ -5537,6 +5541,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> নেটওয়ার্ক, কানেক্ট করা হচ্ছে</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">প্রথমে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
+<translation id="8417548266957501132">অভিভাবকের পাসওয়ার্ড</translation>
 <translation id="8417573335434189196">ক্ষতি করতে পারে এমন ওয়েবসাইট, ডাউনলোড অথবা এক্সটেনশন থেকে আপনার ডিভাইসকে সুরক্ষিত করে না। Chrome এই সেটিং সাজেস্ট করে না।</translation>
 <translation id="8418445294933751433">ট্যাব রূপে &amp;দেখান</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' এর সার্চ ফলাফল</translation>

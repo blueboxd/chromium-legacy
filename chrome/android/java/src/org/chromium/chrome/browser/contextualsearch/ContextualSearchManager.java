@@ -671,11 +671,14 @@ public class ContextualSearchManager
             @QuickActionCategory final int quickActionCategory, final long loggedEventId,
             final String searchUrlFull, final String searchUrlPreload,
             @CardTag final int cocaCardTag) {
-        ResolvedSearchTerm resolvedSearchTerm = new ResolvedSearchTerm(isNetworkUnavailable,
-                responseCode, searchTerm, displayText, alternateTerm, mid, doPreventPreload,
-                selectionStartAdjust, selectionEndAdjust, contextLanguage, thumbnailUrl, caption,
-                quickActionUri, quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload,
-                cocaCardTag);
+        ResolvedSearchTerm resolvedSearchTerm =
+                new ResolvedSearchTerm
+                        .Builder(isNetworkUnavailable, responseCode, searchTerm, displayText,
+                                alternateTerm, mid, doPreventPreload, selectionStartAdjust,
+                                selectionEndAdjust, contextLanguage, thumbnailUrl, caption,
+                                quickActionUri, quickActionCategory, loggedEventId, searchUrlFull,
+                                searchUrlPreload, cocaCardTag)
+                        .build();
         mNetworkCommunicator.handleSearchTermResolutionResponse(resolvedSearchTerm);
     }
 

@@ -140,6 +140,9 @@ source_set("headers") {
     "permissions/permission_utils.h",
     "prerender/prerender_rel_type.h",
     "presentation/presentation_receiver_flags.h",
+    "privacy_budget/identifiability_metric_builder.h",
+    "privacy_budget/identifiability_metrics.h",
+    "privacy_budget/identifiable_surface.h",
     "scheduler/web_scheduler_tracked_feature.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
@@ -158,6 +161,7 @@ source_set("headers") {
   ]
 
   public_deps = [
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/network/public/cpp:cpp",
     "//skia",
     "//skia/public/mojom:shared_typemap_traits",

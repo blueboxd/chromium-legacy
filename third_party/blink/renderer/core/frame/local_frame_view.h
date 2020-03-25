@@ -686,6 +686,16 @@ class CORE_EXPORT LocalFrameView final
   void RegisterForLifecycleNotifications(LifecycleNotificationObserver*);
   void UnregisterFromLifecycleNotifications(LifecycleNotificationObserver*);
 
+  // Enqueue tasks to be run at the start of the next lifecycle. These tasks
+  // will run right after `WillStartLifecycleUpdate()` on the lifecycle
+  // notification observers.
+  void EnqueueStartOfLifecycleTask(base::OnceClosure);
+
+  // For testing way to steal the start-of-lifecycle tasks.
+  WTF::Vector<base::OnceClosure> TakeStartOfLifecycleTasksForTest() {
+    return std::move(start_of_lifecycle_tasks_);
+  }
+
  protected:
   void FrameRectsChanged(const IntRect&) override;
   void SelfVisibleChanged() override;
@@ -993,6 +1003,9 @@ class CORE_EXPORT LocalFrameView final
 
   std::unique_ptr<OverlayInterstitialAdDetector>
       overlay_interstitial_ad_detector_;
+
+  // These tasks will be run at the beginning of the next lifecycle.
+  WTF::Vector<base::OnceClosure> start_of_lifecycle_tasks_;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

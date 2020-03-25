@@ -192,7 +192,7 @@
 <translation id="1243314992276662751">Cargar</translation>
 <translation id="1244265436519979884">El restablecimiento de Linux está en curso</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
-<translation id="1246158006305844142">Se sincronizarán tus apps y opciones de configuración en todos los dispositivos con el Sistema operativo Chrome en los que hayas accedido con tu Cuenta de Google. Para ver las opciones de sincronización del navegador, ve a la <ph name="LINK_BEGIN" />configuración de Chrome<ph name="LINK_END" />.</translation>
+<translation id="1246158006305844142">Se sincronizarán tus apps y opciones de configuración en todos los dispositivos con el Sistema operativo Chrome a los que hayas accedido con tu Cuenta de Google. Para ver las opciones de sincronización del navegador, ve a la <ph name="LINK_BEGIN" />configuración de Chrome<ph name="LINK_END" />.</translation>
 <translation id="1246905108078336582">¿Quieres quitar la sugerencia del portapapeles?</translation>
 <translation id="1249643471736608405">Se bloqueó <ph name="PLUGIN_NAME" /> porque dejó de estar disponible</translation>
 <translation id="1251366534849411931">Llave de apertura esperada: <ph name="ERROR_LINE" /></translation>
@@ -458,6 +458,7 @@
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
 <translation id="1616298854599875024">No se puede importar la extensión "<ph name="IMPORT_NAME" />" porque no es un módulo compartido</translation>
 <translation id="1618268899808219593">C&amp;entro de ayuda</translation>
+<translation id="1620307519959413822">La contraseña es incorrecta. Vuelve a intentarlo o haz clic en "¿Olvidaste la contraseña?" para restablecerla.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623132449929929218">En este momento, las imágenes no están disponibles. Vuelve a conectarte a Internet para ver las colecciones de fondos de pantalla.</translation>
 <translation id="1627276047960621195">Descriptores de archivos</translation>
@@ -676,6 +677,7 @@
 <translation id="1887850431809612466">Revisión de hardware</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Abrir pantalla completa</translation>
+<translation id="1892341345406963517">Hola, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Otros idiomas</translation>
 <translation id="1895252664692693738">Tiempo restante: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Cierre</translation>
@@ -1312,7 +1314,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
 <translation id="2727633948226935816">No volver a recordarme</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
-<translation id="2729314457178420145">También quiero borrar los datos de navegación (<ph name="URL" />), lo que posiblemente me haga salir de Google.com. <ph name="LEARN_MORE" /></translation>
+<translation id="2729314457178420145">Borrar también los datos de navegación (<ph name="URL" />), lo que posiblemente implique salir de Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Creando la copia de seguridad de las apps y los archivos de Linux</translation>
 <translation id="273093730430620027">Esta página está accediendo a la cámara.</translation>
 <translation id="2731392572903530958">Volv&amp;er a abrir una ventana cerrada</translation>
@@ -3084,7 +3086,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, búsqueda de <ph name="DEFAULT_SEARCH_ENGINE_NAME" /></translation>
 <translation id="5139823398361067371">Ingresa el PIN para tu llave de seguridad. Si no lo conoces, restablece la llave.</translation>
 <translation id="5139955368427980650">&amp;Abrir</translation>
-<translation id="5142793792982256885">Velocidad de desplazamiento del panel táctil</translation>
+<translation id="5142793792982256885">Velocidad de desplazamiento en el panel táctil</translation>
 <translation id="5142961317498132443">Autenticación</translation>
 <translation id="5143374789336132547">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al hacer clic en el botón Página prinicpal.</translation>
 <translation id="5143712164865402236">Ingresar a pantalla completa</translation>
@@ -3130,6 +3132,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5213891612754844763">Mostrar la configuración de proxy</translation>
 <translation id="5215502535566372932">Selecciona un país</translation>
 <translation id="521582610500777512">Se descartó la foto.</translation>
+<translation id="5222403284441421673">Se bloqueó una descarga no segura</translation>
 <translation id="5222676887888702881">Salir</translation>
 <translation id="52232769093306234">No se pudo realizar el empaquetamiento.</translation>
 <translation id="5225324770654022472">Mostrar acceso directo a las aplicaciones</translation>
@@ -3528,6 +3531,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5734362860645681824">Comunicaciones</translation>
 <translation id="5734697361979786483">Agregar sistema de archivos compartidos</translation>
 <translation id="5736796278325406685">Ingresa un nombre de usuario válido</translation>
+<translation id="5739017626473506901">Accede para ayudar a <ph name="USER_NAME" /> a agregar una cuenta de una institución educativa</translation>
 <translation id="5739235828260127894">La verificación está pendiente. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Muy grande</translation>
 <translation id="574209121243317957">Tono</translation>
@@ -5536,6 +5540,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8408068190360279472">Red <ph name="NETWORK_TYPE" />, conectando</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Preguntar primero (recomendado)</translation>
+<translation id="8417548266957501132">Contraseña del padre o madre</translation>
 <translation id="8417573335434189196">No te protege contra descargas, extensiones ni sitios web peligrosos. Chrome no recomienda usar esta opción de configuración.</translation>
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
 <translation id="8419098111404128271">Resultados de la búsqueda para "<ph name="SEARCH_TEXT" />"</translation>
@@ -5850,7 +5855,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8808686172382650546">Gato</translation>
 <translation id="8808744862003883508">En esta página, podrás ver todas las extensiones instaladas en Chrome.</translation>
 <translation id="8809147117840417135">Verde azulado claro</translation>
-<translation id="8812593354822910461">También quiero borrar los datos de navegación (<ph name="URL" />), lo que me hará salir de <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
+<translation id="8812593354822910461">Borrar también los datos de navegación (<ph name="URL" />), lo que implicará salir de <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">No se puede acceder a <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">hoja de papel</translation>
 <translation id="8813872945700551674">Haz que tu padre o madre aprueben "<ph name="EXTENSION_NAME" />"</translation>

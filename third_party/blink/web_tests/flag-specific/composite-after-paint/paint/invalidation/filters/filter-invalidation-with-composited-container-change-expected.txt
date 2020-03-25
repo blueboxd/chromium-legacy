@@ -11,11 +11,11 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='box' class='green box blurry'",
-      "position": [-30, -30],
-      "bounds": [260, 260],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
       "backgroundColor": "#008000",
       "invalidations": [
-        [0, 0, 260, 260]
+        [0, 0, 200, 200]
       ],
       "transform": 1
     }

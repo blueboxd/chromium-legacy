@@ -97,12 +97,16 @@ ScopedHString ScopedHString::Create(WStringPiece str) {
       str.data(), checked_cast<UINT32>(str.length()), &hstr);
   if (SUCCEEDED(hr))
     return ScopedHString(hstr);
+
   if (hr == E_OUTOFMEMORY) {
     // This size is an approximation. The actual size likely includes
     // sizeof(HSTRING_HEADER) as well.
     base::TerminateBecauseOutOfMemory((str.length() + 1) * sizeof(wchar_t));
   }
-  DLOG(ERROR) << "Failed to create HSTRING" << std::hex << hr;
+
+  // This should not happen at runtime. Otherwise we could silently pass nullptr
+  // or an empty string to downstream code.
+  NOTREACHED() << "Failed to create HSTRING: " << std::hex << hr;
   return ScopedHString(nullptr);
 }
 

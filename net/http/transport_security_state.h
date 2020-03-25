@@ -533,11 +533,9 @@ class NET_EXPORT TransportSecurityState {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   }
 
-  // For unit tests only. Causes CheckCTRequirements() to return
-  // CT_REQUIREMENTS_NOT_MET (if |*required| is true) or CT_REQUIREMENTS_MET (if
-  // |*required| is false) for non-compliant connections by default (that is,
-  // unless a RequireCTDelegate overrides). Set to nullptr to reset.
-  static void SetShouldRequireCTForTesting(bool* required);
+  // For unit tests only. Forces CheckCTRequirements() to unconditionally
+  // check compliance.
+  static void SetRequireCTForTesting(bool required);
 
   // For unit tests only. Clears the caches that deduplicate sent PKP and
   // Expect-CT reports.

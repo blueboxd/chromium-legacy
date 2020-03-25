@@ -25,6 +25,7 @@ MediaFeedsUI::MediaFeedsUI(content::WebUI* web_ui)
   // Setup the data source behind chrome://media-feeds.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaFeedsHost));
+  source->AddResourcePath("media-data-table.js", IDR_MEDIA_DATA_TABLE_JS);
   source->AddResourcePath("media-feeds.js", IDR_MEDIA_FEEDS_JS);
   source->AddResourcePath(
       "services/media_session/public/mojom/media_session.mojom-lite.js",

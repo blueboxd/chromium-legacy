@@ -5,12 +5,14 @@
 /** @fileoverview Runs the Polymer Check Password tests. */
 
 // clang-format off
-// #import {PasswordManagerImpl, routes, Router} from 'chrome://settings/settings.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {OpenWindowProxyImpl, PasswordManagerProxy, PasswordManagerImpl, routes, Router} from 'chrome://settings/settings.js';
 // #import 'chrome://settings/lazy_load.js';
 // #import {makeCompromisedCredential,  makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {getSyncAllPrefs,simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.m.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
 // clang-format on
 
@@ -130,7 +132,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that clicking 'Check again' make proper function call to
     // password manager
-    test('testCheckAgainButtonWhenIdleAfterFirstRun', function() {
+    test('testCheckAgainButtonWhenIdleAfterFirstRun', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE,
@@ -138,57 +140,66 @@ cr.define('settings_passwords_check', function() {
           /*remaining=*/ undefined,
           /*lastCheck=*/ 'Just now');
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus')
-          .then(() => {
-            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-            expectEquals(
-                section.i18n('checkPasswordsAgain'),
-                section.$.controlPasswordCheckButton.innerText);
-            section.$.controlPasswordCheckButton.click();
-          })
-          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswordsAgain'),
+          section.$.controlPasswordCheckButton.innerText);
+      section.$.controlPasswordCheckButton.click();
+      await passwordManager.whenCalled('startBulkPasswordCheck');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
+          interaction);
     });
 
     // Test verifies that clicking 'Start Check' make proper function call to
     // password manager
-    test('testStartCheckButtonWhenIdle', function() {
+    test('testStartCheckButtonWhenIdle', async function() {
       assertEquals(
           PasswordCheckState.IDLE, passwordManager.data.checkStatus.state);
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus')
-          .then(() => {
-            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-            expectEquals(
-                section.i18n('checkPasswords'),
-                section.$.controlPasswordCheckButton.innerText);
-            section.$.controlPasswordCheckButton.click();
-          })
-          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswords'),
+          section.$.controlPasswordCheckButton.innerText);
+      section.$.controlPasswordCheckButton.click();
+      await passwordManager.whenCalled('startBulkPasswordCheck');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
+          interaction);
     });
 
     // Test verifies that clicking 'Check again' make proper function call to
     // password manager
-    test('testStopButtonWhenRunning', function() {
+    test('testStopButtonWhenRunning', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
               /*checked=*/ 0,
               /*remaining=*/ 2);
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus')
-          .then(() => {
-            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-            expectEquals(
-                section.i18n('checkPasswordsStop'),
-                section.$.controlPasswordCheckButton.innerText);
-            section.$.controlPasswordCheckButton.click();
-          })
-          .then(() => passwordManager.whenCalled('stopBulkPasswordCheck'));
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswordsStop'),
+          section.$.controlPasswordCheckButton.innerText);
+      section.$.controlPasswordCheckButton.click();
+      await passwordManager.whenCalled('stopBulkPasswordCheck');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.STOP_CHECK,
+          interaction);
     });
 
     // Test verifies that sync users see only the link to account checkup and no
     // button to start the local leak check once they run out of quota.
-    test('testOnlyCheckupLinkAfterHittingQuotaWhenSyncing', function() {
+    test('testOnlyCheckupLinkAfterHittingQuotaWhenSyncing', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.QUOTA_LIMIT);
@@ -198,15 +209,14 @@ cr.define('settings_passwords_check', function() {
           'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
       sync_test_util.simulateSyncStatus({signedIn: true});
 
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        expectTrue(isElementVisible(section.$.linkToGoogleAccount));
-        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      expectTrue(isElementVisible(section.$.linkToGoogleAccount));
+      expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
     });
 
     // Test verifies that non-sync users see neither the link to the account
     // checkup nor a retry button once they run out of quota.
-    test('testNoCheckupLinkAfterHittingQuotaWhenSignedOut', function() {
+    test('testNoCheckupLinkAfterHittingQuotaWhenSignedOut', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.QUOTA_LIMIT);
@@ -216,16 +226,15 @@ cr.define('settings_passwords_check', function() {
           'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
       sync_test_util.simulateSyncStatus({signedIn: false});
 
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
-        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      expectFalse(isElementVisible(section.$.linkToGoogleAccount));
+      expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
     });
 
     // Test verifies that custom passphrase users see neither the link to the
     // account checkup nor a retry button once they run out of quota.
-    test('testNoCheckupLinkAfterHittingQuotaForEncryption', function() {
+    test('testNoCheckupLinkAfterHittingQuotaForEncryption', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.QUOTA_LIMIT);
@@ -236,96 +245,100 @@ cr.define('settings_passwords_check', function() {
       cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
       sync_test_util.simulateSyncStatus({signedIn: true});
 
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
-        assertFalse(isElementVisible(section.$.controlPasswordCheckButton));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      expectFalse(isElementVisible(section.$.linkToGoogleAccount));
+      assertFalse(isElementVisible(section.$.controlPasswordCheckButton));
     });
 
     // Test verifies that 'Try again' visible and working when users encounter a
     // generic error.
-    test('testShowRetryAfterGenericError', function() {
+    test('testShowRetryAfterGenericError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.OTHER_ERROR);
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus')
-          .then(() => {
-            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-            expectEquals(
-                section.i18n('checkPasswordsAgainAfterError'),
-                section.$.controlPasswordCheckButton.innerText);
-            section.$.controlPasswordCheckButton.click();
-          })
-          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswordsAgainAfterError'),
+          section.$.controlPasswordCheckButton.innerText);
+      section.$.controlPasswordCheckButton.click();
+      await passwordManager.whenCalled('startBulkPasswordCheck');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
+          interaction);
     });
 
     // Test verifies that 'Try again' is hidden when users encounter a
     // not-signed-in error.
-    test('testHideRetryAfterSignOutErrorUntilSignedInAgain', function() {
+    test('testHideRetryAfterSignOutErrorUntilSignedInAgain', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.SIGNED_OUT);
       const section = createCheckPasswordSection();
       cr.webUIListenerCallback('stored-accounts-updated', []);
-      // <if expr="chromeos">
-      sync_test_util.simulateSyncStatus({signedIn: false});
-      // </if>
-      return passwordManager.whenCalled('getPasswordCheckStatus')
-          .then(() => {
-            Polymer.dom.flush();
-            expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
-            cr.webUIListenerCallback(
-                'stored-accounts-updated', [{email: 'foo@bar.com'}]);
-            // <if expr="chromeos">
-            sync_test_util.simulateSyncStatus(
-                {signedIn: true, hasError: false});
-            // </if>
-          })
-          .then(() => {
-            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-            expectEquals(
-                section.i18n('checkPasswordsAgainAfterError'),
-                section.$.controlPasswordCheckButton.innerText);
-            section.$.controlPasswordCheckButton.click();
-          })
-          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+      if (cr.isChromeOS) {
+        sync_test_util.simulateSyncStatus({signedIn: false});
+      }
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+      cr.webUIListenerCallback(
+          'stored-accounts-updated', [{email: 'foo@bar.com'}]);
+      if (cr.isChromeOS) {
+        sync_test_util.simulateSyncStatus({signedIn: true, hasError: false});
+      }
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswordsAgainAfterError'),
+          section.$.controlPasswordCheckButton.innerText);
+      section.$.controlPasswordCheckButton.click();
+      await passwordManager.whenCalled('startBulkPasswordCheck');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
+          interaction);
     });
 
     // Test verifies that 'Try again' is hidden when users encounter a
     // no-saved-passwords error.
-    test('testHideRetryAfterNoPasswordsError', function() {
+    test('testHideRetryAfterNoPasswordsError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.NO_PASSWORDS);
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
     });
 
     // Test verifies that 'Try again' visible and working when users encounter a
     // connection error.
-    test('testShowRetryAfterNoConnectionError', function() {
+    test('testShowRetryAfterNoConnectionError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.OFFLINE);
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus')
-          .then(() => {
-            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-            expectEquals(
-                section.i18n('checkPasswordsAgainAfterError'),
-                section.$.controlPasswordCheckButton.innerText);
-            section.$.controlPasswordCheckButton.click();
-          })
-          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswordsAgainAfterError'),
+          section.$.controlPasswordCheckButton.innerText);
+      section.$.controlPasswordCheckButton.click();
+      await passwordManager.whenCalled('startBulkPasswordCheck');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.START_CHECK_MANUALLY,
+          interaction);
     });
 
     // Test verifies that if no compromised credentials found than list is not
     // shown
-    test('testNoCompromisedCredentials', function() {
+    test('testNoCompromisedCredentials', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE,
@@ -345,15 +358,14 @@ cr.define('settings_passwords_check', function() {
         profile: {password_manager_leak_detection: {value: true}}
       };
 
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        assertFalse(isElementVisible(section.$.passwordCheckBody));
-        assertTrue(isElementVisible(section.$.noCompromisedCredentials));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      assertFalse(isElementVisible(section.$.passwordCheckBody));
+      assertTrue(isElementVisible(section.$.noCompromisedCredentials));
     });
 
     // Test verifies that compromised credentials are displayed in a proper way
-    test('testSomeCompromisedCredentials', function() {
+    test('testSomeCompromisedCredentials', async function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'PHISHED', 1, 1),
@@ -362,13 +374,11 @@ cr.define('settings_passwords_check', function() {
       ];
       passwordManager.data.leakedCredentials = leakedPasswords;
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getCompromisedCredentials')
-          .then(() => {
-            Polymer.dom.flush();
-            assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
-            assertTrue(checkPasswordSection.$.noCompromisedCredentials.hidden);
-            validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
-          });
+      await passwordManager.whenCalled('getCompromisedCredentials');
+      Polymer.dom.flush();
+      assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
+      assertTrue(checkPasswordSection.$.noCompromisedCredentials.hidden);
+      validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
     });
 
     // Test verifies that credentials from mobile app shown correctly
@@ -382,8 +392,28 @@ cr.define('settings_passwords_check', function() {
       assertTrue(!!checkPasswordSection.$$('#changePasswordInApp'));
     });
 
+    // Verify that a click on "Change password" opens the expected URL and
+    // records a corresponding user action.
+    test('testChangePasswordOpensUrlAndRecordsAction', async function() {
+      const testOpenWindowProxy = new TestOpenWindowProxy();
+      settings.OpenWindowProxyImpl.instance_ = testOpenWindowProxy;
+
+      const password = autofill_test_util.makeCompromisedCredential(
+          'one.com', 'test4', 'LEAKED');
+      const passwordCheckListItem = createLeakedPasswordItem(password);
+      passwordCheckListItem.$$('#changePasswordButton').click();
+
+      const url = await testOpenWindowProxy.whenCalled('openURL');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals('http://one.com/', url);
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.CHANGE_PASSWORD,
+          interaction);
+    });
+
     // Verify that the More Actions menu opens when the button is clicked.
-    test('testMoreActionsMenu', function() {
+    test('testMoreActionsMenu', async function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
@@ -391,37 +421,39 @@ cr.define('settings_passwords_check', function() {
       passwordManager.data.leakedCredentials = leakedPasswords;
       const checkPasswordSection = createCheckPasswordSection();
 
-      return passwordManager.whenCalled('getCompromisedCredentials')
-          .then(() => {
-            Polymer.dom.flush();
-            assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
-            const listElement =
-                checkPasswordSection.$$('password-check-list-item');
-            const menu = checkPasswordSection.$.moreActionsMenu;
+      await passwordManager.whenCalled('getCompromisedCredentials');
+      Polymer.dom.flush();
+      assertFalse(checkPasswordSection.$.passwordCheckBody.hidden);
+      const listElement = checkPasswordSection.$$('password-check-list-item');
+      const menu = checkPasswordSection.$.moreActionsMenu;
 
-            assertFalse(menu.open);
-            listElement.$.more.click();
-            assertTrue(menu.open);
-          });
+      assertFalse(menu.open);
+      listElement.$.more.click();
+      assertTrue(menu.open);
     });
 
     // Test verifies that clicking remove button is calling proper
     // proxy function.
-    test('testRemovePasswordConfirmationDialog', function() {
+    test('testRemovePasswordConfirmationDialog', async function() {
       const entry = autofill_test_util.makeCompromisedCredential(
           'one.com', 'test4', 'LEAKED', 0);
       const removeDialog = createRemovePasswordDialog(entry);
       removeDialog.$.remove.click();
-      return passwordManager.whenCalled('removeCompromisedCredential')
-          .then(({id, username, formattedOrigin}) => {
-            assertEquals(0, id);
-            assertEquals('test4', username);
-            assertEquals('one.com', formattedOrigin);
-          });
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      const {id, username, formattedOrigin} =
+          await passwordManager.whenCalled('removeCompromisedCredential');
+
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.REMOVE_PASSWORD,
+          interaction);
+      assertEquals(0, id);
+      assertEquals('test4', username);
+      assertEquals('one.com', formattedOrigin);
     });
 
     // A changing status is immediately reflected in title, icon and banner.
-    test('testUpdatesNumberOfCheckedPasswordsWhileRunning', function() {
+    test('testUpdatesNumberOfCheckedPasswordsWhileRunning', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -429,46 +461,42 @@ cr.define('settings_passwords_check', function() {
               /*remaining=*/ 2);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        assertTrue(isElementVisible(section.$.title));
-        expectEquals(
-            section.i18n('checkPasswordsProgress', 1, 2),
-            section.$.title.innerText);
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(section.$.title));
+      expectEquals(
+          section.i18n('checkPasswordsProgress', 1, 2),
+          section.$.title.innerText);
 
-        // Change status from running to IDLE.
-        assertTrue(
-            !!passwordManager.lastCallback.addPasswordCheckStatusListener);
-        passwordManager.lastCallback.addPasswordCheckStatusListener(
-            autofill_test_util.makePasswordCheckStatus(
-                /*state=*/ PasswordCheckState.RUNNING,
-                /*checked=*/ 1,
-                /*remaining=*/ 1));
+      // Change status from running to IDLE.
+      assertTrue(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
+      passwordManager.lastCallback.addPasswordCheckStatusListener(
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.RUNNING,
+              /*checked=*/ 1,
+              /*remaining=*/ 1));
 
-        Polymer.dom.flush();
-        assertTrue(isElementVisible(section.$.title));
-        expectEquals(
-            section.i18n('checkPasswordsProgress', 2, 2),
-            section.$.title.innerText);
-      });
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(section.$.title));
+      expectEquals(
+          section.i18n('checkPasswordsProgress', 2, 2),
+          section.$.title.innerText);
     });
 
     // Tests that the status is queried right when the page loads.
-    test('testQueriesCheckedStatusImmediately', function() {
+    test('testQueriesCheckedStatusImmediately', async function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       assertEquals(0, data.leakedCredentials.length);
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        expectEquals(
-            PasswordCheckState.IDLE, checkPasswordSection.status_.state);
-      }, () => assertTrue(false));
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      expectEquals(PasswordCheckState.IDLE, checkPasswordSection.status_.state);
     });
 
     // Tests that the spinner is replaced with a checkmark on successful runs.
-    test('testShowsCheckmarkIconWhenFinishedWithoutLeaks', function() {
+    test('testShowsCheckmarkIconWhenFinishedWithoutLeaks', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
@@ -478,36 +506,34 @@ cr.define('settings_passwords_check', function() {
           /*lastCheck=*/ 'Just now');
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const icon = checkPasswordSection.$$('iron-icon');
-        const spinner = checkPasswordSection.$$('paper-spinner-lite');
-        expectFalse(isElementVisible(spinner));
-        assertTrue(isElementVisible(icon));
-        expectFalse(icon.classList.contains('has-leaks'));
-        expectTrue(icon.classList.contains('no-leaks'));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const icon = checkPasswordSection.$$('iron-icon');
+      const spinner = checkPasswordSection.$$('paper-spinner-lite');
+      expectFalse(isElementVisible(spinner));
+      assertTrue(isElementVisible(icon));
+      expectFalse(icon.classList.contains('has-leaks'));
+      expectTrue(icon.classList.contains('no-leaks'));
     });
 
     // Tests that there is neither spinner nor icon if the check hasn't run yet.
-    test('testIconWhenFirstRunIsPending', function() {
+    test('testIconWhenFirstRunIsPending', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(PasswordCheckState.IDLE);
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const icon = checkPasswordSection.$$('iron-icon');
-        const spinner = checkPasswordSection.$$('paper-spinner-lite');
-        expectFalse(isElementVisible(spinner));
-        expectFalse(isElementVisible(icon));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const icon = checkPasswordSection.$$('iron-icon');
+      const spinner = checkPasswordSection.$$('paper-spinner-lite');
+      expectFalse(isElementVisible(spinner));
+      expectFalse(isElementVisible(icon));
     });
 
     // Tests that the spinner is replaced with a triangle if leaks were found.
-    test('testShowsTriangleIconWhenFinishedWithLeaks', function() {
+    test('testShowsTriangleIconWhenFinishedWithLeaks', async function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       data.leakedCredentials = [
@@ -516,19 +542,18 @@ cr.define('settings_passwords_check', function() {
       ];
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const icon = checkPasswordSection.$$('iron-icon');
-        const spinner = checkPasswordSection.$$('paper-spinner-lite');
-        expectFalse(isElementVisible(spinner));
-        assertTrue(isElementVisible(icon));
-        expectTrue(icon.classList.contains('has-leaks'));
-        expectFalse(icon.classList.contains('no-leaks'));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const icon = checkPasswordSection.$$('iron-icon');
+      const spinner = checkPasswordSection.$$('paper-spinner-lite');
+      expectFalse(isElementVisible(spinner));
+      assertTrue(isElementVisible(icon));
+      expectTrue(icon.classList.contains('has-leaks'));
+      expectFalse(icon.classList.contains('no-leaks'));
     });
 
     // Tests that the spinner is replaced with a warning on errors.
-    test('testShowsInfoIconWhenFinishedWithErrors', function() {
+    test('testShowsInfoIconWhenFinishedWithErrors', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.OFFLINE,
@@ -536,19 +561,18 @@ cr.define('settings_passwords_check', function() {
               /*remaining=*/ undefined);
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const icon = checkPasswordSection.$$('iron-icon');
-        const spinner = checkPasswordSection.$$('paper-spinner-lite');
-        expectFalse(isElementVisible(spinner));
-        assertTrue(isElementVisible(icon));
-        expectFalse(icon.classList.contains('has-leaks'));
-        expectFalse(icon.classList.contains('no-leaks'));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const icon = checkPasswordSection.$$('iron-icon');
+      const spinner = checkPasswordSection.$$('paper-spinner-lite');
+      expectFalse(isElementVisible(spinner));
+      assertTrue(isElementVisible(icon));
+      expectFalse(icon.classList.contains('has-leaks'));
+      expectFalse(icon.classList.contains('no-leaks'));
     });
 
     // Tests that the spinner replaces any icon while the check is running.
-    test('testShowsSpinnerWhileRunning', function() {
+    test('testShowsSpinnerWhileRunning', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -556,17 +580,16 @@ cr.define('settings_passwords_check', function() {
               /*remaining=*/ 3);
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const icon = checkPasswordSection.$$('iron-icon');
-        const spinner = checkPasswordSection.$$('paper-spinner-lite');
-        expectTrue(isElementVisible(spinner));
-        expectFalse(isElementVisible(icon));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const icon = checkPasswordSection.$$('iron-icon');
+      const spinner = checkPasswordSection.$$('paper-spinner-lite');
+      expectTrue(isElementVisible(spinner));
+      expectFalse(isElementVisible(icon));
     });
 
     // While running, the check should show the processed and total passwords.
-    test('testShowOnlyProgressWhileRunningWithoutLeaks', function() {
+    test('testShowOnlyProgressWhileRunningWithoutLeaks', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -574,19 +597,18 @@ cr.define('settings_passwords_check', function() {
               /*remaining=*/ 4);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        assertTrue(isElementVisible(title));
-        expectEquals(
-            section.i18n('checkPasswordsProgress', 1, 4), title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      assertTrue(isElementVisible(title));
+      expectEquals(
+          section.i18n('checkPasswordsProgress', 1, 4), title.innerText);
+      expectFalse(isElementVisible(section.$.subtitle));
     });
 
     // Verifies that in case the backend could not obtain the number of checked
     // and remaining credentials the UI does not surface 0s to the user.
-    test('runningProgressHandlesZeroCaseFromBackend', function() {
+    test('runningProgressHandlesZeroCaseFromBackend', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -594,18 +616,17 @@ cr.define('settings_passwords_check', function() {
               /*remaining=*/ 0);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        assertTrue(isElementVisible(title));
-        expectEquals(
-            section.i18n('checkPasswordsProgress', 1, 1), title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      assertTrue(isElementVisible(title));
+      expectEquals(
+          section.i18n('checkPasswordsProgress', 1, 1), title.innerText);
+      expectFalse(isElementVisible(section.$.subtitle));
     });
 
     // While running, show progress and already found leak count.
-    test('testShowProgressAndLeaksWhileRunning', function() {
+    test('testShowProgressAndLeaksWhileRunning', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.RUNNING,
@@ -617,20 +638,19 @@ cr.define('settings_passwords_check', function() {
       ];
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        const subtitle = section.$.subtitle;
-        assertTrue(isElementVisible(title));
-        assertTrue(isElementVisible(subtitle));
-        expectEquals(
-            section.i18n('checkPasswordsProgress', 2, 5), title.innerText);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      const subtitle = section.$.subtitle;
+      assertTrue(isElementVisible(title));
+      assertTrue(isElementVisible(subtitle));
+      expectEquals(
+          section.i18n('checkPasswordsProgress', 2, 5), title.innerText);
     });
 
     // When canceled, show string explaining that and already found leak
     // count.
-    test('testShowProgressAndLeaksAfterCanceled', function() {
+    test('testShowProgressAndLeaksAfterCanceled', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.CANCELED,
@@ -642,32 +662,29 @@ cr.define('settings_passwords_check', function() {
       ];
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        const subtitle = section.$.subtitle;
-        assertTrue(isElementVisible(title));
-        assertTrue(isElementVisible(subtitle));
-        expectEquals(section.i18n('checkPasswordsCanceled'), title.innerText);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      const subtitle = section.$.subtitle;
+      assertTrue(isElementVisible(title));
+      assertTrue(isElementVisible(subtitle));
+      expectEquals(section.i18n('checkPasswordsCanceled'), title.innerText);
     });
 
     // Before the first run, show only a description of what the check does.
-    test('testShowOnlyDescriptionIfNotRun', function() {
+    test('testShowOnlyDescriptionIfNotRun', async function() {
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        const subtitle = section.$.subtitle;
-        assertTrue(isElementVisible(title));
-        assertFalse(isElementVisible(subtitle));
-        expectEquals(
-            section.i18n('checkPasswordsDescription'), title.innerText);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      const subtitle = section.$.subtitle;
+      assertTrue(isElementVisible(title));
+      assertFalse(isElementVisible(subtitle));
+      expectEquals(section.i18n('checkPasswordsDescription'), title.innerText);
     });
 
     // After running, show confirmation, timestamp and number of leaks.
-    test('testShowLeakCountAndTimeStampWhenIdle', function() {
+    test('testShowLeakCountAndTimeStampWhenIdle', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE,
@@ -680,131 +697,121 @@ cr.define('settings_passwords_check', function() {
       ];
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        const subtitle = section.$.subtitle;
-        assertTrue(isElementVisible(title));
-        assertTrue(isElementVisible(subtitle));
-        expectEquals(
-            section.i18n('checkedPasswords') + ' • Just now', title.innerText);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      const subtitle = section.$.subtitle;
+      assertTrue(isElementVisible(title));
+      assertTrue(isElementVisible(subtitle));
+      expectEquals(
+          section.i18n('checkedPasswords') + ' • Just now', title.innerText);
     });
 
     // When offline, only show an error.
-    test('testShowOnlyErrorWhenOffline', function() {
+    test('testShowOnlyErrorWhenOffline', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.OFFLINE);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        assertTrue(isElementVisible(title));
-        expectEquals(
-            section.i18n('checkPasswordsErrorOffline'), title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      assertTrue(isElementVisible(title));
+      expectEquals(section.i18n('checkPasswordsErrorOffline'), title.innerText);
+      expectFalse(isElementVisible(section.$.subtitle));
     });
 
     // When signed out, only show an error.
-    test('testShowOnlyErrorWhenSignedOut', function() {
+    test('testShowOnlyErrorWhenSignedOut', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.SIGNED_OUT);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        assertTrue(isElementVisible(title));
-        expectEquals(
-            section.i18n('checkPasswordsErrorSignedOut'), title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      assertTrue(isElementVisible(title));
+      expectEquals(
+          section.i18n('checkPasswordsErrorSignedOut'), title.innerText);
+      expectFalse(isElementVisible(section.$.subtitle));
     });
 
     // When no passwords are saved, only show an error.
-    test('testShowOnlyErrorWithoutPasswords', function() {
+    test('testShowOnlyErrorWithoutPasswords', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.NO_PASSWORDS);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        assertTrue(isElementVisible(title));
-        expectEquals(
-            section.i18n('checkPasswordsErrorNoPasswords'), title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      assertTrue(isElementVisible(title));
+      expectEquals(
+          section.i18n('checkPasswordsErrorNoPasswords'), title.innerText);
+      expectFalse(isElementVisible(section.$.subtitle));
     });
 
     // When users run out of quota, only show an error.
-    test('testShowOnlyErrorWhenQuotaIsHit', function() {
+    test('testShowOnlyErrorWhenQuotaIsHit', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.QUOTA_LIMIT);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        assertTrue(isElementVisible(title));
-        expectEquals(section.i18n('checkPasswordsErrorQuota'), title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      assertTrue(isElementVisible(title));
+      expectEquals(section.i18n('checkPasswordsErrorQuota'), title.innerText);
+      expectFalse(isElementVisible(section.$.subtitle));
     });
 
     // When a general error occurs, only show the message.
-    test('testShowOnlyGenericError', function() {
+    test('testShowOnlyGenericError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.OTHER_ERROR);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        const title = section.$.title;
-        assertTrue(isElementVisible(title));
-        expectEquals(
-            section.i18n('checkPasswordsErrorGeneric'), title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      const title = section.$.title;
+      assertTrue(isElementVisible(title));
+      expectEquals(section.i18n('checkPasswordsErrorGeneric'), title.innerText);
+      expectFalse(isElementVisible(section.$.subtitle));
     });
 
     // Transform check-button to stop-button if a check is running.
-    test('testButtonChangesTextAccordingToStatus', function() {
+    test('testButtonChangesTextAccordingToStatus', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(PasswordCheckState.IDLE);
 
       const section = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-        expectEquals(
-            section.i18n('checkPasswords'),
-            section.$.controlPasswordCheckButton.innerText);
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswords'),
+          section.$.controlPasswordCheckButton.innerText);
 
-        // Change status from running to IDLE.
-        assertTrue(
-            !!passwordManager.lastCallback.addPasswordCheckStatusListener);
-        passwordManager.lastCallback.addPasswordCheckStatusListener(
-            autofill_test_util.makePasswordCheckStatus(
-                /*state=*/ PasswordCheckState.RUNNING,
-                /*checked=*/ 0,
-                /*remaining=*/ 2));
-        assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-        expectEquals(
-            section.i18n('checkPasswordsStop'),
-            section.$.controlPasswordCheckButton.innerText);
-      });
+      // Change status from running to IDLE.
+      assertTrue(!!passwordManager.lastCallback.addPasswordCheckStatusListener);
+      passwordManager.lastCallback.addPasswordCheckStatusListener(
+          autofill_test_util.makePasswordCheckStatus(
+              /*state=*/ PasswordCheckState.RUNNING,
+              /*checked=*/ 0,
+              /*remaining=*/ 2));
+      assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+      expectEquals(
+          section.i18n('checkPasswordsStop'),
+          section.$.controlPasswordCheckButton.innerText);
     });
 
     // Test that the banner is in a state that shows the positive confirmation
     // after a leak check finished.
-    test('testShowsPositiveBannerWhenIdle', function() {
+    test('testShowsPositiveBannerWhenIdle', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
@@ -814,34 +821,32 @@ cr.define('settings_passwords_check', function() {
           /*lastCheck=*/ 'Just now');
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
-        expectEquals(
-            'chrome://settings/images/password_check_positive.svg',
-            checkPasswordSection.$$('#bannerImage').src);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+      expectEquals(
+          'chrome://settings/images/password_check_positive.svg',
+          checkPasswordSection.$$('#bannerImage').src);
     });
 
     // Test that the banner indicates a neutral state if no check was run yet.
-    test('testShowsNeutralBannerBeforeFirstRun', function() {
+    test('testShowsNeutralBannerBeforeFirstRun', async function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       assertEquals(0, data.leakedCredentials.length);
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
-        expectEquals(
-            'chrome://settings/images/password_check_neutral.svg',
-            checkPasswordSection.$$('#bannerImage').src);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+      expectEquals(
+          'chrome://settings/images/password_check_neutral.svg',
+          checkPasswordSection.$$('#bannerImage').src);
     });
 
     // Test that the banner is in a state that shows that the leak check is
     // in progress but hasn't found anything yet.
-    test('testShowsNeutralBannerWhenRunning', function() {
+    test('testShowsNeutralBannerWhenRunning', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
@@ -849,35 +854,33 @@ cr.define('settings_passwords_check', function() {
           /*remaining=*/ 5);
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
-        expectEquals(
-            'chrome://settings/images/password_check_neutral.svg',
-            checkPasswordSection.$$('#bannerImage').src);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+      expectEquals(
+          'chrome://settings/images/password_check_neutral.svg',
+          checkPasswordSection.$$('#bannerImage').src);
     });
 
     // Test that the banner is in a state that shows that the leak check is
     // in progress but hasn't found anything yet.
-    test('testShowsNeutralBannerWhenCanceled', function() {
+    test('testShowsNeutralBannerWhenCanceled', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.CANCELED);
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
-        expectEquals(
-            'chrome://settings/images/password_check_neutral.svg',
-            checkPasswordSection.$$('#bannerImage').src);
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+      expectEquals(
+          'chrome://settings/images/password_check_neutral.svg',
+          checkPasswordSection.$$('#bannerImage').src);
     });
 
     // Test that the banner isn't visible as soon as the first leak is detected.
-    test('testLeaksHideBannerWhenRunning', function() {
+    test('testLeaksHideBannerWhenRunning', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.RUNNING, /*checked=*/ 1,
@@ -888,14 +891,13 @@ cr.define('settings_passwords_check', function() {
       ];
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
     });
 
     // Test that the banner isn't visible if a leak is detected after a check.
-    test('testLeaksHideBannerWhenIdle', function() {
+    test('testLeaksHideBannerWhenIdle', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE);
@@ -905,14 +907,13 @@ cr.define('settings_passwords_check', function() {
       ];
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
     });
 
     // Test that the banner isn't visible if a leak is detected after canceling.
-    test('testLeaksHideBannerWhenCanceled', function() {
+    test('testLeaksHideBannerWhenCanceled', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.CANCELED);
@@ -922,10 +923,9 @@ cr.define('settings_passwords_check', function() {
       ];
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        Polymer.dom.flush();
-        expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
-      });
+      await passwordManager.whenCalled('getPasswordCheckStatus');
+      Polymer.dom.flush();
+      expectFalse(isElementVisible(checkPasswordSection.$$('#bannerImage')));
     });
 
     // Test verifies that new credentials are added to the bottom
@@ -982,40 +982,35 @@ cr.define('settings_passwords_check', function() {
 
     // Verify that the edit dialog is not shown if a plaintext password could
     // not be obtained.
-    test('testEditDialogWithoutPlaintextPassword', function() {
+    test('testEditDialogWithoutPlaintextPassword', async function() {
       passwordManager.data.leakedCredentials = [
         autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
       ];
 
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getCompromisedCredentials')
-          .then(() => {
-            Polymer.dom.flush();
-            const listElements = checkPasswordSection.$.leakedPasswordList;
-            const node = listElements.children[1];
+      await passwordManager.whenCalled('getCompromisedCredentials');
+      Polymer.dom.flush();
+      const listElements = checkPasswordSection.$.leakedPasswordList;
+      const node = listElements.children[1];
 
-            // Open the more actions menu and click 'Edit Password'.
-            node.$.more.click();
-            checkPasswordSection.$.menuEditPassword.click();
-            // Since we did not specify a plaintext password above, this request
-            // should fail.
-            return passwordManager.whenCalled(
-                'getPlainttextCompromisedPassword');
-          })
-          .then(() => {
-            // Verify that the edit dialog has not become visible.
-            Polymer.dom.flush();
-            expectFalse(isElementVisible(checkPasswordSection.$$(
-                'settings-password-check-edit-dialog')));
+      // Open the more actions menu and click 'Edit Password'.
+      node.$.more.click();
+      checkPasswordSection.$.menuEditPassword.click();
+      // Since we did not specify a plaintext password above, this request
+      // should fail.
+      await passwordManager.whenCalled('getPlainttextCompromisedPassword');
+      // Verify that the edit dialog has not become visible.
+      Polymer.dom.flush();
+      expectFalse(isElementVisible(
+          checkPasswordSection.$$('settings-password-check-edit-dialog')));
 
-            // Verify that the more actions menu is closed.
-            expectFalse(checkPasswordSection.$.moreActionsMenu.open);
-          });
+      // Verify that the more actions menu is closed.
+      expectFalse(checkPasswordSection.$.moreActionsMenu.open);
     });
 
     // Verify edit a password on the edit dialog.
-    test('testEditDialogWithPlaintextPassword', function() {
+    test('testEditDialogWithPlaintextPassword', async function() {
       passwordManager.data.leakedCredentials = [
         autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
@@ -1023,33 +1018,29 @@ cr.define('settings_passwords_check', function() {
 
       passwordManager.setPlaintextPassword('password');
       const checkPasswordSection = createCheckPasswordSection();
-      return passwordManager.whenCalled('getCompromisedCredentials')
-          .then(() => {
-            Polymer.dom.flush();
-            const listElements = checkPasswordSection.$.leakedPasswordList;
-            const node = listElements.children[1];
+      await passwordManager.whenCalled('getCompromisedCredentials');
+      Polymer.dom.flush();
+      const listElements = checkPasswordSection.$.leakedPasswordList;
+      const node = listElements.children[1];
 
-            // Open the more actions menu and click 'Edit Password'.
-            node.$.more.click();
-            checkPasswordSection.$.menuEditPassword.click();
-            return passwordManager.whenCalled(
-                'getPlainttextCompromisedPassword');
-          })
-          .then(({credential, reason}) => {
-            expectEquals(passwordManager.data.leakedCredentials[0], credential);
-            expectEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
+      // Open the more actions menu and click 'Edit Password'.
+      node.$.more.click();
+      checkPasswordSection.$.menuEditPassword.click();
+      const {credential, reason} =
+          await passwordManager.whenCalled('getPlainttextCompromisedPassword');
+      expectEquals(passwordManager.data.leakedCredentials[0], credential);
+      expectEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
 
-            // Verify that the edit dialog has become visible.
-            Polymer.dom.flush();
-            expectTrue(isElementVisible(checkPasswordSection.$$(
-                'settings-password-check-edit-dialog')));
+      // Verify that the edit dialog has become visible.
+      Polymer.dom.flush();
+      expectTrue(isElementVisible(
+          checkPasswordSection.$$('settings-password-check-edit-dialog')));
 
-            // Verify that the more actions menu is closed.
-            expectFalse(checkPasswordSection.$.moreActionsMenu.open);
-          });
+      // Verify that the more actions menu is closed.
+      expectFalse(checkPasswordSection.$.moreActionsMenu.open);
     });
 
-    test('testEditDialogChangePassword', function() {
+    test('testEditDialogChangePassword', async function() {
       const leakedPassword = autofill_test_util.makeCompromisedCredential(
           'google.com', 'jdoerrie', 'LEAKED');
       leakedPassword.password = 'mybirthday';
@@ -1059,10 +1050,14 @@ cr.define('settings_passwords_check', function() {
       editDialog.$.passwordInput.value = 'yadhtribym';
       editDialog.$.save.click();
 
-      return passwordManager.whenCalled('changeCompromisedCredential')
-          .then(({newPassword}) => {
-            assertEquals('yadhtribym', newPassword);
-          });
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      const {newPassword} =
+          await passwordManager.whenCalled('changeCompromisedCredential');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction.EDIT_PASSWORD,
+          interaction);
+      assertEquals('yadhtribym', newPassword);
     });
 
     test('testEditDialogCancel', function() {
@@ -1079,11 +1074,17 @@ cr.define('settings_passwords_check', function() {
           0, passwordManager.getCallCount('changeCompromisedCredential'));
     });
 
-    test('startEqualsTrueSearchParameterStartsCheck', function() {
+    test('startEqualsTrueSearchParameterStartsCheck', async function() {
       settings.Router.getInstance().navigateTo(
           settings.routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
       createCheckPasswordSection();
-      return passwordManager.whenCalled('startBulkPasswordCheck');
+      await passwordManager.whenCalled('startBulkPasswordCheck');
+      const interaction =
+          await passwordManager.whenCalled('recordPasswordCheckInteraction');
+      assertEquals(
+          PasswordManagerProxy.PasswordCheckInteraction
+              .START_CHECK_AUTOMATICALLY,
+          interaction);
     });
   });
   // #cr_define_end

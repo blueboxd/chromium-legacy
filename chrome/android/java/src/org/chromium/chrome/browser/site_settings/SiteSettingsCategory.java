@@ -26,7 +26,6 @@ import androidx.preference.Preference;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.subresource_filter.SubresourceFilterFeatureList;
 import org.chromium.ui.text.SpanApplier;
@@ -467,26 +466,21 @@ public class SiteSettingsCategory {
         @ContentSettingsType
         int type = this.getContentSettingsType();
         int permission_string = R.string.android_permission_off;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)) {
-            if (type == ContentSettingsType.GEOLOCATION) {
-                permission_string = R.string.android_location_permission_off;
-            } else if (type == ContentSettingsType.MEDIASTREAM_MIC) {
-                permission_string = R.string.android_microphone_permission_off;
-            } else if (type == ContentSettingsType.MEDIASTREAM_CAMERA) {
-                permission_string = R.string.android_camera_permission_off;
-            } else if (type == ContentSettingsType.AR) {
-                // TODO(https://crbug.com/1058055): Use the missing camera permission
-                // text until we get guidance from UX team.
-                permission_string = R.string.android_camera_permission_off;
-            } else if (type == ContentSettingsType.NOTIFICATIONS) {
-                permission_string = R.string.android_notifications_permission_off;
-            }
-            return activity.getResources().getString(
-                    plural ? R.string.android_permission_off_plural : permission_string);
-        } else {
-            return activity.getResources().getString(plural ? R.string.android_permission_off_plural
-                                                            : R.string.android_permission_off);
+        if (type == ContentSettingsType.GEOLOCATION) {
+            permission_string = R.string.android_location_permission_off;
+        } else if (type == ContentSettingsType.MEDIASTREAM_MIC) {
+            permission_string = R.string.android_microphone_permission_off;
+        } else if (type == ContentSettingsType.MEDIASTREAM_CAMERA) {
+            permission_string = R.string.android_camera_permission_off;
+        } else if (type == ContentSettingsType.AR) {
+            // TODO(https://crbug.com/1058055): Use the missing camera permission
+            // text until we get guidance from UX team.
+            permission_string = R.string.android_camera_permission_off;
+        } else if (type == ContentSettingsType.NOTIFICATIONS) {
+            permission_string = R.string.android_notifications_permission_off;
         }
+        return activity.getResources().getString(
+                plural ? R.string.android_permission_off_plural : permission_string);
     }
 
     /**

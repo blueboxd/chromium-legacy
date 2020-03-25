@@ -24,6 +24,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -263,6 +264,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        SavedPassword) {
+  base::HistogramTester histograms;
   SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   content::WebContents* web_contents =
@@ -307,6 +309,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_EQ(
       chrome::GetSettingsUrl(chrome::kPasswordCheckSubPage),
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
+  histograms.ExpectUniqueSample(
+      password_manager::kPasswordCheckReferrerHistogram,
+      password_manager::PasswordCheckReferrer::kPhishGuardDialog, 1);
 }
 #endif
 

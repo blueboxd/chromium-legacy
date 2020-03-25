@@ -5,6 +5,7 @@
 #include "pdf/pdfium/pdfium_engine.h"
 
 #include "pdf/document_layout.h"
+#include "pdf/document_metadata.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
@@ -17,6 +18,7 @@ namespace chrome_pdf {
 namespace {
 
 using ::testing::InSequence;
+using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Return;
 
@@ -175,6 +177,36 @@ TEST_F(PDFiumEngineTest, ApplyDocumentLayoutAvoidsInfiniteLoop) {
   EXPECT_CALL(client, ScrollToPage(-1)).Times(1);
   CompareSize({343, 1463}, engine->ApplyDocumentLayout(options));
   CompareSize({343, 1463}, engine->ApplyDocumentLayout(options));
+}
+
+TEST_F(PDFiumEngineTest, GetDocumentMetadata) {
+  NiceMock<MockTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("document_info.pdf"));
+  ASSERT_TRUE(engine);
+
+  const DocumentMetadata& doc_metadata = engine->GetDocumentMetadata();
+
+  EXPECT_EQ("Sample PDF Document Info", doc_metadata.title);
+  EXPECT_EQ("Chromium Authors", doc_metadata.author);
+  EXPECT_EQ("Testing", doc_metadata.subject);
+  EXPECT_EQ("Your Preferred Text Editor", doc_metadata.creator);
+  EXPECT_EQ("fixup_pdf_template.py", doc_metadata.producer);
+}
+
+TEST_F(PDFiumEngineTest, GetEmptyDocumentMetadata) {
+  NiceMock<MockTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
+
+  const DocumentMetadata& doc_metadata = engine->GetDocumentMetadata();
+
+  EXPECT_THAT(doc_metadata.title, IsEmpty());
+  EXPECT_THAT(doc_metadata.author, IsEmpty());
+  EXPECT_THAT(doc_metadata.subject, IsEmpty());
+  EXPECT_THAT(doc_metadata.creator, IsEmpty());
+  EXPECT_THAT(doc_metadata.producer, IsEmpty());
 }
 
 }  // namespace

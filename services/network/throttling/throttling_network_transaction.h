@@ -79,8 +79,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingNetworkTransaction
       net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
-  void SetBeforeHeadersSentCallback(
-      const BeforeHeadersSentCallback& callback) override;
   void SetRequestHeadersCallback(net::RequestHeadersCallback callback) override;
   void SetResponseHeadersCallback(
       net::ResponseHeadersCallback callback) override;

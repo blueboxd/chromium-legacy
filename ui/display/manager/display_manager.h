@@ -412,7 +412,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   std::string GetDisplayNameForId(int64_t id) const;
 
   // Returns true if mirror mode should be set on for the specified displays.
-  bool ShouldSetMirrorModeOn(const DisplayIdList& id_list);
+  // If |should_check_hardware_mirroring| is true, the state of
+  // IsInHardwareMirroringMode() will also be taken into account.
+  bool ShouldSetMirrorModeOn(const DisplayIdList& id_list,
+                             bool should_check_hardware_mirroring);
 
   // Change the mirror mode. |mixed_params| will be ignored if mirror mode is
   // off or normal. When mirror mode is off, display mode will be set to default

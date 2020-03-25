@@ -14,9 +14,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/ime_candidate_window_handler_interface.h"
+#include "ui/base/ime/ime_suggestion_window_handler_interface.h"
 
 namespace chromeos {
 class IMECandidateWindowHandlerInterface;
+class IMESuggestionWindowHandlerInterface;
 }
 #endif
 
@@ -81,6 +83,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEBridge {
   // window service, pass NULL for |handler|. Caller must release |handler|.
   virtual void SetCandidateWindowHandler(
       chromeos::IMECandidateWindowHandlerInterface* handler) = 0;
+
+  virtual chromeos::IMESuggestionWindowHandlerInterface*
+  GetSuggestionWindowHandler() const = 0;
+  virtual void SetSuggestionWindowHandler(
+      chromeos::IMESuggestionWindowHandlerInterface* handler) = 0;
 #endif
 
  protected:

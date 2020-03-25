@@ -482,7 +482,7 @@ Polymer({
    */
   canGoBack_() {
     return this.lastBackMessageValue_ && !this.isWhitelistErrorShown_ &&
-        !this.authCompleted_ && !this.isLoadingUiShown_ && !this.isSaml_;
+        !this.authCompleted_ && !this.isSaml_;
   },
 
   /**

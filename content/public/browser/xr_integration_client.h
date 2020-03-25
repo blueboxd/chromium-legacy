@@ -17,6 +17,7 @@
 #endif
 
 namespace content {
+class XrConsentHelper;
 class XrInstallHelper;
 
 #if !defined(OS_ANDROID)
@@ -48,6 +49,12 @@ class CONTENT_EXPORT XrIntegrationClient {
   // nullptr if the requested |XRDeviceId| does not have any required extra
   // installation steps.
   virtual std::unique_ptr<XrInstallHelper> GetInstallHelper(
+      device::mojom::XRDeviceId device_id);
+
+  // Returns the |XrConsentHelper| for the corresponding |XRDeviceId|, or
+  // nullptr if the requested |XRDeviceId| cannot prompt for consent.
+  // In this case, consent is assumed to have been denied.
+  virtual std::unique_ptr<XrConsentHelper> GetConsentHelper(
       device::mojom::XRDeviceId device_id);
 
 #if !defined(OS_ANDROID)

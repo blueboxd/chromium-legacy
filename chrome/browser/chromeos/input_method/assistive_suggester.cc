@@ -92,7 +92,8 @@ bool AssistiveSuggester::OnKeyEvent(
   if (suggestion_shown_ && event.type == kKeydown) {
     suggestion_shown_ = false;
     if (event.key == "Tab" || event.key == "Right") {
-      engine_->ConfirmCompositionText(false, false);
+      std::string error;
+      engine_->AcceptSuggestion(context_id_, &error);
       return true;
     }
     DismissSuggestion();
@@ -192,9 +193,7 @@ base::string16 AssistiveSuggester::GetPersonalInfoSuggestion(
 
 void AssistiveSuggester::ShowSuggestion(const base::string16& text) {
   std::string error;
-  std::vector<InputMethodEngineBase::SegmentInfo> segments;
-  engine_->SetComposition(context_id_, base::UTF16ToUTF8(text).c_str(), 0, 0, 0,
-                          segments, &error);
+  engine_->SetSuggestion(context_id_, text, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
@@ -202,7 +201,7 @@ void AssistiveSuggester::ShowSuggestion(const base::string16& text) {
 
 void AssistiveSuggester::DismissSuggestion() {
   std::string error;
-  engine_->ClearComposition(context_id_, &error);
+  engine_->DismissSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
   }

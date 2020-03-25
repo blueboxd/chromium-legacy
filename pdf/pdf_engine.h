@@ -56,6 +56,8 @@ class VarDictionary;
 
 namespace chrome_pdf {
 
+struct DocumentMetadata;
+
 // Do one time initialization of the SDK.
 // If |enable_v8| is false, then the PDFEngine will not be able to run
 // JavaScript.
@@ -363,6 +365,8 @@ class PDFEngine {
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;
   virtual void SelectAll() = 0;
+  // Gets metadata about the document.
+  virtual const DocumentMetadata& GetDocumentMetadata() const = 0;
   // Gets the number of pages in the document.
   virtual int GetNumberOfPages() = 0;
   // Gets the named destination by name.
@@ -434,7 +438,6 @@ class PDFEngine {
   // document at page |index|.
   virtual void AppendPage(PDFEngine* engine, int index) = 0;
 
-  virtual std::string GetMetadata(const std::string& key) = 0;
   virtual std::vector<uint8_t> GetSaveData() = 0;
 
   virtual void SetCaretPosition(const pp::Point& position) = 0;

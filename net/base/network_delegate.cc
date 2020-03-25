@@ -45,16 +45,6 @@ int NetworkDelegate::NotifyBeforeStartTransaction(
   return OnBeforeStartTransaction(request, std::move(callback), headers);
 }
 
-void NetworkDelegate::NotifyBeforeSendHeaders(
-    URLRequest* request,
-    const ProxyInfo& proxy_info,
-    const ProxyRetryInfoMap& proxy_retry_info,
-    HttpRequestHeaders* headers) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(headers);
-  OnBeforeSendHeaders(request, proxy_info, proxy_retry_info, headers);
-}
-
 int NetworkDelegate::NotifyHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,

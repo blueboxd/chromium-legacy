@@ -267,11 +267,6 @@
       ],
     },
   },
-  'ios_swarming_account': {
-    'swarming': {
-      'service_account': 'ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com'
-    },
-  },
   'kitkat': {
     'swarming': {
       'dimensions': {

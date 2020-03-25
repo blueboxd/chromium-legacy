@@ -21,13 +21,36 @@ grit("webrtc_logs_resources") {
 }
 
 js_type_check("closure_compile") {
-  deps = [ ":media_feeds" ]
+  deps = [
+    ":media_data_table",
+    ":media_feeds",
+    ":media_history",
+  ]
+}
+
+js_library("media_history") {
+  deps = [
+    ":media_data_table",
+    "//chrome/browser/media:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js/cr/ui:tabs",
+  ]
 }
 
 js_library("media_feeds") {
   deps = [
+    ":media_data_table",
     "//chrome/browser/media/feeds:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:util",
+  ]
+}
+
+js_library("media_data_table") {
+  deps = [
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:util",
   ]
 }

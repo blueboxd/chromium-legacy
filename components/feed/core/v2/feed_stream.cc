@@ -20,6 +20,8 @@
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
+#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
@@ -125,6 +127,13 @@ class FeedStream::ModelMonitor : public StreamModel::Observer {
   std::set<ContentRevision> current_content_set_;
 };
 
+std::unique_ptr<StreamModelUpdateRequest>
+FeedStream::WireResponseTranslator::TranslateWireResponse(
+    feedwire::Response response,
+    base::TimeDelta response_time) {
+  return ::feed::TranslateWireResponse(std::move(response), response_time);
+}
+
 FeedStream::FeedStream(
     RefreshTaskScheduler* refresh_task_scheduler,
     EventObserver* stream_event_observer,
@@ -146,6 +155,8 @@ FeedStream::FeedStream(
       user_classifier_(profile_prefs, clock),
       refresh_throttler_(profile_prefs, clock) {
   // TODO(harringtond): Use these members.
+  static WireResponseTranslator default_translator;
+  wire_response_translator_ = &default_translator;
   (void)feed_network_;
 }
 
@@ -161,10 +172,25 @@ void FeedStream::InitializeScheduling() {
 
 FeedStream::~FeedStream() = default;
 
+void FeedStream::TriggerStreamLoad() {
+  if (model_monitor_ || model_loading_in_progress_)
+    return;
+  model_loading_in_progress_ = true;
+  task_queue_.AddTask(std::make_unique<LoadStreamTask>(
+      this, base::BindOnce(&FeedStream::LoadStreamTaskComplete,
+                           base::Unretained(this))));
+}
+
+void FeedStream::LoadStreamTaskComplete() {
+  model_loading_in_progress_ = false;
+}
+
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
   surfaces_.AddObserver(surface);
   if (model_monitor_) {
     model_monitor_->SurfaceAdded(surface);
+  } else {
+    TriggerStreamLoad();
   }
 }
 
@@ -225,6 +251,9 @@ base::Time FeedStream::GetLastFetchTime() {
 
 void FeedStream::LoadModelForTesting(std::unique_ptr<StreamModel> model) {
   LoadModel(std::move(model));
+}
+offline_pages::TaskQueue* FeedStream::GetTaskQueueForTesting() {
+  return &task_queue_;
 }
 
 void FeedStream::OnTaskQueueIsIdle() {}

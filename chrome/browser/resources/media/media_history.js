@@ -6,9 +6,9 @@
 
 // Allow a function to be provided by tests, which will be called when
 // the page has been populated.
-const pageIsPopulatedResolver = new PromiseResolver();
+const mediaHistoryPageIsPopulatedResolver = new PromiseResolver();
 function whenPageIsPopulatedForTest() {
-  return pageIsPopulatedResolver.promise;
+  return mediaHistoryPageIsPopulatedResolver.promise;
 }
 
 (function() {
@@ -18,12 +18,13 @@ let statsTableBody = null;
 let originsTable = null;
 let playbacksTable = null;
 let sessionsTable = null;
+let delegate = null;
 
 /**
  * Creates a single row in the stats table.
  * @param {string} name The name of the table.
- * @param {string} count The row count of the table.
- * @return {!HTMLElement}
+ * @param {number} count The row count of the table.
+ * @return {!Node}
  */
 function createStatsRow(name, count) {
   const template = $('stats-row');
@@ -33,219 +34,130 @@ function createStatsRow(name, count) {
   return document.importNode(template.content, true);
 }
 
-/**
- * Compares two MediaHistoryOriginRow objects based on |sortKey|.
- * @param {string} sortKey The name of the property to sort by.
- * @param {number|mojo_base.mojom.TimeDelta|url.mojom.Origin} The first object
- *     to compare.
- * @param {number|mojo_base.mojom.TimeDelta|url.mojom.Origin} The second object
- *     to compare.
- * @return {number} A negative number if |a| should be ordered before
- *     |b|, a positive number otherwise.
- */
-function compareTableItem(sortKey, a, b) {
-  const val1 = a[sortKey];
-  const val2 = b[sortKey];
+/** @implements {cr.ui.MediaDataTableDelegate} */
+class MediaHistoryTableDelegate {
+  /**
+   * Formats a field to be displayed in the data table and inserts it into the
+   * element.
+   * @param {Element} td
+   * @param {?Object} data
+   * @param {string} key
+   */
+  insertDataField(td, data, key) {
+    if (data === undefined || data === null) {
+      return;
+    }
 
-  // Compare the hosts of the origin ignoring schemes.
-  if (sortKey == 'origin') {
-    return val1.host > val2.host ? 1 : -1;
+    if (key === 'origin') {
+      // Format a mojo origin.
+      const {scheme, host, port} = data;
+      td.textContent = new URL(`${scheme}://${host}:${port}`).origin;
+    } else if (key === 'lastUpdatedTime') {
+      // Format a JS timestamp.
+      td.textContent = data ? new Date(data).toISOString() : '';
+    } else if (
+        key === 'cachedAudioVideoWatchtime' ||
+        key === 'actualAudioVideoWatchtime' || key === 'watchtime' ||
+        key === 'duration' || key === 'position') {
+      // Format a mojo timedelta.
+      const secs = (data.microseconds / 1000000);
+      td.textContent =
+          secs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+    } else if (key === 'url') {
+      // Format a mojo GURL.
+      td.textContent = data.url;
+    } else if (key === 'hasAudio' || key === 'hasVideo') {
+      // Format a boolean.
+      td.textContent = data ? 'Yes' : 'No';
+    } else if (
+        key === 'title' || key === 'artist' || key === 'album' ||
+        key === 'sourceTitle') {
+      // Format a mojo string16.
+      td.textContent = decodeString16(
+          /** @type {mojoBase.mojom.String16} */ (data));
+    } else if (key === 'artwork') {
+      // Format an array of mojo media images.
+      data.forEach((image) => {
+        const a = document.createElement('a');
+        a.href = image.src.url;
+        a.textContent = image.src.url;
+        a.target = '_blank';
+        td.appendChild(a);
+        td.appendChild(document.createElement('br'));
+      });
+    } else {
+      td.textContent = data;
+    }
   }
 
-  // Compare the url property.
-  if (sortKey == 'url') {
-    return val1.url > val2.url ? 1 : -1;
+  /**
+   * Compares two objects based on |sortKey|.
+   * @param {string} sortKey The name of the property to sort by.
+   * @param {?Object} a The first object to compare.
+   * @param {?Object} b The second object to compare.
+   * @return {number} A negative number if |a| should be ordered
+   *     before |b|, a positive number otherwise.
+   */
+  compareTableItem(sortKey, a, b) {
+    const val1 = a[sortKey];
+    const val2 = b[sortKey];
+
+    // Compare the hosts of the origin ignoring schemes.
+    if (sortKey === 'origin') {
+      return val1.host > val2.host ? 1 : -1;
+    }
+
+    // Compare the url property.
+    if (sortKey === 'url') {
+      return val1.url > val2.url ? 1 : -1;
+    }
+
+    // Compare mojo_base.mojom.TimeDelta microseconds value.
+    if (sortKey === 'cachedAudioVideoWatchtime' ||
+        sortKey === 'actualAudioVideoWatchtime' || sortKey === 'watchtime' ||
+        sortKey === 'duration' || sortKey === 'position') {
+      return val1.microseconds - val2.microseconds;
+    }
+
+    if (sortKey.startsWith('metadata.')) {
+      // Keys with a period denote nested objects.
+      let nestedA = a;
+      let nestedB = b;
+      const expandedKey = sortKey.split('.');
+      expandedKey.forEach((k) => {
+        nestedA = nestedA[k];
+        nestedB = nestedB[k];
+      });
+
+      return nestedA > nestedB ? 1 : -1;
+    }
+
+    if (sortKey === 'lastUpdatedTime') {
+      return val1 - val2;
+    }
+
+    assertNotReached('Unsupported sort key: ' + sortKey);
+    return 0;
   }
-
-  // Compare mojo_base.mojom.TimeDelta microseconds value.
-  if (sortKey == 'cachedAudioVideoWatchtime' ||
-      sortKey == 'actualAudioVideoWatchtime' || sortKey == 'watchtime' ||
-      sortKey == 'duration' || sortKey == 'position') {
-    return val1.microseconds - val2.microseconds;
-  }
-
-  if (sortKey.startsWith('metadata.')) {
-    // Keys with a period denote nested objects.
-    let nestedA = a;
-    let nestedB = b;
-    const expandedKey = sortKey.split('.');
-    expandedKey.forEach((k) => {
-      nestedA = nestedA[k];
-      nestedB = nestedB[k];
-    });
-
-    return nestedA > nestedB;
-  }
-
-  if (sortKey == 'lastUpdatedTime') {
-    return val1 - val2;
-  }
-
-  assertNotReached('Unsupported sort key: ' + sortKey);
-  return 0;
 }
 
 /**
  * Parses utf16 coded string.
- * @param {!mojoBase.mojom.String16} arr
+ * @param {mojoBase.mojom.String16} arr
  * @return {string}
  */
 function decodeString16(arr) {
+  if (!arr) {
+    return '';
+  }
+
   return arr.data.map(ch => String.fromCodePoint(ch)).join('');
 }
 
 /**
- * Formats a field to be displayed in the data table and inserts it into the
- * element.
- * @param {HTMLTableRowElement} td
- * @param {?object} data
- * @param {string} key
- */
-function insertDataField(td, data, key) {
-  if (data === undefined || data === null) {
-    return;
-  }
-
-  if (key == 'origin') {
-    // Format a mojo origin.
-    td.textContent = data.scheme + '://' + data.host;
-    if (data.scheme == 'http' && data.port != '80') {
-      td.textContent += ':' + data.port;
-    } else if (data.scheme == 'https' && data.port != '443') {
-      td.textContent += ':' + data.port;
-    }
-  } else if (key == 'lastUpdatedTime') {
-    // Format a JS timestamp.
-    td.textContent = data ? new Date(data).toISOString() : '';
-  } else if (
-      key == 'cachedAudioVideoWatchtime' ||
-      key == 'actualAudioVideoWatchtime' || key == 'watchtime' ||
-      key == 'duration' || key == 'position') {
-    // Format a mojo timedelta.
-    const secs = (data.microseconds / 1000000);
-    td.textContent = secs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-  } else if (key == 'url') {
-    // Format a mojo GURL.
-    td.textContent = data.url;
-  } else if (key == 'hasAudio' || key == 'hasVideo') {
-    // Format a boolean.
-    td.textContent = data ? 'Yes' : 'No';
-  } else if (
-      key == 'title' || key == 'artist' || key == 'album' ||
-      key == 'sourceTitle') {
-    // Format a mojo string16.
-    td.textContent = decodeString16(data);
-  } else if (key == 'artwork') {
-    // Format an array of mojo media images.
-    data.forEach((image) => {
-      const a = document.createElement('a');
-      a.href = image.src.url;
-      a.textContent = image.src.url;
-      a.target = '_blank';
-      td.appendChild(a);
-      td.appendChild(document.createElement('br'));
-    });
-  } else {
-    td.textContent = data;
-  }
-}
-
-class DataTable {
-  /**
-   * @param {!HTMLTableElement} table
-   */
-  constructor(table) {
-    /** @private {!HTMLTableElement} */
-    this.table_ = table;
-
-    /** @private {Object[]} */
-    this.data_ = [];
-
-    // Set table header sort handlers.
-    const headers = this.table_.querySelectorAll('th[sort-key]');
-    headers.forEach((header) => {
-      header.addEventListener('click', this.handleSortClick.bind(this));
-    }, this);
-  }
-
-  handleSortClick(e) {
-    const isCurrentSortColumn = e.target.classList.contains('sort-column');
-
-    // If we are not the sort column then we should become the sort column.
-    if (!isCurrentSortColumn) {
-      const oldSortColumn = document.querySelector('.sort-column');
-      oldSortColumn.classList.remove('sort-column');
-      e.target.classList.add('sort-column');
-    }
-
-    // If we are the current sort column then we should toggle the reverse
-    // attribute to sort in reverse.
-    if (isCurrentSortColumn && e.target.hasAttribute('sort-reverse')) {
-      e.target.removeAttribute('sort-reverse');
-    } else {
-      e.target.setAttribute('sort-reverse', '');
-    }
-
-    this.render();
-  }
-
-  render() {
-    // Find the body of the table and clear it.
-    const body = this.table_.querySelectorAll('tbody')[0];
-    body.innerHTML = '';
-
-    // Get the sort key from the columns to determine which data should be in
-    // which column.
-    const headerCells = Array.from(this.table_.querySelectorAll('thead th'));
-    const dataAndSortKeys = headerCells.map((e) => {
-      return e.getAttribute('sort-key') ? e.getAttribute('sort-key') :
-                                          e.getAttribute('data-key');
-    });
-
-    const currentSortCol = this.table_.querySelectorAll('.sort-column')[0];
-    const currentSortKey = currentSortCol.getAttribute('sort-key');
-    const currentSortReverse = currentSortCol.hasAttribute('sort-reverse');
-
-    // Sort the data based on the current sort key.
-    this.data_.sort((a, b) => {
-      return (currentSortReverse ? -1 : 1) *
-          compareTableItem(currentSortKey, a, b);
-    });
-
-    // Generate the table rows.
-    this.data_.forEach((dataRow) => {
-      const tr = document.createElement('tr');
-      body.appendChild(tr);
-
-      dataAndSortKeys.forEach((key) => {
-        const td = document.createElement('td');
-
-        // Keys with a period denote nested objects.
-        let data = dataRow;
-        const expandedKey = key.split('.');
-        expandedKey.forEach((k) => {
-          data = data[k];
-          key = k;
-        });
-
-        insertDataField(td, data, key);
-        tr.appendChild(td);
-      });
-    });
-  }
-
-  /**
-   * @param {object[]} data The data to update
-   */
-  setData(data) {
-    this.data_ = data;
-    this.render();
-  }
-}
-
-/**
  * Regenerates the stats table.
- * @param {!MediaHistoryStats} stats The stats for the Media History store.
+ * @param {!mediaHistory.mojom.MediaHistoryStats} stats The stats for the Media
+ *     History store.
  */
 function renderStatsTable(stats) {
   statsTableBody.innerHTML = '';
@@ -280,7 +192,7 @@ function showTab(name) {
   }
 
   // Return an empty promise if there is no tab.
-  return new Promise();
+  return new Promise(() => {});
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -288,9 +200,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   statsTableBody = $('stats-table-body');
 
-  originsTable = new DataTable($('origins-table'));
-  playbacksTable = new DataTable($('playbacks-table'));
-  sessionsTable = new DataTable($('sessions-table'));
+  delegate = new MediaHistoryTableDelegate();
+
+  originsTable = new cr.ui.MediaDataTable($('origins-table'), delegate);
+  playbacksTable = new cr.ui.MediaDataTable($('playbacks-table'), delegate);
+  sessionsTable = new cr.ui.MediaDataTable($('sessions-table'), delegate);
 
   cr.ui.decorate('tabbox', cr.ui.TabBox);
 
@@ -305,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.hash = 'tab-stats';
   } else {
     showTab(window.location.hash.substr(5))
-        .then(pageIsPopulatedResolver.resolve);
+        .then(mediaHistoryPageIsPopulatedResolver.resolve);
   }
 
   // When the tab updates, update the anchor.

@@ -402,9 +402,6 @@ include_rules = [
   # VRService is being moved to content, this forces documentation of new
   # dependencies that are added to it outside of it's own directory.
   "-chrome/browser/vr/service",
-  # The following VRService interfaces will be moving to content/public
-  "+chrome/browser/vr/service/xr_consent_helper.h",
-  "+chrome/browser/vr/service/xr_consent_prompt_level.h",
 
   # Explicitly disallow using SyncMessageFilter to prevent browser from
   # sending synchronous IPC messages on non-UI threads.
@@ -484,6 +481,5 @@ specific_include_rules = {
     # TODO(crbug.com/1031622): Until VRService moves, ChromeBrowserMain is
     # responsible for wiring these up to appropriate factories.
     "+chrome/browser/vr/service/vr_service_impl.h",
-    "+chrome/browser/vr/service/xr_session_request_consent_manager_impl.h",
   ]
 }

@@ -39,6 +39,7 @@ public class ShareSheetCoordinator {
     private final ActivityTabProvider mActivityTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
     private ScreenshotCoordinator mScreenshotCoordinator;
+    private static long sShareStartTime;
 
     /**
      * Used to initiate the screenshot flow once the bottom sheet is fully hidden. Removes itself
@@ -74,6 +75,7 @@ public class ShareSheetCoordinator {
             return;
         }
 
+        sShareStartTime = shareStartTime;
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         ArrayList<PropertyModel> chromeFeatures = createTopRowPropertyModels(bottomSheet, activity);
@@ -103,6 +105,7 @@ public class ShareSheetCoordinator {
                     (shareParams)
                             -> {
                         RecordUserAction.record("SharingHubAndroid.ScreenshotSelected");
+                        recordTimeToShare();
                         mScreenshotCoordinator =
                                 new ScreenshotCoordinator(activity, mActivityTabProvider.get());
                         // Capture a screenshot once the bottom sheet is fully hidden. The observer
@@ -119,6 +122,7 @@ public class ShareSheetCoordinator {
                 AppCompatResources.getDrawable(activity, R.drawable.ic_content_copy_black),
                 activity.getResources().getString(R.string.sharing_copy_url), (params) -> {
                     RecordUserAction.record("SharingHubAndroid.CopyURLSelected");
+                    recordTimeToShare();
                     mBottomSheetController.hideContent(bottomSheet, true);
                     Tab tab = mActivityTabProvider.get();
                     NavigationEntry entry =
@@ -144,6 +148,7 @@ public class ShareSheetCoordinator {
                                         -> {
                                     RecordUserAction.record(
                                             "SharingHubAndroid.SendTabToSelfSelected");
+                                    recordTimeToShare();
                                     mBottomSheetController.hideContent(bottomSheet, true);
                                     SendTabToSelfShareActivity.actionHandler(activity,
                                             mActivityTabProvider.get()
@@ -163,6 +168,7 @@ public class ShareSheetCoordinator {
                 (currentActivity)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.QRCodeSelected");
+                    recordTimeToShare();
                     mBottomSheetController.hideContent(bottomSheet, true);
                     QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(activity);
                     qrCodeCoordinator.show();
@@ -192,5 +198,10 @@ public class ShareSheetCoordinator {
         models.add(morePropertyModel);
 
         return models;
+    }
+
+    protected static void recordTimeToShare() {
+        long delta = System.currentTimeMillis() - sShareStartTime;
+        RecordHistogram.recordMediumTimesHistogram("Sharing.SharingHubAndroid.TimeToShare", delta);
     }
 }

@@ -21,8 +21,10 @@ namespace local_search_service {
 
 class LocalSearchServiceImpl;
 
-// This class owns an implementation of LocalSearchService, but it only exposes
-// LocalSearchService through the mojo interface by returning a remote.
+// This class owns an implementation of LocalSearchService.
+// It exposes LocalSearchService through the mojo interface by returning a
+// remote. However, in-process clients can request implementation ptr directly.
+// TODO(jiameng): the next cl will remove mojo and will provide impl directly.
 class LocalSearchServiceProxy : public KeyedService {
  public:
   // Profile isn't required, hence can be nullptr in tests.
@@ -37,7 +39,12 @@ class LocalSearchServiceProxy : public KeyedService {
   // to |local_search_service_impl_|.
   mojom::LocalSearchService* GetLocalSearchService();
 
+  // For in-process clients, it could be more efficient to get the
+  // implementation ptr directly.
+  LocalSearchServiceImpl* GetLocalSearchServiceImpl();
+
  private:
+  void CreateLocalSearchServiceAndBind();
   std::unique_ptr<LocalSearchServiceImpl> local_search_service_impl_;
   mojo::Remote<mojom::LocalSearchService> remote_;
 

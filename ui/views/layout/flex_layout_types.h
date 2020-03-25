@@ -104,9 +104,29 @@ class VIEWS_EXPORT FlexSpecification {
   // bounds rules. If |adjust_height_for_width| is specified, extra calculations
   // will be done to ensure that the view can become taller if it is made
   // narrower (typically only useful for multiline text controls).
-  FlexSpecification(MinimumFlexSizeRule minimum_size_rule,
-                    MaximumFlexSizeRule maximum_size_rule,
-                    bool adjust_height_for_width = false);
+  //
+  // NOTE: Minimum and maximum size rules apply to both main and cross axes of
+  // the view in the layout. If you only need the view to flex based on its main
+  // axis (width for horizontal layouts, height for vertical) consider using the
+  // FlexSpecification(LayoutOrientation, ...) constructor below.
+  explicit FlexSpecification(
+      MinimumFlexSizeRule minimum_size_rule,
+      MaximumFlexSizeRule maximum_size_rule = MaximumFlexSizeRule::kPreferred,
+      bool adjust_height_for_width = false);
+
+  // Creates a flex specification for a layout with |orientation| using the
+  // given minimum and maximum flex size rules along the main axis. You may also
+  // specify an optional cross-axis minimum size rule, but the default is to use
+  // the child view's preferred size. (There is no max cross size rule because
+  // unless a layout's cross-axis alignment is set to kStretch views will never
+  // receive more than their preferred size in the cross-axis dimension.)
+  FlexSpecification(LayoutOrientation orientation,
+                    MinimumFlexSizeRule minimum_main_axis_rule,
+                    MaximumFlexSizeRule maximum_main_axis_rule =
+                        MaximumFlexSizeRule::kPreferred,
+                    bool adjust_height_for_width = false,
+                    MinimumFlexSizeRule minimum_cross_axis_rule =
+                        MinimumFlexSizeRule::kPreferred);
 
   FlexSpecification(const FlexSpecification& other);
   FlexSpecification& operator=(const FlexSpecification& other);
@@ -218,6 +238,12 @@ class VIEWS_EXPORT Span {
   int start_ = 0;
   int length_ = 0;
 };
+
+// These are declared here for use in gtest-based unit tests but is defined in
+// the views_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(MinimumFlexSizeRule minimum_flex_size_rule, ::std::ostream* os);
+void PrintTo(MaximumFlexSizeRule maximum_flex_size_rule, ::std::ostream* os);
 
 }  // namespace views
 

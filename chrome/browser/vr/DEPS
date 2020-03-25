@@ -27,9 +27,5 @@ specific_include_rules = {
   ],
   ".*mock.*" : [
     "+chrome/browser/vr/service",
-  ],
-  ".*fake.*" : [
-    "+chrome/browser/vr/service",
   ]
-
 }

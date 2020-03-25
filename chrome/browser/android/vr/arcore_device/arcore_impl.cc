@@ -465,6 +465,15 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   return GetMojomVRPoseFromArPose(arcore_session_.get(), arcore_pose.get());
 }
 
+base::TimeDelta ArCoreImpl::GetFrameTimestamp() {
+  DCHECK(arcore_session_.is_valid());
+  DCHECK(arcore_frame_.is_valid());
+  int64_t out_timestamp_ns;
+  ArFrame_getTimestamp(arcore_session_.get(), arcore_frame_.get(),
+                       &out_timestamp_ns);
+  return base::TimeDelta::FromNanoseconds(out_timestamp_ns);
+}
+
 mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
   DVLOG(2) << __func__;
 

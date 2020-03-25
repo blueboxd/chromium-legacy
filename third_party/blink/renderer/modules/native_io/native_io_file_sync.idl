@@ -1,0 +1,21 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/fivedots/nativeio-explainer
+
+[
+  Exposed=DedicatedWorker,
+  RuntimeEnabled=NativeIO,
+  SecureContext
+] interface NativeIOFileSync {
+  void close();
+  [
+    RaisesException
+  ] unsigned long long read([AllowShared] ArrayBufferView buffer,
+                            unsigned long long file_offset);
+  [
+    RaisesException
+  ] unsigned long long write([AllowShared] ArrayBufferView buffer,
+                             unsigned long long file_offset);
+};

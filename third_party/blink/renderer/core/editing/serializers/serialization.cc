@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
+#include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -803,6 +804,25 @@ static bool ContainsStyleElements(const DocumentFragment& fragment) {
   return false;
 }
 
+// Returns true if any svg <use> element is removed.
+static bool StripSVGUseDataURLs(Node& node) {
+  if (IsA<SVGUseElement>(node)) {
+    SVGUseElement& use = To<SVGUseElement>(node);
+    SVGURLReferenceResolver resolver(use.HrefString(), use.GetDocument());
+    if (resolver.AbsoluteUrl().ProtocolIsData())
+      node.remove();
+    return true;
+  }
+  bool stripped = false;
+  for (Node* child = node.firstChild(); child;) {
+    Node* next = child->nextSibling();
+    if (StripSVGUseDataURLs(*child))
+      stripped = true;
+    child = next;
+  }
+  return stripped;
+}
+
 DocumentFragment* CreateSanitizedFragmentFromMarkupWithContext(
     Document& document,
     const String& raw_markup,
@@ -823,7 +843,13 @@ DocumentFragment* CreateSanitizedFragmentFromMarkupWithContext(
     return nullptr;
   }
 
-  if (!ContainsStyleElements(*fragment)) {
+  bool needs_sanitization = false;
+  if (ContainsStyleElements(*fragment))
+    needs_sanitization = true;
+  if (StripSVGUseDataURLs(*fragment))
+    needs_sanitization = true;
+
+  if (!needs_sanitization) {
     staging_document->GetPage()->WillBeDestroyed();
     return CreateFragmentFromMarkupWithContext(
         document, raw_markup, fragment_start, fragment_end, base_url,

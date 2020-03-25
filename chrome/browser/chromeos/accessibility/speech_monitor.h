@@ -55,17 +55,21 @@ class SpeechMonitor : public content::TtsPlatform {
 
   // Non-blocking api.
   // Use these apis if you want to write an async test e.g.
-  // speech_monitor_.ExpectSpeech("foo")
-  //                .Call([this]() { DoSomething(); })
-  //                .Replay();
+  // sm_.ExpectSpeech("foo");
+  // sm_.Call([this]() { DoSomething(); })
+  // sm_.Replay();
 
   // Adds an expectation of spoken text.
-  SpeechMonitor& ExpectSpeech(const std::string& text);
-  SpeechMonitor& ExpectSpeechPattern(const std::string& pattern);
-  SpeechMonitor& ExpectNextSpeechIsNot(const std::string& text);
+  void ExpectSpeech(const std::string& text,
+                    const base::Location& location = FROM_HERE);
+  void ExpectSpeechPattern(const std::string& pattern,
+                           const base::Location& location = FROM_HERE);
+  void ExpectNextSpeechIsNot(const std::string& text,
+                             const base::Location& location = FROM_HERE);
 
   // Adds a call to be included in replay.
-  SpeechMonitor& Call(std::function<void()> func);
+  void Call(std::function<void()> func,
+            const base::Location& location = FROM_HERE);
 
   // Replays all expectations.
   void Replay();

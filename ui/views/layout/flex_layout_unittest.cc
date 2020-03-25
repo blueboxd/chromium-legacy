@@ -43,8 +43,9 @@ class MockView : public View {
   }
 
   int GetHeightForWidth(int width) const override {
-    DCHECK_GT(width, 0);
     const gfx::Size preferred = GetPreferredSize();
+    if (width <= 0)
+      return preferred.height();
     switch (size_mode_) {
       case SizeMode::kUsePreferredSize:
         return preferred.height();
@@ -2246,6 +2247,37 @@ TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
   EXPECT_EQ(0, child2->GetSetVisibleCount());
 }
 
+TEST_F(FlexLayoutTest, Layout_Vertical_ZeroWidthNonZeroHeight) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kCenter);
+  layout_->SetDefault(kMarginsKey, gfx::Insets(5));
+  layout_->SetCollapseMargins(true);
+  AddChild(gfx::Size(10, 10));
+  AddChild(gfx::Size(0, 10));
+  AddChild(gfx::Size(10, 10));
+
+  host_->SetSize(gfx::Size(20, 50));
+  const std::vector<gfx::Rect> expected{
+      {5, 5, 10, 10}, {10, 20, 0, 10}, {5, 35, 10, 10}};
+  EXPECT_EQ(expected, GetChildBounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_Vertical_ZeroWidthZeroHeight) {
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kCenter);
+  layout_->SetDefault(kMarginsKey, gfx::Insets(5));
+  layout_->SetCollapseMargins(true);
+  AddChild(gfx::Size(10, 10));
+  AddChild(gfx::Size(0, 0));
+  AddChild(gfx::Size(10, 10));
+
+  host_->SetSize(gfx::Size(20, 40));
+  const std::vector<gfx::Rect> expected{{5, 5, 10, 10}, {}, {5, 20, 10, 10}};
+  EXPECT_EQ(expected, GetChildBounds());
+}
+
 // Available Size Tests -------------------------------------------------------
 
 TEST_F(FlexLayoutTest, GetAvailableSize_NoFlex) {
@@ -3002,5 +3034,365 @@ TEST_F(NestedFlexLayoutTest, UsingDefaultFlexRule) {
   EXPECT_EQ(gfx::Size(5, 5), grandchild(2, 1)->size());
   EXPECT_FALSE(grandchild(2, 2)->GetVisible());
 }
+
+namespace {
+
+struct DirectionalFlexRuleTestParamRules {
+  const char* const name;
+  MinimumFlexSizeRule min_main_rule;
+  MaximumFlexSizeRule max_main_rule;
+  bool use_height_for_width = false;
+  MinimumFlexSizeRule min_cross_rule = MinimumFlexSizeRule::kPreferred;
+};
+
+struct DirectionalFlexRuleTestParam {
+  LayoutOrientation orientation;
+  DirectionalFlexRuleTestParamRules rules;
+  gfx::Size size;
+  std::vector<gfx::Rect> expected;
+
+  std::string ToString() const {
+    std::ostringstream oss;
+    PrintTo(orientation, &oss);
+    oss << " " << rules.name << " " << size.ToString();
+    return oss.str();
+  }
+};
+
+// No flex in cross-axis direction.
+static const DirectionalFlexRuleTestParamRules kNoCrossFlex{
+    "Main unbounded scale to minimum snap to zero, cross no flex.",
+    MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
+    MaximumFlexSizeRule::kUnbounded};
+
+// Drop out on main axis, flex on cross axis.
+static const DirectionalFlexRuleTestParamRules kMainDropOutCrossFlex{
+    "Main preferred snap to zero, cross unbounded scale to zero.",
+    MinimumFlexSizeRule::kPreferredSnapToZero, MaximumFlexSizeRule::kPreferred,
+    false, MinimumFlexSizeRule::kScaleToZero};
+
+// Preferred height-for-width on main axis, scale to minimum snap to zero on
+// cross axis. (Note: Vertical only!)
+static const DirectionalFlexRuleTestParamRules kFlexUseHeightForWidth{
+    "Cross scale to minimum snap to zero, main use height for width.",
+    MinimumFlexSizeRule::kPreferred, MaximumFlexSizeRule::kPreferred, true,
+    MinimumFlexSizeRule::kScaleToMinimumSnapToZero};
+
+const DirectionalFlexRuleTestParam DirectionalFlexRuleTestParamList[]{
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(20, 10),
+     {{0, 0, 10, 10}, {10, 0, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(30, 10),
+     {{0, 0, 10, 10}, {10, 0, 20, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(16, 10),
+     {{0, 0, 10, 10}, {10, 0, 6, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(14, 10),
+     {{0, 0, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(20, 20),
+     {{0, 5, 10, 10}, {10, 5, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(30, 20),
+     {{0, 5, 10, 10}, {10, 5, 20, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(16, 20),
+     {{0, 5, 10, 10}, {10, 5, 6, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(14, 20),
+     {{0, 5, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(20, 6),
+     {{0, -2, 10, 10}, {10, -2, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(30, 6),
+     {{0, -2, 10, 10}, {10, -2, 20, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(16, 6),
+     {{0, -2, 10, 10}, {10, -2, 6, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(14, 6),
+     {{0, -2, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(20, 4),
+     {{0, -3, 10, 10}, {10, -3, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(30, 4),
+     {{0, -3, 10, 10}, {10, -3, 20, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(16, 4),
+     {{0, -3, 10, 10}, {10, -3, 6, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kNoCrossFlex,
+     gfx::Size(14, 4),
+     {{0, -3, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 10),
+     {{0, 0, 10, 10}, {10, 0, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(30, 10),
+     {{0, 0, 10, 10}, {10, 0, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(16, 10),
+     {{0, 0, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(14, 10),
+     {{0, 0, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 20),
+     {{0, 5, 10, 10}, {10, 5, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(30, 20),
+     {{0, 5, 10, 10}, {10, 5, 10, 10}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(16, 20),
+     {{0, 5, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(14, 20),
+     {{0, 5, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 6),
+     {{0, -2, 10, 10}, {10, 0, 10, 6}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(30, 6),
+     {{0, -2, 10, 10}, {10, 0, 10, 6}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(16, 6),
+     {{0, -2, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(14, 6),
+     {{0, -2, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 4),
+     {{0, -3, 10, 10}, {10, 0, 10, 4}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(30, 4),
+     {{0, -3, 10, 10}, {10, 0, 10, 4}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(16, 4),
+     {{0, -3, 10, 10}, {}}},
+    {LayoutOrientation::kHorizontal,
+     kMainDropOutCrossFlex,
+     gfx::Size(14, 4),
+     {{0, -3, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(10, 20),
+     {{0, 0, 10, 10}, {0, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(10, 30),
+     {{0, 0, 10, 10}, {0, 10, 10, 20}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(10, 16),
+     {{0, 0, 10, 10}, {0, 10, 10, 6}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(10, 14),
+     {{0, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(20, 20),
+     {{5, 0, 10, 10}, {5, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(20, 30),
+     {{5, 0, 10, 10}, {5, 10, 10, 20}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(20, 16),
+     {{5, 0, 10, 10}, {5, 10, 10, 6}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(20, 14),
+     {{5, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(6, 20),
+     {{-2, 0, 10, 10}, {-2, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(6, 30),
+     {{-2, 0, 10, 10}, {-2, 10, 10, 20}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(6, 16),
+     {{-2, 0, 10, 10}, {-2, 10, 10, 6}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(6, 14),
+     {{-2, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(4, 20),
+     {{-3, 0, 10, 10}, {-3, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(4, 30),
+     {{-3, 0, 10, 10}, {-3, 10, 10, 20}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(4, 16),
+     {{-3, 0, 10, 10}, {-3, 10, 10, 6}}},
+    {LayoutOrientation::kVertical,
+     kNoCrossFlex,
+     gfx::Size(4, 14),
+     {{-3, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(10, 20),
+     {{0, 0, 10, 10}, {0, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(10, 30),
+     {{0, 0, 10, 10}, {0, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(10, 16),
+     {{0, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(10, 14),
+     {{0, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 20),
+     {{5, 0, 10, 10}, {5, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 30),
+     {{5, 0, 10, 10}, {5, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 16),
+     {{5, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(20, 14),
+     {{5, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(6, 20),
+     {{-2, 0, 10, 10}, {0, 10, 6, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(6, 30),
+     {{-2, 0, 10, 10}, {0, 10, 6, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(6, 16),
+     {{-2, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(6, 14),
+     {{-2, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(4, 20),
+     {{-3, 0, 10, 10}, {0, 10, 4, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(4, 30),
+     {{-3, 0, 10, 10}, {0, 10, 4, 10}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(4, 16),
+     {{-3, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kMainDropOutCrossFlex,
+     gfx::Size(4, 14),
+     {{-3, 0, 10, 10}, {}}},
+    {LayoutOrientation::kVertical,
+     kFlexUseHeightForWidth,
+     gfx::Size(10, 20),
+     {{0, 0, 10, 10}, {0, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kFlexUseHeightForWidth,
+     gfx::Size(20, 20),
+     {{5, 0, 10, 10}, {5, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kFlexUseHeightForWidth,
+     gfx::Size(10, 30),
+     {{0, 0, 10, 10}, {0, 10, 10, 10}}},
+    {LayoutOrientation::kVertical,
+     kFlexUseHeightForWidth,
+     gfx::Size(8, 30),
+     {{-1, 0, 10, 10}, {0, 10, 8, 12}}},
+    {LayoutOrientation::kVertical,
+     kFlexUseHeightForWidth,
+     gfx::Size(6, 20),
+     {{-2, 0, 10, 10}, {0, 10, 6, 16}}},
+    {LayoutOrientation::kVertical,
+     kFlexUseHeightForWidth,
+     gfx::Size(4, 20),
+     {{-3, 0, 10, 10}, {2, 10, 0, 10}}},
+};
+
+}  // anonymous namespace
+
+class FlexLayoutDirectionalRuleTest
+    : public FlexLayoutTest,
+      public testing::WithParamInterface<DirectionalFlexRuleTestParam> {};
+
+TEST_P(FlexLayoutDirectionalRuleTest, TestRules) {
+  const DirectionalFlexRuleTestParam& param = GetParam();
+  constexpr gfx::Size kChildSize(10, 10);
+  constexpr gfx::Size kMinimumSize(5, 5);
+  layout_->SetOrientation(param.orientation);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kCenter);
+  AddChild(kChildSize);
+  MockView* const child2 = AddChild(kChildSize, kMinimumSize);
+  child2->SetProperty(
+      kFlexBehaviorKey,
+      FlexSpecification(param.orientation, param.rules.min_main_rule,
+                        param.rules.max_main_rule,
+                        param.rules.use_height_for_width,
+                        param.rules.min_cross_rule));
+  if (param.rules.use_height_for_width)
+    child2->set_size_mode(MockView::SizeMode::kFixedArea);
+
+  host_->SetSize(param.size);
+  EXPECT_EQ(param.expected, GetChildBounds())
+      << " Params: " << param.ToString();
+  DLOG(INFO) << "Child visible: " << child2->GetVisible();
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         FlexLayoutDirectionalRuleTest,
+                         testing::ValuesIn(DirectionalFlexRuleTestParamList));
 
 }  // namespace views

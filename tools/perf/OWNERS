@@ -1,7 +1,6 @@
 # Overall OWNERS
-crouleau@chromium.org
+johnchen@chromium.org
 wenbinzhang@google.com
-johnchen@chromium.org  # Backup reviewer for when overall OWNERS are OOO.
 
 # For gtest perf tests, perf data upload, and functional tests
 bsheedy@chromium.org

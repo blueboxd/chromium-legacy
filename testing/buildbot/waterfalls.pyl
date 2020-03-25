@@ -1866,7 +1866,6 @@
       'ios-simulator-code-coverage': {
         'mixins': [
           'code-coverage',
-          'ios_swarming_account',
           'mac_10.14',
           'mac_toolchain',
           'out_dir_arg',
@@ -1878,7 +1877,6 @@
       },
       'ios-simulator-cronet': {
         'mixins': [
-          'ios_swarming_account',
           'mac_10.14',
           'mac_toolchain',
           'out_dir_arg',
@@ -1891,7 +1889,6 @@
       'ios-webkit-tot': {
         'mixins': [
           'ios_custom_webkit',
-          'ios_swarming_account',
           'mac_10.14',
           'mac_toolchain',
           'out_dir_arg',
@@ -1906,7 +1903,6 @@
           'all',
         ],
         'mixins': [
-          'ios_swarming_account',
           'mac_10.14',
           'mac_toolchain',
           'out_dir_arg',
@@ -1926,7 +1922,6 @@
           'all',
         ],
         'mixins': [
-          'ios_swarming_account',
           'mac_10.14',
           'mac_toolchain',
           'out_dir_arg',

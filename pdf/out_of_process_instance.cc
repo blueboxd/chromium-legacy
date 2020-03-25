@@ -25,6 +25,7 @@
 #include "net/base/filename_util.h"
 #include "pdf/accessibility.h"
 #include "pdf/document_layout.h"
+#include "pdf/document_metadata.h"
 #include "pdf/pdf.h"
 #include "pdf/pdf_features.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -1679,7 +1680,7 @@ void OutOfProcessInstance::DocumentLoadComplete(
 
   pp::VarDictionary metadata_message;
   metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
-  std::string title = engine_->GetMetadata("Title");
+  const std::string& title = engine_->GetDocumentMetadata().title;
   if (!base::TrimWhitespace(base::UTF8ToUTF16(title), base::TRIM_ALL).empty()) {
     metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
     HistogramEnumeration("PDF.DocumentFeature", HAS_TITLE, FEATURES_COUNT);

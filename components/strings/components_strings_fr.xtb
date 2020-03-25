@@ -1024,7 +1024,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
 <translation id="5371425731340848620">Mettre à jour la carte</translation>
 <translation id="5377026284221673050">"Votre horloge est en retard.", "Votre horloge est en avance." ou "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête exigeant qu'une règle relative à l'origine soit appliquée à toutes les demandes qu'il reçoit. Cependant, l'en-tête est mal formé, ce qui signifie que le navigateur ne peut pas répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des règles relatives à l'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
+<translation id="5380442954567233718">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête exigeant qu'une règle relative à l'origine soit appliquée à toutes les demandes qu'il reçoit. Cependant, le format de l'en-tête est incorrect, ce qui signifie que le navigateur ne peut pas répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des règles relatives à l'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
 <translation id="5386426401304769735">La chaîne de certificats de ce site contient un certificat signé avec SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Agrafage par le bord droit</translation>

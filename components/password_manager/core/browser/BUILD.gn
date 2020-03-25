@@ -219,6 +219,8 @@ jumbo_static_library("browser") {
     "ui/export_flow.h",
     "ui/export_progress_status.h",
     "ui/import_flow.h",
+    "ui/password_check_referrer.cc",
+    "ui/password_check_referrer.h",
     "ui/plaintext_reason.h",
     "ui/saved_passwords_presenter.cc",
     "ui/saved_passwords_presenter.h",

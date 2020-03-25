@@ -462,6 +462,7 @@
 <translation id="1616206807336925449">ಈ ವಿಸ್ತರಣೆಗೆ ಯಾವುದೇ ವಿಶೇಷ ಅನುಮತಿಗಳ ಅಗತ್ಯವಿಲ್ಲ.</translation>
 <translation id="1616298854599875024">"<ph name="IMPORT_NAME" />" ವಿಸ್ತರಣೆಯು ಹಂಚಿಕೊಂಡ ಮಾಡ್ಯೂಲ್ ಆಗಿಲ್ಲದಿರುವ ಕಾರಣ ಅದನ್ನು ಆಮದು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="1618268899808219593">ಸ&amp;ಹಾಯ ಕೇಂದ್ರ</translation>
+<translation id="1620307519959413822">ಪಾಸ್‌ವರ್ಡ್ ತಪ್ಪಾಗಿದೆ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಅದನ್ನು ಮರುಹೊಂದಿಸಲು ಪಾಸ್‌ವರ್ಡ್ ಮರೆತುಹೋಗಿದೆ ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="1620510694547887537">ಕ್ಯಾಮರಾ</translation>
 <translation id="1623132449929929218">ಚಿತ್ರಗಳು ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ. ವಾಲ್‌ಪೇಪರ್ ಸಂಗ್ರಹಗಳನ್ನು ನೋಡಲು ದಯವಿಟ್ಟು ಇಂಟರ್ನೆಟ್‌ಗೆ ಮರುಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="1627276047960621195">ಫೈಲ್ ವಿವರಣೆಗಳು</translation>
@@ -680,6 +681,7 @@
 <translation id="1887850431809612466">ಹಾರ್ಡ್‌ವೇರ್ ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">ಪೂರ್ಣ ಪರದೆಯನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="1892341345406963517">ನಮಸ್ಕಾರ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">ಇತರೆ ಭಾಷೆಗಳು</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="1895658205118569222">ಶಟ್‌ಡೌನ್</translation>
@@ -3134,6 +3136,7 @@
 <translation id="5213891612754844763">ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5215502535566372932">ದೇಶವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="521582610500777512">ಫೋಟೋವನ್ನು ತ್ಯಜಿಸಲಾಗಿದೆ</translation>
+<translation id="5222403284441421673">ಅಸುರಕ್ಷಿತ ಡೌನ್‌ಲೋಡ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
 <translation id="52232769093306234">ಪ್ಯಾಕಿಂಗ್ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="5225324770654022472">ಅಪ್ಲಿಕೇಶನ್‌ಗಳ ಶಾರ್ಟ್‌ಕಟ್ ತೋರಿಸು</translation>
@@ -3533,6 +3536,7 @@
 <translation id="5734362860645681824">ಸಂವಹನಗಳು</translation>
 <translation id="5734697361979786483">ಫೈಲ್‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="5736796278325406685">ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಬಳಕೆದಾರರ ಹೆಸರನ್ನು ನಮೂದಿಸಿ</translation>
+<translation id="5739017626473506901"><ph name="USER_NAME" /> ಅವರಿಗೆ ಶಾಲೆಯ ಖಾತೆಯನ್ನು ಸೇರಿಸುವುದಕ್ಕೆ ಸಹಾಯ ಮಾಡಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="5739235828260127894">ಪರಿಶೀಲನೆಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ. <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ಅತ್ಯಂತ ದೊಡ್ಡದು</translation>
 <translation id="574209121243317957">ಪಿಚ್</translation>
@@ -5538,6 +5542,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ನೆಟ್‌ವರ್ಕ್, ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="8417548266957501132">ಪೋಷಕರ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="8417573335434189196">ಅಪಾಯಕಾರಿ ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಡೌನ್‌ಲೋಡ್‌ಗಳು ಅಥವಾ ವಿಸ್ತರಣೆಗಳ ವಿರುದ್ಧ ನಿಮಗೆ ರಕ್ಷಣೆ ನೀಡುವುದಿಲ್ಲ. Chrome ಈ ಸೆಟ್ಟಿಂಗ್‌ ಅನ್ನು ಶಿಫಾರಸು ಮಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="8418445294933751433">ಟ್ಯಾಬ್‌ನಂತೆ &amp;ತೋರಿಸಿ</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' ಕುರಿತ ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳು</translation>

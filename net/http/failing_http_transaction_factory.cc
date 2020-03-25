@@ -68,8 +68,6 @@ class FailingHttpTransaction : public HttpTransaction {
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
-  void SetBeforeHeadersSentCallback(
-      const BeforeHeadersSentCallback& callback) override;
   int ResumeNetworkStart() override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
   void SetRequestHeadersCallback(RequestHeadersCallback) override {}
@@ -172,9 +170,6 @@ void FailingHttpTransaction::SetWebSocketHandshakeStreamCreateHelper(
 void FailingHttpTransaction::SetBeforeNetworkStartCallback(
     const BeforeNetworkStartCallback& callback)  {
 }
-
-void FailingHttpTransaction::SetBeforeHeadersSentCallback(
-    const BeforeHeadersSentCallback& callback) {}
 
 int FailingHttpTransaction::ResumeNetworkStart()  {
   NOTREACHED();

@@ -22,9 +22,6 @@ class CrossOriginXHR : public extensions::ExtensionApiTest {
     // Affected tests (note that some of the tests do not need to be migrated if
     // they are already redundant wrt the coverage provided by the
     // CrossOriginReadBlockingExtensionTest suite):
-    // - CrossOriginXHR.AllURLs
-    //   - domainOne
-    //   - domainTwo
     // - CrossOriginXHR.ContentScript
     //   - allowedOrigin
     //   - allowedSubdomain
@@ -46,10 +43,6 @@ class CrossOriginXHR : public extensions::ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, BackgroundPage) {
   ASSERT_TRUE(StartFTPServer(base::FilePath(kFtpDocRoot)));
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/background_page")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(CrossOriginXHR, AllURLs) {
-  ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/all_urls")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, ContentScript) {

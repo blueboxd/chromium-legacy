@@ -9,6 +9,7 @@
     {
       "name": "LayoutNGBlockFlow DIV id='target' class='composited box opaque'",
       "bounds": [100, 100],
+      "contentsOpaque": true,
       "backgroundColor": "#ADD8E6",
       "transform": 1
     },

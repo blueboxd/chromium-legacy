@@ -40,9 +40,6 @@
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileUndo
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileWithContextMenu
 
-# crbug/1036551
--org.chromium.chrome.browser.tabmodel.TabModelMergingTest.testMergeOnColdStartIntoChromeTabbedActivity2
-
 # crbug/1017141
 -org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMultiWindowTest.testMoveTabsAcrossWindow_GTS_WithoutGroup
 

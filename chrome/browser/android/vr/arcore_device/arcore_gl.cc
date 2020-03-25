@@ -363,13 +363,13 @@ void ArCoreGl::GetFrameData(
   base::TimeTicks arcore_update_started = base::TimeTicks::Now();
   mojom::VRPosePtr pose = arcore_->Update(&camera_updated);
   base::TimeTicks now = base::TimeTicks::Now();
-  if (!arcore_update_completed_.is_null()) {
-    arcore_update_interval_ = now - arcore_update_completed_;
-    arcore_update_next_expected_ = now + arcore_update_interval_;
+  base::TimeDelta frame_timestamp = arcore_->GetFrameTimestamp();
+  if (!arcore_last_frame_timestamp_.is_zero()) {
+    arcore_frame_interval_ = frame_timestamp - arcore_last_frame_timestamp_;
+    arcore_update_next_expected_ = now + arcore_frame_interval_;
   }
-  arcore_update_completed_ = now;
-  base::TimeDelta arcore_update_elapsed =
-      arcore_update_completed_ - arcore_update_started;
+  arcore_last_frame_timestamp_ = frame_timestamp;
+  base::TimeDelta arcore_update_elapsed = now - arcore_update_started;
   TRACE_COUNTER1("gpu", "ARCore update elapsed (ms)",
                  arcore_update_elapsed.InMilliseconds());
 

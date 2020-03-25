@@ -134,7 +134,7 @@ public class Profile {
     }
 
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         Object getLastUsedRegularProfile();
         Object fromWebContents(WebContents webContents);
         void destroyWhenAppropriate(long nativeProfileAndroid, Profile caller);

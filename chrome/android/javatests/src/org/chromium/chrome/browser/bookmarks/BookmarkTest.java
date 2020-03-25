@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -119,8 +119,8 @@ public class BookmarkTest {
     public void setUp() {
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mBookmarkModel = new BookmarkModel(
-                    ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile());
+            mBookmarkModel = new BookmarkModel(Profile.fromWebContents(
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents()));
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE_URL_GOOGLE);

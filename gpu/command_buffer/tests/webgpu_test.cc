@@ -25,6 +25,10 @@ namespace {
 void OnRequestAdapterCallback(uint32_t adapter_service_id,
                               const WGPUDeviceProperties& properties) {}
 
+void CountCallback(int* count) {
+  (*count)++;
+}
+
 }  // anonymous namespace
 
 WebGPUTest::Options::Options() = default;
@@ -103,7 +107,7 @@ void WebGPUTest::Initialize(const Options& options) {
   dawnProcSetProcs(&procs);
 }
 
-webgpu::WebGPUInterface* WebGPUTest::webgpu() const {
+webgpu::WebGPUImplementation* WebGPUTest::webgpu() const {
   return context_->GetImplementation();
 }
 
@@ -162,6 +166,75 @@ TEST_F(WebGPUTest, FlushNoCommands) {
   }
 
   webgpu()->FlushCommands();
+}
+
+// Referred from GLES2ImplementationTest/ReportLoss
+TEST_F(WebGPUTest, ReportLoss) {
+  Initialize(WebGPUTest::Options());
+
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  GpuControlClient* webgpu_as_client = webgpu();
+  int lost_count = 0;
+  webgpu()->SetLostContextCallback(base::BindOnce(&CountCallback, &lost_count));
+  EXPECT_EQ(0, lost_count);
+
+  webgpu_as_client->OnGpuControlLostContext();
+  // The lost context callback should be run when WebGPUImplementation is
+  // notified of the loss.
+  EXPECT_EQ(1, lost_count);
+}
+
+// Referred from GLES2ImplementationTest/ReportLossReentrant
+TEST_F(WebGPUTest, ReportLossReentrant) {
+  Initialize(WebGPUTest::Options());
+
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  GpuControlClient* webgpu_as_client = webgpu();
+  int lost_count = 0;
+  webgpu()->SetLostContextCallback(base::BindOnce(&CountCallback, &lost_count));
+  EXPECT_EQ(0, lost_count);
+
+  webgpu_as_client->OnGpuControlLostContextMaybeReentrant();
+  // The lost context callback should not be run yet to avoid calling back into
+  // clients re-entrantly, and having them re-enter WebGPUImplementation.
+  EXPECT_EQ(0, lost_count);
+}
+
+TEST_F(WebGPUTest, RequestAdapterAfterContextLost) {
+  Initialize(WebGPUTest::Options());
+
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  webgpu()->OnGpuControlLostContext();
+  ASSERT_FALSE(
+      webgpu()->RequestAdapterAsync(webgpu::PowerPreference::kDefault,
+                                    base::BindOnce(&OnRequestAdapterCallback)));
+}
+
+TEST_F(WebGPUTest, RequestDeviceAfterContextLost) {
+  Initialize(WebGPUTest::Options());
+
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  webgpu()->OnGpuControlLostContext();
+  ASSERT_FALSE(webgpu()->RequestDeviceAsync(
+      kAdapterServiceID, {},
+      base::BindOnce(
+          [](bool success, webgpu::DawnDeviceClientID assigned_client_id) {})));
 }
 
 }  // namespace gpu

@@ -11,6 +11,38 @@ namespace blink {
 
 namespace bindings {
 
+v8::Local<v8::Object> CreatePropertyDescriptorObject(
+    v8::Isolate* isolate,
+    const v8::PropertyDescriptor& desc) {
+  // https://tc39.es/ecma262/#sec-frompropertydescriptor
+  v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
+  v8::Local<v8::Object> object = v8::Object::New(isolate);
+
+  auto add_property = [&](const char* name, v8::Local<v8::Value> value) {
+    return object->CreateDataProperty(current_context, V8String(isolate, name),
+                                      value);
+  };
+  auto add_property_bool = [&](const char* name, bool value) {
+    return add_property(name, value ? v8::True(isolate) : v8::False(isolate));
+  };
+
+  bool result;
+  if (desc.has_value()) {
+    if (!(add_property("value", desc.value()).To(&result) &&
+          add_property_bool("writable", desc.writable()).To(&result)))
+      return v8::Local<v8::Object>();
+  } else {
+    if (!(add_property("get", desc.get()).To(&result) &&
+          add_property("set", desc.set()).To(&result)))
+      return v8::Local<v8::Object>();
+  }
+  if (!(add_property_bool("enumerable", desc.enumerable()).To(&result) &&
+        add_property_bool("configurable", desc.configurable()).To(&result)))
+    return v8::Local<v8::Object>();
+
+  return object;
+}
+
 v8::Local<v8::Value> GetInterfaceObjectExposedOnGlobal(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context,

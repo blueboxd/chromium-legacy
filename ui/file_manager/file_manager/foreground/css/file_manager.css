@@ -436,12 +436,21 @@ body.files-ng div.splitter .splitter-button {
   width: 32px;
 }
 
+html.pointer-active body.files-ng div.splitter:not(.splitter-active):hover {
+  cursor: default;
+}
+
 body.files-ng div.splitter.splitter-active .splitter-button:hover {
   --hover-bg-color: none;
 }
 
 html.col-resize body.files-ng div.splitter:not(.splitter-active) .splitter-button:hover {
   --hover-bg-color: none;
+}
+
+html.pointer-active body.files-ng div.splitter:not(.splitter-active) .splitter-button:not(:active):hover {
+  --hover-bg-color: none;
+  cursor: default;
 }
 
 body.files-ng div.splitter.splitter-active .splitter-button:not(:active) {
@@ -463,6 +472,11 @@ body.files-ng div.splitter:not(.splitter-active) .splitter-button .icon {
 
 html:not(.col-resize) body.files-ng div.splitter:not(.splitter-active) .splitter-button:hover .icon {
   background-color: var(--google-grey-500);
+}
+
+html.pointer-active body.files-ng div.splitter:not(.splitter-active) .splitter-button:not(:active):hover .icon {
+  background-color: var(--google-grey-300);
+  cursor: default;
 }
 
 body.files-ng div.splitter.splitter-active .splitter-button .icon {

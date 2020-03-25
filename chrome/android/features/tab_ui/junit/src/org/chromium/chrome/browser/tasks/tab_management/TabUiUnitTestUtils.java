@@ -35,7 +35,6 @@ public class TabUiUnitTestUtils {
 
     public static TabImpl prepareTab(int tabId, int rootId, Profile profile, String visibleUrl) {
         TabImpl tab = prepareTab(tabId, rootId);
-        doReturn(null).when(tab).getProfile();
         WebContents webContents = mock(WebContents.class);
         GURL gurl = mock(GURL.class);
         doReturn(visibleUrl).when(gurl).getSpec();

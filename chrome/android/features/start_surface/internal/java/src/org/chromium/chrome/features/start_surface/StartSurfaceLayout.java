@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
@@ -122,7 +121,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // The Tab-to-GTS animation is done, and it's time to renew the thumbnail without causing
         // janky frames.
         // When animation is off, the thumbnail is already updated when showing the GTS.
-        if (TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
+        if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled()) {
             // Delay thumbnail taking a bit more to make it less likely to happen before the
             // thumbnail taking triggered by ThumbnailFetcher. See crbug.com/996385 for details.
             new Handler().postDelayed(() -> {
@@ -140,7 +139,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // The Android View version of GTS overview is hidden.
         // If not doing GTS-to-Tab transition animation, we show the fade-out instead, which was
         // already done.
-        if (!TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
+        if (!TabUiFeatureUtilities.isTabToGtsAnimationEnabled()) {
             postHiding();
             return;
         }
@@ -179,8 +178,8 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
 
         // Skip shrinking animation when there is no tab in current tab model.
         boolean isCurrentTabModelEmpty = mTabModelSelector.getCurrentModel().getCount() == 0;
-        boolean showShrinkingAnimation = animate && TabFeatureUtilities.isTabToGtsAnimationEnabled()
-                && !isCurrentTabModelEmpty;
+        boolean showShrinkingAnimation = animate
+                && TabUiFeatureUtilities.isTabToGtsAnimationEnabled() && !isCurrentTabModelEmpty;
         boolean quick = mTabListDelegate.prepareOverview();
         boolean skipSlowZooming = TabUiFeatureUtilities.SKIP_SLOW_ZOOMING.getValue();
         Log.d(TAG, "SkipSlowZooming = " + skipSlowZooming);
@@ -241,7 +240,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         updateCacheVisibleIds(new LinkedList<>(Arrays.asList(sourceTabId)));
 
         mIsAnimating = true;
-        mController.hideOverview(!TabFeatureUtilities.isTabToGtsAnimationEnabled());
+        mController.hideOverview(!TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
     }
 
     @Override
@@ -465,8 +464,9 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
-                TabFeatureUtilities.isTabToGtsAnimationEnabled() ? mTabListDelegate.getResourceId()
-                                                                 : 0,
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled()
+                        ? mTabListDelegate.getResourceId()
+                        : 0,
                 mBackgroundAlpha, mStartSurface.getTabListDelegate().getTabListTopOffset());
         mFrameCount++;
         if (mLastFrameTime != 0) {

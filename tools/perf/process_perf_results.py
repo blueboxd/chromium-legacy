@@ -289,8 +289,13 @@ def _scan_output_dir(task_output_dir):
   return benchmark_directory_map, benchmarks_shard_map_file
 
 
-def process_perf_results(output_json, configuration_name, build_properties,
-                         task_output_dir, smoke_test_mode, output_results_dir):
+def process_perf_results(output_json,
+                         configuration_name,
+                         build_properties,
+                         task_output_dir,
+                         smoke_test_mode,
+                         output_results_dir,
+                         skip_perf=False):
   """Process perf results.
 
   Consists of merging the json-test-format output, uploading the perf test
@@ -333,7 +338,7 @@ def process_perf_results(output_json, configuration_name, build_properties,
   benchmark_enabled_map = _handle_perf_json_test_results(
       benchmark_directory_map, test_results_list)
 
-  if not smoke_test_mode:
+  if not smoke_test_mode and not skip_perf:
     try:
       build_properties = json.loads(build_properties)
       if not configuration_name:
@@ -625,6 +630,7 @@ def main():
   parser.add_argument('--task-output-dir', help=argparse.SUPPRESS)
   parser.add_argument('-o', '--output-json', required=True,
                       help=argparse.SUPPRESS)
+  parser.add_argument('--skip-perf', help=argparse.SUPPRESS)
   parser.add_argument('json_files', nargs='*', help=argparse.SUPPRESS)
   parser.add_argument('--smoke-test-mode', action='store_true',
                       help='This test should be run in smoke test mode'
@@ -636,7 +642,8 @@ def main():
   try:
     return_code, _ = process_perf_results(
         args.output_json, args.configuration_name, args.build_properties,
-        args.task_output_dir, args.smoke_test_mode, output_results_dir)
+        args.task_output_dir, args.smoke_test_mode, output_results_dir,
+        args.skip_perf)
     return return_code
   finally:
     shutil.rmtree(output_results_dir)

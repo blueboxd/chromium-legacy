@@ -28,7 +28,6 @@ import org.junit.rules.TestRule;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -99,7 +98,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
-        TabFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(false);
+        TabUiFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(false);
         // TODO(meiliang): Replace with TabSwitcher instead when ready to integrate with
         // TabSwitcher.
         ViewGroup view = new FrameLayout(getActivity());
@@ -140,7 +139,7 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
 
     @After
     public void tearDown() {
-        TabFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
+        TabUiFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
     }
 
     @Test

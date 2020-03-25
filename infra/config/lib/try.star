@@ -177,13 +177,18 @@ def chromium_mac_builder(
   )
 
 
-def chromium_mac_ios_builder(*, name, executable='recipe:ios/try', **kwargs):
+def chromium_mac_ios_builder(
+    *,
+    name,
+    executable='recipe:ios/try',
+    goma_backend=builders.goma.backend.RBE_PROD,
+    **kwargs):
   return try_builder(
       name = name,
       caches = [builders.xcode_cache.x11c29],
       cores = None,
       executable = executable,
-      goma_backend=builders.goma.backend.RBE_PROD,
+      goma_backend = goma_backend,
       mastername = 'tryserver.chromium.mac',
       os = builders.os.MAC_ANY,
       **kwargs

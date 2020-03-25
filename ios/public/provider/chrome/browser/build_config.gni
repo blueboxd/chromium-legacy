@@ -27,11 +27,6 @@ declare_args() {
   # Overridden when using the Google-internal repository to build Chrome on iOS.
   ios_provider_target = "//ios/chrome/browser/providers:provider_factory"
 
-  # This defines the build target to include a valid GoogleService-Info.plist
-  # file which is copied to the application bundle. This is used by Firebase
-  # SDK (which comes from the internal framework).
-  ios_firebase_resources_target = ""
-
   # This defines targets to include resources needed by the providers which are
   # copied to the application bundle.
   ios_providers_resources_targets = []

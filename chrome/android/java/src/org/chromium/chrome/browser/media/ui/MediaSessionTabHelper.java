@@ -20,9 +20,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
@@ -561,7 +561,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         String pageUrl = webContents.getLastCommittedUrl();
         int size = MediaNotificationManager.MINIMAL_MEDIA_IMAGE_SIZE_PX;
         if (mLargeIconBridge == null) {
-            mLargeIconBridge = new LargeIconBridge(((TabImpl) mTab).getProfile());
+            mLargeIconBridge = new LargeIconBridge(Profile.fromWebContents(mTab.getWebContents()));
         }
         LargeIconBridge.LargeIconCallback callback = new LargeIconBridge.LargeIconCallback() {
             @Override

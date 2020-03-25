@@ -8,6 +8,8 @@
 namespace blink {
 
 // A list of modes for HeapMojo wrappers.
+// TODO(crbug.com/1058076) This is just a temporary thing to keep the existing
+// behavior during the release freeze.
 enum class HeapMojoWrapperMode {
   // Resets the mojo connection when 1) the owner object is garbage-collected
   // and 2) the associated ExecutionContext is detached.

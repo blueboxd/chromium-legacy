@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
@@ -705,13 +704,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         Activity activity = ContextUtils.activityFromContext(getWindowAndroid().getContext().get());
         if (activity instanceof ChromeActivity) return (ChromeActivity<?>) activity;
         return null;
-    }
-
-    /**
-     * @return The profile associated with this tab.
-     */
-    public Profile getProfile() {
-        return Profile.fromWebContents(getWebContents());
     }
 
     /**

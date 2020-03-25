@@ -60,16 +60,18 @@
 
   /**
    * Gets the text of the password. Will use the value of |password| unless it
-   * cannot be shown, in which case it will be spaces. It can also be the
-   * federated text.
+   * cannot be shown, in which case it will be a fixed number of spaces. It can
+   * also be the federated text.
    * @private
    */
   getPassword_() {
     if (!this.item) {
       return '';
     }
+
+    const NUM_PLACEHOLDERS = 10;
     return this.item.entry.federationText || this.item.password ||
-        ' '.repeat(this.item.entry.numCharactersInPassword);
+        ' '.repeat(NUM_PLACEHOLDERS);
   },
 
   /**

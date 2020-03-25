@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallba
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -318,8 +317,9 @@ public class OfflinePageUtilsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             OfflinePageItem privateOfflinePageItem = new OfflinePageItem(uriPath, OFFLINE_ID,
                     namespace, PAGE_ID, TITLE, filePath, FILE_SIZE, 0, 0, 0, REQUEST_ORIGIN);
-            OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(
-                    ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile());
+            OfflinePageBridge offlinePageBridge =
+                    OfflinePageBridge.getForProfile(Profile.fromWebContents(
+                            mActivityTestRule.getActivity().getActivityTab().getWebContents()));
 
             boolean isSharable = OfflinePageUtils.isOfflinePageShareable(
                     offlinePageBridge, privateOfflinePageItem, Uri.parse(uriPath));

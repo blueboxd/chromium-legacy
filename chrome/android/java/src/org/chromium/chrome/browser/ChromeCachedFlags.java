@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -74,8 +73,8 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
-                TabFeatureUtilities.ZOOMING_MIN_MEMORY,
-                TabFeatureUtilities.ZOOMING_MIN_SDK,
+                TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
+                TabUiFeatureUtilities.ZOOMING_MIN_SDK,
                 TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
                 TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE,
                 TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);

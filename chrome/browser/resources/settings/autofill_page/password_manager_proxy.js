@@ -152,6 +152,12 @@
   isOptedInForAccountStorage() {}
 
   /**
+   * Triggers the opt-in or opt-out flow for the account storage.
+   * @param {boolean} optIn Whether the user wants to opt in or opt out.
+   */
+  optInForAccountStorage(optIn) {}
+
+  /**
    * Requests the start of the bulk password check.
    */
   startBulkPasswordCheck() {}
@@ -380,6 +386,11 @@ PasswordManagerProxy.PasswordCheckStatus;
     return new Promise(resolve => {
       chrome.passwordsPrivate.getPasswordCheckStatus(resolve);
     });
+  }
+
+  /** @override */
+  optInForAccountStorage(optIn) {
+    chrome.passwordsPrivate.optInForAccountStorage(optIn);
   }
 
   /** @override */

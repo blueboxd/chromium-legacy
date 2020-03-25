@@ -185,7 +185,6 @@ crbug.com/874695 http/tests/devtools/persistence/persistence-mimetype-on-rename.
 crbug.com/450493 crbug.com/971262 http/tests/devtools/profiler/live-line-level-heap-profile.js [ Crash Pass Timeout ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Timeout ]
-crbug.com/874695 crbug.com/954319 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-in-multiple-workers.js [ Crash Pass Timeout ]
 crbug.com/874695 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Timeout ]
 crbug.com/874695 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Crash Pass ]
 crbug.com/450493 crbug.com/912793 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Crash Failure Pass Timeout ]

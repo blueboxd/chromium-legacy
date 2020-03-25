@@ -156,6 +156,10 @@ CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
 CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
     const DOMParser* parser);
 
+CORE_EXPORT v8::Local<v8::Array> EnumerateIndexedProperties(
+    v8::Isolate* isolate,
+    uint32_t length);
+
 }  // namespace bindings
 
 }  // namespace blink

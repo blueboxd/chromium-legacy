@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -494,7 +493,8 @@ public class ContextualSearchManager
         mWasActivatedByTap = mSelectionController.getSelectionType() == SelectionType.TAP;
 
         Tab tab = mActivity.getActivityTab();
-        Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
+        Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()));
         tracker.notifyEvent(mWasActivatedByTap
                         ? EventConstants.CONTEXTUAL_SEARCH_TRIGGERED_BY_TAP
                         : EventConstants.CONTEXTUAL_SEARCH_TRIGGERED_BY_LONGPRESS);

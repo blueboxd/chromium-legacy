@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -788,7 +789,7 @@ public class VrShellDelegate
         // TODO(ymalik): This call will connect to the Google Services api which can be slow. Can we
         // connect to it beforehand when we know that we'll be prompting for feedback?
         HelpAndFeedback.getInstance().showFeedback(((TabImpl) tab).getActivity(),
-                ((TabImpl) tab).getProfile(), tab.getUrlString(),
+                Profile.fromWebContents(tab.getWebContents()), tab.getUrlString(),
                 ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_REPORT_TYPE);
     }
 

@@ -41,6 +41,7 @@ source_set("coordinator") {
     ":sad_tab",
     "//components/ui_metrics",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen:coordinators",
@@ -63,6 +64,7 @@ source_set("unit_tests") {
   deps = [
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/sad_tab",
     "//ios/chrome/browser/ui/sad_tab:coordinator",

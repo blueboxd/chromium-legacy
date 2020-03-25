@@ -398,7 +398,6 @@ crbug.com/874695 http/tests/devtools/inspect-iframe-from-different-domain.js [ S
 crbug.com/874695 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Slow ]
 crbug.com/874695 http/tests/devtools/persistence/persistence-mimetype-on-rename.js [ Slow ]
 crbug.com/874695 http/tests/devtools/service-workers/user-agent-override.js [ Slow ]
-crbug.com/874695 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-in-multiple-workers.js [ Slow ]
 crbug.com/874695 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Slow ]
 crbug.com/874695 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Slow ]
 crbug.com/874695 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.js [ Slow ]

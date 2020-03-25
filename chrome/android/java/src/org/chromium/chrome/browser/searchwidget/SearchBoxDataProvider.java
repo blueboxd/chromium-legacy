@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -62,8 +61,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
 
     @Override
     public Profile getProfile() {
-        if (mTab == null) return null;
-        return ((TabImpl) mTab).getProfile();
+        return mTab != null ? Profile.fromWebContents(mTab.getWebContents()) : null;
     }
 
     @Override

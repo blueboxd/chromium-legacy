@@ -2195,8 +2195,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   _sadTabCoordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:self.browserContainerViewController
-                    browserState:self.browserState];
-  _sadTabCoordinator.dispatcher = self.dispatcher;
+                         browser:self.browser];
   _sadTabCoordinator.overscrollDelegate = self;
 
   // If there are any existing SadTabHelpers in
@@ -3524,20 +3523,23 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (BOOL)shouldAllowOverscrollActions {
+- (BOOL)shouldAllowOverscrollActionsForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return !self.toolbarAccessoryPresenter.presenting;
 }
 
-- (UIView*)headerView {
+- (UIView*)headerViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return self.primaryToolbarCoordinator.viewController.view;
 }
 
-- (UIView*)toolbarSnapshotView {
+- (UIView*)toolbarSnapshotViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return [self.primaryToolbarCoordinator.viewController.view
       snapshotViewAfterScreenUpdates:NO];
 }
 
-- (CGFloat)overscrollActionsControllerHeaderInset:
+- (CGFloat)headerInsetForOverscrollActionsController:
     (OverscrollActionsController*)controller {
   // The current WebState can be nil if the Browser's WebStateList is empty
   // (e.g. after closing the last tab, etc).
@@ -3553,8 +3555,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return 0;
 }
 
-- (CGFloat)overscrollHeaderHeight {
+- (CGFloat)headerHeightForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return self.headerHeight;
+}
+
+- (FullscreenController*)fullscreenControllerForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  return self.fullscreenController;
 }
 
 #pragma mark - DialogPresenterDelegate methods

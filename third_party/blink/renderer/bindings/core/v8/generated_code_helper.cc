@@ -248,6 +248,15 @@ ExecutionContext* ExecutionContextFromV8Wrappable(const DOMParser* parser) {
                                : nullptr;
 }
 
+v8::Local<v8::Array> EnumerateIndexedProperties(v8::Isolate* isolate,
+                                                uint32_t length) {
+  Vector<v8::Local<v8::Value>> elements;
+  elements.ReserveCapacity(length);
+  for (uint32_t i = 0; i < length; ++i)
+    elements.UncheckedAppend(v8::Integer::New(isolate, i));
+  return v8::Array::New(isolate, elements.data(), elements.size());
+}
+
 }  // namespace bindings
 
 }  // namespace blink

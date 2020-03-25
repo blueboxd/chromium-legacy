@@ -29,7 +29,9 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
@@ -51,11 +53,11 @@ public class FeedNewTabPage
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param activityTabProvider Allows us to check if we are the current tab.
      * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
-     * @param tab The {@link TabImpl} that contains this new tab page.
+     * @param tab The {@link Tab} that contains this new tab page.
      */
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
             TabModelSelector tabModelSelector, ActivityTabProvider activityTabProvider,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher, TabImpl tab) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher, Tab tab) {
         super(activity, nativePageHost, tabModelSelector, activityTabProvider,
                 activityLifecycleDispatcher, tab);
 
@@ -81,12 +83,13 @@ public class FeedNewTabPage
 
     @Override
     protected void initializeMainView(Context context, NativePageHost host) {
+        Profile profile = Profile.fromWebContents(mTab.getWebContents());
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
                 FeedProcessScopeFactory.getFeedConsumptionObserver(),
                 FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                OfflinePageBridge.getForProfile(((TabImpl) mTab).getProfile()),
+                OfflinePageBridge.getForProfile(profile),
                 FeedProcessScopeFactory.getFeedLoggingBridge(), ((TabImpl) mTab).getActivity(),
-                ((TabImpl) mTab).getProfile());
+                profile);
         LayoutInflater inflater = LayoutInflater.from(((TabImpl) mTab).getActivity());
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
         SectionHeaderView sectionHeaderView = (SectionHeaderView) inflater.inflate(

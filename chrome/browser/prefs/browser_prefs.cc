@@ -37,6 +37,7 @@
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
 #include "chrome/browser/memory/enterprise_memory_limit_pref_observer.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
+#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -126,6 +127,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -648,6 +650,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterListPref(kInvalidatorSavedInvalidations);
   registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
   registry->RegisterStringPref(kInvalidatorClientId, std::string());
+
+  chrome_browser_net::RegisterDNSProbesSettingBackupPref(registry);
 }
 
 }  // namespace
@@ -1320,4 +1324,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 3/2020.
   profile_prefs->ClearPref(kDataReductionNetworkProperties);
+  chrome_browser_net::MigrateDNSProbesSettingToOrFromBackup(profile_prefs);
 }

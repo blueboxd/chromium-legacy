@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.init.FirstDrawDetector;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -509,7 +508,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         TabModelFilter currentTabModelFilter =
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
         if (currentTabModelFilter != null && currentTabModelFilter.isTabModelRestored()) {
-            if (TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
+            if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled()) {
                 quick = mResetHandler.resetWithTabList(
                         currentTabModelFilter, false, mShowTabsInMruOrder);
             }
@@ -535,7 +534,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                         .isTabModelRestored()) {
             mResetHandler.resetWithTabList(
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                    TabFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
+                    TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
         }
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(true);

@@ -25,7 +25,6 @@ let RegulatoryInfo;
  * @typedef {{
  *   currentChannel: BrowserChannel,
  *   targetChannel: BrowserChannel,
- *   canChangeChannel: boolean,
  * }}
  */
 let ChannelInfo;
@@ -214,8 +213,15 @@ cr.define('settings', function() {
      */
     setChannel(channel, isPowerwashAllowed) {}
 
-    /** @return {!Promise<!ChannelInfo>} */
+    /**
+     * Requests channel info from the version updater. This may have latency if
+     * the version updater is busy, for example with downloading updates.
+     * @return {!Promise<!ChannelInfo>}
+     */
     getChannelInfo() {}
+
+    /** @return {!Promise<!boolean>} */
+    canChangeChannel() {}
 
     /** @return {!Promise<!VersionInfo>} */
     getVersionInfo() {}
@@ -323,6 +329,11 @@ cr.define('settings', function() {
     /** @override */
     getChannelInfo() {
       return cr.sendWithPromise('getChannelInfo');
+    }
+
+    /** @override */
+    canChangeChannel() {
+      return cr.sendWithPromise('canChangeChannel');
     }
 
     /** @override */

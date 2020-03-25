@@ -36,7 +36,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -160,7 +159,7 @@ class TabListRecyclerView
         assert mFadeOutAnimator == null;
         mListener.startedShowing(animate);
 
-        long duration = TabFeatureUtilities.isTabToGtsAnimationEnabled()
+        long duration = TabUiFeatureUtilities.isTabToGtsAnimationEnabled()
                 ? FINAL_FADE_IN_DURATION_MS
                 : BASE_ANIMATION_DURATION_MS;
 
@@ -183,7 +182,7 @@ class TabListRecyclerView
                     unregisterDynamicView();
                 }
                 // TODO(crbug.com/972157): remove this band-aid after we know why GTS is invisible.
-                if (TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
+                if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled()) {
                     requestLayout();
                 }
             }

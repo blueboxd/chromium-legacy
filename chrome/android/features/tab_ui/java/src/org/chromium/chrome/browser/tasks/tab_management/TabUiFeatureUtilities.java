@@ -4,16 +4,21 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
+import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -26,6 +31,8 @@ import java.util.List;
  * A class to handle the state of flags for tab_management.
  */
 public class TabUiFeatureUtilities {
+    private static final String TAG = "TabFeatureUtilities";
+
     // Field trial parameters:
     public static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
     public static final BooleanCachedFieldTrialParameter SKIP_SLOW_ZOOMING =
@@ -53,7 +60,19 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, SEARCH_CHIP_ADAPTIVE_PARAM, false);
 
+    // Field trial parameter for the minimum Android SDK version to enable zooming animation.
+    public static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
+    public static final IntCachedFieldTrialParameter ZOOMING_MIN_SDK =
+            new IntCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_SDK_PARAM, Build.VERSION_CODES.M);
+    // Field trial parameter for the minimum physical memory size to enable zooming animation.
+    public static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";
+    public static final IntCachedFieldTrialParameter ZOOMING_MIN_MEMORY =
+            new IntCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_MEMORY_MB_PARAM, 2048);
+
     private static Boolean sTabManagementModuleSupportedForTesting;
+    private static Boolean sIsTabToGtsAnimationEnabled;
 
     /**
      * Set whether the tab management module is supported for testing.
@@ -137,5 +156,29 @@ public class TabUiFeatureUtilities {
 
     public static boolean isTabGridLayoutAndroidNewTabTileEnabled() {
         return TextUtils.equals(TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE.getValue(), "NewTabTile");
+    }
+
+    /**
+     * Toggles whether the Tab-to-GTS animation is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setIsTabToGtsAnimationEnabledForTesting(@Nullable Boolean enabled) {
+        sIsTabToGtsAnimationEnabled = enabled;
+    }
+
+    /**
+     * @return Whether the Tab-to-Grid (and Grid-to-Tab) transition animation is enabled.
+     */
+    public static boolean isTabToGtsAnimationEnabled() {
+        if (sIsTabToGtsAnimationEnabled != null) {
+            Log.d(TAG, "IsTabToGtsAnimationEnabled forced to " + sIsTabToGtsAnimationEnabled);
+            return sIsTabToGtsAnimationEnabled;
+        }
+        Log.d(TAG, "GTS.MinSdkVersion = " + ZOOMING_MIN_SDK.getValue());
+        Log.d(TAG, "GTS.MinMemoryMB = " + ZOOMING_MIN_MEMORY.getValue());
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+                && Build.VERSION.SDK_INT >= ZOOMING_MIN_SDK.getValue()
+                && SysUtils.amountOfPhysicalMemoryKB() / 1024 >= ZOOMING_MIN_MEMORY.getValue();
     }
 }

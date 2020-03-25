@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -126,7 +125,8 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
 
         // Register Offline Page observer and enable limitless prefetching.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mProfile = ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile();
+            mProfile = Profile.fromWebContents(
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents());
             OfflinePageBridge.getForProfile(mProfile).addObserver(
                     new OfflinePageBridge.OfflinePageModelObserver() {
                         @Override

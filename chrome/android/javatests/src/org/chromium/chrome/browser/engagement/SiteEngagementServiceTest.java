@@ -17,7 +17,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -42,8 +41,9 @@ public class SiteEngagementServiceTest {
             @Override
             public void run() {
                 final String url = "https://www.example.com";
-                SiteEngagementService service = SiteEngagementService.getForProfile(
-                        ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile());
+                SiteEngagementService service =
+                        SiteEngagementService.getForProfile(Profile.fromWebContents(
+                                mActivityTestRule.getActivity().getActivityTab().getWebContents()));
 
                 Assert.assertEquals(0.0, service.getScore(url), 0);
                 service.resetBaseScoreForUrl(url, 5.0);
@@ -66,8 +66,8 @@ public class SiteEngagementServiceTest {
             @Override
             public void run() {
                 final String url = "https://www.example.com";
-                Profile profile =
-                        ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile();
+                Profile profile = Profile.fromWebContents(
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents());
 
                 Assert.assertEquals(
                         0.0, SiteEngagementService.getForProfile(profile).getScore(url), 0);

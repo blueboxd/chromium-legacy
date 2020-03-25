@@ -71,7 +71,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
@@ -825,7 +824,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         // getOriginalProfile or via a Supplier<Profile>.
         Tab tab = mActivityTabProvider.get();
         if (tab != null) {
-            Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
+            Tracker tracker = TrackerFactory.getTrackerForProfile(
+                    Profile.fromWebContents(tab.getWebContents()));
             tracker.notifyEvent(toolbarIPHEvent);
         }
     }

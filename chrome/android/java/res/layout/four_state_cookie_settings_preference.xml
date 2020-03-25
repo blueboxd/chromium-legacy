@@ -5,7 +5,7 @@
 
 <!-- Layout used by the FourStateCookieSettingsPreference. -->
 
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -47,4 +47,16 @@
             app:descriptionText="@string/website_settings_category_cookie_block_addition" />
 
     </org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout>
-</FrameLayout>
+
+    <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
+        android:id="@+id/managed_view"
+        android:text="@string/managed_by_your_organization"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:drawablePadding="10dp"
+        app:chromeDrawableTint="@color/default_icon_color"
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
+</LinearLayout>

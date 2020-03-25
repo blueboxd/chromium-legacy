@@ -35,7 +35,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -77,6 +76,9 @@ public class DecoderServiceHost
 
     // A worker task for asynchronously handling video decode requests.
     private DecodeVideoTask mWorkerTask;
+
+    // Keeps track of the last decoding ordinal issued.
+    static int sLastDecodingOrdinal = 0;
 
     // A callback to use for testing to see if decoder is ready.
     static DecoderStatusCallback sStatusCallbackForTesting;
@@ -151,8 +153,9 @@ public class DecoderServiceHost
         // ignored for non-videos.
         final boolean mFirstFrame;
 
-        // When the request was added.
-        final Date mCreateTime;
+        // An ordinal used to enforce FIFO decoding, in the case where all other things are equal
+        // (when it comes to determining which record to decode first).
+        private int mRequestOrdinal;
 
         // The callback to use to communicate the results of the decoding.
         final ImagesDecodedCallback mCallback;
@@ -168,7 +171,7 @@ public class DecoderServiceHost
             mFullWidth = fullWidth;
             mFileType = fileType;
             mFirstFrame = firstFrame;
-            mCreateTime = new Date();
+            mRequestOrdinal = sLastDecodingOrdinal++;
             mCallback = callback;
         }
     }
@@ -190,7 +193,7 @@ public class DecoderServiceHost
         // The two requests share the same file type, or are identical video requests (both
         // requesting first frame or both requesting additional frames) so they can be considered
         // equal. Go with first in first out.
-        return r1.mCreateTime.compareTo(r2.mCreateTime);
+        return r1.mRequestOrdinal - r2.mRequestOrdinal;
     };
 
     // A queue of pending requests.

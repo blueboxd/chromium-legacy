@@ -153,6 +153,14 @@ Polymer({
     },
 
     /** @private */
+    enableAccountStorage_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableAccountStorage');
+      }
+    },
+
+    /** @private */
     showPasswordEditDialog_: Boolean,
 
     /** @private */
@@ -592,6 +600,16 @@ Polymer({
   onPasswordsExportDialogClosed_() {
     this.showPasswordsExportDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
+  },
+
+  /** @private */
+  onOptIn_: function() {
+    this.passwordManager_.optInForAccountStorage(true);
+  },
+
+  /** @private */
+  onOptOut_: function() {
+    this.passwordManager_.optInForAccountStorage(false);
   },
 
   /**

@@ -38,7 +38,6 @@ void OverscrollActionsTabHelper::SetDelegate(
           ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
           : OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
   overscroll_actions_controller_.delegate = delegate;
-  overscroll_actions_controller_.browserState = browser_state;
 }
 
 OverscrollActionsTabHelper::OverscrollActionsTabHelper(web::WebState* web_state)

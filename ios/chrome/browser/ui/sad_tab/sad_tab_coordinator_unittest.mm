@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -26,21 +28,21 @@ class SadTabCoordinatorTest : public PlatformTest {
  protected:
   SadTabCoordinatorTest()
       : base_view_controller_([[UIViewController alloc] init]),
-        browser_state_(TestChromeBrowserState::Builder().Build()) {
+        browser_(std::make_unique<TestBrowser>()) {
     UILayoutGuide* guide = [[NamedGuide alloc] initWithName:kContentAreaGuide];
     [base_view_controller_.view addLayoutGuide:guide];
     AddSameConstraints(guide, base_view_controller_.view);
   }
   web::WebTaskEnvironment task_environment_;
   UIViewController* base_view_controller_;
-  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<Browser> browser_;
 };
 
 // Tests starting coordinator.
 TEST_F(SadTabCoordinatorTest, Start) {
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
+                         browser:browser_.get()];
 
   [coordinator start];
 
@@ -60,7 +62,7 @@ TEST_F(SadTabCoordinatorTest, Start) {
 TEST_F(SadTabCoordinatorTest, Stop) {
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
+                         browser:browser_.get()];
 
   [coordinator start];
   ASSERT_EQ(1U, base_view_controller_.childViewControllers.count);
@@ -73,7 +75,7 @@ TEST_F(SadTabCoordinatorTest, Stop) {
 TEST_F(SadTabCoordinatorTest, Dismiss) {
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
+                         browser:browser_.get()];
 
   [coordinator start];
   ASSERT_EQ(1U, base_view_controller_.childViewControllers.count);
@@ -87,7 +89,7 @@ TEST_F(SadTabCoordinatorTest, Dismiss) {
 TEST_F(SadTabCoordinatorTest, Hide) {
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
+                         browser:browser_.get()];
 
   [coordinator start];
   ASSERT_EQ(1U, base_view_controller_.childViewControllers.count);
@@ -103,7 +105,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInNonIncognito) {
   web_state.WasShown();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
+                         browser:browser_.get()];
 
   [coordinator sadTabTabHelper:nullptr
       presentSadTabForWebState:&web_state
@@ -125,11 +127,11 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInNonIncognito) {
 TEST_F(SadTabCoordinatorTest, FirstFailureInIncognito) {
   web::TestWebState web_state;
   web_state.WasShown();
-  ChromeBrowserState* otr_browser_state =
-      browser_state_->GetOffTheRecordChromeBrowserState();
+  std::unique_ptr<Browser> otr_browser = std::make_unique<TestBrowser>(
+      browser_->GetBrowserState()->GetOffTheRecordChromeBrowserState());
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:otr_browser_state];
+                         browser:otr_browser.get()];
 
   [coordinator sadTabTabHelper:nullptr
       presentSadTabForWebState:&web_state
@@ -149,11 +151,11 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInIncognito) {
 
 // Tests SadTabViewController state for the repeated failure in incognito mode.
 TEST_F(SadTabCoordinatorTest, ShowFirstFailureInIncognito) {
-  ChromeBrowserState* otr_browser_state =
-      browser_state_->GetOffTheRecordChromeBrowserState();
+  std::unique_ptr<Browser> otr_browser = std::make_unique<TestBrowser>(
+      browser_->GetBrowserState()->GetOffTheRecordChromeBrowserState());
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:otr_browser_state];
+                         browser:otr_browser.get()];
 
   [coordinator sadTabTabHelper:nullptr didShowForRepeatedFailure:YES];
 
@@ -175,9 +177,14 @@ TEST_F(SadTabCoordinatorTest, FirstFailureAction) {
   web_state.WasShown();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
-  coordinator.dispatcher = OCMStrictProtocolMock(@protocol(BrowserCommands));
-  OCMExpect([coordinator.dispatcher reload]);
+                         browser:browser_.get()];
+
+  id mock_browser_commands_handler_ =
+      OCMStrictProtocolMock(@protocol(BrowserCommands));
+  [browser_->GetCommandDispatcher()
+      startDispatchingToTarget:mock_browser_commands_handler_
+                   forProtocol:@protocol(BrowserCommands)];
+  OCMExpect([mock_browser_commands_handler_ reload]);
 
   [coordinator sadTabTabHelper:nullptr
       presentSadTabForWebState:&web_state
@@ -192,7 +199,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureAction) {
   // Verify dispatcher's message.
   [view_controller.actionButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
-  EXPECT_OCMOCK_VERIFY(coordinator.dispatcher);
+  EXPECT_OCMOCK_VERIFY(mock_browser_commands_handler_);
   [coordinator stop];
 }
 
@@ -202,10 +209,14 @@ TEST_F(SadTabCoordinatorTest, RepeatedFailureAction) {
   web_state.WasShown();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
-  coordinator.dispatcher =
+                         browser:browser_.get()];
+
+  id mock_application_commands_handler_ =
       OCMStrictProtocolMock(@protocol(ApplicationCommands));
-  OCMExpect([coordinator.dispatcher
+  [browser_->GetCommandDispatcher()
+      startDispatchingToTarget:mock_application_commands_handler_
+                   forProtocol:@protocol(ApplicationCommands)];
+  OCMExpect([mock_application_commands_handler_
       showReportAnIssueFromViewController:base_view_controller_]);
 
   [coordinator sadTabTabHelper:nullptr
@@ -221,7 +232,7 @@ TEST_F(SadTabCoordinatorTest, RepeatedFailureAction) {
   // Verify dispatcher's message.
   [view_controller.actionButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
-  EXPECT_OCMOCK_VERIFY(coordinator.dispatcher);
+  EXPECT_OCMOCK_VERIFY(mock_application_commands_handler_);
   [coordinator stop];
 }
 
@@ -230,7 +241,7 @@ TEST_F(SadTabCoordinatorTest, IgnoreSadTabFromHiddenWebState) {
   web::TestWebState web_state;
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
+                         browser:browser_.get()];
 
   [coordinator sadTabTabHelper:nullptr
       presentSadTabForWebState:&web_state

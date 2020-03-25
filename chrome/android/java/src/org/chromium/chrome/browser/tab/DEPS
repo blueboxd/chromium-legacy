@@ -19,9 +19,9 @@ include_rules = [
   "+components/browser_ui/styles/android",
   "+components/browser_ui/widget/android",
   "+content/public/android/java/src/org/chromium/content_public",
-  "+chrome/android/public/crypto/java/src/org/chromium/chrome/browser/crypto/CipherFactory.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tabmodel/TabbedModeTabPersistencePolicy.java",
-  "+chrome/android/public/profiles/java/src/org/chromium/chrome/browser/profiles/Profile.java",
+  "+chrome/android/public/crypto/java/src/org/chromium/chrome/browser/crypto/CipherFactory.java",
+  "+chrome/browser/profiles/android/java/src/org/chromium/chrome/browser/profiles/Profile.java",
 ]
 
 specific_include_rules = {
@@ -42,7 +42,6 @@ specific_include_rules = {
     "+chrome/android/java/src/org/chromium/chrome/browser/prerender/ExternalPrerenderHandler.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/rlz/RevenueStats.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/night_mode",
-    "+chrome/browser/profiles/android/java/src/org/chromium/chrome/browser/profiles/Profile.java",
     "+chrome/browser/util/android/java/src/org/chromium/chrome/browser/util/UrlConstants.java",
 
     "-components",

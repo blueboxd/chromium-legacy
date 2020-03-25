@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -47,6 +48,70 @@ void V8SetReturnValue(const CallbackInfo& info, const v8::Global<S> value) {
 template <typename CallbackInfo, typename S>
 void V8SetReturnValue(const CallbackInfo& info, const v8::Local<S> value) {
   info.GetReturnValue().Set(value);
+}
+
+// Property descriptor
+PLATFORM_EXPORT v8::Local<v8::Object> CreatePropertyDescriptorObject(
+    v8::Isolate* isolate,
+    const v8::PropertyDescriptor& desc);
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      const v8::PropertyDescriptor& value) {
+  info.GetReturnValue().Set(
+      CreatePropertyDescriptorObject(info.GetIsolate(), value));
+}
+
+// Indexed properties and named properties
+PLATFORM_EXPORT inline void V8SetReturnValue(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    IndexedPropertySetterResult value) {
+  // If an operation implementing indexed property setter is invoked as a
+  // regular operation, and the return type is not type void (V8SetReturnValue
+  // won't be called in case of type void), then return the given value as is.
+  info.GetReturnValue().Set(info[1]);
+}
+
+PLATFORM_EXPORT inline void V8SetReturnValue(
+    const v8::PropertyCallbackInfo<v8::Value>& info,
+    IndexedPropertySetterResult value) {
+  if (value == IndexedPropertySetterResult::kDidNotIntercept) {
+    // Do not set the return value to indicate that the request was not
+    // intercepted.
+    return;
+  }
+  info.GetReturnValue().SetNull();
+}
+
+PLATFORM_EXPORT inline void V8SetReturnValue(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    NamedPropertySetterResult value) {
+  // If an operation implementing named property setter is invoked as a
+  // regular operation, and the return type is not type void (V8SetReturnValue
+  // won't be called in case of type void), then return the given value as is.
+  info.GetReturnValue().Set(info[1]);
+}
+
+PLATFORM_EXPORT inline void V8SetReturnValue(
+    const v8::PropertyCallbackInfo<v8::Value>& info,
+    NamedPropertySetterResult value) {
+  if (value == NamedPropertySetterResult::kDidNotIntercept) {
+    // Do not set the return value to indicate that the request was not
+    // intercepted.
+    return;
+  }
+  info.GetReturnValue().SetNull();
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      NamedPropertyDeleterResult value) {
+  if (value == NamedPropertyDeleterResult::kDidNotIntercept) {
+    // Do not set the return value to indicate that the request was not
+    // intercepted.
+    return;
+  }
+  info.GetReturnValue().Set(value == NamedPropertyDeleterResult::kDeleted);
 }
 
 // nullptr

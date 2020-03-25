@@ -7,6 +7,9 @@
 
 #include <string>
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace chrome_browser_net {
 
 // Returns true if there are any active machine level policies or if the machine
@@ -58,6 +61,18 @@ enum class SecureDnsModeDetailsForHistogram {
   kSecureByEnterprisePolicy = 7,
   kMaxValue = kSecureByEnterprisePolicy,
 };
+
+// Registers the backup preference required for the DNS probes setting reset.
+// TODO(crbug.com/1062698): Remove this once the privacy settings redesign
+// is fully launched.
+void RegisterDNSProbesSettingBackupPref(PrefRegistrySimple* registry);
+
+// Backs up the unneeded preference controlling DNS and captive portal probes
+// once the privacy settings redesign is enabled, or restores the backup
+// in case the feature is rolled back.
+// TODO(crbug.com/1062698): Remove this once the privacy settings redesign
+// is fully launched.
+void MigrateDNSProbesSettingToOrFromBackup(PrefService* prefs);
 
 }  // namespace chrome_browser_net
 

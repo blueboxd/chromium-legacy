@@ -16,8 +16,8 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.PopupState;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.TrackerParameters;
 import org.chromium.chrome.browser.permissions.PermissionSettingsBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -35,7 +35,8 @@ class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
 
     IPHBubbleDelegateImpl(Context context, Tab tab) {
         mContext = context;
-        mTracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
+        mTracker =
+                TrackerFactory.getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()));
         mTab = tab;
     }
 

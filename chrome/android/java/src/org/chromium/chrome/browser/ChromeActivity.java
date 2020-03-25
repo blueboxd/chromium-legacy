@@ -125,7 +125,6 @@ import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
@@ -1983,8 +1982,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab));
         } else if (id == R.id.translate_id) {
             RecordUserAction.record("MobileMenuTranslate");
-            Tracker tracker =
-                    TrackerFactory.getTrackerForProfile(((TabImpl) getActivityTab()).getProfile());
+            Tracker tracker = TrackerFactory.getTrackerForProfile(
+                    Profile.fromWebContents(getActivityTab().getWebContents()));
             tracker.notifyEvent(EventConstants.TRANSLATE_MENU_BUTTON_CLICKED);
             TranslateBridge.translateTabWhenReady(getActivityTab());
         } else if (id == R.id.print_id) {

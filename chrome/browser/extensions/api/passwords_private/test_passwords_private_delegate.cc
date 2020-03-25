@@ -18,7 +18,6 @@ namespace {
 using ui::TimeFormat;
 
 constexpr size_t kNumMocks = 3;
-constexpr int kNumCharactersInPassword = 10;
 
 api::passwords_private::PasswordUiEntry CreateEntry(int id) {
   api::passwords_private::PasswordUiEntry entry;
@@ -26,7 +25,6 @@ api::passwords_private::PasswordUiEntry CreateEntry(int id) {
   entry.urls.origin = "http://" + entry.urls.shown + "/login";
   entry.urls.link = entry.urls.origin;
   entry.username = "testName" + base::NumberToString(id);
-  entry.num_characters_in_password = kNumCharactersInPassword;
   entry.id = id;
   return entry;
 }
@@ -71,8 +69,6 @@ void TestPasswordsPrivateDelegate::ChangeSavedPassword(
   // PasswordUiEntry does not contain a password. Thus we are only updating
   // the username and the length of the password.
   current_entries_[id].username = base::UTF16ToUTF8(username);
-  if (password)
-    current_entries_[id].num_characters_in_password = password->size();
   SendSavedPasswordsList();
 }
 

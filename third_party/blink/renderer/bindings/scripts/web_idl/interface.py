@@ -415,6 +415,14 @@ class IndexedAndNamedProperties(WithOwner, WithDebugInfo):
         return self.named_getter or self.named_setter or self.named_deleter
 
     @property
+    def is_named_property_enumerable(self):
+        named_getter = self.named_getter
+        return bool(named_getter
+                    and 'NotEnumerable' not in named_getter.extended_attributes
+                    and 'LegacyUnenumerableNamedProperties' not in self.owner.
+                    extended_attributes)
+
+    @property
     def indexed_getter(self):
         return self._find_accessor('own_indexed_getter')
 

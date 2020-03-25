@@ -26,7 +26,10 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.InMemorySharedPreferences;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -54,6 +57,12 @@ public class TabSuggestionsOrchestratorTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @Mock
+    public Profile.Natives mMockProfileNatives;
+
     @Mock
     private TabModelSelector mTabModelSelector;
 
@@ -74,7 +83,6 @@ public class TabSuggestionsOrchestratorTest {
     private static Tab mockTab(int id) {
         TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
-        doReturn(null).when(tab).getProfile();
         WebContents webContents = mock(WebContents.class);
         GURL gurl = mock(GURL.class);
         doReturn("").when(gurl).getSpec();
@@ -86,6 +94,7 @@ public class TabSuggestionsOrchestratorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        mocker.mock(ProfileJni.TEST_HOOKS, mMockProfileNatives);
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doNothing()
                 .when(mTabModelFilterProvider)

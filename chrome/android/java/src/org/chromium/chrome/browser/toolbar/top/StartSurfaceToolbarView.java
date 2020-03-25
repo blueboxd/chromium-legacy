@@ -21,7 +21,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
@@ -262,7 +262,7 @@ class StartSurfaceToolbarView extends RelativeLayout {
         setVisibility(View.VISIBLE);
 
         boolean showZoomingAnimation =
-                animateToTab && TabFeatureUtilities.isTabToGtsAnimationEnabled();
+                animateToTab && TabUiFeatureUtilities.isTabToGtsAnimationEnabled();
         final long duration = showZoomingAnimation
                 ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
                 : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;

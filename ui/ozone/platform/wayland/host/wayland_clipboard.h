@@ -57,6 +57,8 @@ class WaylandClipboard : public PlatformClipboard {
   void UpdateSequenceNumber(ClipboardBuffer buffer);
 
  private:
+  bool IsPrimarySelectionSupported() const;
+
   // Holds a temporary instance of the client's clipboard content
   // so that we can asynchronously write to it.
   PlatformClipboard::DataMap* data_map_ = nullptr;

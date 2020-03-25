@@ -35,9 +35,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -195,8 +195,8 @@ public class SigninSignoutIntegrationTest {
     private void addOneTestBookmark() {
         Assert.assertNull("This method should be called only once!", mBookmarkModel);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mBookmarkModel = new BookmarkModel(
-                    ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile());
+            mBookmarkModel = new BookmarkModel(Profile.fromWebContents(
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents()));
             mBookmarkModel.loadFakePartnerBookmarkShimForTesting();
             BookmarkTestUtil.waitForBookmarkModelLoaded();
             Assert.assertEquals(0, mBookmarkModel.getChildCount(mBookmarkModel.getDefaultFolder()));

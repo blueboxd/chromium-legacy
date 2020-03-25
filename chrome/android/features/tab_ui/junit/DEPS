@@ -1,5 +1,6 @@
 include_rules = [
  "+chrome/browser/android/lifecycle",
+ "+chrome/browser/profiles/android/java",
  "+chrome/browser/util",
  "+content/public/android/java/src/org/chromium/content_public/browser",
  "+components/feature_engagement/public/android/java/src/org/chromium/components/feature_engagement",

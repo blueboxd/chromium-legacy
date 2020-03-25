@@ -53,6 +53,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
+import org.chromium.policy.test.annotations.Policies;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -253,6 +254,41 @@ public class SiteSettingsTest {
                 return ChromeFeatureList.isEnabled(
                         ChromeFeatureList.IMPROVED_COOKIE_CONTROLS_FOR_THIRD_PARTY_COOKIE_BLOCKING);
             }
+        });
+    }
+
+    /**
+     * Checks if the button representing the given state matches the managed expectation.
+     */
+    private void checkFourStateCookieToggleButtonUnmanaged(final SettingsActivity settingsActivity,
+            final CookieSettingsState state, final boolean expected) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleCategorySettings preferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            FourStateCookieSettingsPreference fourStateCookieToggle =
+                    (FourStateCookieSettingsPreference) preferences.findPreference(
+                            SingleCategorySettings.FOUR_STATE_COOKIE_TOGGLE_KEY);
+            Assert.assertNotEquals("Button should be " + (expected ? "unmanaged" : "managed"),
+                    fourStateCookieToggle.isStateEnforced(state), expected);
+        });
+    }
+
+    private void checkDefaultCookiesSettingManaged(boolean expected) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(
+                    "Default Cookie Setting should be " + (expected ? "managed" : "unmanaged"),
+                    WebsitePreferenceBridge.isContentSettingManaged(ContentSettingsType.COOKIES),
+                    expected);
+        });
+    }
+
+    private void checkThirdPartyCookieBlockingManaged(boolean expected) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(
+                    "Third Party Cookie Blocking should be " + (expected ? "managed" : "unmanaged"),
+                    PrefServiceBridge.getInstance().isManagedPreference(
+                            Pref.BLOCK_THIRD_PARTY_COOKIES),
+                    expected);
         });
     }
 
@@ -503,6 +539,175 @@ public class SiteSettingsTest {
         // Load the page again and ensure the cookie is gone.
         mActivityTestRule.loadUrl(url);
         Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Set the cookie content setting to managed and ensure the correct radio buttons are enforced.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({ @Policies.Item(key = "DefaultCookiesSetting", string = "1") })
+    public void testDefaultCookiesSettingManagedTrue() throws Exception {
+        checkDefaultCookiesSettingManaged(true);
+        checkThirdPartyCookieBlockingManaged(false);
+        // The ContentSetting is managed (and set to true) while ThirdPartyCookieBlocking is not
+        // managed. This means that every button other than BLOCKED is unmanaged.
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.ALLOW, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK, false);
+        settingsActivity.finish();
+    }
+
+    /**
+     * Set the cookie content setting to managed and ensure the correct radio buttons are enforced.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({ @Policies.Item(key = "DefaultCookiesSetting", string = "2") })
+    public void testDefaultCookiesSettingManagedFalse() throws Exception {
+        checkDefaultCookiesSettingManaged(true);
+        checkThirdPartyCookieBlockingManaged(false);
+        // The ContentSetting is managed (and set to false) while ThirdPartyCookieBlocking is not
+        // managed. This means cookies should always be blocked, so the user cannot choose any other
+        // options and all buttons should be managed.
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.ALLOW, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK, false);
+        settingsActivity.finish();
+    }
+
+    /**
+     * Set third-party cookie blocking to managed and ensure the correct radio buttons are enforced.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({ @Policies.Item(key = "BlockThirdPartyCookies", string = "true") })
+    @DisabledTest(
+            message =
+                    "TODO(eokoyomon): See if it possible to support BlockThirdPartyCookies policy on android.")
+    public void
+    testBlockThirdPartyCookiesManagedTrue() throws Exception {
+        checkDefaultCookiesSettingManaged(false);
+        checkThirdPartyCookieBlockingManaged(true);
+        // ThirdPartyCookieBlocking is managed (and set to true) while the ContentSetting is not
+        // managed. This means a user can choose only between BLOCK_THIRD_PARTY and BLOCK, so only
+        // these should be unmanaged.
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.ALLOW, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK, true);
+        settingsActivity.finish();
+    }
+
+    /**
+     * Set third-party cookie blocking to managed and ensure the correct radio buttons are enforced.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({ @Policies.Item(key = "BlockThirdPartyCookies", string = "false") })
+    @DisabledTest(
+            message =
+                    "TODO(eokoyomon): See if it possible to support BlockThirdPartyCookies policy on android.")
+    public void
+    testBlockThirdPartyCookiesManagedFalse() throws Exception {
+        checkDefaultCookiesSettingManaged(false);
+        checkThirdPartyCookieBlockingManaged(true);
+        // ThirdPartyCookieBlocking is managed (and set to false) while the ContentSetting is not
+        // managed. This means a user can only choose to ALLOW all cookies or BLOCK all cookies, so
+        // only these should be unmanaged.
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.ALLOW, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK, true);
+        settingsActivity.finish();
+    }
+
+    /**
+     * Set both the cookie content setting and third-party cookie blocking to managed and ensure the
+     * correct radio buttons are enforced.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({
+        @Policies.Item(key = "DefaultCookiesSetting", string = "1")
+        , @Policies.Item(key = "BlockThirdPartyCookies", string = "false")
+    })
+    @DisabledTest(
+            message =
+                    "TODO(eokoyomon): See if it possible to support BlockThirdPartyCookies policy on android.")
+    public void
+    testAllCookieSettingsManaged() throws Exception {
+        checkDefaultCookiesSettingManaged(true);
+        checkThirdPartyCookieBlockingManaged(true);
+        // The ContentSetting and ThirdPartyCookieBlocking are managed. This means a user has a
+        // fixed setting for cookies that they cannot change. Therefore, all buttons should be
+        // managed.
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.ALLOW, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY, false);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK, false);
+        settingsActivity.finish();
+    }
+
+    /**
+     * Ensure no radio buttons are enforced when cookie settings are unmanaged.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testNoCookieSettingsManaged() throws Exception {
+        checkDefaultCookiesSettingManaged(false);
+        checkThirdPartyCookieBlockingManaged(false);
+        // The ContentSetting and ThirdPartyCookieBlocking are unmanaged. This means all buttons
+        // should be unmanaged.
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.ALLOW, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK_THIRD_PARTY, true);
+        checkFourStateCookieToggleButtonUnmanaged(
+                settingsActivity, CookieSettingsState.BLOCK, true);
+        settingsActivity.finish();
     }
 
     private void resetSite(WebsiteAddress address) {

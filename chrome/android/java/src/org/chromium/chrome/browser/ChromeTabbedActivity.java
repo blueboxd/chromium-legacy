@@ -119,7 +119,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -2129,8 +2128,8 @@ public class ChromeTabbedActivity
         if (NavigationSheet.isEnabled()) {
             showFullHistoryOnNavigationSheet(tab);
         } else {
-            mNavigationPopup = new NavigationPopup(((TabImpl) tab).getProfile(), this,
-                    tab.getWebContents().getNavigationController(),
+            mNavigationPopup = new NavigationPopup(Profile.fromWebContents(tab.getWebContents()),
+                    this, tab.getWebContents().getNavigationController(),
                     NavigationPopup.Type.ANDROID_SYSTEM_BACK);
             mNavigationPopup.setOnDismissCallback(() -> mNavigationPopup = null);
             mNavigationPopup.show(findViewById(R.id.navigation_popup_anchor_stub));

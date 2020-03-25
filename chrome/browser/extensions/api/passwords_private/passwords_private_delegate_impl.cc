@@ -344,7 +344,6 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     entry.username = base::UTF16ToUTF8(form->username_value);
     entry.id = password_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
-    entry.num_characters_in_password = form->password_value.length();
 
     if (!form->federation_origin.opaque()) {
       entry.federation_text.reset(new std::string(l10n_util::GetStringFUTF8(

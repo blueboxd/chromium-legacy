@@ -35,411 +35,6 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
 };
 
 // eslint-disable-next-line no-var
-var CrControlledButtonV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/controlled_button_tests.m.js';
-  }
-};
-
-TEST_F('CrControlledButtonV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrControlledRadioButtonV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/controlled_radio_button_tests.m.js';
-  }
-};
-
-TEST_F('CrControlledRadioButtonV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#if !defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsDefaultBrowserV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/default_browser_browsertest.m.js';
-  }
-};
-
-TEST_F('CrSettingsDefaultBrowserV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // !defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsDownloadsPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/downloads_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsDownloadsPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsCheckboxV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/checkbox_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsCheckboxV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-
-// eslint-disable-next-line no-var
-var CrSettingsChromeCleanupPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/chrome_cleanup_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsChromeCleanupPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-
-// eslint-disable-next-line no-var
-var CrSettingsDropdownMenuV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/dropdown_menu_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsDropdownMenuV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsExtensionControlledIndicatorV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/extension_controlled_indicator_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsExtensionControlledIndicatorV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#if !defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsImportDataDialogV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/import_data_dialog_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsImportDataDialogV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // !defined(OS_CHROMEOS)');
-
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-
-// eslint-disable-next-line no-var
-var CrSettingsIncompatibleApplicationsPageV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/incompatible_applications_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsIncompatibleApplicationsPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-
-GEN('#if !defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsPeoplePageManageProfileV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/people_page_manage_profile_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsPeoplePageManageProfileV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // !defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsPeoplePageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/people_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsPeoplePageV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#if defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsPeoplePageChromeOSV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/people_page_test_cros.m.js';
-  }
-};
-
-TEST_F('CrSettingsPeoplePageChromeOSV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsPeoplePageSyncControlsV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/people_page_sync_controls_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsPeoplePageSyncControlsV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsPeoplePageSyncPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/people_page_sync_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsPeoplePageSyncPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsPrefUtilV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/pref_util_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsPrefUtilV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsResetPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/reset_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsResetPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSiteFaviconV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_favicon_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsSiteFaviconV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSliderV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_slider_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsSliderV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSubpageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_subpage_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsSubpageV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#if !defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsSystemPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/system_page_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsSystemPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  // !defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsTextareaV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_textarea_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsTextareaV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsToggleButtonV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_toggle_button_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsToggleButtonV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSearchEnginesV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/search_engines_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsSearchEnginesV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSearchPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/search_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsSearchPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsOnStartupPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/on_startup_page_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsOnStartupPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsStartupUrlsPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/startup_urls_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsStartupUrlsPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsAppearancePageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/appearance_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsAppearancePageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsAppearanceFontsPageV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/appearance_fonts_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsAppearanceFontsPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsMenuV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_menu_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsMenuV3Test', 'SettingsMenu', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsPrefsV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/prefs_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsPrefsV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
 var CrSettingsAboutPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
@@ -456,34 +51,6 @@ TEST_F('CrSettingsAboutPageV3Test', 'AboutPage_OfficialBuild', function() {
   mocha.grep('AboutPageTest_OfficialBuilds').run();
 });
 GEN('#endif');
-
-// eslint-disable-next-line no-var
-var CrSettingsLanguagesV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsLanguagesV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#if !defined(OS_MACOSX)');
-
-// eslint-disable-next-line no-var
-var CrSettingsEditDictionaryPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/edit_dictionary_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsEditDictionaryPageV3Test', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif  //!defined(OS_MACOSX)');
 
 // eslint-disable-next-line no-var
 var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
@@ -512,18 +79,6 @@ TEST_F('CrSettingsLanguagesPageV3Test', 'SpellcheckOfficialBuild', function() {
 GEN('#endif');
 
 // eslint-disable-next-line no-var
-var CrSettingsSearchV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/search_settings_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsSearchV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
 var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
@@ -549,17 +104,6 @@ TEST_F(
     });
 GEN('#endif');
 
-// eslint-disable-next-line no-var
-var CrSettingsBasicPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/basic_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsBasicPageV3Test', 'All', function() {
-  mocha.run();
-});
 
 // eslint-disable-next-line no-var
 var CrSettingsMainPageV3Test = class extends CrSettingsV3BrowserTest {
@@ -579,18 +123,6 @@ GEN('#else');
 GEN('#define MAYBE_MainPageV3 MainPageV3');
 GEN('#endif');
 TEST_F('CrSettingsMainPageV3Test', 'MAYBE_MainPageV3', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsAutofillPageV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsAutofillPageV3Test', 'All', function() {
   mocha.run();
 });
 
@@ -679,57 +211,6 @@ TEST_F('CrSettingsPasswordsCheckV3Test', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_CHROMEOS)');
-// eslint-disable-next-line no-var
-var CrSettingsPasswordsSectionV3Test_Cros =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test_cros.m.js';
-  }
-};
-
-TEST_F('CrSettingsPasswordsSectionV3Test_Cros', 'All', function() {
-  mocha.run();
-});
-GEN('#endif');
-
-// eslint-disable-next-line no-var
-var CrSettingsPaymentsSectionV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/payments_section_test.m.js';
-  }
-};
-
-TEST_F('CrSettingsPaymentsSectionV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSiteDataDetailsV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_data_details_subpage_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsSiteDataDetailsV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSiteListEntryV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_list_entry_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsSiteListEntryV3Test', 'All', function() {
-  mocha.run();
-});
-
 // eslint-disable-next-line no-var
 var CrSettingsSiteListV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
@@ -752,96 +233,80 @@ TEST_F('CrSettingsSiteListV3Test', 'AddExceptionDialog', function() {
   runMochaSuite('AddExceptionDialog');
 });
 
-GEN('#if defined(OS_CHROMEOS)');
-// eslint-disable-next-line no-var
-var CrSettingsSiteListChromeOSV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_list_tests_cros.m.js';
-  }
-};
+[['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
+ ['AppearancePage', 'appearance_page_test.m.js'],
+ ['AutofillPage', 'autofill_page_test.m.js'],
+ ['BasicPage', 'basic_page_test.m.js'],
+ ['CategoryDefaultSetting', 'category_default_setting_tests.m.js'],
+ ['CategorySettingExceptions', 'category_setting_exceptions_tests.m.js'],
+ ['Checkbox', 'checkbox_tests.m.js'],
+ ['ChooserExceptionList', 'chooser_exception_list_tests.m.js'],
+ ['ChooserExceptionListEntry', 'chooser_exception_list_entry_tests.m.js'],
+ ['ControlledButton', 'controlled_button_tests.m.js'],
+ ['ControlledRadioButton', 'controlled_radio_button_tests.m.js'],
+ ['DownloadsPage', 'downloads_page_test.m.js'],
+ ['DropdownMenu', 'dropdown_menu_tests.m.js'],
+ ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.m.js'],
+ ['Languages', 'languages_tests.m.js'],
+ ['Menu', 'settings_menu_test.m.js'],
+ ['OnStartupPage', 'on_startup_page_tests.m.js'],
+ ['PaymentsSection', 'payments_section_test.m.js'],
+ ['PeoplePage', 'people_page_test.m.js'],
+ ['PeoplePageSyncControls', 'people_page_sync_controls_test.m.js'],
+ ['PeoplePageSyncPage', 'people_page_sync_page_test.m.js'],
+ ['Prefs', 'prefs_tests.m.js'],
+ ['PrefUtil', 'pref_util_tests.m.js'],
+ ['ResetPage', 'reset_page_test.m.js'],
+ ['SearchEngines', 'search_engines_page_test.m.js'],
+ ['SearchPage', 'search_page_test.m.js'],
+ ['Search', 'search_settings_test.m.js'],
+ ['SiteDataDetails', 'site_data_details_subpage_tests.m.js'],
+ ['SiteDetailsPermission', 'site_details_permission_tests.m.js'],
+ ['SiteEntry', 'site_entry_tests.m.js'],
+ ['SiteFavicon', 'site_favicon_test.m.js'],
+ ['SiteListEntry', 'site_list_entry_tests.m.js'],
+ ['Slider', 'settings_slider_tests.m.js'],
+ ['StartupUrlsPage', 'startup_urls_page_test.m.js'],
+ ['Subpage', 'settings_subpage_test.m.js'],
+ ['Textarea', 'settings_textarea_tests.m.js'],
+ ['ToggleButton', 'settings_toggle_button_tests.m.js'],
+].forEach(test => registerTest(...test));
 
-// Copied from Polymer 2 test:
-// TODO(crbug.com/929455): flaky, fix.
-TEST_F(
-    'CrSettingsSiteListChromeOSV3Test', 'DISABLED_AndroidSmsInfo', function() {
-      mocha.run();
-    });
+GEN('#if defined(OS_CHROMEOS)');
+[['PasswordsSectionCros', 'passwords_section_test_cros.m.js'],
+ ['PeoplePageChromeOS', 'people_page_test_cros.m.js'],
+ // Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
+ ['SiteListChromeOS', 'site_list_tests_cros.m.js', 'DISABLED_AndroidSmsInfo'],
+].forEach(test => registerTest(...test));
 GEN('#endif  // defined(OS_CHROMEOS)');
 
-// eslint-disable-next-line no-var
-var CrSettingsChooserExceptionListEntryV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/chooser_exception_list_entry_tests.m.js';
-  }
-};
+GEN('#if !defined(OS_MACOSX)');
+[['EditDictionaryPage', 'edit_dictionary_page_test.m.js'],
+].forEach(test => registerTest(...test));
+GEN('#endif  //!defined(OS_MACOSX)');
 
-TEST_F('CrSettingsChooserExceptionListEntryV3Test', 'All', function() {
-  mocha.run();
-});
+GEN('#if !defined(OS_CHROMEOS)');
+[['DefaultBrowser', 'default_browser_browsertest.m.js'],
+ ['ImportDataDialog', 'import_data_dialog_test.m.js'],
+ ['PeoplePageManageProfile', 'people_page_manage_profile_test.m.js'],
+ ['SystemPage', 'system_page_tests.m.js'],
+].forEach(test => registerTest(...test));
+GEN('#endif  // !defined(OS_CHROMEOS)');
 
-// eslint-disable-next-line no-var
-var CrSettingsChooserExceptionListV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/chooser_exception_list_tests.m.js';
-  }
-};
+GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+[['ChromeCleanupPage', 'chrome_cleanup_page_test.m.js'],
+ ['IncompatibleApplicationsPage', 'incompatible_applications_page_test.m.js'],
+].forEach(test => registerTest(...test));
+GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
-TEST_F('CrSettingsChooserExceptionListV3Test', 'All', function() {
-  mocha.run();
-});
+function registerTest(testName, module, caseName) {
+  const className = `CrSettings${testName}V3Test`;
+  this[className] = class extends CrSettingsV3BrowserTest {
+    /** @override */
+    get browsePreload() {
+      return `chrome://settings/test_loader.html?module=settings/${module}`;
+    }
+  };
 
-// eslint-disable-next-line no-var
-var CrSettingsCategoryDefaultSettingV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/category_default_setting_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsCategoryDefaultSettingV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsCategorySettingExceptionsV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/category_setting_exceptions_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsCategorySettingExceptionsV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSiteEntryV3Test = class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_entry_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsSiteEntryV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
-var CrSettingsSiteDetailsPermissionV3Test =
-    class extends CrSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_details_permission_tests.m.js';
-  }
-};
-
-TEST_F('CrSettingsSiteDetailsPermissionV3Test', 'All', function() {
-  mocha.run();
-});
+  TEST_F(className, caseName || 'All', () => mocha.run());
+}

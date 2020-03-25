@@ -210,8 +210,8 @@ public class DownloadUtils {
         }
 
         if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
-            Profile profile =
-                    (tab == null ? Profile.getLastUsedProfile() : ((TabImpl) tab).getProfile());
+            Profile profile = (tab == null ? Profile.getLastUsedProfile()
+                                           : Profile.fromWebContents(tab.getWebContents()));
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
         }
@@ -294,7 +294,7 @@ public class DownloadUtils {
             // The download needs to be scheduled to happen at later time due to current network
             // error.
             final OfflinePageBridge bridge =
-                    OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
+                    OfflinePageBridge.getForProfile(Profile.fromWebContents(tab.getWebContents()));
             bridge.scheduleDownload(tab.getWebContents(), OfflinePageBridge.ASYNC_NAMESPACE,
                     tab.getUrlString(), DownloadUiActionFlags.PROMPT_DUPLICATE, origin);
         } else {
@@ -303,7 +303,8 @@ public class DownloadUtils {
             DownloadUtils.recordDownloadPageMetrics(tab);
         }
 
-        Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
+        Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()));
         tracker.notifyEvent(EventConstants.DOWNLOAD_PAGE_STARTED);
     }
 
@@ -326,7 +327,7 @@ public class DownloadUtils {
         // Download will only be allowed for the error page if download button is shown in the page.
         if (tab.isShowingErrorPage()) {
             final OfflinePageBridge bridge =
-                    OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
+                    OfflinePageBridge.getForProfile(Profile.fromWebContents(tab.getWebContents()));
             return bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents());
         }
 

@@ -22,8 +22,6 @@ var availableTests = [
             0, 'another_user', 'new_pass');
       } else if (numCalls == 3) {
         chrome.test.assertEq('another_user', savedPasswordsList[0].username);
-        chrome.test.assertEq(
-            'new_pass'.length, savedPasswordsList[0].numCharactersInPassword);
         chrome.test.succeed();
       } else {
         chrome.test.fail();

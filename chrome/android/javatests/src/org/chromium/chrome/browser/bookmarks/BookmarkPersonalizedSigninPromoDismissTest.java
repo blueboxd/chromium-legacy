@@ -28,10 +28,10 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.sync.SyncTestRule;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -57,8 +57,8 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
         mSyncTestRule.startMainActivityForSyncTest();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BookmarkModel bookmarkModel = new BookmarkModel(
-                    ((TabImpl) mSyncTestRule.getActivity().getActivityTab()).getProfile());
+            BookmarkModel bookmarkModel = new BookmarkModel(Profile.fromWebContents(
+                    mSyncTestRule.getActivity().getActivityTab().getWebContents()));
             bookmarkModel.loadFakePartnerBookmarkShimForTesting();
             BookmarkTestUtil.waitForBookmarkModelLoaded();
         });

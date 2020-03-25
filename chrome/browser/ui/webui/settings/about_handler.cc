@@ -412,6 +412,10 @@ void AboutHandler::RegisterMessages() {
       "getChannelInfo", base::BindRepeating(&AboutHandler::HandleGetChannelInfo,
                                             base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "canChangeChannel",
+      base::BindRepeating(&AboutHandler::HandleCanChangeChannel,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "refreshTPMFirmwareUpdateStatus",
       base::BindRepeating(&AboutHandler::HandleRefreshTPMFirmwareUpdateStatus,
                           base::Unretained(this)));
@@ -636,6 +640,15 @@ void AboutHandler::HandleGetChannelInfo(const base::ListValue* args) {
                  callback_id));
 }
 
+void AboutHandler::HandleCanChangeChannel(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  ResolveJavascriptCallback(
+      base::Value(callback_id),
+      base::Value(CanChangeChannel(Profile::FromWebUI(web_ui()))));
+}
+
 void AboutHandler::OnGetCurrentChannel(std::string callback_id,
                                        const std::string& current_channel) {
   version_updater_->GetChannel(
@@ -651,8 +664,6 @@ void AboutHandler::OnGetTargetChannel(std::string callback_id,
       new base::DictionaryValue);
   channel_info->SetString("currentChannel", current_channel);
   channel_info->SetString("targetChannel", target_channel);
-  channel_info->SetBoolean("canChangeChannel",
-                           CanChangeChannel(Profile::FromWebUI(web_ui())));
 
   ResolveJavascriptCallback(base::Value(callback_id), *channel_info);
 }

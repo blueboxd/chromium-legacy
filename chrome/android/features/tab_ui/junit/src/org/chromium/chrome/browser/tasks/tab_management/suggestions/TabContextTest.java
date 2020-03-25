@@ -18,6 +18,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -49,6 +52,12 @@ public class TabContextTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @Mock
+    public Profile.Natives mMockProfileNatives;
+
     @Mock
     private TabModelSelector mTabModelSelector;
 
@@ -70,6 +79,7 @@ public class TabContextTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mocker.mock(ProfileJni.TEST_HOOKS, mMockProfileNatives);
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
     }
@@ -81,7 +91,6 @@ public class TabContextTest {
         doReturn(rootId).when(tab).getRootId();
         doReturn(title).when(tab).getTitle();
         doReturn(url).when(tab).getUrlString();
-        doReturn(null).when(tab).getProfile();
         doReturn(originalUrl).when(tab).getOriginalUrl();
         WebContents webContents = mock(WebContents.class);
         GURL gurl = mock(GURL.class);

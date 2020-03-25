@@ -6,6 +6,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -16,6 +17,8 @@
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom.h"
 
 namespace content {
+
+namespace {
 
 class CrossOriginOpenerPolicyBrowserTest : public ContentBrowserTest {
  public:
@@ -39,8 +42,12 @@ class CrossOriginOpenerPolicyBrowserTest : public ContentBrowserTest {
 
     https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     SetupCrossSiteRedirector(https_server());
-    https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     ASSERT_TRUE(https_server()->Start());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
   WebContentsImpl* web_contents() const {
@@ -722,5 +729,69 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
       web_contents()->GetFrameTree()->root()->render_manager()->GetProxyCount(),
       1u);
 }
+
+IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+                       IsolateInNewProcessDespiteLimitReached) {
+  // Set a process limit of 1 for testing.
+  RenderProcessHostImpl::SetMaxRendererProcessCount(1);
+
+  // Navigate to a starting page.
+  GURL starting_page(https_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), starting_page));
+
+  // Open a popup with CrossOriginOpenerPolicy and CrossOriginEmbedderPolicy
+  // set.
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     "window.open('/page_with_coop_and_coep.html')"));
+
+  auto* popup_webcontents =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  WaitForLoadStop(popup_webcontents);
+
+  // The page and its popup should be in different processes even though the
+  // process limit was reached.
+  // TODO(clamy, pmeuleman, ahemery): The assert below should be false once we
+  // fix the process reuse for COOP.
+  EXPECT_EQ(current_frame_host()->GetProcess(),
+            popup_webcontents->GetMainFrame()->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+                       NoProcessReuseForCOOPProcesses) {
+  // Set a process limit of 1 for testing.
+  RenderProcessHostImpl::SetMaxRendererProcessCount(1);
+
+  // Navigate to a starting page with CrossOriginOpenerPolicy and
+  // CrossOriginEmbedderPolicy set.
+  GURL starting_page(
+      https_server()->GetURL("a.com", "/page_with_coop_and_coep.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), starting_page));
+
+  // Open a popup without CrossOriginOpenerPolicy and CrossOriginEmbedderPolicy
+  // set.
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.open('/title1.html')"));
+
+  auto* popup_webcontents =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  WaitForLoadStop(popup_webcontents);
+
+  // The page and its popup should be in different processes even though the
+  // process limit was reached.
+  // TODO(clamy, pmeuleman, ahemery): The assert below should be false once we
+  // fix the process reuse for COOP.
+  EXPECT_EQ(current_frame_host()->GetProcess(),
+            popup_webcontents->GetMainFrame()->GetProcess());
+
+  // Navigate to a new page without COOP and COEP. Because of process reuse, it
+  // is placed in the popup process.
+  GURL final_page(https_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), final_page));
+  EXPECT_EQ(current_frame_host()->GetProcess(),
+            popup_webcontents->GetMainFrame()->GetProcess());
+}
+
+}  // namespace
 
 }  // namespace content

@@ -58,6 +58,11 @@ class CodeGenContext(object):
             "operation_group": None,
 
             # Special member-ish definition
+            "indexed_property_getter": None,
+            "indexed_property_setter": None,
+            "named_property_getter": None,
+            "named_property_setter": None,
+            "named_property_deleter": None,
             "stringifier": None,
 
             # The names of the class being generated and its base class.
@@ -162,8 +167,18 @@ class CodeGenContext(object):
                 or self.namespace)
 
     @property
+    def does_override_idl_return_type(self):
+        # Blink implementation returns in a type different from the IDL type.
+        # Namely, IndexedPropertySetterResult, NamedPropertySetterResult, and
+        # NamedPropertyDeleterResult are returned ignoring the operation's
+        # return type.
+        return (self.indexed_property_setter or self.named_property_setter
+                or self.named_property_deleter)
+
+    @property
     def function_like(self):
-        return (self.callback_function or self.constructor or self.operation)
+        return (self.callback_function or self.constructor or self.operation
+                or self._indexed_or_named_property)
 
     @property
     def idl_definition(self):
@@ -198,14 +213,16 @@ class CodeGenContext(object):
 
     @property
     def is_return_by_argument(self):
+        if self.does_override_idl_return_type:
+            return False
         if self.return_type is None:
-            return None
+            return False
         return self.return_type.unwrap().is_union
 
     @property
     def may_throw_exception(self):
         if not self.member_like:
-            return None
+            return False
         ext_attr = self.member_like.extended_attributes.get("RaisesException")
         if not ext_attr:
             return False
@@ -216,7 +233,8 @@ class CodeGenContext(object):
     @property
     def member_like(self):
         return (self.attribute or self.constant or self.constructor
-                or self.dict_member or self.operation)
+                or self.dict_member or self.operation
+                or self._indexed_or_named_property)
 
     @property
     def property_(self):
@@ -225,19 +243,22 @@ class CodeGenContext(object):
 
         return (self.attribute or self.constant or self.constructor_group
                 or self.dict_member or self.exposed_construct
-                or self.operation_group)
+                or self.operation_group or self._indexed_or_named_property)
 
     @property
     def return_type(self):
         if self.attribute_get:
             return self.attribute.idl_type
-        if self.callback_function:
-            return self.callback_function.return_type
-        if self.constructor:
-            return self.constructor.return_type
-        if self.operation:
-            return self.operation.return_type
+        function_like = self.function_like
+        if function_like:
+            return function_like.return_type
         return None
+
+    @property
+    def _indexed_or_named_property(self):
+        return (self.indexed_property_getter or self.indexed_property_setter
+                or self.named_property_getter or self.named_property_setter
+                or self.named_property_deleter)
 
 
 CodeGenContext.init()

@@ -24,9 +24,9 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -249,7 +249,8 @@ class BottomToolbarCoordinator {
         Tab tab = mTabProvider.get();
         if (tab == null) return;
 
-        Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
+        Tracker tracker =
+                TrackerFactory.getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()));
         tracker.notifyEvent(EventConstants.CHROME_DUET_USED_BOTTOM_TOOLBAR);
     }
 

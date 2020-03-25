@@ -10,7 +10,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
@@ -82,7 +81,8 @@ class AssistantCoordinator {
      * Show the Chrome feedback form.
      */
     public void showFeedback(String debugContext) {
-        Profile profile = ((TabImpl) mActivity.getActivityTabProvider().get()).getProfile();
+        Profile profile =
+                Profile.fromWebContents(mActivity.getActivityTabProvider().get().getWebContents());
 
         HelpAndFeedback.getInstance().showFeedback(mActivity, profile,
                 mActivity.getActivityTab().getUrlString(), FEEDBACK_CATEGORY_TAG,

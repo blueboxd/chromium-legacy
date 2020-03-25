@@ -86,7 +86,8 @@ public class ToolbarButtonInProductHelpController
                 long dataSaved = DataReductionProxySettings.getInstance()
                                          .getContentLengthSavedInHistorySummary()
                         - mDataSavedOnStartPageLoad;
-                Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
+                Tracker tracker = TrackerFactory.getTrackerForProfile(
+                        Profile.fromWebContents(tab.getWebContents()));
                 if (dataSaved > 0L) tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
                 if (Previews.isPreview(tab)) {
                     tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
@@ -107,14 +108,15 @@ public class ToolbarButtonInProductHelpController
                     return;
                 }
 
-                OfflinePageBridge bridge =
-                        OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
+                OfflinePageBridge bridge = OfflinePageBridge.getForProfile(
+                        Profile.fromWebContents(tab.getWebContents()));
                 if (bridge == null
                         || !bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents())) {
                     return;
                 }
 
-                Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
+                Tracker tracker = TrackerFactory.getTrackerForProfile(
+                        Profile.fromWebContents(tab.getWebContents()));
                 tracker.notifyEvent(EventConstants.USER_HAS_SEEN_DINO);
             }
         };

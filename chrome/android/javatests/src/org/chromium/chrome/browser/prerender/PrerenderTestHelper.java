@@ -9,8 +9,8 @@ import android.graphics.Rect;
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.TabLoadStatus;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -77,7 +77,8 @@ public class PrerenderTestHelper {
                                 Rect bounds = new Rect(0, 0, coord.getContentWidthPixInt(),
                                         coord.getContentHeightPixInt());
                                 boolean didPrerender = prerenderHandler.addPrerender(
-                                                               ((TabImpl) currentTab).getProfile(),
+                                                               Profile.fromWebContents(
+                                                                       currentTab.getWebContents()),
                                                                currentTab.getWebContents(), testUrl,
                                                                null, bounds, true)
                                         != null;

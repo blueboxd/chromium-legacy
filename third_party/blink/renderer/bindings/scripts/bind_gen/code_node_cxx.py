@@ -20,7 +20,7 @@ class CxxBlockNode(CompositeNode):
     def __init__(self, body):
         template_format = (
             "{{\n"  #
-            "  {body}\n"  #
+            "  {body}\n"
             "}}")
 
         CompositeNode.__init__(
@@ -33,7 +33,7 @@ class CxxIfNode(CompositeNode):
     def __init__(self, cond, body, likeliness):
         template_format = (
             "if ({cond}) {{\n"  #
-            "  {body}\n"  #
+            "  {body}\n"
             "}}")
 
         CompositeNode.__init__(
@@ -47,9 +47,9 @@ class CxxIfElseNode(CompositeNode):
     def __init__(self, cond, then, then_likeliness, else_, else_likeliness):
         template_format = (
             "if ({cond}) {{\n"  #
-            "  {then}\n"  #
-            "}} else {{\n"  #
-            "  {else_}\n"  #
+            "  {then}\n"
+            "}} else {{\n"
+            "  {else_}\n"
             "}}")
 
         CompositeNode.__init__(

@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/browser/android/lifecycle",
+  "+chrome/browser/profiles/android/java",
   "+chrome/browser/ui/messages/android/java",
   "+components/background_task_scheduler",
   "+components/feature_engagement",

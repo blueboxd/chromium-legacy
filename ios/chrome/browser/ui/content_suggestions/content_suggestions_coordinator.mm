@@ -259,28 +259,38 @@
   }
 }
 
-- (BOOL)shouldAllowOverscrollActions {
+- (BOOL)shouldAllowOverscrollActionsForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return YES;
 }
 
-- (UIView*)toolbarSnapshotView {
+- (UIView*)toolbarSnapshotViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return
       [[self.headerController toolBarView] snapshotViewAfterScreenUpdates:NO];
 }
 
-- (UIView*)headerView {
+- (UIView*)headerViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return self.suggestionsViewController.view;
 }
 
-- (CGFloat)overscrollActionsControllerHeaderInset:
+- (CGFloat)headerInsetForOverscrollActionsController:
     (OverscrollActionsController*)controller {
   return 0;
 }
 
-- (CGFloat)overscrollHeaderHeight {
+- (CGFloat)headerHeightForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   CGFloat height = [self.headerController toolBarView].bounds.size.height;
   CGFloat topInset = self.suggestionsViewController.view.safeAreaInsets.top;
   return height + topInset;
+}
+
+- (FullscreenController*)fullscreenControllerForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  // Fullscreen isn't supported here.
+  return nullptr;
 }
 
 #pragma mark - Public methods

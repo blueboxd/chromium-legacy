@@ -11,16 +11,13 @@ cr.define('autofill_test_util', function() {
    * Creates a single item for the list of passwords.
    * @param {string=} url
    * @param {string=} username
-   * @param {number=} passwordLength
    * @param {number=} id
    * @return {chrome.passwordsPrivate.PasswordUiEntry}
    */
-  /* #export */ function createPasswordEntry(
-      url, username, passwordLength, id) {
+  /* #export */ function createPasswordEntry(url, username, id) {
     // Generate fake data if param is undefined.
     url = url || patternMaker_('www.xxxxxx.com', 16);
     username = username || patternMaker_('user_xxxxx', 16);
-    passwordLength = passwordLength || Math.floor(Math.random() * 15) + 3;
     id = id || 0;
 
     return {
@@ -30,7 +27,6 @@ cr.define('autofill_test_util', function() {
         link: 'http://' + url + '/login',
       },
       username: username,
-      numCharactersInPassword: passwordLength,
       id: id,
     };
   }

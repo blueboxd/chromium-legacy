@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegateImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
@@ -170,7 +169,7 @@ public class ExploreSitesPage extends BasicNativePage {
     /**
      * Create a new instance of the explore sites page.
      */
-    public ExploreSitesPage(ChromeActivity activity, NativePageHost host, TabImpl tab) {
+    public ExploreSitesPage(ChromeActivity activity, NativePageHost host, Tab tab) {
         super(host);
 
         mHost = host;
@@ -179,7 +178,7 @@ public class ExploreSitesPage extends BasicNativePage {
         mTitle = activity.getString(R.string.explore_sites_title);
         mView = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
-        mProfile = ((TabImpl) mTab).getProfile();
+        mProfile = Profile.fromWebContents(mTab.getWebContents());
 
         mDenseVariation = ExploreSitesBridge.getDenseVariation();
         int maxRows;

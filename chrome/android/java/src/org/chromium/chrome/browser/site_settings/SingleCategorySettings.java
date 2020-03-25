@@ -583,6 +583,13 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
         PrefServiceBridge.getInstance().setBoolean(
                 Pref.BLOCK_THIRD_PARTY_COOKIES, mode == CookieControlsMode.ON);
+
+        // Re-configure the FourStateCookieToggle in order to avoid having stale state variables
+        // within the FourStateCookieSettingsPreference. These variables determine the checked and
+        // enabled states of each of the buttons.
+        configureFourStateCookieToggle(
+                (FourStateCookieSettingsPreference) getPreferenceScreen().findPreference(
+                        FOUR_STATE_COOKIE_TOGGLE_KEY));
     }
 
     private String getAddExceptionDialogMessage() {
@@ -1027,29 +1034,11 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
     private void configureFourStateCookieToggle(
             FourStateCookieSettingsPreference fourStateCookieToggle) {
         fourStateCookieToggle.setOnPreferenceChangeListener(this);
-        // These conditions only check the preference combinations that deterministically decide
-        // your cookie settings state. In the future we would refactor the backend preferences to
-        // reflect the only possible states you can be in
-        // (Allow/BlockThirdPartyIncognito/BlockThirdParty/Block), instead of using this
-        // combination of multiple signals.
-        CookieSettingsState state;
-        if (!WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES)) {
-            state = CookieSettingsState.BLOCK;
-        } else if (PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)
-                || PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE)
-                        == CookieControlsMode.ON) {
-            // Having CookieControlsMode.ON is equivalent to having the BLOCK_THIRD_PARTY_COOKIES
-            // pref set to enabled, because it means third party cookie blocking is always on.
-            state = CookieSettingsState.BLOCK_THIRD_PARTY;
-        } else if (PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE)
-                == CookieControlsMode.INCOGNITO_ONLY) {
-            state = CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO;
-        } else {
-            state = CookieSettingsState.ALLOW;
-        }
-
-        // TODO(crbug.com/1060118): Add managed state for third-party cookie blocking.
-        fourStateCookieToggle.setState(state);
+        fourStateCookieToggle.setState(mCategory.isManaged(),
+                PrefServiceBridge.getInstance().isManagedPreference(Pref.BLOCK_THIRD_PARTY_COOKIES),
+                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES),
+                PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES),
+                PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE));
     }
 
     private void configureTriStateToggle(

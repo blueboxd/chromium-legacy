@@ -220,27 +220,27 @@ inline v8::Local<v8::Value> ToV8(const base::Optional<InnerType>& value,
 // Declare the function here but define it later so it can call the ToV8()
 // overloads below.
 template <typename Sequence>
-inline v8::Local<v8::Value> ToV8SequenceInternal(
+inline v8::Local<v8::Array> ToV8SequenceInternal(
     const Sequence&,
     v8::Local<v8::Object> creation_context,
     v8::Isolate*);
 
 template <typename T, size_t Extent>
-inline v8::Local<v8::Value> ToV8(base::span<T, Extent> value,
+inline v8::Local<v8::Array> ToV8(base::span<T, Extent> value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8SequenceInternal(value, creation_context, isolate);
 }
 
 template <typename T, wtf_size_t inlineCapacity>
-inline v8::Local<v8::Value> ToV8(const Vector<T, inlineCapacity>& value,
+inline v8::Local<v8::Array> ToV8(const Vector<T, inlineCapacity>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8SequenceInternal(value, creation_context, isolate);
 }
 
 template <typename T, wtf_size_t inlineCapacity>
-inline v8::Local<v8::Value> ToV8(const HeapVector<T, inlineCapacity>& value,
+inline v8::Local<v8::Array> ToV8(const HeapVector<T, inlineCapacity>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8SequenceInternal(value, creation_context, isolate);
@@ -301,7 +301,7 @@ inline v8::Local<v8::Value> ToV8(const HeapVector<std::pair<String, T>>& value,
 }
 
 template <typename Sequence>
-inline v8::Local<v8::Value> ToV8SequenceInternal(
+inline v8::Local<v8::Array> ToV8SequenceInternal(
     const Sequence& sequence,
     v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
@@ -324,7 +324,7 @@ inline v8::Local<v8::Value> ToV8SequenceInternal(
     if (!array->CreateDataProperty(context, index++, value)
              .To(&created_property) ||
         !created_property) {
-      return v8::Local<v8::Value>();
+      return v8::Local<v8::Array>();
     }
   }
   return array;

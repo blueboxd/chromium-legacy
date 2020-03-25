@@ -269,6 +269,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                               password_manager::features::kPasswordImport));
 
   html_source->AddBoolean(
+      "enableAccountStorage",
+      base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage));
+
+  html_source->AddBoolean(
       "syncSetupFriendlySettings",
       base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings));
 

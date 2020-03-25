@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -151,7 +152,7 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
                 searchText, ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
 
-        TrackerFactory.getTrackerForProfile(((TabImpl) mTab).getProfile())
+        TrackerFactory.getTrackerForProfile(Profile.fromWebContents(mTab.getWebContents()))
                 .notifyEvent(EventConstants.WEB_SEARCH_PERFORMED);
         selector.openNewTab(generateUrlParamsForSearch(query),
                 TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, mTab.isIncognito());

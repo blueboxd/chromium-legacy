@@ -509,6 +509,14 @@
   <message name="IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS" desc="Shown in the passwords section of settings. Descriptive text to inform that passwords can be accessed online. Has a link.">
     View and manage saved passwords in your <ph name="BEGIN_LINK">&lt;a is="action-link" href="$1" target="_blank"&gt;</ph>Google Account<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
+  <!-- TODO(crbug.com/1062344): Make it translateable and use definitive label once final mocks are available. -->
+  <message translateable="false" name="IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_LABEL" desc="Label for a button in the passwords section of settings triggering opt in to passwords account storage.">
+    Opt-in to account storage
+  </message>
+  <!-- TODO(crbug.com/1062344): Make it translateable and use definitive label once final mocks are available. -->
+  <message translateable="false" name="IDS_SETTINGS_PASSWORDS_OPT_OUT_ACCOUNT_STORAGE_LABEL" desc="Label for a button in the passwords section of settings triggering opt out of passwords account storage.">
+    Opt-out of account storage
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_EXPORT_MENU_ITEM" desc="A menu item in the More Actions menu above the password list in Chrome's settings. Selecting this action will open a dialog, through which the user can export their passwords outside of Chrome.">
     Export passwords...
   </message>

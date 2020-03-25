@@ -86,7 +86,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY = "NewTabPageScrollPosition";
     public static final String CONTEXT_MENU_USER_ACTION_PREFIX = "Suggestions";
 
-    protected final TabImpl mTab;
+    protected final Tab mTab;
     private final ActivityTabProvider mActivityTabProvider;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
@@ -273,7 +273,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      */
     public NewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
             TabModelSelector tabModelSelector, ActivityTabProvider activityTabProvider,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher, TabImpl tab) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher, Tab tab) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
 
@@ -281,7 +281,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
 
         mTab = tab;
-        Profile profile = mTab.getProfile();
+        Profile profile = Profile.fromWebContents(mTab.getWebContents());
 
         SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
         SuggestionsSource suggestionsSource = depsFactory.createSuggestionSource(profile);

@@ -13,6 +13,7 @@
       'refreshUpdateStatus',
       'openHelpPage',
       'openFeedbackDialog',
+      'canChangeChannel',
       'getChannelInfo',
       'getVersionInfo',
       'getRegulatoryInfo',
@@ -39,8 +40,10 @@
     this.channelInfo_ = {
       currentChannel: BrowserChannel.BETA,
       targetChannel: BrowserChannel.BETA,
-      canChangeChannel: true,
     };
+
+    /** @private {!boolean} */
+    this.canChangeChannel_ = true;
 
     /** @private {?RegulatoryInfo} */
     this.regulatoryInfo_ = null;
@@ -101,7 +104,7 @@
 
   /** @param {boolean} canChangeChannel */
   setCanChangeChannel(canChangeChannel) {
-    this.channelInfo_.canChangeChannel = canChangeChannel;
+    this.canChangeChannel_ = canChangeChannel;
   }
 
   /**
@@ -143,6 +146,12 @@
   getChannelInfo() {
     this.methodCalled('getChannelInfo');
     return Promise.resolve(this.channelInfo_);
+  }
+
+  /** @override */
+  canChangeChannel() {
+    this.methodCalled('canChangeChannel');
+    return Promise.resolve(this.canChangeChannel_);
   }
 
   /** @override */

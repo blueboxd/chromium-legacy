@@ -106,8 +106,12 @@ class AboutHandler : public settings::SettingsPageUIHandler,
       std::string callback_id,
       std::unique_ptr<base::DictionaryValue> version_info);
 
-  // Retrieves combined channel info.
+  // Retrieves channel info.
   void HandleGetChannelInfo(const base::ListValue* args);
+
+  // Checks whether we can change the current channel.
+  void HandleCanChangeChannel(const base::ListValue* args);
+
   // Callbacks for version_updater_->GetChannel calls.
   void OnGetCurrentChannel(std::string callback_id,
                            const std::string& current_channel);

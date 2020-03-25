@@ -49,13 +49,21 @@ Polymer({
   /** @private */
   updateChannelInfo_() {
     const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
+
+    // canChangeChannel() call is expected to be low-latency, so fetch this
+    // value by itself to ensure UI consistency (see https://crbug.com/848750).
+    browserProxy.canChangeChannel().then(canChangeChannel => {
+      this.canChangeChannel_ = canChangeChannel;
+    });
+
+    // getChannelInfo() may have considerable latency due to updates. Fetch this
+    // metadata as part of a separate request.
     browserProxy.getChannelInfo().then(info => {
       this.channelInfo_ = info;
       // Display the target channel for the 'Currently on' message.
       this.currentlyOnChannelText_ = this.i18n(
           'aboutCurrentlyOnChannel',
           this.i18n(settings.browserChannelToI18nId(info.targetChannel)));
-      this.canChangeChannel_ = info.canChangeChannel;
     });
   },
 

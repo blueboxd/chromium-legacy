@@ -201,7 +201,7 @@ public class ContextualSearchTabHelper
         // is initialized.
         if (mNativeHelper == 0) {
             mNativeHelper = ContextualSearchTabHelperJni.get().init(
-                    ContextualSearchTabHelper.this, ((TabImpl) tab).getProfile());
+                    ContextualSearchTabHelper.this, Profile.fromWebContents(tab.getWebContents()));
         }
         if (mTemplateUrlObserver == null) {
             mTemplateUrlObserver = new TemplateUrlServiceObserver() {

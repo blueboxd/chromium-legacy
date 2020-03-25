@@ -72,7 +72,6 @@ chrome.passwordsPrivate.UrlCollection;
  * @typedef {{
  *   urls: !chrome.passwordsPrivate.UrlCollection,
  *   username: string,
- *   numCharactersInPassword: number,
  *   federationText: (string|undefined),
  *   id: number,
  *   fromAccountStore: boolean

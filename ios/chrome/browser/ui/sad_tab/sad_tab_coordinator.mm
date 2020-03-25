@@ -7,8 +7,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/ui_metrics/sadtab_metrics_types.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/fullscreen/chrome_coordinator+fullscreen_disabling.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -50,7 +52,8 @@
   _viewController = [[SadTabViewController alloc] init];
   _viewController.delegate = self;
   _viewController.overscrollDelegate = self.overscrollDelegate;
-  _viewController.offTheRecord = self.browserState->IsOffTheRecord();
+  _viewController.offTheRecord =
+      self.browser->GetBrowserState()->IsOffTheRecord();
   _viewController.repeatedFailure = self.repeatedFailure;
 
   [self.baseViewController addChildViewController:_viewController];
@@ -85,17 +88,26 @@
 
 - (void)sadTabViewControllerShowReportAnIssue:
     (SadTabViewController*)sadTabViewController {
-  [self.dispatcher showReportAnIssueFromViewController:self.baseViewController];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  [static_cast<id<ApplicationCommands>>(self.browser->GetCommandDispatcher())
+      showReportAnIssueFromViewController:self.baseViewController];
 }
 
 - (void)sadTabViewController:(SadTabViewController*)sadTabViewController
     showSuggestionsPageWithURL:(const GURL&)URL {
   OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
-  [self.dispatcher openURLInNewTab:command];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  [static_cast<id<ApplicationCommands>>(self.browser->GetCommandDispatcher())
+      openURLInNewTab:command];
 }
 
 - (void)sadTabViewControllerReload:(SadTabViewController*)sadTabViewController {
-  [self.dispatcher reload];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  [static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher())
+      reload];
 }
 
 #pragma mark - SadTabTabHelperDelegate

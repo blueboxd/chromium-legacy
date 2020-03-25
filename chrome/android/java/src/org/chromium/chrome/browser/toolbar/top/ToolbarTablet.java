@@ -35,8 +35,8 @@ import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
@@ -305,8 +305,8 @@ public class ToolbarTablet extends ToolbarLayout
     private void displayNavigationPopup(boolean isForward, View anchorView) {
         Tab tab = getToolbarDataProvider().getTab();
         if (tab == null || tab.getWebContents() == null) return;
-        mNavigationPopup = new NavigationPopup(((TabImpl) tab).getProfile(), getContext(),
-                tab.getWebContents().getNavigationController(),
+        mNavigationPopup = new NavigationPopup(Profile.fromWebContents(tab.getWebContents()),
+                getContext(), tab.getWebContents().getNavigationController(),
                 isForward ? NavigationPopup.Type.TABLET_FORWARD : NavigationPopup.Type.TABLET_BACK);
         mNavigationPopup.show(anchorView);
     }

@@ -27,6 +27,9 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.DisableNativeTestRule;
+import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -69,6 +72,11 @@ public class TabSuggestionMessageServiceUnitTest {
 
     private TabSuggestionMessageService mMessageService;
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+    @Mock
+    public Profile.Natives mMockProfileNatives;
+
     @Mock
     Context mContext;
     @Mock
@@ -89,6 +97,7 @@ public class TabSuggestionMessageServiceUnitTest {
     public void setUp() {
         // After setUp there are three tabs in TabModel.
         MockitoAnnotations.initMocks(this);
+        mocker.mock(ProfileJni.TEST_HOOKS, mMockProfileNatives);
 
         // Set up Tabs.
         mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_ROOT_ID, null, "");

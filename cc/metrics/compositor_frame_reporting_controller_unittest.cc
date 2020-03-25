@@ -50,14 +50,12 @@ class TestCompositorFrameReportingController
 
 class CompositorFrameReportingControllerTest : public testing::Test {
  public:
-  CompositorFrameReportingControllerTest() : current_id_(1, 1) {
-    args_ = SimulateBeginFrameArgs(current_id_);
-  }
+  CompositorFrameReportingControllerTest() : current_id_(1, 1) {}
 
   // The following functions simulate the actions that would
   // occur for each phase of the reporting controller.
   void SimulateBeginImplFrame() {
-    reporting_controller_.WillBeginImplFrame(args_);
+    reporting_controller_.WillBeginImplFrame(current_id_);
   }
 
   void SimulateBeginMainFrame() {
@@ -67,7 +65,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     CHECK(
         reporting_controller_.reporters()[CompositorFrameReportingController::
                                               PipelineStage::kBeginImplFrame]);
-    reporting_controller_.WillBeginMainFrame(args_);
+    reporting_controller_.WillBeginMainFrame(current_id_);
   }
 
   void SimulateCommit(std::unique_ptr<BeginMainFrameMetrics> blink_breakdown) {
@@ -116,25 +114,10 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     reporting_controller_.DidPresentCompositorFrame(*next_token_, details);
   }
 
-  viz::BeginFrameArgs SimulateBeginFrameArgs(
-      viz::BeginFrameId frame_id,
-      base::TimeTicks frame_time = base::TimeTicks::Now(),
-      base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16)) {
-    args_ = viz::BeginFrameArgs();
-    args_.frame_id = frame_id;
-    args_.frame_time = frame_time;
-    args_.interval = interval;
-    return args_;
-  }
-
-  void IncrementCurrentId() {
-    current_id_.sequence_number++;
-    args_.frame_id = current_id_;
-  }
+  void IncrementCurrentId() { current_id_.sequence_number++; }
 
  protected:
   TestCompositorFrameReportingController reporting_controller_;
-  viz::BeginFrameArgs args_;
   viz::BeginFrameId current_id_;
   viz::BeginFrameId last_activated_id_;
   base::TimeTicks begin_main_start_;
@@ -153,18 +136,18 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   // - 4 Simultaneous Reporters
 
   // BF
-  reporting_controller_.WillBeginImplFrame(args_);
+  reporting_controller_.WillBeginImplFrame(current_id_);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BF
   // Should replace previous reporter.
-  reporting_controller_.WillBeginImplFrame(args_);
+  reporting_controller_.WillBeginImplFrame(current_id_);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF
   // Should add new reporter.
-  reporting_controller_.WillBeginMainFrame(args_);
-  reporting_controller_.WillBeginImplFrame(args_);
+  reporting_controller_.WillBeginMainFrame(current_id_);
+  reporting_controller_.WillBeginImplFrame(current_id_);
   EXPECT_EQ(2, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF -> Commit
@@ -175,7 +158,7 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
 
   // BF -> BMF -> BF -> Commit -> BMF -> Activate -> Commit -> Activation
   // Having two reporters at Activate phase should delete the older one.
-  reporting_controller_.WillBeginMainFrame(args_);
+  reporting_controller_.WillBeginMainFrame(current_id_);
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
   last_activated_id_ = current_id_;
@@ -278,28 +261,23 @@ TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
 TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
   base::HistogramTester histogram_tester;
   viz::BeginFrameId current_id_1_(1, 1);
-  viz::BeginFrameArgs args_1_ = SimulateBeginFrameArgs(current_id_1_);
-
   viz::BeginFrameId current_id_2_(1, 2);
-  viz::BeginFrameArgs args_2_ = SimulateBeginFrameArgs(current_id_2_);
-
   viz::BeginFrameId current_id_3_(1, 3);
-  viz::BeginFrameArgs args_3_ = SimulateBeginFrameArgs(current_id_3_);
 
-  reporting_controller_.WillBeginImplFrame(args_1_);
-  reporting_controller_.WillBeginMainFrame(args_1_);
+  reporting_controller_.WillBeginImplFrame(current_id_1_);
+  reporting_controller_.WillBeginMainFrame(current_id_1_);
   reporting_controller_.BeginMainFrameAborted(current_id_1_);
   reporting_controller_.OnFinishImplFrame(current_id_1_);
   reporting_controller_.DidNotProduceFrame(current_id_1_);
 
-  reporting_controller_.WillBeginImplFrame(args_2_);
-  reporting_controller_.WillBeginMainFrame(args_2_);
+  reporting_controller_.WillBeginImplFrame(current_id_2_);
+  reporting_controller_.WillBeginMainFrame(current_id_2_);
   reporting_controller_.OnFinishImplFrame(current_id_2_);
   reporting_controller_.BeginMainFrameAborted(current_id_2_);
   reporting_controller_.DidNotProduceFrame(current_id_2_);
 
-  reporting_controller_.WillBeginImplFrame(args_3_);
-  reporting_controller_.WillBeginMainFrame(args_3_);
+  reporting_controller_.WillBeginImplFrame(current_id_3_);
+  reporting_controller_.WillBeginMainFrame(current_id_3_);
 
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
@@ -310,8 +288,8 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
 TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {
   base::HistogramTester histogram_tester;
 
-  reporting_controller_.WillBeginImplFrame(args_);
-  reporting_controller_.WillBeginMainFrame(args_);
+  reporting_controller_.WillBeginImplFrame(current_id_);
+  reporting_controller_.WillBeginMainFrame(current_id_);
   reporting_controller_.BeginMainFrameAborted(current_id_);
   reporting_controller_.OnFinishImplFrame(current_id_);
   reporting_controller_.DidSubmitCompositorFrame(
@@ -334,23 +312,17 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {
 TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   base::HistogramTester histogram_tester;
   viz::BeginFrameId current_id_1_(1, 1);
-  viz::BeginFrameArgs args_1_ = SimulateBeginFrameArgs(current_id_1_);
-
   viz::BeginFrameId current_id_2_(1, 2);
-  viz::BeginFrameArgs args_2_ = SimulateBeginFrameArgs(current_id_2_);
-
   viz::BeginFrameId current_id_3_(1, 3);
-  viz::BeginFrameArgs args_3_ = SimulateBeginFrameArgs(current_id_3_);
-
-  reporting_controller_.WillBeginImplFrame(args_1_);
+  reporting_controller_.WillBeginImplFrame(current_id_1_);
   reporting_controller_.OnFinishImplFrame(current_id_1_);
-  reporting_controller_.WillBeginMainFrame(args_1_);
+  reporting_controller_.WillBeginMainFrame(current_id_1_);
   reporting_controller_.WillCommit();
   reporting_controller_.DidCommit();
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
-  reporting_controller_.WillBeginImplFrame(args_2_);
-  reporting_controller_.WillBeginMainFrame(args_2_);
+  reporting_controller_.WillBeginImplFrame(current_id_2_);
+  reporting_controller_.WillBeginMainFrame(current_id_2_);
   reporting_controller_.OnFinishImplFrame(current_id_2_);
   reporting_controller_.BeginMainFrameAborted(current_id_2_);
   reporting_controller_.DidSubmitCompositorFrame(
@@ -390,7 +362,7 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
       2);
-  reporting_controller_.WillBeginImplFrame(args_3_);
+  reporting_controller_.WillBeginImplFrame(current_id_3_);
   reporting_controller_.OnFinishImplFrame(current_id_3_);
   reporting_controller_.DidSubmitCompositorFrame(
       3, current_id_3_, current_id_1_, std::vector<EventMetrics>());
@@ -466,80 +438,6 @@ TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {
       base::TimeDelta::FromMicroseconds(1).InMilliseconds(), 1);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SendBeginMainFrameToCommit.BeginMainSentToStarted", 1);
-}
-
-// If the presentation of the frame happens before deadline.
-TEST_F(CompositorFrameReportingControllerTest, ReportingMissedDeadlineFrame1) {
-  base::HistogramTester histogram_tester;
-
-  reporting_controller_.WillBeginImplFrame(args_);
-  reporting_controller_.OnFinishImplFrame(current_id_);
-  reporting_controller_.WillBeginMainFrame(args_);
-  reporting_controller_.WillCommit();
-  reporting_controller_.DidCommit();
-  reporting_controller_.WillActivate();
-  reporting_controller_.DidActivate();
-  reporting_controller_.DidSubmitCompositorFrame(1, current_id_, current_id_,
-                                                 std::vector<EventMetrics>());
-  viz::FrameTimingDetails details = {};
-  details.presentation_feedback.timestamp =
-      args_.frame_time + args_.interval * 1.5 -
-      base::TimeDelta::FromMicroseconds(100);
-  reporting_controller_.DidPresentCompositorFrame(1, details);
-
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.TotalLatency", 1);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedDeadlineFrame."
-      "BeginImplFrameToSendBeginMainFrame",
-      0);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedDeadlineFrame.TotalLatency", 0);
-
-  // Non-dropped cases.
-  histogram_tester.ExpectBucketCount("CompositorLatency.Type", 0, 1);
-  // Missed-deadline cases.
-  histogram_tester.ExpectBucketCount("CompositorLatency.Type", 1, 0);
-  // Dropped cases.
-  histogram_tester.ExpectBucketCount("CompositorLatency.Type", 2, 0);
-}
-
-// If the presentation of the frame happens after deadline.
-TEST_F(CompositorFrameReportingControllerTest, ReportingMissedDeadlineFrame2) {
-  base::HistogramTester histogram_tester;
-
-  reporting_controller_.WillBeginImplFrame(args_);
-  reporting_controller_.OnFinishImplFrame(current_id_);
-  reporting_controller_.WillBeginMainFrame(args_);
-  reporting_controller_.WillCommit();
-  reporting_controller_.DidCommit();
-  reporting_controller_.WillActivate();
-  reporting_controller_.DidActivate();
-  reporting_controller_.DidSubmitCompositorFrame(1, current_id_, current_id_,
-                                                 std::vector<EventMetrics>());
-  viz::FrameTimingDetails details = {};
-  details.presentation_feedback.timestamp =
-      args_.frame_time + args_.interval * 1.5 +
-      base::TimeDelta::FromMicroseconds(100);
-  reporting_controller_.DidPresentCompositorFrame(1, details);
-
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.TotalLatency", 1);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedDeadlineFrame."
-      "BeginImplFrameToSendBeginMainFrame",
-      1);
-  histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedDeadlineFrame.TotalLatency", 1);
-
-  // Non-dropped cases.
-  histogram_tester.ExpectBucketCount("CompositorLatency.Type", 0, 1);
-  // Missed-deadline cases.
-  histogram_tester.ExpectBucketCount("CompositorLatency.Type", 1, 1);
-  // Dropped cases.
-  histogram_tester.ExpectBucketCount("CompositorLatency.Type", 2, 0);
 }
 
 // Tests that EventLatency histograms are reported properly when a frame is

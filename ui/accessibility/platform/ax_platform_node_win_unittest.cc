@@ -100,7 +100,7 @@ ScopedVariant SELF(CHILDID_SELF);
 
 #define EXPECT_UIA_BOOL_EQ(node, property_id, expected)               \
   {                                                                   \
-    ScopedVariant expectedVariant(expected, VT_BOOL);                 \
+    ScopedVariant expectedVariant(expected);                          \
     ASSERT_EQ(VT_BOOL, expectedVariant.type());                       \
     ScopedVariant actual;                                             \
     ASSERT_HRESULT_SUCCEEDED(                                         \
@@ -135,7 +135,7 @@ ScopedVariant SELF(CHILDID_SELF);
 
 #define EXPECT_UIA_INT_EQ(node, property_id, expected)              \
   {                                                                 \
-    ScopedVariant expectedVariant(expected, VT_I4);                 \
+    ScopedVariant expectedVariant(expected);                        \
     ASSERT_EQ(VT_I4, expectedVariant.type());                       \
     ScopedVariant actual;                                           \
     ASSERT_HRESULT_SUCCEEDED(                                       \

@@ -510,7 +510,18 @@ void CryptAuthSchedulerImpl::ScheduleNextRequest(RequestType request_type) {
                             base::nullopt /* session_id */);
   }
 
+  // Schedule a first-time DeviceSync if one has never successfully completed.
+  // However, unlike Enrollment, there are no periodic DeviceSyncs.
+  if (request_type == RequestType::kDeviceSync &&
+      !pending_requests_[request_type] && !GetLastSuccessTime(request_type)) {
+    pending_requests_[request_type] = BuildClientMetadata(
+        0 /* retry_count */, cryptauthv2::ClientMetadata::INITIALIZATION,
+        base::nullopt /* session_id */);
+  }
+
   if (!pending_requests_[request_type]) {
+    // By this point, only DeviceSync can have no requests pending because it
+    // does not schedule periodic syncs.
     DCHECK_EQ(RequestType::kDeviceSync, request_type);
     pref_service_->SetString(GetPendingRequestPrefName(request_type),
                              kNoClientMetadata);

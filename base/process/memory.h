@@ -64,7 +64,7 @@ namespace internal {
 
 // Handles out of memory, with the failed allocation |size|, or 0 when it is not
 // known.
-BASE_EXPORT void OnNoMemoryInternal(size_t size);
+BASE_EXPORT NOINLINE void OnNoMemoryInternal(size_t size);
 
 }  // namespace internal
 

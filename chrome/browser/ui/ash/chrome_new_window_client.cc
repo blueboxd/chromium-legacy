@@ -77,6 +77,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
     {{ChromePage::ACCESSIBILITY, chrome::kAccessibilitySubPage},
      {ChromePage::ACCOUNTS, chrome::kAccountSubPage},
      {ChromePage::ACCOUNTMANAGER, chrome::kAccountManagerSubPage},
+     {ChromePage::AMBIENTMODE, chrome::kAmbientModeSubPage},
      {ChromePage::ANDROIDAPPSDETAILS, chrome::kAndroidAppsDetailsSubPage},
      {ChromePage::ANDROIDAPPSDETAILSINBROWSERSETTINGS,
       chrome::kAndroidAppsDetailsSubPageInBrowserSettings},

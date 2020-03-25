@@ -41,7 +41,8 @@ namespace device_sync {
 // is made immediately on startup. After a successful Enrollment, periodic
 // Enrollment requests are made at time intervals provided by the CryptAuth
 // server in the ClientDirective proto. Note that there is no periodic
-// scheduling for DeviceSync, per se.
+// scheduling for DeviceSync, per se; however, an initialization request will be
+// made.
 //
 // ClientDirectives received from CryptAuth may contain an InvokeNext field
 // specifying that an Enrollment and/or DeviceSync request should be made

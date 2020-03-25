@@ -89,6 +89,14 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
     return gfx::Point(middle_x - size.width() / 2, top);
   }
 
+  bool ShouldActivateDialog() const override {
+    // The browser Widget may be inactive if showing a bubble so instead check
+    // against the last active browser window when determining whether to
+    // activate the dialog.
+    return chrome::FindLastActive() ==
+           browser_view_layout_->browser_view_->browser();
+  }
+
   gfx::Size GetMaximumDialogSize() override {
     views::View* view = browser_view_layout_->contents_container_;
     gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());

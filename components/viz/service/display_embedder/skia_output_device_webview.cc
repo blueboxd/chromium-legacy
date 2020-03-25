@@ -112,8 +112,9 @@ void SkiaOutputDeviceWebView::InitSkiaSurface(unsigned int fbo) {
             supports_alpha_ ? GrGLFormat::kRGBA8 : GrGLFormat::kRGB8);
   SkColorType color_type = capabilities_.sk_color_type;
 
-  GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 8,
-                                      framebuffer_info);
+  GrBackendRenderTarget render_target(size_.width(), size_.height(),
+                                      /*sampleCnt=*/0,
+                                      /*stencilBits=*/0, framebuffer_info);
   auto origin = (gl_surface_->GetOrigin() == gfx::SurfaceOrigin::kTopLeft)
                     ? kTopLeft_GrSurfaceOrigin
                     : kBottomLeft_GrSurfaceOrigin;

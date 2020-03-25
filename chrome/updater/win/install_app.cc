@@ -692,10 +692,11 @@ DWORD InstallAppController::GetUIThreadID() const {
 
 }  // namespace
 
-// Installs the updater and one application specified by |app_id|.
+// Sets the updater up, shows up a splash screen, then installs an application
+// while displaying the UI progress window.
 class AppInstall : public App {
  public:
-  explicit AppInstall(const std::string& app_id);
+  AppInstall() = default;
 
  private:
   ~AppInstall() override = default;
@@ -705,7 +706,10 @@ class AppInstall : public App {
 
   void SetupDone(int result);
 
-  std::string app_id_;
+  // TODO(sorin): remove the hardcoding of the application id.
+  // https://crbug.com/1014298
+  const std::string app_id_ = {kChromeAppId};
+
   scoped_refptr<Configurator> config_;
   scoped_refptr<InstallAppController> app_install_controller_;
 
@@ -713,8 +717,6 @@ class AppInstall : public App {
   // needs to be alive for a while, until the fading effect is over.
   std::unique_ptr<ui::SplashScreen> splash_screen_;
 };
-
-AppInstall::AppInstall(const std::string& app_id) : app_id_(app_id) {}
 
 void AppInstall::Initialize() {
   base::i18n::InitializeICU();
@@ -758,12 +760,12 @@ void AppInstall::SetupDone(int result) {
       app_id_, base::BindOnce(&AppInstall::Shutdown, this));
 }
 
-scoped_refptr<App> MakeAppInstall(const std::string& app_id) {
+scoped_refptr<App> AppInstallInstance() {
   // TODO(sorin) "--install" must be run with "--single-process" until
   // crbug.com/1053729 is resolved.
   DCHECK(
       base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch));
-  return base::MakeRefCounted<AppInstall>(app_id);
+  return AppInstance<AppInstall>();
 }
 
 }  // namespace updater

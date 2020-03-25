@@ -15,7 +15,8 @@ Loaded modules:
     mobile_throttling
     persistence
     platform
-    protocol
+    protocol_client
+    root
     sdk
     services
     text_utils

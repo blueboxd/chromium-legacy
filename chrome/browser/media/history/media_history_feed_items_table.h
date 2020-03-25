@@ -38,7 +38,8 @@ class MediaHistoryFeedItemsTable : public MediaHistoryTableBase {
     kBadIdentifiers = 7,
     kBadTVEpisode = 8,
     kBadPlayNextCandidate = 9,
-    kMaxValue = kBadPlayNextCandidate,
+    kBadImages = 10,
+    kMaxValue = kBadImages,
   };
 
   MediaHistoryFeedItemsTable(const MediaHistoryFeedItemsTable&) = delete;

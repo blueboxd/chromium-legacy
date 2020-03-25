@@ -28,7 +28,7 @@ void MockConfigurationPolicyProvider::UpdateChromePolicy(
       .CopyFrom(policy);
   UpdatePolicy(std::move(bundle));
   bool spin_run_loop = base::MessageLoopCurrent::IsSet();
-#if defined(IS_IOS)
+#if defined(OS_IOS)
   // On iOS, the UI message loop does not support RunUntilIdle().
   spin_run_loop &= !base::MessageLoopCurrentForUI::IsSet();
 #endif  // defined(OS_IOS)

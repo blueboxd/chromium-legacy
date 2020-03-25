@@ -86,6 +86,7 @@ group("closure_compile") {
     ":os_route",
     ":os_settings_routes",
     ":route_origin_behavior",
+    "ambient_mode_page:closure_compile",
     "bluetooth_page:closure_compile",
     "crostini_page:closure_compile",
     "date_time_page:closure_compile",

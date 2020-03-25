@@ -34,9 +34,31 @@ flags.DEFINE_string('source_file', '',
 flags.DEFINE_string('message',
                     DEFAULT_MESSAGE,
                     'The message to look for in source_file.')
+flags.DEFINE_string('direction', 'forward',
+                    'Set --direction=reverse to convert binary to text.')
 
 COMPONENT_FEED_PROTO_PATH = 'components/feed/core/proto'
 
+def text_to_binary():
+  with open(FLAGS.source_file, mode='r') as file:
+    value_text_proto = file.read()
+
+  encoded = protoc_util.encode_proto(value_text_proto, FLAGS.message,
+                                     FLAGS.chromium_path,
+                                     COMPONENT_FEED_PROTO_PATH)
+  with open(FLAGS.output_file, mode='wb') as file:
+    file.write(encoded)
+
+def binary_to_text():
+  with open(FLAGS.source_file, mode='rb') as file:
+    value_text_proto = file.read()
+
+  encoded = protoc_util.decode_proto(value_text_proto, FLAGS.message,
+                                     FLAGS.chromium_path,
+                                     COMPONENT_FEED_PROTO_PATH)
+
+  with open(FLAGS.output_file, mode='w') as file:
+    file.write(encoded)
 
 def main(argv):
   if len(argv) > 1:
@@ -47,16 +69,13 @@ def main(argv):
     raise app.UsageError('source_file flag must be set.')
   if not FLAGS.output_file:
     raise app.UsageError('output_file flag must be set.')
+  if FLAGS.direction != 'forward' and FLAGS.direction != 'reverse':
+    raise app.UsageError('direction must be forward or reverse')
 
-  with open(FLAGS.source_file) as file:
-    value_text_proto = file.read()
-
-  encoded = protoc_util.encode_proto(value_text_proto, FLAGS.message,
-                                     FLAGS.chromium_path,
-                                     COMPONENT_FEED_PROTO_PATH)
-  with open(FLAGS.output_file, 'wb') as file:
-    file.write(encoded)
-
+  if FLAGS.direction == 'forward':
+    text_to_binary()
+  elif FLAGS.direction == 'reverse':
+    binary_to_text()
 
 if __name__ == '__main__':
   app.run(main)

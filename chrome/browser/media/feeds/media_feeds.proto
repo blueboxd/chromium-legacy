@@ -115,3 +115,19 @@ message TVEpisode {
   // The identifiers for the episode. We will store up to one of each type.
   repeated Identifier identifier = 4;
 }
+
+// A reference to an image along with the width and height in px. Only stores
+// the URL and not the image data.
+// https://wicg.github.io/media-feeds/index.html#media-image
+message Image {
+  string url = 1;
+  int64 width = 2;
+  int64 height = 3;
+}
+
+// Stores up to 5 images of different sizes.
+// https://wicg.github.io/media-feeds/index.html#media-feed-document
+// https://wicg.github.io/media-feeds/index.html#media-feed-item
+message ImageSet {
+  repeated Image image = 1;
+}

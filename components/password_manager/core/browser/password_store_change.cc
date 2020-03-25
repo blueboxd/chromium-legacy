@@ -9,6 +9,8 @@ namespace password_manager {
 std::ostream& operator<<(std::ostream& os,
                          const PasswordStoreChange& password_store_change) {
   return os << "type: " << password_store_change.type()
+            << ", primary key: " << password_store_change.primary_key()
+            << ", password change: " << password_store_change.password_changed()
             << ", password form: " << password_store_change.form();
 }
 

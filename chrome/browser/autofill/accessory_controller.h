@@ -24,6 +24,10 @@ class AccessoryController {
 
   // Triggered when a user selects an option.
   virtual void OnOptionSelected(autofill::AccessoryAction selected_action) = 0;
+
+  // Triggered when a user changes a toggle.
+  virtual void OnToggleChanged(autofill::AccessoryAction toggled_action,
+                               bool enabled) = 0;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_ACCESSORY_CONTROLLER_H_

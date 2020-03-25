@@ -199,9 +199,17 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
   // all live inside an anonymous child box of the fieldset container.
   auto fieldset_content = Node().GetFieldsetContent();
   if (fieldset_content && (content_break_token || !has_seen_all_children)) {
-    NGBreakStatus break_status =
-        LayoutFieldsetContent(fieldset_content, content_break_token,
-                              adjusted_padding_box_size, !!legend);
+    LayoutUnit fragmentainer_block_offset;
+    if (ConstraintSpace().HasBlockFragmentation()) {
+      fragmentainer_block_offset =
+          ConstraintSpace().FragmentainerOffsetAtBfc() + intrinsic_block_size_;
+      if (legend_broke_ &&
+          IsFragmentainerOutOfSpace(fragmentainer_block_offset))
+        return NGBreakStatus::kContinue;
+    }
+    NGBreakStatus break_status = LayoutFieldsetContent(
+        fieldset_content, content_break_token, adjusted_padding_box_size,
+        fragmentainer_block_offset, !!legend);
     if (break_status == NGBreakStatus::kNeedsEarlierBreak)
       return break_status;
   }
@@ -257,6 +265,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
     }
 
     const auto& physical_fragment = result->PhysicalFragment();
+    legend_broke_ = physical_fragment.BreakToken();
 
     // We have already adjusted the legend block offset, no need to adjust
     // again.
@@ -305,6 +314,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
     NGBlockNode& fieldset_content,
     scoped_refptr<const NGBlockBreakToken> content_break_token,
     LogicalSize adjusted_padding_box_size,
+    LayoutUnit fragmentainer_block_offset,
     bool has_legend) {
   auto child_space = CreateConstraintSpaceForFieldsetContent(
       fieldset_content, adjusted_padding_box_size,
@@ -316,11 +326,10 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
 
   NGBreakStatus break_status = NGBreakStatus::kContinue;
   if (ConstraintSpace().HasBlockFragmentation()) {
-    LayoutUnit block_offset =
-        ConstraintSpace().FragmentainerOffsetAtBfc() + intrinsic_block_size_;
     // TODO(almaher): The legend should be treated as out-of-flow.
     break_status = BreakBeforeChildIfNeeded(
-        ConstraintSpace(), fieldset_content, *result.get(), block_offset,
+        ConstraintSpace(), fieldset_content, *result.get(),
+        fragmentainer_block_offset,
         /*has_container_separation*/ has_legend, &container_builder_);
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         result->FinalBreakAfter(), fieldset_content.Style().BreakAfter());
@@ -335,6 +344,13 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
   }
 
   return break_status;
+}
+
+bool NGFieldsetLayoutAlgorithm::IsFragmentainerOutOfSpace(
+    LayoutUnit block_offset) const {
+  if (!ConstraintSpace().HasKnownFragmentainerBlockSize())
+    return false;
+  return block_offset >= FragmentainerSpaceAtBfcStart(ConstraintSpace());
 }
 
 base::Optional<MinMaxSizes> NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(

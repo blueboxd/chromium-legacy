@@ -2441,6 +2441,9 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     children.push_back(owned_child);
 
   for (AXObject* child : children) {
+    constexpr size_t kMaxDescendantsForTextAlternativeComputation = 100;
+    if (visited.size() > kMaxDescendantsForTextAlternativeComputation + 1)
+      break;  // Need to add 1 because the root naming node is in the list.
     // If a child is a continuation, we should ignore attributes like
     // hidden and presentational. See LAYOUT TREE WALKING ALGORITHM in
     // ax_layout_object.cc for more information on continuations.

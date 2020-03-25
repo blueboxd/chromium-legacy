@@ -1788,7 +1788,7 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
 
   apk_path = extracted_minimal_apk_path or args.apk_file
   apk_so_path = None
-  if apk_path:
+  if apk_path and not args.java_only:
     with zipfile.ZipFile(apk_path) as z:
       lib_infos = [f for f in z.infolist()
                    if f.filename.endswith('.so') and f.file_size > 0]

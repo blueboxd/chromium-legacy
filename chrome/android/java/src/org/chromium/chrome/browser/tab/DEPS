@@ -19,6 +19,7 @@ include_rules = [
   "+components/browser_ui/styles/android",
   "+components/browser_ui/widget/android",
   "+content/public/android/java/src/org/chromium/content_public",
+  "+chrome/browser/android/crypto/java/src/org/chromium/chrome/browser/crypto/CipherFactory.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tabmodel/TabbedModeTabPersistencePolicy.java",
   "+chrome/android/public/crypto/java/src/org/chromium/chrome/browser/crypto/CipherFactory.java",
   "+chrome/browser/profiles/android/java/src/org/chromium/chrome/browser/profiles/Profile.java",

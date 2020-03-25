@@ -163,6 +163,10 @@ class ThemeHelper {
       bool incognito,
       const CustomThemeSupplier* theme_supplier) const;
 
+  SkColor GetTabGroupColor(int id,
+                           bool incognito,
+                           const CustomThemeSupplier* theme_supplier) const;
+
   SEQUENCE_CHECKER(sequence_checker_);
 };
 

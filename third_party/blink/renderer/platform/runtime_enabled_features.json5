@@ -1715,7 +1715,7 @@
     },
     {
       name: "TrustedDOMTypes",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "TrustTokens",

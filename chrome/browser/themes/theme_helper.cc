@@ -8,6 +8,7 @@
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -25,7 +26,53 @@ using TP = ThemeProperties;
 // "Default" theme. We have to detect this case specifically. (By the time we
 // realize we've installed the default theme, we already have an extension
 // unpacked on the filesystem.)
-const char kDefaultThemeGalleryID[] = "hkacjpbfdknhflllbcmjibkdeoafencn";
+constexpr char kDefaultThemeGalleryID[] = "hkacjpbfdknhflllbcmjibkdeoafencn";
+
+const std::array<SkColor, 2> GetTabGroupColors(int color_id) {
+  switch (color_id) {
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_BLUE:
+    case TP::COLOR_TAB_GROUP_DIALOG_BLUE:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_BLUE:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_BLUE:
+      return {gfx::kGoogleBlue600, gfx::kGoogleBlue300};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_RED:
+    case TP::COLOR_TAB_GROUP_DIALOG_RED:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_RED:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_RED:
+      return {gfx::kGoogleRed600, gfx::kGoogleRed300};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_YELLOW:
+    case TP::COLOR_TAB_GROUP_DIALOG_YELLOW:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_YELLOW:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_YELLOW:
+      return {gfx::kGoogleYellow900, gfx::kGoogleYellow300};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_GREEN:
+    case TP::COLOR_TAB_GROUP_DIALOG_GREEN:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_GREEN:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREEN:
+      return {gfx::kGoogleGreen600, gfx::kGoogleGreen300};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_PINK:
+    case TP::COLOR_TAB_GROUP_DIALOG_PINK:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_PINK:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_PINK:
+      return {gfx::kGooglePink700, gfx::kGooglePink300};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_PURPLE:
+    case TP::COLOR_TAB_GROUP_DIALOG_PURPLE:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_PURPLE:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_PURPLE:
+      return {gfx::kGooglePurple600, gfx::kGooglePurple200};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_CYAN:
+    case TP::COLOR_TAB_GROUP_DIALOG_CYAN:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_CYAN:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_CYAN:
+      return {gfx::kGoogleCyan900, gfx::kGoogleCyan300};
+    case TP::COLOR_TAB_GROUP_CONTEXT_MENU_GREY:
+    case TP::COLOR_TAB_GROUP_DIALOG_GREY:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_GREY:
+    case TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREY:
+    default:
+      return {gfx::kGoogleGrey700, gfx::kGoogleGrey400};
+  }
+}
 
 SkColor IncreaseLightness(SkColor color, double percent) {
   color_utils::HSL result;
@@ -242,6 +289,10 @@ SkColor ThemeHelper::GetDefaultColor(
     int id,
     bool incognito,
     const CustomThemeSupplier* theme_supplier) const {
+  if (TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_ACTIVE_GREY <= id &&
+      id <= TP::COLOR_TAB_GROUP_CONTEXT_MENU_CYAN)
+    return GetTabGroupColor(id, incognito, theme_supplier);
+
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
   const auto get_frame_color = [this, incognito, theme_supplier](bool active) {
@@ -585,4 +636,28 @@ base::Optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
     default:
       return base::nullopt;
   }
+}
+
+SkColor ThemeHelper::GetTabGroupColor(
+    int id,
+    bool incognito,
+    const CustomThemeSupplier* theme_supplier) const {
+  // Deal with tab group colors in the tabstrip.
+  if (id <= TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_CYAN) {
+    int tab_color_id = id < TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREY
+                           ? TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE
+                           : TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE;
+
+    // TODO(tluk) Change to ensure consistent color ids between WebUI and views
+    // tabstrip groups. Currently WebUI tabstrip groups always check active
+    // frame colors (https://crbug.com/1060398).
+    if (base::FeatureList::IsEnabled(features::kWebUITabStrip))
+      tab_color_id = TP::COLOR_FRAME_ACTIVE;
+
+    return GetTabGroupColors(id)[color_utils::IsDark(
+        GetColor(tab_color_id, incognito, theme_supplier))];
+  }
+
+  // Deal with the rest of the tab group colors.
+  return GetTabGroupColors(id)[UseDarkModeColors(theme_supplier)];
 }

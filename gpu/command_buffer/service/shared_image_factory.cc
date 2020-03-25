@@ -386,7 +386,7 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
   bool using_interop_factory = share_between_gl_vulkan || using_dawn ||
                                share_between_gl_metal ||
-                               (usage & SHARED_IMAGE_USAGE_NATIVE_BUFFER) ||
+                               (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE) ||
                                (share_between_threads && vulkan_usage);
 
   // TODO(vasilyt): Android required AHB for overlays

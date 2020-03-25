@@ -241,7 +241,7 @@ WebViewAutofillClientIOS::GetPopupSuggestions() const {
   return base::span<const autofill::Suggestion>();
 }
 
-void WebViewAutofillClientIOS::PinPopupViewUntilUpdate() {
+void WebViewAutofillClientIOS::PinPopupView() {
   NOTIMPLEMENTED();
 }
 

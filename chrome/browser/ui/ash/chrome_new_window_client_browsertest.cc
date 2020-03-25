@@ -286,6 +286,8 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kAccessibilitySubPage));
   TestOpenChromePage(ChromePage::ACCOUNTMANAGER,
                      base_url.Resolve(chrome::kAccountManagerSubPage));
+  TestOpenChromePage(ChromePage::AMBIENTMODE,
+                     base_url.Resolve(chrome::kAmbientModeSubPage));
   TestOpenChromePage(ChromePage::ANDROIDAPPSDETAILS,
                      base_url.Resolve(chrome::kAndroidAppsDetailsSubPage));
   TestOpenChromePage(

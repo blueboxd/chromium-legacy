@@ -1009,7 +1009,6 @@ external/wpt/picture-in-picture/request-picture-in-picture.html [ Pass ] # wpt_s
 external/wpt/picture-in-picture/shadow-dom.html [ Pass ] # wpt_subtest_failure
 external/wpt/pointerevents/extension/pointerevent_getCoalescedEvents_when_pointerlocked.html [ Failure ]
 external/wpt/pointerevents/idlharness.window.html [ Failure Pass ]
-external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node_in_shadow_dom.html [ Pass Failure ]
 external/wpt/pointerevents/pointerevent_pointercapture-in-custom-element.html [ Failure ]
 external/wpt/pointerevents/pointerevent_pointercapture-in-shadow-dom.html [ Failure ]
 external/wpt/pointerevents/pointerevent_pointercapture_in_frame.html [ Failure Pass ]

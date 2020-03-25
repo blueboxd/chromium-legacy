@@ -146,8 +146,9 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
   // used with Windows updated RS3 (2017) as a workaround for a DWM bug so it
   // might not be relevant to support anymore as a result.
 
-  GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
-                                      framebuffer_info);
+  GrBackendRenderTarget render_target(size.width(), size.height(),
+                                      /*sampleCnt=*/0,
+                                      /*stencilBits=*/0, framebuffer_info);
   auto origin = (gl_surface_->GetOrigin() == gfx::SurfaceOrigin::kTopLeft)
                     ? kTopLeft_GrSurfaceOrigin
                     : kBottomLeft_GrSurfaceOrigin;

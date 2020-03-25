@@ -26,6 +26,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class SVGInlineTextBox;
 struct SVGTextFragment;
 
@@ -76,7 +77,6 @@ class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
 
   float TotalLength() const { return total_length_; }
   unsigned TotalCharacters() const { return total_characters_; }
-  float TotalTextAnchorShift() const { return total_text_anchor_shift_; }
 
  private:
   void HandleTextChunk(BoxListConstIterator box_start,
@@ -84,10 +84,12 @@ class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
 
   float total_length_;
   unsigned total_characters_;
-  float total_text_anchor_shift_;
 
   DISALLOW_COPY_AND_ASSIGN(SVGTextPathChunkBuilder);
 };
+
+// Compute the "shift" induced by the 'text-anchor' property.
+float CalculateTextAnchorShift(const ComputedStyle&, float length);
 
 }  // namespace blink
 

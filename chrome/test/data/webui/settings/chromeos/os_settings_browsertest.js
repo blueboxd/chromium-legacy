@@ -218,6 +218,33 @@ TEST_F('OSSettingsAddUsersTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+
+// Tests for ambient mode page.
+// eslint-disable-next-line no-var
+var OSSettingsAmbientModePageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'ambient_mode_page/ambient_mode_page.html';
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kAmbientModeFeature']};
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'ambient_mode_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAmbientModePageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Tests for the main contents of the settings page.
 // eslint-disable-next-line no-var
 var OSSettingsPageTest = class extends OSSettingsBrowserTest {
@@ -1041,6 +1068,11 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
   get browsePreload() {
     return super.browsePreload +
         'chromeos/personalization_page/personalization_page.html';
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kAmbientModeFeature']};
   }
 
   /** @override */

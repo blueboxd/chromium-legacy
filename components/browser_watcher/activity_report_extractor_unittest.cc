@@ -398,34 +398,6 @@ TEST_F(StabilityReportExtractorTest, ProcessUserDataCollection) {
   EXPECT_EQ(strlen(string2), static_cast<uint64_t>(sref.size()));
 }
 
-TEST_F(StabilityReportExtractorTest, FieldTrialCollection) {
-  // Record some data.
-  GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
-                                        "", 3);
-  ActivityUserData& process_data = GlobalActivityTracker::Get()->process_data();
-  process_data.SetString("string", "bar");
-  process_data.SetString("FieldTrial.string", "bar");
-  process_data.SetString("FieldTrial.foo", "bar");
-
-  // Collect the stability report.
-  StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
-  ASSERT_EQ(1, report.process_states_size());
-
-  // Validate the report's experiment and global data.
-  ASSERT_EQ(2, report.field_trials_size());
-  EXPECT_NE(0U, report.field_trials(0).name_id());
-  EXPECT_NE(0U, report.field_trials(0).group_id());
-  EXPECT_NE(0U, report.field_trials(1).name_id());
-  EXPECT_EQ(report.field_trials(0).group_id(),
-            report.field_trials(1).group_id());
-
-  // Expect 1 key/value pair.
-  const auto& collected_data = report.process_states(0).data();
-  EXPECT_EQ(kInternalProcessDatums + 1U, collected_data.size());
-  EXPECT_TRUE(base::Contains(collected_data, "string"));
-}
-
 TEST_F(StabilityReportExtractorTest, ModuleCollection) {
   // Record some module information.
   GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,

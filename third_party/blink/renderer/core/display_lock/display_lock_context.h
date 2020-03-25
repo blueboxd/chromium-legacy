@@ -187,6 +187,9 @@ class CORE_EXPORT DisplayLockContext final
   void ElementDisconnected();
   void ElementConnected();
 
+  void NotifySubtreeLostFocus();
+  void NotifySubtreeGainedFocus();
+
   void SetNeedsPrePaintSubtreeWalk(
       bool needs_effective_allowed_touch_action_update) {
     needs_effective_allowed_touch_action_update_ =
@@ -218,14 +221,10 @@ class CORE_EXPORT DisplayLockContext final
   // Request that this context be locked. Called when style determines that the
   // subtree rooted at this element should be skipped, unless things like
   // viewport intersection prevent it from doing so.
-  bool RequestLock(uint16_t activation_mask);
+  void RequestLock(uint16_t activation_mask);
   // Request that this context be unlocked. Called when style determines that
   // the subtree rooted at this element should be rendered.
   void RequestUnlock();
-
-  // Returns true if this lock has been activated and the activation has not yet
-  // been cleared.
-  bool IsActivated() const;
 
   // Records the locked context counts on the document as well as context that
   // block all activation.
@@ -304,6 +303,10 @@ class CORE_EXPORT DisplayLockContext final
   // Unlocks the context.
   void Unlock();
 
+  // Determines if the subtree has focus. This is a linear walk from the focused
+  // element to its root element.
+  void DetermineIfSubtreeHasFocus();
+
   WeakMember<Element> element_;
   WeakMember<Document> document_;
   ESubtreeVisibility state_ = ESubtreeVisibility::kVisible;
@@ -343,9 +346,6 @@ class CORE_EXPORT DisplayLockContext final
   uint16_t activatable_mask_ =
       static_cast<uint16_t>(DisplayLockActivationReason::kAny);
 
-  // State that tracks whether we've been activated.
-  bool is_activated_ = false;
-
   // Is set to true if we are registered for lifecycle notifications.
   bool is_registered_for_lifecycle_notifications_ = false;
 
@@ -357,6 +357,18 @@ class CORE_EXPORT DisplayLockContext final
 
   // Lock has been requested.
   bool is_locked_ = false;
+
+  enum class RenderAffectingState : int {
+    kLockRequested,
+    kIntersectsViewport,
+    kSubtreeHasFocus,
+    kNumRenderAffectingStates
+  };
+  void SetRenderAffectingState(RenderAffectingState state, bool flag);
+  void NotifyRenderAffectingStateChanged();
+
+  bool render_affecting_state_[static_cast<int>(
+      RenderAffectingState::kNumRenderAffectingStates)] = {false};
 
   // TODO(vmpstr): This is only needed while we're still sending activation
   // events.

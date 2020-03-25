@@ -433,7 +433,7 @@ Polymer({
   },
 
   /** @private */
-  onSafetyCheckUpdatesButtonClicked_: function() {
+  onSafetyCheckUpdatesButtonClick_: function() {
     this.lifetimeBrowserProxy_.relaunch();
   },
 
@@ -654,7 +654,7 @@ Polymer({
   },
 
   /** @private */
-  onSafetyCheckExtensionsButtonClicked_: function() {
+  onSafetyCheckExtensionsButtonClick_: function() {
     settings.OpenWindowProxyImpl.getInstance().openURL('chrome://extensions');
   },
 

@@ -666,15 +666,7 @@ bool CreateTabsAndWindows(
           if (!iter.ReadUInt32(&color_int))
             return true;
 
-          // Check for the existence of the enum value in the color set, which
-          // is the source of truth for allowed colors in tab groups. If the
-          // enum value doesn't exist, fall back to kGrey per UX preference.
-          tab_groups::TabGroupColorId color_id =
-              static_cast<tab_groups::TabGroupColorId>(color_int);
-          group->visual_data = tab_groups::TabGroupVisualData(
-              title, base::Contains(tab_groups::GetTabGroupColorSet(), color_id)
-                         ? color_id
-                         : tab_groups::TabGroupColorId::kGrey);
+          group->visual_data = tab_groups::TabGroupVisualData(title, color_int);
         }
         break;
       }

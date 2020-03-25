@@ -50,10 +50,19 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
     UNKNOWN,
   };
 
-  ~BubbleDialogDelegateView() override;
-
   // Create and initialize the bubble Widget(s) with proper bounds.
   static Widget* CreateBubble(BubbleDialogDelegateView* bubble_delegate);
+
+  BubbleDialogDelegateView();
+  // |shadow| usually doesn't need to be explicitly set, just uses the default
+  // argument. Unless on Mac when the bubble needs to use Views base shadow,
+  // override it with suitable bubble border type.
+  BubbleDialogDelegateView(
+      View* anchor_view,
+      BubbleBorder::Arrow arrow,
+      BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW);
+
+  ~BubbleDialogDelegateView() override;
 
   // DialogDelegateView:
   BubbleDialogDelegateView* AsBubbleDialogDelegate() override;
@@ -151,14 +160,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   void OnAnchorBoundsChanged();
 
  protected:
-  BubbleDialogDelegateView();
-  // |shadow| usually doesn't need to be explicitly set, just uses the default
-  // argument. Unless on Mac when the bubble needs to use Views base shadow,
-  // override it with suitable bubble border type.
-  BubbleDialogDelegateView(
-      View* anchor_view,
-      BubbleBorder::Arrow arrow,
-      BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW);
 
   // Returns the desired arrow post-RTL mirroring if needed.
   BubbleBorder::Arrow arrow() const { return arrow_; }
@@ -225,12 +226,12 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   static bool devtools_dismiss_override_;
 
   // A flag controlling bubble closure on deactivation.
-  bool close_on_deactivate_;
+  bool close_on_deactivate_ = true;
 
   // The view and widget to which this bubble is anchored. AnchorViewObserver
   // is used to observe bounds changes and view deletion.
   std::unique_ptr<AnchorViewObserver> anchor_view_observer_;
-  Widget* anchor_widget_;
+  Widget* anchor_widget_ = nullptr;
   std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
 
   // Whether the |anchor_widget_| (or the |highlighted_button_tracker_|, when
@@ -253,7 +254,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // The background color of the bubble; and flag for when it's explicitly set.
   SkColor color_;
-  bool color_explicitly_set_;
+  bool color_explicitly_set_ = false;
 
   // The margins around the title.
   // TODO(tapted): Investigate deleting this when MD is default.
@@ -263,14 +264,14 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   gfx::Insets anchor_view_insets_;
 
   // Specifies whether the bubble (or its border) handles mouse events, etc.
-  bool accept_events_;
+  bool accept_events_ = true;
 
   // If true (defaults to true), the arrow may be mirrored and moved to fit the
   // bubble on screen better. It would be a no-op if the bubble has no arrow.
-  bool adjust_if_offscreen_;
+  bool adjust_if_offscreen_ = true;
 
   // Parent native window of the bubble.
-  gfx::NativeView parent_window_;
+  gfx::NativeView parent_window_ = nullptr;
 
   // If true, focus can navigate to the bubble from the anchor view. This takes
   // effect only when SetAnchorView is called.

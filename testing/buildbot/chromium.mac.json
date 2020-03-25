@@ -12186,5 +12186,10 @@
         "test_target": "//:blink_web_tests"
       }
     ]
+  },
+  "ios-device": {
+    "additional_compile_targets": [
+      "all"
+    ]
   }
 }

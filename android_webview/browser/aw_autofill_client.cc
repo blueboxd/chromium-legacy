@@ -228,7 +228,7 @@ base::span<const autofill::Suggestion> AwAutofillClient::GetPopupSuggestions()
   return base::span<const autofill::Suggestion>();
 }
 
-void AwAutofillClient::PinPopupViewUntilUpdate() {
+void AwAutofillClient::PinPopupView() {
   NOTIMPLEMENTED();
 }
 

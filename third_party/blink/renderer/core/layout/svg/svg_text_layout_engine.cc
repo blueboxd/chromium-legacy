@@ -178,11 +178,7 @@ void SVGTextLayoutEngine::BeginTextPathLayout(SVGInlineFlowBox* flow_box) {
   text_path_chunk_layout_builder.ProcessTextChunks(
       line_layout.line_layout_boxes_);
 
-  text_path_start_offset_ +=
-      text_path_chunk_layout_builder.TotalTextAnchorShift();
-  text_path_current_offset_ = text_path_start_offset_;
-
-  // Eventually handle textLength adjustments.
+  // Handle 'textLength' adjustments.
   SVGLengthAdjustType length_adjust = kSVGLengthAdjustUnknown;
   float desired_text_length = 0;
 
@@ -199,20 +195,26 @@ void SVGTextLayoutEngine::BeginTextPathLayout(SVGInlineFlowBox* flow_box) {
       desired_text_length = 0;
   }
 
-  if (!desired_text_length)
-    return;
-
-  float total_length = text_path_chunk_layout_builder.TotalLength();
-  if (length_adjust == kSVGLengthAdjustSpacing) {
-    text_path_spacing_ = 0;
-    if (text_path_chunk_layout_builder.TotalCharacters() > 1) {
-      text_path_spacing_ = desired_text_length - total_length;
-      text_path_spacing_ /=
-          text_path_chunk_layout_builder.TotalCharacters() - 1;
+  float text_path_content_length = text_path_chunk_layout_builder.TotalLength();
+  if (desired_text_length) {
+    if (length_adjust == kSVGLengthAdjustSpacing) {
+      text_path_spacing_ = 0;
+      if (text_path_chunk_layout_builder.TotalCharacters() > 1) {
+        text_path_spacing_ = desired_text_length - text_path_content_length;
+        text_path_spacing_ /=
+            text_path_chunk_layout_builder.TotalCharacters() - 1;
+      }
+    } else {
+      text_path_scaling_ = desired_text_length / text_path_content_length;
     }
-  } else {
-    text_path_scaling_ = desired_text_length / total_length;
+    text_path_content_length = desired_text_length;
   }
+
+  // Perform text-anchor adjustment.
+  float text_anchor_shift =
+      CalculateTextAnchorShift(text_path.StyleRef(), text_path_content_length);
+  text_path_start_offset_ += text_anchor_shift;
+  text_path_current_offset_ = text_path_start_offset_;
 }
 
 void SVGTextLayoutEngine::EndTextPathLayout() {

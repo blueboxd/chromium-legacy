@@ -86,4 +86,14 @@ suite('PersonalizationHandler', function() {
         settings.routes.CHANGE_PICTURE,
         settings.Router.getInstance().getCurrentRoute());
   });
+
+  test('ambientMode', function() {
+    const row = personalizationPage.$$('#ambientModeRow');
+    assertTrue(!!row);
+    row.click();
+    assertEquals(
+        settings.routes.AMBIENT_MODE,
+        settings.Router.getInstance().getCurrentRoute());
+  });
+
 });

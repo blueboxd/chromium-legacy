@@ -12,6 +12,7 @@
  *   ACCESSIBILITY: !settings.Route,
  *   ADVANCED: !settings.Route,
  *   ADDRESSES: !settings.Route,
+ *   AMBIENT_MODE: !settings.Route,
  *   APPEARANCE: !settings.Route,
  *   AUTOFILL: !settings.Route,
  *   BASIC: !settings.Route,

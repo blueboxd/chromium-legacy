@@ -645,6 +645,7 @@ void QuicConnectionLogger::OnPacketSent(
 
 void QuicConnectionLogger::OnPacketLoss(
     quic::QuicPacketNumber lost_packet_number,
+    quic::EncryptionLevel /*encryption_level*/,
     quic::TransmissionType transmission_type,
     quic::QuicTime detection_time) {
   if (!net_log_.IsCapturing())
@@ -828,6 +829,7 @@ void QuicConnectionLogger::OnMaxStreamsFrame(
 
 void QuicConnectionLogger::OnIncomingAck(
     quic::QuicPacketNumber ack_packet_number,
+    quic::EncryptionLevel /*ack_decrypted_level*/,
     const quic::QuicAckFrame& frame,
     quic::QuicTime ack_receive_time,
     quic::QuicPacketNumber largest_observed,

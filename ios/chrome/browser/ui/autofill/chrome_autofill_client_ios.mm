@@ -209,10 +209,11 @@ void ChromeAutofillClientIOS::ShowUnmaskPrompt(
     const CreditCard& card,
     UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
-  unmask_controller_.ShowPrompt(base::Bind(&CreateCardUnmaskPromptViewBridge,
-                                    base::Unretained(&unmask_controller_),
-                                    base::Unretained(base_view_controller_)),
-                                card, reason, delegate);
+  unmask_controller_.ShowPrompt(
+      base::Bind(&CreateCardUnmaskPromptViewBridge,
+                 base::Unretained(&unmask_controller_),
+                 base::Unretained(base_view_controller_)),
+      card, reason, delegate);
 }
 
 void ChromeAutofillClientIOS::OnUnmaskVerificationResult(
@@ -356,7 +357,7 @@ ChromeAutofillClientIOS::GetPopupSuggestions() const {
   return base::span<const autofill::Suggestion>();
 }
 
-void ChromeAutofillClientIOS::PinPopupViewUntilUpdate() {
+void ChromeAutofillClientIOS::PinPopupView() {
   NOTIMPLEMENTED();
 }
 

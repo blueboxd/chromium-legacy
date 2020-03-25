@@ -6,8 +6,11 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -29,42 +32,39 @@ class TabGroupIconImageSource : public gfx::CanvasImageSource {
   // constrained to a menu icon size.
   static constexpr int kIconSize = 14;
 
-  explicit TabGroupIconImageSource(
-      const tab_groups::TabGroupVisualData* visual_data);
+  TabGroupIconImageSource(Profile* profile,
+                          const tab_groups::TabGroupVisualData* visual_data);
   ~TabGroupIconImageSource() override;
 
  private:
-  SkColor GetColor();
-
   // gfx::CanvasImageSource overrides:
   void Draw(gfx::Canvas* canvas) override;
 
-  ui::NativeTheme* native_theme_;
+  Profile* profile_;
   const tab_groups::TabGroupVisualData* visual_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupIconImageSource);
 };
 
 TabGroupIconImageSource::TabGroupIconImageSource(
+    Profile* profile,
     const tab_groups::TabGroupVisualData* visual_data)
     : CanvasImageSource(gfx::Size(kIconSize, kIconSize)),
-      native_theme_(ui::NativeTheme::GetInstanceForNativeUi()),
+      profile_(profile),
       visual_data_(visual_data) {}
 
 TabGroupIconImageSource::~TabGroupIconImageSource() = default;
 
-SkColor TabGroupIconImageSource::GetColor() {
-  const tab_groups::TabGroupColor color_data =
-      tab_groups::GetTabGroupColorSet().at(visual_data_->color());
-  return native_theme_->ShouldUseDarkColors() ? color_data.dark_theme_color
-                                              : color_data.light_theme_color;
-}
-
 void TabGroupIconImageSource::Draw(gfx::Canvas* canvas) {
+  const ui::ThemeProvider& tp =
+      ThemeService::GetThemeProviderForProfile(profile_);
+  const SkColor color =
+      tp.GetColor(GetTabGroupContextMenuColorId(visual_data_->color()));
+
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(GetColor());
+  flags.setColor(color);
   canvas->DrawCircle(gfx::PointF(kIconSize / 2, kIconSize / 2), kIconSize / 2,
                      flags);
 }
@@ -94,7 +94,7 @@ void ExistingTabGroupSubMenuModel::Build() {
       AddItemWithIcon(
           group_index, displayed_title,
           gfx::ImageSkia(std::make_unique<TabGroupIconImageSource>(
-                             tab_group->visual_data()),
+                             model_->profile(), tab_group->visual_data()),
                          gfx::Size(TabGroupIconImageSource::kIconSize,
                                    TabGroupIconImageSource::kIconSize)));
     }

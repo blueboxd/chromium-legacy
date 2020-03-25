@@ -392,6 +392,7 @@ const char kTriggeredResetProfileSettingsSubPage[] =
 const char kAccessibilitySubPage[] = "accessibility";
 const char kAccountManagerSubPage[] = "accountManager";
 const char kAccountSubPage[] = "accounts";
+const char kAmbientModeSubPage[] = "ambientMode";
 const char kAndroidAppsDetailsSubPage[] = "androidAppsDetails";
 const char kAndroidAppsDetailsSubPageInBrowserSettings[] =
     "androidApps/details";
@@ -445,6 +446,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kAccessibilitySubPage,
       kAccountManagerSubPage,
       kAccountSubPage,
+      kAmbientModeSubPage,
       kAndroidAppsDetailsSubPage,
       kAndroidAppsDetailsSubPageInBrowserSettings,
       kAppManagementDetailSubPage,

@@ -49,6 +49,8 @@ int ReleaseReservationOrTerminate(size_t size) {
   return 0;
 }
 
+// TODO(crbug.com/1062949): Remove the NOINLINE once the crash servers handle
+// the |OnNoMemoryInternal()| signature..
 NOINLINE int OnNoMemory(size_t size) {
   internal::OnNoMemoryInternal(size);
   return 0;

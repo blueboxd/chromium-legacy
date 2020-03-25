@@ -44,6 +44,11 @@ class IOSChromeMetricsServicesManagerClient
   bool IsMetricsConsentGiven() override;
   bool IsIncognitoSessionActive() override;
 
+  // Static helper for |IsIncognitoSessionActive()|, suitable for binding into
+  // callbacks. |true| if any browser states have any incognito WebStates in any
+  // Browser.
+  static bool AreIncognitoTabsPresent();
+
   // MetricsStateManager which is passed as a parameter to service constructors.
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 

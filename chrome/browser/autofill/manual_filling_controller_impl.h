@@ -45,6 +45,8 @@ class ManualFillingControllerImpl
                           const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(
       autofill::AccessoryAction selected_action) const override;
+  void OnToggleChanged(autofill::AccessoryAction toggled_action,
+                       bool enabled) const override;
   gfx::NativeView container_view() const override;
 
   // Returns a weak pointer for this object.

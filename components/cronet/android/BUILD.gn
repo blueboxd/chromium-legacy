@@ -667,7 +667,6 @@ _jar_excluded_patterns = [
   "*/multidex/*.class",
   "*/process_launcher/*.class",
   "*/SysUtils*.class",
-  "*/CachedMetrics*.class",
   "org/chromium/base/memory/MemoryPressureMonitor*.class",
 ]
 

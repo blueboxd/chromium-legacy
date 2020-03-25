@@ -70,9 +70,6 @@ void RecordLibraryLoaderRendererHistograms() {
   UMA_HISTOGRAM_TIMES(
       "ChromiumAndroidLinker.RendererLoadTime",
       base::TimeDelta::FromMilliseconds(g_renderer_library_load_time_ms));
-
-  Java_LibraryLoader_onUmaRecordingReadyInRenderer(
-      base::android::AttachCurrentThread());
 }
 
 void SetLibraryLoadedHook(LibraryLoadedHook* func) {

@@ -128,6 +128,13 @@ void AddressAccessoryControllerImpl::OnOptionSelected(
                << static_cast<int>(selected_action);
 }
 
+void AddressAccessoryControllerImpl::OnToggleChanged(
+    AccessoryAction toggled_action,
+    bool enabled) {
+  NOTREACHED() << "Unhandled toggled action: "
+               << static_cast<int>(toggled_action);
+}
+
 void AddressAccessoryControllerImpl::RefreshSuggestions() {
   std::vector<AutofillProfile*> profiles = GetProfiles();
   base::string16 title_or_empty_message;

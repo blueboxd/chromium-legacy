@@ -1668,6 +1668,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PROGRESS" desc="This text describes the progress of the safety check password check.">
+    <ph name="DONE">$1<ex>3</ex></ph>/<ph name="TOTAL">$2<ex>20</ex></ph> passwords checked...
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_SAFE" desc="This text points out that the safety check password check has not found any compromised passwords.">
     No compromised passwords found
   </message>

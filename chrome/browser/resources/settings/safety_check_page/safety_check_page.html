@@ -96,7 +96,7 @@
             if="[[shouldShowUpdatesButton_(updatesStatus_)]]" restamp>
           <div class="separator"></div>
           <cr-button id="safetyCheckUpdatesButton" class="action-button"
-              on-click="onSafetyCheckUpdatesButtonClicked_" no-search
+              on-click="onSafetyCheckUpdatesButtonClick_" no-search
             aria-label="$i18n{safetyCheckUpdatesButtonAriaLabel}">
             $i18n{aboutRelaunch}
           </cr-button>
@@ -176,7 +176,7 @@
           <div class="separator"></div>
           <cr-button id="safetyCheckExtensionsButton"
               class$="[[getExtensionsButtonClass_(extensionsStatus_)]]"
-              on-click="onSafetyCheckExtensionsButtonClicked_" no-search
+              on-click="onSafetyCheckExtensionsButtonClick_" no-search
               aria-label="$i18n{safetyCheckExtensionsButtonAriaLabel}">
             $i18n{safetyCheckExtensionsButton}
           </cr-button>

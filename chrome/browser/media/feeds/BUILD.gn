@@ -8,7 +8,10 @@ import("//third_party/protobuf/proto_library.gni")
 mojom("mojo_bindings") {
   sources = [ "media_feeds_store.mojom" ]
 
-  public_deps = [ "//url/mojom:url_mojom_origin" ]
+  public_deps = [
+    "//services/media_session/public/mojom",
+    "//url/mojom:url_mojom_origin",
+  ]
 }
 
 proto_library("proto") {

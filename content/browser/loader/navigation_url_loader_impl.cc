@@ -850,18 +850,19 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
-    // Wait for OnStartLoadingResponseBody() before sending anything to the
-    // renderer process.
-    if (!response_body_.is_valid()) {
-      head_ = std::move(head);
-      return;
-    }
+    head_ = std::move(head);
+  }
+
+  // network::mojom::URLLoaderClient implementation:
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle response_body) override {
+    response_body_ = std::move(response_body);
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
     // we need to see if the interceptors want to potentially create a new
     // loader for the response. e.g. AppCache.
-    if (MaybeCreateLoaderForResponse(&head))
+    if (MaybeCreateLoaderForResponse(&head_))
       return;
 
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
@@ -879,8 +880,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // This needs to be after the URLLoader has been moved to
     // |url_loader_client_endpoints| in order to abort the request, to avoid
     // receiving unexpected call.
-    if (head->headers &&
-        head->headers->response_code() == net::HTTP_NOT_MODIFIED) {
+    if (head_->headers &&
+        head_->headers->response_code() == net::HTTP_NOT_MODIFIED) {
       // Call CancelWithError instead of OnComplete so that if there is an
       // intercepting URLLoaderFactory it gets notified.
       url_loader_->CancelWithError(
@@ -889,18 +890,16 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       return;
     }
 
-    bool is_download;
-
-    bool must_download = download_utils::MustDownload(url_, head->headers.get(),
-                                                      head->mime_type);
-    bool known_mime_type = blink::IsSupportedMimeType(head->mime_type);
+    bool must_download = download_utils::MustDownload(
+        url_, head_->headers.get(), head_->mime_type);
+    bool known_mime_type = blink::IsSupportedMimeType(head_->mime_type);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-    if (!head->intercepted_by_plugin && !must_download && !known_mime_type) {
+    if (!head_->intercepted_by_plugin && !must_download && !known_mime_type) {
       // No plugin throttles intercepted the response. Ask if the plugin
       // registered to PluginService wants to handle the request.
       CheckPluginAndContinueOnReceiveResponse(
-          std::move(head), std::move(url_loader_client_endpoints),
+          std::move(head_), std::move(url_loader_client_endpoints),
           true /* is_download_if_not_handled_by_plugin */,
           std::vector<WebPluginInfo>());
       return;
@@ -908,10 +907,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 #endif
 
     // When a plugin intercepted the response, we don't want to download it.
-    is_download =
-        !head->intercepted_by_plugin && (must_download || !known_mime_type);
+    bool is_download =
+        !head_->intercepted_by_plugin && (must_download || !known_mime_type);
 
-    CallOnReceivedResponse(std::move(head),
+    CallOnReceivedResponse(std::move(head_),
                            std::move(url_loader_client_endpoints), is_download);
   }
 
@@ -1008,12 +1007,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
-
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle response_body) override {
-    response_body_ = std::move(response_body);
-    OnReceiveResponse(std::move(head_));
-  }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
     UMA_HISTOGRAM_BOOLEAN(

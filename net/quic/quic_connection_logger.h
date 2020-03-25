@@ -50,12 +50,14 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;
   void OnIncomingAck(quic::QuicPacketNumber ack_packet_number,
+                     quic::EncryptionLevel ack_decrypted_level,
                      const quic::QuicAckFrame& frame,
                      quic::QuicTime ack_receive_time,
                      quic::QuicPacketNumber largest_observed,
                      bool rtt_updated,
                      quic::QuicPacketNumber least_unacked_sent_packet) override;
   void OnPacketLoss(quic::QuicPacketNumber lost_packet_number,
+                    quic::EncryptionLevel encryption_level,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime detection_time) override;
   void OnPingSent() override;

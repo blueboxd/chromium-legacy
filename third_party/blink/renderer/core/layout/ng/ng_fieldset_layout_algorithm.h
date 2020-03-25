@@ -37,6 +37,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
       NGBlockNode& fieldset_content,
       scoped_refptr<const NGBlockBreakToken> content_break_token,
       LogicalSize adjusted_padding_box_size,
+      LayoutUnit fragmentainer_block_offset,
       bool has_legend);
 
   const NGConstraintSpace CreateConstraintSpaceForLegend(
@@ -48,6 +49,8 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
       NGBlockNode fieldset_content,
       LogicalSize padding_box_size,
       LayoutUnit block_offset);
+
+  bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
 
   const WritingMode writing_mode_;
 
@@ -75,6 +78,10 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   // If true, this indicates the block_start_padding_edge_ had changed from its
   // initial value during the current layout pass.
   bool block_start_padding_edge_adjusted_ = false;
+
+  // If true, this indicates that the legend broke during the current layout
+  // pass.
+  bool legend_broke_ = false;
 };
 
 }  // namespace blink

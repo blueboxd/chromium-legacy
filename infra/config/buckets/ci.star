@@ -1594,6 +1594,7 @@ ci.linux_builder(
 
 ci.mac_ios_builder(
     name = 'ios-device',
+    executable = 'recipe:chromium',
 )
 
 ci.mac_ios_builder(

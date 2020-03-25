@@ -32,12 +32,19 @@ ScopedVariant::ScopedVariant(const wchar_t* str, UINT length) {
   var_.bstrVal = ::SysAllocStringLen(str, length);
 }
 
-ScopedVariant::ScopedVariant(int value, VARTYPE vt) {
+ScopedVariant::ScopedVariant(long value, VARTYPE vt) {
   var_.vt = vt;
-  if (vt == VT_BOOL)
-    var_.boolVal = value ? VARIANT_TRUE : VARIANT_FALSE;
-  else
-    var_.lVal = value;
+  var_.lVal = value;
+}
+
+ScopedVariant::ScopedVariant(int value) {
+  var_.vt = VT_I4;
+  var_.lVal = value;
+}
+
+ScopedVariant::ScopedVariant(bool value) {
+  var_.vt = VT_BOOL;
+  var_.boolVal = value ? VARIANT_TRUE : VARIANT_FALSE;
 }
 
 ScopedVariant::ScopedVariant(double value, VARTYPE vt) {

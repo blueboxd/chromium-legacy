@@ -1046,17 +1046,6 @@ class BASE_EXPORT GlobalActivityTracker {
       tracker->RecordModuleInfo(info);
   }
 
-  // Record field trial information. This call is thread-safe. In addition to
-  // this, construction of a GlobalActivityTracker will cause all existing
-  // active field trials to be fetched and recorded.
-  void RecordFieldTrial(const std::string& trial_name, StringPiece group_name);
-  static void RecordFieldTrialIfEnabled(const std::string& trial_name,
-                                        StringPiece group_name) {
-    GlobalActivityTracker* tracker = Get();
-    if (tracker)
-      tracker->RecordFieldTrial(trial_name, group_name);
-  }
-
   // Record exception information for the current thread.
   ALWAYS_INLINE
   void RecordException(const void* origin, uint32_t code) {

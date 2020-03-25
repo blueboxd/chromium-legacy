@@ -120,6 +120,13 @@ void CreditCardAccessoryControllerImpl::OnOptionSelected(
                << static_cast<int>(selected_action);
 }
 
+void CreditCardAccessoryControllerImpl::OnToggleChanged(
+    AccessoryAction toggled_action,
+    bool enabled) {
+  NOTREACHED() << "Unhandled toggled action: "
+               << static_cast<int>(toggled_action);
+}
+
 // static
 bool CreditCardAccessoryController::AllowedForWebContents(
     content::WebContents* web_contents) {

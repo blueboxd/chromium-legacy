@@ -93,9 +93,13 @@ class MediaHistoryStoreInternal
 
   void DiscoverMediaFeed(const GURL& url);
 
-  void ReplaceMediaFeedItems(
+  void StoreMediaFeedFetchResult(
       const int64_t feed_id,
-      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
+      const media_feeds::mojom::FetchResult result,
+      const base::Time& expiry_time,
+      const std::vector<media_session::MediaImage>& logos,
+      const std::string& display_name);
 
   std::vector<media_feeds::mojom::MediaFeedItemPtr>
   GetItemsForMediaFeedForDebug(const int64_t feed_id);
@@ -494,9 +498,13 @@ void MediaHistoryStoreInternal::DiscoverMediaFeed(const GURL& url) {
   DB()->CommitTransaction();
 }
 
-void MediaHistoryStoreInternal::ReplaceMediaFeedItems(
+void MediaHistoryStoreInternal::StoreMediaFeedFetchResult(
     const int64_t feed_id,
-    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
+    const media_feeds::mojom::FetchResult result,
+    const base::Time& expiry_time,
+    const std::vector<media_session::MediaImage>& logos,
+    const std::string& display_name) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
     return;
@@ -506,7 +514,7 @@ void MediaHistoryStoreInternal::ReplaceMediaFeedItems(
     return;
   }
 
-  if (!feed_items_table_)
+  if (!feeds_table_ || !feed_items_table_)
     return;
 
   // Remove all the items currently associated with this feed.
@@ -515,12 +523,33 @@ void MediaHistoryStoreInternal::ReplaceMediaFeedItems(
     return;
   }
 
+  int item_play_next_count = 0;
+  int item_content_types = 0;
+
   for (auto& item : items) {
     // Save each item to the table.
     if (!feed_items_table_->SaveItem(feed_id, item)) {
       DB()->RollbackTransaction();
       return;
     }
+
+    // If the item has a play next candidate or the user is currently watching
+    // this media then we should add it to the play next count.
+    if (item->play_next_candidate ||
+        item->action_status ==
+            media_feeds::mojom::MediaFeedItemActionStatus::kActive) {
+      item_play_next_count++;
+    }
+
+    item_content_types |= static_cast<int>(item->type);
+  }
+
+  // Update the metadata associated with this feed.
+  if (!feeds_table_->UpdateFeedFromFetch(
+          feed_id, result, expiry_time, items.size(), item_play_next_count,
+          item_content_types, logos, display_name)) {
+    DB()->RollbackTransaction();
+    return;
   }
 
   DB()->CommitTransaction();
@@ -672,13 +701,18 @@ void MediaHistoryStore::PostTaskToDBForTest(base::OnceClosure callback) {
                                          std::move(callback));
 }
 
-void MediaHistoryStore::ReplaceMediaFeedItems(
+void MediaHistoryStore::StoreMediaFeedFetchResult(
     const int64_t feed_id,
-    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
+    const media_feeds::mojom::FetchResult result,
+    const base::Time& expiry_time,
+    const std::vector<media_session::MediaImage>& logos,
+    const std::string& display_name) {
   db_->db_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&MediaHistoryStoreInternal::ReplaceMediaFeedItems, db_,
-                     feed_id, std::move(items)));
+      base::BindOnce(&MediaHistoryStoreInternal::StoreMediaFeedFetchResult, db_,
+                     feed_id, std::move(items), result, expiry_time, logos,
+                     display_name));
 }
 
 void MediaHistoryStore::GetItemsForMediaFeedForDebug(

@@ -418,9 +418,9 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) = 0;
 
-  // Informs the client that |UpdatePopup| will be called which enables
-  // keeping the UI alive.
-  virtual void PinPopupViewUntilUpdate() = 0;
+  // Informs the client that the popup needs to be kept alive. Call before
+  // |UpdatePopup| to update the open popup in-place.
+  virtual void PinPopupView() = 0;
 
   // Returns (not elided) suggestions currently held by the UI.
   virtual base::span<const Suggestion> GetPopupSuggestions() const = 0;

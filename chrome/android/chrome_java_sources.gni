@@ -1601,6 +1601,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tab/TabWebContentsUserData.java",
   "java/src/org/chromium/chrome/browser/tab/TrustedCdn.java",
   "java/src/org/chromium/chrome/browser/tab/state/CriticalPersistedTabData.java",
+  "java/src/org/chromium/chrome/browser/tab/state/EncryptedFilePersistedTabDataStorage.java",
   "java/src/org/chromium/chrome/browser/tab/state/FilePersistedTabDataStorage.java",
   "java/src/org/chromium/chrome/browser/tab/state/PersistedTabData.java",
   "java/src/org/chromium/chrome/browser/tab/state/PersistedTabDataConfiguration.java",

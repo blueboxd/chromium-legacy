@@ -2507,9 +2507,6 @@ void LayoutBox::SetCachedLayoutResult(
     // When setting the "measure" result we also set the "layout" result.
   }
 
-  for (auto result : layout_results_)
-    InvalidateItems(*result);
-  layout_results_.clear();
   AddLayoutResult(std::move(result), 0);
 }
 

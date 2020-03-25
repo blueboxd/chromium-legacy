@@ -164,6 +164,7 @@ public class NFCTest {
             doNothing().when(mNfcTagHandler).close();
         } catch (IOException | FormatException e) {
         }
+        NfcBlocklist.overrideNfcBlocklistForTests(null /* serverProvidedValues */);
         ContextUtils.initApplicationContextForTests(mContext);
     }
 
@@ -1487,7 +1488,7 @@ public class NFCTest {
         nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback);
 
         // Mocks blocked 'NFC tag found' event.
-        NfcBlocklist.setIsTagBlockedForTesting(true);
+        NfcBlocklist.getInstance().setIsTagBlockedForTesting(true);
         Tag tag = Tag.createMockTag(
                 new byte[] {0x00}, new int[] {TagTechnology.NDEF}, new Bundle[] {});
         NfcTagHandler nfcTagHandler = NfcTagHandler.create(tag);

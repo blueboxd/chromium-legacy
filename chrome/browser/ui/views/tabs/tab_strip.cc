@@ -30,6 +30,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -2025,14 +2026,8 @@ tab_groups::TabGroupColorId TabStrip::GetGroupColorId(
 
 SkColor TabStrip::GetPaintedGroupColor(
     const tab_groups::TabGroupColorId& color_id) const {
-  const tab_groups::TabGroupColor color_data =
-      tab_groups::GetTabGroupColorSet().at(color_id);
-
-  const SkColor background = GetTabBackgroundColor(
-      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
-
-  return color_utils::IsDark(background) ? color_data.dark_theme_color
-                                         : color_data.light_theme_color;
+  return GetThemeProvider()->GetColor(
+      GetTabGroupTabStripColorId(color_id, ShouldPaintAsActiveFrame()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

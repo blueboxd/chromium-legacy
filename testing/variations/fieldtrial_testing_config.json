@@ -2300,6 +2300,21 @@
             ]
         }
     ],
+    "FeedSendFeedback": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InterestFeedFeedback"
+                    ]
+                }
+            ]
+        }
+    ],
     "FilterAdsOnAbusiveSites": [
         {
             "platforms": [
@@ -2928,21 +2943,6 @@
                     },
                     "enable_features": [
                         "InterestFeedContentSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
-    "InterestFeedFeedback": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InterestFeedFeedback"
                     ]
                 }
             ]
@@ -3648,7 +3648,6 @@
                         "NtpRealboxMatchOmniboxTheme",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
-                        "OmniboxLocalEntitySuggestions",
                         "OmniboxMaxURLMatches",
                         "OmniboxOnFocusSuggestions",
                         "OmniboxRemoveSuggestionsFromClipboard",
@@ -3688,6 +3687,25 @@
                 {
                     "name": "iOSExperiments",
                     "enable_features": []
+                }
+            ]
+        }
+    ],
+    "OmniboxLocalEntities": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "DesktopAndAndroidExperiments",
+                    "enable_features": [
+                        "OmniboxLocalEntitySuggestions"
+                    ]
                 }
             ]
         }

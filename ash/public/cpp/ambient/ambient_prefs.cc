@@ -12,6 +12,10 @@ namespace prefs {
 
 constexpr char kAmbientBackdropClientId[] = "ash.ambient.backdrop.client.id";
 
+constexpr char kAmbientModeEnabled[] = "settings.ambient_mode.enabled";
+
+constexpr char kAmbientModeTopicSource[] = "settings.ambient_mode.topic_source";
+
 }  // namespace prefs
 }  // namespace ambient
 }  // namespace ash

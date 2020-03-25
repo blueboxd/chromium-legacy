@@ -709,7 +709,6 @@ crbug.com/982194 external/wpt/mediacapture-record/MediaRecorder-destroy-script-e
 crbug.com/982194 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.resize.html [ Failure Pass ]
 crbug.com/982194 external/wpt/payment-method-basic-card/apply_the_modifiers.html [ Timeout ]
 crbug.com/982194 external/wpt/payment-method-basic-card/steps_for_selecting_the_payment_handler.html [ Timeout ]
-crbug.com/982194 external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node_in_shadow_dom.html [ Pass Timeout ]
 crbug.com/982194 external/wpt/quirks/text-decoration-doesnt-propagate-into-tables/quirks.html [ Failure ]
 crbug.com/982194 external/wpt/screen-orientation/onchange-event-subframe.html [ Pass ]
 crbug.com/982194 external/wpt/svg/painting/marker-005.svg [ Failure ]

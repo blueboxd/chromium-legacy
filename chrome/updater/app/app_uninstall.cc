@@ -22,6 +22,9 @@ namespace updater {
 
 // AppUninstall uninstalls the updater.
 class AppUninstall : public App {
+ public:
+  AppUninstall() = default;
+
  private:
   ~AppUninstall() override = default;
   void FirstTaskRun() override;
@@ -33,8 +36,8 @@ void AppUninstall::FirstTaskRun() {
       base::BindOnce(&AppUninstall::Shutdown, this));
 }
 
-scoped_refptr<App> MakeAppUninstall() {
-  return base::MakeRefCounted<AppUninstall>();
+scoped_refptr<App> AppUninstallInstance() {
+  return AppInstance<AppUninstall>();
 }
 
 }  // namespace updater

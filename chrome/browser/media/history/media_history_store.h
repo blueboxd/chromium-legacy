@@ -103,9 +103,13 @@ class MediaHistoryStore {
   // Saves a newly discovered media feed in the media history store.
   void DiscoverMediaFeed(const GURL& url);
 
-  void ReplaceMediaFeedItems(
+  void StoreMediaFeedFetchResult(
       const int64_t feed_id,
-      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
+      const media_feeds::mojom::FetchResult result,
+      const base::Time& expiry_time,
+      const std::vector<media_session::MediaImage>& logos,
+      const std::string& display_name);
 
   // Gets all the feed items for |feed_id|.
   void GetItemsForMediaFeedForDebug(

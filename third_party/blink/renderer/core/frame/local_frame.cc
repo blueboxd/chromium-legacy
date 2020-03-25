@@ -1516,22 +1516,25 @@ void LocalFrame::SetViewportIntersectionFromParent(
       frame_view->ScheduleAnimation();
     }
   }
-  Tree().Top().SetMainFrameViewportSize(
-      intersection_state.main_frame_viewport_size);
-  Tree().Top().SetMainFrameScrollOffset(
-      IntPoint(intersection_state.main_frame_scroll_offset));
 }
 
 IntSize LocalFrame::GetMainFrameViewportSize() const {
-  if (!IsMainFrame())
-    return Tree().Top().GetMainFrameViewportSize();
-  return View()->GetScrollableArea()->VisibleContentRect().Size();
+  LocalFrame& local_root = LocalFrameRoot();
+  return local_root.IsMainFrame()
+             ? local_root.View()
+                   ->GetScrollableArea()
+                   ->VisibleContentRect()
+                   .Size()
+             : IntSize(local_root.intersection_state_.main_frame_viewport_size);
 }
 
 IntPoint LocalFrame::GetMainFrameScrollOffset() const {
-  if (!IsMainFrame())
-    return Tree().Top().GetMainFrameScrollOffset();
-  return FlooredIntPoint(View()->GetScrollableArea()->GetScrollOffset());
+  LocalFrame& local_root = LocalFrameRoot();
+  return local_root.IsMainFrame()
+             ? FlooredIntPoint(
+                   local_root.View()->GetScrollableArea()->GetScrollOffset())
+             : IntPoint(
+                   local_root.intersection_state_.main_frame_scroll_offset);
 }
 
 FrameOcclusionState LocalFrame::GetOcclusionState() const {

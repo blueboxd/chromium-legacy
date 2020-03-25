@@ -159,7 +159,8 @@
         <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{personalizationPageTitle}"
               section="personalization">
-            <settings-personalization-page></settings-personalization-page>
+            <settings-personalization-page prefs="{{prefs}}">
+            </settings-personalization-page>
           </settings-section>
         </template>
         <settings-section page-title="$i18n{osSearchPageTitle}"

@@ -11,18 +11,15 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
-import org.chromium.chrome.browser.crypto.CipherFactory;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Locale;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 
 /**
  * {@link PersistedTabDataStorage} which uses a file for the storage
@@ -31,24 +28,12 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     private static final String TAG = "FilePTDS";
 
     @Override
-    public void save(int tabId, boolean isEncrypted, String dataId, byte[] data) {
+    public void save(int tabId, String dataId, byte[] data) {
         // TODO(crbug.com/1059636) these should be queued and executed on a background thread
         // TODO(crbug.com/1059637) we should introduce a retry mechanisms
-        // TODO(crbug.com/1059638) abstract out encrypt/decrypt
-        if (isEncrypted) {
-            Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
-            try {
-                data = cipher.doFinal(data);
-            } catch (BadPaddingException | IllegalBlockSizeException e) {
-                Log.e(TAG,
-                        String.format(Locale.ENGLISH, "Problem encrypting data. Details: %s",
-                                e.getMessage()));
-                return;
-            }
-        }
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream(getFile(tabId, isEncrypted, dataId));
+            outputStream = new FileOutputStream(getFile(tabId, dataId));
             outputStream.write(data);
         } catch (FileNotFoundException e) {
             Log.e(TAG,
@@ -68,41 +53,32 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     }
 
     @Override
-    public void restore(int tabId, boolean isEncrypted, String dataId, Callback<byte[]> callback) {
-        File file = getFile(tabId, isEncrypted, dataId);
+    public void restore(int tabId, String dataId, Callback<byte[]> callback) {
+        File file = getFile(tabId, dataId);
         try {
             AtomicFile atomicFile = new AtomicFile(file);
             byte[] res = atomicFile.readFully();
-            if (isEncrypted) {
-                Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
-                res = cipher.doFinal(res);
-            }
-            callback.onResult(res);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> { callback.onResult(res); });
         } catch (FileNotFoundException e) {
             Log.e(TAG,
                     String.format(Locale.ENGLISH,
                             "FileNotFoundException while attempting to restore "
                                     + " for Tab %d. Details: %s",
                             tabId, e.getMessage()));
-            callback.onResult(null);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> { callback.onResult(null); });
         } catch (IOException e) {
             Log.e(TAG,
                     String.format(Locale.ENGLISH,
                             "IOException while attempting to restore for Tab "
                                     + "%d. Details: %s",
                             tabId, e.getMessage()));
-            callback.onResult(null);
-        } catch (BadPaddingException | IllegalBlockSizeException e) {
-            Log.e(TAG,
-                    String.format(
-                            Locale.ENGLISH, "Error encrypting data. Details: %s", e.getMessage()));
-            callback.onResult(null);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> { callback.onResult(null); });
         }
     }
 
     @Override
-    public void delete(int tabId, boolean isEncrypted, String dataId) {
-        File file = getFile(tabId, isEncrypted, dataId);
+    public void delete(int tabId, String dataId) {
+        File file = getFile(tabId, dataId);
         if (!file.exists()) {
             return;
         }
@@ -113,9 +89,8 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     }
 
     @VisibleForTesting
-    protected File getFile(int tabId, boolean isEncrypted, String dataId) {
-        String encryptedId = isEncrypted ? "Encrypted" : "NotEncrypted";
+    protected File getFile(int tabId, String dataId) {
         return new File(TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
-                String.format(Locale.ENGLISH, "%d%s%s", tabId, encryptedId, dataId));
+                String.format(Locale.ENGLISH, "%d%s", tabId, dataId));
     }
 }

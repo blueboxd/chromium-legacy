@@ -275,11 +275,6 @@ def _get_display_from_weston(weston_proc_pid):
     parent = psutil.Process(weston_proc_pid)
     if parent is None:
       break # The process is not found. Give up.
-    weston_proc_display = parent.environ().get('WAYLAND_DISPLAY')
-    # If display is set, Weston could start successfully and we can use
-    # that display for Wayland connection in Chromium.
-    if weston_proc_display is not None:
-      return weston_proc_display
 
     # Traverse through all the children processes and find the
     # "weston-desktop-shell" process that sets local to process env variables

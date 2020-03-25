@@ -17,6 +17,9 @@
 namespace updater {
 
 class AppUpdateAll : public App {
+ public:
+  AppUpdateAll() = default;
+
  private:
   ~AppUpdateAll() override = default;
 
@@ -50,8 +53,8 @@ void AppUpdateAll::FirstTaskRun() {
       base::BindOnce(&AppUpdateAll::Shutdown, this)));
 }
 
-scoped_refptr<App> MakeAppUpdateAll() {
-  return base::MakeRefCounted<AppUpdateAll>();
+scoped_refptr<App> AppUpdateAllInstance() {
+  return AppInstance<AppUpdateAll>();
 }
 
 }  // namespace updater

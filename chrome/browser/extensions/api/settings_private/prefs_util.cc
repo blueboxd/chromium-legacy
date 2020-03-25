@@ -44,6 +44,7 @@
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
@@ -472,6 +473,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
+  // Ambient Mode.
+  (*s_whitelist)[ash::ambient::prefs::kAmbientModeEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::ambient::prefs::kAmbientModeTopicSource] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Google Assistant.
   (*s_whitelist)[chromeos::assistant::prefs::kAssistantConsentStatus] =

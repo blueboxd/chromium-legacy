@@ -419,19 +419,9 @@ class Executive(object):
     def map(self, thunk, arglist, processes=None):
         if sys.platform == 'win32' or len(arglist) == 1:
             return map(thunk, arglist)
-        # multiprocessing.Pool will hang if child processes terminate
-        # unexpectedly (https://bugs.python.org/issue9205). The most common
-        # scenario is when a user presses Ctrl-C in an interactive terminal,
-        # which sends SIGINT to the whole process group, which may hang the
-        # script. Workaround: ignore SIGINT in worker processes and rely on
-        # pool.terminate() to exit gracefully.
-        original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
         pool = multiprocessing.Pool(processes=(processes or multiprocessing.cpu_count()))
-        signal.signal(signal.SIGINT, original_sigint_handler)
         try:
             return pool.map(thunk, arglist)
-        except KeyboardInterrupt:
-            pool.terminate()
         finally:
             pool.close()
             pool.join()

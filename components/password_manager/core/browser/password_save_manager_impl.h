@@ -38,8 +38,8 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
             scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
             VotesUploader* votes_uploader) override;
 
-  // Create pending credentials from |parsed_submitted_form| and
-  // |parsed_observed_form| and |submitted_form|.
+  // Create pending credentials from |parsed_submitted_form|, |observed_form|
+  // and |submitted_form|.
   void CreatePendingCredentials(
       const autofill::PasswordForm& parsed_submitted_form,
       const autofill::FormData& observed_form,
@@ -84,6 +84,16 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 #endif
 
  protected:
+  static PendingCredentialsState FillPendingCredentials(
+      const autofill::PasswordForm& parsed_submitted_form,
+      const autofill::FormData& observed_form,
+      const autofill::FormData& submitted_form,
+      const base::Optional<base::string16>& generated_password,
+      bool is_http_auth,
+      bool is_credential_api_save,
+      const autofill::PasswordForm* similar_saved_form,
+      autofill::PasswordForm* pending_credentials);
+
   // Returns the form_saver to be used for generated passwords. Subclasses will
   // override this method to provide different logic for get the form saver.
   virtual FormSaver* GetFormSaverForGeneration();
@@ -119,15 +129,6 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   const FormFetcher* form_fetcher_;
 
  private:
-  // Create pending credentials from provisionally saved form when this form
-  // represents credentials that were not previously saved.
-  void CreatePendingCredentialsForNewCredentials(
-      const autofill::PasswordForm& parsed_submitted_form,
-      const autofill::FormData& observed_form,
-      const base::string16& password_element,
-      bool is_http_auth,
-      bool is_credential_api_save);
-
   // Save/update |pending_credentials_| to the password store.
   void SavePendingToStore(const autofill::PasswordForm& parsed_submitted_form,
                           bool update);

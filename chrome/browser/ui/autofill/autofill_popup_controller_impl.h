@@ -25,7 +25,7 @@
 namespace content {
 struct NativeWebKeyboardEvent;
 class WebContents;
-}
+}  // namespace content
 
 namespace ui {
 class AXPlatformNode;
@@ -62,9 +62,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual void UpdateDataListValues(const std::vector<base::string16>& values,
                                     const std::vector<base::string16>& labels);
 
-  // Informs the controller that |Show| will be called again which enables
-  // keeping the UI alive.
-  void PinViewUntilUpdate();
+  // Informs the controller that the popup may not be hidden by stale data or
+  // interactions with native Chrome UI. This state remains active until the
+  // view is destroyed.
+  void PinView();
 
   // Returns (not elided) suggestions currently held by the controller.
   base::span<const Suggestion> GetUnelidedSuggestions() const;
@@ -94,7 +95,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   const gfx::RectF& element_bounds() const override;
   void SetElementBounds(const gfx::RectF& bounds);
   bool IsRTL() const override;
-  const std::vector<Suggestion> GetSuggestions() override;
+  std::vector<Suggestion> GetSuggestions() const override;
 
   // AutofillPopupController implementation.
   void OnSuggestionsChanged() override;
@@ -164,9 +165,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   AutofillPopupView* view_ = nullptr;  // Weak reference.
   base::WeakPtr<AutofillPopupDelegate> delegate_;
 
-  // If set to true, the popup will not be hidden because of stale data or if
+  // If set to true, the popup will never be hidden because of stale data or if
   // the user interacts with native UI.
-  bool pinned_until_update_ = false;
+  bool is_view_pinned_ = false;
 
   // The current Autofill query values.
   std::vector<Suggestion> suggestions_;

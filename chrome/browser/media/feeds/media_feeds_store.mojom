@@ -4,6 +4,7 @@
 
 module media_feeds.mojom;
 
+import "services/media_session/public/mojom/media_session.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
@@ -17,19 +18,75 @@ struct MediaFeed {
 
   // The last time this feed was discovered.
   mojo_base.mojom.Time last_discovery_time;
+
+  // The last time this feed was fetched.
+  mojo_base.mojom.Time? last_fetch_time;
+
+  // Whether the user has forcibly opted out of the feed.
+  FeedUserStatus user_status;
+
+  // The result of the last fetch of this feed.
+  FetchResult last_fetch_result;
+
+  // The number of times in a row the feed has failed to be fetched.
+  int64 fetch_failed_count;
+
+  // The time the previously fetched feed should expire in the cache.
+  mojo_base.mojom.Time? cache_expiry_time;
+
+  // The number of items in the last feed fetch.
+  int64 last_fetch_item_count;
+
+  // The number of items in the last feed fetch that are eligible for play next.
+  int64 last_fetch_play_next_count;
+
+  // A field mask of the content types in the last feed fetch.
+  int64 last_fetch_content_types;
+
+  // The logos for the feed.
+  array<media_session.mojom.MediaImage> logos;
+
+  // A display name for the feed.
+  string display_name;
+};
+
+// The result of fetching the feed. This enum is committed to storage so do not
+// change the numbering.
+enum FetchResult {
+  // The feed has never been fetched.
+  kNone = 0,
+
+  // The feed was fetched successfully.
+  kSuccess = 1,
+
+  // The feed failed to fetch because of a backend server error.
+  kFailedBackendError = 2,
+
+  // The feed failed to fetch because of a network error.
+  kFailedNetworkError = 3,
+};
+
+// Whether the user has forcibly opted out of the feed. This enum is committed
+// to storage so do not change the numbering.
+enum FeedUserStatus {
+  // The browser should determine whether to fetch the feed based on metrics.
+  kAuto = 0,
+
+  // The user has opted out of seeing the feed.
+  kDisabled = 1,
 };
 
 // The type of the feed item. This enum is committed to storage so do not
 // change the numbering.
 enum MediaFeedItemType {
-  // Any video. https://schema.org/VideoObject
-  kVideo = 0,
+  // 1 << 0. Any video. https://schema.org/VideoObject
+  kVideo = 1,
 
-  // A TV series. https://schema.org/TVSeries
-  kTVSeries = 1,
+  // 1 << 1. A TV series. https://schema.org/TVSeries
+  kTVSeries = 2,
 
-  // A movie. https://schema.org/Movie
-  kMovie = 2,
+  // 1 << 2. A movie. https://schema.org/Movie
+  kMovie = 4,
 };
 
 // The action status for the feed item. This enum is committed to storage so
@@ -146,7 +203,7 @@ struct LiveDetails {
 
 // The Media Feed Item is an individual item stored in a Media Feed. It
 // represents a single recommendation such as a video or TV show.
-// https://wicg.github.io/media-feeds-api/index.html#media-feed-item
+// https://wicg.github.io/media-feeds/index.html#media-feed-item
 struct MediaFeedItem {
   // The type of this feed item such as a video or TV show.
   MediaFeedItemType type;
@@ -198,6 +255,9 @@ struct MediaFeedItem {
 
   // Whether the user has previously clicked on this feed item.
   bool clicked;
+
+  // The images for the feed item.
+  array<media_session.mojom.MediaImage> images;
 };
 
 // MediaFeedStore allows the Media Feeds WebUI to access data from the Media

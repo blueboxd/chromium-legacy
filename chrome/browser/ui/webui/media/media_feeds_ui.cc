@@ -27,6 +27,11 @@ MediaFeedsUI::MediaFeedsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIMediaFeedsHost));
   source->AddResourcePath("media-feeds.js", IDR_MEDIA_FEEDS_JS);
   source->AddResourcePath(
+      "services/media_session/public/mojom/media_session.mojom-lite.js",
+      IDR_MEDIA_SESSION_MOJOM_LITE_JS);
+  source->AddResourcePath("ui/gfx/geometry/mojom/geometry.mojom-lite.js",
+                          IDR_UI_GEOMETRY_MOJOM_LITE_JS);
+  source->AddResourcePath(
       "chrome/browser/media/feeds/media_feeds_store.mojom-lite.js",
       IDR_MEDIA_FEEDS_STORE_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_MEDIA_FEEDS_HTML);

@@ -39,9 +39,9 @@ and
 * Web platform tests are located in
 `third_party/blink/web_tests/external/wpt/web-nfc/` and are a mirror of the
 [web-platform-tests GitHub repository](https://github.com/web-platform-tests/wpt).
-* NFC platform unit tests file for Android is
-[NFCTest.java](../../../services/device/nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java)
-
+* NFC platform unit tests files for Android are
+[NFCTest.java](../../../services/device/nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java) and
+[NfcBlocklistTest.java](../../../services/device/nfc/android/junit/src/org/chromium/device/nfc/NfcBlocklistTest.java)
 
 ## Security and Privacy
 

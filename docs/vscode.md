@@ -33,7 +33,7 @@ Here's what works well:
 *   VSCode Remote, which allows you to edit remotely-hosted code, and even run
     computationally expensive plugins like vscode-clangd on the remote
     server/workstation (see the [Remote section](#Remote)). Great for working-
-    from-home.
+    from-home. (Googlers: See [go/vscode-remote](http://go/vscode-remote)].)
 
 [TOC]
 

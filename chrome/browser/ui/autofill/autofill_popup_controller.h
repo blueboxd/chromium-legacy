@@ -35,10 +35,10 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   virtual int GetLineCount() const = 0;
 
   // Returns the full set of autofill suggestions, if applicable.
-  virtual const std::vector<autofill::Suggestion> GetSuggestions() = 0;
+  virtual std::vector<Suggestion> GetSuggestions() const = 0;
 
   // Returns the suggestion at the given |row| index.
-  virtual const autofill::Suggestion& GetSuggestionAt(int row) const = 0;
+  virtual const Suggestion& GetSuggestionAt(int row) const = 0;
 
   // Returns the suggestion value string at the given |row| index.
   virtual const base::string16& GetSuggestionValueAt(int row) const = 0;

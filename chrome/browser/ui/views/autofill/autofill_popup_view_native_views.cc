@@ -508,7 +508,7 @@ void AutofillPopupItemView::CreateContent() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  std::vector<autofill::Suggestion> suggestions = controller->GetSuggestions();
+  std::vector<Suggestion> suggestions = controller->GetSuggestions();
 
   const gfx::ImageSkia icon = GetIconImage(suggestions[line_number()]);
 

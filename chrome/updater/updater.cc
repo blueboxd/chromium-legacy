@@ -90,7 +90,7 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 #endif
 
   if (command_line->HasSwitch(kServerSwitch)) {
-    return MakeAppServer()->Run();
+    return AppServerInstance()->Run();
   }
 
 #if defined(OS_WIN)
@@ -98,14 +98,14 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
     return ServiceMain::RunComService(command_line);
 
   if (command_line->HasSwitch(kInstallSwitch))
-    return MakeAppInstall({kChromeAppId})->Run();
+    return AppInstallInstance()->Run();
 #endif  // OS_WIN
 
   if (command_line->HasSwitch(kUninstallSwitch))
-    return MakeAppUninstall()->Run();
+    return AppUninstallInstance()->Run();
 
   if (command_line->HasSwitch(kUpdateAppsSwitch)) {
-    return MakeAppUpdateAll()->Run();
+    return AppUpdateAllInstance()->Run();
   }
 
   VLOG(1) << "Unknown command line switch.";

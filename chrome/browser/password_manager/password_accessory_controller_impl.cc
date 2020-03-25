@@ -210,6 +210,18 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
                << static_cast<int>(selected_action);
 }
 
+void PasswordAccessoryControllerImpl::OnToggleChanged(
+    autofill::AccessoryAction toggled_action,
+    bool enabled) {
+  if (toggled_action == autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS) {
+    // TODO(crbug.com/1044930): Update the cache and the password store
+    // according to the toggle value.
+    return;
+  }
+  NOTREACHED() << "Unhandled selected action: "
+               << static_cast<int>(toggled_action);
+}
+
 void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     FocusedFieldType focused_field_type,
     bool is_manual_generation_available) {

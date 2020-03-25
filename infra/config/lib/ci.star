@@ -359,12 +359,25 @@ def mac_builder(
   )
 
 
-def mac_ios_builder(*, name, **kwargs):
+def mac_ios_builder(*,
+                    name,
+                    caches=None,
+                    executable='recipe:ios/unified_builder_tester',
+                    properties=None,
+                    **kwargs):
+  if not caches:
+    caches = [builders.xcode_cache.x11c29]
+  if not properties:
+    properties = {
+      'xcode_build_version': '11c29'
+    }
+
   return mac_builder(
       name = name,
-      caches = [builders.xcode_cache.x11c29],
-      executable = 'recipe:ios/unified_builder_tester',
+      caches = caches,
+      executable = executable,
       os = builders.os.MAC_ANY,
+      properties = properties,
       **kwargs
   )
 

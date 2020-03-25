@@ -63,7 +63,7 @@ class UpdaterImpl
 
 class App;
 
-scoped_refptr<App> MakeAppServer();
+scoped_refptr<App> AppServerInstance();
 
 }  // namespace updater
 

@@ -10,7 +10,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.HashMap;
@@ -70,14 +69,12 @@ public class ShadowRecordHistogram {
 
     @Implementation
     public static int getHistogramValueCountForTesting(String name, int sample) {
-        CachedMetrics.commitCachedMetrics();
         Integer i = sSamples.get(Pair.create(name, sample));
         return (i != null) ? i : 0;
     }
 
     @Implementation
     public static int getHistogramTotalCountForTesting(String name) {
-        CachedMetrics.commitCachedMetrics();
         Integer i = sTotals.get(name);
         return (i != null) ? i : 0;
     }

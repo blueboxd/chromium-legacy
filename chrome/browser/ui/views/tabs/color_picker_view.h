@@ -11,10 +11,14 @@
 #include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
+#include "components/tab_groups/tab_group_color.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 
 namespace views {
 class Button;
+class BubbleDialogDelegateView;
 }
 
 class ColorPickerElementView;
@@ -25,13 +29,14 @@ class ColorPickerElementView;
 class ColorPickerView : public views::View {
  public:
   using ColorSelectedCallback = base::RepeatingCallback<void()>;
+
   // |colors| should contain the color values and accessible names. There should
   // not be duplicate colors.
-  explicit ColorPickerView(
-      base::span<const std::pair<SkColor, base::string16>> colors,
-      SkColor background_color,
-      SkColor initial_color,
-      ColorSelectedCallback callback);
+  explicit ColorPickerView(const views::BubbleDialogDelegateView* bubble_view,
+                           const TabGroupEditorBubbleView::Colors& colors,
+                           tab_groups::TabGroupColorId initial_color_id,
+                           ColorSelectedCallback callback);
+
   ~ColorPickerView() override;
 
   // Returns the index of the selected element, if any.

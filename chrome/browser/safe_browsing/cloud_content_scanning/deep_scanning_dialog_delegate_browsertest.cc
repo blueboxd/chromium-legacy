@@ -174,10 +174,6 @@ class DeepScanningDialogDelegateBrowserTest
     DeepScanningDialogViews::SetObserverForTesting(this);
   }
 
-  ~DeepScanningDialogDelegateBrowserTest() override {
-    Mock::VerifyAndClearExpectations(client_.get());
-  }
-
   void EnableUploadsScanningAndReporting() {
     SetDMTokenForTesting(policy::DMToken::CreateValidTokenForTesting(kDmToken));
 
@@ -204,56 +200,7 @@ class DeepScanningDialogDelegateBrowserTest
     EXPECT_CALL(*client_, UploadRealtimeReport_(_, _)).Times(0);
   }
 
-  void ExpectDangerousDeepScanningResult(
-      const std::string& expected_url,
-      const std::string& expected_filename,
-      const std::string& expected_sha256,
-      const std::string& expected_threat_type,
-      const std::string& expected_trigger,
-      const std::set<std::string>* expected_mimetypes,
-      int expected_content_size) {
-    EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
-        .WillOnce(
-            [=](base::Value& report, base::OnceCallback<void(bool)>& callback) {
-              EventReportValidator::DangerousDeepScanningResult(
-                  &report, expected_url, expected_filename, expected_sha256,
-                  expected_threat_type, expected_trigger, expected_mimetypes,
-                  expected_content_size);
-            });
-  }
-
-  void ExpectSensitiveDataEvent(
-      const DlpDeepScanningVerdict& expected_dlp_verdict,
-      const std::string& expected_url,
-      const std::string& expected_filename,
-      const std::string& expected_trigger,
-      const std::set<std::string>* expected_mimetypes,
-      int expected_content_size) {
-    EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
-        .WillOnce([=](base::Value& report,
-                      base::OnceCallback<void(bool)>& callback) {
-          EventReportValidator::SensitiveDataEvent(
-              &report, expected_dlp_verdict, expected_url, expected_filename,
-              expected_trigger, expected_mimetypes, expected_content_size);
-        });
-  }
-
-  void ExpectUnscannedFileEvent(const std::string& expected_url,
-                                const std::string& expected_filename,
-                                const std::string& expected_sha256,
-                                const std::string& expected_trigger,
-                                const std::string& expected_reason,
-                                const std::set<std::string>* expected_mimetypes,
-                                int expected_content_size) {
-    EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
-        .WillOnce(
-            [=](base::Value& report, base::OnceCallback<void(bool)>& callback) {
-              EventReportValidator::UnscannedFileEvent(
-                  &report, expected_url, expected_filename, expected_sha256,
-                  expected_trigger, expected_reason, expected_mimetypes,
-                  expected_content_size);
-            });
-  }
+  policy::MockCloudPolicyClient* client() { return client_.get(); }
 
  private:
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
@@ -337,7 +284,8 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Files) {
       MalwareDeepScanningVerdict::MALWARE);
 
   // The malware verdict means an event should be reported.
-  ExpectDangerousDeepScanningResult(
+  EventReportValidator validator(client());
+  validator.ExpectDangerousDeepScanningResult(
       /*url*/ "about:blank",
       /*filename*/ created_file_paths()[1].AsUTF8Unsafe(),
       // printf "bad file content" | sha256sum |  tr '[:lower:]' '[:upper:]'
@@ -433,7 +381,8 @@ IN_PROC_BROWSER_TEST_P(
   data.paths.emplace_back(test_zip);
 
   // The file should be reported as unscanned.
-  ExpectUnscannedFileEvent(
+  EventReportValidator validator(client());
+  validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
       /*filename*/ test_zip.AsUTF8Unsafe(),
       // TODO(1061461): Check SHA256 in this test once the bug is fixed.
@@ -518,7 +467,8 @@ IN_PROC_BROWSER_TEST_P(
   FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
 
   // The file should be reported as unscanned.
-  ExpectUnscannedFileEvent(
+  EventReportValidator validator(client());
+  validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
       /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
       // TODO(1061461): Check SHA256 in this test once the bug is fixed.
@@ -610,7 +560,8 @@ IN_PROC_BROWSER_TEST_P(
   FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
 
   // The file should be reported as unscanned.
-  ExpectUnscannedFileEvent(
+  EventReportValidator validator(client());
+  validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
       /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
       // python3 -c "print('a' * (50 * 1024 * 1024 + 1), end='')" | sha256sum |\
@@ -704,11 +655,14 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Texts) {
   // The DLP verdict means an event should be reported. The content size is
   // equal to the length of the concatenated texts ("text1" and "text2") times 2
   // since they are wide characters ((5 + 5) * 2 = 20).
-  ExpectSensitiveDataEvent(
-      /* dlp_verdict*/ response.dlp_scan_verdict(),
+  EventReportValidator validator(client());
+  validator.ExpectSensitiveDataEvent(
       /*url*/ "about:blank",
       /*filename*/ "Text data",
+      // The hash should not be included for string requests.
+      /*sha*/ "",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
+      /*dlp_verdict*/ response.dlp_scan_verdict(),
       /*mimetype*/ TextMimeTypes(),
       /*size*/ 20);
 

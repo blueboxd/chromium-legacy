@@ -24,9 +24,11 @@ MediaFoundationProtectionManager::~MediaFoundationProtectionManager() = default;
 HRESULT MediaFoundationProtectionManager::RuntimeClassInitialize() {
   DVLOG(1) << __func__ << ": this=" << this;
 
+  if (!base::win::ScopedHString::ResolveCoreWinRTStringDelayload())
+    return E_FAIL;
+
   // Init an empty |property_set_| as MFMediaEngine could access it via
   // |get_Properties| before we populate it within SetPMPServer.
-  base::win::ScopedHString::ResolveCoreWinRTStringDelayload();
   base::win::ScopedHString property_set_id = base::win::ScopedHString::Create(
       RuntimeClass_Windows_Foundation_Collections_PropertySet);
   RETURN_IF_FAILED(
@@ -53,11 +55,11 @@ HRESULT MediaFoundationProtectionManager::SetPMPServer(
   ComPtr<ABI::Windows::Foundation::Collections::IMap<HSTRING, IInspectable*>>
       property_map;
   RETURN_IF_FAILED(property_set_.As(&property_map));
-  boolean replaced = false;
-  base::win::ScopedHString::ResolveCoreWinRTStringDelayload();
+
   // MFMediaEngine uses |pmp_server_key| to get the Protected Media Path (PMP)
   // server used for playing protected content. This is not currently documented
   // in MSDN.
+  boolean replaced = false;
   base::win::ScopedHString pmp_server_key = base::win::ScopedHString::Create(
       L"Windows.Media.Protection.MediaProtectionPMPServer");
   RETURN_IF_FAILED(

@@ -43,8 +43,15 @@ class BASE_EXPORT ScopedVariant {
 
   // Creates a new integral type variant and assigns the value to
   // VARIANT.lVal (32 bit sized field).
-  // NOTE: VT_BOOL constructs here as VARIANT.boolVal.
-  explicit ScopedVariant(int value, VARTYPE vt = VT_I4);
+  explicit ScopedVariant(long value, VARTYPE vt = VT_I4);
+
+  // Creates a new integral type variant for the int type and assigns the value
+  // to VARIANT.lVal (32 bit sized field).
+  explicit ScopedVariant(int value);
+
+  // Creates a new boolean (VT_BOOL) variant and assigns the value to
+  // VARIANT.boolVal.
+  explicit ScopedVariant(bool value);
 
   // Creates a new double-precision type variant.  |vt| must be either VT_R8
   // or VT_DATE.

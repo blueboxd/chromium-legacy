@@ -478,6 +478,33 @@ TEST_F(NotificationTemplateBuilderTest, ProgressBar) {
   ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
+TEST_F(NotificationTemplateBuilderTest, ProgressBar_Indeterminate) {
+  message_center::Notification notification = BuildNotification();
+
+  notification.set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
+  // Setting the progress outside the [0-100] range should result in an
+  // indeterminate progress notification.
+  notification.set_progress(-1);
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+   <text placement="attribution">example.com</text>
+   <progress status="" value="indeterminate"/>
+  </binding>
+ </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
+ </actions>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
+}
+
 TEST_F(NotificationTemplateBuilderTest, ListEntries) {
   message_center::Notification notification = BuildNotification();
 

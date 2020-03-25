@@ -5210,6 +5210,8 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     old_focused_element->SetFocused(false, params.type);
     old_focused_element->SetHasFocusWithinUpToAncestor(false, ancestor);
 
+    DisplayLockUtilities::ElementLostFocus(old_focused_element);
+
     // Dispatch the blur event and let the node do any other blur related
     // activities (important for text fields)
     // If page lost focus, blur event will have already been dispatched
@@ -5263,6 +5265,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
     focused_element_->SetFocused(true, params.type);
     focused_element_->SetHasFocusWithinUpToAncestor(true, ancestor);
+    DisplayLockUtilities::ElementGainedFocus(focused_element_.Get());
 
     // Element::setFocused for frames can dispatch events.
     if (focused_element_ != new_focused_element) {

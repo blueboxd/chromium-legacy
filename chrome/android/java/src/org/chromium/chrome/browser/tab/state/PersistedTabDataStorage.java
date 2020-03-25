@@ -12,24 +12,21 @@ import org.chromium.base.Callback;
 public interface PersistedTabDataStorage {
     /**
      * @param tabId identifier for the {@link Tab}
-     * @param isEncrypted true if the data should be encrypted (i.e. for incognito Tabs)
      * @param tabDataId unique identifier representing the type {@link PersistedTabData}
      * @param data serialized {@link PersistedTabData}
      */
-    void save(int tabId, boolean isEncrypted, String tabDataId, byte[] data);
+    void save(int tabId, String tabDataId, byte[] data);
 
     /**
      * @param tabId identifier for the {@link Tab}
-     * @param isEncrypted true if the stored data is encrypted (i.e. for incognito Tabs)
      * @param tabDataId unique identifier representing the type of {@link PersistedTabData}
      * @param callback to pass back the seraizliaed {@link PersistedTabData} in
      */
-    void restore(int tabId, boolean isEncrypted, String tabDataId, Callback<byte[]> callback);
+    void restore(int tabId, String tabDataId, Callback<byte[]> callback);
 
     /**
      * @param tabId identifier for the {@link Tab}
-     * @param isEncrypted true if the stored data is encrypted (i.e. for incognito Tabs)
      * @param tabDataId unique identifier representing the type of {@link PersistedTabData}
      */
-    void delete(int tabId, boolean isEncrypted, String tabDataId);
+    void delete(int tabId, String tabDataId);
 }

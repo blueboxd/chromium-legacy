@@ -240,7 +240,7 @@ base::span<const autofill::Suggestion> AutofillClientImpl::GetPopupSuggestions()
   return base::span<const autofill::Suggestion>();
 }
 
-void AutofillClientImpl::PinPopupViewUntilUpdate() {
+void AutofillClientImpl::PinPopupView() {
   NOTIMPLEMENTED();
 }
 

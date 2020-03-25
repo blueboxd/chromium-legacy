@@ -28555,12 +28555,6 @@ Called by update_feature_policy_enum.py.-->
   <int value="3" label="Only normal priority frames seen."/>
 </enum>
 
-<enum name="FrameReportType">
-  <int value="0" label="Presented Frame"/>
-  <int value="1" label="Missed Deadline Frame"/>
-  <int value="2" label="Dropped Frame"/>
-</enum>
-
 <enum name="FrameSiteInstanceProcessRelationship">
   <summary>
     Used to describe the relationship between frames hosted in a process,
@@ -42715,6 +42709,21 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Bad type"/>
   <int value="2" label="Bad action status"/>
+  <int value="3" label="Bad author"/>
+  <int value="4" label="Bad action"/>
+  <int value="5" label="Bad interaction counters"/>
+  <int value="6" label="Bad content ratings"/>
+  <int value="7" label="Bad identifiers"/>
+  <int value="8" label="Bad tv episode"/>
+  <int value="9" label="Bad play next candidate"/>
+  <int value="10" label="Bad images"/>
+</enum>
+
+<enum name="MediaFeedReadResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Bad user status"/>
+  <int value="2" label="Bad fetch result"/>
+  <int value="3" label="Bad logo"/>
 </enum>
 
 <enum name="MediaGalleriesUsageType">

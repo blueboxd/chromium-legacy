@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 import argparse
-import sys
 import logging
+import multiprocessing
+import signal
+import traceback
 from collections import namedtuple
 
 from blinkpy.common.system.log_utils import configure_logging
@@ -80,16 +82,15 @@ class HistoryChecker(object):
                         ('chromium.org' in commit.author):
                     before_fork_googlers += 1
         if before_fork == 0:
-            print "%s\t[OK] created after fork" % path
+            return "%s\t[OK] created after fork" % path
         elif before_fork == before_fork_googlers:
-            print "%s\t[OK] created before fork, but all pre-fork commits from Googlers" % path
+            return "%s\t[OK] created before fork, but all pre-fork commits from Googlers" % path
         else:
-            print "%s\t[NO]" % path
+            return "%s\t[NO]" % path
 
     def _process_single(self, path):
-        abs_path = self.filesystem.join(self.port.web_tests_dir(), path)
-        commits = self.run_git_log(abs_path)
-        self.analyze(path, commits)
+        _init(self)
+        print _run(path)
         return 0
 
     def _process_many(self, paths):
@@ -99,23 +100,37 @@ class HistoryChecker(object):
             return 1
         _log.info("Total test files discovered: %d", len(files))
 
-        base_cmd = [self._path]
-        if self.options.verbose:
-            base_cmd += ['-v'] * self.options.verbose
-        commands = []
-        for path in files:
-            commands.append((base_cmd + [path], None))
-        results = self.host.executive.run_in_parallel(commands)
-        if results is None:
-            return 1
+        pool = multiprocessing.Pool(processes=multiprocessing.cpu_count(), initializer=_init, initargs=(self, ))
 
-        exit_code = 0
-        for retcode, out, err in results:
-            if retcode != 0:
-                exit_code = retcode
-            sys.stdout.write(out)
-            sys.stderr.write(err)
-        return exit_code
+        # Capture SIGTERM/INT to exit gracefully without leaving workers behind.
+        def _handler(signum, _):
+            _log.error('Received signal %d, exiting...', signum)
+            raise SystemExit
+
+        signal.signal(signal.SIGINT, _handler)
+        signal.signal(signal.SIGTERM, _handler)
+
+        try:
+            for res in pool.imap_unordered(_run, files):
+                # BaseException includes Exception as well as KeyboardInterrupt.
+                if isinstance(res, BaseException):
+                    # Traceback is already printed in the worker; exit directly.
+                    raise SystemExit
+                print res
+            pool.close()
+        except Exception:
+            # A user exception was raised from the manager (main) process.
+            traceback.print_exc()
+            pool.terminate()
+            return 1
+        except SystemExit:
+            # Either a worker process has exited unexpectedly, or the manager
+            # process has received SIGTERM/INT.
+            pool.terminate()
+            return 1
+        finally:
+            pool.join()
+        return 0
 
     def _is_test(self, path):
         return self.port.is_non_wpt_test_file(self.filesystem.dirname(path), self.filesystem.basename(path))
@@ -124,6 +139,29 @@ class HistoryChecker(object):
         if len(self.options.paths) == 1 and self._is_test(self.options.paths[0]):
             return self._process_single(self.options.paths[0])
         return self._process_many(self.options.paths)
+
+
+# The following protected variable and functions are used inside worker
+# processes. Functions have to be Picklable to work with multiprocessing.Pool,
+# so they are defined at the module level, and thus the variable is global, too.
+_checker = None
+
+
+def _init(checker):
+    global _checker
+    _checker = checker
+
+
+def _run(path):
+    try:
+        abs_path = _checker.filesystem.join(_checker.port.web_tests_dir(), path)
+        commits = _checker.run_git_log(abs_path)
+        return _checker.analyze(path, commits)
+    except Exception as e:
+        traceback.print_exc()
+        return e
+    except KeyboardInterrupt as e:
+        return e
 
 
 def main(argv):

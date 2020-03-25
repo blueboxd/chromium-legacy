@@ -37,8 +37,7 @@
     boolean getModifierState(DOMString keyArg);
 
     // https://w3c.github.io/uievents/#idl-interface-MouseEvent-initializers
-    // TODO(foolip): None of the initMouseEvent() arguments should be optional.
-    [CallWith=ScriptState, Measure] void initMouseEvent(optional DOMString type = "undefined",
+    [CallWith=ScriptState, Measure] void initMouseEvent(DOMString type,
                                                         optional boolean bubbles = false,
                                                         optional boolean cancelable = false,
                                                         optional Window? view = null,

@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -31,6 +32,9 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   static constexpr int TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP = 15;
   static constexpr int TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW = 16;
   static constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 17;
+
+  using Colors =
+      std::vector<std::pair<tab_groups::TabGroupColorId, base::string16>>;
 
   // Shows the editor for |group|. Returns a *non-owning* pointer to the
   // bubble's widget.
@@ -58,8 +62,6 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   ~TabGroupEditorBubbleView() override;
 
   void UpdateGroup();
-
-  SkColor background_color() const { return color(); }
 
   void OnBubbleClose();
 
@@ -121,8 +123,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   ButtonListener button_listener_;
 
-  std::vector<tab_groups::TabGroupColorId> color_ids_;
-  std::vector<std::pair<SkColor, base::string16>> colors_;
+  Colors colors_;
   ColorPickerView* color_selector_;
 
   // If true will use the |anchor_rect_| provided in the constructor, otherwise
@@ -131,7 +132,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   // Creates the set of tab group colors to display and returns the color that
   // is initially selected.
-  SkColor InitColorSet();
+  tab_groups::TabGroupColorId InitColorSet();
 
   base::string16 title_at_opening_;
 };

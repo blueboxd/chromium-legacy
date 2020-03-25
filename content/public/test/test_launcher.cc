@@ -99,7 +99,7 @@ void PrintUsage() {
           "  --test-launcher-jobs=N\n"
           "    Sets the number of parallel test jobs to N.\n"
           "\n"
-          "  --single_process\n"
+          "  --single-process-tests\n"
           "    Runs the tests and the launcher in the same process. Useful\n"
           "    for debugging a specific test in a debugger.\n"
           "\n"

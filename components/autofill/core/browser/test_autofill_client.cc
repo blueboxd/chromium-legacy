@@ -215,7 +215,7 @@ base::span<const Suggestion> TestAutofillClient::GetPopupSuggestions() const {
   return base::span<const Suggestion>();
 }
 
-void TestAutofillClient::PinPopupViewUntilUpdate() {}
+void TestAutofillClient::PinPopupView() {}
 
 void TestAutofillClient::UpdatePopup(const std::vector<Suggestion>& suggestions,
                                      autofill::PopupType popup_type) {}

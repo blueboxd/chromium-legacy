@@ -93,6 +93,7 @@ source_set("web_applications") {
     ":web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
+    "//components/performance_manager",
     "//components/sync",
     "//content/public/browser",
     "//skia",

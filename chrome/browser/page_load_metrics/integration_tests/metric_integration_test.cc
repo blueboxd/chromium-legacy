@@ -130,13 +130,10 @@ std::unique_ptr<HttpResponse> MetricIntegrationTest::HandleRequest(
 
 void MetricIntegrationTest::ExpectUKMPageLoadMetric(StringPiece metric_name,
                                                     int64_t expected_value) {
-  std::vector<const UkmEntry*> entries =
-      ukm_recorder().GetEntriesByName(PageLoad::kEntryName);
-  auto name_filter = [&metric_name](const UkmEntry* entry) {
-    return !TestUkmRecorder::EntryHasMetric(entry, metric_name);
-  };
-  entries.erase(std::remove_if(entries.begin(), entries.end(), name_filter),
-                entries.end());
-  EXPECT_EQ(1ul, entries.size());
-  TestUkmRecorder::ExpectEntryMetric(entries[0], metric_name, expected_value);
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+  const auto& kv = merged_entries.begin();
+  TestUkmRecorder::ExpectEntryMetric(kv->second.get(), metric_name,
+                                     expected_value);
 }

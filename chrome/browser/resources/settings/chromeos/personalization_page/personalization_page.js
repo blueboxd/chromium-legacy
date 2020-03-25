@@ -12,12 +12,28 @@
 Polymer({
   is: 'settings-personalization-page',
 
+  behaviors: [I18nBehavior],
+
   properties: {
+    /**
+     * Preferences state.
+     */
+    prefs: Object,
+
     /** @private */
     showWallpaperRow_: {type: Boolean, value: true},
 
     /** @private */
     isWallpaperPolicyControlled_: {type: Boolean, value: true},
+
+    /** @private */
+    isAmbientModeEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isAmbientModeEnabled');
+      },
+      readOnly: true,
+    },
 
     /** @private {!Map<string, string>} */
     focusConfig_: {
@@ -26,7 +42,10 @@ Polymer({
         const map = new Map();
         if (settings.routes.CHANGE_PICTURE) {
           map.set(settings.routes.CHANGE_PICTURE.path, '#changePictureRow');
+        } else if (settings.routes.AMBIENT_MODE) {
+          map.set(settings.routes.AMBIENT_MODE.path, '#ambientModeRow');
         }
+
         return map;
       }
     },
@@ -62,6 +81,21 @@ Polymer({
   /** @private */
   navigateToChangePicture_() {
     settings.Router.getInstance().navigateTo(settings.routes.CHANGE_PICTURE);
+  },
+
+  /** @private */
+  navigateToAmbientMode_() {
+    settings.Router.getInstance().navigateTo(settings.routes.AMBIENT_MODE);
+  },
+
+  /**
+   * @param {boolean} toggleValue
+   * @return {string}
+   * @private
+   */
+  getAmbientModeRowSubLabel_(toggleValue) {
+    return this.i18n(
+        toggleValue ? 'ambientModeEnabled' : 'ambientModeDisabled');
   },
 });
 })();

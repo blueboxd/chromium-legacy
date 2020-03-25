@@ -90,10 +90,15 @@ class MediaHistoryKeyedService : public KeyedService,
           void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)> callback);
 
   // Replaces the media items in |feed_id|. This will delete any old feed items
-  // and store the new ones in |items|.
-  void ReplaceMediaFeedItems(
+  // and store the new ones in |items|. This will also update the |result|,
+  // |expiry_time|, |logos| and |display_name| for the feed.
+  void StoreMediaFeedFetchResult(
       const int64_t feed_id,
-      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
+      const media_feeds::mojom::FetchResult result,
+      const base::Time& expiry_time,
+      const std::vector<media_session::MediaImage>& logos,
+      const std::string& display_name);
 
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);

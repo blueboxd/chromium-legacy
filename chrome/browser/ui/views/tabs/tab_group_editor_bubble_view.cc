@@ -169,10 +169,10 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetIgnoreDefaultMainAxisMargins(true);
 
-  const SkColor initial_color = InitColorSet();
+  const tab_groups::TabGroupColorId initial_color_id = InitColorSet();
   color_selector_ =
       group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
-          colors_, background_color(), initial_color,
+          this, colors_, initial_color_id,
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
   color_selector_->SetProperty(
@@ -236,35 +236,18 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
 TabGroupEditorBubbleView::~TabGroupEditorBubbleView() = default;
 
-SkColor TabGroupEditorBubbleView::InitColorSet() {
-  base::flat_map<tab_groups::TabGroupColorId, tab_groups::TabGroupColor>
-      all_colors = tab_groups::GetTabGroupColorSet();
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+tab_groups::TabGroupColorId TabGroupEditorBubbleView::InitColorSet() {
+  const tab_groups::ColorLabelMap& color_map =
+      tab_groups::GetTabGroupColorLabelMap();
+
+  // TODO(tluk) remove the reliance on the ordering of the color pairs in the
+  // vector and use the ColorLabelMap structure instead.
+  std::copy(color_map.begin(), color_map.end(), std::back_inserter(colors_));
 
   // Keep track of the current group's color, to be returned as the initial
   // selected value.
-  const tab_groups::TabGroupColorId initial_color_id =
-      browser_->tab_strip_model()
-          ->group_model()
-          ->GetTabGroup(group_)
-          ->visual_data()
-          ->color();
-  SkColor initial_color;
-
-  color_ids_.reserve(all_colors.size());
-  colors_.reserve(all_colors.size());
-  for (auto const& color_pair : all_colors) {
-    color_ids_.push_back(color_pair.first);
-    SkColor color = native_theme->ShouldUseDarkColors()
-                        ? color_pair.second.dark_theme_color
-                        : color_pair.second.light_theme_color;
-    colors_.push_back({color, color_pair.second.label});
-
-    if (color_pair.first == initial_color_id)
-      initial_color = color;
-  }
-
-  return initial_color;
+  auto* const group_model = browser_->tab_strip_model()->group_model();
+  return group_model->GetTabGroup(group_)->visual_data()->color();
 }
 
 void TabGroupEditorBubbleView::UpdateGroup() {
@@ -275,7 +258,7 @@ void TabGroupEditorBubbleView::UpdateGroup() {
   const tab_groups::TabGroupColorId current_color =
       tab_group->visual_data()->color();
   const tab_groups::TabGroupColorId updated_color =
-      selected_element.has_value() ? color_ids_[selected_element.value()]
+      selected_element.has_value() ? colors_[selected_element.value()].first
                                    : current_color;
 
   if (current_color != updated_color) {

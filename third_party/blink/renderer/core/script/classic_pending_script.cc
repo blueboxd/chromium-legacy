@@ -259,7 +259,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   ScriptElementBase* element = GetElement();
   if (element) {
     SubresourceIntegrityHelper::DoReport(
-        *element->GetDocument().ToExecutionContext(),
+        *element->GetDocument().GetExecutionContext(),
         GetResource()->IntegrityReportInfo());
 
     // It is possible to get back a script resource with integrity metadata

@@ -20,7 +20,7 @@ namespace base {
 
 namespace internal {
 
-void OnNoMemoryInternal(size_t size) {
+NOINLINE void OnNoMemoryInternal(size_t size) {
 #if defined(OS_WIN)
   // Kill the process. This is important for security since most of code
   // does not check the result of memory allocation.

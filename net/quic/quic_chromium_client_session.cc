@@ -968,7 +968,9 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 }
 
 void QuicChromiumClientSession::Initialize() {
-  quic::QuicSpdyClientSessionBase::SetMaxAllowedPushId(max_allowed_push_id_);
+  if (VersionUsesHttp3(transport_version())) {
+    quic::QuicSpdyClientSessionBase::SetMaxPushId(max_allowed_push_id_);
+  }
   set_max_inbound_header_list_size(kQuicMaxHeaderListSize);
   quic::QuicSpdyClientSessionBase::Initialize();
   SetHpackEncoderDebugVisitor(std::make_unique<HpackEncoderDebugVisitor>());

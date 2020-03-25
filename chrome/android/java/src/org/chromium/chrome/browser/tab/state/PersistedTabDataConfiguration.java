@@ -14,14 +14,18 @@ import java.util.Map;
 public enum PersistedTabDataConfiguration {
     // TODO(crbug.com/1059650) investigate should this go in the app code?
     // Also investigate if the storage instance should be shared.
-    CRITICAL_PERSISTED_TAB_DATA("CPTD", new FilePersistedTabDataStorage());
+    CRITICAL_PERSISTED_TAB_DATA("CPTD", new FilePersistedTabDataStorage()),
+    ENCRYPTED_CRITICAL_PERSISTED_TAB_DATA("ECPTD", new EncryptedFilePersistedTabDataStorage());
 
     private static final Map<Class<? extends PersistedTabData>, PersistedTabDataConfiguration>
             sLookup = new HashMap<>();
+    private static final Map<Class<? extends PersistedTabData>, PersistedTabDataConfiguration>
+            sEncryptedLookup = new HashMap<>();
 
     static {
         // TODO(crbug.com/1060187) remove static initializer and initialization lazy
         sLookup.put(CriticalPersistedTabData.class, CRITICAL_PERSISTED_TAB_DATA);
+        sEncryptedLookup.put(CriticalPersistedTabData.class, ENCRYPTED_CRITICAL_PERSISTED_TAB_DATA);
     }
 
     public final String id;
@@ -39,7 +43,11 @@ public enum PersistedTabDataConfiguration {
     /**
      * Acquire {@link PersistedTabDataConfiguration} for a given {@link PersistedTabData} class
      */
-    public static PersistedTabDataConfiguration get(Class<? extends PersistedTabData> clazz) {
+    public static PersistedTabDataConfiguration get(
+            Class<? extends PersistedTabData> clazz, boolean isEncrypted) {
+        if (isEncrypted) {
+            return sEncryptedLookup.get(clazz);
+        }
         return sLookup.get(clazz);
     }
 }

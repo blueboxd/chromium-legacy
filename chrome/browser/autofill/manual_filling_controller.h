@@ -111,6 +111,11 @@ class ManualFillingController {
   virtual void OnOptionSelected(
       autofill::AccessoryAction selected_action) const = 0;
 
+  // Called by the UI code because a user toggled the |toggled_action|,
+  // such as "Save passwords for this site".
+  virtual void OnToggleChanged(autofill::AccessoryAction toggled_action,
+                               bool enabled) const = 0;
+
   // -----------------
   // Member accessors:
   // -----------------

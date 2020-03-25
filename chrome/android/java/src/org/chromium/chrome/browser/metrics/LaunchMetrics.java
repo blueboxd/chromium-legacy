@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.metrics;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebApkUkmRecorder;
@@ -94,13 +93,6 @@ public class LaunchMetrics {
             }
         }
         sHomeScreenLaunches.clear();
-
-        String cachedMetricsGroup =
-                CachedMetrics.histogramsBypassCache() ? "HistogramsBypassCache" : "Control";
-        UmaSessionStats.registerSyntheticFieldTrial("AndroidCachedMetrics", cachedMetricsGroup);
-
-        // Record generic cached events.
-        CachedMetrics.commitCachedMetrics();
     }
 
     /**

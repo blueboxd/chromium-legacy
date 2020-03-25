@@ -1,0 +1,50 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="ambient_mode_browser_proxy.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="../../controls/settings_radio_group.html">
+<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../settings_shared_css.html">
+
+<dom-module id="settings-ambient-mode-page">
+  <template>
+    <style include="settings-shared">
+      #ambientModeEnable {
+        border-bottom: var(--cr-separator-line);
+      }
+
+      #topicSourceDescription {
+        display: block;
+        padding-inline-end: var(--cr-section-padding);
+        padding-inline-start: var(--cr-section-padding);
+      }
+    </style>
+    <settings-toggle-button id="ambientModeEnable"
+        class="first primary-toggle"
+        pref="{{prefs.settings.ambient_mode.enabled}}"
+        label="[[getAmbientModeOnOffLabel_(
+            prefs.settings.ambient_mode.enabled.value)]]">
+    </settings-toggle-button>
+
+    <template is="dom-if" if="[[prefs.settings.ambient_mode.enabled.value]]">
+      <label id="topicSourceDescription" class="settings-box-text">
+          $i18n{ambientModeTopicSourceTitle}
+      </label>
+      <settings-radio-group id="topicSourceRadioGroup"
+          class="list-frame"
+          aria-labelledby="topicSourceDescription"
+          pref="{{prefs.settings.ambient_mode.topic_source}}">
+        <cr-radio-button name="[[topicSource_.GOOGLE_PHOTOS]]"
+            class="list-item underbar"
+            label="$i18n{ambientModeTopicSourceGooglePhotos}">
+        </cr-radio-button>
+        <cr-radio-button name="[[topicSource_.ART_GALLERY]]"
+            class="list-item underbar"
+            label="$i18n{ambientModeTopicSourceArtGallery}">
+        </cr-radio-button>
+      </settings-radio-group>
+    </template>
+  </template>
+  <script src="ambient_mode_page.js"></script>
+</dom-module>

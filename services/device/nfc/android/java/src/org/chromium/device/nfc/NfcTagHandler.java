@@ -32,7 +32,7 @@ public class NfcTagHandler {
     public static NfcTagHandler create(Tag tag) {
         if (tag == null) return null;
 
-        if (NfcBlocklist.isTagBlocked(tag)) return null;
+        if (NfcBlocklist.getInstance().isTagBlocked(tag)) return null;
 
         Ndef ndef = Ndef.get(tag);
         if (ndef != null) {

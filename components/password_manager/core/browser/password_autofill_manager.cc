@@ -337,7 +337,7 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
     return;
   UpdatePopup(ReplaceUnlockButtonWithLoadingIndicator(
       autofill_client_->GetPopupSuggestions(), unlock_item));
-  autofill_client_->PinPopupViewUntilUpdate();
+  autofill_client_->PinPopupView();
   password_client_->TriggerReauthForAccount(
       account_id,
       base::BindOnce(&PasswordAutofillManager::OnUnlockReauthCompleted,

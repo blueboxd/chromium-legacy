@@ -3534,8 +3534,7 @@ TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooLow) {
 TEST_F(TabStripModelTest, CreateGroupSetsVisualData) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  base::flat_map<tab_groups::TabGroupColorId, tab_groups::TabGroupColor>
-      all_colors = tab_groups::GetTabGroupColorSet();
+  tab_groups::ColorLabelMap all_colors = tab_groups::GetTabGroupColorLabelMap();
   PrepareTabs(&strip, all_colors.size() + 1);
 
   // Expect groups to cycle through the available color set.

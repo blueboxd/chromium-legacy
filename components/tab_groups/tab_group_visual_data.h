@@ -19,8 +19,8 @@ class COMPONENT_EXPORT(TAB_GROUPS) TabGroupVisualData {
  public:
   // Construct a TabGroupVisualData with placeholder name and random color.
   TabGroupVisualData();
-
   TabGroupVisualData(base::string16 title, tab_groups::TabGroupColorId color);
+  TabGroupVisualData(base::string16 title, uint32_t color_int);
 
   TabGroupVisualData(const TabGroupVisualData& other) = default;
   TabGroupVisualData(TabGroupVisualData&& other) = default;

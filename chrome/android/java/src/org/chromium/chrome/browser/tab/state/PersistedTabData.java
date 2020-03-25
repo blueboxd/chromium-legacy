@@ -74,8 +74,9 @@ public abstract class PersistedTabData implements UserData {
             callback.onResult(persistedTabDataFromTab);
             return;
         }
-        PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(clazz);
-        config.storage.restore(tab.getId(), tab.isIncognito(), config.id, (data) -> {
+        PersistedTabDataConfiguration config =
+                PersistedTabDataConfiguration.get(clazz, tab.isIncognito());
+        config.storage.restore(tab.getId(), config.id, (data) -> {
             T persistedTabData;
             if (data == null) {
                 persistedTabData = supplier.get();
@@ -116,8 +117,7 @@ public abstract class PersistedTabData implements UserData {
      */
     @VisibleForTesting
     protected void save() {
-        mPersistedTabDataStorage.save(
-                mTab.getId(), mTab.isIncognito(), mPersistedTabDataId, serialize());
+        mPersistedTabDataStorage.save(mTab.getId(), mPersistedTabDataId, serialize());
     }
 
     /**
@@ -138,7 +138,7 @@ public abstract class PersistedTabData implements UserData {
      * @param profile profile
      */
     protected void delete() {
-        mPersistedTabDataStorage.delete(mTab.getId(), mTab.isIncognito(), mPersistedTabDataId);
+        mPersistedTabDataStorage.delete(mTab.getId(), mPersistedTabDataId);
     }
 
     /**

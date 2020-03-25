@@ -32,9 +32,7 @@
     readonly attribute DOMString data;
 
     // https://w3c.github.io/uievents/#idl-interface-CompositionEvent-initializers
-    // TODO(foolip): None of the initCompositionEvent() arguments should be
-    // optional, and the spec has a locale argument after data.
-    [Measure] void initCompositionEvent(optional DOMString type = "undefined",
+    [Measure] void initCompositionEvent(DOMString type,
                                         optional boolean bubbles = false,
                                         optional boolean cancelable = false,
                                         optional Window? view = null,

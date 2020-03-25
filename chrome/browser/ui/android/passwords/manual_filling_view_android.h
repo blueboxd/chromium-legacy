@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_PASSWORDS_MANUAL_FILLING_VIEW_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_PASSWORDS_MANUAL_FILLING_VIEW_ANDROID_H_
 
+#include <jni.h>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
@@ -49,6 +50,10 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
   void OnOptionSelected(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         jint selected_action);
+  void OnToggleChanged(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       jint selected_action,
+                       jboolean enabled);
 
  private:
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jstring> j_origin,

@@ -36,7 +36,12 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
         Array.from(document.querySelector('#feed-table-header').children);
 
     assertDeepEquals(
-        ['ID', 'Url', 'Last Discovery Time'],
+        [
+          'ID', 'Url', 'Display Name', 'Last Discovery Time', 'Last Fetch Time',
+          'User Status', 'Last Fetch Result', 'Fetch Failed Count',
+          'Cache Expiry Time', 'Last Fetch Item Count',
+          'Last Fetch Play Next Count', 'Last Fetch Content Types', 'Logos'
+        ],
         feedHeaders.map(x => x.textContent.trim()));
   });
 

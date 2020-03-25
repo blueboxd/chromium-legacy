@@ -5,6 +5,8 @@
 #include "chrome/browser/media/history/media_history_table_base.h"
 
 #include "base/updateable_sequenced_task_runner.h"
+#include "sql/statement.h"
+#include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace media_history {
 
@@ -39,6 +41,23 @@ void MediaHistoryTableBase::ResetDB() {
 bool MediaHistoryTableBase::CanAccessDatabase() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   return db_;
+}
+
+void MediaHistoryTableBase::BindProto(
+    sql::Statement& s,
+    int col,
+    const google::protobuf::MessageLite& protobuf) {
+  std::string out;
+  CHECK(protobuf.SerializeToString(&out));
+  s.BindBlob(col, out.data(), out.size());
+}
+
+bool MediaHistoryTableBase::GetProto(sql::Statement& s,
+                                     int col,
+                                     google::protobuf::MessageLite& protobuf) {
+  std::string value;
+  s.ColumnBlobAsString(col, &value);
+  return protobuf.ParseFromString(value);
 }
 
 }  // namespace media_history

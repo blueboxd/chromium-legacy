@@ -457,6 +457,8 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
       break;
   }
 
+  // TODO(crbug.com/1063023): PermissionInfo should be modified
+  // to contain all needed information regarding Automatically Blocked flag.
   if (permission.setting == CONTENT_SETTING_BLOCK &&
       permissions::PermissionUtil::IsPermission(permission.type)) {
     permissions::PermissionResult permission_result =

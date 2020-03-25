@@ -39,17 +39,13 @@ enum class TabGroupColorId {
   // Next value: 8
 };
 
-struct COMPONENT_EXPORT(TAB_GROUPS) TabGroupColor {
-  SkColor light_theme_color;
-  SkColor dark_theme_color;
-  base::string16 label;
-};
+using ColorLabelMap = base::flat_map<TabGroupColorId, base::string16>;
 
-// Returns the source of truth for what colors tab groups can currently have.
+// Returns a map of TabGroupColorIds to their string labels.
 // When reading color IDs from disk, always verify against the keys in this
-// map for valid values, and fall back to kGrey if it doesn't exist.
+// map for valid values.
 COMPONENT_EXPORT(TAB_GROUPS)
-const base::flat_map<TabGroupColorId, TabGroupColor>& GetTabGroupColorSet();
+const ColorLabelMap& GetTabGroupColorLabelMap();
 
 }  // namespace tab_groups
 

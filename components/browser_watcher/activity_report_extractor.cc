@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browser_watcher/activity_data_names.h"
-#include "components/variations/active_field_trials.h"
 #include "third_party/crashpad/crashpad/util/misc/uuid.h"
 
 namespace browser_watcher {
@@ -29,8 +28,6 @@ using base::debug::GlobalActivityTracker;
 using base::debug::ThreadActivityAnalyzer;
 
 namespace {
-
-const char kFieldTrialKeyPrefix[] = "FieldTrial.";
 
 // Collects stability user data from the recorded format to the collected
 // format.
@@ -65,20 +62,6 @@ void CollectUserData(
       }
       case ActivityUserData::STRING_VALUE: {
         base::StringPiece value = recorded_value.GetString();
-
-        if (report && base::StartsWith(key, kFieldTrialKeyPrefix,
-                                       base::CompareCase::SENSITIVE)) {
-          // This entry represents an active Field Trial.
-          std::string trial_name =
-              key.substr(std::strlen(kFieldTrialKeyPrefix));
-          variations::ActiveGroupId group_id =
-              variations::MakeActiveGroupId(trial_name, value.as_string());
-          FieldTrial* field_trial = report->add_field_trials();
-          field_trial->set_name_id(group_id.name);
-          field_trial->set_group_id(group_id.group);
-          continue;
-        }
-
         collected_value.set_string_value(value.data(), value.size());
 
         // Promote version information to the global key value store.
@@ -87,6 +70,9 @@ void CollectUserData(
               key == kActivityProduct || key == kActivityChannel ||
               key == kActivityPlatform || key == kActivityVersion;
           if (should_promote) {
+            // TODO(siggi): Copy the promoted data or perhaps remove this
+            //     promotion once the backend is able to display the per-process
+            //     data.
             (*report->mutable_global_data())[key].Swap(&collected_value);
             continue;
           }

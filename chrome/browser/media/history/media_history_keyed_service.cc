@@ -194,11 +194,17 @@ void MediaHistoryKeyedService::GetItemsForMediaFeedForDebug(
                                                      std::move(callback));
 }
 
-void MediaHistoryKeyedService::ReplaceMediaFeedItems(
+void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
     const int64_t feed_id,
-    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
-  if (auto* store = store_->GetForWrite())
-    store->ReplaceMediaFeedItems(feed_id, std::move(items));
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
+    const media_feeds::mojom::FetchResult result,
+    const base::Time& expiry_time,
+    const std::vector<media_session::MediaImage>& logos,
+    const std::string& display_name) {
+  if (auto* store = store_->GetForWrite()) {
+    store->StoreMediaFeedFetchResult(feed_id, std::move(items), result,
+                                     expiry_time, logos, display_name);
+  }
 }
 
 void MediaHistoryKeyedService::GetURLsInTableForTest(

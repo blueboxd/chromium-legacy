@@ -51,7 +51,7 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
   MOCK_CONST_METHOD0(container_view, gfx::NativeView());
   MOCK_CONST_METHOD0(element_bounds, const gfx::RectF&());
   MOCK_CONST_METHOD0(IsRTL, bool());
-  const std::vector<autofill::Suggestion> GetSuggestions() override {
+  std::vector<autofill::Suggestion> GetSuggestions() const override {
     return suggestions_;
   }
 

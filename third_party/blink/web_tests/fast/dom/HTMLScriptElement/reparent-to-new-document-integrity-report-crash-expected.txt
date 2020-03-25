@@ -1,0 +1,2 @@
+CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'data:text/javascript,' with computed SHA-256 integrity '47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='. The resource has been blocked.
+PASS if no crash.

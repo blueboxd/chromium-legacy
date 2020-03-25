@@ -10,6 +10,8 @@
   <script src="chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/url/mojom/url.mojom-lite.js"></script>
+  <script src="ui/gfx/geometry/mojom/geometry.mojom-lite.js"></script>
+  <script src="services/media_session/public/mojom/media_session.mojom-lite.js"></script>
   <script src="chrome://resources/js/util.js"></script>
 
   <script src="chrome/browser/media/feeds/media_feeds_store.mojom-lite.js">
@@ -86,8 +88,38 @@
         <th sort-key="url">
           Url
         </th>
+        <th sort-key="displayName">
+          Display Name
+        </th>
         <th sort-key="lastDiscoveryTime">
           Last Discovery Time
+        </th>
+        <th sort-key="lastFetchTime">
+          Last Fetch Time
+        </th>
+        <th sort-key="userStatus">
+          User Status
+        </th>
+        <th sort-key="lastFetchResult">
+          Last Fetch Result
+        </th>
+        <th sort-key="fetchFailedCount">
+          Fetch Failed Count
+        </th>
+        <th sort-key="cacheExpiryTime">
+          Cache Expiry Time
+        </th>
+        <th sort-key="lastFetchItemCount">
+          Last Fetch Item Count
+        </th>
+        <th sort-key="lastFetchPlayNextCount">
+          Last Fetch Play Next Count
+        </th>
+        <th sort-key="lastFetchContentTypes">
+          Last Fetch Content Types
+        </th>
+        <th>
+          Logos
         </th>
       </tr>
     </thead>
@@ -99,7 +131,17 @@
     <tr>
       <td class="id-cell"></td>
       <td class="url-cell"></td>
+      <td></td>
       <td class="last-discovery-time-cell"></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
     </tr>
   </template>
 </body>

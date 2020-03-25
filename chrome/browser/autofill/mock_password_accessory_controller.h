@@ -32,6 +32,8 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
   MOCK_METHOD1(OnOptionSelected,
                void(autofill::AccessoryAction selected_action));
+  MOCK_METHOD2(OnToggleChanged,
+               void(autofill::AccessoryAction toggled_action, bool enabled));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordAccessoryController);

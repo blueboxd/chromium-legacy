@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -471,12 +472,11 @@ base::DictionaryValue TabStripUIHandler::GetTabGroupData(TabGroup* group) {
   base::DictionaryValue visual_data_dict;
   visual_data_dict.SetString("title", visual_data->title());
 
-  bool is_dark_frame = color_utils::IsDark(
-      embedder_->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE));
-  const tab_groups::TabGroupColor tab_group_color =
-      tab_groups::GetTabGroupColorSet().at(visual_data->color());
-  const SkColor group_color = is_dark_frame ? tab_group_color.dark_theme_color
-                                            : tab_group_color.light_theme_color;
+  // TODO the tab strip should support toggles between inactive and active frame
+  // states. Currently the webui tab strip only uses active frame colors
+  // (https://crbug.com/1060398).
+  const int color_id = GetTabGroupTabStripColorId(visual_data->color(), true);
+  const SkColor group_color = embedder_->GetColor(color_id);
   visual_data_dict.SetString("color",
                              color_utils::SkColorToRgbString(group_color));
   visual_data_dict.SetString(

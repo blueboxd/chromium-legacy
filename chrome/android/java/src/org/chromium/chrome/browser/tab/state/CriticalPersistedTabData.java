@@ -104,8 +104,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
         // from the {@link Tab}.
         if (tabImpl.isInitialized()) {
             TabState.WebContentsState webContentsState = TabState.getWebContentsState(tabImpl);
-            PersistedTabDataConfiguration config =
-                    PersistedTabDataConfiguration.get(CriticalPersistedTabData.class);
+            PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
+                    CriticalPersistedTabData.class, tab.isIncognito());
             CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(tab,
                     tab.getParentId(), tabImpl.getRootId(), tab.getTimestampMillis(),
                     webContentsState != null

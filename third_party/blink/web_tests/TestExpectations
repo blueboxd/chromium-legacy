@@ -946,7 +946,6 @@ crbug.com/591099 [ Mac ] fast/css3-text/css3-text-decoration/text-underline-posi
 crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descendant-of-flex.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 crbug.com/591099 [ Mac10.11 ] virtual/audio-service/media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
-crbug.com/591099 [ Mac10.13 ] fast/dynamic/outerHTML-doc.html [ Failure ]
 
 # A few other lines for this test are commented out above to avoid conflicting expectations.
 # If they are not also fixed, reinstate them when removing these lines.
@@ -2687,14 +2686,6 @@ crbug.com/654477 fast/layers/video-layer.html [ Failure ]
 # These could likely be removed - see https://chromium-review.googlesource.com/c/chromium/src/+/1252141
 crbug.com/654477 media/controls-focus-ring.html [ Failure ]
 crbug.com/654477 virtual/audio-service/media/controls-focus-ring.html [ Failure ]
-crbug.com/654477 [ Mac10.10 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/654477 [ Mac10.11 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/654477 [ Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/654477 [ Mac10.10 ] virtual/audio-service/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/654477 [ Mac10.11 ] virtual/audio-service/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/654477 [ Retina ] virtual/audio-service/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/638621 [ Win7 ] virtual/audio-service/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/637930 virtual/audio-service/http/tests/media/video-buffered.html [ Pass Failure ]
@@ -3031,7 +3022,6 @@ crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-co
 crbug.com/626703 [ Linux ] external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/workers/abrupt-completion.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/sxg-subresource/external/wpt/signed-exchange/reporting/sxg-reporting-navigation-parse_error.tentative.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
@@ -3128,15 +3118,12 @@ crbug.com/626703 [ Win ] external/wpt/fetch/corb/script-resource-with-nonsniffab
 crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-disabled.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries_resized.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
-crbug.com/626703 [ Retina ] virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/rendering/non-replaced-elements/form-controls/select-sizing-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-number.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-number.html [ Failure ]
@@ -3158,7 +3145,6 @@ crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-p
 crbug.com/626703 [ Win10 ] external/wpt/payment-request/payment-request-hasenrolledinstrument-method.tentative.https.html [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] virtual/cascade/external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
-crbug.com/626703 [ Retina ] virtual/cascade/external/wpt/css/css-paint-api/one-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/web-animations/timing-model/animation-effects/phases-and-states.html [ Crash ]
 crbug.com/626703 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
@@ -3175,15 +3161,10 @@ crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-004.html [
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
-crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/IndexedDB/structured-clone.any.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/mediacapture-fromelement/ended.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-pause-on-exit.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/workers/data-url-shared.html [ Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-svg-none-test_touch.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/extension/pointerevent_touch-action-pan-right-css_touch.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/detection-security-test.https.html [ Timeout ]
@@ -3194,20 +3175,14 @@ crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection
 crbug.com/626703 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.https.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-missed.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/registered-property-cssom.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/registered-property-computation.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/conditional-rules.html [ Timeout ]
 crbug.com/983503 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-001.html [ Failure ]
 crbug.com/983503 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-002.html [ Failure ]
 crbug.com/983503 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-002.html [ Failure ]
 crbug.com/983503 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/font-family-name-025.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/detection-HTMLVideoElement-invalid-state.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-mode.html [ Timeout ]
 crbug.com/1004760 [ Mac ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-negative-timestamp-events.html [ Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/bidi/start_alignment.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
@@ -4288,9 +4263,6 @@ crbug.com/826419 external/wpt/html/semantics/embedded-content/media-elements/tra
 crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-webvtt-non-snap-to-lines.html [ Failure ]
 
 crbug.com/927477 external/wpt/import-maps/acquire-import-maps-flag/worker-request/* [ Skip ]
-
-# Disabled temporarliy until eager evaluation is fixed/re-baselined in DevTools.
-crbug.com/1043151 http/tests/devtools/console/viewport-testing/console-runtime-result-below-prompt.js [ Pass Failure ]
 
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
@@ -6121,14 +6093,6 @@ crbug.com/1024976 virtual/audio-service/media/video-no-audio.html [ Pass Failure
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
 
-# Temporarily disabled for landing productregistry removal in devtools
-crbug.com/1011466 http/tests/devtools/console/console-format-classes.js [ Pass Failure ]
-crbug.com/1011466 http/tests/devtools/modules-load-initial.js [ Pass Failure ]
-crbug.com/1011466 http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Pass Failure ]
-crbug.com/1011466 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
-crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Pass Failure ]
-crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
-
 # Tests that json modules load correctly within the context of service workers
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
 crbug.com/967018 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
@@ -6291,10 +6255,6 @@ crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-li
 # Sheriff 2020-01-14
 crbug.com/1041973 external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Pass Failure ]
 crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Pass Failure ]
-
-# Disabled for landing devtools changes
-crbug.com/1030746 http/tests/devtools/sources/debugger-ui/sourcemap-src-not-loaded.js [ Pass Failure ]
-crbug.com/1030746 http/tests/devtools/network/load-resource-for-frontend.js [ Pass Failure ]
 
 # Disable for landing devtools changes
 crbug.com/1006759 http/tests/devtools/console/argument-hints.js [ Pass Failure ]
@@ -6699,6 +6659,3 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 # Sheriff 2020-03-16
 crbug.com/1061029 [ Win ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
 crbug.com/1061029 [ Mac ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
-
-### external/wpt/pointerevents/
-crbug.com/1063163 external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node_in_shadow_dom.html [ Failure ]

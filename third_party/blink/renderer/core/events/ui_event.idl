@@ -28,8 +28,7 @@
     readonly attribute InputDeviceCapabilities? sourceCapabilities;
 
     // https://w3c.github.io/uievents/#idl-interface-UIEvent-initializers
-    // TODO(foolip): None of the initUIEvent() arguments should be optional.
-    [Measure] void initUIEvent(optional DOMString type = "undefined",
+    [Measure] void initUIEvent(DOMString type,
                                optional boolean bubbles = false,
                                optional boolean cancelable = false,
                                optional Window? view = null,

@@ -19,7 +19,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -206,8 +205,8 @@ void ComServer::FirstTaskRun() {
     Shutdown(hr);
 }
 
-scoped_refptr<App> MakeAppServer() {
-  return base::MakeRefCounted<ComServer>();
+scoped_refptr<App> AppServerInstance() {
+  return AppInstance<ComServer>();
 }
 
 }  // namespace updater

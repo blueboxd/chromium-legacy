@@ -8,8 +8,11 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -18,6 +21,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -26,6 +30,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/test/browser_task_environment.h"
+#include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +38,17 @@ namespace safe_browsing {
 
 using ::testing::Return;
 using ::testing::ReturnRef;
+
+namespace {
+
+const std::set<std::string>* ExeMimeTypes() {
+  static std::set<std::string> set = {"application/x-msdownload",
+                                      "application/x-ms-dos-executable",
+                                      "application/octet-stream"};
+  return &set;
+}
+
+}  // namespace
 
 class FakeBinaryUploadService : public BinaryUploadService {
  public:
@@ -93,7 +109,7 @@ class DeepScanningRequestTest : public testing::Test {
 
     download_path_ = temp_dir_.GetPath().AppendASCII("download.exe");
     std::string download_contents = "download contents";
-    download_hash_ = "hash";
+    download_hash_ = crypto::SHA256HashString(download_contents);
     tab_url_string_ = "https://example.com/";
     download_url_ = GURL("https://example.com/download.exe");
     tab_url_ = GURL(tab_url_string_);
@@ -334,7 +350,35 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestForAPP) {
             MalwareDeepScanningClientRequest::POPULATION_TITANIUM);
 }
 
-TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
+class DeepScanningReportingTest : public DeepScanningRequestTest {
+ public:
+  void SetUp() override {
+    DeepScanningRequestTest::SetUp();
+    SetUpReporting();
+  }
+
+  void SetUpReporting() {
+    client_ = std::make_unique<policy::MockCloudPolicyClient>();
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->SetCloudPolicyClientForTesting(client_.get());
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->SetBinaryUploadServiceForTesting(
+            download_protection_service_.GetFakeBinaryUploadService());
+    download_protection_service_.GetFakeBinaryUploadService()
+        ->SetAuthForTesting(true);
+    TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
+        prefs::kUnsafeEventsReportingEnabled, true);
+  }
+
+ protected:
+  std::unique_ptr<policy::MockCloudPolicyClient> client_;
+};
+
+TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
+  // Enable event reporting to validate that the correct events are reported for
+  // each response.
+  TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
+      prefs::kUnsafeEventsReportingEnabled, true);
   {
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
@@ -351,6 +395,21 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         DlpDeepScanningVerdict::TriggeredRule::BLOCK);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
+
+    EventReportValidator validator(client_.get());
+    validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
+        /*url*/ "https://example.com/download.exe",
+        /*filename*/ download_path_.AsUTF8Unsafe(),
+        // printf "download contents" | sha256sum |  tr '[:lower:]'
+        // '[:upper:]'
+        /*sha256*/
+        "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+        /*threat_type*/ "DANGEROUS",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*mimetypes*/ ExeMimeTypes(),
+        /*size*/ std::string("download contents").size());
 
     request.Start();
 
@@ -374,6 +433,21 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
 
+    EventReportValidator validator(client_.get());
+    validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
+        /*url*/ "https://example.com/download.exe",
+        /*filename*/ download_path_.AsUTF8Unsafe(),
+        // printf "download contents" | sha256sum |  tr '[:lower:]'
+        // '[:upper:]'
+        /*sha256*/
+        "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+        /*threat_type*/ "POTENTIALLY_UNWANTED",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*mimetypes*/ ExeMimeTypes(),
+        /*size*/ std::string("download contents").size());
+
     request.Start();
 
     EXPECT_EQ(DownloadCheckResult::POTENTIALLY_UNWANTED, last_result_);
@@ -394,6 +468,19 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
 
+    EventReportValidator validator(client_.get());
+    validator.ExpectSensitiveDataEvent(
+        /*url*/ "https://example.com/download.exe",
+        /*filename*/ download_path_.AsUTF8Unsafe(),
+        // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+        /*sha256*/
+        "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*mimetypes*/ ExeMimeTypes(),
+        /*size*/ std::string("download contents").size());
+
     request.Start();
 
     EXPECT_EQ(DownloadCheckResult::SENSITIVE_CONTENT_BLOCK, last_result_);
@@ -413,6 +500,19 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         DlpDeepScanningVerdict::TriggeredRule::WARN);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
+
+    EventReportValidator validator(client_.get());
+    validator.ExpectSensitiveDataEvent(
+        /*url*/ "https://example.com/download.exe",
+        /*filename*/ download_path_.AsUTF8Unsafe(),
+        // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+        /*sha256*/
+        "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*mimetypes*/ ExeMimeTypes(),
+        /*size*/ std::string("download contents").size());
 
     request.Start();
 
@@ -436,6 +536,19 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
 
+    EventReportValidator validator(client_.get());
+    validator.ExpectSensitiveDataEvent(
+        /*url*/ "https://example.com/download.exe",
+        /*filename*/ download_path_.AsUTF8Unsafe(),
+        // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+        /*sha256*/
+        "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*mimetypes*/ ExeMimeTypes(),
+        /*size*/ std::string("download contents").size());
+
     request.Start();
 
     EXPECT_EQ(DownloadCheckResult::SENSITIVE_CONTENT_BLOCK, last_result_);
@@ -454,6 +567,19 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
 
+    EventReportValidator validator(client_.get());
+    validator.ExpectUnscannedFileEvent(
+        /*url*/ "https://example.com/download.exe",
+        /*filename*/ download_path_.AsUTF8Unsafe(),
+        // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+        /*sha256*/
+        "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        /*reason*/ "dlpScanFailed",
+        /*mimetypes*/ ExeMimeTypes(),
+        /*size*/ std::string("download contents").size());
+
     request.Start();
 
     EXPECT_EQ(DownloadCheckResult::DEEP_SCANNED_SAFE, last_result_);
@@ -471,6 +597,19 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         MalwareDeepScanningVerdict::SCAN_FAILURE);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
+
+    EventReportValidator validator(client_.get());
+    validator.ExpectUnscannedFileEvent(
+        /*url*/ "https://example.com/download.exe",
+        /*filename*/ download_path_.AsUTF8Unsafe(),
+        // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+        /*sha256*/
+        "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        /*reason*/ "malwareScanFailed",
+        /*mimetypes*/ ExeMimeTypes(),
+        /*size*/ std::string("download contents").size());
 
     request.Start();
 
@@ -517,7 +656,7 @@ TEST_F(DeepScanningRequestTest, PopulatesRequest) {
                 ->last_request()
                 .digest(),
             // Hex-encoding of 'hash'
-            "68617368");
+            "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C");
 }
 
 }  // namespace safe_browsing

@@ -20,6 +20,8 @@ class MockAddressAccessoryController
   MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
   MOCK_METHOD1(OnOptionSelected,
                void(autofill::AccessoryAction selected_action));
+  MOCK_METHOD2(OnToggleChanged,
+               void(autofill::AccessoryAction toggled_action, bool enabled));
   MOCK_METHOD0(RefreshSuggestions, void());
 
  private:

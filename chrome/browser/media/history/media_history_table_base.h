@@ -12,8 +12,15 @@ namespace base {
 class UpdateableSequencedTaskRunner;
 }  // namespace base
 
+namespace google {
+namespace protobuf {
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
+
 namespace sql {
 class Database;
+class Statement;
 }  // namespace sql
 
 namespace media_history {
@@ -36,6 +43,17 @@ class MediaHistoryTableBase
   sql::Database* DB();
   void ResetDB();
   bool CanAccessDatabase();
+
+  // Serializes and binds the |protobuf| to be stored in |col| of the statement.
+  void BindProto(sql::Statement& s,
+                 int col,
+                 const google::protobuf::MessageLite& protobuf);
+
+  // Deserializes the proto stored in |col| and stores it in |protobuf|. Returns
+  // true if it was successful.
+  bool GetProto(sql::Statement& s,
+                int col,
+                google::protobuf::MessageLite& protobuf);
 
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryTableBase>;

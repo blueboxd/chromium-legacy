@@ -27,6 +27,7 @@ class CreditCardAccessoryControllerImpl
   // AccessoryController:
   void OnFillingTriggered(const UserInfo::Field& selection) override;
   void OnOptionSelected(AccessoryAction selected_action) override;
+  void OnToggleChanged(AccessoryAction toggled_action, bool enabled) override;
 
   // CreditCardAccessoryController:
   void RefreshSuggestions() override;

@@ -1623,12 +1623,6 @@ void GlobalActivityTracker::RecordModuleInfo(const ModuleInfo& info) {
   modules_.emplace(info.file, record);
 }
 
-void GlobalActivityTracker::RecordFieldTrial(const std::string& trial_name,
-                                             StringPiece group_name) {
-  const std::string key = std::string("FieldTrial.") + trial_name;
-  process_data_.SetString(key, group_name);
-}
-
 void GlobalActivityTracker::RecordException(const void* pc,
                                             const void* origin,
                                             uint32_t code) {
@@ -1680,12 +1674,6 @@ GlobalActivityTracker::GlobalActivityTracker(
 
   // Note that this process has launched.
   SetProcessPhase(PROCESS_LAUNCHED);
-
-  // Fetch and record all activated field trials.
-  FieldTrial::ActiveGroups active_groups;
-  FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
-  for (auto& group : active_groups)
-    RecordFieldTrial(group.trial_name, group.group_name);
 }
 
 GlobalActivityTracker::~GlobalActivityTracker() {

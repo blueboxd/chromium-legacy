@@ -11,7 +11,7 @@ namespace updater {
 
 class App;
 
-scoped_refptr<App> MakeAppUninstall();
+scoped_refptr<App> AppUninstallInstance();
 
 }  // namespace updater
 

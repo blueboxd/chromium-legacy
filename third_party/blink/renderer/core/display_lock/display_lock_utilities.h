@@ -76,6 +76,11 @@ class CORE_EXPORT DisplayLockUtilities {
   // Returns true if the element is in a locked subtree (or is self-locked with
   // no self-updates). This crosses frames while navigating the ancestor chain.
   static bool IsInLockedSubtreeCrossingFrames(const Node& node);
+
+  // Called when the focused element changes. These functions update locks to
+  // ensure that focused element ancestors remain unlocked for 'auto' state.
+  static void ElementLostFocus(Element*);
+  static void ElementGainedFocus(Element*);
 };
 
 }  // namespace blink

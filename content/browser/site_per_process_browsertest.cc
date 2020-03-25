@@ -15551,6 +15551,131 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Tests that main_frame_scroll_offset is not shared by frames in the same
+// process. This is a regression test for https://crbug.com/1063760.
+//
+// Set up the frame tree to be A(B1(C1(D1)),B2(C2(D2))) where B1 is above B2.
+// Scroll page A up to the point that B1(C1(D1)) intersects with A, while
+// B2(C2(D2)) is still within A. After the scrolling, C1 will see the up-to-date
+// value of the main_frame_scroll_offset, while in C2 it's still 0 because there
+// was no animation frame scheduled. Finally, we hide D2 to force an update in
+// C2. It's expected that the main_frame_scroll_offset sent from C2 to D2 is 0
+// rather than the current scroll offset.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MainFrameScrollOffset) {
+  GURL a_url = embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/scrollable_page_with_two_frames.html");
+  GURL b_url = embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_large_iframe.html");
+  GURL c_url = embedded_test_server()->GetURL(
+      "c.com", "/frame_tree/page_with_large_iframe.html");
+  GURL d_url = embedded_test_server()->GetURL("d.com", "/title1.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  FrameTreeNode* a_node = web_contents()->GetFrameTree()->root();
+
+  FrameTreeNode* b1_node = a_node->child_at(0);
+  NavigateFrameToURL(b1_node, b_url);
+
+  FrameTreeNode* c1_node = b1_node->child_at(0);
+  NavigateFrameToURL(c1_node, c_url);
+
+  FrameTreeNode* d1_node = c1_node->child_at(0);
+  NavigateFrameToURL(d1_node, d_url);
+
+  FrameTreeNode* b2_node = a_node->child_at(1);
+  NavigateFrameToURL(b2_node, b_url);
+
+  FrameTreeNode* c2_node = b2_node->child_at(0);
+  NavigateFrameToURL(c2_node, c_url);
+
+  FrameTreeNode* d2_node = c2_node->child_at(0);
+  NavigateFrameToURL(d2_node, d_url);
+
+  float scale_factor = 1.0f;
+  if (IsUseZoomForDSFEnabled())
+    scale_factor = GetFrameDeviceScaleFactor(shell()->web_contents());
+
+  // This will intercept messages sent from C1 to D1, describing D1's viewport
+  // intersection.
+  scoped_refptr<UpdateViewportIntersectionMessageFilter>
+      c1_to_d1_message_filter = new UpdateViewportIntersectionMessageFilter();
+  c1_node->current_frame_host()->GetProcess()->AddFilter(
+      c1_to_d1_message_filter.get());
+
+  // This will intercept messages sent from C2 to D2, describing D2's viewport
+  // intersection.
+  scoped_refptr<UpdateViewportIntersectionMessageFilter>
+      c2_to_d2_message_filter = new UpdateViewportIntersectionMessageFilter();
+  c2_node->current_frame_host()->GetProcess()->AddFilter(
+      c2_to_d2_message_filter.get());
+
+  // Run requestAnimationFrame in A, B1, C1, B2, C2 to make sure initial layout
+  // has completed and initial IPCs are sent.
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(a_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(b1_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(c1_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(b2_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(c2_node->current_frame_host(), "", "")
+                  .error.empty());
+
+  c1_to_d1_message_filter->Clear();
+  c2_to_d2_message_filter->Clear();
+
+  // Scroll page A up to the point that B1(C1(D1)) intersects with A, while
+  // B2(C2(D2)) is still within A.
+  int scroll_offset_y = d1_node->render_manager()
+                            ->GetProxyToParent()
+                            ->cross_process_frame_connector()
+                            ->intersection_state()
+                            .viewport_offset.y() +
+                        1;
+  ASSERT_TRUE(
+      ExecJs(a_node->current_frame_host(),
+             content::JsReplace("window.scrollTo(0, $1)", scroll_offset_y)));
+  c1_to_d1_message_filter->Wait();
+
+  // After the scrolling, C1 will see the up-to-date value of the
+  // main_frame_scroll_offset, while in C2 it's still 0 because there was no
+  // animation frame scheduled.
+  EXPECT_FALSE(c2_to_d2_message_filter->MessageReceived());
+
+  EXPECT_EQ(c1_to_d1_message_filter->GetIntersectionState()
+                .main_frame_scroll_offset.y(),
+            static_cast<int>(scroll_offset_y * scale_factor));
+
+  // Run requestAnimationFrame in A, B1, C1, B2, C2 to make sure IPCs are sent.
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(a_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(b1_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(c1_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(b2_node->current_frame_host(), "", "")
+                  .error.empty());
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(c2_node->current_frame_host(), "", "")
+                  .error.empty());
+
+  c1_to_d1_message_filter->Clear();
+  c2_to_d2_message_filter->Clear();
+
+  // Hide D2 to force an update in C2. It's expected that the
+  // main_frame_scroll_offset sent from C2 to D2 is 0 rather than the current
+  // scroll offset.
+  ASSERT_TRUE(ExecJs(
+      c2_node->current_frame_host(),
+      "let f = document.getElementsByTagName('iframe')[0];f.style.display = "
+      "'none';"));
+
+  c2_to_d2_message_filter->Wait();
+  EXPECT_EQ(c2_to_d2_message_filter->GetIntersectionState()
+                .main_frame_scroll_offset.y(),
+            0);
+}
+
 class SitePerProcessCompositorViewportBrowserTest
     : public SitePerProcessBrowserTest,
       public testing::WithParamInterface<double> {

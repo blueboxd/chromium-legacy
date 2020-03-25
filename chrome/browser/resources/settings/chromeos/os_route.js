@@ -117,6 +117,7 @@ cr.define('settings', function() {
       r.PERSONALIZATION =
           r.BASIC.createSection('/personalization', 'personalization');
       r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
+      r.AMBIENT_MODE = r.PERSONALIZATION.createChild('/ambientMode');
 
       // Files (analogous to Downloads)
       r.FILES = r.ADVANCED.createSection('/files', 'files');

@@ -142,7 +142,7 @@ class DisplayLockContextTest : public testing::Test,
   }
 
   void UnlockImmediate(DisplayLockContext* context) {
-    context->RequestUnlock();
+    context->SetRequestedState(ESubtreeVisibility::kVisible);
   }
 
   bool GraphicsLayerNeedsCollection(DisplayLockContext* context) const {
@@ -1641,10 +1641,9 @@ class DisplayLockContextRenderingTest : public RenderingTest,
   bool IsObservingLifecycle(DisplayLockContext* context) const {
     return context->is_registered_for_lifecycle_notifications_;
   }
-  bool IsActivated(DisplayLockContext* context) const {
-    return context->IsActivated();
+  void LockImmediate(DisplayLockContext* context) {
+    context->SetRequestedState(ESubtreeVisibility::kHidden);
   }
-  void LockImmediate(DisplayLockContext* context) { context->RequestLock(0u); }
 };
 
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
@@ -1812,7 +1811,6 @@ TEST_F(DisplayLockContextRenderingTest,
   // Verify lock state.
   auto* inner_context = inner_element->GetDisplayLockContext();
   ASSERT_TRUE(inner_context);
-  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Lock outer.
@@ -1887,7 +1885,6 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_FALSE(IsObservingLifecycle(inner_context));
 
   // Also we should still be activated and unlocked.
-  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Everything should be layout clean.
@@ -1946,7 +1943,6 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   // Verify lock state.
   auto* inner_context = inner_element->GetDisplayLockContext();
   ASSERT_TRUE(inner_context);
-  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Lock outer.
@@ -2023,7 +2019,6 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   EXPECT_TRUE(IsObservingLifecycle(inner_context));
 
   // We're unlocked for now.
-  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Everything should be layout clean.
@@ -2041,7 +2036,6 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   EXPECT_FALSE(IsObservingLifecycle(inner_context));
 
   // We're locked.
-  EXPECT_FALSE(IsActivated(inner_context));
   EXPECT_TRUE(inner_context->IsLocked());
 }
 }  // namespace blink

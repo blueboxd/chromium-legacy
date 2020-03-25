@@ -90,6 +90,7 @@ void RecordActivationReason(Document* document,
 DisplayLockContext::DisplayLockContext(Element* element)
     : element_(element), document_(&element_->GetDocument()) {
   document_->AddDisplayLockContext(this);
+  DetermineIfSubtreeHasFocus();
 }
 
 void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
@@ -124,6 +125,10 @@ void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
          !needs_deferred_not_intersecting_signal_);
   needs_deferred_not_intersecting_signal_ = false;
   UpdateLifecycleNotificationRegistration();
+
+  // Note that we call this here since the |state_| change is a render affecting
+  // state, but is tracked independently.
+  NotifyRenderAffectingStateChanged();
 }
 
 void DisplayLockContext::AdjustElementStyle(ComputedStyle* style) const {
@@ -138,23 +143,13 @@ void DisplayLockContext::AdjustElementStyle(ComputedStyle* style) const {
   style->SetContain(contain);
 }
 
-bool DisplayLockContext::RequestLock(uint16_t activation_mask) {
+void DisplayLockContext::RequestLock(uint16_t activation_mask) {
   UpdateActivationMask(activation_mask);
-
-  if (IsLocked())
-    return true;
-
-  if (IsActivated())
-    return false;
-
-  Lock();
-  return true;
+  SetRenderAffectingState(RenderAffectingState::kLockRequested, true);
 }
 
 void DisplayLockContext::RequestUnlock() {
-  ResetActivation();
-  if (IsLocked())
-    Unlock();
+  SetRenderAffectingState(RenderAffectingState::kLockRequested, false);
 }
 
 void DisplayLockContext::UpdateActivationMask(uint16_t activatable_mask) {
@@ -167,8 +162,6 @@ void DisplayLockContext::UpdateActivationMask(uint16_t activatable_mask) {
                             all_activation_is_blocked);
 
   activatable_mask_ = activatable_mask;
-  // Since activation mask has changed, reset all activation.
-  ResetActivation();
 }
 
 void DisplayLockContext::UpdateDocumentBookkeeping(
@@ -212,10 +205,18 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
     return;
   is_observed_ = should_observe;
 
-  if (should_observe)
+  if (should_observe) {
     document_->RegisterDisplayLockActivationObservation(element_);
-  else
+  } else {
     document_->UnregisterDisplayLockActivationObservation(element_);
+    // If we're not listening to viewport intersections, then we can assume
+    // we're not intersecting:
+    // 1. We might not be connected, in which case we're not intersecting.
+    // 2. We might not be in 'auto' mode. which means that this doesn't affect
+    //    anything consequential but acts as a reset should we switch back to
+    //    the 'auto' mode.
+    SetRenderAffectingState(RenderAffectingState::kIntersectsViewport, false);
+  }
 }
 
 bool DisplayLockContext::NeedsLifecycleNotifications() const {
@@ -379,28 +380,14 @@ void DisplayLockContext::CommitForActivationWithSignal(
 
   RecordActivationReason(document_, reason);
 
-  // TODO(vmpstr): This should eventually only unlock on viewport intersection,
-  // but each reason needs to be tested and considered, so this is being done in
-  // parts.
-  if (reason == DisplayLockActivationReason::kScrollIntoView)
+  // TODO(vmpstr): This should eventually never unlock, but each reason needs to
+  // be tested and considered, so this is being done in parts.
+  if (reason == DisplayLockActivationReason::kScrollIntoView ||
+      reason == DisplayLockActivationReason::kScriptFocus ||
+      reason == DisplayLockActivationReason::kUserFocus)
     return;
 
   Unlock();
-  is_activated_ = true;
-}
-
-bool DisplayLockContext::IsActivated() const {
-  return is_activated_;
-}
-
-void DisplayLockContext::ResetActivation() {
-  is_activated_ = false;
-
-  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityActivationEventEnabled()) {
-    // We're no longer activated, so if the signal didn't run yet, we should
-    // cancel it.
-    weak_factory_.InvalidateWeakPtrs();
-  }
 }
 
 void DisplayLockContext::NotifyIsIntersectingViewport() {
@@ -408,13 +395,7 @@ void DisplayLockContext::NotifyIsIntersectingViewport() {
   // subtree and we don't need to lock as a result.
   needs_deferred_not_intersecting_signal_ = false;
   UpdateLifecycleNotificationRegistration();
-
-  if (!IsLocked())
-    return;
-
-  DCHECK(IsActivatable(DisplayLockActivationReason::kViewportIntersection));
-  CommitForActivationWithSignal(
-      element_, DisplayLockActivationReason::kViewportIntersection);
+  SetRenderAffectingState(RenderAffectingState::kIntersectsViewport, true);
 }
 
 void DisplayLockContext::NotifyIsNotIntersectingViewport() {
@@ -441,9 +422,7 @@ void DisplayLockContext::NotifyIsNotIntersectingViewport() {
     needs_deferred_not_intersecting_signal_ = true;
   } else {
     needs_deferred_not_intersecting_signal_ = false;
-    DCHECK(IsActivated());
-    ResetActivation();
-    Lock();
+    SetRenderAffectingState(RenderAffectingState::kIntersectsViewport, false);
   }
   UpdateLifecycleNotificationRegistration();
 }
@@ -763,6 +742,8 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
       document_->IncrementDisplayLockBlockingAllActivation();
     }
   }
+
+  DetermineIfSubtreeHasFocus();
 }
 
 void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
@@ -799,6 +780,7 @@ void DisplayLockContext::ElementDisconnected() {
 
 void DisplayLockContext::ElementConnected() {
   UpdateActivationObservationIfNeeded();
+  DetermineIfSubtreeHasFocus();
 }
 
 void DisplayLockContext::ScheduleAnimation() {
@@ -881,6 +863,67 @@ bool DisplayLockContext::ForceUnlockIfNeeded() {
 
 bool DisplayLockContext::ConnectedToView() const {
   return element_ && document_ && element_->isConnected() && document_->View();
+}
+
+void DisplayLockContext::NotifySubtreeLostFocus() {
+  SetRenderAffectingState(RenderAffectingState::kSubtreeHasFocus, false);
+}
+
+void DisplayLockContext::NotifySubtreeGainedFocus() {
+  SetRenderAffectingState(RenderAffectingState::kSubtreeHasFocus, true);
+}
+
+void DisplayLockContext::DetermineIfSubtreeHasFocus() {
+  if (!ConnectedToView()) {
+    SetRenderAffectingState(RenderAffectingState::kSubtreeHasFocus, false);
+    return;
+  }
+
+  bool subtree_has_focus = false;
+  // Iterate up the ancestor chain from the currently focused element. If at any
+  // time we find our element, then our subtree is focused.
+  for (auto* focused = document_->FocusedElement(); focused;
+       focused = FlatTreeTraversal::ParentElement(*focused)) {
+    if (focused == element_.Get()) {
+      subtree_has_focus = true;
+      break;
+    }
+  }
+  SetRenderAffectingState(RenderAffectingState::kSubtreeHasFocus,
+                          subtree_has_focus);
+}
+
+void DisplayLockContext::SetRenderAffectingState(RenderAffectingState state,
+                                                 bool new_flag) {
+  render_affecting_state_[static_cast<int>(state)] = new_flag;
+  NotifyRenderAffectingStateChanged();
+}
+
+void DisplayLockContext::NotifyRenderAffectingStateChanged() {
+  auto state = [this](RenderAffectingState state) {
+    return render_affecting_state_[static_cast<int>(state)];
+  };
+
+  // Check that we're visible if and only if lock has not been requested.
+  DCHECK(state_ == ESubtreeVisibility::kVisible ||
+         state(RenderAffectingState::kLockRequested));
+  DCHECK(state_ != ESubtreeVisibility::kVisible ||
+         !state(RenderAffectingState::kLockRequested));
+
+  // We should be locked if the lock has been requested (the above DCHECKs
+  // verify that this means that we are not 'visible'), and any of the
+  // following is true:
+  // - We are not in 'auto' mode (meaning 'hidden') or
+  // - We are in 'auto' mode and nothing blocks locking: viewport is
+  //   not intersecting, and subtree doesn't have focus.
+  bool should_be_locked = state(RenderAffectingState::kLockRequested) &&
+                          (state_ != ESubtreeVisibility::kAuto ||
+                           (!state(RenderAffectingState::kIntersectsViewport) &&
+                            !state(RenderAffectingState::kSubtreeHasFocus)));
+  if (should_be_locked && !IsLocked())
+    Lock();
+  else if (!should_be_locked && IsLocked())
+    Unlock();
 }
 
 void DisplayLockContext::Trace(Visitor* visitor) {

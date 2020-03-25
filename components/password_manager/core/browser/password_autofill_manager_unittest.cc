@@ -156,7 +156,7 @@ class MockAutofillClient : public autofill::TestAutofillClient {
                     bool autoselect_first_suggestion,
                     PopupType popup_type,
                     base::WeakPtr<autofill::AutofillPopupDelegate> delegate));
-  MOCK_METHOD0(PinPopupViewUntilUpdate, void());
+  MOCK_METHOD0(PinPopupView, void());
   MOCK_CONST_METHOD0(GetPopupSuggestions,
                      base::span<const autofill::Suggestion>());
   MOCK_METHOD2(UpdatePopup,
@@ -438,7 +438,7 @@ TEST_F(PasswordAutofillManagerTest,
                autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
           PopupType::kPasswords));
-  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+  EXPECT_CALL(autofill_client, PinPopupView);
   EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .WillOnce(Return(CreateTestSuggestions(
@@ -470,7 +470,7 @@ TEST_F(PasswordAutofillManagerTest,
                autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
           PopupType::kPasswords));
-  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+  EXPECT_CALL(autofill_client, PinPopupView);
   EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .WillOnce(Return(CreateTestSuggestions(
@@ -501,7 +501,7 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
   EXPECT_CALL(autofill_client, UpdatePopup);
 
   // As soon as the waiting state is pending, the next update resets the popup.
-  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate).WillOnce([&] {
+  EXPECT_CALL(autofill_client, PinPopupView).WillOnce([&] {
     testing::Mock::VerifyAndClear(&autofill_client);
     EXPECT_CALL(autofill_client, GetPopupSuggestions)
         .WillOnce(Return(CreateTestSuggestions(
@@ -546,7 +546,7 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
   EXPECT_CALL(autofill_client, UpdatePopup);
 
   // As soon as the waiting state is pending, the next update resets the popup.
-  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate).WillOnce([&] {
+  EXPECT_CALL(autofill_client, PinPopupView).WillOnce([&] {
     testing::Mock::VerifyAndClear(&autofill_client);
     EXPECT_CALL(autofill_client, GetPopupSuggestions)
         .WillOnce(Return(CreateTestSuggestions(
@@ -587,7 +587,7 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInAndFillTriggersOptIn) {
       .WillOnce(Return(CreateTestSuggestions(
           /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false)));
   EXPECT_CALL(autofill_client, UpdatePopup);
-  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+  EXPECT_CALL(autofill_client, PinPopupView);
 
   EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
       .WillOnce([](const auto& id, auto reauth_callback) {
@@ -618,7 +618,7 @@ TEST_F(PasswordAutofillManagerTest,
       .WillOnce(Return(CreateTestSuggestions(
           /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true)));
   EXPECT_CALL(autofill_client, UpdatePopup);
-  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+  EXPECT_CALL(autofill_client, PinPopupView);
 
   EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
       .WillOnce([](const auto& id, auto reauth_callback) {

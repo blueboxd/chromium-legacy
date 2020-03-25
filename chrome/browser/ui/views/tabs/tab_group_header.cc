@@ -90,8 +90,6 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetElideBehavior(gfx::FADE_TAIL);
 
-  VisualsChanged();
-
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   focus_ring_ = views::FocusRing::Install(this);

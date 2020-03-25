@@ -63,10 +63,8 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
   if (previous.get())
     previous->Hide(PopupHidingReason::kViewDestroyed);
 
-  AutofillPopupControllerImpl* controller =
-      new AutofillPopupControllerImpl(
-          delegate, web_contents, container_view, element_bounds,
-          text_direction);
+  AutofillPopupControllerImpl* controller = new AutofillPopupControllerImpl(
+      delegate, web_contents, container_view, element_bounds, text_direction);
   return controller->GetWeakPtr();
 }
 #endif
@@ -136,14 +134,12 @@ void AutofillPopupControllerImpl::Show(
       ->RegisterKeyPressHandler(
           base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                      base::Unretained(this)));
-  pinned_until_update_ = false;
   delegate_->OnPopupShown();
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {
-
   selected_line_.reset();
   // Remove all the old data list values, which should always be at the top of
   // the list if they are present.
@@ -160,7 +156,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
       suggestions_.erase(suggestions_.begin());
     }
 
-     // The popup contents have changed, so either update the bounds or hide it.
+    // The popup contents have changed, so either update the bounds or hide it.
     if (HasSuggestions())
       OnSuggestionsChanged();
     else
@@ -187,8 +183,8 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   OnSuggestionsChanged();
 }
 
-void AutofillPopupControllerImpl::PinViewUntilUpdate() {
-  pinned_until_update_ = true;
+void AutofillPopupControllerImpl::PinView() {
+  is_view_pinned_ = true;
 }
 
 base::span<const Suggestion>
@@ -199,9 +195,9 @@ AutofillPopupControllerImpl::GetUnelidedSuggestions() const {
 void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
   // If the reason for hiding is only stale data or a user interacting with
   // native Chrome UI (kFocusChanged/kEndEditing), the popup might be kept open.
-  if (pinned_until_update_ && (reason == PopupHidingReason::kStaleData ||
-                               reason == PopupHidingReason::kFocusChanged ||
-                               reason == PopupHidingReason::kEndEditing)) {
+  if (is_view_pinned_ && (reason == PopupHidingReason::kStaleData ||
+                          reason == PopupHidingReason::kFocusChanged ||
+                          reason == PopupHidingReason::kEndEditing)) {
     return;  // Don't close the popup while waiting for an update.
   }
   if (delegate_) {
@@ -307,7 +303,7 @@ bool AutofillPopupControllerImpl::IsRTL() const {
   return controller_common_.text_direction == base::i18n::RIGHT_TO_LEFT;
 }
 
-const std::vector<Suggestion> AutofillPopupControllerImpl::GetSuggestions() {
+std::vector<Suggestion> AutofillPopupControllerImpl::GetSuggestions() const {
   return suggestions_;
 }
 

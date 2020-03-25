@@ -602,28 +602,18 @@ void RemoteFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
   To<RemoteFrameOwner>(Owner())->SetFramePolicy(frame_policy);
 }
 
-void RemoteFrame::SetMainFrameViewportSize(
-    const IntSize& main_frame_viewport_size) {
-  DCHECK(IsMainFrame());
-  main_frame_viewport_size_ = main_frame_viewport_size;
-}
-
 IntSize RemoteFrame::GetMainFrameViewportSize() const {
-  if (!IsMainFrame())
-    return Tree().Top().GetMainFrameViewportSize();
-  return main_frame_viewport_size_;
-}
-
-void RemoteFrame::SetMainFrameScrollOffset(
-    const IntPoint& main_frame_scroll_offset) {
-  DCHECK(IsMainFrame());
-  main_frame_scroll_offset_ = main_frame_scroll_offset;
+  HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
+  DCHECK(owner);
+  DCHECK(owner->GetDocument().GetFrame());
+  return owner->GetDocument().GetFrame()->GetMainFrameViewportSize();
 }
 
 IntPoint RemoteFrame::GetMainFrameScrollOffset() const {
-  if (!IsMainFrame())
-    return Tree().Top().GetMainFrameScrollOffset();
-  return main_frame_scroll_offset_;
+  HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
+  DCHECK(owner);
+  DCHECK(owner->GetDocument().GetFrame());
+  return owner->GetDocument().GetFrame()->GetMainFrameScrollOffset();
 }
 
 bool RemoteFrame::IsIgnoredForHitTest() const {

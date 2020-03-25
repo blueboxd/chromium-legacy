@@ -23,6 +23,7 @@
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/browser_task_environment.h"
@@ -308,4 +309,16 @@ TEST_F(ManualFillingControllerTest, OnManualGenerationRequested) {
   EXPECT_CALL(mock_pwd_controller_,
               OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL));
   controller()->OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL);
+}
+
+TEST_F(ManualFillingControllerTest, OnSavePasswordsToggledTrue) {
+  EXPECT_CALL(mock_pwd_controller_,
+              OnToggleChanged(AccessoryAction::TOGGLE_SAVE_PASSWORDS, true));
+  controller()->OnToggleChanged(AccessoryAction::TOGGLE_SAVE_PASSWORDS, true);
+}
+
+TEST_F(ManualFillingControllerTest, OnSavePasswordsToggledFalse) {
+  EXPECT_CALL(mock_pwd_controller_,
+              OnToggleChanged(AccessoryAction::TOGGLE_SAVE_PASSWORDS, false));
+  controller()->OnToggleChanged(AccessoryAction::TOGGLE_SAVE_PASSWORDS, false);
 }

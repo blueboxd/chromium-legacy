@@ -38,7 +38,9 @@ js_library("personalization_page") {
     ":wallpaper_browser_proxy",
     "..:os_route",
     "../..:router",
+    "../../prefs",
     "../../settings_page:settings_animated_pages",
+    "../ambient_mode_page:ambient_mode_browser_proxy",
     "//ui/webui/resources/js:cr",
   ]
 }

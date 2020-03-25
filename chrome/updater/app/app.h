@@ -7,11 +7,23 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 
 namespace updater {
 
-// An App is a main processing mode for the updater.
+// Creates a ref-counted singleton instance of the type T. Use this function
+// to get instances of classes derived from updater::App.
+template <typename T>
+scoped_refptr<T> AppInstance() {
+  static base::NoDestructor<scoped_refptr<T>> instance{
+      base::MakeRefCounted<T>()};
+  return *instance;
+}
+
+// An App is an abstract class used as a main processing mode for the updater.
+// Instances of classes derived from App must be accessed as singletons by
+// calling the function template AppInstance<T>.
 class App : public base::RefCountedThreadSafe<App> {
  public:
   // Starts the thread pool and task executor, then runs a runloop on the main

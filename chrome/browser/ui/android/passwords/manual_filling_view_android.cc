@@ -116,6 +116,15 @@ void ManualFillingViewAndroid::OnOptionSelected(
       static_cast<autofill::AccessoryAction>(selected_action));
 }
 
+void ManualFillingViewAndroid::OnToggleChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint selected_action,
+    jboolean enabled) {
+  controller_->OnToggleChanged(
+      static_cast<autofill::AccessoryAction>(selected_action), enabled);
+}
+
 ScopedJavaLocalRef<jobject>
 ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
     JNIEnv* env,

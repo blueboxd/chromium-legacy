@@ -1302,7 +1302,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakInsideAvoid) {
      <fieldset id="fieldset">
       <legend id="legend" style="width:10px; height:50px;"></legend>
       <div style="break-inside:avoid; width:20px; height:70px;"></div>
-    </fieldsest>
+    </fieldset>
   )HTML");
 
   LayoutUnit kFragmentainerSpaceAvailable(100);
@@ -1354,7 +1354,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakInsideAvoidTallBlock) {
      <fieldset id="fieldset">
       <legend id="legend" style="width:10px; height:50px;"></legend>
       <div style="break-inside:avoid; width:20px; height:170px;"></div>
-    </fieldsest>
+    </fieldset>
   )HTML");
 
   LayoutUnit kFragmentainerSpaceAvailable(100);
@@ -1416,7 +1416,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakInsideAvoid) {
       <fieldset id="fieldset">
         <legend id="legend" style="break-inside:avoid; width:10px; height:60px;">
         </legend>
-      </fieldsest>
+      </fieldset>
     </div>
   )HTML");
 
@@ -1432,15 +1432,10 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakInsideAvoid) {
       NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(node, space);
   ASSERT_FALSE(fragment->BreakToken()->IsFinished());
 
-  // TODO(almaher): Breaking before the fieldset has higher appeal than
-  // breaking inside the legend
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x100
     offset:0,0 size:20x50
-    offset:0,50 size:100x50
-      offset:0,0 size:10x50
-      offset:0,50 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1450,9 +1445,10 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakInsideAvoid) {
 
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x10
-    offset:0,0 size:100x10
-      offset:0,0 size:10x10
+  offset:unplaced size:1000x60
+    offset:0,0 size:100x60
+      offset:0,0 size:10x60
+      offset:0,60 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -1473,7 +1469,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakBeforeAvoid) {
         <legend id="legend" style="width:10px; height:25px;"></legend>
         <div style="width:30px; height:25px;"></div>
         <div style="break-before:avoid; width:15px; height:25px;"></div>
-      </fieldsest>
+      </fieldset>
     </div>
   )HTML");
 
@@ -1527,7 +1523,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakBeforeAvoid) {
       <div style="width:20px; height:90px;"></div>
       <fieldset id="fieldset">
         <legend id="legend" style="break-before:avoid;"></legend>
-      </fieldsest>
+      </fieldset>
     </div>
   )HTML");
 
@@ -1580,7 +1576,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakAfterAvoid) {
         <legend id="legend" style="width:10px; height:25px;"></legend>
         <div style="break-after:avoid; width:30px; height:25px;"></div>
         <div style="width:15px; height:25px;"></div>
-      </fieldsest>
+      </fieldset>
     </div>
   )HTML");
 
@@ -1635,7 +1631,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakAfterAvoid) {
       <fieldset id="fieldset">
         <legend id="legend" style="break-after:avoid;"></legend>
         <div style="width:15px; height:25px;"></div>
-      </fieldsest>
+      </fieldset>
     </div>
   )HTML");
 
@@ -1690,7 +1686,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, MarginTopPastEndOfFragmentainer) {
      <fieldset id="fieldset">
       <legend id="legend" style="margin-top:60px; width:10px; height:20px;"></legend>
       <div style="width:20px; height:20px;"></div>
-    </fieldsest>
+    </fieldset>
   )HTML");
 
   LayoutUnit kFragmentainerSpaceAvailable(50);
@@ -1742,7 +1738,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, MarginBottomPastEndOfFragmentainer) {
      <fieldset id="fieldset">
       <legend id="legend" style="margin-bottom:20px; height:90px;"></legend>
       <div style="width:20px; height:20px;"></div>
-    </fieldsest>
+    </fieldset>
   )HTML");
 
   LayoutUnit kFragmentainerSpaceAvailable(100);

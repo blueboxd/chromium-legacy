@@ -158,6 +158,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void Pause();
   void Resume();
 
+  void FinishFrame(int16_t frame_index);
   bool IsSubmitFrameExpected(int16_t frame_index);
   void ProcessFrame(mojom::XRFrameDataRequestOptionsPtr options,
                     mojom::XRFrameDataPtr frame_data,
@@ -231,6 +232,9 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   bool restrict_frame_data_ = false;
 
+  base::TimeTicks arcore_update_completed_;
+  base::TimeTicks arcore_update_next_expected_;
+  base::TimeDelta arcore_update_interval_;
   FPSMeter fps_meter_;
 
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};

@@ -1,14 +1,13 @@
 <html>
 <head>
 <script>
-// This particular test page uses ASCII keys for simplicity. Real callers are
-// not expected to deal with strings and converting them via charCodeAt().
-// TODO(crbug.com/978430): Pass an actual binary (non-ASCII) key.
-function asciiToArrayBuffer(s) {
-  var buffer = new ArrayBuffer(s.length);
+function base64DecodeToArrayBuffer(encoded) {
+  // atob() decodes base64 strings into binary string.
+  var decoded = atob(encoded); 
+  var buffer = new ArrayBuffer(decoded.length);
   var view = new Uint8Array(buffer);
-  for (var i = 0; i < s.length; i++) {
-    view[i] = s.charCodeAt(i);
+  for (var i = 0; i < decoded.length; i++) {
+    view[i] = decoded.charCodeAt(i);
   }
   return buffer;
 }
@@ -19,7 +18,7 @@ window.onload = function() {
   } else {
     chrome.setSyncEncryptionKeys(() => { window.close(); },
                                  location.search.substring(1),
-                                 [asciiToArrayBuffer(location.hash.substring(1))],
+                                 [base64DecodeToArrayBuffer(location.hash.substring(1))],
                                  /*last_key_version=*/7);
   }
 }

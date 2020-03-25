@@ -62,15 +62,14 @@ class CC_EXPORT CompositorFrameReporter {
     kUnknown
   };
 
-  // These values are used for indexing the UMA histograms.
-  enum class FrameReportType {
+  enum class DroppedFrameReportType {
     kNonDroppedFrame = 0,
-    kMissedDeadlineFrame = 1,
-    kDroppedFrame = 2,
-    kMaxValue = kDroppedFrame
+    kDroppedFrame = 1,
+    kDroppedFrameReportTypeCount
   };
 
-  // These values are used for indexing the UMA histograms.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class StageType {
     kBeginImplFrameToSendBeginMainFrame = 0,
     kSendBeginMainFrameToCommit = 1,
@@ -122,7 +121,6 @@ class CC_EXPORT CompositorFrameReporter {
   CompositorFrameReporter(
       const base::flat_set<FrameSequenceTrackerType>* active_trackers,
       const viz::BeginFrameId& id,
-      const base::TimeTicks frame_deadline,
       LatencyUkmReporter* latency_ukm_reporter,
       bool is_single_threaded = false);
   ~CompositorFrameReporter();
@@ -155,13 +153,10 @@ class CC_EXPORT CompositorFrameReporter {
 
  private:
   void DroppedFrame();
-  void MissedDeadlineFrame();
 
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
   void ReportCompositorLatencyHistograms() const;
-  void ReportLatencyHistograms(bool report_event_latency = false,
-                               bool report_delayed_latency = false);
   void ReportStageHistogramWithBreakdown(
       const StageData& stage,
       FrameSequenceTrackerType frame_sequence_tracker_type =
@@ -210,7 +205,8 @@ class CC_EXPORT CompositorFrameReporter {
   std::vector<EventMetrics> events_metrics_;
 
   const bool is_single_threaded_;
-  FrameReportType report_type_ = FrameReportType::kNonDroppedFrame;
+  DroppedFrameReportType report_type_ =
+      DroppedFrameReportType::kNonDroppedFrame;
   base::TimeTicks frame_termination_time_;
   base::TimeTicks begin_main_frame_start_;
   FrameTerminationStatus frame_termination_status_ =
@@ -227,7 +223,6 @@ class CC_EXPORT CompositorFrameReporter {
   // The time that work on Impl frame is finished. It's only valid if the
   // reporter is in a stage other than begin impl frame.
   base::TimeTicks impl_frame_finish_time_;
-  base::TimeTicks frame_deadline_;
 };
 }  // namespace cc
 

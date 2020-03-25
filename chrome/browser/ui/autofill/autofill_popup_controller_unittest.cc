@@ -43,13 +43,13 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::WeakPtr;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
-using base::ASCIIToUTF16;
-using base::WeakPtr;
 
 namespace autofill {
 namespace {
@@ -146,8 +146,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
                                     nullptr,
                                     nullptr,
                                     element_bounds,
-                                    base::i18n::UNKNOWN_DIRECTION) {
-  }
+                                    base::i18n::UNKNOWN_DIRECTION) {}
   ~TestAutofillPopupController() override = default;
 
   // Making protected functions public for testing
@@ -271,9 +270,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     return autofill_popup_controller_;
   }
 
-  MockAutofillExternalDelegate* delegate() {
-    return external_delegate_.get();
-  }
+  MockAutofillExternalDelegate* delegate() { return external_delegate_.get(); }
 
   MockAutofillPopupView* autofill_popup_view() {
     return autofill_popup_view_.get();
@@ -336,8 +333,7 @@ TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
   EXPECT_FALSE(autofill_popup_controller_->selected_line());
   // Check that there are at least 2 values so that the first and last selection
   // are different.
-  EXPECT_GE(2,
-      static_cast<int>(autofill_popup_controller_->GetLineCount()));
+  EXPECT_GE(2, static_cast<int>(autofill_popup_controller_->GetLineCount()));
 
   // Test wrapping before the front.
   autofill_popup_controller_->SelectPreviousLine();
@@ -638,10 +634,8 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
       AutofillPopupControllerImpl::GetOrCreate(
           test_controller->GetWeakPtr(), delegate.GetWeakPtr(), nullptr,
           nullptr, bounds, base::i18n::UNKNOWN_DIRECTION);
-  EXPECT_EQ(
-      bounds,
-      static_cast<AutofillPopupController*>(controller3.get())->
-          element_bounds());
+  EXPECT_EQ(bounds, static_cast<AutofillPopupController*>(controller3.get())
+                        ->element_bounds());
   controller3->Hide(PopupHidingReason::kViewDestroyed);
 
   // Hide the test_controller to delete it.
@@ -697,7 +691,7 @@ TEST_F(AutofillPopupControllerUnitTest, HidingClearsPreview) {
 
 TEST_F(AutofillPopupControllerUnitTest, DontHideWhenWaitingForData) {
   EXPECT_CALL(*autofill_popup_view(), Hide).Times(0);
-  autofill_popup_controller_->PinViewUntilUpdate();
+  autofill_popup_controller_->PinView();
 
   // Hide() will not work for stale data or when focusing native UI.
   autofill_popup_controller_->DoHide(PopupHidingReason::kStaleData);

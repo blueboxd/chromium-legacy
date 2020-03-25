@@ -514,6 +514,7 @@ source_set("unit_tests") {
     "android_affiliation/facet_manager_unittest.cc",
     "browser_save_password_progress_logger_unittest.cc",
     "bulk_leak_check_service_unittest.cc",
+    "compromised_credentials_observer_unittest.cc",
     "compromised_credentials_table_unittest.cc",
     "credential_cache_unittest.cc",
     "credential_manager_impl_unittest.cc",

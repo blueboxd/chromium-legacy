@@ -345,4 +345,23 @@ bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
   return false;
 }
 
+void DisplayLockUtilities::ElementLostFocus(Element* element) {
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+    return;
+  for (; element; element = FlatTreeTraversal::ParentElement(*element)) {
+    auto* context = element->GetDisplayLockContext();
+    if (context)
+      context->NotifySubtreeLostFocus();
+  }
+}
+void DisplayLockUtilities::ElementGainedFocus(Element* element) {
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+    return;
+  for (; element; element = FlatTreeTraversal::ParentElement(*element)) {
+    auto* context = element->GetDisplayLockContext();
+    if (context)
+      context->NotifySubtreeGainedFocus();
+  }
+}
+
 }  // namespace blink

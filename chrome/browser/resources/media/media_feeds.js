@@ -32,7 +32,68 @@ function createRow(rowInfo) {
 
   td[0].textContent = rowInfo.id;
   td[1].textContent = rowInfo.url.url;
-  td[2].textContent = convertMojoTimeToJS(rowInfo.lastDiscoveryTime).toString();
+  td[2].textContent = rowInfo.displayName;
+  td[3].textContent = convertMojoTimeToJS(rowInfo.lastDiscoveryTime).toString();
+
+  if (rowInfo.lastFetchTime != null) {
+    td[4].textContent = convertMojoTimeToJS(rowInfo.lastFetchTime).toString();
+  }
+
+  if (rowInfo.userStatus == mediaFeeds.mojom.FeedUserStatus.kAuto) {
+    td[5].textContent = 'Auto';
+  } else if (rowInfo.userStatus == mediaFeeds.mojom.FeedUserStatus.kDisabled) {
+    td[5].textContent = 'Disabled';
+  }
+
+  if (rowInfo.lastFetchResult == mediaFeeds.mojom.FetchResult.kNone) {
+    td[6].textContent = 'None';
+  } else if (rowInfo.lastFetchResult == mediaFeeds.mojom.FetchResult.kSuccess) {
+    td[6].textContent = 'Success';
+  } else if (
+      rowInfo.lastFetchResult ==
+      mediaFeeds.mojom.FetchResult.kFailedBackendError) {
+    td[6].textContent = 'Failed (Backend Error)';
+  } else if (
+      rowInfo.lastFetchResult ==
+      mediaFeeds.mojom.FetchResult.kFailedNetworkError) {
+    td[6].textContent = 'Failed (Network Error)';
+  }
+
+  td[7].textContent = rowInfo.fetchFailedCount;
+
+  if (rowInfo.cacheExpiryTime != null) {
+    td[8].textContent = convertMojoTimeToJS(rowInfo.cacheExpiryTime).toString();
+  }
+
+  td[9].textContent = rowInfo.lastFetchItemCount;
+  td[10].textContent = rowInfo.lastFetchPlayNextCount;
+
+  const contentTypes = [];
+  if (rowInfo.lastFetchContentTypes &
+      mediaFeeds.mojom.MediaFeedItemType.kVideo) {
+    contentTypes.push('Video');
+  } else if (
+      rowInfo.lastFetchContentTypes &
+      mediaFeeds.mojom.MediaFeedItemType.kTVSeries) {
+    contentTypes.push('TV Series');
+  } else if (
+      rowInfo.lastFetchContentTypes &
+      mediaFeeds.mojom.MediaFeedItemType.kMovie) {
+    contentTypes.push('Movie');
+  }
+
+  td[11].textContent =
+      contentTypes.length === 0 ? 'None' : contentTypes.join(',');
+
+  // Format an array of mojo media images.
+  rowInfo.logos.forEach((image) => {
+    const a = document.createElement('a');
+    a.href = image.src.url;
+    a.textContent = image.src.url;
+    a.target = '_blank';
+    td[12].appendChild(a);
+    td[12].appendChild(document.createElement('br'));
+  });
 
   return document.importNode(template.content, true);
 }
@@ -89,6 +150,22 @@ function compareTableItem(sortKey, a, b) {
   } else if (sortKey == 'lastDiscoveryTime') {
     return (
         a.lastDiscoveryTime.internalValue > b.lastDiscoveryTime.internalValue);
+  } else if (sortKey == 'displayName') {
+    return a.displayName > b.displayName;
+  } else if (sortKey == 'userStatus') {
+    return a.userStatus > b.userStatus;
+  } else if (sortKey == 'lastFetchResult') {
+    return a.lastFetchResult > b.lastFetchResult;
+  } else if (sortKey == 'fetchFailedCount') {
+    return a.fetchFailedCount > b.fetchFailedCount;
+  } else if (sortKey == 'cacheExpiryTime') {
+    return a.cacheExpiryTime > b.cacheExpiryTime;
+  } else if (sortKey == 'lastFetchItemCount') {
+    return a.lastFetchItemCount > b.lastFetchItemCount;
+  } else if (sortKey == 'lastFetchPlayNextCount') {
+    return a.lastFetchPlayNextCount > b.lastFetchPlayNextCount;
+  } else if (sortKey == 'lastFetchContentTypes') {
+    return a.lastFetchContentTypes > b.lastFetchContentTypes;
   }
 
   assertNotReached('Unsupported sort key: ' + sortKey);

@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
@@ -383,6 +384,11 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       web_ui()->AddMessageHandler(
           std::make_unique<chromeos::settings::ParentalControlsHandler>(
               profile));
+    }
+
+    if (chromeos::features::IsAmbientModeEnabled()) {
+      web_ui()->AddMessageHandler(
+          std::make_unique<chromeos::settings::AmbientModeHandler>());
     }
   }
 

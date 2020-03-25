@@ -5,3 +5,9 @@ include_rules = [
   "+services/network/test",
   "+ui/gfx/native_widget_types.h",
 ]
+
+specific_include_rules = {
+  "NfcBlocklist\.java": [
+    "+components/variations/android/java",
+  ],
+}

@@ -10,39 +10,27 @@
 #include "components/viz/common/frame_timing_details.h"
 
 namespace cc {
-base::TimeDelta INTERVAL = base::TimeDelta::FromMilliseconds(16);
-
 FakeCompositorFrameReportingController::FakeCompositorFrameReportingController(
     bool is_single_threaded)
     : CompositorFrameReportingController(is_single_threaded) {}
 
 void FakeCompositorFrameReportingController::WillBeginMainFrame(
-    const viz::BeginFrameArgs& args) {
+    const viz::BeginFrameId& id) {
   if (!reporters_[PipelineStage::kBeginImplFrame])
-    CompositorFrameReportingController::WillBeginImplFrame(args);
-  CompositorFrameReportingController::WillBeginMainFrame(args);
+    CompositorFrameReportingController::WillBeginImplFrame(id);
+  CompositorFrameReportingController::WillBeginMainFrame(id);
 }
 
 void FakeCompositorFrameReportingController::BeginMainFrameAborted(
     const viz::BeginFrameId& id) {
-  if (!reporters_[PipelineStage::kBeginMainFrame]) {
-    viz::BeginFrameArgs args = viz::BeginFrameArgs();
-    args.frame_id = id;
-    args.frame_time = Now();
-    args.interval = INTERVAL;
-    WillBeginMainFrame(args);
-  }
+  if (!reporters_[PipelineStage::kBeginMainFrame])
+    WillBeginMainFrame(id);
   CompositorFrameReportingController::BeginMainFrameAborted(id);
 }
 
 void FakeCompositorFrameReportingController::WillCommit() {
-  if (!reporters_[PipelineStage::kBeginMainFrame]) {
-    viz::BeginFrameArgs args = viz::BeginFrameArgs();
-    args.frame_id = viz::BeginFrameId();
-    args.frame_time = Now();
-    args.interval = INTERVAL;
-    WillBeginMainFrame(args);
-  }
+  if (!reporters_[PipelineStage::kBeginMainFrame])
+    WillBeginMainFrame(viz::BeginFrameId());
   CompositorFrameReportingController::WillCommit();
 }
 

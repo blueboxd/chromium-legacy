@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds.pb.h"
+#include "chrome/browser/media/feeds/media_feeds_utils.h"
 #include "chrome/browser/media/history/media_history_store.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
@@ -15,28 +16,8 @@ namespace media_history {
 
 namespace {
 
-void BindProto(sql::Statement& s,
-               int col,
-               const google::protobuf::MessageLite& protobuf) {
-  std::string out;
-  CHECK(protobuf.SerializeToString(&out));
-  s.BindBlob(col, out.data(), out.size());
-}
-
-bool GetProto(sql::Statement& statement,
-              int col,
-              google::protobuf::MessageLite& protobuf,
-              MediaHistoryFeedItemsTable::FeedItemReadResult result) {
-  std::string value;
-  statement.ColumnBlobAsString(col, &value);
-
-  if (protobuf.ParseFromString(value))
-    return true;
-
-  base::UmaHistogramEnumeration(
-      MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName, result);
-  return false;
-}
+// The maximum number of images to allow.
+const int kMaxImageCount = 5;
 
 media_feeds::InteractionCounter_Type Convert(
     const media_feeds::mojom::InteractionCounterType& type) {
@@ -168,6 +149,7 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
       "identifiers BLOB, "
       "shown_count INTEGER,"
       "clicked INTEGER, "
+      "images BLOB, "
       "CONSTRAINT fk_feed "
       "FOREIGN KEY (feed_id) "
       "REFERENCES mediaFeed(id) "
@@ -203,8 +185,8 @@ bool MediaHistoryFeedItemsTable::SaveItem(
       "action_status, genre, duration_s, is_live, live_start_time_s, "
       "live_end_time_s, shown_count, clicked, author, action, "
       "interaction_counters, content_rating, identifiers, tv_episode, "
-      "play_next_candidate) VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      "play_next_candidate, images) VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
   statement.BindInt64(0, feed_id);
   statement.BindInt64(1, static_cast<int>(item->type));
@@ -340,6 +322,13 @@ bool MediaHistoryFeedItemsTable::SaveItem(
     statement.BindNull(19);
   }
 
+  if (!item->images.empty()) {
+    BindProto(statement, 20,
+              media_feeds::MediaImagesToProto(item->images, kMaxImageCount));
+  } else {
+    statement.BindNull(20);
+  }
+
   return statement.Run();
 }
 
@@ -366,7 +355,7 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
       "action_status, genre, duration_s, is_live, live_start_time_s, "
       "live_end_time_s, shown_count, clicked, author, action, "
       "interaction_counters, content_rating, identifiers, tv_episode, "
-      "play_next_candidate FROM "
+      "play_next_candidate, images FROM "
       "mediaFeedItem WHERE feed_id = ?"));
 
   statement.BindInt64(0, feed_id);
@@ -396,8 +385,13 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
     if (statement.GetColumnType(12) == sql::ColumnType::kBlob) {
       media_feeds::Author author;
-      if (!GetProto(statement, 12, author, FeedItemReadResult::kBadAuthor))
+      if (!GetProto(statement, 12, author)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadAuthor);
+
         continue;
+      }
 
       item->author = media_feeds::mojom::Author::New();
       item->author->name = author.name();
@@ -406,16 +400,24 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
     if (statement.GetColumnType(13) == sql::ColumnType::kBlob) {
       media_feeds::Action action;
-      if (!GetProto(statement, 13, action, FeedItemReadResult::kBadAction))
+      if (!GetProto(statement, 13, action)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadAction);
+
         continue;
+      }
 
       item->action = Convert(action);
     }
 
     if (statement.GetColumnType(14) == sql::ColumnType::kBlob) {
       media_feeds::InteractionCounterSet counters;
-      if (!GetProto(statement, 14, counters,
-                    FeedItemReadResult::kBadInteractionCounters)) {
+      if (!GetProto(statement, 14, counters)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadInteractionCounters);
+
         continue;
       }
 
@@ -427,8 +429,11 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
     if (statement.GetColumnType(15) == sql::ColumnType::kBlob) {
       media_feeds::ContentRatingSet ratings;
-      if (!GetProto(statement, 15, ratings,
-                    FeedItemReadResult::kBadContentRatings)) {
+      if (!GetProto(statement, 15, ratings)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadContentRatings);
+
         continue;
       }
 
@@ -442,8 +447,11 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
     if (statement.GetColumnType(16) == sql::ColumnType::kBlob) {
       media_feeds::IdentifierSet identifiers;
-      if (!GetProto(statement, 16, identifiers,
-                    FeedItemReadResult::kBadIdentifiers)) {
+      if (!GetProto(statement, 16, identifiers)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadIdentifiers);
+
         continue;
       }
 
@@ -453,8 +461,11 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
     if (statement.GetColumnType(17) == sql::ColumnType::kBlob) {
       media_feeds::TVEpisode tv_episode;
-      if (!GetProto(statement, 17, tv_episode,
-                    FeedItemReadResult::kBadTVEpisode)) {
+      if (!GetProto(statement, 17, tv_episode)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadTVEpisode);
+
         continue;
       }
 
@@ -469,8 +480,11 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
     if (statement.GetColumnType(18) == sql::ColumnType::kBlob) {
       media_feeds::PlayNextCandidate play_next_candidate;
-      if (!GetProto(statement, 18, play_next_candidate,
-                    FeedItemReadResult::kBadPlayNextCandidate)) {
+      if (!GetProto(statement, 18, play_next_candidate)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadPlayNextCandidate);
+
         continue;
       }
 
@@ -486,6 +500,19 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
       for (auto& identifier : play_next_candidate.identifier())
         item->play_next_candidate->identifiers.push_back(Convert(identifier));
+    }
+
+    if (statement.GetColumnType(19) == sql::ColumnType::kBlob) {
+      media_feeds::ImageSet image_set;
+      if (!GetProto(statement, 19, image_set)) {
+        base::UmaHistogramEnumeration(
+            MediaHistoryFeedItemsTable::kFeedItemReadResultHistogramName,
+            FeedItemReadResult::kBadImages);
+
+        continue;
+      }
+
+      item->images = media_feeds::ProtoToMediaImages(image_set, kMaxImageCount);
     }
 
     base::UmaHistogramEnumeration(kFeedItemReadResultHistogramName,

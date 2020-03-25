@@ -274,9 +274,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // Called when the focus controller changes the focus to this frame.
   virtual void DidFocus() = 0;
 
-  virtual void SetMainFrameViewportSize(const IntSize&) {}
   virtual IntSize GetMainFrameViewportSize() const = 0;
-  virtual void SetMainFrameScrollOffset(const IntPoint&) {}
   virtual IntPoint GetMainFrameScrollOffset() const = 0;
 
  protected:

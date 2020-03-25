@@ -26,8 +26,6 @@
 
 namespace blink {
 
-namespace {
-
 float CalculateTextAnchorShift(const ComputedStyle& style, float length) {
   bool is_ltr = style.IsLeftToRightDirection();
   switch (style.SvgStyle().TextAnchor()) {
@@ -42,6 +40,8 @@ float CalculateTextAnchorShift(const ComputedStyle& style, float length) {
       return is_ltr ? -length : 0;
   }
 }
+
+namespace {
 
 bool NeedsTextAnchorAdjustment(const ComputedStyle& style) {
   bool is_ltr = style.IsLeftToRightDirection();
@@ -143,10 +143,7 @@ void SVGTextChunkBuilder::ProcessTextChunks(
 }
 
 SVGTextPathChunkBuilder::SVGTextPathChunkBuilder()
-    : SVGTextChunkBuilder(),
-      total_length_(0),
-      total_characters_(0),
-      total_text_anchor_shift_(0) {}
+    : SVGTextChunkBuilder(), total_length_(0), total_characters_(0) {}
 
 void SVGTextPathChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
                                               BoxListConstIterator box_end) {
@@ -154,10 +151,6 @@ void SVGTextPathChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
 
   ChunkLengthAccumulator length_accumulator(!style.IsHorizontalWritingMode());
   length_accumulator.ProcessRange(box_start, box_end);
-
-  // Handle text-anchor as additional start offset for text paths.
-  total_text_anchor_shift_ +=
-      CalculateTextAnchorShift(style, length_accumulator.length());
 
   total_length_ += length_accumulator.length();
   total_characters_ += length_accumulator.NumCharacters();

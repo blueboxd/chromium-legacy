@@ -23,6 +23,7 @@ class MockCreditCardAccessoryController
 
   MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
   MOCK_METHOD1(OnOptionSelected, void(autofill::AccessoryAction));
+  MOCK_METHOD2(OnToggleChanged, void(autofill::AccessoryAction, bool));
   MOCK_METHOD0(RefreshSuggestions, void());
   MOCK_METHOD0(OnPersonalDataChanged, void());
   MOCK_METHOD3(OnCreditCardFetched,

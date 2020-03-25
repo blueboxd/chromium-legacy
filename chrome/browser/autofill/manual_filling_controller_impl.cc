@@ -177,6 +177,15 @@ void ManualFillingControllerImpl::OnOptionSelected(
   controller->OnOptionSelected(selected_action);
 }
 
+void ManualFillingControllerImpl::OnToggleChanged(
+    AccessoryAction toggled_action,
+    bool enabled) const {
+  AccessoryController* controller = GetControllerForAction(toggled_action);
+  if (!controller)
+    return;  // Controller not available anymore.
+  controller->OnToggleChanged(toggled_action, enabled);
+}
+
 gfx::NativeView ManualFillingControllerImpl::container_view() const {
   return web_contents_->GetNativeView();
 }
@@ -289,12 +298,12 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
     case AccessoryAction::GENERATE_PASSWORD_MANUAL:
     case AccessoryAction::MANAGE_PASSWORDS:
     case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
+    case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
       return GetPasswordController();
     case AccessoryAction::MANAGE_ADDRESSES:
       return address_controller_.get();
     case AccessoryAction::MANAGE_CREDIT_CARDS:
       return cc_controller_.get();
-    case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
     case AccessoryAction::AUTOFILL_SUGGESTION:
     case AccessoryAction::COUNT:
       break;  // Intentional failure;

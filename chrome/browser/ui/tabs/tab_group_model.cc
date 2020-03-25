@@ -58,7 +58,7 @@ std::vector<tab_groups::TabGroupId> TabGroupModel::ListTabGroups() const {
 tab_groups::TabGroupColorId TabGroupModel::GetNextColor() const {
   // Count the number of times each available color is used.
   std::map<tab_groups::TabGroupColorId, int> color_usage_counts;
-  for (const auto& id_color_pair : tab_groups::GetTabGroupColorSet())
+  for (const auto& id_color_pair : tab_groups::GetTabGroupColorLabelMap())
     color_usage_counts[id_color_pair.first] = 0;
   for (const auto& id_group_pair : groups_)
     color_usage_counts[id_group_pair.second->visual_data()->color()]++;

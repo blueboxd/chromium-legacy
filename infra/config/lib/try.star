@@ -182,7 +182,12 @@ def chromium_mac_ios_builder(
     name,
     executable='recipe:ios/try',
     goma_backend=builders.goma.backend.RBE_PROD,
+    properties=None,
     **kwargs):
+  if not properties:
+    properties = {
+      'xcode_build_version': '11c29',
+    }
   return try_builder(
       name = name,
       caches = [builders.xcode_cache.x11c29],
@@ -191,6 +196,7 @@ def chromium_mac_ios_builder(
       goma_backend = goma_backend,
       mastername = 'tryserver.chromium.mac',
       os = builders.os.MAC_ANY,
+      properties = properties,
       **kwargs
   )
 

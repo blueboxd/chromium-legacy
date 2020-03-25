@@ -633,7 +633,7 @@ void CompositorTimingHistory::WillBeginImplFrame(
   viz::BeginFrameArgs::BeginFrameArgsType frame_type = args.type;
   base::TimeTicks frame_time = args.frame_time;
 
-  compositor_frame_reporting_controller_->WillBeginImplFrame(args);
+  compositor_frame_reporting_controller_->WillBeginImplFrame(args.frame_id);
 
   // The check for whether a BeginMainFrame was sent anytime between two
   // BeginImplFrames protects us from not detecting a fast main thread that
@@ -668,7 +668,7 @@ void CompositorTimingHistory::WillBeginMainFrame(
     const viz::BeginFrameArgs& args) {
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_sent_time_);
 
-  compositor_frame_reporting_controller_->WillBeginMainFrame(args);
+  compositor_frame_reporting_controller_->WillBeginMainFrame(args.frame_id);
 
   begin_main_frame_on_critical_path_ = args.on_critical_path;
   begin_main_frame_sent_time_ = Now();

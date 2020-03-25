@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: 1d75af9bf5918fa1c365a4ac696f038e6028a30b
+Revision: 311a5a2fdd5b6be8cee01b66991933397094204f
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -37,4 +37,3 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 Local Modifications:
  - codereview.settings has been excluded.
  - elf_image_reader_fuzzer is enabled only when use_fuzzing_engine is true.
- - cherry-pick upstream 296501351816

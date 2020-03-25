@@ -986,14 +986,6 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
     ActivateFieldTrialEntryWhileLocked(field_trial);
   }
 
-  // Recording for stability debugging has to be done inline as a task posted
-  // to an observer may not get executed before a crash.
-  debug::GlobalActivityTracker* tracker = debug::GlobalActivityTracker::Get();
-  if (tracker) {
-    tracker->RecordFieldTrial(field_trial->trial_name(),
-                              field_trial->group_name_internal());
-  }
-
   if (global_->synchronous_observer_) {
     global_->synchronous_observer_->OnFieldTrialGroupFinalized(
         field_trial->trial_name(), field_trial->group_name_internal());

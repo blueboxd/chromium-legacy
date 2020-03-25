@@ -11737,7 +11737,7 @@
       },
       'example_value': 1,
       'id': 674,
-      'caption': '''Determine the availability of variations on ChromeOS''',
+      'caption': '''Determine the availability of variations on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>''',
       'tags': [],
       'desc': '''Configuring this policy allows to specify which variations are allowed to be applied on an enterprise-managed <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device.
 

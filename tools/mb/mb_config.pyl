@@ -468,7 +468,7 @@
     'chromium.mac': {
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
-      'ios-device': 'ios_error',
+      'ios-device': 'ios_release_device_compile_only',
       'ios-simulator': 'ios_error',
       'ios-simulator-cronet': 'ios_error',
       'ios-simulator-full-configs': 'ios_error',
@@ -882,7 +882,7 @@
       'gpu-fyi-try-mac-nvidia-retina-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-try-mac-amd-retina-dbg': 'gpu_tests_debug_bot',
       'gpu-try-mac-intel-dbg': 'gpu_tests_debug_bot',
-      'ios-device': 'ios_error',
+      'ios-device': 'ios_release_device_compile_only',
       'ios-simulator': 'ios_error',
       'ios-simulator-full-configs': 'ios_error',
       'ios-simulator-cronet': 'ios_error',
@@ -1830,6 +1830,10 @@
         'ios_simulator', 'debug_static_bot',
     ],
 
+    'ios_release_device_compile_only': [
+        'ios_device', 'release_bot', 'ios_disable_code_signing', 'compile_only', 'ios_use_goma_rbe'
+    ],
+
     'libfuzzer_asan_debug_bot': [
       'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
     ],
@@ -2463,7 +2467,7 @@
     },
 
     'ios_simulator': {
-      'mixins': ['ios', 'ios_use_goma_rbe' ],
+      'mixins': ['ios', 'ios_use_goma_rbe'],
       'gn_args': 'target_cpu="x64"',
     },
 

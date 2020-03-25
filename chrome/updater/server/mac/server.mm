@@ -8,7 +8,6 @@
 #include <xpc/xpc.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -57,8 +56,8 @@ void AppServer::FirstTaskRun() {
   }
 }
 
-scoped_refptr<App> MakeAppServer() {
-  return base::MakeRefCounted<AppServer>();
+scoped_refptr<App> AppServerInstance() {
+  return AppInstance<AppServer>();
 }
 
 }  // namespace updater

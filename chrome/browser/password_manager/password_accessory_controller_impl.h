@@ -41,6 +41,8 @@ class PasswordAccessoryControllerImpl
   // AccessoryController:
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(autofill::AccessoryAction selected_action) override;
+  void OnToggleChanged(autofill::AccessoryAction toggled_action,
+                       bool enabled) override;
 
   // PasswordAccessoryController:
   void RefreshSuggestionsForField(

@@ -501,9 +501,9 @@ base::span<const Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
   return popup_controller_->GetUnelidedSuggestions();
 }
 
-void ChromeAutofillClient::PinPopupViewUntilUpdate() {
+void ChromeAutofillClient::PinPopupView() {
   if (popup_controller_.get())
-    popup_controller_->PinViewUntilUpdate();
+    popup_controller_->PinView();
 }
 
 void ChromeAutofillClient::UpdatePopup(

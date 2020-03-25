@@ -18,6 +18,7 @@
 #include <limits>
 #include <string>
 
+#include "base/debug/alias.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
@@ -38,6 +39,7 @@
 #include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
 
 namespace base {
@@ -408,9 +410,18 @@ bool ReplaceFile(const FilePath& from_path,
     return true;
   File::Error move_error = File::OSErrorToFileError(GetLastError());
 
+  // Alias paths for investigation of shutdown hangs. crbug.com/1054164
+  FilePath::CharType from_path_str[MAX_PATH];
+  base::wcslcpy(from_path_str, from_path.value().c_str(),
+                base::size(from_path_str));
+  base::debug::Alias(from_path_str);
+  FilePath::CharType to_path_str[MAX_PATH];
+  base::wcslcpy(to_path_str, to_path.value().c_str(), base::size(to_path_str));
+  base::debug::Alias(to_path_str);
+
   // Try the full-blown replace if the move fails, as ReplaceFile will only
-  // succeed when |to_path| does exist. When writing to a network share, we may
-  // not be able to change the ACLs. Ignore ACL errors then
+  // succeed when |to_path| does exist. When writing to a network share, we
+  // may not be able to change the ACLs. Ignore ACL errors then
   // (REPLACEFILE_IGNORE_MERGE_ERRORS).
   if (::ReplaceFile(to_path.value().c_str(), from_path.value().c_str(), NULL,
                     REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {

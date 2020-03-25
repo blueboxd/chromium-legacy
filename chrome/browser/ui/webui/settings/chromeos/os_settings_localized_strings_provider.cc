@@ -423,6 +423,17 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
 
 void AddPersonalizationStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"ambientModeTitle", IDS_OS_SETTINGS_AMBIENT_MODE_TITLE},
+      {"ambientModeEnabled", IDS_OS_SETTINGS_AMBIENT_MODE_ENABLED},
+      {"ambientModeDisabled", IDS_OS_SETTINGS_AMBIENT_MODE_DISABLED},
+      {"ambientModeOn", IDS_OS_SETTINGS_AMBIENT_MODE_ON},
+      {"ambientModeOff", IDS_OS_SETTINGS_AMBIENT_MODE_OFF},
+      {"ambientModeTopicSourceTitle",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_TITLE},
+      {"ambientModeTopicSourceGooglePhotos",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS},
+      {"ambientModeTopicSourceArtGallery",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY},
       {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
       {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
       {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
@@ -451,6 +462,8 @@ void AddPersonalizationStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(::features::kChangePictureVideoMode));
+  html_source->AddBoolean("isAmbientModeEnabled",
+                          chromeos::features::IsAmbientModeEnabled());
 }
 
 void AddFingerprintListStrings(content::WebUIDataSource* html_source) {

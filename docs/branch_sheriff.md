@@ -94,8 +94,8 @@ simply send a CL changing schedule at the bottom of the file.
 [chromiumdash-branches]: https://chromiumdash.appspot.com/branches
 [chromiumdash-releases]: https://chromiumdash.appspot.com/releases
 [chromiumdash-schedule]: https://chromiumdash.appspot.com/schedule
-[main-beta]: https://ci.chromium.org/p/chromium/g/main-beta/console
-[main-stable]: https://ci.chromium.org/p/chromium/g/main-stable/console
+[main-beta]: https://ci.chromium.org/p/chromium/g/main-m81/console
+[main-stable]: https://ci.chromium.org/p/chromium/g/main-m80/console
 [milestone-json]: https://goto.google.com/chrome-milestone-json
 [rotation-home]: https://goto.google.com/chrome-branch-sheriff-amer-west
 [rotation-config]: https://goto.google.com/chrome-branch-sheriff-amer-west-config

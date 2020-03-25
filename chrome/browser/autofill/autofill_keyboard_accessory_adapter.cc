@@ -197,11 +197,11 @@ bool AutofillKeyboardAccessoryAdapter::IsRTL() const {
   return controller_ && controller_->IsRTL();
 }
 
-const std::vector<autofill::Suggestion>
-AutofillKeyboardAccessoryAdapter::GetSuggestions() {
+std::vector<Suggestion> AutofillKeyboardAccessoryAdapter::GetSuggestions()
+    const {
   if (!controller_)
-    return std::vector<autofill::Suggestion>();
-  std::vector<autofill::Suggestion> suggestions = controller_->GetSuggestions();
+    return std::vector<Suggestion>();
+  std::vector<Suggestion> suggestions = controller_->GetSuggestions();
   if (front_element_.has_value()) {
     std::rotate(suggestions.begin(),
                 suggestions.begin() + front_element_.value(),

@@ -10,42 +10,27 @@
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/utils/SkRandom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_palette.h"
 
 namespace tab_groups {
 
-const base::flat_map<TabGroupColorId, TabGroupColor>& GetTabGroupColorSet() {
-  static const base::NoDestructor<
-      base::flat_map<TabGroupColorId, TabGroupColor>>
-      kTabGroupColors(
-          {{TabGroupColorId::kGrey,
-            TabGroupColor{gfx::kGoogleGrey700, gfx::kGoogleGrey400,
-                          l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_GREY)}},
-           {TabGroupColorId::kBlue,
-            TabGroupColor{gfx::kGoogleBlue600, gfx::kGoogleBlue300,
-                          l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_BLUE)}},
-           {TabGroupColorId::kRed,
-            TabGroupColor{gfx::kGoogleRed600, gfx::kGoogleRed300,
-                          l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_RED)}},
-           {TabGroupColorId::kYellow,
-            TabGroupColor{
-                gfx::kGoogleYellow900, gfx::kGoogleYellow300,
-                l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_YELLOW)}},
-           {TabGroupColorId::kGreen,
-            TabGroupColor{
-                gfx::kGoogleGreen600, gfx::kGoogleGreen300,
-                l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_GREEN)}},
-           {TabGroupColorId::kPink,
-            TabGroupColor{gfx::kGooglePink700, gfx::kGooglePink300,
-                          l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_PINK)}},
-           {TabGroupColorId::kPurple,
-            TabGroupColor{
-                gfx::kGooglePurple600, gfx::kGooglePurple200,
-                l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_PURPLE)}},
-           {TabGroupColorId::kCyan,
-            TabGroupColor{
-                gfx::kGoogleCyan900, gfx::kGoogleCyan300,
-                l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_CYAN)}}});
+const ColorLabelMap& GetTabGroupColorLabelMap() {
+  static const base::NoDestructor<ColorLabelMap> kTabGroupColors(
+      {{TabGroupColorId::kGrey,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_GREY)},
+       {TabGroupColorId::kBlue,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_BLUE)},
+       {TabGroupColorId::kRed,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_RED)},
+       {TabGroupColorId::kYellow,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_YELLOW)},
+       {TabGroupColorId::kGreen,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_GREEN)},
+       {TabGroupColorId::kPink,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_PINK)},
+       {TabGroupColorId::kPurple,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_PURPLE)},
+       {TabGroupColorId::kCyan,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_COLOR_CYAN)}});
   return *kTabGroupColors;
 }
 

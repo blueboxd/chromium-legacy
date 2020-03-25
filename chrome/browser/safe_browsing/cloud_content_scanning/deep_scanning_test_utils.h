@@ -15,6 +15,10 @@ namespace base {
 class Value;
 }
 
+namespace policy {
+class MockCloudPolicyClient;
+}
+
 namespace safe_browsing {
 
 // Helper class that represents a report that's expected from a test. The
@@ -24,8 +28,10 @@ namespace safe_browsing {
 // return different mimetype strings for the same file.
 class EventReportValidator {
  public:
-  static void DangerousDeepScanningResult(
-      base::Value* report,
+  explicit EventReportValidator(policy::MockCloudPolicyClient* client);
+  ~EventReportValidator();
+
+  void ExpectDangerousDeepScanningResult(
       const std::string& expected_url,
       const std::string& expected_filename,
       const std::string& expected_sha256,
@@ -33,28 +39,35 @@ class EventReportValidator {
       const std::string& expected_trigger,
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size);
-  static void SensitiveDataEvent(
-      base::Value* report,
-      const DlpDeepScanningVerdict& expected_dlp_verdict,
-      const std::string& expected_url,
-      const std::string& expected_filename,
-      const std::string& expected_trigger,
-      const std::set<std::string>* expected_mimetypes,
-      int expected_content_size);
-  static void UnscannedFileEvent(
-      base::Value* report,
+
+  void ExpectSensitiveDataEvent(
       const std::string& expected_url,
       const std::string& expected_filename,
       const std::string& expected_sha256,
       const std::string& expected_trigger,
-      const std::string& expected_reason,
+      const DlpDeepScanningVerdict& expected_dlp_verdict,
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size);
 
- private:
-  EventReportValidator();
-  ~EventReportValidator();
+  void ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
+      const std::string& expected_url,
+      const std::string& expected_filename,
+      const std::string& expected_sha256,
+      const std::string& expected_threat_type,
+      const std::string& expected_trigger,
+      const DlpDeepScanningVerdict& expected_dlp_verdict,
+      const std::set<std::string>* expected_mimetypes,
+      int expected_content_size);
 
+  void ExpectUnscannedFileEvent(const std::string& expected_url,
+                                const std::string& expected_filename,
+                                const std::string& expected_sha256,
+                                const std::string& expected_trigger,
+                                const std::string& expected_reason,
+                                const std::set<std::string>* expected_mimetypes,
+                                int expected_content_size);
+
+ private:
   void ValidateReport(base::Value* report);
   void ValidateMimeType(base::Value* value);
   void ValidateDlpVerdict(base::Value* value);
@@ -70,6 +83,8 @@ class EventReportValidator {
   void ValidateField(base::Value* value,
                      const std::string& field_key,
                      const base::Optional<bool>& expected_value);
+
+  policy::MockCloudPolicyClient* client_;
 
   std::string event_key_;
   std::string url_;

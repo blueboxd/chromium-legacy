@@ -22,6 +22,20 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
  public:
   static const char kTableName[];
 
+  static const char kFeedReadResultHistogramName[];
+
+  // If we read a feed item from the database then we record the result to
+  // |kFeedReadResultHistogramName|. Do not change the numbering since this
+  // is recorded.
+  enum class FeedReadResult {
+    kSuccess = 0,
+    kBadUserStatus = 1,
+    kBadFetchResult = 2,
+    kBadLogo = 3,
+    kBadUserIdentifier = 4,
+    kMaxValue = kBadUserIdentifier,
+  };
+
  private:
   friend class MediaHistoryStoreInternal;
 
@@ -36,6 +50,16 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
 
   // Saves a newly discovered feed in the database.
   bool DiscoverFeed(const GURL& url);
+
+  // Updates the feed following a fetch.
+  bool UpdateFeedFromFetch(const int64_t feed_id,
+                           const media_feeds::mojom::FetchResult result,
+                           const base::Time& expiry_time,
+                           const int item_count,
+                           const int item_play_next_count,
+                           const int item_content_types,
+                           const std::vector<media_session::MediaImage>& logos,
+                           const std::string& display_name);
 
   // Returns the feed rows in the database.
   std::vector<media_feeds::mojom::MediaFeedPtr> GetRows();

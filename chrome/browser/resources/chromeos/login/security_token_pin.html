@@ -37,13 +37,14 @@
             <div id="errorContainer" role="alert" problem
                 invisible$="[[!isLabelVisible_(parameters, userEdited_)]]">
               <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
-              [[getLabel_(locale, parameters, errorLabelId_, userEdited_)]]
+              <span id="error">[[getLabel_(locale, parameters, errorLabelId_,
+                                           userEdited_)]]</span>
             </div>
           </pin-keyboard>
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button on-tap="onBackClicked_"></oobe-back-button>
+        <oobe-back-button id="back" on-tap="onBackClicked_"></oobe-back-button>
         <oobe-next-button id="submit" on-tap="onSubmit_"
             disabled="[[!canSubmit_]]"></oobe-next-button>
       </div>

@@ -236,31 +236,29 @@ def AddGnuWinToPath():
 def AddZlibToPath():
   """Download and build zlib, and add to PATH."""
   zlib_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'zlib-1.2.11')
-  if not os.path.exists(zlib_dir):
-    zip_name = 'zlib-1.2.11.tar.gz'
-    DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
-    os.chdir(zlib_dir)
-    zlib_files = [
-        'adler32', 'compress', 'crc32', 'deflate', 'gzclose', 'gzlib',
-        'gzread', 'gzwrite', 'inflate', 'infback', 'inftrees', 'inffast',
-        'trees', 'uncompr', 'zutil'
-        ]
-    cl_flags = [
-        '/nologo', '/O2', '/DZLIB_DLL', '/c', '/D_CRT_SECURE_NO_DEPRECATE',
-        '/D_CRT_NONSTDC_NO_DEPRECATE'
-        ]
-
-    try:
-      RunCommand(['cl.exe'] + [f + '.c' for f in zlib_files] + cl_flags,
-                 msvc_arch='x64')
-      RunCommand(['lib.exe'] + [f + '.obj' for f in zlib_files] +
-                 ['/nologo', '/out:zlib.lib'], msvc_arch='x64')
-      # Remove the test directory so it isn't found when trying to find
-      # test.exe.
-      shutil.rmtree('test')
-    except Exception as e:
-      print('Failed to build zlib: ' + str(e))
-      sys.exit(1)
+  if os.path.exists(zlib_dir):
+    RmTree(zlib_dir)
+  zip_name = 'zlib-1.2.11.tar.gz'
+  DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
+  os.chdir(zlib_dir)
+  zlib_files = [
+      'adler32', 'compress', 'crc32', 'deflate', 'gzclose', 'gzlib', 'gzread',
+      'gzwrite', 'inflate', 'infback', 'inftrees', 'inffast', 'trees',
+      'uncompr', 'zutil'
+  ]
+  cl_flags = [
+      '/nologo', '/O2', '/DZLIB_DLL', '/c', '/D_CRT_SECURE_NO_DEPRECATE',
+      '/D_CRT_NONSTDC_NO_DEPRECATE'
+  ]
+  RunCommand(
+      ['cl.exe'] + [f + '.c' for f in zlib_files] + cl_flags, msvc_arch='x64')
+  RunCommand(
+      ['lib.exe'] + [f + '.obj'
+                     for f in zlib_files] + ['/nologo', '/out:zlib.lib'],
+      msvc_arch='x64')
+  # Remove the test directory so it isn't found when trying to find
+  # test.exe.
+  shutil.rmtree('test')
 
   os.environ['PATH'] = zlib_dir + os.pathsep + os.environ.get('PATH', '')
   return zlib_dir
@@ -487,7 +485,6 @@ def main():
 
     # Require zlib compression.
     zlib_dir = AddZlibToPath()
-    base_cmake_args.append('-DLLVM_ENABLE_ZLIB=ON')
     cflags.append('-I' + zlib_dir)
     cxxflags.append('-I' + zlib_dir)
     ldflags.append('-LIBPATH:' + zlib_dir)
@@ -751,6 +748,8 @@ def main():
       '-DCHROMIUM_TOOLS=%s' % ';'.join(chrome_tools)]
   if args.pgo:
     cmake_args.append('-DLLVM_PROFDATA_FILE=' + LLVM_PROFDATA_FILE)
+  if sys.platform == 'win32':
+    cmake_args.append('-DLLVM_ENABLE_ZLIB=FORCE_ON')
   if sys.platform == 'darwin':
     cmake_args += ['-DCOMPILER_RT_ENABLE_IOS=ON',
                    '-DSANITIZER_MIN_OSX_VERSION=10.7']
@@ -793,6 +792,7 @@ def main():
       # The bootstrap compiler produces 64-bit binaries by default.
       cflags += ['-m32']
       cxxflags += ['-m32']
+
     compiler_rt_args = base_cmake_args + [
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),

@@ -163,13 +163,6 @@ class BubbleDialogDelegateView::AnchorViewObserver : public ViewObserver {
   View* const anchor_view_;
 };
 
-BubbleDialogDelegateView::~BubbleDialogDelegateView() {
-  if (GetWidget())
-    GetWidget()->RemoveObserver(this);
-  SetLayoutManager(nullptr);
-  SetAnchorView(nullptr);
-}
-
 // static
 Widget* BubbleDialogDelegateView::CreateBubble(
     BubbleDialogDelegateView* bubble_delegate) {
@@ -185,6 +178,32 @@ Widget* BubbleDialogDelegateView::CreateBubble(
   bubble_delegate->SizeToContents();
   bubble_widget->AddObserver(bubble_delegate);
   return bubble_widget;
+}
+
+BubbleDialogDelegateView::BubbleDialogDelegateView()
+    : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
+
+BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
+                                                   BubbleBorder::Arrow arrow,
+                                                   BubbleBorder::Shadow shadow)
+    : shadow_(shadow) {
+  SetArrow(arrow);
+  LayoutProvider* provider = LayoutProvider::Get();
+  // An individual bubble should override these margins if its layout differs
+  // from the typical title/text/buttons.
+  set_margins(provider->GetDialogInsetsForContentType(TEXT, TEXT));
+  title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
+  if (anchor_view)
+    SetAnchorView(anchor_view);
+  UpdateColorsFromTheme();
+  UMA_HISTOGRAM_BOOLEAN("Dialog.BubbleDialogDelegateView.Create", true);
+}
+
+BubbleDialogDelegateView::~BubbleDialogDelegateView() {
+  if (GetWidget())
+    GetWidget()->RemoveObserver(this);
+  SetLayoutManager(nullptr);
+  SetAnchorView(nullptr);
 }
 
 BubbleDialogDelegateView* BubbleDialogDelegateView::AsBubbleDialogDelegate() {
@@ -377,31 +396,6 @@ void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
   // TODO(pbos): Reconsider whether to update the anchor when the view isn't
   // drawn.
   SizeToContents();
-}
-
-BubbleDialogDelegateView::BubbleDialogDelegateView()
-    : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
-
-BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
-                                                   BubbleBorder::Arrow arrow,
-                                                   BubbleBorder::Shadow shadow)
-    : close_on_deactivate_(true),
-      anchor_widget_(nullptr),
-      shadow_(shadow),
-      color_explicitly_set_(false),
-      accept_events_(true),
-      adjust_if_offscreen_(true),
-      parent_window_(nullptr) {
-  SetArrow(arrow);
-  LayoutProvider* provider = LayoutProvider::Get();
-  // An individual bubble should override these margins if its layout differs
-  // from the typical title/text/buttons.
-  set_margins(provider->GetDialogInsetsForContentType(TEXT, TEXT));
-  title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
-  if (anchor_view)
-    SetAnchorView(anchor_view);
-  UpdateColorsFromTheme();
-  UMA_HISTOGRAM_BOOLEAN("Dialog.BubbleDialogDelegateView.Create", true);
 }
 
 gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {

@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/web_application_info.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -304,6 +305,11 @@ std::unique_ptr<content::WebContents> WebAppInstallTask::CreateWebContents(
   InstallableManager::CreateForWebContents(web_contents.get());
   SecurityStateTabHelper::CreateForWebContents(web_contents.get());
   favicon::CreateContentFaviconDriverForWebContents(web_contents.get());
+  if (auto* performance_manager_registry =
+          performance_manager::PerformanceManagerRegistry::GetInstance()) {
+    performance_manager_registry->CreatePageNodeForWebContents(
+        web_contents.get());
+  }
 
   return web_contents;
 }

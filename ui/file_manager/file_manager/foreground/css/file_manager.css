@@ -1072,10 +1072,16 @@ body.check-select #search-box {
   display: none;
 }
 
-#search-box.has-cursor,
-#search-box.has-text,
-#search-box.hide-pending {
+.dialog-header:not(.files-ng) #search-box.has-cursor,
+.dialog-header:not(.files-ng) #search-box.has-text,
+.dialog-header:not(.files-ng) #search-box.hide-pending {
   margin-inline-end: 12px;
+}
+
+.dialog-header.files-ng #search-box.has-cursor,
+.dialog-header.files-ng #search-box.has-text,
+.dialog-header.files-ng #search-box.hide-pending {
+  margin-inline-end: 6px;
 }
 
 .dialog-header:not(.files-ng) #search-box.has-cursor cr-input,
@@ -1087,7 +1093,8 @@ body.check-select #search-box {
 .dialog-header.files-ng #search-box.has-cursor cr-input,
 .dialog-header.files-ng #search-box.has-text cr-input,
 .dialog-header.files-ng #search-box.hide-pending cr-input {
-  width: calc(288px - 60px);
+  --cr-input-width: calc(288px - 74px);
+  width: calc(288px - 54px);
 }
 
 #search-box .clear {

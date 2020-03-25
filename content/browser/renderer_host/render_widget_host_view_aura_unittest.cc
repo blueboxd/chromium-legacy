@@ -90,6 +90,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
@@ -497,7 +498,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura_test_helper_.reset(new aura::test::AuraTestHelper());
     aura_test_helper_->SetUp(
         ImageTransportFactory::GetInstance()->GetContextFactory());
-    new wm::DefaultActivationClient(aura_test_helper_->root_window());
+    new wm::DefaultActivationClient(aura_test_helper_->GetContext());
 
     browser_context_.reset(new TestBrowserContext);
     process_host_ = new MockRenderProcessHost(browser_context_.get());
@@ -513,7 +514,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     parent_view_ = new RenderWidgetHostViewAura(parent_host_);
     parent_view_->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
-                                          aura_test_helper_->root_window(),
+                                          aura_test_helper_->GetContext(),
                                           gfx::Rect());
     view_ = CreateView();
     widget_host_ = static_cast<MockRenderWidgetHostImpl*>(view_->host());
@@ -2522,7 +2523,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   // Device scale factor changes to 2, so the physical pixel sizes should
   // change, while the DIP sizes do not.
 
-  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(2.0f);
   // Physical pixel size.
   EXPECT_EQ(gfx::Size(200, 200), view_->GetCompositorViewportPixelSize());
   // Update to the renderer.
@@ -2549,7 +2550,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   }
   sink_->ClearMessages();
 
-  aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(1.0f);
 
   // Physical pixel size.
   EXPECT_EQ(gfx::Size(100, 100), view_->GetCompositorViewportPixelSize());
@@ -2625,7 +2626,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
 
   // Changing the device scale factor updates the renderer.
   sink_->ClearMessages();
-  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(2.0f);
 
   // Update to the renderer.
   // TODO(samans): There should be only one message in the sink, but some
@@ -2830,7 +2831,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
   }
 
   // Cause a conflicting viz::LocalSurfaceId allocation
-  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(2.0f);
   viz::LocalSurfaceIdAllocation merged_local_surface_id_allocation(
       view_->GetLocalSurfaceIdAllocation());
   EXPECT_NE(local_surface_id_allocation1, merged_local_surface_id_allocation);
@@ -3135,7 +3136,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DeviceScaleFactorChanges) {
   EXPECT_EQ(nullptr, view_->window_->layer()->GetOldestAcceptableFallback());
 
   // Resizing should update the primary SurfaceId.
-  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(2.0f);
   viz::SurfaceId new_surface_id = *view_->window_->layer()->GetSurfaceId();
   EXPECT_NE(new_surface_id, initial_surface_id);
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->bounds().size());

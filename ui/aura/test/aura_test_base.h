@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/window_tree_host.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -53,11 +54,11 @@ class AuraTestBase : public testing::Test {
   // Returns whether |event| was handled.
   bool DispatchEventUsingWindowDispatcher(ui::Event* event);
 
-  Window* root_window() { return helper_->root_window(); }
-  WindowTreeHost* host() { return helper_->host(); }
-  ui::EventSink* event_sink() { return helper_->event_sink(); }
-  TestScreen* test_screen() { return helper_->test_screen(); }
-  client::FocusClient* focus_client() { return helper_->focus_client(); }
+  Window* root_window() { return helper_->GetContext(); }
+  WindowTreeHost* host() { return helper_->GetHost(); }
+  ui::EventSink* event_sink() { return host()->event_sink(); }
+  TestScreen* test_screen() { return helper_->GetTestScreen(); }
+  client::FocusClient* focus_client() { return helper_->GetFocusClient(); }
 
  private:
   base::test::TaskEnvironment task_environment_;

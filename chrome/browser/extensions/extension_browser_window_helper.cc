@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_browser_window_helper.h"
 
-#include "chrome/browser/apps/launch_service/app_utils.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

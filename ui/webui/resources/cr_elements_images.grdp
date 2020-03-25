@@ -3,6 +3,8 @@
   <!-- TODO(dschuyler): Many of these may be included for the unit tests which
        don't appear to flatten the html. We may be able to avoid including
        these if the browser_tests would not try to load them. -->
+  <include name="IDR_WEBUI_IMAGES_200_LOGO_GOOGLE_G"
+           file="images/200-logo_googleg.png" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ARROW_DOWN"
            file="images/arrow_down.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ARROW_RIGHT"

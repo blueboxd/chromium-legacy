@@ -171,6 +171,7 @@ js_type_check("closure_compile_module") {
     ":sync_account_control.m",
     ":sync_browser_proxy.m",
     ":sync_controls.m",
+    ":sync_encryption_options.m",
     ":sync_page.m",
   ]
 
@@ -308,6 +309,16 @@ js_library("sync_controls.m") {
   extra_deps = [ ":sync_controls_module" ]
 }
 
+js_library("sync_encryption_options.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/sync_encryption_options.m.js" ]
+  deps = [
+    ":sync_browser_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  extra_deps = [ ":sync_encryption_options_module" ]
+}
+
 js_library("sync_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/sync_page.m.js" ]
   deps = [
@@ -329,6 +340,7 @@ group("polymer3_elements") {
     ":signout_dialog_module",
     ":sync_account_control_module",
     ":sync_controls_module",
+    ":sync_encryption_options_module",
     ":sync_page_module",
   ]
 
@@ -417,14 +429,22 @@ polymer_modulizer("sync_controls") {
                  ]
 }
 
+polymer_modulizer("sync_encryption_options") {
+  js_file = "sync_encryption_options.js"
+  html_file = "sync_encryption_options.html"
+  html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncPrefs,SyncStatus",
+                   "ui/webui/resources/html/assert.html|assert,assertNotReached",
+                 ]
+}
+
 polymer_modulizer("sync_page") {
   js_file = "sync_page.js"
   html_file = "sync_page.html"
   html_type = "dom-module"
-  ignore_imports = [
-    "chrome/browser/resources/settings/people_page/sync_encryption_options.html",
-    "chrome/browser/resources/settings/privacy_page/personalization_options.html",
-  ]
+  ignore_imports = [ "chrome/browser/resources/settings/privacy_page/personalization_options.html" ]
   namespace_rewrites = settings_namespace_rewrites
   auto_imports = settings_auto_imports + [
                    "ui/webui/resources/html/polymer.html|Polymer,html,flush",

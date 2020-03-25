@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tree_host.h"
 
 namespace ui {
 class ContextFactory;
@@ -26,6 +25,7 @@ namespace aura {
 class Env;
 class TestScreen;
 class Window;
+class WindowTreeHost;
 
 namespace client {
 class CaptureClient;
@@ -57,14 +57,11 @@ class AuraTestHelper {
   // Flushes message loop.
   void RunAllPendingInMessageLoop();
 
-  Window* root_window() { return host_ ? host_->window() : nullptr; }
-  ui::EventSink* event_sink() { return host_->event_sink(); }
-  WindowTreeHost* host() { return host_.get(); }
-
-  TestScreen* test_screen() { return test_screen_.get(); }
-
-  client::FocusClient* focus_client() { return focus_client_.get(); }
-  client::CaptureClient* capture_client();
+  Window* GetContext();
+  WindowTreeHost* GetHost();
+  TestScreen* GetTestScreen();
+  client::FocusClient* GetFocusClient();
+  client::CaptureClient* GetCaptureClient();
 
   Env* GetEnv();
 

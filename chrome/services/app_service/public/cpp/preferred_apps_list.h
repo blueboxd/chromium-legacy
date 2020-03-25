@@ -43,6 +43,10 @@ class PreferredAppsList {
       const apps::mojom::IntentFilterPtr& intent_filter,
       PreferredApps* preferred_apps);
 
+  // Delete all settings for an |app_id|.
+  static void DeleteAppId(const std::string& app_id,
+                          PreferredApps* preferred_apps);
+
   // Find preferred app id for an |intent|.
   base::Optional<std::string> FindPreferredAppForIntent(
       const apps::mojom::IntentPtr& intent);
@@ -60,6 +64,9 @@ class PreferredAppsList {
   // Delete a preferred app for an |intent_filter| with the same |app_id|.
   void DeletePreferredApp(const std::string& app_id,
                           const apps::mojom::IntentFilterPtr& intent_filter);
+
+  // Delete all settings for an |app_id|.
+  void DeleteAppId(const std::string& app_id);
 
  private:
   PreferredApps preferred_apps_;

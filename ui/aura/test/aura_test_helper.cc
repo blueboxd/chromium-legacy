@@ -20,6 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/compositor/compositor.h"
@@ -121,15 +122,14 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   host_.reset(test_screen_->CreateHostForPrimaryDisplay());
   host_->window()->SetEventTargeter(std::make_unique<WindowTargeter>());
 
-  client::SetFocusClient(root_window(), focus_client_.get());
-  capture_client_ =
-      std::make_unique<client::DefaultCaptureClient>(root_window());
-  parenting_client_ =
-      std::make_unique<TestWindowParentingClient>(root_window());
+  Window* root_window = GetContext();
+  client::SetFocusClient(root_window, focus_client_.get());
+  capture_client_ = std::make_unique<client::DefaultCaptureClient>(root_window);
+  parenting_client_ = std::make_unique<TestWindowParentingClient>(root_window);
 
-  root_window()->Show();
+  root_window->Show();
   // Ensure width != height so tests won't confuse them.
-  host()->SetBoundsInPixels(gfx::Rect(host_size));
+  host_->SetBoundsInPixels(gfx::Rect(host_size));
 
   g_instance = this;
 }
@@ -138,7 +138,7 @@ void AuraTestHelper::TearDown() {
   g_instance = nullptr;
   teardown_called_ = true;
   parenting_client_.reset();
-  client::SetFocusClient(root_window(), nullptr);
+  client::SetFocusClient(GetContext(), nullptr);
   capture_client_.reset();
   host_.reset();
 
@@ -179,7 +179,23 @@ void AuraTestHelper::RunAllPendingInMessageLoop() {
   run_loop.RunUntilIdle();
 }
 
-client::CaptureClient* AuraTestHelper::capture_client() {
+Window* AuraTestHelper::GetContext() {
+  return host_ ? host_->window() : nullptr;
+}
+
+WindowTreeHost* AuraTestHelper::GetHost() {
+  return host_.get();
+}
+
+TestScreen* AuraTestHelper::GetTestScreen() {
+  return test_screen_.get();
+}
+
+client::FocusClient* AuraTestHelper::GetFocusClient() {
+  return focus_client_.get();
+}
+
+client::CaptureClient* AuraTestHelper::GetCaptureClient() {
   return capture_client_.get();
 }
 

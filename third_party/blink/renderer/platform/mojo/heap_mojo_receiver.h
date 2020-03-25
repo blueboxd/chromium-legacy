@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -17,7 +18,11 @@ namespace blink {
 // HeapMojoReceiver's constructor takes context as a mandatory parameter.
 // HeapMojoReceiver resets the mojo connection when 1) the owner object is
 // garbage-collected and 2) the associated ExecutionContext is detached.
-template <typename Interface>
+
+// TODO(crbug.com/1058076) HeapMojoWrapperMode should be removed once we ensure
+// that the interface is not used after ContextDestroyed().
+template <typename Interface,
+          HeapMojoWrapperMode Mode = HeapMojoWrapperMode::kWithContextObserver>
 class HeapMojoReceiver {
   DISALLOW_NEW();
 
@@ -72,7 +77,10 @@ class HeapMojoReceiver {
     mojo::Receiver<Interface>& receiver() { return receiver_; }
 
     // ContextLifecycleObserver methods
-    void ContextDestroyed() override { receiver_.reset(); }
+    void ContextDestroyed() override {
+      if (Mode == HeapMojoWrapperMode::kWithContextObserver)
+        receiver_.reset();
+    }
 
    private:
     mojo::Receiver<Interface> receiver_;

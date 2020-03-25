@@ -63,8 +63,6 @@ let RealboxOutputUpdate;
  */
 const CLASSES = {
   ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
-  // Shows a clock next to historical realbox results.
-  CLOCK_ICON: 'clock-icon',
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
@@ -91,7 +89,8 @@ const CLASSES = {
   IMAGE_CONTAINER: 'image-container',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
-  LOAD_FAVICON: 'load-favicon',
+  // The icon next to a realbox match.
+  MATCH_ICON: 'match-icon',
   // The image next to a realbox match.
   MATCH_IMAGE: 'match-image',
   // Vertically centers the most visited section for a non-Google provided page.
@@ -99,7 +98,6 @@ const CLASSES = {
   REMOVABLE: 'removable',
   REMOVE_ICON: 'remove-icon',
   REMOVE_MATCH: 'remove-match',
-  SEARCH_ICON: 'search-icon',  // Magnifying glass/search icon.
   SELECTED: 'selected',  // A selected (via up/down arrow key) realbox match.
   SHOW_ELEMENT: 'show-element',
   // When the realbox has matches to show.
@@ -107,11 +105,6 @@ const CLASSES = {
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
 };
-
-const SEARCH_HISTORY_MATCH_TYPES = [
-  'search-history',
-  'search-suggest-personalized',
-];
 
 /**
  * The period of time (ms) before transitions can be applied to a toast
@@ -276,7 +269,7 @@ let enterWasPressed = false;
  * reuse match image data that have been loaded before and to avoid flickering.
  * @type {!Object<string>}
  */
-const imageUrlToDataUrlCache = {};
+const faviconOrImageUrlToDataUrlCache = {};
 
 /**
  * The time of the first character insert operation that has not yet been
@@ -381,32 +374,50 @@ function autocompleteResultChanged(result) {
 
 /**
  * @param {number} matchIndex
- * @param {string} imageUrl
+ * @param {string} url AutocompleteMatch's imageUrl or destinationUrl.
  * @param {string} dataUrl
  */
-function autocompleteMatchImageAvailable(matchIndex, imageUrl, dataUrl) {
-  if (!autocompleteResult || !autocompleteResult.matches[matchIndex] ||
-      autocompleteResult.matches[matchIndex].imageUrl !== imageUrl) {
+function autocompleteMatchImageAvailable(matchIndex, url, dataUrl) {
+  if (!autocompleteResult || !autocompleteResult.matches[matchIndex]) {
     return;
   }
 
-  // Ignore images that have previously been loaded. Those are rendered already.
-  if (imageUrlToDataUrlCache[imageUrl]) {
+  const match = autocompleteResult.matches[matchIndex];
+  if (match.imageUrl !== url && match.destinationUrl !== url) {
     return;
   }
-  imageUrlToDataUrlCache[imageUrl] = dataUrl;
 
-  const realboxMatchesEl = $(IDS.REALBOX_MATCHES);
-  const matchEls = Array.from(realboxMatchesEl.children);
+  // Return if the image has been rendered. Re-rendering it will cause flicker.
+  if (faviconOrImageUrlToDataUrlCache[url]) {
+    return;
+  }
+  faviconOrImageUrlToDataUrlCache[url] = dataUrl;
+
+  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
   assert(autocompleteResult.matches.length === matchEls.length);
 
-  const imageContainerEl = assert(
-      matchEls[matchIndex].getElementsByClassName(CLASSES.IMAGE_CONTAINER)[0]);
-  const imageEl = document.createElement('img');
-  imageEl.classList.add(CLASSES.MATCH_IMAGE);
-  imageEl.src = dataUrl;
-  imageContainerEl.appendChild(imageEl);
-  imageContainerEl.style.backgroundColor = 'transparent';
+  // Update the match image/favicon.
+  if (match.imageUrl === url) {
+    const imageContainerEl = assert(matchEls[matchIndex].getElementsByClassName(
+        CLASSES.IMAGE_CONTAINER)[0]);
+    const imageEl = document.createElement('img');
+    imageEl.classList.add(CLASSES.MATCH_IMAGE);
+    imageEl.src = dataUrl;
+    imageContainerEl.appendChild(imageEl);
+    imageContainerEl.style.backgroundColor = 'transparent';
+  } else {
+    const iconEl = assert(
+        matchEls[matchIndex].getElementsByClassName(CLASSES.MATCH_ICON)[0]);
+    setBackgroundImageByUrl(iconEl, dataUrl);
+  }
+
+  // If the match is selected, also update the realbox favicon.
+  const selectedMatchIndex = matchEls.findIndex(matchEl => {
+    return matchEl.classList.contains(CLASSES.SELECTED);
+  });
+  if (selectedMatchIndex === matchIndex) {
+    setRealboxIcon(match);
+  }
 }
 
 /**
@@ -718,25 +729,6 @@ function floatUpNotification(notification, notificationContainer) {
 }
 
 /**
- * @param {string} url
- * @return {string} The chrome-search://ntpicon/ corresponding to |url|.
- */
-function getIconUrl(url) {
-  // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
-  const iconUrl = new URL('chrome-search://ntpicon/');
-  iconUrl.searchParams.set('show_fallback_monogram', 'false');
-  iconUrl.searchParams.set('size', '32@' + window.devicePixelRatio + 'x');
-  // The fallback color must match that of .clock-icon and .search-icon
-  iconUrl.searchParams.set(
-      'color',
-      convertToHexColor(
-          configData.realboxMatchOmniboxTheme ? getNtpTheme().searchBox.icon :
-                                                [117, 117, 117, 255]));
-  iconUrl.searchParams.set('url', url);
-  return iconUrl.toString();
-}
-
-/**
  * Returns theme background info, first checking for history.state.notheme. If
  * the page has notheme set, returns a fallback light-colored theme (or dark-
  * colored theme if dark mode is enabled). This is used when the doodle is
@@ -918,6 +910,8 @@ function init() {
     customize.init(showErrorNotification, hideNotification);
 
     if (configData.realboxEnabled) {
+      setRealboxIcon(undefined);
+
       const realboxEl = $(IDS.REALBOX);
       realboxEl.placeholder = configData.translatedStrings.searchboxPlaceholder;
       // Using .onmousedown instead of addEventListener('mousedown') to support
@@ -1406,6 +1400,7 @@ function onRealboxWrapperFocusOut(e) {
     // Clear the input if it was empty when displaying the matches.
     if (lastQueriedInput === '') {
       updateRealboxOutput({inline: '', text: ''});
+      setRealboxIcon(undefined);
     }
     setRealboxMatchesVisible(false);
 
@@ -1706,29 +1701,30 @@ function renderAutocompleteMatches(matches) {
       matchEl.classList.add(CLASSES.HAS_IMAGE);
     }
 
-    if (match.isSearchType) {
-      const icon = document.createElement('div');
-      if (hasImage) {
-        icon.classList.add(CLASSES.IMAGE_CONTAINER);
+    if (hasImage) {
+      const imageContainer = document.createElement('div');
+      imageContainer.classList.add(CLASSES.IMAGE_CONTAINER);
 
-        if (imageUrlToDataUrlCache[match.imageUrl]) {
-          const imageEl = document.createElement('img');
-          imageEl.classList.add(CLASSES.MATCH_IMAGE);
-          imageEl.src = imageUrlToDataUrlCache[match.imageUrl];
-          icon.appendChild(imageEl);
-        } else if (match.imageDominantColor) {
-          // .25 Opacity matching c/b/u/views/omnibox/omnibox_match_cell_view.cc
-          icon.style.backgroundColor = match.imageDominantColor + '40';
-        }
-      } else {
-        const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
-        icon.classList.add(
-            isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON);
+      if (faviconOrImageUrlToDataUrlCache[match.imageUrl]) {
+        const imageEl = document.createElement('img');
+        imageEl.classList.add(CLASSES.MATCH_IMAGE);
+        imageEl.src = faviconOrImageUrlToDataUrlCache[match.imageUrl];
+        imageContainer.appendChild(imageEl);
+      } else if (match.imageDominantColor) {
+        // .25 Opacity matching c/b/u/views/omnibox/omnibox_match_cell_view.cc
+        imageContainer.style.backgroundColor = match.imageDominantColor + '40';
       }
-      matchEl.appendChild(icon);
+      matchEl.appendChild(imageContainer);
     } else {
-      const iconUrl = getIconUrl(match.destinationUrl);
-      matchEl.style.backgroundImage = `url(${iconUrl})`;
+      const iconEl = document.createElement('div');
+      iconEl.classList.add(CLASSES.MATCH_ICON);
+      if (faviconOrImageUrlToDataUrlCache[match.destinationUrl]) {
+        setBackgroundImageByUrl(
+            iconEl, faviconOrImageUrlToDataUrlCache[match.destinationUrl]);
+      } else {
+        setWebkitMaskImageByUrl(iconEl, match.iconUrl);
+      }
+      matchEl.appendChild(iconEl);
     }
 
     const contentsEl =
@@ -2131,21 +2127,54 @@ function setFakeboxVisibility(show) {
   document.body.classList.toggle(CLASSES.HIDE_FAKEBOX, !show);
 }
 
+/**
+ * @param {!Element} element
+ * @param {string} url
+ */
+function setBackgroundImageByUrl(element, url) {
+  element.style.webkitMaskImage = '';
+  element.style.backgroundImage = `url(${url})`;
+  element.style.backgroundColor = 'transparent';
+}
+
+/**
+ * @param {!Element} element
+ * @param {string} url
+ */
+function setWebkitMaskImageByUrl(element, url) {
+  element.style.webkitMaskImage = `url(${url})`;
+  element.style.backgroundImage = '';
+  element.style.backgroundColor = '';
+}
+
 /** @param {!AutocompleteMatch|undefined} match */
 function setRealboxIcon(match) {
-  const loadFavicon = match && !match.isSearchType;
-
   const realboxIcon = $(IDS.REALBOX_ICON);
-  realboxIcon.style.webkitMask = loadFavicon ? 'none' : '';
-  realboxIcon.style.backgroundColor = loadFavicon ? 'transparent' : '';
-  realboxIcon.style.backgroundImage =
-      loadFavicon ? `url(${getIconUrl(match.destinationUrl)})` : '';
-
-  const historical = match && SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
-  realboxIcon.className = loadFavicon ?
-      CLASSES.LOAD_FAVICON :
-      (historical ? CLASSES.CLOCK_ICON :
-                    realboxIcon.dataset['realboxIconClass']);
+  if (match && !match.isSearchType) {
+    // if the selected match is a navigation match and has a favicon loaded,
+    // display the favicon. Otherwise display the match icon.
+    if (faviconOrImageUrlToDataUrlCache[match.destinationUrl]) {
+      realboxIcon.dataset.icon = '';
+      setBackgroundImageByUrl(
+          realboxIcon, faviconOrImageUrlToDataUrlCache[match.destinationUrl]);
+    } else {
+      realboxIcon.dataset.icon = match.iconUrl;
+      setWebkitMaskImageByUrl(realboxIcon, realboxIcon.dataset.icon);
+    }
+  } else if (configData.useGoogleGIcon) {
+    // if google_g icon should be used (as the default icon and search matches),
+    // display the default icon which is set to the google_g icon.
+    /** @suppress {missingProperties} */
+    realboxIcon.dataset.icon = realboxIcon.dataset.defaultIcon;
+    setBackgroundImageByUrl(realboxIcon, realboxIcon.dataset.icon);
+  } else {
+    // if no match is selected, display the default icon. Otherwise display the
+    // match icon.
+    /** @suppress {missingProperties} */
+    realboxIcon.dataset.icon =
+        match ? match.iconUrl : realboxIcon.dataset.defaultIcon;
+    setWebkitMaskImageByUrl(realboxIcon, realboxIcon.dataset.icon);
+  }
 }
 
 /** @param {boolean} visible */

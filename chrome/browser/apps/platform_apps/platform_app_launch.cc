@@ -5,7 +5,7 @@
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_manager.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -84,8 +84,7 @@ bool OpenExtensionApplicationWindow(Profile* profile,
   params.command_line = command_line;
   params.current_directory = current_directory;
   if (app->from_bookmark()) {
-    params.launch_files =
-        LaunchManager::GetLaunchFilesFromCommandLine(command_line);
+    params.launch_files = GetLaunchFilesFromCommandLine(command_line);
   }
   content::WebContents* tab_in_app_window = ::OpenApplication(profile, params);
 

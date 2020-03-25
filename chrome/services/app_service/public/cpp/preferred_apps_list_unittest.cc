@@ -456,3 +456,130 @@ TEST_F(PreferredAppListTest, DeleteOverlapFilters) {
   EXPECT_EQ(base::nullopt,
             preferred_apps_.FindPreferredAppForUrl(filter_url_4));
 }
+
+// Test that DeleteAppId() can delete the setting for one filter.
+TEST_F(PreferredAppListTest, DeleteAppIdForOneFilter) {
+  GURL filter_url = GURL("https://www.google.com/abc");
+  auto intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter);
+
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url));
+
+  preferred_apps_.DeleteAppId(kAppId1);
+
+  EXPECT_EQ(base::nullopt, preferred_apps_.FindPreferredAppForUrl(filter_url));
+}
+
+// Test that when multiple filters set to the same app id, DeleteAppId() can
+// delete all of them.
+TEST_F(PreferredAppListTest, DeleteAppIdForMultipleFilters) {
+  GURL filter_url_1 = GURL("https://www.google.com/abc");
+  auto intent_filter_1 = apps_util::CreateIntentFilterForUrlScope(filter_url_1);
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter_1);
+
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url_1));
+
+  GURL filter_url_2 = GURL("https://www.abc.com/google");
+  auto intent_filter_2 = apps_util::CreateIntentFilterForUrlScope(filter_url_2);
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter_2);
+
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url_2));
+
+  GURL filter_url_3 = GURL("tel://12345678/");
+  auto intent_filter_3 = apps_util::CreateIntentFilterForUrlScope(filter_url_3);
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter_3);
+
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url_3));
+
+  preferred_apps_.DeleteAppId(kAppId1);
+
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_3));
+}
+
+// Test that for filter with multiple condition values, DeleteAppId() can
+// delete them all.
+TEST_F(PreferredAppListTest, DeleteAppIdForMultipleConditionValues) {
+  auto intent_filter =
+      apps_util::CreateIntentFilterForUrlScope(GURL("https://www.google.com/"));
+  intent_filter->conditions[0]->condition_values.push_back(
+      apps_util::MakeConditionValue("http",
+                                    apps::mojom::PatternMatchType::kNone));
+
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter);
+
+  GURL url_https = GURL("https://www.google.com/");
+  GURL url_http = GURL("http://www.google.com/");
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(url_https));
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(url_http));
+
+  preferred_apps_.DeleteAppId(kAppId1);
+  EXPECT_EQ(base::nullopt, preferred_apps_.FindPreferredAppForUrl(url_https));
+  EXPECT_EQ(base::nullopt, preferred_apps_.FindPreferredAppForUrl(url_http));
+}
+
+// Test that for multiple filters set to different app ids, DeleteAppId() only
+// deletes the correct app id.
+TEST_F(PreferredAppListTest, DeleteAppIdForMultipleAppIds) {
+  GURL filter_url_1 = GURL("https://www.google.com/abc");
+  auto intent_filter_1 = apps_util::CreateIntentFilterForUrlScope(filter_url_1);
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter_1);
+
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url_1));
+
+  GURL filter_url_2 = GURL("https://www.abc.com/google");
+  auto intent_filter_2 = apps_util::CreateIntentFilterForUrlScope(filter_url_2);
+  preferred_apps_.AddPreferredApp(kAppId1, intent_filter_2);
+
+  EXPECT_EQ(kAppId1, preferred_apps_.FindPreferredAppForUrl(filter_url_2));
+
+  GURL filter_url_3 = GURL("tel://12345678/");
+  auto intent_filter_3 = apps_util::CreateIntentFilterForUrlScope(filter_url_3);
+  preferred_apps_.AddPreferredApp(kAppId2, intent_filter_3);
+
+  EXPECT_EQ(kAppId2, preferred_apps_.FindPreferredAppForUrl(filter_url_3));
+
+  GURL filter_url_4 = GURL("https://www.google.com.au/");
+  auto intent_filter_4 = apps_util::CreateIntentFilterForUrlScope(filter_url_4);
+  preferred_apps_.AddPreferredApp(kAppId2, intent_filter_4);
+
+  EXPECT_EQ(kAppId2, preferred_apps_.FindPreferredAppForUrl(filter_url_4));
+
+  GURL filter_url_5 = GURL("https://www.example.com/google");
+  auto intent_filter_5 = apps_util::CreateIntentFilterForUrlScope(filter_url_5);
+  preferred_apps_.AddPreferredApp(kAppId3, intent_filter_5);
+
+  EXPECT_EQ(kAppId3, preferred_apps_.FindPreferredAppForUrl(filter_url_5));
+
+  GURL filter_url_6 = GURL("tel://98765432/");
+  auto intent_filter_6 = apps_util::CreateIntentFilterForUrlScope(filter_url_6);
+  preferred_apps_.AddPreferredApp(kAppId3, intent_filter_6);
+
+  EXPECT_EQ(kAppId3, preferred_apps_.FindPreferredAppForUrl(filter_url_6));
+
+  preferred_apps_.DeleteAppId(kAppId1);
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(kAppId2, preferred_apps_.FindPreferredAppForUrl(filter_url_3));
+  EXPECT_EQ(kAppId2, preferred_apps_.FindPreferredAppForUrl(filter_url_4));
+  EXPECT_EQ(kAppId3, preferred_apps_.FindPreferredAppForUrl(filter_url_5));
+  EXPECT_EQ(kAppId3, preferred_apps_.FindPreferredAppForUrl(filter_url_6));
+  preferred_apps_.DeleteAppId(kAppId2);
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_3));
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_4));
+  EXPECT_EQ(kAppId3, preferred_apps_.FindPreferredAppForUrl(filter_url_5));
+  EXPECT_EQ(kAppId3, preferred_apps_.FindPreferredAppForUrl(filter_url_6));
+  preferred_apps_.DeleteAppId(kAppId3);
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_5));
+  EXPECT_EQ(base::nullopt,
+            preferred_apps_.FindPreferredAppForUrl(filter_url_6));
+}

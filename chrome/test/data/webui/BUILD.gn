@@ -240,6 +240,9 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/passwords_export_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/passwords_section_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/payments_section_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/people_page_sync_controls_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/people_page_sync_page_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/people_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/pref_util_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/prefs_test_cases.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/prefs_tests.m.js",
@@ -269,6 +272,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/test_lifetime_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_open_window_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_password_manager_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/test_profile_info_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_reset_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_search_engines_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_site_settings_prefs_browser_proxy.m.js",
@@ -289,6 +293,7 @@ js2gtest("browser_tests_js_webui") {
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/site_list_tests_cros.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/passwords_section_test_cros.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/people_page_test_cros.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/test_android_info_browser_proxy.m.js",
     ]
   } else {

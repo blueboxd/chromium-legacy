@@ -12,10 +12,6 @@
     android:layout_height="match_parent"
     android:padding="10dp">
 
-    <include
-        layout="@layout/persistent_error_message"
-        android:id="@+id/webview_package_error"/>
-
     <!--suppress HardcodedText -->
     <TextView
         android:id="@+id/flags_warning"

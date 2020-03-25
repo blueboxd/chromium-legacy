@@ -153,24 +153,6 @@ body.hide-fakebox #fakebox {
   max-width: 584px;
 }
 
-.google-g-icon {
-  background-image:
-      url(../../../../ui/webui/resources/images/200-logo_googleg.png);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 14px;
-  bottom: 0;
-  left: 16px;
-  position: absolute;
-  top: 0;
-  width: 24px;
-}
-
-[dir=rtl] .google-g-icon {
-  left: auto;
-  right: 16px;
-}
-
 #fakebox {
   background: white;
   cursor: text;
@@ -219,14 +201,22 @@ body.hide-fakebox #fakebox {
   display: none;
 }
 
-/* The realbox is a "loupe" (.search-icon) by default, but when the selection
- * ends up on match with a different icon, the realbox also gets that icon.
- * Example: typing the start of a URL with a favicon or the user pressing
- * up/down to select matches sets a background-image here and disables the
- * -webkit-mask applied by .search-icon. */
-#realbox-icon {
+/* The realbox has a "loupe" or "search" icon by default. When a match with a
+ * different icon ("clock" for historical searches or "page" for URLs) or a
+ * favicon is selected, the realbox also gets that icon/favicon. For both the
+ * realbox as well as the dropdown, icons are rendered via webkit-mask-image and
+ * background-color and favicons are rendered via background-
+ image set on the
+ * element's style property in JS. */
+#realbox-icon,
+.match-icon {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 16px;
+  background-color: var(--search-box-icon, rgb(117, 117, 117));
   background-position: center center;
   background-repeat: no-repeat;
+  background-size: 16px;
   bottom: 0;
   left: 16px;
   margin: auto;
@@ -235,13 +225,17 @@ body.hide-fakebox #fakebox {
   width: 24px;
 }
 
-[dir=rtl] #realbox-icon {
+[dir=rtl] :-webkit-any(#realbox-icon, .match-icon) {
   left: auto;
   right: 16px;
 }
 
-#realbox-icon.load-favicon {
-  background-size: 24px;
+#realbox-icon[data-icon='google_g'] {
+  background-size: 12px;
+}
+
+#realbox-icon[data-icon='search'] {
+  -webkit-mask-size: 20px;  /* Loupe in realbox is bigger than in matches. */
 }
 
 #realbox-matches {
@@ -269,9 +263,6 @@ body.hide-fakebox #fakebox {
 }
 
 #realbox-matches a {
-  background-position: 16px center;
-  background-repeat: no-repeat;
-  background-size: 24px;
   font-size: 16px;
   line-height: 1;
   outline: none;
@@ -316,55 +307,21 @@ body.hide-fakebox #fakebox {
   margin-bottom: 8px;  /* Last result is tight with border-radius. */
 }
 
-.clock-icon,
-.search-icon,
-.image-container {
-  bottom: 0;
-  margin: auto;
-  position: absolute;
-  top: 0;
-}
-
-.clock-icon,
-.search-icon {
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 16px;
-  background-color: var(--search-box-icon, rgb(117, 117, 117));
-  left: 16px;
-  width: 24px;
-}
-
-#realbox-matches a:-webkit-any(:focus-within, .selected)
-    :-webkit-any(.clock-icon, .search-icon) {
+#realbox-matches a:-webkit-any(:focus-within, .selected) .match-icon {
   background-color: var(--search-box-icon-selected, rgb(117, 117, 117));
-}
-
-.clock-icon {
-  -webkit-mask-image: url(icons/clock.svg);
-}
-
-.search-icon {
-  -webkit-mask-image:
-      url(../../../../ui/webui/resources/images/icon_search.svg);
-}
-
-#realbox-input-wrapper > .search-icon {
-  -webkit-mask-size: 20px;  /* Loupe in realbox is bigger than in matches. */
-}
-
-html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
-  left: auto;
-  right: 16px;
 }
 
 .image-container {
   align-items: center;
   border-radius: 8px;
+  bottom: 0;
   display: flex;
   height: 32px;
   justify-content: center;
   left: 12px;
+  margin: auto;
+  position: absolute;
+  top: 0;
   width: 32px;
 }
 
@@ -473,7 +430,22 @@ html[dir=rtl] #fakebox > input {
 }
 
 #fakebox .search-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_search.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 20px;
+  background-color: rgb(117, 117, 117);
+  bottom: 0;
+  left: 16px;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+html[dir=rtl] #fakebox .search-icon {
+  left: auto;
+  right: 16px;
 }
 
 #fakebox-text {

@@ -50,17 +50,9 @@ class LaunchManager {
                               apps::mojom::LaunchContainer container)>
           callback) = 0;
 
-  // Converts file arguments to an app on |command_line| into base::FilePaths.
-  static std::vector<base::FilePath> GetLaunchFilesFromCommandLine(
-      const base::CommandLine& command_line);
-
  protected:
   explicit LaunchManager(Profile*);
   Profile* profile() { return profile_; }
-
-  // When a command line launch has an unknown app id, we open a browser
-  // with only the new tab page.
-  Browser* CreateNewTabBrowser();
 
  private:
   Profile* const profile_;

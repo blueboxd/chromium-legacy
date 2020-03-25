@@ -20,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
@@ -79,9 +78,7 @@ SearchController::~SearchController() {}
 
 void SearchController::InitializeRankers() {
   std::unique_ptr<SearchResultRanker> ranker =
-      std::make_unique<SearchResultRanker>(
-          profile_, HistoryServiceFactory::GetForProfile(
-                        profile_, ServiceAccessType::EXPLICIT_ACCESS));
+      std::make_unique<SearchResultRanker>(profile_);
   ranker->InitializeRankers(this);
   mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 

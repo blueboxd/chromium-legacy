@@ -25,6 +25,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/window_tree_host.h"
 #endif
 
 namespace views {
@@ -100,15 +101,13 @@ class ViewsTestBase : public PlatformTest {
 
 #if defined(USE_AURA)
   aura::Window* root_window() {
-    return aura::test::AuraTestHelper::GetInstance()->root_window();
+    return aura::test::AuraTestHelper::GetInstance()->GetContext();
   }
 
-  ui::EventSink* event_sink() {
-    return aura::test::AuraTestHelper::GetInstance()->event_sink();
-  }
+  ui::EventSink* event_sink() { return host()->event_sink(); }
 
   aura::WindowTreeHost* host() {
-    return aura::test::AuraTestHelper::GetInstance()->host();
+    return aura::test::AuraTestHelper::GetInstance()->GetHost();
   }
 #endif
 

@@ -37,24 +37,6 @@ class LaunchCommandPoolCreationError(test_runner.TestRunnerError):
     super(LaunchCommandPoolCreationError, self).__init__(message)
 
 
-def get_all_tests(app_path, test_cases=None):
-  """Gets all tests from test bundle."""
-  test_app_bundle = os.path.join(app_path, os.path.splitext(
-      os.path.basename(app_path))[0])
-  # Method names that starts with test* and also are in *TestCase classes
-  # but they are not test-methods.
-  # TODO(crbug.com/982435): Rename not test methods with test-suffix.
-  not_tests = ['ChromeTestCase/testServer', 'FindInPageTestCase/testURL']
-  all_tests = []
-  for test_class, test_method in test_runner.get_test_names(test_app_bundle):
-    test_name = '%s/%s' % (test_class, test_method)
-    if (test_name not in not_tests and
-        # Filter by self.test_cases if specified
-        (test_class in test_cases if test_cases else True)):
-      all_tests.append(test_name)
-  return all_tests
-
-
 def erase_all_simulators(path=None):
   """Erases all simulator devices.
 
@@ -190,9 +172,7 @@ class LaunchCommand(object):
     self.test_results['attempts'] = []
     cancelled_statuses = {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}
     shards = self.shards
-    running_tests = set(
-        get_all_tests(self.egtests_app.test_app_path,
-                      self.egtests_app.included_tests))
+    running_tests = set(self.egtests_app.get_all_tests())
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       # Erase all simulators per each attempt
@@ -263,6 +243,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
                version,
                platform,
                out_dir,
+               release=False,
                retries=1,
                shards=1,
                test_cases=None,
@@ -279,6 +260,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       version: (str) iOS version to run simulator on.
       platform: (str) Name of device.
       out_dir: (str) A directory to emit test data into.
+      release: (bool) Whether this test runner is running for a release build.
       retries: (int) A number to retry test run, will re-run only failed tests.
       shards: (int) A number of shards. Default is 1.
       test_cases: (list) List of tests to be included in the test run.
@@ -313,6 +295,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       self.host_app_path = os.path.abspath(host_app_path)
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
+    self.release = release
     self.test_results['path_delimiter'] = '/'
     # Do not enable parallel testing when code coverage is enabled, because raw
     # coverage data won't be produced with parallel testing.
@@ -358,6 +341,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
           included_tests=params['test_cases'],
           env_vars=self.env_vars,
           test_args=self.test_args,
+          release=self.release,
           host_app_path=params['host'])
       launch_commands.append(
           LaunchCommand(
@@ -404,7 +388,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         all_failures - set(self.logs['failed tests']))
 
     # Gets not-started/interrupted tests
-    all_tests_to_run = set(get_all_tests(self.app_path, self.test_cases))
+    all_tests_to_run = set([
+        test_name for launch_command in launch_commands
+        for test_name in launch_command.egtests_app.get_all_tests()
+    ])
+
     aborted_tests = list(all_tests_to_run - set(self.logs['failed tests']) -
                          set(self.logs['passed tests']))
     aborted_tests.sort()
@@ -455,6 +443,7 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
       app_path,
       host_app_path,
       out_dir,
+      release=False,
       retries=1,
       test_cases=None,
       test_args=None,
@@ -496,6 +485,7 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
     if host_app_path != 'NO_PATH':
       self.host_app_path = os.path.abspath(host_app_path)
     self.homedir = ''
+    self.release = release
     self.set_up()
     self._init_sharding_data()
     self.start_time = time.strftime('%Y-%m-%d-%H%M%S', time.localtime())

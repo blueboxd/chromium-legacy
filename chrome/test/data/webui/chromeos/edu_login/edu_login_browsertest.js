@@ -95,3 +95,36 @@ TEST_F('EduLoginParentsTest', 'GoNext', function() {
 TEST_F('EduLoginParentsTest', 'SelectedParent', function() {
   this.runMochaTest(edu_login_parents_tests.TestNames.SelectedParent);
 });
+
+var EduLoginParentSigninTest = class extends EduLoginTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://chrome-signin/test_loader.html?module=chromeos/edu_login/edu_login_parent_signin_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return edu_login_parent_signin_tests.suiteName;
+  }
+};
+
+TEST_F('EduLoginParentSigninTest', 'Initialize', function() {
+  this.runMochaTest(edu_login_parent_signin_tests.TestNames.Initialize);
+});
+
+TEST_F('EduLoginParentSigninTest', 'WrongPassword', function() {
+  this.runMochaTest(edu_login_parent_signin_tests.TestNames.WrongPassword);
+});
+
+TEST_F('EduLoginParentSigninTest', 'ParentSigninSuccess', function() {
+  this.runMochaTest(
+      edu_login_parent_signin_tests.TestNames.ParentSigninSuccess);
+});
+
+TEST_F('EduLoginParentSigninTest', 'ShowHidePassword', function() {
+  this.runMochaTest(edu_login_parent_signin_tests.TestNames.ShowHidePassword);
+});
+
+TEST_F('EduLoginParentSigninTest', 'ClearState', function() {
+  this.runMochaTest(edu_login_parent_signin_tests.TestNames.ClearState);
+});

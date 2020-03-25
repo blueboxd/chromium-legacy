@@ -8,8 +8,11 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
+
+namespace {
 
 class MockContext final : public GarbageCollected<MockContext>,
                           public ContextLifecycleNotifier {
@@ -42,12 +45,15 @@ class MockContext final : public GarbageCollected<MockContext>,
   HeapObserverList<ContextLifecycleObserver> observers_;
 };
 
-class ReceiverOwner : public GarbageCollected<ReceiverOwner>,
+template <HeapMojoWrapperMode Mode>
+class ReceiverOwner : public GarbageCollected<ReceiverOwner<Mode>>,
                       public sample::blink::Service {
  public:
   explicit ReceiverOwner(MockContext* context) : receiver_(this, context) {}
 
-  HeapMojoReceiver<sample::blink::Service>& receiver() { return receiver_; }
+  HeapMojoReceiver<sample::blink::Service, Mode>& receiver() {
+    return receiver_;
+  }
 
   void Trace(Visitor* visitor) { visitor->Trace(receiver_); }
 
@@ -59,10 +65,11 @@ class ReceiverOwner : public GarbageCollected<ReceiverOwner>,
                  sample::blink::Service::FrobinateCallback callback) override {}
   void GetPort(mojo::PendingReceiver<sample::blink::Port> port) override {}
 
-  HeapMojoReceiver<sample::blink::Service> receiver_;
+  HeapMojoReceiver<sample::blink::Service, Mode> receiver_;
 };
 
-class HeapMojoReceiverTest : public TestSupportingGC {
+template <HeapMojoWrapperMode Mode>
+class HeapMojoReceiverGCBaseTest : public TestSupportingGC {
  public:
   base::RunLoop& run_loop() { return run_loop_; }
   bool& disconnected() { return disconnected_; }
@@ -73,13 +80,13 @@ class HeapMojoReceiverTest : public TestSupportingGC {
   void SetUp() override {
     CHECK(!disconnected_);
     context_ = MakeGarbageCollected<MockContext>();
-    owner_ = MakeGarbageCollected<ReceiverOwner>(context_);
+    owner_ = MakeGarbageCollected<ReceiverOwner<Mode>>(context_);
     scoped_refptr<base::NullTaskRunner> null_task_runner =
         base::MakeRefCounted<base::NullTaskRunner>();
     remote_ = mojo::Remote<sample::blink::Service>(
         owner_->receiver().BindNewPipeAndPassRemote(null_task_runner));
     remote_.set_disconnect_handler(WTF::Bind(
-        [](HeapMojoReceiverTest* receiver_test) {
+        [](HeapMojoReceiverGCBaseTest* receiver_test) {
           receiver_test->run_loop().Quit();
           receiver_test->disconnected() = true;
         },
@@ -88,29 +95,82 @@ class HeapMojoReceiverTest : public TestSupportingGC {
   void TearDown() override { CHECK(disconnected_); }
 
   Persistent<MockContext> context_;
-  Persistent<ReceiverOwner> owner_;
+  Persistent<ReceiverOwner<Mode>> owner_;
   base::RunLoop run_loop_;
   mojo::Remote<sample::blink::Service> remote_;
   bool disconnected_ = false;
 };
 
-// Make HeapMojoReceiver garbage collected and check that the connection is
-// disconnected right after the marking phase.
-TEST_F(HeapMojoReceiverTest, ResetsOnGC) {
+template <HeapMojoWrapperMode Mode>
+class HeapMojoReceiverDestroyContextBaseTest : public TestSupportingGC {
+ protected:
+  void SetUp() override {
+    context_ = MakeGarbageCollected<MockContext>();
+    owner_ = MakeGarbageCollected<ReceiverOwner<Mode>>(context_);
+    scoped_refptr<base::NullTaskRunner> null_task_runner =
+        base::MakeRefCounted<base::NullTaskRunner>();
+    remote_ = mojo::Remote<sample::blink::Service>(
+        owner_->receiver().BindNewPipeAndPassRemote(null_task_runner));
+  }
+
+  Persistent<MockContext> context_;
+  Persistent<ReceiverOwner<Mode>> owner_;
+  mojo::Remote<sample::blink::Service> remote_;
+};
+
+}  // namespace
+
+class HeapMojoReceiverGCWithContextObserverTest
+    : public HeapMojoReceiverGCBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoReceiverGCWithoutContextObserverTest
+    : public HeapMojoReceiverGCBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+class HeapMojoReceiverDestroyContextWithContextObserverTest
+    : public HeapMojoReceiverDestroyContextBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoReceiverDestroyContextWithoutContextObserverTest
+    : public HeapMojoReceiverDestroyContextBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+
+// Make HeapMojoReceiver with context observer garbage collected and check that
+// the connection is disconnected right after the marking phase.
+TEST_F(HeapMojoReceiverGCWithContextObserverTest, ResetsOnGC) {
   ClearOwner();
   EXPECT_FALSE(disconnected());
-  PreciselyCollectGarbage(BlinkGC::kConcurrentAndLazySweeping);
+  PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
   CompleteSweepingIfNeeded();
 }
 
-// Destroy the context and check that the connection is disconnected.
-TEST_F(HeapMojoReceiverTest, ResetsOnContextDestroyed) {
+// Make HeapMojoReceiver without context observer garbage collected and check
+// that the connection is disconnected right after the marking phase.
+TEST_F(HeapMojoReceiverGCWithoutContextObserverTest, ResetsOnGC) {
+  ClearOwner();
   EXPECT_FALSE(disconnected());
-  context_->NotifyContextDestroyed();
+  PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
+  CompleteSweepingIfNeeded();
+}
+
+// Destroy the context with context observer and check that the connection is
+// disconnected.
+TEST_F(HeapMojoReceiverDestroyContextWithContextObserverTest,
+       ResetsOnContextDestroyed) {
+  EXPECT_TRUE(owner_->receiver().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_FALSE(owner_->receiver().is_bound());
+}
+
+// Destroy the context without context observer and check that the connection is
+// still connected.
+TEST_F(HeapMojoReceiverDestroyContextWithoutContextObserverTest,
+       ResetsOnContextDestroyed) {
+  EXPECT_TRUE(owner_->receiver().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_TRUE(owner_->receiver().is_bound());
 }
 
 }  // namespace blink

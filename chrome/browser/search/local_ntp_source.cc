@@ -84,6 +84,11 @@ using search_provider_logos::LogoCallbackReason;
 using search_provider_logos::LogoMetadata;
 using search_provider_logos::LogoService;
 
+const char kClockIconResourceName[] = "clock";
+const char kGoogleGIconResourceName[] = "google_g";
+const char kSearchIconResourceName[] = "search";
+const char kPageIconResourceName[] = "page";
+
 namespace {
 
 // Language code used to check features run in English in the US.
@@ -138,6 +143,10 @@ const struct Resource{
     // added complexity.
     {chrome::kChromeSearchLocalNtpBackgroundFilename, kLocalResource,
      "image/jpg"},
+    {kClockIconResourceName, IDR_LOCAL_NTP_ICONS_CLOCK, "image/svg+xml"},
+    {kGoogleGIconResourceName, IDR_WEBUI_IMAGES_200_LOGO_GOOGLE_G, "image/png"},
+    {kPageIconResourceName, IDR_LOCAL_NTP_ICONS_PAGE, "image/svg+xml"},
+    {kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH, "image/svg+xml"},
 };
 
 // This enum must match the numbering for NTPSearchSuggestionsRequestStatusi in
@@ -621,6 +630,9 @@ class LocalNtpSource::SearchConfigurationProvider
           "suggestionTransparencyEnabled",
           base::FeatureList::IsEnabled(
               omnibox::kOmniboxSuggestionTransparencyOptions));
+      config_data.SetBoolean(
+          "useGoogleGIcon",
+          base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon));
     }
 
     config_data.SetBoolean(
@@ -1040,8 +1052,8 @@ void LocalNtpSource::StartDataRequest(
 
     bool use_google_g_icon =
         base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon);
-    replacements["realboxIconClass"] =
-        use_google_g_icon ? "google-g-icon" : "search-icon";
+    replacements["realboxDefaultIcon"] =
+        use_google_g_icon ? kGoogleGIconResourceName : kSearchIconResourceName;
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);

@@ -8,8 +8,11 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
+
+namespace {
 
 class MockContext final : public GarbageCollected<MockContext>,
                           public ContextLifecycleNotifier {
@@ -59,18 +62,20 @@ class ServiceImpl : public sample::blink::Service {
   mojo::Receiver<sample::blink::Service> receiver_{this};
 };
 
-class RemoteOwner : public GarbageCollected<RemoteOwner> {
+template <HeapMojoWrapperMode Mode>
+class RemoteOwner : public GarbageCollected<RemoteOwner<Mode>> {
  public:
   explicit RemoteOwner(MockContext* context) : remote_(context) {}
 
-  HeapMojoRemote<sample::blink::Service>& remote() { return remote_; }
+  HeapMojoRemote<sample::blink::Service, Mode>& remote() { return remote_; }
 
   void Trace(Visitor* visitor) { visitor->Trace(remote_); }
 
-  HeapMojoRemote<sample::blink::Service> remote_;
+  HeapMojoRemote<sample::blink::Service, Mode> remote_;
 };
 
-class HeapMojoRemoteTest : public TestSupportingGC {
+template <HeapMojoWrapperMode Mode>
+class HeapMojoRemoteGCBaseTest : public TestSupportingGC {
  public:
   base::RunLoop& run_loop() { return run_loop_; }
   bool& disconnected() { return disconnected_; }
@@ -81,46 +86,96 @@ class HeapMojoRemoteTest : public TestSupportingGC {
   void SetUp() override {
     CHECK(!disconnected_);
     context_ = MakeGarbageCollected<MockContext>();
-    owner_ = MakeGarbageCollected<RemoteOwner>(context_);
+    owner_ = MakeGarbageCollected<RemoteOwner<Mode>>(context_);
     scoped_refptr<base::NullTaskRunner> null_task_runner =
         base::MakeRefCounted<base::NullTaskRunner>();
     impl_.receiver().Bind(
         owner_->remote().BindNewPipeAndPassReceiver(null_task_runner));
     impl_.receiver().set_disconnect_handler(WTF::Bind(
-        [](HeapMojoRemoteTest* remote_test) {
+        [](HeapMojoRemoteGCBaseTest* remote_test) {
           remote_test->run_loop().Quit();
           remote_test->disconnected() = true;
         },
         WTF::Unretained(this)));
   }
-  void TearDown() override {
-    // CHECK(disconnected_);
-  }
 
   ServiceImpl impl_;
   Persistent<MockContext> context_;
-  Persistent<RemoteOwner> owner_;
+  Persistent<RemoteOwner<Mode>> owner_;
   base::RunLoop run_loop_;
   bool disconnected_ = false;
 };
 
-// Make HeapMojoRemote garbage collected and check that the connection is
-// disconnected right after the marking phase.
-TEST_F(HeapMojoRemoteTest, ResetsOnGC) {
+template <HeapMojoWrapperMode Mode>
+class HeapMojoRemoteDestroyContextBaseTest : public TestSupportingGC {
+ protected:
+  void SetUp() override {
+    context_ = MakeGarbageCollected<MockContext>();
+    owner_ = MakeGarbageCollected<RemoteOwner<Mode>>(context_);
+    scoped_refptr<base::NullTaskRunner> null_task_runner =
+        base::MakeRefCounted<base::NullTaskRunner>();
+    impl_.receiver().Bind(
+        owner_->remote().BindNewPipeAndPassReceiver(null_task_runner));
+  }
+
+  ServiceImpl impl_;
+  Persistent<MockContext> context_;
+  Persistent<RemoteOwner<Mode>> owner_;
+};
+
+}  // namespace
+
+class HeapMojoRemoteGCWithContextObserverTest
+    : public HeapMojoRemoteGCBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoRemoteGCWithoutContextObserverTest
+    : public HeapMojoRemoteGCBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+class HeapMojoRemoteDestroyContextWithContextObserverTest
+    : public HeapMojoRemoteDestroyContextBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoRemoteDestroyContextWithoutContextObserverTest
+    : public HeapMojoRemoteDestroyContextBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+
+// Make HeapMojoRemote with context observer garbage collected and check that
+// the connection is disconnected right after the marking phase.
+TEST_F(HeapMojoRemoteGCWithContextObserverTest, ResetsOnGC) {
   ClearOwner();
   EXPECT_FALSE(disconnected());
-  PreciselyCollectGarbage(BlinkGC::kConcurrentAndLazySweeping);
+  PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
   CompleteSweepingIfNeeded();
 }
 
-// Destroy the context and check that the connection is disconnected.
-TEST_F(HeapMojoRemoteTest, ResetsOnContextDestroyed) {
+// Make HeapMojoRemote without context observer garbage collected and check that
+// the connection is disconnected right after the marking phase.
+TEST_F(HeapMojoRemoteGCWithoutContextObserverTest, ResetsOnGC) {
+  ClearOwner();
   EXPECT_FALSE(disconnected());
-  context_->NotifyContextDestroyed();
+  PreciselyCollectGarbage();
   run_loop().Run();
   EXPECT_TRUE(disconnected());
+  CompleteSweepingIfNeeded();
+}
+
+// Destroy the context with context observer and check that the connection is
+// disconnected.
+TEST_F(HeapMojoRemoteDestroyContextWithContextObserverTest,
+       ResetsOnContextDestroyed) {
+  EXPECT_TRUE(owner_->remote().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_FALSE(owner_->remote().is_bound());
+}
+
+// Destroy the context without context observer and check that the connection is
+// still connected.
+TEST_F(HeapMojoRemoteDestroyContextWithoutContextObserverTest,
+       ResetsOnContextDestroyed) {
+  EXPECT_TRUE(owner_->remote().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_TRUE(owner_->remote().is_bound());
 }
 
 }  // namespace blink

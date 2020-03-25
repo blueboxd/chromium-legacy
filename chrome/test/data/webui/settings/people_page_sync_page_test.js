@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {Router, routes, SyncBrowserProxyImpl, PageStatus, StatusAction} from 'chrome://settings/settings.js';
+// #import 'chrome://settings/lazy_load.js';
+// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {getSyncAllPrefs, setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
+// #import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 cr.define('settings_people_page_sync_page', function() {
   suite('SyncSettingsTests', function() {
     let syncPage = null;
@@ -14,7 +25,8 @@ cr.define('settings_people_page_sync_page', function() {
     function setupSyncPage() {
       PolymerTest.clearBody();
       syncPage = document.createElement('settings-sync-page');
-      settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+      const router = settings.Router.getInstance();
+      router.navigateTo(router.getRoutes().SYNC);
       // Preferences should exist for embedded
       // 'personalization_options.html'. We don't perform tests on them.
       syncPage.prefs = {
@@ -80,14 +92,15 @@ cr.define('settings_people_page_sync_page', function() {
     // #######################
 
     test('NotifiesHandlerOfNavigation', function() {
+      const router = settings.Router.getInstance();
       function testNavigateAway() {
-        settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
+        router.navigateTo(router.getRoutes().PEOPLE);
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
       }
 
       function testNavigateBack() {
         browserProxy.resetResolver('didNavigateToSyncPage');
-        settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+        router.navigateTo(router.getRoutes().SYNC);
         return browserProxy.whenCalled('didNavigateToSyncPage');
       }
 
@@ -100,7 +113,7 @@ cr.define('settings_people_page_sync_page', function() {
       function testRecreate() {
         browserProxy.resetResolver('didNavigateToSyncPage');
         syncPage = document.createElement('settings-sync-page');
-        settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+        router.navigateTo(router.getRoutes().SYNC);
 
         document.body.appendChild(syncPage);
         return browserProxy.whenCalled('didNavigateToSyncPage');
@@ -482,8 +495,8 @@ cr.define('settings_people_page_sync_page', function() {
       Polymer.dom.flush();
 
       assertEquals(
-          settings.routes.SYNC_ADVANCED,
-          settings.Router.getInstance().getCurrentRoute());
+          settings.routes.SYNC_ADVANCED.path,
+          settings.Router.getInstance().getCurrentRoute().path);
     });
 
     // This test checks whether the passphrase encryption options are
@@ -619,12 +632,11 @@ cr.define('settings_people_page_sync_page', function() {
 
         // Navigating away while setup is in progress opens the 'Cancel sync?'
         // dialog.
-        settings.Router.getInstance().navigateTo(settings.routes.BASIC);
+        const router = settings.Router.getInstance();
+        router.navigateTo(settings.routes.BASIC);
         return test_util.eventToPromise('cr-dialog-open', syncPage)
             .then(() => {
-              assertEquals(
-                  settings.routes.SYNC,
-                  settings.Router.getInstance().getCurrentRoute());
+              assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
               assertTrue(syncPage.$$('#setupCancelDialog').open);
 
               // Clicking the cancel button on the 'Cancel sync?' dialog closes
@@ -638,14 +650,12 @@ cr.define('settings_people_page_sync_page', function() {
             })
             .then(() => {
               Polymer.dom.flush();
-              assertEquals(
-                  settings.routes.SYNC,
-                  settings.Router.getInstance().getCurrentRoute());
+              assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
               assertFalse(!!syncPage.$$('#setupCancelDialog'));
 
               // Navigating away while setup is in progress opens the
               // dialog again.
-              settings.Router.getInstance().navigateTo(settings.routes.BASIC);
+              router.navigateTo(settings.routes.BASIC);
               return test_util.eventToPromise('cr-dialog-open', syncPage);
             })
             .then(() => {
@@ -671,8 +681,9 @@ cr.define('settings_people_page_sync_page', function() {
         Polymer.dom.flush();
 
         // Searching settings while setup is in progress cancels sync.
-        settings.Router.getInstance().navigateTo(
-            settings.routes.BASIC, new URLSearchParams('search=foo'));
+        const router = settings.Router.getInstance();
+        router.navigateTo(
+            router.getRoutes().BASIC, new URLSearchParams('search=foo'));
 
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
             .then(abort => {
@@ -704,4 +715,5 @@ cr.define('settings_people_page_sync_page', function() {
       });
     }
   });
+  // #cr_define_end
 });

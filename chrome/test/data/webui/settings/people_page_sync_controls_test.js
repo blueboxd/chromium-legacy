@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {SyncBrowserProxyImpl, StatusAction, Router} from 'chrome://settings/settings.js';
+// #import 'chrome://settings/lazy_load.js';
+// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {setupRouterWithSyncRoutes, getSyncAllPrefs} from 'chrome://test/settings/sync_test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 cr.define('settings_people_page_sync_controls', function() {
   suite('SyncControlsTest', function() {
     let syncControls = null;
@@ -124,16 +134,15 @@ cr.define('settings_people_page_sync_controls', function() {
       PolymerTest.clearBody();
 
       syncControls = document.createElement('settings-sync-controls');
-      settings.Router.getInstance().navigateTo(settings.routes.SYNC_ADVANCED);
+      const router = settings.Router.getInstance();
+      router.navigateTo(router.getRoutes().SYNC_ADVANCED);
       document.body.appendChild(syncControls);
 
       syncControls
           .syncStatus = {disabled: false, hasError: false, signedIn: true};
       Polymer.dom.flush();
 
-      assertEquals(
-          settings.routes.SYNC_ADVANCED,
-          settings.Router.getInstance().getCurrentRoute());
+      assertEquals(router.getRoutes().SYNC_ADVANCED, router.getCurrentRoute());
     });
 
     teardown(function() {
@@ -143,9 +152,8 @@ cr.define('settings_people_page_sync_controls', function() {
     test('SignedOut', function() {
       syncControls
           .syncStatus = {disabled: false, hasError: false, signedIn: false};
-      assertEquals(
-          settings.routes.SYNC,
-          settings.Router.getInstance().getCurrentRoute());
+      const router = settings.Router.getInstance();
+      assertEquals(router.getRoutes().SYNC.path, router.getCurrentRoute().path);
     });
 
     test('PassphraseError', function() {
@@ -155,9 +163,9 @@ cr.define('settings_people_page_sync_controls', function() {
         signedIn: true,
         statusAction: settings.StatusAction.ENTER_PASSPHRASE
       };
+      const router = settings.Router.getInstance();
       assertEquals(
-          settings.routes.SYNC_ADVANCED,
-          settings.Router.getInstance().getCurrentRoute());
+          router.getRoutes().SYNC_ADVANCED.path, router.getCurrentRoute().path);
     });
 
     test('SyncPaused', function() {
@@ -167,9 +175,8 @@ cr.define('settings_people_page_sync_controls', function() {
         signedIn: true,
         statusAction: settings.StatusAction.REAUTHENTICATE
       };
-      assertEquals(
-          settings.routes.SYNC,
-          settings.Router.getInstance().getCurrentRoute());
+      const router = settings.Router.getInstance();
+      assertEquals(router.getRoutes().SYNC.path, router.getCurrentRoute().path);
     });
   });
 
@@ -253,4 +260,5 @@ cr.define('settings_people_page_sync_controls', function() {
           .then(prefs => assertPrefs(prefs, datatypeControls));
     });
   });
+  // #cr_define_end
 });

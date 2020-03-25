@@ -38,6 +38,9 @@ js_modulizer("modulize") {
     "password_check_test.js",
     "passwords_section_test.js",
     "payments_section_test.js",
+    "people_page_test.js",
+    "people_page_sync_controls_test.js",
+    "people_page_sync_page_test.js",
     "prefs_test_cases.js",
     "prefs_tests.js",
     "pref_util_tests.js",
@@ -69,6 +72,7 @@ js_modulizer("modulize") {
     "test_metrics_browser_proxy.js",
     "test_open_window_proxy.js",
     "test_password_manager_proxy.js",
+    "test_profile_info_browser_proxy.js",
     "test_reset_browser_proxy.js",
     "test_search_engines_browser_proxy.js",
     "test_site_settings_prefs_browser_proxy.js",
@@ -85,6 +89,7 @@ js_modulizer("modulize") {
     input_files += [
       "passwords_section_test_cros.js",
       "site_list_tests_cros.js",
+      "people_page_test_cros.js",
       "test_android_info_browser_proxy.js",
     ]
   } else {
@@ -123,7 +128,9 @@ js_modulizer("modulize") {
                          "settings_search.createSampleSearchEngine|createSampleSearchEngine",
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
                          "sync_test_util.getSyncAllPrefs|getSyncAllPrefs",
+                         "sync_test_util.setupRouterWithSyncRoutes|setupRouterWithSyncRoutes",
                          "sync_test_util.simulateSyncStatus|simulateSyncStatus",
+                         "sync_test_util.simulateStoredAccounts|simulateStoredAccounts",
                          "test_util.createContentSettingTypeToValuePair|createContentSettingTypeToValuePair",
                          "test_util.createDefaultContentSetting|createDefaultContentSetting",
                          "test_util.createRawChooserException|createRawChooserException",

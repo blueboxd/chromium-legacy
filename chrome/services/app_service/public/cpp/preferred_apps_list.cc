@@ -70,6 +70,20 @@ void PreferredAppsList::DeletePreferredApp(
   }
 }
 
+// static
+void PreferredAppsList::DeleteAppId(const std::string& app_id,
+                                    PreferredApps* preferred_apps) {
+  auto iter = preferred_apps->begin();
+  // Go through the list and delete the entry with requested app_id.
+  while (iter != preferred_apps->end()) {
+    if ((*iter)->app_id == app_id) {
+      iter = preferred_apps->erase(iter);
+    } else {
+      iter++;
+    }
+  }
+}
+
 base::Optional<std::string> PreferredAppsList::FindPreferredAppForIntent(
     const apps::mojom::IntentPtr& intent) {
   base::Optional<std::string> best_match_app_id = base::nullopt;
@@ -104,6 +118,10 @@ void PreferredAppsList::DeletePreferredApp(
     const std::string& app_id,
     const apps::mojom::IntentFilterPtr& intent_filter) {
   DeletePreferredApp(app_id, intent_filter, &preferred_apps_);
+}
+
+void PreferredAppsList::DeleteAppId(const std::string& app_id) {
+  DeleteAppId(app_id, &preferred_apps_);
 }
 
 }  // namespace apps

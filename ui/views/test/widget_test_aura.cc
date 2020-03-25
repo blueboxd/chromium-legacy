@@ -88,7 +88,7 @@ std::vector<aura::Window*> GetAllTopLevelWindows() {
   DCHECK(aura_test_helper) << "Can't find all widgets without a test helper";
 #endif
   if (aura_test_helper)
-    roots.push_back(aura_test_helper->root_window());
+    roots.push_back(aura_test_helper->GetContext());
   return roots;
 }
 

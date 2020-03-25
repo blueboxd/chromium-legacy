@@ -32,6 +32,10 @@ export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_bro
 export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.m.js';
 // </if>
 
+// <if expr="chromeos">
+export {AccountManagerBrowserProxyImpl} from './people_page/account_manager_browser_proxy.m.js';
+// </if>
+
 export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
@@ -44,6 +48,7 @@ export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';
 export {OpenWindowProxyImpl} from './open_window_proxy.m.js';
 export {PageStatus, StatusAction, SyncBrowserProxyImpl} from './people_page/sync_browser_proxy.m.js';
+export {ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_proxy.m.js';
 export {pageVisibility} from './page_visibility.m.js';
 export {PasswordManagerImpl} from './autofill_page/password_manager_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';

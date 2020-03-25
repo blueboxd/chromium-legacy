@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 from mock import patch
 import os
-import shard_util
 import unittest
+
+import shard_util
 
 DEBUG_APP_OTOOL_OUTPUT = '\n'.join([
     'Meta Class', 'name 0x1064b8438 CacheTestCase',
@@ -50,9 +52,7 @@ class TestShardUtil(unittest.TestCase):
     app = 'some_ios_test.app'
 
     actual_path = shard_util.determine_app_path(app)
-    expected_path = os.path.join('/b/s/w/ir/ios/build/bots/scripts',
-                                 '../../../..', 'out/Debug', app,
-                                 'some_ios_test')
+    expected_path = os.path.join('/b/s/w/ir', 'out/Debug', app, 'some_ios_test')
     self.assertEqual(actual_path, expected_path)
 
   @patch('shard_util.os.path.abspath')
@@ -62,46 +62,71 @@ class TestShardUtil(unittest.TestCase):
     host = 'some_host.app'
 
     actual_path = shard_util.determine_app_path(app, host)
-    expected_path = os.path.join('/b/s/w/ir/ios/build/bots/scripts',
-                                 '../../../..', 'out/Debug', app, 'PlugIns',
+    expected_path = os.path.join('/b/s/w/ir', 'out/Debug', app, 'PlugIns',
                                  'some_ios_test.xctest', 'some_ios_test')
     self.assertEqual(actual_path, expected_path)
 
-  def test_fetch_debug_ok(self):
+  @patch('shard_util.os.path.abspath')
+  def test_determine_path_eg2_release(self, mock_abspath):
+    mock_abspath.return_value = '/b/s/w/ir/ios/build/bots/scripts/share_util.py'
+    app = 'some_ios_test-Runner.app'
+    host = 'some_host.app'
+
+    actual_path = shard_util.determine_app_path(app, host, True)
+    expected_path = os.path.join('/b/s/w/ir', 'out/Release', app, 'PlugIns',
+                                 'some_ios_test.xctest', 'some_ios_test')
+    self.assertEqual(actual_path, expected_path)
+
+  def test_fetch_test_names_debug(self):
     """Ensures that the debug output is formatted correctly"""
-    resp = shard_util.fetch_counts_for_debug(DEBUG_APP_OTOOL_OUTPUT)
-    self.assertEqual(len(resp), 5)
+    resp = shard_util.fetch_test_names_for_debug(DEBUG_APP_OTOOL_OUTPUT)
+    self.assertEqual(len(resp), 8)
+    expected_test_names = [('CacheTestCase', 'testA'), ('CacheTestCase',
+                                                        'testB'),
+                           ('CacheTestCase', 'testc'), ('TabUITestCase',
+                                                        'testD'),
+                           ('TabUITestCase', 'testE'),
+                           ('KeyboardTestCase', 'testF'),
+                           ('PasswordsTestCase', 'testG'),
+                           ('ToolBarTestCase', 'testH')]
+    for test_name in expected_test_names:
+      self.assertTrue(test_name in resp)
+
+    test_cases = map(lambda (test_case, test_method): test_case, resp)
 
     # ({'CacheTestCase': 3, 'TabUITestCase': 2, 'PasswordsTestCase': 1,
     # 'KeyboardTestCase': 1, 'ToolBarTestCase': 1})
-    counts = resp.most_common()
+    counts = collections.Counter(test_cases).most_common()
     name, _ = counts[0]
     self.assertEqual(name, 'CacheTestCase')
 
-  def test_fetch_release_ok(self):
+  def test_fetch_test_counts_release(self):
     """Ensures that the release output is formatted correctly"""
-    resp = shard_util.fetch_counts_for_release(RELEASE_APP_OTOOL_OUTPUT)
-    self.assertEqual(len(resp), 4)
+    resp = shard_util.fetch_test_names_for_release(RELEASE_APP_OTOOL_OUTPUT)
+    self.assertEqual(len(resp), 8)
 
+    expected_test_names = [('CacheTestCase', 'testA'), ('CacheTestCase',
+                                                        'testB'),
+                           ('CacheTestCase', 'testc'), ('KeyboardTest',
+                                                        'testD'),
+                           ('KeyboardTest', 'testE'), ('KeyboardTest', 'testF'),
+                           ('ToolBarTestCase', 'testG'),
+                           ('ToolBarTestCase', 'testH')]
+    for test_name in expected_test_names:
+      self.assertTrue(test_name in resp)
+
+    test_cases = map(lambda (test_case, test_method): test_case, resp)
     # ({'KeyboardTest': 3, 'CacheTestCase': 3,
-    # 'ToolBarTestCase': 2, 'TabUITestCase': 0})
-    counts = resp.most_common()
+    # 'ToolBarTestCase': 2})
+    counts = collections.Counter(test_cases).most_common()
     name, _ = counts[0]
     self.assertEqual(name, 'KeyboardTest')
 
-  def test_fetch_test_counts_debug(self):
-    """Ensure the coordinator functions as designed, for release"""
-    test_counts = shard_util.fetch_test_counts(DEBUG_APP_OTOOL_OUTPUT, False)
-    self.assertEqual(len(test_counts), 5)
-
-  def test_fetch_test_counts_release(self):
-    """Ensure the coordinator functions as designed, for release"""
-    test_counts = shard_util.fetch_test_counts(RELEASE_APP_OTOOL_OUTPUT, True)
-    self.assertEqual(len(test_counts), 4)
-
   def test_balance_into_sublists_debug(self):
     """Ensure the balancing algorithm works"""
-    test_counts = shard_util.fetch_test_counts(DEBUG_APP_OTOOL_OUTPUT, False)
+    resp = shard_util.fetch_test_names_for_debug(DEBUG_APP_OTOOL_OUTPUT)
+    test_cases = map(lambda (test_case, test_method): test_case, resp)
+    test_counts = collections.Counter(test_cases)
 
     sublists_1 = shard_util.balance_into_sublists(test_counts, 1)
     self.assertEqual(len(sublists_1), 1)
@@ -118,16 +143,18 @@ class TestShardUtil(unittest.TestCase):
 
   def test_balance_into_sublists_release(self):
     """Ensure the balancing algorithm works"""
-    test_counts = shard_util.fetch_test_counts(RELEASE_APP_OTOOL_OUTPUT, True)
+    resp = shard_util.fetch_test_names_for_release(RELEASE_APP_OTOOL_OUTPUT)
+    test_cases = map(lambda (test_case, test_method): test_case, resp)
+    test_counts = collections.Counter(test_cases)
 
     sublists_3 = shard_util.balance_into_sublists(test_counts, 3)
     self.assertEqual(len(sublists_3), 3)
     # KeyboardTest has 3
     # CacheTestCase has 3
-    # ToolbarTest Case has 2, TabUITestCase has 0
+    # ToolbarTest Case has 2
     self.assertEqual(len(sublists_3[0]), 1)
     self.assertEqual(len(sublists_3[1]), 1)
-    self.assertEqual(len(sublists_3[2]), 2)
+    self.assertEqual(len(sublists_3[2]), 1)
 
 
 if __name__ == '__main__':

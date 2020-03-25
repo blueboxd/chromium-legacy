@@ -21,7 +21,11 @@ patch applied.
 
 ## Starting a perf try job
 
-Visit [Pinpoint](https://pinpoint-dot-chromeperf.appspot.com) and click the perf try button in the bottom right corner of the screen.
+* Visit [Pinpoint](https://pinpoint-dot-chromeperf.appspot.com).
+* Check the upper-right corner of the page. If you see a "Sign in" link,
+  click it and sign in with an account that has trybot access.
+  (If the link shows "Sign out", then you are already signed in.)
+* Click the perf try button in the bottom right corner of the screen.
 
 ![Pinpoint Perf Try Button](images/pinpoint-perf-try-button.png)
 

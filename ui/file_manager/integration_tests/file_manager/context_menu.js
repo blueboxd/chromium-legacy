@@ -388,7 +388,8 @@ testcase.checkContextMenusForInputElements = async () => {
   // Focus the search box.
   chrome.test.assertEq(2, elements.length);
   for (const element of elements) {
-    chrome.test.assertEq('#text-context-menu', element.attributes.contextmenu);
+    chrome.test.assertEq(
+        '#text-context-menu', element.attributes['contextmenu']);
   }
 
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -784,5 +785,5 @@ testcase.checkContextMenuFocus = async () => {
   // Check currently focused element.
   const focusedElement =
       await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
-  chrome.test.assertEq('menuitem', focusedElement.attributes.role);
+  chrome.test.assertEq('menuitem', focusedElement.attributes['role']);
 };

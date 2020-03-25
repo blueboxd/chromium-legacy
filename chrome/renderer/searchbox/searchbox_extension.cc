@@ -455,6 +455,7 @@ base::Value CreateAutocompleteMatches(
     dict.SetStringKey("inlineAutocompletion", match->inline_autocompletion);
     dict.SetBoolKey("isSearchType", match->is_search_type);
     dict.SetStringKey("fillIntoEdit", match->fill_into_edit);
+    dict.SetStringKey("iconUrl", match->icon_url);
     dict.SetStringKey("imageDominantColor", match->image_dominant_color);
     dict.SetStringKey("imageUrl", match->image_url);
     dict.SetBoolKey("swapContentsAndDescription",

@@ -36,6 +36,12 @@ public final class DeveloperUiService extends Service {
     private static final String CHANNEL_ID = "DevUiChannel";
     private static final int FLAG_OVERRIDE_NOTIFICATION_ID = 1;
 
+    // Keep in sync with MainActivity.java
+    private static final String FRAGMENT_ID_INTENT_EXTRA = "fragment-id";
+    private static final int FRAGMENT_ID_HOME = 0;
+    private static final int FRAGMENT_ID_CRASHES = 1;
+    private static final int FRAGMENT_ID_FLAGS = 2;
+
     private static final Object sLock = new Object();
     @GuardedBy("sLock")
     private static Map<String, Boolean> sOverriddenFlags = new HashMap<>();
@@ -106,7 +112,8 @@ public final class DeveloperUiService extends Service {
 
         Intent notificationIntent = new Intent();
         notificationIntent.setClassName(
-                getPackageName(), "org.chromium.android_webview.devui.FlagsActivity");
+                getPackageName(), "org.chromium.android_webview.devui.MainActivity");
+        notificationIntent.putExtra(FRAGMENT_ID_INTENT_EXTRA, FRAGMENT_ID_FLAGS);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         Notification.Builder builder =

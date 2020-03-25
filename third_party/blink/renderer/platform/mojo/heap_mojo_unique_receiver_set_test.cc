@@ -11,10 +11,12 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
 namespace {
+
 class FakeContextNotifier final : public GarbageCollected<FakeContextNotifier>,
                                   public ContextLifecycleNotifier {
   USING_GARBAGE_COLLECTED_MIXIN(FakeContextNotifier);
@@ -46,27 +48,34 @@ class FakeContextNotifier final : public GarbageCollected<FakeContextNotifier>,
   HeapObserverList<ContextLifecycleObserver> observers_;
 };
 
-class GCOwner : public GarbageCollected<GCOwner> {
+template <HeapMojoWrapperMode Mode>
+class GCOwner : public GarbageCollected<GCOwner<Mode>> {
  public:
   explicit GCOwner(FakeContextNotifier* context) : receiver_set_(context) {}
   void Trace(Visitor* visitor) { visitor->Trace(receiver_set_); }
 
-  HeapMojoUniqueReceiverSet<sample::blink::Service>& receiver_set() {
+  HeapMojoUniqueReceiverSet<sample::blink::Service,
+                            std::default_delete<sample::blink::Service>,
+                            Mode>&
+  receiver_set() {
     return receiver_set_;
   }
 
  private:
-  HeapMojoUniqueReceiverSet<sample::blink::Service> receiver_set_;
+  HeapMojoUniqueReceiverSet<sample::blink::Service,
+                            std::default_delete<sample::blink::Service>,
+                            Mode>
+      receiver_set_;
 };
 
-}  // namespace
-class HeapMojoUniqueReceiverSetTest : public TestSupportingGC {
+template <HeapMojoWrapperMode Mode>
+class HeapMojoUniqueReceiverSetBaseTest : public TestSupportingGC {
  public:
   FakeContextNotifier* context() { return context_; }
   scoped_refptr<base::NullTaskRunner> task_runner() {
     return null_task_runner_;
   }
-  GCOwner* owner() { return owner_; }
+  GCOwner<Mode>* owner() { return owner_; }
 
   void ClearOwner() { owner_ = nullptr; }
 
@@ -75,22 +84,32 @@ class HeapMojoUniqueReceiverSetTest : public TestSupportingGC {
  protected:
   void SetUp() override {
     context_ = MakeGarbageCollected<FakeContextNotifier>();
-    owner_ = MakeGarbageCollected<GCOwner>(context());
+    owner_ = MakeGarbageCollected<GCOwner<Mode>>(context());
   }
   void TearDown() override {}
 
   Persistent<FakeContextNotifier> context_;
-  Persistent<GCOwner> owner_;
+  Persistent<GCOwner<Mode>> owner_;
   scoped_refptr<base::NullTaskRunner> null_task_runner_ =
       base::MakeRefCounted<base::NullTaskRunner>();
   bool service_deleted_ = false;
 };
 
+class HeapMojoUniqueReceiverSetWithContextObserverTest
+    : public HeapMojoUniqueReceiverSetBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoUniqueReceiverSetWithoutContextObserverTest
+    : public HeapMojoUniqueReceiverSetBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+
+}  // namespace
+
 namespace {
 
+template <typename T>
 class MockService : public sample::blink::Service {
  public:
-  explicit MockService(HeapMojoUniqueReceiverSetTest* test) : test_(test) {}
+  explicit MockService(T* test) : test_(test) {}
   // Notify the test when the service is deleted by the UniqueReceiverSet.
   ~MockService() override { test_->MarkServiceDeleted(); }
 
@@ -101,16 +120,17 @@ class MockService : public sample::blink::Service {
   void GetPort(mojo::PendingReceiver<sample::blink::Port> receiver) override {}
 
  private:
-  HeapMojoUniqueReceiverSetTest* test_;
+  T* test_;
 };
 
 }  // namespace
 
-// GC the HeapMojoUniqueReceiverSet and verify that the receiver is no longer
-// part of the set, and that the service was deleted.
-TEST_F(HeapMojoUniqueReceiverSetTest, ResetsOnGC) {
+// GC the HeapMojoUniqueReceiverSet with context observer and verify that the
+// receiver is no longer part of the set, and that the service was deleted.
+TEST_F(HeapMojoUniqueReceiverSetWithContextObserverTest, ResetsOnGC) {
   auto receiver_set = owner()->receiver_set();
-  auto service = std::make_unique<MockService>(this);
+  auto service = std::make_unique<
+      MockService<HeapMojoUniqueReceiverSetWithContextObserverTest>>(this);
   auto receiver = mojo::PendingReceiver<sample::blink::Service>(
       mojo::MessagePipe().handle0);
 
@@ -120,18 +140,63 @@ TEST_F(HeapMojoUniqueReceiverSetTest, ResetsOnGC) {
   EXPECT_FALSE(service_deleted_);
 
   ClearOwner();
-  PreciselyCollectGarbage(BlinkGC::kConcurrentAndLazySweeping);
+  PreciselyCollectGarbage();
 
   EXPECT_TRUE(service_deleted_);
 
   CompleteSweepingIfNeeded();
 }
 
-// Destroy the context and verify that the receiver is no longer
-// part of the set, and that the service was deleted.
-TEST_F(HeapMojoUniqueReceiverSetTest, ResetsOnContextDestroyed) {
+// GC the HeapMojoUniqueReceiverSet without context observer and verify that the
+// receiver is no longer part of the set, and that the service was deleted.
+TEST_F(HeapMojoUniqueReceiverSetWithoutContextObserverTest, ResetsOnGC) {
+  auto receiver_set = owner()->receiver_set();
+  auto service = std::make_unique<
+      MockService<HeapMojoUniqueReceiverSetWithoutContextObserverTest>>(this);
+  auto receiver = mojo::PendingReceiver<sample::blink::Service>(
+      mojo::MessagePipe().handle0);
+
+  mojo::ReceiverId rid =
+      receiver_set.Add(std::move(service), std::move(receiver), task_runner());
+  EXPECT_TRUE(receiver_set.HasReceiver(rid));
+  EXPECT_FALSE(service_deleted_);
+
+  ClearOwner();
+  PreciselyCollectGarbage();
+
+  EXPECT_TRUE(service_deleted_);
+
+  CompleteSweepingIfNeeded();
+}
+
+// Destroy the context with context observer and verify that the receiver is no
+// longer part of the set, and that the service was deleted.
+TEST_F(HeapMojoUniqueReceiverSetWithContextObserverTest,
+       ResetsOnContextDestroyed) {
   HeapMojoUniqueReceiverSet<sample::blink::Service> receiver_set(context());
-  auto service = std::make_unique<MockService>(this);
+  auto service = std::make_unique<
+      MockService<HeapMojoUniqueReceiverSetWithContextObserverTest>>(this);
+  auto receiver = mojo::PendingReceiver<sample::blink::Service>(
+      mojo::MessagePipe().handle0);
+
+  mojo::ReceiverId rid =
+      receiver_set.Add(std::move(service), std::move(receiver), task_runner());
+  EXPECT_TRUE(receiver_set.HasReceiver(rid));
+  EXPECT_FALSE(service_deleted_);
+
+  context_->NotifyContextDestroyed();
+
+  EXPECT_FALSE(receiver_set.HasReceiver(rid));
+  EXPECT_TRUE(service_deleted_);
+}
+
+// Destroy the context without context observer and verify that the receiver is
+// no longer part of the set, and that the service was deleted.
+TEST_F(HeapMojoUniqueReceiverSetWithoutContextObserverTest,
+       ResetsOnContextDestroyed) {
+  HeapMojoUniqueReceiverSet<sample::blink::Service> receiver_set(context());
+  auto service = std::make_unique<
+      MockService<HeapMojoUniqueReceiverSetWithoutContextObserverTest>>(this);
   auto receiver = mojo::PendingReceiver<sample::blink::Service>(
       mojo::MessagePipe().handle0);
 

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/favicon_cache.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,6 +39,10 @@
 namespace content {
 class WebContents;
 struct LoadCommittedDetails;
+}
+
+namespace gfx {
+class Image;
 }
 
 class AutocompleteController;
@@ -177,6 +183,10 @@ class SearchTabHelper : public content::WebContentsObserver,
                        const std::string& image_url,
                        const SkBitmap& bitmap);
 
+  void OnFaviconFetched(int match_index,
+                        const std::string& page_url,
+                        const gfx::Image& favicon);
+
   Profile* profile() const;
 
   // Returns whether input is in progress, i.e. if the omnibox has focus and the
@@ -206,6 +216,10 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
   base::TimeTicks time_of_first_autocomplete_query_;
+
+  base::CancelableTaskTracker cancelable_task_tracker_;
+
+  FaviconCache favicon_cache_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

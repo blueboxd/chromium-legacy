@@ -57,7 +57,7 @@ namespace {
 const char kFileHandlingOriginTrial[] = "FileHandling";
 
 // Use #if defined to avoid compiler error on unused function.
-#if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
+#if defined(OS_CHROMEOS)
 
 // A convenience method to create OriginTrialsMap. Note, we only support simple
 // cases for chrome:// and chrome-untrusted:// URLs. We don't support complex
@@ -72,7 +72,7 @@ url::Origin GetOrigin(const char* url) {
   return origin;
 }
 
-#endif  // OS_CHROMEOS && !OFFICIAL_BUILD
+#endif  // OS_CHROMEOS
 
 base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   base::flat_map<SystemAppType, SystemAppInfo> infos;
@@ -124,6 +124,8 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.at(SystemAppType::MEDIA).include_launch_directory = true;
     infos.at(SystemAppType::MEDIA).show_in_launcher = false;
     infos.at(SystemAppType::MEDIA).show_in_search = false;
+    infos.at(SystemAppType::MEDIA).enabled_origin_trials =
+        OriginTrialsMap({{GetOrigin("chrome://media-app"), {"FileHandling"}}});
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::PRINT_MANAGEMENT)) {

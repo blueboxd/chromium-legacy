@@ -15,8 +15,12 @@
         layout="@layout/persistent_error_message"
         android:id="@+id/webview_package_error"/>
 
-    <ListView
-        android:id="@+id/main_info_list"
+    <include
+        layout="@layout/persistent_error_message"
+        android:id="@+id/crash_consent_error"/>
+
+    <FrameLayout
+        android:id="@+id/content_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

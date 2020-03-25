@@ -144,6 +144,7 @@ class Runner():
             self.args.version,
             self.args.platform,
             out_dir=self.args.out_dir,
+            release=self.args.release,
             retries=self.args.retries,
             shards=self.args.shards,
             test_cases=self.args.test_cases,
@@ -188,6 +189,7 @@ class Runner():
             app_path=self.args.app,
             host_app_path=self.args.host_app,
             out_dir=self.args.out_dir,
+            release=self.args.release,
             retries=self.args.retries,
             test_cases=self.args.test_cases,
             test_args=self.test_args,
@@ -313,6 +315,12 @@ class Runner():
         help='Platform to simulate.',
         metavar='sim',
     )
+    #TODO(crbug.com/1056887): Implement this arg in infra.
+    parser.add_argument(
+        '--release',
+        help='Indicates if this is a release build.',
+        action='store_true',
+    )
     parser.add_argument(
         '--replay-path',
         help=('Path to a directory containing WPR replay and recipe files, for '
@@ -437,6 +445,9 @@ class Runner():
     args, test_args = parser.parse_known_args(args)
     load_from_json(args)
     validate(args)
+    # TODO(crbug.com/1056820): |app| won't contain "Debug" or "Release" after
+    # recipe migrations.
+    args.release = args.release or (args.app and "Release" in args.app)
     self.args = args
     self.test_args = test_args
 

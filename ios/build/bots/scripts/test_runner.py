@@ -314,23 +314,6 @@ def get_xctest_from_app(app):
   return None
 
 
-def get_test_names(app_path):
-  """Gets list of tests from test app.
-
-  Args:
-     app_path: A path to test target bundle.
-
-  Returns:
-     List of tests.
-  """
-  cmd = ['otool', '-ov', app_path]
-  test_pattern = re.compile(
-      'imp (?:0[xX][0-9a-fA-F]+ )?-\['
-      '(?P<testSuite>[A-Za-z_][A-Za-z0-9_]*Test(?:Case)?)\s'
-      '(?P<testMethod>test[A-Za-z0-9_]*)\]')
-  return test_pattern.findall(subprocess.check_output(cmd))
-
-
 class TestRunner(object):
   """Base class containing common functionality."""
 

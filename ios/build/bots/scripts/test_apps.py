@@ -8,6 +8,7 @@ import plistlib
 import subprocess
 import time
 
+import shard_util
 import test_runner
 
 
@@ -79,6 +80,7 @@ class GTestsApp(object):
                excluded_tests=None,
                test_args=None,
                env_vars=None,
+               release=False,
                host_app_path=None):
     """Initialize Egtests.
 
@@ -93,6 +95,7 @@ class GTestsApp(object):
       test_args: List of strings to pass as arguments to the test when
         launching.
       env_vars: List of environment variables to pass to the test itself.
+      release: (bool) Whether the app is release build.
 
     Raises:
       AppNotFoundError: If the given app does not exist
@@ -109,6 +112,7 @@ class GTestsApp(object):
     self.included_tests = included_tests or []
     self.excluded_tests = excluded_tests or []
     self.module_name = os.path.splitext(os.path.basename(test_app))[0]
+    self.release = release
     self.host_app_path = host_app_path
 
   def fill_xctest_run(self, out_dir):
@@ -227,6 +231,22 @@ class GTestsApp(object):
               '-parallel-testing-worker-count', str(shards)]
     return cmd
 
+  def get_all_tests(self):
+    """Gets all tests to run in this object."""
+    # Method names that starts with test* and also are in *TestCase classes
+    # but they are not test-methods.
+    # TODO(crbug.com/982435): Rename not test methods with test-suffix.
+    none_tests = ['ChromeTestCase/testServer', 'FindInPageTestCase/testURL']
+    all_tests = []
+    for test_class, test_method in shard_util.fetch_test_names(
+        self.test_app_path, self.host_app_path, self.release):
+      test_name = '%s/%s' % (test_class, test_method)
+      if (test_name not in none_tests and
+          # Filter by self.included_tests if specified
+          (test_class in self.included_tests if self.included_tests else True)):
+        all_tests.append(test_name)
+    return all_tests
+
 
 class EgtestsApp(GTestsApp):
   """Egtests to run.
@@ -245,6 +265,7 @@ class EgtestsApp(GTestsApp):
                excluded_tests=None,
                test_args=None,
                env_vars=None,
+               release=False,
                host_app_path=None):
     """Initialize Egtests.
 
@@ -264,9 +285,9 @@ class EgtestsApp(GTestsApp):
     Raises:
       AppNotFoundError: If the given app does not exist
     """
-    super(EgtestsApp, self).__init__(egtests_app, included_tests,
-                                     excluded_tests, test_args, env_vars,
-                                     host_app_path)
+    super(EgtestsApp,
+          self).__init__(egtests_app, included_tests, excluded_tests, test_args,
+                         env_vars, release, host_app_path)
 
   def _xctest_path(self):
     """Gets xctest-file from egtests/PlugIns folder.

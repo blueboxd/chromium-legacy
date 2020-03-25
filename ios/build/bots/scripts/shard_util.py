@@ -27,36 +27,38 @@ TEST_NAME_RELEASE_APP_PATTERN = re.compile(
 IGNORED_CLASSES = ['BaseEarlGreyTestCase', 'ChromeTestCase']
 
 
-def determine_app_path(app, host_app=None):
+def determine_app_path(app, host_app=None, release=False):
   """String manipulate args.app and args.host to determine what path to use
     for otools
 
     Args:
         app: (string) args.app
         host_app: (string) args.host_app
+        release: (bool) whether it's a release app
 
     Returns:
         (string) path to app for otools to analyze
     """
   # run.py invoked via ../../ios/build/bots/scripts/, so we reverse this
   dirname = os.path.dirname(os.path.abspath(__file__))
-  # location of app: /b/s/w/ir/out/Debug/test.app
-  full_app_path = os.path.join(dirname, '../../../..', 'out/Debug', app)
+
+  build_type = "Release" if release else "Debug"
+  # location of app: /b/s/w/ir/out/{build_type}/test.app
+  full_app_path = os.path.normpath(
+      os.path.join(dirname, '../../../..', 'out', build_type, app))
 
   # ie/ if app_path = "../../some.app", app_name = some
-  start_idx = 0
-  if '/' in app:
-    start_idx = app.rindex('/')
-  app_name = app[start_idx:app.rindex('.app')]
+  app_name = os.path.basename(app)
+  app_name = app_name[:app_name.rindex('.app')]
 
-  # Default app_path looks like /b/s/w/ir/out/Debug/test.app/test
+  # Default app_path looks like /b/s/w/ir/out/{build_type}/test.app/test
   app_path = os.path.join(full_app_path, app_name)
 
   if host_app and host_app != 'NO_PATH':
     LOGGER.debug("Detected EG2 test while building application path. "
                  "Host app: {}".format(host_app))
     # EG2 tests always end in -Runner, so we split that off
-    app_name = app[:app.rindex('-Runner')]
+    app_name = app_name[:app_name.rindex('-Runner')]
     app_path = os.path.join(full_app_path, 'PlugIns',
                             '{}.xctest'.format(app_name), app_name)
 
@@ -77,17 +79,18 @@ def _execute(cmd):
   return stdout
 
 
-def fetch_counts_for_release(stdout):
-  """Invoke otools to determine the number of test case methods
+def fetch_test_names_for_release(stdout):
+  """Parse otool output to get all testMethods in all TestCases in the
+     format of (TestCase, testMethod), in release app.
 
-     WARNING: This logic is a duplicate of what's found in
+     WARNING: This logic is similar to what's found in
       //build/scripts/slave/recipe_modules/ios/api.py
 
     Args:
         stdout: (string) response of 'otool -ov'
 
     Returns:
-        (collections.Counter) dict of test case to number of test case methods
+        (list) a list of (TestCase, testMethod)
     """
   # For Release builds `otool -ov` command generates output that is
   # different from Debug builds.
@@ -99,47 +102,54 @@ def fetch_counts_for_release(stdout):
   res = re.split(TEST_CLASS_RELEASE_APP_PATTERN, stdout)
   # Ignore 1st element in split since it does not have any test class data
   test_classes_output = res[1:]
+  test_names = []
   for test_class, class_output in zip(test_classes_output[0::2],
                                       test_classes_output[1::2]):
     if test_class in IGNORED_CLASSES:
       continue
-    names = TEST_NAME_RELEASE_APP_PATTERN.findall(class_output)
-    test_counts[test_class] = test_counts.get(test_class, 0) + len(set(names))
+    methods = TEST_NAME_RELEASE_APP_PATTERN.findall(class_output)
+    test_names.extend((test_class, test_method) for test_method in methods)
+  return test_names
 
-  return collections.Counter(test_counts)
 
-
-def fetch_counts_for_debug(stdout):
-  """Invoke otools to determine the number of test case methods
+def fetch_test_names_for_debug(stdout):
+  """Parse otool output to get all testMethods in all TestCases in the
+     format of (TestCase, testMethod), in debug app.
 
     Args:
         stdout: (string) response of 'otool -ov'
 
     Returns:
-        (collections.Counter) dict of test case to number of test case methods
+        (list) a list of (TestCase, testMethod)
     """
   test_names = TEST_NAMES_DEBUG_APP_PATTERN.findall(stdout)
-  test_counts = collections.Counter(test_class for test_class, _ in test_names
-                                    if test_class not in IGNORED_CLASSES)
-
-  return test_counts
+  return filter(lambda (test_case, _): test_case not in IGNORED_CLASSES,
+                test_names)
 
 
-def fetch_test_counts(stdout, release=False):
-  """Determine the number of test case methods per test class.
+def fetch_test_names(app, host_app, release=False):
+  """Determine the list of (TestCase, testMethod) for the app.
 
     Args:
-        app_path: (string) path to app
+        app: (string) path to app
+        host_app: (string) path to host app. None or "NO_PATH" for EG1.
+        release: (bool) whether this is a release build.
 
     Returns:
-        (collections.Counter) dict of test_case to number of test case methods
+        (list) a list of (TestCase, testMethod)
     """
+  # Determine what path to use
+  app_path = determine_app_path(app, host_app, release)
+
+  # Use otools to get the test counts
+  cmd = ['otool', '-ov', app_path]
+  stdout = _execute(cmd)
   LOGGER.info("Ignored test classes: {}".format(IGNORED_CLASSES))
   if release:
-    LOGGER.info("Release build detected. Fetching count for release.")
-    return fetch_counts_for_release(stdout)
+    LOGGER.info("Release build detected. Fetching test names for release.")
+    return fetch_test_names_for_release(stdout)
 
-  return fetch_counts_for_debug(stdout)
+  return fetch_test_names_for_debug(stdout)
 
 
 def balance_into_sublists(test_counts, total_shards):
@@ -188,21 +198,10 @@ def shard_test_cases(args, shard_index, total_shards):
   dict_args = vars(args)
   app = dict_args['app']
   host_app = dict_args.get('host_app', None)
+  release = dict_args.get('release', False)
 
-  # Determine what path to use
-  app_path = determine_app_path(app, host_app)
-
-  # release argument is passed by MB only when is_debug=False.
-  # 'Release' can also be set in path for this file (out/Release), so we'll
-  # check for either.
-  release = (
-      dict_args.get('release', False) or 'Release' in os.path.abspath(__file__))
-
-  # Use otools to get the test counts
-  cmd = ['otool', '-ov', app_path]
-  stdout = _execute(cmd)
-
-  test_counts = fetch_test_counts(stdout, release)
+  test_counts = collections.Counter(
+      test_class for test_class, _ in fetch_test_names(app, host_app, release))
 
   # Ensure shard and total shard is int
   shard_index = int(shard_index)

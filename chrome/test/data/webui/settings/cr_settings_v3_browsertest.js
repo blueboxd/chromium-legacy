@@ -190,6 +190,59 @@ TEST_F('CrSettingsPeoplePageManageProfileV3Test', 'All', function() {
 GEN('#endif  // !defined(OS_CHROMEOS)');
 
 // eslint-disable-next-line no-var
+var CrSettingsPeoplePageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/people_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPeoplePageV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#if defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsPeoplePageChromeOSV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/people_page_test_cros.m.js';
+  }
+};
+
+TEST_F('CrSettingsPeoplePageChromeOSV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsPeoplePageSyncControlsV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/people_page_sync_controls_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPeoplePageSyncControlsV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsPeoplePageSyncPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/people_page_sync_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPeoplePageSyncPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsPrefUtilV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {

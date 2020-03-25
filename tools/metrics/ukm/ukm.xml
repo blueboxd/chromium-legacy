@@ -6380,6 +6380,26 @@ be describing additional metrics about the same event.
       Measure of memory consumed by XSL Stylesheet resources in Blink Web Cache.
     </summary>
   </metric>
+  <metric name="WebMediaPlayer.Audio">
+    <summary>
+      Measure of total memory used by media/webmediaplayer/audio.
+    </summary>
+  </metric>
+  <metric name="WebMediaPlayer.DataSource">
+    <summary>
+      Measure of total memory used by media/webmediaplayer/data_source.
+    </summary>
+  </metric>
+  <metric name="WebMediaPlayer.Demuxer">
+    <summary>
+      Measure of total memory used by media/webmediaplayer/demuxer.
+    </summary>
+  </metric>
+  <metric name="WebMediaPlayer.Video">
+    <summary>
+      Measure of total memory used by media/webmediaplayer/video.
+    </summary>
+  </metric>
 </event>
 
 <event name="Memory.TabFootprint">

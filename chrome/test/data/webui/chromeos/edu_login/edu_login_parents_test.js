@@ -10,6 +10,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+import {getFakeParent} from './edu_login_test_util.js';
 
 window.edu_login_parents_tests = {};
 edu_login_parents_tests.suiteName = 'EduLoginParentsTest';
@@ -21,22 +22,6 @@ edu_login_parents_tests.TestNames = {
   GoNext: 'go-next event should be fired when parent is selected',
   SelectedParent: 'Selected parent',
 };
-
-/**
- * @param {string} email
- * @param {string} displayName
- * @param {string} profileImage
- * @param {string} obfuscatedGaiaId
- * @return {ParentAccount}
- */
-function getFakeParent(email, displayName, profileImage, obfuscatedGaiaId) {
-  return {
-    email: email,
-    displayName: displayName,
-    profileImage: profileImage,
-    obfuscatedGaiaId: obfuscatedGaiaId,
-  };
-}
 
 /** @return {Array<ParentAccount>} */
 function getFakeParentsList() {

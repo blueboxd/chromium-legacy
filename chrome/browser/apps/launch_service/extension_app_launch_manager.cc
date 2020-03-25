@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/launch_service/extension_app_launch_manager.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -57,7 +58,7 @@ void ExtensionAppLaunchManager::LaunchApplication(
     container = apps::mojom::LaunchContainer::kLaunchContainerTab;
   } else {
     // Open an empty browser window as the app_id is invalid.
-    CreateNewTabBrowser();
+    CreateBrowserWithNewTabPage(profile());
     container = apps::mojom::LaunchContainer::kLaunchContainerNone;
   }
   std::move(callback).Run(BrowserList::GetInstance()->GetLastActive(),

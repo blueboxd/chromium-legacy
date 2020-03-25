@@ -246,7 +246,7 @@ void RenderViewHostTestHarness::SetUp() {
 
   aura_test_helper_.reset(new aura::test::AuraTestHelper());
   aura_test_helper_->SetUp(context_factory);
-  new wm::DefaultActivationClient(aura_test_helper_->root_window());
+  new wm::DefaultActivationClient(aura_test_helper_->GetContext());
 #endif
 
   sanity_checker_.reset(new ContentBrowserSanityChecker());

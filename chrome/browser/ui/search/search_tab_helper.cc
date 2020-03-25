@@ -20,6 +20,8 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/extension_checkup.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +29,7 @@
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
@@ -53,6 +56,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -66,6 +70,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/suggestion_answer.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
@@ -75,6 +80,7 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -86,9 +92,25 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
 namespace {
+
+// TODO(mahmadi): Make sure all the vector icons returned by
+// AutocompleteMatch::GetVectorIcon have an equivalent SVG resource.
+std::string AutocompleteMatchVectorIconToResourceName(
+    const gfx::VectorIcon& icon) {
+  if (icon.name == omnibox::kClockIcon.name) {
+    return kClockIconResourceName;
+  } else if (icon.name == omnibox::kPageIcon.name) {
+    return kPageIconResourceName;
+  } else if (icon.name == vector_icons::kSearchIcon.name) {
+    return kSearchIconResourceName;
+  } else {
+    return "";
+  }
+}
 
 std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     const AutocompleteResult& result) {
@@ -111,6 +133,8 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                                                     description_class.style));
     }
     mojom_match->destination_url = match.destination_url.spec();
+    mojom_match->icon_url =
+        AutocompleteMatchVectorIconToResourceName(match.GetVectorIcon(false));
     mojom_match->image_dominant_color = match.image_dominant_color;
     mojom_match->image_url = match.image_url.spec();
     mojom_match->fill_into_edit = match.fill_into_edit;
@@ -123,6 +147,13 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     matches.push_back(std::move(mojom_match));
   }
   return matches;
+}
+
+// Converts an in-memory bitmap data to a base64 data url.
+std::string GetBitmapDataUrl(const char* data, size_t size) {
+  std::string base_64;
+  base::Base64Encode(base::StringPiece(data, size), &base_64);
+  return "data:image/png;base64," + base_64;
 }
 
 bool IsCacheableNTP(content::WebContents* contents) {
@@ -177,7 +208,13 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
       ipc_router_(web_contents,
                   this,
                   std::make_unique<SearchIPCRouterPolicyImpl>(web_contents)),
-      instant_service_(nullptr) {
+      instant_service_(nullptr),
+      favicon_cache_(FaviconServiceFactory::GetForProfile(
+                         profile(),
+                         ServiceAccessType::EXPLICIT_ACCESS),
+                     HistoryServiceFactory::GetForProfile(
+                         profile(),
+                         ServiceAccessType::EXPLICIT_ACCESS)) {
   DCHECK(search::IsInstantExtendedAPIEnabled());
 
   instant_service_ = InstantServiceFactory::GetForProfile(profile());
@@ -467,20 +504,33 @@ void SearchTabHelper::OnResultChanged(AutocompleteController* controller,
       autocomplete_controller_->input().text(),
       CreateAutocompleteMatches(autocomplete_controller_->result())));
 
-  // Create new bitmap requests.
   BitmapFetcherService* bitmap_fetcher_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile());
 
   int match_index = -1;
   for (const auto& match : autocomplete_controller_->result()) {
     match_index++;
-    if (match.ImageUrl().is_empty()) {
-      continue;
+
+    // Create new bitmap requests.
+    if (!match.image_url.is_empty()) {
+      bitmap_fetcher_service->RequestImage(
+          match.image_url, base::BindOnce(&SearchTabHelper::OnBitmapFetched,
+                                          weak_factory_.GetWeakPtr(),
+                                          match_index, match.image_url.spec()));
     }
-    bitmap_fetcher_service->RequestImage(
-        match.ImageUrl(), base::BindOnce(&SearchTabHelper::OnBitmapFetched,
-                                         weak_factory_.GetWeakPtr(),
-                                         match_index, match.ImageUrl().spec()));
+
+    // Request favicons for navigational matches.
+    if (!AutocompleteMatch::IsSearchType(match.type) &&
+        match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+      gfx::Image favicon = favicon_cache_.GetLargestFaviconForPageUrl(
+          match.destination_url,
+          base::BindOnce(&SearchTabHelper::OnFaviconFetched,
+                         weak_factory_.GetWeakPtr(), match_index,
+                         match.destination_url.spec()));
+      if (!favicon.IsEmpty()) {
+        OnFaviconFetched(match_index, match.destination_url.spec(), favicon);
+      }
+    }
   }
 }
 
@@ -503,13 +553,19 @@ void SearchTabHelper::OnBitmapFetched(int match_index,
                                       const std::string& image_url,
                                       const SkBitmap& bitmap) {
   auto data = gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
-  std::string base_64;
-  base::Base64Encode(base::StringPiece(data->front_as<char>(), data->size()),
-                     &base_64);
-  const char kDataUrlPrefix[] = "data:image/png;base64,";
-  std::string data_url = GURL(kDataUrlPrefix + base_64).spec();
+  std::string data_url = GetBitmapDataUrl(data->front_as<char>(), data->size());
 
   ipc_router_.AutocompleteMatchImageAvailable(match_index, image_url, data_url);
+}
+
+void SearchTabHelper::OnFaviconFetched(int match_index,
+                                       const std::string& page_url,
+                                       const gfx::Image& favicon) {
+  DCHECK(!favicon.IsEmpty());
+  auto data = favicon.As1xPNGBytes();
+  std::string data_url = GetBitmapDataUrl(data->front_as<char>(), data->size());
+
+  ipc_router_.AutocompleteMatchImageAvailable(match_index, page_url, data_url);
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {

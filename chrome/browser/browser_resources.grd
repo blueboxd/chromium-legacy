@@ -109,6 +109,11 @@
         <include name="IDR_OFFLINE_INTERNALS_BROWSER_PROXY_JS" file="resources\offline_pages\offline_internals_browser_proxy.js" type="BINDATA" compress="gzip" />
       </if>
 
+      <if expr="not is_android">
+        <!-- New Tab Page -->
+        <part file="resources/local_ntp/icons.grdp" />
+      </if>
+
       <if expr="enable_supervised_users">
         <part file="resources/supervised_user_error_page_resources.grdp" />
       </if>

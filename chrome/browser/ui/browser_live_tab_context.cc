@@ -9,7 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/token.h"
-#include "chrome/browser/apps/launch_service/app_utils.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"

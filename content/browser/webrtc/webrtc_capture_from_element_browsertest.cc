@@ -23,8 +23,7 @@
 // process and hence does not support capture: https://crbug.com/641559.
 #define MAYBE_CaptureFromMediaElement DISABLED_CaptureFromMediaElement
 #else
-// crbug.com/769903: Disabling due to TSAN error.
-#define MAYBE_CaptureFromMediaElement DISABLED_CaptureFromMediaElement
+#define MAYBE_CaptureFromMediaElement CaptureFromMediaElement
 #endif
 
 namespace {
@@ -125,16 +124,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
                        MAYBE_CaptureFromMediaElement) {
-#if defined(OS_ANDROID)
-  // TODO(mcasas): flaky on Lollipop Low-End devices, investigate and reconnect
-  // https://crbug.com/626299
-  if (base::SysInfo::IsLowEndDevice() &&
-      base::android::BuildInfo::GetInstance()->sdk_int() <
-          base::android::SDK_VERSION_MARSHMALLOW) {
-    return;
-  }
-#endif
-
   MakeTypicalCall(JsReplace("testCaptureFromMediaElement($1, $2, $3, $4)",
                             GetParam().filename, GetParam().has_video,
                             GetParam().has_audio, GetParam().use_audio_tag),

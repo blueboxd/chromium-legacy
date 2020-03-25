@@ -111,7 +111,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
 
     helper_ = std::make_unique<aura::test::AuraTestHelper>();
     helper_->SetUp(context_factories_->GetContextFactory());
-    new ::wm::DefaultActivationClient(helper_->root_window());
+    new ::wm::DefaultActivationClient(root_window());
   }
 
   void TearDown() override {
@@ -126,13 +126,13 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
 
  protected:
   aura::Window* test_window() { return test_window_.get(); }
-  aura::Window* root_window() { return helper_->root_window(); }
-  aura::TestScreen* test_screen() { return helper_->test_screen(); }
+  aura::Window* root_window() { return helper_->GetContext(); }
+  aura::TestScreen* test_screen() { return helper_->GetTestScreen(); }
 
   void WaitForDraw() {
-    helper_->host()->compositor()->ScheduleDraw();
+    helper_->GetHost()->compositor()->ScheduleDraw();
     ui::DrawWaiterForTest::WaitForCompositingEnded(
-        helper_->host()->compositor());
+        helper_->GetHost()->compositor());
   }
 
   void SetupTestWindow(const gfx::Rect& window_bounds) {

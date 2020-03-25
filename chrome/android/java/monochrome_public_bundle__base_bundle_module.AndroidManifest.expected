@@ -1023,22 +1023,6 @@
           android:value="true"/>
     </activity>
     <activity
-        android:label="WebView
-        Crashes"
-        android:launchMode="singleTop"
-        android:name="org.chromium.android_webview.devui.CrashesListActivity"
-        android:process=":webview_apk"
-        android:taskAffinity="org.chromium.chrome.org.chromium.android_webview.devui"
-        android:theme="@style/Theme.DevUi.DayNight"/>
-    <activity
-        android:label="WebView
-        Flags"
-        android:launchMode="singleTop"
-        android:name="org.chromium.android_webview.devui.FlagsActivity"
-        android:process=":webview_apk"
-        android:taskAffinity="org.chromium.chrome.org.chromium.android_webview.devui"
-        android:theme="@style/Theme.DevUi.DayNight"/>
-    <activity
         android:enabled="false"
         android:excludeFromRecents="true"
         android:exported="true"

@@ -29,11 +29,13 @@ import './site_settings/chooser_exception_list.m.js';
 // import './site_settings/zoom_levels.m.js';
 
 // <if expr="not chromeos">
-import './people_page/manage_profile.m.js';
 import './people_page/import_data_dialog.m.js';
+import './people_page/manage_profile.m.js';
 // </if>
 import './people_page/signout_dialog.m.js';
 import './people_page/sync_account_control.m.js';
+import './people_page/sync_controls.m.js';
+import './people_page/sync_page.m.js';
 
 // <if expr="use_nss_certs">
 import 'chrome://resources/cr_components/certificate_manager/certificate_manager.m.js';
@@ -85,7 +87,6 @@ export {AutofillManagerImpl} from './autofill_page/autofill_section.m.js';
 export {PaymentsManagerImpl} from './autofill_page/payments_section.m.js';
 export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
-export {SyncBrowserProxyImpl, PageStatus} from './people_page/sync_browser_proxy.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
 export {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SITE_EXCEPTION_WILDCARD,SortMethod} from './site_settings/constants.m.js';

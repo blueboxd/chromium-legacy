@@ -254,7 +254,7 @@ class RenderViewHostTestHarness : public testing::Test {
   BrowserTaskEnvironment* task_environment() { return task_environment_.get(); }
 
 #if defined(USE_AURA)
-  aura::Window* root_window() { return aura_test_helper_->root_window(); }
+  aura::Window* root_window() { return aura_test_helper_->GetContext(); }
 #endif
 
   // Replaces the RPH being used.

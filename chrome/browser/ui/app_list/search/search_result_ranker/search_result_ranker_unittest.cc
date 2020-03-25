@@ -147,10 +147,6 @@ class SearchResultRankerTest : public testing::Test {
         base::BindRepeating(&BuildHistoryService));
 
     profile_ = profile_builder.Build();
-
-    history_service_ = std::make_unique<history::HistoryService>();
-    history_service_->Init(
-        history::TestHistoryDatabaseParamsForPath(temp_dir_.GetPath()));
     Wait();
   }
 
@@ -170,8 +166,7 @@ class SearchResultRankerTest : public testing::Test {
   }
 
   std::unique_ptr<SearchResultRanker> MakeRanker() {
-    return std::make_unique<SearchResultRanker>(profile_.get(),
-                                                history_service_.get());
+    return std::make_unique<SearchResultRanker>(profile_.get());
   }
 
   Mixer::SortedResults MakeSearchResults(const std::vector<std::string>& ids,
@@ -189,8 +184,6 @@ class SearchResultRankerTest : public testing::Test {
     return new SearchControllerFake(profile_.get());
   }
 
-  history::HistoryService* history_service() { return history_service_.get(); }
-
   void Wait() { task_environment_.RunUntilIdle(); }
 
   // This is used only to make the ownership clear for the TestSearchResult
@@ -204,7 +197,6 @@ class SearchResultRankerTest : public testing::Test {
 
   ScopedFeatureList scoped_feature_list_;
 
-  std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<Profile> profile_;
 
   const base::HistogramTester histogram_tester_;
@@ -214,7 +206,6 @@ class SearchResultRankerTest : public testing::Test {
   // should add their flag here.
   std::vector<base::Feature> all_feature_flags_ = {
       app_list_features::kEnableAppRanker,
-      app_list_features::kEnableQueryBasedMixedTypesRanker,
       app_list_features::kEnableZeroStateMixedTypesRanker};
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultRankerTest);
@@ -245,34 +236,6 @@ TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
   ranker->Rank(&results);
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("A"), HasId("B"),
                                               HasId("C"), HasId("D"))));
-}
-
-TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
-  EnableOneFeature(
-      app_list_features::kEnableQueryBasedMixedTypesRanker,
-      {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
-  auto ranker = MakeRanker();
-  ranker->InitializeRankers(MakeSearchController());
-  Wait();
-
-  AppLaunchData app_launch_data;
-  app_launch_data.id = "unused";
-  app_launch_data.ranking_item_type = RankingItemType::kFile;
-  app_launch_data.query = "query";
-
-  for (int i = 0; i < 20; ++i)
-    ranker->Train(app_launch_data);
-  ranker->FetchRankings(base::string16());
-
-  auto results =
-      MakeSearchResults({"A", "B", "C", "D"},
-                        {ResultType::kOmnibox, ResultType::kOmnibox,
-                         ResultType::kLauncher, ResultType::kLauncher},
-                        {0.5f, 0.6f, 0.45f, 0.46f});
-
-  ranker->Rank(&results);
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("D"), HasId("C"),
-                                              HasId("B"), HasId("A"))));
 }
 
 TEST_F(SearchResultRankerTest, AppModelImprovesScores) {
@@ -320,245 +283,6 @@ TEST_F(SearchResultRankerTest, AppModelImprovesScores) {
   // B half as much, and C and D not at all. So we expect A > B > D > C.
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("A"), HasId("B"),
                                               HasId("D"), HasId("C"))));
-}
-
-TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
-  // Without the |use_category_model| parameter, the ranker defaults to the item
-  // model.  With the |config| parameter, the ranker uses the default predictor
-  // for the RecurrenceRanker.
-  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
-                   {{"boost_coefficient", "1.0"}});
-
-  base::RunLoop run_loop;
-  auto ranker = MakeRanker();
-  ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers(MakeSearchController());
-  run_loop.Run();
-  Wait();
-
-  AppLaunchData app_launch_data_c;
-  app_launch_data_c.id = "C";
-  app_launch_data_c.ranking_item_type = RankingItemType::kFile;
-  app_launch_data_c.query = "query";
-
-  AppLaunchData app_launch_data_d;
-  app_launch_data_d.id = "D";
-  app_launch_data_d.ranking_item_type = RankingItemType::kFile;
-  app_launch_data_d.query = "query";
-
-  for (int i = 0; i < 10; ++i) {
-    ranker->Train(app_launch_data_c);
-    ranker->Train(app_launch_data_d);
-  }
-  ranker->FetchRankings(base::UTF8ToUTF16("query"));
-
-  // The types associated with these results don't match what was trained on,
-  // to check that the type is irrelevant to the item model.
-  auto results = MakeSearchResults({"A", "B", "C", "D"},
-                                   {ResultType::kOmnibox, ResultType::kOmnibox,
-                                    ResultType::kOmnibox, ResultType::kOmnibox},
-                                   {0.3f, 0.2f, 0.1f, 0.1f});
-
-  ranker->Rank(&results);
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("D"), HasId("C"),
-                                              HasId("A"), HasId("B"))));
-}
-
-// URL IDs should ignore the query and fragment, and URLs for google docs should
-// ignore a trailing /view or /edit.
-TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
-  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
-                   {{"boost_coefficient", "1.0"}});
-
-  // We want |url_1| and |_3| to be equivalent to |url_2| and |_4|. So, train on
-  // 1 and 3 but rank 2 and 4. Even with zero relevance, they should be at the
-  // top of the rankings.
-  const std::string& url_1 = "http://docs.google.com/mydoc/edit?query";
-  const std::string& url_2 = "http://docs.google.com/mydoc/view#fragment";
-  const std::string& url_3 = "some.domain.com?query#edit";
-  const std::string& url_4 = "some.domain.com";
-
-  base::RunLoop run_loop;
-  auto ranker = MakeRanker();
-  ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers(MakeSearchController());
-  run_loop.Run();
-  Wait();
-
-  AppLaunchData app_launch_data_1;
-  app_launch_data_1.id = url_1;
-  app_launch_data_1.ranking_item_type = RankingItemType::kOmniboxGeneric;
-  app_launch_data_1.query = "query";
-  AppLaunchData app_launch_data_3;
-  app_launch_data_3.id = url_3;
-  app_launch_data_3.ranking_item_type = RankingItemType::kOmniboxGeneric;
-  app_launch_data_3.query = "query";
-
-  for (int i = 0; i < 5; ++i) {
-    ranker->Train(app_launch_data_1);
-    ranker->Train(app_launch_data_3);
-  }
-  ranker->FetchRankings(base::UTF8ToUTF16("query"));
-
-  auto results = MakeSearchResults(
-      {url_2, url_4, "untrained id"},
-      {ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kOmnibox},
-      {0.0f, 0.0f, 0.1f});
-
-  ranker->Rank(&results);
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId(url_4), HasId(url_2),
-                                              HasId("untrained id"))));
-}
-
-// Ensure that a JSON config deployed via Finch results in the correct model
-// being constructed.
-TEST_F(SearchResultRankerTest, QueryMixedModelConfigDeployment) {
-  const std::string json = R"({
-      "min_seconds_between_saves": 250,
-      "target_limit": 100,
-      "target_decay": 0.5,
-      "condition_limit": 50,
-      "condition_decay": 0.7,
-      "predictor": {
-        "predictor_type": "exponential weights ensemble",
-        "learning_rate": 1.6,
-        "predictors": [
-          {"predictor_type": "default"},
-          {"predictor_type": "markov"},
-          {"predictor_type": "frecency", "decay_coeff": 0.8}
-        ]
-      }
-    })";
-
-  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
-                   {{"boost_coefficient", "1.0"}, {"config", json}});
-
-  base::RunLoop run_loop;
-  auto ranker = MakeRanker();
-  ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers(MakeSearchController());
-  run_loop.Run();
-  Wait();
-
-  EXPECT_EQ(std::string(ranker->query_based_mixed_types_ranker_
-                            ->GetPredictorNameForTesting()),
-            "ExponentialWeightsEnsemble");
-}
-
-// Tests that, when a URL is deleted from the history service, the query-based
-// mixed-types model deletes it in memory and from disk.
-TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
-  // Create ranker.
-  const std::string json = R"({
-      "min_seconds_between_saves": 1000,
-      "target_limit": 100,
-      "target_decay": 0.5,
-      "condition_limit": 10,
-      "condition_decay": 0.5,
-      "predictor": {
-        "predictor_type": "fake"
-      }
-    })";
-
-  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
-                   {{"boost_coefficient", "1.0"}, {"config", json}});
-
-  base::RunLoop run_loop;
-  auto ranker = MakeRanker();
-  ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
-  ranker->InitializeRankers(MakeSearchController());
-  run_loop.Run();
-  Wait();
-
-  const base::FilePath model_path =
-      profile_->GetPath().AppendASCII("query_based_mixed_types_ranker.pb");
-
-  // Train the model on two URLs.
-  const std::string url_1 = "http://www.google.com/testing";
-  AppLaunchData url_1_data;
-  url_1_data.id = url_1;
-  url_1_data.ranking_item_type = RankingItemType::kOmniboxGeneric;
-  url_1_data.query = "query";
-  ranker->Train(url_1_data);
-  ranker->Train(url_1_data);
-
-  const std::string url_2 = "http://www.other.com";
-  AppLaunchData url_2_data;
-  url_2_data.id = url_2;
-  url_2_data.ranking_item_type = RankingItemType::kOmniboxGeneric;
-  url_2_data.query = "query";
-  ranker->Train(url_2_data);
-
-  // Expect the scores of the urls to reflect their training.
-  {
-    ranker->FetchRankings(base::UTF8ToUTF16("query"));
-    auto results = MakeSearchResults(
-        {url_1, url_2, "untrained"},
-        {ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kOmnibox},
-        {0.0f, 0.0f, 0.5f});
-    ranker->Rank(&results);
-    EXPECT_THAT(results, UnorderedElementsAre(HasIdScore(url_1, 2.0f),
-                                              HasIdScore(url_2, 1.0f),
-                                              HasIdScore("untrained", 0.5f)));
-  }
-
-  // Delete the model file from disk and make sure it's gone.
-  base::DeleteFile(model_path, false);
-  EXPECT_FALSE(base::PathExists(model_path));
-
-  // Advance mock time by more than |min_seconds_between_saves| to make sure the
-  // file will be written again upon modification.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2 * 1000));
-
-  // Modify the history.
-  history_service()->AddPage(GURL(url_1), base::Time::Now(),
-                             history::VisitSource::SOURCE_BROWSED);
-  history_service()->DeleteURLs({GURL(url_1)});
-
-  // Wait for history transactions to be complete.
-  history::BlockUntilHistoryProcessesPendingRequests(history_service());
-  Wait();
-
-  // Verify that the modifications triggered a write of the model.
-  EXPECT_TRUE(base::PathExists(model_path));
-
-  // Force cache expiry.
-  ranker->time_of_last_fetch_ = base::Time();
-
-  // Expect the score of |url_1| to be 0.0, it should have been deleted from
-  // the model.
-  {
-    ranker->FetchRankings(base::UTF8ToUTF16("query"));
-    auto results = MakeSearchResults(
-        {url_1, url_2, "untrained"},
-        {ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kOmnibox},
-        {0.0f, 0.0f, 0.5f});
-    ranker->Rank(&results);
-    EXPECT_THAT(results, UnorderedElementsAre(HasIdScore(url_1, 0.0f),
-                                              HasIdScore(url_2, 1.0f),
-                                              HasIdScore("untrained", 0.5f)));
-  }
-
-  // Load a new ranker from disk and ensure |url_1| hasn't been retained.
-  base::RunLoop new_run_loop;
-  auto new_ranker =
-      std::make_unique<SearchResultRanker>(profile_.get(), history_service());
-  new_ranker->set_json_config_parsed_for_testing(new_run_loop.QuitClosure());
-  new_ranker->InitializeRankers(MakeSearchController());
-  new_run_loop.Run();
-  Wait();
-
-  {
-    new_ranker->FetchRankings(base::UTF8ToUTF16("query"));
-    auto results = MakeSearchResults(
-        {url_1, url_2, "untrained"},
-        {ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kOmnibox},
-        {0.0f, 0.0f, 0.5f});
-    new_ranker->Rank(&results);
-    EXPECT_THAT(results, UnorderedElementsAre(HasIdScore(url_1, 0.0f),
-                                              HasIdScore(url_2, 1.0f),
-                                              HasIdScore("untrained", 0.5f)));
-  }
 }
 
 TEST_F(SearchResultRankerTest, ZeroStateGroupModelDisabledWithFlag) {

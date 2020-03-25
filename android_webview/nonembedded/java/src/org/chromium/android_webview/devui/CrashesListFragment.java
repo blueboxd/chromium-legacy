@@ -18,7 +18,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +33,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
+import androidx.fragment.app.Fragment;
 
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.DeveloperModeUtils;
@@ -38,7 +41,6 @@ import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.common.crash.CrashUploadUtil;
-import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.base.CommandLine;
@@ -52,17 +54,17 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * An activity to show a list of recent WebView crashes.
+ * A fragment to show a list of recent WebView crashes.
  */
-public class CrashesListActivity extends Activity {
+public class CrashesListFragment extends Fragment {
     private static final String TAG = "WebViewDevTools";
 
     // Max number of crashes to show in the crashes list.
     private static final int MAX_CRASHES_NUMBER = 20;
 
     private CrashListExpandableAdapter mCrashListViewAdapter;
-    private WebViewPackageError mDifferentPackageError;
     private PersistentErrorView mCrashConsentError;
+    private Context mContext;
 
     // There is a limit on the length of this query string, see https://crbug.com/1015923
     // TODO(https://crbug.com/1052295): add assert statement to check the length of this String.
@@ -96,31 +98,40 @@ public class CrashesListActivity extends Activity {
             + "Crash ID: http://crash/%s\n";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_crashes_list);
-
-        mCrashListViewAdapter = new CrashListExpandableAdapter();
-        ExpandableListView crashListView = findViewById(R.id.crashes_list);
-        crashListView.setAdapter(mCrashListViewAdapter);
-
-        mDifferentPackageError = new WebViewPackageError(this);
-        mCrashConsentError =
-                buildCrashConsentError(PlatformServiceBridge.getInstance().canUseGms());
-
-        // show the dialog once when the activity is created.
-        mDifferentPackageError.showDialogIfDifferent();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        // Check package status in onResume() to hide/show the error message if the user
-        // changes WebView implementation from system settings and then returns back to the
-        // activity.
-        mDifferentPackageError.showMessageIfDifferent();
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
+    @Override
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_crashes_list, null);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        Activity activity = (Activity) mContext;
+        activity.setTitle("WebView Crashes");
+
+        TextView crashesSummaryView = view.findViewById(R.id.crashes_summary_textview);
+        mCrashListViewAdapter = new CrashListExpandableAdapter(crashesSummaryView);
+        ExpandableListView crashListView = view.findViewById(R.id.crashes_list);
+        crashListView.setAdapter(mCrashListViewAdapter);
+
+        mCrashConsentError =
+                buildCrashConsentError(PlatformServiceBridge.getInstance().canUseGms());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         // Check if crash collection is enabled and show or hide the error message.
         // Firstly, check for the flag value in commandline, since it doesn't require any IPCs.
         // Then check for flags value in the DeveloperUi ContentProvider (it involves an IPC but
@@ -147,8 +158,8 @@ public class CrashesListActivity extends Activity {
     }
 
     private boolean isCrashUploadsEnabledFromFlagsUi() {
-        if (DeveloperModeUtils.isDeveloperModeEnabled(getPackageName())) {
-            return DeveloperModeUtils.getFlagOverrides(getPackageName())
+        if (DeveloperModeUtils.isDeveloperModeEnabled(mContext.getPackageName())) {
+            return DeveloperModeUtils.getFlagOverrides(mContext.getPackageName())
                     .getOrDefault(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH, false);
         }
         return false;
@@ -160,10 +171,9 @@ public class CrashesListActivity extends Activity {
     private class CrashListExpandableAdapter extends BaseExpandableListAdapter {
         private List<CrashInfo> mCrashInfoList;
 
-        CrashListExpandableAdapter() {
+        CrashListExpandableAdapter(TextView crashesSummaryView) {
             mCrashInfoList = new ArrayList<>();
 
-            TextView crashesSummaryView = findViewById(R.id.crashes_summary_textview);
             // Update crash summary when the data changes.
             registerDataSetObserver(new DataSetObserver() {
                 @Override
@@ -200,7 +210,7 @@ public class CrashesListActivity extends Activity {
             } else {
                 packageName = crashInfo.packageName;
                 try {
-                    Drawable icon = getPackageManager().getApplicationIcon(packageName);
+                    Drawable icon = mContext.getPackageManager().getApplicationIcon(packageName);
                     packageIcon.setImageDrawable(icon);
                 } catch (PackageManager.NameNotFoundException e) {
                     // This can happen if the app was uninstalled after the crash was recorded.
@@ -234,13 +244,11 @@ public class CrashesListActivity extends Activity {
                         new Date(crashInfo.uploadTime).toString() + "\nID: " + crashInfo.uploadId;
                 uploadInfoView.setOnLongClickListener(v -> {
                     ClipboardManager clipboard =
-                            (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                            (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
                     ClipData clip = ClipData.newPlainText("upload info", uploadInfo);
                     clipboard.setPrimaryClip(clip);
                     // Show a toast that the text has been copied.
-                    Toast.makeText(
-                                 CrashesListActivity.this, "Copied upload info", Toast.LENGTH_SHORT)
-                            .show();
+                    Toast.makeText(mContext, "Copied upload info", Toast.LENGTH_SHORT).show();
                     return true;
                 });
                 setTwoLineListItemText(uploadInfoView, uploadState, uploadInfo);
@@ -264,8 +272,8 @@ public class CrashesListActivity extends Activity {
                     || crashInfo.uploadState == UploadState.PENDING) {
                 uploadButton.setVisibility(View.VISIBLE);
                 uploadButton.setOnClickListener(v -> {
-                    if (!CrashUploadUtil.isNetworkUnmetered(CrashesListActivity.this)) {
-                        new AlertDialog.Builder(CrashesListActivity.this)
+                    if (!CrashUploadUtil.isNetworkUnmetered(mContext)) {
+                        new AlertDialog.Builder(mContext)
                                 .setTitle("Network Warning")
                                 .setMessage(
                                         "You are connected to a metered network or cellular data."
@@ -288,7 +296,7 @@ public class CrashesListActivity extends Activity {
 
         private void attemptUploadCrash(String crashLocalId) {
             // Attempt uploading the file asynchronously, upload is not guaranteed.
-            CrashUploadUtil.tryUploadCrashDumpWithLocalId(CrashesListActivity.this, crashLocalId);
+            CrashUploadUtil.tryUploadCrashDumpWithLocalId(mContext, crashLocalId);
             // Update the uploadState to be PENDING_USER_REQUESTED or UPLOADED.
             updateCrashes();
         }
@@ -373,7 +381,7 @@ public class CrashesListActivity extends Activity {
         String appVersion = "";
         if (crashInfo.packageName != null) {
             try {
-                PackageManager pm = getPackageManager();
+                PackageManager pm = mContext.getPackageManager();
                 PackageInfo packageInfo = pm.getPackageInfo(crashInfo.packageName, 0);
                 appPackage = crashInfo.packageName;
                 appVersion = String.format(
@@ -382,8 +390,7 @@ public class CrashesListActivity extends Activity {
             }
         }
 
-        PackageInfo webViewPackage =
-                WebViewPackageHelper.getContextPackageInfo(CrashesListActivity.this);
+        PackageInfo webViewPackage = WebViewPackageHelper.getContextPackageInfo(mContext);
 
         return new Uri.Builder()
                 .scheme("https")
@@ -433,7 +440,7 @@ public class CrashesListActivity extends Activity {
     }
 
     private PersistentErrorView buildCrashConsentError(boolean canUseGms) {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
         dialogBuilder.setTitle("Error Showing Crashes");
         if (canUseGms) {
             dialogBuilder.setMessage(
@@ -443,7 +450,7 @@ public class CrashesListActivity extends Activity {
             // cannot be opened directly.
             Intent settingsIntent = new Intent("com.android.settings.action.EXTRA_SETTINGS");
             List<ResolveInfo> intentResolveInfo =
-                    getPackageManager().queryIntentActivities(settingsIntent, 0);
+                    mContext.getPackageManager().queryIntentActivities(settingsIntent, 0);
             // Show a button to open GMS settings activity only if it exists.
             if (intentResolveInfo.size() > 0) {
                 dialogBuilder.setPositiveButton(
@@ -455,28 +462,30 @@ public class CrashesListActivity extends Activity {
             dialogBuilder.setMessage("Crash collection is not supported at the moment.");
         }
 
+        Activity activity = (Activity) mContext;
         return new PersistentErrorView(
-                this, R.id.crash_consent_error, PersistentErrorView.Type.ERROR)
+                activity, R.id.crash_consent_error, PersistentErrorView.Type.ERROR)
                 .setText("Crash collection is disabled. Tap for more info.")
                 .setDialog(dialogBuilder.create());
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.crashes_options_menu, menu);
-        NavigationMenuHelper.inflate(this, menu);
-        return true;
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.crashes_options_menu, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (NavigationMenuHelper.onOptionsItemSelected(this, item)) {
-            return true;
-        }
         if (item.getItemId() == R.id.options_menu_refresh) {
             mCrashListViewAdapter.updateCrashes();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDestroyView() {
+        mCrashConsentError.hide();
+        super.onDestroyView();
     }
 }

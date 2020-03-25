@@ -186,7 +186,8 @@ class RemoteCall {
    *     If query is an array, |query[0]| specifies the first
    *     element(s), |query[1]| specifies elements inside the shadow DOM of
    *     the first element, and so on.
-   * @return {Promise} Promise to be fulfilled when the element appears.
+   * @return {Promise<ElementObject>} Promise to be fulfilled when the element
+   *     appears.
    */
   waitForElement(appId, query) {
     return this.waitForElementStyles(appId, query, []);
@@ -201,7 +202,6 @@ class RemoteCall {
    *     the first element, and so on.
    * @param {!Array<string>} styleNames List of CSS property name to be
    *     obtained. NOTE: Causes element style re-calculation.
-   *     TODO(lucmult): Add a typedef for the returned object.
    * @return {Promise<ElementObject>} Promise to be fulfilled when the element
    *     appears.
    */

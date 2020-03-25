@@ -34,8 +34,9 @@ android_library("nonembedded_java") {
 
 android_library("devui_java") {
   sources = [
-    "java/src/org/chromium/android_webview/devui/CrashesListActivity.java",
-    "java/src/org/chromium/android_webview/devui/FlagsActivity.java",
+    "java/src/org/chromium/android_webview/devui/CrashesListFragment.java",
+    "java/src/org/chromium/android_webview/devui/FlagsFragment.java",
+    "java/src/org/chromium/android_webview/devui/HomeFragment.java",
     "java/src/org/chromium/android_webview/devui/MainActivity.java",
     "java/src/org/chromium/android_webview/devui/PersistentErrorView.java",
     "java/src/org/chromium/android_webview/devui/WebViewPackageError.java",
@@ -57,6 +58,7 @@ android_library("devui_java") {
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:com_android_support_support_fragment_java",
     "//ui/android:ui_java",
   ]
   android_manifest_for_lint = system_webview_android_manifest
@@ -117,12 +119,13 @@ android_resources("icon_resources") {
 android_resources("devui_resources") {
   sources = [
     "java/res_devui/drawable/blue_circle.xml",
-    "java/res_devui/layout/activity_crashes_list.xml",
-    "java/res_devui/layout/activity_flags.xml",
     "java/res_devui/layout/activity_main.xml",
     "java/res_devui/layout/crashes_list_item_body.xml",
     "java/res_devui/layout/crashes_list_item_header.xml",
     "java/res_devui/layout/flag_states.xml",
+    "java/res_devui/layout/fragment_crashes_list.xml",
+    "java/res_devui/layout/fragment_flags.xml",
+    "java/res_devui/layout/fragment_home.xml",
     "java/res_devui/layout/persistent_error_message.xml",
     "java/res_devui/layout/toggleable_flag.xml",
     "java/res_devui/layout/two_line_list_item.xml",

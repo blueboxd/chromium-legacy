@@ -55,7 +55,7 @@ ViewsTestHelperAura::~ViewsTestHelperAura() {
 }
 
 gfx::NativeWindow ViewsTestHelperAura::GetContext() {
-  return aura_test_helper_.root_window();
+  return aura_test_helper_.GetContext();
 }
 
 }  // namespace views

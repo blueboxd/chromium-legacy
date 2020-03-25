@@ -15,6 +15,16 @@
  *   styles:(Object<string>|undefined),
  *   hidden:boolean,
  *   hasShadowRoot: boolean,
+ *   imageWidth: (number|undefined),
+ *   imageHeight: (number|undefined),
+ *   renderedWidth: (number|undefined),
+ *   renderedHeight: (number|undefined),
+ *   renderedTop: (number|undefined),
+ *   renderedLeft: (number|undefined),
+ *   scrollLeft: (number|undefined),
+ *   scrollTop: (number|undefined),
+ *   scrollWidth: (number|undefined),
+ *   scrollHeight: (number|undefined),
  *  }}
  */
 let ElementObject;

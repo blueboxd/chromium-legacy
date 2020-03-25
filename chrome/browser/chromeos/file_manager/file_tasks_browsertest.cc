@@ -96,8 +96,7 @@ class FileTasksBrowserTestWithMediaApp : public FileTasksBrowserTest {
  public:
   FileTasksBrowserTestWithMediaApp() {
     // Enable Media App.
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kMediaApp, blink::features::kFileHandlingAPI}, {});
+    scoped_feature_list_.InitWithFeatures({chromeos::features::kMediaApp}, {});
   }
 
  private:

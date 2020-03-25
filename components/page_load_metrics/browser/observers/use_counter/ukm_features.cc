@@ -57,6 +57,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kCredentialManagerGetPublicKeyCredential,
           WebFeature::kCredentialManagerMakePublicKeyCredentialSuccess,
           WebFeature::kCredentialManagerGetPublicKeyCredentialSuccess,
+          WebFeature::kU2FCryptotokenRegister,
+          WebFeature::kU2FCryptotokenSign,
           WebFeature::kV8AudioContext_Constructor,
           WebFeature::kElementAttachShadow,
           WebFeature::kElementAttachShadowOpen,

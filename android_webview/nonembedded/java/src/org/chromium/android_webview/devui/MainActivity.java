@@ -3,34 +3,31 @@
 // found in the LICENSE file.
 package org.chromium.android_webview.devui;
 
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.android_webview.devui.util.NavigationMenuHelper;
-import org.chromium.android_webview.devui.util.WebViewPackageHelper;
-import org.chromium.ui.widget.Toast;
-
-import java.util.Locale;
 
 /**
  * Dev UI main activity.
- * It shows a summary about WebView package and the device.
- * It helps to navigate to other WebView developer tools.
+ * It shows persistent errors and helps to navigate to WebView developer tools.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
     private WebViewPackageError mDifferentPackageError;
+    private boolean mSwitchFragmentOnResume;
+
+    // Keep in sync with DeveloperUiService.java
+    private static final String FRAGMENT_ID_INTENT_EXTRA = "fragment-id";
+    private static final int FRAGMENT_ID_HOME = 0;
+    private static final int FRAGMENT_ID_CRASHES = 1;
+    private static final int FRAGMENT_ID_FLAGS = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,36 +35,20 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-        PackageInfo webViewPackage = WebViewPackageHelper.getContextPackageInfo(this);
-        InfoItem[] infoItems = new InfoItem[] {
-                new InfoItem("WebView package", webViewPackage.packageName),
-                new InfoItem("WebView version",
-                        String.format(Locale.US, "%s (%s)", webViewPackage.versionName,
-                                webViewPackage.versionCode)),
-                new InfoItem("Device info",
-                        String.format(Locale.US, "%s - %s", Build.MODEL, Build.FINGERPRINT)),
-        };
-
-        ListView infoListView = findViewById(R.id.main_info_list);
-        ArrayAdapter<InfoItem> itemsArrayAdapter = new InfoListAdapter(infoItems);
-        infoListView.setAdapter(itemsArrayAdapter);
-
-        // Copy item's text to clipboard on long tapping a list item.
-        infoListView.setOnItemLongClickListener((parent, view, pos, id) -> {
-            InfoItem item = (InfoItem) parent.getItemAtPosition(pos);
-            ClipboardManager clipboard =
-                    (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(item.title, item.subtitle);
-            clipboard.setPrimaryClip(clip);
-            // Show a toast that the text has been copied.
-            Toast.makeText(MainActivity.this, "Copied " + item.title, Toast.LENGTH_SHORT).show();
-
-            return true;
-        });
+        // Let onResume handle showing the initial Fragment.
+        mSwitchFragmentOnResume = true;
 
         mDifferentPackageError = new WebViewPackageError(this);
         // show the dialog once when the activity is created.
         mDifferentPackageError.showDialogIfDifferent();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        // Store the Intent so we can switch Fragments in onResume (which is called next). Only need
+        // to switch Fragment if the Intent specifies to do so.
+        setIntent(intent);
+        mSwitchFragmentOnResume = intent.hasExtra(FRAGMENT_ID_INTENT_EXTRA);
     }
 
     @Override
@@ -77,54 +58,44 @@ public class MainActivity extends Activity {
         // changes WebView implementation from system settings and then returns back to the
         // activity.
         mDifferentPackageError.showMessageIfDifferent();
-    }
 
-    /**
-     * A model class for a key-value piece of information to be displayed as a title (key) and
-     * subtitle (value).
-     */
-    private static class InfoItem {
-        public static final String UNKNOWN = "Unknown";
-        public final String title;
-        public final String subtitle;
+        // Don't change Fragment unless we have a new Intent, since the user might just be coming
+        // back to this through the task switcher.
+        if (!mSwitchFragmentOnResume) return;
 
-        public InfoItem(String title, String subtitle) {
-            this.title = title;
-            this.subtitle = subtitle == null ? UNKNOWN : subtitle;
-        }
-    }
+        // Ensure we only switch the first time we see a new Intent.
+        mSwitchFragmentOnResume = false;
 
-    /**
-     * An ArrayAdapter to show a list of {@code InfoItem} objects.
-     *
-     * It uses android stock {@code android.R.layout.simple_list_item_2} which has two {@code
-     * TextView}; {@code text1} acts as the item title and {@code text2} as the item subtitle.
-     */
-    private class InfoListAdapter extends ArrayAdapter<InfoItem> {
-        private final InfoItem[] mItems;
-
-        public InfoListAdapter(InfoItem[] items) {
-            super(MainActivity.this, R.layout.two_line_list_item, items);
-            mItems = items;
+        // Default to HomeFragment if not specified.
+        int fragmentId = FRAGMENT_ID_HOME;
+        // FRAGMENT_ID_INTENT_EXTRA is an optional extra to specify which fragment to open. At the
+        // moment, it's specified only by DeveloperUiService (so make sure these constants stay in
+        // sync).
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            fragmentId = extras.getInt(FRAGMENT_ID_INTENT_EXTRA, fragmentId);
         }
 
-        @Override
-        public View getView(int position, View view, ViewGroup parent) {
-            // If the the old view is already created then reuse it, else create a new one by layout
-            // inflation.
-            if (view == null) {
-                view = getLayoutInflater().inflate(R.layout.two_line_list_item, null, true);
-            }
-
-            InfoItem item = mItems[position];
-            TextView title = view.findViewById(android.R.id.text1);
-            TextView subtitle = view.findViewById(android.R.id.text2);
-
-            title.setText(item.title);
-            subtitle.setText(item.subtitle);
-
-            return view;
+        Fragment fragment = null;
+        switch (fragmentId) {
+            default:
+                // Fall through.
+            case FRAGMENT_ID_HOME:
+                fragment = new HomeFragment();
+                break;
+            case FRAGMENT_ID_CRASHES:
+                fragment = new CrashesListFragment();
+                break;
+            case FRAGMENT_ID_FLAGS:
+                fragment = new FlagsFragment();
+                break;
         }
+        assert fragment != null;
+
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(R.id.content_fragment, fragment);
+        transaction.commit();
     }
 
     @Override

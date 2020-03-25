@@ -1306,9 +1306,8 @@ TEST_F('ChromeVoxEditingTest', 'GrammarErrors', function() {
       });
 });
 
-// TODO(https://crbug.com/1033649) flaky on linux-chromeos-rel/dbg.
 TEST_F(
-    'ChromeVoxEditingTest', 'DISABLED_CharacterTypedAfterNewLine', function() {
+    'ChromeVoxEditingTest', 'CharacterTypedAfterNewLine', function() {
       const mockFeedback = this.createMockFeedback();
       this.runWithLoadedTree(
           `

@@ -386,6 +386,15 @@
            use_base_dir="false"
            preprocess="true"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_SYNC_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_SYNC_ENCRYPTION_OPTIONS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_encryption_options.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_PEOPLE_PAGE_PEOPLE_PAGE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/people_page.m.js"
            use_base_dir="false"
@@ -627,11 +636,6 @@
            preprocess="true" />
   <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.m.js"
-           use_base_dir="false"
-           type="BINDATA"
-           preprocess="true" />
-  <include name="IDR_SETTINGS_PEOPLE_PAGE_SYNC_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_browser_proxy.m.js"
            use_base_dir="false"
            type="BINDATA"
            preprocess="true" />

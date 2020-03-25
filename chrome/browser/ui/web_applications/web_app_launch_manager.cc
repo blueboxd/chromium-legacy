@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -219,8 +220,7 @@ void WebAppLaunchManager::LaunchApplication(
       apps::mojom::AppLaunchSource::kSourceCommandLine);
   params.command_line = command_line;
   params.current_directory = current_directory;
-  params.launch_files =
-      apps::LaunchManager::GetLaunchFilesFromCommandLine(command_line);
+  params.launch_files = apps::GetLaunchFilesFromCommandLine(command_line);
 
   // Wait for the web applications database to load.
   // If the profile and WebAppLaunchManager are destroyed,
@@ -248,7 +248,7 @@ void WebAppLaunchManager::LaunchWebApplication(
     DCHECK(browser);
   } else {
     // Open an empty browser window as the app_id is invalid.
-    browser = CreateNewTabBrowser();
+    browser = apps::CreateBrowserWithNewTabPage(profile());
     params.container = apps::mojom::LaunchContainer::kLaunchContainerNone;
   }
   std::move(callback).Run(browser, params.container);

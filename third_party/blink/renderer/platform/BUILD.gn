@@ -1230,6 +1230,7 @@ jumbo_component("platform") {
     "mojo/heap_mojo_receiver_set.h",
     "mojo/heap_mojo_remote.h",
     "mojo/heap_mojo_unique_receiver_set.h",
+    "mojo/heap_mojo_wrapper_mode.h",
     "mojo/kurl_mojom_traits.h",
     "mojo/mojo_helper.h",
     "mojo/security_origin_mojom_traits.h",

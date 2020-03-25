@@ -94,10 +94,6 @@ template("ios_test_runner_wrapper") {
       "${shards}",
     ]
 
-    if (use_clang_coverage) {
-      executable_args += [ "--use-clang-coverage" ]
-    }
-
     # test runner relies on iossim if use_ios_simulator (defined in ios_sdk.gni)
     if (use_ios_simulator) {
       _rebased_root_build_dir = rebase_path("${root_build_dir}", root_build_dir)
@@ -110,6 +106,14 @@ template("ios_test_runner_wrapper") {
         "--iossim",
         "@WrappedPath(${_rebased_root_build_dir}/iossim)",
       ]
+    }
+
+    if (use_clang_coverage) {
+      executable_args += [ "--use-clang-coverage" ]
+    }
+
+    if (!is_debug) {
+      executable_args += [ "--release" ]
     }
 
     # wrapper script output name and path

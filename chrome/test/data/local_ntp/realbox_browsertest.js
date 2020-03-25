@@ -21,9 +21,9 @@ test.realbox.IDS = {
  * @const
  */
 test.realbox.CLASSES = {
-  CLOCK_ICON: 'clock-icon',
   HAS_IMAGE: 'has-image',
   IMAGE_CONTAINER: 'image-container',
+  MATCH_ICON: 'match-icon',
   MATCH_IMAGE: 'match-image',
   REMOVABLE: 'removable',
   REMOVE_ICON: 'remove-icon',
@@ -31,11 +31,35 @@ test.realbox.CLASSES = {
   SHOW_MATCHES: 'show-matches',
 };
 
+test.realbox.CONSTANTS = {
+  CLOCK_ICON: 'clock',
+  PAGE_ICON: 'page',
+  SEARCH_ICON: 'search',
+};
+
 /** @return {boolean} */
 test.realbox.areMatchesShowing = function() {
   return test.realbox.wrapperEl.classList.contains(
     test.realbox.CLASSES.SHOW_MATCHES);
-}
+};
+
+/**
+ * @param {!Element} element
+ * @param {string} dataUrl
+ */
+test.realbox.assertBackgroundImageIcon = function(element, dataUrl) {
+  assertEquals(test.realbox.cssUrl(dataUrl), element.style.backgroundImage);
+  assertEquals('', element.style.webkitMaskImage);
+};
+
+/**
+ * @param {!Element} element
+ * @param {string} iconUrl
+ */
+test.realbox.assertWebkitMaskIcon = function(element, iconUrl) {
+  assertEquals('', element.style.backgroundImage);
+  assertEquals(test.realbox.cssUrl(iconUrl), element.style.webkitMaskImage);
+};
 
 /**
  * @param {string} name
@@ -107,6 +131,14 @@ test.realbox.getSearchMatch = function(modifiers = {}) {
         type: 'search-what-you-typed',
       },
       modifiers);
+};
+
+/**
+ * @param {string} url an absolute, relative, or a data URL.
+ * @return {string} the input wrapped in a url() CSS function.
+ */
+test.realbox.cssUrl = function(url) {
+  return 'url("' + url + '")';
 };
 
 /** @type {!Array<number>} */
@@ -1041,7 +1073,8 @@ test.realbox4.testInputAfterFocusoutPrefixMatches = function() {
 
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({
     input: test.realbox.queries[0].input,
-    matches: [test.realbox.getSearchMatch()],
+    matches: [test.realbox.getSearchMatch(
+        {iconUrl: test.realbox.CONSTANTS.CLOCK_ICON})],
   });
 
   assertTrue(test.realbox.areMatchesShowing());
@@ -1057,6 +1090,12 @@ test.realbox4.testInputAfterFocusoutPrefixMatches = function() {
   assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
   assertEquals('hello world', test.realbox.realboxEl.value);
 
+  // The first match is a historical search match and therefore will load a
+  // clock icon via webkit-mask in #realbox-icon.
+  const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
+  test.realbox.assertWebkitMaskIcon(
+      realboxIcon, test.realbox.CONSTANTS.CLOCK_ICON);
+
   test.realbox.realboxEl.dispatchEvent(new Event('focusout', {
     bubbles: true,
     cancelable: true,
@@ -1064,8 +1103,12 @@ test.realbox4.testInputAfterFocusoutPrefixMatches = function() {
     relatedTarget: document.body,
   }));
 
+  // Focusing out should clear/hide matches but leave the input and the icon in
+  // #realbox-icon intact.
   assertFalse(test.realbox.areMatchesShowing());
   assertEquals('hello world', test.realbox.realboxEl.value);
+  test.realbox.assertWebkitMaskIcon(
+      realboxIcon, test.realbox.CONSTANTS.CLOCK_ICON);
 };
 
 test.realbox4.testInputAfterFocusoutZeroPrefixMatches = function() {
@@ -1076,7 +1119,8 @@ test.realbox4.testInputAfterFocusoutZeroPrefixMatches = function() {
 
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({
     input: test.realbox.queries[0].input,
-    matches: [test.realbox.getSearchMatch()],
+    matches: [test.realbox.getSearchMatch(
+        {iconUrl: test.realbox.CONSTANTS.CLOCK_ICON})],
   });
 
   assertTrue(test.realbox.areMatchesShowing());
@@ -1092,6 +1136,12 @@ test.realbox4.testInputAfterFocusoutZeroPrefixMatches = function() {
   assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
   assertEquals('hello world', test.realbox.realboxEl.value);
 
+  // The first match is a historical search match and therefore will load a
+  // clock icon via webkit-mask in #realbox-icon.
+  const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
+  test.realbox.assertWebkitMaskIcon(
+      realboxIcon, test.realbox.CONSTANTS.CLOCK_ICON);
+
   test.realbox.realboxEl.dispatchEvent(new Event('focusout', {
     bubbles: true,
     cancelable: true,
@@ -1099,8 +1149,12 @@ test.realbox4.testInputAfterFocusoutZeroPrefixMatches = function() {
     relatedTarget: document.body,
   }));
 
+  // Focusing out should clear/hide matches, clear the input and restore the
+  // default search icon in #realbox-icon.
   assertFalse(test.realbox.areMatchesShowing());
   assertEquals('', test.realbox.realboxEl.value);
+  test.realbox.assertWebkitMaskIcon(
+      realboxIcon, test.realbox.CONSTANTS.SEARCH_ICON);
 };
 
 test.realbox4.testArrowUpDownShowsMatchesWhenHidden = function() {
@@ -1200,9 +1254,18 @@ test.realbox4.testPrivilegedDestinationUrls = function() {
   assertEquals(3, test.realbox.opens.length);
 };
 
-test.realbox4.testRealboxIconZeroSuggest = function() {
+test.realbox4.testMatchIconAndRealboxIconZeroPrefix = function() {
+  const CLOCK_ICON = test.realbox.CONSTANTS.CLOCK_ICON;
+  const PAGE_ICON = test.realbox.CONSTANTS.PAGE_ICON;
+  const SEARCH_ICON = test.realbox.CONSTANTS.SEARCH_ICON;
+  const assertBackgroundImageIcon = test.realbox.assertBackgroundImageIcon;
+  const assertWebkitMaskIcon = test.realbox.assertWebkitMaskIcon;
+  const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC=';
+  const destinationUrl = 'http://example.com/';
+  const cssUrl = test.realbox.cssUrl;
+
   const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
-  assertFalse(!!realboxIcon.style.backgroundImage);
+  assertWebkitMaskIcon(realboxIcon, test.realbox.CONSTANTS.SEARCH_ICON);
 
   // Trigger zero suggest querying autocomplete.
   test.realbox.realboxEl.onmousedown(test.realbox.trustedEventFacade(
@@ -1212,32 +1275,35 @@ test.realbox4.testRealboxIconZeroSuggest = function() {
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({
     input: test.realbox.realboxEl.value,
     matches: [
-      test.realbox.getSearchMatch({allowedToBeDefaultMatch: false}),
-      test.realbox.getUrlMatch(),
+      test.realbox.getSearchMatch(
+          {allowedToBeDefaultMatch: false, iconUrl: CLOCK_ICON}),
+      test.realbox.getSearchMatch({iconUrl: SEARCH_ICON}),
+      test.realbox.getUrlMatch({iconUrl: PAGE_ICON, destinationUrl}),
     ],
   });
 
-  // Zero suggest matches should be showing but no selection nor icon should be
-  // present.
+  // Matches should be showing but none should be selected. Therefore the
+  // default search icon in #realbox-icon should remain intact.
   assertTrue(test.realbox.areMatchesShowing());
-
   const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
-  assertEquals(2, matchEls.length);
+  assertEquals(3, matchEls.length);
   assertFalse(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertFalse(!!realboxIcon.style.backgroundImage);
+  assertWebkitMaskIcon(realboxIcon, test.realbox.CONSTANTS.SEARCH_ICON);
 
-  const arrowDown = new KeyboardEvent('keydown', {
+  // Arrow down should create a selection.
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
     bubbles: true,
     cancelable: true,
     key: 'ArrowDown',
-  });
-  test.realbox.realboxEl.dispatchEvent(arrowDown);
-  assertTrue(arrowDown.defaultPrevented);
+  }));
 
-  // Arrow down should create a selection. Because the first item is a search
-  // match, it shouldn't change the realbox icon (as it's search by default).
+  // The first match is a historical search match and therefore will load a
+  // clock icon via webkit-mask in .match-icon and #realbox-icon.
   assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertFalse(!!realboxIcon.style.backgroundImage);
+  let matchIconEl =
+      matchEls[0].getElementsByClassName(test.realbox.CLASSES.MATCH_ICON)[0];
+  assertWebkitMaskIcon(matchIconEl, CLOCK_ICON);
+  assertWebkitMaskIcon(realboxIcon, CLOCK_ICON);
 
   test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
     bubbles: true,
@@ -1245,15 +1311,79 @@ test.realbox4.testRealboxIconZeroSuggest = function() {
     key: 'ArrowDown',
   }));
 
-  // The second item is a URL and therefore should attempt to load the URL's
-  // favicon via background-image on #realbox-icon.
+  // The second match is a historical search match and therefore will load a
+  // search icon via webkit-mask in .match-icon and #realbox-icon.
   assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertTrue(!!realboxIcon.style.backgroundImage);
+  matchIconEl =
+      matchEls[1].getElementsByClassName(test.realbox.CLASSES.MATCH_ICON)[0];
+  assertWebkitMaskIcon(matchIconEl, SEARCH_ICON);
+  assertWebkitMaskIcon(realboxIcon, SEARCH_ICON);
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  }));
+
+  // The third match is a URL match without a favicon and therefore will load a
+  // page icon via webkit-mask in .match-icon and #realbox-icon.
+  assertTrue(matchEls[2].classList.contains(test.realbox.CLASSES.SELECTED));
+  matchIconEl =
+      matchEls[2].getElementsByClassName(test.realbox.CLASSES.MATCH_ICON)[0];
+  assertWebkitMaskIcon(matchIconEl, PAGE_ICON);
+  assertWebkitMaskIcon(realboxIcon, PAGE_ICON);
+
+  // The URL of the loaded favicon must match that of the autocomplete result at
+  // the given index.
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      1, destinationUrl, dataUrl);
+  assertWebkitMaskIcon(realboxIcon, PAGE_ICON);
+
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      2, 'http://counterexample.com/', dataUrl);
+  assertWebkitMaskIcon(realboxIcon, PAGE_ICON);
+
+  // Once the favicon for the third match is successfully loaded it will replace
+  // the webkit-mask with a background-image in .match-icon and #realbox-icon.
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      2, destinationUrl, dataUrl);
+  assertBackgroundImageIcon(matchIconEl, dataUrl);
+  assertBackgroundImageIcon(realboxIcon, dataUrl);
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Escape',
+  }));
+
+  // Pressing Escape should revert to first match and load a clock icon in
+  // #realbox-icon.
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertWebkitMaskIcon(realboxIcon, CLOCK_ICON);
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Escape',
+  }));
+
+  // Escape again should clear/hide matches and restore the default search icon
+  // in #realbox-icon.
+  assertFalse(test.realbox.areMatchesShowing());
+  assertWebkitMaskIcon(realboxIcon, SEARCH_ICON);
 };
 
-test.realbox4.testRealboxIconPrefixSearch = function() {
+test.realbox4.testMatchAndRealboxIconPrefixSearch = function() {
+  const CLOCK_ICON = test.realbox.CONSTANTS.CLOCK_ICON;
+  const PAGE_ICON = test.realbox.CONSTANTS.PAGE_ICON;
+  const SEARCH_ICON = test.realbox.CONSTANTS.SEARCH_ICON;
+  const assertWebkitMaskIcon = test.realbox.assertWebkitMaskIcon;
+  const cssUrl = test.realbox.cssUrl;
+  const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC=';
+  const imageUrl = 'http://example.com/star.png';
+
   const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
-  assertFalse(!!realboxIcon.style.backgroundImage);
+  assertWebkitMaskIcon(realboxIcon, SEARCH_ICON);
 
   test.realbox.realboxEl.value = 'about';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
@@ -1261,121 +1391,91 @@ test.realbox4.testRealboxIconPrefixSearch = function() {
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({
     input: test.realbox.realboxEl.value,
     matches: [
-      test.realbox.getUrlMatch({allowedToBeDefaultMatch: true}),
-      test.realbox.getSearchMatch(),
-      test.realbox.getSearchMatch({type: 'search-history'}),
+      test.realbox.getUrlMatch(
+          {allowedToBeDefaultMatch: true, iconUrl: PAGE_ICON}),
+      test.realbox.getSearchMatch(
+          {iconUrl: CLOCK_ICON, imageUrl, imageDominantColor: '#757575'}),
     ],
   });
+
+  // Matches should be showing and the first match should be selected. The first
+  // match is a URL match and therefore will load a page icon via webkit-mask in
+  // .match-icon and #realbox-icon.
   assertTrue(test.realbox.areMatchesShowing());
-
-  // First URL match should be showing and the favicon should be in the realbox.
-  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
-  assertEquals(3, matchEls.length);
-  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertTrue(!!realboxIcon.style.backgroundImage);
-
-  const arrowDown = new KeyboardEvent('keydown', {
-    bubbles: true,
-    cancelable: true,
-    key: 'ArrowDown',
-  });
-  test.realbox.realboxEl.dispatchEvent(arrowDown);
-  assertTrue(arrowDown.defaultPrevented);
-
-  // Second search match should clear the favicon.
-  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertFalse(!!realboxIcon.style.backgroundImage);
-
-  test.realbox.realboxEl.dispatchEvent(arrowDown);
-
-  // Third search match should change to clock icon.
-  assertTrue(matchEls[2].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertEquals(realboxIcon.className, test.realbox.CLASSES.CLOCK_ICON);
-
-  const escapeToDefaultMatch = new KeyboardEvent('keydown', {
-    bubbles: true,
-    cancelable: true,
-    key: 'Escape',
-  });
-  test.realbox.realboxEl.dispatchEvent(escapeToDefaultMatch);
-  assertTrue(escapeToDefaultMatch.defaultPrevented);
-
-  // Pressing Escape should revert to first match (URL + icon in realbox).
-  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertTrue(!!realboxIcon.style.backgroundImage);
-
-  const escapeToClear = new KeyboardEvent('keydown', {
-    bubbles: true,
-    cancelable: true,
-    key: 'Escape',
-  });
-  test.realbox.realboxEl.dispatchEvent(escapeToClear);
-  assertTrue(escapeToClear.defaultPrevented);
-
-  // Escape again should clear/hide matches and favicon.
-  assertFalse(test.realbox.areMatchesShowing());
-  assertFalse(!!realboxIcon.style.backgroundImage);
-};
-
-test.realbox4.testEntityMatchImage = function() {
-  const imageUrl = 'http://example.com/star.png';
-  const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC=';
-
-  const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
-  assertFalse(!!realboxIcon.style.backgroundImage);
-
-  test.realbox.realboxEl.value = 'star';
-  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
-
-  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
-    input: test.realbox.realboxEl.value,
-    matches: [
-      test.realbox.getSearchMatch({
-        allowedToBeDefaultMatch: true,
-        imageUrl,
-        imageDominantColor: '#757575'
-      }),
-      test.realbox.getSearchMatch(),
-    ],
-  });
-  assertTrue(test.realbox.areMatchesShowing());
-
-  // The first match is selected but it doesn't change the realbox icon.
   const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
   assertEquals(2, matchEls.length);
   assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
-  assertFalse(!!realboxIcon.style.backgroundImage);
+  matchIconEl =
+      matchEls[0].getElementsByClassName(test.realbox.CLASSES.MATCH_ICON)[0];
+  assertWebkitMaskIcon(matchIconEl, PAGE_ICON);
+  assertWebkitMaskIcon(realboxIcon, PAGE_ICON);
 
-  // The first match is showing a placeholder color until the image loads.
-  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.HAS_IMAGE));
-  const imageContainerEl = matchEls[0].getElementsByClassName(
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  }));
+
+  // The second match is a search match with an image and therefore will show a
+  // placeholder color in .image-container until the image loads. It also loads
+  // a clock icon via webkit-mask in #realbox-icon.
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.HAS_IMAGE));
+  const imageContainerEl = matchEls[1].getElementsByClassName(
       test.realbox.CLASSES.IMAGE_CONTAINER)[0];
+  assertEquals(0, imageContainerEl.children.length);
   assertEquals(
       'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
+  assertWebkitMaskIcon(realboxIcon, CLOCK_ICON);
 
   // The URL of the loaded image must match that of the autocomplete result at
   // the given index.
   chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
-      1, imageUrl, dataUrl);
-  assertEquals(0, imageContainerEl.children.length);
-  assertEquals(
-      'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
-
-  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
-      0, 'http://example.com/moon.png', dataUrl);
-  assertEquals(0, imageContainerEl.children.length);
-  assertEquals(
-      'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
-
-  // Once the image is successfully loaded it replaces the placeholder color.
-  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
       0, imageUrl, dataUrl);
+  assertEquals(0, imageContainerEl.children.length);
+  assertEquals(
+      'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
+
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      1, 'http://example.com/moon.png', dataUrl);
+  assertEquals(0, imageContainerEl.children.length);
+  assertEquals(
+      'rgba(117, 117, 117, 0.25)', imageContainerEl.style.backgroundColor);
+
+  // Once the image for the second match is successfully loaded it will replace
+  // the placeholder color in .image-container with a background-image but
+  // leaves the clock icon in #realbox-icon intact.
+  chrome.embeddedSearch.searchBox.autocompletematchimageavailable(
+      1, imageUrl, dataUrl);
   assertEquals(
       dataUrl,
       imageContainerEl
           .getElementsByClassName(test.realbox.CLASSES.MATCH_IMAGE)[0]
           .src);
   assertEquals('transparent', imageContainerEl.style.backgroundColor);
+  assertWebkitMaskIcon(realboxIcon, CLOCK_ICON);
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Escape',
+  }));
+
+  // Pressing Escape should revert to first match and load a page icon in
+  // #realbox-icon.
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertWebkitMaskIcon(realboxIcon, PAGE_ICON);
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Escape',
+  }));
+
+  // Escape again should clear/hide matches and restore the default search icon
+  // in #realbox-icon.
+  assertFalse(test.realbox.areMatchesShowing());
+  assertWebkitMaskIcon(realboxIcon, SEARCH_ICON);
 };
 
 test.realbox4.testCharTypedToRepaintLatency = function() {

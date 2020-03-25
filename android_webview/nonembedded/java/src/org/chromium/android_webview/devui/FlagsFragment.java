@@ -13,8 +13,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -25,22 +24,23 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+
 import org.chromium.android_webview.common.DeveloperModeUtils;
 import org.chromium.android_webview.common.Flag;
 import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.common.services.IDeveloperUiService;
 import org.chromium.android_webview.common.services.ServiceNames;
-import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.base.Log;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An activity to toggle experimental WebView flags/features.
+ * A fragment to toggle experimental WebView flags/features.
  */
 @SuppressLint("SetTextI18n")
-public class FlagsActivity extends Activity {
+public class FlagsFragment extends Fragment {
     private static final String TAG = "WebViewDevTools";
 
     private static final String STATE_DEFAULT = "Default";
@@ -52,46 +52,45 @@ public class FlagsActivity extends Activity {
             STATE_DISABLED,
     };
 
-    private WebViewPackageError mDifferentPackageError;
     private Map<String, Boolean> mOverriddenFlags = new HashMap<>();
     private FlagsListAdapter mListAdapter;
 
+    private Context mContext;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
+    }
 
-        setContentView(R.layout.activity_flags);
+    @Override
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_flags, null);
+    }
 
-        ListView flagsListView = findViewById(R.id.flags_list);
-        TextView flagsDescriptionView = findViewById(R.id.flags_description);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        Activity activity = (Activity) mContext;
+        activity.setTitle("WebView Flags");
+
+        ListView flagsListView = view.findViewById(R.id.flags_list);
+        TextView flagsDescriptionView = view.findViewById(R.id.flags_description);
         flagsDescriptionView.setText("By enabling these features, you could "
                 + "lose app data or compromise your security or privacy. Enabled features apply to "
                 + "WebViews across all apps on the device.");
 
         // Restore flag overrides from the service process to repopulate the UI, if developer mode
         // is enabled.
-        if (DeveloperModeUtils.isDeveloperModeEnabled(getPackageName())) {
-            mOverriddenFlags = DeveloperModeUtils.getFlagOverrides(getPackageName());
+        if (DeveloperModeUtils.isDeveloperModeEnabled(mContext.getPackageName())) {
+            mOverriddenFlags = DeveloperModeUtils.getFlagOverrides(mContext.getPackageName());
         }
 
         mListAdapter = new FlagsListAdapter();
         flagsListView.setAdapter(mListAdapter);
 
-        Button resetFlagsButton = findViewById(R.id.reset_flags_button);
-        resetFlagsButton.setOnClickListener((View view) -> { resetAllFlags(); });
-
-        mDifferentPackageError = new WebViewPackageError(this);
-        // show the dialog once when the activity is created.
-        mDifferentPackageError.showDialogIfDifferent();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Check package status in onResume() to hide/show the error message if the user
-        // changes WebView implementation from system settings and then returns back to the
-        // activity.
-        mDifferentPackageError.showMessageIfDifferent();
+        Button resetFlagsButton = view.findViewById(R.id.reset_flags_button);
+        resetFlagsButton.setOnClickListener((View flagButton) -> { resetAllFlags(); });
     }
 
     private static int booleanToState(Boolean b) {
@@ -150,8 +149,7 @@ public class FlagsActivity extends Activity {
      */
     private class FlagsListAdapter extends ArrayAdapter<Flag> {
         public FlagsListAdapter() {
-            super(FlagsActivity.this, R.layout.toggleable_flag,
-                    ProductionSupportedFlagList.sFlagList);
+            super(mContext, R.layout.toggleable_flag, ProductionSupportedFlagList.sFlagList);
         }
 
         @Override
@@ -174,7 +172,7 @@ public class FlagsActivity extends Activity {
             flagName.setText(label);
             flagDescription.setText(flag.getDescription());
             ArrayAdapter<String> adapter =
-                    new ArrayAdapter<>(FlagsActivity.this, R.layout.flag_states, sFlagStates);
+                    new ArrayAdapter<>(mContext, R.layout.flag_states, sFlagStates);
             adapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
             flagToggle.setAdapter(adapter);
 
@@ -207,26 +205,11 @@ public class FlagsActivity extends Activity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        NavigationMenuHelper.inflate(this, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (NavigationMenuHelper.onOptionsItemSelected(this, item)) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private class FlagsServiceConnection implements ServiceConnection {
         public void start() {
             Intent intent = new Intent();
-            intent.setClassName(
-                    FlagsActivity.this.getPackageName(), ServiceNames.DEVELOPER_UI_SERVICE);
-            if (!FlagsActivity.this.bindService(intent, this, Context.BIND_AUTO_CREATE)) {
+            intent.setClassName(mContext.getPackageName(), ServiceNames.DEVELOPER_UI_SERVICE);
+            if (!mContext.bindService(intent, this, Context.BIND_AUTO_CREATE)) {
                 Log.e(TAG, "Failed to bind to Developer UI service");
             }
         }
@@ -234,8 +217,7 @@ public class FlagsActivity extends Activity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Intent intent = new Intent();
-            intent.setClassName(
-                    FlagsActivity.this.getPackageName(), ServiceNames.DEVELOPER_UI_SERVICE);
+            intent.setClassName(mContext.getPackageName(), ServiceNames.DEVELOPER_UI_SERVICE);
             try {
                 IDeveloperUiService.Stub.asInterface(service).setFlagOverrides(mOverriddenFlags);
             } catch (RemoteException e) {
@@ -243,7 +225,7 @@ public class FlagsActivity extends Activity {
             } finally {
                 // Unbind when we've sent the flags overrides, since we can always rebind later. The
                 // service will manage its own lifetime.
-                FlagsActivity.this.unbindService(this);
+                mContext.unbindService(this);
             }
         }
 

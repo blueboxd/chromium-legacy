@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_LOCAL_NTP_ICONS_CLOCK"
+           file="resources/local_ntp/icons/clock.svg" type="BINDATA" compress="gzip" />
+  <include name="IDR_LOCAL_NTP_ICONS_PAGE"
+           file="resources/local_ntp/icons/page.svg" type="BINDATA" compress="gzip" />
+</grit-part>

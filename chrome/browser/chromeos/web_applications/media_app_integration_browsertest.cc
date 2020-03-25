@@ -49,10 +49,7 @@ constexpr char kFileVideoVP9[] = "world.webm";
 class MediaAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   MediaAppIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kMediaApp, blink::features::kNativeFileSystemAPI,
-         blink::features::kFileHandlingAPI},
-        {});
+    scoped_feature_list_.InitWithFeatures({chromeos::features::kMediaApp}, {});
   }
 
  private:

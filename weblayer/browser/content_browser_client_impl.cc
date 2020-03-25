@@ -72,6 +72,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
@@ -150,6 +151,35 @@ void HandleSSLErrorWrapper(
       captive_portal_service,
       std::make_unique<weblayer::WebLayerSecurityBlockingPageFactory>());
 }
+
+#if defined(OS_ANDROID)
+void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
+  std::move(callback).Run(true, base::UnguessableToken::Create());
+}
+
+void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
+  // Since CreateOriginId() always returns a non-empty origin ID, we don't need
+  // to allow empty origin ID.
+  std::move(callback).Run(false);
+}
+
+void CreateMediaDrmStorage(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<::media::mojom::MediaDrmStorage> receiver) {
+  DCHECK(render_frame_host);
+
+  if (render_frame_host->GetLastCommittedOrigin().opaque()) {
+    DVLOG(1) << __func__ << ": Unique origin.";
+    return;
+  }
+
+  // The object will be deleted on connection error, or when the frame navigates
+  // away.
+  new cdm::MediaDrmStorageImpl(
+      render_frame_host, base::BindRepeating(&CreateOriginId),
+      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(receiver));
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -446,6 +476,15 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
     GetSafeBrowsingService()->AddInterface(registry, render_process_host);
   }
 #endif  // defined(OS_ANDROID)
+}
+
+void ContentBrowserClientImpl::ExposeInterfacesToMediaService(
+    service_manager::BinderRegistry* registry,
+    content::RenderFrameHost* render_frame_host) {
+#if defined(OS_ANDROID)
+  registry->AddInterface(
+      base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
+#endif
 }
 
 void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(

@@ -347,6 +347,10 @@ void ResetVerifiedLinks(
   instance->ResetVerifiedLinks(package_names);
 }
 
+bool ShouldShow(const ArcAppListPrefs::AppInfo& app_info) {
+  return app_info.show_in_launcher;
+}
+
 }  // namespace
 
 namespace apps {
@@ -649,7 +653,7 @@ void ArcApps::GetMenuModel(const std::string& app_id,
   }
 
   // App Info item.
-  if (app_info->ready) {
+  if (app_info->ready && ShouldShow(*app_info)) {
     AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
                    &menu_items);
   }
@@ -998,8 +1002,8 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->recommendable = apps::mojom::OptionalBool::kTrue;
   app->searchable = apps::mojom::OptionalBool::kTrue;
 
-  auto show = app_info.show_in_launcher ? apps::mojom::OptionalBool::kTrue
-                                        : apps::mojom::OptionalBool::kFalse;
+  auto show = ShouldShow(app_info) ? apps::mojom::OptionalBool::kTrue
+                                   : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;
   app->show_in_search = show;
   app->show_in_management = show;

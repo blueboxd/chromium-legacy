@@ -64,6 +64,8 @@ component("ui") {
     "main_stage/assistant_query_view.h",
     "main_stage/assistant_text_element_view.cc",
     "main_stage/assistant_text_element_view.h",
+    "main_stage/assistant_timers_element_view.cc",
+    "main_stage/assistant_timers_element_view.h",
     "main_stage/assistant_ui_element_view.cc",
     "main_stage/assistant_ui_element_view.h",
     "main_stage/assistant_ui_element_view_factory.cc",

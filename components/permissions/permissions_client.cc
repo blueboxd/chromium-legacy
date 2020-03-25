@@ -92,6 +92,20 @@ base::Optional<GURL> PermissionsClient::OverrideCanonicalOrigin(
 }
 
 #if defined(OS_ANDROID)
+bool PermissionsClient::IsPermissionControlledByDse(
+    content::BrowserContext* browser_context,
+    ContentSettingsType type,
+    const url::Origin& origin) {
+  return false;
+}
+
+bool PermissionsClient::ResetPermissionIfControlledByDse(
+    content::BrowserContext* browser_context,
+    ContentSettingsType type,
+    const url::Origin& origin) {
+  return false;
+}
+
 infobars::InfoBarManager* PermissionsClient::GetInfoBarManager(
     content::WebContents* web_contents) {
   return nullptr;

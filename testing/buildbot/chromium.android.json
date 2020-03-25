@@ -21508,6 +21508,8 @@
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
+          "--git-revision",
+          "${got_revision}",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -21521,6 +21523,14 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "chrome_public_test_vr_apk-ddready-ddview",
+        "precommit_args": [
+          "--gerrit-issue",
+          "${patch_issue}",
+          "--gerrit-patchset",
+          "${patch_set}",
+          "--buildbucket-id",
+          "${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -21539,7 +21549,7 @@
               "os": "Android"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "chrome_public_test_vr_apk",
@@ -21889,6 +21899,8 @@
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
+          "--git-revision",
+          "${got_revision}",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -21902,6 +21914,14 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "chrome_public_test_vr_apk-ddready-ddview",
+        "precommit_args": [
+          "--gerrit-issue",
+          "${patch_issue}",
+          "--gerrit-patchset",
+          "${patch_set}",
+          "--buildbucket-id",
+          "${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -21929,7 +21949,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "chrome_public_test_vr_apk",
@@ -37649,6 +37669,8 @@
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
+          "--git-revision",
+          "${got_revision}",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -37662,6 +37684,14 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "name": "chrome_public_test_vr_apk-ddready-ddview",
+        "precommit_args": [
+          "--gerrit-issue",
+          "${patch_issue}",
+          "--gerrit-patchset",
+          "${patch_set}",
+          "--buildbucket-id",
+          "${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -37690,7 +37720,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "chrome_public_test_vr_apk",

@@ -9,7 +9,7 @@ jochen@chromium.org
 machenbach@chromium.org
 sky@chromium.org
 
-per-file *chromium.perf*.json=crouleau@chromium.org
+per-file *chromium.perf*.json=johnchen@chromium.org
 per-file *chromium.perf*.json=wenbinzhang@google.com
 per-file *chromium.perf*.json=hypan@google.com
 per-file chromium.webrtc.json=mbonadei@chromium.org

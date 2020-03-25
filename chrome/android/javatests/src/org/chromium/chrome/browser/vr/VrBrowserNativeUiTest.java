@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr;
 import static org.chromium.chrome.browser.vr.XrTestFramework.NATIVE_URLS_OF_INTEREST;
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.VR_SKIA_GOLD_CORPUS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.graphics.PointF;
@@ -57,7 +58,7 @@ public class VrBrowserNativeUiTest {
 
     @Rule
     public RenderTestRule mRenderTestRule =
-            new RenderTestRule("components/test/data/vr_browser_ui/render_tests");
+            new RenderTestRule.SkiaGoldBuilder().setCorpus(VR_SKIA_GOLD_CORPUS).build();
 
     private VrBrowserTestFramework mVrBrowserTestFramework;
 

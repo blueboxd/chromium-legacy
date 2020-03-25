@@ -39,6 +39,8 @@ component("model") {
     "ui/assistant_card_element.h",
     "ui/assistant_text_element.cc",
     "ui/assistant_text_element.h",
+    "ui/assistant_timers_element.cc",
+    "ui/assistant_timers_element.h",
     "ui/assistant_ui_element.cc",
     "ui/assistant_ui_element.h",
   ]

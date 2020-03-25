@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -29,7 +30,7 @@ class CrostiniFileTasksTest : public testing::Test {
     // crostini.registry {<id>: {container_name: "penguin", name: {"": <name>},
     //                           mime_types: [<mime>,], vm_name: "termina"}}
     DictionaryPrefUpdate update(profile_.GetPrefs(),
-                                crostini::prefs::kCrostiniRegistry);
+                                guest_os::prefs::kGuestOsRegistry);
     base::DictionaryValue* registry = update.Get();
     base::Value app(base::Value::Type::DICTIONARY);
     app.SetKey("container_name", base::Value("penguin"));

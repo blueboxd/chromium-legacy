@@ -3381,7 +3381,7 @@
 <translation id="5539221284352502426">입력한 비밀번호가 서버에 의해 거부되었습니다. 가능한 이유는 다음과 같습니다. 비밀번호가 너무 짧습니다. 비밀번호에 숫자 또는 기호가 포함되어야 합니다. 이전 비밀번호와 달라야 합니다.</translation>
 <translation id="5541694225089836610">관리자가 사용 중지한 작업입니다.</translation>
 <translation id="5542132724887566711">프로필</translation>
-<translation id="5542133445231529202"><ph name="ORGANIZATION_NAME" />에서 즉시 기기 업데이트를 요청합니다.</translation>
+<translation id="5542133445231529202"><ph name="ORGANIZATION_NAME" />에서 즉시 기기를 업데이트할 것을 요청합니다.</translation>
 <translation id="5542750926112347543"><ph name="DOMAIN" />의 쿠키를 차단함</translation>
 <translation id="5542949973455282971"><ph name="CARRIER_NAME" />에 연결 중</translation>
 <translation id="5543983818738093899">상태 확인 중...</translation>
@@ -3981,7 +3981,7 @@
 <translation id="6325191661371220117">자동 실행 사용 안함</translation>
 <translation id="6326175484149238433">Chrome에서 삭제</translation>
 <translation id="6326855256003666642">프로그램 사용자 수</translation>
-<translation id="632707535499064463"><ph name="ORGANIZATION_NAME" />에서 기한 전에 기기 업데이트를 요청합니다.</translation>
+<translation id="632707535499064463"><ph name="ORGANIZATION_NAME" />에서 기한 전에 기기를 업데이트할 것을 요청합니다.</translation>
 <translation id="6327785803543103246">웹 프록시 자동검색</translation>
 <translation id="6333064448949140209">디버깅을 위해 파일이 Google로 전송됩니다.</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" />의 새 프로필을 만드세요.</translation>

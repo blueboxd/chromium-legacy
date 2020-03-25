@@ -101,7 +101,6 @@
 <translation id="4444765639179266822">텍스트가 <ph name="OCR_TEXT" />인 것으로 보입니다</translation>
 <translation id="4446524499724042288">용어 참조</translation>
 <translation id="4522570452068850558">세부정보</translation>
-<translation id="4542388879936266156">남은 시간: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">양식</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' 다음 부분에 '<ph name="INVALIDCHARACTER" />' 기호가 포함되면 안됩니다.</translation>

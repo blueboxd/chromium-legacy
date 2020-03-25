@@ -2,7 +2,81 @@
 
 ## Fixing a failing Render Test
 
-### Failing on trybots
+Which section applies to the test you are investigating is determined by whether
+the test class is manually creating a RenderTestRule or using the
+SkiaGoldBuilder.
+
+### Skia Gold Comparison
+
+The newer form of pixel comparison backed by
+[Skia Gold](https://skia.org/dev/testing/skiagold). If a test is running in
+this mode, there will be mentions of "Skia Gold" in the reported failure.
+
+#### Failing on trybots
+
+Anytime a patchset produces new golden images, Gold should automatically
+comment on your CL with a link to the triage page. If it fails to do so (e.g.
+your test is failing because it is producing an image that was explicitly
+marked as negative/invalid by someone previously), you can do the following to
+access the triage page manually:
+
+1. On the failed trybot run, locate and follow the `results_details` link under
+the `chrome_public_test_apk` step to go to the **Suites Summary** page.
+2. On the **Suites Summary** page, follow the link to the test suite that is
+failing.
+3. On the **Test Results of Suite** page, follow the links in the **log** column
+corresponding to the renders mentioned in the failure stack trace. The links
+will be named "Skia Gold triage link for entire CL".
+
+Once on the triage page, make sure you are logged in at the top-right.
+Currently, only @google.com accounts work, but other domains such as
+chromium.org can be whitelisted if requested. You should then be able to
+triage any newly produced images.
+
+If the newly generated golden images are "breaking", i.e. it would be a
+regression if Chrome continued to produce the old golden images (such as due
+to a major UI change), you should **NOT** approve them as-is.
+
+Instead:
+1. Increment the revision using SkiaGoldBuilders's `setRevision`.
+1. If you would like to add a description of what the revision represents that
+will be visible on the Gold triage page, add or modify a call to
+SkiaGoldBuilder's `setDescription`
+1. Upload the new patchset, re-run the tryjobs, and approve the new baselines.
+
+The revision increment is so that Gold separates any new golden images from any
+that were produced before. It will affect **any** images produced using
+RenderTestRule that had its revision incremented (i.e. any images produced in
+that test class), so you may have to re-triage additional images. If there
+are many images that need to be triaged, you can use the "Bulk Triage" option
+in Gold under the "ACTIONS" menu item.
+
+#### Failing on CI bots
+
+If a test is failing on the CI bots, i.e. after a CL has already been merged,
+you can perform the same steps as in the above section with the following
+differences:
+
+1. You must manually find the triage links, as Gold has nowhere to post a
+comment to. Alternatively, you can check for untriaged images directly in the
+[gold instance](https://chrome-gold.skia.org).
+2. Triage links are for specific images instead of for an entire CL, and are
+thus named after the the render name.
+
+#### Failing locally
+
+Skia Gold does not allow you to update golden images from local runs. You will
+still have access to the generated image, the closest golden image, and the diff
+between them in the test results, but this is purely for local debugging. New
+golden images must come from either trybots or CI bots.
+
+### Legacy/Local Pixel Comparison
+
+The older form of pixel comparison that does everything locally. If a test is
+running in this mode, there will be no mention of "Skia Gold" in the reported
+failure.
+
+#### Failing on trybots
 
 To investigate why a Render Test is failing on the trybots:
 
@@ -46,7 +120,7 @@ sure to add it to `ALLOWED_DEVICE_SDK_COMBINATIONS` in
 `//chrome/test/data/android/manage_render_test_goldens.py`, otherwise the
 goldens for it will not be uploaded.
 
-### Failing locally
+#### Failing locally
 
 Follow the steps in [*Running the tests locally*](#running-the-tests-locally)
 below to generate renders.
@@ -65,6 +139,22 @@ To write a new test, start with the example in the javadoc for
 [RenderTestRule](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/RenderTestRule.java)
 or [ChromeRenderTestRule](https://cs.chromium.org/chromium/src/chrome/test/android/javatests/src/org/chromium/chrome/test/util/ChromeRenderTestRule.java).
 
+To enable use of Skia Gold for managing golden images, use
+RenderTestRule.SkiaGoldBuilder instead of creating a
+RenderTestRule manually. This will become the default eventually, but is still
+going through the experimental stage. If you want maximum stability, prefer the
+older approach for now. If you want an easier rebaselining process in exchange
+for potentially running into some early growing pains, prefer the use of Skia
+Gold.
+
+Rebaselining the old way requires downloading all new goldens locally, running
+a script to upload them to a Google Storage bucket, and committing the updated
+SHA1 files. Rebaselining via Gold is done entirely through a web UI.
+
+If you want to separate your baselines from the default `android-render-tests`
+corpus in Gold, you can call `setCorpus()` on your
+`SkiaGoldBuilder` instance before calling `build()`.
+
 ### Running the tests locally
 
 When running instrumentation tests locally, pass the `--local-output` option to
@@ -82,6 +172,9 @@ but if there appear to be goldens missing that should be there, try running
 that the downloaded goldens are current for the git revision.
 
 ### Generating golden images locally
+
+**Note that this section only applies to tests running in the legacy/local pixel
+comparison mode**
 
 New golden images may be downloaded from the trybots or retrieved locally. This
 section elaborates how to do the latter.

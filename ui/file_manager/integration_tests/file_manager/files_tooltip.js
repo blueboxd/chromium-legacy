@@ -123,4 +123,28 @@
     // The tooltip should be hidden.
     tooltip = await remoteCall.waitForElement(appId, tooltipQueryHidden);
   };
+
+  /**
+   * Tests that the tooltip should hide when the window resizes.
+   */
+  testcase.filesTooltipHidesOnWindowResize = async () => {
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+    // The tooltip should be hidden.
+    await remoteCall.waitForElement(appId, tooltipQueryHidden);
+
+    // Focus a button with tooltip.
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('focus', appId, [searchButton]));
+
+    // The tooltip should be visible.
+    await remoteCall.waitForElement(appId, tooltipQueryVisible);
+
+    // Resize the window.
+    await remoteCall.callRemoteTestUtil('resizeWindow', appId, [1200, 1200]);
+
+    // The tooltip should be hidden.
+    await remoteCall.waitForElement(appId, tooltipQueryHidden);
+  };
 })();

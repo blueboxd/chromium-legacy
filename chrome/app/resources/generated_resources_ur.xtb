@@ -193,6 +193,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1243314992276662751">اپ لوڈ کریں</translation>
 <translation id="1244265436519979884">‏Linux بحالی فی الحال جاری ہے</translation>
 <translation id="1244303850296295656">ایکسٹینشن میں خرابی</translation>
+<translation id="1246158006305844142">‏آپ کی ایپس اور ترتیبات ان تمام Chrome OS آلات میں مطابقت پذیر ہوں گی جہاں آپ اپنے Google اکاؤنٹ کے ساتھ سائن ان ہیں۔ براؤزر کے مطابقت پذیری کے اختیارات کے ليے <ph name="LINK_BEGIN" />Chrome کی ترتیبات<ph name="LINK_END" /> پر جائیں۔</translation>
 <translation id="1246905108078336582">کلپ بورڈ سے تجویز ہٹائیں؟</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> فرسودہ ہونے کی وجہ سے مسدود کر دیا گیا</translation>
 <translation id="1251366534849411931">ابتدائی خمیدہ قوسین کی توقع ہے: <ph name="ERROR_LINE" /></translation>
@@ -392,6 +393,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1524563461097350801">نہیں شکریہ</translation>
 <translation id="1525740877599838384">‏مقام کا تعین کرنے کے لیے صرف Wi-Fi کا استعمال کریں</translation>
 <translation id="152629053603783244">‏Linux ری اسٹارٹ کریں</translation>
+<translation id="1526335046150927198">ٹچ پیڈ کے اسکرول ایکسلریٹر کو فعال کریں</translation>
 <translation id="1526560967942511387">بلا عنوان دستاویز</translation>
 <translation id="1529891865407786369">پاور کا ماخذ</translation>
 <translation id="1530838837447122178">ماؤس اور ٹچ پیڈ آلہ کی ترتیبات کو کھولیں</translation>
@@ -460,6 +462,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1616206807336925449">اس ایکسٹینشن کو کوئی خاص اجازتیں درکار نہیں ہیں۔</translation>
 <translation id="1616298854599875024">ایکسٹینشن "<ph name="IMPORT_NAME" />" کو درآمد کرنے سے قاصر ہے کیونکہ یہ ایک اشتراک کردہ ماڈیول نہیں ہے</translation>
 <translation id="1618268899808219593">امدادی &amp;مرکز</translation>
+<translation id="1620307519959413822">پاس ورڈ غلط ہے۔ دوبارہ کوشش کریں یا اسے ری سیٹ کرنے کیلئے 'پاس ورڈ بھول گئے' پر کلک کریں۔</translation>
 <translation id="1620510694547887537">کیمرا</translation>
 <translation id="1623132449929929218">تصاویر فی الحال دستیاب نہیں ہے۔ وال پیپر کے مجموعوں کو دیکھنے کے لیے براہ کرم انٹرنیٹ سے دوبارہ منسلک ہوں۔</translation>
 <translation id="1627276047960621195">فائل ڈسکرپٹرز</translation>
@@ -678,6 +681,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1887850431809612466">ہارڈ ویئر سے متعلق نظر ثانی</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">پوری سکرین کھولیں</translation>
+<translation id="1892341345406963517">آداب <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">دوسری زبانیں</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> باقی ہے</translation>
 <translation id="1895658205118569222">بند کریں</translation>
@@ -1314,6 +1318,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2725200716980197196">نیٹ ورک کنیکٹویٹی بحال کر دی گئی</translation>
 <translation id="2727633948226935816">مجھے دوبارہ یاد نہ دلائیں</translation>
 <translation id="2727712005121231835">اصل سائز</translation>
+<translation id="2729314457178420145">‏براؤزنگ ڈیٹا (<ph name="URL" />) بھی صاف کریں جس سے آپ Google.com سے سائن آؤٹ ہو سکتے ہیں۔ <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">‏Linux ایپس اور فائلز کا بیک اپ لیا جا رہا ہے</translation>
 <translation id="273093730430620027">یہ صفحہ آپ کے کیمرا تک رسائی حاصل کر رہا ہے۔</translation>
 <translation id="2731392572903530958">بند ونڈوز د&amp;وبارہ کھولیں</translation>
@@ -2165,6 +2170,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3838486795898716504">مزید <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">کوکیز اور دیگر سائٹ اور پلگ ان ڈیٹا</translation>
 <translation id="383891835335927981">کسی بھی سائٹ کو زوم ان یا زوم آؤٹ نہیں کیا گیا ہے</translation>
+<translation id="3839509547554145593">ماؤس کے اسکرول ایکسلریٹر کو فعال کریں</translation>
 <translation id="3839516600093027468">کلپ بورڈ کو دیکھنے سے <ph name="HOST" /> کو ہمیشہ مسدود کریں</translation>
 <translation id="3841964634449506551">پاس ورڈ غلط ہے</translation>
 <translation id="3842552989725514455">‏Serif فونٹ</translation>
@@ -2776,6 +2782,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4699172675775169585">کیش کردہ تصاویر اور فائلیں</translation>
 <translation id="4699357559218762027">(از خود شروع کیا گیا)</translation>
 <translation id="470074695271471509">مکمل کرنے کیلئے سائن آؤٹ کریں؟</translation>
+<translation id="4701025263201366865">والدین کا سائن ان</translation>
 <translation id="4707302005824653064">‏مینیجر (<ph name="CUSTODIAN_EMAIL" />) استعمال اور سرگزشت کا chrome.com پر جائزہ لے سکتا ہے۔</translation>
 <translation id="4707579418881001319">‏L2TP/IPsec + صارف سرٹیفکیٹ</translation>
 <translation id="4708794300267213770">سلیپ وضع سے بیدار کرنے کے وقت لاک اسکرین دکھائیں</translation>
@@ -3083,6 +3090,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />، <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> تلاش</translation>
 <translation id="5139823398361067371">‏اپنی سیکورٹی کلید کے لیے PIN درج کریں۔ اگر آپ کو PIN معلوم نہیں ہے، تو آپ کو سیکیورٹی کلید کو دوبارہ ترتیب دینا ہوگا۔</translation>
 <translation id="5139955368427980650">&amp;کھولیں</translation>
+<translation id="5142793792982256885">ٹچ پیڈ کے اسکرول کی رفتار</translation>
 <translation id="5142961317498132443">تصدیق</translation>
 <translation id="5143374789336132547">آپ کی جانب سے ہوم بٹن کلک کرنے پر دکھائی دینے والے صفحہ کو ایکسٹینشن "<ph name="EXTENSION_NAME" />" نے تبدیل کر دیا ہے۔</translation>
 <translation id="5143712164865402236">پوری اسکرین میں داخل ہوں</translation>
@@ -3128,6 +3136,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5213891612754844763">پراکسی ترتیبات دکھائيں</translation>
 <translation id="5215502535566372932">ملک منتخب کریں</translation>
 <translation id="521582610500777512">تصویر کو مسترد کر دیا گیا</translation>
+<translation id="5222403284441421673">غیر محفوظ ڈاؤن لوڈ مسدود ہو گیا</translation>
 <translation id="5222676887888702881">سائن آؤٹ</translation>
 <translation id="52232769093306234">پیکنگ نہیں ہو سکی۔</translation>
 <translation id="5225324770654022472">ایپس شارٹ کٹ دکھائیں</translation>
@@ -3526,6 +3535,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5734362860645681824">مواصلات</translation>
 <translation id="5734697361979786483">فائل کا اشتراک شامل کریں</translation>
 <translation id="5736796278325406685">براہ کرم ایک درست صارف نام درج کریں</translation>
+<translation id="5739017626473506901">اسکول کا اکاؤنٹ شامل کرنے میں <ph name="USER_NAME" /> کی مدد کرنے کیلئے سائن ان کریں</translation>
 <translation id="5739235828260127894">توثیق کا انتظار ہے۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">بہت بڑا</translation>
 <translation id="574209121243317957">پچ</translation>
@@ -3645,6 +3655,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5901630391730855834">پیلا</translation>
 <translation id="5906655207909574370">تقریباً اپ ٹو ڈیٹ! اپ ڈیٹ کرنے کو مکمل کرنے کیلئے اپنا آلہ دوبارہ شروع کریں۔</translation>
 <translation id="5906732635754427568">اس ایپ سے وابستہ ڈیٹا کو اس آلہ سے ہٹا دیا جائے گا۔</translation>
+<translation id="5908695239556627796">ماؤس کے اسکرول کی رفتار</translation>
 <translation id="5908769186679515905">سائٹس کو فلیش چلانے سے مسدود کریں</translation>
 <translation id="5910363049092958439">تصویر مح&amp;فوظ کریں بطور…</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> آف لائن ہے</translation>
@@ -5093,6 +5104,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
     <ph name="BEGIN_BOLD" />نوٹ:<ph name="END_BOLD" />  کارروائی کے دوران سسٹم ریبوٹ کرے گا۔</translation>
 <translation id="7828731929332799387">اس سے فریق ثالث کے سیاق و سباق میں دستیاب تمام کوکیز اور سائٹ کا ڈیٹا حذف ہو جائے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟</translation>
 <translation id="7829298379596169484">آڈیو ان پٹ تک رسائی ہو رہی ہے</translation>
+<translation id="7829877209233347340">والدین سے اسکول اکاؤنٹ شامل کرنے کی اجازت دینے کے ليے سائن ان کرنے کو کہیں</translation>
 <translation id="7830594666202422257">‏Linux سے منسلک ہوں</translation>
 <translation id="7831491651892296503">نیٹ ورک کو ترتیب دینے میں خرابی</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5532,6 +5544,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> نیٹ ورک، منسلک ہو رہا ہے</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">پہلے پوچھیں (تجویز کردہ)</translation>
+<translation id="8417548266957501132">والد/والدہ کا پاس ورڈ</translation>
 <translation id="8417573335434189196">‏خطرناک ویب سائٹس، ڈاؤن لوڈز یا ایکسٹینشنز سے آپ کی حفاظت نہیں کرتی ہے۔ Chrome اس ترتیب کی تجویز نہیں کرتا ہے۔</translation>
 <translation id="8418445294933751433">ٹیب کے بطور &amp;دکھائیں</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' کیلئے تلاش کے نتائج</translation>
@@ -5846,6 +5859,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8808686172382650546">بلی</translation>
 <translation id="8808744862003883508">‏اس صفحہ پر آپ Chrome میں انسٹال کردہ تمام ایکسٹینشنز دیکھ سکتے ہیں۔</translation>
 <translation id="8809147117840417135">ہلکا نیلگوں سبز</translation>
+<translation id="8812593354822910461">براؤزنگ ڈیٹا (<ph name="URL" />) بھی صاف کریں جس سے آپ <ph name="DOMAIN" /> سے سائن آؤٹ ہو جائیں گے۔ <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039"><ph name="USERNAME" /> میں سائن ان نہیں کیا جا سکتا ہے</translation>
 <translation id="8813811964357448561">پیپر کی شیٹ</translation>
 <translation id="8813872945700551674">والدین سے "<ph name="EXTENSION_NAME" />" کی منظوری طلب کریں</translation>
@@ -6135,6 +6149,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="9203398526606335860">&amp;پروفائلنگ فعال ہے</translation>
 <translation id="9203904171912129171">ایک آلہ منتخب کریں</translation>
 <translation id="9203962528777363226">اس آلہ کے منتظم نے نئے صارفین کے شامل کیے جانے کو غیر فعال کر دیا ہے</translation>
+<translation id="9209689095351280025">سائٹس ان کوکیز کا استعمال نہیں کر سکتی ہیں جو آپ کو پورے ویب پر ٹریک کرتی ہیں۔</translation>
 <translation id="9211177926627870898">اپ ڈیٹ درکار ہے</translation>
 <translation id="9214520840402538427">افوہ!  انسٹالیشن کے وقت کے انتسابات کے آغاز کا وقت ختم ہوگیا ہے۔ براہ کرم اپنے امدادی نمائندہ سے رابطہ کریں۔</translation>
 <translation id="9214695392875603905">کپ کیک</translation>

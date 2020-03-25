@@ -56,9 +56,32 @@ source_set("test_support") {
 
   deps = [ "//base" ]
 
-  public_deps = [ "//components/policy/core/common:test_support" ]
+  public_deps = [
+    "//components/policy/core/common:test_support",
+    "//testing/gmock",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "policy_unittest.mm" ]
+  deps = [
+    ":policy",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/sync_preferences",
+    "//ios/chrome/browser:pref_names",
+    "//ios/chrome/browser:utils",
+    "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/prefs:browser_prefs",
+    "//testing/gtest",
+  ]
 }
 
 source_set("eg2_tests") {

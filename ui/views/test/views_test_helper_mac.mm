@@ -12,6 +12,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -58,8 +59,8 @@ ViewsTestHelperMac::~ViewsTestHelperMac() {
   }
 }
 
-ui::ContextFactory* ViewsTestHelperMac::GetContextFactory() {
-  return context_factories_.GetContextFactory();
+void ViewsTestHelperMac::SetUpTestViewsDelegate(TestViewsDelegate* delegate) {
+  delegate->set_context_factory(context_factories_.GetContextFactory());
 }
 
 }  // namespace views

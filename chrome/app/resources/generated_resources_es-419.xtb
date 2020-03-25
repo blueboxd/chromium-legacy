@@ -842,7 +842,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2135787500304447609">&amp;Reanudar</translation>
 <translation id="2136372518715274136">Ingresa la nueva contraseña</translation>
 <translation id="2136476978468204130">La frase de contraseña que ingresaste es incorrecta</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Las cookies están bloqueadas.}=1{Se bloquearon las cookies; hay 1 excepción}other{Se bloquearon; {COUNT} excepciones}}</translation>
+<translation id="2137122615728646911">{COUNT,plural, =0{Se bloquearon las cookies.}=1{Se bloquearon las cookies; hay 1 excepción}other{Se bloquearon las cookies; hay {COUNT} excepciones}}</translation>
 <translation id="2138398485845393913">La conexión a "<ph name="DEVICE_NAME" />" sigue en curso</translation>
 <translation id="2139545522194199494">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, administrada por tu administrador, conectar</translation>
 <translation id="2139919072249842737">Botón de configuración</translation>
@@ -3238,7 +3238,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5353252989841766347">Exportar contraseñas desde Chrome</translation>
 <translation id="5355099869024327351">Permite que el Asistente te muestre notificaciones</translation>
 <translation id="5355926466126177564">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al llevar a cabo búsquedas desde el cuadro multifunción.</translation>
-<translation id="535911077628776608">Es posible que el archivo <ph name="FILE_NAME" /> sea peligroso. ¿Quieres enviarlo al programa de Protección Avanzada de Google para que lo analicemos? Presiona mayúscula + F6 para ir al área de la barra de descargas.</translation>
+<translation id="535911077628776608">Es posible que el archivo <ph name="FILE_NAME" /> sea peligroso. ¿Quieres enviarlo al Programa de protección avanzada de Google para que lo analicemos? Presiona mayúscula + F6 para ir al área de la barra de descargas.</translation>
 <translation id="5359910752122114278">1 resultado</translation>
 <translation id="5360150013186312835">Mostrar en la barra de herramientas</translation>
 <translation id="5362741141255528695">Seleccionar archivo de clave privada.</translation>
@@ -3496,7 +3496,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5691511426247308406">Familia</translation>
 <translation id="5691772641933328258">No se reconoció la huella digital</translation>
 <translation id="5692183275898619210">Se completó la impresión</translation>
-<translation id="5692875591060376599">El archivo seleccionado es desconocido y puede ser peligroso. ¿Quieres enviarlo al programa de Protección Avanzada de Google para que lo analicemos?</translation>
+<translation id="5692875591060376599">El archivo seleccionado es desconocido y puede ser peligroso. ¿Quieres enviarlo al Programa de protección avanzada de Google para que lo analicemos?</translation>
 <translation id="569425414730375234">Sesión actual en modo Incógnito: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">Informar abuso de "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">Archivo PPD actualmente en uso: <ph name="PPD_NAME" /></translation>
@@ -5701,7 +5701,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8641606876632989680">Chrome te notificará cuando accedas con una contraseña hackeada</translation>
 <translation id="8642900771896232685">2 segundos</translation>
 <translation id="8642947597466641025">Aumentar el tamaño del texto</translation>
-<translation id="8643443571868262066">Es posible que el archivo <ph name="FILE_NAME" /> sea peligroso. ¿Quieres enviarlo al programa de Protección Avanzada de Google para que lo analicemos?</translation>
+<translation id="8643443571868262066">Es posible que el archivo <ph name="FILE_NAME" /> sea peligroso. ¿Quieres enviarlo al Programa de protección avanzada de Google para que lo analicemos?</translation>
 <translation id="8644655801811752511">No se puede restablecer esta llave de seguridad. Intenta restablecerla inmediatamente después de insertarla.</translation>
 <translation id="8645354835496065562">Seguir permitiendo el acceso a los sensores</translation>
 <translation id="8645920082661222035">Predice y te advierte sobre eventos peligrosos antes de que ocurran.</translation>

@@ -106,7 +106,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEEngineHandlerInterface {
   // selection range, |anchor_pos| represents opposite index from |cursor_pos|.
   // Otherwise |anchor_pos| is equal to |cursor_pos|. If not all surrounding
   // text is given |offset_pos| indicates the starting offset of |text|.
-  virtual void SetSurroundingText(const std::string& text,
+  virtual void SetSurroundingText(const base::string16& text,
                                   uint32_t cursor_pos,
                                   uint32_t anchor_pos,
                                   uint32_t offset_pos) = 0;

@@ -38,10 +38,10 @@ namespace features {
 // Controls whether the AdTracker will look across async stacks to determine if
 // the currently running stack is ad related.
 const base::Feature kAsyncStackAdTagging{"AsyncStackAdTagging",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the AdTracker analyzes the whole pseudo-stack or just the
-// top of the stack when detecting ads.
+// Controls whether the AdTracker analyzes the bottom and top of the stack or
+// just the top of the stack when detecting ads.
 const base::Feature kTopOfStackAdTagging{"TopOfStackAdTagging",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
@@ -156,8 +156,9 @@ bool AdTracker::CalculateIfAdSubresource(ExecutionContext* execution_context,
                                          bool known_ad) {
   // Check if the document loading the resource is an ad or if any executing
   // script is an ad.
-  known_ad = known_ad || IsKnownAdExecutionContext(execution_context) ||
-             IsAdScriptInStackForContext(execution_context);
+  known_ad =
+      known_ad || IsKnownAdExecutionContext(execution_context) ||
+      IsAdScriptInStackForContext(StackType::kBottomAndTop, execution_context);
 
   // If it is a script marked as an ad and it's not in an ad context, append it
   // to the known ad script set. We don't need to keep track of ad scripts in ad
@@ -177,7 +178,7 @@ void AdTracker::DidCreateAsyncTask(probe::AsyncTaskId* task,
   if (!async_stack_enabled_)
     return;
 
-  if (IsAdScriptInStackForContext(execution_context))
+  if (IsAdScriptInStackForContext(StackType::kBottomOnly, execution_context))
     task->SetAdTask();
 }
 
@@ -200,6 +201,7 @@ void AdTracker::DidFinishAsyncTask(probe::AsyncTaskId* task) {
 }
 
 bool AdTracker::IsAdScriptInStackForContext(
+    StackType stack_type,
     ExecutionContext* execution_context) {
   if (num_ads_in_stack_ > 0 || running_ad_async_tasks_ > 0)
     return true;
@@ -212,9 +214,13 @@ bool AdTracker::IsAdScriptInStackForContext(
   if (IsKnownAdExecutionContext(execution_context))
     return true;
 
-  // The pseudo-stack contains entry points into the stack (e.g., when v8 is
-  // executed) but not the entire stack. It's cheap to retrieve the top of the
-  // stack so scan that as well.
+  if (stack_type == StackType::kBottomOnly)
+    return false;
+
+  // The stack scanned by the AdTracker contains entry points into the stack
+  // (e.g., when v8 is executed) but not the entire stack. For a small cost we
+  // can also check the top of the stack (this is much cheaper than getting the
+  // full stack from v8).
   String top_script = ScriptAtTopOfStack(execution_context);
 
   if (!top_script.IsEmpty() && IsKnownAdScript(execution_context, top_script))
@@ -223,8 +229,8 @@ bool AdTracker::IsAdScriptInStackForContext(
   return false;
 }
 
-bool AdTracker::IsAdScriptInStackSlow() {
-  return IsAdScriptInStackForContext(GetCurrentExecutionContext());
+bool AdTracker::IsAdScriptInStackSlow(StackType stack_type) {
+  return IsAdScriptInStackForContext(stack_type, GetCurrentExecutionContext());
 }
 
 bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,

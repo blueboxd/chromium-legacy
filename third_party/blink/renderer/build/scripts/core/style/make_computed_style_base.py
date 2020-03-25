@@ -88,6 +88,7 @@ ALIGNMENT_ORDER = [
 
 # FIXME: Improve documentation and add docstrings.
 
+
 def _flatten_list(x):
     """Flattens a list of lists into a single list."""
     return list(chain.from_iterable(x))
@@ -109,6 +110,7 @@ def _create_groups(properties):
     Returns:
         Group: The root group of the tree. The name of the group is set to None.
     """
+
     # We first convert properties into a dictionary structure. Each dictionary
     # represents a group. The None key corresponds to the fields directly stored
     # on that group. The other keys map from group name to another dictionary.
@@ -127,8 +129,9 @@ def _create_groups(properties):
     def _dict_to_group(name, group_dict):
         fields_in_current_group = group_dict.pop(None)
         subgroups = [
-            _dict_to_group(subgroup_name, subgroup_dict) for subgroup_name,
-            subgroup_dict in group_dict.items()]
+            _dict_to_group(subgroup_name, subgroup_dict)
+            for subgroup_name, subgroup_dict in group_dict.items()
+        ]
         return Group(name, subgroups, _reorder_fields(fields_in_current_group))
 
     root_group_dict = {None: []}
@@ -171,32 +174,32 @@ def _list_field_dependencies(entries_with_field_dependencies):
     return field_dependencies
 
 
-def _create_diff_groups(fields_to_diff,
-                        methods_to_diff,
-                        predicates_to_test,
+def _create_diff_groups(fields_to_diff, methods_to_diff, predicates_to_test,
                         root_group):
     diff_group = DiffGroup(root_group)
-    field_dependencies = _list_field_dependencies(
-        methods_to_diff + predicates_to_test)
+    field_dependencies = _list_field_dependencies(methods_to_diff +
+                                                  predicates_to_test)
     for subgroup in root_group.subgroups:
-        if any(field.property_name in (fields_to_diff + field_dependencies)
-               for field in subgroup.all_fields):
-            diff_group.subgroups.append(_create_diff_groups(
-                fields_to_diff, methods_to_diff, predicates_to_test, subgroup))
+        if any(
+                field.property_name in (fields_to_diff + field_dependencies)
+                for field in subgroup.all_fields):
+            diff_group.subgroups.append(
+                _create_diff_groups(fields_to_diff, methods_to_diff,
+                                    predicates_to_test, subgroup))
     for entry in fields_to_diff:
         for field in root_group.fields:
             if not field.is_inherited_flag and entry == field.property_name:
                 diff_group.fields.append(field)
     for entry in methods_to_diff:
         for field in root_group.fields:
-            if (not field.is_inherited_flag and
-                    field.property_name in entry['field_dependencies'] and
-                    entry['method'] not in diff_group.expressions):
+            if (not field.is_inherited_flag
+                    and field.property_name in entry['field_dependencies']
+                    and entry['method'] not in diff_group.expressions):
                 diff_group.expressions.append(entry['method'])
     for entry in predicates_to_test:
         for field in root_group.fields:
-            if (not field.is_inherited_flag and
-                    field.property_name in entry['field_dependencies']
+            if (not field.is_inherited_flag
+                    and field.property_name in entry['field_dependencies']
                     and entry['predicate'] not in diff_group.predicates):
                 diff_group.predicates.append(entry['predicate'])
     return diff_group
@@ -208,10 +211,12 @@ def _create_enums(properties):
     for property_ in properties:
         # Only generate enums for keyword properties that do not
         # require includes.
-        if (property_['field_template'] in ('keyword', 'multi_keyword') and
-                len(property_['include_paths']) == 0):
-            enum = Enum(property_['type_name'], property_['keywords'],
-                        is_set=(property_['field_template'] == 'multi_keyword'))
+        if (property_['field_template'] in ('keyword', 'multi_keyword')
+                and len(property_['include_paths']) == 0):
+            enum = Enum(
+                property_['type_name'],
+                property_['keywords'],
+                is_set=(property_['field_template'] == 'multi_keyword'))
             if property_['field_template'] == 'multi_keyword':
                 assert property_['keywords'][0] == 'none', \
                     "First keyword in a 'multi_keyword' field must be " \
@@ -290,7 +295,9 @@ def _create_inherited_flag_field(property_):
     Create the field used for an inheritance fast path from an independent CSS
     property, and return the Field object.
     """
-    name_for_methods = NameStyleConverter(property_['name_for_methods']).to_function_name(suffix=['is', 'inherited'])
+    name_for_methods = NameStyleConverter(
+        property_['name_for_methods']).to_function_name(
+            suffix=['is', 'inherited'])
     name_source = NameStyleConverter(name_for_methods)
     return Field(
         'inherited_flag',
@@ -365,8 +372,10 @@ def _reorder_non_bit_fields(non_bit_fields):
         assert field.alignment_type in ALIGNMENT_ORDER, \
             "Type {} has unknown alignment. Please update ALIGNMENT_ORDER " \
             "to include it.".format(field.name)
-    return list(sorted(
-        non_bit_fields, key=lambda f: ALIGNMENT_ORDER.index(f.alignment_type)))
+    return list(
+        sorted(
+            non_bit_fields,
+            key=lambda f: ALIGNMENT_ORDER.index(f.alignment_type)))
 
 
 def _reorder_fields(fields):
@@ -378,12 +387,12 @@ def _reorder_fields(fields):
     non_bit_fields = [field for field in fields if not field.is_bit_field]
 
     # Non bit fields go first, then the bit fields.
-    return _reorder_non_bit_fields(
-        non_bit_fields) + _reorder_bit_fields(bit_fields)
+    return _reorder_non_bit_fields(non_bit_fields) + _reorder_bit_fields(
+        bit_fields)
 
 
-def _get_properties_ranking_using_partition_rule(
-        properties_ranking, partition_rule):
+def _get_properties_ranking_using_partition_rule(properties_ranking,
+                                                 partition_rule):
     """Take the contents of the properties ranking file and produce a dictionary
     of css properties with their group number based on the partition_rule
 
@@ -398,9 +407,10 @@ def _get_properties_ranking_using_partition_rule(
     """
     return dict(
         zip(properties_ranking, [
-            bisect.bisect_left(
-                partition_rule, float(i) / len(properties_ranking)) + 1
-            for i in range(len(properties_ranking))]))
+            bisect.bisect_left(partition_rule,
+                               float(i) / len(properties_ranking)) + 1
+            for i in range(len(properties_ranking))
+        ]))
 
 
 def _best_rank(prop, ranking_map):
@@ -418,8 +428,10 @@ def _best_rank(prop, ranking_map):
     return best_rank if best_rank != worst_rank else -1
 
 
-def _evaluate_rare_non_inherited_group(properties, properties_ranking,
-                                       num_layers, partition_rule=None):
+def _evaluate_rare_non_inherited_group(properties,
+                                       properties_ranking,
+                                       num_layers,
+                                       partition_rule=None):
     """Re-evaluate the grouping of RareNonInherited groups based on each
     property's popularity.
 
@@ -432,15 +444,15 @@ def _evaluate_rare_non_inherited_group(properties, properties_ranking,
     """
     if partition_rule is None:
         partition_rule = [
-            1.0 * (i + 1) / num_layers for i in range(num_layers)]
+            1.0 * (i + 1) / num_layers for i in range(num_layers)
+        ]
 
     assert num_layers == len(partition_rule), \
         "Length of rule and num_layers mismatch"
 
     layers_name = [
         "rare-non-inherited-usage-less-than-{}-percent".format(
-            int(round(partition_rule[i] * 100)))
-        for i in range(num_layers)
+            int(round(partition_rule[i] * 100))) for i in range(num_layers)
     ]
     properties_ranking = _get_properties_ranking_using_partition_rule(
         properties_ranking, partition_rule)
@@ -464,8 +476,10 @@ def _evaluate_rare_non_inherited_group(properties, properties_ranking,
             property_["field_group"] = "->".join(group_tree)
 
 
-def _evaluate_rare_inherit_group(properties, properties_ranking,
-                                 num_layers, partition_rule=None):
+def _evaluate_rare_inherit_group(properties,
+                                 properties_ranking,
+                                 num_layers,
+                                 partition_rule=None):
     """Re-evaluate the grouping of RareInherited groups based on each property's
     popularity.
 
@@ -486,8 +500,7 @@ def _evaluate_rare_inherit_group(properties, properties_ranking,
 
     layers_name = [
         "rare-inherited-usage-less-than-{}-percent".format(
-            int(round(partition_rule[i] * 100)))
-        for i in range(num_layers)
+            int(round(partition_rule[i] * 100))) for i in range(num_layers)
     ]
 
     properties_ranking = _get_properties_ranking_using_partition_rule(
@@ -526,8 +539,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
         # css_properties.json5 and we can get the longest continuous segment.
         # Thereby reduce the switch case statement to the minimum.
         properties = keyword_utils.sort_keyword_properties_by_canonical_order(
-            self._css_properties.longhands,
-            json5_file_paths[5],
+            self._css_properties.longhands, json5_file_paths[5],
             self.default_parameters)
         self._properties = properties + self._css_properties.extra_fields
 
@@ -535,41 +547,43 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
 
         # Organise fields into a tree structure where the root group
         # is ComputedStyleBase.
-        group_parameters = dict([
-            (conf["name"], conf["cumulative_distribution"]) for conf in
-            json5_generator.Json5File.load_from_files(
-                [json5_file_paths[7]]).name_dictionaries])
+        group_parameters = dict(
+            [(conf["name"], conf["cumulative_distribution"])
+             for conf in json5_generator.Json5File.load_from_files(
+                 [json5_file_paths[7]]).name_dictionaries])
 
         properties_ranking = [
-            x["name"].original for x in json5_generator.Json5File.load_from_files(
-                [json5_file_paths[6]]).name_dictionaries
+            x["name"].original for x in json5_generator.Json5File.
+            load_from_files([json5_file_paths[6]]).name_dictionaries
         ]
         _evaluate_rare_non_inherited_group(
-            self._properties,
-            properties_ranking,
+            self._properties, properties_ranking,
             len(group_parameters["rare_non_inherited_properties_rule"]),
             group_parameters["rare_non_inherited_properties_rule"])
         _evaluate_rare_inherit_group(
-            self._properties,
-            properties_ranking,
+            self._properties, properties_ranking,
             len(group_parameters["rare_inherited_properties_rule"]),
             group_parameters["rare_inherited_properties_rule"])
         self._root_group = _create_groups(self._properties)
         self._diff_functions_map = _create_diff_groups_map(
             json5_generator.Json5File.load_from_files(
-                [json5_file_paths[4]]).name_dictionaries,
-            self._root_group)
+                [json5_file_paths[4]]).name_dictionaries, self._root_group)
 
         self._include_paths = _get_include_paths(self._properties)
         self._outputs = {
-            'computed_style_base.h': self.generate_base_computed_style_h,
-            'computed_style_base.cc': self.generate_base_computed_style_cpp,
+            'computed_style_base.h':
+            self.generate_base_computed_style_h,
+            'computed_style_base.cc':
+            self.generate_base_computed_style_cpp,
             'computed_style_base_constants.h':
-                self.generate_base_computed_style_constants,
+            self.generate_base_computed_style_constants,
         }
 
     @template_expander.use_jinja(
-        'core/style/templates/computed_style_base.h.tmpl', tests={'in': lambda a, b: a in b})
+        'core/style/templates/computed_style_base.h.tmpl',
+        tests={
+            'in': lambda a, b: a in b
+        })
     def generate_base_computed_style_h(self):
         return {
             'input_files': self._input_files,
@@ -582,7 +596,9 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
 
     @template_expander.use_jinja(
         'core/style/templates/computed_style_base.cc.tmpl',
-        tests={'in': lambda a, b: a in b})
+        tests={
+            'in': lambda a, b: a in b
+        })
     def generate_base_computed_style_cpp(self):
         return {
             'input_files': self._input_files,
@@ -593,13 +609,15 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
             'diff_functions_map': self._diff_functions_map,
         }
 
-    @template_expander.use_jinja('core/style/templates/computed_style_base_constants.h.tmpl')
+    @template_expander.use_jinja(
+        'core/style/templates/computed_style_base_constants.h.tmpl')
     def generate_base_computed_style_constants(self):
         return {
             'input_files': self._input_files,
             'properties': self._properties,
             'enums': self._generated_enums,
         }
+
 
 if __name__ == '__main__':
     json5_generator.Maker(ComputedStyleBaseWriter).main()

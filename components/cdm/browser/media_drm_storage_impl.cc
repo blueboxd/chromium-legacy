@@ -19,6 +19,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "media/base/media_drm_key_type.h"
 #include "url/origin.h"
@@ -717,6 +719,20 @@ MediaDrmStorageImpl::MediaDrmStorageImpl(
   DCHECK(allow_empty_origin_id_cb_);
   DCHECK(!origin().opaque());
 }
+
+MediaDrmStorageImpl::MediaDrmStorageImpl(
+    content::RenderFrameHost* render_frame_host,
+    GetOriginIdCB get_origin_id_cb,
+    AllowEmptyOriginIdCB allow_empty_origin_id_cb,
+    mojo::PendingReceiver<media::mojom::MediaDrmStorage> receiver)
+    : MediaDrmStorageImpl(
+          render_frame_host,
+          user_prefs::UserPrefs::Get(
+              content::WebContents::FromRenderFrameHost(render_frame_host)
+                  ->GetBrowserContext()),
+          get_origin_id_cb,
+          allow_empty_origin_id_cb,
+          std::move(receiver)) {}
 
 MediaDrmStorageImpl::~MediaDrmStorageImpl() {
   DVLOG(1) << __func__;

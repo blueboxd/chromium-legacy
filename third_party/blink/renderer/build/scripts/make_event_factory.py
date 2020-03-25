@@ -84,14 +84,10 @@ class EventFactoryWriter(json5_generator.Writer):
         'suffix': '',
     }
     filters = {
-        'cpp_name':
-        name_utilities.cpp_name,
-        'name':
-        lambda entry: entry['name'].original,
-        'create_event_ignore_case_list':
-        create_event_ignore_case_list,
-        'measure_name':
-        measure_name,
+        'cpp_name': name_utilities.cpp_name,
+        'name': lambda entry: entry['name'].original,
+        'create_event_ignore_case_list': create_event_ignore_case_list,
+        'measure_name': measure_name,
     }
 
     def __init__(self, json5_file_path, output_dir):

@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/test/view_event_test_platform_part.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -75,7 +76,9 @@ void ViewEventTestBase::SetUp() {
   context_factories_ =
       std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
+#if defined(OS_MACOSX)
   views_delegate_.set_context_factory(context_factories_->GetContextFactory());
+#endif
   views_delegate_.set_use_desktop_native_widgets(true);
 
   platform_part_.reset(ViewEventTestPlatformPart::Create(

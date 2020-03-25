@@ -32,14 +32,14 @@ class AssistiveSuggester {
 
   // Checks the text before cursor, emits metric if any assistive prefix is
   // matched.
-  void RecordAssitiveCoverageMetrics(const std::string& text,
+  void RecordAssitiveCoverageMetrics(const base::string16& text,
                                      int cursor_pos,
                                      int anchor_pos);
 
   // Called when a surrounding text is changed.
   // Returns true if it changes the surrounding text, e.g. a suggestion is
   // generated or dismissed.
-  bool OnSurroundingTextChanged(const std::string& text,
+  bool OnSurroundingTextChanged(const base::string16& text,
                                 int cursor_pos,
                                 int anchor_pos);
 
@@ -50,13 +50,14 @@ class AssistiveSuggester {
 
  private:
   // Get the suggestion according to |text_before_cursor|.
-  std::string GetPersonalInfoSuggestion(const std::string& text_before_cursor);
+  base::string16 GetPersonalInfoSuggestion(
+      const base::string16& text_before_cursor);
 
   // Check if any suggestion text should be displayed according to the
   // surrounding text information.
-  void Suggest(const std::string& text, int cursor_pos, int anchor_pos);
+  void Suggest(const base::string16& text, int cursor_pos, int anchor_pos);
 
-  void ShowSuggestion(const std::string& text);
+  void ShowSuggestion(const base::string16& text);
   void DismissSuggestion();
 
   InputMethodEngine* const engine_;

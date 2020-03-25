@@ -171,14 +171,12 @@ DisplaySettings GetDisplaySettingsForDevice(const wchar_t* device_name) {
 std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
     const DisplayInfo& parent_info,
     std::vector<DisplayInfo>* display_infos) {
-  std::vector<DisplayInfo> touching_display_infos;
-  base::EraseIf(*display_infos, [&](const auto& display_info) {
-    if (DisplayInfosTouch(parent_info, display_info)) {
-      touching_display_infos.push_back(display_info);
-      return true;
-    }
-    return false;
-  });
+  const auto first_touching_it = std::partition(
+      display_infos->begin(), display_infos->end(),
+      [&](const auto& info) { return !DisplayInfosTouch(parent_info, info); });
+  std::vector<DisplayInfo> touching_display_infos(first_touching_it,
+                                                  display_infos->end());
+  display_infos->erase(first_touching_it, display_infos->end());
   return touching_display_infos;
 }
 
@@ -629,9 +627,8 @@ gfx::Point ScreenWin::GetCursorScreenPoint() {
 
 bool ScreenWin::IsWindowUnderCursor(gfx::NativeWindow window) {
   POINT cursor_loc;
-  HWND hwnd =
-      ::GetCursorPos(&cursor_loc) ? ::WindowFromPoint(cursor_loc) : nullptr;
-  return GetNativeWindowFromHWND(hwnd) == window;
+  return ::GetCursorPos(&cursor_loc) &&
+         (GetNativeWindowFromHWND(::WindowFromPoint(cursor_loc)) == window);
 }
 
 gfx::NativeWindow ScreenWin::GetWindowAtScreenPoint(const gfx::Point& point) {
@@ -754,18 +751,12 @@ void ScreenWin::OnColorProfilesChanged() {
   // The color profile reader will often just confirm that our guess that the
   // color profile was sRGB was indeed correct. Avoid doing an update in these
   // cases.
-  bool changed = false;
-  for (const auto& display : displays_) {
-    if (display.color_spaces().GetRasterColorSpace() !=
-        color_profile_reader_->GetDisplayColorSpace(display.id())) {
-      changed = true;
-      break;
-    }
-  }
-  if (!changed)
-    return;
-
-  UpdateAllDisplaysAndNotify();
+  if (std::any_of(
+          displays_.cbegin(), displays_.cend(), [this](const auto& display) {
+            return display.color_spaces().GetRasterColorSpace() !=
+                   color_profile_reader_->GetDisplayColorSpace(display.id());
+          }))
+    UpdateAllDisplaysAndNotify();
 }
 
 void ScreenWin::UpdateAllDisplaysAndNotify() {
@@ -804,20 +795,14 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPPoint(
 
 ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPRect(
     const gfx::Rect& dip_rect) const {
-  ScreenWinDisplay closest_screen_win_display;
-  int64_t closest_distance = INT64_MAX;
-  for (const auto& screen_win_display : screen_win_displays_) {
-    Display display = screen_win_display.display();
-    gfx::Rect dip_bounds = display.bounds();
-    if (dip_rect.Intersects(dip_bounds))
-      return screen_win_display;
-    int64_t distance = SquaredDistanceBetweenRects(dip_rect, dip_bounds);
-    if (distance < closest_distance) {
-      closest_distance = distance;
-      closest_screen_win_display = screen_win_display;
-    }
-  }
-  return closest_screen_win_display;
+  const auto first_closer = [dip_rect](const auto& display1,
+                                       const auto& display2) {
+    return SquaredDistanceBetweenRects(dip_rect, display1.display().bounds()) <
+           SquaredDistanceBetweenRects(dip_rect, display2.display().bounds());
+  };
+  const auto it = std::min_element(screen_win_displays_.cbegin(),
+                                   screen_win_displays_.cend(), first_closer);
+  return (it == screen_win_displays_.cend()) ? ScreenWinDisplay() : *it;
 }
 
 ScreenWinDisplay ScreenWin::GetPrimaryScreenWinDisplay() const {
@@ -831,15 +816,14 @@ ScreenWinDisplay ScreenWin::GetPrimaryScreenWinDisplay() const {
 ScreenWinDisplay ScreenWin::GetScreenWinDisplay(
     const MONITORINFOEX& monitor_info) const {
   const int64_t id = DisplayInfo::DeviceIdFromDeviceName(monitor_info.szDevice);
-  for (const auto& screen_win_display : screen_win_displays_) {
-    if (screen_win_display.display().id() == id)
-      return screen_win_display;
-  }
+  const auto it = std::find_if(
+      screen_win_displays_.cbegin(), screen_win_displays_.cend(),
+      [id](const auto& display) { return display.display().id() == id; });
   // There is 1:1 correspondence between MONITORINFOEX and ScreenWinDisplay.
   // If we found no screens, either there are no screens, or we're in the midst
   // of updating our screens (see crbug.com/768845); either way, hand out the
   // default display.
-  return ScreenWinDisplay();
+  return (it == screen_win_displays_.cend()) ? ScreenWinDisplay() : *it;
 }
 
 // static

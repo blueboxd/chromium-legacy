@@ -100,7 +100,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
     // Called when a surrounding text is changed.
     virtual void OnSurroundingTextChanged(const std::string& engine_id,
-                                          const std::string& text,
+                                          const base::string16& text,
                                           int cursor_pos,
                                           int anchor_pos,
                                           int offset_pos) = 0;
@@ -143,7 +143,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   void Reset() override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
                        KeyEventDoneCallback callback) override;
-  void SetSurroundingText(const std::string& text,
+  void SetSurroundingText(const base::string16& text,
                           uint32_t cursor_pos,
                           uint32_t anchor_pos,
                           uint32_t offset_pos) override;

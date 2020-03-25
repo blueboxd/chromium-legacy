@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Пашырэнне не патрабуе спецыяльных дазволаў.</translation>
 <translation id="1616298854599875024">Не ўдалося імпартаваць пашырэнне "<ph name="IMPORT_NAME" />": гэта не абагулены модуль</translation>
 <translation id="1618268899808219593">Да&amp;ведачны цэнтр</translation>
+<translation id="1620307519959413822">Няправільны пароль. Паўтарыце спробу або націсніце на словы "Забылі пароль?", каб скінуць яго.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623132449929929218">Відарысы пакуль што недаступныя. Каб паглядзець калекцыі шпалер, падключыцеся да інтэрнэту.</translation>
 <translation id="1627276047960621195">Дэскрыптары файлаў</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Версія апаратнага забеспячэння</translation>
 <translation id="1890674179660343635">&lt;span&gt;Ідэнтыфікатар: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Адкрыць у поўнаэкранным рэжыме</translation>
+<translation id="1892341345406963517">Вітаем, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Іншыя мовы</translation>
 <translation id="1895252664692693738">Засталося: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Завяршэнне працы</translation>
@@ -3133,6 +3135,7 @@
 <translation id="5213891612754844763">Паказаць налады проксі-сервера</translation>
 <translation id="5215502535566372932">Выберыце краіну</translation>
 <translation id="521582610500777512">Фота было адхілена</translation>
+<translation id="5222403284441421673">Небяспечная спампоўка заблакіравана</translation>
 <translation id="5222676887888702881">Выйсці</translation>
 <translation id="52232769093306234">Памылка запакоўвання.</translation>
 <translation id="5225324770654022472">Паказваць ярлык праграм</translation>
@@ -3531,6 +3534,7 @@
 <translation id="5734362860645681824">Размовы</translation>
 <translation id="5734697361979786483">Дадаць файлаабменнік</translation>
 <translation id="5736796278325406685">Увядзіце сапраўднае імя карыстальніка</translation>
+<translation id="5739017626473506901">Каб дапамагчы дзіцяці (<ph name="USER_NAME" />) дадаць навучальны ўліковы запіс, увайдзіце</translation>
 <translation id="5739235828260127894">Чаканне спраўджання. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Вельмі вялікі</translation>
 <translation id="574209121243317957">Вышыня голасу</translation>
@@ -5538,6 +5542,7 @@
 <translation id="8408068190360279472">Тып сеткі – <ph name="NETWORK_TYPE" />, ідзе падключэнне</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Спачатку запытваць (рэкамендуецца)</translation>
+<translation id="8417548266957501132">Бацькоўскі пароль</translation>
 <translation id="8417573335434189196">Не абараняе ад небяспечных вэб-сайтаў, спамповак і пашырэнняў. Chrome не рэкамендуе гэту наладу.</translation>
 <translation id="8418445294933751433">&amp;Паказаць як укладку</translation>
 <translation id="8419098111404128271">Вынікі пошуку па запыце "<ph name="SEARCH_TEXT" />"</translation>

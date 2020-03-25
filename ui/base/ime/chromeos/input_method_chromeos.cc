@@ -254,8 +254,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   // |surrounding_text| coordinates.
   if (GetEngine()) {
     GetEngine()->SetSurroundingText(
-        base::UTF16ToUTF8(surrounding_text),
-        selection_range.start() - text_range.start(),
+        surrounding_text, selection_range.start() - text_range.start(),
         selection_range.end() - text_range.start(), text_range.start());
   }
 }

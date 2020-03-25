@@ -10,10 +10,36 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_util.h"
+#include "base/hash/sha1.h"
+#include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace printing {
+
+namespace {
+
+base::FilePath GetPdfTestData(const base::FilePath::StringType& filename) {
+  base::FilePath root_path;
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path))
+    return base::FilePath();
+  return root_path.Append("pdf").Append("test").Append("data").Append(filename);
+}
+
+base::FilePath GetPrintingTestData(const base::FilePath::StringType& filename) {
+  base::FilePath root_path;
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path))
+    return base::FilePath();
+  return root_path.Append("printing")
+      .Append("test")
+      .Append("data")
+      .Append("pdf_cg")
+      .Append(filename);
+}
+
+}  // namespace
 
 TEST(PdfMetafileCgTest, Pdf) {
   // Test in-renderer constructor.
@@ -63,6 +89,100 @@ TEST(PdfMetafileCgTest, Pdf) {
   page_size = pdf2.GetPageBounds(2).size();
   EXPECT_EQ(720, page_size.width());
   EXPECT_EQ(540, page_size.height());
+}
+
+TEST(PdfMetafileCgTest, GetPageBounds) {
+  // Get test data.
+  base::FilePath pdf_file = GetPdfTestData("rectangles_multi_pages.pdf");
+  ASSERT_FALSE(pdf_file.empty());
+  std::string pdf_data;
+  ASSERT_TRUE(base::ReadFileToString(pdf_file, &pdf_data));
+
+  // Initialize and check metafile.
+  PdfMetafileCg pdf_cg;
+  ASSERT_TRUE(pdf_cg.InitFromData(pdf_data.data(), pdf_data.size()));
+  ASSERT_EQ(5u, pdf_cg.GetPageCount());
+
+  // Since the input into GetPageBounds() is a 1-indexed page number, 0 and 6
+  // are out of bounds.
+  gfx::Rect bounds;
+  for (size_t i : {0, 6}) {
+    bounds = pdf_cg.GetPageBounds(i);
+    EXPECT_EQ(0, bounds.x());
+    EXPECT_EQ(0, bounds.y());
+    EXPECT_EQ(0, bounds.width());
+    EXPECT_EQ(0, bounds.height());
+  }
+
+  // Whereas 1-5 are in bounds.
+  for (size_t i = 1; i < 6; ++i) {
+    bounds = pdf_cg.GetPageBounds(i);
+    EXPECT_EQ(0, bounds.x());
+    EXPECT_EQ(0, bounds.y());
+    EXPECT_EQ(200, bounds.width());
+    EXPECT_EQ(250, bounds.height());
+  }
+}
+
+TEST(PdfMetafileCgTest, RenderPageBasic) {
+  // Get test data.
+  base::FilePath pdf_file = GetPdfTestData("rectangles.pdf");
+  ASSERT_FALSE(pdf_file.empty());
+  std::string pdf_data;
+  ASSERT_TRUE(base::ReadFileToString(pdf_file, &pdf_data));
+
+  base::FilePath expected_png_file =
+      GetPrintingTestData("rectangles_cg_expected.pdf.0.png");
+  ASSERT_FALSE(expected_png_file.empty());
+  std::string expected_png_data;
+  ASSERT_TRUE(base::ReadFileToString(expected_png_file, &expected_png_data));
+
+  // Initialize and check metafile.
+  constexpr int kExpectedWidth = 200;
+  constexpr int kExpectedHeight = 300;
+  PdfMetafileCg pdf_cg;
+  ASSERT_TRUE(pdf_cg.InitFromData(pdf_data.data(), pdf_data.size()));
+  ASSERT_EQ(1u, pdf_cg.GetPageCount());
+  gfx::Rect bounds = pdf_cg.GetPageBounds(1);
+  ASSERT_EQ(0, bounds.x());
+  ASSERT_EQ(0, bounds.y());
+  ASSERT_EQ(kExpectedWidth, bounds.width());
+  ASSERT_EQ(kExpectedHeight, bounds.height());
+
+  // Set up rendering context.
+  constexpr size_t kBitsPerComponent = 8;
+  constexpr size_t kBytesPerPixel = 4;
+  constexpr size_t kStride = kExpectedWidth * kBytesPerPixel;
+  std::vector<uint8_t> rendered_bitmap(kStride * kExpectedHeight);
+  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+      CGColorSpaceCreateDeviceRGB());
+  base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
+      rendered_bitmap.data(), kExpectedWidth, kExpectedHeight,
+      kBitsPerComponent, kStride, color_space,
+      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little));
+
+  // Render using metafile and calculate the output hash.
+  Metafile::MacRenderPageParams params;
+  params.autorotate = true;
+  ASSERT_TRUE(pdf_cg.RenderPage(1, context, bounds.ToCGRect(), params));
+  std::array<uint8_t, base::kSHA1Length> rendered_hash =
+      base::SHA1HashSpan(rendered_bitmap);
+
+  // Decode expected PNG and calculate the output hash.
+  std::vector<uint8_t> expected_png_bitmap;
+  int png_width;
+  int png_height;
+  ASSERT_TRUE(gfx::PNGCodec::Decode(
+      reinterpret_cast<const uint8_t*>(expected_png_data.data()),
+      expected_png_data.size(), gfx::PNGCodec::FORMAT_BGRA,
+      &expected_png_bitmap, &png_width, &png_height));
+  ASSERT_EQ(kExpectedWidth, png_width);
+  ASSERT_EQ(kExpectedHeight, png_height);
+  std::array<uint8_t, base::kSHA1Length> expected_hash =
+      base::SHA1HashSpan(expected_png_bitmap);
+
+  // Make sure the hashes match.
+  EXPECT_EQ(expected_hash, rendered_hash);
 }
 
 }  // namespace printing

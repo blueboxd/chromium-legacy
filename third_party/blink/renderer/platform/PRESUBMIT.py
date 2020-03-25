@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Presubmit script for changes affecting Source/platform.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
@@ -42,9 +41,12 @@ def _CheckRuntimeEnabledFeaturesSorted(input_api, output_api):
     # Diff the sorted/unsorted versions.
     differ = difflib.Differ()
     diff = differ.compare(features, features_sorted)
-    return [output_api.PresubmitError(
-        'runtime_enabled_features.json5 features must be sorted alphabetically. '
-        'Diff of feature order follows:', long_text='\n'.join(diff))]
+    return [
+        output_api.PresubmitError(
+            'runtime_enabled_features.json5 features must be sorted alphabetically. '
+            'Diff of feature order follows:',
+            long_text='\n'.join(diff))
+    ]
 
 
 def _CommonChecks(input_api, output_api):

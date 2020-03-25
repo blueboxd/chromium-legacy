@@ -783,9 +783,6 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
   if (params->stop_at_main_frame_layout_viewport && IsGlobalRootScroller())
     return absolute_rect;
 
-  // Presumably the same issue as in setScrollTop. See crbug.com/343132.
-  DisableCompositingQueryAsserts disabler;
-
   PhysicalRect absolute_rect_to_scroll = absolute_rect;
   if (absolute_rect_to_scroll.Width() <= 0)
     absolute_rect_to_scroll.SetWidth(LayoutUnit(1));

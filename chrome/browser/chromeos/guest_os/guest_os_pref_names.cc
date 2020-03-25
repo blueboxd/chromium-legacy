@@ -13,8 +13,28 @@ namespace prefs {
 // shared with.
 const char kGuestOSPathsSharedToVms[] = "guest_os.paths_shared_to_vms";
 
+const char kGuestOsRegistry[] = "crostini.registry";
+// Keys for the |kGuestOsRegistry| Dictionary stored in prefs for each app.
+const char kAppDesktopFileIdKey[] = "desktop_file_id";
+const char kAppVmNameKey[] = "vm_name";
+const char kAppContainerNameKey[] = "container_name";
+const char kAppCommentKey[] = "comment";
+const char kAppMimeTypesKey[] = "mime_types";
+const char kAppKeywordsKey[] = "keywords";
+const char kAppExecutableFileNameKey[] = "executable_file_name";
+const char kAppNameKey[] = "name";
+const char kAppNoDisplayKey[] = "no_display";
+const char kAppScaledKey[] = "scaled";
+const char kAppPackageIdKey[] = "package_id";
+const char kAppStartupWMClassKey[] = "startup_wm_class";
+const char kAppStartupNotifyKey[] = "startup_notify";
+const char kAppInstallTimeKey[] = "install_time";
+const char kAppLastLaunchTimeKey[] = "last_launch_time";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kGuestOSPathsSharedToVms);
+
+  registry->RegisterDictionaryPref(kGuestOsRegistry);
 }
 
 }  // namespace prefs

@@ -318,7 +318,7 @@ TEST_F(ShelfContextMenuTest, ArcLauncherMenusCheck) {
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_PIN));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
   EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 
   // Shelf group context menu.

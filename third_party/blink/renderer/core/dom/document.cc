@@ -981,11 +981,11 @@ const Document& Document::From(const ExecutionContext& context) {
 }
 
 ExecutionContext* Document::ToExecutionContext() {
-  return domWindow();
+  return GetExecutionContext();
 }
 
 const ExecutionContext* Document::ToExecutionContext() const {
-  return domWindow();
+  return GetExecutionContext();
 }
 
 bool Document::FeatureEnabled(OriginTrialFeature feature) const {

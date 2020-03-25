@@ -191,6 +191,7 @@
 <translation id="1243314992276662751">ଅପ୍‌ଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="1244265436519979884">ବର୍ତ୍ତମାନ Linuxର ରିଷ୍ଟୋର୍ ଚାଲିଛି</translation>
 <translation id="1244303850296295656">ଏକ୍ସଟେନ୍‌ସନ୍ ତ୍ରୁଟି</translation>
+<translation id="1246158006305844142">ଆପଣ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟ ସହିତ ସାଇନ୍ ଇନ୍ କରିଥିବା ସମସ୍ତ Chrome OS ଡିଭାଇସରେ ଆପଣଙ୍କର ଆପ୍ସ ଏବଂ ସେଟିଂସ୍ ସିଙ୍କ୍ ହେବ। ବ୍ରାଉଜର୍ ସିଙ୍କ୍ ବିକଳ୍ପଗୁଡ଼ିକ ପାଇଁ, <ph name="LINK_BEGIN" />Chrome ସେଟିଂସ<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="1246905108078336582">କ୍ଲିପ୍‍‍ବୋର୍ଡରୁ ପ୍ରସ୍ତାବ କାଢ଼ି ଦେବେ?</translation>
 <translation id="1249643471736608405"><ph name="PLUGIN_NAME" /> ବ୍ଲକ୍ କରାଯାଇଥିଲା କାରଣ ଏହାକୁ ଅଗ୍ରାହ୍ୟ କରାଯାଇଛି</translation>
 <translation id="1251366534849411931">ପ୍ରତ୍ୟାଶିତ ଖୋଲାଥିବା କୁଟିଳ ବନ୍ଧନୀ: <ph name="ERROR_LINE" /></translation>
@@ -387,6 +388,7 @@
 <translation id="1524563461097350801">ନାହିଁ, ଥାଉ</translation>
 <translation id="1525740877599838384">ଲୋକେସନ୍‌ ସ୍ଥିର କରିବାକୁ କେବଳ ୱାଇ-ଫାଇ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="152629053603783244">Linux ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
+<translation id="1526335046150927198">ଟଚପ୍ୟାଡ୍ ସ୍କ୍ରଲ୍ ଆକ୍ସିଲିରେସନ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="1526560967942511387">ଆଖ୍ୟାବିହୀନ ଡକ୍ୟୁମେଣ୍ଟ</translation>
 <translation id="1529891865407786369">ପାୱର୍‍ ଉତ୍ସ</translation>
 <translation id="1530838837447122178">ମାଉସ୍‌ ଏବଂ ଟଚ୍‍ପ୍ୟାଡ୍‌ ଡିଭାଇସ୍‌ ସେଟିଂସ୍‌ ଖୋଲନ୍ତୁ</translation>
@@ -1308,6 +1310,7 @@
 <translation id="2725200716980197196">ନେଟ୍‍ୱାର୍କ ସଂଯୋଗ ପୁନଃସ୍ଥାପନ ହୋଇଛି</translation>
 <translation id="2727633948226935816">ମୋତେ ପୁଣି ମନେ ପକାନ୍ତୁ ନାହିଁ</translation>
 <translation id="2727712005121231835">ପ୍ରକୃତ ଆକାର</translation>
+<translation id="2729314457178420145">ଆପଣଙ୍କୁ Google.comରୁ ସାଇନ୍ ଆଉଟ୍ କରିଦେଇପାରୁଥିବା ବ୍ରାଉଜିଂ ଡାଟା (<ph name="URL" />)କୁ ମଧ୍ୟ ଖାଲି କରନ୍ତୁ। <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Linux ଆପ୍ ଏବଂ ଫାଇଲ୍‌ଗୁଡ଼ିକର ବ୍ୟାକ୍ ଅପ୍ ନିଆଯାଉଛି</translation>
 <translation id="273093730430620027">ଏହି ପୃଷ୍ଠା ଆପଣଙ୍କର କ୍ୟାମେରାକୁ ଆକ୍ସେସ୍ କରୁଛି।</translation>
 <translation id="2731392572903530958">&amp;ବନ୍ଦ ହୋଇଥିବା ୱିଣ୍ଡୋ ପୁନର୍ବାର ଖୋଲନ୍ତୁ</translation>
@@ -2159,6 +2162,7 @@
 <translation id="3838486795898716504">ଅଧିକ <ph name="PAGE_TITLE" /></translation>
 <translation id="3838543471119263078">କୁକୀ ଓ ଅନ୍ୟାନ୍ୟ ସାଇଟ୍ ଏବଂ ପ୍ଲଗଇନ୍ ଡାଟା</translation>
 <translation id="383891835335927981">କୌଣସି ସାଇଟ୍‌କୁ ଜୁମ୍ ଇନ୍ ବା ଆଉଟ୍ କରାଯାଇନାହିଁ</translation>
+<translation id="3839509547554145593">ମାଉସ୍ ସ୍କ୍ରଲ୍ ଆକ୍ସିଲିରେସନ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="3839516600093027468">କ୍ଲିପ୍‌ବୋର୍ଡ ଦେଖିବାରୁ ସର୍ବଦା <ph name="HOST" />କୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3841964634449506551">ପାସ୍‌ୱାର୍ଡ ଅବୈଧ ଅଟେ</translation>
 <translation id="3842552989725514455">ସେରିଫ୍‌ ଫଣ୍ଟ</translation>
@@ -2769,6 +2773,7 @@
 <translation id="4699172675775169585">କେଚ୍‍ ଛବି ଏବଂ ଫାଇଲ୍‌</translation>
 <translation id="4699357559218762027">(ଅଟୋ-ଲଞ୍ଚ କରାଗଲା)</translation>
 <translation id="470074695271471509">ସମାପ୍ତ କରିବା ପାଇଁ ସାଇନ୍ ଆଉଟ୍ କରିବେ?</translation>
+<translation id="4701025263201366865">ବାପାମା ସାଇନ୍-ଇନ୍</translation>
 <translation id="4707302005824653064">।chrome.com ରେ ପରିଚାଳକ (<ph name="CUSTODIAN_EMAIL" />) ଙ୍କ ଦ୍ଵାରା ବ୍ୟବହାର ଓ ଇତିବୃତ୍ତିର ସମୀକ୍ଷା କରାଯାଇପାରିବ।</translation>
 <translation id="4707579418881001319">L2TP/IPsec + ଉପଯୋଗକର୍ତ୍ତା ସାର୍ଟିଫିକେଟ୍</translation>
 <translation id="4708794300267213770">ନିଷ୍କ୍ରିୟତାରୁ ବାହାରିବା ସମୟରେ ଲକ୍ ସ୍କ୍ରିନ୍ ଦେଖାନ୍ତୁ</translation>
@@ -3076,6 +3081,7 @@
 <translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> ସନ୍ଧାନ</translation>
 <translation id="5139823398361067371">ଆପଣଙ୍କର ସୁରକ୍ଷା କୀ ପାଇଁ PIN ଲେଖନ୍ତୁ। ଯଦି ଆପଣ PIN ଜାଣି ନାହାଁନ୍ତି, ତେବେ ଆପଣ ସୁରକ୍ଷା କୀ ରିସେଟ୍ କରିବାକୁ ଆବଶ୍ୟକ କରିବେ।</translation>
 <translation id="5139955368427980650">&amp;ଖୋଲନ୍ତୁ</translation>
+<translation id="5142793792982256885">ଟଚପ୍ୟାଡ୍ ସ୍କ୍ରଲ୍ ବେଗ</translation>
 <translation id="5142961317498132443">ପ୍ରମାଣିକରଣ</translation>
 <translation id="5143374789336132547">ଏକ୍ସଟେନ୍‌ସନ୍ "<ph name="EXTENSION_NAME" />" ଏହା ପରିବର୍ତ୍ତନ କରିଛି ଯେ ଯେତେବେଳେ ଆପଣ ହୋମ୍‌ ବଟନ୍‌ରେ କ୍ଲିକ୍‌ କରନ୍ତି ସେତେବେଳେ କେଉଁ ପୃଷ୍ଠା ଦେଖାଇବ।</translation>
 <translation id="5143712164865402236">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ରେ ପ୍ରବେଶ କରନ୍ତୁ</translation>
@@ -3638,6 +3644,7 @@
 <translation id="5901630391730855834">ହଳଦିଆ</translation>
 <translation id="5906655207909574370">ପ୍ରାୟ ଅପ୍-ଟୁ-ଡେଟ୍! ଅପଡେଟିଂ ସମାପ୍ତ କରିବା ପାଇଁ ନିଜ ଡିଭାଇସ୍‌କୁ ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ।</translation>
 <translation id="5906732635754427568">ଏହି ଡିଭାଇସ୍‌ରୁ ଏହି ଆପ୍‌ ସମ୍ବନ୍ଧିତ ଡାଟା କାଢ଼ିଦିଆଯିବ।</translation>
+<translation id="5908695239556627796">ମାଉସ୍ ସ୍କ୍ରଲ୍ ବେଗ</translation>
 <translation id="5908769186679515905">ଫ୍ଲାସ୍ ଚଲାଇବାରୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="5910363049092958439">ଛବି ଏପରି ଭାବେ &amp;ସେଭ୍ କରନ୍ତୁ...</translation>
 <translation id="5910726859585389579"><ph name="DEVICE_TYPE" /> ଅଫଲାଇନ୍ ଅଛି</translation>
@@ -5087,6 +5094,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
     <ph name="BEGIN_BOLD" />ଟିପ୍ପଣୀ:<ph name="END_BOLD" />  ଏହି ପ୍ରକ୍ରିୟା ଚାଲୁଥିବା ସମୟରେ ସିଷ୍ଟମ୍ ରିବୁଟ୍ ହେବ।</translation>
 <translation id="7828731929332799387">ଏହା ତୃତୀୟ-ପକ୍ଷ ପ୍ରସଙ୍ଗରେ ଉପଲବ୍ଧ ଥିବା ସମସ୍ତ କୁକୀ ଏବଂ ସାଇଟ୍ ଡାଟା ଡିଲିଟ୍ କରିଦେବ। ଆପଣ ଜାରି ରଖିବାକୁ ଚାହୁଁଛନ୍ତି କି?</translation>
 <translation id="7829298379596169484">ଅଡିଓ ଇନ୍‍ପୁଟ୍‍ ଆକ୍ସେସ୍‌ କରୁଛି</translation>
+<translation id="7829877209233347340">ଏକ ସ୍କୁଲ ଆକାଉଣ୍ଟ ଯୋଗ କରିବାକୁ ଅନୁମତି ଦେବା ପାଇଁ ଜଣେ ବାପା କିମ୍ବା ମା'ଙ୍କୁ ସାଇନ୍ ଇନ୍ କରିବାକୁ କୁହନ୍ତୁ</translation>
 <translation id="7830594666202422257">Linuxକୁ ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="7831491651892296503">ନେଟ୍‍ୱର୍କ କନ୍‍ଫିଗର୍ କରିବା ସମୟରେ ତ୍ରୁଟି ହୋଇଛି</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
@@ -5838,6 +5846,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8808686172382650546">କ୍ୟାଟ୍‌</translation>
 <translation id="8808744862003883508">ଏହି ପୃଷ୍ଠାରେ ଆପଣ Chromeରେ ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ସମସ୍ତ ଏକ୍ସଟେନ୍‍ସନ୍ ଦେଖିପାରିବେ।</translation>
 <translation id="8809147117840417135">ହାଲୁକା ଟିଲ୍</translation>
+<translation id="8812593354822910461">ଆପଣଙ୍କୁ <ph name="DOMAIN" />ରୁ ସାଇନ୍ ଆଉଟ୍ କରିଦେବା ବ୍ରାଉଜିଂ ଡାଟା (<ph name="URL" />)କୁ ମଧ୍ୟ ଖାଲି କରନ୍ତୁ। <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039"><ph name="USERNAME" />ରେ ସାଇନ୍ ଇନ୍ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="8813811964357448561">କାଗଜର ସୀଟ୍</translation>
 <translation id="8813872945700551674">"<ph name="EXTENSION_NAME" />"କୁ ଅନୁମୋଦନ କରିବା ପାଇଁ ଜଣେ ବାପା କିମ୍ବା ମା'ଙ୍କୁ ପଚାରନ୍ତୁ</translation>
@@ -6127,6 +6136,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="9203398526606335860">&amp;ପ୍ରଫାଇଲିଂ ସକ୍ଷମ କରାଗଲା</translation>
 <translation id="9203904171912129171">ଏକ ଡିଭାଇସ୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="9203962528777363226">ଏହି ଡିଭାଇସ୍‌ର ବ୍ୟବସ୍ଥାପକ ନୂଆ ଉପଯୋଗକର୍ତ୍ତାମାନଙ୍କୁ ଯୋଗ ହେବାକୁ ଅକ୍ଷମ କରିଛନ୍ତି</translation>
+<translation id="9209689095351280025">ସାଇଟଗୁଡ଼ିକ ସମଗ୍ର ୱେବରେ ଆପଣଙ୍କୁ ଟ୍ରାକ୍ କରୁଥିବା କୁକୀଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିପାରିବ ନାହିଁ</translation>
 <translation id="9211177926627870898">ଅପଡେଟ୍ କରିବା ଦରକାର</translation>
 <translation id="9214520840402538427">ଓହୋ!  ଇନ୍‌ଷ୍ଟଲେସନ୍ ସମୟ ବୈଶିଷ୍ଟ୍ୟର ଇନ୍‌ଷ୍ଟାଲାଇଜେସନ୍ ସମୟ ଅବଧି ଶେଷ।  ଦୟାକରି ଆପଣଙ୍କ ସମର୍ଥକ ପ୍ରତିନିଧିଙ୍କ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।</translation>
 <translation id="9214695392875603905">କପ୍‌କେକ୍‌</translation>

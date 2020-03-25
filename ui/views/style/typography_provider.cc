@@ -97,6 +97,12 @@ ui::NativeTheme::ColorId GetMenuColorId(int style) {
   }
 }
 
+ui::NativeTheme::ColorId GetHintColorId(int context) {
+  return (context == style::CONTEXT_TEXTFIELD)
+             ? ui::NativeTheme::kColorId_TextfieldPlaceholderColor
+             : ui::NativeTheme::kColorId_LabelSecondaryColor;
+}
+
 ui::NativeTheme::ColorId GetColorId(int context, int style) {
   if (style == style::STYLE_DIALOG_BUTTON_DEFAULT)
     return ui::NativeTheme::kColorId_TextOnProminentButtonColor;
@@ -104,6 +110,8 @@ ui::NativeTheme::ColorId GetColorId(int context, int style) {
     return GetDisabledColorId(context);
   if (style == style::STYLE_LINK)
     return ui::NativeTheme::kColorId_LinkEnabled;
+  if (style == style::STYLE_HINT)
+    return GetHintColorId(context);
   if (context == style::CONTEXT_BUTTON_MD)
     return ui::NativeTheme::kColorId_ButtonEnabledColor;
   if (context == style::CONTEXT_LABEL && style == style::STYLE_SECONDARY)

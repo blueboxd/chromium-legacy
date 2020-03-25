@@ -16,7 +16,7 @@ extern const base::Feature kSupervisedUserInitiatedExtensionInstall;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // For the COVID-19 crisis. Temporarily enable supervised users to install from
-// an allowlist of extensions without parental approval.
+// a policy allowlist of extensions without parental approval.
 // TODO(crbug/1063104): Remove after the parent permission dialog launches.
 extern const base::Feature kSupervisedUserAllowlistExtensionInstall;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

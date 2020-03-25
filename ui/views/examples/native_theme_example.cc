@@ -122,6 +122,7 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TabBottomBorder));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldDefaultColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldDefaultBackground));
+  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldPlaceholderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldReadOnlyColor));
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_TextfieldReadOnlyBackground));

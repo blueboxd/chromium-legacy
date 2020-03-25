@@ -2255,7 +2255,8 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
         GetPlaceholderText(),
         placeholder_font_list_.has_value() ? placeholder_font_list_.value()
                                            : GetFontList(),
-        placeholder_text_color_.value_or(SkColorSetA(GetTextColor(), 0x83)),
+        placeholder_text_color_.value_or(style::GetColor(
+            *this, style::CONTEXT_TEXTFIELD, style::STYLE_HINT)),
         render_text->display_rect(), placeholder_text_draw_flags);
   }
 

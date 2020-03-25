@@ -16,6 +16,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/model/ui/assistant_text_element.h"
+#include "ash/assistant/model/ui/assistant_timers_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
@@ -617,8 +618,25 @@ void AssistantInteractionController::OnTimersResponse(
   if (!HasActiveInteraction())
     return;
 
-  // TODO(dmblack): Implement inline UI for timers.
-  NOTIMPLEMENTED();
+  if (!IsResponseProcessingV2Enabled()) {
+    // If this occurs, the server has broken our response ordering agreement. We
+    // should not crash but we cannot handle the response so we ignore it.
+    if (!HasUnprocessedPendingResponse()) {
+      NOTREACHED();
+      return;
+    }
+  }
+
+  AssistantResponse* response = GetResponseForActiveInteraction();
+  response->AddUiElement(std::make_unique<AssistantTimersElement>(timer_ids));
+
+  if (IsResponseProcessingV2Enabled()) {
+    // If |response| is pending, commit it to cause the response for the
+    // previous interaction, if one exists, to be animated off stage and the new
+    // |response| to begin rendering.
+    if (response == model_.pending_response())
+      model_.CommitPendingResponse();
+  }
 }
 
 void AssistantInteractionController::OnSpeechRecognitionStarted() {}

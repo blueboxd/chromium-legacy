@@ -62,6 +62,8 @@ public abstract class XrTestFramework {
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
     public static final boolean DEBUG_LOGS = false;
 
+    public static final String VR_SKIA_GOLD_CORPUS = "android-vr-render-tests";
+
     // We need to make sure the port is constant, otherwise the URL changes between test runs, which
     // is really bad for image diff tests. There's nothing special about this port other than that
     // it shouldn't be in use by anything.

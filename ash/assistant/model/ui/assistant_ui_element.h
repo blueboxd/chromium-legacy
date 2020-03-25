@@ -15,8 +15,9 @@ namespace ash {
 
 // Defines possible types of Assistant UI elements.
 enum class AssistantUiElementType {
-  kCard,  // See AssistantCardElement.
-  kText,  // See AssistantTextElement.
+  kCard,    // See AssistantCardElement.
+  kText,    // See AssistantTextElement.
+  kTimers,  // See AssistantTimersElement.
 };
 
 // AssistantUiElement ----------------------------------------------------------

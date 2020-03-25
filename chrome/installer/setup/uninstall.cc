@@ -21,6 +21,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
+#include "base/process/process_iterator.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -140,12 +141,46 @@ bool RemoveInstallerFiles(const base::FilePath& installer_directory) {
   return success;
 }
 
-// Kills all Chrome processes, immediately.
-void CloseAllChromeProcesses() {
+// Filter for processes whose base name matches and whose path starts with a
+// specified prefix.
+class ProcessPathPrefixFilter : public base::ProcessFilter {
+ public:
+  explicit ProcessPathPrefixFilter(
+      const base::FilePath::StringPieceType& process_path_prefix)
+      : process_path_prefix_(process_path_prefix) {}
+
+  // base::ProcessFilter:
+  bool Includes(const base::ProcessEntry& entry) const override {
+    // Test if |entry|'s file path starts with the prefix we're looking for.
+    base::Process process(::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+                                        FALSE, entry.th32ProcessID));
+    if (!process.IsValid())
+      return false;
+
+    DWORD path_len = MAX_PATH;
+    wchar_t path_string[MAX_PATH];
+    if (::QueryFullProcessImageName(process.Handle(), 0, path_string,
+                                    &path_len)) {
+      base::FilePath file_path(path_string);
+      return base::StartsWith(file_path.value(), process_path_prefix_,
+                              base::CompareCase::INSENSITIVE_ASCII);
+    }
+    PLOG(WARNING) << "QueryFullProcessImageName failed for PID "
+                  << entry.th32ProcessID;
+    return false;
+  }
+
+ private:
+  const base::FilePath::StringPieceType process_path_prefix_;
+};
+
+// Kills all Chrome processes in |target_path|, immediately.
+void CloseAllChromeProcesses(const base::FilePath& target_path) {
+  ProcessPathPrefixFilter target_path_filter(target_path.value());
   base::CleanupProcesses(installer::kChromeExe, base::TimeDelta(),
-                         content::RESULT_CODE_HUNG, NULL);
+                         content::RESULT_CODE_HUNG, &target_path_filter);
   base::CleanupProcesses(installer::kNaClExe, base::TimeDelta(),
-                         content::RESULT_CODE_HUNG, NULL);
+                         content::RESULT_CODE_HUNG, &target_path_filter);
 }
 
 // Updates shortcuts to |old_target_exe| that have non-empty args, making them
@@ -371,7 +406,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
     if (!base::DeleteFileRecursively(to_delete)) {
       LOG(ERROR) << "Failed to delete path (1st try): " << to_delete.value();
       // Try closing any running Chrome processes and deleting files once again.
-      CloseAllChromeProcesses();
+      CloseAllChromeProcesses(target_path);
       if (!base::DeleteFileRecursively(to_delete)) {
         LOG(ERROR) << "Failed to delete path (2nd try): " << to_delete.value();
         result = DELETE_FAILED;
@@ -826,7 +861,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to
     // do silent uninstall. Try to close all running Chrome instances.
-    CloseAllChromeProcesses();
+    CloseAllChromeProcesses(installer_state.target_path());
   } else {
     // no --force-uninstall so lets show some UI dialog boxes.
     status = IsChromeActiveOrUserCancelled(installer_state);

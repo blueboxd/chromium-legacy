@@ -117,7 +117,13 @@ class AdTrackerTest : public testing::Test {
   void DidExecuteScript() { ad_tracker_->DidExecuteScript(); }
 
   bool AnyExecutingScriptsTaggedAsAdResource() {
-    return ad_tracker_->IsAdScriptInStackSlow();
+    return AnyExecutingScriptsTaggedAsAdResourceWithStackType(
+        AdTracker::StackType::kBottomAndTop);
+  }
+
+  bool AnyExecutingScriptsTaggedAsAdResourceWithStackType(
+      AdTracker::StackType stack_type) {
+    return ad_tracker_->IsAdScriptInStackSlow(stack_type);
   }
 
   void AppendToKnownAdScripts(const String& url) {
@@ -145,6 +151,29 @@ TEST_F(AdTrackerTest, AnyExecutingScriptsTaggedAsAdResource) {
   WillExecuteScript("https://example.com/foo.js");
   WillExecuteScript("https://example.com/bar.js");
   EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
+}
+
+TEST_F(AdTrackerTest, BottomScriptTaggedAsAdResource) {
+  AppendToKnownAdScripts("https://example.com/ad.js");
+
+  WillExecuteScript("https://example.com/ad.js");
+  ad_tracker_->SetScriptAtTopOfStack("https://example.com/vanilla.js");
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResourceWithStackType(
+      AdTracker::StackType::kBottomAndTop));
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResourceWithStackType(
+      AdTracker::StackType::kBottomOnly));
+}
+
+TEST_F(AdTrackerTest, TopScriptTaggedAsAdResource) {
+  AppendToKnownAdScripts("https://example.com/ad.js");
+
+  WillExecuteScript("https://example.com/vanilla.js");
+  ad_tracker_->SetScriptAtTopOfStack("https://example.com/ad.js");
+
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResourceWithStackType(
+      AdTracker::StackType::kBottomAndTop));
+  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResourceWithStackType(
+      AdTracker::StackType::kBottomOnly));
 }
 
 TEST_F(AdTrackerTest, TopOfStackOnly_NoAdsOnTop) {
@@ -198,6 +227,8 @@ TEST_F(AdTrackerTest, TopOfStackIncluded) {
 
   ad_tracker_->SetScriptAtTopOfStack(ad_script_url);
   EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
+  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResourceWithStackType(
+      AdTracker::StackType::kBottomOnly));
 
   ad_tracker_->SetScriptAtTopOfStack("https://www.example.com/baz.js");
   EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
@@ -366,14 +397,15 @@ TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
   // Run vanilla script in the main frame context. It shouldn't be an ad.
   ad_tracker_->SetScriptAtTopOfStack("foo.js");
   EXPECT_FALSE(ad_tracker_->IsAdScriptInStackForContext(
-      GetDocument().ToExecutionContext()));
+      AdTracker::StackType::kBottomAndTop, GetDocument().ToExecutionContext()));
 
   // Run the same vanilla script in the child's context. It should be considered
   // an ad based on context alone. This also tests IsAdScriptInStack's
   // |execution_context| param.
   ExecutionContext* execution_context =
       child_frame->GetDocument()->ToExecutionContext();
-  EXPECT_TRUE(ad_tracker_->IsAdScriptInStackForContext(execution_context));
+  EXPECT_TRUE(ad_tracker_->IsAdScriptInStackForContext(
+      AdTracker::StackType::kBottomAndTop, execution_context));
 }
 
 TEST_F(AdTrackerSimTest, RedirectToAdUrl) {

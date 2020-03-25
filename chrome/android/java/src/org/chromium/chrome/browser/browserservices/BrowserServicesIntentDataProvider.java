@@ -290,13 +290,6 @@ public class BrowserServicesIntentDataProvider {
     }
 
     /**
-     * @return Whether the Custom Tab was opened from a WebAPK.
-     */
-    public boolean isOpenedByWebApk() {
-        return false;
-    }
-
-    /**
      * @return Whether the Activity should be opened in incognito mode.
      */
     public boolean isIncognito() {

@@ -30,13 +30,16 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
   @staticmethod
   def createTestInstance():
     c = _INSTRUMENTATION_TEST_INSTANCE_PATH % 'InstrumentationTestInstance'
+    # yapf: disable
     with mock.patch('%s._initializeApkAttributes' % c), (
          mock.patch('%s._initializeDataDependencyAttributes' % c)), (
-         mock.patch('%s._initializeTestFilterAttributes' % c)), (
+         mock.patch('%s._initializeTestFilterAttributes' %c)), (
          mock.patch('%s._initializeFlagAttributes' % c)), (
          mock.patch('%s._initializeDriverAttributes' % c)), (
          mock.patch('%s._initializeTestControlAttributes' % c)), (
-         mock.patch('%s._initializeTestCoverageAttributes' % c)):
+         mock.patch('%s._initializeTestCoverageAttributes' % c)), (
+         mock.patch('%s._initializeSkiaGoldAttributes' % c)):
+      # yapf: enable
       return instrumentation_test_instance.InstrumentationTestInstance(
           mock.MagicMock(), mock.MagicMock(), lambda s: None)
 

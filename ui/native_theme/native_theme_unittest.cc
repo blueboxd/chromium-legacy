@@ -5,6 +5,7 @@
 #include "ui/native_theme/native_theme.h"
 
 #include <ostream>
+#include <tuple>
 
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -42,18 +43,41 @@ std::ostream& operator<<(std::ostream& os, PrintableSkColor printable_color) {
 }
 
 class NativeThemeRedirectedEquivalenceTest
-    : public testing::TestWithParam<NativeTheme::ColorId> {
+    : public testing::TestWithParam<
+          std::tuple<NativeTheme::ColorScheme, NativeTheme::ColorId>> {
  public:
   NativeThemeRedirectedEquivalenceTest() = default;
 
   static std::string ParamInfoToString(
-      ::testing::TestParamInfo<NativeTheme::ColorId> param_info) {
-    NativeTheme::ColorId color_id = param_info.param;
-    if (color_id >= NativeTheme::ColorId::kColorId_NumColors) {
-      ADD_FAILURE() << "Invalid color value " << color_id;
-      return "Invalid";
+      ::testing::TestParamInfo<std::tuple<NativeTheme::ColorScheme,
+                                          NativeTheme::ColorId>> param_info) {
+    auto param_tuple = param_info.param;
+    return ColorSchemeToString(std::get<0>(param_tuple)) + "_With_" +
+           ColorIdToString(std::get<1>(param_tuple));
+  }
+
+ private:
+  static std::string ColorSchemeToString(NativeTheme::ColorScheme scheme) {
+    switch (scheme) {
+      case NativeTheme::ColorScheme::kDefault:
+        NOTREACHED()
+            << "Cannot unit test kDefault as it depends on machine state.";
+        return "InvalidColorScheme";
+      case NativeTheme::ColorScheme::kLight:
+        return "kLight";
+      case NativeTheme::ColorScheme::kDark:
+        return "kDark";
+      case NativeTheme::ColorScheme::kPlatformHighContrast:
+        return "kPlatformHighContrast";
     }
-    return kColorIdStringName[color_id];
+  }
+
+  static std::string ColorIdToString(NativeTheme::ColorId id) {
+    if (id >= NativeTheme::ColorId::kColorId_NumColors) {
+      NOTREACHED() << "Invalid color value " << id;
+      return "InvalidColorId";
+    }
+    return kColorIdStringName[id];
   }
 };
 
@@ -62,13 +86,17 @@ class NativeThemeRedirectedEquivalenceTest
 TEST_P(NativeThemeRedirectedEquivalenceTest, NativeUiGetSystemColor) {
   // Verifies that colors with and without the Color Provider are the same.
   NativeTheme* native_theme = NativeTheme::GetInstanceForNativeUi();
-  NativeTheme::ColorId color_id = GetParam();
+  auto param_tuple = GetParam();
+  auto color_scheme = std::get<0>(param_tuple);
+  auto color_id = std::get<1>(param_tuple);
 
-  PrintableSkColor original{native_theme->GetSystemColor(color_id)};
+  PrintableSkColor original{
+      native_theme->GetSystemColor(color_id, color_scheme)};
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kColorProviderRedirection);
-  PrintableSkColor redirected{native_theme->GetSystemColor(color_id)};
+  PrintableSkColor redirected{
+      native_theme->GetSystemColor(color_id, color_scheme)};
 
   EXPECT_EQ(original, redirected);
 }
@@ -77,7 +105,11 @@ TEST_P(NativeThemeRedirectedEquivalenceTest, NativeUiGetSystemColor) {
 INSTANTIATE_TEST_SUITE_P(
     ,
     NativeThemeRedirectedEquivalenceTest,
-    ::testing::Values(NATIVE_THEME_COLOR_IDS),
+    ::testing::Combine(
+        ::testing::Values(NativeTheme::ColorScheme::kLight,
+                          NativeTheme::ColorScheme::kDark,
+                          NativeTheme::ColorScheme::kPlatformHighContrast),
+        ::testing::Values(NATIVE_THEME_COLOR_IDS)),
     NativeThemeRedirectedEquivalenceTest::ParamInfoToString);
 #undef OP
 

@@ -89,6 +89,7 @@
   /* Textfield */                                                              \
   OP(kColorId_TextfieldDefaultColor),                                          \
   OP(kColorId_TextfieldDefaultBackground),                                     \
+  OP(kColorId_TextfieldPlaceholderColor),                                      \
   OP(kColorId_TextfieldReadOnlyColor),                                         \
   OP(kColorId_TextfieldReadOnlyBackground),                                    \
   OP(kColorId_TextfieldSelectionColor),                                        \

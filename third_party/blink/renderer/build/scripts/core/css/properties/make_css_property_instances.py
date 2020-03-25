@@ -9,8 +9,12 @@ import template_expander
 from collections import namedtuple
 from core.css import css_properties
 
+
 class PropertyClassData(
-        namedtuple('PropertyClassData', 'enum_key,enum_value,property_id,classname,namespace_group,filename')):
+        namedtuple(
+            'PropertyClassData',
+            'enum_key,enum_value,property_id,classname,namespace_group,filename'
+        )):
     pass
 
 
@@ -19,17 +23,16 @@ class CSSPropertyInstancesWriter(json5_generator.Writer):
         super(CSSPropertyInstancesWriter, self).__init__([], output_dir)
         self._input_files = json5_file_paths
         self._outputs = {
-            'css_property_instances.h': self.generate_property_instances_header,
+            'css_property_instances.h':
+            self.generate_property_instances_header,
             'css_property_instances.cc':
-                self.generate_property_instances_implementation
+            self.generate_property_instances_implementation
         }
         # These files are no longer generated. If the files are present from
         # a previous build, we remove them. This avoids accidentally #including
         # a stale generated header.
         self._cleanup = set([
-            'css_property.cc',
-            'css_property.h',
-            'css_unresolved_property.cc',
+            'css_property.cc', 'css_property.h', 'css_unresolved_property.cc',
             'css_unresolved_property.h'
         ])
 
@@ -84,6 +87,7 @@ class CSSPropertyInstancesWriter(json5_generator.Writer):
             'property_classes_by_property_id': self._property_classes_by_id,
             'alias_classes_by_property_id': self._alias_classes_by_id,
         }
+
 
 if __name__ == '__main__':
     json5_generator.Maker(CSSPropertyInstancesWriter).main()

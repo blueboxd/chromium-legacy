@@ -20,7 +20,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
-#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -87,23 +86,20 @@ HostContentSettingsMap* GetHostContentSettingsMap() {
 
 // Reset the give permission for the DSE if the permission and origin are
 // controlled by the DSE.
-bool MaybeResetDSEPermission(ContentSettingsType type,
+bool MaybeResetDSEPermission(Profile* profile,
+                             ContentSettingsType type,
                              const GURL& origin,
                              const GURL& embedder,
-                             bool is_incognito,
                              ContentSetting setting) {
-  SearchPermissionsService* search_helper =
-      SearchPermissionsService::Factory::GetForBrowserContext(
-          GetActiveUserProfile(is_incognito));
-  bool same_embedder = embedder.is_empty() || embedder == origin;
-  if (same_embedder && search_helper &&
-      search_helper->IsPermissionControlledByDSE(type,
-                                                 url::Origin::Create(origin)) &&
-      setting == CONTENT_SETTING_DEFAULT) {
-    search_helper->ResetDSEPermission(type);
-    return true;
-  }
-  return false;
+  if (!embedder.is_empty() && embedder != origin)
+    return false;
+
+  if (setting != CONTENT_SETTING_DEFAULT)
+    return false;
+
+  return permissions::PermissionsClient::Get()
+      ->ResetPermissionIfControlledByDse(profile, type,
+                                         url::Origin::Create(origin));
 }
 
 ScopedJavaLocalRef<jstring> ConvertOriginToJavaString(
@@ -245,8 +241,8 @@ void SetSettingForOrigin(JNIEnv* env,
         ->RemoveEmbargoByUrl(origin_url, content_type);
   }
 
-  if (MaybeResetDSEPermission(content_type, origin_url, embedder_url,
-                              is_incognito, setting)) {
+  if (MaybeResetDSEPermission(profile, content_type, origin_url, embedder_url,
+                              setting)) {
     return;
   }
 
@@ -479,8 +475,8 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
       ->GetPermissionDecisionAutoBlocker(profile)
       ->RemoveEmbargoByUrl(url, ContentSettingsType::NOTIFICATIONS);
 
-  if (MaybeResetDSEPermission(ContentSettingsType::NOTIFICATIONS, url, GURL(),
-                              is_incognito, setting)) {
+  if (MaybeResetDSEPermission(profile, ContentSettingsType::NOTIFICATIONS, url,
+                              GURL(), setting)) {
     return;
   }
 
@@ -831,13 +827,10 @@ static jboolean JNI_WebsitePreferenceBridge_IsPermissionControlledByDSE(
     int content_settings_type,
     const JavaParamRef<jstring>& jorigin,
     jboolean is_incognito) {
-  SearchPermissionsService* search_helper =
-      SearchPermissionsService::Factory::GetForBrowserContext(
-          GetActiveUserProfile(is_incognito));
-  return search_helper &&
-         search_helper->IsPermissionControlledByDSE(
-             static_cast<ContentSettingsType>(content_settings_type),
-             url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
+  return permissions::PermissionsClient::Get()->IsPermissionControlledByDse(
+      GetActiveUserProfile(is_incognito),
+      static_cast<ContentSettingsType>(content_settings_type),
+      url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
 }
 
 static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(

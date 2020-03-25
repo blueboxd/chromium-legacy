@@ -28,7 +28,7 @@ class ViewsTestHelperMac : public ViewsTestHelper {
   ~ViewsTestHelperMac() override;
 
   // ViewsTestHelper:
-  ui::ContextFactory* GetContextFactory() override;
+  void SetUpTestViewsDelegate(TestViewsDelegate* delegate) override;
 
  private:
   ui::TestContextFactories context_factories_{false};

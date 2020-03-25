@@ -180,9 +180,6 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         int transition;
         if (mIntentDataProvider.isTrustedWebActivity()) {
           transition = PageTransition.AUTO_TOPLEVEL | PageTransition.FROM_API;
-        } else if (mIntentDataProvider.isOpenedByWebApk()) {
-          transition = PageTransition.LINK;
-          params.setHasUserGesture(true);
         } else {
           transition = PageTransition.LINK | PageTransition.FROM_API;
         }

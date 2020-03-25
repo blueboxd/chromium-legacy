@@ -115,10 +115,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     public static final String EXTRA_DISABLE_DOWNLOAD_BUTTON =
             "org.chromium.chrome.browser.customtabs.EXTRA_DISABLE_DOWNLOAD_BUTTON";
 
-    /** Extra that indicates whether the client is a WebAPK. */
-    public static final String EXTRA_IS_OPENED_BY_WEBAPK =
-            "org.chromium.chrome.browser.customtabs.EXTRA_IS_OPENED_BY_WEBAPK";
-
     /**
      * Indicates the source where the Custom Tab is launched. The value is defined as
      * {@link LaunchSourceType}.
@@ -169,7 +165,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private final int mInitialBackgroundColor;
     private final boolean mDisableStar;
     private final boolean mDisableDownload;
-    private final boolean mIsOpenedByWebApk;
     private final boolean mIsTrustedWebActivity;
     @Nullable
     private final Integer mNavigationBarColor;
@@ -326,8 +321,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
         mDisableDownload =
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_DOWNLOAD_BUTTON, false);
-        mIsOpenedByWebApk =
-                IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OPENED_BY_WEBAPK, false);
 
         mTranslateLanguage = IntentUtils.safeGetStringExtra(intent, EXTRA_TRANSLATE_LANGUAGE);
         mFocusIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_FOCUS_INTENT);
@@ -714,11 +707,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public boolean shouldShowDownloadButton() {
         return !mDisableDownload;
-    }
-
-    @Override
-    public boolean isOpenedByWebApk() {
-        return mIsOpenedByWebApk;
     }
 
     @Override

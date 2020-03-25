@@ -659,6 +659,7 @@ SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
     case kColorId_TextfieldDefaultColor:
     case kColorId_ButtonEnabledColor:
     case kColorId_UnfocusedBorderColor:
+    case kColorId_TextfieldPlaceholderColor:
     case kColorId_TextfieldReadOnlyColor:
     case kColorId_FocusedBorderColor:
     case kColorId_TabTitleColorActive:

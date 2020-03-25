@@ -847,7 +847,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2135787500304447609">&amp;Nastavi</translation>
 <translation id="2136372518715274136">Unesite novu zaporku</translation>
 <translation id="2136476978468204130">Šifra koju ste unijeli nije točna</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Kolačići su blokirani.}=1{Kolačići su blokirani, jedna iznimka}one{Kolačići su blokirani, {COUNT} iznimka}few{Kolačići su blokirani, {COUNT} iznimke}other{Kolačići su blokirani, {COUNT} iznimki}}</translation>
+<translation id="2137122615728646911">{COUNT,plural, =0{Kolačići su blokirani.}=1{Kolačići su blokirani, jedna iznimka}one{Kolačići su blokirani, {COUNT} iznimka}few{Kolačići su blokirani, {COUNT} iznimke}other{Kolačići su blokirani, {COUNT} iznimaka}}</translation>
 <translation id="2138398485845393913">Povezivanje s uređajem "<ph name="DEVICE_NAME" />" još je u tijeku</translation>
 <translation id="2139545522194199494">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, upravlja administrator, povežite</translation>
 <translation id="2139919072249842737">Gumb za postavljanje</translation>
@@ -3244,7 +3244,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5353252989841766347">Izvoz zaporki iz Chromea</translation>
 <translation id="5355099869024327351">Dopustite Asistentu da vam prikazuje obavijesti</translation>
 <translation id="5355926466126177564">Proširenje "<ph name="EXTENSION_NAME" />" promijenilo stranicu koja se prikazuje prilikom pretraživanja putem višenamjenskog okvira.</translation>
-<translation id="535911077628776608">Datoteka <ph name="FILE_NAME" /> možda je opasna. Poslati na Google naprednu zaštitu radi pregleda? Pritisnite Shift + F6 nekoliko puta da biste se pomaknuli na područje trake preuzimanja.</translation>
+<translation id="535911077628776608">Datoteka <ph name="FILE_NAME" /> možda je opasna. Želite li upotrijebiti Googleovu naprednu zaštitu za pregled datoteke? Pritisnite Shift + F6 nekoliko puta da biste se pomaknuli na područje trake preuzimanja.</translation>
 <translation id="5359910752122114278">Jedan rezultat</translation>
 <translation id="5360150013186312835">Prikaži na alatnoj traci</translation>
 <translation id="5362741141255528695">Odaberite datoteku s osobnim ključem.</translation>
@@ -3429,7 +3429,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5593357315997824387">Sinkroniziraj moje datoteke</translation>
 <translation id="5595152862129936745">Vrlo daleko</translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
-<translation id="5595727715083333657">Vaš spremnik ne podržava promjenu veličine. Da biste prilagodili količinu prostora koji je unaprijed dodijeljen Linuxu (Beta), stvorite sigurnosnu kopiju i vratite je u novom spremniku.</translation>
+<translation id="5595727715083333657">Vaš spremnik ne podržava promjenu veličine. Da biste prilagodili količinu prostora koji je unaprijed dodijeljen Linuxu (Beta), izradite sigurnosnu kopiju i vratite je u novom spremniku.</translation>
 <translation id="5596627076506792578">Više opcija</translation>
 <translation id="5600706100022181951">Za preuzimanje ažuriranja iskoristit će se <ph name="UPDATE_SIZE_MB" /> MB mobilnih podataka. Želite li nastaviti?</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -3502,7 +3502,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5691511426247308406">Obitelj</translation>
 <translation id="5691772641933328258">Otisak prsta nije prepoznat</translation>
 <translation id="5692183275898619210">Ispis je dovršen</translation>
-<translation id="5692875591060376599">Odabrana datoteka nije poznata i može biti opasna. Poslati na Google naprednu zaštitu radi pregleda?</translation>
+<translation id="5692875591060376599">Odabrana datoteka nije poznata i može biti opasna. Želite li upotrijebiti Googleovu naprednu zaštitu za pregled datoteke?</translation>
 <translation id="569425414730375234">Trenutačna anonimna sesija: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">Prijavi zloupotrebu za proširenje "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">Trenutačna PPD datoteka u upotrebi: <ph name="PPD_NAME" /></translation>
@@ -5681,7 +5681,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8608618451198398104">Dodajte Kerberosov tiket</translation>
 <translation id="8609465669617005112">Premjesti gore</translation>
 <translation id="8610103157987623234">Format nije točan. Pokušajte ponovo.</translation>
-<translation id="8612935480510351790">Datoteka <ph name="FILE_NAME" /> možda je opasna. Poslati na Google naprednu zaštitu radi pregleda?</translation>
+<translation id="8612935480510351790">Datoteka <ph name="FILE_NAME" /> možda je opasna. Želite li upotrijebiti Googleovu naprednu zaštitu za pregled datoteke?</translation>
 <translation id="8613164732773110792">Samo mala slova, brojke, podvlake ili crtice</translation>
 <translation id="8615618338313291042">Anonimna aplikacija: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Sjena</translation>
@@ -5709,7 +5709,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8641606876632989680">Chrome će vas obavijestiti kada se prijavite ugroženom zaporkom</translation>
 <translation id="8642900771896232685">Dvije sekunde</translation>
 <translation id="8642947597466641025">Uvećaj tekst</translation>
-<translation id="8643443571868262066">Datoteka <ph name="FILE_NAME" /> možda je opasna. Poslati na Google naprednu zaštitu radi pregleda?</translation>
+<translation id="8643443571868262066">Datoteka <ph name="FILE_NAME" /> možda je opasna. Želite li upotrijebiti Googleovu naprednu zaštitu za pregled datoteke?</translation>
 <translation id="8644655801811752511">Taj se sigurnosni ključ ne može vratiti na zadano. Pokušajte vratiti ključ na zadano odmah nakon što ga umetnete.</translation>
 <translation id="8645354835496065562">Nastavi dopuštati pristup senzorima</translation>
 <translation id="8645920082661222035">Predviđa opasne događaje i upozorava vas na njih prije nego što se dogode</translation>

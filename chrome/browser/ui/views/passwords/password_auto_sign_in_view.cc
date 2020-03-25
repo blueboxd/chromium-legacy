@@ -49,7 +49,7 @@ PasswordAutoSignInView::PasswordAutoSignInView(
           controller_.GetProfile())
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
-      STYLE_HINT, views::style::STYLE_PRIMARY);
+      views::style::STYLE_HINT, views::style::STYLE_PRIMARY);
   credential->SetEnabled(false);
   AddChildView(credential);
 

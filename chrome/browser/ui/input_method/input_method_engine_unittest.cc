@@ -109,13 +109,13 @@ class TestObserver : public InputMethodEngineBase::Observer {
     composition_bounds_ = bounds;
   }
   void OnSurroundingTextChanged(const std::string& engine_id,
-                                const std::string& text,
+                                const base::string16& text,
                                 int cursor_pos,
                                 int anchor_pos,
                                 int offset) override {
     calls_bitmap_ |= ONSURROUNDINGTEXTCHANGED;
     engine_id_ = engine_id;
-    surrounding_info_.text = text;
+    surrounding_info_.text = base::UTF16ToUTF8(text);
     surrounding_info_.focus = cursor_pos;
     surrounding_info_.anchor = anchor_pos;
     surrounding_info_.offset = offset;
@@ -278,7 +278,7 @@ TEST_F(InputMethodEngineTest, TestSurroundingTextChanged) {
   EXPECT_EQ(ONACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
   EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   // Sets the surrounding text.
-  engine_->SetSurroundingText("text" /* Surrounding text*/,
+  engine_->SetSurroundingText(base::UTF8ToUTF16("text") /* Surrounding text*/,
                               0 /*focused position*/, 1 /*anchor position*/,
                               0 /*offset position*/);
   EXPECT_EQ(ONSURROUNDINGTEXTCHANGED, observer_->GetCallsBitmapAndReset());

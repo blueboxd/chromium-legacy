@@ -195,7 +195,7 @@ void NativeInputMethodEngine::ImeObserver::OnCompositionBoundsChanged(
 
 void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     const std::string& engine_id,
-    const std::string& text,
+    const base::string16& text,
     int cursor_pos,
     int anchor_pos,
     int offset_pos) {

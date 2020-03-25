@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_main_parts.h"
 
 namespace base {
@@ -20,7 +21,7 @@ struct MainFunctionParams;
 }
 
 namespace views {
-class ViewsDelegate;
+class TestViewsDelegate;
 }
 
 namespace ui {
@@ -57,10 +58,14 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& content_params,
       ViewsContentClient* views_content_client);
 
+#if defined(OS_MACOSX)
+  views::TestViewsDelegate* views_delegate() { return views_delegate_.get(); }
+#endif
+
  private:
   std::unique_ptr<content::ShellBrowserContext> browser_context_;
 
-  std::unique_ptr<views::ViewsDelegate> views_delegate_;
+  std::unique_ptr<views::TestViewsDelegate> views_delegate_;
 
   ViewsContentClient* views_content_client_;
 

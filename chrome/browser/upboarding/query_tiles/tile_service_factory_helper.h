@@ -11,11 +11,11 @@ namespace image_fetcher {
 class ImageFetcher;
 }  // namespace image_fetcher
 
-class KeyedService;
-
 namespace upboarding {
 
-std::unique_ptr<KeyedService> CreateTileService(
+class TileService;
+
+std::unique_ptr<TileService> CreateTileService(
     image_fetcher::ImageFetcher* image_fetcher);
 
 }  // namespace upboarding

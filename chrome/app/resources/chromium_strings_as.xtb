@@ -45,6 +45,7 @@
 <translation id="2886012850691518054">ঐচ্ছিক: স্বয়ংক্ৰিয়ভাৱে Googleলৈ ব্যৱহাৰৰ পৰিসংখ্যা আৰু ক্ৰেশ্ব ৰিপ'ৰ্ট পঠিয়াই Chromiumক উন্নত কৰাত সহায় কৰক।</translation>
 <translation id="2910007522516064972">&amp;Chromiumৰ বিষয়ে</translation>
 <translation id="2977470724722393594">Chromium একেবাৰে শেহতীয়া অৱস্থাত আছে</translation>
+<translation id="2983934633046890458">Chromiumএ পাছৱর্ডসমূহ সম্পাদনা কৰিবলৈ চেষ্টা কৰি আছে।</translation>
 <translation id="3032706164202344641">Chromiumএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব নোৱাৰে। পাছত আকৌ চেষ্টা কৰক।</translation>
 <translation id="3032787606318309379">Chromiumত যোগ কৰি থকা হৈছে...</translation>
 <translation id="3068515742935458733">Googleলৈ ক্ৰেশ্ব ৰিপ‘ৰ্ট আৰু <ph name="UMA_LINK" /> পঠিয়াই Chromiumক উন্নত কৰাত সহায় কৰক</translation>
@@ -112,6 +113,7 @@
 <translation id="5479196819031988440">Chromium OSএ এই পৃষ্ঠাটো খুলিব নোৱাৰে।</translation>
 <translation id="5480860683791598150">আপোনাৰ অৱস্থান এই ছাইটটোৰ সৈতে শ্বেয়াৰ কৰিবলৈ Chromiumএ আপোনাৰ অৱস্থান এক্সেছ কৰাৰ আৱশ্যক</translation>
 <translation id="549669000822060376">Chromiumএ শেহতীয়া ছিষ্টেম আপডে’ট ইনষ্টল কৰালৈ কিছুসময় অপেক্ষা কৰক।</translation>
+<translation id="5496810170689441661">Chromiumএ পাছৱর্ডসমূহ সম্পাদনা কৰিবলৈ চেষ্টা কৰি আছে। এই কার্যৰ বাবে অনুমতি দিবলৈ আপোনাৰ Windowsৰ পাছৱৰ্ডটো টাইপ কৰক।</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromiumৰ এটা আপডে'ট আছে}=1{Chromiumৰ এটা আপডে'ট আছে}one{Chromiumৰ এটা আপডে’ট # দিনৰ বাবে উপলব্ধ}other{Chromiumৰ এটা আপডে’ট # দিনৰ বাবে উপলব্ধ}}</translation>
 <translation id="5631814766731275228">Chromiumৰ নাম আৰু ছবি</translation>
 <translation id="5634636535844844681">Chromiumৰ বাবে Windows 7 বা তাতোকৈ উন্নত সংস্কৰণৰ আৱশ্যক।</translation>

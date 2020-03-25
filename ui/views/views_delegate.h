@@ -30,7 +30,9 @@ class Rect;
 }  // namespace gfx
 
 namespace ui {
+#if defined(OS_MACOSX)
 class ContextFactory;
+#endif
 class TouchEditingControllerFactory;
 }  // namespace ui
 
@@ -158,8 +160,10 @@ class VIEWS_EXPORT ViewsDelegate {
   // maximized windows; otherwise to restored windows.
   virtual bool WindowManagerProvidesTitleBar(bool maximized);
 
+#if defined(OS_MACOSX)
   // Returns the context factory for new windows.
   virtual ui::ContextFactory* GetContextFactory();
+#endif
 
   // Returns the user-visible name of the application.
   virtual std::string GetApplicationName();

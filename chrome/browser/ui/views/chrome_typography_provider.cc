@@ -113,9 +113,6 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
 
   ui::NativeTheme::ColorId color_id;
   switch (style) {
-    case STYLE_HINT:
-      color_id = ui::NativeTheme::kColorId_LabelSecondaryColor;
-      break;
     case STYLE_RED:
       color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
       break;

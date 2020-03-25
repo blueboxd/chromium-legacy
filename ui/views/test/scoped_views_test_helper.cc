@@ -10,7 +10,6 @@
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/views/test/test_views_delegate.h"
-#include "ui/views/test/views_test_helper.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -21,8 +20,7 @@ namespace views {
 ScopedViewsTestHelper::ScopedViewsTestHelper(
     std::unique_ptr<TestViewsDelegate> test_views_delegate)
     : test_views_delegate_(std::move(test_views_delegate)) {
-  test_helper_ = ViewsTestHelper::Create();
-  test_views_delegate_->set_context_factory(test_helper_->GetContextFactory());
+  test_helper_->SetUpTestViewsDelegate(test_views_delegate_.get());
 
   ui::InitializeInputMethodForTesting();
   ui::TestClipboard::CreateForCurrentThread();

@@ -95,6 +95,9 @@ ExtensionsMenuView::ExtensionsMenuView(
 
   EnableUpDownKeyboardAccelerators();
 
+  // Let anchor view's MenuButtonController handle the highlight.
+  set_highlight_button_when_shown(false);
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   Populate();
@@ -472,13 +475,17 @@ base::AutoReset<bool> ExtensionsMenuView::AllowInstancesForTesting() {
 }
 
 // static
-void ExtensionsMenuView::ShowBubble(views::View* anchor_view,
-                                    Browser* browser,
-                                    ExtensionsContainer* extensions_container) {
+views::Widget* ExtensionsMenuView::ShowBubble(
+    views::View* anchor_view,
+    Browser* browser,
+    ExtensionsContainer* extensions_container) {
   DCHECK(!g_extensions_dialog);
   g_extensions_dialog =
       new ExtensionsMenuView(anchor_view, browser, extensions_container);
-  views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog)->Show();
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog);
+  widget->Show();
+  return widget;
 }
 
 // static

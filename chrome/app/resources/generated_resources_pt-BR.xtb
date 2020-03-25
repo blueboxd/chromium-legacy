@@ -847,7 +847,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2135787500304447609">&amp;Retomar</translation>
 <translation id="2136372518715274136">Digite a nova senha</translation>
 <translation id="2136476978468204130">A senha longa informada está incorreta</translation>
-<translation id="2137122615728646911">{COUNT,plural, =0{Os cookies foram bloqueados.}=1{Os cookies foram bloqueados, 1 exceção}one{Os cookies foram bloqueados, {COUNT} exceção}other{Os cookies foram bloqueados, {COUNT} exceções}}</translation>
+<translation id="2137122615728646911">{COUNT,plural, =0{Os cookies foram bloqueados.}=1{Os cookies foram bloqueados, com 1 exceção}one{Os cookies foram bloqueados, com {COUNT} exceção}other{Os cookies foram bloqueados, com {COUNT} exceções}}</translation>
 <translation id="2138398485845393913">A conexão com "<ph name="DEVICE_NAME" />" ainda está em andamento</translation>
 <translation id="2139545522194199494">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidade de sinal em <ph name="SIGNAL_STRENGTH" />%, gerenciada pelo seu administrador, conectar</translation>
 <translation id="2139919072249842737">Botão "Configurar"</translation>
@@ -1883,7 +1883,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3496213124478423963">Afastar</translation>
 <translation id="3497560059572256875">Compartilhar doodle</translation>
 <translation id="3498215018399854026">Não foi possível contatar seu pai/mãe no momento. Tente novamente.</translation>
-<translation id="3500417806337761827">Erro ao ativar o compartilhamento. Muitos compartilhamentos PME já estão ativos.</translation>
+<translation id="3500417806337761827">Erro ao ativar o compartilhamento. Muitos compartilhamentos SMB já estão ativos.</translation>
 <translation id="3505030558724226696">Revogar acesso ao dispositivo</translation>
 <translation id="3507421388498836150">Permissões atuais para "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Procurar dispositivos Bluetooth novamente</translation>
@@ -2635,7 +2635,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="450099669180426158">Ícone de ponto de exclamação</translation>
 <translation id="4501530680793980440">Confirmar remoção</translation>
 <translation id="4502423230170890588">Remover deste dispositivo</translation>
-<translation id="4504374760782163539">{COUNT,plural, =0{Os cookies foram permitidos}=1{Os cookies foram permitidos, 1 exceção}one{Os cookies foram permitidos, {COUNT} exceção}other{Os cookies foram permitidos, {COUNT} exceções}}</translation>
+<translation id="4504374760782163539">{COUNT,plural, =0{Os cookies foram permitidos}=1{Os cookies foram permitidos, com 1 exceção}one{Os cookies foram permitidos, com {COUNT} exceção}other{Os cookies foram permitidos, com {COUNT} exceções}}</translation>
 <translation id="4504940961672722399">Para usar esta extensão, clique neste ícone ou pressione <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="4508051413094283164">Abrir todos em uma janela anônima</translation>
 <translation id="4508265954913339219">Falha na ativação</translation>
@@ -2730,7 +2730,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4628762811416793313">A configuração do contêiner Linux não foi concluída. Tente novamente.</translation>
 <translation id="4633003931260532286">A extensão requer "<ph name="IMPORT_NAME" />" com a versão mínima "<ph name="IMPORT_VERSION" />", mas apenas a versão "<ph name="INSTALLED_VERSION" />" está instalada</translation>
-<translation id="4633757335284074492">Faça backup no Google Drive Restaure dados ou troque de dispositivo a qualquer momento com facilidade. O backup inclui dados do app. Os backups são enviados ao Google e criptografados usando a senha da Conta do Google da criança.</translation>
+<translation id="4633757335284074492">Fazer backup no Google Drive Restaure dados ou troque de dispositivo a qualquer momento com facilidade. O backup inclui dados do app. Os backups são enviados ao Google e criptografados usando a senha da Conta do Google da criança.</translation>
 <translation id="4634771451598206121">Fazer login novamente...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> não está disponível para usuários visitantes.</translation>
 <translation id="4637083375689622795">Mais ações, <ph name="EMAIL" /></translation>
@@ -3429,7 +3429,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5593357315997824387">Sincronizar meus arquivos</translation>
 <translation id="5595152862129936745">Muito longe</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
-<translation id="5595727715083333657">Seu contêiner não é compatível com redimensionamento. Para ajustar a quantidade de espaço pré-alocada no Linux (Beta), faça backup e restaure em um novo contêiner.</translation>
+<translation id="5595727715083333657">Seu contêiner não é compatível com redimensionamento. Para ajustar a quantidade de espaço pré-alocada para o Linux (Beta), faça backup e restaure em um novo contêiner.</translation>
 <translation id="5596627076506792578">Mais opções</translation>
 <translation id="5600706100022181951">O download da atualização será feito com <ph name="UPDATE_SIZE_MB" /> MB de dados móveis. Quer continuar?</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -4798,7 +4798,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7441830548568730290">Outros usuários</translation>
 <translation id="7442465037756169001">Seu hardware Hangouts Meet está pronto para ser configurado.</translation>
 <translation id="744341768939279100">Criar um novo perfil</translation>
-<translation id="744366959743242014">Carregando dados. Isso pode demorar um pouco.</translation>
+<translation id="744366959743242014">Carregando dados. Isso pode levar alguns segundos.</translation>
 <translation id="7443806024147773267">Acesse suas senhas sempre que estiver utilizando sua Conta Google</translation>
 <translation id="7444983668544353857">Desativar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instalar apps automaticamente</translation>
@@ -4918,7 +4918,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7609148976235050828">Conecte-se à Internet e tente novamente.</translation>
 <translation id="7611008212562900400">Pesquisar no dispositivo, nos apps, na Web...</translation>
 <translation id="7614260613810441905">Perguntar quando um site quiser editar arquivos ou pastas do dispositivo (recomendado)</translation>
-<translation id="761530003705945209">Faça backup no Google Drive Restaure seus dados ou troque de dispositivo a qualquer momento com facilidade. Seu backup inclui dados do app. Seus backups são enviados para o Google e criptografados usando a senha da sua Conta do Google.</translation>
+<translation id="761530003705945209">Fazer backup no Google Drive Restaure seus dados ou troque de dispositivo a qualquer momento com facilidade. Seu backup inclui dados do app. Seus backups são enviados para o Google e criptografados usando a senha da sua Conta do Google.</translation>
 <translation id="7616214729753637086">Registrando dispositivo…</translation>
 <translation id="7617366389578322136">Conectando-se a "<ph name="DEVICE_NAME" />"</translation>
 <translation id="762068974690945752">Adicione uma conta escolar ou gerencie contas de criança aqui. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
@@ -6038,7 +6038,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="9027459031423301635">Abrir link em uma nova &amp;guia</translation>
 <translation id="9030515284705930323">Sua organização não ativou a Google Play Store para sua conta. Entre em contato com seu administrador para receber mais informações.</translation>
 <translation id="9030785788945687215">Gmail</translation>
-<translation id="9031549947500880805">Faça backup no Google Drive Restaure seus dados ou troque de dispositivo a qualquer momento com facilidade. Seu backup inclui dados do app.</translation>
+<translation id="9031549947500880805">Fazer backup no Google Drive Restaure seus dados ou troque de dispositivo a qualquer momento com facilidade. Seu backup inclui dados do app.</translation>
 <translation id="9033857511263905942">&amp;Colar</translation>
 <translation id="9037965129289936994">Mostrar original</translation>
 <translation id="903797871439633902">Esta é a última atualização automática de software e segurança deste <ph name="DEVICE_TYPE" />. Para receber atualizações futuras, faça upgrade para um modelo mais novo. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>

@@ -6,6 +6,8 @@
 
 namespace views {
 
+void ViewsTestHelper::SetUpTestViewsDelegate(TestViewsDelegate* delegate) {}
+
 gfx::NativeWindow ViewsTestHelper::GetContext() {
   return nullptr;
 }

@@ -256,7 +256,7 @@ gfx::Rect PdfMetafileCg::GetPageBounds(unsigned int page_number) const {
     LOG(ERROR) << "Unable to create PDF document from data";
     return gfx::Rect();
   }
-  if (page_number > GetPageCount()) {
+  if (page_number == 0 || page_number > GetPageCount()) {
     LOG(ERROR) << "Invalid page number: " << page_number;
     return gfx::Rect();
   }

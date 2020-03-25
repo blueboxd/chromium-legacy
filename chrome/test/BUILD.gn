@@ -446,17 +446,10 @@ group("telemetry_gpu_integration_test") {
     "//media/test/data/bear-1280x720.mp4",
   ]
 
-  # For pixel_test and maps_pixel_test. Because this links to a CIPD
-  # dependency, which is a symlink on Unix platforms, refer to the
-  # actual executable rather than the whole directory; copying the
-  # whole directory doesn't work, at least with "mb.py zip".
-  if (is_win) {
-    data += [ "//tools/skia_goldctl/win/goldctl.exe" ]
-  } else if (is_mac) {
-    data += [ "//tools/skia_goldctl/mac/goldctl" ]
-  } else {
-    data += [ "//tools/skia_goldctl/linux/goldctl" ]
-  }
+  data_deps = [
+    # For anything using Skia Gold (pixel, maps).
+    "//ui/base:goldctl",
+  ]
 }
 
 if (is_win) {
@@ -2051,18 +2044,6 @@ if (!is_android) {
           [ "//chrome/browser/internal/resources/signin/test_accounts.json" ]
     }
 
-    # For pixel tests. Because this links to a CIPD
-    # dependency, which is a symlink on Unix platforms, refer to the
-    # actual executable rather than the whole directory; copying the
-    # whole directory doesn't work, at least with "mb.py zip".
-    if (is_win) {
-      data += [ "//tools/skia_goldctl/win/goldctl.exe" ]
-    } else if (is_mac) {
-      data += [ "//tools/skia_goldctl/mac/goldctl" ]
-    } else {
-      data += [ "//tools/skia_goldctl/linux/goldctl" ]
-    }
-
     if (is_chromeos) {
       sources += [
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
@@ -3468,7 +3449,6 @@ test("unit_tests") {
     "../browser/ui/webui/interventions_internals/interventions_internals_page_handler_unittest.cc",
     "../browser/ui/webui/local_state/local_state_ui_unittest.cc",
     "../browser/ui/webui/log_web_ui_url_unittest.cc",
-    "../browser/upboarding/query_tiles/cached_image_loader_unittest.cc",
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
     "../browser/vr/metrics/session_tracker_unittest.cc",
     "../browser/vr/vr_tab_helper_unittest.cc",
@@ -6737,12 +6717,8 @@ if (is_win) {
     deps = [
       ":browser_tests_runner",
       ":test_support",
+      "//ui/base:pixel_diff_test_support",
     ]
-    if (is_win) {
-      data = [ "//tools/skia_goldctl/goldctl.exe" ]
-    } else {
-      data = [ "//tools/skia_goldctl/goldctl" ]
-    }
     if (!is_mac) {
       data_deps = [ "//chrome:packed_resources" ]
     }

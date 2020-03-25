@@ -24,13 +24,12 @@ group("query_tiles") {
 
 source_set("public") {
   sources = [
-    "image_loader.h",
     "query_tile_entry.cc",
     "query_tile_entry.h",
     "tile_service.h",
   ]
 
-  deps = []
+  deps = [ "//ui/gfx" ]
 
   public_deps = [
     "//base",

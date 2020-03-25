@@ -181,6 +181,8 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
 
   const auto apply_vector_icon = [=](const gfx::VectorIcon& vector_icon) {
     const auto& icon = gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE);
+    answer_image_view_->SetImageSize(
+        gfx::Size(kAnswerImageSize, kAnswerImageSize));
     answer_image_view_->SetImage(
         gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
             kAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
@@ -210,7 +212,9 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
           apply_vector_icon(omnibox::kAnswerTranslationIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_WEATHER:
-          // Weather icons are downloaded. Do nothing.
+          // Weather icons are downloaded. We just need to set the correct size.
+          answer_image_view_->SetImageSize(
+              gfx::Size(kAnswerImageSize, kAnswerImageSize));
           break;
         case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
           apply_vector_icon(omnibox::kAnswerWhenIsIcon);
@@ -219,10 +223,6 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
           apply_vector_icon(omnibox::kAnswerDefaultIcon);
           break;
       }
-      // Always set the image size so that downloaded images get the correct
-      // size (such as Weather answers).
-      answer_image_view_->SetImageSize(
-          gfx::Size(kAnswerImageSize, kAnswerImageSize));
     } else {
       SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
       extensions::image_util::ParseHexColorString(match.image_dominant_color,

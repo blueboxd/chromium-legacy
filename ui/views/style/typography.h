@@ -77,6 +77,9 @@ enum TextStyle {
   // Secondary text: Appears near the primary text.
   STYLE_SECONDARY,
 
+  // "Hint" text, usually a line that gives context to something more important.
+  STYLE_HINT,
+
   // Style for text that is displayed in a selection.
   STYLE_SELECTED,
 

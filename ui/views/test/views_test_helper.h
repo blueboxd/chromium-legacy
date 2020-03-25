@@ -10,11 +10,9 @@
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace ui {
-class ContextFactory;
-}
-
 namespace views {
+
+class TestViewsDelegate;
 
 // A helper class owned by tests that performs platform specific initialization
 // required for running tests.
@@ -25,11 +23,12 @@ class ViewsTestHelper {
 
   virtual ~ViewsTestHelper() = default;
 
+  // Does any additional necessary setup of the provided |delegate|.
+  virtual void SetUpTestViewsDelegate(TestViewsDelegate* delegate);
+
   // Returns a context view. In aura builds, this will be the RootWindow.
   // Everywhere else, null.
   virtual gfx::NativeWindow GetContext();
-
-  virtual ui::ContextFactory* GetContextFactory() = 0;
 
  protected:
   ViewsTestHelper() = default;

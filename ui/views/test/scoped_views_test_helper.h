@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/test/views_test_helper.h"
 
 namespace views {
 
 class TestViewsDelegate;
-class ViewsTestHelper;
 class Widget;
 
 // Creates a ViewsTestHelper that is destroyed automatically. Acts like
@@ -41,8 +41,8 @@ class ScopedViewsTestHelper {
   }
 
  private:
+  std::unique_ptr<ViewsTestHelper> test_helper_ = ViewsTestHelper::Create();
   std::unique_ptr<TestViewsDelegate> test_views_delegate_;
-  std::unique_ptr<ViewsTestHelper> test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedViewsTestHelper);
 };

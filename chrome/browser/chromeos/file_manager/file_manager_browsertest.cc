@@ -858,7 +858,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("filesTooltipFocus"),
                       TestCase("filesTooltipMouseOver"),
-                      TestCase("filesTooltipClickHides")));
+                      TestCase("filesTooltipClickHides"),
+                      TestCase("filesTooltipHidesOnWindowResize")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileList, /* file_list.js */

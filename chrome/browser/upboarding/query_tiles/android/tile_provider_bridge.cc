@@ -4,13 +4,63 @@
 
 #include "chrome/browser/upboarding/query_tiles/android/tile_provider_bridge.h"
 
+#include "base/android/callback_android.h"
+#include "base/android/jni_string.h"
 #include "chrome/browser/upboarding/query_tiles/jni_headers/TileProviderBridge_jni.h"
+#include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
+
+using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 
 namespace upboarding {
 
 namespace {
 const char kTileProviderBridgeKey[] = "tile_provider_bridge";
+
+ScopedJavaLocalRef<jobject> createJavaTileAndMaybeAddToList(
+    JNIEnv* env,
+    ScopedJavaLocalRef<jobject> jlist,
+    QueryTileEntry* tile) {
+  ScopedJavaLocalRef<jobject> jchildren =
+      Java_TileProviderBridge_createList(env);
+
+  for (QueryTileEntry* subtile : tile->subtiles)
+    createJavaTileAndMaybeAddToList(env, jchildren, subtile);
+
+  return Java_TileProviderBridge_createTileAndMaybeAddToList(
+      env, jlist, ConvertUTF8ToJavaString(env, tile->id),
+      ConvertUTF8ToJavaString(env, tile->display_text),
+      ConvertUTF8ToJavaString(env, tile->accessibility_text),
+      ConvertUTF8ToJavaString(env, tile->query_text), jchildren);
 }
+
+ScopedJavaLocalRef<jobject> createJavaTiles(
+    JNIEnv* env,
+    const std::vector<QueryTileEntry*>& tiles) {
+  ScopedJavaLocalRef<jobject> jlist = Java_TileProviderBridge_createList(env);
+
+  for (QueryTileEntry* tile : tiles)
+    createJavaTileAndMaybeAddToList(env, jlist, tile);
+
+  return jlist;
+}
+
+void RunGetTilesCallback(const JavaRef<jobject>& j_callback,
+                         const std::vector<QueryTileEntry*>& tiles) {
+  JNIEnv* env = AttachCurrentThread();
+  RunObjectCallbackAndroid(j_callback, createJavaTiles(env, tiles));
+}
+
+void RunGeVisualsCallback(const JavaRef<jobject>& j_callback,
+                          const gfx::Image& image) {
+  ScopedJavaLocalRef<jobject> j_bitmap =
+      gfx::ConvertToJavaBitmap(image.ToSkBitmap());
+  RunObjectCallbackAndroid(j_callback, j_bitmap);
+}
+
+}  // namespace
 
 // static
 ScopedJavaLocalRef<jobject> TileProviderBridge::GetBridgeForTileService(
@@ -44,11 +94,18 @@ TileProviderBridge::~TileProviderBridge() {
 void TileProviderBridge::GetQueryTiles(JNIEnv* env,
                                        const JavaParamRef<jobject>& jcaller,
                                        const JavaParamRef<jobject>& jcallback) {
+  tile_service_->GetQueryTiles(base::BindOnce(
+      &RunGetTilesCallback, ScopedJavaGlobalRef<jobject>(jcallback)));
 }
 
 void TileProviderBridge::GetThumbnail(JNIEnv* env,
                                       const JavaParamRef<jobject>& jcaller,
                                       const JavaParamRef<jstring>& jid,
-                                      const JavaParamRef<jobject>& jcallback) {}
+                                      const JavaParamRef<jobject>& jcallback) {
+  std::string tile_id = ConvertJavaStringToUTF8(env, jid);
+  tile_service_->GetVisuals(
+      tile_id, base::BindOnce(&RunGeVisualsCallback,
+                              ScopedJavaGlobalRef<jobject>(jcallback)));
+}
 
 }  // namespace upboarding

@@ -278,6 +278,7 @@ base::Optional<SkColor> SkColorFromColorId(
     case ui::NativeTheme::kColorId_TextfieldDefaultBackground:
       return GetBgColor(GtkCheckVersion(3, 20) ? "GtkTextView#textview.view"
                                                : "GtkTextView.view");
+    case ui::NativeTheme::kColorId_TextfieldPlaceholderColor:
     case ui::NativeTheme::kColorId_TextfieldReadOnlyColor:
       return GetFgColor(GtkCheckVersion(3, 20)
                             ? "GtkTextView#textview.view:disabled #text"

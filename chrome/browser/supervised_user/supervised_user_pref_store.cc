@@ -9,13 +9,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
-#include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/common/chrome_switches.h"
@@ -170,18 +168,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
       // "Permissions for sites, apps and extensions" setting, like geolocation
       // being disallowed.
       bool permissions_disallowed = true;
-      if (base::FeatureList::IsEnabled(
-              supervised_users::kSupervisedUserAllowlistExtensionInstall)) {
-        // We want the default setting of the
-        // kSupervisedUserExtensionsMayRequestPermissions pref to match the
-        // server default for the "Permissions for sites, apps and extensions"
-        // toggle.
-        // We need to do this matching because the toggle value is never sent
-        // to our client side until the user touches the toggle.
-        // The default is currently true, so allowlist extension installs will
-        // automatically work.
-        permissions_disallowed = false;
-      }
       settings->GetBoolean(supervised_users::kGeolocationDisabled,
                            &permissions_disallowed);
       prefs_->SetBoolean(prefs::kSupervisedUserExtensionsMayRequestPermissions,

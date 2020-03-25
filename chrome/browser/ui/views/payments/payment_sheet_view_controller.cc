@@ -333,7 +333,7 @@ class PaymentSheetRowBuilder {
     DCHECK(accessible_content_.empty());
     std::unique_ptr<PreviewEliderLabel> content_view =
         std::make_unique<PreviewEliderLabel>(preview_text, format_string, n,
-                                             STYLE_HINT);
+                                             views::style::STYLE_HINT);
     content_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     return CreateWithButton(std::move(content_view), button_string,
                             button_enabled);

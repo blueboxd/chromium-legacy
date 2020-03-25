@@ -57,7 +57,7 @@ void AXLanguageInfoStats::Add(const std::vector<std::string>& languages) {
 
   // Assign languages with higher probability a higher score.
   // TODO(chrishall): consider more complex scoring
-  unsigned int score = kMaxDetectedLanguagesPerSpan;
+  int score = kMaxDetectedLanguagesPerSpan;
   for (const auto& lang : languages) {
     lang_counts_[lang] += score;
 

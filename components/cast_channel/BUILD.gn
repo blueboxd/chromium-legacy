@@ -26,6 +26,8 @@ static_library("cast_channel") {
     "enum_table.h",
     "keep_alive_delegate.cc",
     "keep_alive_delegate.h",
+    "keep_alive_handler.cc",
+    "keep_alive_handler.h",
     "logger.cc",
     "logger.h",
     "mojo_data_pump.cc",

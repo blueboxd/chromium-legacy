@@ -457,6 +457,7 @@
 <translation id="1616206807336925449">Энэ өргөтгөл нь ямар нэгэн тусгай зөвшөөрөл шаарддаггүй.</translation>
 <translation id="1616298854599875024">"<ph name="IMPORT_NAME" />" өргөтгөл нь хуваалцсан модуль биш тул үүнийг импорт хийх боломжгүй</translation>
 <translation id="1618268899808219593">Тусламжийн төв</translation>
+<translation id="1620307519959413822">Нууц үг буруу байна. Дахин оролдож эсвэл нууц үгийг шинэчлэхийн тулд Мартсан дээр товшино уу.</translation>
 <translation id="1620510694547887537">Камер</translation>
 <translation id="1623132449929929218">Зураг одоогоор боломжгүй байна. Ханын зургийн цуглуулгыг харахын тулд интернэтэд дахин холбогдоно уу.</translation>
 <translation id="1627276047960621195">Файл тодорхойлогч</translation>
@@ -675,6 +676,7 @@
 <translation id="1887850431809612466">Техник хангамжийн шалгалт</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Нээлттэй нүүр дүүрэн дэлгэц</translation>
+<translation id="1892341345406963517">Сайн байна уу <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Бусад хэлнүүд</translation>
 <translation id="1895252664692693738"><ph name="TIME_LEFT" /> үлдсэн</translation>
 <translation id="1895658205118569222">Унтраах</translation>
@@ -3127,6 +3129,7 @@
 <translation id="5213891612754844763">Прокси тохиргоог харуулах</translation>
 <translation id="5215502535566372932">Улсаа сонгох</translation>
 <translation id="521582610500777512">Зураг хэрэгцээгүй болсон байна</translation>
+<translation id="5222403284441421673">Аюултай таталтыг блоклосон</translation>
 <translation id="5222676887888702881">Гарах</translation>
 <translation id="52232769093306234">Багцалж чадсангүй.</translation>
 <translation id="5225324770654022472">Аппликэйшнүүдийн богино холболтыг үзүүлэх</translation>
@@ -3526,6 +3529,7 @@
 <translation id="5734362860645681824">Харилцаа холбоо</translation>
 <translation id="5734697361979786483">Файл хуваалцахыг нэмэх</translation>
 <translation id="5736796278325406685">Хэрэглэгчийн нэрийг зөв оруулна уу</translation>
+<translation id="5739017626473506901"><ph name="USER_NAME" />-д сургуулийн бүртгэл нэмэхэд нь туслахын тулд нэвтэрнэ үү</translation>
 <translation id="5739235828260127894">Баталгаажуулалтыг хүлээж байна. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Маш том</translation>
 <translation id="574209121243317957">Авиа</translation>
@@ -5529,6 +5533,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> сүлжээ, холбогдож байна</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Эхлээд асууна уу (санал болгосон)</translation>
+<translation id="8417548266957501132">Эцэг эхийн нууц үг</translation>
 <translation id="8417573335434189196">Таныг аюултай вэб сайт, таталт эсвэл өргөтгөлөөс хамгаалахгүй. Chrome нь энэ тохиргоог санал болгодоггүй.</translation>
 <translation id="8418445294933751433">&amp; Цонх болгож харуул</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />'-н хайлтын үр дүн</translation>

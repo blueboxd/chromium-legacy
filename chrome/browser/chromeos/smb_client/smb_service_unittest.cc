@@ -54,6 +54,7 @@ using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Invoke;
 using ::testing::Ne;
+using ::testing::NiceMock;
 using ::testing::WithArg;
 using ::testing::WithArgs;
 
@@ -575,6 +576,16 @@ TEST_F(SmbServiceTest, Premount) {
 
 class SmbServiceWithSmbfsTest : public testing::Test {
  protected:
+  // Mojo endpoints owned by the smbfs instance.
+  struct TestSmbFsInstance {
+    explicit TestSmbFsInstance(
+        mojo::PendingReceiver<smbfs::mojom::SmbFs> pending)
+        : mock_smbfs(std::move(pending)) {}
+
+    MockSmbFsImpl mock_smbfs;
+    mojo::Remote<smbfs::mojom::SmbFsDelegate> delegate;
+  };
+
   SmbServiceWithSmbfsTest() {
     scoped_feature_list_.InitWithFeatures({features::kSmbFs}, {});
 
@@ -653,6 +664,63 @@ class SmbServiceWithSmbfsTest : public testing::Test {
       const base::FilePath& path) {
     return std::make_unique<chromeos::disks::MountPoint>(path,
                                                          disk_mount_manager_);
+  }
+
+  // Helper function for creating a basic smbfs mount with an empty
+  // username/password.
+  std::unique_ptr<TestSmbFsInstance> MountBasicShare(
+      const std::string& share_path,
+      const std::string& mount_path,
+      SmbService::MountResponse callback) {
+    mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
+    std::unique_ptr<TestSmbFsInstance> instance =
+        std::make_unique<TestSmbFsInstance>(
+            smbfs_remote.BindNewPipeAndPassReceiver());
+
+    smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
+    // Use a NiceMock<> so that the ON_CALL below doesn't complain.
+    std::unique_ptr<MockSmbFsMounter> mock_mounter =
+        std::make_unique<NiceMock<MockSmbFsMounter>>();
+
+    smb_service_->SetSmbFsMounterCreationCallbackForTesting(
+        base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
+                                       const std::string& share_path,
+                                       const std::string& mount_dir_name,
+                                       const SmbFsShare::MountOptions& options,
+                                       smbfs::SmbFsHost::Delegate* delegate)
+                                       -> std::unique_ptr<smbfs::SmbFsMounter> {
+          smbfs_host_delegate = delegate;
+          return std::move(mock_mounter);
+        }));
+
+    // Use ON_CALL instead of EXPECT_CALL because there might be a failure
+    // earlier in the mount process and this won't be called.
+    ON_CALL(*mock_mounter, Mount(_))
+        .WillByDefault(
+            [this, &smbfs_host_delegate, &smbfs_remote, &instance,
+             &mount_path](smbfs::SmbFsMounter::DoneCallback mount_callback) {
+              std::move(mount_callback)
+                  .Run(smbfs::mojom::MountError::kOk,
+                       std::make_unique<smbfs::SmbFsHost>(
+                           MakeMountPoint(base::FilePath(mount_path)),
+                           smbfs_host_delegate, std::move(smbfs_remote),
+                           instance->delegate.BindNewPipeAndPassReceiver()));
+            });
+
+    base::RunLoop run_loop;
+    smb_service_->Mount(mount_options_, base::FilePath(share_path),
+                        "" /* username */, "" /* password */,
+                        false /* use_chromad_kerberos */,
+                        false /* should_open_file_manager_after_mount */,
+                        false /* save_credentials */,
+                        base::BindLambdaForTesting(
+                            [&run_loop, &callback](SmbMountResult result) {
+                              std::move(callback).Run(result);
+                              run_loop.Quit();
+                            }));
+    run_loop.Run();
+
+    return instance;
   }
 
   content::BrowserTaskEnvironment task_environment_{
@@ -935,93 +1003,26 @@ TEST_F(SmbServiceWithSmbfsTest, MountExcessiveShares) {
 
   // Check: It is possible to mount the maximum number of shares.
   for (size_t i = 0; i < kMaxSmbFsShares; ++i) {
-    mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
-    MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
-    mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
-
-    smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
-    std::unique_ptr<MockSmbFsMounter> mock_mounter =
-        std::make_unique<MockSmbFsMounter>();
-
-    smb_service_->SetSmbFsMounterCreationCallbackForTesting(
-        base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
-                                       const std::string& share_path,
-                                       const std::string& mount_dir_name,
-                                       const SmbFsShare::MountOptions& options,
-                                       smbfs::SmbFsHost::Delegate* delegate)
-                                       -> std::unique_ptr<smbfs::SmbFsMounter> {
-          smbfs_host_delegate = delegate;
-          return std::move(mock_mounter);
-        }));
-
     const std::string share_path =
         std::string(kSharePath) + base::NumberToString(i);
     const std::string mount_path =
         std::string(kMountPath) + base::NumberToString(i);
-
-    EXPECT_CALL(*mock_mounter, Mount(_))
-        .WillOnce([this, &smbfs_host_delegate, &smbfs_remote,
-                   &smbfs_delegate_remote,
-                   &mount_path](smbfs::SmbFsMounter::DoneCallback callback) {
-          std::move(callback).Run(
-              smbfs::mojom::MountError::kOk,
-              std::make_unique<smbfs::SmbFsHost>(
-                  MakeMountPoint(base::FilePath(mount_path)),
-                  smbfs_host_delegate, std::move(smbfs_remote),
-                  smbfs_delegate_remote.BindNewPipeAndPassReceiver()));
-        });
-
-    base::RunLoop run_loop;
-    smb_service_->Mount(
-        mount_options_, base::FilePath(share_path), kTestUser, kTestPassword,
-        false /* use_chromad_kerberos */,
-        false /* should_open_file_manager_after_mount */,
-        false /* save_credentials */,
-        base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
-          EXPECT_EQ(SmbMountResult::kSuccess, result);
-          run_loop.Quit();
-        }));
-    run_loop.Run();
+    ignore_result(MountBasicShare(share_path, mount_path,
+                                  base::BindOnce([](SmbMountResult result) {
+                                    EXPECT_EQ(SmbMountResult::kSuccess, result);
+                                  })));
   }
 
   // Check: After mounting the maximum number of shares, requesting to mount an
   // additional share should fail.
-  mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
-  MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
-  mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
-
-  smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
-  std::unique_ptr<MockSmbFsMounter> mock_mounter =
-      std::make_unique<MockSmbFsMounter>();
-
-  smb_service_->SetSmbFsMounterCreationCallbackForTesting(
-      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
-                                     const std::string& share_path,
-                                     const std::string& mount_dir_name,
-                                     const SmbFsShare::MountOptions& options,
-                                     smbfs::SmbFsHost::Delegate* delegate)
-                                     -> std::unique_ptr<smbfs::SmbFsMounter> {
-        smbfs_host_delegate = delegate;
-        return std::move(mock_mounter);
-      }));
-
   const std::string share_path =
       std::string(kSharePath) + base::NumberToString(kMaxSmbFsShares);
   const std::string mount_path =
       std::string(kMountPath) + base::NumberToString(kMaxSmbFsShares);
-
-  base::RunLoop run_loop;
-  smb_service_->Mount(
-      mount_options_, base::FilePath(share_path), kTestUser, kTestPassword,
-      false /* use_chromad_kerberos */,
-      false /* should_open_file_manager_after_mount */,
-      false /* save_credentials */,
-      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+  ignore_result(MountBasicShare(
+      share_path, mount_path, base::BindOnce([](SmbMountResult result) {
         EXPECT_EQ(SmbMountResult::kTooManyOpened, result);
-        run_loop.Quit();
-      }));
-
-  run_loop.Run();
+      })));
 }
 
 }  // namespace smb_client

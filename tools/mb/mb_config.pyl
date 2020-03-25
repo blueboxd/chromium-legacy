@@ -237,6 +237,7 @@
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
       'ios13-beta-simulator': 'ios_simulator_debug_static_bot',
+      'ios13-sdk-device': 'ios_device_release_static_disable_signing_bot',
       'ios13-sdk-simulator': 'ios_simulator_debug_static_bot',
       'ios-simulator': 'ios_error',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
@@ -1821,6 +1822,10 @@
       'ios_deployment_target_9_0', 'cronet_ios'
     ],
 
+    'ios_device_release_static_disable_signing_bot': [
+      'ios_device', 'ios_disable_code_signing', 'release_bot',
+    ],
+
     'ios_simulator_debug_static_bot': [
         'ios_simulator', 'debug_static_bot',
     ],
@@ -2445,6 +2450,16 @@
 
     'ios_deployment_target_9_0': {
       'gn_args': 'ios_deployment_target=\"9.0\"',
+    },
+
+    'ios_device': {
+      'mixins': ['ios'],
+      'gn_args': 'target_cpu="arm64"',
+    },
+
+    'ios_disable_code_signing': {
+      # defaults to true under ios_sdk.gni
+      'gn_args': 'ios_enable_code_signing=false'
     },
 
     'ios_simulator': {

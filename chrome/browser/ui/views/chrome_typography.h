@@ -67,9 +67,6 @@ enum ChromeTextStyle {
   // Similar to views::style::STYLE_SECONDARY but with a monospaced typeface.
   STYLE_SECONDARY_MONOSPACED,
 
-  // "Hint" text, usually a line that gives context to something more important.
-  STYLE_HINT,
-
   // A solid shade of red.
   STYLE_RED,
 

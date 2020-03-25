@@ -22,16 +22,11 @@
 
 namespace weblayer {
 namespace {
+
 // Permission context which denies all requests.
 class DeniedPermissionContext : public permissions::PermissionContextBase {
  public:
-  DeniedPermissionContext(
-      content::BrowserContext* browser_context,
-      ContentSettingsType content_settings_type,
-      blink::mojom::FeaturePolicyFeature feature_policy_feature)
-      : PermissionContextBase(browser_context,
-                              content_settings_type,
-                              feature_policy_feature) {}
+  using PermissionContextBase::PermissionContextBase;
 
  protected:
   ContentSetting GetPermissionStatusInternal(
@@ -41,6 +36,18 @@ class DeniedPermissionContext : public permissions::PermissionContextBase {
     return CONTENT_SETTING_BLOCK;
   }
 
+  bool IsRestrictedToSecureOrigins() const override { return true; }
+};
+
+// A permission context with default behavior, which is restricted to secure
+// origins.
+class SafePermissionContext : public permissions::PermissionContextBase {
+ public:
+  using PermissionContextBase::PermissionContextBase;
+  SafePermissionContext(const SafePermissionContext&) = delete;
+  SafePermissionContext& operator=(const SafePermissionContext&) = delete;
+
+ protected:
   bool IsRestrictedToSecureOrigins() const override { return true; }
 };
 
@@ -58,6 +65,12 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<GeolocationPermissionContext>(
           browser_context,
           std::make_unique<GeolocationPermissionContextDelegate>());
+
+  permission_contexts[ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER] =
+      std::make_unique<SafePermissionContext>(
+          browser_context, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+          blink::mojom::FeaturePolicyFeature::kEncryptedMedia);
+
   // For now, all requests are denied. As features are added, their permission
   // contexts can be added here instead of DeniedPermissionContext.
   for (content::PermissionType type : content::GetAllPermissionTypes()) {

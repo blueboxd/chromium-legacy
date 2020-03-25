@@ -1883,7 +1883,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3496213124478423963">Kleiner</translation>
 <translation id="3497560059572256875">Doodle delen</translation>
 <translation id="3498215018399854026">We kunnen je ouder momenteel niet bereiken. Probeer het opnieuw.</translation>
-<translation id="3500417806337761827">Fout bij activeren van share. Er zijn al te veel SMB-shares geactiveerd.</translation>
+<translation id="3500417806337761827">Fout bij activeren van fileshare. Er zijn al te veel SMB-fileshares geactiveerd.</translation>
 <translation id="3505030558724226696">Apparaattoegang intrekken</translation>
 <translation id="3507421388498836150">Huidige rechten voor '<ph name="EXTENSION_NAME" />'</translation>
 <translation id="3507888235492474624">Opnieuw scannen naar Bluetooth-apparaten</translation>

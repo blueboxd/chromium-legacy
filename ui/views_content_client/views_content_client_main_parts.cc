@@ -8,7 +8,6 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "content/public/browser/context_factory.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
@@ -33,10 +32,7 @@ void ViewsContentClientMainParts::PreMainMessageLoopRun() {
   ui::InitializeInputMethodForTesting();
   browser_context_ = std::make_unique<content::ShellBrowserContext>(false);
 
-  std::unique_ptr<views::TestViewsDelegate> test_views_delegate(
-      new views::DesktopTestViewsDelegate);
-  test_views_delegate->set_context_factory(content::GetContextFactory());
-  views_delegate_ = std::move(test_views_delegate);
+  views_delegate_ = std::make_unique<views::DesktopTestViewsDelegate>();
   run_loop_ = std::make_unique<base::RunLoop>();
   views_content_client()->set_quit_closure(run_loop_->QuitClosure());
 }

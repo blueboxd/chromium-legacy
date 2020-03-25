@@ -53,6 +53,9 @@ struct QueryTileEntry {
 
   // A set contains all ids of it's children tiles.
   std::set<std::string> children;
+
+  // TODO(shaktisahu): Merge children into subtiles.
+  std::vector<QueryTileEntry*> subtiles;
 };
 
 }  // namespace upboarding

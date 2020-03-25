@@ -37,6 +37,8 @@ ExtensionsToolbarButton::ExtensionsToolbarButton(
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
 }
 
+ExtensionsToolbarButton::~ExtensionsToolbarButton() = default;
+
 void ExtensionsToolbarButton::UpdateIcon() {
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(vector_icons::kExtensionIcon, GetIconSize(),
@@ -89,7 +91,14 @@ void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,
     ExtensionsMenuView::Hide();
     return;
   }
-  ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_);
+  pressed_lock_ = menu_button_controller_->TakeLock();
+  ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_)
+      ->AddObserver(this);
+}
+
+void ExtensionsToolbarButton::OnWidgetDestroying(views::Widget* widget) {
+  widget->RemoveObserver(this);
+  pressed_lock_.reset();
 }
 
 int ExtensionsToolbarButton::GetIconSize() const {

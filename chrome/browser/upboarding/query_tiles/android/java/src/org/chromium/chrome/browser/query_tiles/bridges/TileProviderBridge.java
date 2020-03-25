@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.query_tiles.bridges;
 
 import android.graphics.Bitmap;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -13,6 +15,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.query_tiles.Tile;
 import org.chromium.chrome.browser.query_tiles.TileProvider;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,6 +49,19 @@ public class TileProviderBridge implements TileProvider {
     public void getThumbnail(String id, Callback<Bitmap> callback) {
         if (mNativeTileProviderBridge == 0) return;
         TileProviderBridgeJni.get().getThumbnail(mNativeTileProviderBridge, this, id, callback);
+    }
+
+    @CalledByNative
+    private static List<Tile> createList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static Tile createTileAndMaybeAddToList(@Nullable List<Tile> list, String tileId,
+            String displayTitle, String accessibilityText, String queryText, List<Tile> children) {
+        Tile tile = new Tile(tileId, displayTitle, accessibilityText, queryText, children);
+        if (list != null) list.add(tile);
+        return tile;
     }
 
     @NativeMethods

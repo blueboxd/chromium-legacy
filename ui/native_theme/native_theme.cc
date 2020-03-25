@@ -116,6 +116,8 @@ NativeThemeColorIdToColorIdMap() {
            kColorTextfieldDisabledBackground},
           {NTCID::kColorId_TextfieldReadOnlyColor,
            kColorTextfieldDisabledForeground},
+          {NTCID::kColorId_TextfieldPlaceholderColor,
+           kColorTextfieldPlaceholderForeground},
           {NTCID::kColorId_TextfieldDefaultColor, kColorTextfieldForeground},
           {NTCID::kColorId_TextfieldSelectionBackgroundFocused,
            kColorTextfieldSelectionBackground},
@@ -158,9 +160,12 @@ bool NativeTheme::SystemDarkModeSupported() {
 
 SkColor NativeTheme::GetSystemColor(ColorId color_id,
                                     ColorScheme color_scheme) const {
+  if (color_scheme == NativeTheme::ColorScheme::kDefault)
+    color_scheme = GetDefaultSystemColorScheme();
+
   // TODO(http://crbug.com/1057754): Remove the below restrictions.
   if (base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
-      !ShouldUseDarkColors() && !UsesHighContrastColors()) {
+      color_scheme == NativeTheme::ColorScheme::kLight) {
     if (!color_provider_) {
       // Lazy init the color provider as it makes USER32 calls underneath on
       // Windows, which isn't permitted on renderers.

@@ -29,6 +29,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/permissions/contexts/geolocation_permission_context_android.h"
 #elif defined(OS_WIN)
 #include <KnownFolders.h>
@@ -229,6 +230,7 @@ void BrowserContextImpl::RegisterPrefs(
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
 #if defined(OS_ANDROID)
+  cdm::MediaDrmStorageImpl::RegisterProfilePrefs(pref_registry);
   permissions::GeolocationPermissionContextAndroid::RegisterProfilePrefs(
       pref_registry);
 #endif

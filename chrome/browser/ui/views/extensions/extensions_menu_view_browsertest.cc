@@ -31,6 +31,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/test_extension_dir.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
@@ -364,6 +365,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   }
 
   ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       ExtensionsMenuButtonHighlight) {
+  LoadTestExtension("extensions/uitest/window_open");
+  ClickExtensionsMenuButton();
+  EXPECT_EQ(BrowserView::GetBrowserViewForBrowser(browser())
+                ->toolbar()
+                ->GetExtensionsButton()
+                ->GetInkDrop()
+                ->GetTargetInkDropState(),
+            views::InkDropState::ACTIVATED);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {

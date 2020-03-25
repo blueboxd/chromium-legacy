@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UPBOARDING_QUERY_TILES_IMAGE_LOADER_H_
-#define CHROME_BROWSER_UPBOARDING_QUERY_TILES_IMAGE_LOADER_H_
+#ifndef CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_IMAGE_LOADER_H_
+#define CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_IMAGE_LOADER_H_
 
 #include <memory>
 #include <string>
@@ -33,4 +33,4 @@ class ImageLoader {
 
 }  // namespace upboarding
 
-#endif  // CHROME_BROWSER_UPBOARDING_QUERY_TILES_IMAGE_LOADER_H_
+#endif  // CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_IMAGE_LOADER_H_

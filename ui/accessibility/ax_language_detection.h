@@ -150,11 +150,11 @@ class AX_EXPORT AXLanguageInfoStats {
   friend class AXLanguageDetectionTestFixture;
 
   // Store a count of the occurrences of a given language.
-  std::unordered_map<std::string, unsigned int> lang_counts_;
+  std::unordered_map<std::string, int> lang_counts_;
 
   // Cache of last calculated top language results.
   // A vector of pairs of (score, language) sorted by descending score.
-  std::vector<std::pair<unsigned int, std::string>> top_results_;
+  std::vector<std::pair<int, std::string>> top_results_;
 
   // Boolean recording that we have not mutated the statistics since last
   // calculating top results, setting this to false will cause recalculation

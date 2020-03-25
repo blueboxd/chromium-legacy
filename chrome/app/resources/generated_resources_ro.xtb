@@ -461,6 +461,7 @@
 <translation id="1616206807336925449">Această extensie nu necesită permisiuni speciale.</translation>
 <translation id="1616298854599875024">Nu se poate importa extensia „<ph name="IMPORT_NAME" />”, deoarece nu este un modul folosit în comun</translation>
 <translation id="1618268899808219593">C&amp;entrul de ajutor</translation>
+<translation id="1620307519959413822">Parola este greșită. Încearcă din nou sau dă clic pe „Am uitat parola” pentru a o reseta.</translation>
 <translation id="1620510694547887537">Cameră</translation>
 <translation id="1623132449929929218">Imaginile sunt momentan indisponibile. Conectează-te din nou la internet ca să vezi colecțiile de imagini de fundal.</translation>
 <translation id="1627276047960621195">Descriptorii fișierelor</translation>
@@ -679,6 +680,7 @@
 <translation id="1887850431809612466">Versiune hardware</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Deschide ecranul complet</translation>
+<translation id="1892341345406963517">Bună, <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Alte limbi</translation>
 <translation id="1895252664692693738">Timp rămas: <ph name="TIME_LEFT" /></translation>
 <translation id="1895658205118569222">Închideți</translation>
@@ -3133,6 +3135,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5213891612754844763">Afișează setările de proxy</translation>
 <translation id="5215502535566372932">Selectează o țară</translation>
 <translation id="521582610500777512">Fotografia a fost ștearsă</translation>
+<translation id="5222403284441421673">O descărcare nesigură a fost blocată</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="52232769093306234">Împachetarea nu a reușit.</translation>
 <translation id="5225324770654022472">Afișați comanda rapidă pentru aplicații</translation>
@@ -3531,6 +3534,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5734362860645681824">Comunicații</translation>
 <translation id="5734697361979786483">Adaugă un dispozitiv de stocare în rețea</translation>
 <translation id="5736796278325406685">Introdu un nume de utilizator valid</translation>
+<translation id="5739017626473506901">Conectează-te pentru a ajuta utilizatorul <ph name="USER_NAME" /> să adauge un cont de la școală</translation>
 <translation id="5739235828260127894">Se așteaptă confirmarea. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Foarte mare</translation>
 <translation id="574209121243317957">Tonalitatea</translation>
@@ -5539,6 +5543,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8408068190360279472">Rețea <ph name="NETWORK_TYPE" />, se stabilește conexiunea</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Mai întâi întreabă (recomandat)</translation>
+<translation id="8417548266957501132">Parola părinte</translation>
 <translation id="8417573335434189196">Nu te protejează împotriva site-urilor, descărcărilor sau extensiilor periculoase. Chrome nu recomandă această setare.</translation>
 <translation id="8418445294933751433">&amp;Afișează ca filă</translation>
 <translation id="8419098111404128271">Rezultatele de căutare pentru „<ph name="SEARCH_TEXT" />”</translation>

@@ -12,10 +12,12 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "content/public/browser/context_factory.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_paths.h"
 #include "content/shell/browser/shell_application_mac.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
 
@@ -65,6 +67,8 @@ ViewsContentClientMainPartsMac::ViewsContentClientMainPartsMac(
 
 void ViewsContentClientMainPartsMac::PreMainMessageLoopRun() {
   ViewsContentClientMainParts::PreMainMessageLoopRun();
+
+  views_delegate()->set_context_factory(content::GetContextFactory());
 
   // On Mac, the task must be deferred to applicationDidFinishLaunching. If not,
   // the widget can activate, but (even if configured) the mainMenu won't be

@@ -391,6 +391,7 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     }
     case NativeTheme::kColorId_TextfieldReadOnlyBackground:
       return SK_ColorWHITE;
+    case NativeTheme::kColorId_TextfieldPlaceholderColor:
     case NativeTheme::kColorId_TextfieldReadOnlyColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_TextfieldReadOnlyBackground, color_scheme);

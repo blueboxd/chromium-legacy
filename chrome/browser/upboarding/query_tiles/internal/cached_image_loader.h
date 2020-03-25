@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UPBOARDING_QUERY_TILES_CACHED_IMAGE_LOADER_H_
-#define CHROME_BROWSER_UPBOARDING_QUERY_TILES_CACHED_IMAGE_LOADER_H_
+#ifndef CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_CACHED_IMAGE_LOADER_H_
+#define CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_CACHED_IMAGE_LOADER_H_
 
 #include <memory>
 
-#include "chrome/browser/upboarding/query_tiles/image_loader.h"
+#include "chrome/browser/upboarding/query_tiles/internal/image_loader.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 
 namespace image_fetcher {
@@ -34,4 +34,4 @@ class CachedImageLoader : public ImageLoader {
 
 }  // namespace upboarding
 
-#endif  // CHROME_BROWSER_UPBOARDING_QUERY_TILES_CACHED_IMAGE_LOADER_H_
+#endif  // CHROME_BROWSER_UPBOARDING_QUERY_TILES_INTERNAL_CACHED_IMAGE_LOADER_H_

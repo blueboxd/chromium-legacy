@@ -317,6 +317,11 @@ test("printing_unittests") {
     "//ui/gfx/geometry",
   ]
 
+  data = [
+    "test/data/",
+    "../pdf/test/data/",
+  ]
+
   if (is_win || is_mac) {
     sources += [ "printed_document_unittest.cc" ]
   }

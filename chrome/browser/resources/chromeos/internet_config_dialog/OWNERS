@@ -1,6 +1,3 @@
-azeemarshad@chromium.org
-jonmann@chromium.org
-khorimoto@chromium.org
-stevenjb@chromium.org
+file://chrome/browser/resources/settings/chromeos/internet_page/OWNERS
 
-# COMPONENT: UI>Shell>Networking
+# COMPONENT: OS>Systems>Network

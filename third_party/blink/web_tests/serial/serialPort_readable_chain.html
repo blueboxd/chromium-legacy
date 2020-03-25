@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/mojo/public/mojom/base/unguessable_token.mojom.js"></script>
+<script src="file:///gen/third_party/blink/public/mojom/serial/serial.mojom.js"></script>
+<script src="resources/serial-test-utils.js"></script>
+<script>
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size larger than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  fakePort.write(new TextEncoder().encode("Hello world!"));
+
+  const decoder = new TextDecoderStream();
+  const streamClosed = port.readable.pipeTo(decoder.writable);
+  const readable = decoder.readable.pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream());
+  const reader = readable.getReader();
+  const { value, done } = await reader.read();
+  assert_false(done);
+  assert_equals("Hello world!", value);
+  await reader.cancel("arbitrary reason");
+  await streamClosed.catch(reason => {
+    assert_equals("arbitrary reason", reason);
+  });
+
+  await port.close();
+}, 'Stream closure is observable through a long chain of transforms');
+
+</script>

@@ -680,6 +680,25 @@ if (!is_ios) {
       "//ui/gfx",
       "//ui/snapshot",
     ]
+
+    if (!is_fuchsia) {
+      data_deps = [ ":goldctl" ]
+    }
+  }
+
+  group("goldctl") {
+    data = []
+
+    # Because this links to a CIPD dependency, which is a symlink on Unix
+    # platforms, refer to the actual executable rather than the whole directory;
+    # copying the whole directory doesn't work, at least with "mb.py zip".
+    if (is_win) {
+      data += [ "//tools/skia_goldctl/win/goldctl.exe" ]
+    } else if (is_mac) {
+      data += [ "//tools/skia_goldctl/mac/goldctl" ]
+    } else {
+      data += [ "//tools/skia_goldctl/linux/goldctl" ]
+    }
   }
 }
 

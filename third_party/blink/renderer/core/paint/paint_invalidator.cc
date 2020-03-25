@@ -172,6 +172,9 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
 void PaintInvalidator::UpdatePaintInvalidationContainer(
     const LayoutObject& object,
     PaintInvalidatorContext& context) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   if (object.IsPaintInvalidationContainer()) {
     context.paint_invalidation_container = ToLayoutBoxModelObject(&object);
     if (object.StyleRef().IsStackingContext() || object.IsSVGRoot())

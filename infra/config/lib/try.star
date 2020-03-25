@@ -183,6 +183,7 @@ def chromium_mac_ios_builder(*, name, executable='recipe:ios/try', **kwargs):
       caches = [builders.xcode_cache.x11c29],
       cores = None,
       executable = executable,
+      goma_backend=builders.goma.backend.RBE_PROD,
       mastername = 'tryserver.chromium.mac',
       os = builders.os.MAC_ANY,
       **kwargs

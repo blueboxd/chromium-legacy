@@ -34,6 +34,7 @@ from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
 from pylib.output import remote_output_manager
+from pylib.utils import gold_utils
 from pylib.utils import instrumentation_tracing
 from pylib.utils import shared_preference_utils
 
@@ -91,6 +92,7 @@ RE_RENDER_IMAGE_NAME = re.compile(
       r'(?P<test_class>\w+)\.'
       r'(?P<description>[-\w]+)\.'
       r'(?P<device_model_sdk>[-\w]+)\.png')
+
 
 @contextlib.contextmanager
 def _LogTestEndpoints(device, test_name):
@@ -638,8 +640,7 @@ class LocalDeviceInstrumentationTestRun(
               json_archive_name, 'ui_capture', output_manager.Datatype.JSON
               ) as json_archive:
             json.dump(screenshots, json_archive)
-          for result in results:
-            result.SetLink('ui screenshot', json_archive.Link())
+          _SetLinkOnResults(results, 'ui screenshot', json_archive.Link())
 
       def pull_ui_screenshot(filename):
         source_dir = ui_capture_dir.name
@@ -667,9 +668,8 @@ class LocalDeviceInstrumentationTestRun(
         for step in post_test_steps:
           step()
 
-    for result in results:
-      if logcat_file:
-        result.SetLink('logcat', logcat_file.Link())
+    if logcat_file:
+      _SetLinkOnResults(results, 'logcat', logcat_file.Link())
 
     # Update the result name if the test used flags.
     if flags_to_add:
@@ -889,12 +889,108 @@ class LocalDeviceInstrumentationTestRun(
                           screenshot_host_file.name)
         finally:
           screenshot_device_file.close()
-      for result in results:
-        result.SetLink(link_name, screenshot_host_file.Link())
+      _SetLinkOnResults(results, link_name, screenshot_host_file.Link())
 
   def _ProcessRenderTestResults(
       self, device, render_tests_device_output_dir, results):
+    self._ProcessSkiaGoldRenderTestResults(
+        device, render_tests_device_output_dir, results)
+    self._ProcessLocalRenderTestResults(device, render_tests_device_output_dir,
+                                        results)
 
+  def _ProcessSkiaGoldRenderTestResults(
+      self, device, render_tests_device_output_dir, results):
+    gold_dir = posixpath.join(render_tests_device_output_dir, 'skia_gold')
+    if not device.FileExists(gold_dir):
+      return
+
+    gold_properties = self._test_instance.skia_gold_properties
+    with tempfile_ext.NamedTemporaryDirectory() as working_dir:
+      gold_session = gold_utils.SkiaGoldSession(
+          working_dir=working_dir, gold_properties=gold_properties)
+      use_luci = not (gold_properties.local_pixel_tests
+                      or gold_properties.no_luci_auth)
+      for image_name in device.ListDirectory(gold_dir):
+        if not image_name.endswith('.png'):
+          continue
+
+        render_name = image_name[:-4]
+        json_name = render_name + '.json'
+        device_json_path = posixpath.join(gold_dir, json_name)
+        if not device.FileExists(device_json_path):
+          _FailTestIfNecessary(results)
+          _AppendToLog(
+              results, 'Unable to find corresponding JSON file for image %s '
+              'when doing Skia Gold comparison.' % image_name)
+          continue
+
+        host_image_path = os.path.join(working_dir, image_name)
+        device.PullFile(posixpath.join(gold_dir, image_name), host_image_path)
+        host_json_path = os.path.join(working_dir, json_name)
+        device.PullFile(device_json_path, host_json_path)
+
+        status, error = gold_session.RunComparison(
+            name=render_name,
+            keys_file=host_json_path,
+            png_file=host_image_path,
+            output_manager=self._env.output_manager,
+            use_luci=use_luci)
+
+        if not status:
+          continue
+
+        _FailTestIfNecessary(results)
+        failure_log = (
+            'Skia Gold reported failure for RenderTest %s. See '
+            'RENDER_TESTS.md for how to fix this failure.' % render_name)
+        status_codes = gold_utils.SkiaGoldSession.StatusCodes
+        if status == status_codes.AUTH_FAILURE:
+          _AppendToLog(results,
+                       'Gold authentication failed with output %s' % error)
+        elif status == status_codes.COMPARISON_FAILURE_REMOTE:
+          triage_link = gold_session.GetTriageLink(render_name)
+          if not triage_link:
+            _AppendToLog(
+                results, 'Failed to get triage link for %s, raw output: %s' %
+                (render_name, error))
+            _AppendToLog(
+                results, 'Reason for no triage link: %s' %
+                gold_session.GetTriageLinkOmissionReason(render_name))
+            continue
+          if gold_properties.IsTryjobRun():
+            _SetLinkOnResults(results, 'Skia Gold triage link for entire CL',
+                              triage_link)
+          else:
+            _SetLinkOnResults(results,
+                              'Skia Gold triage link for %s' % render_name,
+                              triage_link)
+          _AppendToLog(results, failure_log)
+
+        elif status == status_codes.COMPARISON_FAILURE_LOCAL:
+          given_link = gold_session.GetGivenImageLink(render_name)
+          closest_link = gold_session.GetClosestImageLink(render_name)
+          diff_link = gold_session.GetDiffImageLink(render_name)
+
+          processed_template_output = _GenerateRenderTestHtml(
+              render_name, given_link, closest_link, diff_link)
+          with self._env.output_manager.ArchivedTempfile(
+              '%s.html' % render_name, 'gold_local_diffs',
+              output_manager.Datatype.HTML) as html_results:
+            html_results.write(processed_template_output)
+          _SetLinkOnResults(results, render_name, html_results.Link())
+          _AppendToLog(
+              results,
+              'See %s link for diff image with closest positive.' % render_name)
+        elif status == status_codes.LOCAL_DIFF_FAILURE:
+          _AppendToLog(results,
+                       'Failed to generate diffs from Gold: %s' % error)
+        else:
+          logging.error(
+              'Given unhandled SkiaGoldSession StatusCode %s with error %s',
+              status, error)
+
+  def _ProcessLocalRenderTestResults(self, device,
+                                     render_tests_device_output_dir, results):
     failure_images_device_dir = posixpath.join(
         render_tests_device_output_dir, 'failures')
     if not device.FileExists(failure_images_device_dir):
@@ -940,24 +1036,15 @@ class LocalDeviceInstrumentationTestRun(
       else:
         diff_link = ''
 
-      jinja2_env = jinja2.Environment(
-          loader=jinja2.FileSystemLoader(_JINJA_TEMPLATE_DIR),
-          trim_blocks=True)
-      template = jinja2_env.get_template(_JINJA_TEMPLATE_FILENAME)
-      # pylint: disable=no-member
-      processed_template_output = template.render(
-          test_name=failure_filename,
-          failure_link=failure_link,
-          golden_link=golden_link,
-          diff_link=diff_link)
+      processed_template_output = _GenerateRenderTestHtml(
+          failure_filename, failure_link, golden_link, diff_link)
 
       with self._env.output_manager.ArchivedTempfile(
           '%s.html' % failure_filename, 'render_tests',
           output_manager.Datatype.HTML) as html_results:
         html_results.write(processed_template_output)
         html_results.flush()
-      for result in results:
-        result.SetLink(failure_filename, html_results.Link())
+      _SetLinkOnResults(results, failure_filename, html_results.Link())
 
   #override
   def _ShouldRetry(self, test, result):
@@ -1000,3 +1087,69 @@ def _IsRenderTest(test):
     test = [test]
   return any([RENDER_TEST_FEATURE_ANNOTATION in t['annotations'].get(
               FEATURE_ANNOTATION, {}).get('value', ()) for t in test])
+
+
+def _GenerateRenderTestHtml(image_name, failure_link, golden_link, diff_link):
+  """Generates a RenderTest results page.
+
+  Displays the generated (failure) image, the golden image, and the diff
+  between them.
+
+  Args:
+    image_name: The name of the image whose comparison failed.
+    failure_link: The URL to the generated/failure image.
+    golden_link: The URL to the golden image.
+    diff_link: The URL to the diff image between the failure and golden images.
+
+  Returns:
+    A string containing the generated HTML.
+  """
+  jinja2_env = jinja2.Environment(
+      loader=jinja2.FileSystemLoader(_JINJA_TEMPLATE_DIR), trim_blocks=True)
+  template = jinja2_env.get_template(_JINJA_TEMPLATE_FILENAME)
+  # pylint: disable=no-member
+  return template.render(
+      test_name=image_name,
+      failure_link=failure_link,
+      golden_link=golden_link,
+      diff_link=diff_link)
+
+
+def _FailTestIfNecessary(results):
+  """Marks the given results as failed if it wasn't already.
+
+  Marks the result types as ResultType.FAIL unless they were already some sort
+  of failure type, e.g. ResultType.CRASH.
+
+  Args:
+    results: A list of base_test_result.BaseTestResult objects.
+  """
+  for result in results:
+    if result.GetType() not in [
+        base_test_result.ResultType.FAIL, base_test_result.ResultType.CRASH,
+        base_test_result.ResultType.TIMEOUT, base_test_result.ResultType.UNKNOWN
+    ]:
+      result.SetType(base_test_result.ResultType.FAIL)
+
+
+def _AppendToLog(results, line):
+  """Appends the given line to the end of the logs of the given results.
+
+  Args:
+    results: A list of base_test_result.BaseTestResult objects.
+    line: A string to be appended as a neww line to the log of |result|.
+  """
+  for result in results:
+    result.SetLog(result.GetLog() + '\n' + line)
+
+
+def _SetLinkOnResults(results, link_name, link):
+  """Sets the given link on the given results.
+
+  Args:
+    results: A list of base_test_result.BaseTestResult objects.
+    link_name: A string containing the name of the link being set.
+    link: A string containing the lkink being set.
+  """
+  for result in results:
+    result.SetLink(link_name, link)

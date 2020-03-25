@@ -59,7 +59,7 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override;
   void OnSurroundingTextChanged(const std::string& component_id,
-                                const std::string& text,
+                                const base::string16& text,
                                 int cursor_pos,
                                 int anchor_pos,
                                 int offset_pos) override;

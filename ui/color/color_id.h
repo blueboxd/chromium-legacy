@@ -108,6 +108,8 @@
     NativeTheme::kColorId_TextfieldReadOnlyBackground) \
   E(kColorTextfieldDisabledForeground, \
     NativeTheme::kColorId_TextfieldReadOnlyColor) \
+  E(kColorTextfieldPlaceholderForeground, \
+    NativeTheme::kColorId_TextfieldPlaceholderColor) \
   E(kColorTextfieldForeground, NativeTheme::kColorId_TextfieldDefaultColor) \
   E(kColorTextfieldSelectionBackground, \
     NativeTheme::kColorId_TextfieldSelectionBackgroundFocused) \

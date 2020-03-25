@@ -26,7 +26,6 @@ class ViewsTestHelperAura : public ViewsTestHelper {
 
   // ViewsTestHelper:
   gfx::NativeWindow GetContext() override;
-  ui::ContextFactory* GetContextFactory() override;
 
  private:
   aura::test::AuraTestHelper aura_test_helper_;

@@ -19,6 +19,7 @@ from pylib.instrumentation import instrumentation_parser
 from pylib.symbols import deobfuscator
 from pylib.symbols import stack_symbolizer
 from pylib.utils import dexdump
+from pylib.utils import gold_utils
 from pylib.utils import instrumentation_tracing
 from pylib.utils import proguard
 from pylib.utils import shared_preference_utils
@@ -516,6 +517,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._use_webview_provider = None
     self._initializeUseWebviewProviderAttributes(args)
 
+    self._skia_gold_properties = None
+    self._initializeSkiaGoldAttributes(args)
+
     self._external_shard_index = args.test_launcher_shard_index
     self._total_external_shards = args.test_launcher_total_shards
 
@@ -724,6 +728,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       return
     self._use_webview_provider = args.use_webview_provider
 
+  def _initializeSkiaGoldAttributes(self, args):
+    self._skia_gold_properties = gold_utils.SkiaGoldProperties(args)
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -799,6 +806,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def screenshot_dir(self):
     return self._screenshot_dir
+
+  @property
+  def skia_gold_properties(self):
+    return self._skia_gold_properties
 
   @property
   def store_tombstones(self):

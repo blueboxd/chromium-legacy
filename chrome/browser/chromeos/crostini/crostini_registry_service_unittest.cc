@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -550,7 +551,8 @@ TEST_F(CrostiniRegistryServiceTest, MigrateTerminal) {
   // Add prefs entry for the deleted terminal.
   base::DictionaryValue registry;
   registry.SetKey(GetDeletedTerminalId(), base::DictionaryValue());
-  profile()->GetPrefs()->Set(prefs::kCrostiniRegistry, std::move(registry));
+  profile()->GetPrefs()->Set(guest_os::prefs::kGuestOsRegistry,
+                             std::move(registry));
 
   // Only current terminal returned.
   RecreateService();
@@ -560,7 +562,7 @@ TEST_F(CrostiniRegistryServiceTest, MigrateTerminal) {
   // Deleted terminal removed from prefs.
   EXPECT_FALSE(profile()
                    ->GetPrefs()
-                   ->GetDictionary(prefs::kCrostiniRegistry)
+                   ->GetDictionary(guest_os::prefs::kGuestOsRegistry)
                    ->HasKey(GetDeletedTerminalId()));
 }
 

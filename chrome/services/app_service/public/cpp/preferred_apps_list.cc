@@ -52,6 +52,24 @@ apps::mojom::ReplacedAppPreferencesPtr PreferredAppsList::AddPreferredApp(
   return replaced_app_preferences;
 }
 
+// static
+void PreferredAppsList::DeletePreferredApp(
+    const std::string& app_id,
+    const apps::mojom::IntentFilterPtr& intent_filter,
+    PreferredApps* preferred_apps) {
+  // Go through the list and see if there are overlapped intent filters with the
+  // same app id in the list. If there are, delete the entry.
+  auto iter = preferred_apps->begin();
+  while (iter != preferred_apps->end()) {
+    if ((*iter)->app_id == app_id &&
+        apps_util::FiltersHaveOverlap((*iter)->intent_filter, intent_filter)) {
+      iter = preferred_apps->erase(iter);
+    } else {
+      iter++;
+    }
+  }
+}
+
 base::Optional<std::string> PreferredAppsList::FindPreferredAppForIntent(
     const apps::mojom::IntentPtr& intent) {
   base::Optional<std::string> best_match_app_id = base::nullopt;
@@ -80,6 +98,12 @@ apps::mojom::ReplacedAppPreferencesPtr PreferredAppsList::AddPreferredApp(
     const std::string& app_id,
     const apps::mojom::IntentFilterPtr& intent_filter) {
   return AddPreferredApp(app_id, intent_filter, &preferred_apps_);
+}
+
+void PreferredAppsList::DeletePreferredApp(
+    const std::string& app_id,
+    const apps::mojom::IntentFilterPtr& intent_filter) {
+  DeletePreferredApp(app_id, intent_filter, &preferred_apps_);
 }
 
 }  // namespace apps

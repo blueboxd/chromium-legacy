@@ -14,16 +14,21 @@ from pylib.base import mock_environment
 from pylib.base import mock_test_instance
 from pylib.local.device import local_device_instrumentation_test_run
 
+
 class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
+
+  def setUp(self):
+    super(LocalDeviceInstrumentationTestRunTest, self).setUp()
+    self._env = mock_environment.MockEnvironment()
+    self._ti = mock_test_instance.MockTestInstance()
+    self._obj = (
+        local_device_instrumentation_test_run.LocalDeviceInstrumentationTestRun(
+            self._env, self._ti))
 
   # TODO(crbug.com/797002): Decide whether the _ShouldRetry hook is worth
   # retaining and remove these tests if not.
 
   def testShouldRetry_failure(self):
-    env = mock_environment.MockEnvironment()
-    ti = mock_test_instance.MockTestInstance()
-    obj = (local_device_instrumentation_test_run
-           .LocalDeviceInstrumentationTestRun(env, ti))
     test = {
         'annotations': {},
         'class': 'SadTest',
@@ -32,13 +37,9 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
     }
     result = base_test_result.BaseTestResult(
         'SadTest.testFailure', base_test_result.ResultType.FAIL)
-    self.assertTrue(obj._ShouldRetry(test, result))
+    self.assertTrue(self._obj._ShouldRetry(test, result))
 
   def testShouldRetry_retryOnFailure(self):
-    env = mock_environment.MockEnvironment()
-    ti = mock_test_instance.MockTestInstance()
-    obj = (local_device_instrumentation_test_run
-           .LocalDeviceInstrumentationTestRun(env, ti))
     test = {
         'annotations': {'RetryOnFailure': None},
         'class': 'SadTest',
@@ -47,13 +48,9 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
     }
     result = base_test_result.BaseTestResult(
         'SadTest.testRetryOnFailure', base_test_result.ResultType.FAIL)
-    self.assertTrue(obj._ShouldRetry(test, result))
+    self.assertTrue(self._obj._ShouldRetry(test, result))
 
   def testShouldRetry_notRun(self):
-    env = mock_environment.MockEnvironment()
-    ti = mock_test_instance.MockTestInstance()
-    obj = (local_device_instrumentation_test_run
-           .LocalDeviceInstrumentationTestRun(env, ti))
     test = {
         'annotations': {},
         'class': 'SadTest',
@@ -62,7 +59,7 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
     }
     result = base_test_result.BaseTestResult(
         'SadTest.testNotRun', base_test_result.ResultType.NOTRUN)
-    self.assertTrue(obj._ShouldRetry(test, result))
+    self.assertTrue(self._obj._ShouldRetry(test, result))
 
 
 if __name__ == '__main__':

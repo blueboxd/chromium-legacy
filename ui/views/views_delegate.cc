@@ -112,9 +112,11 @@ bool ViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
   return false;
 }
 
+#if defined(OS_MACOSX)
 ui::ContextFactory* ViewsDelegate::GetContextFactory() {
   return nullptr;
 }
+#endif
 
 std::string ViewsDelegate::GetApplicationName() {
   base::FilePath program = base::CommandLine::ForCurrentProcess()->GetProgram();

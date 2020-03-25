@@ -2337,7 +2337,7 @@
 <translation id="4047726037116394521">Одете на почетната страница</translation>
 <translation id="4050225813016893843">Метод на проверка</translation>
 <translation id="4052120076834320548">Ситен</translation>
-<translation id="4056908315660577142">Го достигна временското ограничување што твојот родител го поставил за апликацијата на Chrome <ph name="APP_NAME" />. Ќе може да ја користиш <ph name="TIME_LIMIT" /> утре.</translation>
+<translation id="4056908315660577142">Го достигна временското ограничување што твојот родител го поставил за апликацијата <ph name="APP_NAME" /> на Chrome. Ќе може да ја користиш <ph name="TIME_LIMIT" /> утре.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Прикажи во продавница</translation>
 <translation id="4058647953897694817">Потврди преку Bluetooth</translation>
@@ -2565,7 +2565,7 @@
 <translation id="4400963414856942668">Може да кликнете на ѕвездата за да обележите картичка</translation>
 <translation id="4403775189117163360">Одберете друга папка</translation>
 <translation id="4404136731284211429">Скенирај пак</translation>
-<translation id="4404843640767531781">Твојот родител ја блокирал <ph name="APP_NAME" />. Побарај дозвола од него за користење на апликацијава.</translation>
+<translation id="4404843640767531781">Твојот родител ја блокирал <ph name="APP_NAME" />. Побарај дозвола од родителот за користење на апликацијава.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">П&amp;омош</translation>
 <translation id="4409697491990005945">Маргини</translation>
@@ -4853,7 +4853,7 @@
 <translation id="7513029293694390567">Автоматски најавувајте се на веб-сајтови со складирани акредитиви. Ако е оневозможено, ќе ви се бара потврда пред секое најавување на веб-сајт.</translation>
 <translation id="7514239104543605883">Копирај на уредот</translation>
 <translation id="7514365320538308">Преземи</translation>
-<translation id="751523031290522286">Администраторот ја блокирал <ph name="APP_NAME" />. Побарајте дозвола од него за користење на апликацијава.</translation>
+<translation id="751523031290522286">Администраторот ја блокирал <ph name="APP_NAME" />. Побарајте дозвола од администраторот за користење на апликацијава.</translation>
 <translation id="7516981202574715431"><ph name="APP_NAME" /> е паузирана</translation>
 <translation id="7517063221058203587">{0,plural, =1{Ажурирајте го уредот во рок од 1 минута}one{Ажурирајте го уредот во рок од # минута}other{Ажурирајте го уредот во рок од # минути}}</translation>
 <translation id="7520766081042531487">Инкогнито портал: <ph name="SUBFRAME_SITE" /></translation>

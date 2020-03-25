@@ -106,6 +106,18 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
       const std::vector<std::string>& expected_responses,
       base::TimeDelta wait_timeout = kDefaultWaitTimeout);
 
+  // Waits until a timers response is rendered that contains the given timers.
+  // If the expected response is not received in |wait_timeout|, this will fail
+  // the test.
+  void ExpectTimersResponse(const std::vector<base::TimeDelta>& timers,
+                            base::TimeDelta wait_timeout = kDefaultWaitTimeout);
+
+  // Waits until a timers response is rendered and returns the time remaining of
+  // the rendered timers. If a timers response is not received in |wait_timeout|
+  // this will fail the test.
+  std::vector<base::TimeDelta> ExpectAndReturnTimersResponse(
+      base::TimeDelta wait_timeout = kDefaultWaitTimeout);
+
   // Presses the Assistant key, which will toggle the Assistant UI.
   void PressAssistantKey();
 

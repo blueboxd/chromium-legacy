@@ -40,7 +40,6 @@ bool JobDelegate::ShouldYield() {
 #if DCHECK_IS_ON()
   // ShouldYield() shouldn't be called again after returning true.
   DCHECK(!last_should_yield_);
-  AssertExpectedConcurrency(recorded_max_concurrency_);
 #endif  // DCHECK_IS_ON()
   const bool should_yield =
       task_source_->ShouldYield() ||

@@ -64,8 +64,9 @@ const FilesTooltip = Polymer({
    * Adds an event listener to the body.
    */
   attached: function() {
-    document.body.addEventListener(
-      'mousedown', this.onDocumentMouseDown_.bind(this));
+    const closeTooltipHandler = this.onDocumentMouseDown_.bind(this);
+    document.body.addEventListener('mousedown', closeTooltipHandler);
+    window.addEventListener('resize', closeTooltipHandler);
   },
 
   /**
@@ -142,8 +143,8 @@ const FilesTooltip = Polymer({
     if (this.hideTooltipTimerId_) {
       clearTimeout(this.hideTooltipTimerId_);
     }
-    this.hideTooltipTimerId_ = setTimeout(
-        this.hideTooltip_.bind(this), this.hideTimeout);
+    this.hideTooltipTimerId_ =
+        setTimeout(this.hideTooltip_.bind(this), this.hideTimeout);
   },
 
   /**
@@ -243,5 +244,5 @@ const FilesTooltip = Polymer({
       clearTimeout(this.showTooltipTimerId_);
       this.showTooltipTimerId_ = 0;
     }
-  }
+  },
 });

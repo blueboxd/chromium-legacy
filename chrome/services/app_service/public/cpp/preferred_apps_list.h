@@ -27,10 +27,18 @@ class PreferredAppsList {
   PreferredAppsList& operator=(const PreferredAppsList&) = delete;
 
   using PreferredApps = std::vector<apps::mojom::PreferredAppPtr>;
+
   // Add a preferred app for an |intent_filter| for |preferred_apps|.
   // Returns the preferred app and their corresponding |intent_filters| that are
   // replaced by this action.
   static apps::mojom::ReplacedAppPreferencesPtr AddPreferredApp(
+      const std::string& app_id,
+      const apps::mojom::IntentFilterPtr& intent_filter,
+      PreferredApps* preferred_apps);
+
+  // Delete a preferred app for an |intent_filter| with the same |app_id| for
+  // |preferred_apps|.
+  static void DeletePreferredApp(
       const std::string& app_id,
       const apps::mojom::IntentFilterPtr& intent_filter,
       PreferredApps* preferred_apps);
@@ -48,6 +56,10 @@ class PreferredAppsList {
   apps::mojom::ReplacedAppPreferencesPtr AddPreferredApp(
       const std::string& app_id,
       const apps::mojom::IntentFilterPtr& intent_filter);
+
+  // Delete a preferred app for an |intent_filter| with the same |app_id|.
+  void DeletePreferredApp(const std::string& app_id,
+                          const apps::mojom::IntentFilterPtr& intent_filter);
 
  private:
   PreferredApps preferred_apps_;

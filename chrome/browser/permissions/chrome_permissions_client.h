@@ -47,6 +47,13 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
 #if defined(OS_ANDROID)
+  bool IsPermissionControlledByDse(content::BrowserContext* browser_context,
+                                   ContentSettingsType type,
+                                   const url::Origin& origin) override;
+  bool ResetPermissionIfControlledByDse(
+      content::BrowserContext* browser_context,
+      ContentSettingsType type,
+      const url::Origin& origin) override;
   infobars::InfoBarManager* GetInfoBarManager(
       content::WebContents* web_contents) override;
   infobars::InfoBar* MaybeCreateInfoBar(

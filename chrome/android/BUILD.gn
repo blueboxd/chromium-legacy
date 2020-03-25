@@ -1012,6 +1012,8 @@ android_library("chrome_test_java") {
     "//media/test/data/bear-vp8a.webm",
     "//media/test/data/sfx.mp3",
   ]
+
+  data_deps = [ "//ui/base:goldctl" ]
 }
 
 if (enable_vr || enable_arcore) {
@@ -1071,6 +1073,8 @@ if (enable_vr || enable_arcore) {
       "//chrome/test/data/xr/e2e_test_files/",
       "//third_party/blink/web_tests/resources/testharness.js",
     ]
+
+    data_deps = [ "//ui/base:goldctl" ]
   }
 
   if (enable_vr) {

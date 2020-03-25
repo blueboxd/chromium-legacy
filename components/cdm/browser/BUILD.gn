@@ -20,6 +20,7 @@ jumbo_source_set("browser") {
   deps = [
     "//components/cdm/common",
     "//components/prefs",
+    "//components/user_prefs",
     "//content/public/common",
     "//ipc",
     "//media",

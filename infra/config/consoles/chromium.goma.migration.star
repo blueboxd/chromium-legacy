@@ -1155,5 +1155,44 @@ luci.console_view(
             category = 'ios|week1a',
             short_name = 'sim',
         ),
+        luci.console_view_entry(
+            builder = 'ci/ios-device',
+            category = 'ios|week1b',
+            short_name = 'dev',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator',
+            category = 'ios|week1b|sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-full-configs',
+            category = 'ios|week1b|sim',
+            short_name = 'fullconf',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-noncq',
+            category = 'ios|week1b|sim',
+            short_name = 'noncq',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios13-beta-simulator',
+            category = 'ios|week1b|ios13|beta',
+            short_name = 'sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios13-sdk-simulator',
+            category = 'ios|week1b|ios13|sdk',
+            short_name = 'sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-m80/ios-simulator',
+            category = 'ios|week1b|m80',
+            short_name = 'sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-m81/ios-simulator',
+            category = 'ios|week1b|m81',
+            short_name = 'sim',
+        ),
     ],
 )

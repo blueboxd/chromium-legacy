@@ -66,7 +66,9 @@ SPECIAL_TOKENS = [
     'XR',
 ]
 
-_SPECIAL_TOKENS_WITH_NUMBERS = [token for token in SPECIAL_TOKENS if re.search(r'[0-9]', token)]
+_SPECIAL_TOKENS_WITH_NUMBERS = [
+    token for token in SPECIAL_TOKENS if re.search(r'[0-9]', token)
+]
 
 # Applying _TOKEN_PATTERNS repeatedly should capture any sequence of a-z, A-Z,
 # 0-9.
@@ -80,7 +82,8 @@ _TOKEN_PATTERNS = [
     '[0-9]+',
 ]
 
-_TOKEN_RE = re.compile(r'(' + '|'.join(SPECIAL_TOKENS + _TOKEN_PATTERNS) + r')')
+_TOKEN_RE = re.compile(r'(' + '|'.join(SPECIAL_TOKENS + _TOKEN_PATTERNS) +
+                       r')')
 
 
 def tokenize_name(name):
@@ -103,7 +106,8 @@ def tokenize_name(name):
     # In case |name| is written in lowerCamelCase, we try to match special
     # tokens that contains numbers ignoring cases only at the first step.
     tokens = []
-    match = re.search(r'^(' + '|'.join(_SPECIAL_TOKENS_WITH_NUMBERS) + r')', name, re.IGNORECASE)
+    match = re.search(r'^(' + '|'.join(_SPECIAL_TOKENS_WITH_NUMBERS) + r')',
+                      name, re.IGNORECASE)
     if match:
         tokens.append(match.group(0))
         name = name[match.end(0):]
@@ -176,7 +180,8 @@ class NameStyleConverter(object):
         """
         if not self.tokens:
             return ''
-        return self.tokens[0].lower() + ''.join([token[0].upper() + token[1:] for token in self.tokens[1:]])
+        return self.tokens[0].lower() + ''.join(
+            [token[0].upper() + token[1:] for token in self.tokens[1:]])
 
     def to_macro_case(self):
         """Macro case is the macro name style per Google C++ Style Guide:

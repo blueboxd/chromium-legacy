@@ -7024,17 +7024,6 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
   TestNoMITMSoftwareInterstitial();
 }
 
-void SetShouldNotRequireCTForTesting() {
-  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  content::GetNetworkService()->BindTestInterface(
-      network_service_test.BindNewPipeAndPassReceiver());
-  network::mojom::NetworkServiceTest::ShouldRequireCT required_ct =
-      network::mojom::NetworkServiceTest::ShouldRequireCT::DONT_REQUIRE;
-
-  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-  network_service_test->SetShouldRequireCT(required_ct);
-}
-
 class TLSLegacyVersionSSLUITest : public SSLUITest {
  public:
   TLSLegacyVersionSSLUITest() = default;
@@ -7043,7 +7032,6 @@ class TLSLegacyVersionSSLUITest : public SSLUITest {
   void SetUpOnMainThread() override {
     SSLUITest::SetUpOnMainThread();
     mock_cert_verifier()->set_default_result(net::OK);
-    SetShouldNotRequireCTForTesting();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

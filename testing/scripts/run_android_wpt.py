@@ -63,9 +63,6 @@ BLINK_TOOLS_DIR = os.path.join(SRC_DIR, 'third_party', 'blink', 'tools')
 WEB_TESTS_DIR = os.path.join(BLINK_TOOLS_DIR, os.pardir, 'web_tests')
 DEFAULT_WPT = os.path.join(WEB_TESTS_DIR, 'external', 'wpt', 'wpt')
 
-SYSTEM_WEBVIEW_SHELL_PKG = 'org.chromium.webview_shell'
-WEBLAYER_SHELL_PKG = 'org.chromium.weblayer.shell'
-WEBLAYER_SUPPORT_PKG = 'org.chromium.weblayer.support'
 
 # List of supported products.
 PRODUCTS = ['android_weblayer', 'android_webview', 'chrome_android']
@@ -89,28 +86,30 @@ class PassThroughArgs(argparse.Action):
       cls.pass_through_args.append(arg)
 
 
+def _get_adapter(device):
+  product = WPTAndroidAdapter(device).options.product
+  if product == 'android_weblayer':
+    return WPTWeblayerAdapter(device)
+  elif product == 'android_webview':
+    return WPTWebviewAdapter(device)
+  else:
+    return WPTClankAdapter(device)
+
+
 class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
 
-  def __init__(self):
+  def __init__(self, device):
     self.pass_through_wpt_args = []
     self.pass_through_binary_args = []
     self._metadata_dir = None
     self._test_apk = None
     self._missing_test_apk_arg = None
+    self._device = device
     super(WPTAndroidAdapter, self).__init__()
     # Arguments from add_extra_argumentsparse were added so
     # its safe to parse the arguments and set self._options
     self.parse_args()
 
-  @classmethod
-  def get_adapter(cls):
-    product = cls().options.product
-    if product == 'android_weblayer':
-      return WPTWeblayerAdapter()
-    elif product == 'android_webview':
-      return WPTWebviewAdapter()
-    else:
-      return WPTClankAdapter()
 
   def generate_test_output_args(self, output):
     return ['--log-chromium', output]
@@ -194,9 +193,12 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     common.run_command(metadata_builder_cmd)
 
   def run_test(self):
-    with NamedTemporaryDirectory() as self._metadata_dir:
+    with NamedTemporaryDirectory() as self._metadata_dir, self._install_apks():
       self._maybe_build_metadata()
       return super(WPTAndroidAdapter, self).run_test()
+
+  def _install_apks(self):
+    raise NotImplementedError
 
   def clean_up_after_test_run(self):
     # Avoid having a dangling reference to the temp directory
@@ -270,26 +272,37 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
                         help='Force trial params for Chromium features.')
 
 
-class WPTWebviewAdapter(WPTAndroidAdapter):
-
-  def __init__(self):
-    super(WPTWebviewAdapter, self).__init__()
-    self._test_apk = self.options.system_webview_shell
-    self._missing_test_apk_arg = '--system-webview-shell'
-
-  def _extra_metadata_builder_args(self):
-    return [
-      '--additional-expectations',
-      os.path.join(
-          WEB_TESTS_DIR, 'android', 'WebviewWPTOverrideExpectations')]
-
-
 class WPTWeblayerAdapter(WPTAndroidAdapter):
 
-  def __init__(self):
-    super(WPTWeblayerAdapter, self).__init__()
+  WEBLAYER_SHELL_PKG = 'org.chromium.weblayer.shell'
+  WEBLAYER_SUPPORT_PKG = 'org.chromium.weblayer.support'
+
+  def __init__(self, device):
+    super(WPTWeblayerAdapter, self).__init__(device)
     self._test_apk = self.options.weblayer_shell
     self._missing_test_apk_arg = '--weblayer-shell'
+
+  @contextlib.contextmanager
+  def _install_apks(self):
+    if self.options.package_name:
+      logger.warn('--package-name has no effect for weblayer, provider'
+            'will be set to the --apk if it is provided.')
+    install_weblayer_shell_as_needed = maybe_install_user_apk(
+        self._device, self.options.weblayer_shell, self.WEBLAYER_SHELL_PKG)
+    install_weblayer_support_as_needed = maybe_install_user_apk(
+        self._device, self.options.weblayer_support, self.WEBLAYER_SUPPORT_PKG)
+
+    if self.options.apk:
+      install_webview_as_needed = webview_app.UseWebViewProvider(
+          self._device, self.options.apk)
+      logger.info('Will install WebView apk at ' + self.options.apk)
+    else:
+      install_webview_as_needed = no_op()
+
+    with install_weblayer_shell_as_needed,   \
+         install_weblayer_support_as_needed, \
+         install_webview_as_needed:
+      yield
 
   def _extra_metadata_builder_args(self):
     return [
@@ -298,77 +311,63 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
                    'android', 'WeblayerWPTOverrideExpectations')]
 
 
+class WPTWebviewAdapter(WPTAndroidAdapter):
+
+  SYSTEM_WEBVIEW_SHELL_PKG = 'org.chromium.webview_shell'
+
+  def __init__(self, device):
+    super(WPTWebviewAdapter, self).__init__(device)
+    self._test_apk = self.options.system_webview_shell
+    self._missing_test_apk_arg = '--system-webview-shell'
+
+  @contextlib.contextmanager
+  def _install_apks(self):
+    if self.options.package_name:
+      logger.warn('--package-name has no effect for android_webview, provider'
+            'will be set to the --apk if it is provided.')
+
+    if self.options.system_webview_shell:
+      install_shell_as_needed = maybe_install_user_apk(
+          self._device, self.options.system_webview_shell,
+          self.SYSTEM_WEBVIEW_SHELL_PKG)
+    else:
+      install_shell_as_needed = no_op()
+
+    if self.options.apk:
+      install_webview_as_needed = webview_app.UseWebViewProvider(
+          self._device, self.options.apk)
+      logger.info('Will install WebView apk at ' + self.options.apk)
+    else:
+      install_webview_as_needed = no_op()
+
+    with install_shell_as_needed, install_webview_as_needed:
+      yield
+
+  def _extra_metadata_builder_args(self):
+    return [
+      '--additional-expectations',
+      os.path.join(
+          WEB_TESTS_DIR, 'android', 'WebviewWPTOverrideExpectations')]
+
+
 class WPTClankAdapter(WPTAndroidAdapter):
 
-  def __init__(self):
-    super(WPTClankAdapter, self).__init__()
+  def __init__(self, device):
+    super(WPTClankAdapter, self).__init__(device)
     self._test_apk = self.options.apk
     self._missing_test_apk_arg = '--apk'
+
+  @contextlib.contextmanager
+  def _install_apks(self):
+    install_clank_as_needed = maybe_install_user_apk(
+        self._device, self.options.apk)
+    with install_clank_as_needed:
+      yield
 
   def _extra_metadata_builder_args(self):
     return [
       '--additional-expectations',
       os.path.join(WEB_TESTS_DIR, 'android', 'ClankWPTOverrideExpectations')]
-
-
-def run_android_weblayer(device, adapter):
-  if adapter.options.package_name:
-    logger.warn('--package-name has no effect for weblayer, provider'
-          'will be set to the --apk if it is provided.')
-
-  install_weblayer_shell_as_needed = maybe_install_user_apk(
-      device, adapter.options.weblayer_shell, WEBLAYER_SHELL_PKG)
-
-  install_weblayer_support_as_needed = maybe_install_user_apk(
-      device, adapter.options.weblayer_support, WEBLAYER_SUPPORT_PKG)
-
-  if adapter.options.apk:
-    install_webview_as_needed = webview_app.UseWebViewProvider(device,
-        adapter.options.apk)
-    logger.info('Will install WebView apk at ' + adapter.options.apk)
-  else:
-    install_webview_as_needed = no_op()
-
-  with install_weblayer_shell_as_needed,\
-       install_weblayer_support_as_needed,\
-       install_webview_as_needed:
-    return adapter.run_test()
-
-
-def run_android_webview(device, adapter):
-  if adapter.options.package_name:
-    logger.warn('--package-name has no effect for android_webview, provider'
-          'will be set to the --apk if it is provided.')
-
-  if adapter.options.system_webview_shell:
-    shell_pkg = apk_helper.GetPackageName(adapter.options.system_webview_shell)
-    if shell_pkg != SYSTEM_WEBVIEW_SHELL_PKG:
-      raise Exception('{} has incorrect package name: {}, expected {}.'.format(
-          '--system-webview-shell apk', shell_pkg, SYSTEM_WEBVIEW_SHELL_PKG))
-    install_shell_as_needed = system_app.ReplaceSystemApp(device, shell_pkg,
-        adapter.options.system_webview_shell)
-    logger.info('Will install ' + shell_pkg + ' at '
-                + adapter.options.system_webview_shell)
-  else:
-    install_shell_as_needed = no_op()
-
-  if adapter.options.apk:
-    install_webview_as_needed = webview_app.UseWebViewProvider(device,
-        adapter.options.apk)
-    logger.info('Will install WebView apk at ' + adapter.options.apk)
-  else:
-    install_webview_as_needed = no_op()
-
-  with install_shell_as_needed, install_webview_as_needed:
-    return adapter.run_test()
-
-
-def run_chrome_android(device, adapter):
-  if adapter.options.apk:
-    with app_installed(device, adapter.options.apk):
-      return adapter.run_test()
-  else:
-    return adapter.run_test()
 
 
 def maybe_install_user_apk(device, apk, expected_pkg=None):
@@ -417,7 +416,18 @@ def main_compile_targets(args):
 
 
 def main():
-  adapter = WPTAndroidAdapter.get_adapter()
+  devil_chromium.Initialize()
+  devices = device_utils.DeviceUtils.HealthyDevices()
+
+  if not devices:
+    logger.error('There are no devices attached to this host. Exiting script.')
+    return 1
+
+  # Only 1 device is supported for Android locally, this will work well with
+  # sharding support via swarming infra.
+  device = devices[0]
+
+  adapter = _get_adapter(device)
   adapter.parse_args()
 
   if adapter.options.verbose:
@@ -426,25 +436,12 @@ def main():
     else:
       logger.setLevel(logging.DEBUG)
 
-  devil_chromium.Initialize()
-
-  # Only 1 device is supported for Android locally, this will work well with
-  # sharding support via swarming infra.
-  device = device_utils.DeviceUtils.HealthyDevices()[0]
-
   # WPT setup for chrome and webview requires that PATH contains adb.
   platform_tools_path = os.path.dirname(devil_env.config.FetchPath('adb'))
   os.environ['PATH'] = ':'.join([platform_tools_path] +
                                 os.environ['PATH'].split(':'))
 
-  if adapter.options.product == 'android_weblayer':
-    return run_android_weblayer(device, adapter)
-  elif adapter.options.product == 'android_webview':
-    return run_android_webview(device, adapter)
-  elif adapter.options.product == 'chrome_android':
-    return run_chrome_android(device, adapter)
-  else:
-    return 1
+  return adapter.run_test()
 
 
 if __name__ == '__main__':

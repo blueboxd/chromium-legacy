@@ -103,6 +103,14 @@ class MediaDrmStorageImpl final
       AllowEmptyOriginIdCB allow_empty_origin_id_cb,
       mojo::PendingReceiver<media::mojom::MediaDrmStorage> receiver);
 
+  // As above, but derives the PrefService from |render_frame_host|.
+  // TODO(estade): make this the only constructor.
+  MediaDrmStorageImpl(
+      content::RenderFrameHost* render_frame_host,
+      GetOriginIdCB get_origin_id_cb,
+      AllowEmptyOriginIdCB allow_empty_origin_id_cb,
+      mojo::PendingReceiver<media::mojom::MediaDrmStorage> receiver);
+
   // media::mojom::MediaDrmStorage implementation.
   void Initialize(InitializeCallback callback) final;
   void OnProvisioned(OnProvisionedCallback callback) final;

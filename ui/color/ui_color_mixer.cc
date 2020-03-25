@@ -74,6 +74,8 @@ void AddUiColorMixers(ColorProvider* provider) {
       GetColorWithMaxContrast(kColorTextfieldForeground);
   mixer[kColorTextfieldDisabledBackground] = {kColorPrimaryBackground};
   mixer[kColorTextfieldDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorTextfieldPlaceholderForeground] = {
+      kColorTextfieldDisabledForeground};
   mixer[kColorTextfieldForeground] = {kColorPrimaryForeground};
   mixer[kColorTextfieldSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorTextfieldSelectionForeground] = {kColorTextfieldForeground};

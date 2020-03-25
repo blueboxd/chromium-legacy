@@ -587,8 +587,6 @@ def main(sys_args):
                                     options.test_shard_map_filename)
       # Copy sharding map file to isolated_out_dir so that the merge script
       # can collect it later.
-      # TODO(crouleau): Move this step over to merge script
-      # (process_perf_results.py).
       shutil.copyfile(
           shard_map_path,
           os.path.join(isolated_out_dir, 'benchmarks_shard_map.json'))

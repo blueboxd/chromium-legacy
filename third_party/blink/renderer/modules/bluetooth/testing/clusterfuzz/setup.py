@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Script that helps run the fuzzer locally and in ClusterFuzz.
 
    To prepare to run the fuzzer locally, this script copies the necessary
@@ -19,15 +18,15 @@ import shutil
 import sys
 
 # src path from this file's path.
-SRC_PATH = os.path.join(
-    os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir)
-WEB_TESTS_RESOURCES_PATH = os.path.join(
-    SRC_PATH, 'third_party', 'blink', 'web_tests', 'resources')
+SRC_PATH = os.path.join(os.pardir, os.pardir, os.pardir, os.pardir, os.pardir,
+                        os.pardir, os.pardir)
+WEB_TESTS_RESOURCES_PATH = os.path.join(SRC_PATH, 'third_party', 'blink',
+                                        'web_tests', 'resources')
 WEB_PLATFORM_TESTS_RESOURCES_PATH = os.path.join(
     SRC_PATH, 'third_party', 'blink', 'web_tests', 'external', 'wpt',
     'bluetooth', 'resources')
-COMMON_FUZZER_RESOURCES_PATH = os.path.join(
-    SRC_PATH, 'testing', 'clusterfuzz', 'common')
+COMMON_FUZZER_RESOURCES_PATH = os.path.join(SRC_PATH, 'testing', 'clusterfuzz',
+                                            'common')
 RESOURCES = [
     os.path.join(WEB_TESTS_RESOURCES_PATH, 'testharness.js'),
     os.path.join(WEB_TESTS_RESOURCES_PATH, 'testharnessreport.js'),
@@ -69,13 +68,19 @@ def main():
     # Get arguments.
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-c', '--cluster_fuzz', action='store_true',
-                        help='If present, this script generates tar.bz2 file '
-                        'containing the fuzzer. This file can be uploaded '
-                        'and run on ClusterFuzz.')
-    parser.add_argument('-l', '--local', action='store_true',
-                        help='If present, this script retrieves the files '
-                             'necessary to run the fuzzer locally.')
+    parser.add_argument(
+        '-c',
+        '--cluster_fuzz',
+        action='store_true',
+        help='If present, this script generates tar.bz2 file '
+        'containing the fuzzer. This file can be uploaded '
+        'and run on ClusterFuzz.')
+    parser.add_argument(
+        '-l',
+        '--local',
+        action='store_true',
+        help='If present, this script retrieves the files '
+        'necessary to run the fuzzer locally.')
 
     args = parser.parse_args()
 
@@ -106,6 +111,7 @@ def main():
             root_dir=os.path.join(current_path, os.pardir),
             base_dir='clusterfuzz')
         print 'File wrote to: ' + compressed_file_path + '.tar.bz2'
+
 
 if __name__ == '__main__':
     sys.exit(main())

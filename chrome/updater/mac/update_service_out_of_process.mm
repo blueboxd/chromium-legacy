@@ -38,6 +38,14 @@ using base::SysUTF8ToNSString;
     _xpcConnection.get().remoteObjectInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateChecking)];
 
+    _xpcConnection.get().interruptionHandler = ^{
+      LOG(WARNING) << "CRUUpdateCheckingService: XPC connection interrupted.";
+    };
+
+    _xpcConnection.get().invalidationHandler = ^{
+      LOG(WARNING) << "CRUUpdateCheckingService: XPC connection invalidated.";
+    };
+
     [_xpcConnection resume];
   }
 
@@ -72,7 +80,7 @@ using base::SysUTF8ToNSString;
     reply(-1);
   };
 
-  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
+  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
       checkForUpdatesWithReply:reply];
 }
 
@@ -86,7 +94,7 @@ using base::SysUTF8ToNSString;
     reply(-1);
   };
 
-  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
+  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
       checkForUpdateWithAppID:appID
                      priority:priority
                   updateState:updateState
@@ -116,7 +124,7 @@ void UpdateServiceOutOfProcess::RegisterApp(
         FROM_HERE, base::BindOnce(std::move(block_callback), response));
   };
 
-  [client_.get()
+  [client_
       registerForUpdatesWithAppId:SysUTF8ToNSString(request.app_id)
                         brandCode:SysUTF8ToNSString(request.brand_code)
                               tag:SysUTF8ToNSString(request.tag)
@@ -139,7 +147,7 @@ void UpdateServiceOutOfProcess::UpdateAll(
                                   static_cast<update_client::Error>(error)));
   };
 
-  [client_.get() checkForUpdatesWithReply:reply];
+  [client_ checkForUpdatesWithReply:reply];
 }
 
 void UpdateServiceOutOfProcess::Update(const std::string& app_id,
@@ -163,10 +171,10 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
           initWithRepeatingCallback:state_update
                      callbackRunner:callback_runner_]);
 
-  [client_.get() checkForUpdateWithAppID:SysUTF8ToNSString(app_id)
-                                priority:priorityWrapper.get()
-                             updateState:stateObserver.get()
-                                   reply:reply];
+  [client_ checkForUpdateWithAppID:SysUTF8ToNSString(app_id)
+                          priority:priorityWrapper.get()
+                       updateState:stateObserver.get()
+                             reply:reply];
 }
 
 void UpdateServiceOutOfProcess::Uninitialize() {

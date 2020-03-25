@@ -40,21 +40,21 @@ void RecordAssitiveConverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
 }
 
-AssistiveType ProposeAssistiveAction(const std::string& text) {
+AssistiveType ProposeAssistiveAction(const base::string16& text) {
   AssistiveType action = AssistiveType::kGenericAction;
-  if (base::EndsWith(text, kAssistEmailPrefix,
+  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistEmailPrefix),
                      base::CompareCase::INSENSITIVE_ASCII)) {
     action = AssistiveType::kPersonalEmail;
   }
-  if (base::EndsWith(text, kAssistNamePrefix,
+  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistNamePrefix),
                      base::CompareCase::INSENSITIVE_ASCII)) {
     action = AssistiveType::kPersonalName;
   }
-  if (base::EndsWith(text, kAssistAddressPrefix,
+  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistAddressPrefix),
                      base::CompareCase::INSENSITIVE_ASCII)) {
     action = AssistiveType::kPersonalAddress;
   }
-  if (base::EndsWith(text, kAssistPhoneNumberPrefix,
+  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistPhoneNumberPrefix),
                      base::CompareCase::INSENSITIVE_ASCII)) {
     action = AssistiveType::kPersonalPhoneNumber;
   }
@@ -102,14 +102,15 @@ bool AssistiveSuggester::OnKeyEvent(
   return false;
 }
 
-void AssistiveSuggester::RecordAssitiveCoverageMetrics(const std::string& text,
-                                                       int cursor_pos,
-                                                       int anchor_pos) {
+void AssistiveSuggester::RecordAssitiveCoverageMetrics(
+    const base::string16& text,
+    int cursor_pos,
+    int anchor_pos) {
   int len = static_cast<int>(text.length());
   if (cursor_pos > 0 && cursor_pos <= len && cursor_pos == anchor_pos &&
       (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos]))) {
     int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
-    std::string text_before_cursor =
+    base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
     AssistiveType action = ProposeAssistiveAction(text_before_cursor);
     if (action != AssistiveType::kGenericAction)
@@ -117,7 +118,7 @@ void AssistiveSuggester::RecordAssitiveCoverageMetrics(const std::string& text,
   }
 }
 
-bool AssistiveSuggester::OnSurroundingTextChanged(const std::string& text,
+bool AssistiveSuggester::OnSurroundingTextChanged(const base::string16& text,
                                                   int cursor_pos,
                                                   int anchor_pos) {
   if (suggestion_dismissed_) {
@@ -131,7 +132,7 @@ bool AssistiveSuggester::OnSurroundingTextChanged(const std::string& text,
   return suggestion_shown_;
 }
 
-void AssistiveSuggester::Suggest(const std::string& text,
+void AssistiveSuggester::Suggest(const base::string16& text,
                                  int cursor_pos,
                                  int anchor_pos) {
   int len = static_cast<int>(text.length());
@@ -142,9 +143,10 @@ void AssistiveSuggester::Suggest(const std::string& text,
     // |text| could be very long, we get at most |kMaxTextBeforeCursorLength|
     // characters before cursor.
     int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
-    std::string text_before_cursor =
+    base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
-    std::string suggestion_text = GetPersonalInfoSuggestion(text_before_cursor);
+    base::string16 suggestion_text =
+        GetPersonalInfoSuggestion(text_before_cursor);
     if (!suggestion_text.empty()) {
       ShowSuggestion(suggestion_text);
       suggestion_shown_ = true;
@@ -152,18 +154,18 @@ void AssistiveSuggester::Suggest(const std::string& text,
   }
 }
 
-std::string AssistiveSuggester::GetPersonalInfoSuggestion(
-    const std::string& text) {
+base::string16 AssistiveSuggester::GetPersonalInfoSuggestion(
+    const base::string16& text) {
   AssistiveType action = ProposeAssistiveAction(text);
   if (action == AssistiveType::kGenericAction)
-    return "";
+    return base::EmptyString16();
 
   if (action == AssistiveType::kPersonalEmail)
-    return profile_->GetProfileUserName();
+    return base::UTF8ToUTF16(profile_->GetProfileUserName());
 
   auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
   if (autofill_profiles.empty())
-    return "";
+    return base::EmptyString16();
 
   // Currently, we are just picking the first candidate, will improve the
   // strategy in the future.
@@ -185,13 +187,14 @@ std::string AssistiveSuggester::GetPersonalInfoSuggestion(
       NOTREACHED();
       break;
   }
-  return base::UTF16ToUTF8(suggestion);
+  return suggestion;
 }
 
-void AssistiveSuggester::ShowSuggestion(const std::string& text) {
+void AssistiveSuggester::ShowSuggestion(const base::string16& text) {
   std::string error;
   std::vector<InputMethodEngineBase::SegmentInfo> segments;
-  engine_->SetComposition(context_id_, text.c_str(), 0, 0, 0, segments, &error);
+  engine_->SetComposition(context_id_, base::UTF16ToUTF8(text).c_str(), 0, 0, 0,
+                          segments, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }

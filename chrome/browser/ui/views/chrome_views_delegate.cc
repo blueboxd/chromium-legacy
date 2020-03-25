@@ -15,7 +15,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/context_factory.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -191,10 +190,6 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   }
 
   params->native_widget = CreateNativeWidget(params, delegate);
-}
-
-ui::ContextFactory* ChromeViewsDelegate::GetContextFactory() {
-  return content::GetContextFactory();
 }
 
 std::string ChromeViewsDelegate::GetApplicationName() {

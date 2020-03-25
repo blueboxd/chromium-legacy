@@ -8,6 +8,7 @@
 #include <utility>
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/ime/ime_bridge.h"
 
@@ -164,7 +165,7 @@ void ImeObserver::OnCompositionBoundsChanged(
     const std::vector<gfx::Rect>& bounds) {}
 
 void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
-                                           const std::string& text,
+                                           const base::string16& text,
                                            int cursor_pos,
                                            int anchor_pos,
                                            int offset_pos) {
@@ -173,7 +174,10 @@ void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
     return;
 
   input_ime::OnSurroundingTextChanged::SurroundingInfo info;
-  info.text = text;
+  // |info.text| is encoded in UTF8 here so |info.focus| etc may not match the
+  // index in |info.text|, the javascript code on the extension side should
+  // handle it.
+  info.text = base::UTF16ToUTF8(text);
   info.focus = cursor_pos;
   info.anchor = anchor_pos;
   info.offset = offset_pos;

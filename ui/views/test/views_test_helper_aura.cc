@@ -58,8 +58,4 @@ gfx::NativeWindow ViewsTestHelperAura::GetContext() {
   return aura_test_helper_.root_window();
 }
 
-ui::ContextFactory* ViewsTestHelperAura::GetContextFactory() {
-  return aura_test_helper_.GetContextFactory();
-}
-
 }  // namespace views

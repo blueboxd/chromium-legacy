@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/upboarding/query_tiles/cached_image_loader.h"
+#include "chrome/browser/upboarding/query_tiles/internal/cached_image_loader.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/upboarding/query_tiles/image_loader.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

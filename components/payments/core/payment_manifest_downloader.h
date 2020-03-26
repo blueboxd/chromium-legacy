@@ -37,19 +37,24 @@ class ErrorLogger;
 //
 // Download failure results in empty contents. Failure to download the manifest
 // can happen because of the following reasons:
-//  - HTTP response code is not 200. (204 is also allowed for HEAD request.)
-//  - HTTP GET on the manifest URL returns empty content.
+//  - HTTP response code is not 200. (204 is also allowed for payment method
+//    manifest.)
 //
 // In the case of a payment method manifest download, can also fail when:
 //  - More than three redirects.
 //  - Cross-site redirects.
-//  - HTTP response headers are absent.
-//  - HTTP response headers do not contain Link headers.
-//  - Link header does not contain rel="payment-method-manifest".
-//  - Link header does not contain a valid URL of the same origin.
+//  - HTTP GET on the manifest URL returns empty content and:
+//      - HTTP response headers are absent.
+//      - HTTP response headers do not contain Link headers.
+//      - Link header does not contain rel="payment-method-manifest".
+//      - Link header does not contain a valid URL of the same origin.
+//  - After following the Link header:
+//      - There's a redirect.
+//      - HTTP GET returns empty content.
 //
 // In the case of a web app manifest download, can also also fail when:
 //  - There's a redirect.
+//  - HTTP GET on the manifest URL returns empty content.
 using PaymentManifestDownloadCallback =
     base::OnceCallback<void(const GURL& url,
                             const std::string& contents,
@@ -59,9 +64,9 @@ using PaymentManifestDownloadCallback =
 // payment method name that is a URL with HTTPS scheme, e.g.,
 // https://bobpay.com.
 //
-// The downloader follows up to three redirects for the HEAD request only (used
-// for payment method manifests). Three is enough for known legitimate use cases
-// and seems like a good upper bound.
+// The downloader follows up to three redirects for the payment method manifest
+// request only. Three is enough for known legitimate use cases and seems like a
+// good upper bound.
 //
 // The command line must be initialized to use this class in tests, because it
 // checks for --unsafely-treat-insecure-origin-as-secure=<origin> flag. For
@@ -75,24 +80,20 @@ class PaymentManifestDownloader {
 
   virtual ~PaymentManifestDownloader();
 
-  // Download a payment method manifest from |url| via two consecutive HTTP
-  // requests:
-  //
-  // 1) HEAD request for the payment method name |url|. The HTTP response header
-  //    is parsed for Link header that points to the location of the payment
-  //    method manifest file. Example of a relative location:
+  // Download a payment method manifest from |url| via a GET. The HTTP response
+  // header is parsed for Link header. If there is no Link header, then the body
+  // is returned. If there's a Link header, then it is followed exactly once.
+  // Example header:
   //
   //      Link: <data/payment-manifest.json>; rel="payment-method-manifest"
   //
-  //    (This is relative to the payment method URL.) Example of an absolute
-  //    location:
+  // (This is relative to the payment method URL.) Example of an absolute
+  // location:
   //
   //      Link: <https://bobpay.com/data/payment-manifest.json>;
   //      rel="payment-method-manifest"
   //
-  //    The absolute location must use HTTPS scheme.
-  //
-  // 2) GET request for the payment method manifest file.
+  // The absolute location must use HTTPS scheme.
   //
   // |merchant_origin| should be the origin of the iframe that created the
   // PaymentRequest object. It is used by security features like
@@ -129,11 +130,16 @@ class PaymentManifestDownloader {
 
   // Information about an ongoing download request.
   struct Download {
+    enum class Type {
+      RESPONSE_BODY_OR_LINK_HEADER,
+      RESPONSE_BODY,
+    };
+
     Download();
     ~Download();
 
     int allowed_number_of_redirects = 0;
-    std::string method;
+    Type type = Type::RESPONSE_BODY;
     url::Origin request_initiator;
     GURL original_url;
     std::unique_ptr<network::SimpleURLLoader> loader;
@@ -167,7 +173,7 @@ class PaymentManifestDownloader {
   // Overridden in TestDownloader.
   virtual void InitiateDownload(const url::Origin& request_initiator,
                                 const GURL& url,
-                                const std::string& method,
+                                Download::Type download_type,
                                 int allowed_number_of_redirects,
                                 PaymentManifestDownloadCallback callback);
 

@@ -253,7 +253,7 @@ Gpu::Gpu(mojo::PendingRemote<mojom::Gpu> gpu_remote,
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuPtrIO::Initialize, base::Unretained(gpu_.get()),
-                     base::Passed(std::move(gpu_remote)),
+                     std::move(gpu_remote),
                      std::move(gpu_memory_buffer_factory_receiver)));
 }
 

@@ -533,8 +533,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, ThreeTypesOfMethods) {
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        SinglePaymentMethodName404) {
   std::string expected_pattern =
-      "Unable to make a HEAD request to "
-      "\"https://127.0.0.1:\\d+/404.test/webpay\" for payment method manifest.";
+      "Unable to download payment manifest "
+      "\"https://127.0.0.1:\\d+/404.test/webpay\".";
   {
     content::PaymentAppProvider::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
@@ -572,9 +572,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
                        MultiplePaymentMethodName404) {
   std::string expected_pattern =
-      "Unable to make a HEAD request to "
-      "\"https://127.0.0.1:\\d+/404(aswell)?.test/webpay\" for payment method "
-      "manifest.";
+      "Unable to download payment manifest "
+      "\"https://127.0.0.1:\\d+/404(aswell)?.test/webpay\".";
   {
     content::PaymentAppProvider::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();

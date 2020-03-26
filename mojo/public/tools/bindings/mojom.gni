@@ -596,9 +596,9 @@ template("mojom") {
 
   write_file("$target_gen_dir/$target_name.deps_sources_list", deps_sources)
 
-  generate_fuzzing = enable_ipc_fuzzer && (!defined(invoker.enable_fuzzing) ||
-                                           invoker.enable_fuzzing) &&
-                     (!defined(invoker.testonly) || !invoker.testonly)
+  generate_fuzzing =
+      (!defined(invoker.enable_fuzzing) || invoker.enable_fuzzing) &&
+      enable_ipc_fuzzer && (!defined(invoker.testonly) || !invoker.testonly)
 
   if (sources_list != []) {
     parser_target_name = "${target_name}__parser"

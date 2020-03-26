@@ -18,9 +18,9 @@
 
 namespace content {
 
-// When NavigationLoaderOnUI is enabled, the CrossOriginReadBlockingChecker
-// lives on the UI thread, but blobs must be read on IO. This class handles all
-// blob access for CrossOriginReadBlockingChecker.
+// The CrossOriginReadBlockingChecker lives on the UI thread, but blobs must be
+// read on IO. This class handles all blob access for
+// CrossOriginReadBlockingChecker.
 class CrossOriginReadBlockingChecker::BlobIOState {
  public:
   BlobIOState(base::WeakPtr<CrossOriginReadBlockingChecker> checker,

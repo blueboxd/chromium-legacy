@@ -126,12 +126,17 @@ void FoundRegistrationForStartWorker(
                                           ? registration->active_version()
                                           : registration->installing_version();
   // Since FindRegistrationForScope returned
-  // blink::ServiceWorkerStatusCode::kOk, there must be either: -
-  // an active version, which optionally might have activated from a waiting
+  // blink::ServiceWorkerStatusCode::kOk, there must have been either:
+  // - an active version, which optionally might have activated from a waiting
   //   version (as DidFindRegistrationForFindImpl will activate any waiting
   //   version).
   // - or an installing version.
-  DCHECK(version_ptr);
+  // However, if the installation is rejected, the installing version can go
+  // away by the time we reach here from DidFindRegistrationForFindImpl.
+  if (!version_ptr) {
+    callback_runner->PostTask(FROM_HERE, std::move(failure_callback));
+    return;
+  }
 
   // Note: There might be a remote possibility that |registration|'s |version|
   // might change between here and DidStartWorker, so bind |version| to

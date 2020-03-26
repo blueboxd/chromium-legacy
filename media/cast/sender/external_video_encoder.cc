@@ -402,7 +402,7 @@ class ExternalVideoEncoder::VEAClientImpl
       cast_environment_->PostTask(
           CastEnvironment::MAIN, FROM_HERE,
           base::BindOnce(std::move(request.frame_encoded_callback),
-                         base::Passed(&encoded_frame)));
+                         std::move(encoded_frame)));
 
       in_progress_frame_encodes_.pop_front();
     } else {
@@ -495,7 +495,7 @@ class ExternalVideoEncoder::VEAClientImpl
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(
             std::move(in_progress_frame_encodes_.back().frame_encoded_callback),
-            base::Passed(&no_result)));
+            std::move(no_result)));
     in_progress_frame_encodes_.pop_back();
   }
 
@@ -693,8 +693,7 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
       FROM_HERE,
       base::BindOnce(&VEAClientImpl::EncodeVideoFrame, client_,
                      std::move(video_frame), reference_time,
-                     key_frame_requested_,
-                     base::Passed(std::move(frame_encoded_callback))));
+                     key_frame_requested_, std::move(frame_encoded_callback)));
   key_frame_requested_ = false;
   return true;
 }

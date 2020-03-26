@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -166,7 +167,7 @@ class AudioEncoder::ImplBase
             cast_environment_->Clock()->NowTicks();
         cast_environment_->PostTask(
             CastEnvironment::MAIN, FROM_HERE,
-            base::BindOnce(callback_, base::Passed(&audio_frame),
+            base::BindOnce(callback_, std::move(audio_frame),
                            samples_dropped_from_buffer_));
         samples_dropped_from_buffer_ = 0;
       }
@@ -825,7 +826,7 @@ void AudioEncoder::InsertAudio(std::unique_ptr<AudioBus> audio_bus,
   cast_environment_->PostTask(
       CastEnvironment::AUDIO, FROM_HERE,
       base::BindOnce(&AudioEncoder::ImplBase::EncodeAudio, impl_,
-                     base::Passed(&audio_bus), recorded_time));
+                     std::move(audio_bus), recorded_time));
 }
 
 }  // namespace cast

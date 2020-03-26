@@ -1520,7 +1520,9 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   INSTANTIATE_TEST_SUITE_P(All, name, ::testing::Values(false, true))
 
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTest);
+INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTestNoWebUiTabStrip);
 INSTANTIATE_TEST_SUITE(ImmersiveModeBrowserViewTest);
+INSTANTIATE_TEST_SUITE(ImmersiveModeBrowserViewTestNoWebUiTabStrip);
 INSTANTIATE_TEST_SUITE(WebAppNonClientFrameViewAshTest);
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshBackButtonTest);
 INSTANTIATE_TEST_SUITE(HomeLauncherBrowserNonClientFrameViewAshTest);

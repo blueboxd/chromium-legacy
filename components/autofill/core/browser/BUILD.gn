@@ -360,6 +360,7 @@ jumbo_static_library("browser") {
     "//components/strings",
     "//components/sync",
     "//components/variations/net",
+    "//components/variations/service:service",
     "//components/version_info",
     "//components/webdata/common",
     "//crypto",

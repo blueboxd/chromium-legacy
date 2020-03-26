@@ -69,6 +69,7 @@ class ChromeAutofillClient
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   std::string GetPageLanguage() const override;
+  std::string GetVariationConfigCountryCode() const override;
 #if !defined(OS_ANDROID)
   std::vector<std::string> GetMerchantWhitelistForVirtualCards() override;
   std::vector<std::string> GetBinRangeWhitelistForVirtualCards() override;

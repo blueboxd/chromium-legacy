@@ -6,6 +6,8 @@
 
 #import "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/common/app_group/app_group_command.h"
+#import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -59,6 +61,7 @@
                                    @"passcode on your device.")
                 preferredStyle:UIAlertControllerStyleAlert];
 
+  __weak UIResponder* opener = [self openerFromViewController:viewController];
   UIAlertAction* learnAction = [UIAlertAction
       actionWithTitle:
           NSLocalizedString(
@@ -66,19 +69,10 @@
               @"Learn How")
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction*) {
-                UIResponder* responder = viewController;
-                while (responder) {
-                  if ([responder respondsToSelector:@selector(openURL:)]) {
-                    [responder
-                        performSelector:@selector(openURL:)
-                             withObject:
-                                 [NSURL URLWithString:base::SysUTF8ToNSString(
-                                                          kPasscodeArticleURL)]
-                             afterDelay:0];
-                    break;
-                  }
-                  responder = responder.nextResponder;
-                }
+                [self openAppWithURL:[NSURL
+                                         URLWithString:base::SysUTF8ToNSString(
+                                                           kPasscodeArticleURL)]
+                              opener:opener];
                 completionHandler(ReauthenticationResult::kFailure);
               }];
   [alertController addAction:learnAction];
@@ -94,6 +88,36 @@
   [viewController presentViewController:alertController
                                animated:YES
                              completion:nil];
+}
+
+#pragma mark - Private
+
+// Returns first responder up the chain that can open a URL.
+- (UIResponder*)openerFromViewController:(UIViewController*)viewController {
+  UIResponder* responder = viewController;
+  while (responder) {
+    if ([responder respondsToSelector:@selector(openURL:)]) {
+      return responder;
+    }
+    responder = responder.nextResponder;
+  }
+  return nil;
+}
+
+// Open URL through app group commands.
+- (void)openAppWithURL:(NSURL*)URL opener:(UIResponder*)opener {
+  AppGroupCommand* command = [[AppGroupCommand alloc]
+      initWithSourceApp:app_group::kOpenCommandSourceCredentialsExtension
+         URLOpenerBlock:^(NSURL* openURL) {
+           if ([opener respondsToSelector:@selector(openURL:)]) {
+             [opener performSelector:@selector(openURL:)
+                          withObject:openURL
+                          afterDelay:0];
+           }
+         }];
+
+  [command prepareToOpenURL:URL];
+  [command executeInApp];
 }
 
 @end

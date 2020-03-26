@@ -64,6 +64,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   std::string GetPageLanguage() const override;
+  std::string GetVariationConfigCountryCode() const override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,

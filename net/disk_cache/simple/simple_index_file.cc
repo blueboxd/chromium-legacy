@@ -393,7 +393,7 @@ void SimpleIndexFile::WriteToDisk(net::CacheType cache_type,
   base::OnceClosure task =
       base::BindOnce(&SimpleIndexFile::SyncWriteToDisk, cache_type_,
                      cache_directory_, index_file_, temp_index_file_,
-                     base::Passed(&pickle), start, app_on_background);
+                     std::move(pickle), start, app_on_background);
   if (callback.is_null())
     cache_runner_->PostTask(FROM_HERE, std::move(task));
   else

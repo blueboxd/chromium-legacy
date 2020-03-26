@@ -4,8 +4,11 @@
 
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/proxy/enter_proxy.h"
@@ -134,7 +137,7 @@ void PPB_Flash_MessageLoop_Proxy::OnMsgRun(
 
   PPB_Flash_MessageLoop_API::RunFromHostProxyCallback callback =
       base::BindOnce(&PPB_Flash_MessageLoop_Proxy::WillQuitSoon, AsWeakPtr(),
-                     base::Passed(std::unique_ptr<IPC::Message>(reply)));
+                     base::WrapUnique(reply));
 
   EnterHostFromHostResource<PPB_Flash_MessageLoop_API>
       enter(flash_message_loop);

@@ -5078,8 +5078,6 @@ crbug.com/794338 virtual/audio-service/media/video-rotation.html [ Failure Pass 
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 crbug.com/811605 virtual/audio-service/media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
-crbug.com/813704 http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
-
 crbug.com/806645 [ Win7 ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 crbug.com/806645 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 

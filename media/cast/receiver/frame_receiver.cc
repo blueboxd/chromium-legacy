@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/big_endian.h"
 #include "base/bind.h"
@@ -281,8 +282,8 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
     cast_environment_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(&FrameReceiver::EmitOneFrame, AsWeakPtr(),
-                       base::Passed(std::move(*frame_request_queue_.begin())),
-                       base::Passed(&encoded_frame)));
+                       std::move(*frame_request_queue_.begin()),
+                       std::move(encoded_frame)));
     frame_request_queue_.pop_front();
   }
 }

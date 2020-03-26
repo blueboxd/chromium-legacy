@@ -987,7 +987,7 @@ void KeySystemConfigSelector::SelectConfigInternal(
         media_permission_->RequestPermission(
             MediaPermission::PROTECTED_MEDIA_IDENTIFIER,
             base::BindOnce(&KeySystemConfigSelector::OnPermissionResult,
-                           weak_factory_.GetWeakPtr(), base::Passed(&request)));
+                           weak_factory_.GetWeakPtr(), std::move(request)));
         return;
       case CONFIGURATION_SUPPORTED:
         cdm_config.allow_distinctive_identifier =

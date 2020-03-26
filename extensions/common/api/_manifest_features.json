@@ -359,7 +359,7 @@
     }
   ],
   "web_app_file_handlers": {
-    "channel": "trunk",
+    "channel": "stable",
     "extension_types": ["hosted_app"]
   },
   "webview": {

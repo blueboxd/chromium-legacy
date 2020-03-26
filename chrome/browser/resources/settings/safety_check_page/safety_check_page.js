@@ -416,6 +416,28 @@ Polymer({
   },
 
   /**
+   * Returns the default icon aria label for a safety check child in the
+   * specified state.
+   * @private
+   * @param {ChildUiStatus} childUiStatus
+   * @return {string}
+   */
+  getChildUiIconAriaLabel_: function(childUiStatus) {
+    switch (childUiStatus) {
+      case ChildUiStatus.RUNNING:
+        return this.i18n('safetyCheckIconRunningAriaLabel');
+      case ChildUiStatus.SAFE:
+        return this.i18n('safetyCheckIconSafeAriaLabel');
+      case ChildUiStatus.INFO:
+        return this.i18n('safetyCheckIconInfoAriaLabel');
+      case ChildUiStatus.WARNING:
+        return this.i18n('safetyCheckIconWarningAriaLabel');
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
    * @private
    * @return {boolean}
    */
@@ -485,6 +507,14 @@ Polymer({
 
   /**
    * @private
+   * @return {string}
+   */
+  getUpdatesIconAriaLabel_: function() {
+    return this.getChildUiIconAriaLabel_(this.getUpdatesUiStatus_());
+  },
+
+  /**
+   * @private
    * @return {boolean}
    */
   shouldShowPasswordsButton_: function() {
@@ -537,6 +567,14 @@ Polymer({
    */
   getPasswordsIconClass_: function() {
     return this.getChildUiIconClass_(this.getPasswordsUiStatus_());
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getPasswordsIconAriaLabel_: function() {
+    return this.getChildUiIconAriaLabel_(this.getPasswordsUiStatus_());
   },
 
   /** @private */
@@ -625,6 +663,14 @@ Polymer({
     return this.getChildUiIconClass_(this.getSafeBrowsingUiStatus_());
   },
 
+  /**
+   * @private
+   * @return {string}
+   */
+  getSafeBrowsingIconAriaLabel_: function() {
+    return this.getChildUiIconAriaLabel_(this.getSafeBrowsingUiStatus_());
+  },
+
   /** @private */
   onSafeBrowsingButtonClick_: function() {
     settings.Router.getInstance().navigateTo(settings.routes.SECURITY);
@@ -708,6 +754,14 @@ Polymer({
    */
   getExtensionsIconClass_: function() {
     return this.getChildUiIconClass_(this.getExtensionsUiStatus_());
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getExtensionsIconAriaLabel_: function() {
+    return this.getChildUiIconAriaLabel_(this.getExtensionsUiStatus_());
   },
 
   /**

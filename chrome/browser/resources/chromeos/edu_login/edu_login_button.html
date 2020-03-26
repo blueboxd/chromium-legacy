@@ -1,27 +1,10 @@
 <style>
-  cr-button {
-    position: absolute;
-    right: 32px;
-  }
-
   :host([button-type='next']) cr-button {
     padding-inline-end: 10px;
   }
 
   :host([button-type='back']) cr-button {
-    left: 32px;
     padding-inline-start: 10px;
-    right: auto;
-  }
-
-  :host-context([dir='rtl']) cr-button {
-    left: 32px;
-    right: auto;
-  }
-
-  :host-context([dir='rtl']):host([button-type='back']) cr-button {
-    left: auto;
-    right: 32px;
   }
 </style>
 <cr-button class$="[[getClass_(buttonType)]]" on-tap="onTap_"

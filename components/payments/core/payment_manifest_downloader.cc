@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/link_header_util/link_header_util.h"
@@ -33,59 +34,29 @@
 namespace payments {
 namespace {
 
-GURL ParseResponseHeader(const GURL& url,
-                         scoped_refptr<net::HttpResponseHeaders> headers,
-                         const ErrorLogger& log,
-                         std::string* out_error_message) {
-  if (!headers) {
-    *out_error_message = base::ReplaceStringPlaceholders(
-        errors::kNoLinkRelPaymentMethodManifestHttpHeader, {url.spec()},
-        nullptr);
-    log.Error(*out_error_message);
-    return GURL();
+// Invokes |callback| with |error_format|.
+void RespondWithError(const base::StringPiece& error_format,
+                      const GURL& final_url,
+                      const ErrorLogger& log,
+                      PaymentManifestDownloadCallback callback) {
+  std::string error_message = base::ReplaceStringPlaceholders(
+      error_format, {final_url.spec()}, nullptr);
+  log.Error(error_message);
+  std::move(callback).Run(final_url, std::string(), error_message);
+}
+
+// Invokes the |callback| with |response_body|. If |response_body| is empty,
+// then invokes |callback| with |empty_error_format|.
+void RespondWithContent(const std::string& response_body,
+                        const base::StringPiece& empty_error_format,
+                        const GURL& final_url,
+                        const ErrorLogger& log,
+                        PaymentManifestDownloadCallback callback) {
+  if (response_body.empty()) {
+    RespondWithError(empty_error_format, final_url, log, std::move(callback));
+  } else {
+    std::move(callback).Run(final_url, response_body, std::string());
   }
-
-  int response_code = headers->response_code();
-  if (response_code != net::HTTP_OK && response_code != net::HTTP_NO_CONTENT) {
-    *out_error_message = base::ReplaceStringPlaceholders(
-        errors::kHttpHeadRequestFailed, {url.spec()}, nullptr),
-    log.Error(*out_error_message);
-    return GURL();
-  }
-
-  std::string link_header;
-  headers->GetNormalizedHeader("link", &link_header);
-  if (link_header.empty()) {
-    *out_error_message = base::ReplaceStringPlaceholders(
-        errors::kNoLinkRelPaymentMethodManifestHttpHeader, {url.spec()},
-        nullptr);
-    log.Error(*out_error_message);
-    return GURL();
-  }
-
-  for (const auto& value : link_header_util::SplitLinkHeader(link_header)) {
-    std::string payment_method_manifest_url;
-    std::unordered_map<std::string, base::Optional<std::string>> params;
-    if (!link_header_util::ParseLinkHeaderValue(
-            value.first, value.second, &payment_method_manifest_url, &params)) {
-      continue;
-    }
-
-    auto rel = params.find("rel");
-    if (rel == params.end())
-      continue;
-
-    std::vector<std::string> rel_parts =
-        base::SplitString(rel->second.value_or(""), HTTP_LWS,
-                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (base::Contains(rel_parts, "payment-method-manifest"))
-      return url.Resolve(payment_method_manifest_url);
-  }
-
-  *out_error_message = base::ReplaceStringPlaceholders(
-      errors::kNoLinkRelPaymentMethodManifestHttpHeader, {url.spec()}, nullptr);
-  log.Error(*out_error_message);
-  return GURL();
 }
 
 bool IsValidManifestUrl(const GURL& url,
@@ -126,22 +97,6 @@ GURL ParseRedirectUrl(const net::RedirectInfo& redirect_info,
   return redirect_info.new_url;
 }
 
-std::string ParseResponseContent(
-    const GURL& final_url,
-    const std::string& response_body,
-    scoped_refptr<net::HttpResponseHeaders> headers,
-    const ErrorLogger& log,
-    std::string* out_error_message) {
-  if (!headers || headers->response_code() != net::HTTP_OK) {
-    *out_error_message = base::ReplaceStringPlaceholders(
-        errors::kPaymentManifestDownloadFailed, {final_url.spec()}, nullptr);
-    log.Error(*out_error_message);
-    return std::string();
-  }
-
-  return response_body;
-}
-
 }  // namespace
 
 PaymentManifestDownloader::PaymentManifestDownloader(
@@ -160,7 +115,8 @@ void PaymentManifestDownloader::DownloadPaymentMethodManifest(
     PaymentManifestDownloadCallback callback) {
   DCHECK(UrlUtil::IsValidManifestUrl(url));
   // Restrict number of redirects for efficiency and breaking circle.
-  InitiateDownload(merchant_origin, url, "HEAD",
+  InitiateDownload(merchant_origin, url,
+                   Download::Type::RESPONSE_BODY_OR_LINK_HEADER,
                    /*allowed_number_of_redirects=*/3, std::move(callback));
 }
 
@@ -169,7 +125,8 @@ void PaymentManifestDownloader::DownloadWebAppManifest(
     const GURL& url,
     PaymentManifestDownloadCallback callback) {
   DCHECK(UrlUtil::IsValidManifestUrl(url));
-  InitiateDownload(payment_method_manifest_origin, url, "GET",
+  InitiateDownload(payment_method_manifest_origin, url,
+                   Download::Type::RESPONSE_BODY,
                    /*allowed_number_of_redirects=*/0, std::move(callback));
 }
 
@@ -195,7 +152,7 @@ void PaymentManifestDownloader::OnURLLoaderRedirect(
   // Manually follow some type of redirects.
   std::string error_message;
   if (download->allowed_number_of_redirects > 0) {
-    DCHECK(download->method == "HEAD");
+    DCHECK_EQ(Download::Type::RESPONSE_BODY_OR_LINK_HEADER, download->type);
     GURL redirect_url = ParseRedirectUrl(redirect_info, download->original_url,
                                          *log_, &error_message);
     if (!redirect_url.is_empty()) {
@@ -204,7 +161,8 @@ void PaymentManifestDownloader::OnURLLoaderRedirect(
               download->original_url, redirect_url,
               net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
         // Redirects preserve the original request initiator.
-        InitiateDownload(download->request_initiator, redirect_url, "HEAD",
+        InitiateDownload(download->request_initiator, redirect_url,
+                         Download::Type::RESPONSE_BODY_OR_LINK_HEADER,
                          --download->allowed_number_of_redirects,
                          std::move(download->callback));
         return;
@@ -250,41 +208,88 @@ void PaymentManifestDownloader::OnURLLoaderCompleteInternal(
   downloads_.erase(download_it);
 
   std::string error_message;
-  if (download->method == "GET") {
-    std::string content = ParseResponseContent(final_url, response_body,
-                                               headers, *log_, &error_message);
-    std::move(download->callback).Run(final_url, content, error_message);
+  if (download->type == Download::Type::RESPONSE_BODY) {
+    if (!headers || headers->response_code() != net::HTTP_OK) {
+      RespondWithError(errors::kPaymentManifestDownloadFailed, final_url, *log_,
+                       std::move(download->callback));
+    } else {
+      RespondWithContent(response_body, errors::kNoContentInPaymentManifest,
+                         final_url, *log_, std::move(download->callback));
+    }
     return;
   }
 
-  DCHECK_EQ("HEAD", download->method);
-  GURL payment_method_manifest_url =
-      ParseResponseHeader(final_url, headers, *log_, &error_message);
-  if (!payment_method_manifest_url.is_valid()) {
-    std::move(download->callback).Run(final_url, std::string(), error_message);
+  DCHECK_EQ(Download::Type::RESPONSE_BODY_OR_LINK_HEADER, download->type);
+
+  if (!headers) {
+    RespondWithContent(response_body, errors::kNoContentAndNoLinkHeader,
+                       final_url, *log_, std::move(download->callback));
     return;
   }
 
-  if (!IsValidManifestUrl(payment_method_manifest_url, *log_, &error_message)) {
-    std::move(download->callback).Run(final_url, std::string(), error_message);
+  if (headers->response_code() != net::HTTP_OK &&
+      headers->response_code() != net::HTTP_NO_CONTENT) {
+    RespondWithError(errors::kPaymentManifestDownloadFailed, final_url, *log_,
+                     std::move(download->callback));
     return;
   }
 
-  if (!url::IsSameOriginWith(final_url, payment_method_manifest_url)) {
-    error_message = base::ReplaceStringPlaceholders(
-        errors::kCrossOriginPaymentMethodManifestNotAllowed,
-        {payment_method_manifest_url.spec(), final_url.spec()}, nullptr);
-    log_->Error(error_message);
-    std::move(download->callback).Run(final_url, std::string(), error_message);
+  std::string link_header;
+  headers->GetNormalizedHeader("link", &link_header);
+  if (link_header.empty()) {
+    RespondWithContent(response_body, errors::kNoContentAndNoLinkHeader,
+                       final_url, *log_, std::move(download->callback));
     return;
   }
 
-  // The request initiator for the payment method manifest is the origin of the
-  // HEAD request with the HTTP link header.
-  // https://github.com/w3c/webappsec-fetch-metadata/issues/30
-  InitiateDownload(
-      url::Origin::Create(final_url), payment_method_manifest_url, "GET",
-      /*allowed_number_of_redirects=*/0, std::move(download->callback));
+  for (const auto& value : link_header_util::SplitLinkHeader(link_header)) {
+    std::string link_url;
+    std::unordered_map<std::string, base::Optional<std::string>> params;
+    if (!link_header_util::ParseLinkHeaderValue(value.first, value.second,
+                                                &link_url, &params)) {
+      continue;
+    }
+
+    auto rel = params.find("rel");
+    if (rel == params.end())
+      continue;
+
+    std::vector<std::string> rel_parts =
+        base::SplitString(rel->second.value_or(""), HTTP_LWS,
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (base::Contains(rel_parts, "payment-method-manifest")) {
+      GURL payment_method_manifest_url = final_url.Resolve(link_url);
+
+      if (!IsValidManifestUrl(payment_method_manifest_url, *log_,
+                              &error_message)) {
+        std::move(download->callback)
+            .Run(final_url, std::string(), error_message);
+        return;
+      }
+
+      if (!url::IsSameOriginWith(final_url, payment_method_manifest_url)) {
+        error_message = base::ReplaceStringPlaceholders(
+            errors::kCrossOriginPaymentMethodManifestNotAllowed,
+            {payment_method_manifest_url.spec(), final_url.spec()}, nullptr);
+        log_->Error(error_message);
+        std::move(download->callback)
+            .Run(final_url, std::string(), error_message);
+        return;
+      }
+
+      // The request initiator for the payment method manifest is the origin of
+      // the GET request with the HTTP link header.
+      // https://github.com/w3c/webappsec-fetch-metadata/issues/30
+      InitiateDownload(
+          url::Origin::Create(final_url), payment_method_manifest_url,
+          Download::Type::RESPONSE_BODY,
+          /*allowed_number_of_redirects=*/0, std::move(download->callback));
+      return;
+    }
+  }
+
+  RespondWithContent(response_body, errors::kNoContentAndNoLinkHeader,
+                     final_url, *log_, std::move(download->callback));
 }
 
 network::SimpleURLLoader* PaymentManifestDownloader::GetLoaderForTesting() {
@@ -300,10 +305,15 @@ GURL PaymentManifestDownloader::GetLoaderOriginalURLForTesting() {
 void PaymentManifestDownloader::InitiateDownload(
     const url::Origin& request_initiator,
     const GURL& url,
-    const std::string& method,
+    Download::Type download_type,
     int allowed_number_of_redirects,
     PaymentManifestDownloadCallback callback) {
   DCHECK(UrlUtil::IsValidManifestUrl(url));
+
+  // Only initial download of the payment method manifest (which might contain
+  // an HTTP Link header) is allowed to redirect.
+  DCHECK(allowed_number_of_redirects == 0 ||
+         download_type == Download::Type::RESPONSE_BODY_OR_LINK_HEADER);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("payment_manifest_downloader", R"(
@@ -328,7 +338,7 @@ void PaymentManifestDownloader::InitiateDownload(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->request_initiator = request_initiator;
   resource_request->url = url;
-  resource_request->method = method;
+  resource_request->method = "GET";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
@@ -343,7 +353,7 @@ void PaymentManifestDownloader::InitiateDownload(
 
   auto download = std::make_unique<Download>();
   download->request_initiator = request_initiator;
-  download->method = method;
+  download->type = download_type;
   download->original_url = url;
   download->loader = std::move(loader);
   download->callback = std::move(callback);

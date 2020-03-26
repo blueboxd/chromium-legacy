@@ -4,6 +4,8 @@
 
 #include "media/cast/cast_sender_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -71,7 +73,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
     cast_environment_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(&AudioSender::InsertAudio, audio_sender_,
-                       base::Passed(&audio_bus), recorded_time));
+                       std::move(audio_bus), recorded_time));
   }
 
  protected:

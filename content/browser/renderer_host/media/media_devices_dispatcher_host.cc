@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -203,7 +204,7 @@ void MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID(
       blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_,
       render_frame_id_,
       base::BindOnce(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
-                     weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
+                     weak_factory_.GetWeakPtr(), std::move(client_callback),
                      std::move(salt_and_origin)));
 }
 

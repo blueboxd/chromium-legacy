@@ -72,7 +72,7 @@ void CastReceiverImpl::ReceivePacket(std::unique_ptr<Packet> packet) {
   cast_environment_->PostTask(
       CastEnvironment::MAIN, FROM_HERE,
       base::BindOnce(base::IgnoreResult(&FrameReceiver::ProcessPacket), target,
-                     base::Passed(&packet)));
+                     std::move(packet)));
 }
 
 void CastReceiverImpl::RequestDecodedAudioFrame(

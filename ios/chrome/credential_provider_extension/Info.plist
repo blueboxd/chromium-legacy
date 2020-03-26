@@ -32,5 +32,7 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.authentication-services-credential-provider-ui</string>
 	</dict>
+	<key>KSChannelChromeScheme</key>
+	<string>${CHROME_CHANNEL_SCHEME}</string>
 </dict>
 </plist>

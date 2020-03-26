@@ -125,10 +125,9 @@ void PairingRegistry::GetPairing(const std::string& client_id,
 
   GetPairingCallback wrapped_callback =
       base::BindOnce(&PairingRegistry::InvokeGetPairingCallbackAndScheduleNext,
-                     this, base::Passed(std::move(callback)));
-  ServiceOrQueueRequest(
-      base::BindOnce(&PairingRegistry::DoLoad, this, client_id,
-                     base::Passed(std::move(wrapped_callback))));
+                     this, std::move(callback));
+  ServiceOrQueueRequest(base::BindOnce(&PairingRegistry::DoLoad, this,
+                                       client_id, std::move(wrapped_callback)));
 }
 
 void PairingRegistry::GetAllPairings(GetAllPairingsCallback callback) {
@@ -136,13 +135,11 @@ void PairingRegistry::GetAllPairings(GetAllPairingsCallback callback) {
 
   GetAllPairingsCallback wrapped_callback = base::BindOnce(
       &PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext, this,
-      base::Passed(std::move(callback)));
-  GetAllPairingsCallback sanitize_callback =
-      base::BindOnce(&PairingRegistry::SanitizePairings, this,
-                     base::Passed(std::move(wrapped_callback)));
-  ServiceOrQueueRequest(
-      base::BindOnce(&PairingRegistry::DoLoadAll, this,
-                     base::Passed(std::move(sanitize_callback))));
+      std::move(callback));
+  GetAllPairingsCallback sanitize_callback = base::BindOnce(
+      &PairingRegistry::SanitizePairings, this, std::move(wrapped_callback));
+  ServiceOrQueueRequest(base::BindOnce(&PairingRegistry::DoLoadAll, this,
+                                       std::move(sanitize_callback)));
 }
 
 void PairingRegistry::DeletePairing(const std::string& client_id,
@@ -151,10 +148,9 @@ void PairingRegistry::DeletePairing(const std::string& client_id,
 
   DoneCallback wrapped_callback =
       base::BindOnce(&PairingRegistry::InvokeDoneCallbackAndScheduleNext, this,
-                     base::Passed(std::move(callback)));
-  ServiceOrQueueRequest(
-      base::BindOnce(&PairingRegistry::DoDelete, this, client_id,
-                     base::Passed(std::move(wrapped_callback))));
+                     std::move(callback));
+  ServiceOrQueueRequest(base::BindOnce(&PairingRegistry::DoDelete, this,
+                                       client_id, std::move(wrapped_callback)));
 }
 
 void PairingRegistry::ClearAllPairings(DoneCallback callback) {
@@ -162,10 +158,9 @@ void PairingRegistry::ClearAllPairings(DoneCallback callback) {
 
   DoneCallback wrapped_callback =
       base::BindOnce(&PairingRegistry::InvokeDoneCallbackAndScheduleNext, this,
-                     base::Passed(std::move(callback)));
-  ServiceOrQueueRequest(
-      base::BindOnce(&PairingRegistry::DoDeleteAll, this,
-                     base::Passed(std::move(wrapped_callback))));
+                     std::move(callback));
+  ServiceOrQueueRequest(base::BindOnce(&PairingRegistry::DoDeleteAll, this,
+                                       std::move(wrapped_callback)));
 }
 
 PairingRegistry::~PairingRegistry() = default;
@@ -181,9 +176,8 @@ void PairingRegistry::AddPairing(const Pairing& pairing) {
   DoneCallback wrapped_callback =
       base::BindOnce(&PairingRegistry::InvokeDoneCallbackAndScheduleNext, this,
                      DoneCallback());
-  ServiceOrQueueRequest(
-      base::BindOnce(&PairingRegistry::DoSave, this, pairing,
-                     base::Passed(std::move(wrapped_callback))));
+  ServiceOrQueueRequest(base::BindOnce(&PairingRegistry::DoSave, this, pairing,
+                                       std::move(wrapped_callback)));
 }
 
 void PairingRegistry::DoLoadAll(GetAllPairingsCallback callback) {
@@ -191,7 +185,7 @@ void PairingRegistry::DoLoadAll(GetAllPairingsCallback callback) {
 
   std::unique_ptr<base::ListValue> pairings = delegate_->LoadAll();
   PostTask(caller_task_runner_, FROM_HERE,
-           base::BindOnce(std::move(callback), base::Passed(&pairings)));
+           base::BindOnce(std::move(callback), std::move(pairings)));
 }
 
 void PairingRegistry::DoDeleteAll(DoneCallback callback) {

@@ -204,7 +204,7 @@ void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
           browser_host->OpenExisting(
               GURL(root_url),
               base::BindOnce(&PendingHostCreator::AddPendingResourceHost,
-                             creator, i, base::Passed(&resource_host)));
+                             creator, i, std::move(resource_host)));
           // Do not fall through; the fall-through case adds the pending
           // resource host to the list. We must do this asynchronously.
           continue;

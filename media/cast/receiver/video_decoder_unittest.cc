@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <cstdlib>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -106,7 +107,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(&VideoDecoder::DecodeFrame,
                        base::Unretained(video_decoder_.get()),
-                       base::Passed(&encoded_frame),
+                       std::move(encoded_frame),
                        base::Bind(&VideoDecoderTest::OnDecodedFrame,
                                   base::Unretained(this), video_frame,
                                   num_dropped_frames == 0)));

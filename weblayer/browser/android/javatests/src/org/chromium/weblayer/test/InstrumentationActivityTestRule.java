@@ -151,18 +151,19 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         navigateAndWait(getActivity().getTab(), url, true /* waitForPaint */);
     }
 
-    public void navigateAndWait(Tab controller, String url, boolean waitForPaint) {
-        (new NavigationWaiter(url, controller, false /* expectFailure */, waitForPaint))
-                .navigateAndWait();
+    public void navigateAndWait(Tab tab, String url, boolean waitForPaint) {
+        (new NavigationWaiter(url, tab, false /* expectFailure */, waitForPaint)).navigateAndWait();
     }
 
     /**
      * Loads the given URL in the shell, expecting failure.
      */
     public void navigateAndWaitForFailure(String url) {
-        (new NavigationWaiter(
-                 url, getActivity().getTab(), true /* expectFailure */, true /* waitForPaint */))
-                .navigateAndWait();
+        navigateAndWaitForFailure(getActivity().getTab(), url, true /* waitForPaint */);
+    }
+
+    public void navigateAndWaitForFailure(Tab tab, String url, boolean waitForPaint) {
+        (new NavigationWaiter(url, tab, true /* expectFailure */, waitForPaint)).navigateAndWait();
     }
 
     /**

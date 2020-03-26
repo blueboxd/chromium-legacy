@@ -65,8 +65,7 @@ class AudioDecoder::ImplBase
       VLOG(2) << "Decoding of frame " << encoded_frame->frame_id << " failed.";
       cast_environment_->PostTask(
           CastEnvironment::MAIN, FROM_HERE,
-          base::BindOnce(std::move(callback), base::Passed(&decoded_audio),
-                         false));
+          base::BindOnce(std::move(callback), std::move(decoded_audio), false));
       return;
     }
 
@@ -80,7 +79,7 @@ class AudioDecoder::ImplBase
 
     cast_environment_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
-        base::BindOnce(std::move(callback), base::Passed(&decoded_audio),
+        base::BindOnce(std::move(callback), std::move(decoded_audio),
                        is_continuous));
   }
 
@@ -252,7 +251,7 @@ void AudioDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
   cast_environment_->PostTask(
       CastEnvironment::AUDIO, FROM_HERE,
       base::BindOnce(&AudioDecoder::ImplBase::DecodeFrame, impl_,
-                     base::Passed(&encoded_frame), std::move(callback)));
+                     std::move(encoded_frame), std::move(callback)));
 }
 
 }  // namespace cast

@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/mojo_video_decoder_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -293,7 +295,7 @@ void MojoVideoDecoderService::OnReaderRead(
   decoder_->Decode(
       buffer,
       base::BindOnce(&MojoVideoDecoderService::OnDecoderDecoded, weak_this_,
-                     base::Passed(&callback), base::Passed(&trace_event)));
+                     std::move(callback), std::move(trace_event)));
 }
 
 void MojoVideoDecoderService::OnReaderFlushed() {

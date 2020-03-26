@@ -342,7 +342,7 @@ class LocalStorageImpl::StorageAreaHolder final
           FROM_HERE, base::BindOnce(&MigrateStorageHelper, sql_db_path(),
                                     base::ThreadTaskRunnerHandle::Get(),
                                     base::BindOnce(&CallMigrationCalback,
-                                                   base::Passed(&callback))));
+                                                   std::move(callback))));
       return;
     }
     std::move(callback).Run(nullptr);

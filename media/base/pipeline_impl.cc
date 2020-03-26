@@ -5,6 +5,7 @@
 #include "media/base/pipeline_impl.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -660,7 +661,7 @@ void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
       enabled_track_ids, GetCurrentTimestamp(),
       base::BindOnce(&RendererWrapper::OnDemuxerCompletedTrackChange,
                      weak_factory_.GetWeakPtr(),
-                     base::Passed(&change_completed_cb)));
+                     std::move(change_completed_cb)));
 }
 
 void PipelineImpl::OnSelectedVideoTrackChanged(
@@ -700,7 +701,7 @@ void PipelineImpl::RendererWrapper::OnSelectedVideoTrackChanged(
       tracks, GetCurrentTimestamp(),
       base::BindOnce(&RendererWrapper::OnDemuxerCompletedTrackChange,
                      weak_factory_.GetWeakPtr(),
-                     base::Passed(&change_completed_cb)));
+                     std::move(change_completed_cb)));
 }
 
 void PipelineImpl::RendererWrapper::OnDemuxerCompletedTrackChange(

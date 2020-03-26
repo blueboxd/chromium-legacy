@@ -84,7 +84,7 @@ void PamAuthorizer::ProcessMessage(const jingle_xmpp::XmlElement* message,
   underlying_->ProcessMessage(
       message,
       base::BindOnce(&PamAuthorizer::OnMessageProcessed, base::Unretained(this),
-                     base::Passed(std::move(resume_callback))));
+                     std::move(resume_callback)));
 }
 
 void PamAuthorizer::OnMessageProcessed(base::OnceClosure resume_callback) {

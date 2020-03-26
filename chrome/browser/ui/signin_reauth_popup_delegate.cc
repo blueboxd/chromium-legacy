@@ -6,17 +6,16 @@
 
 #include "base/logging.h"
 #include "chrome/browser/signin/reauth_result.h"
+#include "chrome/browser/signin/reauth_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/http/http_status_code.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -35,7 +34,8 @@ SigninReauthPopupDelegate::SigninReauthPopupDelegate(
     : signin_view_controller_(signin_view_controller),
       browser_(browser),
       reauth_callback_(std::move(reauth_callback)) {
-  NavigateParams nav_params(browser_, reauth_url(),
+  const GURL& reauth_url = GaiaUrls::GetInstance()->reauth_url();
+  NavigateParams nav_params(browser_, reauth_url,
                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   nav_params.disposition = WindowOpenDisposition::NEW_POPUP;
   nav_params.window_action = NavigateParams::SHOW_WINDOW;
@@ -46,10 +46,19 @@ SigninReauthPopupDelegate::SigninReauthPopupDelegate(
   Navigate(&nav_params);
 
   web_contents_ = nav_params.navigated_or_inserted_contents;
+
+  signin::ReauthTabHelper::CreateForWebContents(
+      web_contents_, reauth_url, false,
+      base::BindOnce(&SigninReauthPopupDelegate::CompleteReauth,
+                     weak_ptr_factory_.GetWeakPtr()));
   content::WebContentsObserver::Observe(web_contents_);
 }
 
-SigninReauthPopupDelegate::~SigninReauthPopupDelegate() = default;
+SigninReauthPopupDelegate::~SigninReauthPopupDelegate() {
+  // Last chance to invoke |reauth_callback_| if this hasn't been done before.
+  if (reauth_callback_)
+    std::move(reauth_callback_).Run(signin::ReauthResult::kDismissedByUser);
+}
 
 void SigninReauthPopupDelegate::CloseModalSignin() {
   CompleteReauth(signin::ReauthResult::kCancelled);
@@ -63,58 +72,27 @@ content::WebContents* SigninReauthPopupDelegate::GetWebContents() {
   return web_contents_;
 }
 
-void SigninReauthPopupDelegate::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  GURL url_without_query =
-      navigation_handle->GetURL().ReplaceComponents(replacements);
-  if (url_without_query != reauth_url())
-    return;
-
-  // TODO(https://crbug.com/1045515): update the response code once Gaia
-  // implements a landing page.
-  if (navigation_handle->IsErrorPage() ||
-      !navigation_handle->GetResponseHeaders() ||
-      navigation_handle->GetResponseHeaders()->response_code() !=
-          net::HTTP_NOT_IMPLEMENTED) {
-    CompleteReauth(signin::ReauthResult::kLoadFailed);
-    return;
-  }
-
-  CompleteReauth(signin::ReauthResult::kSuccess);
-}
-
 void SigninReauthPopupDelegate::WebContentsDestroyed() {
   if (signin_view_controller_) {
     signin_view_controller_->ResetModalSigninDelegate();
     signin_view_controller_ = nullptr;
   }
-  // The last chance to invoke |reauth_callback_|. Run it only if WebContents
-  // descruction was caused by an event outside of this class.
-  if (reauth_callback_)
-    std::move(reauth_callback_).Run(signin::ReauthResult::kDismissedByUser);
   delete this;
 }
 
 void SigninReauthPopupDelegate::CompleteReauth(signin::ReauthResult result) {
-  std::move(reauth_callback_).Run(result);
-  // Close WebContents asynchronously so other WebContentsObservers can safely
-  // finish their task.
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&SigninReauthPopupDelegate::CloseWebContents,
-                                weak_ptr_factory_.GetWeakPtr()));
+  if (reauth_callback_)
+    std::move(reauth_callback_).Run(result);
+
+  if (!web_contents_->IsBeingDestroyed()) {
+    // Close WebContents asynchronously so other WebContentsObservers can safely
+    // finish their task.
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&SigninReauthPopupDelegate::CloseWebContents,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void SigninReauthPopupDelegate::CloseWebContents() {
   web_contents_->ClosePage();
-}
-
-const GURL& SigninReauthPopupDelegate::reauth_url() const {
-  return GaiaUrls::GetInstance()->reauth_url();
 }

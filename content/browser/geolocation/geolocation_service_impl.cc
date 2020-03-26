@@ -4,6 +4,8 @@
 
 #include "content/browser/geolocation/geolocation_service_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_type.h"
@@ -89,8 +91,8 @@ void GeolocationServiceImpl::CreateGeolocation(
       // outlive the GeolocationServiceImpl.
       base::BindOnce(
           &GeolocationServiceImpl::CreateGeolocationWithPermissionStatus,
-          base::Unretained(this), base::Passed(&receiver),
-          base::Passed(&scoped_callback)));
+          base::Unretained(this), std::move(receiver),
+          std::move(scoped_callback)));
 }
 
 void GeolocationServiceImpl::CreateGeolocationWithPermissionStatus(

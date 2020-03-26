@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
@@ -58,6 +59,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -192,6 +194,16 @@ std::string ChromeAutofillClient::GetPageLanguage() const {
   if (translate_manager)
     return translate_manager->GetLanguageState().original_language();
   return std::string();
+}
+
+std::string ChromeAutofillClient::GetVariationConfigCountryCode() const {
+  variations::VariationsService* variation_service =
+      g_browser_process->variations_service();
+  // Retrieves the country code from variation service and converts it to upper
+  // case.
+  return variation_service
+             ? base::ToUpperASCII(variation_service->GetLatestCountry())
+             : std::string();
 }
 
 #if !defined(OS_ANDROID)

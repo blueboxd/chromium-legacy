@@ -85,7 +85,7 @@ bool StructTraits<viz::mojom::CopyOutputRequestDataView,
       mojo::PendingRemote<viz::mojom::CopyOutputResultSender>>();
 
   auto request = std::make_unique<viz::CopyOutputRequest>(
-      result_format, base::BindOnce(SendResult, base::Passed(&result_sender)));
+      result_format, base::BindOnce(SendResult, std::move(result_sender)));
 
   gfx::Vector2d scale_from;
   if (!data.ReadScaleFrom(&scale_from) || scale_from.x() <= 0 ||

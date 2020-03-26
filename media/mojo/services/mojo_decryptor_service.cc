@@ -124,7 +124,7 @@ void MojoDecryptorService::InitializeAudioDecoder(
   DVLOG(1) << __func__;
   decryptor_->InitializeAudioDecoder(
       config, base::BindOnce(&MojoDecryptorService::OnAudioDecoderInitialized,
-                             weak_this_, base::Passed(&callback)));
+                             weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::InitializeVideoDecoder(
@@ -133,7 +133,7 @@ void MojoDecryptorService::InitializeVideoDecoder(
   DVLOG(2) << __func__;
   decryptor_->InitializeVideoDecoder(
       config, base::BindOnce(&MojoDecryptorService::OnVideoDecoderInitialized,
-                             weak_this_, base::Passed(&callback)));
+                             weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::DecryptAndDecodeAudio(
@@ -184,7 +184,7 @@ void MojoDecryptorService::OnReadDone(StreamType stream_type,
 
   decryptor_->Decrypt(stream_type, std::move(buffer),
                       base::BindOnce(&MojoDecryptorService::OnDecryptDone,
-                                     weak_this_, base::Passed(&callback)));
+                                     weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::OnDecryptDone(DecryptCallback callback,

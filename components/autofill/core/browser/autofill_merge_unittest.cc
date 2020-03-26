@@ -129,7 +129,7 @@ class PersonalDataManagerMock : public PersonalDataManager {
 };
 
 PersonalDataManagerMock::PersonalDataManagerMock()
-    : PersonalDataManager("en-US") {}
+    : PersonalDataManager("en-US", "US") {}
 
 PersonalDataManagerMock::~PersonalDataManagerMock() {}
 

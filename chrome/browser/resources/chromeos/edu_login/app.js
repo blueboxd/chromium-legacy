@@ -5,6 +5,7 @@
 import './edu_login_welcome.js';
 import './edu_login_parents.js';
 import './edu_login_parent_signin.js';
+import './edu_login_parent_info.js';
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';

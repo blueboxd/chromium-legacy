@@ -77,7 +77,7 @@ void NegotiatingClientAuthenticator::ProcessMessage(
         base::BindOnce(&NegotiatingAuthenticatorBase::ProcessMessageInternal,
                        base::Unretained(this),
                        base::Owned(new jingle_xmpp::XmlElement(*message)),
-                       base::Passed(std::move(resume_callback))));
+                       std::move(resume_callback)));
     return;
   }
   ProcessMessageInternal(message, std::move(resume_callback));

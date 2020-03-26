@@ -27,8 +27,8 @@ class GenericUiControllerAndroid {
   // Ownership of the arguments is not changed.
   static std::unique_ptr<GenericUiControllerAndroid> CreateFromProto(
       const GenericUserInterfaceProto& proto,
-      base::android::ScopedJavaLocalRef<jobject> jcontext,
-      base::android::ScopedJavaGlobalRef<jobject> delegate,
+      base::android::ScopedJavaGlobalRef<jobject> jcontext,
+      base::android::ScopedJavaGlobalRef<jobject> jdelegate,
       EventHandler* event_handler,
       UserModel* user_model,
       BasicInteractions* basic_interactions);

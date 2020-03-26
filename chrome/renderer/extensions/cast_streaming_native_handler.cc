@@ -450,11 +450,10 @@ void CastStreamingNativeHandler::CreateCastSession(
   context()
       ->web_frame()
       ->GetTaskRunner(blink::TaskType::kInternalMedia)
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&CastStreamingNativeHandler::CallCreateCallback,
-                         weak_factory_.GetWeakPtr(), base::Passed(&stream1),
-                         base::Passed(&stream2), base::Passed(&udp_transport)));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&CastStreamingNativeHandler::CallCreateCallback,
+                                weak_factory_.GetWeakPtr(), std::move(stream1),
+                                std::move(stream2), std::move(udp_transport)));
 }
 
 void CastStreamingNativeHandler::CallCreateCallback(

@@ -89,7 +89,7 @@ void WebContentDecryptionModuleAccessImpl::CreateContentDecryptionModule(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CreateCdm, client_, key_system_, security_origin_,
-                     cdm_config_, base::Passed(&result_copy)));
+                     cdm_config_, std::move(result_copy)));
 }
 
 bool WebContentDecryptionModuleAccessImpl::UseHardwareSecureCodecs() const {

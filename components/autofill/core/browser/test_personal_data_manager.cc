@@ -10,7 +10,7 @@
 namespace autofill {
 
 TestPersonalDataManager::TestPersonalDataManager()
-    : PersonalDataManager("en-US") {}
+    : PersonalDataManager("en-US", "US") {}
 
 TestPersonalDataManager::~TestPersonalDataManager() {}
 

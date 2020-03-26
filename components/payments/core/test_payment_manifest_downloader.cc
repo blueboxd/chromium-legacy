@@ -29,11 +29,11 @@ void TestDownloader::AddTestServerURL(const std::string& prefix,
 void TestDownloader::InitiateDownload(
     const url::Origin& request_initiator,
     const GURL& url,
-    const std::string& method,
+    Download::Type download_type,
     int allowed_number_of_redirects,
     PaymentManifestDownloadCallback callback) {
   PaymentManifestDownloader::InitiateDownload(
-      request_initiator, FindTestServerURL(url), method,
+      request_initiator, FindTestServerURL(url), download_type,
       allowed_number_of_redirects, std::move(callback));
 }
 

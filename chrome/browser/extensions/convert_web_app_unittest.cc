@@ -14,11 +14,14 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
@@ -93,10 +96,30 @@ base::Time GetTestTime(int year, int month, int day, int hour, int minute,
 
 }  // namespace
 
-TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+class ExtensionFromWebApp : public extensions::ExtensionServiceTestBase {
+ public:
+  void SetUp() override {
+    extensions::ExtensionServiceTestBase::SetUp();
+    ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
+  }
 
+  void StartExtensionService() {
+    InitializeEmptyExtensionService();
+    service()->Init();
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(service()->is_ready());
+  }
+
+  const base::FilePath& ExtensionPath() const {
+    return extensions_dir_.GetPath();
+  }
+
+ private:
+  base::ScopedTempDir extensions_dir_;
+};
+
+TEST_F(ExtensionFromWebApp, GetScopeURLFromBookmarkApp) {
+  StartExtensionService();
   base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "Test App");
   manifest.SetString(keys::kVersion, "0");
@@ -117,17 +140,15 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp) {
 
   std::string error;
   scoped_refptr<Extension> bookmark_app =
-      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+      Extension::Create(ExtensionPath(), Manifest::INTERNAL, manifest,
                         Extension::FROM_BOOKMARK, &error);
   ASSERT_TRUE(bookmark_app.get());
 
   EXPECT_EQ(scope_url, GetScopeURLFromBookmarkApp(bookmark_app.get()));
 }
 
-TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_NoURLHandlers) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_NoURLHandlers) {
+  StartExtensionService();
   base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "Test App");
   manifest.SetString(keys::kVersion, "0");
@@ -137,17 +158,15 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_NoURLHandlers) {
 
   std::string error;
   scoped_refptr<Extension> bookmark_app =
-      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+      Extension::Create(ExtensionPath(), Manifest::INTERNAL, manifest,
                         Extension::FROM_BOOKMARK, &error);
   ASSERT_TRUE(bookmark_app.get());
 
   EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(bookmark_app.get()));
 }
 
-TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_WrongURLHandler) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_WrongURLHandler) {
+  StartExtensionService();
   base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "Test App");
   manifest.SetString(keys::kVersion, "0");
@@ -174,17 +193,15 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_WrongURLHandler) {
 
   std::string error;
   scoped_refptr<Extension> bookmark_app =
-      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+      Extension::Create(ExtensionPath(), Manifest::INTERNAL, manifest,
                         Extension::FROM_BOOKMARK, &error);
   ASSERT_TRUE(bookmark_app.get());
 
   EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(bookmark_app.get()));
 }
 
-TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_ExtraURLHandler) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_ExtraURLHandler) {
+  StartExtensionService();
   base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "Test App");
   manifest.SetString(keys::kVersion, "0");
@@ -219,7 +236,7 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_ExtraURLHandler) {
 
   std::string error;
   scoped_refptr<Extension> bookmark_app =
-      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+      Extension::Create(ExtensionPath(), Manifest::INTERNAL, manifest,
                         Extension::FROM_BOOKMARK, &error);
   ASSERT_TRUE(bookmark_app.get());
 
@@ -228,7 +245,8 @@ TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_ExtraURLHandler) {
   EXPECT_EQ(scope_url, GetScopeURLFromBookmarkApp(bookmark_app.get()));
 }
 
-TEST(ExtensionFromWebApp, GenerateVersion) {
+TEST_F(ExtensionFromWebApp, GenerateVersion) {
+  StartExtensionService();
   EXPECT_EQ("2010.1.1.0",
             ConvertTimeToExtensionVersion(
                 GetTestTime(2010, 1, 1, 0, 0, 0, 0)));
@@ -240,10 +258,8 @@ TEST(ExtensionFromWebApp, GenerateVersion) {
                 GetTestTime(2010, 10, 1, 23, 59, 59, 999)));
 }
 
-TEST(ExtensionFromWebApp, Basic) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, Basic) {
+  StartExtensionService();
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.description =
@@ -262,7 +278,7 @@ TEST(ExtensionFromWebApp, Basic) {
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
       Extension::NO_FLAGS, Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
 
@@ -314,16 +330,14 @@ TEST(ExtensionFromWebApp, Basic) {
   }
 }
 
-TEST(ExtensionFromWebApp, Minimal) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, Minimal) {
+  StartExtensionService();
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
       Extension::NO_FLAGS, Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
 
@@ -354,16 +368,14 @@ TEST(ExtensionFromWebApp, Minimal) {
   ASSERT_EQ(0u, extension->web_extent().patterns().size());
 }
 
-TEST(ExtensionFromWebApp, ExtraInstallationFlags) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, ExtraInstallationFlags) {
+  StartExtensionService();
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
       Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_OEM,
       Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
@@ -379,16 +391,14 @@ TEST(ExtensionFromWebApp, ExtraInstallationFlags) {
   EXPECT_EQ(Manifest::INTERNAL, extension->location());
 }
 
-TEST(ExtensionFromWebApp, ExternalPolicyLocation) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, ExternalPolicyLocation) {
+  StartExtensionService();
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
       Extension::NO_FLAGS, Manifest::EXTERNAL_POLICY);
   ASSERT_TRUE(extension.get());
 
@@ -403,10 +413,8 @@ TEST(ExtensionFromWebApp, ExternalPolicyLocation) {
 // Tests that a scope not ending in "/" works correctly.
 // The tested behavior is unexpected but is working correctly according
 // to the Web Manifest spec. https://github.com/w3c/manifest/issues/554
-TEST(ExtensionFromWebApp, ScopeDoesNotEndInSlash) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, ScopeDoesNotEndInSlash) {
+  StartExtensionService();
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.description =
@@ -415,7 +423,7 @@ TEST(ExtensionFromWebApp, ScopeDoesNotEndInSlash) {
   web_app.scope = GURL("http://aaronboodman.com/gear");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
       Extension::NO_FLAGS, Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(web_app.scope, GetScopeURLFromBookmarkApp(extension.get()));
@@ -423,10 +431,8 @@ TEST(ExtensionFromWebApp, ScopeDoesNotEndInSlash) {
 
 // Tests that |file_handler| on the WebAppManifest is correctly converted
 // to |file_handlers| on an extension manifest.
-TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
+  StartExtensionService();
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Graphr");
   web_app.description = base::ASCIIToUTF16("A magical graphy thing");
@@ -452,46 +458,43 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
       Extension::NO_FLAGS, Manifest::INTERNAL);
 
   ASSERT_TRUE(extension.get());
 
-  const std::vector<apps::FileHandlerInfo> file_handler_info =
-      *extensions::FileHandlers::GetFileHandlers(extension.get());
+  const std::vector<apps::FileHandlerInfo>* file_handler_infos =
+      extensions::FileHandlers::GetFileHandlers(extension.get());
 
-  EXPECT_EQ(2u, file_handler_info.size());
+  ASSERT_TRUE(file_handler_infos);
+  EXPECT_EQ(2u, file_handler_infos->size());
 
-  EXPECT_EQ("https://graphr.n/open-graph/", file_handler_info[0].id);
-  EXPECT_FALSE(file_handler_info[0].include_directories);
-  EXPECT_EQ(apps::file_handler_verbs::kOpenWith, file_handler_info[0].verb);
-  // Extensions should contain SVG, and only SVG
-  EXPECT_THAT(file_handler_info[0].extensions,
-              testing::UnorderedElementsAre("svg"));
-  // Mime types should contain text/svg+xml and only text/svg+xml
-  EXPECT_THAT(file_handler_info[0].types,
-              testing::UnorderedElementsAre("text/svg+xml"));
-
-  EXPECT_EQ("https://graphr.n/open-raw/", file_handler_info[1].id);
-  EXPECT_FALSE(file_handler_info[1].include_directories);
-  EXPECT_EQ(apps::file_handler_verbs::kOpenWith, file_handler_info[1].verb);
-  // Extensions should contain csv, and only csv
-  EXPECT_THAT(file_handler_info[1].extensions,
-              testing::UnorderedElementsAre("csv"));
-  // Mime types should contain text/csv and only text/csv
-  EXPECT_THAT(file_handler_info[1].types,
-              testing::UnorderedElementsAre("text/csv"));
+  {
+    const apps::FileHandlerInfo& info = file_handler_infos->at(0);
+    EXPECT_EQ("https://graphr.n/open-graph/", info.id);
+    EXPECT_FALSE(info.include_directories);
+    EXPECT_EQ(apps::file_handler_verbs::kOpenWith, info.verb);
+    // Extensions should contain SVG, and only SVG
+    EXPECT_THAT(info.extensions, testing::UnorderedElementsAre("svg"));
+    // Mime types should contain text/svg+xml and only text/svg+xml
+    EXPECT_THAT(info.types, testing::UnorderedElementsAre("text/svg+xml"));
+  }
+  {
+    const apps::FileHandlerInfo& info = file_handler_infos->at(1);
+    EXPECT_EQ("https://graphr.n/open-raw/", info.id);
+    EXPECT_FALSE(info.include_directories);
+    EXPECT_EQ(apps::file_handler_verbs::kOpenWith, info.verb);
+    // Extensions should contain csv, and only csv
+    EXPECT_THAT(info.extensions, testing::UnorderedElementsAre("csv"));
+    // Mime types should contain text/csv and only text/csv
+    EXPECT_THAT(info.types, testing::UnorderedElementsAre("text/csv"));
+  }
 }
 
 // Tests that |file_handler| on the WebAppManifest is correctly converted
 // to |web_app_file_handlers| on an extension manifest.
-//
-// TODO(crbug.com/1062239): This test is failing on Windows trunk builds. It can
-// be temporarily disabled, since the feature hasn't shipped yet.
-TEST(ExtensionFromWebApp, DISABLED_WebAppFileHandlersAreCorrectlyConverted) {
-  base::ScopedTempDir extensions_dir;
-  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
-
+TEST_F(ExtensionFromWebApp, WebAppFileHandlersAreCorrectlyConverted) {
+  StartExtensionService();
   WebApplicationInfo web_app;
   web_app.title = base::ASCIIToUTF16("Graphr");
   web_app.description = base::ASCIIToUTF16("A magical graphy thing.");
@@ -518,27 +521,33 @@ TEST(ExtensionFromWebApp, DISABLED_WebAppFileHandlersAreCorrectlyConverted) {
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), ExtensionPath(),
       Extension::NO_FLAGS, Manifest::INTERNAL);
 
   ASSERT_TRUE(extension.get());
 
-  const apps::FileHandlers file_handlers =
-      *extensions::WebAppFileHandlers::GetWebAppFileHandlers(extension.get());
+  const apps::FileHandlers* file_handlers =
+      extensions::WebAppFileHandlers::GetWebAppFileHandlers(extension.get());
 
-  EXPECT_EQ(2u, file_handlers.size());
+  ASSERT_TRUE(file_handlers);
+  EXPECT_EQ(2u, file_handlers->size());
 
-  EXPECT_EQ("https://graphr.n/open-graph/", file_handlers[0].action);
-  EXPECT_EQ(1u, file_handlers[0].accept.size());
-  EXPECT_EQ("text/svg+xml", file_handlers[0].accept[0].mime_type);
-  EXPECT_THAT(file_handlers[0].accept[0].file_extensions,
-              testing::UnorderedElementsAre(".svg"));
-
-  EXPECT_EQ("https://graphr.n/open-raw/", file_handlers[1].action);
-  EXPECT_EQ(1u, file_handlers[1].accept.size());
-  EXPECT_EQ("text/csv", file_handlers[1].accept[0].mime_type);
-  EXPECT_THAT(file_handlers[1].accept[0].file_extensions,
-              testing::UnorderedElementsAre(".csv"));
+  {
+    const apps::FileHandler& file_handler = file_handlers->at(0);
+    EXPECT_EQ("https://graphr.n/open-graph/", file_handler.action);
+    EXPECT_EQ(1u, file_handler.accept.size());
+    EXPECT_EQ("text/svg+xml", file_handler.accept[0].mime_type);
+    EXPECT_THAT(file_handler.accept[0].file_extensions,
+                testing::UnorderedElementsAre(".svg"));
+  }
+  {
+    const apps::FileHandler& file_handler = file_handlers->at(1);
+    EXPECT_EQ("https://graphr.n/open-raw/", file_handler.action);
+    EXPECT_EQ(1u, file_handler.accept.size());
+    EXPECT_EQ("text/csv", file_handler.accept[0].mime_type);
+    EXPECT_THAT(file_handler.accept[0].file_extensions,
+                testing::UnorderedElementsAre(".csv"));
+  }
 }
 
 }  // namespace extensions

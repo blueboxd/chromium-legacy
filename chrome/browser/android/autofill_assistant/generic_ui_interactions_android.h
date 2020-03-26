@@ -56,7 +56,8 @@ void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,
 void SetViewText(
     base::WeakPtr<UserModel> user_model,
     const SetTextProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+    base::android::ScopedJavaGlobalRef<jobject> jdelegate);
 
 // Sets the visibility of a view.
 void SetViewVisibility(

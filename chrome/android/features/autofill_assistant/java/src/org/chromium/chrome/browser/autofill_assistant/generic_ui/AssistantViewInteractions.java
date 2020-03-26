@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorTextField;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
 import org.chromium.content.browser.input.PopupItemType;
 import org.chromium.content.browser.input.SelectPopupDialog;
@@ -95,12 +96,14 @@ public class AssistantViewInteractions {
     }
 
     @CalledByNative
-    private static boolean setViewText(View view, String text) {
+    static boolean setViewText(View view, String text, AssistantGenericUiDelegate delegate) {
         if (view instanceof TextView) {
-            ((TextView) view).setText(text);
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    (TextView) view, text, delegate::onTextLinkClicked);
             return true;
         } else if (view instanceof EditorTextField) {
-            ((EditorTextField) view).getEditText().setText(text);
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    ((EditorTextField) view).getEditText(), text, delegate::onTextLinkClicked);
             return true;
         }
         return false;

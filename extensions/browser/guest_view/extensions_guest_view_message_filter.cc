@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/stl_util.h"
@@ -208,7 +210,7 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
                                       CreateEmbeddedMimeHandlerViewGuest,
                                   this, render_frame_id, tab_id, original_url,
                                   element_instance_id, element_size,
-                                  base::Passed(&transferrable_url_loader)));
+                                  std::move(transferrable_url_loader)));
     return;
   }
 

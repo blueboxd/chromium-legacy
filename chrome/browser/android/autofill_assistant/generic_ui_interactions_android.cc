@@ -6,6 +6,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewInteractions_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -210,7 +211,8 @@ void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,
 void SetViewText(
     base::WeakPtr<UserModel> user_model,
     const SetTextProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+    base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   if (!user_model) {
     return;
   }
@@ -238,7 +240,8 @@ void SetViewText(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AssistantViewInteractions_setViewText(
       env, jview->second,
-      base::android::ConvertUTF8ToJavaString(env, text->strings().values(0)));
+      base::android::ConvertUTF8ToJavaString(env, text->strings().values(0)),
+      jdelegate);
 }
 
 void SetViewVisibility(

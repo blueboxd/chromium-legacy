@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "url/gurl.h"
 
 class SigninViewController;
 class Browser;
@@ -35,21 +34,16 @@ class SigninReauthPopupDelegate : public SigninViewControllerDelegate,
   content::WebContents* GetWebContents() override;
 
   // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
  private:
   void CompleteReauth(signin::ReauthResult result);
   void CloseWebContents();
 
-  const GURL& reauth_url() const;
-
   SigninViewController* signin_view_controller_;
   Browser* const browser_;
   base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
   content::WebContents* web_contents_;
-  GURL reauth_url_;
 
   base::WeakPtrFactory<SigninReauthPopupDelegate> weak_ptr_factory_{this};
 };

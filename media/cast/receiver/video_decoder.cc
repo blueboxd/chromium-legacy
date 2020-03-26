@@ -263,7 +263,7 @@ void VideoDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
   cast_environment_->PostTask(
       CastEnvironment::VIDEO, FROM_HERE,
       base::BindOnce(&VideoDecoder::ImplBase::DecodeFrame, impl_,
-                     base::Passed(&encoded_frame), callback));
+                     std::move(encoded_frame), callback));
 }
 
 }  // namespace cast

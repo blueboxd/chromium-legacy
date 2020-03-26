@@ -4,6 +4,8 @@
 
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 
@@ -31,10 +33,10 @@ void VideoFrameReceiverOnTaskRunner::OnFrameReadyInBuffer(
         buffer_read_permission,
     mojom::VideoFrameInfoPtr frame_info) {
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoFrameReceiver::OnFrameReadyInBuffer,
-                                receiver_, buffer_id, frame_feedback_id,
-                                base::Passed(&buffer_read_permission),
-                                base::Passed(&frame_info)));
+      FROM_HERE,
+      base::BindOnce(&VideoFrameReceiver::OnFrameReadyInBuffer, receiver_,
+                     buffer_id, frame_feedback_id,
+                     std::move(buffer_read_permission), std::move(frame_info)));
 }
 
 void VideoFrameReceiverOnTaskRunner::OnBufferRetired(int buffer_id) {

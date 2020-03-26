@@ -189,7 +189,7 @@ void PassFileInfoToUIThread(const FileInfoOptCallback& callback,
   std::unique_ptr<base::File::Info> file_info(
       result == base::File::FILE_OK ? new base::File::Info(info) : NULL);
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback, base::Passed(&file_info)));
+                 base::BindOnce(callback, std::move(file_info)));
 }
 
 // Gets a WebContents instance handle for a platform app hosted in

@@ -219,7 +219,7 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
   std::unique_ptr<SimpleIndexLoadResult> load_result_scoped(load_result);
   base::OnceClosure reply =
       base::BindOnce(&SimpleIndex::MergeInitializingSet, AsWeakPtr(),
-                     base::Passed(&load_result_scoped));
+                     std::move(load_result_scoped));
   index_file_->LoadIndexEntries(cache_mtime, std::move(reply), load_result);
 }
 

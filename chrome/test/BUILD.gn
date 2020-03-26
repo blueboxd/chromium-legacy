@@ -3390,6 +3390,7 @@ test("unit_tests") {
     "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
     "../browser/signin/chrome_signin_url_loader_throttle_unittest.cc",
     "../browser/signin/local_auth_unittest.cc",
+    "../browser/signin/reauth_tab_helper_unittest.cc",
     "../browser/signin/signin_profile_attributes_updater_unittest.cc",
     "../browser/signin/signin_status_metrics_provider_chromeos_unittest.cc",
     "../browser/signin/test_signin_client_builder.cc",

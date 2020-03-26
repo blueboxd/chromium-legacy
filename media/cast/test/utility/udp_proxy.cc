@@ -730,7 +730,7 @@ class UDPProxyImpl : public UDPProxy {
       result = socket_->SendTo(
           buf.get(), static_cast<int>(buf_size), destination,
           base::BindOnce(&UDPProxyImpl::AllowWrite, weak_factory_.GetWeakPtr(),
-                         buf, base::Passed(&packet)));
+                         buf, std::move(packet)));
     }
     if (result == net::ERR_IO_PENDING) {
       blocked_ = true;

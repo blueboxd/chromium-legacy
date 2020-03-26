@@ -420,7 +420,7 @@ inline base::OnceCallback<FunctionType> RunWhileLocked(
       new internal::RunWhileLockedHelper<FunctionType>(std::move(callback)));
   return base::BindOnce(
       &internal::RunWhileLockedHelper<FunctionType>::CallWhileLocked,
-      base::Passed(std::move(helper)));
+      std::move(helper));
 }
 
 }  // namespace ppapi

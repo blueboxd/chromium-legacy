@@ -659,7 +659,7 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       client_->GetVersionForSimulationCallback(),
       base::BindOnce(&VariationsService::PerformSimulationWithVersion,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&seed)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(seed)));
   return true;
 }
 

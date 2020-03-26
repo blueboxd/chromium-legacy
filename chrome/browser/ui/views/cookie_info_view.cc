@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/cookie_info_view.h"
 
 #include <algorithm>
+#include <array>
 #include <utility>
 
 #include "base/i18n/time_formatting.h"
@@ -96,79 +97,83 @@ CookieInfoView::CookieInfoView() {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
                         views::GridLayout::USE_PREF, 0, 0);
 
-  name_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                  IDS_COOKIES_COOKIE_NAME_LABEL);
-
-  content_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                     IDS_COOKIES_COOKIE_CONTENT_LABEL);
-
-  domain_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                    IDS_COOKIES_COOKIE_DOMAIN_LABEL);
-
-  path_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                  IDS_COOKIES_COOKIE_PATH_LABEL);
-
-  send_for_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                      IDS_COOKIES_COOKIE_SENDFOR_LABEL);
-
-  created_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                     IDS_COOKIES_COOKIE_CREATED_LABEL);
-
-  expires_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                     IDS_COOKIES_COOKIE_EXPIRES_LABEL);
+  for (const auto& cookie_property_and_label : {
+           std::make_pair(CookieProperty::kName, IDS_COOKIES_COOKIE_NAME_LABEL),
+           std::make_pair(CookieProperty::kContent,
+                          IDS_COOKIES_COOKIE_CONTENT_LABEL),
+           std::make_pair(CookieProperty::kDomain,
+                          IDS_COOKIES_COOKIE_DOMAIN_LABEL),
+           std::make_pair(CookieProperty::kPath, IDS_COOKIES_COOKIE_PATH_LABEL),
+           std::make_pair(CookieProperty::kSendFor,
+                          IDS_COOKIES_COOKIE_SENDFOR_LABEL),
+           std::make_pair(CookieProperty::kCreated,
+                          IDS_COOKIES_COOKIE_CREATED_LABEL),
+           std::make_pair(CookieProperty::kExpires,
+                          IDS_COOKIES_COOKIE_EXPIRES_LABEL),
+       }) {
+    property_textfields_[cookie_property_and_label.first] = AddTextfieldRow(
+        three_column_layout_id, layout, cookie_property_and_label.second);
+  }
+  SetTextfieldColors();
 }
 
 CookieInfoView::~CookieInfoView() = default;
 
 void CookieInfoView::SetCookie(const std::string& domain,
                                const net::CanonicalCookie& cookie) {
-  name_value_field_->SetText(base::UTF8ToUTF16(cookie.Name()));
-  content_value_field_->SetText(base::UTF8ToUTF16(cookie.Value()));
-  domain_value_field_->SetText(base::UTF8ToUTF16(domain));
-  path_value_field_->SetText(base::UTF8ToUTF16(cookie.Path()));
-  created_value_field_->SetText(
-      base::TimeFormatFriendlyDateAndTime(cookie.CreationDate()));
+  const std::unordered_map<CookieProperty, base::string16> strings_map{
+      {CookieProperty::kName, base::UTF8ToUTF16(cookie.Name())},
+      {CookieProperty::kContent, base::UTF8ToUTF16(cookie.Value())},
+      {CookieProperty::kDomain, base::UTF8ToUTF16(domain)},
+      {CookieProperty::kPath, base::UTF8ToUTF16(cookie.Path())},
+      {CookieProperty::kSendFor,
+       l10n_util::GetStringUTF16(
+           CookiesTreeModel::GetSendForMessageID(cookie))},
+      {CookieProperty::kCreated,
+       base::TimeFormatFriendlyDateAndTime(cookie.CreationDate())},
+      {CookieProperty::kExpires,
+       cookie.IsPersistent()
+           ? base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate())
+           : l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION)}};
 
-  base::string16 expire_text = cookie.IsPersistent() ?
-      base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate()) :
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
+  for (const auto& p : strings_map)
+    property_textfields_[p.first]->SetText(p.second);
 
-  expires_value_field_->SetText(expire_text);
-  send_for_value_field_->SetText(
-      l10n_util::GetStringUTF16(CookiesTreeModel::GetSendForMessageID(cookie)));
   EnableCookieDisplay(true);
   Layout();
 }
 
 void CookieInfoView::ClearCookieDisplay() {
-  base::string16 no_cookie_string =
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED);
-  name_value_field_->SetText(no_cookie_string);
-  content_value_field_->SetText(no_cookie_string);
-  domain_value_field_->SetText(no_cookie_string);
-  path_value_field_->SetText(no_cookie_string);
-  send_for_value_field_->SetText(no_cookie_string);
-  created_value_field_->SetText(no_cookie_string);
-  expires_value_field_->SetText(no_cookie_string);
+  for (const auto textfield_pair : property_textfields_) {
+    textfield_pair.second->SetText(
+        l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED));
+  }
   EnableCookieDisplay(false);
 }
 
 void CookieInfoView::EnableCookieDisplay(bool enabled) {
-  name_value_field_->SetEnabled(enabled);
-  content_value_field_->SetEnabled(enabled);
-  domain_value_field_->SetEnabled(enabled);
-  path_value_field_->SetEnabled(enabled);
-  send_for_value_field_->SetEnabled(enabled);
-  created_value_field_->SetEnabled(enabled);
-  expires_value_field_->SetEnabled(enabled);
+  for (const auto textfield_pair : property_textfields_)
+    textfield_pair.second->SetEnabled(enabled);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CookieInfoView, views::View overrides.
+void CookieInfoView::OnThemeChanged() {
+  SetTextfieldColors();
+  views::ScrollView::OnThemeChanged();
+}
 
-views::Textfield* CookieInfoView::AddLabelRow(int layout_id,
-                                              views::GridLayout* layout,
-                                              int label_message_id) {
+void CookieInfoView::SetTextfieldColors() {
+  auto* theme = GetNativeTheme();
+  for (const auto textfield_pair : property_textfields_) {
+    textfield_pair.second->SetBackgroundColor(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground));
+    textfield_pair.second->SetTextColor(
+        theme->GetSystemColor(ui::NativeTheme::kColorId_DialogForeground));
+  }
+}
+
+views::Textfield* CookieInfoView::AddTextfieldRow(int layout_id,
+                                                  views::GridLayout* layout,
+                                                  int label_message_id) {
   auto textfield = std::make_unique<GestureScrollableTextfield>(this);
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(label_message_id));
@@ -182,9 +187,6 @@ views::Textfield* CookieInfoView::AddLabelRow(int layout_id,
   // Now that the Textfield is in the view hierarchy, it can be initialized.
   textfield_ptr->SetReadOnly(true);
   textfield_ptr->SetBorder(views::NullBorder());
-  // Color these borderless text areas the same as the containing dialog.
-  textfield_ptr->SetBackgroundColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground));
-  textfield_ptr->SetTextColor(SkColorSetRGB(0x78, 0x78, 0x78));
+
   return textfield_ptr;
 }

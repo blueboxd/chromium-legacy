@@ -191,9 +191,8 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
 
         Assert.assertTrue(
                 "Payment method manifest should have not have been downloaded.", mDownloadFailure);
-        Assert.assertEquals("Unable to make a HEAD request to \"" + uri.toString()
-                        + "\" for payment method manifest.",
-                mErrorMessage);
+        Assert.assertEquals(
+                "Unable to download payment manifest \"" + uri.toString() + "\".", mErrorMessage);
     }
 
     @Test

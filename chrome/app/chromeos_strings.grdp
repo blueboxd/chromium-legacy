@@ -4557,6 +4557,32 @@
   <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_HIDE" desc="A tool tip on a button that hides the saved password that is being shown.">
     Hide password
   </message>
+  <message name="IDS_EDU_LOGIN_INFO_TITLE" desc="Title for the parent information screen in EDU account addition flow.">
+    School account info for parents
+  </message>
+  <message name="IDS_EDU_LOGIN_INFO_BODY" desc="Text informing parent that only EDU account may be added to the device.">
+    Your child wants to add another Google account to this device. Only G Suite for Education accounts may be added to Family Link managed devices.
+  </message>
+  <message name="IDS_EDU_LOGIN_INFO_PARENT_SETTINGS" desc="Text informing parent about Family Link parent settings.">
+    Your Family Link parent settings will still apply. If you've previously blocked an app or site, you won't have to do it again.
+  </message>
+  <message name="IDS_EDU_LOGIN_INFO_DATA_PROTECTION" desc="Text informing parent about their child's data protection.">
+    You child's data in Classroom will be protected. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_EDU_LOGIN_INFO_RESOURCES_AVAILABILITY" desc="Text informing parent some resources for schoolwork might not be available.">
+    Resources for schoolwork might not be available or automatically loaded
+    Your child might not have access to:
+    <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Applications and extensions that were installed by the school
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Bookmarks from a school Chromebook
+      <ph name="LIST_ITEM">&lt;li&gt;</ph>Autofill passwords to educational sites
+    <ph name="END_LIST">&lt;/ul&gt;</ph>
+    To get the full school experience on this device, your child should:
+    <ph name="BEGIN_OLIST">&lt;ol&gt;</ph>
+      <ph name="OLIST_ITEM">&lt;li&gt;</ph>Sign out of their Family Link managed account
+      <ph name="OLIST_ITEM">&lt;li&gt;</ph>Sign in with their GSuite for Education account on the sign-in screen. Note, however, this will mean school policies including app and website access settings will take effect over your Family Link supervision features (for instance, school administrators may allow YouTube if it’s necessary for homework, screentime would not be enforced, etc.)
+    <ph name="END_OLIST">&lt;/ol&gt;</ph>
+  </message>
 
   <!-- TPM firmware auto-update notifications -->
   <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">

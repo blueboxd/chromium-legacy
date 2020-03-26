@@ -786,8 +786,7 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
   query_result.device->CreateGattConnection(
       base::BindOnce(&WebBluetoothServiceImpl::OnCreateGATTConnectionSuccess,
                      weak_ptr_factory_.GetWeakPtr(), device_id, start_time,
-                     base::Passed(&web_bluetooth_server_client),
-                     copyable_callback),
+                     std::move(web_bluetooth_server_client), copyable_callback),
       base::BindOnce(&WebBluetoothServiceImpl::OnCreateGATTConnectionFailed,
                      weak_ptr_factory_.GetWeakPtr(), start_time,
                      copyable_callback));
@@ -1149,7 +1148,7 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStartNotifications(
   query_result.characteristic->StartNotifySession(
       base::BindOnce(&WebBluetoothServiceImpl::OnStartNotifySessionSuccess,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&characteristic_client), copyable_callback),
+                     std::move(characteristic_client), copyable_callback),
       base::BindOnce(&WebBluetoothServiceImpl::OnStartNotifySessionFailed,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
@@ -1177,7 +1176,7 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStopNotifications(
   notify_session_iter->second->gatt_notify_session->Stop(
       base::BindOnce(&WebBluetoothServiceImpl::OnStopNotifySessionComplete,
                      weak_ptr_factory_.GetWeakPtr(), characteristic_instance_id,
-                     base::Passed(&callback)));
+                     std::move(callback)));
 }
 
 void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
@@ -1365,8 +1364,8 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
   // StartDiscoverySession() here.
   adapter->StartDiscoverySession(
       base::BindOnce(&WebBluetoothServiceImpl::OnStartDiscoverySession,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&client),
-                     base::Passed(&options)),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(client),
+                     std::move(options)),
       base::BindOnce(&WebBluetoothServiceImpl::OnDiscoverySessionError,
                      weak_ptr_factory_.GetWeakPtr()));
 }

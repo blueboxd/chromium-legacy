@@ -11,6 +11,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -601,7 +602,7 @@ TEST_F(URLFetcherTest, SequencedTaskTest) {
                   EXPECT_EQ(kDefaultResponseBody, data);
                   std::move(quit_closure).Run();
                 },
-                std::move(quit_closure), base::Passed(&delegate)));
+                std::move(quit_closure), std::move(delegate)));
 
             raw_delegate->CreateFetcher(response_path, URLFetcher::GET,
                                         context_getter);

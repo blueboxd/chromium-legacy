@@ -1070,9 +1070,9 @@ scoped_refptr<NiceMockBluetoothAdapter> WebTestBluetoothAdapterProvider::
                   error_callback) {
             base::OnceClosure pending;
             if (succeeds) {
-              pending = base::BindOnce(std::move(callback),
-                                       base::Passed(GetBaseGATTNotifySession(
-                                           measurement_ptr->GetWeakPtr())));
+              pending = base::BindOnce(
+                  std::move(callback),
+                  GetBaseGATTNotifySession(measurement_ptr->GetWeakPtr()));
             } else {
               pending =
                   base::BindOnce(std::move(error_callback),

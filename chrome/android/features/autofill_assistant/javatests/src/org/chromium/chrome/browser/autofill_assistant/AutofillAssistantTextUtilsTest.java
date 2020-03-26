@@ -10,7 +10,9 @@ import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.openTextLink;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
@@ -82,26 +84,30 @@ public class AutofillAssistantTextUtilsTest {
         TextView boldTextView = runOnUiThreadBlocking(() -> {
             TextView view = new TextView(mTestRule.getActivity());
             mTestLayout.addView(view);
-            AssistantTextUtils.applyVisualAppearanceTags(view, "<b>Bold text</b>", null);
-            StyleSpan[] spans =
-                    ((SpannedString) view.getText()).getSpans(0, view.length(), StyleSpan.class);
-            assertThat(spans.length, is(1));
-            assertThat(spans[0].getStyle(), is(Typeface.BOLD));
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view, "regular text, <b>bold text</b>", null);
             return view;
         });
-        onView(is(boldTextView)).check(matches(withText("Bold text")));
+        int boldStart = "regular text, ".length();
+        int boldEnd = "regular text, bold text".length() - 1;
+        onView(withText("regular text, bold text"))
+                .check(matches(hasTypefaceSpan(boldStart, boldEnd, Typeface.BOLD)));
+        onView(withText("regular text, bold text"))
+                .check(matches(not(hasTypefaceSpan(0, boldStart, Typeface.BOLD))));
 
         TextView italicTextView = runOnUiThreadBlocking(() -> {
             TextView view = new TextView(mTestRule.getActivity());
             mTestLayout.addView(view);
-            AssistantTextUtils.applyVisualAppearanceTags(view, "<i>Italic text</i>", null);
-            StyleSpan[] spans =
-                    ((SpannedString) view.getText()).getSpans(0, view.length(), StyleSpan.class);
-            assertThat(spans.length, is(1));
-            assertThat(spans[0].getStyle(), is(Typeface.ITALIC));
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view, "regular text, <i>italic text</i>", null);
             return view;
         });
-        onView(is(italicTextView)).check(matches(withText("Italic text")));
+        int italicStart = "italic text, ".length();
+        int italicEnd = "italic text, bold text".length() - 1;
+        onView(withText("regular text, italic text"))
+                .check(matches(hasTypefaceSpan(italicStart, italicEnd, Typeface.ITALIC)));
+        onView(withText("regular text, italic text"))
+                .check(matches(not(hasTypefaceSpan(0, italicStart, Typeface.ITALIC))));
     }
 
     @Test

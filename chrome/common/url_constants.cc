@@ -323,6 +323,9 @@ const char kChromeOSGestureEducationHelpURL[] =
 const char kChromePaletteHelpURL[] =
     "https://support.google.com/chromebook?p=stylus_help";
 
+const char kClassroomSigninLearnMoreURL[] =
+    "https://support.google.com/edu/classroom/answer/6072460";
+
 const char kCrosScheme[] = "cros";
 
 const char kCupsPrintLearnMoreURL[] =

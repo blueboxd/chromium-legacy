@@ -93,6 +93,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaViewContainer(
 base::android::ScopedJavaLocalRef<jobject> CreateJavaTextView(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jobject>& jcontext,
+    const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
     const base::android::ScopedJavaLocalRef<jstring>& jidentifier,
     const TextViewProto& proto) {
   base::android::ScopedJavaLocalRef<jstring> jtext_appearance = nullptr;
@@ -101,7 +102,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaTextView(
         base::android::ConvertUTF8ToJavaString(env, proto.text_appearance());
   }
   return Java_AssistantViewFactory_createTextView(
-      env, jcontext, jidentifier,
+      env, jcontext, jdelegate, jidentifier,
       base::android::ConvertUTF8ToJavaString(env, proto.text()),
       jtext_appearance);
 }
@@ -129,7 +130,8 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
                                       proto.view_container());
       break;
     case ViewProto::kTextView:
-      jview = CreateJavaTextView(env, jcontext, jidentifier, proto.text_view());
+      jview = CreateJavaTextView(env, jcontext, jdelegate, jidentifier,
+                                 proto.text_view());
       break;
     case ViewProto::kDividerView:
       jview = Java_AssistantViewFactory_createDividerView(env, jcontext,
@@ -229,7 +231,7 @@ GenericUiControllerAndroid::~GenericUiControllerAndroid() {
 std::unique_ptr<GenericUiControllerAndroid>
 GenericUiControllerAndroid::CreateFromProto(
     const GenericUserInterfaceProto& proto,
-    base::android::ScopedJavaLocalRef<jobject> jcontext,
+    base::android::ScopedJavaGlobalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate,
     EventHandler* event_handler,
     UserModel* user_model,
@@ -238,17 +240,18 @@ GenericUiControllerAndroid::CreateFromProto(
   JNIEnv* env = base::android::AttachCurrentThread();
   auto views = std::make_unique<
       std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>>();
-  auto jroot_view = proto.has_root_view()
-                        ? CreateJavaView(env, jcontext, jdelegate,
-                                         proto.root_view(), views.get())
-                        : nullptr;
+  auto jroot_view =
+      proto.has_root_view()
+          ? CreateJavaView(env,
+                           base::android::ScopedJavaLocalRef<jobject>(jcontext),
+                           jdelegate, proto.root_view(), views.get())
+          : nullptr;
 
   // Create interactions.
-  auto interaction_handler =
-      std::make_unique<InteractionHandlerAndroid>(event_handler, jcontext);
-  if (!interaction_handler->AddInteractionsFromProto(
-          proto.interactions(), env, views.get(), jdelegate, user_model,
-          basic_interactions)) {
+  auto interaction_handler = std::make_unique<InteractionHandlerAndroid>(
+      event_handler, user_model, basic_interactions, views.get(), jcontext,
+      jdelegate);
+  if (!interaction_handler->AddInteractionsFromProto(proto.interactions())) {
     return nullptr;
   }
 

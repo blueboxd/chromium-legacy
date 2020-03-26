@@ -4,6 +4,8 @@
 
 #include "services/viz/public/cpp/gpu/gpu.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -142,10 +144,9 @@ class GpuTest : public testing::Test {
   mojo::PendingRemote<mojom::Gpu> GetRemote() {
     mojo::PendingRemote<mojom::Gpu> remote;
     io_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&TestGpuImpl::BindReceiver,
-                       base::Unretained(gpu_impl_.get()),
-                       base::Passed(remote.InitWithNewPipeAndPassReceiver())));
+        FROM_HERE, base::BindOnce(&TestGpuImpl::BindReceiver,
+                                  base::Unretained(gpu_impl_.get()),
+                                  remote.InitWithNewPipeAndPassReceiver()));
     return remote;
   }
 

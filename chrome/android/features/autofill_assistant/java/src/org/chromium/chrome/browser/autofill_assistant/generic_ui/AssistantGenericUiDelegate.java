@@ -34,6 +34,12 @@ public class AssistantGenericUiDelegate {
                 AssistantGenericUiDelegate.this, modelIdentifier, value);
     }
 
+    void onTextLinkClicked(int link) {
+        assert mNativeAssistantGenericUiDelegate != 0;
+        AssistantGenericUiDelegateJni.get().onTextLinkClicked(
+                mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this, link);
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantGenericUiDelegate = 0;
@@ -45,5 +51,7 @@ public class AssistantGenericUiDelegate {
                 String identifier);
         void onValueChanged(long nativeAssistantGenericUiDelegate,
                 AssistantGenericUiDelegate caller, String modelIdentifier, AssistantValue value);
+        void onTextLinkClicked(
+                long nativeAssistantGenericUiDelegate, AssistantGenericUiDelegate caller, int link);
     }
 }

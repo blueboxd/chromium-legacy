@@ -1659,6 +1659,18 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON_ARIA_LABEL" desc="Accessibility text for the button with which the user can quickly check whether their safety-related settings are fully protecting them.">
     Run safety check now
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_ICON_RUNNING_ARIA_LABEL" desc="Accessibility text for a safety check child icon, that indicates that the child check is running.">
+    Running
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_ICON_SAFE_ARIA_LABEL" desc="Accessibility text for a safety check child icon, that indicates the child passed the check.">
+    Passed
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_ICON_INFO_ARIA_LABEL" desc="Accessibility text for a safety check child icon, that indicates info for the child check.">
+    Info
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_ICON_WARNING_ARIA_LABEL" desc="Accessibility text for a safety check child icon, that indicates a warning for the child check.">
+    Warning
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
   </message>

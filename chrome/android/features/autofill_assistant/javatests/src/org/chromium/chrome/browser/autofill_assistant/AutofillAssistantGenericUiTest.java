@@ -30,10 +30,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.iterableWithSize;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isImportantForAccessibility;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
+import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.widget.DatePicker;
@@ -76,6 +78,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.InteractionsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.LinearLayoutProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ModelProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.OnModelValueChangedEventProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.OnTextLinkClickedProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.OnUserActionCalled;
 import org.chromium.chrome.browser.autofill_assistant.proto.OnViewClickedEventProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
@@ -1601,6 +1604,96 @@ public class AutofillAssistantGenericUiTest {
                                 .setIdentifier("text_value")
                                 .setValue(ValueProto.newBuilder().setStrings(
                                         StringList.newBuilder().addValues("test 2")))
+                                .build()));
+    }
+
+    /**
+     * Tests text spans like <b></b> and <i></i> as well as text links like <link1></link1>.
+     */
+    @Test
+    @MediumTest
+    public void testTextSpansAndLinks() {
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("text_link_clicked")
+                                .build());
+
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnTextLinkClicked(
+                                         OnTextLinkClickedProto.newBuilder().setTextLink(1)))
+                                 .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                         SetModelValueProto.newBuilder()
+                                                 .setValue(ValueProto.newBuilder().setBooleans(
+                                                         BooleanList.newBuilder().addValues(true)))
+                                                 .setModelIdentifier("text_link_clicked")))
+                                 .addCallbacks(CallbackProto.newBuilder().setEndAction(
+                                         EndActionProto.newBuilder().setStatus(
+                                                 ProcessedActionStatusProto.ACTION_APPLIED)))
+                                 .build());
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(ViewProto.newBuilder().setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addViews(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "<b>bold text</b>")))
+                                        .addViews(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "<i>italic text</i>")))
+                                        .addViews(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "<link1>click here</link1>")))))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder()
+                                                   .setGenericUserInterface(genericUserInterface)
+                                                   .addOutputModelIdentifiers("text_link_clicked"))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("click here"), isCompletelyDisplayed());
+
+        onView(withText("bold text"))
+                .check(matches(hasTypefaceSpan(0, "bold text".length() - 1, Typeface.BOLD)));
+        onView(withText("italic text"))
+                .check(matches(hasTypefaceSpan(0, "italic text".length() - 1, Typeface.ITALIC)));
+
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(withText("click here")).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        assertThat(processedActions, iterableWithSize(1));
+        assertThat(
+                processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
+        ShowGenericUiProto.Result result = processedActions.get(0).getShowGenericUiResult();
+        List<ModelProto.ModelValue> resultModelValues = result.getModel().getValuesList();
+        assertThat(resultModelValues, iterableWithSize(1));
+        assertThat(resultModelValues.get(0),
+                is((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("text_link_clicked")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(true)))
                                 .build()));
     }
 }

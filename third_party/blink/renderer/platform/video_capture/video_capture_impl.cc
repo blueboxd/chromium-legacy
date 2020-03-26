@@ -638,8 +638,7 @@ void VideoCaptureImpl::OnBufferReady(
           FROM_HERE,
           base::BindOnce(
               &BufferContext::BindBufferToTextureOnMediaThread,
-              std::move(buffer_context), base::Passed(&info),
-              base::Passed(&gmb), frame,
+              std::move(buffer_context), std::move(info), std::move(gmb), frame,
               media::BindToCurrentLoop(base::BindOnce(
                   &VideoCaptureImpl::OnVideoFrameReady,
                   weak_factory_.GetWeakPtr(), buffer_id, reference_time))));

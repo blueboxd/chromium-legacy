@@ -62,6 +62,7 @@ class FormDataImporter {
 
   // Checks suitability of |profile| for adding to the user's set of profiles.
   static bool IsValidLearnableProfile(const AutofillProfile& profile,
+                                      const std::string& finch_country_code,
                                       const std::string& app_locale);
 
   LocalCardMigrationManager* local_card_migration_manager() {

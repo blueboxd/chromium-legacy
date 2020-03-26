@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -137,7 +138,7 @@ void QuotaManagerHost::DidGetPersistentUsageAndQuota(
       params, process_id_,
       base::BindOnce(&QuotaManagerHost::DidGetPermissionResponse,
                      weak_factory_.GetWeakPtr(), requested_quota, current_usage,
-                     current_quota, base::Passed(std::move(callback))));
+                     current_quota, std::move(callback)));
 }
 
 void QuotaManagerHost::DidGetPermissionResponse(

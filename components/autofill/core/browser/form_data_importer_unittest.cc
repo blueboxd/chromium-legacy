@@ -117,7 +117,7 @@ class FormDataImporterTestBase {
   FormDataImporterTestBase() : autofill_table_(nullptr) {}
 
   void ResetPersonalDataManager(UserMode user_mode) {
-    personal_data_manager_.reset(new PersonalDataManager("en"));
+    personal_data_manager_.reset(new PersonalDataManager("en", "US"));
     personal_data_manager_->Init(
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
         /*account_database=*/nullptr,

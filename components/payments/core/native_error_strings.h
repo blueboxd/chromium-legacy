@@ -71,10 +71,6 @@ extern const char kCrossOriginWebAppManifestNotAllowed[];
 // to replace.
 extern const char kDetailedInvalidSslCertificateMessageFormat[];
 
-// Used when a HEAD request for URL A fails. This format should be used with
-// base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
-extern const char kHttpHeadRequestFailed[];
-
 // Used for HTTP redirects that are prohibited for payment method manifests.
 // This format should be used with base::ReplaceStringPlaceholders(fmt,
 // {http_code, http_code_phrase, original_url}, nullptr).
@@ -116,11 +112,6 @@ extern const char kMissingMethodNameFromPaymentApp[];
 // supported. This format should be used with base::ReplaceChars() function,
 // where "$" is the character to replace.
 extern const char kMultiplePaymentMethodsNotSupportedFormat[];
-
-// Used when the payment method URL A does not have a "Link:
-// rel=payment-method-manifest" HTTP header. This format should be used with
-// base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
-extern const char kNoLinkRelPaymentMethodManifestHttpHeader[];
 
 // Payment handler did not respond to the "paymentrequest" event.
 extern const char kNoResponseToPaymentEvent[];
@@ -249,6 +240,14 @@ extern const char kCanMakePaymentEventNoExplicitlyVerifiedMethods[];
 
 // A message about unsupported payment method.
 extern const char kGenericPaymentMethodNotSupportedMessage[];
+
+// Used for errors downloading the payment method manifest. This format should
+// be used with base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
+extern const char kNoContentAndNoLinkHeader[];
+
+// User when the downloaded payment manifest A is empty. This format should be
+// used with base::ReplaceStringPlaceholders(fmt, {A}, nullptr).
+extern const char kNoContentInPaymentManifest[];
 
 }  // namespace errors
 }  // namespace payments

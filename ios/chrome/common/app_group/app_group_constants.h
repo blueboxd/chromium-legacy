@@ -118,6 +118,7 @@ extern NSString* const kOpenCommandSourceTodayExtension;
 extern NSString* const kOpenCommandSourceContentExtension;
 extern NSString* const kOpenCommandSourceSearchExtension;
 extern NSString* const kOpenCommandSourceShareExtension;
+extern NSString* const kOpenCommandSourceCredentialsExtension;
 
 // The value of the key for the sharedDefaults used by the Content Widget.
 extern NSString* const kSuggestedItems;

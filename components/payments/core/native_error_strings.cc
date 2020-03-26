@@ -53,9 +53,6 @@ const char kCrossOriginWebAppManifestNotAllowed[] =
 const char kDetailedInvalidSslCertificateMessageFormat[] =
     "SSL certificate is not valid. Security level: $.";
 
-const char kHttpHeadRequestFailed[] =
-    "Unable to make a HEAD request to \"$1\" for payment method manifest.";
-
 const char kHttpStatusCodeNotAllowed[] =
     "HTTP status code $1 \"$2\" not allowed for payment method manifest "
     "\"$3\".";
@@ -88,9 +85,6 @@ const char kMissingMethodNameFromPaymentApp[] =
 
 const char kMultiplePaymentMethodsNotSupportedFormat[] =
     "The payment methods $ are not supported.";
-
-const char kNoLinkRelPaymentMethodManifestHttpHeader[] =
-    "No \"Link: rel=payment-method-manifest\" HTTP header found at \"$1\".";
 
 const char kNoResponseToPaymentEvent[] =
     "Payment handler did not respond to \"paymentrequest\" event.";
@@ -219,6 +213,13 @@ const char kCanMakePaymentEventNoExplicitlyVerifiedMethods[] =
 
 const char kGenericPaymentMethodNotSupportedMessage[] =
     "Payment method not supported.";
+
+const char kNoContentAndNoLinkHeader[] =
+    "No content and no \"Link: rel=payment-method-manifest\" HTTP header found "
+    "at \"$1\".";
+
+const char kNoContentInPaymentManifest[] =
+    "No content found in payment manifest \"$1\".";
 
 }  // namespace errors
 }  // namespace payments

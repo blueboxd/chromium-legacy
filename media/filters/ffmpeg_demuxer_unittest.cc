@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -1671,27 +1672,27 @@ void DisableAndEnableDemuxerTracks(
   base::RunLoop disable_video;
   demuxer->OnSelectedVideoTrackChanged(
       video_tracks, base::TimeDelta(),
-      base::BindOnce(QuitLoop, base::Passed(disable_video.QuitClosure())));
+      base::BindOnce(QuitLoop, disable_video.QuitClosure()));
   disable_video.Run();
 
   base::RunLoop disable_audio;
   demuxer->OnEnabledAudioTracksChanged(
       audio_tracks, base::TimeDelta(),
-      base::BindOnce(QuitLoop, base::Passed(disable_audio.QuitClosure())));
+      base::BindOnce(QuitLoop, disable_audio.QuitClosure()));
   disable_audio.Run();
 
   base::RunLoop enable_video;
   video_tracks.push_back(MediaTrack::Id("1"));
   demuxer->OnSelectedVideoTrackChanged(
       video_tracks, base::TimeDelta(),
-      base::BindOnce(QuitLoop, base::Passed(enable_video.QuitClosure())));
+      base::BindOnce(QuitLoop, enable_video.QuitClosure()));
   enable_video.Run();
 
   base::RunLoop enable_audio;
   audio_tracks.push_back(MediaTrack::Id("2"));
   demuxer->OnEnabledAudioTracksChanged(
       audio_tracks, base::TimeDelta(),
-      base::BindOnce(QuitLoop, base::Passed(enable_audio.QuitClosure())));
+      base::BindOnce(QuitLoop, enable_audio.QuitClosure()));
   enable_audio.Run();
 
   task_environment->RunUntilIdle();

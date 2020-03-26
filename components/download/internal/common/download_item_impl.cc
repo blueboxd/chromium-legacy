@@ -534,7 +534,7 @@ void DownloadItemImpl::StealDangerousDownload(bool delete_file_afterward,
     if (download_file_) {
       base::PostTaskAndReplyWithResult(
           GetDownloadTaskRunner().get(), FROM_HERE,
-          base::BindOnce(&DownloadFileDetach, base::Passed(&download_file_)),
+          base::BindOnce(&DownloadFileDetach, std::move(download_file_)),
           base::BindOnce(std::move(callback)));
     } else {
       std::move(callback).Run(GetFullPath());

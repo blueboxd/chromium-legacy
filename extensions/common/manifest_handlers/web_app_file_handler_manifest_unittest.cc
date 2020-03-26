@@ -5,9 +5,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/values_test_util.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
-#include "components/version_info/version_info.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/web_app_file_handler.h"
@@ -23,12 +21,6 @@ namespace errors = manifest_errors;
 namespace {
 
 class WebAppFileHandlersManifestTest : public ManifestTest {
- public:
-  // version_info::Channel::UNKNOWN needs to be specified here as long as the
-  // "web_app_file_handlers" manifest key is only enabled on trunk in
-  // extensions/common/api/_manifest_features.json.
-  WebAppFileHandlersManifestTest() : channel_(version_info::Channel::UNKNOWN) {}
-
  protected:
   ManifestData CreateManifest(const char* web_app_file_handlers) {
     const char kManifestTemplate[] =
@@ -47,9 +39,6 @@ class WebAppFileHandlersManifestTest : public ManifestTest {
         base::StringPrintf(kManifestTemplate, web_app_file_handlers));
     return ManifestData(std::move(manifest), "test");
   }
-
- private:
-  ScopedCurrentChannel channel_;
 };
 
 }  // namespace

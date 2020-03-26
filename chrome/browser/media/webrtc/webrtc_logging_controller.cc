@@ -207,7 +207,7 @@ void WebRtcLoggingController::StoreLogContinue(
       log_uploader_->background_task_runner().get(), FROM_HERE,
       base::BindOnce(log_directory_getter_),
       base::BindOnce(&WebRtcLoggingController::StoreLogInDirectory, this,
-                     log_id, base::Passed(&log_paths), callback));
+                     log_id, std::move(log_paths), callback));
 }
 
 void WebRtcLoggingController::StartRtpDump(

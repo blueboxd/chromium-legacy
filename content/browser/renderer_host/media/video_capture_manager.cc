@@ -655,9 +655,9 @@ void VideoCaptureManager::GetPhotoState(
   }
   // Queue up a request for later.
   photo_request_queue_.emplace_back(
-      session_id, base::BindOnce(&VideoCaptureController::GetPhotoState,
-                                 controller->GetWeakPtrForIOThread(),
-                                 base::Passed(&callback)));
+      session_id,
+      base::BindOnce(&VideoCaptureController::GetPhotoState,
+                     controller->GetWeakPtrForIOThread(), std::move(callback)));
 }
 
 void VideoCaptureManager::SetPhotoOptions(
@@ -675,10 +675,9 @@ void VideoCaptureManager::SetPhotoOptions(
   }
   // Queue up a request for later.
   photo_request_queue_.emplace_back(
-      session_id,
-      base::BindOnce(&VideoCaptureController::SetPhotoOptions,
-                     controller->GetWeakPtrForIOThread(),
-                     base::Passed(&settings), base::Passed(&callback)));
+      session_id, base::BindOnce(&VideoCaptureController::SetPhotoOptions,
+                                 controller->GetWeakPtrForIOThread(),
+                                 std::move(settings), std::move(callback)));
 }
 
 void VideoCaptureManager::TakePhoto(
@@ -701,9 +700,9 @@ void VideoCaptureManager::TakePhoto(
                        "VideoCaptureManager::TakePhoto enqueuing request",
                        TRACE_EVENT_SCOPE_PROCESS);
   photo_request_queue_.emplace_back(
-      session_id, base::BindOnce(&VideoCaptureController::TakePhoto,
-                                 controller->GetWeakPtrForIOThread(),
-                                 base::Passed(&callback)));
+      session_id,
+      base::BindOnce(&VideoCaptureController::TakePhoto,
+                     controller->GetWeakPtrForIOThread(), std::move(callback)));
 }
 
 void VideoCaptureManager::OnOpened(

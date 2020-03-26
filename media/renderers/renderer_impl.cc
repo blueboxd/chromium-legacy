@@ -579,7 +579,7 @@ void RendererImpl::ReinitializeAudioRenderer(
   audio_renderer_->Initialize(
       stream, cdm_context_, audio_renderer_client_.get(),
       base::BindOnce(&RendererImpl::OnAudioRendererReinitialized, weak_this_,
-                     stream, time, base::Passed(&reinitialize_completed_cb)));
+                     stream, time, std::move(reinitialize_completed_cb)));
 }
 
 void RendererImpl::OnAudioRendererReinitialized(
@@ -613,7 +613,7 @@ void RendererImpl::ReinitializeVideoRenderer(
       base::BindRepeating(&RendererImpl::GetWallClockTimes,
                           base::Unretained(this)),
       base::BindOnce(&RendererImpl::OnVideoRendererReinitialized, weak_this_,
-                     stream, time, base::Passed(&reinitialize_completed_cb)));
+                     stream, time, std::move(reinitialize_completed_cb)));
 }
 
 void RendererImpl::OnVideoRendererReinitialized(
@@ -994,9 +994,9 @@ void RendererImpl::OnSelectedVideoTracksChanged(
   }
 
   pending_video_track_change_ = true;
-  video_renderer_->Flush(base::BindOnce(
-      &RendererImpl::CleanUpTrackChange, weak_this_,
-      base::Passed(&fix_stream_cb), &video_ended_, &video_playing_));
+  video_renderer_->Flush(base::BindOnce(&RendererImpl::CleanUpTrackChange,
+                                        weak_this_, std::move(fix_stream_cb),
+                                        &video_ended_, &video_playing_));
 }
 
 void RendererImpl::OnEnabledAudioTracksChanged(
@@ -1036,9 +1036,9 @@ void RendererImpl::OnEnabledAudioTracksChanged(
   if (audio_playing_)
     PausePlayback();
 
-  audio_renderer_->Flush(base::BindOnce(
-      &RendererImpl::CleanUpTrackChange, weak_this_,
-      base::Passed(&fix_stream_cb), &audio_ended_, &audio_playing_));
+  audio_renderer_->Flush(base::BindOnce(&RendererImpl::CleanUpTrackChange,
+                                        weak_this_, std::move(fix_stream_cb),
+                                        &audio_ended_, &audio_playing_));
 }
 
 }  // namespace media

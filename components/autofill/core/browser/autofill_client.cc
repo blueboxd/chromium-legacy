@@ -16,6 +16,10 @@ std::string AutofillClient::GetPageLanguage() const {
   return std::string();
 }
 
+std::string AutofillClient::GetVariationConfigCountryCode() const {
+  return std::string();
+}
+
 LogManager* AutofillClient::GetLogManager() const {
   return nullptr;
 }

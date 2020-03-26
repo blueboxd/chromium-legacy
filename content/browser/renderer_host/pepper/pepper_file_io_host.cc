@@ -270,7 +270,7 @@ void PepperFileIOHost::DidOpenInternalFile(
       file_system_host_->OpenQuotaFile(
           this, file_system_url_,
           base::BindOnce(&PepperFileIOHost::DidOpenQuotaFile, AsWeakPtr(),
-                         reply_context, base::Passed(&file)));
+                         reply_context, std::move(file)));
       return;
     }
   }

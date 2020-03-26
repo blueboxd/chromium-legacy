@@ -76,6 +76,18 @@ void AddEduStrings(content::WebUIDataSource* source,
                              IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_HIDE);
   source->AddString("parentSigninAccountRecoveryUrl",
                     chrome::kAccountRecoveryURL);
+
+  source->AddLocalizedString("parentInfoTitle", IDS_EDU_LOGIN_INFO_TITLE);
+  source->AddLocalizedString("parentInfoBody", IDS_EDU_LOGIN_INFO_BODY);
+  source->AddLocalizedString("parentInfoParentSettingsText",
+                             IDS_EDU_LOGIN_INFO_PARENT_SETTINGS);
+  source->AddString(
+      "parentInfoDataProtectionText",
+      l10n_util::GetStringFUTF16(
+          IDS_EDU_LOGIN_INFO_DATA_PROTECTION,
+          base::ASCIIToUTF16(chrome::kClassroomSigninLearnMoreURL)));
+  source->AddLocalizedString("parentInfoResourcesAvailabilityText",
+                             IDS_EDU_LOGIN_INFO_RESOURCES_AVAILABILITY);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -120,6 +132,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
                           IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS);
   source->AddResourcePath("edu_login_parent_signin.js",
                           IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS);
+  source->AddResourcePath("edu_login_parent_info.js",
+                          IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS);
 
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);

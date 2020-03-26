@@ -93,9 +93,10 @@ class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
 
 class PersonalDataManagerMock : public PersonalDataManager {
  public:
-  explicit PersonalDataManagerMock(const std::string& app_locale)
-      : PersonalDataManager(app_locale) {}
-  ~PersonalDataManagerMock() override {}
+  explicit PersonalDataManagerMock(const std::string& app_locale,
+                                   const std::string& variations_country_code)
+      : PersonalDataManager(app_locale, variations_country_code) {}
+  ~PersonalDataManagerMock() override = default;
 
   MOCK_METHOD1(OnValidated, void(const AutofillProfile* profile));
   void OnValidatedPDM(const AutofillProfile* profile) {
@@ -348,7 +349,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
                                 bool use_account_server_storage = false) {
     if (personal_data_)
       personal_data_->Shutdown();
-    personal_data_.reset(new PersonalDataManager("en"));
+    personal_data_.reset(new PersonalDataManager("EN", "US"));
     PersonalDataManagerTestBase::ResetPersonalDataManager(
         user_mode, use_account_server_storage, personal_data_.get());
   }
@@ -610,7 +611,7 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
   void ResetPersonalDataManager(UserMode user_mode) {
     if (personal_data_)
       personal_data_->Shutdown();
-    personal_data_.reset(new PersonalDataManagerMock("en"));
+    personal_data_.reset(new PersonalDataManagerMock("en", std::string()));
     PersonalDataManagerTestBase::ResetPersonalDataManager(
         user_mode, /*use_account_server_storage=*/true, personal_data_.get());
   }
@@ -2053,6 +2054,63 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   AddProfileToPersonalDataManager(armadillo);
   ResetPersonalDataManager(USER_MODE_NORMAL);
   EXPECT_EQ("MX", personal_data_->GetDefaultCountryCodeForNewAddress());
+}
+
+TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromVariations) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseVariationCountryCode);
+
+  const std::string expected_country_code = "DE";
+  const std::string unepected_country_code = "FR";
+
+  // Normally, the variation country code is passed to the constructor.
+  personal_data_->set_variations_country_code_for_testing(
+      expected_country_code);
+
+  // Verify that there are no profiles set.
+  EXPECT_EQ(0u, personal_data_->GetProfiles().size());
+
+  // Since there are no profiles set, the country code supplied buy variations
+  // should be used get get a default country code.
+  std::string actual_country_code =
+      personal_data_->GetDefaultCountryCodeForNewAddress();
+
+  // Verify the the correct country code was retrieved.
+  EXPECT_EQ(expected_country_code, actual_country_code);
+
+  // Set a new country code.
+  personal_data_->set_variations_country_code_for_testing(
+      unepected_country_code);
+
+  // The default country code retrieved before should have been cached.
+  actual_country_code = personal_data_->GetDefaultCountryCodeForNewAddress();
+
+  // Verify the expectations newly set country code is actually different.
+  EXPECT_NE(expected_country_code, unepected_country_code);
+
+  // Verify that it was actually set.
+  EXPECT_EQ(unepected_country_code,
+            personal_data_->variations_country_code_for_testing());
+
+  // Verify that the retrieved country code is the initial one.
+  EXPECT_EQ(expected_country_code, actual_country_code);
+
+  // Now a profile is set and the correctcaching of the country code is verified
+  // once more.
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  AddProfileToPersonalDataManager(profile);
+
+  // Once more, retrieve the defaultcountry code.
+  actual_country_code = personal_data_->GetDefaultCountryCodeForNewAddress();
+
+  // Verify that the profile was actually set.
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+
+  // Verify that the country code is still the initial one.
+  EXPECT_EQ(actual_country_code, expected_country_code);
 }
 
 TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {

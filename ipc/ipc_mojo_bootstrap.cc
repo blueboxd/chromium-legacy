@@ -734,7 +734,7 @@ class ChannelAssociatedGroupController
           FROM_HERE,
           base::BindOnce(
               &ChannelAssociatedGroupController::SendMessageOnMasterThread,
-              this, base::Passed(message)));
+              this, std::move(*message)));
       return true;
     }
   }

@@ -121,7 +121,7 @@ void MessageHandler::HandleBlockingMessage(
       FROM_HERE,
       RunWhileLocked(base::BindOnce(
           &HandleBlockingMessageWrapper, handler_if_->HandleBlockingMessage,
-          instance_, user_data_, var, base::Passed(std::move(reply_msg)))));
+          instance_, user_data_, var, std::move(reply_msg))));
 }
 
 MessageHandler::MessageHandler(

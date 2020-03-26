@@ -18,6 +18,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/ErrorPageCallbackTest.java",
     "src/org/chromium/weblayer/test/EventUtils.java",
     "src/org/chromium/weblayer/test/ExecuteScriptTest.java",
+    "src/org/chromium/weblayer/test/ExternalNavigationTest.java",
     "src/org/chromium/weblayer/test/FindInPageTest.java",
     "src/org/chromium/weblayer/test/FullscreenCallbackTest.java",
     "src/org/chromium/weblayer/test/InputTypesTest.java",

@@ -83,7 +83,9 @@
     <iron-collapse id="safetyCheckCollapse"
         opened="[[shouldShowChildren_(parentStatus_)]]">
       <div class="settings-box two-line">
-        <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]" aria-hidden="true"
+        <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
+            role="img"
+            aria-label="[[getUpdatesIconAriaLabel_(updatesStatus_)]]"
             src="[[getUpdatesIconSrc_(updatesStatus_)]]"
             class$="[[getUpdatesIconClass_(updatesStatus_)]]">
         </iron-icon>
@@ -113,7 +115,8 @@
         <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
             src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
             class$="[[getPasswordsIconClass_(passwordsStatus_)]]"
-            aria-hidden="true">
+            role="img"
+            aria-label="[[getPasswordsIconAriaLabel_(passwordsStatus_)]]">
         </iron-icon>
         <div class="start settings-box-text">
           <div>$i18n{passwords}</div>
@@ -135,7 +138,8 @@
         <iron-icon icon="[[getSafeBrowsingIcon_(safeBrowsingStatus_)]]"
             src="[[getSafeBrowsingIconSrc_(safeBrowsingStatus_)]]"
             class$="[[getSafeBrowsingIconClass_(safeBrowsingStatus_)]]"
-            aria-hidden="true">
+            role="img"
+            aria-label="[[getSafeBrowsingIconAriaLabel_(safeBrowsingStatus_)]]">
         </iron-icon>
         <div class="start settings-box-text">
           <div>$i18n{safeBrowsingSectionLabel}</div>
@@ -164,7 +168,8 @@
         <iron-icon icon="[[getExtensionsIcon_(extensionsStatus_)]]"
             src="[[getExtensionsIconSrc_(extensionsStatus_)]]"
             class$="[[getExtensionsIconClass_(extensionsStatus_)]]"
-            aria-hidden="true">
+            role="img"
+            aria-label="[[getExtensionsIconAriaLabel_(extensionsStatus_)]]">
         </iron-icon>
         <div class="start settings-box-text">
           <div>$i18n{safetyCheckExtensionsPrimaryLabel}</div>

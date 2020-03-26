@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/video_encoder_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -42,7 +44,7 @@ void EncodeVideoFrameOnEncoderThread(
   encoded_frame->encode_completion_time = environment->Clock()->NowTicks();
   environment->PostTask(CastEnvironment::MAIN, FROM_HERE,
                         base::BindOnce(std::move(frame_encoded_callback),
-                                       base::Passed(&encoded_frame)));
+                                       std::move(encoded_frame)));
 }
 }  // namespace
 

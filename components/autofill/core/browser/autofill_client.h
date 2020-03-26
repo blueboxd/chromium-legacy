@@ -255,6 +255,10 @@ class AutofillClient : public RiskDataLoader {
   // Returns the current best guess as to the page's display language.
   virtual std::string GetPageLanguage() const;
 
+  // Retrieves the country code of the user from Chrome variation service.
+  // If the variation service is not available, return an empty string.
+  virtual std::string GetVariationConfigCountryCode() const;
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Returns the whitelists for virtual cards. Used on desktop platforms only.
   virtual std::vector<std::string> GetMerchantWhitelistForVirtualCards() = 0;

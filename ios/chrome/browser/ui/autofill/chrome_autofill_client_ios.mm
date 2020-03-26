@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -26,6 +27,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/ukm/ios/ukm_url_recorder.h"
+#include "components/variations/service/variations_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
@@ -198,6 +200,16 @@ std::string ChromeAutofillClientIOS::GetPageLanguage() const {
       return translate_manager->GetLanguageState().original_language();
   }
   return std::string();
+}
+
+std::string ChromeAutofillClientIOS::GetVariationConfigCountryCode() const {
+  variations::VariationsService* variation_service =
+      GetApplicationContext()->GetVariationsService();
+  // Retrieves the country code from variation service and converts it to upper
+  // case.
+  return variation_service
+             ? base::ToUpperASCII(variation_service->GetLatestCountry())
+             : std::string();
 }
 
 void ChromeAutofillClientIOS::ShowAutofillSettings(

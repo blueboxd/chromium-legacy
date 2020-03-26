@@ -5,6 +5,7 @@
 #include "content/public/browser/web_ui_url_loader_factory.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
@@ -203,7 +204,7 @@ void StartURLLoader(
   // owned by |source| keep a reference to it in the callback.
   URLDataSource::GotDataCallback data_available_callback = base::BindOnce(
       DataAvailable, std::move(resource_response), replacements, replace_in_js,
-      base::RetainedRef(source), base::Passed(&client_remote));
+      base::RetainedRef(source), std::move(client_remote));
 
   // TODO(jam): once we only have this code path for WebUI, and not the
   // URLLRequestJob one, then we should switch data sources to run on the UI

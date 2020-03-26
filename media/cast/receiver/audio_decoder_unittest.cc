@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
@@ -129,7 +131,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(
             &AudioDecoder::DecodeFrame, base::Unretained(audio_decoder_.get()),
-            base::Passed(&encoded_frame),
+            std::move(encoded_frame),
             base::Bind(&AudioDecoderTest::OnDecodedFrame,
                        base::Unretained(this), num_dropped_frames == 0)));
   }

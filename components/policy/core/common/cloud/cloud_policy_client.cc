@@ -239,7 +239,7 @@ void CloudPolicyClient::RegisterWithCertificate(
   signing_service_->SignData(
       data.SerializeAsString(),
       base::BindOnce(&CloudPolicyClient::OnRegisterWithCertificateRequestSigned,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&auth)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(auth)));
 }
 
 void CloudPolicyClient::RegisterWithToken(const std::string& token,

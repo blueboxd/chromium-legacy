@@ -32,27 +32,25 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
  public:
   using InteractionCallback = base::RepeatingCallback<void()>;
 
-  // Constructor. |event_handler| and |jcontext| must outlive this instance.
+  // Constructor. |event_handler|, |user_model|, |basic_interactions|,
+  // |views|, |jcontext| and |jdelegate| must outlive this instance.
   InteractionHandlerAndroid(
       EventHandler* event_handler,
-      base::android::ScopedJavaLocalRef<jobject> jcontext);
+      UserModel* user_model,
+      BasicInteractions* basic_interactions,
+      std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+      base::android::ScopedJavaGlobalRef<jobject> jcontext,
+      base::android::ScopedJavaGlobalRef<jobject> jdelegate);
   ~InteractionHandlerAndroid() override;
 
   void StartListening();
   void StopListening();
 
-  // Creates callbacks for each interaction in |proto| as well as the
-  // corresponding view events in |views|. Returns false if |proto| is invalid.
-  // |views| must outlive this interaction handler.
-  bool AddInteractionsFromProto(
-      const InteractionsProto& proto,
-      JNIEnv* env,
-      std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
-      base::android::ScopedJavaGlobalRef<jobject> jdelegate,
-      UserModel* user_model,
-      BasicInteractions* basic_interactions);
+  // Creates callbacks for each interaction in |proto|. Returns false if |proto|
+  // is invalid.
+  bool AddInteractionsFromProto(const InteractionsProto& proto);
 
-  // Overrides autofill_assistant::EventHandler::Observer:
+  // Overrides autofill_assistant::EventHandler::Observer.
   void OnEvent(const EventHandler::EventKey& key) override;
 
  private:
@@ -64,7 +62,11 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
       interactions_;
 
   EventHandler* event_handler_ = nullptr;
+  UserModel* user_model_ = nullptr;
+  BasicInteractions* basic_interactions_ = nullptr;
+  std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views_;
   base::android::ScopedJavaGlobalRef<jobject> jcontext_ = nullptr;
+  base::android::ScopedJavaGlobalRef<jobject> jdelegate_ = nullptr;
   bool is_listening_ = false;
   DISALLOW_COPY_AND_ASSIGN(InteractionHandlerAndroid);
 };

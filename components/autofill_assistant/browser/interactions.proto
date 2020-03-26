@@ -49,6 +49,7 @@ message EventProto {
     OnModelValueChangedEventProto on_value_changed = 1;
     OnViewClickedEventProto on_view_clicked = 2;
     OnUserActionCalled on_user_action_called = 3;
+    OnTextLinkClickedProto on_text_link_clicked = 4;
   }
 }
 
@@ -68,6 +69,13 @@ message OnViewClickedEventProto {
 message OnUserActionCalled {
   // The identifier of the user action to observe.
   optional string user_action_identifier = 1;
+}
+
+// Event that is triggered when clicking the specified text link.
+message OnTextLinkClickedProto {
+  // The number of the text link to observe, i.e., the number in the html-style
+  // tag <link3>...</link3>.
+  optional int32 text_link = 1;
 }
 
 // Callback that writes the specified value to |model_identifier|.

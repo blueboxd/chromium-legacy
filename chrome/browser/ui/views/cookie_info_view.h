@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -43,20 +44,27 @@ class CookieInfoView : public views::ScrollView {
   // Enables or disables the cookie property text fields.
   void EnableCookieDisplay(bool enabled);
 
- private:
-  // Layout helper routines.
-  views::Textfield* AddLabelRow(int layout_id,
-                                views::GridLayout* layout,
-                                int label_message_id);
+  void OnThemeChanged() override;
 
-  // Individual property labels
-  views::Textfield* name_value_field_ = nullptr;
-  views::Textfield* content_value_field_ = nullptr;
-  views::Textfield* domain_value_field_ = nullptr;
-  views::Textfield* path_value_field_ = nullptr;
-  views::Textfield* send_for_value_field_ = nullptr;
-  views::Textfield* created_value_field_ = nullptr;
-  views::Textfield* expires_value_field_ = nullptr;
+ private:
+  enum class CookieProperty {
+    kName,
+    kContent,
+    kDomain,
+    kPath,
+    kSendFor,
+    kCreated,
+    kExpires,
+  };
+
+  // Layout helper routines.
+  views::Textfield* AddTextfieldRow(int layout_id,
+                                    views::GridLayout* layout,
+                                    int label_message_id);
+
+  void SetTextfieldColors();
+
+  std::unordered_map<CookieProperty, views::Textfield*> property_textfields_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieInfoView);
 };

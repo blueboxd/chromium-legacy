@@ -57,7 +57,7 @@ bool SizeAdaptableVideoEncoderBase::EncodeVideoFrame(
       std::move(video_frame), reference_time,
       base::BindOnce(&SizeAdaptableVideoEncoderBase::OnEncodedVideoFrame,
                      weak_factory_.GetWeakPtr(),
-                     base::Passed(std::move(frame_encoded_callback))));
+                     std::move(frame_encoded_callback)));
   if (is_frame_accepted) {
     ++frames_in_encoder_;
   }

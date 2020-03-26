@@ -1242,7 +1242,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // Counts the time overhead of all the hops from the UI to the IO threads.
   base::TimeDelta ui_to_io_time_;
 
-  // Only used when NavigationLoaderOnUI is enabled:
   BrowserContext* browser_context_;
 
   network::mojom::URLResponseHeadPtr head_;

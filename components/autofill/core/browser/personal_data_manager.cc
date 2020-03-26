@@ -258,11 +258,17 @@ class PersonalDatabaseHelper
   DISALLOW_COPY_AND_ASSIGN(PersonalDatabaseHelper);
 };
 
-PersonalDataManager::PersonalDataManager(const std::string& app_locale)
+PersonalDataManager::PersonalDataManager(
+    const std::string& app_locale,
+    const std::string& variations_country_code)
     : app_locale_(app_locale),
+      variations_country_code_(variations_country_code),
       test_data_creator_(kDisusedDataModelDeletionTimeDelta, app_locale_) {
   database_helper_ = std::make_unique<PersonalDatabaseHelper>(this);
 }
+
+PersonalDataManager::PersonalDataManager(const std::string& app_locale)
+    : PersonalDataManager(app_locale, std::string()) {}
 
 void PersonalDataManager::Init(
     scoped_refptr<AutofillWebDataService> profile_database,
@@ -1482,6 +1488,13 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
     const {
   if (default_country_code_.empty())
     default_country_code_ = MostCommonCountryCodeFromProfiles();
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillUseVariationCountryCode)) {
+    // Failing that, use the country code from variations service.
+    if (default_country_code_.empty())
+      default_country_code_ = variations_country_code_;
+  }
 
   // Failing that, guess based on system timezone.
   if (default_country_code_.empty())

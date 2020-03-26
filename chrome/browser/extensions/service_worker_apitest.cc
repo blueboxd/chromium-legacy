@@ -1946,11 +1946,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // PendingTasks correctly. Also tests that subsequent tasks are properly
 // cleared.
 // Regression test for https://crbug.com/1019161.
-//
-// Flaky (https://crbug.com/1063476): Fails DCHECK(version_ptr) in
-// ServiceWorkerContextWrapper.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       DISABLED_WorkerStartFailureClearsPendingTasks) {
+                       WorkerStartFailureClearsPendingTasks) {
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
   content::ServiceWorkerContext* context =
@@ -1990,13 +1987,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ASSERT_EQ(kTestExtensionId, extension->id());
   LazyContextId context_id(browser()->profile(), extension->id(),
                            extension->url());
-  ServiceWorkerStartFailureObserver worker_start_failure_observer(
-      extension->id());
-
   // Let the worker start so it rejects 'install' event. This causes the worker
   // to stop.
   observer.WaitForWorkerStart();
   observer.WaitForWorkerStop();
+
+  ServiceWorkerStartFailureObserver worker_start_failure_observer(
+      extension->id());
 
   ServiceWorkerTaskQueue* service_worker_task_queue =
       ServiceWorkerTaskQueue::Get(browser()->profile());

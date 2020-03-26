@@ -689,7 +689,7 @@ void FakeVideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakePhotoDevice::TakePhoto,
                                 base::Unretained(photo_device_.get()),
-                                base::Passed(&callback), elapsed_time_));
+                                std::move(callback), elapsed_time_));
 }
 
 OwnBufferFrameDeliverer::OwnBufferFrameDeliverer(

@@ -25,7 +25,9 @@ import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.core.deps.guava.base.Preconditions;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.text.Spanned;
+import android.text.SpannedString;
 import android.text.style.ClickableSpan;
+import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -127,7 +129,11 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    /** Checks that a text view has a specific typeface style. */
+    /**
+     * Checks that a text view has a specific typeface style. NOTE: this only works for views that
+     * explicitly set the text style, *NOT* for text spans! @see {@link #hasTypefaceSpan(int, int,
+     * int)}
+     */
     public static TypeSafeMatcher<View> hasTypefaceStyle(/*@Typeface.Style*/ int style) {
         return new TypeSafeMatcher<View>() {
             @Override
@@ -145,6 +151,46 @@ class AutofillAssistantUiTestUtil {
             @Override
             public void describeTo(Description description) {
                 description.appendText("hasTypefaceStyle");
+            }
+        };
+    }
+
+    /**
+     * Checks that a text view has a span with the specified style in the specified region.
+     * @param start The start offset of the style span
+     * @param end The end offset of the style span
+     * @param style The style to check for
+     * @return A matcher that returns true if the view satisfies the condition.
+     */
+    public static TypeSafeMatcher<View> hasTypefaceSpan(
+            int start, int end, /*@Typeface.Style*/ int style) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View item) {
+                if (!(item instanceof TextView)) {
+                    return false;
+                }
+                TextView textView = (TextView) item;
+                if (!(textView.getText() instanceof SpannedString)) {
+                    return false;
+                }
+                if (start >= textView.length() || end >= textView.length()) {
+                    return false;
+                }
+                StyleSpan[] spans =
+                        ((SpannedString) textView.getText()).getSpans(start, end, StyleSpan.class);
+                for (StyleSpan span : spans) {
+                    if (span.getStyle() == style) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(
+                        "hasTypefaceSpan(" + style + ") in [" + start + ", " + end + "]");
             }
         };
     }

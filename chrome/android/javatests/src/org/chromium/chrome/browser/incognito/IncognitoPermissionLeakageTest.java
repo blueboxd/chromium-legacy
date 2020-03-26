@@ -138,17 +138,18 @@ public class IncognitoPermissionLeakageTest {
         ActivityType activity1 = ActivityType.valueOf(activityType1);
         ActivityType activity2 = ActivityType.valueOf(activityType2);
 
-        // Request permission here and accept it.
         Tab tab1 = activity1.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
+
+        // Request permission in activity1's tab and accept it.
         requestLocationPermission(tab1);
         assertDialogIsShown();
         grantPermission();
 
-        // Get permission here from second activity.
         Tab tab2 = activity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
 
+        // Request permission in activity2's tab.
         requestLocationPermission(tab2);
         // Permission is asked again.
         assertDialogIsShown();
@@ -159,21 +160,24 @@ public class IncognitoPermissionLeakageTest {
     @UseMethodParameter(TestParams.IncognitoToIncognito.class)
     public void testAllowPermissionDoNotLeakFromIncognitoToIncognito(
             String incognitoActivityType1, String incognitoActivityType2) throws Exception {
+        // At least one of the incognitoActivity is an incognito CCT.
         ActivityType incognitoActivity1 = ActivityType.valueOf(incognitoActivityType1);
         ActivityType incognitoActivity2 = ActivityType.valueOf(incognitoActivityType2);
 
-        // Request permission here and accept it.
         Tab tab1 = incognitoActivity1.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
+
+        // Request permission in incognitoActivity1's tab and accept it.
         requestLocationPermission(tab1);
         assertDialogIsShown();
         grantPermission();
 
-        // Get permission here from second activity.
         Tab tab2 = incognitoActivity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
 
+        // Request permission in incognitoActivity2's tab.
         requestLocationPermission(tab2);
+
         // Incognito CCTs with isolated profiles should not inherit permissions from other sessions.
         if (CustomTabIncognitoManager.hasIsolatedProfile()) {
             // Permission is asked again, therefore the previous permission wasn't inherited.
@@ -191,16 +195,19 @@ public class IncognitoPermissionLeakageTest {
         ActivityType incognitoActivity1 = ActivityType.valueOf(incognitoActivityType1);
         ActivityType incognitoActivity2 = ActivityType.valueOf(incognitoActivityType2);
 
-        // Request permission here and accept it.
         Tab tab1 = incognitoActivity1.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
+
+        // Request permission in incognitoActivity1's tab and block it.
         requestLocationPermission(tab1);
         assertDialogIsShown();
         blockPermission();
 
-        // Get permission here from second activity.
         Tab tab2 = incognitoActivity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
+
+        // Request permission now in incognitoActivity2's tab.
+        requestLocationPermission(tab2);
 
         // Incognito CCTs with isolated profiles should not inherit permissions from other sessions.
         if (CustomTabIncognitoManager.hasIsolatedProfile()) {
@@ -219,20 +226,22 @@ public class IncognitoPermissionLeakageTest {
         ActivityType regularActivity = ActivityType.valueOf(regularActivityType);
         ActivityType incognitoActivity = ActivityType.valueOf(incognitoActivityType);
 
-        // Request permission here and accept it.
         Tab tab1 = regularActivity.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
+
+        // Request permission in regularActivity's tab and block it.
         requestLocationPermission(tab1);
         assertDialogIsShown();
         blockPermission();
 
-        // Get permission here from second activity.
         Tab tab2 = incognitoActivity.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
 
+        // Request permission in incognitoActivity's tab.
+        requestLocationPermission(tab2);
+
         // Dialog is not shown again to the new tab as the permission was blocked for this site in
         // regular.
-        requestLocationPermission(tab2);
         assertDialogIsNotShown();
     }
 
@@ -244,19 +253,22 @@ public class IncognitoPermissionLeakageTest {
         ActivityType incognitoActivity = ActivityType.valueOf(incognitoActivityType);
         ActivityType regularActivity = ActivityType.valueOf(regularActivityType);
 
-        // Request permission here and accept it.
         Tab tab1 = incognitoActivity.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
+
+        // Request permission in incognitoActivity's tab and accept it.
         requestLocationPermission(tab1);
+
         assertDialogIsShown();
         blockPermission();
 
-        // Get permission here from second activity.
         Tab tab2 = regularActivity.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mPermissionTestPage);
 
-        // Dialog is shown again to the new tab and the permission is therefore not leaked.
+        // Request permission in regularActivity's tab.
         requestLocationPermission(tab2);
+
+        // Dialog is shown again in tab2 and the permission is therefore not leaked.
         assertDialogIsShown();
     }
 }

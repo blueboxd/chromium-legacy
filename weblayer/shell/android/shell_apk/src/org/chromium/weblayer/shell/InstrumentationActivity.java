@@ -103,6 +103,24 @@ public class InstrumentationActivity extends FragmentActivity {
         super.startActivityFromFragment(fragment, intent, requestCode, options);
     }
 
+    @Override
+    public void startActivity(Intent intent) {
+        if (mIntentInterceptor != null) {
+            mIntentInterceptor.interceptIntent(null, intent, 0, null);
+            return;
+        }
+        super.startActivity(intent);
+    }
+
+    @Override
+    public boolean startActivityIfNeeded(Intent intent, int requestCode) {
+        if (mIntentInterceptor != null) {
+            mIntentInterceptor.interceptIntent(null, intent, requestCode, null);
+            return true;
+        }
+        return super.startActivityIfNeeded(intent, requestCode);
+    }
+
     public View getTopContentsContainer() {
         return mTopContentsContainer;
     }

@@ -132,8 +132,7 @@ void VideoFramePump::OnCaptureResult(
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
       base::BindOnce(&VideoFramePump::EncodeFrame, encoder_.get(),
-                     base::Passed(&frame),
-                     base::Passed(&captured_frame_timestamps_)),
+                     std::move(frame), std::move(captured_frame_timestamps_)),
       base::BindOnce(&VideoFramePump::OnFrameEncoded,
                      weak_factory_.GetWeakPtr()));
 }

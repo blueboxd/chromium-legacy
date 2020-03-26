@@ -30,6 +30,11 @@ class AssistantGenericUiDelegate {
       const base::android::JavaParamRef<jstring>& jmodel_identifier,
       const base::android::JavaParamRef<jobject>& jvalue);
 
+  // A text link was clicked.
+  void OnTextLinkClicked(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& jcaller,
+                         jint jlink);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

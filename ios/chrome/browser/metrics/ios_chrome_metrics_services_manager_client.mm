@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 #include "ios/chrome/browser/variations/ios_chrome_variations_service_client.h"
 #include "ios/chrome/browser/variations/ios_ui_string_overrider_factory.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

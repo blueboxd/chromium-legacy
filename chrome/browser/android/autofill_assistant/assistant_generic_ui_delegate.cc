@@ -5,6 +5,7 @@
 #include "chrome/browser/android/autofill_assistant/assistant_generic_ui_delegate.h"
 
 #include "base/android/jni_string.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantGenericUiDelegate_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
@@ -48,6 +49,14 @@ void AssistantGenericUiDelegate::OnValueChanged(
       ui_controller_android_utils::SafeConvertJavaStringToNative(
           env, jmodel_identifier),
       ui_controller_android_utils::ToNativeValue(env, jvalue));
+}
+
+void AssistantGenericUiDelegate::OnTextLinkClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint jlink) {
+  ui_controller_->OnViewEvent(
+      {EventProto::kOnTextLinkClicked, base::NumberToString(jlink)});
 }
 
 base::android::ScopedJavaGlobalRef<jobject>

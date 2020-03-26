@@ -45,7 +45,9 @@ constexpr char kStubSigninExtensionPolicyFileNameFragment[] =
 constexpr char kStubPerAccountPolicyKeyFileName[] = "policy.pub";
 constexpr char kEmptyAccountId[] = "";
 
-FakeSessionManagerClient* g_instance = nullptr;
+// Global flag weather the g_instance in SessionManagerClient is a
+// FakeSessionManagerClient or not.
+bool g_is_fake = false;
 
 // Helper to asynchronously retrieve a file's content.
 std::string GetFileContent(const base::FilePath& path) {
@@ -220,21 +222,32 @@ void PostReply(const base::Location& from_here,
 FakeSessionManagerClient::FakeSessionManagerClient()
     : FakeSessionManagerClient(PolicyStorageType::kInMemory) {}
 
+// This constructor will implicitly create a global static variable by
+// SessionManagerClient::SessionManagerClient() that can be retrieved
+// via FakeSessionManagerClient::Get() down casted. With the global
+// flag g_is_fake we make sure that either the SessionManagerClient or
+// the FakeSessionManagerClient constructor is called but not both.
 FakeSessionManagerClient::FakeSessionManagerClient(
     PolicyStorageType policy_storage)
     : policy_storage_(policy_storage) {
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_is_fake);
+  g_is_fake = true;
 }
 
 FakeSessionManagerClient::~FakeSessionManagerClient() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+  g_is_fake = false;
 }
 
 // static
+// Returns the static instance of FakeSessionManagerClient if the
+// g_instance in SessionManagerClientis a FakeSessionManagerClient otherwise it
+// will return nullptr.
 FakeSessionManagerClient* FakeSessionManagerClient::Get() {
-  return g_instance;
+  SessionManagerClient* client = SessionManagerClient::Get();
+  if (g_is_fake)
+    return static_cast<FakeSessionManagerClient*>(client);
+  else
+    return nullptr;
 }
 
 void FakeSessionManagerClient::SetStubDelegate(StubDelegate* delegate) {

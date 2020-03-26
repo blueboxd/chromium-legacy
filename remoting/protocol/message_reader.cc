@@ -109,7 +109,7 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&MessageReader::RunCallback, weak_factory_.GetWeakPtr(),
-                       base::Passed(base::WrapUnique(buffer))));
+                       base::WrapUnique(buffer)));
   }
 }
 

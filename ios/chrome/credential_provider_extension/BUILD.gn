@@ -51,6 +51,7 @@ ios_appex_bundle("credential_provider_extension") {
   deps = [
     ":system_strings",
     "//base",
+    "//ios/chrome/common/app_group:command",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/credential_provider_extension/resources",
@@ -68,6 +69,7 @@ ios_appex_bundle("credential_provider_extension") {
   ]
 
   extra_substitutions = [
+    "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
     "CREDENTIAL_PROVIDER_EXTENSION_BUNDLE_ID=$chromium_bundle_id.CredentialProviderExtension",
   ]

@@ -30,7 +30,7 @@ void LogEventDispatcher::DispatchFrameEvent(
   } else {
     env_->PostTask(CastEnvironment::MAIN, FROM_HERE,
                    base::BindOnce(&LogEventDispatcher::Impl::DispatchFrameEvent,
-                                  impl_, base::Passed(&event)));
+                                  impl_, std::move(event)));
   }
 }
 
@@ -42,7 +42,7 @@ void LogEventDispatcher::DispatchPacketEvent(
     env_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(&LogEventDispatcher::Impl::DispatchPacketEvent, impl_,
-                       base::Passed(&event)));
+                       std::move(event)));
   }
 }
 
@@ -56,8 +56,7 @@ void LogEventDispatcher::DispatchBatchOfEvents(
     env_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(&LogEventDispatcher::Impl::DispatchBatchOfEvents, impl_,
-                       base::Passed(&frame_events),
-                       base::Passed(&packet_events)));
+                       std::move(frame_events), std::move(packet_events)));
   }
 }
 

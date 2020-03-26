@@ -76,6 +76,8 @@ class PersonalDataManager : public KeyedService,
                             public AccountInfoGetter {
  public:
   explicit PersonalDataManager(const std::string& app_locale);
+  PersonalDataManager(const std::string& app_locale,
+                      const std::string& country_code);
   ~PersonalDataManager() override;
 
   // Kicks off asynchronous loading of profiles and credit cards.
@@ -329,7 +331,21 @@ class PersonalDataManager : public KeyedService,
   // Also see SetProfile for more details.
   virtual void Refresh();
 
+  // Returns the |app_locale_| that was provided during construction.
   const std::string& app_locale() const { return app_locale_; }
+
+#ifdef UNIT_TEST
+  // Returns the country code that was provided from the variations service
+  // during construction.
+  const std::string& variations_country_code_for_testing() const {
+    return variations_country_code_;
+  }
+
+  // Sets the country code from the variations service.
+  void set_variations_country_code_for_testing(std::string country_code) {
+    variations_country_code_ = country_code;
+  }
+#endif
 
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
@@ -736,7 +752,12 @@ class PersonalDataManager : public KeyedService,
   // migrating from using email to Gaia ID as th account identifier.
   void MigrateUserOptedInWalletSyncTransportIfNeeded();
 
+  // Stores the |app_locale| supplied on construction.
   const std::string app_locale_;
+
+  // Stores the country code that was provided from the variations service
+  // during construction.
+  std::string variations_country_code_;
 
   // The default country code for new addresses.
   mutable std::string default_country_code_;

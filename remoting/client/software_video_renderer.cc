@@ -155,10 +155,10 @@ void SoftwareVideoRenderer::ProcessVideoPacket(
 
   base::PostTaskAndReplyWithResult(
       decode_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&DoDecodeFrame, decoder_.get(), base::Passed(&packet),
-                     base::Passed(&frame)),
+      base::BindOnce(&DoDecodeFrame, decoder_.get(), std::move(packet),
+                     std::move(frame)),
       base::BindOnce(&SoftwareVideoRenderer::RenderFrame,
-                     weak_factory_.GetWeakPtr(), base::Passed(&frame_stats),
+                     weak_factory_.GetWeakPtr(), std::move(frame_stats),
                      base::AdaptCallbackForRepeating(done_runner.Release())));
 }
 
@@ -178,7 +178,7 @@ void SoftwareVideoRenderer::RenderFrame(
   consumer_->DrawFrame(std::move(frame),
                        base::BindOnce(&SoftwareVideoRenderer::OnFrameRendered,
                                       weak_factory_.GetWeakPtr(),
-                                      base::Passed(&stats), std::move(done)));
+                                      std::move(stats), std::move(done)));
 }
 
 void SoftwareVideoRenderer::OnFrameRendered(

@@ -15,8 +15,23 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/variations/service/variations_service.h"
 
 namespace autofill {
+
+namespace {
+
+// Return the latest country code from the chrome variation service.
+// If the variation service is not available, an empty string is returned.
+const std::string GetCountryCodeFromVariations() {
+  variations::VariationsService* variation_service =
+      g_browser_process->variations_service();
+
+  return variation_service
+             ? base::ToUpperASCII(variation_service->GetLatestCountry())
+             : std::string();
+}
+}  // namespace
 
 // static
 PersonalDataManager* PersonalDataManagerFactory::GetForProfile(
@@ -47,7 +62,8 @@ KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   PersonalDataManager* service =
-      new PersonalDataManager(g_browser_process->GetApplicationLocale());
+      new PersonalDataManager(g_browser_process->GetApplicationLocale(),
+                              GetCountryCodeFromVariations());
   auto local_storage = WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   auto account_storage = WebDataServiceFactory::GetAutofillWebDataForAccount(

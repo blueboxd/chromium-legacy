@@ -91,11 +91,11 @@ public class AssistantViewFactory {
 
     /** Creates a {@code android.widget.TextView} widget. */
     @CalledByNative
-    public static TextView createTextView(
-            Context context, String identifier, String text, @Nullable String textAppearance) {
+    public static TextView createTextView(Context context, AssistantGenericUiDelegate delegate,
+            String identifier, String text, @Nullable String textAppearance) {
         TextView textView = new TextView(context);
+        AssistantViewInteractions.setViewText(textView, text, delegate);
         textView.setTag(identifier);
-        textView.setText(text);
         if (textAppearance != null) {
             int styleId = context.getResources().getIdentifier(
                     textAppearance, "style", context.getPackageName());

@@ -4,6 +4,8 @@
 
 #include "media/remoting/demuxer_stream_adapter.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -186,7 +188,7 @@ void DemuxerStreamAdapter::Initialize(int remote_callback_handle) {
                   << '}';
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RpcBroker::SendMessageToRemote, rpc_broker_,
-                                base::Passed(&rpc)));
+                                std::move(rpc)));
 }
 
 void DemuxerStreamAdapter::ReadUntil(std::unique_ptr<pb::RpcMessage> message) {
@@ -371,7 +373,7 @@ void DemuxerStreamAdapter::SendReadAck() {
                   << '}';
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RpcBroker::SendMessageToRemote, rpc_broker_,
-                                base::Passed(&rpc)));
+                                std::move(rpc)));
   // Resets callback handle after completing the reading request.
   read_until_callback_handle_ = RpcBroker::kInvalidHandle;
 

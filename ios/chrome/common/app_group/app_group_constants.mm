@@ -58,6 +58,8 @@ NSString* const kOpenCommandSourceTodayExtension = @"ChromeTodayExtension";
 NSString* const kOpenCommandSourceContentExtension = @"ChromeContentExtension";
 NSString* const kOpenCommandSourceSearchExtension = @"ChromeSearchExtension";
 NSString* const kOpenCommandSourceShareExtension = @"ChromeShareExtension";
+NSString* const kOpenCommandSourceCredentialsExtension =
+    @"ChromeCredentialsExtension";
 
 NSString* const kSuggestedItems = @"SuggestedItems";
 

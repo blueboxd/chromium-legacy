@@ -276,6 +276,9 @@ extern const char kChromeOSGestureEducationHelpURL[];
 // Palette help link for Chrome.
 extern const char kChromePaletteHelpURL[];
 
+// The URL for "How do I sign in to Classroom?" page.
+extern const char kClassroomSigninLearnMoreURL[];
+
 extern const char kCrosScheme[];
 
 extern const char kCupsPrintLearnMoreURL[];

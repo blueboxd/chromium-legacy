@@ -33,6 +33,8 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/variations/service/variations_field_trial_creator.h"
+#include "components/variations/service/variations_service.h"
 
 namespace autofill {
 
@@ -66,13 +68,24 @@ bool IsValidFieldTypeAndValue(const std::set<ServerFieldType>& types_seen,
 // No verification of validity of the contents is performed. This is an
 // existence check only.
 bool IsMinimumAddress(const AutofillProfile& profile,
+                      const std::string& variation_country_code,
                       const std::string& app_locale) {
   // All countries require at least one address line.
   if (profile.GetRawInfo(ADDRESS_HOME_LINE1).empty())
     return false;
 
+  // Try to acquire the country code form the filled form.
   std::string country_code =
       base::UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillUseVariationCountryCode)) {
+    // As a fallback, use the finch state to get a country code.
+    if (country_code.empty() && !variation_country_code.empty())
+      country_code = variation_country_code;
+  }
+
+  // As the last resort, derive the country code from the app_locale.
   if (country_code.empty())
     country_code = AutofillCountry::CountryCodeForLocale(app_locale);
 
@@ -203,9 +216,11 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
 }
 
 // static
-bool FormDataImporter::IsValidLearnableProfile(const AutofillProfile& profile,
-                                               const std::string& app_locale) {
-  if (!IsMinimumAddress(profile, app_locale))
+bool FormDataImporter::IsValidLearnableProfile(
+    const AutofillProfile& profile,
+    const std::string& variation_country_code,
+    const std::string& app_locale) {
+  if (!IsMinimumAddress(profile, variation_country_code, app_locale))
     return false;
 
   base::string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
@@ -360,8 +375,12 @@ bool FormDataImporter::ImportAddressProfileForSection(
 
   // Reject the profile if minimum address and validation requirements are not
   // met.
-  if (!IsValidLearnableProfile(candidate_profile, app_locale_))
+  const std::string variation_country_code =
+      client_->GetVariationConfigCountryCode();
+  if (!IsValidLearnableProfile(candidate_profile, variation_country_code,
+                               app_locale_)) {
     return false;
+  }
 
   // Delaying |SaveImportedProfile| is safe here because PersonalDataManager
   // outlives this class.

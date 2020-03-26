@@ -97,7 +97,7 @@ class TestDownloader : public PaymentManifestDownloader {
   // PaymentManifestDownloader implementation.
   void InitiateDownload(const url::Origin& request_initiator,
                         const GURL& url,
-                        const std::string& method,
+                        Download::Type download_type,
                         int allowed_number_of_redirects,
                         PaymentManifestDownloadCallback callback) override;
 

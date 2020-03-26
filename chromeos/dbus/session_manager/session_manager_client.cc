@@ -1093,8 +1093,10 @@ void SessionManagerClient::InitializeFake() {
 
 // static
 void SessionManagerClient::InitializeFakeInMemory() {
-  new FakeSessionManagerClient(
-      FakeSessionManagerClient::PolicyStorageType::kInMemory);
+  if (!FakeSessionManagerClient::Get()) {
+    new FakeSessionManagerClient(
+        FakeSessionManagerClient::PolicyStorageType::kInMemory);
+  }
 }
 
 // static

@@ -439,7 +439,7 @@ FileIOResource::FileHolder::~FileHolder() {
     base::TaskRunner* file_task_runner =
         PpapiGlobals::Get()->GetFileTaskRunner();
     file_task_runner->PostTask(FROM_HERE,
-                               base::BindOnce(&DoClose, Passed(&file_)));
+                               base::BindOnce(&DoClose, std::move(file_)));
   }
 }
 

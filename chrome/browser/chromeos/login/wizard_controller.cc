@@ -611,7 +611,6 @@ void WizardController::OnOwnershipStatusCheckDone(
 }
 
 void WizardController::ShowLoginScreen() {
-  LoginScreenContext context;
   // This may be triggered by multiply asynchronous events from the JS side.
   if (login_screen_started_)
     return;
@@ -622,7 +621,7 @@ void WizardController::ShowLoginScreen() {
   }
   VLOG(1) << "Showing login screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SPECIAL_LOGIN);
-  GetLoginDisplayHost()->StartSignInScreen(context);
+  GetLoginDisplayHost()->StartSignInScreen();
   login_screen_started_ = true;
 }
 

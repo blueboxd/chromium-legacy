@@ -926,11 +926,21 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
 
   const SharedQuadState* last_sqs = nullptr;
   cc::Region occlusion_in_target_space;
+  cc::Region backdrop_filters_in_target_space;
   bool current_sqs_intersects_occlusion = false;
   int minimum_draw_occlusion_height =
       settings_.kMinimumDrawOcclusionSize.height() * device_scale_factor_;
   int minimum_draw_occlusion_width =
       settings_.kMinimumDrawOcclusionSize.width() * device_scale_factor_;
+
+  base::flat_map<RenderPassId, gfx::Rect> backdrop_filter_rects;
+  for (const auto& pass : frame->render_pass_list) {
+    if (!pass->backdrop_filters.IsEmpty() &&
+        pass->backdrop_filters.HasFilterThatMovesPixels()) {
+      backdrop_filter_rects[pass->id] = cc::MathUtil::MapEnclosingClippedRect(
+          pass->transform_to_root_target, pass->output_rect);
+    }
+  }
 
   const auto& pass = frame->render_pass_list.back();
   // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
@@ -940,14 +950,26 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
 
   auto quad_list_end = pass->quad_list.end();
   cc::Region occlusion_in_quad_content_space;
+  gfx::Rect render_pass_quads_in_content_space;
   for (auto quad = pass->quad_list.begin(); quad != quad_list_end;) {
     // Skip quad if it is a RenderPassDrawQuad because RenderPassDrawQuad is a
     // special type of DrawQuad where the visible_rect of shared quad state is
-    // not entirely covered by draw quads in it; or the DrawQuad size is
-    // smaller than the kMinimumDrawOcclusionSize; or the DrawQuad is inside
-    // a 3d objects.
-    if (quad->material == ContentDrawQuadBase::Material::kRenderPass ||
-        (quad->visible_rect.width() <= minimum_draw_occlusion_width &&
+    // not entirely covered by draw quads in it.
+    if (quad->material == ContentDrawQuadBase::Material::kRenderPass) {
+      // A RenderPass with backdrop filters may apply to a quad underlying
+      // RenderPassQuad. These regions should be tracked so that correctly
+      // handle splitting and occlusion of the underlying quad.
+      auto it = backdrop_filter_rects.find(
+          RenderPassDrawQuad::MaterialCast(*quad)->render_pass_id);
+      if (it != backdrop_filter_rects.end()) {
+        backdrop_filters_in_target_space.Union(it->second);
+      }
+      ++quad;
+      continue;
+    }
+    // Also skip quad if the DrawQuad size is smaller than the
+    // kMinimumDrawOcclusionSize; or the DrawQuad is inside a 3d object.
+    if ((quad->visible_rect.width() <= minimum_draw_occlusion_width &&
          quad->visible_rect.height() <= minimum_draw_occlusion_height) ||
         quad->shared_quad_state->sorting_context_id != 0) {
       ++quad;
@@ -999,6 +1021,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       // for quads in the current SharedQuadState.
       last_sqs = quad->shared_quad_state;
       occlusion_in_quad_content_space.Clear();
+      render_pass_quads_in_content_space = gfx::Rect();
       const auto current_sqs_in_target_space =
           cc::MathUtil::MapEnclosingClippedRect(
               transform, last_sqs->visible_quad_layer_rect);
@@ -1034,6 +1057,20 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
                 SafeConvertRectForRegion(rect_in_content));
           }
         }
+
+        // A render pass quad may apply some filter or transform to an
+        // underlying quad. Do not split quads when they intersect with a render
+        // pass quad.
+        if (current_sqs_in_target_space.Intersects(
+                backdrop_filters_in_target_space.bounds())) {
+          for (const auto& rect_in_target_space :
+               backdrop_filters_in_target_space) {
+            auto rect_in_content =
+                cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+                    reverse_transform, rect_in_target_space);
+            render_pass_quads_in_content_space.Union(rect_in_content);
+          }
+        }
       }
     }
 
@@ -1060,6 +1097,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       // more than X fragments.
       const bool should_split_quads =
           enable_quad_splitting_ &&
+          !visible_region.Intersects(render_pass_quads_in_content_space) &&
           ReduceComplexity(visible_region, settings_.quad_split_limit,
                            &cached_visible_region_) &&
           CanSplitQuad(quad->material, ComputeArea(cached_visible_region_),

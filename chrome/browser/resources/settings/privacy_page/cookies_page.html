@@ -51,7 +51,10 @@
           on-selected-changed="onCookiesControlRadioChange_">
         <settings-collapse-radio-button id="allowAll"
             name="[[cookiesControlEnum_.ALLOW_ALL]]"
-            label="$i18n{cookiePageAllowAll}">
+            label="$i18n{cookiePageAllowAll}"
+            disabled="[[cookieControlsManagedState_.allowAll.disabled]]"
+            policy-indicator-type=
+                    "[[cookieControlsManagedState_.allowAll.indicator]]">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="settings:cookie"></iron-icon>
@@ -65,7 +68,12 @@
         </settings-collapse-radio-button>
         <settings-collapse-radio-button id="blockThirdPartyIncognito"
             name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
-            label="$i18n{cookiePageBlockThirdIncognito}">
+            label="$i18n{cookiePageBlockThirdIncognito}"
+            disabled="[[
+                cookieControlsManagedState_.blockThirdPartyIncognito.disabled]]"
+            policy-indicator-type="[[
+                cookieControlsManagedState_.blockThirdPartyIncognito.indicator
+                ]]">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="settings:cookie"></iron-icon>
@@ -83,7 +91,10 @@
         </settings-collapse-radio-button>
         <settings-collapse-radio-button id="blockThirdParty"
             name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY]]"
-            label="$i18n{cookiePageBlockThird}">
+            label="$i18n{cookiePageBlockThird}"
+            disabled="[[cookieControlsManagedState_.blockThirdParty.disabled]]"
+            policy-indicator-type="[[
+                cookieControlsManagedState_.blockThirdParty.indicator]]">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="settings:cookie"></iron-icon>
@@ -97,7 +108,10 @@
         </settings-collapse-radio-button>
         <settings-collapse-radio-button id="blockAll"
             name="[[cookiesControlEnum_.BLOCK_ALL]]"
-            label="$i18n{cookiePageBlockAll}">
+            label="$i18n{cookiePageBlockAll}"
+            disabled="[[cookieControlsManagedState_.blockAll.disabled]]"
+            policy-indicator-type="[[
+                cookieControlsManagedState_.blockAll.indicator]]">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="settings:block"></iron-icon>
@@ -138,21 +152,21 @@
         category="[[cookiesContentSettingType_]]"
         category-subtype="[[contentSetting_.ALLOW]]"
         category-header="$i18n{cookiePageAllowExceptions}"
-        read-only-list="[[cookiesContentSettingManaged_]]"
+        read-only-list="[[exceptionListsReadOnly_]]"
         search-filter="[[searchTerm]]">
     </site-list>
     <site-list id="sessionOnlyExceptionsList"
         category="[[cookiesContentSettingType_]]"
         category-subtype="[[contentSetting_.SESSION_ONLY]]"
         category-header="$i18n{cookiePageSessionOnlyExceptions}"
-        read-only-list="[[cookiesContentSettingManaged_]]"
+        read-only-list="[[exceptionListsReadOnly_]]"
         search-filter="[[searchTerm]]">
     </site-list>
     <site-list id="blockExceptionsList"
         category="[[cookiesContentSettingType_]]"
         category-subtype="[[contentSetting_.BLOCK]]"
         category-header="$i18n{cookiePageBlockExceptions}"
-        read-only-list="[[cookiesContentSettingManaged_]]"
+        read-only-list="[[exceptionListsReadOnly_]]"
         search-filter="[[searchTerm]]">
     </site-list>
   </template>

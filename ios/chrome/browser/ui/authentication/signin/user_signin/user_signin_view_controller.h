@@ -48,6 +48,11 @@
 // Updates the primary button based on the user sign-in state.
 - (void)updatePrimaryButtonStyle;
 
+// Returns the supported orientations for the device type:
+// |UIInterfaceOrientationPortrait| orientation on iPhone and all other
+// orientations on iPad.
+- (NSUInteger)supportedInterfaceOrientations;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_USER_SIGNIN_USER_SIGNIN_VIEW_CONTROLLER_H_

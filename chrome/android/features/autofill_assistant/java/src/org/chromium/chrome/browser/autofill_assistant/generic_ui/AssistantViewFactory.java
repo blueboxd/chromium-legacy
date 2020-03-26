@@ -22,6 +22,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorTextField;
+import org.chromium.chrome.browser.autofill_assistant.AssistantChevronStyle;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpanderAccordion;
 import org.chromium.ui.widget.ChromeImageView;
 
 /** Generic view factory. */
@@ -158,5 +161,47 @@ public class AssistantViewFactory {
                 });
         view.setTag(viewIdentifier);
         return view;
+    }
+
+    /**
+     * Creates an {@code AssistantVerticalExpander} widget.
+     * @param chevronStyle Should match the enum defined in
+     *         components/autofill_assistant/browser/view_layout.proto
+     */
+    @CalledByNative
+    public static AssistantVerticalExpander createVerticalExpander(Context context,
+            String identifier, @Nullable View titleView, @Nullable View collapsedView,
+            @Nullable View expandedView, @AssistantChevronStyle int chevronStyle) {
+        AssistantVerticalExpander expander = new AssistantVerticalExpander(context, null);
+        if (titleView != null) {
+            expander.setTitleView(titleView,
+                    new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+        if (collapsedView != null) {
+            expander.setCollapsedView(collapsedView,
+                    new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+        if (expandedView != null) {
+            expander.setExpandedView(expandedView,
+                    new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+        expander.setChevronStyle(chevronStyle);
+        expander.setFixed(collapsedView == null || expandedView == null);
+        expander.setTag(identifier);
+        return expander;
+    }
+
+    /** Creates an {@code AssistantVerticalExpanderAccordion} widget. */
+    @CalledByNative
+    public static AssistantVerticalExpanderAccordion createVerticalExpanderAccordion(
+            Context context, String identifier, int orientation) {
+        AssistantVerticalExpanderAccordion accordion =
+                new AssistantVerticalExpanderAccordion(context, null);
+        accordion.setOrientation(orientation);
+        accordion.setTag(identifier);
+        return accordion;
     }
 }

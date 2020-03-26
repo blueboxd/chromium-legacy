@@ -68782,7 +68782,8 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WebSchedulerTrackedFeature">
-<!-- Generated from third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h.-->
+<!-- Generated from third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h.
+Called by update_scheduler_enums.py.-->
 
   <int value="0" label="WebSocket"/>
   <int value="1" label="WebRTC"/>
@@ -68799,7 +68800,7 @@ Full version information for the fingerprint enum values:
   <int value="12" label="ContainsPlugins"/>
   <int value="13" label="DocumentLoaded"/>
   <int value="14" label="DedicatedWorkerOrWorklet"/>
-  <int value="15" label="OutstandingNetworkRequest"/>
+  <int value="15" label="OutstandingNetworkRequestOthers"/>
   <int value="16" label="ServiceWorkerControlledPage"/>
   <int value="17" label="OutstandingIndexedDBTransaction"/>
   <int value="18" label="HasScriptableFramesInMultipleTabs"/>
@@ -68824,6 +68825,8 @@ Full version information for the fingerprint enum values:
   <int value="37" label="RequestedStorageAccessGrant"/>
   <int value="38" label="WebNfc"/>
   <int value="39" label="WebFileSystem"/>
+  <int value="40" label="OutstandingNetworkRequestFetch"/>
+  <int value="41" label="OutstandingNetworkRequestXHR"/>
 </enum>
 
 <enum name="WebShareMethod">

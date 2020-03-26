@@ -5,12 +5,16 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -54,6 +58,39 @@ bool IsAllowedImpl(Profile* profile) {
   }
 
   return base::FeatureList::IsEnabled(features::kCrostini);
+}
+
+bool IsArcManagedAdbSideloadingSupported(bool is_device_enterprise_managed,
+                                         bool is_profile_enterprise_managed,
+                                         bool is_owner_profile) {
+  DCHECK(is_device_enterprise_managed || is_profile_enterprise_managed);
+
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kArcManagedAdbSideloadingSupport)) {
+    DVLOG(1) << "adb sideloading is disabled by a feature flag";
+    return false;
+  }
+
+  if (is_device_enterprise_managed) {
+    // TODO(janagrill): Add check for device policy
+    if (is_profile_enterprise_managed) {
+      // TODO(janagrill): Add check for affiliated user
+      // TODO(janagrill): Add check for user policy
+      return true;
+    }
+
+    DVLOG(1) << "adb sideloading is unsupported for this managed device";
+    return false;
+  }
+
+  if (is_owner_profile) {
+    // We know here that the profile is enterprise-managed so no need to check
+    // TODO(janagrill): Add check for user policy
+    return true;
+  }
+
+  DVLOG(1) << "Only the owner can change adb sideloading status";
+  return false;
 }
 
 }  // namespace
@@ -126,6 +163,37 @@ bool CrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
   return g_crostini_features->IsUIAllowed(profile, true) &&
          base::FeatureList::IsEnabled(
              chromeos::features::kCrostiniWebUIUpgrader);
+}
+
+bool CrostiniFeatures::CanChangeAdbSideloading(Profile* profile) {
+  // First rule out a child account as it is a special case - a child can be an
+  // owner, but ADB sideloading is currently not supported for this case
+  if (profile->IsChild()) {
+    DVLOG(1) << "adb sideloading is currently unsupported for child accounts";
+    return false;
+  }
+
+  // Check the managed device and/or user case
+  auto* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  bool is_device_enterprise_managed = connector->IsEnterpriseManaged();
+  bool is_profile_enterprise_managed =
+      profile->GetProfilePolicyConnector()->IsManaged();
+  bool is_owner_profile = chromeos::ProfileHelper::IsOwnerProfile(profile);
+  if (is_device_enterprise_managed || is_profile_enterprise_managed) {
+    return IsArcManagedAdbSideloadingSupported(is_device_enterprise_managed,
+                                               is_profile_enterprise_managed,
+                                               is_owner_profile);
+  }
+
+  // Here we are sure that the user is not enterprise-managed and we therefore
+  // only check whether the user is the owner
+  if (!is_owner_profile) {
+    DVLOG(1) << "Only the owner can change adb sideloading status";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace crostini

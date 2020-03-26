@@ -118,12 +118,17 @@ Polymer({
       notify: false,
     },
 
+    /** @private {!CookieControlsManagedState} */
+    cookieControlsManagedState_: {
+      type: Object,
+      notify: true,
+    },
+
     /** @type {!Map<string, (string|Function)>} */
     focusConfig: {
       type: Object,
       observer: 'focusConfigChanged_',
     },
-
   },
 
   observers: [
@@ -186,7 +191,7 @@ Polymer({
         await this.browserProxy_.getDefaultValueForContentType(
             settings.ContentSettingsTypes.COOKIES);
 
-    // Set radio toggle state.
+    // Set control state.
     if (contentSetting.setting === settings.ContentSetting.BLOCK) {
       this.cookiesControlRadioSelected_ = CookiesControl.BLOCK_ALL;
     } else if (blockThirdParty.value) {
@@ -199,22 +204,30 @@ Polymer({
     } else {
       this.cookiesControlRadioSelected_ = CookiesControl.ALLOW_ALL;
     }
+    this.clearOnExitDisabled_ =
+        contentSetting.setting === settings.ContentSetting.BLOCK;
 
-    // Set clear on exit state.
+    // Update virtual preference for the clear on exit toggle.
+    // TODO(crbug.com/1063265): Create toggle that can directly accept state.
     this.clearOnExitPref_ = {
       key: '',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: contentSetting.setting === settings.ContentSetting.BLOCK ?
           false :
           contentSetting.setting === settings.ContentSetting.SESSION_ONLY,
-      controlledBy: this.getContolledBy_(contentSetting),
+      controlledBy: this.getControlledBy_(contentSetting),
       enforcement: this.getEnforced_(contentSetting),
     };
-    this.clearOnExitDisabled_ =
-        contentSetting.setting === settings.ContentSetting.BLOCK;
 
-    this.cookiesContentSettingManaged_ =
+    // Set the exception lists to read only if the content setting is managed.
+    // Display of managed state for individual entries will be handled by each
+    // site-list-entry.
+    this.exceptionListsReadOnly_ =
         contentSetting.source === settings.SiteSettingSource.POLICY;
+
+    // Retrieve and update remaining controls managed state.
+    this.cookieControlsManagedState_ =
+        await this.browserProxy_.getCookieControlsManagedState();
   },
 
   /**
@@ -223,7 +236,7 @@ Polymer({
    * @return {!chrome.settingsPrivate.ControlledBy}
    * @private
    */
-  getContolledBy_({source}) {
+  getControlledBy_({source}) {
     switch (source) {
       case ContentSettingProvider.POLICY:
         return chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;

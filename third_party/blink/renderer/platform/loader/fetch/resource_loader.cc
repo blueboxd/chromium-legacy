@@ -174,6 +174,18 @@ bool RequestContextObserveResponse(mojom::RequestContextType type) {
   }
 }
 
+SchedulingPolicy::Feature GetFeatureFromRequestContextType(
+    mojom::RequestContextType type) {
+  switch (type) {
+    case mojom::RequestContextType::FETCH:
+      return SchedulingPolicy::Feature::kOutstandingNetworkRequestFetch;
+    case mojom::RequestContextType::XML_HTTP_REQUEST:
+      return SchedulingPolicy::Feature::kOutstandingNetworkRequestXHR;
+    default:
+      return SchedulingPolicy::Feature::kOutstandingNetworkRequestOthers;
+  }
+}
+
 }  // namespace
 
 // CodeCacheRequest handles the requests to fetch data from code cache.
@@ -388,10 +400,11 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
   // content, we can have them survive without breaking web content when the
   // page is put into BackForwardCache.
   auto& request = resource_->GetResourceRequest();
-  if (!RequestContextObserveResponse(request.GetRequestContext())) {
+  auto request_context = request.GetRequestContext();
+  if (!RequestContextObserveResponse(request_context)) {
     if (FrameScheduler* frame_scheduler = fetcher->GetFrameScheduler()) {
       feature_handle_for_scheduler_ = frame_scheduler->RegisterFeature(
-          SchedulingPolicy::Feature::kOutstandingNetworkRequest,
+          GetFeatureFromRequestContextType(request_context),
           {SchedulingPolicy::RecordMetricsForBackForwardCache()});
     }
   }

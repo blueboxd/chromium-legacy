@@ -40,6 +40,7 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -182,6 +183,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     BOOL tabSwitcherIsActive;
 // YES while animating the dismissal of tab switcher.
 @property(nonatomic, assign) BOOL dismissingTabSwitcher;
+
+// The coordinator used to control sign-in UI flows. Lazily created the first
+// time it is accessed.
+@property(nonatomic, strong) SigninCoordinator* signinCoordinator;
 
 @end
 
@@ -494,10 +499,27 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
         initWithBrowser:browser
              dispatcher:self.mainInterface.bvc.dispatcher];
 
+    if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
+      self.signinCoordinator = [SigninCoordinator
+          upgradeSigninPromoCoordinatorWithBaseViewController:self.mainInterface
+                                                                  .bvc
+                                                      browser:browser];
+      __weak SceneController* weakSelf = self;
+      self.signinCoordinator.signinCompletion =
+          ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+            [weakSelf.signinCoordinator stop];
+            weakSelf.signinCoordinator = nil;
+          };
+    }
+
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{
-                     [self showPromo:promoController];
+                     if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
+                       [self.signinCoordinator start];
+                     } else {
+                       [self showPromo:promoController];
+                     }
                    });
   }
 }

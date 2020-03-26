@@ -41,8 +41,12 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "Dedicated worker or worklet present";
     case WebSchedulerTrackedFeature::kSharedWorker:
       return "Shared worker present";
-    case WebSchedulerTrackedFeature::kOutstandingNetworkRequest:
-      return "outstanding network request";
+    case WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch:
+      return "outstanding network request (fetch)";
+    case WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR:
+      return "outstanding network request (XHR)";
+    case WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers:
+      return "outstanding network request (others)";
     case WebSchedulerTrackedFeature::kServiceWorkerControlledPage:
       return "ServiceWorker-controlled page";
     case WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction:

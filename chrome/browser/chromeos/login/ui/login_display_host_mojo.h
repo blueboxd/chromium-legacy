@@ -79,7 +79,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   WizardController* GetWizardController() override;
   void OnStartUserAdding() override;
   void CancelUserAdding() override;
-  void OnStartSignInScreen(const LoginScreenContext& context) override;
+  void OnStartSignInScreen() override;
   void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;

@@ -200,8 +200,7 @@ void LoginDisplayHostMojo::CancelUserAdding() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostMojo::OnStartSignInScreen(
-    const LoginScreenContext& context) {
+void LoginDisplayHostMojo::OnStartSignInScreen() {
   // This function may be called early in startup flow, before LoginScreenClient
   // has been initialized. Wait until LoginScreenClient is initialized as it is
   // a common dependency.
@@ -209,7 +208,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     // TODO(jdufault): Add a timeout here / make sure we do not post infinitely.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&LoginDisplayHostMojo::OnStartSignInScreen,
-                                  weak_factory_.GetWeakPtr(), context));
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 

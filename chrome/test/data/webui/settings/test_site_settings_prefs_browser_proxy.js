@@ -82,6 +82,7 @@ let SiteSettingsPref;
 
     this.mockMethods([
       'getCookieSettingDescription',
+      'getCookieControlsManagedState',
       'getRecentSitePermissions',
     ]);
   }

@@ -31,7 +31,6 @@ namespace chromeos {
 
 class AppLaunchController;
 class ExistingUserController;
-class LoginScreenContext;
 class OobeUI;
 class WebUILoginView;
 class WizardController;
@@ -111,7 +110,7 @@ class LoginDisplayHost {
   virtual void CancelUserAdding() = 0;
 
   // Starts sign in screen.
-  virtual void StartSignInScreen(const LoginScreenContext& context) = 0;
+  virtual void StartSignInScreen() = 0;
 
   // Invoked when system preferences that affect the signin screen have changed.
   virtual void OnPreferencesChanged() = 0;

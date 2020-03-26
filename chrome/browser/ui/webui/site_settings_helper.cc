@@ -26,10 +26,12 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -165,6 +167,28 @@ static_assert(base::size(kSiteSettingSourceStringMapping) ==
                   static_cast<int>(SiteSettingSource::kNumSources),
               "kSiteSettingSourceStringMapping should have "
               "SiteSettingSource::kNumSources elements");
+
+struct PolicyIndicatorTypeStringMapping {
+  PolicyIndicatorType source;
+  const char* indicator_str;
+};
+
+// Converts a policy indicator type to its JS usable string representation.
+const PolicyIndicatorTypeStringMapping kPolicyIndicatorTypeStringMapping[] = {
+    {PolicyIndicatorType::kDevicePolicy, "devicePolicy"},
+    {PolicyIndicatorType::kExtension, "extension"},
+    {PolicyIndicatorType::kNone, "none"},
+    {PolicyIndicatorType::kOwner, "owner"},
+    {PolicyIndicatorType::kPrimaryUser, "primary_user"},
+    {PolicyIndicatorType::kRecommended, "recommended"},
+    {PolicyIndicatorType::kUserPolicy, "userPolicy"},
+    {PolicyIndicatorType::kParent, "parent"},
+    {PolicyIndicatorType::kChildRestriction, "childRestriction"},
+};
+static_assert(base::size(kPolicyIndicatorTypeStringMapping) ==
+                  static_cast<int>(PolicyIndicatorType::kNumIndicators),
+              "kPolicyIndicatorStringMapping should have "
+              "PolicyIndicatorType::kNumIndicators elements");
 
 // Retrieves the corresponding string, according to the following precedence
 // order from highest to lowest priority:
@@ -314,6 +338,45 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
     {&GetSerialChooserContext, kSerialChooserDataGroupType},
     {&GetHidChooserContext, kHidChooserDataGroupType},
     {&GetBluetoothChooserContext, kBluetoothChooserDataGroupType}};
+
+PolicyIndicatorType GetPolicyIndicatorFromSettingSource(
+    content_settings::SettingSource setting_source) {
+  switch (setting_source) {
+    case content_settings::SETTING_SOURCE_POLICY:
+      return PolicyIndicatorType::kDevicePolicy;
+    case content_settings::SETTING_SOURCE_SUPERVISED:
+      return PolicyIndicatorType::kParent;
+    case content_settings::SETTING_SOURCE_EXTENSION:
+      return PolicyIndicatorType::kExtension;
+    case content_settings::SETTING_SOURCE_USER:
+    case content_settings::SETTING_SOURCE_WHITELIST:
+    case content_settings::SETTING_SOURCE_NONE:
+      return PolicyIndicatorType::kNone;
+    case content_settings::SETTING_SOURCE_INSTALLED_WEBAPP:
+      NOTREACHED();
+      return PolicyIndicatorType::kNone;
+  }
+}
+
+PolicyIndicatorType GetPolicyIndicatorFromPref(
+    const PrefService::Preference* pref) {
+  if (!pref) {
+    return PolicyIndicatorType::kNone;
+  }
+  if (pref->IsExtensionControlled()) {
+    return PolicyIndicatorType::kExtension;
+  }
+  if (pref->IsManagedByCustodian()) {
+    return PolicyIndicatorType::kParent;
+  }
+  if (pref->IsManaged()) {
+    return PolicyIndicatorType::kDevicePolicy;
+  }
+  if (pref->GetRecommendedValue()) {
+    return PolicyIndicatorType::kRecommended;
+  }
+  return PolicyIndicatorType::kNone;
+}
 
 }  // namespace
 
@@ -806,6 +869,127 @@ base::Value GetChooserExceptionListFromProfile(
   }
 
   return exceptions;
+}
+
+CookieControlsManagedState GetCookieControlsManagedState(Profile* profile) {
+  // Setup a default unmanaged state that is updated based on the actual
+  // managed state.
+  CookieControlsManagedState managed_state;
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::string content_setting_provider;
+  auto content_setting = map->GetDefaultContentSetting(
+      ContentSettingsType::COOKIES, &content_setting_provider);
+  auto content_setting_source =
+      HostContentSettingsMap::GetSettingSourceFromProviderName(
+          content_setting_provider);
+  bool content_setting_enforced =
+      content_setting_source !=
+      content_settings::SettingSource::SETTING_SOURCE_USER;
+
+  // Both the content setting and the block_third_party preference can
+  // be controlled via policy.
+  const PrefService::Preference* block_third_party_pref =
+      profile->GetPrefs()->FindPreference(prefs::kBlockThirdPartyCookies);
+  bool block_third_party_on = block_third_party_pref->GetValue()->GetBool();
+  bool block_third_party_enforced = !block_third_party_pref->IsUserModifiable();
+  // IsRecommended() cannot be used as we care if a recommended value exists at
+  // all, even if a user has overwritten it.
+  bool block_third_party_recommended =
+      (block_third_party_pref && block_third_party_pref->GetRecommendedValue());
+  bool block_third_party_recommended_on =
+      block_third_party_recommended &&
+      block_third_party_pref->GetRecommendedValue()->GetBool();
+
+  // kCookieControlsMode == kOn should imply block_third_party is on.
+  auto control_mode = static_cast<content_settings::CookieControlsMode>(
+      profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
+  DCHECK(control_mode != content_settings::CookieControlsMode::kOn ||
+         block_third_party_on)
+      << "kCookieControlsMode == kOn should imply "
+      << "kBlockThirdPartyCookies is true";
+
+  // Get indicators representing each settings source. These may or may not
+  // be used depending on the determined managed state.
+  auto content_setting_source_indicator =
+      GetPolicyIndicatorFromSettingSource(content_setting_source);
+  auto block_third_party_source_indicator =
+      GetPolicyIndicatorFromPref(block_third_party_pref);
+
+  if (!content_setting_enforced && !block_third_party_enforced &&
+      !block_third_party_recommended) {
+    // No cookie controls are managed or recommended.
+    return managed_state;
+  }
+
+  if (content_setting_enforced) {
+    // Block and session only managed state only depend on the content setting.
+    managed_state.block_all = {/*disabled*/ true,
+                               content_setting_source_indicator};
+    managed_state.session_only = {/*disabled*/ true,
+                                  content_setting_source_indicator};
+  }
+
+  if (content_setting_enforced && content_setting == CONTENT_SETTING_BLOCK) {
+    // All remaining controls are managed by the content setting source.
+    managed_state.allow_all = {/*disabled*/ true,
+                               content_setting_source_indicator};
+    managed_state.block_third_party_incognito = {
+        /*disabled*/ true, content_setting_source_indicator};
+    managed_state.block_third_party = {/*disabled*/ true,
+                                       content_setting_source_indicator};
+    return managed_state;
+  }
+  if (content_setting_enforced && block_third_party_enforced) {
+    // All remaining controls are managed by the block_third_party source.
+    managed_state.allow_all = {/*disabled*/ true,
+                               block_third_party_source_indicator};
+    managed_state.block_third_party_incognito = {
+        /*disabled*/ true, block_third_party_source_indicator};
+    managed_state.block_third_party = {/*disabled*/ true,
+                                       block_third_party_source_indicator};
+    return managed_state;
+  }
+  DCHECK(!content_setting_enforced ||
+         content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_SESSION_ONLY);
+  DCHECK(!content_setting_enforced || !block_third_party_enforced);
+  // At this stage the content setting is not enforcing a BLOCK state. Given
+  // this, allow and block_third_party are still valid choices that do not
+  // contradict the content setting. They can thus be controlled or recommended
+  // by the block_third_party preference.
+  if (block_third_party_enforced) {
+    DCHECK(!content_setting_enforced);
+    managed_state.block_third_party_incognito = {
+        true, block_third_party_source_indicator};
+    if (block_third_party_on) {
+      managed_state.allow_all = {/*disabled*/ true,
+                                 block_third_party_source_indicator};
+    } else {
+      managed_state.block_third_party = {/*disabled*/ true,
+                                         block_third_party_source_indicator};
+    }
+    return managed_state;
+  }
+  if (block_third_party_recommended) {
+    if (block_third_party_recommended_on) {
+      managed_state.block_third_party = {/*disabled*/ false,
+                                         block_third_party_source_indicator};
+    } else {
+      managed_state.allow_all = {/*disabled*/ false,
+                                 block_third_party_source_indicator};
+    }
+    return managed_state;
+  }
+  DCHECK(content_setting_enforced && !block_third_party_enforced &&
+         !block_third_party_recommended);
+  return managed_state;
+}
+
+std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type) {
+  return kPolicyIndicatorTypeStringMapping[static_cast<int>(type)]
+      .indicator_str;
 }
 
 }  // namespace site_settings

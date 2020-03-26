@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link href="resources/flexbox.css" rel="stylesheet">
+<link href="../support/flexbox.css" rel="stylesheet">
  <style>
     .flexbox {
       border: 1px solid black;
@@ -9,7 +9,6 @@
       height: 200px;
     }
     .item1 {
-      margin: 0 auto;
       background: lightblue;
     }
     .item2 {
@@ -18,8 +17,9 @@
   </style>
 </head>
 <body>
+  <p>The test passes if the flex items are properly centered in each column</p>
   <div class="flexbox column wrap">
-    <div class="item1">centeredWithMargins</div>
+    <div class="item1 align-self-center">centeredWithMargins</div>
     <div class="item2 align-self-center">centeredWithAlignSelf</div>
     <div class="item2 align-self-center">centeredWithAlignSelf</div>
     <div class="item2 align-self-center">centeredWithAlignSelf</div>

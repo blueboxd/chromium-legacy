@@ -218,10 +218,6 @@ std::string GetNetworkName(const std::string& service_path) {
 
 }  // namespace
 
-// LoginScreenContext implementation ------------------------------------------
-
-LoginScreenContext::LoginScreenContext() = default;
-
 // SigninScreenHandler implementation ------------------------------------------
 
 SigninScreenHandler::SigninScreenHandler(
@@ -485,16 +481,12 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("sendFeedback", &SigninScreenHandler::HandleSendFeedback);
 }
 
-void SigninScreenHandler::Show(const LoginScreenContext& context,
-                               bool oobe_ui) {
+void SigninScreenHandler::Show(bool oobe_ui) {
   CHECK(delegate_);
 
   // Just initialize internal fields from context and call ShowImpl().
   oobe_ui_ = oobe_ui;
 
-  std::string email;
-  email = context.email();
-  gaia_screen_handler_->set_populated_email(email);
   ShowImpl();
   histogram_helper_->OnScreenShow();
 }

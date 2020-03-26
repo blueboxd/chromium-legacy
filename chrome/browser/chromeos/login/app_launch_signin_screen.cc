@@ -39,7 +39,7 @@ void AppLaunchSigninScreen::Show() {
   InitOwnerUserList();
   oobe_ui_->web_ui()->CallJavascriptFunctionUnsafe(
       "login.AccountPickerScreen.setShouldShowApps", base::Value(false));
-  oobe_ui_->ShowSigninScreen(LoginScreenContext(), this, NULL);
+  oobe_ui_->ShowSigninScreen(this, nullptr);
 }
 
 void AppLaunchSigninScreen::InitOwnerUserList() {

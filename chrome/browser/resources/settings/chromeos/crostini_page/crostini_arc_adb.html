@@ -36,7 +36,7 @@
           isOwnerProfile_, isEnterpriseManaged_)]]"></cr-policy-indicator>
       <cr-toggle id="arcAdbEnabledButton" aria-labelledby="enableArcAdbLabel"
           checked$="[[arcAdbEnabled_]]"
-          disabled="[[shouldDisable_(isOwnerProfile_, isEnterpriseManaged_,
+          disabled="[[shouldDisable_(canChangeAdbSideloading_,
                       arcAdbNeedPowerwash_)]]"
           on-change="onArcAdbToggleChanged_">
       </cr-toggle>

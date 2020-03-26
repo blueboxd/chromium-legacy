@@ -100,7 +100,7 @@ bool PosixSystemProducer::SetupStartupTracing() {
 }
 
 perfetto::SharedMemoryArbiter* PosixSystemProducer::MaybeSharedMemoryArbiter() {
-  base::AutoLock lock(services_lock_);
+  base::AutoLock lock(lock_);
   DCHECK(GetService());
   return GetService()->MaybeSharedMemoryArbiter();
 }
@@ -134,7 +134,7 @@ void PosixSystemProducer::NewDataSourceAdded(
 }
 
 bool PosixSystemProducer::IsTracingActive() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::AutoLock lock(lock_);
   return data_sources_tracing_ > 0;
 }
 
@@ -233,7 +233,7 @@ void PosixSystemProducer::OnDisconnect() {
               return;
             }
             if (weak_ptr->state_ == State::kConnecting) {
-              base::AutoLock lock(weak_ptr->services_lock_);
+              base::AutoLock lock(weak_ptr->lock_);
               // We never connected, which means this disconnect is
               // an error from connecting, which means we don't need
               // to keep this endpoint (and associated memory around
@@ -284,7 +284,10 @@ void PosixSystemProducer::StartDataSource(
                   return;
                 }
                 DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
-                ++weak_ptr->data_sources_tracing_;
+                {
+                  base::AutoLock lock(weak_ptr->lock_);
+                  ++weak_ptr->data_sources_tracing_;
+                }
                 data_source->StartTracingWithID(
                     id, weak_ptr.get(),
                     EnsureGuardRailsAreFollowed(data_source_config));
@@ -312,7 +315,10 @@ void PosixSystemProducer::StopDataSource(perfetto::DataSourceInstanceID id) {
             }
             DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
             weak_ptr->GetService()->NotifyDataSourceStopped(id);
-            --weak_ptr->data_sources_tracing_;
+            {
+              base::AutoLock lock(weak_ptr->lock_);
+              --weak_ptr->data_sources_tracing_;
+            }
             if (!weak_ptr->IsTracingActive()) {
               // If this is the last data source to be shut down then
               // perhaps we need to invoke any callbacks that were stored
@@ -375,7 +381,7 @@ void PosixSystemProducer::ConnectSocket() {
       task_runner(),
       perfetto::TracingService::ProducerSMBScrapingMode::kEnabled);
 
-  base::AutoLock lock(services_lock_);
+  base::AutoLock lock(lock_);
   services_.push_back(std::move(service));
 }
 
@@ -473,7 +479,7 @@ perfetto::TracingService::ProducerEndpoint* PosixSystemProducer::GetService() {
 #if DCHECK_IS_ON()
   // Requires lock to be held when called on a non-producer sequence/thread.
   if (!sequence_checker_.CalledOnValidSequence()) {
-    services_lock_.AssertAcquired();
+    lock_.AssertAcquired();
   }
 #endif  // DCHECK_IS_ON()
 

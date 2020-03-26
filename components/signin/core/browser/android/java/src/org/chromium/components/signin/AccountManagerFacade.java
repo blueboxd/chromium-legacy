@@ -38,10 +38,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 
 /**
  * AccountManagerFacade wraps our access of AccountManager in Android.
@@ -51,9 +49,6 @@ import java.util.regex.Pattern;
  */
 public class AccountManagerFacade {
     private static final String TAG = "Sync_Signin";
-    private static final Pattern AT_SYMBOL = Pattern.compile("@");
-    private static final String GMAIL_COM = "gmail.com";
-    private static final String GOOGLEMAIL_COM = "googlemail.com";
     public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
     /**
@@ -195,6 +190,7 @@ public class AccountManagerFacade {
 
     /**
      * Creates an Account object for the given name.
+     * TODO(https://crbug.com/1064877): Move this method to AccountUtils
      */
     @AnyThread
     public static Account createAccountFromName(String name) {
@@ -328,29 +324,16 @@ public class AccountManagerFacade {
         runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccounts()));
     }
 
-    private String canonicalizeName(String name) {
-        String[] parts = AT_SYMBOL.split(name);
-        if (parts.length != 2) return name;
-
-        if (GOOGLEMAIL_COM.equalsIgnoreCase(parts[1])) {
-            parts[1] = GMAIL_COM;
-        }
-        if (GMAIL_COM.equalsIgnoreCase(parts[1])) {
-            parts[0] = parts[0].replace(".", "");
-        }
-        return (parts[0] + "@" + parts[1]).toLowerCase(Locale.US);
-    }
-
     /**
      * Returns the account if it exists; null if account doesn't exists or an error occurs
      * while getting account list.
      */
     @AnyThread
     public Account getAccountFromName(String accountName) {
-        String canonicalName = canonicalizeName(accountName);
+        String canonicalName = AccountUtils.canonicalizeName(accountName);
         List<Account> accounts = tryGetGoogleAccounts();
         for (Account account : accounts) {
-            if (canonicalizeName(account.name).equals(canonicalName)) {
+            if (AccountUtils.canonicalizeName(account.name).equals(canonicalName)) {
                 return account;
             }
         }

@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander.ChevronStyle;
+import org.chromium.chrome.browser.autofill_assistant.AssistantChevronStyle;
 import org.chromium.content.browser.input.PopupItemType;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupItem;
@@ -152,7 +152,7 @@ public class AssistantDateSection {
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         expander.setFixed(true);
-        expander.setChevronStyle(ChevronStyle.ALWAYS);
+        expander.setChevronStyle(AssistantChevronStyle.ALWAYS);
         expander.findViewById(R.id.section_title_add_button).setVisibility(View.GONE);
     }
 

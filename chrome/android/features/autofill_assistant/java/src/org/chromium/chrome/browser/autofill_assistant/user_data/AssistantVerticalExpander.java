@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantChevronStyle;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 
 /**
@@ -28,13 +29,6 @@ import org.chromium.components.browser_ui.widget.TintedDrawable;
  * parameters for disambiguation, otherwise the child won't be added at all!
  */
 public class AssistantVerticalExpander extends LinearLayout {
-    /** Controls whether the chevron should be visible. */
-    public enum ChevronStyle {
-        AUTO, /** visible if the expander has an expanded view, else invisible. */
-        ALWAYS,
-        NEVER
-    }
-
     private final ViewGroup mTitleContainer;
     private final ViewGroup mCollapsedContainer;
     private final ViewGroup mExpandedContainer;
@@ -47,7 +41,7 @@ public class AssistantVerticalExpander extends LinearLayout {
     private View mExpandedView;
     private boolean mExpanded;
     private boolean mFixed;
-    private ChevronStyle mChevronStyle = ChevronStyle.AUTO;
+    private @AssistantChevronStyle int mChevronStyle = AssistantChevronStyle.NOT_SET_AUTOMATIC;
 
     public AssistantVerticalExpander(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -139,9 +133,9 @@ public class AssistantVerticalExpander extends LinearLayout {
         }
     }
 
-    public void setChevronStyle(ChevronStyle style) {
-        if (style != mChevronStyle) {
-            mChevronStyle = style;
+    public void setChevronStyle(@AssistantChevronStyle int chevronStyle) {
+        if (chevronStyle != mChevronStyle) {
+            mChevronStyle = chevronStyle;
             update();
         }
     }
@@ -205,14 +199,14 @@ public class AssistantVerticalExpander extends LinearLayout {
 
     private void update() {
         switch (mChevronStyle) {
-            case AUTO:
+            case AssistantChevronStyle.NOT_SET_AUTOMATIC:
                 mChevronButton.setVisibility(
                         !mFixed && mExpandedView != null ? View.VISIBLE : View.GONE);
                 break;
-            case ALWAYS:
+            case AssistantChevronStyle.ALWAYS:
                 mChevronButton.setVisibility(View.VISIBLE);
                 break;
-            case NEVER:
+            case AssistantChevronStyle.NEVER:
                 mChevronButton.setVisibility(View.GONE);
                 break;
         }

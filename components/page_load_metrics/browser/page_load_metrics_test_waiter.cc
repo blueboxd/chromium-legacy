@@ -244,6 +244,8 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
   }
   if (timing.paint_timing->first_input_or_scroll_notified_timestamp)
     matched_bits.Set(TimingField::kFirstInputOrScroll);
+  if (timing.interactive_timing->first_input_delay)
+    matched_bits.Set(TimingField::kFirstInputDelay);
 
   return matched_bits;
 }

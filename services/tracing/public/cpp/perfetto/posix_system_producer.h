@@ -124,26 +124,31 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   bool retrying_ = false;
   std::string socket_name_;
   uint32_t connection_backoff_ms_;
-  uint64_t data_sources_tracing_ = 0;
   bool disallow_pre_android_pie_ = true;
   State state_ = State::kDisconnected;
   std::vector<base::OnceClosure> on_disconnect_callbacks_;
+  // First value is the flush ID, the second is the number of
+  // replies we're still waiting for.
+  std::pair<uint64_t, size_t> pending_replies_for_latest_flush_;
 
-  // |services_| is accessed by MaybeSharedMemoryArbiter() on any thread. This
-  // access and any modifications to |services_| are protected by this lock.
-  base::Lock services_lock_;
+  // -- Begin lock-protected members. --
+  base::Lock lock_;
+
   // ProducerEndpoints must outlive all trace writers, but some trace writers
   // will never flush until future tracing sessions, which means even on
   // disconnecting we have to keep these around. So instead of destroying any
   // Endpoints (which hold the SharedMemory and SharedMemoryArbiters) we store
   // them forever (leaking their amount of memory).
   //
+  // |services_| is accessed by MaybeSharedMemoryArbiter() on any thread. This
+  // access and any modifications to |services_| are protected by the |lock_|.
+  //
   // TODO(nuskos): We should improve this once we're on the client library.
   std::vector<std::unique_ptr<perfetto::TracingService::ProducerEndpoint>>
       services_;
-  // First value is the flush ID, the second is the number of
-  // replies we're still waiting for.
-  std::pair<uint64_t, size_t> pending_replies_for_latest_flush_;
+
+  uint64_t data_sources_tracing_ = 0;
+  // -- End lock-protected members. --
 
   SEQUENCE_CHECKER(sequence_checker_);
   // NOTE: Weak pointers must be invalidated before all other member variables.

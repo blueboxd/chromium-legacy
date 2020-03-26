@@ -47,6 +47,14 @@ Polymer({
     },
 
     /** @private {boolean} */
+    canChangeAdbSideloading_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('canChangeAdbSideloading');
+      },
+    },
+
+    /** @private {boolean} */
     showConfirmationDialog_: {
       type: Boolean,
       value: false,
@@ -65,34 +73,41 @@ Polymer({
   },
 
   /**
-   * Returns whether the toggle is changeable to the user. Only the device owner
-   * is able to change it. Note that the actual guard should be in browser,
-   * otherwise a user may bypass this check by inspecting Settings with
-   * developer tool.
+   * Returns whether the toggle is changeable by the user. See
+   * CrostiniFeatures::CanChangeAdbSideloading(). Note that the actual
+   * guard should be in the browser, otherwise a user may bypass this check by
+   * inspecting Settings with developer tools.
+   * @return {boolean} Whether the control should be disabled.
    * @private
    */
-  shouldDisable_(isOwnerProfile, isEnterpriseManaged, arcAdbNeedPowerwash) {
-    return !isOwnerProfile || isEnterpriseManaged || arcAdbNeedPowerwash;
+  shouldDisable_() {
+    return !this.canChangeAdbSideloading_ || this.arcAdbNeedPowerwash_;
   },
 
-  /** @private */
-  getPolicyIndicatorType_(isOwnerProfile, isEnterpriseManaged) {
-    if (isEnterpriseManaged) {
+  /**
+   * @return {CrPolicyIndicatorType} Which policy indicator to show (if any).
+   * @private
+   */
+  getPolicyIndicatorType_() {
+    if (this.isEnterpriseManaged_) {
       return CrPolicyIndicatorType.DEVICE_POLICY;
-    } else if (!isOwnerProfile) {
+    } else if (!this.isOwnerProfile_) {
       return CrPolicyIndicatorType.OWNER;
     } else {
       return CrPolicyIndicatorType.NONE;
     }
   },
 
-  /** @private */
-  getToggleAction_(arcAdbEnabled) {
-    return arcAdbEnabled ? 'disable' : 'enable';
+  /**
+   * @return {string} Which action to perform when the toggle is changed.
+   * @private
+   */
+  getToggleAction_() {
+    return this.arcAdbEnabled_ ? 'disable' : 'enable';
   },
 
   /** @private */
-  onArcAdbToggleChanged_(event) {
+  onArcAdbToggleChanged_() {
     this.showConfirmationDialog_ = true;
   },
 

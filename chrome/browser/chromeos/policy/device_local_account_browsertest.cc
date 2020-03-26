@@ -173,7 +173,6 @@
 
 namespace em = enterprise_management;
 
-using chromeos::LoginScreenContext;
 using chromeos::test::GetOobeElementPath;
 using testing::_;
 using testing::InvokeWithoutArgs;
@@ -773,7 +772,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     chromeos::LoginDisplayHost* host =
         chromeos::LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
-    host->StartSignInScreen(LoginScreenContext());
+    host->StartSignInScreen();
     chromeos::ExistingUserController* controller =
         chromeos::ExistingUserController::current_controller();
     ASSERT_TRUE(controller);

@@ -114,7 +114,11 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
       FeatureToBit(WebSchedulerTrackedFeature::kWebRTC) |
       FeatureToBit(WebSchedulerTrackedFeature::kContainsPlugins) |
       FeatureToBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
-      FeatureToBit(WebSchedulerTrackedFeature::kOutstandingNetworkRequest) |
+      FeatureToBit(
+          WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers) |
+      FeatureToBit(
+          WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch) |
+      FeatureToBit(WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR) |
       FeatureToBit(
           WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
       FeatureToBit(

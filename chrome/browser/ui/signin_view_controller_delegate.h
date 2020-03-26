@@ -54,6 +54,17 @@ class SigninViewControllerDelegate {
       const CoreAccountId& account_id,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
+  // Returns a platform-specific SigninViewContolllerDelegate instance that
+  // displays the fake reauth modal dialog. The returned object should delete
+  // itself when the window it's managing is closed.
+  // WARNING: This dialog is for development use only and should not be used in
+  // production.
+  static SigninViewControllerDelegate* CreateFakeReauthDelegate(
+      SigninViewController* signin_view_controller,
+      Browser* browser,
+      const CoreAccountId& account_id,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+
   // Closes the sign-in dialog. Note that this method may destroy this object,
   // so the caller should no longer use this object after calling this method.
   virtual void CloseModalSignin() = 0;

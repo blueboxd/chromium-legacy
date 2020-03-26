@@ -7,12 +7,16 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/signin_reauth_popup_delegate.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/core_account_id.h"
 
@@ -21,7 +25,6 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -29,7 +32,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/account_consistency_method.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
@@ -169,12 +171,37 @@ void SigninViewController::ShowReauthPrompt(
 
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
-  if (base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
+  if (!base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
+    // This currently displays a fake dialog for development purposes. Should
+    // not be called in production.
+    delegate_ = SigninViewControllerDelegate::CreateFakeReauthDelegate(
+        this, browser, account_id, std::move(reauth_callback));
+    return;
+  }
+
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser->profile());
+  base::Optional<AccountInfo> account_info =
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id);
+
+  // For now, Reauth is restricted to the primary account only.
+  CoreAccountId primary_account_id =
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+
+  if (!account_info || account_id != primary_account_id) {
+    std::move(reauth_callback).Run(signin::ReauthResult::kAccountNotSignedIn);
+    return;
+  }
+
+  if (account_info->hosted_domain != kNoHostedDomainFound &&
+      account_info->hosted_domain != "google.com") {
+    // Display a popup for Dasher users. Ideally it should only be shown for
+    // SAML users but there is no way to distinguish them.
     delegate_ = new SigninReauthPopupDelegate(this, browser, account_id,
                                               std::move(reauth_callback));
   } else {
-    // This currently displays a fake dialog for development purposes. Should
-    // not be called in production.
     delegate_ = SigninViewControllerDelegate::CreateReauthDelegate(
         this, browser, account_id, std::move(reauth_callback));
   }

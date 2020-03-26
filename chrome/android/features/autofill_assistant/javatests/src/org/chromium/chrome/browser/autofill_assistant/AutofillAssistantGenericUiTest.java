@@ -104,6 +104,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.UserActionList;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueComparisonProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.VerticalExpanderAccordionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.VerticalExpanderViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ViewAttributesProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ViewContainerProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ViewLayoutParamsProto;
@@ -1695,5 +1697,116 @@ public class AutofillAssistantGenericUiTest {
                                 .setValue(ValueProto.newBuilder().setBooleans(
                                         BooleanList.newBuilder().addValues(true)))
                                 .build()));
+    }
+
+    /**
+     * Creates three vertical expanders inside an accordion and tests expand/collapse functionality.
+     */
+    @Test
+    @MediumTest
+    public void testVerticalExpanders() {
+        // Regular expander, can expand and collapse.
+        ViewProto expanderA =
+                (ViewProto) ViewProto.newBuilder()
+                        .setVerticalExpanderView(
+                                VerticalExpanderViewProto.newBuilder()
+                                        .setTitleView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander A Title")))
+                                        .setCollapsedView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander A Collapsed")))
+                                        .setExpandedView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander A Expanded"))))
+                        .build();
+
+        // Only title+collapsed, can not expand (similar to date/time sections in current
+        // CollectUserData action).
+        ViewProto expanderB =
+                (ViewProto) ViewProto.newBuilder()
+                        .setVerticalExpanderView(
+                                VerticalExpanderViewProto.newBuilder()
+                                        .setTitleView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander B Title")))
+                                        .setCollapsedView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander B Collapsed")))
+                                        .setChevronStyle(
+                                                VerticalExpanderViewProto.ChevronStyle.ALWAYS))
+                        .build();
+
+        // Regular expander, can expand and collapse.
+        ViewProto expanderC =
+                (ViewProto) ViewProto.newBuilder()
+                        .setVerticalExpanderView(
+                                VerticalExpanderViewProto.newBuilder()
+                                        .setTitleView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander C Title")))
+                                        .setCollapsedView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander C Collapsed")))
+                                        .setExpandedView(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "Expander C Expanded"))))
+                        .build();
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(ViewProto.newBuilder().setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setExpanderAccordion(
+                                                VerticalExpanderAccordionProto.newBuilder()
+                                                        .setOrientation(
+                                                                LinearLayoutProto.Orientation
+                                                                        .VERTICAL))
+                                        .addViews(expanderA)
+                                        .addViews(expanderB)
+                                        .addViews(expanderC)))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterface))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Expander A Title"), isDisplayed());
+
+        onView(withText("Expander A Title")).check(matches(isDisplayed()));
+        onView(withText("Expander B Title")).check(matches(isDisplayed()));
+        onView(withText("Expander C Title")).check(matches(isDisplayed()));
+
+        onView(withText("Expander A Collapsed")).check(matches(isDisplayed()));
+        onView(withText("Expander B Collapsed")).check(matches(isDisplayed()));
+        onView(withText("Expander C Collapsed")).check(matches(isDisplayed()));
+
+        onView(withText("Expander A Expanded")).check(matches(not(isDisplayed())));
+        onView(withText("Expander C Expanded")).check(matches(not(isDisplayed())));
+
+        onView(withText("Expander A Title")).perform(click());
+        waitUntilViewMatchesCondition(withText("Expander A Expanded"), isDisplayed());
+        onView(withText("Expander C Expanded")).check(matches(not(isDisplayed())));
+
+        onView(withText("Expander C Title")).perform(click());
+        waitUntilViewMatchesCondition(withText("Expander C Expanded"), isDisplayed());
+        waitUntilViewMatchesCondition(withText("Expander A Expanded"), not(isDisplayed()));
+
+        onView(withText("Expander C Title")).perform(click());
+        waitUntilViewMatchesCondition(withText("Expander C Expanded"), not(isDisplayed()));
+        onView(withText("Expander A Expanded")).check(matches(not(isDisplayed())));
     }
 }

@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
@@ -39,8 +40,9 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
-    screen_position_client_.reset(
-        new wm::DefaultScreenPositionClient(root_window()));
+    screen_position_client_.reset(new wm::DefaultScreenPositionClient());
+    aura::client::SetScreenPositionClient(root_window(),
+                                          screen_position_client_.get());
 
     triple_tap_delegate_ = std::make_unique<MockMultipleTapDetectorDelegate>();
     triple_tap_detector_ = std::make_unique<MultipleTapDetector>(
@@ -57,7 +59,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
   void TearDown() override {
     ui::SetEventTickClockForTesting(nullptr);
     triple_tap_detector_.reset();
-    screen_position_client_.reset();
     aura::test::AuraTestBase::TearDown();
   }
 

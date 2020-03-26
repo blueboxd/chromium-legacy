@@ -501,9 +501,6 @@ class PDFiumEngine : public PDFEngine,
   void OnSelectionTextChanged();
   void OnSelectionPositionChanged();
 
-  // Common code shared by RotateClockwise() and RotateCounterclockwise().
-  void RotateInternal();
-
   // Sets text selection status of document. This does not include text
   // within form text fields.
   void SetSelecting(bool selecting);

@@ -50,6 +50,7 @@ TABS_SWITCHING = Tag(
     'tabs_switching', 'Story has multi tabs and tabs switching action.')
 VIDEO_PLAYBACK = Tag(
     'video_playback', 'Story has video playing.')
+WEBASSEMBLY = Tag('wasm', 'Story with heavy usages of WebAssembly')
 WEBGL = Tag(
     'webgl', 'Story has sites with heavy uses of WebGL.')
 WEB_STORAGE = Tag(

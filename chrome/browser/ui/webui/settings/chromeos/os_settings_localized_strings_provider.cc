@@ -760,6 +760,9 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
                           chromeos::ProfileHelper::IsOwnerProfile(profile));
   html_source->AddBoolean("isEnterpriseManaged",
                           IsDeviceManaged() || IsProfileManaged(profile));
+  html_source->AddBoolean(
+      "canChangeAdbSideloading",
+      crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(profile));
   html_source->AddBoolean("showCrostiniContainerUpgrade",
                           crostini::ShouldAllowContainerUpgrade(profile));
   html_source->AddBoolean(

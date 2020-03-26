@@ -118,6 +118,8 @@ PlatformType GetCurrentPlatformType() {
   return WINDOWS_PLATFORM;
 #elif defined(OS_LINUX)
   return LINUX_PLATFORM;
+#elif defined(OS_IOS)
+  return IOS_PLATFORM;
 #elif defined(OS_MACOSX)
   return OSX_PLATFORM;
 #else

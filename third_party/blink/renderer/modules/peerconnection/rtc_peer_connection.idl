@@ -157,7 +157,7 @@ enum RTCPeerConnectionState {
     attribute EventHandler ontrack;
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
-    [RuntimeEnabled=RTCSctpTransport] readonly attribute RTCSctpTransport? sctp;
+    readonly attribute RTCSctpTransport? sctp;
     [CallWith=ScriptState, RaisesException] RTCDataChannel createDataChannel(USVString label, optional RTCDataChannelInit dataChannelDict = {});
     attribute EventHandler ondatachannel;
 

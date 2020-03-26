@@ -1692,9 +1692,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
       FROM_HERE);
-  ExpectBlocklistedFeature(
-      blink::scheduler::WebSchedulerTrackedFeature::kOutstandingNetworkRequest,
-      FROM_HERE);
+  ExpectBlocklistedFeature(blink::scheduler::WebSchedulerTrackedFeature::
+                               kOutstandingNetworkRequestOthers,
+                           FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -5426,7 +5426,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, OutstandingFetchNotCached) {
   EXPECT_FALSE(rfh_a->scheduler_tracked_features() &
                (1ull << static_cast<size_t>(
                     blink::scheduler::WebSchedulerTrackedFeature::
-                        kOutstandingNetworkRequest)));
+                        kOutstandingNetworkRequestFetch)));
 
   // 2) Create a fetch() request.
   EXPECT_TRUE(ExecJs(rfh_a, "fetch('/fetch');"));
@@ -5442,9 +5442,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, OutstandingFetchNotCached) {
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
       FROM_HERE);
-  ExpectBlocklistedFeature(
-      blink::scheduler::WebSchedulerTrackedFeature::kOutstandingNetworkRequest,
-      FROM_HERE);
+  ExpectBlocklistedFeature(blink::scheduler::WebSchedulerTrackedFeature::
+                               kOutstandingNetworkRequestFetch,
+                           FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, OutstandingXHRNotCached) {
@@ -5463,7 +5463,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, OutstandingXHRNotCached) {
   EXPECT_FALSE(rfh_a->scheduler_tracked_features() &
                (1ull << static_cast<size_t>(
                     blink::scheduler::WebSchedulerTrackedFeature::
-                        kOutstandingNetworkRequest)));
+                        kOutstandingNetworkRequestXHR)));
 
   // 2) Create a XMLHttpRequest.
   EXPECT_TRUE(ExecJs(rfh_a, R"(
@@ -5483,9 +5483,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, OutstandingXHRNotCached) {
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
       FROM_HERE);
-  ExpectBlocklistedFeature(
-      blink::scheduler::WebSchedulerTrackedFeature::kOutstandingNetworkRequest,
-      FROM_HERE);
+  ExpectBlocklistedFeature(blink::scheduler::WebSchedulerTrackedFeature::
+                               kOutstandingNetworkRequestXHR,
+                           FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, NotFetchedScriptNotCached) {
@@ -5521,9 +5521,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, NotFetchedScriptNotCached) {
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
       FROM_HERE);
-  ExpectBlocklistedFeature(
-      blink::scheduler::WebSchedulerTrackedFeature::kOutstandingNetworkRequest,
-      FROM_HERE);
+  ExpectBlocklistedFeature(blink::scheduler::WebSchedulerTrackedFeature::
+                               kOutstandingNetworkRequestOthers,
+                           FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, PageshowMetrics) {

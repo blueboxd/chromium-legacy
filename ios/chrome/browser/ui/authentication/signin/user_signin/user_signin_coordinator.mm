@@ -376,7 +376,30 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                                                animated:NO];
       break;
     }
-    case UserSigninIntentUpgrade:
+    case UserSigninIntentUpgrade: {
+      DCHECK(self.baseViewController);
+
+      // Avoid presenting the promo if the current device orientation is not
+      // supported. The promo will be presented at a later moment, when the
+      // device orientation is supported.
+      UIInterfaceOrientation orientation =
+          [UIApplication sharedApplication].statusBarOrientation;
+      NSUInteger supportedOrientationsMask =
+          [self.viewController supportedInterfaceOrientations];
+      if (!((1 << orientation) & supportedOrientationsMask)) {
+        [self
+            runCompletionCallbackWithSigninResult:
+                SigninCoordinatorResultInterrupted
+                                         identity:self.unifiedConsentCoordinator
+                                                      .selectedIdentity];
+        return;
+      }
+
+      [self.baseViewController presentViewController:self.viewController
+                                            animated:YES
+                                          completion:nil];
+      break;
+    }
     case UserSigninIntentSignin: {
       DCHECK(self.baseViewController);
       [self.baseViewController presentViewController:self.viewController

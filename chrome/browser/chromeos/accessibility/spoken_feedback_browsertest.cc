@@ -917,7 +917,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   sm_.Replay();
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
+#if defined(OS_CHROMEOS)
+// Flaky on ChromeOS: http://crbug.com/1064947
+#define MAYBE_ResetTtsSettings DISABLED_ResetTtsSettings
+#else
+#define MAYBE_ResetTtsSettings ResetTtsSettings
+#endif
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ResetTtsSettings) {
   EnableChromeVox();
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html,<button autofocus>Click me</button>"));

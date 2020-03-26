@@ -132,6 +132,9 @@ SettingsUIInteractiveTest.prototype = {
   ]),
 };
 
+// Fails on Linux CFI (see crbug/1063844).
+GEN('#if !(defined(OS_LINUX) && defined(IS_CFI))');
 TEST_F('SettingsUIInteractiveTest', 'All', function() {
   mocha.run();
 });
+GEN('#endif');

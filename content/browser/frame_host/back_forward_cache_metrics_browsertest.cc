@@ -50,10 +50,14 @@ ukm::SourceId ToSourceId(int64_t navigation_id) {
 // which are related to the document finishing loading).
 // We ignore them to make tests easier to read and write.
 constexpr uint64_t kFeaturesToIgnoreMask =
-    1 << static_cast<size_t>(
+    1ull << static_cast<size_t>(
         blink::scheduler::WebSchedulerTrackedFeature::kDocumentLoaded) |
-    1 << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
-                                 kOutstandingNetworkRequest);
+    1ull << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
+                                    kOutstandingNetworkRequestFetch) |
+    1ull << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
+                                    kOutstandingNetworkRequestXHR) |
+    1ull << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
+                                    kOutstandingNetworkRequestOthers);
 
 using UkmMetrics = ukm::TestUkmRecorder::HumanReadableUkmMetrics;
 using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;

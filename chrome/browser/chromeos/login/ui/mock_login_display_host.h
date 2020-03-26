@@ -45,7 +45,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   }
 
   MOCK_METHOD0(CancelUserAdding, void(void));
-  MOCK_METHOD1(StartSignInScreen, void(const LoginScreenContext&));
+  MOCK_METHOD0(StartSignInScreen, void(void));
   MOCK_METHOD0(OnPreferencesChanged, void(void));
   MOCK_METHOD0(PrewarmAuthentication, void(void));
   MOCK_METHOD3(StartAppLaunch, void(const std::string&, bool, bool));

@@ -78,7 +78,13 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FaviconPermission) {
 
 // Test functions and APIs that are always allowed (even if you ask for no
 // permissions).
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, AlwaysAllowed) {
+// Flaky on MacOS (see crbug/1064929).
+#if defined(OS_MACOSX)
+#define MAYBE_AlwaysAllowed DISABLED_AlwaysAllowed
+#else
+#define MAYBE_AlwaysAllowed AlwaysAllowed
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionsApiTest, MAYBE_AlwaysAllowed) {
   ASSERT_TRUE(RunExtensionTest("permissions/always_allowed")) << message_;
 }
 

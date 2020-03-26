@@ -79,8 +79,7 @@ void FakeLoginDisplayHost::StartUserAdding(
 
 void FakeLoginDisplayHost::CancelUserAdding() {}
 
-void FakeLoginDisplayHost::StartSignInScreen(
-    const LoginScreenContext& context) {}
+void FakeLoginDisplayHost::StartSignInScreen() {}
 
 void FakeLoginDisplayHost::OnPreferencesChanged() {}
 

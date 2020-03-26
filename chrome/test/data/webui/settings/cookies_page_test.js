@@ -30,6 +30,9 @@ suite('CrSettingsCookiesPageTest', function() {
   /** @type {Element} */
   let blockAll;
 
+  /** @type {array<!Element>} */
+  let radioButtons;
+
   setup(function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
@@ -53,6 +56,8 @@ suite('CrSettingsCookiesPageTest', function() {
     blockAll = page.$$('#blockAll');
     clearOnExit = page.$$('#clearOnExit');
     networkPrediction = page.$$('#networkPrediction');
+    radioButtons =
+        [allowAll, blockThirdPartyIncognito, blockThirdParty, blockAll];
   });
 
   teardown(function() {
@@ -246,7 +251,14 @@ suite('CrSettingsCookiesPageTest', function() {
     }
   });
 
-  test('CookieSettingExceptions_Managed', async function() {
+  test('CookieControls_ManagedState', async function() {
+    const managedControlState = {
+      allowAll: {disabled: true, indicator: 'devicePolicy'},
+      blockThirdPartyIncognito: {disabled: true, indicator: 'devicePolicy'},
+      blockThirdParty: {disabled: true, indicator: 'devicePolicy'},
+      blockAll: {disabled: true, indicator: 'devicePolicy'},
+      sessionOnly: {disabled: true, indicator: 'devicePolicy'},
+    };
     const managedPrefs = test_util.createSiteSettingsPrefs(
         [test_util.createContentSettingTypeToValuePair(
             settings.ContentSettingsTypes.COOKIES,
@@ -255,16 +267,40 @@ suite('CrSettingsCookiesPageTest', function() {
               source: settings.SiteSettingSource.POLICY
             }))],
         []);
+    siteSettingsBrowserProxy.setResultFor(
+        'getCookieControlsManagedState', Promise.resolve(managedControlState));
     siteSettingsBrowserProxy.setPrefs(managedPrefs);
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
+    await siteSettingsBrowserProxy.whenCalled('getCookieControlsManagedState');
     Polymer.dom.flush();
 
+    // Check the four radio buttons are correctly indicating they are managed.
+    for (button of radioButtons) {
+      assertTrue(button.disabled);
+      assertEquals(button.policyIndicatorType, 'devicePolicy');
+    }
+
+    // Check the clear on exit toggle is correctly indicating it is managed.
+    assertTrue(clearOnExit.checked);
+    assertTrue(clearOnExit.controlDisabled());
+    assertTrue(
+        test_util.isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
     let exceptionLists = page.shadowRoot.querySelectorAll('site-list');
+
+    // Check all exception lists are read only.
     assertEquals(exceptionLists.length, 3);
     for (const list of exceptionLists) {
       assertTrue(!!list.readOnlyList);
     }
 
+    // Revert to an unmanaged state and ensure all controls return to unmanged.
+    const unmanagedControlState = {
+      allowAll: {disabled: false, indicator: 'none'},
+      blockThirdPartyIncognito: {disabled: false, indicator: 'none'},
+      blockThirdParty: {disabled: false, indicator: 'none'},
+      blockAll: {disabled: false, indicator: 'none'},
+      sessionOnly: {disabled: false, indicator: 'none'},
+    };
     const unmanagedPrefs = test_util.createSiteSettingsPrefs(
         [test_util.createContentSettingTypeToValuePair(
             settings.ContentSettingsTypes.COOKIES,
@@ -272,10 +308,27 @@ suite('CrSettingsCookiesPageTest', function() {
               setting: settings.ContentSetting.ALLOW,
             }))],
         []);
+    siteSettingsBrowserProxy.reset();
+    siteSettingsBrowserProxy.setResultFor(
+        'getCookieControlsManagedState',
+        Promise.resolve(unmanagedControlState));
     siteSettingsBrowserProxy.setPrefs(unmanagedPrefs);
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
-    Polymer.dom.flush();
+    await siteSettingsBrowserProxy.whenCalled('getCookieControlsManagedState');
 
+    // Check the four radio buttons no longer indicate they are managed.
+    for (button of radioButtons) {
+      assertFalse(button.disabled);
+      assertEquals(button.policyIndicatorType, 'none');
+    }
+
+    // Check the clear on exit toggle no longer indicates it is managed.
+    assertFalse(clearOnExit.checked);
+    assertFalse(clearOnExit.controlDisabled());
+    assertFalse(
+        test_util.isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
+
+    // Check all exception lists are no longer read only.
     exceptionLists = page.shadowRoot.querySelectorAll('site-list');
     assertEquals(exceptionLists.length, 3);
     for (const list of exceptionLists) {

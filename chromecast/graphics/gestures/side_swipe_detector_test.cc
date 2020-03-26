@@ -72,8 +72,9 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
-    screen_position_client_.reset(
-        new wm::DefaultScreenPositionClient(root_window()));
+    screen_position_client_.reset(new wm::DefaultScreenPositionClient());
+    aura::client::SetScreenPositionClient(root_window(),
+                                          screen_position_client_.get());
 
     gesture_handler_ = std::make_unique<MockCastGestureHandler>();
     side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
@@ -91,7 +92,6 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
   void TearDown() override {
     side_swipe_detector_.reset();
     gesture_handler_.reset();
-    screen_position_client_.reset();
 
     aura::test::AuraTestBase::TearDown();
   }

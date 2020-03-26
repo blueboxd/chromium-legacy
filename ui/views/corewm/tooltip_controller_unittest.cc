@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -484,16 +485,17 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 
   void SetUp() override {
     TooltipControllerTest::SetUp();
-    screen_position_client_ =
-        std::make_unique<wm::DefaultScreenPositionClient>(GetRootWindow());
+    aura::client::SetScreenPositionClient(GetRootWindow(),
+                                          &screen_position_client_);
   }
 
   void TearDown() override {
+    aura::client::SetScreenPositionClient(GetRootWindow(), nullptr);
     TooltipControllerTest::TearDown();
   }
 
  private:
-  std::unique_ptr<wm::DefaultScreenPositionClient> screen_position_client_;
+  wm::DefaultScreenPositionClient screen_position_client_;
   std::unique_ptr<display::Screen> desktop_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerCaptureTest);

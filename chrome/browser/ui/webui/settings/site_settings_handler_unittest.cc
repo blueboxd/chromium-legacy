@@ -45,6 +45,8 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/content_settings/core/test/content_settings_mock_provider.h"
+#include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/permissions/chooser_context_base.h"
@@ -2173,6 +2175,61 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
 
   storage_and_cookie_list = GetOnStorageFetchedSentListValue();
   EXPECT_EQ(0U, storage_and_cookie_list->GetSize());
+}
+
+TEST_F(SiteSettingsHandlerTest, CookieControlsManagedState) {
+  // Test that the handler correctly wraps the helper result. Helper with
+  // extensive logic is tested in site_settings_helper_unittest.cc.
+  const std::string kNone = "none";
+  const std::string kDevicePolicy = "devicePolicy";
+  const std::vector<std::string> kControlNames = {
+      "allowAll", "blockAll", "blockThirdParty", "blockThirdPartyIncognito",
+      "sessionOnly"};
+
+  // Check that the default cookie control state is handled correctly.
+  base::ListValue get_args;
+  get_args.AppendString(kCallbackId);
+  handler()->HandleGetCookieControlsManagedState(&get_args);
+  {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->GetBool());
+    for (const auto& control_name : kControlNames) {
+      auto* control_state = data.arg3()->FindPath(control_name);
+      ASSERT_FALSE(control_state->FindKey("disabled")->GetBool());
+      ASSERT_EQ(kNone, control_state->FindKey("indicator")->GetString());
+    }
+  }
+
+  // Check that a fully managed cookie state is handled correctly.
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  auto provider = std::make_unique<content_settings::MockProvider>();
+  provider->SetWebsiteSetting(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      ContentSettingsType::COOKIES, std::string(),
+      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
+  content_settings::TestUtils::OverrideProvider(
+      map, std::move(provider), HostContentSettingsMap::POLICY_PROVIDER);
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+  pref_service->SetManagedPref(prefs::kBlockThirdPartyCookies,
+                               std::make_unique<base::Value>(true));
+
+  handler()->HandleGetCookieControlsManagedState(&get_args);
+  {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->GetBool());
+    for (const auto& control_name : kControlNames) {
+      auto* control_state = data.arg3()->FindPath(control_name);
+      ASSERT_TRUE(control_state->FindKey("disabled")->GetBool());
+      ASSERT_EQ(kDevicePolicy,
+                control_state->FindKey("indicator")->GetString());
+    }
+  }
 }
 
 TEST_F(SiteSettingsHandlerTest, CookieSettingDescription) {

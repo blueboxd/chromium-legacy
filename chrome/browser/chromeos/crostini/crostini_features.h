@@ -43,6 +43,11 @@ class CrostiniFeatures {
   // Returns true if container upgrade ui is allowed by flag.
   virtual bool IsContainerUpgradeUIAllowed(Profile*);
 
+  // Returns whether the user is allowed to enable and disable ADB sideloading
+  // based on whether the user is the owner, whether the user and the device
+  // are managed, and feature flag and policies for managed case.
+  virtual bool CanChangeAdbSideloading(Profile* profile);
+
   // TODO(crbug.com/1004708): Move other functions from crostini_util to here.
 
  protected:

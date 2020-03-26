@@ -37,6 +37,10 @@ class SigninViewControllerDelegateViews
   static std::unique_ptr<views::WebView> CreateSigninErrorWebView(
       Browser* browser);
 
+  static std::unique_ptr<views::WebView> CreateReauthWebView(
+      Browser* browser,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+
   // views::DialogDelegateView:
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
@@ -72,7 +76,8 @@ class SigninViewControllerDelegateViews
       std::unique_ptr<views::WebView> content_view,
       Browser* browser,
       ui::ModalType dialog_modal_type,
-      bool wait_for_size);
+      bool wait_for_size,
+      bool should_show_close_button);
   ~SigninViewControllerDelegateViews() override;
 
   // Creates a WebView for a dialog with the specified URL.
@@ -97,6 +102,7 @@ class SigninViewControllerDelegateViews
   views::Widget* modal_signin_widget_;  // Not owned.
   ui::ModalType dialog_modal_type_;
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+  bool should_show_close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateViews);
 };

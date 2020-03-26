@@ -94,7 +94,7 @@ CrostiniDialogBrowserTest::CrostiniDialogBrowserTest(bool register_termina)
   fake_crostini_features_.set_enabled(true);
   fake_crostini_features_.set_export_import_ui_allowed(true);
   fake_crostini_features_.set_root_access_allowed(true);
-  fake_crostini_features_.container_upgrade_ui_allowed(true);
+  fake_crostini_features_.set_container_upgrade_ui_allowed(true);
 }
 
 CrostiniDialogBrowserTest::~CrostiniDialogBrowserTest() = default;

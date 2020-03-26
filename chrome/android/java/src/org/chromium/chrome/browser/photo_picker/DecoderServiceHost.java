@@ -135,7 +135,7 @@ public class DecoderServiceHost
     /**
      * Class for keeping track of the data involved with each request.
      */
-    private static class DecoderServiceParams {
+    protected static class DecoderServiceParams {
         // The URI for the file containing the bitmap to decode.
         final Uri mUri;
 
@@ -180,7 +180,7 @@ public class DecoderServiceHost
     // Top priority: Still images (TileType.PICTURES).
     // Medium priority: Videos (decoding of first frame only).
     // Low priority: Videos (multiple frames for animating).
-    private Comparator<DecoderServiceParams> mRequestComparator = (r1, r2) -> {
+    protected Comparator<DecoderServiceParams> mRequestComparator = (r1, r2) -> {
         if (r1.mFileType != r2.mFileType) {
             return r1.mFileType - r2.mFileType;
         }

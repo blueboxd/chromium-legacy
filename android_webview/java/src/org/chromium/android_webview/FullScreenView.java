@@ -33,7 +33,11 @@ public class FullScreenView extends FrameLayout {
             int initialWidth, int initialHeight) {
         super(context);
         setRight(initialWidth);
-        setBottom(initialHeight);
+        // Setting to the exact same dimensions avoids a layout later in some apps.
+        // This apparently causes some unexpected behavior such as not receiving key events
+        // Arbitrarily set the height to 5 pixels less to force a layout while also minimizing
+        // changes to viewport that can affect the graphics pipeline.
+        setBottom(Math.max(0, initialHeight - 5));
         setAwViewMethods(awViewMethods);
         mAwContents = awContents;
         mInternalAccessAdapter = new InternalAccessAdapter();

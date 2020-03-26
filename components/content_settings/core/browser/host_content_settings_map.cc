@@ -911,6 +911,18 @@ HostContentSettingsMap::GetProviderTypeFromSource(const std::string& source) {
   return DEFAULT_PROVIDER;
 }
 
+// static
+content_settings::SettingSource
+HostContentSettingsMap::GetSettingSourceFromProviderName(
+    const std::string& provider_name) {
+  for (const auto& provider_name_source : kProviderNamesSourceMap) {
+    if (provider_name == provider_name_source.provider_name)
+      return provider_name_source.provider_source;
+  }
+  NOTREACHED();
+  return content_settings::SETTING_SOURCE_NONE;
+}
+
 std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
     const GURL& primary_url,
     const GURL& secondary_url,

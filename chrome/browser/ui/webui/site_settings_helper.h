@@ -52,16 +52,23 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
 using ChooserExceptionDetails =
     std::map<std::pair<GURL, std::string>, std::set<std::pair<GURL, bool>>>;
 
+constexpr char kAllowAll[] = "allowAll";
+constexpr char kBlockThirdPartyIncognito[] = "blockThirdPartyIncognito";
+constexpr char kBlockThirdParty[] = "blockThirdParty";
+constexpr char kBlockAll[] = "blockAll";
+constexpr char kSessionOnly[] = "sessionOnly";
 constexpr char kChooserType[] = "chooserType";
 constexpr char kDisplayName[] = "displayName";
 constexpr char kEmbeddingOrigin[] = "embeddingOrigin";
 constexpr char kIncognito[] = "incognito";
 constexpr char kObject[] = "object";
+constexpr char kDisabled[] = "disabled";
 constexpr char kOrigin[] = "origin";
 constexpr char kOriginForFavicon[] = "originForFavicon";
 constexpr char kRecentPermissions[] = "recentPermissions";
 constexpr char kSetting[] = "setting";
 constexpr char kSites[] = "sites";
+constexpr char kPolicyIndicator[] = "indicator";
 constexpr char kSource[] = "source";
 constexpr char kType[] = "type";
 
@@ -77,6 +84,40 @@ enum class SiteSettingSource {
   kPreference,
   kNumSources,
 };
+
+// Possible policy indicators that can be shown in settings.
+// Must be kept in sync with the CrPolicyIndicatorType enum located in
+// src/ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.js
+enum class PolicyIndicatorType {
+  kDevicePolicy,
+  kExtension,
+  kNone,
+  kOwner,
+  kPrimaryUser,
+  kRecommended,
+  kUserPolicy,
+  kParent,
+  kChildRestriction,
+  kNumIndicators,
+};
+
+// Represents the managed state for a single settings control.
+struct ManagedState {
+  bool disabled = false;
+  PolicyIndicatorType indicator = PolicyIndicatorType::kNone;
+};
+
+// Represents the manage states for all of the cookie controls.
+struct CookieControlsManagedState {
+  ManagedState allow_all;
+  ManagedState block_third_party_incognito;
+  ManagedState block_third_party;
+  ManagedState block_all;
+  ManagedState session_only;
+};
+
+// Concerts a PolicyIndicatorType to its string identifier.
+std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type);
 
 // Returns whether a group name has been registered for the given type.
 bool HasRegisteredGroupName(ContentSettingsType type);
@@ -185,6 +226,9 @@ base::Value CreateChooserExceptionObject(
 base::Value GetChooserExceptionListFromProfile(
     Profile* profile,
     const ChooserTypeNameEntry& chooser_type);
+
+// Returns the cookie controls manage state for a given profile.
+CookieControlsManagedState GetCookieControlsManagedState(Profile* profile);
 
 }  // namespace site_settings
 

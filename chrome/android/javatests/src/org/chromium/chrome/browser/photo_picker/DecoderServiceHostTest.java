@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.support.test.filters.LargeTest;
+import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -112,6 +113,79 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
 
     private void cancelDecodeImage(DecoderServiceHost host, String filePath) {
         TestThreadUtils.runOnUiThreadBlocking(() -> host.cancelDecodeImage(filePath));
+    }
+
+    @Test
+    @SmallTest
+    public void testRequestComparator() throws Throwable {
+        Uri uri = Uri.parse("http://example.com");
+        int width = 100;
+        boolean fullWidth = true;
+        DecoderServiceHost.ImagesDecodedCallback callback = null;
+
+        DecoderServiceHost.DecoderServiceParams higherPri;
+        DecoderServiceHost.DecoderServiceParams lowerPri;
+
+        // Still image decoding has higher priority than first frame video decoding.
+        higherPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.PICTURE,
+                /* firstFrame= */ true, callback);
+        lowerPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ true, callback);
+        DecoderServiceHost host = new DecoderServiceHost(this, mContext);
+        Assert.assertTrue("Still images have priority over requests for initial video frame",
+                host.mRequestComparator.compare(higherPri, lowerPri) < 0);
+
+        // Still image decoding has higher priority than decoding remaining video frames.
+        higherPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.PICTURE,
+                /* firstFrame= */ true, callback);
+        lowerPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ false, callback);
+        Assert.assertTrue("Still images have priority over requests for remaining video frames",
+                host.mRequestComparator.compare(higherPri, lowerPri) < 0);
+
+        // First frame video request have priority over remaining video frames.
+        higherPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ true, callback);
+        lowerPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ false, callback);
+        Assert.assertTrue("Initial video frames have priority over remaining video frames",
+                host.mRequestComparator.compare(higherPri, lowerPri) < 0);
+
+        // Enforce FIFO principle for two identical still image requests.
+        higherPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.PICTURE,
+                /* firstFrame= */ true, callback);
+        lowerPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.PICTURE,
+                /* firstFrame= */ true, callback);
+        Assert.assertTrue("Identical still image requests should be processed FIFO",
+                host.mRequestComparator.compare(higherPri, lowerPri) < 0);
+
+        // Enforce FIFO principle for two identical video requests (initial frames).
+        higherPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ true, callback);
+        lowerPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ true, callback);
+        Assert.assertTrue("Identical video requests (initial frames) should be processed FIFO",
+                host.mRequestComparator.compare(higherPri, lowerPri) < 0);
+
+        // Enforce FIFO principle for two identical video requests (remaining frames).
+        higherPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ false, callback);
+        lowerPri = new DecoderServiceHost.DecoderServiceParams(uri, width, fullWidth,
+                PickerBitmap.TileTypes.VIDEO,
+                /* firstFrame= */ false, callback);
+        Assert.assertTrue("Identical video requests (remanining frames) should be processed FIFO",
+                host.mRequestComparator.compare(higherPri, lowerPri) < 0);
     }
 
     @Test

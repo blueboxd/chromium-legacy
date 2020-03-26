@@ -12,18 +12,16 @@
 #include "base/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/crostini_disk.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
 #include "chrome/common/pref_names.h"
@@ -412,28 +410,7 @@ void CrostiniHandler::HandleDisableArcAdbRequest(const base::ListValue* args) {
 }
 
 bool CrostiniHandler::CheckEligibilityToChangeArcAdbSideloading() const {
-  if (!chromeos::ProfileHelper::IsOwnerProfile(profile_)) {
-    DVLOG(1) << "Only the owner can change adb sideloading status";
-    return false;
-  }
-
-  if (user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-    DVLOG(1) << "adb sideloading is currently unsupported for child account";
-    return false;
-  }
-
-  if (profile_->GetProfilePolicyConnector()->IsManaged()) {
-    DVLOG(1) << "adb sideloading is currently unsupported for managed user";
-    return false;
-  }
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged()) {
-    DVLOG(1) << "adb sideloading is currently unsupported on managed device";
-    return false;
-  }
-  return true;
+  return crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(profile_);
 }
 
 void CrostiniHandler::LaunchTerminal() {

@@ -84,8 +84,7 @@ void LoginDisplayHostCommon::StartUserAdding(
   OnStartUserAdding();
 }
 
-void LoginDisplayHostCommon::StartSignInScreen(
-    const LoginScreenContext& context) {
+void LoginDisplayHostCommon::StartSignInScreen() {
   PrewarmAuthentication();
 
   const user_manager::UserList& users =
@@ -107,7 +106,7 @@ void LoginDisplayHostCommon::StartSignInScreen(
       kPolicyServiceInitializationDelayMilliseconds);
 
   // Run UI-specific logic.
-  OnStartSignInScreen(context);
+  OnStartSignInScreen();
 
   // Enable status area after starting sign-in screen, as it may depend on the
   // UI being visible.

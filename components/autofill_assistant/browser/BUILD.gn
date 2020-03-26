@@ -108,6 +108,7 @@ jumbo_static_library("browser") {
     "event_handler.h",
     "features.cc",
     "features.h",
+    "generic_ui_java_generated_enums.h",
     "info_box.cc",
     "info_box.h",
     "metrics.cc",
@@ -303,6 +304,7 @@ if (is_android) {
 
   java_cpp_enum("autofill_assistant_enums_java") {
     sources = [
+      "generic_ui_java_generated_enums.h",
       "metrics.h",
       "overlay_state.h",
       "user_data.h",

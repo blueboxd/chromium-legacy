@@ -10,11 +10,20 @@
 #include "chrome/browser/android/autofill_assistant/interaction_handler_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/event_handler.h"
+#include "components/autofill_assistant/browser/generic_ui_java_generated_enums.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 
 namespace autofill_assistant {
 
 namespace {
+
+// Forward declaration to allow recursive calls.
+base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
+    JNIEnv* env,
+    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
+    const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
+    const ViewProto& proto,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
     JNIEnv* env,
@@ -84,6 +93,10 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaViewContainer(
       jcontainer = Java_AssistantViewFactory_createLinearLayout(
           env, jcontext, jidentifier, proto.linear_layout().orientation());
       break;
+    case ViewContainerProto::kExpanderAccordion:
+      jcontainer = Java_AssistantViewFactory_createVerticalExpanderAccordion(
+          env, jcontext, jidentifier, proto.expander_accordion().orientation());
+      break;
     case ViewContainerProto::CONTAINER_NOT_SET:
       return nullptr;
   }
@@ -107,13 +120,56 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaTextView(
       jtext_appearance);
 }
 
-// Forward declaration to allow recursive calls.
-base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
+base::android::ScopedJavaLocalRef<jobject> CreateJavaVerticalExpander(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jobject>& jcontext,
     const base::android::ScopedJavaGlobalRef<jobject>& jdelegate,
-    const ViewProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+    const base::android::ScopedJavaLocalRef<jstring>& jidentifier,
+    const VerticalExpanderViewProto& proto,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+  base::android::ScopedJavaGlobalRef<jobject> jtitle_view = nullptr;
+  if (proto.has_title_view()) {
+    jtitle_view =
+        CreateJavaView(env, jcontext, jdelegate, proto.title_view(), views);
+    if (!jtitle_view) {
+      return nullptr;
+    }
+  }
+  base::android::ScopedJavaGlobalRef<jobject> jcollapsed_view = nullptr;
+  if (proto.has_collapsed_view()) {
+    jcollapsed_view =
+        CreateJavaView(env, jcontext, jdelegate, proto.collapsed_view(), views);
+    if (!jcollapsed_view) {
+      return nullptr;
+    }
+  }
+  base::android::ScopedJavaGlobalRef<jobject> jexpanded_view = nullptr;
+  if (proto.has_expanded_view()) {
+    jexpanded_view =
+        CreateJavaView(env, jcontext, jdelegate, proto.expanded_view(), views);
+    if (!jexpanded_view) {
+      return nullptr;
+    }
+  }
+  VerticalExpanderChevronStyle chevron_style;
+  switch (proto.chevron_style()) {
+    case VerticalExpanderViewProto::NOT_SET_AUTOMATIC:
+      chevron_style = VerticalExpanderChevronStyle::NOT_SET_AUTOMATIC;
+      break;
+    case VerticalExpanderViewProto::ALWAYS:
+      chevron_style = VerticalExpanderChevronStyle::ALWAYS;
+      break;
+    case VerticalExpanderViewProto::NEVER:
+      chevron_style = VerticalExpanderChevronStyle::NEVER;
+      break;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+  return Java_AssistantViewFactory_createVerticalExpander(
+      env, jcontext, jidentifier, jtitle_view, jcollapsed_view, jexpanded_view,
+      static_cast<int>(chevron_style));
+}
 
 base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
     JNIEnv* env,
@@ -146,6 +202,11 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
       }
       jview = Java_AssistantViewFactory_createImageView(env, jcontext,
                                                         jidentifier, jimage);
+      break;
+    }
+    case ViewProto::kVerticalExpanderView: {
+      jview = CreateJavaVerticalExpander(env, jcontext, jdelegate, jidentifier,
+                                         proto.vertical_expander_view(), views);
       break;
     }
     case ViewProto::kTextInputView:

@@ -16,7 +16,7 @@ namespace wm {
 class WM_CORE_EXPORT DefaultScreenPositionClient
     : public aura::client::ScreenPositionClient {
  public:
-  explicit DefaultScreenPositionClient(aura::Window* root_window);
+  DefaultScreenPositionClient();
   ~DefaultScreenPositionClient() override;
 
   // aura::client::ScreenPositionClient overrides:
@@ -35,8 +35,6 @@ class WM_CORE_EXPORT DefaultScreenPositionClient
   virtual gfx::Point GetOriginInScreen(const aura::Window* root_window);
 
  private:
-  aura::Window* root_window_;
-
   DISALLOW_COPY_AND_ASSIGN(DefaultScreenPositionClient);
 };
 

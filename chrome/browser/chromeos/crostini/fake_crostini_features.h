@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_FAKE_CROSTINI_FEATURES_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 
 class Profile;
@@ -28,49 +29,43 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   bool IsExportImportUIAllowed(Profile* profile) override;
   bool IsRootAccessAllowed(Profile* profile) override;
   bool IsContainerUpgradeUIAllowed(Profile*) override;
+  bool CanChangeAdbSideloading(Profile* profile) override;
 
   void set_allowed(bool allowed) {
-    allowed_set_ = true;
     allowed_ = allowed;
   }
   void set_ui_allowed(bool allowed) {
-    ui_allowed_set_ = true;
     ui_allowed_ = allowed;
   }
   void set_enabled(bool enabled) {
-    enabled_set_ = true;
     enabled_ = enabled;
   }
   void set_export_import_ui_allowed(bool allowed) {
-    export_import_ui_allowed_set_ = true;
     export_import_ui_allowed_ = allowed;
   }
   void set_root_access_allowed(bool allowed) {
-    root_access_allowed_set_ = true;
     root_access_allowed_ = allowed;
   }
-  void container_upgrade_ui_allowed(bool allowed) {
-    container_upgrade_ui_allowed_set_ = true;
+  void set_container_upgrade_ui_allowed(bool allowed) {
     container_upgrade_ui_allowed_ = allowed;
   }
 
+  void set_can_change_adb_sideloading(bool can_change) {
+    can_change_adb_sideloading_ = can_change;
+  }
+
  private:
-  // Original global static when this instance is created.  It is captured when
+  // Original global static when this instance is created. It is captured when
   // FakeCrostiniFeatures is created and replaced at destruction.
   CrostiniFeatures* original_features_;
 
-  bool allowed_set_ = false;
-  bool allowed_ = false;
-  bool ui_allowed_set_ = false;
-  bool ui_allowed_ = false;
-  bool enabled_ = false;
-  bool enabled_set_ = false;
-  bool export_import_ui_allowed_set_ = false;
-  bool export_import_ui_allowed_ = false;
-  bool root_access_allowed_set_ = false;
-  bool root_access_allowed_ = false;
-  bool container_upgrade_ui_allowed_set_ = false;
-  bool container_upgrade_ui_allowed_ = false;
+  base::Optional<bool> allowed_;
+  base::Optional<bool> ui_allowed_;
+  base::Optional<bool> enabled_;
+  base::Optional<bool> export_import_ui_allowed_;
+  base::Optional<bool> root_access_allowed_;
+  base::Optional<bool> container_upgrade_ui_allowed_;
+  base::Optional<bool> can_change_adb_sideloading_;
 };
 
 }  // namespace crostini

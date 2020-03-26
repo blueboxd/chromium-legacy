@@ -30,6 +30,8 @@ message ViewProto {
     ImageViewProto image_view = 7;
     // A text input view.
     TextInputViewProto text_input_view = 8;
+    // A vertical expander with fixed title, collapsed, and expanded sections.
+    VerticalExpanderViewProto vertical_expander_view = 9;
   }
 }
 
@@ -143,7 +145,10 @@ message ViewContainerProto {
   // The list of views to add to this container.
   repeated ViewProto views = 1;
 
-  oneof container { LinearLayoutProto linear_layout = 2; }
+  oneof container {
+    LinearLayoutProto linear_layout = 2;
+    VerticalExpanderAccordionProto expander_accordion = 3;
+  }
 }
 
 message LinearLayoutProto {
@@ -153,6 +158,38 @@ message LinearLayoutProto {
   }
 
   optional Orientation orientation = 1;
+}
+
+// A vertical expander is a special type of vertical linear layout. It has two
+// expansion states (expanded vs. collapsed) and toggles between them by tapping
+// the title widget. For user guidance, a chevron is shown in the title to
+// indicate the current state.
+message VerticalExpanderViewProto {
+  enum ChevronStyle {
+    // Automatic: will show the chevron only if |expanded_view| is set.
+    NOT_SET_AUTOMATIC = 0;
+    ALWAYS = 1;
+    NEVER = 2;
+  }
+
+  // The view to show in the expander title.
+  optional ViewProto title_view = 1;
+
+  // The view to show in the collapsed state.
+  optional ViewProto collapsed_view = 2;
+
+  // The view to show in the expanded state.
+  optional ViewProto expanded_view = 3;
+
+  // The chevron style controls when to show the expand/collapse chevron.
+  optional ChevronStyle chevron_style = 4;
+}
+
+// This is a special type of linear layout that implements accordion-like
+// functionality for all child vertical expanders, i.e., it ensures that at
+// most one child vertical expander is expanded at any time.
+message VerticalExpanderAccordionProto {
+  optional LinearLayoutProto.Orientation orientation = 2;
 }
 
 message TextViewProto {

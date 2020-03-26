@@ -37,7 +37,12 @@ enum class WebSchedulerTrackedFeature {
   kContainsPlugins = 12,
   kDocumentLoaded = 13,
   kDedicatedWorkerOrWorklet = 14,
-  kOutstandingNetworkRequest = 15,
+
+  // There are some other values defined for specific request context types
+  // (e.g., XHR). This value corresponds to a network requests not covered by
+  // specific context types down below.
+  kOutstandingNetworkRequestOthers = 15,
+
   // TODO(altimin): This doesn't include service worker-controlled origins.
   // We need to track them too.
   kServiceWorkerControlledPage = 16,
@@ -76,8 +81,11 @@ enum class WebSchedulerTrackedFeature {
   kWebNfc = 38,
   kWebFileSystem = 39,
 
+  kOutstandingNetworkRequestFetch = 40,
+  kOutstandingNetworkRequestXHR = 41,
+
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kWebFileSystem
+  kMaxValue = kOutstandingNetworkRequestXHR,
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,

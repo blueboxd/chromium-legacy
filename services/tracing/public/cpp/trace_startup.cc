@@ -170,6 +170,12 @@ void PropagateTracingFlagsToChildProcessCmdLine(base::CommandLine* cmd_line) {
   if (!TraceEventDataSource::GetInstance()->IsEnabled())
     return;
 
+  // (Posix)SystemProducer doesn't currently support startup tracing, so don't
+  // attempt to enable startup tracing in child processes if system tracing is
+  // active.
+  if (PerfettoTracedProcess::Get()->system_producer()->IsTracingActive())
+    return;
+
   // The child process startup may race with a concurrent disabling of the
   // tracing session by the tracing service. To avoid being stuck in startup
   // tracing mode forever, the child process will discard the startup session

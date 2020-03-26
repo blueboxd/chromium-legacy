@@ -14,10 +14,10 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantChevronStyle;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander.ChevronStyle;
 import org.chromium.content.browser.input.PopupItemType;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupItem;
@@ -126,7 +126,7 @@ public class AssistantPopupListSection implements AssistantAdditionalSection {
 
         mSectionExpander.findViewById(R.id.section_title_add_button).setVisibility(View.GONE);
         mSectionExpander.setFixed(true);
-        mSectionExpander.setChevronStyle(ChevronStyle.ALWAYS);
+        mSectionExpander.setChevronStyle(AssistantChevronStyle.ALWAYS);
 
         parent.addView(mSectionExpander, index,
                 new ViewGroup.LayoutParams(

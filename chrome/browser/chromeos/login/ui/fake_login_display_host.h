@@ -37,7 +37,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   AppLaunchController* GetAppLaunchController() override;
   void StartUserAdding(base::OnceClosure completion_callback) override;
   void CancelUserAdding() override;
-  void StartSignInScreen(const LoginScreenContext& context) override;
+  void StartSignInScreen() override;
   void OnPreferencesChanged() override;
   void PrewarmAuthentication() override;
   void StartAppLaunch(const std::string& app_id,

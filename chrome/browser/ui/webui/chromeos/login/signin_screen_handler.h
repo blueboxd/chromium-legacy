@@ -59,19 +59,6 @@ class NativeWindowDelegate;
 class User;
 class UserContext;
 
-// Helper class to pass initial parameters to the login screen.
-class LoginScreenContext {
- public:
-  LoginScreenContext();
-
-  void set_email(const std::string& email) { email_ = email; }
-  const std::string& email() const { return email_; }
-
- private:
-  // Optional email to prefill in gaia signin.
-  std::string email_;
-};
-
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
 class LoginDisplayWebUIHandler {
  public:
@@ -204,7 +191,7 @@ class SigninScreenHandler
       input_method::InputMethodManager::State* ime_state);
 
   // Shows the sign in screen.
-  void Show(const LoginScreenContext& context, bool oobe_ui);
+  void Show(bool oobe_ui);
 
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.

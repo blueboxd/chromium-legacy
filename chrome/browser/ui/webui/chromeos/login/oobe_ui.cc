@@ -667,8 +667,7 @@ void OobeUI::ShowOobeUI(bool show) {
     oobe_display_chooser_->TryToPlaceUiOnTouchDisplay();
 }
 
-void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
-                              SigninScreenHandlerDelegate* delegate,
+void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
                               NativeWindowDelegate* native_window_delegate) {
   // Check our device mode.
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -683,8 +682,7 @@ void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
   signin_screen_handler_->SetDelegate(delegate);
   signin_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
 
-  LoginScreenContext actual_context(context);
-  signin_screen_handler_->Show(actual_context, core_handler_->show_oobe_ui());
+  signin_screen_handler_->Show(core_handler_->show_oobe_ui());
 }
 
 void OobeUI::ForwardAccelerator(std::string accelerator_name) {

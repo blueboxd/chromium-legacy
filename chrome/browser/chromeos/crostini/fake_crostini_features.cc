@@ -16,39 +16,45 @@ FakeCrostiniFeatures::~FakeCrostiniFeatures() {
 }
 
 bool FakeCrostiniFeatures::IsAllowed(Profile* profile) {
-  if (allowed_set_)
-    return allowed_;
+  if (allowed_.has_value())
+    return *allowed_;
   return original_features_->IsAllowed(profile);
 }
 
 bool FakeCrostiniFeatures::IsUIAllowed(Profile* profile, bool check_policy) {
-  if (ui_allowed_set_)
-    return ui_allowed_;
+  if (ui_allowed_.has_value())
+    return *ui_allowed_;
   return original_features_->IsUIAllowed(profile, check_policy);
 }
 
 bool FakeCrostiniFeatures::IsEnabled(Profile* profile) {
-  if (enabled_set_)
-    return enabled_;
+  if (enabled_.has_value())
+    return *enabled_;
   return original_features_->IsEnabled(profile);
 }
 
 bool FakeCrostiniFeatures::IsExportImportUIAllowed(Profile* profile) {
-  if (export_import_ui_allowed_set_)
-    return export_import_ui_allowed_;
+  if (export_import_ui_allowed_.has_value())
+    return *export_import_ui_allowed_;
   return original_features_->IsExportImportUIAllowed(profile);
 }
 
 bool FakeCrostiniFeatures::IsRootAccessAllowed(Profile* profile) {
-  if (root_access_allowed_set_)
-    return root_access_allowed_;
+  if (root_access_allowed_.has_value())
+    return *root_access_allowed_;
   return original_features_->IsRootAccessAllowed(profile);
 }
 
 bool FakeCrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
-  if (container_upgrade_ui_allowed_set_)
-    return container_upgrade_ui_allowed_;
+  if (container_upgrade_ui_allowed_.has_value())
+    return *container_upgrade_ui_allowed_;
   return original_features_->IsContainerUpgradeUIAllowed(profile);
+}
+
+bool FakeCrostiniFeatures::CanChangeAdbSideloading(Profile* profile) {
+  if (can_change_adb_sideloading_.has_value())
+    return *can_change_adb_sideloading_;
+  return original_features_->CanChangeAdbSideloading(profile);
 }
 
 }  // namespace crostini

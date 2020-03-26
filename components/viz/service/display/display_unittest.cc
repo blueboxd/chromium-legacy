@@ -904,6 +904,89 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   TearDownDisplay();
 }
 
+// Quads that intersect backdrop filter render pass quads should not be
+// split because splitting may affect how the filter applies to an
+// underlying quad.
+TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSplitPartiallyOccludedQuads);
+
+  RendererSettings settings;
+  settings.minimum_fragments_reduced = 0;
+  settings.kMinimumDrawOcclusionSize.set_width(0);
+  SetUpGpuDisplay(settings);
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  CompositorFrame frame = CompositorFrameBuilder()
+                              .AddDefaultRenderPass()
+                              .AddDefaultRenderPass()
+                              .Build();
+
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+
+  // Rects, shared quad states and quads map 1:1:1
+  gfx::Rect rects[3] = {
+      gfx::Rect(75, 0, 50, 100),
+      gfx::Rect(0, 0, 50, 50),
+      gfx::Rect(0, 0, 100, 100),
+  };
+  SharedQuadState* shared_quad_states[3];
+  DrawQuad* quads[3];
+
+  // Set up the backdrop filter render pass
+  auto& bd_render_pass = frame.render_pass_list.at(0);
+  auto& root_render_pass = frame.render_pass_list.at(1);
+  auto bd_filter_rect = rects[0];
+
+  cc::FilterOperations backdrop_filters;
+  backdrop_filters.Append(cc::FilterOperation::CreateBlurFilter(5.0));
+  bd_render_pass->SetAll(
+      2, bd_filter_rect, gfx::Rect(), gfx::Transform(), cc::FilterOperations(),
+      backdrop_filters, gfx::RRectF(gfx::RectF(bd_filter_rect), 0),
+      gfx::ContentColorUsage::kSRGB, false, false, false, false);
+
+  // Add quads to root render pass
+  for (int i = 0; i < 3; i++) {
+    shared_quad_states[i] = root_render_pass->CreateAndAppendSharedQuadState();
+    shared_quad_states[i]->SetAll(
+        gfx::Transform(), rects[i], rects[i], gfx::RRectF(), rects[i],
+        is_clipped, are_contents_opaque, opacity, SkBlendMode::kSrcOver, 0);
+
+    if (i == 0) {  // Backdrop filter quad
+      auto* new_quad = root_render_pass->quad_list
+                           .AllocateAndConstruct<RenderPassDrawQuad>();
+      new_quad->SetNew(shared_quad_states[i], rects[i], rects[i],
+                       bd_render_pass->id, 2, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.f);
+      quads[i] = new_quad;
+    } else {
+      auto* new_quad = root_render_pass->quad_list
+                           .AllocateAndConstruct<SolidColorDrawQuad>();
+      new_quad->SetNew(shared_quad_states[i], rects[i], rects[i], SK_ColorBLACK,
+                       false);
+      quads[i] = new_quad;
+    }
+  }
+
+  // +---+-+-+-+
+  // | 1 | | . |
+  // +---+ | 0 |
+  // | 2   | . |
+  // +-----+---+
+  EXPECT_EQ(base::size(rects), root_render_pass->quad_list.size());
+  display_->RemoveOverdrawQuads(&frame);
+  ASSERT_EQ(base::size(rects), root_render_pass->quad_list.size());
+
+  for (int i = 0; i < 3; i++) {
+    EXPECT_EQ(rects[i], root_render_pass->quad_list.ElementAt(i)->visible_rect);
+  }
+
+  TearDownDisplay();
+}
+
 // Check if draw occlusion does not remove any DrawQuads when no quad is being
 // covered completely.
 TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {

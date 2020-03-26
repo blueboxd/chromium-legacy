@@ -204,11 +204,11 @@ static String ConvertDragOperationToEffectAllowed(DragOperation op) {
 }
 
 // We provide the IE clipboard types (URL and Text), and the clipboard types
-// specified in the WHATWG Web Applications 1.0 draft see
-// http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
+// specified in the HTML spec. See
+// https://html.spec.whatwg.org/multipage/dnd.html#the-datatransfer-interface
 static String NormalizeType(const String& type,
                             bool* convert_to_url = nullptr) {
-  String clean_type = type.StripWhiteSpace().DeprecatedLower();
+  String clean_type = type.StripWhiteSpace().LowerASCII();
   if (clean_type == kMimeTypeText ||
       clean_type.StartsWith(kMimeTypeTextPlainEtc))
     return kMimeTypeTextPlain;

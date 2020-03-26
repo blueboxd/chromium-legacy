@@ -112,6 +112,11 @@ enum AuthenticationButtonType {
                     forControlEvents:UIControlEventTouchUpInside];
 }
 
+- (NSUInteger)supportedInterfaceOrientations {
+  return IsIPadIdiom() ? [super supportedInterfaceOrientations]
+                       : UIInterfaceOrientationMaskPortrait;
+}
+
 #pragma mark - MDCActivityIndicator
 
 - (void)startAnimatingActivityIndicator {

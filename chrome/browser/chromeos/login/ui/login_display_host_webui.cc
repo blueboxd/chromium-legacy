@@ -211,7 +211,7 @@ void ShowLoginWizardFinish(
   }
 
   if (ShouldShowSigninScreen(first_screen)) {
-    display_host->StartSignInScreen(chromeos::LoginScreenContext());
+    display_host->StartSignInScreen();
   } else {
     display_host->StartWizard(first_screen);
 
@@ -595,8 +595,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   existing_user_controller_->Init(
       user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
   CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(LoginScreenContext(), login_display_.get(),
-                                login_display_.get());
+  GetOobeUI()->ShowSigninScreen(login_display_.get(), login_display_.get());
 }
 
 void LoginDisplayHostWebUI::CancelUserAdding() {
@@ -608,8 +607,7 @@ void LoginDisplayHostWebUI::CancelUserAdding() {
   Finalize(base::OnceClosure());
 }
 
-void LoginDisplayHostWebUI::OnStartSignInScreen(
-    const LoginScreenContext& context) {
+void LoginDisplayHostWebUI::OnStartSignInScreen() {
   DisableKeyboardOverscroll();
 
   restore_path_ = RESTORE_SIGN_IN;
@@ -642,8 +640,7 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 
   CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(context, login_display_.get(),
-                                login_display_.get());
+  GetOobeUI()->ShowSigninScreen(login_display_.get(), login_display_.get());
 
   OnStartSignInScreenCommon();
 

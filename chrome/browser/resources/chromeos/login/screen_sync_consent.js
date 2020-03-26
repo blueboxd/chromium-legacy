@@ -23,6 +23,15 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
     },
 
     /**
+     * Event handler that is invoked just before the screen is shown.
+     * @param {Object} data Screen init payload.
+     */
+    onBeforeShow(data) {
+      $('sync-loading').onBeforeShow();
+      $('sync-consent-impl').onBeforeShow();
+    },
+
+    /**
      * Event handler that is invoked just before the screen is hidden.
      */
     onBeforeHide() {

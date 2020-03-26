@@ -47,6 +47,8 @@ source_set("util") {
 source_set("ntp_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "incognito_cookies_view.h",
+    "incognito_cookies_view.mm",
     "incognito_view.h",
     "incognito_view.mm",
     "incognito_view_controller.h",
@@ -104,6 +106,8 @@ source_set("ntp_internal") {
     "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/overscroll_actions",
+    "//ios/chrome/browser/ui/page_info:features",
+    "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",

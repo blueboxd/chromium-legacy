@@ -475,7 +475,6 @@ crbug.com/1050754 external/wpt/css/css-align/animation/row-gap-interpolation.htm
 crbug.com/1050754 external/wpt/css/css-animations/animation-before-initial-box-construction-001.html [ Failure ]
 crbug.com/1050754 external/wpt/css/css-animations/AnimationEffect-getComputedTiming.tentative.html [ Failure ]
 crbug.com/1050754 external/wpt/css/css-animations/AnimationEffect-updateTiming.tentative.html [ Failure ]
-crbug.com/1050754 external/wpt/css/css-animations/animationevent-marker-pseudoelement.html [ Timeout ]
 crbug.com/1050754 external/wpt/css/css-animations/CSSAnimation-animationName.tentative.html [ Failure ]
 crbug.com/1050754 external/wpt/css/css-animations/CSSAnimation-canceling.tentative.html [ Failure ]
 crbug.com/1050754 external/wpt/css/css-animations/CSSAnimation-compositeOrder.tentative.html [ Failure ]

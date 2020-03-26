@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "components/heap_profiling/client_connection_manager.h"
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/cpp/controller.h"
@@ -71,7 +72,18 @@ void Supervisor::Start(Mode mode,
                        base::OnceClosure closure) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!started_);
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->GetDumpThreadTaskRunner()
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&Supervisor::StartProfilingOnMemoryInfraThread,
+                                base::Unretained(this), mode, stack_mode,
+                                sampling_rate, std::move(closure)));
+}
 
+void Supervisor::StartProfilingOnMemoryInfraThread(Mode mode,
+                                                   mojom::StackMode stack_mode,
+                                                   uint32_t sampling_rate,
+                                                   base::OnceClosure closure) {
   mojo::PendingRemote<memory_instrumentation::mojom::HeapProfilerHelper> helper;
   mojo::PendingRemote<memory_instrumentation::mojom::HeapProfiler> profiler;
   auto profiler_receiver = profiler.InitWithNewPipeAndPassReceiver();

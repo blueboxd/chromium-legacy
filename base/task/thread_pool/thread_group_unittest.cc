@@ -806,7 +806,13 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
 
 // Verify that finishing work outside of a job unblocks workers with a stale
 // max concurrency.
-TEST_P(ThreadGroupTest, JoinJobTaskSourceStaleConcurrency) {
+// TODO(crbug.com/1064953): Flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_JoinJobTaskSourceStaleConcurrency DISABLED_JoinJobTaskSourceStaleConcurrency
+#else
+#define MAYBE_JoinJobTaskSourceStaleConcurrency JoinJobTaskSourceStaleConcurrency
+#endif
+TEST_P(ThreadGroupTest, MAYBE_JoinJobTaskSourceStaleConcurrency) {
   StartThreadGroup();
 
   WaitableEvent thread_running;

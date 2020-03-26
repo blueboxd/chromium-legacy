@@ -31,6 +31,7 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GRID_LAYOU
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabInDialog;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickNthTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickScrimToExitDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
@@ -38,7 +39,9 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.e
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isShowingPopupTabList;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.prepareTabsWithThumbnail;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyAllTabsHaveThumbnail;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyShowingPopupTabList;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
@@ -69,6 +72,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -80,6 +84,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -99,12 +104,16 @@ public class TabGridDialogTest {
     private boolean mHasReceivedSourceRect;
     private TabSelectionEditorTestingRobot mSelectionEditorRobot =
             new TabSelectionEditorTestingRobot();
+    private TabSwitcher.TabDialogDelegation mTabDialogDelegation;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    @Rule
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     @Rule
     public IntentsTestRule<ChromeActivity> mShareActivityTestRule =
@@ -116,6 +125,8 @@ public class TabGridDialogTest {
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
+        mTabDialogDelegation =
+                ((StartSurfaceLayout) layout).getStartSurfaceForTesting().getTabDialogDelegate();
         CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
                                             .getTabModelSelector()
                                             .getTabModelFilterProvider()
@@ -235,10 +246,7 @@ public class TabGridDialogTest {
         float expectedHeight = sourceRect.height() - 2 * tabGridCardPadding;
 
         // Setup the callback to verify the animation source Rect.
-        StartSurfaceLayout layout = (StartSurfaceLayout) cta.getLayoutManager().getOverviewLayout();
-        TabSwitcher.TabDialogDelegation delegation =
-                layout.getStartSurfaceForTesting().getTabDialogDelegate();
-        delegation.setSourceRectCallbackForTesting((result -> {
+        mTabDialogDelegation.setSourceRectCallbackForTesting((result -> {
             mHasReceivedSourceRect = true;
             assertTrue(expectedTop == result.top);
             assertTrue(expectedHeight == result.height());
@@ -526,6 +534,78 @@ public class TabGridDialogTest {
         waitForDialogHidingAnimation(cta);
         enterTabSwitcher(cta);
         verifyFirstCardTitle(CUSTOMIZED_TITLE2);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testRenderDialog_3Tabs_Portrait() throws Exception {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabsWithThumbnail(mActivityTestRule, 3, 0, "about:blank");
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+        verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        openDialogFromTabSwitcherAndVerify(cta, 3,
+                cta.getResources().getQuantityString(
+                        R.plurals.bottom_tab_grid_title_placeholder, 3, 3));
+
+        View dialogView = mTabDialogDelegation.getTabGridDialogParentViewForTesting();
+        mRenderTestRule.render(dialogView, "3_tabs_portrait");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testRenderDialog_3Tabs_Landscape() throws Exception {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabsWithThumbnail(mActivityTestRule, 3, 0, "about:blank");
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+        verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
+
+        // Rotate to landscape mode and create a tab group.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        openDialogFromTabSwitcherAndVerify(cta, 3,
+                cta.getResources().getQuantityString(
+                        R.plurals.bottom_tab_grid_title_placeholder, 3, 3));
+
+        View dialogView = mTabDialogDelegation.getTabGridDialogParentViewForTesting();
+        mRenderTestRule.render(dialogView, "3_tabs_landscape");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testRenderDialog_5Tabs_InitialScroll() throws Exception {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabsWithThumbnail(mActivityTestRule, 5, 0, "about:blank");
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 5);
+        verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        openDialogFromTabSwitcherAndVerify(cta, 5,
+                cta.getResources().getQuantityString(
+                        R.plurals.bottom_tab_grid_title_placeholder, 5, 5));
+
+        // Select the last tab and reopen the dialog. Verify that the dialog has scrolled to the
+        // correct position.
+        clickNthTabInDialog(cta, 4);
+        enterTabSwitcher(cta);
+        openDialogFromTabSwitcherAndVerify(cta, 5,
+                cta.getResources().getQuantityString(
+                        R.plurals.bottom_tab_grid_title_placeholder, 5, 5));
+
+        View dialogView = mTabDialogDelegation.getTabGridDialogParentViewForTesting();
+        mRenderTestRule.render(dialogView, "5_tabs_select_last");
     }
 
     private void openDialogFromTabSwitcherAndVerify(

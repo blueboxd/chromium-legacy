@@ -83,11 +83,17 @@ class VULKAN_EXPORT VulkanImage {
   zx::vmo GetMemoryZirconHandle();
 #endif
 
+  VulkanDeviceQueue* device_queue() const { return device_queue_; }
   const gfx::Size& size() const { return size_; }
   VkFormat format() const { return format_; }
+  VkImageCreateFlags flags() const { return flags_; }
   VkDeviceSize device_size() const { return device_size_; }
   uint32_t memory_type_index() const { return memory_type_index_; }
   VkImageTiling image_tiling() const { return image_tiling_; }
+  VkImageLayout image_layout() const { return image_layout_; }
+  void set_image_layout(VkImageLayout layout) { image_layout_ = layout; }
+  uint32_t queue_family_index() const { return queue_family_index_; }
+  void set_queue_family_index(uint32_t index) { queue_family_index_ = index; }
   const base::Optional<VulkanYCbCrInfo>& ycbcr_info() const {
     return ycbcr_info_;
   }
@@ -123,9 +129,12 @@ class VULKAN_EXPORT VulkanImage {
   VulkanDeviceQueue* device_queue_ = nullptr;
   gfx::Size size_;
   VkFormat format_ = VK_FORMAT_UNDEFINED;
+  VkImageCreateFlags flags_ = 0;
   VkDeviceSize device_size_ = 0;
   uint32_t memory_type_index_ = 0;
   VkImageTiling image_tiling_ = VK_IMAGE_TILING_OPTIMAL;
+  VkImageLayout image_layout_ = VK_IMAGE_LAYOUT_UNDEFINED;
+  uint32_t queue_family_index_ = VK_QUEUE_FAMILY_IGNORED;
   base::Optional<VulkanYCbCrInfo> ycbcr_info_;
   VkImage image_ = VK_NULL_HANDLE;
   VkDeviceMemory device_memory_ = VK_NULL_HANDLE;

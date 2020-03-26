@@ -8,16 +8,12 @@
 #include <xpc/xpc.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/updater/app/app.h"
 #import "chrome/updater/configurator.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/server/mac/service_delegate.h"
-#import "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_in_process.h"
-#include "chrome/updater/updater_version.h"
 
 namespace updater {
 
@@ -45,7 +41,7 @@ void AppServer::Initialize() {
 void AppServer::FirstTaskRun() {
   @autoreleasepool {
     delegate_.reset([[CRUUpdateCheckXPCServiceDelegate alloc]
-        initWithUpdateService:std::make_unique<UpdateServiceInProcess>(
+        initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
                                   config_)]);
 
     listener_.reset([[NSXPCListener alloc]

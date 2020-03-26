@@ -219,16 +219,16 @@ TEST_F(FormControlClickDetectionTest,
   EXPECT_EQ(text_, last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
-  // Click the disabled element.
+  // Click the disabled element and focus should change.
   EXPECT_TRUE(SimulateElementClick("button_2"));
   EXPECT_FALSE(form_control_element_clicked_called());
   ClearAutofillAgentTestState();
 
-  // Click the text field second time. AutofillClient should know that this is
-  // the second click.
+  // Click the text field second time and verify it has lost
+  // focus already.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_TRUE(last_clicked_form_control_element_was_focused());
+  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
   EXPECT_EQ(text_, last_clicked_form_control_element());
 }
 

@@ -23,7 +23,6 @@ specific_include_rules = {
   ".*test.*\.cc": [
     "+device/vr/test/test_hook.h",
     "+third_party/openvr/src/headers/openvr.h",
-    "+chrome/browser/vr/service",
   ],
   ".*mock.*" : [
     "+chrome/browser/vr/service",

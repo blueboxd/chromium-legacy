@@ -12,6 +12,7 @@ include_rules = [
   "+chrome/browser/vr/metrics/session_metrics_helper.h",
   "+chrome/browser/vr/vr_export.h",
   "+chrome/browser/vr/xr_runtime_manager_statics.h",
+  "+chrome/browser/vr/xr_test_utils.h",
 ]
 
 specific_include_rules = {

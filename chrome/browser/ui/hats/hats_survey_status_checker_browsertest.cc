@@ -24,20 +24,34 @@
 
 namespace {
 
-class FakeHatsSurveyStatusChecker : public HatsSurveyStatusChecker {
+class TestHatsSurveyStatusChecker : public HatsSurveyStatusChecker {
+ public:
+  explicit TestHatsSurveyStatusChecker(Profile* profile)
+      : HatsSurveyStatusChecker(profile) {}
+  TestHatsSurveyStatusChecker(const TestHatsSurveyStatusChecker&) = delete;
+  TestHatsSurveyStatusChecker& operator=(const TestHatsSurveyStatusChecker&) =
+      delete;
+  ~TestHatsSurveyStatusChecker() override = default;
+
+  std::string HatsSurveyURLWithoutId() override {
+    return HatsSurveyStatusChecker::HatsSurveyURLWithoutId();
+  }
+};
+
+class FakeHatsSurveyStatusChecker : public TestHatsSurveyStatusChecker {
  public:
   static constexpr int kTimeoutSecs = 1;
 
   FakeHatsSurveyStatusChecker(Profile* profile, const std::string& url)
-      : HatsSurveyStatusChecker(profile), url_(url) {}
+      : TestHatsSurveyStatusChecker(profile), url_(url) {}
   FakeHatsSurveyStatusChecker(const FakeHatsSurveyStatusChecker&) = delete;
-  ~FakeHatsSurveyStatusChecker() override = default;
-
   FakeHatsSurveyStatusChecker& operator=(const FakeHatsSurveyStatusChecker&) =
       delete;
+  ~FakeHatsSurveyStatusChecker() override = default;
 
- protected:
-  std::string HatsSurveyURL() override { return url_ + kHatsSurveyDataPath; }
+  std::string HatsSurveyURLWithoutId() override {
+    return url_ + kHatsSurveyDataPath;
+  }
   int SurveyCheckTimeoutSecs() override { return kTimeoutSecs; }
 
  private:
@@ -54,10 +68,9 @@ class HatsSurveyStatusCheckerBrowserTestBase : public InProcessBrowserTest {
   HatsSurveyStatusCheckerBrowserTestBase() = default;
   HatsSurveyStatusCheckerBrowserTestBase(
       const HatsSurveyStatusCheckerBrowserTestBase&) = delete;
-  ~HatsSurveyStatusCheckerBrowserTestBase() override = default;
-
   HatsSurveyStatusCheckerBrowserTestBase& operator=(
       const HatsSurveyStatusCheckerBrowserTestBase&) = delete;
+  ~HatsSurveyStatusCheckerBrowserTestBase() override = default;
 
   // Handles |request| by serving different response based on the site id in the
   // request.
@@ -135,6 +148,21 @@ constexpr char HatsSurveyStatusCheckerBrowserTestBase::kErrorSiteId[];
 constexpr char HatsSurveyStatusCheckerBrowserTestBase::kOutOfCapacitySiteId[];
 constexpr char HatsSurveyStatusCheckerBrowserTestBase::kNormalSiteId[];
 
+// Check the url is formatted correctly such as its host name is separated from
+// the path. So we can extract the expected host name from the url.
+IN_PROC_BROWSER_TEST_F(HatsSurveyStatusCheckerBrowserTestBase,
+                       CheckHostInStatusURLCorrect) {
+  auto checker =
+      std::make_unique<TestHatsSurveyStatusChecker>(browser()->profile());
+  GURL url(checker->HatsSurveyURLWithoutId());
+  EXPECT_STREQ("www.google.com", url.host().c_str());
+
+  auto fake_checker = std::make_unique<FakeHatsSurveyStatusChecker>(
+      browser()->profile(), embedded_test_server()->base_url().spec());
+  GURL test_url(fake_checker->HatsSurveyURLWithoutId());
+  EXPECT_EQ(embedded_test_server()->base_url().host(), test_url.host());
+}
+
 IN_PROC_BROWSER_TEST_F(HatsSurveyStatusCheckerBrowserTestBase,
                        CheckStatusResults) {
   struct SiteResult {
@@ -150,9 +178,8 @@ IN_PROC_BROWSER_TEST_F(HatsSurveyStatusCheckerBrowserTestBase,
       {HatsSurveyStatusCheckerBrowserTestBase::kNormalSiteId,
        HatsSurveyStatusChecker::Status::kSuccess}};
 
-  std::unique_ptr<FakeHatsSurveyStatusChecker> checker =
-      std::make_unique<FakeHatsSurveyStatusChecker>(
-          browser()->profile(), embedded_test_server()->base_url().spec());
+  auto checker = std::make_unique<FakeHatsSurveyStatusChecker>(
+      browser()->profile(), embedded_test_server()->base_url().spec());
   for (const auto& item : site_id_with_result) {
     base::RunLoop request_wait;
     SetClosure(request_wait.QuitClosure(),

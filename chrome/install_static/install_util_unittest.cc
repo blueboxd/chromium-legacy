@@ -14,6 +14,7 @@
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
 #include "chrome/chrome_elf/nt_registry/nt_registry.h"
+#include "chrome/install_static/buildflags.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -338,15 +339,15 @@ class InstallStaticUtilTest
     EXPECT_TRUE(!medium || system_level_);
 
     std::wstring result(L"Software\\");
-    if (kUseGoogleUpdateIntegration) {
-      result.append(L"Google\\Update\\ClientState");
-      if (medium)
-        result.append(L"Medium");
-      result.push_back(L'\\');
-      result.append(mode_->app_guid);
-    } else {
-      result.append(kProductPathName);
-    }
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+    result.append(L"Google\\Update\\ClientState");
+    if (medium)
+      result.append(L"Medium");
+    result.push_back(L'\\');
+    result.append(mode_->app_guid);
+#else
+    result.append(kProductPathName);
+#endif
     return result;
   }
 
@@ -431,12 +432,9 @@ TEST_P(InstallStaticUtilTest, GetUninstallRegistryPath) {
 TEST_P(InstallStaticUtilTest, GetAppGuid) {
   // For brands that do not integrate with Omaha/Google Update, the app guid is
   // an empty string.
-  if (!kUseGoogleUpdateIntegration) {
-    EXPECT_STREQ(L"", GetAppGuid());
-    return;
-  }
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+  EXPECT_STREQ(L"", GetAppGuid());
+#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // The app guids for the brand's install modes; parallel to kInstallModes.
   static constexpr const wchar_t* kAppGuids[] = {
       L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",  // Google Chrome.

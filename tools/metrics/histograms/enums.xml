@@ -30393,12 +30393,15 @@ Called by update_feature_policy_enum.py.-->
 
 <enum name="GCMCheckinRequestStatus">
   <int value="0" label="Success"/>
-  <int value="1" label="URL fetching failed"/>
+  <int value="1" label="URL fetching failed (until M82)"/>
   <int value="2" label="HTTP bad request"/>
   <int value="3" label="HTTP unauthorized"/>
   <int value="4" label="HTTP not OK"/>
   <int value="5" label="Response parsing failed"/>
   <int value="6" label="Zero ID or token"/>
+  <int value="7" label="URL fetching failed: network error"/>
+  <int value="8" label="URL fetching failed: no response info"/>
+  <int value="9" label="URL fetching failed: no headers"/>
 </enum>
 
 <enum name="GCMClientResult">
@@ -37408,6 +37411,7 @@ from previous Chrome versions.
   <int value="-2080657940" label="DirectActions:disabled"/>
   <int value="-2080504230" label="TabHoverCards:disabled"/>
   <int value="-2077268643" label="disable-device-enumeration"/>
+  <int value="-2076313806" label="TrustTokens:disabled"/>
   <int value="-2075870708" label="MediaRemotingEncrypted:disabled"/>
   <int value="-2075807193" label="enable-webusb-on-any-origin"/>
   <int value="-2075725205" label="disable-new-zip-unpacker"/>
@@ -38063,6 +38067,7 @@ from previous Chrome versions.
   <int value="-1331831950" label="site-isolation-for-password-sites:enabled"/>
   <int value="-1330409814" label="ContextMenuCopyImage:enabled"/>
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
+  <int value="-1326671705" label="TrustTokens:enabled"/>
   <int value="-1326463296" label="SSLCommittedInterstitials:disabled"/>
   <int value="-1325887476" label="NewPrintPreview:enabled"/>
   <int value="-1324634193" label="EnablePalmOnMaxTouchMajor:disabled"/>
@@ -68140,8 +68145,8 @@ Full version information for the fingerprint enum values:
   <int value="5" label="Developer API prompt via an Android Custom Tab"/>
   <int value="6" label="Via a debug source"/>
   <int value="7" label="Extensions management API (not reported)"/>
-  <int value="8" label="Ambient badge in an Android Custom Tab"/>
-  <int value="9" label="Ambient badge in a browser tab"/>
+  <int value="8" label="Ambient badge in a browser tab"/>
+  <int value="9" label="Ambient badge in an Android Custom Tab"/>
   <int value="10" label="Via ARC on Chrome OS"/>
   <int value="11" label="Internal default-install on Chrome OS"/>
   <int value="12" label="External default-install on Chrome OS"/>

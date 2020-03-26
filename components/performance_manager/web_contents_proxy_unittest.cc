@@ -54,8 +54,7 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
     PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting(
-            [&deref_proxy, page_node,
-             quit_loop = run_loop.QuitClosure()](GraphImpl* graph) {
+            [&deref_proxy, page_node, quit_loop = run_loop.QuitClosure()]() {
               base::PostTask(
                   FROM_HERE, {content::BrowserThread::UI},
                   base::BindOnce(deref_proxy, page_node->contents_proxy(),
@@ -73,8 +72,7 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
     PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting([&contents, &deref_proxy, page_node,
-                                    quit_loop = run_loop.QuitClosure()](
-                                       GraphImpl* graph) {
+                                    quit_loop = run_loop.QuitClosure()]() {
           base::PostTask(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindLambdaForTesting([&contents]() { contents.reset(); }));

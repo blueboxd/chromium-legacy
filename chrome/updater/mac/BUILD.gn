@@ -8,9 +8,9 @@ import("//chrome/updater/branding.gni")
 
 group("mac") {
   deps = [
+    ":install_app",
     ":updater_bundle",
     ":updater_install_script",
-    ":updater_setup",
     "//chrome/updater/mac/signing",
   ]
 }
@@ -53,6 +53,7 @@ mac_app_bundle("updater_bundle") {
 
   sources = [ "main.cc" ]
   deps = [
+    ":install_app",
     ":network_fetcher_sources",
     ":updater_setup_sources",
     "//chrome/updater:lib",
@@ -97,13 +98,19 @@ source_set("updater_setup_sources") {
   ]
 }
 
-executable("updater_setup") {
-  sources = [ "setup/main.cc" ]
+source_set("install_app") {
+  sources = [
+    "setup/install_app.cc",
+    "setup/install_app.h",
+  ]
 
   deps = [
-    ":updater_bundle",
     ":updater_setup_sources",
+    "//base",
+    "//chrome/updater:lib",
   ]
+
+  allow_circular_includes_from = [ "//chrome/updater:lib" ]
 }
 
 action("updater_install_script") {
@@ -143,7 +150,9 @@ source_set("updater_setup_tests") {
   data = [ "//chrome/test/data/updater/updater_setup_test_dmg.dmg" ]
 
   deps = [
+    ":install_app",
     ":installer_sources",
+    ":updater_setup_sources",
     "//base",
     "//base/test:test_support",
     "//chrome/common:constants",

@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
@@ -29,8 +30,6 @@
 
 namespace updater {
 
-namespace setup {
-
 namespace {
 const base::FilePath GetUpdateFolderName() {
   return base::FilePath(COMPANY_SHORTNAME_STRING)
@@ -41,51 +40,6 @@ const base::FilePath GetUpdaterAppName() {
 }
 const base::FilePath GetUpdaterAppExecutablePath() {
   return base::FilePath("Contents/MacOS").AppendASCII(PRODUCT_FULLNAME_STRING);
-}
-
-void ThreadPoolStart() {
-  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("UpdaterSetup");
-}
-
-void ThreadPoolStop() {
-  base::ThreadPoolInstance::Get()->Shutdown();
-}
-
-// The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
-void InitLogging(const base::CommandLine& command_line) {
-  logging::LoggingSettings settings;
-  base::FilePath log_dir;
-  updater::GetProductDirectory(&log_dir);
-  const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater_setup.log"));
-  settings.log_file_path = log_file.value().c_str();
-  settings.logging_dest = logging::LOG_TO_ALL;
-  logging::InitLogging(settings);
-  logging::SetLogItems(true,    // enable_process_id
-                       true,    // enable_thread_id
-                       true,    // enable_timestamp
-                       false);  // enable_tickcount
-  VLOG(1) << "Log file " << settings.log_file_path;
-}
-
-void InitializeUpdaterSetupMain() {
-  crash_reporter::InitializeCrashKeys();
-
-  static crash_reporter::CrashKeyString<16> crash_key_process_type(
-      "process_type");
-  crash_key_process_type.Set("updater_setup");
-
-  if (updater::CrashClient::GetInstance()->InitializeCrashReporting())
-    VLOG(1) << "Crash reporting initialized.";
-  else
-    VLOG(1) << "Crash reporting is not available.";
-
-  updater::StartCrashReporter(UPDATER_VERSION_STRING);
-
-  ThreadPoolStart();
-}
-
-void TerminateUpdaterSetupMain() {
-  ThreadPoolStop();
 }
 
 bool CopyBundle() {
@@ -102,11 +56,7 @@ bool CopyBundle() {
     }
   }
 
-  base::FilePath this_executable_path;
-  base::PathService::Get(base::FILE_EXE, &this_executable_path);
-  const base::FilePath src_path =
-      this_executable_path.DirName().Append(GetUpdaterAppName());
-
+  const base::FilePath src_path = base::mac::OuterBundlePath();
   if (!base::CopyDirectory(src_path, dest_path, true)) {
     LOG(ERROR) << "Copying app to ~/Library failed";
     return false;
@@ -219,6 +169,8 @@ bool StartLaunchdServiceTask() {
                                             CFSTR("Aqua"));
 }
 
+}  // namespace
+
 int SetupUpdater() {
   if (!CopyBundle())
     return -1;
@@ -238,47 +190,12 @@ int SetupUpdater() {
   return 0;
 }
 
-}  // namespace
-
-int HandleUpdaterSetupCommands(const base::CommandLine* command_line) {
-  DCHECK(!command_line->HasSwitch(updater::kCrashHandlerSwitch));
-
-  if (command_line->HasSwitch(updater::kCrashMeSwitch)) {
-    LOG(FATAL) << "Crashing deliberately.";
-    return -100;
-  }
-
-  return SetupUpdater();
-}
-
-int UpdaterSetupMain(int argc, const char* const* argv) {
-  base::PlatformThread::SetName("UpdaterSetupMain");
-  base::AtExitManager exit_manager;
-
-  base::CommandLine::Init(argc, argv);
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(updater::kTestSwitch))
-    return 0;
-
-  InitLogging(*command_line);
-
-  if (command_line->HasSwitch(updater::kCrashHandlerSwitch))
-    return updater::CrashReporterMain();
-
-  InitializeUpdaterSetupMain();
-  const auto result = HandleUpdaterSetupCommands(command_line);
-  TerminateUpdaterSetupMain();
-  return result;
-}
-
-}  // namespace setup
-
 int Uninstall(bool is_machine) {
   ALLOW_UNUSED_LOCAL(is_machine);
-  if (!setup::RemoveFromLaunchd())
+  if (!RemoveFromLaunchd())
     return -1;
 
-  if (!setup::DeleteInstallFolder())
+  if (!DeleteInstallFolder())
     return -2;
 
   return 0;

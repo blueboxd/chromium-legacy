@@ -913,7 +913,6 @@ TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
 
   RendererSettings settings;
   settings.minimum_fragments_reduced = 0;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -1214,7 +1213,6 @@ TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
 // defined by |rects[2]| will not be occluded (removed).
 TEST_F(DisplayTest, DrawOcclusionWithSingleOverlapBehindDisjointedDrawQuads) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -1272,7 +1270,6 @@ TEST_F(DisplayTest, DrawOcclusionWithSingleOverlapBehindDisjointedDrawQuads) {
 // defined by |rects[2]| will not be occluded (removed).
 TEST_F(DisplayTest, DrawOcclusionWithMultipleOverlapBehindDisjointedDrawQuads) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -1328,7 +1325,6 @@ TEST_F(DisplayTest, DrawOcclusionWithMultipleOverlapBehindDisjointedDrawQuads) {
 // Check if draw occlusion removes DrawQuads that are not shown on screen.
 TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -1456,197 +1452,9 @@ TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
   TearDownDisplay();
 }
 
-// Check if draw occlusion is not applied on DrawQuads that are smaller than
-// skip_rect size, such that DrawQuads that are smaller than the |skip_rect|
-// are drawn on the screen regardless is shown or not.
-TEST_F(DisplayTest, DrawOcclusionWithSkipRect) {
-  SetUpGpuDisplay(RendererSettings());
-
-  StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
-
-  CompositorFrame frame = MakeDefaultCompositorFrame();
-  gfx::Rect more_then_minimum_size(
-      RendererSettings().kMinimumDrawOcclusionSize);
-  more_then_minimum_size.set_width(more_then_minimum_size.width() + 1);
-
-  gfx::Rect minimum_size(RendererSettings().kMinimumDrawOcclusionSize);
-
-  gfx::Rect less_than_minimum_size(
-      RendererSettings().kMinimumDrawOcclusionSize);
-  less_than_minimum_size.set_width(more_then_minimum_size.width() - 1);
-  less_than_minimum_size.set_height(more_then_minimum_size.height() - 1);
-
-  gfx::Rect rect(0, 0, 100, 100);
-
-  bool is_clipped = false;
-  bool are_contents_opaque = true;
-  float opacity = 1.f;
-  SharedQuadState* shared_quad_state =
-      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
-  auto* quad = frame.render_pass_list.front()
-                   ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
-  SharedQuadState* shared_quad_state2 =
-      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
-  auto* quad2 = frame.render_pass_list.front()
-                    ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
-  // A small rect is hiding behind the bigger rect (|rect|), same picture for
-  // the following 3 tests.
-  // rects structure:         show on screen:
-  // +----+---+               +--------+
-  // |    |   |               |        |
-  // |----+   |               |        |
-  // |        |               |        |
-  // +--------+               +--------+
-  {
-    shared_quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
-                              is_clipped, are_contents_opaque, opacity,
-                              SkBlendMode::kSrcOver, 0);
-    shared_quad_state2->SetAll(
-        gfx::Transform(), more_then_minimum_size, more_then_minimum_size,
-        gfx::RRectF(), more_then_minimum_size, is_clipped, are_contents_opaque,
-        opacity, SkBlendMode::kSrcOver, 0);
-    quad->SetNew(shared_quad_state, rect, rect, SK_ColorBLACK, false);
-    quad2->SetNew(shared_quad_state2, more_then_minimum_size,
-                  more_then_minimum_size, SK_ColorBLACK, false);
-
-    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
-    display_->RemoveOverdrawQuads(&frame);
-
-    // |more_then_minimum_size| rect is not shown on screen. Since its size is
-    // slightly larger than the skip_rect size, draw occlusion is applied on
-    // |more_then_minimum_size| and it's removed from the compositor frame.
-    EXPECT_EQ(1u, frame.render_pass_list.front()->quad_list.size());
-    EXPECT_EQ(rect.ToString(), frame.render_pass_list.front()
-                                   ->quad_list.ElementAt(0)
-                                   ->visible_rect.ToString());
-  }
-
-  {
-    shared_quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
-                              is_clipped, are_contents_opaque, opacity,
-                              SkBlendMode::kSrcOver, 0);
-    shared_quad_state2->SetAll(gfx::Transform(), minimum_size, minimum_size,
-                               gfx::RRectF(), minimum_size, is_clipped,
-                               are_contents_opaque, opacity,
-                               SkBlendMode::kSrcOver, 0);
-    quad2 = frame.render_pass_list.front()
-                ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
-    quad->SetNew(shared_quad_state, rect, rect, SK_ColorBLACK, false);
-    quad2->SetNew(shared_quad_state2, minimum_size, minimum_size, SK_ColorBLACK,
-                  false);
-
-    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
-    display_->RemoveOverdrawQuads(&frame);
-
-    // |minimum_size| rect is not shown on screen. Since its size is the same
-    // as skip_rect size, draw occlusion is not applied on this rect.  So it is
-    // not removed from compositor frame.
-    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
-    EXPECT_EQ(rect.ToString(), frame.render_pass_list.front()
-                                   ->quad_list.ElementAt(0)
-                                   ->visible_rect.ToString());
-    EXPECT_EQ(minimum_size.ToString(), frame.render_pass_list.front()
-                                           ->quad_list.ElementAt(1)
-                                           ->visible_rect.ToString());
-  }
-
-  {
-    shared_quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
-                              is_clipped, are_contents_opaque, opacity,
-                              SkBlendMode::kSrcOver, 0);
-    shared_quad_state2->SetAll(
-        gfx::Transform(), less_than_minimum_size, less_than_minimum_size,
-        gfx::RRectF(), less_than_minimum_size, is_clipped, are_contents_opaque,
-        opacity, SkBlendMode::kSrcOver, 0);
-    quad->SetNew(shared_quad_state, rect, rect, SK_ColorBLACK, false);
-    quad2->SetNew(shared_quad_state2, less_than_minimum_size,
-                  less_than_minimum_size, SK_ColorBLACK, false);
-
-    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
-    display_->RemoveOverdrawQuads(&frame);
-
-    // |less_than_minimum_size| rect is not shown on screen. Since its size is
-    // less than skip_rect size, draw occlusion is not applied on this rect.
-    // So it is not removed from compositor frame.
-    EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
-    EXPECT_EQ(rect.ToString(), frame.render_pass_list.front()
-                                   ->quad_list.ElementAt(0)
-                                   ->visible_rect.ToString());
-    EXPECT_EQ(less_than_minimum_size.ToString(), frame.render_pass_list.front()
-                                                     ->quad_list.ElementAt(1)
-                                                     ->visible_rect.ToString());
-  }
-
-  TearDownDisplay();
-}
-
-// Check if draw occlusion is not applied on DrawQuads that are smaller than
-// skip_rect size, such that DrawQuads that are smaller than the |skip_rect|
-// cannot occlude other quads behind it.
-TEST_F(DisplayTest, OcclusionIgnoringSkipRect) {
-  SetUpGpuDisplay(RendererSettings());
-
-  StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
-
-  CompositorFrame frame = MakeDefaultCompositorFrame();
-  gfx::Rect rect1(0, 0, 50, 50);
-  gfx::Rect rect2(50, 0, 50, 50);
-  gfx::Rect rect3(0, 0, 50, 90);
-
-  bool is_clipped = false;
-  bool are_contents_opaque = true;
-  float opacity = 1.f;
-  SharedQuadState* shared_quad_state =
-      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
-  auto* quad = frame.render_pass_list.front()
-                   ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
-  SharedQuadState* shared_quad_state2 =
-      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
-  auto* quad2 = frame.render_pass_list.front()
-                    ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
-  SharedQuadState* shared_quad_state3 =
-      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
-  auto* quad3 = frame.render_pass_list.front()
-                    ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
-
-  shared_quad_state->SetAll(gfx::Transform(), rect1, rect1, gfx::RRectF(),
-                            rect1, is_clipped, are_contents_opaque, opacity,
-                            SkBlendMode::kSrcOver, 0);
-  shared_quad_state2->SetAll(gfx::Transform(), rect2, rect2, gfx::RRectF(),
-                             rect2, is_clipped, are_contents_opaque, opacity,
-                             SkBlendMode::kSrcOver, 0);
-  shared_quad_state3->SetAll(gfx::Transform(), rect3, rect3, gfx::RRectF(),
-                             rect3, is_clipped, are_contents_opaque, opacity,
-                             SkBlendMode::kSrcOver, 0);
-  quad->SetNew(shared_quad_state, rect1, rect1, SK_ColorBLACK, false);
-  quad2->SetNew(shared_quad_state2, rect2, rect2, SK_ColorBLACK, false);
-  quad3->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
-
-  EXPECT_EQ(3u, frame.render_pass_list.front()->quad_list.size());
-  display_->RemoveOverdrawQuads(&frame);
-
-  // |quad3| is not shown on screen because is hiding behind the occlusion rect
-  // formed by |quad1| and |quad2|. Since the |visible_rect| in both |quad1|
-  // and |quad2| are smaller than the skip rect, they cannot be used to occlude
-  // |quad3|. So no draw quad is removed in compositor frame by draw occlusion.
-  EXPECT_EQ(3u, frame.render_pass_list.front()->quad_list.size());
-  EXPECT_EQ(rect1.ToString(), frame.render_pass_list.front()
-                                  ->quad_list.ElementAt(0)
-                                  ->visible_rect.ToString());
-  EXPECT_EQ(rect2.ToString(), frame.render_pass_list.front()
-                                  ->quad_list.ElementAt(1)
-                                  ->visible_rect.ToString());
-  EXPECT_EQ(rect3.ToString(), frame.render_pass_list.front()
-                                  ->quad_list.ElementAt(2)
-                                  ->visible_rect.ToString());
-  TearDownDisplay();
-}
 // Check if draw occlusion works well with scale change transformer.
 TEST_F(DisplayTest, CompositorFrameWithTransformer) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2153,7 +1961,6 @@ TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
 //  +-----+                                  +----+     reduced weight
 TEST_F(DisplayTest, CompositorFrameWithRotation) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2282,7 +2089,6 @@ TEST_F(DisplayTest, CompositorFrameWithRotation) {
 // preserves 2d axis alignment.
 TEST_F(DisplayTest, CompositorFrameWithPerspective) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2358,7 +2164,6 @@ TEST_F(DisplayTest, CompositorFrameWithPerspective) {
 // Check if draw occlusion works with transparent DrawQuads.
 TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2425,7 +2230,6 @@ TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
 
 TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2493,7 +2297,6 @@ TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
 // Test if draw occlusion skips 3d objects. https://crbug.com/833748
 TEST_F(DisplayTest, CompositorFrameZTranslate) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2548,7 +2351,6 @@ TEST_F(DisplayTest, CompositorFrameZTranslate) {
 
 TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2669,7 +2471,6 @@ TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
 
 TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2797,7 +2598,6 @@ TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
 
 TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -2942,7 +2742,6 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
 
 TEST_F(DisplayTest, CompositorFrameWithClip) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -3059,7 +2858,6 @@ TEST_F(DisplayTest, CompositorFrameWithClip) {
 // Check if draw occlusion works with copy requests in root RenderPass only.
 TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -3107,7 +2905,6 @@ TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
 
 TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -3287,7 +3084,6 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
 
 TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
@@ -3465,7 +3261,6 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
 
 TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
   RendererSettings settings;
-  settings.kMinimumDrawOcclusionSize.set_width(0);
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;

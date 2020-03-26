@@ -94,6 +94,7 @@ static_library("weblayer_shell_lib") {
     if (toolkit_views) {
       sources += [ "browser/shell_views.cc" ]
       deps += [
+        "//ui/native_theme",
         "//ui/resources",
         "//ui/views:test_support",
         "//ui/views/controls/webview",

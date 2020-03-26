@@ -62,7 +62,7 @@ class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
   MockPageLoader* mock_loader_;
 };
 
-TEST_F(BackgroundTabLoadingPolicyTest, RestoreTabs) {
+TEST_F(BackgroundTabLoadingPolicyTest, ScheduleLoadForRestoredTabs) {
   std::vector<
       performance_manager::TestNodeWrapper<performance_manager::PageNodeImpl>>
       page_nodes;
@@ -75,11 +75,11 @@ TEST_F(BackgroundTabLoadingPolicyTest, RestoreTabs) {
     EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes.back()));
 
     // Set |is_tab| property as this is a requirement to pass the PageNode to
-    // RestoreTabs().
+    // ScheduleLoadForRestoredTabs().
     TabPropertiesDecorator::SetIsTabForTesting(raw_page_nodes.back(), true);
   }
 
-  policy()->RestoreTabs(raw_page_nodes);
+  policy()->ScheduleLoadForRestoredTabs(raw_page_nodes);
 }
 
 }  // namespace policies

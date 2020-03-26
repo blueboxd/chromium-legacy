@@ -4,7 +4,6 @@
 
 #include "chrome/updater/app/app_update_all.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,7 +28,7 @@ class AppUpdateAll : public App {
   void Uninitialize() override;
 
   scoped_refptr<Configurator> config_;
-  std::unique_ptr<UpdateService> update_service_;
+  scoped_refptr<UpdateService> update_service_;
 };
 
 void AppUpdateAll::Initialize() {

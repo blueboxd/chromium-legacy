@@ -1528,16 +1528,6 @@ public class AutofillAssistantGenericUiTest {
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
-                                        "text_value")))
-                        .addCallbacks(CallbackProto.newBuilder().setSetText(
-                                SetTextProto.newBuilder()
-                                        .setViewIdentifier("text_view")
-                                        .setModelIdentifier("text_value")))
-                        .build());
-        interactions.add(
-                (InteractionProto) InteractionProto.newBuilder()
-                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
-                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "chips")))
                         .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
                                 SetUserActionsProto.newBuilder().setModelIdentifier("chips")))

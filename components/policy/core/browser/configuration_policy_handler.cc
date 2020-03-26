@@ -93,18 +93,14 @@ bool ListPolicyHandler::CheckPolicySettings(const policy::PolicyMap& policies,
 
 void ListPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
                                             PrefValueMap* prefs) {
-  std::unique_ptr<base::ListValue> list;
-  if (CheckAndGetList(policies, nullptr, &list) && list)
+  base::Value list(base::Value::Type::NONE);
+  if (CheckAndGetList(policies, nullptr, &list) && list.is_list())
     ApplyList(std::move(list), prefs);
 }
 
-bool ListPolicyHandler::CheckAndGetList(
-    const policy::PolicyMap& policies,
-    policy::PolicyErrorMap* errors,
-    std::unique_ptr<base::ListValue>* filtered_list) {
-  if (filtered_list)
-    filtered_list->reset();
-
+bool ListPolicyHandler::CheckAndGetList(const policy::PolicyMap& policies,
+                                        policy::PolicyErrorMap* errors,
+                                        base::Value* filtered_list) {
   const base::Value* value = nullptr;
   if (!CheckAndGetValue(policies, errors, &value))
     return false;
@@ -115,7 +111,7 @@ bool ListPolicyHandler::CheckAndGetList(
   // Filter the list, rejecting any invalid strings.
   base::Value::ConstListView list = value->GetList();
   if (filtered_list)
-    *filtered_list = std::make_unique<base::ListValue>();
+    *filtered_list = base::Value(base::Value::Type::LIST);
   for (size_t list_index = 0; list_index < list.size(); ++list_index) {
     const base::Value& entry = list[list_index];
     if (entry.type() != list_entry_type_) {
@@ -135,7 +131,7 @@ bool ListPolicyHandler::CheckAndGetList(
     }
 
     if (filtered_list)
-      (*filtered_list)->Append(entry.CreateDeepCopy());
+      filtered_list->Append(entry.Clone());
   }
 
   return true;

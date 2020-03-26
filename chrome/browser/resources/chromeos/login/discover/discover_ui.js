@@ -138,6 +138,7 @@ function initializeDiscoverAPI() {
       }
       if (module) {
         this.hideAll_();
+        module.onBeforeShow();
         module.hidden = false;
         module.show();
       } else {

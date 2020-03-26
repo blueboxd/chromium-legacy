@@ -19,15 +19,16 @@ namespace media {
 // DXVI_FORMAT.
 class MEDIA_GPU_EXPORT FormatSupportChecker {
  public:
+  // |device| may be null, mostly for tests.
   explicit FormatSupportChecker(ComD3D11Device device);
-  ~FormatSupportChecker();
+  virtual ~FormatSupportChecker();
 
   // Set up the device to be able to check format support.
   // Returns false if there is a failure.
-  bool Initialize();
+  virtual bool Initialize();
 
   // Checks if the device's texture processing pipeline supports output textures
-  bool CheckOutputFormatSupport(DXGI_FORMAT format);
+  virtual bool CheckOutputFormatSupport(DXGI_FORMAT format) const;
 
  private:
   ComD3D11Device device_;

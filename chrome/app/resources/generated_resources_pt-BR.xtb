@@ -1120,7 +1120,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="247949520305900375">Compartilhar áudio</translation>
 <translation id="2480868415629598489">Modificar os dados que você copia e cola</translation>
 <translation id="2482878487686419369">Notificações</translation>
-<translation id="2483610039979585156"><ph name="ORIGIN" /> poderá editar <ph name="FILENAME" /> até que você feche todas as guias de <ph name="ORIGIN" /></translation>
 <translation id="2484959914739448251">Para limpar os dados de navegação de todos os dispositivos sincronizados e da sua Conta do Google, <ph name="BEGIN_LINK" />digite sua senha longa<ph name="END_LINK" />.</translation>
 <translation id="2485005079599453134">Senha salva neste dispositivo</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -1704,6 +1703,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3264544094376351444">Fonte Sans-Serif</translation>
 <translation id="3264582393905923483">Contexto</translation>
 <translation id="3265459715026181080">Fechar janela</translation>
+<translation id="3266274118485960573">A "confirmação de segurança" está sendo executada.</translation>
 <translation id="3267726687589094446">Continuar permitindo download automático de vários arquivos</translation>
 <translation id="3268451620468152448">Guias abertas</translation>
 <translation id="3269069891205016797">Suas informações serão removidas do dispositivo quando você sair da sua conta.</translation>
@@ -1725,7 +1725,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3285322247471302225">Nova &amp;guia</translation>
 <translation id="328571385944182268">Salvar senhas?</translation>
-<translation id="328785681103589998"><ph name="ORIGIN" /> poderá ver <ph name="FILENAME" /> até que você feche todas as guias de <ph name="ORIGIN" /></translation>
 <translation id="3288047731229977326">Extensões executadas no modo de desenvolvedor podem prejudicar o computador. Se você não for desenvolvedor, para sua segurança, desative essas extensões que estão sendo executadas no modo de desenvolvedor.</translation>
 <translation id="3289856944988573801">Para verificar se há atualizações, utilize Ethernet ou Wi-Fi.</translation>
 <translation id="3290356915286466215">Não protegida</translation>
@@ -1810,6 +1809,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3412265149091626468">Ir para a seleção</translation>
 <translation id="3413122095806433232">Emissores de autoridades de certificação: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Tamanho:</translation>
+<translation id="3416468988018290825">Sempre mostrar URLs completos</translation>
 <translation id="3420501302812554910">A chave de segurança interna precisa ser redefinida</translation>
 <translation id="3421387094817716717">Chave pública de curva elíptica</translation>
 <translation id="3422291238483866753">Perguntar quando um site quiser criar um mapa 3D dos seus arredores ou acompanhar a posição da câmera (recomendado)</translation>
@@ -2414,6 +2414,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4144218403971135344">Tenha uma melhor qualidade de vídeo e economize bateria. Os vídeos serão reproduzidos apenas na tela compatível com Cast.</translation>
 <translation id="4146026355784316281">Sempre abrir com visualizador do sistema</translation>
 <translation id="4146785383423576110">Redefinir e limpar</translation>
+<translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4147911968024186208">Tente novamente. Se o erro se repetir, entre em contato com seu representante de suporte.</translation>
 <translation id="4150201353443180367">Exibição</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 guia}one{# guias}other{# guias}}</translation>
@@ -2733,6 +2734,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4633757335284074492">Fazer backup no Google Drive Restaure dados ou troque de dispositivo a qualquer momento com facilidade. O backup inclui dados do app. Os backups são enviados ao Google e criptografados usando a senha da Conta do Google da criança.</translation>
 <translation id="4634771451598206121">Fazer login novamente...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> não está disponível para usuários visitantes.</translation>
+<translation id="4636930964841734540">Informações</translation>
 <translation id="4637083375689622795">Mais ações, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Ativar depuração do adb</translation>
 <translation id="4641539339823703554">Não foi possível para o Google Chrome configurar a hora do sistema. Verifique a hora abaixo e corrija-a, se necessário.</translation>
@@ -2812,7 +2814,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4750394297954878236">Sugestões</translation>
 <translation id="475088594373173692">Primeiro usuário</translation>
 <translation id="4751476147751820511">Sensores de luz ou movimento</translation>
-<translation id="4756269098451810636">Imagem compartilhada do <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Parar/Recarregar</translation>
 <translation id="4756388243121344051">&amp;Histórico</translation>
 <translation id="4759238208242260848">Downloads</translation>
@@ -3760,7 +3761,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6040852767465482106">Identidade anônima</translation>
 <translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />O serviço de localização do Google usa fontes como redes móveis, Wi‑Fi e sensores para ajudar a estimar o local do seu dispositivo.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />É possível desativar esse serviço desativando a configuração de localização principal no dispositivo. Nessa configuração, você também pode desativar o uso de redes móveis, Wi‑Fi e sensores de local.<ph name="END_PARAGRAPH2" /></translation>
-<translation id="6041150002191391409"><ph name="ORIGIN" /> poderá ver os arquivos na pasta <ph name="FOLDERNAME" /> até que você feche todas as guias de <ph name="ORIGIN" /></translation>
 <translation id="6041155700700864984">Sair da Tela inteira</translation>
 <translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Mais</translation>
@@ -4157,7 +4157,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">O caminho ou nome do arquivo é muito longo. Salve com um nome mais curto ou em outro local.</translation>
 <translation id="6563469144985748109">Seu administrador ainda não o aprovou</translation>
-<translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6569934958368283244">Outras pessoas</translation>
 <translation id="657402800789773160">&amp;Recarregar esta página</translation>
 <translation id="6577284282025554716">Download cancelado: <ph name="FILE_NAME" /></translation>
@@ -4169,6 +4168,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6586451623538375658">Trocar botão principal do mouse</translation>
 <translation id="6586604979641883411">É necessário ter pelo menos <ph name="REQUIRED_SPACE" /> de espaço livre em disco para fazer upgrade do Linux. Libere espaço no seu dispositivo e tente novamente.</translation>
 <translation id="6588043302623806746">Usar DNS seguro</translation>
+<translation id="659005207229852190">A "confirmação de segurança" foi concluída.</translation>
 <translation id="6590458744723262880">Renomear pasta</translation>
 <translation id="6592267180249644460">Horário da captura do registro WebRTC: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Impressão digital capturada</translation>
@@ -4222,7 +4222,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6659594942844771486">Guia</translation>
 <translation id="6664237456442406323">Infelizmente, seu computador está configurado com um ID de hardware mal formado. Isso impede que o Chrome OS seja atualizado com as correções de segurança mais recentes e, por isso, seu computador <ph name="BEGIN_BOLD" />pode ficar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Ocorreu um erro ao abrir seu perfil. Saia da conta e faça login novamente.</translation>
-<translation id="6667776121818773738">Imagem compartilhada de outro dispositivo</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Quer que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador conectado</translation>
@@ -4843,7 +4842,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7497981768003291373">Você não tem nenhum registro de texto WebRTC capturado recentemente.</translation>
 <translation id="7502658306369382406">Endereço IPv6</translation>
 <translation id="7503191893372251637">Tipo de certificado do Netscape</translation>
-<translation id="7503821294401948377">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação do navegador.</translation>
 <translation id="7503985202154027481">Um registro da visita a este site será mantido na sua chave de segurança.</translation>
 <translation id="7504293978434250212">Sua organização pode verificar arquivos de até 50 MB. Tente fazer upload de um arquivo menor.</translation>
 <translation id="750509436279396091">Abrir pasta de downloads</translation>
@@ -5431,6 +5429,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8249672078237421304">Sugerir a tradução de páginas que não estão em um idioma que você conheça</translation>
 <translation id="8251441930213048644">Atualizar agora</translation>
 <translation id="8251578425305135684">Miniatura removida.</translation>
+<translation id="825238165904109940">Sempre mostrar URLs completos</translation>
 <translation id="8252569384384439529">Fazendo upload…</translation>
 <translation id="8253198102038551905">Clique em "+" para ver as propriedades da rede</translation>
 <translation id="8254954272268479918">Desligar o Linux (Beta)</translation>
@@ -5646,7 +5645,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8546930481464505581">Personalizar barra de toque</translation>
 <translation id="8547013269961688403">Ativar lupa de tela cheia</translation>
 <translation id="85486688517848470">Mantenha pressionada a tecla "Pesquisar" para alternar o comportamento das teclas de função</translation>
-<translation id="8550165047974571882"><ph name="ORIGIN" /> poderá editar arquivos na pasta <ph name="FOLDERNAME" /> até que você feche todas as guias de <ph name="ORIGIN" /></translation>
 <translation id="8551388862522347954">Licenças</translation>
 <translation id="8553342806078037065">Gerenciar outras pessoas</translation>
 <translation id="8554899698005018844">Sem idioma</translation>

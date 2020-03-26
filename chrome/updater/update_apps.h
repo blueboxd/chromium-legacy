@@ -5,8 +5,6 @@
 #ifndef CHROME_UPDATER_UPDATE_APPS_H_
 #define CHROME_UPDATER_UPDATE_APPS_H_
 
-#include <memory>
-
 #include "base/memory/scoped_refptr.h"
 
 namespace update_client {
@@ -14,10 +12,11 @@ class Configurator;
 }  // namespace update_client
 
 namespace updater {
+
 class UpdateService;
 
 // A factory method to create an UpdateService class instance.
-std::unique_ptr<UpdateService> CreateUpdateService(
+scoped_refptr<UpdateService> CreateUpdateService(
     scoped_refptr<update_client::Configurator> config);
 
 }  // namespace updater

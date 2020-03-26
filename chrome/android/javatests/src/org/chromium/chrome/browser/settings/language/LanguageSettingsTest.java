@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.settings.language;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -19,6 +20,7 @@ import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.SmallTest;
 
@@ -34,11 +36,14 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.language.settings.LanguageItem;
 import org.chromium.chrome.browser.language.settings.LanguageListBaseAdapter;
 import org.chromium.chrome.browser.language.settings.LanguageSettings;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -167,5 +172,52 @@ public class LanguageSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { newLangView.findViewById(R.id.more).performClick(); });
         onView(withText(R.string.remove)).perform(click());
+    }
+
+    @Test
+    @SmallTest
+    public void testEnabledAndDisableOfferToTranslate() {
+        RecyclerView acceptLanguageList = mActivity.findViewById(R.id.language_list);
+        View langView = acceptLanguageList.findViewHolderForAdapterPosition(0).itemView;
+        ListMenuButton moreButton = langView.findViewById(R.id.more);
+        SwitchCompat pref = mActivity.findViewById(R.id.switchWidget);
+
+        // Restore this after test.
+        boolean enabledInDefault = pref.isChecked();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean enabled =
+                    PrefServiceBridge.getInstance().getBoolean(Pref.OFFER_TRANSLATE_ENABLED);
+            Assert.assertEquals(
+                    "The state of switch widget is different from local preference of 'offer to translate'.",
+                    enabledInDefault, enabled);
+        });
+
+        // Verify that "offer to translate" is hidden or visible.
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) moreButton::performClick);
+        onView(withText(R.string.languages_item_option_offer_to_translate))
+                .check(enabledInDefault ? matches(isDisplayed()) : doesNotExist());
+
+        // Dismiss the popup window.
+        TestThreadUtils.runOnUiThreadBlocking(moreButton::dismiss);
+
+        // Toggle the switch.
+        onView(withId(R.id.switchWidget)).perform(click());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(
+                    "Preference of 'offer to translate' should be toggled when switch widget is clicked.",
+                    !enabledInDefault,
+                    PrefServiceBridge.getInstance().getBoolean(Pref.OFFER_TRANSLATE_ENABLED));
+        });
+
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) moreButton::performClick);
+
+        onView(withText(R.string.languages_item_option_offer_to_translate))
+                .check(!enabledInDefault ? matches(isDisplayed()) : doesNotExist());
+
+        // Reset state.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.OFFER_TRANSLATE_ENABLED, enabledInDefault);
+        });
     }
 }

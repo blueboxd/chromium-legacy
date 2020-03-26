@@ -16,6 +16,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
@@ -24,16 +25,13 @@
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/gl/gl_switches.h"
 
+using base::test::RunOnceClosure;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
 namespace shape_detection {
 
 namespace {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacCoreImage(
     mojom::BarcodeDetectorOptionsPtr options) {
@@ -178,7 +176,8 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
 
   base::RunLoop run_loop;
   // Send the image Detect() and expect the response in callback.
-  EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(run_loop.QuitClosure()));
+  EXPECT_CALL(*this, Detection())
+      .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
   // TODO(crbug.com/938663): expect detected symbology.
   impl_->Detect(bitmap,
                 base::BindOnce(&BarcodeDetectionImplMacTest::DetectCallback,

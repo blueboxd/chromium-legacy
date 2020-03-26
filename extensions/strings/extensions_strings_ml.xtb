@@ -7,7 +7,6 @@
 <translation id="1420684932347524586">അയ്യോ! ക്രമരഹിത RSA സ്വകാര്യ കീ ജനറേറ്റ് ചെയ്യുന്നതിന് പരാജയപ്പെട്ടു. </translation>
 <translation id="1445572445564823378">ഈ വിപുലീകരണം <ph name="PRODUCT_NAME" />-നെ മന്ദഗതിയിലാക്കുന്നു. <ph name="PRODUCT_NAME" />-ന്റെ പ്രകടനം പുനഃസ്ഥാപിക്കുന്നതിനായി നിങ്ങൾ അതിനെ പ്രവർത്തനരഹിതമാക്കണം.</translation>
 <translation id="1468038450257740950">WebGL പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
-<translation id="149347756975725155">വിപുലീകരണ ഐക്കൺ '<ph name="ICON" />' ലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="1803557475693955505">പശ്ചാത്തല പേജ് '<ph name="BACKGROUND_PAGE" />' ലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="2159915644201199628">ചിത്രം ഡീകോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">പ്രാദേശികവൽക്കരണം ഉപയോഗിച്ചു, പക്ഷെ മാനിഫെസ്‌റ്റിൽ സ്ഥിര-ഭാഷ വ്യക്തമാക്കിയിട്ടില്ല.</translation>
@@ -44,7 +43,6 @@
 <translation id="6322279351188361895">സ്വകാര്യ കീ റീഡുചെയ്യുന്നതിന് പരാജയപ്പെട്ടു.</translation>
 <translation id="6391538222494443604">ഇന്‍‌പുട്ട് ഡയറക്‌റ്ററി നിലവിലുണ്ടായിരിക്കണം.</translation>
 <translation id="641087317769093025">വിപുലീകരണം അൺസിപ്പ് ചെയ്യാൻ കഴിഞ്ഞില്ല</translation>
-<translation id="6413453408918378296">ഐക്കൺ '<ph name="ICON" />' വേണ്ടത്ര ദൃശ്യമല്ല.</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" നിങ്ങളുടെ ഒന്നോ അതിലധികമോ ഉപകരണങ്ങളിലേക്ക് ആക്‌സസ് അഭ്യർത്ഥിക്കുന്നു:</translation>
 <translation id="657064425229075395">പശ്ചാത്തല സ്‌ക്രിപ്റ്റ് '<ph name="BACKGROUND_SCRIPT" />' ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> എന്നതിൽ നിന്നുള്ള <ph name="PRODUCT_NAME" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>

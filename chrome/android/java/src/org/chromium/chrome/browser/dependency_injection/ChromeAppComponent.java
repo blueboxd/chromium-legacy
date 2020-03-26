@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.Notifica
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.customtabs.CustomTabsClientFileProcessor;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -32,9 +33,11 @@ public interface ChromeAppComponent {
     ChromeActivityComponent createChromeActivityComponent(ChromeActivityCommonsModule module);
 
     CustomTabActivityComponent createCustomTabActivityComponent(ChromeActivityCommonsModule module,
+            BaseCustomTabActivityModule baseCustomTabActivityModule,
             CustomTabActivityModule customTabActivityModule);
-    WebappActivityComponent createWebappActivityComponent(
-            ChromeActivityCommonsModule module, WebappActivityModule webappActivityModule);
+    WebappActivityComponent createWebappActivityComponent(ChromeActivityCommonsModule module,
+            BaseCustomTabActivityModule baseCustomTabActivityModule,
+            WebappActivityModule webappActivityModule);
 
     CustomTabsConnection resolveCustomTabsConnection();
     SharedPreferencesManager resolveSharedPreferencesManager();

@@ -9,14 +9,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chromeos/network/network_ui_data.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
-
-namespace base {
-class Value;
-}
 
 namespace policy {
 
@@ -95,8 +92,7 @@ class PinnedLauncherAppsPolicyHandler : public ListPolicyHandler {
 
   // Converts the list of strings |filtered_list| to a list of dictionaries and
   // sets the pref.
-  void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
-                 PrefValueMap* prefs) override;
+  void ApplyList(base::Value filtered_list, PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PinnedLauncherAppsPolicyHandler);

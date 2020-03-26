@@ -75,6 +75,11 @@ void TestBrowserDialog::PreShow() {
   UpdateWidgets();
 }
 
+void TestBrowserDialog::ShowAndVerifyUi() {
+  TestBrowserUi::ShowAndVerifyUi();
+  baseline_.clear();
+}
+
 // This returns true if exactly one views widget was shown that is a dialog or
 // has a name matching the test-specified name, and if that window is in the
 // work area (if |should_verify_dialog_bounds_| is true).
@@ -127,8 +132,8 @@ bool TestBrowserDialog::VerifyUi() {
 
     pixel_diff_->Init(dialog_widget, "BrowserUiDialog");
     auto* test_info = testing::UnitTest::GetInstance()->current_test_info();
-    const std::string test_name =
-        base::StrCat({test_info->test_case_name(), "_", test_info->name()});
+    const std::string test_name = base::StrCat(
+        {test_info->test_case_name(), "_", test_info->name(), "_", baseline_});
     if (!pixel_diff_->CompareScreenshot(test_name,
                                         dialog_widget->GetContentsView())) {
       DLOG(INFO) << "VerifyUi(): Pixel compare failed.";

@@ -465,10 +465,10 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
         if (GetRowCount())
           SelectByViewIndex(0);
       } else {
-        AdvanceSelection(ADVANCE_DECREMENT);
+        AdvanceSelection(AdvanceDirection::kDecrement);
       }
 #else
-      AdvanceSelection(ADVANCE_DECREMENT);
+      AdvanceSelection(AdvanceDirection::kDecrement);
 #endif
       return true;
 
@@ -478,10 +478,10 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
         if (GetRowCount())
           SelectByViewIndex(GetRowCount() - 1);
       } else {
-        AdvanceSelection(ADVANCE_INCREMENT);
+        AdvanceSelection(AdvanceDirection::kIncrement);
       }
 #else
-      AdvanceSelection(ADVANCE_INCREMENT);
+      AdvanceSelection(AdvanceDirection::kIncrement);
 #endif
       return true;
 
@@ -490,13 +490,14 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
         if (IsCmdOrCtrl(event)) {
           if (active_visible_column_index_ != -1 && header_) {
             const AdvanceDirection direction =
-                base::i18n::IsRTL() ? ADVANCE_INCREMENT : ADVANCE_DECREMENT;
+                base::i18n::IsRTL() ? AdvanceDirection::kIncrement
+                                    : AdvanceDirection::kDecrement;
             header_->ResizeColumnViaKeyboard(active_visible_column_index_,
                                              direction);
             focus_ring_->SchedulePaint();
           }
         } else {
-          AdvanceActiveVisibleColumn(ADVANCE_DECREMENT);
+          AdvanceActiveVisibleColumn(AdvanceDirection::kDecrement);
         }
         return true;
       }
@@ -507,13 +508,14 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
         if (IsCmdOrCtrl(event)) {
           if (active_visible_column_index_ != -1 && header_) {
             const AdvanceDirection direction =
-                base::i18n::IsRTL() ? ADVANCE_DECREMENT : ADVANCE_INCREMENT;
+                base::i18n::IsRTL() ? AdvanceDirection::kDecrement
+                                    : AdvanceDirection::kIncrement;
             header_->ResizeColumnViaKeyboard(active_visible_column_index_,
                                              direction);
             focus_ring_->SchedulePaint();
           }
         } else {
-          AdvanceActiveVisibleColumn(ADVANCE_INCREMENT);
+          AdvanceActiveVisibleColumn(AdvanceDirection::kIncrement);
         }
         return true;
       }
@@ -630,15 +632,17 @@ bool TableView::HandleAccessibleAction(const ui::AXActionData& action_data) {
       break;
 
     case ax::mojom::Action::kScrollRight: {
-      const AdvanceDirection direction =
-          base::i18n::IsRTL() ? ADVANCE_DECREMENT : ADVANCE_INCREMENT;
+      const AdvanceDirection direction = base::i18n::IsRTL()
+                                             ? AdvanceDirection::kDecrement
+                                             : AdvanceDirection::kIncrement;
       AdvanceActiveVisibleColumn(direction);
       break;
     }
 
     case ax::mojom::Action::kScrollLeft: {
-      const AdvanceDirection direction =
-          base::i18n::IsRTL() ? ADVANCE_INCREMENT : ADVANCE_DECREMENT;
+      const AdvanceDirection direction = base::i18n::IsRTL()
+                                             ? AdvanceDirection::kIncrement
+                                             : AdvanceDirection::kDecrement;
       AdvanceActiveVisibleColumn(direction);
       break;
     }
@@ -1051,7 +1055,7 @@ void TableView::AdvanceActiveVisibleColumn(AdvanceDirection direction) {
     return;
   }
 
-  if (direction == ADVANCE_DECREMENT) {
+  if (direction == AdvanceDirection::kDecrement) {
     SetActiveVisibleColumnIndex(std::max(0, active_visible_column_index_ - 1));
   } else {
     SetActiveVisibleColumnIndex(
@@ -1129,7 +1133,7 @@ void TableView::AdvanceSelection(AdvanceDirection direction) {
     return;
   }
   int view_index = ModelToView(selection_model_.active());
-  if (direction == ADVANCE_DECREMENT)
+  if (direction == AdvanceDirection::kDecrement)
     view_index = std::max(0, view_index - 1);
   else
     view_index = std::min(GetRowCount() - 1, view_index + 1);

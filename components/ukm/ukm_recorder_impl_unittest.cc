@@ -125,4 +125,22 @@ TEST(UkmRecorderImplTest, WebApkSourceUrl) {
   EXPECT_EQ(SourceIdType::WEBAPK_ID, GetSourceIdType(id));
 }
 
+TEST(UkmRecorderImplTest, PaymentAppScopeUrl) {
+  base::test::TaskEnvironment env;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  GURL url("https://bobpay.com");
+  SourceId id = UkmRecorderImpl::GetSourceIdForPaymentAppFromScope(url);
+
+  ASSERT_NE(kInvalidSourceId, id);
+
+  const auto& sources = test_ukm_recorder.GetSources();
+  ASSERT_EQ(1ul, sources.size());
+  auto it = sources.find(id);
+  ASSERT_NE(sources.end(), it);
+  EXPECT_EQ(url, it->second->url());
+  EXPECT_EQ(1u, it->second->urls().size());
+  EXPECT_EQ(SourceIdType::PAYMENT_APP_ID, GetSourceIdType(id));
+}
+
 }  // namespace ukm

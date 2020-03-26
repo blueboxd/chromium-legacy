@@ -51,6 +51,7 @@ public class LanguageSettings
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 boolean enabled = (boolean) newValue;
                 PrefServiceBridge.getInstance().setBoolean(Pref.OFFER_TRANSLATE_ENABLED, enabled);
+                mLanguageListPref.notifyPrefChanged();
                 LanguagesManager.recordAction(enabled ? LanguagesManager.LanguageSettingsActionType
                                                                 .ENABLE_TRANSLATE_GLOBALLY
                                                       : LanguagesManager.LanguageSettingsActionType

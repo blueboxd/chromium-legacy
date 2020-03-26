@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.payments.MethodStrings;
+import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -459,6 +460,15 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
                 webContents, PaymentEventResponseType.PAYMENT_HANDLER_WINDOW_CLOSING);
     }
 
+    /**
+     * Get the ukm source id for the invoked payment app.
+     * @param swScope The scope of the invoked payment app.
+     */
+    public static long getSourceIdForPaymentAppFromScope(URI swScope) {
+        return ServiceWorkerPaymentAppBridgeJni.get().getSourceIdForPaymentAppFromScope(
+                swScope.toString());
+    }
+
     @CalledByNative
     private static String getSupportedMethodFromMethodData(PaymentMethodData data) {
         return data.supportedMethod;
@@ -605,7 +615,9 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
     @CalledByNative
     private static Object createPayerData(String payerName, String payerPhone, String payerEmail,
             Object shippingAddress, String selectedShippingOptionId) {
-        return new PayerData(payerName, payerPhone, payerEmail, (PaymentAddress) shippingAddress,
+        return new PayerData(payerName, payerPhone, payerEmail,
+                PaymentAddressTypeConverter.convertPaymentAddressFromMojo(
+                        (PaymentAddress) shippingAddress),
                 selectedShippingOptionId);
     }
 
@@ -682,5 +694,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
                 PaymentDetailsModifier[] modifiers, String currency, PaymentHandlerFinder callback,
                 ServiceWorkerPaymentApp app);
         void onClosingPaymentAppWindow(WebContents webContents, int reason);
+        long getSourceIdForPaymentAppFromScope(String swScope);
     }
 }

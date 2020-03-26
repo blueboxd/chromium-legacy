@@ -21,6 +21,7 @@ import androidx.annotation.IntDef;
         Task.CLEAR_ALL_WITH_REFRESH,
         Task.CLEAR_PERSISTENT_STORE_TASK,
         Task.COMMIT_TASK,
+        Task.CREATE_AND_STORE,
         Task.CREATE_AND_UPLOAD,
         Task.DETACH_SESSION,
         Task.DISMISS_LOCAL,
@@ -59,6 +60,7 @@ public @interface Task {
     int CLEAR_PERSISTENT_STORE_TASK = 4;
     int COMMIT_TASK = 5;
     int CREATE_AND_UPLOAD = 6;
+    int CREATE_AND_STORE = 33;
     int DETACH_SESSION = 7;
     int DISMISS_LOCAL = 8;
     int DUMP_EPHEMERAL_ACTIONS = 9;
@@ -86,5 +88,5 @@ public @interface Task {
     int UPLOAD_ALL_ACTIONS_FOR_URL = 32;
 
     // The next value that should be used when adding additional values to the IntDef.
-    int NEXT_VALUE = 33;
+    int NEXT_VALUE = 34;
 }

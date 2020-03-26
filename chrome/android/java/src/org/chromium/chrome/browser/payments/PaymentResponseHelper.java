@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
+import org.chromium.components.payments.PayerData;
 import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentResponse;
@@ -150,7 +151,9 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
 
         // Set up the shipping section of the response when it comes from payment app.
         if (mPaymentOptions.requestShipping && mSelectedPaymentApp.handlesShippingAddress()) {
-            mPaymentResponse.shippingAddress = mPayerDataFromPaymentApp.shippingAddress;
+            mPaymentResponse.shippingAddress =
+                    PaymentAddressTypeConverter.convertAddressToMojoPaymentAddress(
+                            mPayerDataFromPaymentApp.shippingAddress);
             mPaymentResponse.shippingOption = mPayerDataFromPaymentApp.selectedShippingOptionId;
         }
 

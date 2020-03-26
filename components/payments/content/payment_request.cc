@@ -38,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace payments {
 namespace {
@@ -762,6 +763,14 @@ void PaymentRequest::HideIfNecessary() {
 
 bool PaymentRequest::IsIncognito() const {
   return delegate_->IsIncognito();
+}
+
+void PaymentRequest::OnPaymentHandlerOpenWindowCalled() {
+  DCHECK(state_->selected_app());
+  // UKM for payment app origin should get recorded only when the origin of the
+  // invoked payment app is shown to the user.
+  journey_logger_.SetPaymentAppUkmSourceId(
+      state_->selected_app()->UkmSourceId());
 }
 
 void PaymentRequest::RecordFirstAbortReason(

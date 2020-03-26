@@ -17,6 +17,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "services/shape_detection/face_detection_impl_mac_vision.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,16 +26,13 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gl/gl_switches.h"
 
+using base::test::RunOnceClosure;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
 namespace shape_detection {
 
 namespace {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 std::unique_ptr<mojom::FaceDetection> CreateFaceDetectorImplMac(
     shape_detection::mojom::FaceDetectorOptionsPtr options) {
@@ -187,7 +185,8 @@ TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
 
   base::RunLoop run_loop;
   // Send the image to Detect() and expect the response in callback.
-  EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(run_loop.QuitClosure()));
+  EXPECT_CALL(*this, Detection())
+      .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
   impl_->Detect(
       *image,
       base::BindOnce(&FaceDetectionImplMacTest::DetectCallback,

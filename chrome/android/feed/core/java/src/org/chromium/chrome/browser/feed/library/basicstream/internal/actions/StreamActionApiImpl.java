@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.feed.library.api.internal.actionparser.Action
 import org.chromium.chrome.browser.feed.library.basicstream.internal.pendingdismiss.ClusterPendingDismissHelper;
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager;
 import org.chromium.chrome.browser.feed.library.sharedstream.pendingdismiss.PendingDismissCallback;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.ElementType;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.LabelledFeedActionData;
@@ -321,5 +322,12 @@ public class StreamActionApiImpl implements StreamActionApi {
                 onElementHide(ElementType.TOOLTIP.getNumber());
             }
         });
+    }
+
+    @Override
+    public void reportClickAction(String contentId, ActionPayload payload) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            mActionManager.createAndStoreAction(contentId, payload);
+        }
     }
 }

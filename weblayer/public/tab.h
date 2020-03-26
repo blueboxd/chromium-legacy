@@ -23,7 +23,6 @@ class WebView;
 #endif
 
 namespace weblayer {
-class DownloadDelegate;
 class ErrorPageDelegate;
 class FullscreenDelegate;
 class NavigationController;
@@ -41,9 +40,6 @@ class Tab {
 #endif
 
   virtual ~Tab() {}
-
-  // Sets the DownloadDelegate. If none is set, downloads will be dropped.
-  virtual void SetDownloadDelegate(DownloadDelegate* delegate) = 0;
 
   // Sets the ErrorPageDelegate. If none is set, a default action will be taken
   // for any given interaction with an error page.

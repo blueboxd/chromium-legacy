@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.feed.library.common.protoextensions.FeedExten
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils.ElapsedTimeTracker;
 import org.chromium.chrome.browser.feed.library.feedrequestmanager.internal.Utils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamToken;
 import org.chromium.components.feed.core.proto.wire.ActionTypeProto;
 import org.chromium.components.feed.core.proto.wire.CapabilityProto.Capability;
@@ -366,6 +367,11 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
                     feedRequestBuilder, ConfigKey.SNIPPETS_ENABLED, Capability.ARTICLE_SNIPPETS);
             addCapabilityIfConfigEnabled(feedRequestBuilder, ConfigKey.USE_SECONDARY_PAGE_REQUEST,
                     Capability.USE_SECONDARY_PAGE_REQUEST);
+
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+                feedRequestBuilder.addClientCapability(Capability.CLICK_ACTION);
+            }
+
             feedRequestBuilder.addClientCapability(Capability.BASE_UI);
 
             for (Capability capability : feedRequestBuilder.getClientCapabilityList()) {

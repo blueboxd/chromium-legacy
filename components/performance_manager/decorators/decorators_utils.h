@@ -26,7 +26,7 @@ void SetPropertyForWebContentsPageNode(
       FROM_HERE, base::BindOnce(
                      [](base::WeakPtr<PageNode> node,
                         void (decorator_data_type::*setter_function)(T),
-                        T value, Graph* graph) {
+                        T value) {
                        if (node) {
                          auto* data = decorator_data_type::GetOrCreate(
                              PageNodeImpl::FromNode(node.get()));

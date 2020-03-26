@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
+import org.chromium.components.payments.PayerData;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -96,6 +97,16 @@ public abstract class PaymentApp extends EditableOption {
          */
         void onInstrumentDetailsReady(
                 String methodName, String stringifiedDetails, PayerData payerData);
+
+        /**
+         * Stub method to get removed after resolving clank dependencies.
+         *
+         * @param methodName         Method name. For example, "visa".
+         * @param stringifiedDetails JSON-serialized object. For example, {"card": "123"}.
+         * @param payerData          Payer's shipping address and contact information.
+         */
+        void onInstrumentDetailsReady(String methodName, String stringifiedDetails,
+                org.chromium.chrome.browser.payments.PayerData payerData);
 
         /**
          * Called if unable to retrieve payment details.
@@ -339,5 +350,12 @@ public abstract class PaymentApp extends EditableOption {
     @Nullable
     public Set<String> getApplicationIdentifiersThatHideThisApp() {
         return null;
+    }
+
+    /**
+     * @return The ukm source id assigned to the payment app.
+     */
+    public long getUkmSourceId() {
+        return 0;
     }
 }

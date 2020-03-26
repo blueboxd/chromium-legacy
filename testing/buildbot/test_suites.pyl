@@ -3170,6 +3170,7 @@
     },
 
     'ozone_linux_gtests_wayland': {
+      'ui_touch_selection_unittests': {},
       'wayland_views_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter',
@@ -3181,6 +3182,7 @@
     'ozone_linux_gtests_x11': {
       'content_unittests': {},
       'ozone_x11_unittests': {},
+      'ui_touch_selection_unittests': {},
       'views_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',
@@ -3553,6 +3555,13 @@
         'hard_timeout': 14400,
         'io_timeout': 14400,
         'script': 'test_traffic_annotation_auditor.py',
+      },
+    },
+
+    'upload_perfetto': {
+      'upload_perfetto_script': {
+        'script':
+            '//tools/perf/core/perfetto_binary_roller/upload_trace_processor',
       },
     },
 

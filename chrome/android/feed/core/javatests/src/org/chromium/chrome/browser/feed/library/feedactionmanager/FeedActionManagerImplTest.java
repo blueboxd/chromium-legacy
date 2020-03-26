@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.feed.library.api.internal.sessionmanager.Feed
 import org.chromium.chrome.browser.feed.library.api.internal.store.LocalActionMutation;
 import org.chromium.chrome.browser.feed.library.api.internal.store.LocalActionMutation.ActionType;
 import org.chromium.chrome.browser.feed.library.api.internal.store.Store;
+import org.chromium.chrome.browser.feed.library.api.internal.store.UploadableActionMutation;
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeTaskQueue;
@@ -70,6 +71,8 @@ public class FeedActionManagerImplTest {
     @Mock
     private LocalActionMutation mLocalActionMutation;
     @Mock
+    private UploadableActionMutation mUploadableActionMutation;
+    @Mock
     private Consumer<Result<Model>> mModelConsumer;
     @Mock
     private FeedLoggingBridge mFeedLoggingBridge;
@@ -85,6 +88,8 @@ public class FeedActionManagerImplTest {
     private ArgumentCaptor<Consumer<Result<ConsistencyToken>>> mConsumerCaptor;
     @Captor
     private ArgumentCaptor<Set<StreamUploadableAction>> mActionCaptor;
+    @Captor
+    private ArgumentCaptor<StreamUploadableAction> mUploadableActionCaptor;
 
     private ActionManager mActionManager;
 
@@ -197,6 +202,21 @@ public class FeedActionManagerImplTest {
     }
 
     @Test
+    public void triggerCreateAndStoreAction() throws Exception {
+        setupCreateAndStoreMocks();
+        ActionPayload payload = ActionPayload.getDefaultInstance();
+        mFakeClock.set(DEFAULT_TIME);
+        mActionManager.createAndStoreAction(CONTENT_ID_STRING, payload);
+        verify(mUploadableActionMutation)
+                .upsert(mUploadableActionCaptor.capture(), mContentIdStringCaptor.capture());
+        StreamUploadableAction action = mUploadableActionCaptor.getValue();
+        assertThat(action.getFeatureContentId()).isEqualTo(CONTENT_ID_STRING);
+        assertThat(action.getTimestampSeconds()).isEqualTo(DEFAULT_TIME_SECONDS);
+        assertThat(action.getPayload()).isEqualTo(payload);
+        assertThat(mContentIdStringCaptor.getValue()).isEqualTo(CONTENT_ID_STRING);
+    }
+
+    @Test
     public void triggerUploadAllActions() throws Exception {
         String url = "url";
         String param = "param";
@@ -225,6 +245,12 @@ public class FeedActionManagerImplTest {
                 .thenReturn(mModelConsumer);
         when(mLocalActionMutation.add(anyInt(), anyString())).thenReturn(mLocalActionMutation);
         when(mStore.editLocalActions()).thenReturn(mLocalActionMutation);
+    }
+
+    private void setupCreateAndStoreMocks() {
+        when(mUploadableActionMutation.upsert(any(StreamUploadableAction.class), anyString()))
+                .thenReturn(mUploadableActionMutation);
+        when(mStore.editUploadableActions()).thenReturn(mUploadableActionMutation);
     }
 
     private FakeTaskQueue getTaskQueue() {

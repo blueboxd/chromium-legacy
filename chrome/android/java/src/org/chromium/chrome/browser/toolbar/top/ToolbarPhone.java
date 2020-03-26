@@ -2614,11 +2614,18 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     @Override
     void hideOptionalButton() {
-        if (mOptionalButton == null || mOptionalButton.getVisibility() == View.GONE) {
+        // mLayoutLocationBarWithoutExtraButton implies that the hide animation is currently
+        // running.
+        if (mOptionalButton == null || mOptionalButton.getVisibility() == View.GONE
+                || mLayoutLocationBarWithoutExtraButton) {
             return;
         }
 
-        if (mTabSwitcherState == STATIC_TAB && !mUrlFocusChangeInProgress && !urlHasFocus()) {
+        boolean transitioningAwayFromLocationBarInNTP = mVisibleNewTabPage != null
+                && mVisibleNewTabPage.isLocationBarShownInNTP() && !isLocationBarShownInNTP();
+
+        if (mTabSwitcherState == STATIC_TAB && !mUrlFocusChangeInProgress && !urlHasFocus()
+                && !transitioningAwayFromLocationBarInNTP) {
             runHideOptionalButtonsAnimators();
         } else {
             mOptionalButton.setVisibility(View.GONE);
@@ -2708,7 +2715,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (mOptionalButtonAnimationRunning) mOptionalButtonAnimator.end();
 
         List<Animator> animators = new ArrayList<>();
-
         mLocBarWidthChangePercent = 0.f;
         Animator widthChangeAnimator =
                 ObjectAnimator.ofFloat(this, mLocBarWidthChangePercentProperty, 1.f);

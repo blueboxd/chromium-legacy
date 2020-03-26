@@ -22,6 +22,13 @@ namespace media {
 
 class FormatSupportCheckerUnittest : public ::testing::Test {};
 
+TEST_F(FormatSupportCheckerUnittest, NullDeviceDoesntCrash) {
+  FormatSupportChecker checker(nullptr);
+  // Init and Check should both fail, but not crash.
+  EXPECT_FALSE(checker.Initialize());
+  EXPECT_FALSE(checker.CheckOutputFormatSupport(DXGI_FORMAT_NV12));
+}
+
 TEST_F(FormatSupportCheckerUnittest, CheckInitializationCantCast) {
   auto device = CreateD3D11Mock<NiceMock<D3D11DeviceMock>>();
   auto vdevice = CreateD3D11Mock<NiceMock<D3D11VideoDeviceMock>>();

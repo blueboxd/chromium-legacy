@@ -33,11 +33,6 @@ class UpdateServiceInProcess : public UpdateService {
   explicit UpdateServiceInProcess(
       scoped_refptr<update_client::Configurator> config);
 
-  UpdateServiceInProcess(const UpdateServiceInProcess&) = delete;
-  UpdateServiceInProcess& operator=(const UpdateServiceInProcess&) = delete;
-
-  ~UpdateServiceInProcess() override;
-
   // Overrides for updater::UpdateService.
   // Registers given request to the updater.
   void RegisterApp(
@@ -58,6 +53,8 @@ class UpdateServiceInProcess : public UpdateService {
   void Uninitialize() override;
 
  private:
+  ~UpdateServiceInProcess() override;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<update_client::Configurator> config_;

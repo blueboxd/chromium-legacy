@@ -49,7 +49,11 @@ HRESULT UpdaterObserverImpl::OnComplete(ICompleteStatus* status) {
   return S_OK;
 }
 
-UpdateServiceOutOfProcess::UpdateServiceOutOfProcess() = default;
+UpdateServiceOutOfProcess::UpdateServiceOutOfProcess() {
+  Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(
+      &UpdateServiceOutOfProcess::ModuleStop);
+  com_task_runner_ = base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits);
+}
 
 UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -57,20 +61,6 @@ UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() {
 
 void UpdateServiceOutOfProcess::ModuleStop() {
   VLOG(2) << "UpdateServiceOutOfProcess::ModuleStop";
-}
-
-std::unique_ptr<UpdateServiceOutOfProcess>
-UpdateServiceOutOfProcess::CreateInstance() {
-  Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(
-      &UpdateServiceOutOfProcess::ModuleStop);
-
-  struct Creator : public UpdateServiceOutOfProcess {};
-  auto instance = std::make_unique<Creator>();
-  instance->com_task_runner_ =
-      base::ThreadPool::CreateCOMSTATaskRunner(kComClientTraits);
-  if (!instance->com_task_runner_)
-    return nullptr;
-  return instance;
 }
 
 void UpdateServiceOutOfProcess::RegisterApp(

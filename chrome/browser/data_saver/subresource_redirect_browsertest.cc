@@ -1066,9 +1066,11 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests CSS background image coverage metrics is recorded but not redirected,
 // when redirect is disabled.
-IN_PROC_BROWSER_TEST_F(
-    RedirectDisabledSubresourceRedirectBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
+// Disabling for all as it was already Disabled on Mac, Win and ChromeOS and it
+// now seems to be flaky on Linux
+// Disabled due to flakes. See https://crbug.com/1063736.
+IN_PROC_BROWSER_TEST_F(RedirectDisabledSubresourceRedirectBrowserTest,
+                       DISABLED_TestCSSBackgroundImageRedirect) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths("/load_image/css_background_image.html",

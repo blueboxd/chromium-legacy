@@ -31,6 +31,17 @@ class TestBrowserDialog : public TestBrowserUi {
   bool VerifyUi() override;
   void WaitForUserDismissal() override;
   void DismissUi() override;
+  void ShowAndVerifyUi();
+
+  // Only useful when pixel verification is enabled.
+  // Set pixel test baseline so previous gold images become invalid.
+  // Call this method before ShowAndVerifyUi().
+  // For example, a cl changes a dialog's text, and all previously approved
+  // gold images become invalid. Then in the same cl you should set a new
+  // baseline. Or else the previous gold image are still valid (which they
+  // should not be because they have wrong text).
+  // Consider using the cl number as baseline.
+  void set_baseline(const std::string& baseline) { baseline_ = baseline; }
 
   // Whether to close asynchronously using Widget::Close(). This covers
   // codepaths relying on DialogDelegate::Close(), which isn't invoked by
@@ -51,6 +62,9 @@ class TestBrowserDialog : public TestBrowserUi {
   // The widgets present before/after showing UI.
   views::Widget::Widgets widgets_;
 #endif  // defined(TOOLKIT_VIEWS)
+
+  // The baseline to use for the next pixel verification.
+  std::string baseline_;
 
   // If set to true, the dialog bounds will be verified to fit inside the
   // display's work area.

@@ -111,8 +111,7 @@ TEST_F(RenderProcessHostProxyTest, RPHDeletionInvalidatesProxy) {
     PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting(
-            [&deref_proxy, process_node,
-             quit_loop = run_loop.QuitClosure()](GraphImpl* graph) {
+            [&deref_proxy, process_node, quit_loop = run_loop.QuitClosure()]() {
               base::PostTask(
                   FROM_HERE, {content::BrowserThread::UI},
                   base::BindOnce(deref_proxy,
@@ -131,8 +130,8 @@ TEST_F(RenderProcessHostProxyTest, RPHDeletionInvalidatesProxy) {
     PerformanceManagerImpl::CallOnGraphImpl(
         FROM_HERE,
         base::BindLambdaForTesting([&rph_factory, &deref_proxy, process_node,
-                                    host, quit_loop = run_loop.QuitClosure()](
-                                       GraphImpl* graph) {
+                                    host,
+                                    quit_loop = run_loop.QuitClosure()]() {
           base::PostTask(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindLambdaForTesting([&rph_factory, host]() {

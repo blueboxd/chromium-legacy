@@ -11,8 +11,8 @@
 #include "base/test/test_reg_util_win.h"
 #include "build/branding_buildflags.h"
 #include "chrome/chrome_elf/nt_registry/nt_registry.h"
+#include "chrome/install_static/buildflags.h"
 #include "chrome/install_static/install_details.h"
-#include "chrome/install_static/install_modes.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -273,12 +273,12 @@ class MakeInstallDetailsTest : public testing::TestWithParam<TestData> {
     ASSERT_NO_FATAL_FAILURE(SetUninstallArguments(
         root_key_, install_static::kInstallModes[test_data_.index].app_guid,
         test_data_.uninstall_args));
-    if (install_static::kUseGoogleUpdateIntegration) {
-      ASSERT_NO_FATAL_FAILURE(SetProductAp(
-          root_key_, install_static::kInstallModes[test_data_.index].app_guid,
-          test_data_.product_ap));
-      ASSERT_NO_FATAL_FAILURE(SetBinariesAp(root_key_, test_data_.binaries_ap));
-    }
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+    ASSERT_NO_FATAL_FAILURE(SetProductAp(
+        root_key_, install_static::kInstallModes[test_data_.index].app_guid,
+        test_data_.product_ap));
+    ASSERT_NO_FATAL_FAILURE(SetBinariesAp(root_key_, test_data_.binaries_ap));
+#endif
   }
 
   void TearDown() override {

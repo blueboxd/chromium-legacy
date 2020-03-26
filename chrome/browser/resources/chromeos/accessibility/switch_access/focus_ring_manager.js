@@ -12,37 +12,14 @@ class FocusRingManager {
      * @private {!Map<SAConstants.Focus.ID,
      *     chrome.accessibilityPrivate.FocusRingInfo>}
      */
-    this.rings_ = new Map();
-
-    // Create each focus ring.
-    this.rings_.set(SAConstants.Focus.ID.PRIMARY, {
-      id: SAConstants.Focus.ID.PRIMARY,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.SOLID,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
-    this.rings_.set(SAConstants.Focus.ID.NEXT, {
-      id: SAConstants.Focus.ID.NEXT,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
-    this.rings_.set(SAConstants.Focus.ID.TEXT, {
-      id: SAConstants.Focus.ID.TEXT,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
+    this.rings_ = this.createMap_();
 
     /**
      * Regex pattern to verify valid colors. Checks that the first character
-     * is '#', followed by between 3 and 8 valid hex characters, and no other
+     * is '#', followed by 3, 4, 6, or 8 valid hex characters, and no other
      * characters (ignoring case).
      */
-    this.colorPattern_ = /^#[0-9A-F]{3,8}$/i;
+    this.colorPattern_ = /^#([0-9A-F]{3,4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
   }
 
   /**
@@ -53,7 +30,7 @@ class FocusRingManager {
     if (this.colorPattern_.test(color) !== true) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.INVALID_COLOR,
-          'Problem setting focus ring color: color is not' +
+          'Problem setting focus ring color: ' + color + ' is not' +
               'a valid CSS color string.');
     }
     this.rings_.forEach((ring) => ring.color = color);
@@ -66,10 +43,7 @@ class FocusRingManager {
    * @param {!SARootNode} group
    */
   setFocusNodes(primary, group) {
-    if (this.rings_.size === 0) {
-      return;
-    }
-    if (!primary.location || !group.location) {
+    if (!primary.location) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_LOCATION,
           'Cannot set focus rings if node location is undefined');
@@ -126,6 +100,35 @@ class FocusRingManager {
     this.rings_.forEach((ring) => ring.rects = []);
     this.updateFocusRings_();
   }
+
+  /**
+   * Creates the map of focus rings.
+   * @return {!Map<SAConstants.Focus.ID,
+   * chrome.accessibilityPrivate.FocusRingInfo>}
+   */
+  createMap_() {
+    const primaryRing = {
+      id: SAConstants.Focus.ID.PRIMARY,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.SOLID,
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
+    };
+
+    const nextRing = {
+      id: SAConstants.Focus.ID.NEXT,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.DASHED,
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
+    };
+
+    return new Map([
+      [SAConstants.Focus.ID.PRIMARY, primaryRing],
+      [SAConstants.Focus.ID.NEXT, nextRing]
+    ]);
+  }
+
 
   /**
    * Updates all focus rings to reflect new location, color, style, or other

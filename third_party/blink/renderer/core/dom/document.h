@@ -325,7 +325,14 @@ class CORE_EXPORT Document : public ContainerNode,
       mojom::blink::FeaturePolicyFeature) const;
   void ReportFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature,
-      mojom::FeaturePolicyDisposition,
+      mojom::blink::FeaturePolicyDisposition,
+      const String& message = g_empty_string,
+      // If source_file is set to empty string,
+      // current JS file would be used as source_file instead.
+      const String& source_file = g_empty_string) const;
+  void ReportDocumentPolicyViolation(
+      mojom::blink::DocumentPolicyFeature,
+      mojom::blink::FeaturePolicyDisposition disposition,
       const String& message = g_empty_string,
       // If source_file is set to empty string,
       // current JS file would be used as source_file instead.
@@ -408,13 +415,13 @@ class CORE_EXPORT Document : public ContainerNode,
       mojom::blink::DocumentPolicyFeature,
       ReportOptions report_option = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,
-      const String& source_file = g_empty_string);
+      const String& source_file = g_empty_string) const;
   bool IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature,
       PolicyValue threshold_value,
       ReportOptions report_option = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,
-      const String& source_file = g_empty_string);
+      const String& source_file = g_empty_string) const;
 
   String addressSpaceForBindings() const;
 

@@ -27,6 +27,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "chrome/updater/mac/setup/install_app.h"
 #include "chrome/updater/server/mac/server.h"
 #endif
 
@@ -96,10 +97,10 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 #if defined(OS_WIN)
   if (command_line->HasSwitch(kComServiceSwitch))
     return ServiceMain::RunComService(command_line);
+#endif  // OS_WIN
 
   if (command_line->HasSwitch(kInstallSwitch))
     return AppInstallInstance()->Run();
-#endif  // OS_WIN
 
   if (command_line->HasSwitch(kUninstallSwitch))
     return AppUninstallInstance()->Run();

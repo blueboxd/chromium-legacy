@@ -40,7 +40,7 @@ class BrowserList : public KeyedService {
   // calling RemoveBrowser() with an incognito browser.
   virtual void RemoveBrowser(Browser* browser) = 0;
 
-  // Removes an incognito browser from the lisr. Removing any incognito browser
+  // Removes an incognito browser from the list. Removing any incognito browser
   // not previously added is a no-op; observers are not informed. This includes
   // calling RemoveIncognitoBrowser() with a regular browser.
   virtual void RemoveIncognitoBrowser(Browser* browser) = 0;

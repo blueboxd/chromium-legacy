@@ -47,8 +47,8 @@ base::Time GetTime() {
 
 std::string TooltipTypeToString(TooltipType type) {
   switch (type) {
-    case TooltipType::kDragHandle:
-      return "drag_handle";
+    case TooltipType::kInAppToHome:
+      return "in_app_to_home";
     case TooltipType::kBackGesture:
       return "back_gesture";
     case TooltipType::kHomeToOverview:
@@ -108,7 +108,7 @@ bool ShouldShowNudge(PrefService* prefs,
     return false;
   }
 
-  if (type == TooltipType::kDragHandle &&
+  if (type == TooltipType::kInAppToHome &&
       g_drag_handle_nudge_disabled_for_hidden_shelf) {
     set_recheck_delay(base::TimeDelta());
     return false;
@@ -134,14 +134,14 @@ bool ShouldShowNudge(PrefService* prefs,
   // interval.
   if (type == TooltipType::kBackGesture) {
     if (!g_drag_handle_nudge_disabled_for_hidden_shelf &&
-        ShouldShowNudge(prefs, TooltipType::kDragHandle, nullptr)) {
+        ShouldShowNudge(prefs, TooltipType::kInAppToHome, nullptr)) {
       set_recheck_delay(kMinIntervalBetweenBackAndDragHandleNudge);
       return false;
     }
 
     // Verify that drag handle nudge has been shown at least a minute ago.
     const base::Time drag_handle_nudge_last_shown_time =
-        GetLastShownTime(prefs, TooltipType::kDragHandle);
+        GetLastShownTime(prefs, TooltipType::kInAppToHome);
     if (!drag_handle_nudge_last_shown_time.is_null()) {
       const base::TimeDelta time_since_drag_handle_nudge =
           GetTime() - drag_handle_nudge_last_shown_time;
@@ -156,7 +156,7 @@ bool ShouldShowNudge(PrefService* prefs,
 
   // Make sure that drag handle nudge is not shown within a minute of back
   // gesture nudge.
-  if (type == TooltipType::kDragHandle) {
+  if (type == TooltipType::kInAppToHome) {
     if (g_back_gesture_nudge_showing) {
       set_recheck_delay(kMinIntervalBetweenBackAndDragHandleNudge);
       return false;

@@ -471,6 +471,8 @@ ScriptPromise XRSession::requestReferenceSpace(
     ScriptState* script_state,
     const String& type,
     ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
+
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionEnded);
@@ -618,6 +620,8 @@ ScriptPromise XRSession::CreateAnchor(
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
+  DVLOG(3) << __func__;
+
   TRACE_EVENT0("gpu", __func__);
   // Don't allow any new frame requests once the session is ended.
   if (ended_)
@@ -947,6 +951,10 @@ void XRSession::ProcessAnchorsData(
       updated_anchors.insert(anchor_id, it->value);
     }
   }
+
+  DVLOG(3) << __func__
+           << ": anchor count before update=" << anchor_ids_to_anchors_.size()
+           << ", after update=" << updated_anchors.size();
 
   anchor_ids_to_anchors_.swap(updated_anchors);
 
@@ -1338,8 +1346,8 @@ void XRSession::UpdatePresentationFrameState(
     int16_t frame_id,
     bool emulated_position) {
   TRACE_EVENT0("gpu", __func__);
-  DVLOG(2) << __func__ << " : frame_data valid? "
-           << (frame_data ? true : false);
+  DVLOG(2) << __func__ << " : frame_data valid? " << (frame_data ? true : false)
+           << ", emulated_position=" << emulated_position;
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
     return;
@@ -1409,7 +1417,8 @@ void XRSession::OnFrame(
     double timestamp,
     const base::Optional<gpu::MailboxHolder>& output_mailbox_holder) {
   TRACE_EVENT0("gpu", __func__);
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": ended_=" << ended_
+           << ", pending_frame_=" << pending_frame_;
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
     return;
@@ -1425,10 +1434,14 @@ void XRSession::OnFrame(
     // session. That would allow tracking with no associated visuals.
     XRWebGLLayer* frame_base_layer = render_state_->baseLayer();
     if (!frame_base_layer) {
+      DVLOG(2) << __func__ << ": frame_base_layer not present";
+
       // If we previously had a frame base layer, we need to still attempt to
       // submit a frame back to the runtime, as all "GetFrameData" calls need a
       // matching submit.
       if (prev_base_layer_) {
+        DVLOG(2) << __func__
+                 << ": prev_base_layer_ is valid, submitting frame to it";
         prev_base_layer_->OnFrameStart(output_mailbox_holder);
         prev_base_layer_->OnFrameEnd();
         prev_base_layer_ = nullptr;
@@ -1438,16 +1451,23 @@ void XRSession::OnFrame(
 
     // Don't allow frames to be processed if an inline session doesn't have an
     // output canvas.
-    if (!immersive() && !render_state_->output_canvas())
+    if (!immersive() && !render_state_->output_canvas()) {
+      DVLOG(2) << __func__
+               << ": frames are not to be processed if an inline session "
+                  "doesn't have an output canvas";
       return;
+    }
 
     frame_base_layer->OnFrameStart(output_mailbox_holder);
 
     // Don't allow frames to be processed if the session's visibility state is
     // "hidden".
     if (visibility_state_ == XRVisibilityState::HIDDEN) {
-      // If the frame is skipped because of the visibility state, make sure we
-      // end the frame anyway.
+      DVLOG(2) << __func__
+               << ": frames to be processed if the session's visibility state "
+                  "is \"hidden\"";
+      // If the frame is skipped because of the visibility state,
+      // make sure we end the frame anyway.
       frame_base_layer->OnFrameEnd();
       return;
     }

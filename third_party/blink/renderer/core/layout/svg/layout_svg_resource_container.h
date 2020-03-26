@@ -109,12 +109,12 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,
                     resource.ResourceType() == typeName)
 
 template <typename ContainerType>
-inline bool IsResourceOfType(LayoutSVGResourceContainer* container) {
+inline bool IsResourceOfType(const LayoutSVGResourceContainer* container) {
   return container->ResourceType() == ContainerType::kResourceType;
 }
 
 template <typename ContainerType>
-inline ContainerType* GetSVGResourceAsType(SVGResource* resource) {
+inline ContainerType* GetSVGResourceAsType(const SVGResource* resource) {
   if (!resource)
     return nullptr;
   if (LayoutSVGResourceContainer* container = resource->ResourceContainer()) {
@@ -125,7 +125,8 @@ inline ContainerType* GetSVGResourceAsType(SVGResource* resource) {
 }
 
 template <typename ContainerType>
-inline ContainerType* GetSVGResourceAsType(StyleSVGResource* style_resource) {
+inline ContainerType* GetSVGResourceAsType(
+    const StyleSVGResource* style_resource) {
   if (!style_resource)
     return nullptr;
   return GetSVGResourceAsType<ContainerType>(style_resource->Resource());

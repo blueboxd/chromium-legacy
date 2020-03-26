@@ -263,20 +263,29 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
             case 'androidx_core_core':
-                sb.append('  ignore_proguard_configs = true\n')
-                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('\n')
+                sb.append('  # Target has AIDL, but we do not support it yet: http://crbug.com/644439\n')
                 sb.append('  ignore_aidl = true\n')
+                sb.append('\n')
+                sb.append('  # Manifest and proguard config have just one entry: Adding (and -keep\'ing\n')
+                sb.append('  # android:appComponentFactory="androidx.core.app.CoreComponentFactory"\n')
+                sb.append('  # Chrome does not use this feature and it causes a scary stack trace to be\n')
+                sb.append('  # shown when incremental_install=true.\n')
+                sb.append('  ignore_manifest = true\n')
+                sb.append('  ignore_proguard_configs = true\n')
+                sb.append('  custom_package = "androidx.core"\n')
                 break
             case 'androidx_media_media':
             case 'androidx_versionedparcelable_versionedparcelable':
             case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':
             case 'com_android_support_versionedparcelable':
-                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('\n')
+                sb.append('  # Target has AIDL, but we do not support it yet: http://crbug.com/644439\n')
                 sb.append('  ignore_aidl = true\n')
                 break
             case 'androidx_test_uiautomator_uiautomator':
-	        sb.append('  deps = [":androidx_test_runner_java"]\n')
+                sb.append('  deps = [":androidx_test_runner_java"]\n')
                 break
             case 'com_android_support_mediarouter_v7':
                 sb.append('  # https://crbug.com/1000382\n')
@@ -300,17 +309,20 @@ class BuildConfigGenerator extends DefaultTask {
             case 'android_arch_lifecycle_viewmodel':
             case 'androidx_lifecycle_lifecycle_runtime':
             case 'androidx_lifecycle_lifecycle_viewmodel':
+                sb.append('\n')
                 sb.append('  # https://crbug.com/887942#c1\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
             case 'com_android_support_coordinatorlayout':
             case 'androidx_coordinatorlayout_coordinatorlayout':
+                sb.append('\n')
                 sb.append('  # https:crbug.com/954584\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
             case 'com_android_support_design':
             case 'com_google_android_material_material':
-                // Reduce binary size. https:crbug.com/954584
+                sb.append('\n')
+                sb.append('  # Reduce binary size. https:crbug.com/954584\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
             case 'com_android_support_support_annotations':
@@ -332,15 +344,17 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  extract_native_libraries = true\n')
                 break
             case 'com_google_guava_guava':
-                // Need to exclude class and replace it with class library as
-                // com_google_guava_listenablefuture has support_androids=true.
+                sb.append('\n')
+                sb.append('  # Need to exclude class and replace it with class library as\n')
+                sb.append('  # com_google_guava_listenablefuture has support_androids=true.\n')
                 sb.append('  deps += [":com_google_guava_listenablefuture_java"]\n')
                 sb.append('  jar_excluded_patterns = ["*/ListenableFuture.class"]\n')
                 break
             case 'com_google_code_findbugs_jsr305':
             case 'com_google_guava_listenablefuture':
             case 'com_googlecode_java_diff_utils_diffutils':
-                // Needed to break dependency cycle for errorprone_plugin_java.
+                sb.append('\n')
+                sb.append('  # Needed to break dependency cycle for errorprone_plugin_java.\n')
                 sb.append('  no_build_hooks = true\n')
                 break
             case 'androidx_test_rules':

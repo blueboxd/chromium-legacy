@@ -11,7 +11,6 @@ import android.support.test.filters.SmallTest;
 import android.support.v4.app.Fragment;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +30,7 @@ public class ExternalNavigationTest {
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
+    private static final String ABOUT_BLANK_URL = "about:blank";
     private static final String INTENT_TO_CHROME_URL =
             "intent://play.google.com/store/apps/details?id=com.facebook.katana/#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end";
 
@@ -54,14 +54,6 @@ public class ExternalNavigationTest {
         }
     }
 
-    private IntentInterceptor mIntentInterceptor = new IntentInterceptor();
-
-    @Before
-    public void setUp() throws Exception {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
-        activity.setIntentInterceptor(mIntentInterceptor);
-    }
-
     /**
      * Verifies that for a navigation to a URI that WebLayer can handle internally, there
      * is no external intent triggered.
@@ -69,8 +61,17 @@ public class ExternalNavigationTest {
     @Test
     @SmallTest
     public void testBrowserNavigation() throws Throwable {
-        mActivityTestRule.navigateAndWait("about:blank");
-        Assert.assertNull(mIntentInterceptor.mLastIntent);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
+        // The test server handles "echo" with a response containing "Echo" :).
+        String testServerSiteUrl = mActivityTestRule.getTestServer().getURL("/echo");
+
+        mActivityTestRule.navigateAndWait(testServerSiteUrl);
+
+        Assert.assertNull(intentInterceptor.mLastIntent);
+        Assert.assertEquals(testServerSiteUrl, mActivityTestRule.getCurrentDisplayUrl());
     }
 
     /**
@@ -80,13 +81,20 @@ public class ExternalNavigationTest {
     @Test
     @SmallTest
     public void testExternalIntentWithNoRedirectBlocked() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
         Tab tab = mActivityTestRule.getActivity().getTab();
 
         // Note that this navigation will not result in a paint.
         mActivityTestRule.navigateAndWaitForFailure(
                 tab, INTENT_TO_CHROME_URL, /*waitForPaint=*/false);
 
-        Assert.assertNull(mIntentInterceptor.mLastIntent);
+        Assert.assertNull(intentInterceptor.mLastIntent);
+
+        // The current URL should not have changed.
+        Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
     }
 
     /**
@@ -96,6 +104,10 @@ public class ExternalNavigationTest {
     @Test
     @SmallTest
     public void testExternalIntentAfterRedirectLaunched() throws Throwable {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(ABOUT_BLANK_URL);
+        IntentInterceptor intentInterceptor = new IntentInterceptor();
+        activity.setIntentInterceptor(intentInterceptor);
+
         String url = mActivityTestRule.getTestServer().getURL(
                 "/server-redirect?" + INTENT_TO_CHROME_URL);
 
@@ -103,9 +115,11 @@ public class ExternalNavigationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { tab.getNavigationController().navigate(Uri.parse(url)); });
 
-        mIntentInterceptor.waitForIntent();
+        intentInterceptor.waitForIntent();
 
-        Intent intent = mIntentInterceptor.mLastIntent;
+        // The current URL should not have changed, and the intent should have been launched.
+        Assert.assertEquals(ABOUT_BLANK_URL, mActivityTestRule.getCurrentDisplayUrl());
+        Intent intent = intentInterceptor.mLastIntent;
         Assert.assertNotNull(intent);
         Assert.assertEquals("com.android.chrome", intent.getPackage());
         Assert.assertEquals("android.intent.action.VIEW", intent.getAction());

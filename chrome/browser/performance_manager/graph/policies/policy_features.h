@@ -84,6 +84,10 @@ extern const base::Feature kPageFreezingFromPerformanceManager;
 // Enables urgent discarding of pages directly from PerformanceManager rather
 // than via TabManager.
 extern const base::Feature kUrgentDiscardingFromPerformanceManager;
+
+// Enable background tab loading of pages (restored via session restore)
+// directly from Performance Manager rather than via TabLoader.
+extern const base::Feature kBackgroundTabLoadingFromPerformanceManager;
 #endif
 
 // Feature that controls whether or not memory pressure signals will be emitted

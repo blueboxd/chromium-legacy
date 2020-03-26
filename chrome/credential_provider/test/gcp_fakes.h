@@ -5,6 +5,7 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_
 #define CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -296,10 +297,21 @@ class FakeWinHttpUrlFetcherFactory {
   FakeWinHttpUrlFetcherFactory();
   ~FakeWinHttpUrlFetcherFactory();
 
+  // Sets the given |response| for any number of HTTP requests made for |url|.
   void SetFakeResponse(
       const GURL& url,
       const WinHttpUrlFetcher::Headers& headers,
       const std::string& response,
+      HANDLE send_response_event_handle = INVALID_HANDLE_VALUE);
+
+  // Queues the given |response| for the specified |num_requests| number of HTTP
+  // requests made for |url|. Different responses for the URL can be set by
+  // calling this function multiple times with different responses.
+  void SetFakeResponseForSpecifiedNumRequests(
+      const GURL& url,
+      const WinHttpUrlFetcher::Headers& headers,
+      const std::string& response,
+      unsigned int num_requests,
       HANDLE send_response_event_handle = INVALID_HANDLE_VALUE);
 
   // Sets the response as a failed http attempt. The return result
@@ -343,10 +355,11 @@ class FakeWinHttpUrlFetcherFactory {
     HANDLE send_response_event_handle;
   };
 
-  std::map<GURL, Response> fake_responses_;
+  std::map<GURL, std::deque<Response>> fake_responses_;
   std::map<GURL, HRESULT> failed_http_fetch_hr_;
   size_t requests_created_ = 0;
   bool collect_request_data_ = false;
+  bool remove_fake_response_when_created_ = false;
   std::vector<RequestData> requests_data_;
 };
 

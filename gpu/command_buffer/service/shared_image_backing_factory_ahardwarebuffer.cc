@@ -277,18 +277,11 @@ class SharedImageRepresentationSkiaVkAHB
     DCHECK(vulkan_image_);
     DCHECK(context_state_);
     DCHECK(context_state_->vk_context_provider());
-    // Create backend texture from the VkImage.
-    GrVkAlloc alloc(vulkan_image_->device_memory(), 0 /* offset */,
-                    vulkan_image_->device_size(), 0 /* flags */);
-    GrVkImageInfo vk_info(vulkan_image_->image(), alloc,
-                          vulkan_image_->image_tiling(),
-                          VK_IMAGE_LAYOUT_UNDEFINED, vulkan_image_->format(),
-                          1 /* levelCount */, VK_QUEUE_FAMILY_EXTERNAL);
-
     // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
     // if the vk_info stays the same on subsequent calls.
     promise_texture_ = SkPromiseImageTexture::Make(
-        GrBackendTexture(size().width(), size().height(), vk_info));
+        GrBackendTexture(size().width(), size().height(),
+                         CreateGrVkImageInfo(vulkan_image_.get())));
     DCHECK(promise_texture_);
   }
 

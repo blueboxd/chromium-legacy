@@ -65,7 +65,6 @@ public final class TabImpl extends ITab.Stub {
     private WebContentsObserver mWebContentsObserver;
     private TabCallbackProxy mTabCallbackProxy;
     private NavigationControllerImpl mNavigationController;
-    private DownloadCallbackProxy mDownloadCallbackProxy;
     private ErrorPageCallbackProxy mErrorPageCallbackProxy;
     private FullscreenCallbackProxy mFullscreenCallbackProxy;
     private ViewAndroidDelegate mViewAndroidDelegate;
@@ -319,16 +318,7 @@ public final class TabImpl extends ITab.Stub {
     @Override
     public void setDownloadCallbackClient(IDownloadCallbackClient client) {
         StrictModeWorkaround.apply();
-        if (client != null) {
-            if (mDownloadCallbackProxy == null) {
-                mDownloadCallbackProxy = new DownloadCallbackProxy(mBrowser, mNativeTab, client);
-            } else {
-                mDownloadCallbackProxy.setClient(client);
-            }
-        } else if (mDownloadCallbackProxy != null) {
-            mDownloadCallbackProxy.destroy();
-            mDownloadCallbackProxy = null;
-        }
+        mProfile.setDownloadCallbackClient(client);
     }
 
     @Override
@@ -529,10 +519,6 @@ public final class TabImpl extends ITab.Stub {
         if (mTabCallbackProxy != null) {
             mTabCallbackProxy.destroy();
             mTabCallbackProxy = null;
-        }
-        if (mDownloadCallbackProxy != null) {
-            mDownloadCallbackProxy.destroy();
-            mDownloadCallbackProxy = null;
         }
         if (mErrorPageCallbackProxy != null) {
             mErrorPageCallbackProxy.destroy();

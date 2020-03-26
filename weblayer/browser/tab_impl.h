@@ -122,12 +122,10 @@ class TabImpl : public Tab,
   base::android::ScopedJavaLocalRef<jstring> GetGuid(JNIEnv* env);
 #endif
 
-  DownloadDelegate* download_delegate() { return download_delegate_; }
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
   FullscreenDelegate* fullscreen_delegate() { return fullscreen_delegate_; }
 
   // Tab:
-  void SetDownloadDelegate(DownloadDelegate* delegate) override;
   void SetErrorPageDelegate(ErrorPageDelegate* delegate) override;
   void SetFullscreenDelegate(FullscreenDelegate* delegate) override;
   void SetNewTabDelegate(NewTabDelegate* delegate) override;
@@ -229,7 +227,6 @@ class TabImpl : public Tab,
   void UpdateBrowserVisibleSecurityStateIfNecessary();
 
   BrowserImpl* browser_ = nullptr;
-  DownloadDelegate* download_delegate_ = nullptr;
   ErrorPageDelegate* error_page_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;
   NewTabDelegate* new_tab_delegate_ = nullptr;

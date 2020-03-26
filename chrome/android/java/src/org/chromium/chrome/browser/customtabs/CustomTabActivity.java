@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabContro
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
+import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
@@ -360,11 +361,13 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         IntentIgnoringCriterion intentIgnoringCriterion =
                 (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
+        BaseCustomTabActivityModule baseCustomTabsModule =
+                new BaseCustomTabActivityModule(mIntentDataProvider);
         CustomTabActivityModule customTabsModule = new CustomTabActivityModule(mIntentDataProvider,
                 mNightModeStateController, intentIgnoringCriterion, getStartupTabPreloader());
         CustomTabActivityComponent component =
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
-                        commonsModule, customTabsModule);
+                        commonsModule, baseCustomTabsModule, customTabsModule);
 
         onComponentCreated(component);
 

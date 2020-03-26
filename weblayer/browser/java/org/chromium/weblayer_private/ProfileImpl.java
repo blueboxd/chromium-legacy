@@ -13,6 +13,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.interfaces.BrowsingDataType;
+import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -30,6 +31,7 @@ public final class ProfileImpl extends IProfile.Stub {
     private long mNativeProfile;
     private Runnable mOnDestroyCallback;
     private boolean mBeingDeleted;
+    private DownloadCallbackProxy mDownloadCallbackProxy;
 
     public static void enumerateAllProfileNames(ValueCallback<String[]> callback) {
         final Callback<String[]> baseCallback = (String[] names) -> callback.onReceiveValue(names);
@@ -49,6 +51,12 @@ public final class ProfileImpl extends IProfile.Stub {
     public void destroy() {
         StrictModeWorkaround.apply();
         if (mBeingDeleted) return;
+
+        if (mDownloadCallbackProxy != null) {
+            mDownloadCallbackProxy.destroy();
+            mDownloadCallbackProxy = null;
+        }
+
         deleteNativeProfile();
         maybeRunDestroyCallback();
     }
@@ -106,6 +114,21 @@ public final class ProfileImpl extends IProfile.Stub {
         StrictModeWorkaround.apply();
         checkNotDestroyed();
         ProfileImplJni.get().setDownloadDirectory(mNativeProfile, directory);
+    }
+
+    @Override
+    public void setDownloadCallbackClient(IDownloadCallbackClient client) {
+        StrictModeWorkaround.apply();
+        if (client != null) {
+            if (mDownloadCallbackProxy == null) {
+                mDownloadCallbackProxy = new DownloadCallbackProxy(mNativeProfile, client);
+            } else {
+                mDownloadCallbackProxy.setClient(client);
+            }
+        } else if (mDownloadCallbackProxy != null) {
+            mDownloadCallbackProxy.destroy();
+            mDownloadCallbackProxy = null;
+        }
     }
 
     void checkNotDestroyed() {

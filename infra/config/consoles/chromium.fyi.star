@@ -267,5 +267,20 @@ luci.console_view(
             builder = 'ci/win-celab-tester-rel',
             category = 'celab',
         ),
+        luci.console_view_entry(
+            builder = 'ci/linux-upload-perfetto',
+            category = 'perfetto',
+            short_name = 'lnx',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/mac-upload-perfetto',
+            category = 'perfetto',
+            short_name = 'mac',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/win-upload-perfetto',
+            category = 'perfetto',
+            short_name = 'win',
+        ),
     ],
 )

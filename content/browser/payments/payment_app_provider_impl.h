@@ -62,6 +62,8 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
                                     const GURL& sw_js_url,
                                     const GURL& sw_scope,
                                     std::string* error_message) override;
+  ukm::SourceId GetSourceIdForPaymentAppFromScope(
+      const GURL& sw_scope) override;
 
  private:
   PaymentAppProviderImpl();

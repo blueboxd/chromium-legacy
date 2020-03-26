@@ -28,6 +28,14 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     },
 
     /**
+     * Returns default event target element.
+     * @type {Object}
+     */
+    get defaultControl() {
+      return this.gaiaPasswordChanged_;
+    },
+
+    /**
      * Cancels password migration and drops the user back to the login screen.
      */
     cancel() {

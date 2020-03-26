@@ -216,7 +216,6 @@ external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure Pa
 external/wpt/css/css-animations/CSSAnimation-ready.tentative.html [ Failure Pass ]
 external/wpt/css/css-animations/CSSPseudoElement-getAnimations.tentative.html [ Failure ]
 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/css/css-animations/animationevent-marker-pseudoelement.html [ Timeout ] # wpt_subtest_failure
 external/wpt/css/css-animations/event-dispatch.tentative.html [ Pass Timeout ] # wpt_subtest_failure
 external/wpt/css/css-backgrounds/background-size/vector/background-size-vector-024.html [ Pass Failure ]
 external/wpt/css/css-box/parsing/min-height-invalid.html [ Failure ]

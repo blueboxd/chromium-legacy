@@ -15,6 +15,7 @@
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
+#include "chrome/browser/performance_manager/graph/policies/background_tab_loading_policy.h"
 #include "chrome/browser/performance_manager/graph/policies/high_pmf_memory_pressure_policy.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/performance_manager/graph/policies/urgent_page_discarding_policy.h"
@@ -105,6 +106,14 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
     graph->PassToGraph(
         std::make_unique<
             performance_manager::policies::UrgentPageDiscardingPolicy>());
+  }
+
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::
+              kBackgroundTabLoadingFromPerformanceManager)) {
+    graph->PassToGraph(
+        std::make_unique<
+            performance_manager::policies::BackgroundTabLoadingPolicy>());
   }
 #endif  // !defined(OS_ANDROID)
 

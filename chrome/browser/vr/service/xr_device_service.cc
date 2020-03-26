@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "chrome/browser/vr/xr_test_utils.h"
 #include "content/public/browser/service_process_host.h"
 
 namespace vr {

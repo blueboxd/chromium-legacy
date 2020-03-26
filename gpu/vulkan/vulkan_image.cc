@@ -209,12 +209,13 @@ bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
   device_queue_ = device_queue;
   size_ = size;
   format_ = format;
+  flags_ = flags;
   image_tiling_ = image_tiling;
 
   VkImageCreateInfo create_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .pNext = vk_image_create_info_next,
-      .flags = flags,
+      .flags = flags_,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = format_,
       .extent = {size.width(), size.height(), 1},
@@ -226,7 +227,7 @@ bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
       .queueFamilyIndexCount = 0,
       .pQueueFamilyIndices = nullptr,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .initialLayout = image_layout_,
   };
   VkDevice vk_device = device_queue->GetVulkanDevice();
   VkResult result =
@@ -486,6 +487,9 @@ bool VulkanImage::InitializeFromGpuMemoryBufferHandle(
     return false;
   }
 
+  // VkImage is imported from external.
+  queue_family_index_ = VK_QUEUE_FAMILY_EXTERNAL;
+
   if (ahb_format_props.format == VK_FORMAT_UNDEFINED) {
     ycbcr_info_.emplace(VK_FORMAT_UNDEFINED, ahb_format_props.externalFormat,
                         ahb_format_props.suggestedYcbcrModel,
@@ -494,6 +498,7 @@ bool VulkanImage::InitializeFromGpuMemoryBufferHandle(
                         ahb_format_props.suggestedYChromaOffset,
                         ahb_format_props.formatFeatures);
   }
+
   return true;
 #endif  // defined(OS_ANDROID)
 }

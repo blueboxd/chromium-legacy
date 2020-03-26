@@ -28,6 +28,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
+import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -257,6 +258,15 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public String getTestDataURL(String path) {
         return getTestServer().getURL("/weblayer/test/data/" + path);
+    }
+
+    public String getCurrentDisplayUrl() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            NavigationController navController = getActivity().getTab().getNavigationController();
+            return navController
+                    .getNavigationEntryDisplayUri(navController.getNavigationListCurrentIndex())
+                    .toString();
+        });
     }
 
     public void setRetainInstance(boolean retain) {

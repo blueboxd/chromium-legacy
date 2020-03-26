@@ -73,6 +73,9 @@ public interface StreamActionApi extends ActionApi {
      */
     void onElementClick(int elementType);
 
+    /* Reports a click action on given content ID with the given action payload. */
+    void reportClickAction(String contentId, ActionPayload payload);
+
     /** Whether or not show tooltip actions can be handled. */
     boolean canShowTooltip();
 

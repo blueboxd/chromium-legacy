@@ -25,6 +25,7 @@ const char kNoRateLimitSwitch[] = "no-rate-limit";
 const char kEnableLoggingSwitch[] = "enable-logging";
 const char kLoggingModuleSwitch[] = "vmodule";
 const char kSingleProcessSwitch[] = "single-process";
+const char kAppIdSwitch[] = "appid";
 
 // URLs.
 const char kUpdaterJSONDefaultUrl[] =

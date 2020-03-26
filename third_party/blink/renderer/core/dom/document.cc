@@ -160,6 +160,7 @@
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
+#include "third_party/blink/renderer/core/frame/document_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -1103,7 +1104,7 @@ bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
 bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
                                 ReportOptions report_option,
                                 const String& message,
-                                const String& source_file) {
+                                const String& source_file) const {
   return GetExecutionContext() &&
          GetExecutionContext()->IsFeatureEnabled(feature, report_option,
                                                  message, source_file);
@@ -1113,7 +1114,7 @@ bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
                                 PolicyValue threshold_value,
                                 ReportOptions report_option,
                                 const String& message,
-                                const String& source_file) {
+                                const String& source_file) const {
   return GetExecutionContext() &&
          GetExecutionContext()->IsFeatureEnabled(
              feature, threshold_value, report_option, message, source_file);
@@ -8391,6 +8392,55 @@ void Document::ReportFeaturePolicyViolation(
         mojom::ConsoleMessageSource::kViolation,
         mojom::ConsoleMessageLevel::kError,
         (message.IsEmpty() ? ("Feature policy violation: " + feature_name +
+                              " is not allowed in this document.")
+                           : message)));
+  }
+}
+
+void Document::ReportDocumentPolicyViolation(
+    mojom::blink::DocumentPolicyFeature feature,
+    mojom::blink::FeaturePolicyDisposition disposition,
+    const String& message,
+    const String& source_file) const {
+  LocalFrame* frame = GetFrame();
+  if (!frame)
+    return;
+
+  // Construct the document policy violation report.
+  const String& feature_name =
+      GetDocumentPolicyFeatureInfoMap().at(feature).feature_name.c_str();
+  bool is_report_only =
+      disposition == mojom::blink::FeaturePolicyDisposition::kReport;
+  const String& disp_str = is_report_only ? "report" : "enforce";
+  const DocumentPolicy* relevant_document_policy =
+      is_report_only ? GetSecurityContext().GetReportOnlyDocumentPolicy()
+                     : GetSecurityContext().GetDocumentPolicy();
+
+  DocumentPolicyViolationReportBody* body =
+      source_file.IsEmpty()
+          ? MakeGarbageCollected<DocumentPolicyViolationReportBody>(
+                feature_name, "Document policy violation", disp_str)
+          : MakeGarbageCollected<DocumentPolicyViolationReportBody>(
+                feature_name, "Document policy violation", disp_str,
+                source_file);
+
+  Report* report = MakeGarbageCollected<Report>(
+      ReportType::kDocumentPolicyViolation, Url().GetString(), body);
+
+  // Send the document policy violation report to any ReportingObservers.
+  auto* reporting_context = ReportingContext::From(domWindow());
+  const base::Optional<std::string> endpoint =
+      relevant_document_policy->GetFeatureEndpoint(feature);
+
+  reporting_context->QueueReport(
+      report, endpoint ? Vector<String>{endpoint->c_str()} : Vector<String>{});
+
+  // TODO(iclelland): Report something different in report-only mode
+  if (!is_report_only) {
+    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kViolation,
+        mojom::blink::ConsoleMessageLevel::kError,
+        (message.IsEmpty() ? ("Document policy violation: " + feature_name +
                               " is not allowed in this document.")
                            : message)));
   }

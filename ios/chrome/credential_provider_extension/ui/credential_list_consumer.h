@@ -12,6 +12,9 @@
 // Called when the user taps the cancel button in the navigation bar.
 - (void)navigationCancelButtonWasPressed:(UIButton*)button;
 
+// Called when the user is filtering results through search.
+- (void)updateResultsWithFilter:(NSString*)filter;
+
 @end
 
 @protocol CredentialListConsumer <NSObject>

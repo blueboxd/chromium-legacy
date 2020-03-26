@@ -172,14 +172,37 @@ void VaapiImageProcessorBackend::Process(scoped_refptr<VideoFrame> input_frame,
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
-  auto src_va_surface =
-      vaapi_wrapper_->CreateVASurfaceForVideoFrame(input_frame.get());
-  auto dst_va_surface =
-      vaapi_wrapper_->CreateVASurfaceForVideoFrame(output_frame.get());
-  if (!src_va_surface || !dst_va_surface) {
-    // Failed to create VASurface for frames. |cb| isn't executed in the case.
+  DCHECK(input_frame);
+  DCHECK(output_frame);
+  scoped_refptr<gfx::NativePixmap> input_pixmap =
+      CreateNativePixmapDmaBuf(input_frame.get());
+  if (!input_pixmap) {
+    VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
+    error_cb_.Run();
     return;
   }
+
+  auto src_va_surface =
+      vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(input_pixmap));
+
+  if (!src_va_surface)
+    return;
+
+  scoped_refptr<gfx::NativePixmap> output_pixmap =
+      CreateNativePixmapDmaBuf(output_frame.get());
+  if (!output_pixmap) {
+    VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
+    error_cb_.Run();
+    return;
+  }
+
+  auto dst_va_surface =
+      vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(output_pixmap));
+
+  // Failed to create VASurface for frames. |cb| isn't executed in the case.
+  if (!dst_va_surface)
+    return;
+
   // VA-API performs pixel format conversion and scaling without any filters.
   if (!vaapi_wrapper_->BlitSurface(*src_va_surface, *dst_va_surface,
                                    input_frame->visible_rect(),

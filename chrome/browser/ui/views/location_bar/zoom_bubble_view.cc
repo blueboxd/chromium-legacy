@@ -510,27 +510,24 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
   // matches the size of the default. But not all extensions will declare an
   // icon set, or may not have an icon of the default size (we don't want the
   // bubble to display, for example, a very large icon). In that case, if there
-  // is a browser-action icon (size-19) this is an acceptable alternative.
-  const ExtensionIconSet& icons = extensions::IconsInfo::GetIcons(extension);
+  // is an action icon (size-16) this is an acceptable alternative.
+  const ExtensionIconSet* icons = &extensions::IconsInfo::GetIcons(extension);
   bool has_default_sized_icon =
-      !icons.Get(gfx::kFaviconSize, ExtensionIconSet::MATCH_EXACTLY).empty();
-  if (has_default_sized_icon) {
-    extension_info_.icon_image = std::make_unique<extensions::IconImage>(
-        web_contents()->GetBrowserContext(), extension, icons, icon_size,
-        default_extension_icon_image, this);
-    return;
+      !icons->Get(gfx::kFaviconSize, ExtensionIconSet::MATCH_EXACTLY).empty();
+
+  if (!has_default_sized_icon) {
+    const extensions::ActionInfo* action =
+        extensions::ActionInfo::GetAnyActionInfo(extension);
+    if (!action || action->default_icon.empty())
+      return;  // Out of options.
+
+    icons = &action->default_icon;
+    icon_size = icons->map().begin()->first;
   }
 
-  const extensions::ActionInfo* browser_action =
-      extensions::ActionInfo::GetBrowserActionInfo(extension);
-  if (!browser_action || browser_action->default_icon.empty())
-    return;
-
-  icon_size = browser_action->default_icon.map().begin()->first;
-  extension_info_.icon_image.reset(
-      new extensions::IconImage(web_contents()->GetBrowserContext(), extension,
-                                browser_action->default_icon, icon_size,
-                                default_extension_icon_image, this));
+  extension_info_.icon_image = std::make_unique<extensions::IconImage>(
+      web_contents()->GetBrowserContext(), extension, *icons, icon_size,
+      default_extension_icon_image, this);
 }
 
 void ZoomBubbleView::UpdateZoomPercent() {

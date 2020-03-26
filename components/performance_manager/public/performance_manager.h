@@ -32,18 +32,22 @@ class PerformanceManager {
   // the main thread only.
   static bool IsAvailable();
 
-  // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to call from any sequence.
+  // Posts a callback that will run on the PM sequence. Valid to call from any
+  // sequence.
   //
-  // Note: If called from the main thread, the |graph_callback| is guaranteed to
-  //       run if and only if "IsAvailable()" returns true.
+  // Note: If called from the main thread, the |callback| is guaranteed to run
+  //       if and only if "IsAvailable()" returns true.
   //
   //       If called from any other sequence, there is no guarantee that the
   //       callback will run. It will depend on if the PerformanceManager was
   //       destroyed before the the task is scheduled.
+  static void CallOnGraph(const base::Location& from_here,
+                          base::OnceClosure callback);
+
+  // Same as the above, but the callback is provided a pointer to the graph.
   using GraphCallback = base::OnceCallback<void(Graph*)>;
   static void CallOnGraph(const base::Location& from_here,
-                          GraphCallback graph_callback);
+                          GraphCallback callback);
 
   // Passes a GraphOwned object into the Graph on the PM sequence. Must only be
   // called if "IsAvailable()" returns true. Valid to call from the main thread

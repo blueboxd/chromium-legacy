@@ -20,6 +20,7 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #endif
 
 namespace gpu {
@@ -167,6 +168,20 @@ void DeleteSkSurface(SharedContextState* context_state,
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
+GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image) {
+  DCHECK(image);
+  VkPhysicalDevice physical_device =
+      image->device_queue()->GetVulkanPhysicalDevice();
+  GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
+      physical_device, image->image_tiling(), image->ycbcr_info());
+  GrVkAlloc alloc(image->device_memory(), /*offset=*/0, image->device_size(),
+                  /*flags=*/0);
+  bool is_protected = image->flags() & VK_IMAGE_CREATE_PROTECTED_BIT;
+  return GrVkImageInfo(
+      image->image(), alloc, image->image_tiling(), image->image_layout(),
+      image->format(), /*levelCount=*/1, image->queue_family_index(),
+      is_protected ? GrProtected::kYes : GrProtected::kNo, gr_ycbcr_info);
+}
 
 GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
     VkPhysicalDevice physical_device,

@@ -76,15 +76,21 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // 150%) taking all sources into account (system level and user zoom).
   int GetFontSize() const;
 
+  // Set the zoom level correctly for a new navigation.
+  void NewPageZoom();
+
   PrefService* GetPrefService() const;
 
+  // Returns the new multiplier after zooming in the given direction. Returns
+  // nullopt if it is impossible to zoom in the given direction;
   base::Optional<double> NewMultiplierAfterZoom(Zoom zoom) const;
   // Returns the current user zoom multiplier (i.e. not counting any additional
   // zoom due to the system accessibility settings).
   double GetCurrentUserZoomMultiplier() const;
   void StoreCurrentUserZoomMultiplier(double multiplier);
   std::string GetCurrentUserZoomMultiplierKey() const;
-
+  std::string GetUserZoomMultiplierKeyUrlPart() const;
+  bool IsGoogleCachedAMPPage() const;
   bool tab_helper_has_zoomed_ = false;
 
   // web::WebStateObserver overrides:
@@ -92,6 +98,10 @@ class FontSizeTabHelper : public web::WebStateObserver,
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
   void WebStateDestroyed(web::WebState* web_state) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* context) override;
+  void WebFrameDidBecomeAvailable(web::WebState* web_state,
+                                  web::WebFrame* web_frame) override;
 
   // Observer id returned by registering at NSNotificationCenter.
   id content_size_did_change_observer_ = nil;

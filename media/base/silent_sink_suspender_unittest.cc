@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/silent_sink_suspender.h"
+
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/test_message_loop.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "media/base/mock_audio_renderer_sink.h"
-#include "media/base/silent_sink_suspender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
+using base::test::RunClosure;
 
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
+namespace media {
 
 class SilentSinkSuspenderTest : public testing::Test {
  public:
@@ -184,4 +184,4 @@ TEST_F(SilentSinkSuspenderTest, MultipleResume) {
             0);
 }
 
-}  // namespace content
+}  // namespace media

@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/color_space.h"
 
@@ -287,6 +288,12 @@ void OnTransactionCompletedOnAnyThread(void* context,
 bool SurfaceControl::IsSupported() {
   if (!base::android::BuildInfo::GetInstance()->is_at_least_q())
     return false;
+
+  // GLFence cannot be created successfully on emulator, and it is needed by
+  // Android surface control.
+  if (base::SysInfo::GetAndroidHardwareEGL() == "emulation")
+    return false;
+
   CHECK(SurfaceControlMethods::Get().supported);
   return true;
 }

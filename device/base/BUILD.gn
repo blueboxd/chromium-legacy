@@ -20,9 +20,10 @@ component("base") {
 
   defines = [ "DEVICE_BASE_IMPLEMENTATION" ]
 
-  deps = [ "//device/vr/buildflags" ]
-
-  public_deps = [ "//base" ]
+  public_deps = [
+    "//base",
+    "//device/vr/buildflags",
+  ]
 
   if (use_udev) {
     sources += [
@@ -30,7 +31,7 @@ component("base") {
       "device_monitor_linux.h",
     ]
 
-    deps += [ "//device/udev_linux" ]
+    deps = [ "//device/udev_linux" ]
   }
 
   if (is_win) {

@@ -19,6 +19,7 @@
 #include "chromeos/components/sync_wifi/test_data_generator.h"
 #include "chromeos/dbus/shill/fake_shill_simulated_result.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
@@ -58,8 +59,9 @@ class LocalNetworkCollectorImplTest : public testing::Test {
     testing::Test::SetUp();
     helper()->SetUp();
     local_network_collector_ = std::make_unique<LocalNetworkCollectorImpl>(
-        remote_cros_network_config_.get(),
-        NetworkHandler::Get()->network_metadata_store());
+        remote_cros_network_config_.get());
+    local_network_collector_->SetNetworkMetadataStore(
+        NetworkHandler::Get()->network_metadata_store()->GetWeakPtr());
   }
 
   void TearDown() override {

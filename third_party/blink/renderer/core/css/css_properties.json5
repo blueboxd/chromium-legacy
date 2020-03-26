@@ -466,6 +466,7 @@
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-direction",
@@ -479,6 +480,7 @@
       },
       priority: "Animation",
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-duration",
@@ -491,6 +493,7 @@
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-fill-mode",
@@ -503,6 +506,7 @@
       keywords: ["none", "forwards", "backwards", "both"],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-iteration-count",
@@ -517,6 +521,7 @@
       keywords: ["infinite"],
       typedom_types: ["Keyword", "Number"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-name",
@@ -528,7 +533,8 @@
       priority: "Animation",
       keywords: ["none"],
       typedom_types: ["Keyword"],
-      separator: ","
+      separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-play-state",
@@ -541,6 +547,7 @@
       keywords: ["running", "paused"],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-timing-function",
@@ -565,6 +572,7 @@
       ],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "transition-delay",
@@ -576,6 +584,7 @@
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "transition-duration",
@@ -587,6 +596,7 @@
         attribute: "Duration",
       },
       priority: "Animation",
+      valid_for_marker: true,
     },
     {
       name: "transition-property",
@@ -597,7 +607,8 @@
       },
       priority: "Animation",
       keywords: ["none"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      valid_for_marker: true,
     },
     {
       name: "transition-timing-function",
@@ -621,6 +632,7 @@
         "step-end"],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
 
     // High Priority and all other font properties.

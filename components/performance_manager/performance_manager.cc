@@ -18,6 +18,14 @@ PerformanceManager::~PerformanceManager() = default;
 
 // static
 void PerformanceManager::CallOnGraph(const base::Location& from_here,
+                                     base::OnceClosure callback) {
+  DCHECK(callback);
+
+  PerformanceManagerImpl::GetTaskRunner()->PostTask(from_here,
+                                                    std::move(callback));
+}
+// static
+void PerformanceManager::CallOnGraph(const base::Location& from_here,
                                      GraphCallback callback) {
   DCHECK(callback);
 

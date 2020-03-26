@@ -23,8 +23,7 @@ void NotifyPageLoadTrackerDecoratorOnPMSequence(content::WebContents* contents,
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
-          [](base::WeakPtr<PageNode> node, void (*method)(PageNodeImpl*),
-             GraphImpl* graph) {
+          [](base::WeakPtr<PageNode> node, void (*method)(PageNodeImpl*)) {
             if (node) {
               PageNodeImpl* page_node = PageNodeImpl::FromNode(node.get());
               method(page_node);

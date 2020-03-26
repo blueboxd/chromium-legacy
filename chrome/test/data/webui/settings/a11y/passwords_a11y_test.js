@@ -4,6 +4,9 @@
 
 /** @fileoverview Define accessibility tests for the PASSWORDS route. */
 
+// TODO(crbug/1064966) Flaky on Linux CFI.
+GEN('#if !(defined(OS_LINUX) && defined(IS_CFI))');
+
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
   'settings_accessibility_test.js',
@@ -108,3 +111,5 @@ AccessibilityTest.define('SettingsA11yPasswords', {
   /** @override */
   violationFilter: SettingsAccessibilityTest.violationFilter,
 });
+
+GEN('#endif  // !(defined(OS_LINUX) && defined(IS_CFI))');

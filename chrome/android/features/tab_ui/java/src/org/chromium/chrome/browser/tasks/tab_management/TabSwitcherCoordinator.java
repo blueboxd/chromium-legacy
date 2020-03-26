@@ -331,6 +331,15 @@ public class TabSwitcherCoordinator
         TabGridDialogParent.setSourceRectCallbackForTesting(callback);
     }
 
+    @Override
+    @VisibleForTesting
+    public View getTabGridDialogParentViewForTesting() {
+        TabGridDialogParent dialogParent =
+                mTabGridDialogCoordinator.getTabGridDialogParentForTesting();
+        assert dialogParent != null;
+        return dialogParent.getTabGridDialogParentViewForTesting();
+    }
+
     // ResetHandler implementation.
     @Override
     public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode, boolean mruMode) {

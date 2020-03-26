@@ -131,6 +131,3 @@
 
 # crbug.com/1064058
 -org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRecycling_aspectRatioPoint75
-
-# crbug.com/1064388
--org.chromium.chrome.browser.feed.FeedNewTabPageTest.testFeedDisabledByPolicy

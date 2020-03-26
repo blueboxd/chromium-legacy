@@ -7,8 +7,10 @@
 #include "components/translate/core/common/language_detection_details.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
+#import "ios/chrome/browser/main/all_web_state_list_observation_registrar.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -19,10 +21,7 @@
 #endif
 
 IOSTranslateInternalsHandler::IOSTranslateInternalsHandler()
-    : scoped_web_state_list_observer_(
-          std::make_unique<ScopedObserver<WebStateList, WebStateListObserver>>(
-              this)),
-      scoped_tab_helper_observer_(
+    : scoped_tab_helper_observer_(
           std::make_unique<ScopedObserver<
               language::IOSLanguageDetectionTabHelper,
               language::IOSLanguageDetectionTabHelper::Observer>>(this)) {}
@@ -55,41 +54,28 @@ void IOSTranslateInternalsHandler::RegisterMessages() {
   ChromeBrowserState* chrome_browser_state =
       ChromeBrowserState::FromBrowserState(browser_state)
           ->GetOriginalChromeBrowserState();
-  NSArray<TabModel*>* tab_models =
-      TabModelList::GetTabModelsForChromeBrowserState(chrome_browser_state);
-  for (TabModel* tab_model in tab_models) {
-    scoped_web_state_list_observer_->Add(tab_model.webStateList);
-    for (int i = 0; i < tab_model.webStateList->count(); i++) {
-      AddLanguageDetectionObserverForWebState(
-          tab_model.webStateList->GetWebStateAt(i));
+
+  BrowserList* browser_list =
+      BrowserListFactory::GetForBrowserState(chrome_browser_state);
+  std::set<Browser*> browsers = chrome_browser_state->IsOffTheRecord()
+                                    ? browser_list->AllIncognitoBrowsers()
+                                    : browser_list->AllRegularBrowsers();
+
+  for (Browser* browser : browsers) {
+    WebStateList* web_state_list = browser->GetWebStateList();
+    for (int i = 0; i < web_state_list->count(); i++) {
+      AddLanguageDetectionObserverForWebState(web_state_list->GetWebStateAt(i));
     }
   }
 
+  AllWebStateListObservationRegistrar::Mode mode =
+      chrome_browser_state->IsOffTheRecord()
+          ? AllWebStateListObservationRegistrar::Mode::INCOGNITO
+          : AllWebStateListObservationRegistrar::Mode::REGULAR;
+  registrar_ = std::make_unique<AllWebStateListObservationRegistrar>(
+      chrome_browser_state, std::make_unique<Observer>(this), mode);
+
   RegisterMessageCallbacks();
-}
-
-void IOSTranslateInternalsHandler::WebStateInsertedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  AddLanguageDetectionObserverForWebState(web_state);
-}
-
-void IOSTranslateInternalsHandler::WebStateReplacedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  RemoveLanguageDetectionObserverForWebState(old_web_state);
-  AddLanguageDetectionObserverForWebState(new_web_state);
-}
-
-void IOSTranslateInternalsHandler::WebStateDetachedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  RemoveLanguageDetectionObserverForWebState(web_state);
 }
 
 void IOSTranslateInternalsHandler::OnLanguageDetermined(
@@ -122,4 +108,33 @@ void IOSTranslateInternalsHandler::RemoveLanguageDetectionObserverForWebState(
   language::IOSLanguageDetectionTabHelper* tab_helper =
       language::IOSLanguageDetectionTabHelper::FromWebState(web_state);
   scoped_tab_helper_observer_->Remove(tab_helper);
+}
+
+IOSTranslateInternalsHandler::Observer::Observer(
+    IOSTranslateInternalsHandler* handler)
+    : handler_(handler) {}
+IOSTranslateInternalsHandler::Observer::~Observer() {}
+
+void IOSTranslateInternalsHandler::Observer::WebStateInsertedAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index,
+    bool activating) {
+  handler_->AddLanguageDetectionObserverForWebState(web_state);
+}
+
+void IOSTranslateInternalsHandler::Observer::WebStateReplacedAt(
+    WebStateList* web_state_list,
+    web::WebState* old_web_state,
+    web::WebState* new_web_state,
+    int index) {
+  handler_->RemoveLanguageDetectionObserverForWebState(old_web_state);
+  handler_->AddLanguageDetectionObserverForWebState(new_web_state);
+}
+
+void IOSTranslateInternalsHandler::Observer::WebStateDetachedAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index) {
+  handler_->RemoveLanguageDetectionObserverForWebState(web_state);
 }

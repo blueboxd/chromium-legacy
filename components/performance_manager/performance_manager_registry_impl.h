@@ -17,7 +17,6 @@
 #include "components/performance_manager/process_node_source.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "components/performance_manager/tab_helper_frame_node_source.h"
-#include "components/performance_manager/worker_watcher.h"
 
 namespace content {
 class RenderProcessHost;
@@ -27,6 +26,8 @@ class WebContents;
 namespace performance_manager {
 
 class PerformanceManagerMainThreadObserver;
+class ServiceWorkerContextAdapter;
+class WorkerWatcher;
 
 class PerformanceManagerRegistryImpl
     : public PerformanceManagerRegistry,
@@ -76,10 +77,14 @@ class PerformanceManagerRegistryImpl
   base::flat_set<content::WebContents*> web_contents_;
   base::flat_set<content::RenderProcessHost*> render_process_hosts_;
 
-  // Map of browser context ids for which a WorkerWatcher exists to
-  // corresponding WorkerWatcher.
-  base::flat_map<std::string, std::unique_ptr<WorkerWatcher>>
-      browser_contexts_with_worker_watcher_;
+  // Maps each browser context to its ServiceWorkerContextAdapter.
+  base::flat_map<content::BrowserContext*,
+                 std::unique_ptr<ServiceWorkerContextAdapter>>
+      service_worker_context_adapters_;
+
+  // Maps each browser context to its worker watcher.
+  base::flat_map<content::BrowserContext*, std::unique_ptr<WorkerWatcher>>
+      worker_watchers_;
 
   // Used by WorkerWatchers to access existing process nodes and frame
   // nodes.

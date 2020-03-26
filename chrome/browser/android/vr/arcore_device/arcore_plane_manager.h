@@ -64,9 +64,9 @@ class ArCorePlaneManager {
 
  private:
   // Executes |fn| for each still tracked, non-subsumed plane present in
-  // |arcore_planes|. |fn| will receive 2 parameters, an owning
-  // `ScopedArCoreObject<ArAnchor*>`, and, for convenience, the non-owning
-  // ArPlane* typecast from the first parameter.
+  // |arcore_planes|. |fn| will receive 3 parameters - a
+  // `ScopedArCoreObject<ArAnchor*>` that can be stored, the non-owning ArPlane*
+  // typecast from the first parameter, and ArTrackingState.
   template <typename FunctionType>
   void ForEachArCorePlane(ArTrackableList* arcore_planes, FunctionType fn);
 

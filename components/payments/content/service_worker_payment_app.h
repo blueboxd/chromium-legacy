@@ -97,6 +97,7 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;
   bool HandlesPayerPhone() const override;
+  ukm::SourceId UkmSourceId() override;
 
   void set_payment_handler_host(
       mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host) {
@@ -152,6 +153,8 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   content::WebContents* web_contents_;
   std::unique_ptr<WebAppInstallationInfo> installable_web_app_info_;
   std::string installable_enabled_method_;
+
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   base::WeakPtrFactory<ServiceWorkerPaymentApp> weak_ptr_factory_{this};
 

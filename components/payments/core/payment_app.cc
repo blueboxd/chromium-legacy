@@ -62,6 +62,10 @@ const std::set<std::string>& PaymentApp::GetAppMethodNames() const {
   return app_method_names_;
 }
 
+ukm::SourceId PaymentApp::UkmSourceId() {
+  return ukm::kInvalidSourceId;
+}
+
 // static
 void PaymentApp::SortApps(std::vector<std::unique_ptr<PaymentApp>>* apps) {
   DCHECK(apps);

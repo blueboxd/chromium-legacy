@@ -32,6 +32,11 @@
       showcase::kUseCaseKey : @"Credential Provider Stale Credentials UI",
     },
     @{
+      showcase::kClassForDisplayKey : @"CredentialListViewController",
+      showcase::kClassForInstantiationKey : @"SCCredentialListCoordinator",
+      showcase::kUseCaseKey : @"Credential Provider Credentials List UI",
+    },
+    @{
       showcase::kClassForDisplayKey : @"ContentSuggestionsViewController",
       showcase::kClassForInstantiationKey : @"SCContentSuggestionsCoordinator",
       showcase::kUseCaseKey : @"Content Suggestions UI",

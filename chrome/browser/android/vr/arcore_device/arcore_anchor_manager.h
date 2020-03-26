@@ -51,7 +51,7 @@ class ArCoreAnchorManager {
  private:
   // Executes |fn| for each still tracked, anchor present in |arcore_anchors|.
   // |fn| will receive a `device::internal::ScopedArCoreObject<ArAnchor*>` that
-  // can be stored.
+  // can be stored, as well as ArTrackingState of the passed in anchor.
   template <typename FunctionType>
   void ForEachArCoreAnchor(ArAnchorList* arcore_anchors, FunctionType fn);
 

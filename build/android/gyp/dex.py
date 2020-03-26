@@ -82,6 +82,11 @@ def _ParseArgs(args):
             'unobfuscated symbols present in the code. If not present, the jar '
             'is assumed not to be obfuscated.'))
 
+  parser.add_argument(
+      '--force-enable-assertions',
+      action='store_true',
+      help='Forcefully enable javac generated assertion code.')
+
   options = parser.parse_args(args)
 
   if options.dexlayout_profile:
@@ -426,6 +431,9 @@ def main(args):
     dex_cmd += ['--release']
   if options.min_api:
     dex_cmd += ['--min-api', options.min_api]
+
+  if options.force_enable_assertions:
+    dex_cmd += ['--force-enable-assertions']
 
   md5_check.CallAndWriteDepfileIfStale(
       lambda changes: _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd),

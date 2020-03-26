@@ -242,6 +242,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     WorkerThreadObserver* worker_thread_observer = nullptr;
 
     bool may_block_without_delay;
+    bool fixed_max_best_effort_tasks;
 
     // Threshold after which the max tasks is increased to compensate for a
     // worker that is within a MAY_BLOCK ScopedBlockingCall.

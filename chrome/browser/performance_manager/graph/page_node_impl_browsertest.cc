@@ -210,8 +210,7 @@ void RunOriginTrialTestOnPMSequence(
     base::RunLoop run_loop;
     auto quit_closure = run_loop.QuitClosure();
     PerformanceManagerImpl::CallOnGraphImpl(
-        FROM_HERE,
-        base::BindLambdaForTesting([&](performance_manager::GraphImpl* graph) {
+        FROM_HERE, base::BindLambdaForTesting([&]() {
           auto ot_change_count = ot_change_counter->GetCount();
           EXPECT_GE(expected_ot_change_count, ot_change_count);
           if (ot_change_count == expected_ot_change_count)

@@ -333,3 +333,32 @@ TEST_F(FontSizeTabHelperTest, CanZoomContent) {
   web_state_.SetContentIsHTML(true);
   EXPECT_TRUE(font_size_tab_helper->CurrentPageSupportsTextZoom());
 }
+
+TEST_F(FontSizeTabHelperTest, GoogleCachedAMPPageHasSeparateKey) {
+  // First, zoom in on a regular Google url.
+  GURL google_url("https://www.google.com/");
+  web_state_.SetCurrentURL(google_url);
+  FontSizeTabHelper* font_size_tab_helper =
+      FontSizeTabHelper::FromWebState(&web_state_);
+  font_size_tab_helper->UserZoom(ZOOM_IN);
+  std::string google_pref_key =
+      ZoomMultiplierPrefKey(preferred_content_size_category_, google_url);
+
+  // Next, zoom out on a Google AMP url and make sure both states are saved
+  // separately.
+  GURL google_amp_url("https://www.google.com/amp/s/www.france24.com");
+  web_state_.SetCurrentURL(google_amp_url);
+  font_size_tab_helper->UserZoom(ZOOM_OUT);
+  // Google AMP pages use a different key for the URL part.
+  std::string google_amp_pref_key = base::StringPrintf(
+      "%s.%s",
+      base::SysNSStringToUTF8(preferred_content_size_category_).c_str(),
+      "www.google.com/amp");
+
+  EXPECT_NE(google_pref_key, google_amp_pref_key);
+
+  const base::Value* pref =
+      chrome_browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
+  EXPECT_EQ(1.1, pref->FindDoublePath(google_pref_key));
+  EXPECT_EQ(0.9, pref->FindDoublePath(google_amp_pref_key));
+}

@@ -143,6 +143,8 @@ class BASE_EXPORT MemoryDumpManager {
     dumper_registrations_ignored_for_testing_ = ignored;
   }
 
+  scoped_refptr<SequencedTaskRunner> GetDumpThreadTaskRunner();
+
  private:
   friend std::default_delete<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;

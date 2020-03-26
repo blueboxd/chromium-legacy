@@ -19,7 +19,9 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -49,6 +51,8 @@ import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.feedrequestmanager.FeedRequestManagerImpl;
 import org.chromium.chrome.browser.feed.library.testing.conformance.network.NetworkClientConformanceTest;
 import org.chromium.chrome.browser.feed.library.testing.host.logging.FakeBasicLoggingApi;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamToken;
 import org.chromium.components.feed.core.proto.wire.ConsistencyTokenProto.ConsistencyToken;
 import org.chromium.components.feed.core.proto.wire.ResponseProto.Response;
@@ -64,6 +68,7 @@ import java.util.Collections;
 /** Tests of the {@link MockServerNetworkClient} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
 public class MockServerNetworkClientTest extends NetworkClientConformanceTest {
     private final Configuration mConfiguration = new Configuration.Builder().build();
     private final FakeClock mFakeClock = new FakeClock();
@@ -86,6 +91,9 @@ public class MockServerNetworkClientTest extends NetworkClientConformanceTest {
     private Context mContext;
     private FakeBasicLoggingApi mBasicLoggingApi;
     private MainThreadRunner mMainThreadRunner;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Override
     protected Uri getValidUri(@HttpMethod String method) {

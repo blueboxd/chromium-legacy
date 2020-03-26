@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/payer_data.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace payments {
@@ -109,6 +110,8 @@ class PaymentApp {
 
   int icon_resource_id() const { return icon_resource_id_; }
   Type type() const { return type_; }
+
+  virtual ukm::SourceId UkmSourceId();
 
  protected:
   PaymentApp(int icon_resource_id, Type type);

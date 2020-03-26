@@ -80,6 +80,9 @@ constexpr size_t kNonceLength = 12;
 
 constexpr size_t kSessionKeyLength = 32;
 
+// Maximum number of retries if a HTTP call to the backend fails.
+constexpr unsigned int kMaxNumHttpRetries = 3;
+
 bool Base64DecodeCryptographicKey(const std::string& cryptographic_key,
                                   std::string* out) {
   std::string cryptographic_key_copy;
@@ -275,7 +278,8 @@ HRESULT EncryptUserPasswordUsingEscrowService(
   // |public_key| to be used for encryption.
   HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       PasswordRecoveryManager::Get()->GetEscrowServiceGenerateKeyPairUrl(),
-      access_token, {}, request_dict, request_timeout, &request_result);
+      access_token, {}, request_dict, request_timeout, kMaxNumHttpRetries,
+      &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
@@ -363,7 +367,8 @@ HRESULT DecryptUserPasswordUsingEscrowService(
   HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       PasswordRecoveryManager::Get()->GetEscrowServiceGetPrivateKeyUrl(
           *resource_id),
-      access_token, {}, {}, request_timeout, &request_result);
+      access_token, {}, {}, request_timeout, kMaxNumHttpRetries,
+      &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="

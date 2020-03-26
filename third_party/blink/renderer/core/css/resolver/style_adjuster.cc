@@ -222,7 +222,6 @@ static void AdjustStyleForMarker(ComputedStyle& style,
     style.SetMarginEnd(Length::Fixed(margins.second));
   } else {
     // Outside list markers should generate a block container.
-    DCHECK_EQ(style.Display(), EDisplay::kInline);
     style.SetDisplay(EDisplay::kInlineBlock);
 
     // Do not break inside the marker, and honor the trailing spaces.

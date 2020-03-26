@@ -38069,6 +38069,15 @@
       }
     ]
   },
+  "linux-upload-perfetto": {
+    "scripts": [
+      {
+        "name": "upload_perfetto_script",
+        "script": "//tools/perf/core/perfetto_binary_roller/upload_trace_processor",
+        "swarming": {}
+      }
+    ]
+  },
   "linux-wpt-fyi-rel": {
     "isolated_scripts": [
       {
@@ -41458,6 +41467,15 @@
       }
     ]
   },
+  "mac-upload-perfetto": {
+    "scripts": [
+      {
+        "name": "upload_perfetto_script",
+        "script": "//tools/perf/core/perfetto_binary_roller/upload_trace_processor",
+        "swarming": {}
+      }
+    ]
+  },
   "mac10.10-blink-rel-dummy": {
     "isolated_scripts": [
       {
@@ -41686,6 +41704,15 @@
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
+      }
+    ]
+  },
+  "win-upload-perfetto": {
+    "scripts": [
+      {
+        "name": "upload_perfetto_script",
+        "script": "//tools/perf/core/perfetto_binary_roller/upload_trace_processor",
+        "swarming": {}
       }
     ]
   },

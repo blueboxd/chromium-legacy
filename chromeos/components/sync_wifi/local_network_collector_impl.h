@@ -38,9 +38,8 @@ class LocalNetworkCollectorImpl
   // LocalNetworkCollector:
 
   // |cros_network_config| and |network_metadata_store| must outlive this class.
-  LocalNetworkCollectorImpl(
-      network_config::mojom::CrosNetworkConfig* cros_network_config,
-      NetworkMetadataStore* network_metadata_store);
+  explicit LocalNetworkCollectorImpl(
+      network_config::mojom::CrosNetworkConfig* cros_network_config);
   ~LocalNetworkCollectorImpl() override;
 
   // Can only execute one request at a time.
@@ -49,6 +48,9 @@ class LocalNetworkCollectorImpl
   // Can be called on multiple networks simultaneously.
   void GetSyncableNetwork(const NetworkIdentifier& id,
                           ProtoCallback callback) override;
+
+  void SetNetworkMetadataStore(
+      base::WeakPtr<NetworkMetadataStore> network_metadata_store) override;
 
   // CrosNetworkConfigObserver:
   void OnNetworkStateListChanged() override;
@@ -100,7 +102,7 @@ class LocalNetworkCollectorImpl
   mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
   std::vector<network_config::mojom::NetworkStatePropertiesPtr> mojo_networks_;
-  NetworkMetadataStore* network_metadata_store_;
+  base::WeakPtr<NetworkMetadataStore> network_metadata_store_;
 
   base::flat_map<std::string, std::vector<sync_pb::WifiConfigurationSpecifics>>
       request_guid_to_complete_protos_;

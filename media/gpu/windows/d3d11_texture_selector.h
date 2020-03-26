@@ -19,6 +19,7 @@
 namespace media {
 
 class MediaLog;
+class FormatSupportChecker;
 
 // Stores different pixel formats and DGXI formats, and checks for decoder
 // GUID support.
@@ -39,6 +40,7 @@ class MEDIA_GPU_EXPORT TextureSelector {
       const gpu::GpuDriverBugWorkarounds& workarounds,
       DXGI_FORMAT decoder_output_format,
       HDRMode hdr_output_mode,
+      const FormatSupportChecker* format_checker,
       MediaLog* media_log);
 
   virtual std::unique_ptr<Texture2DWrapper> CreateTextureWrapper(

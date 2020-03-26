@@ -156,7 +156,10 @@ component("gpu") {
   }
 
   if (use_vaapi) {
-    public_deps += [ "//media/gpu/vaapi" ]
+    public_deps += [
+      "//media/gpu/vaapi",
+      "//media/gpu/vaapi:common",
+    ]
   }
 
   if (is_win) {

@@ -28,7 +28,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version.h"
-#include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/buildflags.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -47,17 +47,21 @@ namespace installer {
 
 namespace {
 
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 // The study currently being conducted.
 constexpr ExperimentStorage::Study kCurrentStudy = ExperimentStorage::kStudyOne;
+#endif
 
 // The primary group for study number two.
 constexpr int kStudyTwoGroup = 0;
 
 // Test switches.
-constexpr char kExperimentEnableForTesting[] = "experiment-enable-for-testing";
-constexpr char kExperimentEnterpriseBypass[] = "experiment-enterprise-bypass";
 constexpr char kExperimentParticipation[] = "experiment-participation";
 constexpr char kExperimentRetryDelay[] = "experiment-retry-delay";
+
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+constexpr char kExperimentEnableForTesting[] = "experiment-enable-for-testing";
+constexpr char kExperimentEnterpriseBypass[] = "experiment-enterprise-bypass";
 
 // Returns true if the experiment is enabled for testing.
 bool IsExperimentEnabledForTesting() {
@@ -75,6 +79,7 @@ bool IsEnterpriseInstall(const InstallerState& installer_state) {
   }
   return installer_state.is_msi() || IsDomainJoined();
 }
+#endif
 
 // Returns the delay to be used between presentation retries. The default (five
 // minutes) can be overidden via --experiment-retry-delay=SECONDS.
@@ -215,9 +220,9 @@ bool WaitForPresentation(
 // Execution may be in the context of the system or a user on it, and no
 // guarantee is made regarding the setup singleton.
 bool ShouldRunUserExperiment(const InstallerState& installer_state) {
-  if (!install_static::kUseGoogleUpdateIntegration)
-    return false;
-
+#if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+  return false;
+#else
   if (!install_static::SupportsRetentionExperiments())
     return false;
 
@@ -250,6 +255,7 @@ bool ShouldRunUserExperiment(const InstallerState& installer_state) {
     return false;
 
   return true;
+#endif
 }
 
 // Execution is from the context of the installer immediately following a
@@ -502,8 +508,7 @@ bool IsUpdateRenamePending() {
   // Consider an update to be pending if an "opv" value is present in the
   // registry or if Chrome's version as registered with Omaha doesn't match the
   // current version.
-  base::string16 clients_key_path =
-      install_static::GetClientsKeyPath(install_static::GetAppGuid());
+  base::string16 clients_key_path = install_static::GetClientsKeyPath();
   const HKEY root = install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
                                                       : HKEY_CURRENT_USER;
   base::win::RegKey clients_key;

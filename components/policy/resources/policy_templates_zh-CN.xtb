@@ -2868,7 +2868,6 @@
           如果此政策的值设置为 True 或未配置，这位用户即可创建并管理受监管用户。</translation>
 <translation id="5369937289900051171">仅限彩色打印</translation>
 <translation id="5370279767682621504">在非默认端口上启用 HTTP/0.9 支持</translation>
-<translation id="5373065931879562543">确定变体在 Chrome 操作系统中的可用情况</translation>
 <translation id="5378985487213287085">可让您设置是否允许网站显示桌面通知。默认情况下，可以允许或拒绝显示桌面通知，也可以在每次网站要显示桌面通知时询问用户。如果未设置此政策，系统将使用“AskNotifications”并允许用户更改此设置。</translation>
 <translation id="5380329473151894945">设置大号光标无障碍功能在登录屏幕上的默认状态。
 

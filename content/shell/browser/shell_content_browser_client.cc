@@ -29,11 +29,9 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
-#include "content/public/test/test_service.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -41,18 +39,11 @@
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
-#include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
-#include "content/shell/common/web_test/web_test_switches.h"
-#include "content/test/data/mojo_web_test_helper_test.mojom.h"
-#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/ssl/client_cert_identity.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/service_manager/public/cpp/manifest.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/ui_base_features.h"
@@ -106,20 +97,6 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
   return crash_reporter::GetHandlerSocket(&fd, &pid) ? fd : -1;
 }
 #endif
-
-const service_manager::Manifest& GetContentBrowserOverlayManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .ExposeCapability(
-              "renderer",
-              service_manager::Manifest::InterfaceList<
-                  mojom::MojoWebTestHelper, mojom::FakeBluetoothChooser,
-                  mojom::FakeBluetoothChooserFactory,
-                  mojom::WebTestBluetoothFakeAdapterSetter,
-                  bluetooth::mojom::FakeBluetooth>())
-          .Build()};
-  return *manifest;
-}
 
 }  // namespace
 
@@ -198,14 +175,6 @@ bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
   if (should_terminate_on_service_quit_callback_)
     return std::move(should_terminate_on_service_quit_callback_).Run(id);
   return false;
-}
-
-base::Optional<service_manager::Manifest>
-ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName)
-    return GetContentBrowserOverlayManifest();
-
-  return base::nullopt;
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
@@ -419,27 +388,9 @@ ShellContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  mojo::Remote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  UpdateCorsExemptHeader(context_params.get());
-  context_params->user_agent = GetUserAgent();
-  context_params->accept_language = GetAcceptLangs(context);
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunWebTests)) {
-    // Configure the Reporting service in a manner expected by certain Web
-    // Platform Tests (network-error-logging and reporting-api).
-    //
-    //   (1) Always send reports (irrespective of BACKGROUND_SYNC permission)
-    //   (2) Lower the timeout for sending reports.
-    context_params->reporting_delivery_interval =
-        kReportingDeliveryIntervalTimeForWebTests;
-    context_params->skip_reporting_send_permission_check = true;
-  }
-#endif
-
+      CreateNetworkContextParams(context);
+  mojo::Remote<network::mojom::NetworkContext> network_context;
   GetNetworkService()->CreateNetworkContext(
       network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
   return network_context;
@@ -457,6 +408,16 @@ ShellBrowserContext* ShellContentBrowserClient::browser_context() {
 ShellBrowserContext*
     ShellContentBrowserClient::off_the_record_browser_context() {
   return shell_browser_main_parts_->off_the_record_browser_context();
+}
+
+network::mojom::NetworkContextParamsPtr
+ShellContentBrowserClient::CreateNetworkContextParams(BrowserContext* context) {
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  UpdateCorsExemptHeader(context_params.get());
+  context_params->user_agent = GetUserAgent();
+  context_params->accept_language = GetAcceptLangs(context);
+  return context_params;
 }
 
 }  // namespace content

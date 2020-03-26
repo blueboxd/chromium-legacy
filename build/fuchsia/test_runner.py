@@ -37,6 +37,14 @@ def main():
   parser.add_argument('--test-launcher-retry-limit',
                       help='Number of times that test suite will retry failing '
                            'tests. This is multiplicative with --gtest_repeat.')
+  parser.add_argument(
+      '--test-launcher-shard-index',
+      type=int,
+      help='Index of this instance amongst swarming shards.')
+  parser.add_argument(
+      '--test-launcher-total-shards',
+      type=int,
+      help='Total number of swarming shards of this suite.')
   parser.add_argument('--gtest_break_on_failure', action='store_true',
                       default=False,
                       help='Should GTest break on failure; useful with '
@@ -112,6 +120,12 @@ def main():
   if args.test_launcher_retry_limit:
     child_args.append(
         '--test-launcher-retry-limit=' + args.test_launcher_retry_limit)
+  if args.test_launcher_shard_index:
+    child_args.append(
+        '--test-launcher-shard-index=%d' % args.test_launcher_shard_index)
+  if args.test_launcher_total_shards:
+    child_args.append(
+        '--test-launcher-total-shards=%d' % args.test_launcher_total_shards)
   if args.gtest_break_on_failure:
     child_args.append('--gtest_break_on_failure')
   if args.test_launcher_summary_output:

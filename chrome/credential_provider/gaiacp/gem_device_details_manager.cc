@@ -49,6 +49,9 @@ const char kIsAdJoinedUserParameterName[] = "is_ad_joined_user";
 const char kMacAddressParameterName[] = "wlan_mac_addr";
 const char kUploadDeviceDetailsResponseDeviceResourceIdParameterName[] =
     "deviceResourceId";
+
+// Maximum number of retries if a HTTP call to the backend fails.
+constexpr unsigned int kMaxNumHttpRetries = 3;
 }  // namespace
 
 // static
@@ -127,19 +130,12 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       GemDeviceDetailsManager::Get()->GetGemServiceUploadDeviceDetailsUrl(),
       access_token, {}, *request_dict_, upload_device_details_request_timeout_,
-      &request_result);
+      kMaxNumHttpRetries, &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
     return E_FAIL;
-  }
-
-  base::Value* error_detail =
-      request_result->FindDictKey(kErrorKeyInRequestResult);
-  if (error_detail) {
-    LOGFN(ERROR) << "error=" << *error_detail;
-    hr = E_FAIL;
   }
 
   std::string* resource_id = request_result->FindStringKey(

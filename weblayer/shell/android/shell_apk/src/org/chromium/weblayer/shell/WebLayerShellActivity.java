@@ -230,8 +230,8 @@ public class WebLayerShellActivity extends FragmentActivity {
         // when the shell is rotated in the foreground).
         fragment.setRetainInstance(true);
         mBrowser = Browser.fromFragment(fragment);
-        setTabCallbacks(mBrowser.getActiveTab(), fragment);
         mProfile = mBrowser.getProfile();
+        setTabCallbacks(mBrowser.getActiveTab(), fragment);
 
         mBrowser.setTopView(mTopContentsContainer);
         mTabListCallback = new TabListCallback() {
@@ -354,7 +354,7 @@ public class WebLayerShellActivity extends FragmentActivity {
                 mLoadProgressBar.setProgress((int) Math.round(100 * progress));
             }
         });
-        tab.setDownloadCallback(new DownloadCallback() {
+        mProfile.setDownloadCallback(new DownloadCallback() {
             @Override
             public boolean onInterceptDownload(Uri uri, String userAgent, String contentDisposition,
                     String mimetype, long contentLength) {

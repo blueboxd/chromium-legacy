@@ -213,14 +213,10 @@ if (is_win || is_mac) {
         "//chrome/common/mac:launchd",
         "//chrome/updater/mac:updater_bundle",
         "//chrome/updater/mac:updater_setup_tests",
-        "//chrome/updater/mac:updater_tests",
         "//chrome/updater/mac:xpc_names",
       ]
 
-      data_deps = [
-        "//chrome/updater/mac:updater_bundle",
-        "//chrome/updater/mac:updater_setup",
-      ]
+      data_deps = [ "//chrome/updater/mac:updater_bundle" ]
     }
 
     if (is_win || is_mac) {

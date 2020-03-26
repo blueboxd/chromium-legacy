@@ -127,8 +127,7 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
     auto quit_closure = run_loop.QuitClosure();
     auto browser_context_id = profile()->UniqueId();
     PerformanceManagerImpl::CallOnGraphImpl(
-        FROM_HERE,
-        base::BindLambdaForTesting([&](performance_manager::GraphImpl* graph) {
+        FROM_HERE, base::BindLambdaForTesting([&]() {
           auto mock_cache =
               std::make_unique<MockSiteDataCache>(browser_context_id);
           mock_cache_raw = mock_cache.get();

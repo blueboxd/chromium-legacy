@@ -375,11 +375,20 @@ void LocalDOMWindow::CountPotentialFeaturePolicyViolation(
 
 void LocalDOMWindow::ReportFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature,
-    mojom::FeaturePolicyDisposition disposition,
+    mojom::blink::FeaturePolicyDisposition disposition,
     const String& message,
     const String& source_file) const {
   document()->ReportFeaturePolicyViolation(feature, disposition, message,
                                            source_file);
+}
+
+void LocalDOMWindow::ReportDocumentPolicyViolation(
+    mojom::blink::DocumentPolicyFeature feature,
+    mojom::blink::FeaturePolicyDisposition disposition,
+    const String& message,
+    const String& source_file) const {
+  document()->ReportDocumentPolicyViolation(feature, disposition, message,
+                                            source_file);
 }
 
 static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,

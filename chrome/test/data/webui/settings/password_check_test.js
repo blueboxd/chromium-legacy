@@ -132,7 +132,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that clicking 'Check again' make proper function call to
     // password manager
-    test('testCheckAgainButtonWhenIdleAfterFirstRun', async function() {
+    test('checkAgainButtonWhenIdleAfterFirstRun', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE,
@@ -156,7 +156,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that clicking 'Start Check' make proper function call to
     // password manager
-    test('testStartCheckButtonWhenIdle', async function() {
+    test('startCheckButtonWhenIdle', async function() {
       assertEquals(
           PasswordCheckState.IDLE, passwordManager.data.checkStatus.state);
       const section = createCheckPasswordSection();
@@ -176,7 +176,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that clicking 'Check again' make proper function call to
     // password manager
-    test('testStopButtonWhenRunning', async function() {
+    test('stopButtonWhenRunning', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -199,7 +199,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that sync users see only the link to account checkup and no
     // button to start the local leak check once they run out of quota.
-    test('testOnlyCheckupLinkAfterHittingQuotaWhenSyncing', async function() {
+    test('onlyCheckupLinkAfterHittingQuotaWhenSyncing', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.QUOTA_LIMIT);
@@ -216,7 +216,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that non-sync users see neither the link to the account
     // checkup nor a retry button once they run out of quota.
-    test('testNoCheckupLinkAfterHittingQuotaWhenSignedOut', async function() {
+    test('noCheckupLinkAfterHittingQuotaWhenSignedOut', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.QUOTA_LIMIT);
@@ -234,7 +234,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that custom passphrase users see neither the link to the
     // account checkup nor a retry button once they run out of quota.
-    test('testNoCheckupLinkAfterHittingQuotaForEncryption', async function() {
+    test('noCheckupLinkAfterHittingQuotaForEncryption', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.QUOTA_LIMIT);
@@ -253,7 +253,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that 'Try again' visible and working when users encounter a
     // generic error.
-    test('testShowRetryAfterGenericError', async function() {
+    test('showRetryAfterGenericError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.OTHER_ERROR);
@@ -274,7 +274,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that 'Try again' is hidden when users encounter a
     // not-signed-in error.
-    test('testHideRetryAfterSignOutErrorUntilSignedInAgain', async function() {
+    test('hideRetryAfterSignOutErrorUntilSignedInAgain', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.SIGNED_OUT);
@@ -306,7 +306,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that 'Try again' is hidden when users encounter a
     // no-saved-passwords error.
-    test('testHideRetryAfterNoPasswordsError', async function() {
+    test('hideRetryAfterNoPasswordsError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.NO_PASSWORDS);
@@ -317,7 +317,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that 'Try again' visible and working when users encounter a
     // connection error.
-    test('testShowRetryAfterNoConnectionError', async function() {
+    test('showRetryAfterNoConnectionError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.OFFLINE);
@@ -338,7 +338,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that if no compromised credentials found than list is not
     // shown
-    test('testNoCompromisedCredentials', async function() {
+    test('noCompromisedCredentials', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE,
@@ -365,7 +365,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test verifies that compromised credentials are displayed in a proper way
-    test('testSomeCompromisedCredentials', async function() {
+    test('someCompromisedCredentials', async function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'PHISHED', 1, 1),
@@ -382,7 +382,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test verifies that credentials from mobile app shown correctly
-    test('testSomeCompromisedCredentials', function() {
+    test('someCompromisedCredentials', function() {
       const password = autofill_test_util.makeCompromisedCredential(
           'one.com', 'test4', 'LEAKED');
       password.changePasswordUrl = null;
@@ -394,7 +394,7 @@ cr.define('settings_passwords_check', function() {
 
     // Verify that a click on "Change password" opens the expected URL and
     // records a corresponding user action.
-    test('testChangePasswordOpensUrlAndRecordsAction', async function() {
+    test('changePasswordOpensUrlAndRecordsAction', async function() {
       const testOpenWindowProxy = new TestOpenWindowProxy();
       settings.OpenWindowProxyImpl.instance_ = testOpenWindowProxy;
 
@@ -413,7 +413,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Verify that the More Actions menu opens when the button is clicked.
-    test('testMoreActionsMenu', async function() {
+    test('moreActionsMenu', async function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
@@ -434,7 +434,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that clicking remove button is calling proper
     // proxy function.
-    test('testRemovePasswordConfirmationDialog', async function() {
+    test('removePasswordConfirmationDialog', async function() {
       const entry = autofill_test_util.makeCompromisedCredential(
           'one.com', 'test4', 'LEAKED', 0);
       const removeDialog = createRemovePasswordDialog(entry);
@@ -453,7 +453,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // A changing status is immediately reflected in title, icon and banner.
-    test('testUpdatesNumberOfCheckedPasswordsWhileRunning', async function() {
+    test('updatesNumberOfCheckedPasswordsWhileRunning', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -484,7 +484,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Tests that the status is queried right when the page loads.
-    test('testQueriesCheckedStatusImmediately', async function() {
+    test('queriesCheckedStatusImmediately', async function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       assertEquals(0, data.leakedCredentials.length);
@@ -496,7 +496,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Tests that the spinner is replaced with a checkmark on successful runs.
-    test('testShowsCheckmarkIconWhenFinishedWithoutLeaks', async function() {
+    test('showsCheckmarkIconWhenFinishedWithoutLeaks', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
@@ -517,7 +517,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Tests that there is neither spinner nor icon if the check hasn't run yet.
-    test('testIconWhenFirstRunIsPending', async function() {
+    test('iconWhenFirstRunIsPending', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus =
@@ -533,7 +533,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Tests that the spinner is replaced with a triangle if leaks were found.
-    test('testShowsTriangleIconWhenFinishedWithLeaks', async function() {
+    test('showsTriangleIconWhenFinishedWithLeaks', async function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       data.leakedCredentials = [
@@ -553,7 +553,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Tests that the spinner is replaced with a warning on errors.
-    test('testShowsInfoIconWhenFinishedWithErrors', async function() {
+    test('showsInfoIconWhenFinishedWithErrors', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.OFFLINE,
@@ -572,7 +572,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Tests that the spinner replaces any icon while the check is running.
-    test('testShowsSpinnerWhileRunning', async function() {
+    test('showsSpinnerWhileRunning', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -589,7 +589,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // While running, the check should show the processed and total passwords.
-    test('testShowOnlyProgressWhileRunningWithoutLeaks', async function() {
+    test('showOnlyProgressWhileRunningWithoutLeaks', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.RUNNING,
@@ -626,7 +626,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // While running, show progress and already found leak count.
-    test('testShowProgressAndLeaksWhileRunning', async function() {
+    test('showProgressAndLeaksWhileRunning', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.RUNNING,
@@ -650,7 +650,7 @@ cr.define('settings_passwords_check', function() {
 
     // When canceled, show string explaining that and already found leak
     // count.
-    test('testShowProgressAndLeaksAfterCanceled', async function() {
+    test('showProgressAndLeaksAfterCanceled', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.CANCELED,
@@ -672,7 +672,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Before the first run, show only a description of what the check does.
-    test('testShowOnlyDescriptionIfNotRun', async function() {
+    test('showOnlyDescriptionIfNotRun', async function() {
       const section = createCheckPasswordSection();
       await passwordManager.whenCalled('getPasswordCheckStatus');
       Polymer.dom.flush();
@@ -684,7 +684,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // After running, show confirmation, timestamp and number of leaks.
-    test('testShowLeakCountAndTimeStampWhenIdle', async function() {
+    test('showLeakCountAndTimeStampWhenIdle', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE,
@@ -708,7 +708,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // When offline, only show an error.
-    test('testShowOnlyErrorWhenOffline', async function() {
+    test('showOnlyErrorWhenOffline', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.OFFLINE);
@@ -723,7 +723,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // When signed out, only show an error.
-    test('testShowOnlyErrorWhenSignedOut', async function() {
+    test('showOnlyErrorWhenSignedOut', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.SIGNED_OUT);
@@ -739,7 +739,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // When no passwords are saved, only show an error.
-    test('testShowOnlyErrorWithoutPasswords', async function() {
+    test('showOnlyErrorWithoutPasswords', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.NO_PASSWORDS);
@@ -755,7 +755,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // When users run out of quota, only show an error.
-    test('testShowOnlyErrorWhenQuotaIsHit', async function() {
+    test('showOnlyErrorWhenQuotaIsHit', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.QUOTA_LIMIT);
@@ -770,7 +770,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // When a general error occurs, only show the message.
-    test('testShowOnlyGenericError', async function() {
+    test('showOnlyGenericError', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.OTHER_ERROR);
@@ -785,7 +785,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Transform check-button to stop-button if a check is running.
-    test('testButtonChangesTextAccordingToStatus', async function() {
+    test('buttonChangesTextAccordingToStatus', async function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(PasswordCheckState.IDLE);
 
@@ -811,7 +811,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test that the banner is in a state that shows the positive confirmation
     // after a leak check finished.
-    test('testShowsPositiveBannerWhenIdle', async function() {
+    test('showsPositiveBannerWhenIdle', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
@@ -830,7 +830,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test that the banner indicates a neutral state if no check was run yet.
-    test('testShowsNeutralBannerBeforeFirstRun', async function() {
+    test('showsNeutralBannerBeforeFirstRun', async function() {
       const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       assertEquals(0, data.leakedCredentials.length);
@@ -846,7 +846,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test that the banner is in a state that shows that the leak check is
     // in progress but hasn't found anything yet.
-    test('testShowsNeutralBannerWhenRunning', async function() {
+    test('showsNeutralBannerWhenRunning', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
@@ -864,7 +864,7 @@ cr.define('settings_passwords_check', function() {
 
     // Test that the banner is in a state that shows that the leak check is
     // in progress but hasn't found anything yet.
-    test('testShowsNeutralBannerWhenCanceled', async function() {
+    test('showsNeutralBannerWhenCanceled', async function() {
       const data = passwordManager.data;
       assertEquals(0, data.leakedCredentials.length);
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
@@ -880,7 +880,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test that the banner isn't visible as soon as the first leak is detected.
-    test('testLeaksHideBannerWhenRunning', async function() {
+    test('leaksHideBannerWhenRunning', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.RUNNING, /*checked=*/ 1,
@@ -897,7 +897,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test that the banner isn't visible if a leak is detected after a check.
-    test('testLeaksHideBannerWhenIdle', async function() {
+    test('leaksHideBannerWhenIdle', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.IDLE);
@@ -913,7 +913,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test that the banner isn't visible if a leak is detected after canceling.
-    test('testLeaksHideBannerWhenCanceled', async function() {
+    test('leaksHideBannerWhenCanceled', async function() {
       const data = passwordManager.data;
       data.checkStatus = autofill_test_util.makePasswordCheckStatus(
           /*state=*/ PasswordCheckState.CANCELED);
@@ -929,7 +929,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Test verifies that new credentials are added to the bottom
-    test('testAppendCompromisedCredentials', function() {
+    test('appendCompromisedCredentials', function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'LEAKED', 1, 0),
@@ -937,7 +937,7 @@ cr.define('settings_passwords_check', function() {
             'two.com', 'test3', 'LEAKED', 2, 0),
       ];
       const checkPasswordSection = createCheckPasswordSection();
-      checkPasswordSection.updateList(leakedPasswords);
+      checkPasswordSection.updateList_(leakedPasswords);
       Polymer.dom.flush();
 
       validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
@@ -948,13 +948,13 @@ cr.define('settings_passwords_check', function() {
           'four.com', 'test1', 'LEAKED', 4, 5));
       leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
           'five.com', 'test0', 'LEAKED', 5, 4));
-      checkPasswordSection.updateList(shuffleArray(leakedPasswords));
+      checkPasswordSection.updateList_(shuffleArray(leakedPasswords));
       Polymer.dom.flush();
       validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
     });
 
     // Test verifies that deleting and adding works as it should
-    test('testDeleteComrpomisedCredemtials', function() {
+    test('deleteComrpomisedCredemtials', function() {
       const leakedPasswords = [
         autofill_test_util.makeCompromisedCredential(
             'one.com', 'test4', 'PHISHED', 0, 0),
@@ -966,7 +966,7 @@ cr.define('settings_passwords_check', function() {
             'four.com', 'test2', 'LEAKED', 3, 2),
       ];
       const checkPasswordSection = createCheckPasswordSection();
-      checkPasswordSection.updateList(leakedPasswords);
+      checkPasswordSection.updateList_(leakedPasswords);
       Polymer.dom.flush();
       validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
 
@@ -975,14 +975,14 @@ cr.define('settings_passwords_check', function() {
       leakedPasswords.push(autofill_test_util.makeCompromisedCredential(
           'five.com', 'test2', 'LEAKED', 4, 3));
 
-      checkPasswordSection.updateList(shuffleArray(leakedPasswords));
+      checkPasswordSection.updateList_(shuffleArray(leakedPasswords));
       Polymer.dom.flush();
       validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
     });
 
     // Verify that the edit dialog is not shown if a plaintext password could
     // not be obtained.
-    test('testEditDialogWithoutPlaintextPassword', async function() {
+    test('editDialogWithoutPlaintextPassword', async function() {
       passwordManager.data.leakedCredentials = [
         autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
@@ -1010,7 +1010,7 @@ cr.define('settings_passwords_check', function() {
     });
 
     // Verify edit a password on the edit dialog.
-    test('testEditDialogWithPlaintextPassword', async function() {
+    test('editDialogWithPlaintextPassword', async function() {
       passwordManager.data.leakedCredentials = [
         autofill_test_util.makeCompromisedCredential(
             'google.com', 'jdoerrie', 'LEAKED'),
@@ -1040,7 +1040,7 @@ cr.define('settings_passwords_check', function() {
       expectFalse(checkPasswordSection.$.moreActionsMenu.open);
     });
 
-    test('testEditDialogChangePassword', async function() {
+    test('editDialogChangePassword', async function() {
       const leakedPassword = autofill_test_util.makeCompromisedCredential(
           'google.com', 'jdoerrie', 'LEAKED');
       leakedPassword.password = 'mybirthday';
@@ -1060,7 +1060,7 @@ cr.define('settings_passwords_check', function() {
       assertEquals('yadhtribym', newPassword);
     });
 
-    test('testEditDialogCancel', function() {
+    test('editDialogCancel', function() {
       const leakedPassword = autofill_test_util.makeCompromisedCredential(
           'google.com', 'jdoerrie', 'LEAKED');
       leakedPassword.password = 'mybirthday';

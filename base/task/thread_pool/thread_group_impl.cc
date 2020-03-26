@@ -417,8 +417,9 @@ void ThreadGroupImpl::Start(
   DCHECK(!replacement_thread_group_);
 
   in_start().may_block_without_delay =
-      FeatureList::IsEnabled(kMayBlockWithoutDelay) &&
-      priority_hint_ == ThreadPriority::NORMAL;
+      FeatureList::IsEnabled(kMayBlockWithoutDelay);
+  in_start().fixed_max_best_effort_tasks =
+      FeatureList::IsEnabled(kFixedMaxBestEffortTasks);
   in_start().may_block_threshold =
       may_block_threshold ? may_block_threshold.value()
                           : (priority_hint_ == ThreadPriority::NORMAL
@@ -1217,16 +1218,20 @@ void ThreadGroupImpl::DecrementMaxTasksLockRequired(TaskPriority priority) {
   DCHECK_GT(num_running_tasks_, 0U);
   DCHECK_GT(max_tasks_, 0U);
   --max_tasks_;
-  if (priority == TaskPriority::BEST_EFFORT)
+  if (priority == TaskPriority::BEST_EFFORT &&
+      !after_start().fixed_max_best_effort_tasks) {
     --max_best_effort_tasks_;
+  }
   UpdateMinAllowedPriorityLockRequired();
 }
 
 void ThreadGroupImpl::IncrementMaxTasksLockRequired(TaskPriority priority) {
   DCHECK_GT(num_running_tasks_, 0U);
   ++max_tasks_;
-  if (priority == TaskPriority::BEST_EFFORT)
+  if (priority == TaskPriority::BEST_EFFORT &&
+      !after_start().fixed_max_best_effort_tasks) {
     ++max_best_effort_tasks_;
+  }
   UpdateMinAllowedPriorityLockRequired();
 }
 

@@ -548,6 +548,12 @@ struct AutocompleteMatch {
   // Additional helper text for each entry, such as a title or description.
   base::string16 description;
   ACMatchClassifications description_class;
+  // In the case of the document provider, the description includes a last
+  // updated date that may become stale. To avoid showing stale descriptions,
+  // when |description_for_shortcut| is not empty, it will be stored instead of
+  // |description| in the shortcuts provider.
+  base::string16 description_for_shortcuts;
+  ACMatchClassifications description_class_for_shortcuts;
 
   // An optional header text this match must appear under. Currently only
   // zero-prefix matches may have a header.

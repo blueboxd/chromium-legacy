@@ -35,9 +35,6 @@ source_set("helpers") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
-  if (use_vaapi) {
-    deps += [ "//media/gpu/vaapi" ]
-  }
 }
 
 source_set("frame_validator") {

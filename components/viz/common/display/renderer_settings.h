@@ -43,9 +43,6 @@ class VIZ_COMMON_EXPORT RendererSettings {
 
   int slow_down_compositing_scale_factor = 1;
 
-  // The required minimum size for DrawQuad to apply Draw Occlusion on.
-  gfx::Size kMinimumDrawOcclusionSize = gfx::Size(60, 60);
-
   // The maximum number of occluding Rects to track during occlusion culling.
   int kMaximumOccluderComplexity = 10;
 

@@ -15,7 +15,7 @@ start calling into the test via Mojo to get controller and headset data instead
 of attempting to use the real implementation.
 
 [xr hook base]: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/vr/test/mock_xr_device_hook_base.h
-[xr service hook]: https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/services/isolated_xr_device/xr_service_test_hook.cc
+[xr service hook]: https://chromium.googlesource.com/chromium/src/+/HEAD/content/services/isolated_xr_device/xr_service_test_hook.cc
 
 ### OpenVR
 

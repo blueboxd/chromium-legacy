@@ -14,11 +14,14 @@
 namespace autofill_assistant {
 namespace android_events {
 
-// Sets a click listener for |jview|.
-void SetOnClickListener(JNIEnv* env,
-                        base::android::ScopedJavaGlobalRef<jobject> jview,
-                        base::android::ScopedJavaGlobalRef<jobject> jdelegate,
-                        const OnViewClickedEventProto& proto);
+// Creates java listeners for all view events in |proto| such that |jdelegate|
+// is notified when appropriate (e.g., OnClickListeners). Returns true on
+// success, false on failure.
+bool CreateJavaListenersFromProto(
+    JNIEnv* env,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+    base::android::ScopedJavaGlobalRef<jobject> jdelegate,
+    const InteractionsProto& proto);
 
 }  // namespace android_events
 }  // namespace autofill_assistant

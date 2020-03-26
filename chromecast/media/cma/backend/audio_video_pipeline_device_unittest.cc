@@ -195,8 +195,7 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
   }
 
   void SetUp() override {
-    CastMediaShlib::Initialize(
-        base::CommandLine::ForCurrentProcess()->argv());
+    CastMediaShlib::Initialize(base::CommandLine::ForCurrentProcess()->argv());
     VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
   }
 
@@ -328,12 +327,13 @@ void BufferFeeder::ScheduleConfigTest() {
   // now.
   // TODO(almasrymina): re-enable this. b/110961816.
   return;
-#endif
+#else
   if (expecting_buffer_complete_) {
     test_config_after_next_push_ = true;
   } else {
     TestConfigs();
   }
+#endif
 }
 
 void BufferFeeder::FeedBuffer() {
@@ -581,8 +581,8 @@ std::unique_ptr<BufferFeeder> BufferFeeder::LoadVideo(
   if (raw_h264) {
     base::FilePath file_path = GetTestDataFilePath(filename);
     base::MemoryMappedFile video_stream;
-    CHECK(video_stream.Initialize(file_path)) << "Couldn't open stream file: "
-                                              << file_path.MaybeAsASCII();
+    CHECK(video_stream.Initialize(file_path))
+        << "Couldn't open stream file: " << file_path.MaybeAsASCII();
     buffers = H264SegmenterForTest(video_stream.data(), video_stream.length());
 
     // TODO(erickung): Either pull data from stream or make caller specify value
@@ -806,15 +806,13 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
   if (sync_type_ == MediaPipelineDeviceParams::kModeSyncPts) {
     // Check that the current PTS is no more than 100ms past the last pushed
     // PTS.
-    if (audio_feeder_ &&
-        audio_feeder_->last_pushed_pts() !=
-            std::numeric_limits<int64_t>::min()) {
+    if (audio_feeder_ && audio_feeder_->last_pushed_pts() !=
+                             std::numeric_limits<int64_t>::min()) {
       EXPECT_LE(pts, std::max(kStartPts,
                               audio_feeder_->last_pushed_pts() + 100 * 1000));
     }
-    if (video_feeder_ &&
-        video_feeder_->last_pushed_pts() !=
-            std::numeric_limits<int64_t>::min()) {
+    if (video_feeder_ && video_feeder_->last_pushed_pts() !=
+                             std::numeric_limits<int64_t>::min()) {
       EXPECT_LE(pts, std::max(kStartPts,
                               video_feeder_->last_pushed_pts() + 100 * 1000));
     }

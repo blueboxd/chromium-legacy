@@ -2042,6 +2042,11 @@
           'gtest_tests': 'fieldtrial_browser_tests',
         },
       },
+      'linux-upload-perfetto': {
+        'test_suites': {
+          'scripts': 'upload_perfetto',
+        },
+      },
       'linux-wpt-fyi-rel': {
         'mixins': [
           'linux-xenial',
@@ -2080,6 +2085,11 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+        },
+      },
+      'mac-upload-perfetto': {
+        'test_suites': {
+          'scripts': 'upload_perfetto',
         },
       },
       'mac10.10-blink-rel-dummy': {
@@ -2187,6 +2197,11 @@
         'test_suites': {
           'gtest_tests': 'pixel_browser_tests_gtests',
         }
+      },
+      'win-upload-perfetto': {
+        'test_suites': {
+          'scripts': 'upload_perfetto',
+        },
       },
       'win10-blink-rel-dummy': {
         'swarming': {

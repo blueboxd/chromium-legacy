@@ -7,7 +7,6 @@
 <translation id="1420684932347524586">અરેરે! રેંડમ RSA ખાનગી કી જનરેટ કરવામાં નિષ્ફળ.</translation>
 <translation id="1445572445564823378">આ એક્સ્ટેંશન <ph name="PRODUCT_NAME" />ને ધીમુંં કરી રહ્યું છે. <ph name="PRODUCT_NAME" />ના પ્રદર્શનને પહેલાંના જેવું કરવા માટે તમારે તેને બંધ કરવું જોઈએ.</translation>
 <translation id="1468038450257740950">WebGL સમર્થિત નથી.</translation>
-<translation id="149347756975725155">એક્સ્ટેંશન આયકન '<ph name="ICON" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="1803557475693955505">પૃષ્ઠભૂમિ પૃષ્ઠ '<ph name="BACKGROUND_PAGE" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="2159915644201199628">છબીને ડિકોડ કરી શક્યાં નથી: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">લૉકલાઇઝેશન વપરાયુ, પરંતુ default_locale નો ઉલ્લેખ મેનિફેસ્ટમાં નહોતો.</translation>
@@ -44,7 +43,6 @@
 <translation id="6322279351188361895">ખાનગી કી વાંચવામાં નિષ્ફળ છે.</translation>
 <translation id="6391538222494443604">ઇનપુટ ડિરેક્ટરી અસતિત્વમાં હોવી જોઈએ.</translation>
 <translation id="641087317769093025">એક્સ્ટેન્શન અનઝિપ કરી શકાયું નથી</translation>
-<translation id="6413453408918378296">આઇકન સ્પષ્ટ દેખાતો નથી '<ph name="ICON" />'.</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />", તમારા એક અથવા વધુ ઉપકરણો પરની ઍક્સેસની વિનંતી કરી રહ્યું છે:</translation>
 <translation id="657064425229075395">પૃષ્ઠભૂમિ સ્ક્રિપ્ટ '<ph name="BACKGROUND_SCRIPT" />' લોડ કરી શકાઈ નથી.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> નું <ph name="PRODUCT_NAME" /> (સીરિયલ નંબર <ph name="SERIAL_NUMBER" />)</translation>

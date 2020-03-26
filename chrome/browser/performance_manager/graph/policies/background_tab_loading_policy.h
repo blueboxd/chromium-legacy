@@ -34,9 +34,12 @@ class BackgroundTabLoadingPolicy : public GraphOwned {
   void OnTakenFromGraph(Graph* graph) override;
 
   // Schedules the PageNodes in |page_nodes| to be loaded when appropriate.
-  void RestoreTabs(std::vector<PageNode*> page_nodes);
+  void ScheduleLoadForRestoredTabs(std::vector<PageNode*> page_nodes);
 
   void SetMockLoaderForTesting(std::unique_ptr<mechanism::PageLoader> loader);
+
+  // Returns the instance of BackgroundTabLoadingPolicy within the graph.
+  static BackgroundTabLoadingPolicy* GetInstance();
 
  private:
   std::unique_ptr<performance_manager::mechanism::PageLoader> page_loader_;

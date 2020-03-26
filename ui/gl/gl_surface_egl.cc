@@ -961,16 +961,19 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
 
   // The native fence sync extension is a bit complicated. It's reported as
   // present for ChromeOS, but Android currently doesn't report this extension
-  // even when it's present, and older devices may export a useless wrapper
-  // function. See crbug.com/775707 for details. In short, if the symbol is
-  // present and we're on Android N or newer, assume that it's usable even if
-  // the extension wasn't reported.
+  // even when it's present, and older devices and Android emulator may export
+  // a useless wrapper function. See crbug.com/775707 for details. In short, if
+  // the symbol is present and we're on Android N or newer and we are not on
+  // Android emulator, assume that it's usable even if the extension wasn't
+  // reported.
   g_egl_android_native_fence_sync_supported =
       HasEGLExtension("EGL_ANDROID_native_fence_sync");
 #if defined(OS_ANDROID)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+  if (!g_egl_android_native_fence_sync_supported &&
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
           base::android::SDK_VERSION_NOUGAT &&
-      g_driver_egl.fn.eglDupNativeFenceFDANDROIDFn) {
+      g_driver_egl.fn.eglDupNativeFenceFDANDROIDFn &&
+      base::SysInfo::GetAndroidHardwareEGL() != "emulation") {
     g_egl_android_native_fence_sync_supported = true;
   }
 #endif

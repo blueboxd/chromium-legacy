@@ -207,17 +207,22 @@ DownloadDelegate* DownloadManagerDelegateImpl::GetDelegate(
   if (!web_contents)
     return nullptr;
 
-  auto* tab = TabImpl::FromWebContents(web_contents);
-  if (!tab)
+  return GetDelegate(web_contents->GetBrowserContext());
+}
+
+DownloadDelegate* DownloadManagerDelegateImpl::GetDelegate(
+    content::BrowserContext* browser_context) {
+  auto* profile = ProfileImpl::FromBrowserContext(browser_context);
+  if (!profile)
     return nullptr;
 
-  return tab->download_delegate();
+  return profile->download_delegate();
 }
 
 DownloadDelegate* DownloadManagerDelegateImpl::GetDelegate(
     download::DownloadItem* item) {
-  auto* web_contents = content::DownloadItemUtils::GetWebContents(item);
-  return GetDelegate(web_contents);
+  auto* browser_context = content::DownloadItemUtils::GetBrowserContext(item);
+  return GetDelegate(browser_context);
 }
 
 }  // namespace weblayer

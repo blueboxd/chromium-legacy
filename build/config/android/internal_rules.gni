@@ -1077,6 +1077,13 @@ if (enable_java_templates) {
         inputs += [ _proguard_jar_path ]
       }
 
+      _enable_assert = is_java_debug || dcheck_always_on || report_java_assert
+      if (_enable_assert) {
+        # The default for generating dex file format is
+        # --force-disable-assertions.
+        args += [ "--force-enable-assertions" ]
+      }
+
       if (defined(invoker.args)) {
         args += invoker.args
       }
@@ -1439,6 +1446,13 @@ if (enable_java_templates) {
           "--r8-jar-path",
           rebase_path(_r8_path, root_build_dir),
         ]
+
+        _enable_assert = is_java_debug || dcheck_always_on || report_java_assert
+        if (_enable_assert) {
+          # The default for generating dex file format is
+          # --force-disable-assertions.
+          args += [ "--force-enable-assertions" ]
+        }
       }
     }
   }
@@ -1522,10 +1536,6 @@ if (enable_java_templates) {
     _input_jar_path = invoker.input_jar_path
     _output_jar_path = invoker.output_jar_path
 
-    _enable_assert =
-        defined(invoker.enable_build_hooks) && invoker.enable_build_hooks &&
-        (is_java_debug || dcheck_always_on || report_java_assert)
-
     _enable_custom_resources = defined(invoker.enable_build_hooks_android) &&
                                invoker.enable_build_hooks_android
 
@@ -1537,7 +1547,7 @@ if (enable_java_templates) {
     _skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
 
     _enable_bytecode_rewriter =
-        _enable_assert || _enable_custom_resources || _enable_thread_annotations
+        _enable_custom_resources || _enable_thread_annotations
     _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
     _enable_bytecode_checks = !defined(invoker.enable_bytecode_checks) ||
                               invoker.enable_bytecode_checks
@@ -1552,7 +1562,6 @@ if (enable_java_templates) {
                ])
     if (defined(invoker.enable_bytecode_rewriter)) {
       not_needed([
-                   "_enable_assert",
                    "_enable_custom_resources",
                    "_enable_thread_annotations",
                  ])
@@ -1643,9 +1652,6 @@ if (enable_java_templates) {
         ]
         if (_is_prebuilt) {
           args += [ "--is-prebuilt" ]
-        }
-        if (_enable_assert) {
-          args += [ "--enable-assert" ]
         }
         if (_enable_custom_resources) {
           args += [ "--enable-custom-resources" ]
@@ -3542,7 +3548,6 @@ if (enable_java_templates) {
                                  ])
           is_prebuilt = _is_prebuilt
           supports_android = _supports_android
-          enable_build_hooks = _enable_build_hooks
           enable_build_hooks_android = _enable_build_hooks_android
           build_config = _build_config
           input_jar_path = _unprocessed_jar_path
@@ -3587,30 +3592,6 @@ if (enable_java_templates) {
           _accumulated_public_deps += [ ":${target_name}__dex" ]
         }
       }
-
-      if (!_is_java_binary) {
-        group(target_name) {
-          forward_variables_from(invoker,
-                                 [
-                                   "assert_no_deps",
-                                   "data",
-                                   "data_deps",
-                                   "deps",
-                                   "visibility",
-                                 ])
-
-          # Export all of our steps as "public", so that all outputs can be used
-          # as inputs to other targets.
-          public_deps = _accumulated_public_deps
-
-          if (defined(_analysis_public_deps)) {
-            if (!defined(data_deps)) {
-              data_deps = []
-            }
-            data_deps += _analysis_public_deps
-          }
-        }
-      }
     }
 
     if (_is_java_binary) {
@@ -3632,24 +3613,21 @@ if (enable_java_templates) {
       _accumulated_public_deps += [ ":${target_name}__java_binary_script" ]
     }
 
-    if (_is_java_binary ||
-        (_is_annotation_processor && !defined(_final_jar_path))) {
-      group(target_name) {
-        forward_variables_from(invoker,
-                               [
-                                 "assert_no_deps",
-                                 "data",
-                                 "deps",
-                                 "data_deps",
-                                 "visibility",
-                               ])
-        public_deps = _accumulated_public_deps
-        if (defined(_analysis_public_deps)) {
-          if (!defined(data_deps)) {
-            data_deps = []
-          }
-          data_deps += _analysis_public_deps
+    group(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "assert_no_deps",
+                               "data",
+                               "deps",
+                               "data_deps",
+                               "visibility",
+                             ])
+      public_deps = _accumulated_public_deps
+      if (defined(_analysis_public_deps)) {
+        if (!defined(data_deps)) {
+          data_deps = []
         }
+        data_deps += _analysis_public_deps
       }
     }
   }

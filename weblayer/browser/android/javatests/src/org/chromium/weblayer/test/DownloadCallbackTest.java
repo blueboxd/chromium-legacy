@@ -145,8 +145,8 @@ public class DownloadCallbackTest {
 
         mCallback = new Callback();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mActivity.getTab().setDownloadCallback(mCallback);
             Profile profile = mActivity.getBrowser().getProfile();
+            profile.setDownloadCallback(mCallback);
             profile.setDownloadDirectory(new File(tempDownloadDirectory));
         });
     }

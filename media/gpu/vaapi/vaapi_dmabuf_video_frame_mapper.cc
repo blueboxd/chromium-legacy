@@ -129,16 +129,26 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  if (!video_frame->HasDmaBufs()) {
+  if (!video_frame->HasDmaBufs())
+    return nullptr;
+
+  if (video_frame->format() != format_) {
+    VLOGF(1) << "Unexpected format, got: "
+             << VideoPixelFormatToString(video_frame->format())
+             << ", expected: " << VideoPixelFormatToString(format_);
     return nullptr;
   }
-  if (video_frame->format() != format_) {
-    VLOGF(1) << "Unexpected format: " << video_frame->format();
+
+  scoped_refptr<gfx::NativePixmap> pixmap =
+      CreateNativePixmapDmaBuf(video_frame.get());
+  if (!pixmap) {
+    VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
     return nullptr;
   }
 
   scoped_refptr<VASurface> va_surface =
-      vaapi_wrapper_->CreateVASurfaceForVideoFrame(video_frame.get());
+      vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
+
   if (!va_surface) {
     VLOGF(1) << "Failed to create VASurface";
     return nullptr;

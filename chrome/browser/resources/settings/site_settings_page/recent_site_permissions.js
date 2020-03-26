@@ -326,7 +326,7 @@ Polymer({
       return;
     }
     const currentIndex =
-        this.recentSitePermissionsList_.findIndex(function(permissions) {
+        this.recentSitePermissionsList_.findIndex((permissions) => {
           return permissions.origin === this.lastSelected_.origin &&
               permissions.incognito === this.lastSelected_.incognito;
         });

@@ -711,8 +711,7 @@ TEST_F(TabLifecycleUnitSourceTest, AsyncInitialization) {
   // |web_contents|.
   base::RunLoop run_loop;
   performance_manager::PerformanceManager::CallOnGraph(
-      FROM_HERE,
-      base::BindLambdaForTesting([&](performance_manager::Graph* unused) {
+      FROM_HERE, base::BindLambdaForTesting([&]() {
         EXPECT_TRUE(page_node);
         EXPECT_FALSE(page_node->IsHoldingWebLock());
         auto* node_impl =

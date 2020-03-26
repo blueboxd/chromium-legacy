@@ -4,9 +4,15 @@
 package org.chromium.android_webview.devui;
 
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -14,6 +20,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.android_webview.devui.util.NavigationMenuHelper;
+import org.chromium.base.ApiCompatibilityUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Dev UI main activity.
@@ -22,6 +32,7 @@ import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 public class MainActivity extends FragmentActivity {
     private WebViewPackageError mDifferentPackageError;
     private boolean mSwitchFragmentOnResume;
+    final Map<Integer, Integer> mFragmentIdMap = new HashMap<>();
 
     // Keep in sync with DeveloperUiService.java
     private static final String FRAGMENT_ID_INTENT_EXTRA = "fragment-id";
@@ -41,6 +52,71 @@ public class MainActivity extends FragmentActivity {
         mDifferentPackageError = new WebViewPackageError(this);
         // show the dialog once when the activity is created.
         mDifferentPackageError.showDialogIfDifferent();
+
+        // Set up bottom navigation bar:
+        mFragmentIdMap.put(R.id.navigation_home, FRAGMENT_ID_HOME);
+        mFragmentIdMap.put(R.id.navigation_crash_ui, FRAGMENT_ID_CRASHES);
+        mFragmentIdMap.put(R.id.navigation_flags_ui, FRAGMENT_ID_FLAGS);
+        LinearLayout bottomNavBar = findViewById(R.id.nav_view);
+        View.OnClickListener listener = (View view) -> {
+            assert mFragmentIdMap.containsKey(view.getId()) : "Unexpected view ID: " + view.getId();
+            int fragmentId = mFragmentIdMap.get(view.getId());
+            switchFragment(fragmentId);
+        };
+        final int childCount = bottomNavBar.getChildCount();
+        for (int i = 0; i < childCount; ++i) {
+            View v = bottomNavBar.getChildAt(i);
+            v.setOnClickListener(listener);
+        }
+    }
+
+    private void switchFragment(int chosenFragmentId) {
+        Fragment fragment = null;
+        switch (chosenFragmentId) {
+            default:
+                chosenFragmentId = FRAGMENT_ID_HOME;
+                // Fall through.
+            case FRAGMENT_ID_HOME:
+                fragment = new HomeFragment();
+                break;
+            case FRAGMENT_ID_CRASHES:
+                fragment = new CrashesListFragment();
+                break;
+            case FRAGMENT_ID_FLAGS:
+                fragment = new FlagsFragment();
+                break;
+        }
+        assert fragment != null;
+
+        // Switch fragments
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(R.id.content_fragment, fragment);
+        transaction.commit();
+
+        // Update the bottom toolbar
+        LinearLayout bottomNavBar = findViewById(R.id.nav_view);
+        final int childCount = bottomNavBar.getChildCount();
+        for (int i = 0; i < childCount; ++i) {
+            View view = bottomNavBar.getChildAt(i);
+            assert mFragmentIdMap.containsKey(view.getId()) : "Unexpected view ID: " + view.getId();
+            int fragmentId = mFragmentIdMap.get(view.getId());
+            assert view instanceof TextView : "Bottom bar must have TextViews as direct children";
+            TextView textView = (TextView) view;
+
+            boolean isSelectedFragment = chosenFragmentId == fragmentId;
+            ApiCompatibilityUtils.setTextAppearance(textView,
+                    isSelectedFragment ? R.style.SelectedNavigationButton
+                                       : R.style.UnselectedNavigationButton);
+            int color = isSelectedFragment ? getResources().getColor(R.color.navigation_selected)
+                                           : getResources().getColor(R.color.navigation_unselected);
+            for (Drawable drawable : textView.getCompoundDrawables()) {
+                if (drawable != null) {
+                    drawable.setColorFilter(
+                            new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
+                }
+            }
+        }
     }
 
     @Override
@@ -75,27 +151,7 @@ public class MainActivity extends FragmentActivity {
         if (extras != null) {
             fragmentId = extras.getInt(FRAGMENT_ID_INTENT_EXTRA, fragmentId);
         }
-
-        Fragment fragment = null;
-        switch (fragmentId) {
-            default:
-                // Fall through.
-            case FRAGMENT_ID_HOME:
-                fragment = new HomeFragment();
-                break;
-            case FRAGMENT_ID_CRASHES:
-                fragment = new CrashesListFragment();
-                break;
-            case FRAGMENT_ID_FLAGS:
-                fragment = new FlagsFragment();
-                break;
-        }
-        assert fragment != null;
-
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-        transaction.replace(R.id.content_fragment, fragment);
-        transaction.commit();
+        switchFragment(fragmentId);
     }
 
     @Override

@@ -13,7 +13,7 @@ namespace base {
 namespace {
 
 const int64_t kLowBitsMask = (INT64_C(1) << 32) - 1;
-const int64_t kNumTypeBits = 3;
+const int64_t kNumTypeBits = static_cast<int64_t>(UkmSourceId::Type::kMaxValue);
 const int64_t kTypeMask = (INT64_C(1) << kNumTypeBits) - 1;
 
 }  // namespace

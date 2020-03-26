@@ -381,7 +381,14 @@ android_aar_prebuilt("androidx_core_core_java") {
   ]
   skip_jetify = true
   ignore_aidl = true
+
+  # Manifest and proguard config have just one entry: Adding (and -keep'ing)
+  # android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+  # Chrome doesn't use this feature and it causes a scary stack trace to be
+  # shown when incremental_install=true.
+  ignore_manifest = true
   ignore_proguard_configs = true
+  custom_package = "androidx.core"
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

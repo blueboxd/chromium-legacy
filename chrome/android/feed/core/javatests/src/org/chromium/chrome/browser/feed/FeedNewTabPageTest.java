@@ -293,6 +293,7 @@ import java.util.List;
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage"})
+    @DisabledTest(message = "crbug.com/1064388")
     public void testFeedDisabledByPolicy() throws Exception {
         final boolean pref = TestThreadUtils.runOnUiThreadBlocking(
                 ()

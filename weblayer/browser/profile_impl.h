@@ -36,10 +36,15 @@ class ProfileImpl : public Profile {
   explicit ProfileImpl(const std::string& name);
   ~ProfileImpl() override;
 
+  // Returns the ProfileImpl from the specified BrowserContext.
+  static ProfileImpl* FromBrowserContext(
+      content::BrowserContext* browser_context);
+
   content::BrowserContext* GetBrowserContext();
 
   // Path data is stored at, empty if off-the-record.
   const base::FilePath& data_path() const { return data_path_; }
+  DownloadDelegate* download_delegate() { return download_delegate_; }
 
   // Profile implementation:
   bool DeleteDataFromDisk(base::OnceClosure done_callback) override;
@@ -48,6 +53,7 @@ class ProfileImpl : public Profile {
                          base::Time to_time,
                          base::OnceClosure callback) override;
   void SetDownloadDirectory(const base::FilePath& directory) override;
+  void SetDownloadDelegate(DownloadDelegate* delegate) override;
 
 #if defined(OS_ANDROID)
   ProfileImpl(JNIEnv* env, const base::android::JavaParamRef<jstring>& path);
@@ -89,6 +95,8 @@ class ProfileImpl : public Profile {
   std::unique_ptr<BrowserContextImpl> browser_context_;
 
   base::FilePath download_directory_;
+
+  DownloadDelegate* download_delegate_ = nullptr;
 
   std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
 

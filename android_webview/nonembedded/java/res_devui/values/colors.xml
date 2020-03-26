@@ -9,4 +9,6 @@
     <color name="error_red">#C5221F</color>
     <color name="warning_yellow">#FFCC00</color>
     <color name="blue">#1967D2</color>
+    <color name="navigation_selected">#000000</color>
+    <color name="navigation_unselected">#888888</color>
 </resources>

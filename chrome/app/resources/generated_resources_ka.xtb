@@ -392,7 +392,7 @@
 <translation id="1524563461097350801">არა, გმადლობთ</translation>
 <translation id="1525740877599838384">მდებარეობის დასადგენად მხოლოდ Wi-Fi ქსელის გამოყენება</translation>
 <translation id="152629053603783244">Linux-ის გადატვირთვა</translation>
-<translation id="1526335046150927198">სენსორული კლავიატურით გადაადგილების დაჩქარების ჩართვა</translation>
+<translation id="1526335046150927198">სენსორული პანელით გადაადგილების დაჩქარების ჩართვა</translation>
 <translation id="1526560967942511387">უსათაურო დოკუმენტი</translation>
 <translation id="1529891865407786369">ელკვების წყარო</translation>
 <translation id="1530838837447122178">მაუსისა და სენსორული პანელის პარამეტრები</translation>
@@ -1119,7 +1119,6 @@
 <translation id="247949520305900375">აუდიოს გაზიარება</translation>
 <translation id="2480868415629598489">თქვენ მიერ კოპირებული და ჩასმული მონაცემების შეცვლა</translation>
 <translation id="2482878487686419369">შეტყობინებები</translation>
-<translation id="2483610039979585156"><ph name="ORIGIN" /> შეძლებს „<ph name="FILENAME" />“-ის რედაქტირებას <ph name="ORIGIN" />-ის ყველა ჩანართის დახურვამდე</translation>
 <translation id="2484959914739448251">თქვენი Google ანგარიშიდან და ყველა სინქრონიზებული მოწყობილობიდან დათვალიერების მონაცემების გასასუფთავებლად <ph name="BEGIN_LINK" />შეიყვანეთ თქვენი საიდუმლო ფრაზა<ph name="END_LINK" />.</translation>
 <translation id="2485005079599453134">პაროლი შენახულია ამ მოწყობილობაზე</translation>
 <translation id="2485422356828889247">დეინსტალაცია</translation>
@@ -1724,7 +1723,6 @@
 <translation id="3282568296779691940">შესვლა Chrome-ში</translation>
 <translation id="3285322247471302225">ახალი ჩ&amp;ანართი</translation>
 <translation id="328571385944182268">გსურთ თქვენი პაროლების შენახვა?</translation>
-<translation id="328785681103589998"><ph name="ORIGIN" /> შეძლებს „<ph name="FILENAME" />“-ის ნახვას <ph name="ORIGIN" />-ის ყველა ჩანართის დახურვამდე</translation>
 <translation id="3288047731229977326">დეველოპერის რეჟიმში გაშვებულმა გაფართოებებმა შეიძლება დააზიანოს თქვენი კომპიუტერი. თუ თქვენ არ ხართ დეველოპერი, უსაფრთხოების შენარჩუნებისათვის თქვენ უნდა გამორთოთ დეველოპერულ რეჟიმში გაშვებული გაფართოებები.</translation>
 <translation id="3289856944988573801">განახლებების შესამოწმებლად გამოიყენეთ Ethernet ან Wi-Fi.</translation>
 <translation id="3290356915286466215">დაუცველი</translation>
@@ -2413,6 +2411,7 @@
 <translation id="4144218403971135344">ნახეთ ვიდეოები უკეთესი ხარისხით და დაზოგეთ ბატარეა. ვიდეოები დაიკვრება მხოლოდ Cast-ის მხარდაჭერის მქონე ეკრანზე.</translation>
 <translation id="4146026355784316281">ყოველთვის გახსნა სისტემის დამთვალიერებლით</translation>
 <translation id="4146785383423576110">გადაყენება და გასუფთავება</translation>
+<translation id="4147897805161313378">Google Photos</translation>
 <translation id="4147911968024186208">გთხოვთ, ცადოთ ხელახლა. თუ ეს შეცდომა კვლავ შეგხვდებათ, გთხოვთ, დაუკავშირდეთ მხარდაჭერის გუნდის წარმომადგენელს.</translation>
 <translation id="4150201353443180367">ჩვენება</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 ჩანართი}other{# ჩანართი}}</translation>
@@ -2732,6 +2731,7 @@
 <translation id="4633757335284074492">სარეზერვო კოპირება Google Drive-ში. მარტივად აღადგინეთ მონაცემები, ან შეცვალეთ მოწყობილობები ნებისმიერ დროს. ეს სარეზერვო ასლი მოიცავს აპების მონაცემებს. სარეზერვო ასლები აიტვირთება Google-ში და დაიშიფრება თქვენი შვილის Google ანგარიშის პაროლით.</translation>
 <translation id="4634771451598206121">ხელახლა შესვლა…</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> მიუწვდომელია სტუმარი მომხმარებლებისთვის.</translation>
+<translation id="4636930964841734540">ინფორმაცია</translation>
 <translation id="4637083375689622795">სხვა ქმედებები, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">ADB გამართვის ჩართვა</translation>
 <translation id="4641539339823703554">Chrome-მა ვერ დააყენა სისტემის დრო. შეამოწმეთ დრო ქვემოთ და გაასწორეთ, თუ საჭიროა.</translation>
@@ -2811,7 +2811,6 @@
 <translation id="4750394297954878236">შემოთავაზებები</translation>
 <translation id="475088594373173692">პირველი მომხმარებელი</translation>
 <translation id="4751476147751820511">მოძრაობის ან განათების სენსორები</translation>
-<translation id="4756269098451810636"><ph name="DEVICE_NAME" />-დან გაზიარდა სურათი</translation>
 <translation id="4756378406049221019">შეწყვეტა/გადატვირთვა</translation>
 <translation id="4756388243121344051">&amp;ისტორია</translation>
 <translation id="4759238208242260848">ჩამოტვირთვები</translation>
@@ -3758,7 +3757,6 @@
 <translation id="6040852767465482106">ანონიმური იდენტობა</translation>
 <translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />თქვენი მოწყობილობის მიახლოებითი მდებარეობის დასადგენად Google-ის მდებარეობის სერვისები იყენებს ისეთ წყაროებს, როგორიცაა Wi-Fi, მობილური ქსელები და სენსორები.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />მდებარეობის გამორთვა შესაძლებელია თქვენს მოწყობილობაზე მდებარეობის მთავარი პარამეტრის გამორთვით. ასევე შეგიძლიათ გამორთოთ Wi-Fi კავშირის, მობილური ქსელებისა და სენსორების გამოყენება მდებარეობის დასადგენად.<ph name="END_PARAGRAPH2" /></translation>
-<translation id="6041150002191391409"><ph name="ORIGIN" /> შეძლებს „<ph name="FOLDERNAME" />“-ში არსებული ფაილების ნახვას <ph name="ORIGIN" />-ის ყველა ჩანართის დახურვამდე</translation>
 <translation id="6041155700700864984">სრულეკრანიანი რეჟიმიდან გამოსვლა</translation>
 <translation id="604124094241169006">ავტომატური</translation>
 <translation id="6042308850641462728">სხვა</translation>
@@ -4154,7 +4152,6 @@
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">ფაილის მდებარეობა ან სახელი ძალიან გრძელია. გთხოვთ, შეინახოთ იგი უფრო მოკლე სახელით ან სხვა ადგილას.</translation>
 <translation id="6563469144985748109">თქვენს მენეჯერს ის ჯერ არ დაუდასტურებია</translation>
-<translation id="6567688344210276845">ვერ ჩაიტვირთა „<ph name="ICON" />“ გვერდის მოქმედებისთვის.</translation>
 <translation id="6569934958368283244">სხვა ადამიანები</translation>
 <translation id="657402800789773160">&amp;ამ გვერდის ხელახლა ჩატვირთვა</translation>
 <translation id="6577284282025554716">ჩამოტვირთვა გაუქმდა: <ph name="FILE_NAME" /></translation>
@@ -4219,7 +4216,6 @@
 <translation id="6659594942844771486">ჩანართი</translation>
 <translation id="6664237456442406323">სამწუხაროდ, თქვენი კომპიუტერი კონფიგურირებულია დეფორმირებული აპარატურის ID-თი. ეს ხელს უშლის Chrome OS-ის განახლებას უსაფრთხოების უახლესი გამოსწორებებით და თქვენი კომპიუტერი <ph name="BEGIN_BOLD" />შეიძლება გახდეს მავნე პროგრამების მიერ განხორციელებული შეტევების ობიექტი<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">თქვენი პროფილის გახსნისას შეფერხება წარმოიქმნა. გთხოვთ, გამოხვიდეთ და ხელახლა შეხვიდეთ სისტემაში.</translation>
-<translation id="6667776121818773738">სხვა მოწყობილობიდან გაზიარდა სურათი</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">გსურთ, Google-მა ამ <ph name="SOURCE_LANGUAGE" /> გვერდის <ph name="TARGET_LANGUAGE" /> ვერსია შემოგთავაზოთ?</translation>
 <translation id="6675665718701918026">დაკავშირებულია მიმთითებელი მოწყობილობა</translation>
@@ -4840,7 +4836,6 @@
 <translation id="7497981768003291373">ახლახან აღბეჭდილი WebRTC-ის ტექსტური ჟურნალები არ არის.</translation>
 <translation id="7502658306369382406">IPv6 მისამართი</translation>
 <translation id="7503191893372251637">Netscape სერტიფიკატის ტიპი</translation>
-<translation id="7503821294401948377">ვერ ჩაიტვირთა ხატულა „<ph name="ICON" />“ ბრაუზერის მოქმედებისთვის.</translation>
 <translation id="7503985202154027481">თქვენს უსაფრთხოების გასაღებზე ჩაიწერება ამ საიტზე ვიზიტი.</translation>
 <translation id="7504293978434250212">თქვენს ორგანიზაციას შეუძლია 50 მბაიტამდე ზომის ფაილების სკანირება. ატვირთეთ უფრო მცირე ზომის ფაილი.</translation>
 <translation id="750509436279396091">გახსენით ჩამოტვირთვების ფოლდერი</translation>
@@ -5641,7 +5636,6 @@
 <translation id="8546930481464505581">შეხების ზოლის მორგება</translation>
 <translation id="8547013269961688403">სრულეკრანიანი ლუპის ჩართვა</translation>
 <translation id="85486688517848470">ზედა მწკრივის ღილაკების რეჟიმის გადასართავად ხანგრძლივად დააჭირეთ ძიების კლავიშს</translation>
-<translation id="8550165047974571882"><ph name="ORIGIN" /> შეძლებს „<ph name="FOLDERNAME" />“-ში არსებული ფაილების რედაქტირებას <ph name="ORIGIN" />-ის ყველა ჩანართის დახურვამდე</translation>
 <translation id="8551388862522347954">ლიცენზიები</translation>
 <translation id="8553342806078037065">სხვა ადამიანების მართვა</translation>
 <translation id="8554899698005018844">ენის გარეშე</translation>
@@ -5855,7 +5849,7 @@
 <translation id="8808686172382650546">კატა</translation>
 <translation id="8808744862003883508">ამ გვერდზე შეგიძლიათ იხილოთ Chrome-ში დაინსტალირებული ყველა გაფართოება.</translation>
 <translation id="8809147117840417135">ღია ფირუზისფერი</translation>
-<translation id="8812593354822910461">დათვალიერების მონაცემების (<ph name="URL" />) გასუფთავებაც (შესაძლოა, გამოხვიდეთ <ph name="DOMAIN" />-დან). <ph name="LEARN_MORE" /></translation>
+<translation id="8812593354822910461">დათვალიერების მონაცემების (<ph name="URL" />) გასუფთავებაც (ეს გამოგიყვანთ <ph name="DOMAIN" />-იდან). <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039"><ph name="USERNAME" />-ში შესვლა ვერ მოხერხდა</translation>
 <translation id="8813811964357448561">ფურცელი</translation>
 <translation id="8813872945700551674">სთხოვეთ მშობელს, დაადასტუროს „<ph name="EXTENSION_NAME" />“</translation>

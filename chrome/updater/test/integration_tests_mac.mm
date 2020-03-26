@@ -31,13 +31,6 @@ base::FilePath GetExecutablePath() {
       .Append(FILE_PATH_LITERAL(PRODUCT_FULLNAME_STRING));
 }
 
-base::FilePath GetInstallerPath() {
-  base::FilePath test_executable;
-  if (!base::PathService::Get(base::FILE_EXE, &test_executable))
-    return base::FilePath();
-  return test_executable.DirName().Append("updater_setup");
-}
-
 base::FilePath GetProductPath() {
   return base::mac::GetUserLibraryPath()
       .AppendASCII(COMPANY_SHORTNAME_STRING)
@@ -89,10 +82,12 @@ void ExpectInstalled() {
 }
 
 void Install() {
-  base::FilePath path = GetInstallerPath();
+  base::FilePath path = GetExecutablePath();
   ASSERT_FALSE(path.empty());
+  base::CommandLine command_line(path);
+  command_line.AppendSwitch("install");
   int exit_code = -1;
-  ASSERT_TRUE(Run(base::CommandLine(path), &exit_code));
+  ASSERT_TRUE(Run(command_line, &exit_code));
   EXPECT_EQ(0, exit_code);
 }
 

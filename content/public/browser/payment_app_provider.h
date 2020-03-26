@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 
 class SkBitmap;
@@ -102,6 +103,11 @@ class CONTENT_EXPORT PaymentAppProvider {
                                             const GURL& sw_js_url,
                                             const GURL& sw_scope,
                                             std::string* error_message) = 0;
+
+  // Gets the ukm source id for a payment app with |sw_scope|.
+  // This must ONLY be called when payment app window has been opened.
+  virtual ukm::SourceId GetSourceIdForPaymentAppFromScope(
+      const GURL& sw_scope) = 0;
 
  protected:
   virtual ~PaymentAppProvider() = default;

@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.view.View;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,7 +75,6 @@ public class AutocompleteMediatorUnitTest {
     private AutocompleteMediator mMediator;
     private List<OmniboxSuggestion> mSuggestionsList;
     private ModelList mSuggestionModels;
-    private PropertyModel mSuggestionModel;
 
     @Before
     public void setUp() {
@@ -83,8 +83,6 @@ public class AutocompleteMediatorUnitTest {
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         mSuggestionModels = new ModelList();
         mListModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
-        mSuggestionModel = new PropertyModel(SuggestionCommonProperties.ALL_KEYS);
-
         mListModel.set(SuggestionListProperties.SUGGESTION_MODELS, mSuggestionModels);
 
         mMediator = new AutocompleteMediator(mActivity, mAutocompleteDelegate, mTextStateProvider,
@@ -95,7 +93,8 @@ public class AutocompleteMediatorUnitTest {
                 AutocompleteMediator.SuggestionVisibilityState.ALLOWED);
 
         when(mMockProcessor.doesProcessSuggestion(any())).thenReturn(true);
-        when(mMockProcessor.createModelForSuggestion(any())).thenReturn(mSuggestionModel);
+        when(mMockProcessor.createModelForSuggestion(any()))
+                .thenAnswer((mock) -> new PropertyModel(SuggestionCommonProperties.ALL_KEYS));
         when(mMockProcessor.getMinimumSuggestionViewHeight()).thenReturn(SUGGESTION_MIN_HEIGHT);
 
         mSuggestionsList = buildDummySuggestionsList(10, "Suggestion");
@@ -435,5 +434,46 @@ public class AutocompleteMediatorUnitTest {
         // Ensure duplicate requests are suppressed.
         mMediator.onSuggestionsReceived(mSuggestionsList, "inline_autocomplete2");
         verifyNoMoreInteractions(mAutocompleteDelegate);
+    }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void setLayoutDirection_beforeInitialization() {
+        mMediator.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.updateSuggestionsList(Integer.MAX_VALUE);
+        Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
+        for (int i = 0; i < mSuggestionModels.size(); i++) {
+            Assert.assertEquals(i + "th model does not have the expected layout direction.",
+                    View.LAYOUT_DIRECTION_RTL,
+                    mSuggestionModels.get(i).model.get(
+                            SuggestionCommonProperties.LAYOUT_DIRECTION));
+        }
+    }
+
+    @Test
+    @Features.DisableFeatures({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void setLayoutDirection_afterInitialization() {
+        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.updateSuggestionsList(Integer.MAX_VALUE);
+        Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
+
+        mMediator.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        for (int i = 0; i < mSuggestionModels.size(); i++) {
+            Assert.assertEquals(i + "th model does not have the expected layout direction.",
+                    View.LAYOUT_DIRECTION_RTL,
+                    mSuggestionModels.get(i).model.get(
+                            SuggestionCommonProperties.LAYOUT_DIRECTION));
+        }
+
+        mMediator.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        for (int i = 0; i < mSuggestionModels.size(); i++) {
+            Assert.assertEquals(i + "th model does not have the expected layout direction.",
+                    View.LAYOUT_DIRECTION_LTR,
+                    mSuggestionModels.get(i).model.get(
+                            SuggestionCommonProperties.LAYOUT_DIRECTION));
+        }
     }
 }

@@ -276,7 +276,7 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
     ui_test_utils::NavigateToURL(browser, embedded_test_server()->base_url());
 
     // Wait until the session has finished saving.
-    content::RunAllTasksUntilIdle();
+    WaitForDB(GetMediaHistoryService(browser));
   }
 
   const GURL GetTestURL() const {
@@ -299,6 +299,12 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
   static MediaHistoryKeyedService* GetOTRMediaHistoryService(Browser* browser) {
     return MediaHistoryKeyedServiceFactory::GetForProfile(
         browser->profile()->GetOffTheRecordProfile());
+  }
+
+  static void WaitForDB(MediaHistoryKeyedService* service) {
+    base::RunLoop run_loop;
+    service->PostTaskToDBForTest(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   Browser* CreateBrowserFromParam() {

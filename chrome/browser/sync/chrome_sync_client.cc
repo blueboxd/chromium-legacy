@@ -614,7 +614,8 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
     case syncer::WIFI_CONFIGURATIONS:
-      return WifiConfigurationSyncServiceFactory::GetForProfile(profile_)
+      return WifiConfigurationSyncServiceFactory::GetForProfile(profile_,
+                                                                /*create=*/true)
           ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
     case syncer::SHARING_MESSAGE:

@@ -50,6 +50,14 @@
       this.switchToEmailCard(true /* animated */);
     },
 
+    onBeforeShow() {
+      this.behaviors.forEach((behavior) => {
+        if (behavior.onBeforeShow)
+          behavior.onBeforeShow.call(this);
+      });
+      this.$$('#dialog').onBeforeShow();
+    },
+
     onForgotPasswordClicked_() {
       this.disabled = true;
       this.fire('dialogShown');

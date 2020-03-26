@@ -615,7 +615,7 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   if (in_app_shelf && in_tablet_mode) {
     if (contextual_tooltip::ShouldShowNudge(
             Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
-            contextual_tooltip::TooltipType::kDragHandle, nullptr)) {
+            contextual_tooltip::TooltipType::kInAppToHome, nullptr)) {
       shelf_widget_->ScheduleShowDragHandleNudge();
     } else if (!shelf_widget_->GetDragHandle()->ShowingNudge()) {
       // If the drag handle is not yet shown, HideDragHandleNudge() should
@@ -2344,7 +2344,7 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
         window_drag_result == ShelfWindowDragResult::kGoToHomeScreen) {
       contextual_tooltip::HandleGesturePerformed(
           Shell::Get()->session_controller()->GetActivePrefService(),
-          contextual_tooltip::TooltipType::kDragHandle);
+          contextual_tooltip::TooltipType::kInAppToHome);
     }
 
     base::Optional<InAppShelfGestures> gesture_to_record =

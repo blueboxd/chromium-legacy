@@ -810,11 +810,6 @@ const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
     "WriteBasicSystemProfileToPersistentHistogramsFile",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables improvements to the chrome://accessibility page.
-const base::Feature kAccessibilityInternalsPageImprovements{
-    "AccessibilityInternalsPageImprovements",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables setting time limit for Chrome and PWA's on child user device.
 // Requires |kPerAppTimeLimits| to be enabled.
 #if defined(OS_CHROMEOS)

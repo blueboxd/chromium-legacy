@@ -4,7 +4,9 @@
 
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -59,8 +61,7 @@ void SiteDataCacheFacade::WaitUntilCacheInitializedForTesting() {
   PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindOnce(
                      [](base::OnceClosure quit_closure,
-                        const std::string& browser_context_id,
-                        Graph* graph_unused) {
+                        const std::string& browser_context_id) {
                        auto* cache = SiteDataCacheFactory::GetInstance()
                                          ->GetDataCacheForBrowserContext(
                                              browser_context_id);
@@ -79,7 +80,7 @@ void SiteDataCacheFacade::OnURLsDeleted(
     const history::DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory()) {
     auto clear_all_site_data_cb = base::BindOnce(
-        [](const std::string& browser_context_id, Graph* graph_unused) {
+        [](const std::string& browser_context_id) {
           auto* cache = SiteDataCacheFactory::GetInstance()
                             ->GetDataCacheForBrowserContext(browser_context_id);
           static_cast<SiteDataCacheImpl*>(cache)->ClearAllSiteData();
@@ -105,8 +106,7 @@ void SiteDataCacheFacade::OnURLsDeleted(
 
     auto clear_site_data_cb = base::BindOnce(
         [](const std::string& browser_context_id,
-           const std::vector<url::Origin>& origins_to_remove,
-           Graph* graph_unused) {
+           const std::vector<url::Origin>& origins_to_remove) {
           auto* cache = SiteDataCacheFactory::GetInstance()
                             ->GetDataCacheForBrowserContext(browser_context_id);
           static_cast<SiteDataCacheImpl*>(cache)->ClearSiteDataForOrigins(

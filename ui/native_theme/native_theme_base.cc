@@ -1627,9 +1627,13 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     ControlColorId color_id) const {
     switch (color_id) {
     case kAccent:
+      return SkColorSetRGB(0xC3, 0xC3, 0xC3);
     case kHoveredAccent:
+      return SkColorSetRGB(0xD8, 0xD8, 0xD8);
     case kPressedAccent:
+      return SkColorSetRGB(0xB9, 0xB9, 0xB9);
     case kDisabledAccent:
+      return SkColorSetARGB(0x4D, 0xC3, 0xC3, 0xC3);
     case kFill:
     case kLightenLayer:
     case kProgressValue:

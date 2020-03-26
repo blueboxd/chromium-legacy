@@ -61,6 +61,7 @@ import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.components.payments.PaymentHandlerHost.PaymentHandlerHostDelegate;
@@ -1379,8 +1380,15 @@ public class PaymentRequestImpl
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return false;
-        return mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito,
+
+        boolean success = mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito,
                 paymentHandlerWebContentsObserver, /*uiObserver=*/this);
+        if (success) {
+            // UKM for payment app origin should get recorded only when the origin of the invoked
+            // payment app is shown to the user.
+            mJourneyLogger.setPaymentAppUkmSourceId(mInvokedPaymentApp.getUkmSourceId());
+        }
+        return success;
     }
 
     @Override
@@ -2863,6 +2871,11 @@ public class PaymentRequestImpl
 
         mPaymentResponseHelper.onPaymentDetailsReceived(methodName, stringifiedDetails, payerData);
     }
+
+    /** Stub method to get removed after resolving clank dependencies. */
+    @Override
+    public void onInstrumentDetailsReady(String methodName, String stringifiedDetails,
+            org.chromium.chrome.browser.payments.PayerData payerData) {}
 
     @Override
     public void onPaymentResponseReady(PaymentResponse response) {

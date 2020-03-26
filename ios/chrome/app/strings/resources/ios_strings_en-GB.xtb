@@ -161,6 +161,7 @@
 <translation id="2923448633003185837">Paste and Go</translation>
 <translation id="292639812446257861">Mark Unread</translation>
 <translation id="2958718410589002129">Passwords</translation>
+<translation id="2964349545761222050">Block third-party cookies</translation>
 <translation id="2969979262385602596">Failed to sign in. Please try again later.</translation>
 <translation id="298306318844797842">Add Payment Method...</translation>
 <translation id="2989805286512600854">Open in New Tab</translation>
@@ -304,6 +305,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4979397965658815378">Sign in with your Google Account to get your bookmarks, passwords, history and other settings on all your devices</translation>
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
+<translation id="5039020240289137291">Blocking third-party cookies</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Install Google Drive</translation>

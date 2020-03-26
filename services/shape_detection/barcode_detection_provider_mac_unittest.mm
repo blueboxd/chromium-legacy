@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -22,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::test::RunClosure;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::TestWithParam;
@@ -30,10 +32,6 @@ using ::testing::ValuesIn;
 namespace shape_detection {
 
 namespace {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 static const std::vector<mojom::BarcodeFormat>& CISupportedFormats = {
     mojom::BarcodeFormat::QR_CODE};

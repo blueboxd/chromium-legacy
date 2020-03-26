@@ -930,6 +930,24 @@ ci.fyi_builder(
     triggered_by = ['win-pixel-builder-rel'],
 )
 
+ci.fyi_builder(
+    name = 'linux-upload-perfetto',
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    builderless = True,
+    name = 'mac-upload-perfetto',
+    os = os.MAC_DEFAULT,
+    schedule = 'with 3h interval',
+)
+
+ci.fyi_builder(
+    builderless = True,
+    name = 'win-upload-perfetto',
+    os = os.WINDOWS_DEFAULT,
+    schedule = 'with 3h interval',
+)
 
 ci.fyi_celab_builder(
     name = 'win-celab-builder-rel',

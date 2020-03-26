@@ -117,6 +117,11 @@ class Supervisor {
 
   void GetProfiledPidsOnIOThread(GetProfiledPidsCallback callback);
 
+  void StartProfilingOnMemoryInfraThread(Mode mode,
+                                         mojom::StackMode stack_mode,
+                                         uint32_t sampling_rate,
+                                         base::OnceClosure closure);
+
   // Bound to the IO thread.
   std::unique_ptr<Controller> controller_;
 

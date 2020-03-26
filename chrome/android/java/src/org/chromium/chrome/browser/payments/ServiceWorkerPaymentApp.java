@@ -62,6 +62,9 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
     /** Whether the app is ready for minial UI flow. */
     private boolean mIsReadyForMinimalUI;
 
+    /** UKM source Id generated using the app's origin. */
+    private long mUkmSourceId;
+
     /** The account balance to be used in the minimal UI flow. */
     @Nullable
     private String mAccountBalance;
@@ -147,6 +150,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
         mAppName = name;
         mSwUri = null;
         mUseCache = false;
+        mUkmSourceId = 0;
     }
 
     /**
@@ -193,6 +197,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
         mAppName = name;
         mSwUri = swUri;
         mUseCache = useCache;
+        mUkmSourceId = 0;
     }
 
     /**
@@ -369,5 +374,13 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
     @Nullable
     public Set<String> getApplicationIdentifiersThatHideThisApp() {
         return mPreferredRelatedApplicationIds;
+    }
+
+    @Override
+    public long getUkmSourceId() {
+        if (mUkmSourceId == 0) {
+            mUkmSourceId = ServiceWorkerPaymentAppBridge.getSourceIdForPaymentAppFromScope(mScope);
+        }
+        return mUkmSourceId;
     }
 }

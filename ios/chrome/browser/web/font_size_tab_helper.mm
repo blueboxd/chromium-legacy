@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/values.h"
+#include "components/google/core/common/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -233,6 +234,35 @@ void FontSizeTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   DCHECK_EQ(web_state, web_state_);
+  NewPageZoom();
+}
+
+void FontSizeTabHelper::DidFinishNavigation(web::WebState* web_state,
+                                            web::NavigationContext* context) {
+  // When navigating to a Google AMP Cached page, the navigation occurs via
+  // Javascript, so handle that separately.
+  if (IsGoogleCachedAMPPage()) {
+    NewPageZoom();
+  }
+}
+
+void FontSizeTabHelper::WebFrameDidBecomeAvailable(web::WebState* web_state,
+                                                   web::WebFrame* web_frame) {
+  // Make sure that any new web frame starts with the correct zoom level.
+  DCHECK_EQ(web_state, web_state_);
+  int size = GetFontSize();
+  // Prevent any zooming errors by only zooming when necessary. This is mostly
+  // when size != 100, but if zooming has happened before, then zooming to 100
+  // may be necessary to reset a previous page to the correct zoom level.
+  if (tab_helper_has_zoomed_ || size != 100) {
+    std::vector<base::Value> parameters;
+    parameters.push_back(base::Value(size));
+    web_frame->CallJavaScriptFunction("accessibility.adjustFontSize",
+                                      parameters);
+  }
+}
+
+void FontSizeTabHelper::NewPageZoom() {
   int size = GetFontSize();
   // Prevent any zooming errors by only zooming when necessary. This is mostly
   // when size != 100, but if zooming has happened before, then zooming to 100
@@ -252,7 +282,15 @@ std::string FontSizeTabHelper::GetCurrentUserZoomMultiplierKey() const {
   std::string content_size_category = base::SysNSStringToUTF8(
       UIApplication.sharedApplication.preferredContentSizeCategory);
   return base::StringPrintf("%s.%s", content_size_category.c_str(),
-                            web_state_->GetLastCommittedURL().host().c_str());
+                            GetUserZoomMultiplierKeyUrlPart().c_str());
+}
+
+std::string FontSizeTabHelper::GetUserZoomMultiplierKeyUrlPart() const {
+  if (IsGoogleCachedAMPPage()) {
+    return web_state_->GetLastCommittedURL().host().append("/amp");
+  }
+
+  return web_state_->GetLastCommittedURL().host();
 }
 
 double FontSizeTabHelper::GetCurrentUserZoomMultiplier() const {
@@ -271,6 +309,23 @@ void FontSizeTabHelper::StoreCurrentUserZoomMultiplier(double multiplier) {
   } else {
     update->SetDoublePath(GetCurrentUserZoomMultiplierKey(), multiplier);
   }
+}
+
+bool FontSizeTabHelper::IsGoogleCachedAMPPage() const {
+  // All google AMP pages have URL in the form "https://google_domain/amp/..."
+  // This method checks that this is strictly the case.
+  const GURL& url = web_state_->GetLastCommittedURL();
+  if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme)) {
+    return false;
+  }
+  if (!google_util::IsGoogleDomainUrl(
+          url, google_util::DISALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS) ||
+      url.path().compare(0, 5, "/amp/") != 0) {
+    return false;
+  }
+
+  return true;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(FontSizeTabHelper)

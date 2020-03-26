@@ -43,8 +43,6 @@
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
 
-#include "media/gpu/chromeos/platform_video_frame_utils.h"
-#include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -1540,17 +1538,6 @@ bool VaapiWrapper::CreateContext(const gfx::Size& size) {
       &va_context_id_);
   VA_LOG_ON_ERROR(va_res, "vaCreateContext");
   return va_res == VA_STATUS_SUCCESS;
-}
-
-scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForVideoFrame(
-    const VideoFrame* frame) {
-  DCHECK(frame);
-  scoped_refptr<gfx::NativePixmap> pixmap = CreateNativePixmapDmaBuf(frame);
-  if (!pixmap) {
-    LOG(ERROR) << "Failed to create NativePixmap from VideoFrame";
-    return nullptr;
-  }
-  return CreateVASurfaceForPixmap(std::move(pixmap));
 }
 
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(

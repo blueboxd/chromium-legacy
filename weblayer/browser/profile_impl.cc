@@ -166,8 +166,7 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
 // static
 base::FilePath ProfileImpl::GetCachePath(content::BrowserContext* context) {
   DCHECK(context);
-  ProfileImpl* profile =
-      static_cast<BrowserContextImpl*>(context)->profile_impl();
+  ProfileImpl* profile = FromBrowserContext(context);
 #if defined(OS_POSIX)
   base::FilePath path = ComputeCachePath(profile->name_);
   {
@@ -204,6 +203,11 @@ ProfileImpl::~ProfileImpl() {
   DCHECK_EQ(num_browser_impl_, 0u);
   if (browser_context_)
     browser_context_->ShutdownStoragePartitions();
+}
+
+ProfileImpl* ProfileImpl::FromBrowserContext(
+    content::BrowserContext* browser_context) {
+  return static_cast<BrowserContextImpl*>(browser_context)->profile_impl();
 }
 
 content::BrowserContext* ProfileImpl::GetBrowserContext() {
@@ -262,6 +266,10 @@ void ProfileImpl::ClearBrowsingData(
 
 void ProfileImpl::SetDownloadDirectory(const base::FilePath& directory) {
   download_directory_ = directory;
+}
+
+void ProfileImpl::SetDownloadDelegate(DownloadDelegate* delegate) {
+  download_delegate_ = delegate;
 }
 
 void ProfileImpl::ClearRendererCache() {

@@ -57,9 +57,6 @@ extern const char kAccessibilityExposeARIAAnnotationsDescription[];
 extern const char kAccessibilityExposeDisplayNoneName[];
 extern const char kAccessibilityExposeDisplayNoneDescription[];
 
-extern const char kAccessibilityInternalsPageImprovementsName[];
-extern const char kAccessibilityInternalsPageImprovementsDescription[];
-
 extern const char kAccountIdMigrationName[];
 extern const char kAccountIdMigrationDescription[];
 
@@ -1150,6 +1147,9 @@ extern const char kTreatInsecureOriginAsSecureDescription[];
 
 extern const char kTreatUnsafeDownloadsAsActiveName[];
 extern const char kTreatUnsafeDownloadsAsActiveDescription[];
+
+extern const char kTrustTokensName[];
+extern const char kTrustTokensDescription[];
 
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];

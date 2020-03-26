@@ -2652,10 +2652,27 @@ void RenderProcessHostImpl::RegisterCoordinatorClient(
     return;
   }
 
-  GetMemoryInstrumentationCoordinatorController()->RegisterClientProcess(
-      std::move(receiver), std::move(client_process),
-      memory_instrumentation::mojom::ProcessType::RENDERER, GetProcess().Pid(),
-      /*service_name=*/base::nullopt);
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->GetDumpThreadTaskRunner()
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](mojo::PendingReceiver<
+                     memory_instrumentation::mojom::Coordinator> receiver,
+                 mojo::PendingRemote<
+                     memory_instrumentation::mojom::ClientProcess>
+                     client_process,
+                 base::ProcessId pid) {
+                GetMemoryInstrumentationCoordinatorController()
+                    ->RegisterClientProcess(
+                        std::move(receiver), std::move(client_process),
+                        memory_instrumentation::mojom::ProcessType::RENDERER,
+                        pid,
+                        /*service_name=*/base::nullopt);
+              },
+              std::move(receiver), std::move(client_process),
+              GetProcess().Pid()));
+
   coordinator_connector_receiver_.reset();
 }
 

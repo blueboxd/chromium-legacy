@@ -29,11 +29,6 @@ class AwContentClient : public content::ContentClient {
   void ExposeInterfacesToBrowser(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojo::BinderMap* binders) override;
-
-  const std::string& gpu_fingerprint() const { return gpu_fingerprint_; }
-
- private:
-  std::string gpu_fingerprint_;
 };
 
 }  // namespace android_webview

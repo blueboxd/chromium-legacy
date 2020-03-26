@@ -4,6 +4,8 @@
 
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -334,8 +336,7 @@ void TabLifecycleUnitSource::OnTabInserted(TabStripModel* tab_strip_model,
         FROM_HERE,
         base::BindOnce(
             [](base::WeakPtr<performance_manager::PageNode> page_node,
-               scoped_refptr<base::SingleThreadTaskRunner> runner,
-               performance_manager::Graph* graph) {
+               scoped_refptr<base::SingleThreadTaskRunner> runner) {
               if (!page_node)
                 return;
               runner->PostTask(

@@ -175,7 +175,7 @@ if (use_v4l2_codec || use_vaapi) {
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [ "jpeg_encode_accelerator_unittest.cc" ]
     if (use_vaapi) {
-      deps += [ "//media/gpu/vaapi" ]
+      deps += [ "//media/gpu/vaapi:common" ]
     }
 
     # TODO(crbug.com/1029942): consider removing use_x11 support here. This is
@@ -227,7 +227,7 @@ test("jpeg_decode_accelerator_unittest") {
   sources = [ "mjpeg_decode_accelerator_unittest.cc" ]
   data = [ "//media/test/data/peach_pi-1280x720.jpg" ]
   if (use_vaapi) {
-    deps += [ "//media/gpu/vaapi" ]
+    deps += [ "//media/gpu/vaapi:common" ]
   }
 
   # TODO(crbug.com/1029942): consider removing use_x11 support here. This is no

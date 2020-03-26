@@ -44,7 +44,7 @@ class _DiffAction(object):
     parser.add_argument('--all', action='store_true', help='Verbose diff')
 
   @staticmethod
-  def Run(args, parser):
+  def Run(args, on_config_error):
     args.output_directory = None
     args.tool_prefix = None
     args.inputs = [args.before, args.after]
@@ -60,7 +60,7 @@ class _DiffAction(object):
         '  print("Full diff:")',
         'Print(d, verbose=%s)' % bool(args.all),
     ])
-    console.Run(args, parser)
+    console.Run(args, on_config_error)
 
 
 class _SaveDiffAction(object):
@@ -74,13 +74,13 @@ class _SaveDiffAction(object):
         help='Write generated data to the specified .sizediff file.')
 
   @staticmethod
-  def Run(args, parser):
+  def Run(args, on_config_error):
     if not args.before.endswith('.size'):
-      parser.error('Before input must end with ".size"')
+      on_config_error('Before input must end with ".size"')
     if not args.after.endswith('.size'):
-      parser.error('After input must end with ".size"')
+      on_config_error('After input must end with ".size"')
     if not args.output_file.endswith('.sizediff'):
-      parser.error('Output must end with ".sizediff"')
+      on_config_error('Output must end with ".sizediff"')
 
     before_size_info = archive.LoadAndPostProcessSizeInfo(args.before)
     after_size_info = archive.LoadAndPostProcessSizeInfo(args.after)
@@ -130,7 +130,10 @@ def main():
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     atexit.register(_LogPeakRamUsage)
 
-  args.func(args, parser)
+  def on_config_error(*args):
+    parser.error(*args)
+
+  args.func(args, on_config_error)
 
 
 if __name__ == '__main__':

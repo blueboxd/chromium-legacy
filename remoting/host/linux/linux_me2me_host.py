@@ -613,8 +613,19 @@ class Desktop:
     # Use a separate profile for any instances of Chrome that are started in
     # the virtual session. Chrome doesn't support sharing a profile between
     # multiple DISPLAYs, but Chrome Sync allows for a reasonable compromise.
+    #
+    # M61 introduced CHROME_CONFIG_HOME, which allows specifying a different
+    # config base path while still using different user data directories for
+    # different channels (Stable, Beta, Dev). For existing users who only have
+    # chrome-profile, continue using CHROME_USER_DATA_DIR so they don't have to
+    # set up their profile again.
     chrome_profile = os.path.join(CONFIG_DIR, "chrome-profile")
-    self.child_env["CHROME_USER_DATA_DIR"] = chrome_profile
+    chrome_config_home = os.path.join(CONFIG_DIR, "chrome-config")
+    if (os.path.exists(chrome_profile)
+        and not os.path.exists(chrome_config_home)):
+      self.child_env["CHROME_USER_DATA_DIR"] = chrome_profile
+    else:
+      self.child_env["CHROME_CONFIG_HOME"] = chrome_config_home
 
     # Set SSH_AUTH_SOCK to the file name to listen on.
     if self.ssh_auth_sockname:

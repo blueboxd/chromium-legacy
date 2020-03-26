@@ -1027,7 +1027,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5371425731340848620">Kartani yangilash</translation>
 <translation id="5377026284221673050">“Soatingiz orqada” yoki “Soatingiz oldinda” yoki “&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5380442954567233718">Siz ochmoqchi boʻlgan <ph name="ORIGIN" /> serverida
-    barcha soʻrovlar manba siyosati tekshiruvidan oʻtishini talab qiluvchi sarlavha sozlangan. Lekin
+    barcha soʻrovlar manba siyosati tekshiruvidan oʻtishini talab qiluvchi sarlavha bilan sozlangan. Lekin
     sarlavha xato formatdaligi sababli brauzer <ph name="SITE" /> saytidagi soʻrovingizni
     bajara olmaydi. Manba siyosatlari sayt operatorlari
     tomonidan xavfsizlik kabi sayt parametrlarini sozlashda ishlatiladi.</translation>

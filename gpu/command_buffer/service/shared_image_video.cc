@@ -287,22 +287,11 @@ class SharedImageRepresentationVideoSkiaVk
       DCHECK_EQ(static_cast<int32_t>(vulkan_image_->image_tiling()),
                 static_cast<int32_t>(VK_IMAGE_TILING_OPTIMAL));
 
-      GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
-          device_queue->GetVulkanPhysicalDevice(), VK_IMAGE_TILING_OPTIMAL,
-          vulkan_image_->ycbcr_info());
-      // Create backend texture from the VkImage.
-      GrVkAlloc alloc(vulkan_image_->device_memory(), 0 /* offset */,
-                      vulkan_image_->device_size(), 0 /* flags */);
-      GrVkImageInfo vk_info(vulkan_image_->image(), alloc,
-                            vulkan_image_->image_tiling(),
-                            VK_IMAGE_LAYOUT_UNDEFINED, vulkan_image_->format(),
-                            1 /* levelCount */, VK_QUEUE_FAMILY_EXTERNAL,
-                            GrProtected::kNo, gr_ycbcr_info);
-
       // TODO(bsalomon): Determine whether it makes sense to attempt to reuse
       // this if the vk_info stays the same on subsequent calls.
       promise_texture_ = SkPromiseImageTexture::Make(
-          GrBackendTexture(size().width(), size().height(), vk_info));
+          GrBackendTexture(size().width(), size().height(),
+                           CreateGrVkImageInfo(vulkan_image_.get())));
       DCHECK(promise_texture_);
     }
     return promise_texture_;

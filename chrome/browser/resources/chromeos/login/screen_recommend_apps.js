@@ -23,6 +23,15 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
       return $('recommend-apps-screen');
     },
 
+    /**
+     * Event handler that is invoked just before the screen is shown.
+     * @param {Object} data Screen init payload.
+     */
+    onBeforeShow(data) {
+      $('recommend-apps-loading').onBeforeShow();
+      $('recommend-apps-screen').onBeforeShow();
+    },
+
     /*
      * Executed on language change.
      */

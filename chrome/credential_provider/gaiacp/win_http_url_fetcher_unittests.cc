@@ -13,14 +13,22 @@ namespace testing {
 // Test the WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService method
 // used to make various HTTP requests.
 // Parameters are:
-// bool  true:  HTTP call succeeds.
-//       false: Fails due to invalid response from server.
-class GcpWinHttpUrlFetcherTest : public GlsRunnerTestBase,
-                                 public ::testing::WithParamInterface<bool> {};
+// 1.  int - 0:  HTTP call succeeds.
+//           1:  Fails due to invalid response from server.
+//           2:  Fails due to a retryable HTTP error (like 503).
+//           3:  Fails due to a non-retryable HTTP error (like 404).
+// 2.  int - Number of retries allowed for a HTTP request.
+class GcpWinHttpUrlFetcherTest
+    : public GlsRunnerTestBase,
+      public ::testing::WithParamInterface<std::tuple<int, int>> {};
 
 TEST_P(GcpWinHttpUrlFetcherTest,
        BuildRequestAndFetchResultFromHttpServiceTest) {
-  bool invalid_response = GetParam();
+  bool valid_response = std::get<0>(GetParam()) == 0;
+  bool invalid_response = std::get<0>(GetParam()) == 1;
+  bool retryable_error_response = std::get<0>(GetParam()) == 2;
+  bool nonretryable_error_response = std::get<0>(GetParam()) == 3;
+  int num_retries = std::get<1>(GetParam());
 
   const int timeout_in_millis = 12000;
   const std::string header1 = "test-header-1";
@@ -42,23 +50,64 @@ TEST_P(GcpWinHttpUrlFetcherTest,
   std::string expected_response;
   base::JSONWriter::Write(expected_result, &expected_response);
 
-  fake_http_url_fetcher_factory()->SetFakeResponse(
-      test_url, FakeWinHttpUrlFetcher::Headers(),
-      invalid_response ? "Invalid json response" : expected_response);
+  std::string response;
+  if (invalid_response) {
+    response = "Invalid json response";
+  } else if (retryable_error_response) {
+    response =
+        "{\n\"error\": {"
+        "\"code\": 503,\n"
+        "\"message\": \"Service unavailable\","
+        "\"status\": \"UNAVAILABLE\"\n}\n}";
+  } else if (nonretryable_error_response) {
+    response =
+        "{\n\"error\": {"
+        "\"code\": 403,\n"
+        "\"message\": \"The caller does not have permission\","
+        "\"status\": \"PERMISSION_DENIED\"\n}\n}";
+  } else {
+    response = expected_response;
+  }
+
+  if (num_retries == 0) {
+    fake_http_url_fetcher_factory()->SetFakeResponse(
+        test_url, FakeWinHttpUrlFetcher::Headers(), response);
+  } else {
+    fake_http_url_fetcher_factory()->SetFakeResponseForSpecifiedNumRequests(
+        test_url, FakeWinHttpUrlFetcher::Headers(), response, num_retries);
+    fake_http_url_fetcher_factory()->SetFakeResponseForSpecifiedNumRequests(
+        test_url, FakeWinHttpUrlFetcher::Headers(), expected_response, 1);
+  }
   fake_http_url_fetcher_factory()->SetCollectRequestData(true);
 
   HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       test_url, access_token, {{header1, header1_value}}, request,
-      request_timeout, &request_result);
+      request_timeout, num_retries, &request_result);
 
-  if (invalid_response) {
-    ASSERT_TRUE(FAILED(hr));
+  if (num_retries == 0) {
+    if (invalid_response || retryable_error_response ||
+        nonretryable_error_response) {
+      ASSERT_TRUE(FAILED(hr));
+    } else {
+      ASSERT_EQ(S_OK, hr);
+      ASSERT_EQ(expected_result, request_result.value());
+    }
   } else {
-    ASSERT_EQ(S_OK, hr);
-    ASSERT_EQ(expected_result, request_result.value());
+    if (nonretryable_error_response) {
+      ASSERT_TRUE(FAILED(hr));
+    } else {
+      ASSERT_EQ(S_OK, hr);
+      ASSERT_EQ(expected_result, request_result.value());
+    }
   }
 
-  ASSERT_TRUE(fake_http_url_fetcher_factory()->requests_created() > 0);
+  if (valid_response || nonretryable_error_response) {
+    ASSERT_EQ(1UL, fake_http_url_fetcher_factory()->requests_created());
+  } else {
+    ASSERT_EQ(num_retries + 1UL,
+              fake_http_url_fetcher_factory()->requests_created());
+  }
+
   for (size_t idx = 0;
        idx < fake_http_url_fetcher_factory()->requests_created(); ++idx) {
     FakeWinHttpUrlFetcherFactory::RequestData request_data =
@@ -78,7 +127,8 @@ TEST_P(GcpWinHttpUrlFetcherTest,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpWinHttpUrlFetcherTest,
-                         ::testing::Values(true, false));
+                         ::testing::Combine(::testing::Values(0, 1, 2, 3),
+                                            ::testing::Values(0, 1, 3)));
 
 }  // namespace testing
 }  // namespace credential_provider

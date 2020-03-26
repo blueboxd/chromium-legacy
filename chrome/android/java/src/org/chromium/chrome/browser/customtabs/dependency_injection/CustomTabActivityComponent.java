@@ -25,7 +25,8 @@ import dagger.Subcomponent;
  * Activity-scoped component associated with
  * {@link org.chromium.chrome.browser.customtabs.CustomTabActivity}.
  */
-@Subcomponent(modules = {ChromeActivityCommonsModule.class, CustomTabActivityModule.class})
+@Subcomponent(modules = {ChromeActivityCommonsModule.class, BaseCustomTabActivityModule.class,
+                      CustomTabActivityModule.class})
 @ActivityScope
 public interface CustomTabActivityComponent extends BaseCustomTabActivityComponent {
     TrustedWebActivityCoordinator resolveTrustedWebActivityCoordinator();

@@ -35,7 +35,7 @@ class ManagedBookmarksPolicyHandlerTest
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
-  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
+  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, nullptr));
 
   PolicyMap policy;
   policy.Set(
@@ -80,13 +80,13 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
                                        "]"),
       nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* pref_value = NULL;
+  const base::Value* pref_value = nullptr;
   EXPECT_TRUE(
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
   // Make sure the kManagedBookmarksFolderName pref is set correctly.
-  const base::Value* folder_value = NULL;
+  const base::Value* folder_value = nullptr;
   std::string folder_name;
   EXPECT_TRUE(store_->GetValue(bookmarks::prefs::kManagedBookmarksFolderName,
                                &folder_value));
@@ -142,7 +142,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
-  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
+  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, nullptr));
 
   PolicyMap policy;
   policy.Set(key::kManagedBookmarks, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -155,13 +155,13 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
                                               "]"),
              nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* pref_value = NULL;
+  const base::Value* pref_value = nullptr;
   EXPECT_TRUE(
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
   // Make sure the kManagedBookmarksFolderName pref is set correctly.
-  const base::Value* folder_value = NULL;
+  const base::Value* folder_value = nullptr;
   std::string folder_name;
   EXPECT_TRUE(store_->GetValue(bookmarks::prefs::kManagedBookmarksFolderName,
                                &folder_value));
@@ -194,7 +194,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
                                            "]"),
              nullptr);
   UpdateProviderPolicy(policy);
-  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
+  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, nullptr));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -212,7 +212,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
                                        "]"),
       nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* pref_value = NULL;
+  const base::Value* pref_value = nullptr;
   EXPECT_TRUE(
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);

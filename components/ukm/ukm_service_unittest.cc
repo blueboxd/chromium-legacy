@@ -1397,39 +1397,45 @@ TEST_F(UkmServiceTest, PurgeNonNavigationSources) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  // Seed some dummy sources.
-  SourceId id0 = ConvertToSourceId(0, SourceIdType::UKM);
-  recorder.UpdateSourceURL(id0, GURL("https://www.example0.com/"));
-  SourceId id1 =
+  // Seed some fake sources.
+  SourceId ukm_id = ConvertToSourceId(0, SourceIdType::UKM);
+  recorder.UpdateSourceURL(ukm_id, GURL("https://www.example0.com/"));
+  SourceId navigation_id =
       ConvertSourceIdToWhitelistedType(1, SourceIdType::NAVIGATION_ID);
-  recorder.UpdateSourceURL(id1, GURL("https://www.example1.com/"));
-  SourceId id2 = ConvertSourceIdToWhitelistedType(2, SourceIdType::APP_ID);
-  recorder.UpdateSourceURL(id2, GURL("https://www.example2.com/"));
-  SourceId id3 = ConvertSourceIdToWhitelistedType(3, SourceIdType::HISTORY_ID);
-  recorder.UpdateSourceURL(id3, GURL("https://www.example3.com/"));
-  SourceId id4 = ConvertSourceIdToWhitelistedType(4, SourceIdType::WEBAPK_ID);
-  recorder.UpdateSourceURL(id4, GURL("https://www.example3.com/"));
+  recorder.UpdateSourceURL(navigation_id, GURL("https://www.example1.com/"));
+  SourceId app_id = ConvertSourceIdToWhitelistedType(2, SourceIdType::APP_ID);
+  recorder.UpdateSourceURL(app_id, GURL("https://www.example2.com/"));
+  SourceId history_id =
+      ConvertSourceIdToWhitelistedType(3, SourceIdType::HISTORY_ID);
+  recorder.UpdateSourceURL(history_id, GURL("https://www.example3.com/"));
+  SourceId webapk_id =
+      ConvertSourceIdToWhitelistedType(4, SourceIdType::WEBAPK_ID);
+  recorder.UpdateSourceURL(webapk_id, GURL("https://www.example4.com/"));
+  SourceId payment_app_id =
+      ConvertSourceIdToWhitelistedType(5, SourceIdType::PAYMENT_APP_ID);
+  recorder.UpdateSourceURL(payment_app_id, GURL("https://www.example5.com/"));
 
   service.Flush();
   int logs_count = 0;
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
-  // All sources are present except id0 of non-whitelisted UKM type.
+  // All sources are present except ukm_id of non-whitelisted UKM type.
   Report proto_report = GetPersistedReport();
-  ASSERT_EQ(4, proto_report.sources_size());
-  EXPECT_EQ(id1, proto_report.sources(0).id());
-  EXPECT_EQ(id2, proto_report.sources(1).id());
-  EXPECT_EQ(id3, proto_report.sources(2).id());
-  EXPECT_EQ(id4, proto_report.sources(3).id());
+  ASSERT_EQ(5, proto_report.sources_size());
+  EXPECT_EQ(navigation_id, proto_report.sources(0).id());
+  EXPECT_EQ(app_id, proto_report.sources(1).id());
+  EXPECT_EQ(history_id, proto_report.sources(2).id());
+  EXPECT_EQ(webapk_id, proto_report.sources(3).id());
+  EXPECT_EQ(payment_app_id, proto_report.sources(4).id());
 
   service.Flush();
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
-  // Sources of APP_ID, HISTORY_ID and WEBAPK_ID types are not kept between
-  // reporting cycles, thus only 1 navigation type source remains.
+  // Sources of APP_ID, HISTORY_ID, WEBAPK_ID and PAYMENT_APP_ID types are not
+  // kept between reporting cycles, thus only 1 navigation type source remains.
   proto_report = GetPersistedReport();
   ASSERT_EQ(1, proto_report.sources_size());
-  EXPECT_EQ(id1, proto_report.sources(0).id());
+  EXPECT_EQ(navigation_id, proto_report.sources(0).id());
 }
 
 }  // namespace ukm

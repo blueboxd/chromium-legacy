@@ -156,12 +156,10 @@ bool PrintingAllowedPageSizesPolicyHandler::CheckListEntry(
   return width && height && width->is_int() && height->is_int();
 }
 
-void PrintingAllowedPageSizesPolicyHandler::ApplyList(
-    std::unique_ptr<base::ListValue> filtered_list,
-    PrefValueMap* prefs) {
-  DCHECK(filtered_list);
-  prefs->SetValue(prefs::kPrintingAllowedPageSizes,
-                  base::Value::FromUniquePtrValue(std::move(filtered_list)));
+void PrintingAllowedPageSizesPolicyHandler::ApplyList(base::Value filtered_list,
+                                                      PrefValueMap* prefs) {
+  DCHECK(filtered_list.is_list());
+  prefs->SetValue(prefs::kPrintingAllowedPageSizes, std::move(filtered_list));
 }
 
 PrintingSizeDefaultPolicyHandler::PrintingSizeDefaultPolicyHandler()

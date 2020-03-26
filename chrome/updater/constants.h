@@ -86,6 +86,9 @@ extern const char kLoggingModuleSwitch[];
 // only and it may be removed at any time.
 extern const char kSingleProcessSwitch[];
 
+// Specifies the application that the Updater needs to install.
+extern const char kAppIdSwitch[];
+
 // URLs.
 //
 // Omaha server end point.

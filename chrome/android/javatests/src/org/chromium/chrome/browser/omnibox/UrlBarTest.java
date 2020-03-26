@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -218,6 +219,27 @@ public class UrlBarTest extends DummyUiActivityTestCase {
             selection[1] = Selection.getSelectionEnd(text);
             return selection;
         });
+    }
+
+    private void setTextAndVerifyTextDirection(String text, int expectedDirection)
+            throws TimeoutException {
+        CallbackHelper directionCallback = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mUrlBar.setUrlDirectionListener((direction) -> {
+                if (direction == expectedDirection) directionCallback.notifyCalled();
+            });
+        });
+        setTextAndVerifyNoAutocomplete(text);
+        directionCallback.waitForFirst(
+                "Direction never reached expected direction: " + expectedDirection);
+        assertUrlDirection(expectedDirection);
+        TestThreadUtils.runOnUiThreadBlocking(() -> mUrlBar.setUrlDirectionListener(null));
+    }
+
+    private void assertUrlDirection(int expectedDirection) {
+        int actualDirection =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> mUrlBar.getUrlDirection());
+        Assert.assertEquals(expectedDirection, actualDirection);
     }
 
     @Test
@@ -903,5 +925,19 @@ public class UrlBarTest extends DummyUiActivityTestCase {
         setAutocomplete("test", "ing is hard");
         setAutocomplete("test", "ing is awesome");
         assertAutocompleteSelectionRange(4, 18);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testUrlDirection() throws TimeoutException {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        assertUrlDirection(View.LAYOUT_DIRECTION_LOCALE);
+        setTextAndVerifyTextDirection("ل", View.LAYOUT_DIRECTION_RTL);
+        setTextAndVerifyTextDirection("a", View.LAYOUT_DIRECTION_LTR);
+        setTextAndVerifyTextDirection("للك", View.LAYOUT_DIRECTION_RTL);
+        setTextAndVerifyTextDirection("f", View.LAYOUT_DIRECTION_LTR);
+        setTextAndVerifyTextDirection("", View.LAYOUT_DIRECTION_LOCALE);
     }
 }

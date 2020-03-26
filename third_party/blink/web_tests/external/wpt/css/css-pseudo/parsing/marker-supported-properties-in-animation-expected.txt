@@ -1,0 +1,64 @@
+This is a testharness.js-based test.
+Found 60 tests; 49 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
+FAIL Animation of font in ::marker assert_in_array: value "italic small-caps 500 ultra-expanded 15px Ahem" not in array ["italic small-caps 500 expanded 15px Ahem", "italic small-caps 500 expanded 15px/normal Ahem"]
+PASS Animation of font-family in ::marker
+PASS Animation of font-feature-settings in ::marker
+PASS Animation of font-kerning in ::marker
+PASS Animation of font-size in ::marker
+PASS Animation of font-size-adjust in ::marker
+FAIL Animation of font-stretch in ::marker assert_in_array: value "200%" not in array ["expanded", "125%"]
+PASS Animation of font-style in ::marker
+FAIL Animation of font-synthesis in ::marker assert_true: font-synthesis doesn't seem to be supported in the computed style expected true got false
+PASS Animation of font-variant in ::marker
+PASS Animation of font-variant-caps in ::marker
+PASS Animation of font-variant-east-asian in ::marker
+PASS Animation of font-variant-ligatures in ::marker
+PASS Animation of font-variant-numeric in ::marker
+FAIL Animation of font-variant-position in ::marker assert_true: font-variant-position doesn't seem to be supported in the computed style expected true got false
+PASS Animation of font-weight in ::marker
+FAIL Animation of white-space in ::marker assert_equals: expected "nowrap" but got "pre"
+PASS Animation of color in ::marker
+FAIL Animation of text-combine-upright in ::marker assert_equals: expected "none" but got "all"
+PASS Animation of unicode-bidi in ::marker
+PASS Animation of direction in ::marker
+PASS Animation of content in ::marker
+PASS Animation of display in ::marker
+PASS Animation of position in ::marker
+PASS Animation of float in ::marker
+PASS Animation of list-style in ::marker
+PASS Animation of list-style-image in ::marker
+PASS Animation of list-style-position in ::marker
+PASS Animation of list-style-type in ::marker
+PASS Animation of line-height in ::marker
+FAIL Transition of font in ::marker assert_in_array: value "italic small-caps 500 ultra-expanded 15px Ahem" not in array ["italic small-caps 500 expanded 15px Ahem", "italic small-caps 500 expanded 15px/normal Ahem"]
+PASS Transition of font-family in ::marker
+PASS Transition of font-feature-settings in ::marker
+PASS Transition of font-kerning in ::marker
+PASS Transition of font-size in ::marker
+PASS Transition of font-size-adjust in ::marker
+FAIL Transition of font-stretch in ::marker assert_in_array: value "200%" not in array ["expanded", "125%"]
+PASS Transition of font-style in ::marker
+FAIL Transition of font-synthesis in ::marker assert_true: font-synthesis doesn't seem to be supported in the computed style expected true got false
+PASS Transition of font-variant in ::marker
+PASS Transition of font-variant-caps in ::marker
+PASS Transition of font-variant-east-asian in ::marker
+PASS Transition of font-variant-ligatures in ::marker
+PASS Transition of font-variant-numeric in ::marker
+FAIL Transition of font-variant-position in ::marker assert_true: font-variant-position doesn't seem to be supported in the computed style expected true got false
+PASS Transition of font-weight in ::marker
+FAIL Transition of white-space in ::marker assert_equals: expected "nowrap" but got "pre"
+PASS Transition of color in ::marker
+PASS Transition of text-combine-upright in ::marker
+PASS Transition of unicode-bidi in ::marker
+PASS Transition of direction in ::marker
+PASS Transition of content in ::marker
+PASS Transition of display in ::marker
+PASS Transition of position in ::marker
+PASS Transition of float in ::marker
+PASS Transition of list-style in ::marker
+PASS Transition of list-style-image in ::marker
+PASS Transition of list-style-position in ::marker
+PASS Transition of list-style-type in ::marker
+PASS Transition of line-height in ::marker
+Harness: the test ran to completion.
+

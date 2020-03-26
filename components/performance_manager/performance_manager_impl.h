@@ -36,8 +36,8 @@ class PerformanceManagerImpl : public PerformanceManager {
 
   ~PerformanceManagerImpl() override;
 
-  // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to call from any sequence.
+  // Posts a callback that will run on the PM sequence. Valid to call from any
+  // sequence.
   //
   // Note: If called from the main thread, the |graph_callback| is guaranteed to
   //       run if and only if "IsAvailable()" returns true.
@@ -45,6 +45,10 @@ class PerformanceManagerImpl : public PerformanceManager {
   //       If called from any other sequence, there is no guarantee that the
   //       callback will run. It will depend on if the PerformanceManager was
   //       destroyed before the the task is scheduled.
+  static void CallOnGraphImpl(const base::Location& from_here,
+                              base::OnceClosure callback);
+
+  // Same as the above, but the callback is provided a pointer to the graph.
   using GraphImplCallback = base::OnceCallback<void(GraphImpl*)>;
   static void CallOnGraphImpl(const base::Location& from_here,
                               GraphImplCallback graph_callback);

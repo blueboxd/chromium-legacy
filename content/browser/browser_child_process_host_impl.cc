@@ -26,6 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/token.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -654,25 +655,28 @@ void BrowserChildProcessHostImpl::RegisterCoordinatorClient(
   if (!IsProcessLaunched())
     return;
 
-  base::PostTask(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(
-          [](mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator>
-                 receiver,
-             mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
-                 client_process,
-             memory_instrumentation::mojom::ProcessType process_type,
-             base::ProcessId process_id,
-             base::Optional<std::string> service_name) {
-            GetMemoryInstrumentationCoordinatorController()
-                ->RegisterClientProcess(std::move(receiver),
-                                        std::move(client_process), process_type,
-                                        process_id, std::move(service_name));
-          },
-          std::move(receiver), std::move(client_process),
-          GetCoordinatorClientProcessType(
-              static_cast<ProcessType>(data_.process_type)),
-          child_process_->GetProcess().Pid(), delegate_->GetServiceName()));
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->GetDumpThreadTaskRunner()
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](mojo::PendingReceiver<
+                     memory_instrumentation::mojom::Coordinator> receiver,
+                 mojo::PendingRemote<
+                     memory_instrumentation::mojom::ClientProcess>
+                     client_process,
+                 memory_instrumentation::mojom::ProcessType process_type,
+                 base::ProcessId process_id,
+                 base::Optional<std::string> service_name) {
+                GetMemoryInstrumentationCoordinatorController()
+                    ->RegisterClientProcess(
+                        std::move(receiver), std::move(client_process),
+                        process_type, process_id, std::move(service_name));
+              },
+              std::move(receiver), std::move(client_process),
+              GetCoordinatorClientProcessType(
+                  static_cast<ProcessType>(data_.process_type)),
+              child_process_->GetProcess().Pid(), delegate_->GetServiceName()));
 }
 
 bool BrowserChildProcessHostImpl::IsProcessLaunched() const {

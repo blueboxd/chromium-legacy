@@ -8,7 +8,6 @@ assert(current_toolchain == default_toolchain)
 
 java_binary("java_bytecode_rewriter") {
   sources = [
-    "java/org/chromium/bytecode/AssertionEnablerClassAdapter.java",
     "java/org/chromium/bytecode/ByteCodeProcessor.java",
     "java/org/chromium/bytecode/ClassPathValidator.java",
     "java/org/chromium/bytecode/CustomClassLoaderClassWriter.java",

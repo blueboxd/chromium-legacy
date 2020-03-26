@@ -223,6 +223,37 @@ AnimationTimeDelta StartTimeFromDelay(double start_delay) {
   return AnimationTimeDelta::FromSecondsD(start_delay < 0 ? -start_delay : 0);
 }
 
+// Timing functions for computing elapsed time of an event.
+
+AnimationTimeDelta IntervalStart(const AnimationEffect& effect) {
+  const double start_delay = effect.SpecifiedTiming().start_delay;
+  const double active_duration = effect.SpecifiedTiming().ActiveDuration();
+  return AnimationTimeDelta::FromSecondsD(
+      std::fmax(std::fmin(-start_delay, active_duration), 0.0));
+}
+
+AnimationTimeDelta IntervalEnd(const AnimationEffect& effect) {
+  const double start_delay = effect.SpecifiedTiming().start_delay;
+  const double end_delay = effect.SpecifiedTiming().end_delay;
+  const double active_duration = effect.SpecifiedTiming().ActiveDuration();
+  const double target_effect_end =
+      std::max(start_delay + active_duration + end_delay, 0.0);
+  return AnimationTimeDelta::FromSecondsD(std::max(
+      std::min(target_effect_end - start_delay, active_duration), 0.0));
+}
+
+AnimationTimeDelta IterationElapsedTime(const AnimationEffect& effect,
+                                        double previous_iteration) {
+  const double current_iteration = effect.CurrentIteration().value();
+  const double iteration_boundary = (previous_iteration > current_iteration)
+                                        ? current_iteration + 1
+                                        : current_iteration;
+  const double iteration_start = effect.SpecifiedTiming().iteration_start;
+  const AnimationTimeDelta iteration_duration =
+      effect.SpecifiedTiming().iteration_duration.value();
+  return iteration_duration * (iteration_boundary - iteration_start);
+}
+
 }  // namespace
 
 CSSAnimations::CSSAnimations() = default;
@@ -1181,47 +1212,45 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
   const base::Optional<double> current_iteration =
       animation_node.CurrentIteration();
 
-  if (previous_phase_ != current_phase &&
-      (current_phase == Timing::kPhaseActive ||
-       current_phase == Timing::kPhaseAfter) &&
-      (previous_phase_ == Timing::kPhaseNone ||
-       previous_phase_ == Timing::kPhaseBefore)) {
-    const double start_delay = animation_node.SpecifiedTiming().start_delay;
-    const auto& elapsed_time =
-        AnimationTimeDelta::FromSecondsD(start_delay < 0 ? -start_delay : 0);
+  // See http://drafts.csswg.org/css-animations-2/#event-dispatch
+  // When multiple events are dispatched for a single phase transition,
+  // the animationstart event is to be dispatched before the animationend
+  // event.
+
+  // The following phase transitions trigger an animationstart event:
+  //   idle or before --> active or after
+  //   after --> active or before
+  const bool phase_change = previous_phase_ != current_phase;
+  const bool was_idle_or_before = (previous_phase_ == Timing::kPhaseNone ||
+                                   previous_phase_ == Timing::kPhaseBefore);
+  const bool is_active_or_after = (current_phase == Timing::kPhaseActive ||
+                                   current_phase == Timing::kPhaseAfter);
+  const bool is_active_or_before = (current_phase == Timing::kPhaseActive ||
+                                    current_phase == Timing::kPhaseBefore);
+  const bool was_after = (previous_phase_ == Timing::kPhaseAfter);
+  if (phase_change && ((was_idle_or_before && is_active_or_after) ||
+                       (was_after && is_active_or_before))) {
+    AnimationTimeDelta elapsed_time =
+        was_after ? IntervalEnd(animation_node) : IntervalStart(animation_node);
     MaybeDispatch(Document::kAnimationStartListener,
                   event_type_names::kAnimationstart, elapsed_time);
   }
 
-  if (current_phase == Timing::kPhaseActive &&
-      previous_phase_ == current_phase &&
-      previous_iteration_ != current_iteration) {
-    // We fire only a single event for all iterations that terminate
-    // between a single pair of samples. See http://crbug.com/275263. For
-    // compatibility with the existing implementation, this event uses
-    // the elapsedTime for the first iteration in question.
-    DCHECK(previous_iteration_);
-    const AnimationTimeDelta elapsed_time =
-        animation_node.SpecifiedTiming().iteration_duration.value() *
-        (previous_iteration_.value() + 1);
-    MaybeDispatch(Document::kAnimationIterationListener,
-                  event_type_names::kAnimationiteration, elapsed_time);
-  }
-
-  previous_iteration_ = current_iteration;
-
-  if (previous_phase_ == current_phase)
-    return;
-  previous_phase_ = current_phase;
-
-  if (current_phase == Timing::kPhaseAfter) {
+  // The following phase transitions trigger an animationend event:
+  //   idle, before or active--> after
+  //   active or after--> before
+  const bool was_active_or_after = (previous_phase_ == Timing::kPhaseActive ||
+                                    previous_phase_ == Timing::kPhaseAfter);
+  const bool is_after = (current_phase == Timing::kPhaseAfter);
+  const bool is_before = (current_phase == Timing::kPhaseBefore);
+  if (phase_change && (is_after || (was_active_or_after && is_before))) {
+    AnimationTimeDelta elapsed_time =
+        is_after ? IntervalEnd(animation_node) : IntervalStart(animation_node);
     MaybeDispatch(Document::kAnimationEndListener,
-                  event_type_names::kAnimationend,
-                  AnimationTimeDelta::FromSecondsD(
-                      animation_node.SpecifiedTiming().ActiveDuration()));
+                  event_type_names::kAnimationend, elapsed_time);
   }
 
-  if (current_phase == Timing::kPhaseNone) {
+  if (phase_change && current_phase == Timing::kPhaseNone) {
     // TODO(crbug.com/1059968): Determine if animation direction or playback
     // rate factor into the calculation of the elapsed time.
     double cancel_time = animation_node.GetCancelTime();
@@ -1229,6 +1258,22 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
                   event_type_names::kAnimationcancel,
                   AnimationTimeDelta::FromSecondsD(cancel_time));
   }
+
+  if (!phase_change && current_phase == Timing::kPhaseActive &&
+      previous_iteration_ != current_iteration) {
+    // We fire only a single event for all iterations that terminate
+    // between a single pair of samples. See http://crbug.com/275263. For
+    // compatibility with the existing implementation, this event uses
+    // the elapsedTime for the first iteration in question.
+    DCHECK(previous_iteration_ && current_iteration);
+    const AnimationTimeDelta elapsed_time =
+        IterationElapsedTime(animation_node, previous_iteration_.value());
+    MaybeDispatch(Document::kAnimationIterationListener,
+                  event_type_names::kAnimationiteration, elapsed_time);
+  }
+
+  previous_iteration_ = current_iteration;
+  previous_phase_ = current_phase;
 }
 
 void CSSAnimations::AnimationEventDelegate::Trace(Visitor* visitor) {

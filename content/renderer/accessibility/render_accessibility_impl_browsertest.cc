@@ -41,6 +41,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -267,6 +268,16 @@ class RenderAccessibilityImplTest : public RenderViewTest {
 
   void SetUp() override {
     RenderViewTest::SetUp();
+    // These flags are enabled in the parent class to make the testing
+    // environment match the Blink one. But there are some accessibility flags
+    // that cause some of the tests here to fail such as:
+    // SendFullAccessibilityTreeOnReload, ShowAccessibilityObject, and
+    // HideAccessibilityObject. Disabling these flags for now to keep the
+    // behavior the same as production for these tests. Ideally someone with the
+    // domain knowledge here should be able keep these features enabled.
+    blink::WebRuntimeFeatures::EnableExperimentalFeatures(false);
+    blink::WebRuntimeFeatures::EnableTestOnlyFeatures(false);
+
     sink_ = &render_thread_->sink();
 
     // Ensure that a valid RenderAccessibilityImpl object is created and

@@ -256,6 +256,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     onBeforeShow(data) {
       cr.ui.Oobe.clearErrors();
+      $('error-message-md').onBeforeShow();
       $('error-message-back-button').disabled = !this.closable;
     },
 

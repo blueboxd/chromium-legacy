@@ -14,6 +14,7 @@
 #include "content/child/child_process.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
@@ -41,6 +42,11 @@
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "media/cdm/cdm_host_file.h"
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
+#include "content/services/isolated_xr_device/xr_device_service.h"  // nogncheck
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"       // nogncheck
+#endif
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox.h"
@@ -162,6 +168,13 @@ auto RunVideoCapture(
       std::move(receiver), base::ThreadTaskRunnerHandle::Get());
 }
 
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
+auto RunXrDeviceService(
+    mojo::PendingReceiver<device::mojom::XRDeviceService> receiver) {
+  return std::make_unique<device::XrDeviceService>(std::move(receiver));
+}
+#endif
+
 mojo::ServiceFactory& GetIOThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory{
       RunNetworkService,
@@ -180,6 +193,9 @@ mojo::ServiceFactory& GetMainThreadServiceFactory() {
     RunStorageService,
     RunTracing,
     RunVideoCapture,
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
+    RunXrDeviceService,
+#endif
   };
   // clang-format on
   return *factory;

@@ -126,7 +126,7 @@ XRRuntimeManagerImpl::GetOrCreateInstance() {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   orientation_provider_enabled =
       IsEnabled(cmd_line, device::kWebXrOrientationSensorDevice,
-                switches::kWebXrRuntimeOrientationSensors);
+                ::switches::kWebXrRuntimeOrientationSensors);
 #endif
 
   if (orientation_provider_enabled) {

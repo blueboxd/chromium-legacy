@@ -7,13 +7,20 @@
 
 #import <Foundation/Foundation.h>
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/updater/update_service.h"
 
 @class CRUUpdateServiceOutOfProcessImpl;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace update_client {
 enum class Error;
@@ -22,25 +29,20 @@ enum class Error;
 namespace updater {
 
 using StateChangeCallback =
-    base::RepeatingCallback<void(updater::UpdateService::UpdateState)>;
+    base::RepeatingCallback<void(UpdateService::UpdateState)>;
 
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
   UpdateServiceOutOfProcess();
 
-  UpdateServiceOutOfProcess(const UpdateServiceOutOfProcess&) = delete;
-  UpdateServiceOutOfProcess& operator=(const UpdateServiceOutOfProcess&) =
-      delete;
-
-  ~UpdateServiceOutOfProcess() override;
-
-  // Overrides for updater::UpdateService.
-  // Update-checks all registered applications. Calls |callback| once the
-  // operation is complete.
+  // Overrides for UpdateService.
   void RegisterApp(
       const RegistrationRequest& request,
       base::OnceCallback<void(const RegistrationResponse&)> callback) override;
+
+  // Checks all registered applications for updates. Calls |callback| once the
+  // operation is complete.
   void UpdateAll(base::OnceCallback<void(Result)> callback) override;
   void Update(const std::string& app_id,
               Priority priority,
@@ -49,6 +51,8 @@ class UpdateServiceOutOfProcess : public UpdateService {
   void Uninitialize() override;
 
  private:
+  ~UpdateServiceOutOfProcess() override;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::scoped_nsobject<CRUUpdateServiceOutOfProcessImpl> client_;

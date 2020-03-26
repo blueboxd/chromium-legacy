@@ -20,15 +20,13 @@ namespace {
 // Helper function to add |worker_node| as a child to |frame_node| on the PM
 // sequence.
 void AddWorkerToFrameNode(FrameNodeImpl* frame_node,
-                          WorkerNodeImpl* worker_node,
-                          GraphImpl* graph) {
+                          WorkerNodeImpl* worker_node) {
   worker_node->AddClientFrame(frame_node);
 }
 
 // Helper function to remove |worker_node| from |frame_node| on the PM sequence.
 void RemoveWorkerFromFrameNode(FrameNodeImpl* frame_node,
-                               WorkerNodeImpl* worker_node,
-                               GraphImpl* graph) {
+                               WorkerNodeImpl* worker_node) {
   worker_node->RemoveClientFrame(frame_node);
 }
 
@@ -36,8 +34,7 @@ void RemoveWorkerFromFrameNode(FrameNodeImpl* frame_node,
 // sequence.
 void RemoveWorkersFromFrameNode(
     FrameNodeImpl* frame_node,
-    const base::flat_set<WorkerNodeImpl*>& worker_nodes,
-    GraphImpl* graph) {
+    const base::flat_set<WorkerNodeImpl*>& worker_nodes) {
   for (auto* worker_node : worker_nodes)
     worker_node->RemoveClientFrame(frame_node);
 }
@@ -46,12 +43,8 @@ void RemoveWorkersFromFrameNode(
 // OnFinalResponseURLDetermined() on |worker_node|.
 void SetFinalResponseURL(WorkerNodeImpl* worker_node, const GURL& url) {
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(
-          [](WorkerNodeImpl* worker_node, const GURL& url, GraphImpl* graph) {
-            worker_node->OnFinalResponseURLDetermined(url);
-          },
-          worker_node, url));
+      FROM_HERE, base::BindOnce(&WorkerNodeImpl::OnFinalResponseURLDetermined,
+                                base::Unretained(worker_node), url));
 }
 
 }  // namespace
@@ -60,19 +53,20 @@ WorkerWatcher::WorkerWatcher(
     const std::string& browser_context_id,
     content::DedicatedWorkerService* dedicated_worker_service,
     content::SharedWorkerService* shared_worker_service,
+    content::ServiceWorkerContext* service_worker_context,
     ProcessNodeSource* process_node_source,
     FrameNodeSource* frame_node_source)
     : browser_context_id_(browser_context_id),
-      dedicated_worker_service_observer_(this),
-      shared_worker_service_observer_(this),
       process_node_source_(process_node_source),
       frame_node_source_(frame_node_source) {
   DCHECK(dedicated_worker_service);
   DCHECK(shared_worker_service);
+  DCHECK(service_worker_context);
   DCHECK(process_node_source_);
   DCHECK(frame_node_source_);
   dedicated_worker_service_observer_.Add(dedicated_worker_service);
   shared_worker_service_observer_.Add(shared_worker_service);
+  service_worker_context_observer_.Add(service_worker_context);
 }
 
 WorkerWatcher::~WorkerWatcher() {
@@ -81,6 +75,8 @@ WorkerWatcher::~WorkerWatcher() {
   DCHECK(!dedicated_worker_service_observer_.IsObservingSources());
   DCHECK(shared_worker_nodes_.empty());
   DCHECK(!shared_worker_service_observer_.IsObservingSources());
+  DCHECK(service_worker_nodes_.empty());
+  DCHECK(!service_worker_context_observer_.IsObservingSources());
 }
 
 void WorkerWatcher::TearDown() {
@@ -104,18 +100,26 @@ void WorkerWatcher::TearDown() {
 
   // Then clean all the worker nodes.
   std::vector<std::unique_ptr<NodeBase>> nodes;
-  nodes.reserve(dedicated_worker_nodes_.size() + shared_worker_nodes_.size());
+  nodes.reserve(dedicated_worker_nodes_.size() + shared_worker_nodes_.size() +
+                service_worker_nodes_.size());
+
   for (auto& node : dedicated_worker_nodes_)
     nodes.push_back(std::move(node.second));
   dedicated_worker_nodes_.clear();
+
   for (auto& node : shared_worker_nodes_)
     nodes.push_back(std::move(node.second));
   shared_worker_nodes_.clear();
+
+  for (auto& node : service_worker_nodes_)
+    nodes.push_back(std::move(node.second));
+  service_worker_nodes_.clear();
 
   PerformanceManagerImpl::BatchDeleteNodes(std::move(nodes));
 
   dedicated_worker_service_observer_.RemoveAll();
   shared_worker_service_observer_.RemoveAll();
+  service_worker_context_observer_.RemoveAll();
 }
 
 void WorkerWatcher::OnWorkerStarted(
@@ -128,11 +132,12 @@ void WorkerWatcher::OnWorkerStarted(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
       base::UnguessableToken::Create());
-  AddClientFrame(worker_node.get(), ancestor_render_frame_host_id);
   bool inserted = dedicated_worker_nodes_
                       .emplace(dedicated_worker_id, std::move(worker_node))
                       .second;
   DCHECK(inserted);
+
+  // TODO(pmonette): Connect |worker_node| to its client frame.
 }
 
 void WorkerWatcher::OnBeforeWorkerTerminated(
@@ -140,15 +145,15 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   auto it = dedicated_worker_nodes_.find(dedicated_worker_id);
   DCHECK(it != dedicated_worker_nodes_.end());
-  auto worker_node = std::move(it->second);
-  dedicated_worker_nodes_.erase(it);
 
-  RemoveClientFrame(worker_node.get(), ancestor_render_frame_host_id);
+  auto worker_node = std::move(it->second);
+  // TODO(pmonette): Disconnect |worker_node| from its client frame.
 #if DCHECK_IS_ON()
   DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
 #endif  // DCHECK_IS_ON()
-
   PerformanceManagerImpl::DeleteNode(std::move(worker_node));
+
+  dedicated_worker_nodes_.erase(it);
 }
 
 void WorkerWatcher::OnFinalResponseURLDetermined(
@@ -201,6 +206,32 @@ void WorkerWatcher::OnClientRemoved(
     content::GlobalFrameRoutingId render_frame_host_id) {
   RemoveClientFrame(GetSharedWorkerNode(shared_worker_id),
                     render_frame_host_id);
+}
+
+void WorkerWatcher::OnVersionStartedRunning(
+    int64_t version_id,
+    const content::ServiceWorkerRunningInfo& running_info) {
+  // TODO(pmonette): Plumb in the DevTools token.
+  auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
+      browser_context_id_, WorkerNode::WorkerType::kService,
+      process_node_source_->GetProcessNode(running_info.render_process_id),
+      base::UnguessableToken());
+  bool inserted =
+      service_worker_nodes_.emplace(version_id, std::move(worker_node)).second;
+  DCHECK(inserted);
+}
+
+void WorkerWatcher::OnVersionStoppedRunning(int64_t version_id) {
+  auto it = service_worker_nodes_.find(version_id);
+  DCHECK(it != service_worker_nodes_.end());
+
+  auto worker_node = std::move(it->second);
+#if DCHECK_IS_ON()
+  DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
+#endif  // DCHECK_IS_ON()
+  PerformanceManagerImpl::DeleteNode(std::move(worker_node));
+
+  service_worker_nodes_.erase(it);
 }
 
 void WorkerWatcher::AddClientFrame(
@@ -333,6 +364,15 @@ WorkerNodeImpl* WorkerWatcher::GetSharedWorkerNode(
     content::SharedWorkerId shared_worker_id) {
   auto it = shared_worker_nodes_.find(shared_worker_id);
   if (it == shared_worker_nodes_.end()) {
+    NOTREACHED();
+    return nullptr;
+  }
+  return it->second.get();
+}
+
+WorkerNodeImpl* WorkerWatcher::GetServiceWorkerNode(int64_t version_id) {
+  auto it = service_worker_nodes_.find(version_id);
+  if (it == service_worker_nodes_.end()) {
     NOTREACHED();
     return nullptr;
   }

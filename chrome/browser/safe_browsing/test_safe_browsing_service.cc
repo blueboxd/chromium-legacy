@@ -16,7 +16,10 @@
 namespace safe_browsing {
 
 // TestSafeBrowsingService functions:
-TestSafeBrowsingService::TestSafeBrowsingService() {
+TestSafeBrowsingService::TestSafeBrowsingService()
+    : test_shared_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   services_delegate_ = ServicesDelegate::CreateForTest(this, this);
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
@@ -32,6 +35,17 @@ V4ProtocolConfig TestSafeBrowsingService::GetV4ProtocolConfig() const {
 
 void TestSafeBrowsingService::UseV4LocalDatabaseManager() {
   use_v4_local_db_manager_ = true;
+}
+
+void TestSafeBrowsingService::SetUseTestUrlLoaderFactory(
+    bool use_test_url_loader_factory) {
+  use_test_url_loader_factory_ = use_test_url_loader_factory;
+}
+
+network::TestURLLoaderFactory*
+TestSafeBrowsingService::GetTestUrlLoaderFactory() {
+  DCHECK(use_test_url_loader_factory_);
+  return &test_url_loader_factory_;
 }
 
 std::unique_ptr<SafeBrowsingService::StateSubscription>
@@ -130,6 +144,13 @@ ResourceRequestDetector*
 TestSafeBrowsingService::CreateResourceRequestDetector() {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+TestSafeBrowsingService::GetURLLoaderFactory() {
+  if (use_test_url_loader_factory_)
+    return test_shared_loader_factory_;
+  return SafeBrowsingService::GetURLLoaderFactory();
 }
 
 // TestSafeBrowsingServiceFactory functions:

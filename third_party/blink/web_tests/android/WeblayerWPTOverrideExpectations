@@ -371,7 +371,6 @@ crbug.com/1050754 external/wpt/credential-management/passwordcredential-framed-g
 crbug.com/1050754 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-creates-stacking-context.html [ Failure ]
 crbug.com/1050754 external/wpt/css/compositing/parsing/background-blend-mode-computed.html [ Failure ]
 crbug.com/1050754 external/wpt/css/css-animations/AnimationEffect-updateTiming.tentative.html [ Failure ]
-crbug.com/1050754 external/wpt/css/css-animations/animationevent-marker-pseudoelement.html [ Timeout ]
 crbug.com/1050754 external/wpt/css/css-animations/CSSAnimation-compositeOrder.tentative.html [ Failure ]
 crbug.com/1050754 external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
 crbug.com/1050754 external/wpt/css/css-animations/CSSAnimation-ready.tentative.html [ Failure ]

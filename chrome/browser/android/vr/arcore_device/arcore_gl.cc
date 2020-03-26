@@ -426,6 +426,10 @@ void ArCoreGl::GetFrameData(
   }
 
   // Create the frame data to return to the renderer.
+  if (!pose) {
+    DVLOG(1) << __func__ << ": pose unavailable!";
+  }
+
   frame_data->pose = std::move(pose);
   frame_data->time_delta = now - base::TimeTicks();
 
@@ -828,7 +832,8 @@ void ArCoreGl::ProcessFrame(
     mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataPtr frame_data,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  DVLOG(3) << __func__ << " frame=" << frame_data->frame_id;
+  DVLOG(3) << __func__ << " frame=" << frame_data->frame_id << ", pose valid? "
+           << (frame_data->pose ? true : false);
 
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);

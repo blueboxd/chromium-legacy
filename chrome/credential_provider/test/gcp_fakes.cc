@@ -641,8 +641,26 @@ void FakeWinHttpUrlFetcherFactory::SetFakeResponse(
     const WinHttpUrlFetcher::Headers& headers,
     const std::string& response,
     HANDLE send_response_event_handle /*=INVALID_HANDLE_VALUE*/) {
-  fake_responses_[url] =
-      Response(headers, response, send_response_event_handle);
+  fake_responses_[url].clear();
+  fake_responses_[url].push_back(
+      Response(headers, response, send_response_event_handle));
+  remove_fake_response_when_created_ = false;
+}
+
+void FakeWinHttpUrlFetcherFactory::SetFakeResponseForSpecifiedNumRequests(
+    const GURL& url,
+    const WinHttpUrlFetcher::Headers& headers,
+    const std::string& response,
+    unsigned int num_requests,
+    HANDLE send_response_event_handle /* =INVALID_HANDLE_VALUE */) {
+  if (fake_responses_.find(url) == fake_responses_.end()) {
+    fake_responses_[url] = std::deque<Response>();
+  }
+  for (unsigned int i = 0; i < num_requests; ++i) {
+    fake_responses_[url].push_back(
+        Response(headers, response, send_response_event_handle));
+  }
+  remove_fake_response_when_created_ = true;
 }
 
 void FakeWinHttpUrlFetcherFactory::SetFakeFailedResponse(const GURL& url,
@@ -667,11 +685,17 @@ std::unique_ptr<WinHttpUrlFetcher> FakeWinHttpUrlFetcherFactory::Create(
   FakeWinHttpUrlFetcher* fetcher = new FakeWinHttpUrlFetcher(std::move(url));
 
   if (fake_responses_.count(url) != 0) {
-    const Response& response = fake_responses_[url];
+    const Response& response = fake_responses_[url].front();
 
     fetcher->response_headers_ = response.headers;
     fetcher->response_ = response.response;
     fetcher->send_response_event_handle_ = response.send_response_event_handle;
+
+    if (remove_fake_response_when_created_) {
+      fake_responses_[url].pop_front();
+      if (fake_responses_[url].empty())
+        fake_responses_.erase(url);
+    }
   } else {
     DCHECK(failed_http_fetch_hr_.count(url) > 0);
     fetcher->response_hr_ = failed_http_fetch_hr_[url];

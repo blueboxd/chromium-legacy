@@ -29,6 +29,7 @@
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
+#include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/media_buildflags.h"
 #include "ui/gl/direct_composition_surface_win.h"
@@ -278,6 +279,13 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  FormatSupportChecker format_checker(device_);
+  if (!format_checker.Initialize()) {
+    // Don't fail; it'll just return no support a lot.
+    MEDIA_LOG(WARNING, media_log_)
+        << "Could not create format checker, continuing";
+  }
+
   // Use IsHDRSupported to guess whether the compositor can output HDR textures.
   // See TextureSelector for notes about why the decoder should not care.
   texture_selector_ =
@@ -286,7 +294,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                               gl::DirectCompositionSurfaceWin::IsHDRSupported()
                                   ? TextureSelector::HDRMode::kSDROrHDR
                                   : TextureSelector::HDRMode::kSDROnly,
-                              media_log_.get());
+                              &format_checker, media_log_.get());
   if (!texture_selector_) {
     NotifyError("D3DD11: Cannot get TextureSelector for format");
     return;
@@ -744,6 +752,13 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
       texture_selector_->PixelFormat(), mailbox_holders,
       VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
+
+  if (!frame) {
+    // This can happen if, somehow, we get an unsupported combination of
+    // pixel format, etc.
+    NotifyError("Failed to construct video frame");
+    return false;
+  }
 
   // TODO(liberato): bind this to the gpu main thread.
   frame->SetReleaseMailboxCB(media::BindToCurrentLoop(

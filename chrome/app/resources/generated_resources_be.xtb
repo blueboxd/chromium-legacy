@@ -1120,7 +1120,6 @@
 <translation id="247949520305900375">Абагульваць аўдыя</translation>
 <translation id="2480868415629598489">Змена даных, якія вы капіруеце і ўстаўляеце</translation>
 <translation id="2482878487686419369">Апавяшчэнні</translation>
-<translation id="2483610039979585156"><ph name="ORIGIN" /> зможа змяняць файл <ph name="FILENAME" />, пакуль вы не закрыеце ўсе ўкладкі сайта <ph name="ORIGIN" /></translation>
 <translation id="2484959914739448251">Каб ачысціць даныя прагляду з усіх сінхранізаваных прылад і Уліковага запісу Google, <ph name="BEGIN_LINK" />увядзіце фразу-пароль<ph name="END_LINK" />.</translation>
 <translation id="2485005079599453134">Пароль захаваны на гэтай прыладзе</translation>
 <translation id="2485422356828889247">Выдаліць</translation>
@@ -1317,7 +1316,7 @@
 <translation id="2725200716980197196">Падключэнне да сеткі адноўлена</translation>
 <translation id="2727633948226935816">Больш не напамінаць</translation>
 <translation id="2727712005121231835">Фактычны памер</translation>
-<translation id="2729314457178420145">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />). (Гэта можа прывесці да выхаду з уліковага запісу на дамене Google.com.) <ph name="LEARN_MORE" /></translation>
+<translation id="2729314457178420145">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />), што можа прывесці да выхаду з уліковага запісу на дамене Google.com. <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Ідзе рэзервовае капіраванне файлаў і праграм Linux</translation>
 <translation id="273093730430620027">Гэта старонка выкарыстоўвае камеру.</translation>
 <translation id="2731392572903530958">Паў&amp;торна адкрыць закрытае акно</translation>
@@ -1725,7 +1724,6 @@
 <translation id="3282568296779691940">Увайсці ў Chrome</translation>
 <translation id="3285322247471302225">Новая &amp;ўкладка</translation>
 <translation id="328571385944182268">Захоўваць паролі?</translation>
-<translation id="328785681103589998"><ph name="ORIGIN" /> зможа праглядаць файл <ph name="FILENAME" />, пакуль вы не закрыеце ўсе ўкладкі сайта <ph name="ORIGIN" /></translation>
 <translation id="3288047731229977326">Пашырэнні, якія працуюць у рэжыме распрацоўшчыка, могуць пашкодзіць камп'ютар. Калі вы не распрацоўшчык, вам у мэтах бяспекі трэба забараніць гэтым пашырэнням працаваць у рэжыме распрацоўшчыка.</translation>
 <translation id="3289856944988573801">Каб праверыць наяўнасць абнаўленняў, падключыцеся да сеткі Ethernet або Wi-Fi.</translation>
 <translation id="3290356915286466215">Не абаронена</translation>
@@ -2414,6 +2412,7 @@
 <translation id="4144218403971135344">Гэта функцыя дазваляе павысіць якасць відэа і падоўжыць тэрмін службы акумулятара. Відэа будуць прайгравацца толькі на экранах з падтрымкай Cast.</translation>
 <translation id="4146026355784316281">Заўсёды адкрываць з дапамогай сістэмнага сродку прагляду</translation>
 <translation id="4146785383423576110">Скід налад і выдаленне шкоднага ПЗ</translation>
+<translation id="4147897805161313378">Google Фота</translation>
 <translation id="4147911968024186208">Паўтарыце спробу. Калі вы бачыце гэту памылку паўторна, звярніцеся да прадстаўніка службы падтрымкі.</translation>
 <translation id="4150201353443180367">Дысплэй</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 укладка}one{# укладка}few{# укладкі}many{# укладак}other{# укладкі}}</translation>
@@ -2733,6 +2732,7 @@
 <translation id="4633757335284074492">Рэзервовае капіраванне на Google Дыск. Лёгка аднаўляйце даныя і пераносьце іх на іншыя прылады. У рэзервовую копію ўваходзяць даныя праграм. Рэзервовыя копіі запампоўваюцца ў Google і шыфруюцца пад паролем ад Уліковага запісу Google дзіцяці.</translation>
 <translation id="4634771451598206121">Увайсці яшчэ раз...</translation>
 <translation id="4635398712689569051">Старонка <ph name="PAGE_NAME" /> недаступная для гасцявых карыстальнікаў.</translation>
+<translation id="4636930964841734540">Інфармацыя</translation>
 <translation id="4637083375689622795">Іншыя дзеянні, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Уключыць адладку ADB</translation>
 <translation id="4641539339823703554">Браўзеру Chrome не ўдалося задаць сістэмны час. Праверце ўказаны ніжэй час і пры неабходнасці выправіце яго.</translation>
@@ -2812,7 +2812,6 @@
 <translation id="4750394297954878236">Прапановы</translation>
 <translation id="475088594373173692">Першы карыстальнік</translation>
 <translation id="4751476147751820511">Датчыкі руху або святла</translation>
-<translation id="4756269098451810636">Выява абагулена з прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="4756378406049221019">Спыніць/Перазагрузіць</translation>
 <translation id="4756388243121344051">&amp;Гісторыя</translation>
 <translation id="4759238208242260848">Спампоўкі</translation>
@@ -3759,7 +3758,6 @@
 <translation id="6040852767465482106">Ананімны ідэнтыфікатар</translation>
 <translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />Служба геалакацыі Google выкарыстоўвае такія крыніцы як Wi-Fi, мабільныя сеткі і датчыкі ў якасці дапаможных для вызначэння месцазнаходжання вашай прылады.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Каб выключыць гэту службу, выключыце галоўную наладу вызначэння месцазнаходжання на прыладзе. Таксама можна выключыць выкарыстанне Wi-Fi, мабільных сетак і датчыкаў для вызначэння месцазнаходжання ў адпаведных наладах.<ph name="END_PARAGRAPH2" /></translation>
-<translation id="6041150002191391409"><ph name="ORIGIN" /> зможа праглядаць файлы ў папцы <ph name="FOLDERNAME" />, пакуль вы не закрыеце ўсе ўкладкі сайта <ph name="ORIGIN" /></translation>
 <translation id="6041155700700864984">Выключыць поўнаэкранны рэжым</translation>
 <translation id="604124094241169006">Аўтаматычна</translation>
 <translation id="6042308850641462728">Яшчэ</translation>
@@ -4155,7 +4153,6 @@
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">Шлях да файла або яго назва занадта доўгія.  Зрабіце назву карацейшай або ўкажыце іншае месцазнаходжанне.</translation>
 <translation id="6563469144985748109">Ваш менеджар пакуль што не ўхваліў гэты сайт</translation>
-<translation id="6567688344210276845">Не ўдалося загрузіць значок "<ph name="ICON" />" для дзеяння са старонкай.</translation>
 <translation id="6569934958368283244">Іншыя людзі</translation>
 <translation id="657402800789773160">&amp;Перазагрузіць старонку</translation>
 <translation id="6577284282025554716">Спампоўванне скасавана: <ph name="FILE_NAME" /></translation>
@@ -4220,7 +4217,6 @@
 <translation id="6659594942844771486">Укладка</translation>
 <translation id="6664237456442406323">Ваш камп'ютар сканфігураваны з няправільным ідэнтыфікатарам апаратнага забеспячэння. Гэта не дае ўсталяваць апошнія выпраўленні сістэмы бяспекі для Chrome OS. Ваш камп'ютар <ph name="BEGIN_BOLD" />можа быць прыступным для атак зламыснікаў<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Нешта пайшло не так падчас адкрыцця вашага профілю. Выйдзіце і зноў увайдзіце ва ўліковы запіс.</translation>
-<translation id="6667776121818773738">Выява абагулена з іншай прылады</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Дазволіць Google перакласці гэту старонку з <ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Падключана ўказальная прылада</translation>
@@ -4841,7 +4837,6 @@
 <translation id="7497981768003291373">У вас няма апошніх тэкставых журналаў WebRTC.</translation>
 <translation id="7502658306369382406">Адрас IPv6</translation>
 <translation id="7503191893372251637">Тып сертыфіката Netscape</translation>
-<translation id="7503821294401948377">Не ўдалося загрузіць значок "<ph name="ICON" />" для дзеяння ў браўзеры.</translation>
 <translation id="7503985202154027481">На ключы бяспекі будзе пакінуты запіс пра наведванне вамі гэтага вэб-сайта.</translation>
 <translation id="7504293978434250212">Ваша арганізацыя можа правяраць файлы памерам да 50 МБ. Запампуйце файл меншага памеру.</translation>
 <translation id="750509436279396091">Адкрыць папку спамповак</translation>
@@ -5643,7 +5638,6 @@
 <translation id="8546930481464505581">Наладзіць сэнсарную палоску</translation>
 <translation id="8547013269961688403">Уключыць лупу для поўнаэкраннага рэжыму</translation>
 <translation id="85486688517848470">Утрымлівайце клавішу пошуку, каб змяніць значэнні клавіш верхняга рада</translation>
-<translation id="8550165047974571882"><ph name="ORIGIN" /> зможа змяняць файлы ў папцы <ph name="FOLDERNAME" />, пакуль вы не закрыеце ўсе ўкладкі сайта <ph name="ORIGIN" /></translation>
 <translation id="8551388862522347954">Ліцэнзіі</translation>
 <translation id="8553342806078037065">Іншыя карыстальнікі</translation>
 <translation id="8554899698005018844">Мова не выбрана</translation>
@@ -5857,7 +5851,7 @@
 <translation id="8808686172382650546">Кот</translation>
 <translation id="8808744862003883508">На гэтай старонцы можна бачыць усе ўсталяваныя ў Chrome пашырэнні.</translation>
 <translation id="8809147117840417135">Светла-бірузовы</translation>
-<translation id="8812593354822910461">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />). (Гэта прывядзе да выхаду з уліковага запісу на дамене <ph name="DOMAIN" />.) <ph name="LEARN_MORE" /></translation>
+<translation id="8812593354822910461">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />), што можа прывесці да выхаду з уліковага запісу на дамене <ph name="DOMAIN" />. <ph name="LEARN_MORE" /></translation>
 <translation id="8813698869395535039">Не ўдаецца ўвайсці ва ўліковы запіс <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">аркуш паперы</translation>
 <translation id="8813872945700551674">Для ўхвалення пашырэння "<ph name="EXTENSION_NAME" />" звярніцеся да бацькоў.</translation>

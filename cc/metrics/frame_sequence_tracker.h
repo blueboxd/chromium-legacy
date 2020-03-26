@@ -192,8 +192,6 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   ActiveFrameSequenceTrackers FrameSequenceTrackerActiveTypes();
 
   FrameSequenceTracker* GetTrackerForTesting(FrameSequenceTrackerType type);
-  FrameSequenceTracker* GetRemovalTrackerForTesting(
-      FrameSequenceTrackerType type);
 
   void SetUkmManager(UkmManager* manager);
 
@@ -201,8 +199,6 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   friend class FrameSequenceTrackerTest;
 
   void RecreateTrackers(const viz::BeginFrameArgs& args);
-  // Destroy the trackers that are ready to be terminated.
-  void DestroyTrackers();
 
   const bool is_single_threaded_;
   // The callsite can use the type to manipulate the tracker.
@@ -231,9 +227,9 @@ class CC_EXPORT FrameSequenceTrackerCollection {
 class CC_EXPORT FrameSequenceTracker {
  public:
   enum class TerminationStatus {
-    kActive = 0,
-    kScheduledForTermination = 1,
-    kReadyForTermination = 2,
+    kActive,
+    kScheduledForTermination,
+    kReadyForTermination,
   };
 
   static const char* GetFrameSequenceTrackerTypeName(
@@ -439,11 +435,9 @@ class CC_EXPORT FrameSequenceTracker {
     void Advance(base::TimeTicks new_timestamp);
   } trace_data_;
 
-  // True when an impl-impl is not ended. A tracker is ready for termination
-  // only when the last impl-frame is ended (ReportFrameEnd).
+#if DCHECK_IS_ON()
   bool is_inside_frame_ = false;
 
-#if DCHECK_IS_ON()
   // This stringstream represents a sequence of frame reporting activities on
   // the current tracker. Each letter can be one of the following:
   // {'B', 'N', 'b', 'n', 'S', 'P'}, where

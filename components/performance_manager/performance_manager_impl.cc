@@ -60,6 +60,13 @@ PerformanceManagerImpl::~PerformanceManagerImpl() {
 
 // static
 void PerformanceManagerImpl::CallOnGraphImpl(const base::Location& from_here,
+                                             base::OnceClosure callback) {
+  DCHECK(callback);
+  GetTaskRunner()->PostTask(from_here, std::move(callback));
+}
+
+// static
+void PerformanceManagerImpl::CallOnGraphImpl(const base::Location& from_here,
                                              GraphImplCallback callback) {
   DCHECK(callback);
   GetTaskRunner()->PostTask(

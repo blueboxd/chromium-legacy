@@ -25,6 +25,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
@@ -39,14 +40,20 @@
 #include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
 #include "content/shell/browser/web_test/web_test_tts_platform.h"
 #include "content/shell/common/blink_test.mojom.h"
+#include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
+#include "content/test/data/mojo_web_test_helper_test.mojom.h"
 #include "content/test/mock_clipboard_host.h"
 #include "content/test/mock_platform_notification_service.h"
+#include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "device/bluetooth/test/fake_bluetooth.h"
 #include "gpu/config/gpu_switches.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_map.h"
+#include "services/service_manager/public/cpp/manifest.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "url/origin.h"
@@ -62,15 +69,31 @@ void BindWebTestHelper(
   MojoWebTestHelper::Create(std::move(receiver));
 }
 
-class TestOverlayWindow : public OverlayWindow {
- public:
-  TestOverlayWindow() = default;
-  ~TestOverlayWindow() override {}
+const service_manager::Manifest& GetWebTestContentBrowserOverlayManifest() {
+  static base::NoDestructor<service_manager::Manifest> manifest{
+      service_manager::ManifestBuilder()
+          .ExposeCapability(
+              "renderer",
+              service_manager::Manifest::InterfaceList<
+                  mojom::MojoWebTestHelper, mojom::FakeBluetoothChooser,
+                  mojom::FakeBluetoothChooserFactory,
+                  mojom::WebTestBluetoothFakeAdapterSetter,
+                  bluetooth::mojom::FakeBluetooth>())
+          .Build()};
+  return *manifest;
+}
 
-  static std::unique_ptr<OverlayWindow> Create(
-      PictureInPictureWindowController* controller) {
-    return std::unique_ptr<OverlayWindow>(new TestOverlayWindow());
-  }
+// An OverlayWindow that returns the last given video natural size as the
+// window's bounds.
+class BoundsMatchVideoSizeOverlayWindow : public OverlayWindow {
+ public:
+  BoundsMatchVideoSizeOverlayWindow() = default;
+  ~BoundsMatchVideoSizeOverlayWindow() override = default;
+
+  BoundsMatchVideoSizeOverlayWindow(const BoundsMatchVideoSizeOverlayWindow&) =
+      delete;
+  BoundsMatchVideoSizeOverlayWindow& operator=(
+      const BoundsMatchVideoSizeOverlayWindow&) = delete;
 
   bool IsActive() override { return false; }
   void Close() override {}
@@ -92,8 +115,6 @@ class TestOverlayWindow : public OverlayWindow {
 
  private:
   gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
 };
 
 }  // namespace
@@ -193,6 +214,14 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
       partition->GetNetworkContext()));
 }
 
+base::Optional<service_manager::Manifest>
+WebTestContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
+  if (name == content::mojom::kBrowserServiceName)
+    return GetWebTestContentBrowserOverlayManifest();
+
+  return base::nullopt;
+}
+
 void WebTestContentBrowserClient::BindClientHintsControllerDelegate(
     mojo::PendingReceiver<client_hints::mojom::ClientHints> receiver) {
   ClientHintsControllerDelegate* delegate =
@@ -255,7 +284,7 @@ WebTestContentBrowserClient::CreateBrowserMainParts(
 std::unique_ptr<OverlayWindow>
 WebTestContentBrowserClient::CreateWindowForPictureInPicture(
     PictureInPictureWindowController* controller) {
-  return TestOverlayWindow::Create(controller);
+  return std::make_unique<BoundsMatchVideoSizeOverlayWindow>();
 }
 
 std::vector<url::Origin>
@@ -397,7 +426,26 @@ std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
   return nullptr;
 }
 
-// private
+network::mojom::NetworkContextParamsPtr
+WebTestContentBrowserClient::CreateNetworkContextParams(
+    BrowserContext* context) {
+  network::mojom::NetworkContextParamsPtr context_params =
+      ShellContentBrowserClient::CreateNetworkContextParams(context);
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Configure the Reporting service in a manner expected by certain Web
+  // Platform Tests (network-error-logging and reporting-api).
+  //
+  //   (1) Always send reports (irrespective of BACKGROUND_SYNC permission)
+  //   (2) Lower the timeout for sending reports.
+  context_params->reporting_delivery_interval =
+      kReportingDeliveryIntervalTimeForWebTests;
+  context_params->skip_reporting_send_permission_check = true;
+#endif
+
+  return context_params;
+}
+
 void WebTestContentBrowserClient::CreateFakeBluetoothChooserFactory(
     mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver) {
   DCHECK(!fake_bluetooth_chooser_factory_);

@@ -41,6 +41,14 @@ login.createScreen(
         },
 
         /**
+         * Returns default event target element.
+         * @type {Object}
+         */
+        get defaultControl() {
+          return this.adPasswordChanged_;
+        },
+
+        /**
          * Cancels password changing and drops the user back to the login
          * screen.
          */

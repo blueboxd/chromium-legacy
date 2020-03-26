@@ -67,9 +67,9 @@ class VIEWS_EXPORT TableView : public views::View,
   // Used by AdvanceActiveVisibleColumn(), AdvanceSelection() and
   // ResizeColumnViaKeyboard() to determine the direction to change the
   // selection.
-  enum AdvanceDirection {
-    ADVANCE_DECREMENT,
-    ADVANCE_INCREMENT,
+  enum class AdvanceDirection {
+    kDecrement,
+    kIncrement,
   };
 
   // Used to track a visible column. Useful only for the header.

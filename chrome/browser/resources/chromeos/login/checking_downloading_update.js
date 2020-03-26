@@ -99,13 +99,6 @@ Polymer({
     },
   },
 
-  onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
-  },
-
   computeProgressMessage_(
       hasEstimate, defaultProgressMessage, estimatedTimeLeftMsg_) {
     if (hasEstimate)

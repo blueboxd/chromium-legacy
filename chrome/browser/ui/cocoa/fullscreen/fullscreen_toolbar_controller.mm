@@ -6,46 +6,28 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h"
-#import "chrome/browser/ui/views/frame/browser_view.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
-#include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
-@implementation FullscreenToolbarController {
-  // Whether or not we are in fullscreen mode.
-  BOOL _inFullscreenMode;
+@implementation FullscreenToolbarController
 
-  // Updates the fullscreen toolbar layout for changes in the menubar. This
-  // object is only set when the browser is in fullscreen mode.
-  base::scoped_nsobject<FullscreenMenubarTracker> _menubarTracker;
-
-  // Manages the toolbar animations for the TOOLBAR_HIDDEN style.
-  std::unique_ptr<FullscreenToolbarAnimationController> _animationController;
-
-  // When the menu bar and toolbar are visible, creates a tracking area which
-  // is used to keep them visible until the mouse moves far enough away from
-  // them. Only set when the browser is in fullscreen mode.
-  base::scoped_nsobject<FullscreenToolbarMouseTracker> _mouseTracker;
-
-  // The style of the fullscreen toolbar.
-  FullscreenToolbarStyle _toolbarStyle;
-
-  BrowserView* _browserView;  // weak
-}
-
-- (id)initWithBrowserView:(BrowserView*)browserView {
+- (id)initWithDelegate:(id<FullscreenToolbarContextDelegate>)delegate {
   if ((self = [super init])) {
-    _browserView = browserView;
     _animationController =
         std::make_unique<FullscreenToolbarAnimationController>(self);
+    _visibilityLockController.reset(
+        [[FullscreenToolbarVisibilityLockController alloc]
+            initWithFullscreenToolbarController:self
+                            animationController:_animationController.get()]);
   }
+
+  _delegate = delegate;
   return self;
 }
 
@@ -119,7 +101,9 @@
   if (_toolbarStyle == FullscreenToolbarStyle::TOOLBAR_NONE)
     return NO;
 
-  return [_menubarTracker state] == FullscreenMenubarState::SHOWN;
+  FullscreenMenubarState menubarState = [_menubarTracker state];
+  return menubarState == FullscreenMenubarState::SHOWN ||
+         [_visibilityLockController isToolbarVisibilityLocked];
 }
 
 - (void)updateToolbarFrame:(NSRect)frame {
@@ -128,7 +112,6 @@
 }
 
 - (void)layoutToolbar {
-  _browserView->Layout();
   _animationController->ToolbarDidUpdate();
   [_mouseTracker updateTrackingArea];
 }
@@ -141,26 +124,36 @@
   return _menubarTracker.get();
 }
 
+- (FullscreenToolbarVisibilityLockController*)visibilityLockController {
+  return _visibilityLockController.get();
+}
+
 - (void)setToolbarStyle:(FullscreenToolbarStyle)style {
   _toolbarStyle = style;
 }
 
-- (BOOL)isInAnyFullscreenMode {
-  return _browserView->IsFullscreen();
+- (id<FullscreenToolbarContextDelegate>)delegate {
+  return _delegate;
 }
 
-- (BOOL)isFullscreenTransitionInProgress {
-  auto* host =
-      views::NativeWidgetMacNSWindowHost::GetFromNativeWindow([self window]);
-  if (auto* bridge = host->GetInProcessNSWindowBridge())
-    return bridge->in_fullscreen_transition();
-  DLOG(ERROR) << "TODO(https://crbug.com/915110): Support fullscreen "
-                 "transitions for RemoteMacViews PWA windows.";
-  return false;
+@end
+
+@implementation FullscreenToolbarController (ExposedForTesting)
+
+- (FullscreenToolbarAnimationController*)animationController {
+  return _animationController.get();
 }
 
-- (NSWindow*)window {
-  return _browserView->GetNativeWindow().GetNativeNSWindow();
+- (void)setMenubarTracker:(FullscreenMenubarTracker*)tracker {
+  _menubarTracker.reset([tracker retain]);
+}
+
+- (void)setMouseTracker:(FullscreenToolbarMouseTracker*)tracker {
+  _mouseTracker.reset([tracker retain]);
+}
+
+- (void)setTestFullscreenMode:(BOOL)isInFullscreen {
+  _inFullscreenMode = isInFullscreen;
 }
 
 @end

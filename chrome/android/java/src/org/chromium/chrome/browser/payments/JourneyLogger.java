@@ -211,6 +211,15 @@ public class JourneyLogger {
         JourneyLoggerJni.get().setTriggerTime(mJourneyLoggerAndroid, JourneyLogger.this);
     }
 
+    /**
+     * Sets the ukm source id of payment app.
+     * @param sourceId A long indicating the ukm source id of the invoked payment app.
+     */
+    public void setPaymentAppUkmSourceId(long sourceId) {
+        JourneyLoggerJni.get().setPaymentAppUkmSourceId(
+                mJourneyLoggerAndroid, JourneyLogger.this, sourceId);
+    }
+
     @NativeMethods
     interface Natives {
         long initJourneyLoggerAndroid(
@@ -241,5 +250,7 @@ public class JourneyLogger {
         void recordTransactionAmount(long nativeJourneyLoggerAndroid, JourneyLogger caller,
                 String currency, String value, boolean completed);
         void setTriggerTime(long nativeJourneyLoggerAndroid, JourneyLogger caller);
+        void setPaymentAppUkmSourceId(
+                long nativeJourneyLoggerAndroid, JourneyLogger caller, long sourceId);
     }
 }

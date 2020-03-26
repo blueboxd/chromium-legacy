@@ -7,11 +7,9 @@
 
 #include <memory>
 
+#include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
-namespace base {
-class ListValue;
-}
 class PrefValueMap;
 class PrefRegistrySimple;
 
@@ -27,8 +25,7 @@ class SystemFeaturesDisableListPolicyHandler
 
  protected:
   // ListPolicyHandler:
-  void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
-                 PrefValueMap* prefs) override;
+  void ApplyList(base::Value filtered_list, PrefValueMap* prefs) override;
 };
 
 }  // namespace policy

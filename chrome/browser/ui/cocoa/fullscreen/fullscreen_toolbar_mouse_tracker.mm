@@ -70,7 +70,7 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
     [self removeTrackingArea];
   }
 
-  _contentView = [[_controller window] contentView];
+  _contentView = [[[_controller delegate] window] contentView];
 
   _trackingArea.reset([[CrTrackingArea alloc]
       initWithRect:_trackingAreaFrame
@@ -82,7 +82,7 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
 }
 
 - (void)updateToolbarFrame:(NSRect)frame {
-  NSRect contentBounds = [[[_controller window] contentView] bounds];
+  NSRect contentBounds = [[[[_controller delegate] window] contentView] bounds];
   _trackingAreaFrame = frame;
   _trackingAreaFrame.origin.y -= kTrackingAreaAdditionalThreshold;
   _trackingAreaFrame.size.height =

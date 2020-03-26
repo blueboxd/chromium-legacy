@@ -830,6 +830,9 @@ public class StartSurfaceLayoutTest {
         TabSelectionEditorTestingRobot tabSelectionEditorTestingRobot =
                 new TabSelectionEditorTestingRobot();
         tabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        Espresso.pressBack();
+        tabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsHidden();
     }
 
     @Test

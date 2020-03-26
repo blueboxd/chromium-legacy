@@ -886,6 +886,16 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
           display_owner && !owners.empty() ? *owners[0] : "");
       AutocompleteMatch::AddLastClassificationIfNecessary(
           &match.description_class, 0, ACMatchClassification::DIM);
+      // Exclude date from description_for_shortcut to avoid showing stale dates
+      // from the shortcuts provider.
+      match.description_for_shortcuts = GetMatchDescription(
+          "", mimetype, display_owner && !owners.empty() ? *owners[0] : "");
+      AutocompleteMatch::AddLastClassificationIfNecessary(
+          &match.description_class_for_shortcuts, 0,
+          ACMatchClassification::DIM);
+      match.RecordAdditionalInfo(
+          "description_for_shortcuts",
+          base::UTF16ToUTF8(match.description_for_shortcuts));
     }
 
     match.TryAutocompleteWithTitle(TitleForAutocompletion(match), input_);

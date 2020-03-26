@@ -314,19 +314,28 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
       mojom::blink::DocumentPolicyFeature,
       ReportOptions report_option = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,
-      const String& source_file = g_empty_string);
+      const String& source_file = g_empty_string) const;
   bool IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature,
       PolicyValue threshold_value,
       ReportOptions report_option = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,
-      const String& source_file = g_empty_string);
+      const String& source_file = g_empty_string) const;
 
   virtual void CountPotentialFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature) const {}
+
+  // Report policy violations is delegated to Document because in order
+  // to both remain const qualified and output console message, needs
+  // to call |frame_->Console().AddMessage()| directly.
   virtual void ReportFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature,
-      mojom::FeaturePolicyDisposition,
+      mojom::blink::FeaturePolicyDisposition,
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const {}
+  virtual void ReportDocumentPolicyViolation(
+      mojom::blink::DocumentPolicyFeature,
+      mojom::blink::FeaturePolicyDisposition,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const {}
 
@@ -356,12 +365,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // would change under the proposal in https://crbug.com/937131.
   void FeaturePolicyPotentialBehaviourChangeObserved(
       mojom::blink::FeaturePolicyFeature feature) const;
-
-  void ReportDocumentPolicyViolation(
-      mojom::blink::DocumentPolicyFeature,
-      bool is_report_only,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string);
 
   v8::Isolate* const isolate_;
 

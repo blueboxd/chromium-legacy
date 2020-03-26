@@ -59,6 +59,7 @@ js_modulizer("modulize") {
     "settings_toggle_button_tests.js",
     "settings_ui_tests.js",
     "site_data_details_subpage_tests.js",
+    "site_details_tests.js",
     "site_details_permission_tests.js",
     "site_entry_tests.js",
     "site_list_entry_tests.js",

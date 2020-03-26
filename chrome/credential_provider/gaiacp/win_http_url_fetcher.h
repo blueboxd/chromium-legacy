@@ -30,13 +30,17 @@ class WinHttpUrlFetcher {
   // value pairs to be sent with the request. |request_dict| is a dictionary of
   // json parameters to be sent with the request. This argument will be
   // converted to a json string and sent as the body of the request.
-  // |request_timeout| is the maximum time to wait for a response.
+  // |request_timeout| is the maximum time to wait for a response. If the HTTP
+  // request times out or fails with an error response code that signifies an
+  // internal server error (HTTP codes >= 500) then the request will be retried
+  // |request_retries| number of times before the call is marked failed.
   static HRESULT BuildRequestAndFetchResultFromHttpService(
       const GURL& request_url,
       std::string access_token,
       const std::vector<std::pair<std::string, std::string>>& headers,
       const base::Value& request_dict,
       const base::TimeDelta& request_timeout,
+      unsigned int request_retries,
       base::Optional<base::Value>* request_result);
 
   virtual ~WinHttpUrlFetcher();

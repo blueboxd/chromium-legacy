@@ -21,15 +21,13 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 @JNINamespace("weblayer")
 public final class DownloadCallbackProxy {
     private long mNativeDownloadCallbackProxy;
-    private BrowserImpl mBrowser;
     private IDownloadCallbackClient mClient;
 
-    DownloadCallbackProxy(BrowserImpl browser, long tab, IDownloadCallbackClient client) {
+    DownloadCallbackProxy(long profile, IDownloadCallbackClient client) {
         assert client != null;
-        mBrowser = browser;
         mClient = client;
         mNativeDownloadCallbackProxy =
-                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, tab);
+                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, profile);
     }
 
     public void setClient(IDownloadCallbackClient client) {
@@ -72,7 +70,7 @@ public final class DownloadCallbackProxy {
 
     @CalledByNative
     private DownloadImpl createDownload(long nativeDownloadImpl) {
-        return new DownloadImpl(mBrowser, mClient, nativeDownloadImpl);
+        return new DownloadImpl(mClient, nativeDownloadImpl);
     }
 
     @CalledByNative

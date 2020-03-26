@@ -84,23 +84,6 @@ static const struct {
 static_assert(base::size(kFormatTable) == (viz::RESOURCE_FORMAT_MAX + 1),
               "kFormatTable does not handle all cases.");
 
-GrVkImageInfo CreateGrVkImageInfo(SharedContextState* context_state,
-                                  VulkanImage* image,
-                                  bool use_protected_memory) {
-  VkPhysicalDevice physical_device = context_state->vk_context_provider()
-                                         ->GetDeviceQueue()
-                                         ->GetVulkanPhysicalDevice();
-  GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
-      physical_device, image->image_tiling(), image->ycbcr_info());
-  GrVkAlloc alloc(image->device_memory(), 0 /* offset */, image->device_size(),
-                  0 /* flags */);
-  return GrVkImageInfo(
-      image->image(), alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
-      image->format(), 1 /* levelCount */, VK_QUEUE_FAMILY_IGNORED,
-      use_protected_memory ? GrProtected::kYes : GrProtected::kNo,
-      gr_ycbcr_info);
-}
-
 uint32_t FindMemoryTypeIndex(SharedContextState* context_state,
                              const VkMemoryRequirements& requirements,
                              VkMemoryPropertyFlags flags) {
@@ -350,12 +333,9 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                                       false /* is_thread_safe */),
       context_state_(context_state),
       image_(std::move(image)),
-      backend_texture_(
-          size.width(),
-          size.height(),
-          CreateGrVkImageInfo(context_state_,
-                              image_.get(),
-                              usage & SHARED_IMAGE_USAGE_PROTECTED)),
+      backend_texture_(size.width(),
+                       size.height(),
+                       CreateGrVkImageInfo(image_.get())),
       command_pool_(command_pool) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {

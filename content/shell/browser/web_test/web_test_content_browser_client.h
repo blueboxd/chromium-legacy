@@ -64,6 +64,8 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,
       RenderProcessHost* render_process_host) override;
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
+      base::StringPiece name) override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
@@ -110,6 +112,10 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       LoginAuthRequiredCallback auth_required_callback) override;
 
  private:
+  // ShellContentBrowserClient overrides.
+  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
+      BrowserContext* context) override;
+
   // Creates and stores a FakeBluetoothChooserFactory instance.
   void CreateFakeBluetoothChooserFactory(
       mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver);

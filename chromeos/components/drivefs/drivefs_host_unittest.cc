@@ -43,6 +43,7 @@
 namespace drivefs {
 namespace {
 
+using base::test::RunOnceClosure;
 using testing::_;
 using MountFailure = DriveFsHost::MountObserver::MountFailure;
 
@@ -169,10 +170,6 @@ class MockDriveFsHostObserver : public DriveFsHostObserver {
   MOCK_METHOD1(OnError, void(const mojom::DriveError& error));
 };
 
-ACTION_P(RunQuitClosure, quit) {
-  std::move(*quit).Run();
-}
-
 class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
  public:
   DriveFsHostTest()
@@ -272,7 +269,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     base::OnceClosure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*host_delegate_,
                 OnMounted(base::FilePath("/media/drivefsroot/salt-g-ID")))
-        .WillOnce(RunQuitClosure(&quit_closure));
+        .WillOnce(RunOnceClosure(std::move(quit_closure)));
     // Eventually we must attempt unmount.
     EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/salt-g-ID", _));
     SendOnMounted();
@@ -362,7 +359,7 @@ TEST_F(DriveFsHostTest, OnMountFailedFromMojo) {
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kUnknown, _))
-      .WillOnce(RunQuitClosure(&quit_closure));
+      .WillOnce(RunOnceClosure(std::move(quit_closure)));
   SendMountFailed({});
   run_loop.Run();
   ASSERT_FALSE(host_->IsMounted());
@@ -377,7 +374,7 @@ TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kInvocation, _))
-      .WillOnce(RunQuitClosure(&quit_closure));
+      .WillOnce(RunOnceClosure(std::move(quit_closure)));
   DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
                      chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS,
                      {base::StrCat({"drivefs://", token}),

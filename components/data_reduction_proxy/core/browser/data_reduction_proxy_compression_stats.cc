@@ -47,9 +47,6 @@ namespace {
     UMA_HISTOGRAM_COUNTS_1M(uma, UNIQUE_VARNAME >> 10); \
   }
 
-const double kSecondsPerWeek =
-    base::Time::kMicrosecondsPerWeek / base::Time::kMicrosecondsPerSecond;
-
 // Returns the value at |index| of |list_value| as an int64_t.
 int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
   int64_t val = 0;
@@ -93,6 +90,12 @@ void RecordSavingsClearedMetric(DataReductionProxySavingsClearedReason reason) {
       "DataReductionProxy.SavingsCleared.Reason", reason,
       DataReductionProxySavingsClearedReason::REASON_COUNT);
 }
+
+// TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
+// http://crbug.com/865373
+#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
+const double kSecondsPerWeek =
+    base::Time::kMicrosecondsPerWeek / base::Time::kMicrosecondsPerSecond;
 
 // Returns the week number for the current time. The epoch time is treated as
 // week=0.
@@ -178,6 +181,7 @@ void RecordDictionaryToHistogram(const std::string& histogram_name,
     }
   }
 }
+#endif
 
 }  // namespace
 
@@ -809,12 +813,9 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
 
 void DataReductionProxyCompressionStats::InitializeWeeklyAggregateDataUse(
     const base::Time& now) {
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
   // TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
   // http://crbug.com/865373
-  return;
-#endif
-
+#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
   MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);
   // Record the histograms that will show up in the user feedback.
   RecordDictionaryToHistogram(
@@ -843,6 +844,7 @@ void DataReductionProxyCompressionStats::InitializeWeeklyAggregateDataUse(
       "ContentType",
       pref_service_->GetDictionary(
           prefs::kLastWeekUserTrafficContentTypeDownstreamKB));
+#endif
 }
 
 void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
@@ -851,11 +853,9 @@ void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
     bool is_user_request,
     data_use_measurement::DataUseUserData::DataUseContentType content_type,
     int32_t service_hash_code) {
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
   // TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
   // http://crbug.com/865373
-  return;
-#endif
+#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
   // Update the prefs if this is a new week. This can happen when chrome is open
   // for weeks without being closed.
   MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);
@@ -875,6 +875,7 @@ void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
                           service_hash_code, data_used_kb);
     }
   }
+#endif
 }
 
 // static

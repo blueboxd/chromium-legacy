@@ -46,9 +46,8 @@ import java.util.zip.ZipOutputStream;
  * Java application that takes in an input jar, performs a series of bytecode transformations,
  * and generates an output jar.
  *
- * Two types of transformations are performed:
- * 1) Enabling assertions via {@link AssertionEnablerClassAdapter}
- * 2) Providing support for custom resources via {@link CustomResourcesClassAdapter}
+ * One type of transformation are performed:
+ * 1) Providing support for custom resources via {@link CustomResourcesClassAdapter}
  */
 class ByteCodeProcessor {
     private static final String CLASS_FILE_SUFFIX = ".class";
@@ -56,7 +55,6 @@ class ByteCodeProcessor {
     private static final int BUFFER_SIZE = 16384;
     private static boolean sVerbose;
     private static boolean sIsPrebuilt;
-    private static boolean sShouldAssert;
     private static boolean sShouldUseCustomResources;
     private static boolean sShouldUseThreadAnnotations;
     private static boolean sShouldCheckClassPath;
@@ -128,9 +126,6 @@ class ByteCodeProcessor {
         */
         if (sShouldUseThreadAnnotations) {
             chain = new ThreadAssertionClassAdapter(chain);
-        }
-        if (sShouldAssert) {
-            chain = new AssertionEnablerClassAdapter(chain);
         }
         if (sShouldUseCustomResources) {
             chain = new CustomResourcesClassAdapter(
@@ -252,7 +247,6 @@ class ByteCodeProcessor {
         String outputJarPath = args[currIndex++];
         sVerbose = args[currIndex++].equals("--verbose");
         sIsPrebuilt = args[currIndex++].equals("--is-prebuilt");
-        sShouldAssert = args[currIndex++].equals("--enable-assert");
         sShouldUseCustomResources = args[currIndex++].equals("--enable-custom-resources");
         sShouldUseThreadAnnotations = args[currIndex++].equals("--enable-thread-annotations");
         sShouldCheckClassPath = args[currIndex++].equals("--enable-check-class-path");

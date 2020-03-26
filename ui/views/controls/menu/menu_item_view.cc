@@ -101,29 +101,10 @@ int MenuItemView::item_right_margin_;
 // static
 int MenuItemView::pref_menu_height_;
 
-MenuItemView::MenuItemView(MenuDelegate* delegate)
-    : delegate_(delegate),
-      controller_(nullptr),
-      canceled_(false),
-      parent_menu_item_(nullptr),
-      type_(Type::kSubMenu),
-      selected_(false),
-      command_(0),
-      submenu_(nullptr),
-      has_mnemonics_(false),
-      show_mnemonics_(false),
-      has_icons_(false),
-      icon_view_(nullptr),
-      top_margin_(-1),
-      bottom_margin_(-1),
-      left_icon_margin_(0),
-      right_icon_margin_(0),
-      requested_menu_position_(MenuPosition::kBestFit),
-      actual_menu_position_(requested_menu_position_),
-      use_right_margin_(true) {
+MenuItemView::MenuItemView(MenuDelegate* delegate) : delegate_(delegate) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes() supplies a
   // NULL delegate.
-  Init(nullptr, 0, Type::kSubMenu, delegate);
+  Init(nullptr, 0, Type::kSubMenu);
 }
 
 void MenuItemView::ChildPreferredSizeChanged(View* child) {
@@ -291,7 +272,8 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     CreateSubmenu();
   DCHECK_LE(size_t{index}, submenu_->children().size());
   if (type == Type::kSeparator) {
-    submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
+    submenu_->AddChildViewAt(std::make_unique<MenuSeparator>(separator_style),
+                             index);
     return nullptr;
   }
   MenuItemView* item = new MenuItemView(this, item_id, type);
@@ -316,8 +298,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   }
   if (GetDelegate() && !GetDelegate()->IsCommandVisible(item_id))
     item->SetVisible(false);
-  submenu_->AddChildViewAt(item, index);
-  return item;
+  return submenu_->AddChildViewAt(item, index);
 }
 
 void MenuItemView::RemoveMenuItem(View* item) {
@@ -375,8 +356,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
     submenu_ = new SubmenuView(this);
 
     // Initialize the submenu indicator icon (arrow).
-    submenu_arrow_image_view_ = new ImageView();
-    AddChildView(submenu_arrow_image_view_);
+    submenu_arrow_image_view_ = AddChildView(std::make_unique<ImageView>());
   }
 
   return submenu_;
@@ -728,27 +708,8 @@ void MenuItemView::SetAlerted() {
 
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
-                           MenuItemView::Type type)
-    : delegate_(nullptr),
-      controller_(nullptr),
-      canceled_(false),
-      parent_menu_item_(parent),
-      type_(type),
-      selected_(false),
-      command_(command),
-      submenu_(nullptr),
-      has_mnemonics_(false),
-      show_mnemonics_(false),
-      has_icons_(false),
-      icon_view_(nullptr),
-      top_margin_(-1),
-      bottom_margin_(-1),
-      left_icon_margin_(0),
-      right_icon_margin_(0),
-      requested_menu_position_(MenuPosition::kBestFit),
-      actual_menu_position_(requested_menu_position_),
-      use_right_margin_(true) {
-  Init(parent, command, type, nullptr);
+                           MenuItemView::Type type) {
+  Init(parent, command, type);
 }
 
 MenuItemView::~MenuItemView() {
@@ -799,37 +760,25 @@ void MenuItemView::UpdateMenuPartSizes() {
 
 void MenuItemView::Init(MenuItemView* parent,
                         int command,
-                        MenuItemView::Type type,
-                        MenuDelegate* delegate) {
-  delegate_ = delegate;
-  controller_ = nullptr;
-  canceled_ = false;
+                        MenuItemView::Type type) {
   parent_menu_item_ = parent;
   type_ = type;
-  selected_ = false;
   command_ = command;
-  submenu_ = nullptr;
-  radio_check_image_view_ = nullptr;
-  submenu_arrow_image_view_ = nullptr;
-  vertical_separator_ = nullptr;
-  show_mnemonics_ = false;
-  corner_radius_ = 0;
   // Assign our ID, this allows SubmenuItemView to find MenuItemViews.
   SetID(kMenuItemViewID);
   has_icons_ = false;
 
   if (type_ == Type::kCheckbox || type_ == Type::kRadio) {
-    radio_check_image_view_ = new ImageView();
+    radio_check_image_view_ = AddChildView(std::make_unique<ImageView>());
     bool show_check_radio_icon =
         type_ == Type::kRadio || (type_ == Type::kCheckbox &&
                                   GetDelegate()->IsItemChecked(GetCommand()));
     radio_check_image_view_->SetVisible(show_check_radio_icon);
     radio_check_image_view_->set_can_process_events_within_subtree(false);
-    AddChildView(radio_check_image_view_);
   }
 
   if (type_ == Type::kActionableSubMenu) {
-    vertical_separator_ = new Separator();
+    vertical_separator_ = AddChildView(std::make_unique<Separator>());
     vertical_separator_->SetVisible(true);
     vertical_separator_->SetFocusBehavior(FocusBehavior::NEVER);
     const MenuConfig& config = MenuConfig::instance();
@@ -839,7 +788,6 @@ void MenuItemView::Init(MenuItemView* parent,
         gfx::Size(config.actionable_submenu_vertical_separator_width,
                   config.actionable_submenu_vertical_separator_height));
     vertical_separator_->set_can_process_events_within_subtree(false);
-    AddChildView(vertical_separator_);
   }
 
   if (submenu_arrow_image_view_)
@@ -912,7 +860,7 @@ void MenuItemView::GetLabelStyle(MenuDelegate::LabelStyle* style) const {
 void MenuItemView::AddEmptyMenus() {
   DCHECK(HasSubmenu());
   if (!submenu_->HasVisibleChildren() && !submenu_->HasEmptyMenuItemView()) {
-    submenu_->AddChildViewAt(new EmptyMenuMenuItem(this), 0);
+    submenu_->AddChildViewAt(std::make_unique<EmptyMenuMenuItem>(this), 0);
   } else {
     for (MenuItemView* item : submenu_->GetMenuItems()) {
       if (item->HasSubmenu())

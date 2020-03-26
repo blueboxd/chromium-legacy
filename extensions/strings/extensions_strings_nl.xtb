@@ -7,7 +7,6 @@
 <translation id="1420684932347524586">O nee! Kan geen willekeurige persoonlijke RSA-sleutel genereren.</translation>
 <translation id="1445572445564823378"><ph name="PRODUCT_NAME" /> wordt door deze extensie vertraagd. Schakel de extensie uit om de prestaties van <ph name="PRODUCT_NAME" /> te verbeteren.</translation>
 <translation id="1468038450257740950">WebGL wordt niet ondersteund.</translation>
-<translation id="149347756975725155">Kan extensiepictogram '<ph name="ICON" />' niet laden.</translation>
 <translation id="1803557475693955505">Kan achtergrondpagina '<ph name="BACKGROUND_PAGE" />' niet laden.</translation>
 <translation id="2159915644201199628">Kan afbeelding niet decoderen: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">Lokalisatie gebruikt, maar er is geen 'default_locale' opgegeven in het manifest.</translation>
@@ -44,7 +43,6 @@
 <translation id="6322279351188361895">Lezen van persoonlijke sleutel is mislukt.</translation>
 <translation id="6391538222494443604">Er moet een invoerdirectory zijn.</translation>
 <translation id="641087317769093025">Kan extensie niet uitpakken</translation>
-<translation id="6413453408918378296">Het pictogram <ph name="ICON" /> is niet voldoende zichtbaar.</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> vraagt om toegang tot een of meer van je apparaten:</translation>
 <translation id="657064425229075395">Kan achtergrondscript '<ph name="BACKGROUND_SCRIPT" />' niet laden.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> van <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>

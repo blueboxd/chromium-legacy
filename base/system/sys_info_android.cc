@@ -215,6 +215,12 @@ std::string SysInfo::GetAndroidBuildID() {
   return std::string(os_build_id_str);
 }
 
+std::string SysInfo::GetAndroidHardwareEGL() {
+  char os_hardware_egl_str[PROP_VALUE_MAX];
+  __system_property_get("ro.hardware.egl", os_hardware_egl_str);
+  return std::string(os_hardware_egl_str);
+}
+
 int SysInfo::DalvikHeapSizeMB() {
   static int heap_size = GetDalvikHeapSizeMB();
   return heap_size;

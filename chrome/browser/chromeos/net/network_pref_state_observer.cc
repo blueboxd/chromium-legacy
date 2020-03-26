@@ -8,7 +8,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
+#include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -40,6 +43,14 @@ void NetworkPrefStateObserver::Observe(
   if (ProfileHelper::IsPrimaryProfile(profile)) {
     InitializeNetworkPrefServices(profile);
     notification_registrar_.RemoveAll();
+
+    auto* wifi_sync_service =
+        WifiConfigurationSyncServiceFactory::GetForProfile(profile,
+                                                           /*create=*/false);
+    if (wifi_sync_service) {
+      wifi_sync_service->SetNetworkMetadataStore(
+          NetworkHandler::Get()->network_metadata_store()->GetWeakPtr());
+    }
   }
 }
 

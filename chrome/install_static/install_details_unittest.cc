@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/buildflags.h"
 #include "components/version_info/version_info_values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,13 +23,13 @@ class FakeInstallDetails : public InstallDetails {
     constants.install_suffix = L"";
     constants.default_channel_name = L"";
     constants.supported_multi_install = true;
-    if (kUseGoogleUpdateIntegration) {
-      constants.app_guid = L"testguid";
-      constants.channel_strategy = ChannelStrategy::FIXED;
-    } else {
-      constants.app_guid = L"";
-      constants.channel_strategy = ChannelStrategy::UNSUPPORTED;
-    }
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+    constants.app_guid = L"testguid";
+    constants.channel_strategy = ChannelStrategy::FIXED;
+#else
+    constants.app_guid = L"";
+    constants.channel_strategy = ChannelStrategy::UNSUPPORTED;
+#endif
     payload.size = sizeof(payload);
     payload.product_version = product_version.c_str();
     payload.mode = &constants;
@@ -56,25 +56,25 @@ class FakeInstallDetails : public InstallDetails {
 
 TEST(InstallDetailsTest, GetClientStateKeyPath) {
   FakeInstallDetails details;
-  if (kUseGoogleUpdateIntegration) {
-    EXPECT_THAT(details.GetClientStateKeyPath(),
-                StrEq(L"Software\\Google\\Update\\ClientState\\testguid"));
-  } else {
-    EXPECT_THAT(details.GetClientStateKeyPath(),
-                StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-  }
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+  constants.app_guid = L"testguid";
+  EXPECT_THAT(details.GetClientStateKeyPath(),
+              StrEq(L"Software\\Google\\Update\\ClientState\\testguid"));
+#else
+  EXPECT_THAT(details.GetClientStateKeyPath(),
+              StrEq(std::wstring(L"Software\\").append(kProductPathName)));
+#endif
 }
 
 TEST(InstallDetailsTest, GetClientStateMediumKeyPath) {
   FakeInstallDetails details;
-  if (kUseGoogleUpdateIntegration) {
-    EXPECT_THAT(
-        details.GetClientStateMediumKeyPath(),
-        StrEq(L"Software\\Google\\Update\\ClientStateMedium\\testguid"));
-  } else {
-    EXPECT_THAT(details.GetClientStateKeyPath(),
-                StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-  }
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+  EXPECT_THAT(details.GetClientStateMediumKeyPath(),
+              StrEq(L"Software\\Google\\Update\\ClientStateMedium\\testguid"));
+#else
+  EXPECT_THAT(details.GetClientStateKeyPath(),
+              StrEq(std::wstring(L"Software\\").append(kProductPathName)));
+#endif
 }
 
 TEST(InstallDetailsTest, VersionMismatch) {

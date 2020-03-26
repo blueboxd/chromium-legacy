@@ -254,6 +254,7 @@ component("vr_common") {
     "vr_export.h",
     "vr_web_contents_observer.cc",
     "vr_web_contents_observer.h",
+    "xr_test_utils.h",
   ]
 
   sources += [

@@ -69,16 +69,16 @@ INSTANTIATE_TEST_SUITE_P(All, ContextualTooltipTest, testing::Values(true));
 // Checks that nudges are not shown when the feature flag is disabled.
 TEST_P(ContextualTooltipDisabledTest, FeatureFlagDisabled) {
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
 }
 
 TEST_P(ContextualTooltipTest, ShouldShowPersistentDragHandleNudge) {
   base::TimeDelta recheck_delay;
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+      GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
   EXPECT_TRUE(recheck_delay.is_zero());
   EXPECT_TRUE(contextual_tooltip::GetNudgeTimeout(GetPrefService(),
-                                                  TooltipType::kDragHandle)
+                                                  TooltipType::kInAppToHome)
                   .is_zero());
 }
 
@@ -88,12 +88,12 @@ TEST_P(ContextualTooltipTest, NonPersistentDragHandleNudgeTimeout) {
   for (int shown_count = 1;
        shown_count < contextual_tooltip::kNotificationLimit; shown_count++) {
     contextual_tooltip::HandleNudgeShown(GetPrefService(),
-                                         TooltipType::kDragHandle);
+                                         TooltipType::kInAppToHome);
     clock()->Advance(contextual_tooltip::kMinInterval);
     EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-        GetPrefService(), TooltipType::kDragHandle, nullptr));
+        GetPrefService(), TooltipType::kInAppToHome, nullptr));
     EXPECT_EQ(contextual_tooltip::GetNudgeTimeout(GetPrefService(),
-                                                  TooltipType::kDragHandle),
+                                                  TooltipType::kInAppToHome),
               contextual_tooltip::kNudgeShowDuration);
   }
 }
@@ -102,32 +102,32 @@ TEST_P(ContextualTooltipTest, NonPersistentDragHandleNudgeTimeout) {
 // since the last time it was shown but not before the time interval has passed.
 TEST_P(ContextualTooltipTest, ShouldShowTimedDragHandleNudge) {
   contextual_tooltip::HandleNudgeShown(GetPrefService(),
-                                       TooltipType::kDragHandle);
+                                       TooltipType::kInAppToHome);
   base::TimeDelta recheck_delay;
   for (int shown_count = 1;
        shown_count < contextual_tooltip::kNotificationLimit; shown_count++) {
     EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-        GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+        GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
     EXPECT_EQ(contextual_tooltip::kMinInterval, recheck_delay);
     clock()->Advance(contextual_tooltip::kMinInterval / 2);
     EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-        GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+        GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
     EXPECT_EQ(
         contextual_tooltip::kMinInterval - contextual_tooltip::kMinInterval / 2,
         recheck_delay);
     clock()->Advance(contextual_tooltip::kMinInterval / 2);
     EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-        GetPrefService(), TooltipType::kDragHandle, nullptr));
+        GetPrefService(), TooltipType::kInAppToHome, nullptr));
     contextual_tooltip::HandleNudgeShown(GetPrefService(),
-                                         TooltipType::kDragHandle);
+                                         TooltipType::kInAppToHome);
   }
   clock()->Advance(contextual_tooltip::kMinInterval);
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+      GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
   EXPECT_TRUE(recheck_delay.is_zero());
 
   EXPECT_EQ(contextual_tooltip::GetNudgeTimeout(GetPrefService(),
-                                                TooltipType::kDragHandle),
+                                                TooltipType::kInAppToHome),
             contextual_tooltip::kNudgeShowDuration);
 }
 
@@ -135,16 +135,16 @@ TEST_P(ContextualTooltipTest, ShouldShowTimedDragHandleNudge) {
 // |kSuccessLimit|, the corresponding nudge should not be shown.
 TEST_P(ContextualTooltipTest, ShouldNotShowNudgeAfterSuccessLimit) {
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
   for (int success_count = 0; success_count < contextual_tooltip::kSuccessLimit;
        success_count++) {
     contextual_tooltip::HandleGesturePerformed(GetPrefService(),
-                                               TooltipType::kDragHandle);
+                                               TooltipType::kInAppToHome);
   }
 
   base::TimeDelta recheck_delay;
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+      GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
   EXPECT_TRUE(recheck_delay.is_zero());
 }
 
@@ -153,7 +153,7 @@ TEST_P(ContextualTooltipTest, ShouldNotShowNudgeAfterSuccessLimit) {
 TEST_P(ContextualTooltipTest,
        DoNotShowBackGestureNudgeIfDragHandleNudgeIsExpected) {
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
 
   // The drag handle nudge is expected to show, so back gesture nudge should not
   // be shown at the same time.
@@ -166,7 +166,7 @@ TEST_P(ContextualTooltipTest,
   // After the nudge is shown, back gesture should remain hidden until
   // sufficient amount of time passes.
   contextual_tooltip::HandleNudgeShown(GetPrefService(),
-                                       TooltipType::kDragHandle);
+                                       TooltipType::kInAppToHome);
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
       GetPrefService(), TooltipType::kBackGesture, &recheck_delay));
 
@@ -199,7 +199,7 @@ TEST_P(ContextualTooltipTest,
 // handle would normally be available.
 TEST_P(ContextualTooltipTest, AllowBackGestureForHiddenShelf) {
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
 
   // The drag handle nudge is expected to show, so back gesture nudge should not
   // be shown at the same time.
@@ -210,14 +210,14 @@ TEST_P(ContextualTooltipTest, AllowBackGestureForHiddenShelf) {
   // gesture nudge should be allowed.
   contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(true);
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
       GetPrefService(), TooltipType::kBackGesture, nullptr));
 
   // Disallow back gesture nudge if the shelf becomes visible.
   contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(false);
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
       GetPrefService(), TooltipType::kBackGesture, nullptr));
 }
@@ -227,7 +227,7 @@ TEST_P(ContextualTooltipTest, AllowBackGestureForHiddenShelf) {
 TEST_P(ContextualTooltipTest,
        DoNotShowDragHandleNudgeIfBackGestureNudgeIsShown) {
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
 
   // Drag handle nudge not allowed if back gesture is showing.
   contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(true);
@@ -236,7 +236,7 @@ TEST_P(ContextualTooltipTest,
 
   base::TimeDelta recheck_delay;
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+      GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
   EXPECT_EQ(contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge,
             recheck_delay);
 
@@ -248,7 +248,7 @@ TEST_P(ContextualTooltipTest,
 
   recheck_delay = base::TimeDelta();
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+      GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
 
   EXPECT_EQ(contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge,
             recheck_delay);
@@ -256,11 +256,11 @@ TEST_P(ContextualTooltipTest,
   clock()->Advance(
       contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge / 2);
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, &recheck_delay));
+      GetPrefService(), TooltipType::kInAppToHome, &recheck_delay));
 
   clock()->Advance(recheck_delay);
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      GetPrefService(), TooltipType::kDragHandle, nullptr));
+      GetPrefService(), TooltipType::kInAppToHome, nullptr));
 }
 
 }  // namespace contextual_tooltip

@@ -8367,6 +8367,31 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PaymentApp.CheckoutEvents">
+  <owner>sahel@chromium.org</owner>
+  <owner>web-payments-team@google.com</owner>
+  <summary>
+    Records checkout events as well as completion status for the invoked payment
+    app when its origin is shown inside the payment handler modal window. This
+    metric uses the specific PAYMENT_APP_ID ukm_source_id which is generated
+    from the app's origin.
+  </summary>
+  <metric name="CompletionStatus" enum="PaymentRequestFlowCompletionStatus">
+    <summary>
+      How the Payment Request ended. This metric will only get recorded if a
+      non-autofill payment app gets invoked to handle the request.
+    </summary>
+  </metric>
+  <metric name="Events">
+    <summary>
+      Bitfield representing the events that occurred during the Payment Request.
+      This metric will only get recorded if a non-autofill payment app gets
+      invoked to handle the request. Values defined in the Event enum of
+      components/payments/core/journey_logger.h.
+    </summary>
+  </metric>
+</event>
+
 <event name="PaymentRequest.CheckoutEvents">
   <owner>sebsg@chromium.org</owner>
   <metric name="CompletionStatus">

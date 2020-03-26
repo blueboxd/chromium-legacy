@@ -46,8 +46,7 @@ TEST_F(SiteDataCacheFactoryTest, EndToEnd) {
         base::BindOnce(
             [](SiteDataCacheFactory* factory,
                const std::string& browser_context_id,
-               base::OnceClosure quit_closure,
-               performance_manager::GraphImpl* graph_unused) {
+               base::OnceClosure quit_closure) {
               DCHECK_NE(nullptr, factory->GetDataCacheForBrowserContext(
                                      browser_context_id));
               DCHECK_NE(nullptr, factory->GetInspectorForBrowserContext(
@@ -68,8 +67,7 @@ TEST_F(SiteDataCacheFactoryTest, EndToEnd) {
         base::BindOnce(
             [](SiteDataCacheFactory* factory,
                const std::string& browser_context_id,
-               base::OnceClosure quit_closure,
-               performance_manager::GraphImpl* graph_unused) {
+               base::OnceClosure quit_closure) {
               DCHECK_EQ(nullptr, factory->GetDataCacheForBrowserContext(
                                      browser_context_id));
               DCHECK_EQ(nullptr, factory->GetInspectorForBrowserContext(

@@ -6,10 +6,10 @@
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/vr/service/xr_device_service.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
+#include "chrome/browser/vr/xr_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace vr {

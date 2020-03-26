@@ -301,7 +301,6 @@ js_type_check("closure_compile_module") {
     ":add_site_dialog.m",
 
     #    ":all_sites.m",
-    #    ":all_sites_icons.m",
     ":android_info_browser_proxy.m",
     ":category_default_setting.m",
     ":category_setting_exceptions.m",
@@ -319,7 +318,7 @@ js_type_check("closure_compile_module") {
     ":site_data_details_subpage.m",
 
     #    ":site_data_entry.m",
-    #    ":site_details.m",
+    ":site_details.m",
     ":site_details_permission.m",
     ":site_entry.m",
     ":site_list.m",
@@ -351,14 +350,6 @@ js_library("all_sites.m") {
     # TODO: Fill those in.
   ]
   extra_deps = [ ":all_sites_module" ]
-}
-
-js_library("all_sites_icons.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/all_sites_icons.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":all_sites_icons_module" ]
 }
 
 js_library("android_info_browser_proxy.m") {
@@ -509,8 +500,17 @@ js_library("site_data_entry.m") {
 js_library("site_details.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/site_details.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":constants.m",
+    ":site_details_permission.m",
+    ":site_settings_behavior.m",
+    ":website_usage_browser_proxy.m",
+    "..:router.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":site_details_module" ]
 }
 
@@ -769,6 +769,14 @@ polymer_modulizer("site_details") {
   js_file = "site_details.js"
   html_file = "site_details.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/router.html|Route,Router,RouteObserverBehavior",
+                   "chrome/browser/resources/settings/site_settings/constants.html|ContentSetting,ContentSettingsTypes",
+                   "chrome/browser/resources/settings/site_settings/website_usage_browser_proxy.html|WebsiteUsageBrowserProxy,WebsiteUsageBrowserProxyImpl",
+                   "ui/webui/resources/html/assert.html|assert",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("site_details_permission") {

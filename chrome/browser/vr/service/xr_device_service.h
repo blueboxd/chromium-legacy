@@ -17,13 +17,6 @@ namespace vr {
 VR_EXPORT const mojo::Remote<device::mojom::XRDeviceService>&
 GetXRDeviceService();
 
-// Allows tests to perform extra initialization steps on any new XR Device
-// Service instance before other client code can use it. Any time a new instance
-// of the service is started by |GetXRDeviceService()|, this callback (if
-// non-null) is invoked.
-VR_EXPORT void SetXRDeviceServiceStartupCallbackForTesting(
-    base::RepeatingClosure callback);
-
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_SERVICE_XR_DEVICE_SERVICE_H_

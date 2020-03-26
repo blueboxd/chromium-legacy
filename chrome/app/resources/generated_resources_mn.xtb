@@ -1115,7 +1115,6 @@
 <translation id="247949520305900375">Аудио хуваалцах</translation>
 <translation id="2480868415629598489">Хуулж, буулгах өгөгдлөө өөрчлөх</translation>
 <translation id="2482878487686419369">Мэдэгдэл</translation>
-<translation id="2483610039979585156">Таныг бүх <ph name="ORIGIN" /> табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FILENAME" /> файлыг засах боломжтой байна</translation>
 <translation id="2484959914739448251">Хөтчийн өгөгдлийг синк хийсэн бүх төхөөрөмж болон Google Бүртгэлээсээ устгахын тулд <ph name="BEGIN_LINK" />нэвтрэх хэллэгээ оруулна уу<ph name="END_LINK" />.</translation>
 <translation id="2485005079599453134">Энэ төхөөрөмж дээр хадгалсан нууц үг</translation>
 <translation id="2485422356828889247">Устгах</translation>
@@ -1720,7 +1719,6 @@
 <translation id="3282568296779691940">Chrome руу нэвтрэх</translation>
 <translation id="3285322247471302225">Шинэ &amp;Цонх</translation>
 <translation id="328571385944182268">Таны нууц үгийг хадгалах уу?</translation>
-<translation id="328785681103589998">Таныг бүх <ph name="ORIGIN" /> табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FILENAME" /> файлыг харах боломжтой байна</translation>
 <translation id="3288047731229977326">Хөгжүүлэгч горим дээр ачаалж буй өргөтгөл нь таны компьютерийг гэмтээж болзошгүй байна. Хэрэв та хөгжүүлэгч биш бол аюулгүй байдлаа хангах үүднээс хөгжүүлэгч горим дээр ачаалж буй өргөтгөлийг идэвхгүй болгоно уу.</translation>
 <translation id="3289856944988573801">Шинэчлэлтийг шалгахын тулд Ethernet эсвэл Wi-Fi-аа ашиглана уу.</translation>
 <translation id="3290356915286466215">Хамгаалалтгүй</translation>
@@ -2408,6 +2406,7 @@
 <translation id="4144218403971135344">Илүү чанартай видео авж батарейн ажиллах хугацаагаа хэмнээрэй. Видео нь зөвхөн таны дамжуулах боломжтой дэлгэцэд тоглоно.</translation>
 <translation id="4146026355784316281">Системийн харагчтэй үргэлж хамт нээж байх</translation>
 <translation id="4146785383423576110">Шинэчлэх, цэвэрлэх</translation>
+<translation id="4147897805161313378">Google Зураг</translation>
 <translation id="4147911968024186208">Дахин оролдоно уу. Та энэ алдааг дахин харвал дэмжлэгийн төлөөлөгчтэйгээ холбогдоно уу.</translation>
 <translation id="4150201353443180367">Дэлгэц</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 цонх}other{# цонх}}</translation>
@@ -2727,6 +2726,7 @@
 <translation id="4633757335284074492">Google Драйвд хуулбарлана уу. Өгөгдлийг амархан сэргээх эсвэл хүссэн үедээ төхөөрөмж хооронд сэлгэнэ үү. Энэ нөөцлөлтөд аппын өгөгдөл багтана. Нөөцлөлтийг Google-д байршуулдаг бөгөөд таны хүүхдийн Google Бүртгэлийн нууц үгийг ашиглан шифрлэдэг.</translation>
 <translation id="4634771451598206121">Дахин нэвтэрнэ үү...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> Зочин хэрэглэгч ашиглах боломжгүй байна.</translation>
+<translation id="4636930964841734540">Мэдээлэл</translation>
 <translation id="4637083375689622795">Нэмэлт үйлдлүүд, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">ADB алдаа засахыг идэвхжүүлэх</translation>
 <translation id="4641539339823703554">Chrome-оос системийн цагийг тохируулах боломжгүй байсан. Доор байгаа цагийг шалгаад шаардлагатай бол зөв болгоно уу.</translation>
@@ -2806,7 +2806,6 @@
 <translation id="4750394297954878236">Санал зөвлөмж</translation>
 <translation id="475088594373173692">Анхны хэрэглэгч</translation>
 <translation id="4751476147751820511">Хөдөлгөөн эсвэл гэрэл мэдрэгч</translation>
-<translation id="4756269098451810636"><ph name="DEVICE_NAME" />-с хуваалцсан зураг</translation>
 <translation id="4756378406049221019">Зогсоох/Дахин ачааллах</translation>
 <translation id="4756388243121344051">&amp; Түүх</translation>
 <translation id="4759238208242260848">Татацууд:</translation>
@@ -3753,7 +3752,6 @@
 <translation id="6040852767465482106">Нэрээ нууцалсан байдал</translation>
 <translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />Google-н байршлын үйлчилгээ нь таны төхөөрөмжийн байршлыг тооцоолоход туслах зорилгоор Wi‑Fi, мобайл сүлжээ болон мэдрэгч зэрэг эх сурвалжийг ашигладаг.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Та төхөөрөмжийнхөө Байршлын үндсэн тохиргоог унтрааж, Байршлыг унтраах боломжтой. Түүнчлэн та байршлын Wi‑Fi, мобайл сүлжээ болон мэдрэгчийн ашиглалтыг байршлын тохиргоонд унтрааж болно.<ph name="END_PARAGRAPH2" /></translation>
-<translation id="6041150002191391409">Таныг бүх <ph name="ORIGIN" /> табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FOLDERNAME" /> фолдерын файлуудыг харах боломжтой байна</translation>
 <translation id="6041155700700864984">Бүтэн дэлгэцээс гарах</translation>
 <translation id="604124094241169006">Автомат</translation>
 <translation id="6042308850641462728">Илүү их</translation>
@@ -4149,7 +4147,6 @@
 <translation id="6561726789132298588">Оруул</translation>
 <translation id="656293578423618167">Файлын зам эсвэл нэр нь хэтэрхий урт байна. Илүү богино нэрээр эсвэл өөр газарт хадгална уу.</translation>
 <translation id="6563469144985748109">Таны менежер үүнийг одоогоор зөвшөөрөөгүй байна</translation>
-<translation id="6567688344210276845">Хуудасны арга хэмжээг авах '<ph name="ICON" />' тэмдэгтийг ачаалж чадсангүй.</translation>
 <translation id="6569934958368283244">Бусад хүмүүс</translation>
 <translation id="657402800789773160">Энэ хуудсыг дахин ачаалах</translation>
 <translation id="6577284282025554716">Таталтыг цуцалсан: <ph name="FILE_NAME" /></translation>
@@ -4214,7 +4211,6 @@
 <translation id="6659594942844771486">Цонх</translation>
 <translation id="6664237456442406323">Харамсалтай нь таны компьютер хорт вирусаар халдварласан  техник хангамжийн ID-аар тохируулагдсан байна. Энэ нь Chrome OS-ийг хамгийн сүүлийн үеийн аюулгүй байдлын засваруудаас шинэчлэлт хийх боломжгүй болгодог бөгөөд таны компьютер <ph name="BEGIN_BOLD" /> хорт халдлагад өртөх магадлалтай байна<ph name="END_BOLD" /> .</translation>
 <translation id="6664774537677393800">Таны профайлыг нээхэд асуудал гарлаа. Бүртгэлээсээ гараад, дахин нэвтэрнэ үү.</translation>
-<translation id="6667776121818773738">Бусад төхөөрөмжөөс хуваалцсан зураг</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Та Google-г энэ хуудсыг<ph name="SOURCE_LANGUAGE" />-с <ph name="TARGET_LANGUAGE" /> руу орчуулахыг хүсэж байна уу?</translation>
 <translation id="6675665718701918026">Сонгосон төхөөрөмжийг холбосон</translation>
@@ -4835,7 +4831,6 @@
 <translation id="7497981768003291373">Танд саяхан авсан WebRTC текст лог алга.</translation>
 <translation id="7502658306369382406">IPv6 хаяг</translation>
 <translation id="7503191893372251637">Нэтскейпийн гэрчилгээний төрөл</translation>
-<translation id="7503821294401948377">Вэб хөтөчийг ажиллуулах '<ph name="ICON" />'-ыг ачаалж чадсангүй.</translation>
 <translation id="7503985202154027481">Таны энэ сайтад зочилсон бүртгэл аюулгүй байдлын түлхүүрт хадгалагдана.</translation>
 <translation id="7504293978434250212">Танай байгууллага 50 МБ хүртэл хэмжээтэй файлыг скан хийх боломжтой. Илүү жижиг файл байршуулж үзнэ үү.</translation>
 <translation id="750509436279396091">Татаж авсан файлуудын хавтсыг нээ</translation>
@@ -5634,7 +5629,6 @@
 <translation id="8546930481464505581">Хүрэх мөрийг өөрчлөх</translation>
 <translation id="8547013269961688403">Бүтэн дэлгэцийн томруулагчийг идэвхжүүлэх</translation>
 <translation id="85486688517848470">Дээд мөрний түлхүүрийн функцийг сэлгэхийн тулд Хайлтын түлхүүрийг дарна уу</translation>
-<translation id="8550165047974571882">Таныг бүх <ph name="ORIGIN" /> табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FOLDERNAME" /> фолдерын файлуудыг засах боломжтой байна</translation>
 <translation id="8551388862522347954">Лиценз</translation>
 <translation id="8553342806078037065">Бусад хүмүүсийг удирдах</translation>
 <translation id="8554899698005018844">Хэл байхгүй</translation>

@@ -5,7 +5,6 @@ include_rules = [
   "+chrome/services/ipp_parser/public/mojom",
   "+chrome/services/file_util/file_util_service.h",
   "+chrome/services/file_util/public/mojom",
-  "+chrome/services/isolated_xr_device",
   "+chrome/services/media_gallery_util",
   # TODO(crbug.com/798782): remove dependency to pdf_to_emf_converter_factory.h
   # when Cloud print chrome/service is removed.
@@ -36,8 +35,6 @@ include_rules = [
   "+components/wifi",
   "+content/public/child",
   "+content/public/utility",
-  "+device/vr/buildflags",
-  "+device/vr/public",
   "+extensions/common",
   "+extensions/buildflags",
   "+media",

@@ -65,14 +65,6 @@ Polymer({
     this.$.termsOfServiceDialog.show();
   },
 
-  /** Called when dialog is shown */
-  onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
-  },
-
   /**
    * This is called when strings are updated.
    * @override

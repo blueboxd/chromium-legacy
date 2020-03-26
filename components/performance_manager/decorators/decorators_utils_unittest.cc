@@ -4,6 +4,8 @@
 
 #include "components/performance_manager/decorators/decorators_utils.h"
 
+#include <utility>
+
 #include "base/test/bind_test_util.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/performance_manager_test_harness.h"
@@ -70,7 +72,7 @@ TEST_F(DecoratorsUtilsTest, SetPropertyForWebContentsPageNode) {
   base::WeakPtr<PageNode> node =
       PerformanceManager::GetPageNodeForWebContents(web_contents());
   auto quit_closure = run_loop.QuitClosure();
-  auto call_on_graph_cb = base::BindLambdaForTesting([&](Graph* unused) {
+  auto call_on_graph_cb = base::BindLambdaForTesting([&]() {
     EXPECT_TRUE(node);
     FakePageNodeDecoratorData::GetOrCreate(PageNodeImpl::FromNode(node.get()))
         ->SetOnSetPropertyCalledExpectations(std::move(quit_closure),

@@ -83,6 +83,3 @@
 
 # crbug/1039522
 -org.chromium.chrome.browser.settings.privacy.BrowsingDataBridgeTest.testClearingSiteSettingsAndCacheWithImportantSites
-
-# crbug/1054502
--org.chromium.chrome.browser.photo_picker.DecoderServiceHostTest.testDecodingOrder

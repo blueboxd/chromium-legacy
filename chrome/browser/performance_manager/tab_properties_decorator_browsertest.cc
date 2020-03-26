@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(TabPropertiesDecoratorBrowserTest, SetIsTab) {
 
   // Get data from the PageNode and verify the tab properties.
   base::RunLoop run_loop;
-  auto call_on_graph_cb = base::BindLambdaForTesting([&](Graph* unused) {
+  auto call_on_graph_cb = base::BindLambdaForTesting([&]() {
     EXPECT_TRUE(page_node);
     EXPECT_TRUE(TabPropertiesDecorator::Data::FromPageNode(page_node.get())
                     ->IsInTabStrip());

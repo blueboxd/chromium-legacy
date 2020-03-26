@@ -58,27 +58,26 @@
         margin-inline-end: 10px;
       }
 
-      .section {
-        @apply --cr-section;
+      .cr-section {
         margin-bottom: 10px;
       }
 
-      .section.first {
+      .cr-section.first {
         border-top: none;
       }
 
-      .section.single-column {
+      .cr-section.single-column {
         align-items: stretch;
         flex-direction: column;
         justify-content: center;
       }
 
-      .section > .start {
+      .cr-section > .start {
         align-items: center;
         flex: auto;
       }
 
-      .section cr-button + cr-button {
+      .cr-section cr-button + cr-button {
         margin-inline-start: 8px;
       }
 
@@ -94,7 +93,7 @@
     </style>
 
     <!-- Title section: Icon + name + connection state. -->
-    <div id="title" class="section first">
+    <div id="title" class="cr-section first">
       <div class="start layout horizontal center">
         <network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
@@ -122,7 +121,7 @@
     <!-- SIM Info (Cellular only). -->
     <template is="dom-if" if="[[showCellularSim_(managedProperties_)]]"
         restamp>
-      <div class="section single-column">
+      <div class="cr-section single-column">
         <network-siminfo device-state="[[deviceState_]]">
         </network-siminfo>
       <div>
@@ -131,7 +130,7 @@
     <!-- Choose Mobile Network (Cellular only) -->
     <template is="dom-if"
         if="[[showCellularChooseNetwork_(managedProperties_)]]">
-      <div class="section single-column">
+      <div class="cr-section single-column">
         <network-choose-mobile device-state="[[deviceState_]]"
             managed-properties="[[managedProperties_]]">
         </network-choose-mobile>
@@ -140,7 +139,7 @@
 
     <!-- APN (Cellular only) -->
     <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
-      <div class="section single-column">
+      <div class="cr-section single-column">
         <network-apnlist editable on-apn-change="onApnChange_"
             managed-properties="[[managedProperties_]]">
         </network-apnlist>
@@ -148,7 +147,7 @@
     </template>
 
     <!-- Proxy -->
-    <div class="section single-column">
+    <div class="cr-section single-column">
       <template is="dom-if"
           if="[[shouldShowProxyPolicyIndicator_(managedProperties_)]]">
         <div class="property-box">
@@ -166,14 +165,14 @@
 
     <template is="dom-if" if="[[isRememberedOrConnected_(managedProperties_)]]">
       <!-- IP Config -->
-      <div class="section single-column">
+      <div class="cr-section single-column">
         <network-ip-config editable on-ip-change="onIPConfigChange_"
             managed-properties="[[managedProperties_]]">
         </network-ip-config>
       </div>
 
       <!-- Nameservers -->
-      <div class="section single-column">
+      <div class="cr-section single-column">
         <network-nameservers editable
             on-nameservers-change="onIPConfigChange_"
             managed-properties="[[managedProperties_]]">
@@ -181,7 +180,7 @@
       </div>
     </template>
 
-    <div class="section single-column indented">
+    <div class="cr-section single-column indented">
       <!-- MAC Address. -->
       <div class="property-box single-column two-line"
           hidden$="[[!deviceState_.macAddress]]">

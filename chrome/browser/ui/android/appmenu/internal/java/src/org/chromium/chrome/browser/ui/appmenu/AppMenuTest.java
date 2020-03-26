@@ -629,13 +629,13 @@ public class AppMenuTest extends DummyUiActivityTestCase {
                 buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), downMotionEvent);
 
         waitForMenuToShow(0);
-        Assert.assertTrue("Menu should be showing", mAppMenuHandler.isAppMenuShowing());
+        CriteriaHelper.pollUiThread(
+                () -> mAppMenuHandler.getAppMenuDragHelper().isReadyForMenuItemAction());
 
-        View firstItem = mAppMenuHandler.getAppMenu().getListView().getChildAt(0);
-        Rect firstItemScreenRect =
-                mAppMenuHandler.getAppMenuDragHelper().getScreenVisibleRect(firstItem);
-        int eventX = firstItemScreenRect.left + (firstItemScreenRect.right / 2);
-        int eventY = firstItemScreenRect.top + (firstItemScreenRect.bottom / 2);
+        Rect firstItemScreenRect = getVisibleScreenRectAtPosition(0);
+        int eventX = firstItemScreenRect.left + (firstItemScreenRect.width() / 2);
+        int eventY = firstItemScreenRect.top + (firstItemScreenRect.height() / 2);
+
         MotionEvent dragMotionEvent =
                 MotionEvent.obtain(0, 100, MotionEvent.ACTION_MOVE, eventX, eventY, 0);
         sendMotionEventToButtonHelper(
@@ -645,8 +645,9 @@ public class AppMenuTest extends DummyUiActivityTestCase {
                 MotionEvent.obtain(0, 150, MotionEvent.ACTION_UP, eventX, eventY, 0);
         sendMotionEventToButtonHelper(
                 buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), upMotionEvent);
-
-        mDelegate.itemSelectedCallbackHelper.waitForCallback(0);
+        mDelegate.itemSelectedCallbackHelper.waitForCallback(
+                "itemRect: " + firstItemScreenRect + " eventX: " + eventX + " eventY: " + eventY,
+                0);
         Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_one,
                 mDelegate.lastSelectedItemId);
     }
@@ -737,6 +738,12 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         viewRect.right = viewRect.left + anchor.getWidth();
         viewRect.bottom = viewRect.top + anchor.getHeight();
         return viewRect;
+    }
+
+    private Rect getVisibleScreenRectAtPosition(int position) throws ExecutionException {
+        View view = getViewAtPosition(position);
+        return TestThreadUtils.runOnUiThreadBlocking(
+                () -> mAppMenuHandler.getAppMenuDragHelper().getScreenVisibleRect(view));
     }
 
     private void sendMotionEventToButtonHelper(AppMenuButtonHelperImpl helper, View view,

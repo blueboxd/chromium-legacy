@@ -35,6 +35,7 @@ namespace {
 // The extension ids used here should be valid extension ids.
 constexpr char kExtensionId1[] = "abcdefghijklmnopabcdefghijklmnop";
 constexpr char kExtensionId2[] = "bcdefghijklmnopabcdefghijklmnopa";
+constexpr char kExtensionId3[] = "cdefghijklmnopqrstuvwxyzabcdefgh";
 constexpr char kExtensionName1[] = "name1";
 constexpr char kExtensionName2[] = "name2";
 constexpr char kExtensionUpdateUrl[] =
@@ -186,6 +187,28 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
   histogram_tester_.ExpectTotalCount(kTotalCountStats, 0);
+}
+
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ForcedExtensionsAddedAfterManualExtensions) {
+  SetupEmptyForceList();
+  // Report failure for an extension which is not in forced list.
+  installation_reporter_->ReportFailure(
+      kExtensionId3, InstallationReporter::FailureReason::INVALID_ID);
+  // InstallationTracker should keep running as the forced extensions are still
+  // not loaded.
+  EXPECT_TRUE(fake_timer_->IsRunning());
+  SetupForceList();
+
+  auto ext = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, ext.get());
+  installation_reporter_->ReportFailure(
+      kExtensionId2, InstallationReporter::FailureReason::INVALID_ID);
+  // InstallationTracker shuts down timer because kExtensionId1 was loaded and
+  // kExtensionId2 was failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(
+      kFailureReasonsCWS, InstallationReporter::FailureReason::INVALID_ID, 1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,

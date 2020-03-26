@@ -33,10 +33,10 @@ void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
   std::unique_ptr<base::Value> value;
-  if (!CheckAndGetValue(policies, NULL, &value))
+  if (!CheckAndGetValue(policies, nullptr, &value))
     return;
 
-  base::ListValue* list = NULL;
+  base::ListValue* list = nullptr;
   if (!value || !value->GetAsList(&list))
     return;
 
@@ -51,7 +51,7 @@ std::string
 ManagedBookmarksPolicyHandler::GetFolderName(const base::ListValue& list) {
   // Iterate over the list, and try to find the FolderName.
   for (const auto& el : list) {
-    const base::DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = nullptr;
     if (!el.GetAsDictionary(&dict))
       continue;
 
@@ -69,34 +69,34 @@ void ManagedBookmarksPolicyHandler::FilterBookmarks(base::ListValue* list) {
   // Remove any non-conforming values found.
   auto it = list->begin();
   while (it != list->end()) {
-    base::DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = nullptr;
     if (!it->GetAsDictionary(&dict)) {
-      it = list->Erase(it, NULL);
+      it = list->Erase(it, nullptr);
       continue;
     }
 
     std::string name;
     std::string url;
-    base::ListValue* children = NULL;
+    base::ListValue* children = nullptr;
     // Every bookmark must have a name, and then either a URL of a list of
     // child bookmarks.
     if (!dict->GetString(ManagedBookmarksTracker::kName, &name) ||
         (!dict->GetList(ManagedBookmarksTracker::kChildren, &children) &&
          !dict->GetString(ManagedBookmarksTracker::kUrl, &url))) {
-      it = list->Erase(it, NULL);
+      it = list->Erase(it, nullptr);
       continue;
     }
 
     if (children) {
       // Ignore the URL if this bookmark has child nodes.
-      dict->Remove(ManagedBookmarksTracker::kUrl, NULL);
+      dict->Remove(ManagedBookmarksTracker::kUrl, nullptr);
       FilterBookmarks(children);
     } else {
       // Make sure the URL is valid before passing a bookmark to the pref.
-      dict->Remove(ManagedBookmarksTracker::kChildren, NULL);
+      dict->Remove(ManagedBookmarksTracker::kChildren, nullptr);
       GURL gurl = url_formatter::FixupURL(url, std::string());
       if (!gurl.is_valid()) {
-        it = list->Erase(it, NULL);
+        it = list->Erase(it, nullptr);
         continue;
       }
       dict->SetString(ManagedBookmarksTracker::kUrl, gurl.spec());

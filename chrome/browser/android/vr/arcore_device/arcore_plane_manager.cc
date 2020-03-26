@@ -122,7 +122,7 @@ void ArCorePlaneManager::ForEachArCorePlane(ArTrackableList* arcore_planes,
     }
     // Pass the ownership of the |trackable| to the |fn|, along with the
     // |ar_plane| that points to the |trackable| but with appropriate type.
-    fn(std::move(trackable), ar_plane);
+    fn(std::move(trackable), ar_plane, tracking_state);
   }
 }
 
@@ -140,14 +140,15 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
       arcore_planes_.get(),
       [this, &updated_plane_ids](
           internal::ScopedArCoreObject<ArTrackable*> trackable,
-          ArPlane* ar_plane) {
+          ArPlane* ar_plane, ArTrackingState tracking_state) {
         // ID
         PlaneId plane_id;
         bool created;
         std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
 
         DVLOG(3) << "Previously detected plane found, id=" << plane_id
-                 << ", created?=" << created;
+                 << ", created?=" << created
+                 << ", tracking_state=" << tracking_state;
 
         updated_plane_ids.insert(plane_id);
       });
@@ -168,7 +169,7 @@ void ArCorePlaneManager::Update(ArFrame* ar_frame) {
       arcore_planes_.get(),
       [this, &plane_id_to_plane_object](
           internal::ScopedArCoreObject<ArTrackable*> trackable,
-          ArPlane* ar_plane) {
+          ArPlane* ar_plane, ArTrackingState tracking_state) {
         // ID
         PlaneId plane_id;
         bool created;

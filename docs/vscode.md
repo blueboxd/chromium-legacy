@@ -238,6 +238,10 @@ writing:
     * `third_party/android_protobuf/src/java/src/main/java`
     * `third_party/junit/src/src/main/java`
 
+Also, make sure
+`export ANDROID_HOME=/usr/local/google/home/{your_ldap}/Android/Sdk` is in the
+remote machine's `~/.bashrc`.
+
 Then restart vscode, open a Java file, and wait for a bit.
 
 Debugging tips:

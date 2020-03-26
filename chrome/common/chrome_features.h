@@ -498,9 +498,6 @@ extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAccessibilityInternalsPageImprovements;
-
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebTimeLimits;

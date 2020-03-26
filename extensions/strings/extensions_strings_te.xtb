@@ -7,7 +7,6 @@
 <translation id="1420684932347524586">అరె! RSA ప్రైవేట్ కీని రాండమ్‌గా రూపొందించడంలో విఫలమైంది.</translation>
 <translation id="1445572445564823378">ఈ ఎక్స్‌టెన్ష‌న్‌ <ph name="PRODUCT_NAME" />ను మందగింప చేస్తోంది. <ph name="PRODUCT_NAME" /> యొక్క పనితీరును పునరుద్ధరించడానికి మీరు దీన్ని నిలిపివేయాలి.</translation>
 <translation id="1468038450257740950">WebGLకి మద్దతు లేదు.</translation>
-<translation id="149347756975725155">'<ph name="ICON" />' ఎక్స్‌టెన్షన్ చిహ్నాన్ని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="1803557475693955505">నేపథ్య పేజీ '<ph name="BACKGROUND_PAGE" />'ను లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="2159915644201199628">ఈ చిత్రం డీకోడ్ చేయబడదు: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">స్థానికీకరణ ఉపయోగించబడుతుంది, అయితే మానిఫెస్ట్‌లో default_localeను పేర్కొనలేదు.</translation>
@@ -44,7 +43,6 @@
 <translation id="6322279351188361895">ప్రైవేట్ కీని చదవడంలో విఫలమైంది.</translation>
 <translation id="6391538222494443604">ఇన్‌పుట్ డైరెక్టరీ తప్పనిసరిగా ఉనికిలో ఉండాలి.</translation>
 <translation id="641087317769093025">పొడిగింపు అన్‌జిప్ చేయబడదు</translation>
-<translation id="6413453408918378296">చిహ్నం తగినంత బాగా కనిపించడం లేదు '<ph name="ICON" />'.</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" మీ ఒకటి లేదా అంతకంటే ఎక్కువ పరికరాలకు యాక్సెస్‌ను అభ్యర్థిస్తోంది:</translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT" />' నేపథ్య స్క్రిప్ట్‌ను లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> నుండి <ph name="PRODUCT_NAME" /> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER" />)</translation>

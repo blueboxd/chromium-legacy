@@ -13,6 +13,7 @@ class FilePath;
 }
 
 namespace weblayer {
+class DownloadDelegate;
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplBrowsingDataType
@@ -45,6 +46,9 @@ class Profile {
   // system download directory on Android and on other platforms it's in the
   // home directory.
   virtual void SetDownloadDirectory(const base::FilePath& directory) = 0;
+
+  // Sets the DownloadDelegate. If none is set, downloads will be dropped.
+  virtual void SetDownloadDelegate(DownloadDelegate* delegate) = 0;
 };
 
 }  // namespace weblayer

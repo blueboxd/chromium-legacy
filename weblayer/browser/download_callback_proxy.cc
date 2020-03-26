@@ -8,6 +8,7 @@
 #include "url/gurl.h"
 #include "weblayer/browser/download_impl.h"
 #include "weblayer/browser/java/jni/DownloadCallbackProxy_jni.h"
+#include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 
 using base::android::AttachCurrentThread;
@@ -16,13 +17,15 @@ using base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
 
-DownloadCallbackProxy::DownloadCallbackProxy(JNIEnv* env, jobject obj, Tab* tab)
-    : tab_(tab), java_delegate_(env, obj) {
-  tab_->SetDownloadDelegate(this);
+DownloadCallbackProxy::DownloadCallbackProxy(JNIEnv* env,
+                                             jobject obj,
+                                             Profile* profile)
+    : profile_(profile), java_delegate_(env, obj) {
+  profile_->SetDownloadDelegate(this);
 }
 
 DownloadCallbackProxy::~DownloadCallbackProxy() {
-  tab_->SetDownloadDelegate(nullptr);
+  profile_->SetDownloadDelegate(nullptr);
 }
 
 bool DownloadCallbackProxy::InterceptDownload(
@@ -99,9 +102,9 @@ void DownloadCallbackProxy::DownloadFailed(Download* download) {
 static jlong JNI_DownloadCallbackProxy_CreateDownloadCallbackProxy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& proxy,
-    jlong tab) {
-  return reinterpret_cast<jlong>(
-      new DownloadCallbackProxy(env, proxy, reinterpret_cast<TabImpl*>(tab)));
+    jlong profile) {
+  return reinterpret_cast<jlong>(new DownloadCallbackProxy(
+      env, proxy, reinterpret_cast<ProfileImpl*>(profile)));
 }
 
 static void JNI_DownloadCallbackProxy_DeleteDownloadCallbackProxy(JNIEnv* env,

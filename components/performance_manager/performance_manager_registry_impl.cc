@@ -10,6 +10,8 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/performance_manager_main_thread_observer.h"
+#include "components/performance_manager/service_worker_context_adapter.h"
+#include "components/performance_manager/worker_watcher.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -94,24 +96,37 @@ void PerformanceManagerRegistryImpl::NotifyBrowserContextAdded(
     content::BrowserContext* browser_context) {
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(browser_context);
-  std::unique_ptr<WorkerWatcher> worker_watcher =
-      std::make_unique<WorkerWatcher>(
-          browser_context->UniqueId(),
-          storage_partition->GetDedicatedWorkerService(),
-          storage_partition->GetSharedWorkerService(), &process_node_source_,
-          &frame_node_source_);
-  auto result = browser_contexts_with_worker_watcher_.insert(
-      {browser_context->UniqueId(), std::move(worker_watcher)});
-  DCHECK(result.second);
+
+  // Create an adapter for the service worker context.
+  auto insertion_result = service_worker_context_adapters_.emplace(
+      browser_context, std::make_unique<ServiceWorkerContextAdapter>(
+                           storage_partition->GetServiceWorkerContext()));
+  DCHECK(insertion_result.second);
+  ServiceWorkerContextAdapter* service_worker_context_adapter =
+      insertion_result.first->second.get();
+
+  auto worker_watcher = std::make_unique<WorkerWatcher>(
+      browser_context->UniqueId(),
+      storage_partition->GetDedicatedWorkerService(),
+      storage_partition->GetSharedWorkerService(),
+      service_worker_context_adapter, &process_node_source_,
+      &frame_node_source_);
+  bool inserted =
+      worker_watchers_.emplace(browser_context, std::move(worker_watcher))
+          .second;
+  DCHECK(inserted);
 }
 
 void PerformanceManagerRegistryImpl::NotifyBrowserContextRemoved(
     content::BrowserContext* browser_context) {
-  auto it =
-      browser_contexts_with_worker_watcher_.find(browser_context->UniqueId());
-  DCHECK(it != browser_contexts_with_worker_watcher_.end());
+  auto it = worker_watchers_.find(browser_context);
+  DCHECK(it != worker_watchers_.end());
   it->second->TearDown();
-  browser_contexts_with_worker_watcher_.erase(it);
+  worker_watchers_.erase(it);
+
+  // Remove the adapter.
+  size_t removed = service_worker_context_adapters_.erase(browser_context);
+  DCHECK_EQ(removed, 1u);
 }
 
 void PerformanceManagerRegistryImpl::TearDown() {
@@ -125,11 +140,12 @@ void PerformanceManagerRegistryImpl::TearDown() {
 
   // Destroy WorkerNodes before ProcessNodes, because ProcessNode checks that it
   // has no associated WorkerNode when torn down.
-  for (auto& browser_context_and_worker_watcher :
-       browser_contexts_with_worker_watcher_) {
-    browser_context_and_worker_watcher.second->TearDown();
+  for (auto& kv : worker_watchers_) {
+    kv.second->TearDown();
   }
-  browser_contexts_with_worker_watcher_.clear();
+  worker_watchers_.clear();
+
+  service_worker_context_adapters_.clear();
 
   for (auto* web_contents : web_contents_) {
     PerformanceManagerTabHelper* tab_helper =

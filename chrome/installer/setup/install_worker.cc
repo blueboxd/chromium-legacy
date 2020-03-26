@@ -34,6 +34,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
+#include "chrome/install_static/buildflags.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
@@ -871,13 +872,14 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
   // installs. This is ordinarily done by Google Update prior to running
   // Chrome's installer. Do it here as well so that the key exists for manual
   // installs.
-  if (install_static::kUseGoogleUpdateIntegration &&
-      installer_state.system_install()) {
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+  if (installer_state.system_install()) {
     const base::string16 path = install_static::GetClientStateMediumKeyPath();
     post_install_task_list
         ->AddCreateRegKeyWorkItem(HKEY_LOCAL_MACHINE, path, KEY_WOW64_32KEY)
         ->set_best_effort(true);
   }
+#endif
 
   return true;
 }

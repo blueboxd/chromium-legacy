@@ -28,6 +28,10 @@ namespace metrics {
 class UkmRecorderInterface;
 }  // namespace metrics
 
+namespace content {
+class PaymentAppProviderImpl;
+}  // namespace content
+
 namespace ukm {
 
 class DelegatingUkmRecorder;
@@ -72,6 +76,12 @@ class METRICS_EXPORT UkmRecorder {
   // method should only be called by WebApkUkmRecorder class.
   static SourceId GetSourceIdForWebApkManifestUrl(const GURL& manifest_url);
 
+  // Gets new source Id for PAYMENT_APP_ID type and updates the source url to
+  // the scope of the app. This method should only be called by
+  // PaymentAppProviderImpl class when the payment app window is opened.
+  static SourceId GetSourceIdForPaymentAppFromScope(
+      const GURL& service_worker_scope);
+
  private:
   friend DelegatingUkmRecorder;
   friend TestRecordingHelper;
@@ -79,6 +89,7 @@ class METRICS_EXPORT UkmRecorder {
   friend blink::Document;
   friend metrics::UkmRecorderInterface;
   friend PermissionUmaUtil;
+  friend content::PaymentAppProviderImpl;
 
   // WebApkUkmRecorder records metrics about installed Webapps. Instead of using
   // the current main frame URL, we want to record the URL of the Webapp

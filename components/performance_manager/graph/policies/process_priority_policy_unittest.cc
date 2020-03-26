@@ -4,6 +4,9 @@
 
 #include "components/performance_manager/graph/policies/process_priority_policy.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/test/bind_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -39,8 +42,7 @@ void PostToggleProcessNodePriority(content::RenderProcessHost* rph) {
   auto* process_node = rpud->process_node();
 
   PerformanceManager::CallOnGraph(
-      FROM_HERE,
-      base::BindLambdaForTesting([process_node](Graph* graph_unused) {
+      FROM_HERE, base::BindLambdaForTesting([process_node]() {
         process_node->set_priority(
             GetOppositePriority(process_node->priority()));
       }));

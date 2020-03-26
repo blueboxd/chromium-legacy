@@ -125,6 +125,25 @@ class SectionSizeKnobs(object):
     # Whether to count number of relative relocations instead of binary size
     self.relocations_mode = False
 
+  def ModifyWithArgs(self, args):
+    if args.source_directory:
+      self.src_root = args.source_directory
+
+    if args.java_only:
+      self.analyze_java = True
+      self.analyze_native = False
+    if args.native_only:
+      self.analyze_java = False
+      self.analyze_native = True
+    if args.no_java:
+      self.analyze_java = False
+    if args.no_native:
+      self.analyze_native = False
+
+    if args.relocations:
+      self.relocations_mode = True
+      self.analyze_java = False
+
 
 def _OpenMaybeGzAsText(path):
   """Calls `gzip.open()` if |path| ends in ".gz", otherwise calls `open()`."""
@@ -1752,18 +1771,52 @@ def AddArguments(parser):
   AddMainPathsArguments(parser)
 
 
-def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
-  """Computes main paths based on input, and deduces them if needed."""
-  elf_path = args.elf_file
-  map_path = args.map_file
-  any_input = args.apk_file or args.minimal_apks_file or elf_path or map_path
-  if not any_input:
-    parser.error('Must pass at least one of --apk-file, --minimal-apks-file, '
-                 '--elf-file, --map-file')
-  output_directory_finder = path_util.OutputDirectoryFinder(
-      value=args.output_directory,
-      any_path_within_output_directory=any_input)
+def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
+                      on_config_error):
+  apk_so_path = None
+  if apk_path:
+    with zipfile.ZipFile(apk_path) as z:
+      lib_infos = [
+          f for f in z.infolist()
+          if f.filename.endswith('.so') and f.file_size > 0
+      ]
+    assert lib_infos, 'APK has no .so files.'
+    # TODO(agrieve): Add support for multiple .so files, and take into account
+    #     secondary architectures.
+    apk_so_path = max(lib_infos, key=lambda x: x.file_size).filename
+    logging.debug('Sub-apk path=%s', apk_so_path)
+    if not elf_path and tentative_output_dir:
+      elf_path = os.path.join(
+          tentative_output_dir, 'lib.unstripped',
+          os.path.basename(apk_so_path.replace('crazy.', '')))
+      logging.debug('Detected --elf-file=%s', elf_path)
 
+  if map_path:
+    if not map_path.endswith('.map') and not map_path.endswith('.map.gz'):
+      on_config_error('Expected --map-file to end with .map or .map.gz')
+  elif elf_path:
+    # Look for a .map file named for either the ELF file, or in the
+    # partitioned native library case, the combined ELF file from which the
+    # main library was extracted. Note that we don't yet have |tool_prefix| to
+    # use here, but that's not a problem for this use case.
+    if _ElfIsMainPartition(elf_path, ''):
+      map_path = elf_path.replace('.so', '__combined.so') + '.map'
+    else:
+      map_path = elf_path + '.map'
+    if not os.path.exists(map_path):
+      map_path += '.gz'
+
+  if not os.path.exists(map_path):
+    on_config_error(
+        'Could not find .map(.gz)? file. Ensure you have built with '
+        'is_official_build=true and generate_linker_map=true, or use '
+        '--map-file to point me a linker map file.')
+
+  return elf_path, map_path, apk_so_path
+
+
+def _DeduceMainPaths(args, knobs, on_config_error):
+  """Computes main paths based on input, and deduces them if needed."""
   aab_or_apk = args.apk_file or args.minimal_apks_file
   mapping_path = args.mapping_file
   resources_pathmap_path = args.resources_pathmap_file
@@ -1786,56 +1839,31 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
         logging.debug('Detected --resources-pathmap-file=%s',
                       resources_pathmap_path)
 
-  apk_path = extracted_minimal_apk_path or args.apk_file
-  apk_so_path = None
-  if apk_path and not args.java_only:
-    with zipfile.ZipFile(apk_path) as z:
-      lib_infos = [f for f in z.infolist()
-                   if f.filename.endswith('.so') and f.file_size > 0]
-    assert lib_infos, 'APK has no .so files.'
-    # TODO(agrieve): Add support for multiple .so files, and take into account
-    #     secondary architectures.
-    apk_so_path = max(lib_infos, key=lambda x:x.file_size).filename
-    logging.debug('Sub-apk path=%s', apk_so_path)
-    if not elf_path and output_directory_finder.Tentative():
-      elf_path = os.path.join(
-          output_directory_finder.Tentative(), 'lib.unstripped',
-          os.path.basename(apk_so_path.replace('crazy.', '')))
-      logging.debug('Detected --elf-file=%s', elf_path)
+  output_directory_finder = path_util.OutputDirectoryFinder(
+      value=args.output_directory,
+      any_path_within_output_directory=args.any_path_within_output_directory)
 
-  if args.java_only:
-    # Trust that these values will not be used, and set to None.
-    map_path = None
-    linker_name = None
-  elif map_path:
-    if not map_path.endswith('.map') and not map_path.endswith('.map.gz'):
-      parser.error('Expected --map-file to end with .map or .map.gz')
-  elif elf_path:
-    # Look for a .map file named for either the ELF file, or in the partitioned
-    # native library case, the combined ELF file from which the main library was
-    # extracted. Note that we don't yet have a tool_prefix to use here, but
-    # that's not a problem for this use case.
-    if _ElfIsMainPartition(elf_path, ''):
-      map_path = elf_path.replace('.so', '__combined.so') + '.map'
-    else:
-      map_path = elf_path + '.map'
-    if not os.path.exists(map_path):
-      map_path += '.gz'
-    if not os.path.exists(map_path):
-      parser.error('Could not find .map(.gz)? file. Ensure you have built with '
-                   'is_official_build=true and generate_linker_map=true, or '
-                   'use --map-file to point me a linker map file.')
-
+  apk_path = args.extracted_minimal_apk_path or args.apk_file
+  linker_name = None
   tool_prefix = None
-  if map_path:
-    linker_name = _DetectLinkerName(map_path)
-    logging.info('Linker name: %s' % linker_name)
+  if knobs.analyze_native:
+    elf_path, map_path, apk_so_path = _DeduceNativeInfo(
+        output_directory_finder.Tentative(), apk_path, args.elf_file,
+        args.map_file, on_config_error)
+    if map_path:
+      linker_name = _DetectLinkerName(map_path)
+      logging.info('Linker name: %s' % linker_name)
 
-    tool_prefix_finder = path_util.ToolPrefixFinder(
-        value=args.tool_prefix,
-        output_directory_finder=output_directory_finder,
-        linker_name=linker_name)
-    tool_prefix = tool_prefix_finder.Finalized()
+      tool_prefix_finder = path_util.ToolPrefixFinder(
+          value=args.tool_prefix,
+          output_directory_finder=output_directory_finder,
+          linker_name=linker_name)
+      tool_prefix = tool_prefix_finder.Finalized()
+  else:
+    # Trust that these values will not be used, and set to None.
+    elf_path = None
+    map_path = None
+    apk_so_path = None
 
   output_directory = None
   if not args.no_source_paths:
@@ -1851,62 +1879,54 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
           size_info_prefix)
 
 
-def Run(args, parser):
+def Run(args, on_config_error):
   if not args.size_file.endswith('.size'):
-    parser.error('size_file must end with .size')
+    on_config_error('size_file must end with .size')
 
   if args.f is not None:
     if not _AutoIdentifyInputFile(args):
-      parser.error('Cannot identify file %s' % args.f)
+      on_config_error('Cannot identify file %s' % args.f)
   if args.apk_file and args.minimal_apks_file:
-    parser.error('Cannot use both --apk-file and --minimal-apks-file.')
+    on_config_error('Cannot use both --apk-file and --minimal-apks-file.')
+
+  # Deduce arguments.
+  setattr(args, 'is_bundle', args.minimal_apks_file is not None)
+  any_path = (args.apk_file or args.minimal_apks_file or args.elf_file
+              or args.map_file)
+  if any_path is None:
+    on_config_error(
+        'Must pass at least one of --apk-file, --minimal-apks-file, '
+        '--elf-file, --map-file')
+  setattr(args, 'any_path_within_output_directory', any_path)
+  setattr(args, 'extracted_minimal_apk_path', None)
 
   if args.minimal_apks_file:
     # Can't use NamedTemporaryFile() because it uses atexit, which does
     # not play nice with fork().
-    fd, extracted_minimal_apk_path = tempfile.mkstemp(suffix='.apk')
+    fd, args.extracted_minimal_apk_path = tempfile.mkstemp(suffix='.apk')
+    assert args.apk_file is None
     try:
       logging.debug('Extracting %s', _APKS_MAIN_APK)
       with zipfile.ZipFile(args.minimal_apks_file) as z:
         os.write(fd, z.read(_APKS_MAIN_APK))
       os.close(fd)
-      _RunInternal(args, parser, extracted_minimal_apk_path)
+      _RunInternal(args, on_config_error)
     finally:
-      os.unlink(extracted_minimal_apk_path)
+      os.unlink(args.extracted_minimal_apk_path)
   else:
-    _RunInternal(args, parser, None)
+    _RunInternal(args, on_config_error)
 
 
-def _RunInternal(args, parser, extracted_minimal_apk_path):
+def _RunInternal(args, on_config_error):
+  knobs = SectionSizeKnobs(args.is_bundle)
+  knobs.ModifyWithArgs(args)
+
   (output_directory, tool_prefix, apk_path, mapping_path, apk_so_path, elf_path,
-   map_path, resources_pathmap_path,
-   linker_name, size_info_prefix) = _DeduceMainPaths(
-       args, parser, extracted_minimal_apk_path)
+   map_path, resources_pathmap_path, linker_name,
+   size_info_prefix) = _DeduceMainPaths(args, knobs, on_config_error)
 
-  knobs = SectionSizeKnobs(is_bundle=bool(extracted_minimal_apk_path))
-  if args.source_directory:
-    knobs.src_root = args.source_directory
-
-  if args.java_only:
-    knobs.analyze_java = True
-    knobs.analyze_native = False
-  if args.native_only:
-    knobs.analyze_java = False
-    knobs.analyze_native = True
-  if args.no_java:
-    knobs.analyze_java = False
-  if args.no_native:
-    knobs.analyze_native = False
-
-  if args.relocations:
-    knobs.relocations_mode = True
-    knobs.analyze_java = False
-
-  if not knobs.analyze_native:
-    map_path = None
-    elf_path = None
-    apk_so_path = None
-
+  # Note that |args.apk_file| is used instead of |apk_path|, since the latter
+  # may be an extracted temporary file.
   metadata = CreateMetadata(map_path, elf_path, args.apk_file,
                             args.minimal_apks_file, tool_prefix,
                             output_directory, linker_name)

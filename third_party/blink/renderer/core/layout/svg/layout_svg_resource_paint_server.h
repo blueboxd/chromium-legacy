@@ -116,7 +116,7 @@ class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
 
 template <>
 inline bool IsResourceOfType<LayoutSVGResourcePaintServer>(
-    LayoutSVGResourceContainer* container) {
+    const LayoutSVGResourceContainer* container) {
   return container->IsSVGPaintServer();
 }
 

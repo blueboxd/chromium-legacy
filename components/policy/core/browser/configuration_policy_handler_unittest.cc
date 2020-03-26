@@ -115,11 +115,9 @@ class StringListPolicyHandler : public ListPolicyHandler {
       : ListPolicyHandler(kPolicyName, base::Value::Type::STRING) {}
 
  protected:
-  void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
-                 PrefValueMap* prefs) override {
-    DCHECK(filtered_list);
-    prefs->SetValue(kTestPref,
-                    base::Value::FromUniquePtrValue(std::move(filtered_list)));
+  void ApplyList(base::Value filtered_list, PrefValueMap* prefs) override {
+    DCHECK(filtered_list.is_list());
+    prefs->SetValue(kTestPref, std::move(filtered_list));
   }
 };
 

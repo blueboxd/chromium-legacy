@@ -34,10 +34,6 @@ source_set("vaapi") {
     "h264_encoder.h",
     "h264_vaapi_video_decoder_delegate.cc",
     "h264_vaapi_video_decoder_delegate.h",
-    "va_surface.cc",
-    "va_surface.h",
-    "vaapi_common.cc",
-    "vaapi_common.h",
     "vaapi_dmabuf_video_frame_mapper.cc",
     "vaapi_dmabuf_video_frame_mapper.h",
     "vaapi_image_decode_accelerator_worker.cc",
@@ -54,8 +50,6 @@ source_set("vaapi") {
     "vaapi_picture.h",
     "vaapi_picture_factory.cc",
     "vaapi_picture_factory.h",
-    "vaapi_utils.cc",
-    "vaapi_utils.h",
     "vaapi_video_decode_accelerator.cc",
     "vaapi_video_decode_accelerator.h",
     "vaapi_video_decoder.cc",
@@ -66,8 +60,6 @@ source_set("vaapi") {
     "vaapi_video_encode_accelerator.h",
     "vaapi_webp_decoder.cc",
     "vaapi_webp_decoder.h",
-    "vaapi_wrapper.cc",
-    "vaapi_wrapper.h",
     "vp8_encoder.cc",
     "vp8_encoder.h",
     "vp8_vaapi_video_decoder_delegate.cc",
@@ -78,13 +70,10 @@ source_set("vaapi") {
     "vp9_vaapi_video_decoder_delegate.h",
   ]
 
-  configs += [
-    "//build/config/linux/libva",
-    "//third_party/libyuv:libyuv_config",
-  ]
+  configs += [ "//build/config/linux/libva" ]
 
   deps = [
-    ":libva_stubs",
+    ":common",
     "//base",
     "//gpu/config",
     "//gpu/ipc/common",
@@ -102,6 +91,7 @@ source_set("vaapi") {
   public_deps = [
     "//media",
     "//skia",
+    "//ui/gl",
   ]
 
   if (is_chromeos) {
@@ -148,6 +138,42 @@ source_set("vaapi") {
   }
 }
 
+source_set("common") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+    "va_surface.cc",
+    "va_surface.h",
+    "vaapi_common.cc",
+    "vaapi_common.h",
+    "vaapi_utils.cc",
+    "vaapi_utils.h",
+    "vaapi_wrapper.cc",
+    "vaapi_wrapper.h",
+  ]
+  public_deps = [
+    "//base",
+    "//media",
+    "//media/gpu:common",
+    "//ui/gfx/geometry",
+  ]
+  deps = [
+    ":libva_stubs",
+    "//third_party/libyuv",
+    "//ui/gfx:memory_buffer",
+    "//ui/gl",
+  ]
+  if (ozone_platform_gbm) {
+    deps += [ "//ui/ozone" ]
+  }
+
+  if (use_x11) {
+    configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
+  }
+
+  configs += [ "//build/config/linux/libva" ]
+}
+
 source_set("vaapi_test_utils") {
   testonly = true
   sources = [
@@ -155,7 +181,7 @@ source_set("vaapi_test_utils") {
     "test_utils.h",
   ]
   deps = [
-    ":vaapi",
+    ":common",
     "//base",
     "//testing/gtest",
     "//third_party/libyuv:libyuv",
@@ -171,6 +197,7 @@ source_set("unit_test") {
     "vaapi_video_decode_accelerator_unittest.cc",
   ]
   deps = [
+    ":common",
     ":vaapi",
     "//base",
     "//base/test:test_support",
@@ -206,6 +233,7 @@ if (is_chromeos) {
     testonly = true
     sources = [ "vaapi_jpeg_decoder_unittest.cc" ]
     deps = [
+      ":common",
       ":vaapi",
       ":vaapi_image_decoder_test_common",
       ":vaapi_test_utils",
@@ -224,6 +252,7 @@ if (is_chromeos) {
     testonly = true
     sources = [ "vaapi_webp_decoder_unittest.cc" ]
     deps = [
+      ":common",
       ":vaapi",
       ":vaapi_image_decoder_test_common",
       ":vaapi_test_utils",
@@ -242,7 +271,7 @@ source_set("vaapi_utils_unittest") {
   testonly = true
   sources = [ "vaapi_utils_unittest.cc" ]
   deps = [
-    ":vaapi",
+    ":common",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
@@ -253,7 +282,7 @@ source_set("vaapi_utils_unittest") {
 test("vaapi_unittest") {
   sources = [ "vaapi_unittest.cc" ]
   deps = [
-    ":vaapi",
+    ":common",
     ":vaapi_utils_unittest",
     "//base",
     "//media/gpu/test:helpers",

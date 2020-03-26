@@ -257,9 +257,12 @@ void XRFrameProvider::OnImmersiveFrameData(
 
   immersive_frame_pose_ = std::move(data->pose);
   if (immersive_frame_pose_) {
+    DVLOG(3) << __func__ << ": pose available, emulated_position="
+             << immersive_frame_pose_->emulated_position;
     is_immersive_frame_position_emulated_ =
         immersive_frame_pose_->emulated_position;
   } else {
+    DVLOG(2) << __func__ << ": emulating immersive frame position";
     is_immersive_frame_position_emulated_ = true;
   }
 

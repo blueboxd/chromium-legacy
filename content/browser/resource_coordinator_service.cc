@@ -5,6 +5,7 @@
 #include "content/public/browser/resource_coordinator_service.h"
 
 #include "base/no_destructor.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/mojom/resource_coordinator_service.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
@@ -13,8 +14,9 @@ namespace content {
 
 resource_coordinator::mojom::ResourceCoordinatorService*
 GetResourceCoordinatorService() {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(base::trace_event::MemoryDumpManager::GetInstance()
+             ->GetDumpThreadTaskRunner()
+             ->RunsTasksInCurrentSequence());
   static base::NoDestructor<
       mojo::Remote<resource_coordinator::mojom::ResourceCoordinatorService>>
       remote;
@@ -25,8 +27,9 @@ GetResourceCoordinatorService() {
 
 memory_instrumentation::mojom::CoordinatorController*
 GetMemoryInstrumentationCoordinatorController() {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(base::trace_event::MemoryDumpManager::GetInstance()
+             ->GetDumpThreadTaskRunner()
+             ->RunsTasksInCurrentSequence());
   static base::NoDestructor<
       mojo::Remote<memory_instrumentation::mojom::CoordinatorController>>
       controller([] {

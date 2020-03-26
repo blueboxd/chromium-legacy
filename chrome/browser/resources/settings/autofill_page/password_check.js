@@ -138,7 +138,7 @@ Polymer({
 
     const statusChangeListener = status => this.status_ = status;
     const setLeakedCredentialsListener = compromisedCredentials => {
-      this.updateList(compromisedCredentials);
+      this.updateList_(compromisedCredentials);
 
       settings.PluralStringProxyImpl.getInstance()
           .getPluralString('compromisedPasswords', this.leakedPasswords.length)
@@ -224,12 +224,11 @@ Polymer({
 
   /**
    * Returns true if there are any compromised credentials.
-   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>} list
    * @return {boolean}
    * @private
    */
-  hasLeakedCredentials_(list) {
-    return !!list.length;
+  hasLeakedCredentials_() {
+    return !!this.leakedPasswords.length;
   },
 
   /**
@@ -284,17 +283,14 @@ Polymer({
 
   /**
    * Returns the icon (warning, info or error) indicating the check status.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
-   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>}
-   *     leakedPasswords
    * @return {string}
    * @private
    */
-  getStatusIcon_(status, leakedPasswords) {
-    if (!this.hasLeaksOrErrors_(status, leakedPasswords)) {
+  getStatusIcon_() {
+    if (!this.hasLeaksOrErrors_()) {
       return 'settings:check-circle';
     }
-    if (this.hasLeakedCredentials_(leakedPasswords)) {
+    if (this.hasLeakedCredentials_()) {
       return 'cr:warning';
     }
     return 'cr:info';
@@ -302,17 +298,14 @@ Polymer({
 
   /**
    * Returns the CSS class used to style the icon (warning, info or error).
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
-   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>}
-   *     leakedPasswords
    * @return {string}
    * @private
    */
-  getStatusIconClass_(status, leakedPasswords) {
-    if (!this.hasLeaksOrErrors_(status, leakedPasswords)) {
+  getStatusIconClass_() {
+    if (!this.hasLeaksOrErrors_()) {
       return this.waitsForFirstCheck_() ? 'hidden' : 'no-leaks';
     }
-    if (this.hasLeakedCredentials_(leakedPasswords)) {
+    if (this.hasLeakedCredentials_()) {
       return 'has-leaks';
     }
     return '';
@@ -355,33 +348,30 @@ Polymer({
 
   /**
    * Returns true iff a check is running right according to the given |status|.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @return {boolean}
    * @private
    */
-  isCheckInProgress_(status) {
-    return status.state == CheckState.RUNNING;
+  isCheckInProgress_() {
+    return this.status_.state == CheckState.RUNNING;
   },
 
   /**
    * Returns true to show the timestamp when a check was completed successfully.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @return {boolean}
    * @private
    */
-  showsTimestamp_(status) {
-    return status.state == CheckState.IDLE &&
-        !!status.elapsedTimeSinceLastCheck;
+  showsTimestamp_() {
+    return this.status_.state == CheckState.IDLE &&
+        !!this.status_.elapsedTimeSinceLastCheck;
   },
 
   /**
    * Returns the button caption indicating it's current functionality.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @return {string}
    * @private
    */
-  getButtonText_(status) {
-    switch (status.state) {
+  getButtonText_() {
+    switch (this.status_.state) {
       case CheckState.IDLE:
         return this.waitsForFirstCheck_() ? this.i18n('checkPasswords') :
                                             this.i18n('checkPasswordsAgain');
@@ -397,7 +387,8 @@ Polymer({
       case CheckState.QUOTA_LIMIT:
         return '';  // Undefined behavior. Don't show any misleading text.
     }
-    assertNotReached('Can\'t find a button text for state: ' + status.state);
+    assertNotReached(
+        'Can\'t find a button text for state: ' + this.status_.state);
   },
 
   /**
@@ -453,27 +444,24 @@ Polymer({
    * @private
    */
   shouldShowBanner_() {
-    if (this.hasLeakedCredentials_(this.leakedPasswords)) {
+    if (this.hasLeakedCredentials_()) {
       return false;
     }
     return this.status_.state == CheckState.CANCELED ||
-        !this.hasLeaksOrErrors_(this.status_, this.leakedPasswords);
+        !this.hasLeaksOrErrors_();
   },
 
   /**
    * Returns true if there are leaked credentials or the status is unexpected
    * for a regular password check.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
-   * @param {!Array<PasswordManagerProxy.CompromisedCredential>}
-   *     leakedPasswords
    * @return {boolean}
    * @private
    */
-  hasLeaksOrErrors_(status, leakedPasswords) {
-    if (this.hasLeakedCredentials_(leakedPasswords)) {
+  hasLeaksOrErrors_() {
+    if (this.hasLeakedCredentials_()) {
       return true;
     }
-    switch (status.state) {
+    switch (this.status_.state) {
       case CheckState.IDLE:
       case CheckState.RUNNING:
         return false;
@@ -485,7 +473,8 @@ Polymer({
       case CheckState.OTHER_ERROR:
         return true;
     }
-    throw 'Not specified whether to state is an error: ' + status.state;
+    assertNotReached(
+        'Not specified whether to state is an error: ' + this.status_.state);
   },
 
   /**
@@ -495,7 +484,7 @@ Polymer({
    * @private
    */
   showsPasswordsCount_() {
-    if (this.hasLeakedCredentials_(this.leakedPasswords)) {
+    if (this.hasLeakedCredentials_()) {
       return true;
     }
     switch (this.status_.state) {
@@ -559,7 +548,7 @@ Polymer({
    * @param {!Array<!PasswordManagerProxy.CompromisedCredential>} newList
    * @private
    */
-  updateList(newList) {
+  updateList_(newList) {
     const oldList = this.leakedPasswords.slice();
     const map = new Map();
     newList.forEach(item => map.set(item.id, item));
@@ -605,8 +594,7 @@ Polymer({
 
     // Return true if there was a successful check and no compromised passwords
     // were found.
-    return !this.hasLeakedCredentials_(this.leakedPasswords) &&
-        this.showsTimestamp_(this.status_);
+    return !this.hasLeakedCredentials_() && this.showsTimestamp_();
   },
 });
 })();

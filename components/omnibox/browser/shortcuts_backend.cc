@@ -168,14 +168,21 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
     normalized_match = &temp;
   }
 
+  auto description = normalized_match->description_for_shortcuts.empty()
+                         ? normalized_match->description
+                         : normalized_match->description_for_shortcuts;
+  auto description_class =
+      normalized_match->description_class_for_shortcuts.empty()
+          ? normalized_match->description_class
+          : normalized_match->description_class_for_shortcuts;
+
   return ShortcutsDatabase::Shortcut::MatchCore(
       normalized_match->fill_into_edit, normalized_match->destination_url,
       static_cast<int>(normalized_match->document_type),
       normalized_match->contents,
-      StripMatchMarkers(normalized_match->contents_class),
-      normalized_match->description,
-      StripMatchMarkers(normalized_match->description_class),
-      normalized_match->transition, match_type, normalized_match->keyword);
+      StripMatchMarkers(normalized_match->contents_class), description,
+      StripMatchMarkers(description_class), normalized_match->transition,
+      match_type, normalized_match->keyword);
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {

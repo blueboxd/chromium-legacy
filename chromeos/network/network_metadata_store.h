@@ -72,6 +72,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   void AddObserver(NetworkMetadataObserver* observer);
   void RemoveObserver(NetworkMetadataObserver* observer);
 
+  base::WeakPtr<NetworkMetadataStore> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   void RemoveNetworkFromPref(const std::string& network_guid,
                              PrefService* pref_service);
@@ -88,6 +92,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   NetworkStateHandler* network_state_handler_;
   PrefService* profile_pref_service_;
   PrefService* device_pref_service_;
+  base::WeakPtrFactory<NetworkMetadataStore> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

@@ -268,6 +268,12 @@ bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
   return false;
 }
 
+scoped_refptr<SequencedTaskRunner>
+MemoryDumpManager::GetDumpThreadTaskRunner() {
+  base::AutoLock lock(lock_);
+  return GetOrCreateBgTaskRunnerLocked();
+}
+
 scoped_refptr<base::SequencedTaskRunner>
 MemoryDumpManager::GetOrCreateBgTaskRunnerLocked() {
   lock_.AssertAcquired();

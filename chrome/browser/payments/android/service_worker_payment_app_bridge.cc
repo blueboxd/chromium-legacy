@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
@@ -671,4 +672,17 @@ static void JNI_ServiceWorkerPaymentAppBridge_OnClosingPaymentAppWindow(
   content::PaymentAppProvider::GetInstance()->OnClosingOpenedWindow(
       web_contents->GetBrowserContext(),
       static_cast<payments::mojom::PaymentEventResponseType>(reason));
+}
+
+static jlong
+JNI_ServiceWorkerPaymentAppBridge_GetSourceIdForPaymentAppFromScope(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& jscope) {
+  // At this point we know that the payment handler window is open for the
+  // payment app associated with this scope. Since this getter is called inside
+  // PaymentApp::getUkmSourceId() function which in turn gets called for the
+  // invoked app inside PaymentRequestImpl::openPaymentHandlerWindowInternal.
+  return content::PaymentAppProvider::GetInstance()
+      ->GetSourceIdForPaymentAppFromScope(
+          GURL(ConvertJavaStringToUTF8(env, jscope)).GetOrigin());
 }

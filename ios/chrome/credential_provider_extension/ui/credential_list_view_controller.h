@@ -10,7 +10,7 @@
 #import "ios/chrome/credential_provider_extension/ui/credential_list_consumer.h"
 
 @interface CredentialListViewController
-    : UIViewController <CredentialListConsumer>
+    : UITableViewController <CredentialListConsumer>
 @end
 
 #endif  // IOS_CHROME_CREDENTIAL_PROVIDER_EXTENSION_UI_CREDENTIAL_LIST_VIEW_CONTROLLER_H_

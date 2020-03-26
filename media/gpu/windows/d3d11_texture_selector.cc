@@ -10,6 +10,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
+#include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/direct_composition_surface_win.h"
 
@@ -39,6 +40,7 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     DXGI_FORMAT decoder_output_format,
     TextureSelector::HDRMode hdr_output_mode,
+    const FormatSupportChecker* format_checker,
     MediaLog* media_log) {
   bool supports_nv12_decode_swap_chain =
       gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported();
@@ -82,17 +84,48 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
       // using an 11.1-capable device.
       // TODO(liberato): Get the context and ask it.
       const bool is_d3d_11_1 = true;
+
       if (!is_d3d_11_1 || hdr_output_mode == HDRMode::kSDROnly) {
-        // SDR output, so just use 8 bit and sRGB.
-        MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: 8 bit sRGB";
-        output_dxgi_format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        output_color_space = gfx::ColorSpace::CreateSRGB();
+        if (format_checker->CheckOutputFormatSupport(
+                DXGI_FORMAT_B8G8R8A8_UNORM)) {
+          // SDR output, so just use 8 bit and sRGB.
+          // TODO(liberato): use the format checker, else bind P010.
+          MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: 8 bit sRGB";
+          output_dxgi_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+          output_color_space = gfx::ColorSpace::CreateSRGB();
+        } else {
+          // Bind P010 directly, since we can't copy.
+          MEDIA_LOG(INFO, media_log)
+              << "D3D11VideoDecoder: binding P010, no SDR output support";
+          output_dxgi_format = DXGI_FORMAT_P010;
+          // PIXEL_FORMAT_YUV422P10 would probably be a better choice, but it's
+          // not supported by the rest of the pipeline yet.
+          output_pixel_format = PIXEL_FORMAT_NV12;
+          output_color_space.reset();
+        }
       } else {
         // Will (may) be displayed in HDR, so switch to a high precision format.
         // For full screen, we might want 10 bit unorm instead of fp16.
-        MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: fp16 bit scRGBLinear";
-        output_dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-        output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
+        if (format_checker->CheckOutputFormatSupport(
+                DXGI_FORMAT_R16G16B16A16_FLOAT)) {
+          MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: fp16 scRGBLinear";
+          output_dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+          output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
+        } else if (format_checker->CheckOutputFormatSupport(
+                       DXGI_FORMAT_R10G10B10A2_UNORM)) {
+          MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: BGRA10 scRGBLinear";
+          output_dxgi_format = DXGI_FORMAT_R10G10B10A2_UNORM;
+          output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
+        } else {
+          // No support at all.  Just bind P010, and hope for the best.
+          MEDIA_LOG(INFO, media_log)
+              << "D3D11VideoDecoder: binding P010, no HDR output support";
+          output_dxgi_format = DXGI_FORMAT_P010;
+          // PIXEL_FORMAT_YUV422P10 would probably be a better choice, but it's
+          // not supported by the rest of the pipeline yet.
+          output_pixel_format = PIXEL_FORMAT_NV12;
+          output_color_space.reset();
+        }
 
         // TODO(liberato): Handle HLG, if we can get the input color space.
         // The rough outline looks something like this:

@@ -44,7 +44,8 @@ def AddArguments(parser):
                       help='Address for the HTTP server')
 
 
-def Run(args, _parser):
+# pylint: disable=unused-argument
+def Run(args, on_config_error):
   logging.info('Starting server')
   server_addr = (args.address, args.port)
 

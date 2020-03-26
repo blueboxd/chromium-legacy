@@ -714,6 +714,7 @@ Polymer({
 
     this.$['offline-ad-auth'].onBeforeShow();
     this.$['signin-frame-dialog'].onBeforeShow();
+    this.$['offline-gaia'].onBeforeShow();
     this.$.pinDialog.onBeforeShow();
   },
 

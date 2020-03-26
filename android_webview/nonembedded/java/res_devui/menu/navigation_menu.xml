@@ -9,21 +9,6 @@
     <group android:id="@+id/nav_menu_group">
         <!--suppress HardcodedText -->
         <item
-             android:id="@+id/nav_menu_main_ui"
-             android:title="Home"
-             android:showAsAction="never"/>
-        <!--suppress HardcodedText -->
-        <item
-             android:id="@+id/nav_menu_crash_ui"
-             android:title="WebView Crashes"
-             android:showAsAction="never"/>
-        <!--suppress HardcodedText -->
-        <item
-             android:id="@+id/nav_menu_flags_ui"
-             android:title="Experimental Flags"
-             android:showAsAction="never"/>
-        <!--suppress HardcodedText -->
-        <item
              android:id="@+id/nav_menu_switch_provider"
              android:title="Change WebView Provider"
              android:showAsAction="never"/>

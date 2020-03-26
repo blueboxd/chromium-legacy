@@ -54,7 +54,7 @@ class HatsSurveyStatusChecker {
   HatsSurveyStatusChecker();
 
   // Overridden only by tests.
-  virtual std::string HatsSurveyURL();
+  virtual std::string HatsSurveyURLWithoutId();
   virtual int SurveyCheckTimeoutSecs();
 
  private:

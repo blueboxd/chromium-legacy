@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
+#include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "printing/backend/printing_restrictions.h"
 
@@ -95,8 +96,7 @@ class PrintingAllowedPageSizesPolicyHandler : public ListPolicyHandler {
 
   // ListPolicyHandler implementation:
   bool CheckListEntry(const base::Value& value) override;
-  void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
-                 PrefValueMap* prefs) override;
+  void ApplyList(base::Value filtered_list, PrefValueMap* prefs) override;
 };
 
 class PrintingSizeDefaultPolicyHandler : public TypeCheckingPolicyHandler {

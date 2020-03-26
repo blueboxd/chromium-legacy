@@ -178,4 +178,11 @@ public class LanguageListPreference extends Preference {
     void registerActivityLauncher(AddLanguageFragment.Launcher launcher) {
         mLauncher = launcher;
     }
+
+    /**
+     * Notify LanguageListAdapter of pref changes to update list items.
+     */
+    void notifyPrefChanged() {
+        mAdapter.onDataUpdated();
+    }
 }

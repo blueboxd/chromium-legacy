@@ -161,6 +161,11 @@ def _ParseOptions():
       action='store_true',
       help='Disable -checkdiscard directives')
   parser.add_argument('--sourcefile', help='Value for source file attribute')
+  parser.add_argument(
+      '--force-enable-assertions',
+      action='store_true',
+      help='Forcefully enable javac generated assertion code.')
+
 
   options = parser.parse_args(args)
 
@@ -240,6 +245,9 @@ def _OptimizeWithR8(options,
 
     if options.min_api:
       cmd += ['--min-api', options.min_api]
+
+    if options.force_enable_assertions:
+      cmd += ['--force-enable-assertions']
 
     if options.main_dex_rules_path:
       for main_dex_rule in options.main_dex_rules_path:

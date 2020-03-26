@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.SystemClock;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -216,6 +217,12 @@ public interface TabSwitcher {
          */
         @VisibleForTesting
         void setSourceRectCallbackForTesting(Callback<RectF> callback);
+
+        /**
+         * @return The parent view of tab grid dialog.
+         */
+        @VisibleForTesting
+        View getTabGridDialogParentViewForTesting();
     }
 
     /**

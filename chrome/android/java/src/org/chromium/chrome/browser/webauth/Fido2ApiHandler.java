@@ -20,7 +20,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 public class Fido2ApiHandler {
     private static Fido2ApiHandler sInstance;
     private static final String GMSCORE_PACKAGE_NAME = "com.google.android.gms";
-    public static final int GMSCORE_MIN_VERSION = 201106000;
+    public static final int GMSCORE_MIN_VERSION = 16890000;
 
     @VisibleForTesting
     static void overrideInstanceForTesting(Fido2ApiHandler instance) {

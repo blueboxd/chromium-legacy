@@ -141,6 +141,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       contents_class(match.contents_class),
       description(match.description),
       description_class(match.description_class),
+      description_for_shortcuts(match.description_for_shortcuts),
+      description_class_for_shortcuts(match.description_class_for_shortcuts),
       header(match.header),
       swap_contents_and_description(match.swap_contents_and_description),
       answer(match.answer),
@@ -196,6 +198,8 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   contents_class = match.contents_class;
   description = match.description;
   description_class = match.description_class;
+  description_for_shortcuts = match.description_for_shortcuts;
+  description_class_for_shortcuts = match.description_class_for_shortcuts;
   header = match.header;
   swap_contents_and_description = match.swap_contents_and_description;
   answer = match.answer;
@@ -425,13 +429,16 @@ bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
   if (!match1.allowed_to_be_default_match && match2.allowed_to_be_default_match)
     return false;
 
-  // Prefer document suggestions.
-  if (match1.type == AutocompleteMatchType::DOCUMENT_SUGGESTION &&
-      match2.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+  // Prefer live document suggestions. We check provider type instead of match
+  // type in order to distinguish live suggestions from the document provider
+  // from stale suggestions from the shortcuts providers, because the latter
+  // omits changing metadata such as last access date.
+  if (match1.provider->type() == AutocompleteProvider::TYPE_DOCUMENT &&
+      match2.provider->type() != AutocompleteProvider::TYPE_DOCUMENT) {
     return true;
   }
-  if (match1.type != AutocompleteMatchType::DOCUMENT_SUGGESTION &&
-      match2.type == AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+  if (match1.provider->type() != AutocompleteProvider::TYPE_DOCUMENT &&
+      match2.provider->type() == AutocompleteProvider::TYPE_DOCUMENT) {
     return false;
   }
 
@@ -1046,6 +1053,8 @@ AutocompleteMatch::GetMatchWithContentsAndDescriptionPossiblySwapped() const {
   if (copy.swap_contents_and_description) {
     std::swap(copy.contents, copy.description);
     std::swap(copy.contents_class, copy.description_class);
+    copy.description_for_shortcuts.clear();
+    copy.description_class_for_shortcuts.clear();
     // Clear bit to prevent accidentally performing the swap again.
     copy.swap_contents_and_description = false;
   }
@@ -1115,6 +1124,9 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(contents_class);
   res += base::trace_event::EstimateMemoryUsage(description);
   res += base::trace_event::EstimateMemoryUsage(description_class);
+  res += base::trace_event::EstimateMemoryUsage(description_for_shortcuts);
+  res +=
+      base::trace_event::EstimateMemoryUsage(description_class_for_shortcuts);
   if (answer)
     res += base::trace_event::EstimateMemoryUsage(answer.value());
   else
@@ -1206,6 +1218,8 @@ void AutocompleteMatch::Validate() const {
   std::string provider_name = provider ? provider->GetName() : "None";
   ValidateClassifications(contents, contents_class, provider_name);
   ValidateClassifications(description, description_class, provider_name);
+  ValidateClassifications(description_for_shortcuts,
+                          description_class_for_shortcuts, provider_name);
 }
 #endif  // DCHECK_IS_ON()
 

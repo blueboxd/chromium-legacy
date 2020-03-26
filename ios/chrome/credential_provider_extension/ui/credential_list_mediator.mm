@@ -54,7 +54,7 @@
   [self.UIHandler showEmptyCredentials];
 }
 
-#pragma mark - CredentialListConsumer
+#pragma mark - CredentialListConsumerDelegate
 
 - (void)navigationCancelButtonWasPressed:(UIButton*)button {
   NSError* error =
@@ -62,6 +62,10 @@
                                  code:ASExtensionErrorCodeUserCanceled
                              userInfo:nil];
   [self.context cancelRequestWithError:error];
+}
+
+- (void)updateResultsWithFilter:(NSString*)filter {
+  // TODO(crbug.com/1045454): Implement this method.
 }
 
 @end

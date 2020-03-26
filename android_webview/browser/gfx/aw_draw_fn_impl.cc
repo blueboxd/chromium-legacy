@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -478,14 +479,7 @@ void AwDrawFnImpl::DrawVkInterop(AwDrawFn_DrawVkParams* params) {
       return;
     }
 
-    // Create backend texture from the VkImage.
-    GrVkAlloc alloc(vulkan_image->device_memory(), 0 /* offset */,
-                    vulkan_image->device_size(), 0 /* flags */);
-    pending_draw->image_info = GrVkImageInfo(
-        vulkan_image->image(), alloc, vulkan_image->image_tiling(),
-        VK_IMAGE_LAYOUT_UNDEFINED, vulkan_image->format(), 1 /* levelCount */,
-        VK_QUEUE_FAMILY_EXTERNAL);
-
+    pending_draw->image_info = gpu::CreateGrVkImageInfo(vulkan_image.get());
     pending_draw->vulkan_image = std::move(vulkan_image);
   }
 

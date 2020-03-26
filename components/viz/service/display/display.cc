@@ -928,10 +928,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
   cc::Region occlusion_in_target_space;
   cc::Region backdrop_filters_in_target_space;
   bool current_sqs_intersects_occlusion = false;
-  int minimum_draw_occlusion_height =
-      settings_.kMinimumDrawOcclusionSize.height() * device_scale_factor_;
-  int minimum_draw_occlusion_width =
-      settings_.kMinimumDrawOcclusionSize.width() * device_scale_factor_;
 
   base::flat_map<RenderPassId, gfx::Rect> backdrop_filter_rects;
   for (const auto& pass : frame->render_pass_list) {
@@ -969,9 +965,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     }
     // Also skip quad if the DrawQuad size is smaller than the
     // kMinimumDrawOcclusionSize; or the DrawQuad is inside a 3d object.
-    if ((quad->visible_rect.width() <= minimum_draw_occlusion_width &&
-         quad->visible_rect.height() <= minimum_draw_occlusion_height) ||
-        quad->shared_quad_state->sorting_context_id != 0) {
+    if (quad->shared_quad_state->sorting_context_id != 0) {
       ++quad;
       continue;
     }

@@ -128,8 +128,7 @@ class POLICY_EXPORT ListPolicyHandler : public TypeCheckingPolicyHandler {
 
   // Implement this method to apply the |filtered_list| of values of type
   // |list_entry_type_| as returned from CheckAndGetList() to |prefs|.
-  virtual void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
-                         PrefValueMap* prefs) = 0;
+  virtual void ApplyList(base::Value filtered_list, PrefValueMap* prefs) = 0;
 
  private:
   // Checks whether the policy value is indeed a list, filters out all entries
@@ -138,7 +137,7 @@ class POLICY_EXPORT ListPolicyHandler : public TypeCheckingPolicyHandler {
   // filtered list entries if |errors| is not nullptr.
   bool CheckAndGetList(const policy::PolicyMap& policies,
                        policy::PolicyErrorMap* errors,
-                       std::unique_ptr<base::ListValue>* filtered_list);
+                       base::Value* filtered_list);
 
   // Expected value type for list entries. All other types are filtered out.
   base::Value::Type list_entry_type_;

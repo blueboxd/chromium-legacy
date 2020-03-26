@@ -188,7 +188,7 @@ void InstallationTracker::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   ChangeExtensionStatus(extension->id(), ExtensionStatus::LOADED);
-  if (pending_extensions_counter_ == 0)
+  if (loaded_ && pending_extensions_counter_ == 0)
     ReportResults();
 }
 
@@ -196,7 +196,7 @@ void InstallationTracker::OnExtensionInstallationFailed(
     const ExtensionId& extension_id,
     InstallationReporter::FailureReason reason) {
   ChangeExtensionStatus(extension_id, ExtensionStatus::FAILED);
-  if (pending_extensions_counter_ == 0)
+  if (loaded_ && pending_extensions_counter_ == 0)
     ReportResults();
 }
 

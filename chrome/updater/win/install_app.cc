@@ -706,10 +706,6 @@ class AppInstall : public App {
 
   void SetupDone(int result);
 
-  // TODO(sorin): remove the hardcoding of the application id.
-  // https://crbug.com/1014298
-  const std::string app_id_ = {kChromeAppId};
-
   scoped_refptr<Configurator> config_;
   scoped_refptr<InstallAppController> app_install_controller_;
 
@@ -747,7 +743,9 @@ void AppInstall::FirstTaskRun() {
 }
 
 void AppInstall::SetupDone(int result) {
-  if (result != 0) {
+  const auto app_id =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kAppIdSwitch);
+  if (result != 0 || app_id.empty()) {
     Shutdown(result);
     return;
   }
@@ -757,7 +755,7 @@ void AppInstall::SetupDone(int result) {
 
   app_install_controller_ = base::MakeRefCounted<InstallAppController>(config_);
   app_install_controller_->InstallApp(
-      app_id_, base::BindOnce(&AppInstall::Shutdown, this));
+      app_id, base::BindOnce(&AppInstall::Shutdown, this));
 }
 
 scoped_refptr<App> AppInstallInstance() {

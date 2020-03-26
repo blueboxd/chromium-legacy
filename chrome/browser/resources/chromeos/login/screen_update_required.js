@@ -39,6 +39,14 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
       return OOBE_UI_STATE.BLOCKING;
     },
 
+    /**
+     * Returns default event target element.
+     * @type {Object}
+     */
+    get defaultControl() {
+      return $('update-required-card');
+    },
+
     /** @param {string} domain Enterprise domain name */
     /** @param {string} device Device name */
     setEnterpriseAndDeviceName(enterpriseDomain, device) {

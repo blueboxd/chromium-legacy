@@ -260,10 +260,10 @@ void TableHeader::ResizeColumnViaKeyboard(
 
   int new_width = column.width;
   switch (direction) {
-    case TableView::ADVANCE_INCREMENT:
+    case TableView::AdvanceDirection::kIncrement:
       new_width += kResizeKeyboardAmount;
       break;
-    case TableView::ADVANCE_DECREMENT:
+    case TableView::AdvanceDirection::kDecrement:
       new_width -= kResizeKeyboardAmount;
       break;
   }

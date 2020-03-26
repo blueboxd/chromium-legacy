@@ -51,6 +51,7 @@ ios_appex_bundle("credential_provider_extension") {
   deps = [
     ":system_strings",
     "//base",
+    "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:command",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/reauthentication",

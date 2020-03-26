@@ -18,6 +18,14 @@ login.createScreen('TPMErrorMessageScreen', 'tpm-error-message', function() {
     },
 
     /**
+     * Returns default event target element.
+     * @type {Object}
+     */
+    get defaultControl() {
+      return $('tpm-error-dialog');
+    },
+
+    /**
      * Show TPM screen.
      */
     show() {

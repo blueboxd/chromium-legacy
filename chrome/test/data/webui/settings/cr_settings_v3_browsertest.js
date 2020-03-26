@@ -233,6 +233,26 @@ TEST_F('CrSettingsSiteListV3Test', 'AddExceptionDialog', function() {
   runMochaSuite('AddExceptionDialog');
 });
 
+// eslint-disable-next-line no-var
+var CrSettingsSiteDetailsV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_details_tests.m.js';
+  }
+};
+
+// Disabling on debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
+// https://crbug.com/825304 - later for other platforms in crbug.com/1021219.
+// Disabling on Linux CFI due to flaky timeout (crbug.com/1031960).
+GEN('#if (!defined(NDEBUG)) || (defined(OS_LINUX) && defined(IS_CFI))');
+GEN('#define MAYBE_SiteDetails DISABLED_SiteDetails');
+GEN('#else');
+GEN('#define MAYBE_SiteDetails SiteDetails');
+GEN('#endif');
+
+TEST_F('CrSettingsSiteDetailsV3Test', 'MAYBE_SiteDetails', function() {
+  mocha.run();
+});
 
 // eslint-disable-next-line no-var
 var CrSettingsPersonalizationOptionsV3Test =

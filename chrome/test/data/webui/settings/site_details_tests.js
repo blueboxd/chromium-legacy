@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl,WebsiteUsageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+// #import {createContentSettingTypeToValuePair,createRawChooserException,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.m.js';
+// #import {flush,Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {listenOnce} from 'chrome://resources/js/util.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {Route,Router,routes} from 'chrome://settings/settings.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+// clang-format on
+
 class TestWebsiteUsageBrowserProxy extends TestBrowserProxy {
   constructor() {
     super(['clearUsage', 'fetchUsageTotal']);
@@ -229,7 +241,7 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
 
     // First, explicitly set all the optional settings to false.
-    for (contentSetting in optionalSiteDetailsContentSettingsTypes) {
+    for (const contentSetting in optionalSiteDetailsContentSettingsTypes) {
       const loadTimeDataOverride = {};
       loadTimeDataOverride
           [optionalSiteDetailsContentSettingsTypes[contentSetting]] = false;
@@ -238,7 +250,7 @@ suite('SiteDetails', function() {
 
     // Iterate over each flag in on / off state, assuming that the on state
     // means the content setting will show, and off hides it.
-    for (contentSetting in optionalSiteDetailsContentSettingsTypes) {
+    for (const contentSetting in optionalSiteDetailsContentSettingsTypes) {
       const numContentSettings =
           Object.keys(settings.ContentSettingsTypes).length -
           nonSiteDetailsContentSettingsTypes.length -
@@ -269,7 +281,7 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     testElement = createSiteDetails('https://foo.com:443');
     Polymer.dom.flush();
-    assert(!!testElement.$$('#usage'));
+    assertTrue(!!testElement.$$('#usage'));
 
     // When there's no usage, there should be a string that says so.
     assertEquals('', testElement.storedData_);

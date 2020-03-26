@@ -12,6 +12,14 @@
 namespace content {
 
 void InitializeBrowserMemoryInstrumentationClient() {
+  auto task_runner = base::trace_event::MemoryDumpManager::GetInstance()
+                         ->GetDumpThreadTaskRunner();
+  if (!task_runner->RunsTasksInCurrentSequence()) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&InitializeBrowserMemoryInstrumentationClient));
+    return;
+  }
   TRACE_EVENT0("startup", "InitializeBrowserMemoryInstrumentationClient");
   mojo::PendingRemote<memory_instrumentation::mojom::Coordinator> coordinator;
   mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess> process;

@@ -984,6 +984,12 @@ bool PaymentAppProviderImpl::IsValidInstallablePaymentApp(
   return true;
 }
 
+ukm::SourceId PaymentAppProviderImpl::GetSourceIdForPaymentAppFromScope(
+    const GURL& sw_scope) {
+  return ukm::UkmRecorder::GetSourceIdForPaymentAppFromScope(
+      sw_scope.GetOrigin());
+}
+
 PaymentAppProviderImpl::PaymentAppProviderImpl() = default;
 
 PaymentAppProviderImpl::~PaymentAppProviderImpl() = default;

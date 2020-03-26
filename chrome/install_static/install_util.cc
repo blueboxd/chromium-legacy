@@ -16,6 +16,7 @@
 
 #include "build/branding_buildflags.h"
 #include "chrome/chrome_elf/nt_registry/nt_registry.h"
+#include "chrome/install_static/buildflags.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/policy_path_parser.h"
@@ -60,6 +61,7 @@ const wchar_t kUtilityProcess[] = L"utility";
 
 namespace {
 
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 // TODO(ananta)
 // http://crbug.com/604923
 // The constants defined in this file are also defined in chrome/installer and
@@ -68,13 +70,16 @@ namespace {
 constexpr wchar_t kChromeChannelDev[] = L"dev";
 constexpr wchar_t kChromeChannelBeta[] = L"beta";
 constexpr wchar_t kChromeChannelStableExplicit[] = L"stable";
+#endif
 
 // TODO(ananta)
 // http://crbug.com/604923
 // These constants are defined in the chrome/installer directory as well. We
 // need to unify them.
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 constexpr wchar_t kRegValueAp[] = L"ap";
 constexpr wchar_t kRegValueName[] = L"name";
+#endif
 constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
@@ -273,12 +278,11 @@ std::vector<StringType> TokenizeStringT(
   return tokens;
 }
 
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 // Returns Chrome's update channel name based on the contents of the given "ap"
 // value from Chrome's ClientState key.
 std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
                                              const std::wstring& ap_value) {
-  assert(kUseGoogleUpdateIntegration);
-
   static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
   static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
   static constexpr wchar_t kChromeChannelDevPattern[] = L"2?0-d*";
@@ -307,6 +311,7 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
   // rules in the update configs.
   return std::wstring();
 }
+#endif
 
 // Converts a process type specified as a string to the ProcessType enum.
 ProcessType GetProcessType(const std::wstring& process_type) {
@@ -926,9 +931,9 @@ std::wstring DetermineChannel(const InstallConstants& mode,
                               bool from_binaries,
                               std::wstring* update_ap,
                               std::wstring* update_cohort_name) {
-  if (!kUseGoogleUpdateIntegration)
-    return std::wstring();
-
+#if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+  return std::wstring();
+#else
   // Read the "ap" value and cache it if requested.
   std::wstring client_state(from_binaries
                                 ? GetBinariesClientStateKeyPath()
@@ -958,6 +963,7 @@ std::wstring DetermineChannel(const InstallConstants& mode,
   }
 
   return std::wstring();
+#endif
 }
 
 }  // namespace install_static

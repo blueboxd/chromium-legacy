@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_TEST_SUPPORT_DECORATORS_UTILS_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_TEST_SUPPORT_DECORATORS_UTILS_H_
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "components/performance_manager/public/graph/graph.h"
@@ -46,7 +48,7 @@ void TestPageNodePropertyOnPMSequence(content::WebContents* contents,
       PerformanceManager::GetPageNodeForWebContents(contents);
 
   PerformanceManager::CallOnGraph(
-      FROM_HERE, base::BindLambdaForTesting([&](Graph* unused) {
+      FROM_HERE, base::BindLambdaForTesting([&]() {
         EXPECT_TRUE(node);
         auto* data = T::GetOrCreateForTesting(node.get());
         EXPECT_TRUE(data);

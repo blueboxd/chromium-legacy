@@ -80,6 +80,10 @@ class JourneyLoggerAndroid {
       jboolean jcompleted);
   void SetTriggerTime(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& jcaller);
+  void SetPaymentAppUkmSourceId(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      ukm::SourceId source_id);
 
  private:
   JourneyLogger journey_logger_;

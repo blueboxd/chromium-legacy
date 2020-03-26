@@ -3,8 +3,14 @@
 # found in the LICENSE file.
 
 source_set("credential_provider") {
-  sources = []
-  deps = [ "//ios/chrome/credential_provider_extension/ui" ]
+  sources = [
+    "sc_credential_list_coordinator.h",
+    "sc_credential_list_coordinator.mm",
+  ]
+  deps = [
+    "//ios/chrome/credential_provider_extension/ui",
+    "//ios/showcase/common",
+  ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

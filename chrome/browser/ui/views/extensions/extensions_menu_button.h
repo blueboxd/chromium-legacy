@@ -20,6 +20,9 @@ namespace views {
 class Button;
 }  // namespace views
 
+// ExtensionsMenuButton is the single extension action button within a row in
+// the extensions menu. This includes the extension icon and name and triggers
+// the extension action.
 class ExtensionsMenuButton : public views::LabelButton,
                              public views::ButtonListener,
                              public ToolbarActionViewDelegateViews {

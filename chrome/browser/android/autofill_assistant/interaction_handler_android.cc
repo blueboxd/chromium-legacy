@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
-#include "chrome/browser/android/autofill_assistant/generic_ui_events_android.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_interactions_android.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
 #include "components/autofill_assistant/browser/interactions.pb.h"
@@ -37,26 +36,31 @@ void TryRunConditionalCallback(
 
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     const EventProto& proto,
-    JNIEnv* env,
     std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   switch (proto.kind_case()) {
     case EventProto::kOnValueChanged:
-      return base::Optional<EventHandler::EventKey>(
-          {proto.kind_case(), proto.on_value_changed().model_identifier()});
-    case EventProto::kOnViewClicked: {
-      auto jview = views->find(proto.on_view_clicked().view_identifier());
-      if (jview == views->end()) {
-        VLOG(1) << "Invalid OnViewClickedEventProto: no view with id='"
-                << proto.on_view_clicked().view_identifier() << "' found";
+      if (proto.on_value_changed().model_identifier().empty()) {
+        VLOG(1) << "Invalid OnValueChangedEventProto: no model_identifier "
+                   "specified";
         return base::nullopt;
       }
-      android_events::SetOnClickListener(env, jview->second, jdelegate,
-                                         proto.on_view_clicked());
+      return base::Optional<EventHandler::EventKey>(
+          {proto.kind_case(), proto.on_value_changed().model_identifier()});
+    case EventProto::kOnViewClicked:
+      if (proto.on_view_clicked().view_identifier().empty()) {
+        VLOG(1) << "Invalid OnViewClickedEventProto: no view_identifier "
+                   "specified";
+        return base::nullopt;
+      }
       return base::Optional<EventHandler::EventKey>(
           {proto.kind_case(), proto.on_view_clicked().view_identifier()});
-    }
     case EventProto::kOnUserActionCalled:
+      if (proto.on_user_action_called().user_action_identifier().empty()) {
+        VLOG(1) << "Invalid OnUserActionCalled: no user_action_identifier "
+                   "specified";
+        return base::nullopt;
+      }
       return base::Optional<EventHandler::EventKey>(
           {proto.kind_case(),
            proto.on_user_action_called().user_action_identifier()});
@@ -85,8 +89,8 @@ CreateInteractionCallbackFromProto(
   switch (proto.kind_case()) {
     case CallbackProto::kSetValue:
       if (proto.set_value().model_identifier().empty()) {
-        VLOG(1)
-            << "Error creating SetValue interaction: model_identifier not set";
+        VLOG(1) << "Error creating SetValue interaction: model_identifier "
+                   "not set";
         return base::nullopt;
       }
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
@@ -238,39 +242,33 @@ void InteractionHandlerAndroid::StopListening() {
 }
 
 bool InteractionHandlerAndroid::AddInteractionsFromProto(
-    const InteractionsProto& proto) {
+    const InteractionProto& proto) {
   if (is_listening_) {
     NOTREACHED() << "Interactions can not be added while listening to events!";
     return false;
   }
-  JNIEnv* env = base::android::AttachCurrentThread();
-  for (const auto& interaction_proto : proto.interactions()) {
-    auto key = CreateEventKeyFromProto(interaction_proto.trigger_event(), env,
-                                       views_, jdelegate_);
-    if (!key) {
-      VLOG(1) << "Invalid trigger event for interaction";
+  auto key = CreateEventKeyFromProto(proto.trigger_event(), views_, jdelegate_);
+  if (!key) {
+    VLOG(1) << "Invalid trigger event for interaction";
+    return false;
+  }
+
+  for (const auto& callback_proto : proto.callbacks()) {
+    auto callback = CreateInteractionCallbackFromProto(
+        callback_proto, user_model_, basic_interactions_, views_, jcontext_,
+        jdelegate_);
+    if (!callback) {
+      VLOG(1) << "Invalid callback for interaction";
       return false;
     }
-
-    for (const auto& callback_proto : interaction_proto.callbacks()) {
-      auto callback = CreateInteractionCallbackFromProto(
-          callback_proto, user_model_, basic_interactions_, views_, jcontext_,
-          jdelegate_);
-      if (!callback) {
-        VLOG(1) << "Invalid callback for interaction";
-        return false;
-      }
-      // Wrap callback in condition handler if necessary.
-      if (callback_proto.has_condition_model_identifier()) {
-        callback =
-            base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-                base::BindRepeating(&TryRunConditionalCallback,
-                                    basic_interactions_->GetWeakPtr(),
-                                    callback_proto.condition_model_identifier(),
-                                    *callback));
-      }
-      AddInteraction(*key, *callback);
+    // Wrap callback in condition handler if necessary.
+    if (callback_proto.has_condition_model_identifier()) {
+      callback = base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(
+              &TryRunConditionalCallback, basic_interactions_->GetWeakPtr(),
+              callback_proto.condition_model_identifier(), *callback));
     }
+    AddInteraction(*key, *callback);
   }
   return true;
 }

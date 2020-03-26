@@ -25,7 +25,7 @@ import './site_settings/chooser_exception_list.m.js';
 // import './site_settings/pdf_documents.m.js';
 // import './site_settings/protocol_handlers.m.js';
 // import './site_settings/site_data.m.js';
-// import './site_settings/site_details.m.js';
+import './site_settings/site_details.m.js';
 // import './site_settings/zoom_levels.m.js';
 
 // <if expr="not chromeos">
@@ -94,6 +94,7 @@ export {cookieInfo} from './site_settings/cookie_info.m.js';
 export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
 export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.m.js';
 export {ContentSettingProvider,SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.m.js';
+export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.m.js';
 
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';

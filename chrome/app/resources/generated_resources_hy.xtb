@@ -1120,7 +1120,6 @@
 <translation id="247949520305900375">Տարածել ձայնը</translation>
 <translation id="2480868415629598489">Փոփոխել տվյալները, որոնք դուք պատճենում և տեղադրում եք</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
-<translation id="2483610039979585156"><ph name="ORIGIN" /> կայքը կկարողանա խմբագրել <ph name="FILENAME" /> ֆայլը, մինչև չփակեք բոլոր <ph name="ORIGIN" /> ներդիրները։</translation>
 <translation id="2484959914739448251">Այցելությունների պատմությունը բոլոր համաժամացված սարքերից և Google հաշվից ջնջելու համար <ph name="BEGIN_LINK" />մուտքագրեք ձեր անցաբառը<ph name="END_LINK" />:</translation>
 <translation id="2485005079599453134">Գաղտնաբառը պահվեց այս սարքում</translation>
 <translation id="2485422356828889247">Ապատեղադրել</translation>
@@ -1725,7 +1724,6 @@
 <translation id="3282568296779691940">Մուտք գործել Chrome</translation>
 <translation id="3285322247471302225">Նոր &amp;ներդիր</translation>
 <translation id="328571385944182268">Պահե՞լ ձեր գաղտնաբառերը</translation>
-<translation id="328785681103589998"><ph name="ORIGIN" /> կայքը կկարողանա դիտել <ph name="FILENAME" /> ֆայլը, մինչև չփակեք բոլոր <ph name="ORIGIN" /> ներդիրները։</translation>
 <translation id="3288047731229977326">Մշակողի ռեժիմում գործարկվող ընդլայնումները կարող են վնասել ձեր համակարգիչը: Եթե դուք մշակող չեք, ձեր ապահովության համար խորհուրդ ենք տալիս անջատել այդ ընդլայնումները:</translation>
 <translation id="3289856944988573801">Թարմացումների առկայությունը ստուգելու համար օգտվեք Ethernet կամ Wi-Fi ցանցերից:</translation>
 <translation id="3290356915286466215">Պաշտպանված չէ</translation>
@@ -2414,6 +2412,7 @@
 <translation id="4144218403971135344">Այս գործառույթը կօգնի բարելավել տեսանյութի որակը և երկարացնել մարտկոցի կյանքը: Տեսանյութը կնվագարկվի միայն Cast աջակցող էկրաններին:</translation>
 <translation id="4146026355784316281">Միշտ բացել համակարգի դիտման ծրագրի միջոցով</translation>
 <translation id="4146785383423576110">Վերակայել և մաքրել</translation>
+<translation id="4147897805161313378">Google Լուսանկարներ</translation>
 <translation id="4147911968024186208">Խնդրում ենք նորից փորձել։ Եթե խնդիրը չլուծվի, կապվեք աջակցման կենտրոնի մասնագետների հետ:</translation>
 <translation id="4150201353443180367">Էկրան</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 ներդիր}one{# ներդիր}other{# ներդիր}}</translation>
@@ -2733,6 +2732,7 @@
 <translation id="4633757335284074492">Պահուստավորում Google Drive-ում։ Ցանկացած ժամանակ հեշտությամբ վերականգնեք ձեր տվյալները կամ տեղափոխեք մեկ այլ սարք։ Պահուստավորումը ներառում է հավելվածների տվյալները։ Պահուստավորված տվյալները վերբեռնվում են Google և գաղտնագրվում ձեր երեխայի Google հաշվի գաղտնաբառի միջոցով։</translation>
 <translation id="4634771451598206121">Նորից մուտք գործել…</translation>
 <translation id="4635398712689569051">«<ph name="PAGE_NAME" />» էջը հասանելի չէ հյուրի ռեժիմում:</translation>
+<translation id="4636930964841734540">Տեղեկություններ</translation>
 <translation id="4637083375689622795">Այլ գործողություններ, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Միացնել ADB վրիպազերծումը</translation>
 <translation id="4641539339823703554">Chrome-ը չկարողացավ կայել համակարգի ժամանակը: Ստուգեք ժամը և, եթե կարիք կա, ուղղեք:</translation>
@@ -2812,7 +2812,6 @@
 <translation id="4750394297954878236">Առաջարկներ</translation>
 <translation id="475088594373173692">Առաջին օգտատեր</translation>
 <translation id="4751476147751820511">Շարժման և լուսավորության տվիչներ</translation>
-<translation id="4756269098451810636">Պատկեր՝ <ph name="DEVICE_NAME" /> սարքից</translation>
 <translation id="4756378406049221019">Դադարեցնել/թարմացնել</translation>
 <translation id="4756388243121344051">&amp;Պատմություն</translation>
 <translation id="4759238208242260848">Ներբեռնումներ</translation>
@@ -3762,7 +3761,6 @@
 <translation id="6040852767465482106">Նույնականացման անանուն տվյալներ</translation>
 <translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />Google-ի տեղորոշման ծառայությունն օգտագործում է տարբեր աղբյուրներ, ինչպիսիք են Wi-Fi և բջջային ցանցերը՝ ձեր սարքի գտնվելու վայրը որոշելու համար:<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Դուք կարող եք անջատել տեղորոշումը՝ սարքում անջատելով տեղորոշման հիմնական կարգավորումը: Ինչպես նաև տեղադրության կարգավորումներում կարող եք անջատել Wi-Fi-ի, բջջային ցանցերի ու տվիչների օգտագործումը տեղորոշման համար։<ph name="END_PARAGRAPH2" /></translation>
-<translation id="6041150002191391409"><ph name="ORIGIN" /> կայքը կկարողանա դիտել «<ph name="FOLDERNAME" />» պանակի բոլոր ֆայլերը, մինչև չփակեք բոլոր <ph name="ORIGIN" /> ներդիրները։</translation>
 <translation id="6041155700700864984">Դուրս գալ լիաէկրան ռեժիմից</translation>
 <translation id="604124094241169006">Ավտոմատ</translation>
 <translation id="6042308850641462728">Ավելին</translation>
@@ -4158,7 +4156,6 @@
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Ֆայլի ուղին կամ անունը չափազանց երկար է: Տվեք ավելի կարճ անուն կամ պահեք այլ տեղում:</translation>
 <translation id="6563469144985748109">Ձեր ադմինիստրատորը դեռ չի հաստատել</translation>
-<translation id="6567688344210276845">Չհաջողվեց բեռնել «<ph name="ICON" />» պատկերակը՝ էջի գործողության համար:</translation>
 <translation id="6569934958368283244">Այլ մարդիկ</translation>
 <translation id="657402800789773160">&amp;Վերաբեռնել այս էջը</translation>
 <translation id="6577284282025554716">Ներբեռնումը չեղարկվել է՝ <ph name="FILE_NAME" /></translation>
@@ -4223,7 +4220,6 @@
 <translation id="6659594942844771486">Ներդիր</translation>
 <translation id="6664237456442406323">Ձեր համակարգիչը կազմաձևված է սարքակազմի սխալ ID-ով: Սա թույլ չի տալիս, որպեսզի Chrome OS-ը թարմացվի անվտանգության վերջին նորացումներով և ձեր համակարգիչը <ph name="BEGIN_BOLD" />կարող է խոցելի դառնալ վնասարար հարձակումների համար<ph name="END_BOLD" />:</translation>
 <translation id="6664774537677393800">Պրոֆիլը բացելիս սխալ առաջացավ: Դուրս եկեք հաշվից ու նորից մուտք գործեք:</translation>
-<translation id="6667776121818773738">Պատկեր՝ այլ սարքից</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Ուզո՞ւմ եք, որ Google-ը թարգմանի այս էջը <ph name="SOURCE_LANGUAGE" />ից <ph name="TARGET_LANGUAGE" />:</translation>
 <translation id="6675665718701918026">Ցուցիչ սարքը միացված է</translation>
@@ -4844,7 +4840,6 @@
 <translation id="7497981768003291373">Վերջերս ստեղծված WebRTC տեքստային մատյաններ չկան:</translation>
 <translation id="7502658306369382406">IPv6 հասցե</translation>
 <translation id="7503191893372251637">Netscape-ի վկայագրի տեսակ</translation>
-<translation id="7503821294401948377">Չհաջողվեց բեռնել «<ph name="ICON" />» պատկերակը դիտարկիչի աշխատանքի համար:</translation>
 <translation id="7503985202154027481">Անվտանգության բանալու վրա կպահվի նշում այս կայքի այցելության մասին:</translation>
 <translation id="7504293978434250212">Ձեր կազմակերպությունը կարող է սկանավորել մինչև 50 ՄԲ չափի ֆայլեր։ Փորձեք ավելի փոքր ֆայլ վերբեռնել։</translation>
 <translation id="750509436279396091">Բացել ներբեռնումների պանակը</translation>
@@ -5544,7 +5539,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ցանց, միացում…</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Նախ հարցնել (հանձնարարելի)</translation>
-<translation id="8417548266957501132">Ծնողի գաղտնաբառ</translation>
+<translation id="8417548266957501132">Ծնողի գաղտնաբառը</translation>
 <translation id="8417573335434189196">Չի պաշտպանում վտանգավոր կայքերից, ընդլայնումներից և ներբեռնումներից։ Chrome-ը խորհուրդ չի տալիս օգտագործել այս կարգավորումը։</translation>
 <translation id="8418445294933751433">&amp;Ցույց տալ որպես ներդիր</translation>
 <translation id="8419098111404128271">«<ph name="SEARCH_TEXT" />»-ի որոնման արդյունքներ</translation>
@@ -5645,7 +5640,6 @@
 <translation id="8546930481464505581">Հարմարեցնել հպման գոտին</translation>
 <translation id="8547013269961688403">Միացնել լիաէկրան խոշորացույցը</translation>
 <translation id="85486688517848470">Վերևի շարքի ստեղները փոխարկելու համար սեղմած պահեք որոնման ստեղնը</translation>
-<translation id="8550165047974571882"><ph name="ORIGIN" /> կայքը կկարողանա խմբագրել «<ph name="FOLDERNAME" />» պանակի բոլոր ֆայլերը, մինչև չփակեք բոլոր <ph name="ORIGIN" /> ներդիրները։</translation>
 <translation id="8551388862522347954">Լիցենզիաներ</translation>
 <translation id="8553342806078037065">Կառավարել այլ օգտատերերի</translation>
 <translation id="8554899698005018844">Լեզու նշված չէ</translation>

@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 
 interface IProfile {
@@ -18,4 +19,7 @@ interface IProfile {
 
   // Added in Version 82.
   void destroyAndDeleteDataFromDisk(in IObjectWrapper completionCallback) = 4;
+
+  // Added in Version 83.
+  void setDownloadCallbackClient(IDownloadCallbackClient client) = 5;
 }

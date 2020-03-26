@@ -10,6 +10,8 @@
 #include <atlconv.h>
 #include <process.h>
 
+#include <set>
+
 #include "base/base64.h"
 #include "base/containers/span.h"
 #include "base/json/json_reader.h"
@@ -20,6 +22,18 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
+
+namespace {
+// Key name containing the HTTP error code within the dictionary returned by the
+// server in case of errors.
+constexpr char kHttpErrorCodeKeyNameInResponse[] = "code";
+
+// The HTTP response codes for which the request is re-tried on failure.
+const std::set<int> kRetryableHttpErrorCodes = {
+    503,  // Service Unavailable
+    504   // Gateway Timeout
+};
 
 // Self deleting http service requester. This class will try to make a query
 // using the given url fetcher. It will delete itself when the request is
@@ -41,11 +55,12 @@
 //       thread can self delete.
 class HttpServiceRequest {
  public:
-  explicit HttpServiceRequest(
-      std::unique_ptr<credential_provider::WinHttpUrlFetcher> fetcher)
-      : fetcher_(std::move(fetcher)) {
-    DCHECK(fetcher_);
-  }
+  static HttpServiceRequest* Create(
+      const GURL& request_url,
+      const std::string& access_token,
+      const std::vector<std::pair<std::string, std::string>>& headers,
+      const std::string& request_body,
+      const base::TimeDelta& request_timeout);
 
   // Tries to fetch the request stored in |fetcher_| in a background thread
   // within the given |request_timeout|. If the background thread returns before
@@ -103,6 +118,12 @@ class HttpServiceRequest {
   }
 
  private:
+  explicit HttpServiceRequest(
+      std::unique_ptr<credential_provider::WinHttpUrlFetcher> fetcher)
+      : fetcher_(std::move(fetcher)) {
+    DCHECK(fetcher_);
+  }
+
   void OrphanRequest() {
     bool delete_self = false;
     {
@@ -157,6 +178,44 @@ class HttpServiceRequest {
   bool is_orphaned_ = false;
   bool is_processing_ = true;
 };
+
+HttpServiceRequest* HttpServiceRequest::Create(
+    const GURL& request_url,
+    const std::string& access_token,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& request_body,
+    const base::TimeDelta& request_timeout) {
+  auto url_fetcher =
+      credential_provider::WinHttpUrlFetcher::Create(request_url);
+  if (!url_fetcher) {
+    LOGFN(ERROR) << "Could not create valid fetcher for url="
+                 << request_url.spec();
+    return nullptr;
+  }
+
+  url_fetcher->SetRequestHeader("Content-Type", "application/json");
+  url_fetcher->SetRequestHeader("Authorization",
+                                ("Bearer " + access_token).c_str());
+  for (auto& header : headers)
+    url_fetcher->SetRequestHeader(header.first.c_str(), header.second.c_str());
+
+  if (!request_body.empty()) {
+    HRESULT hr = url_fetcher->SetRequestBody(request_body.c_str());
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "fetcher.SetRequestBody hr="
+                   << credential_provider::putHR(hr);
+      return nullptr;
+    }
+  }
+
+  if (!request_timeout.is_zero()) {
+    url_fetcher->SetHttpRequestTimeout(request_timeout.InMilliseconds());
+  }
+
+  return (new HttpServiceRequest(std::move(url_fetcher)));
+}
+
+}  // namespace
 
 namespace credential_provider {
 
@@ -353,49 +412,55 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
     const std::vector<std::pair<std::string, std::string>>& headers,
     const base::Value& request_dict,
     const base::TimeDelta& request_timeout,
+    unsigned int request_retries,
     base::Optional<base::Value>* request_result) {
   DCHECK(request_result);
-
-  auto url_fetcher = WinHttpUrlFetcher::Create(request_url);
-  if (!url_fetcher) {
-    LOGFN(ERROR) << "Could not create valid fetcher for url="
-                 << request_url.spec();
-    return E_FAIL;
-  }
-
-  url_fetcher->SetRequestHeader("Content-Type", "application/json");
-  url_fetcher->SetRequestHeader("Authorization",
-                                ("Bearer " + access_token).c_str());
-  for (auto& header : headers)
-    url_fetcher->SetRequestHeader(header.first.c_str(), header.second.c_str());
-
   HRESULT hr = S_OK;
 
+  std::string request_body;
   if (request_dict.is_dict()) {
-    std::string body;
-    if (!base::JSONWriter::Write(request_dict, &body)) {
+    if (!base::JSONWriter::Write(request_dict, &request_body)) {
       LOGFN(ERROR) << "base::JSONWriter::Write failed";
       return E_FAIL;
     }
+  }
 
-    hr = url_fetcher->SetRequestBody(body.c_str());
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "fetcher.SetRequestBody hr=" << putHR(hr);
+  for (unsigned int try_count = 0; try_count <= request_retries; ++try_count) {
+    HttpServiceRequest* request = HttpServiceRequest::Create(
+        request_url, access_token, headers, request_body, request_timeout);
+
+    if (!request)
       return E_FAIL;
+
+    auto extracted_param =
+        request->WaitForResponseFromHttpService(request_timeout);
+
+    if (!extracted_param) {
+      hr = E_FAIL;
+      continue;
     }
+    *request_result = std::move(extracted_param);
+
+    base::Value* error_detail =
+        (*request_result)->FindDictKey(kErrorKeyInRequestResult);
+    if (error_detail) {
+      hr = E_FAIL;
+      LOGFN(ERROR) << "error: " << *error_detail;
+
+      // If error code is known, retry only on retryable server errors.
+      base::Optional<int> error_code =
+          error_detail->FindIntKey(kHttpErrorCodeKeyNameInResponse);
+      if (error_code.has_value() &&
+          kRetryableHttpErrorCodes.find(error_code.value()) ==
+              kRetryableHttpErrorCodes.end())
+        break;
+
+      continue;
+    }
+
+    hr = S_OK;
+    break;
   }
-
-  if (!request_timeout.is_zero()) {
-    url_fetcher->SetHttpRequestTimeout(request_timeout.InMilliseconds());
-  }
-
-  auto extracted_param = (new HttpServiceRequest(std::move(url_fetcher)))
-                             ->WaitForResponseFromHttpService(request_timeout);
-
-  if (!extracted_param)
-    return E_FAIL;
-
-  *request_result = std::move(extracted_param);
 
   return hr;
 }

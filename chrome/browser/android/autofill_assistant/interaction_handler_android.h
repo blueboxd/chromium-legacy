@@ -46,9 +46,9 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   void StartListening();
   void StopListening();
 
-  // Creates callbacks for each interaction in |proto|. Returns false if |proto|
-  // is invalid.
-  bool AddInteractionsFromProto(const InteractionsProto& proto);
+  // Creates interaction callbacks as specified by |proto|. Returns false if
+  // |proto| is invalid.
+  bool AddInteractionsFromProto(const InteractionProto& proto);
 
   // Overrides autofill_assistant::EventHandler::Observer.
   void OnEvent(const EventHandler::EventKey& key) override;

@@ -79,7 +79,6 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -106,7 +105,6 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
-#include "ui/native_theme/native_theme_features.h"
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
@@ -142,7 +140,6 @@ using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
-using blink::WebRuntimeFeatures;
 using blink::WebString;
 using blink::WebURLError;
 
@@ -247,16 +244,6 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   ~RenderViewImplTest() override {}
-
-  void SetUp() override {
-    // Enable Blink's experimental and test only features so that test code
-    // does not have to bother enabling each feature.
-    WebRuntimeFeatures::EnableExperimentalFeatures(true);
-    WebRuntimeFeatures::EnableTestOnlyFeatures(true);
-    WebRuntimeFeatures::EnableOverlayScrollbars(
-        ui::IsOverlayScrollbarEnabled());
-    RenderViewTest::SetUp();
-  }
 
   RenderViewImpl* view() {
     return static_cast<RenderViewImpl*>(view_);

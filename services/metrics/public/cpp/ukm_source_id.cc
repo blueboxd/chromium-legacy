@@ -15,11 +15,13 @@ SourceId AssignNewSourceId() {
 }
 
 SourceId ConvertToSourceId(int64_t other_id, SourceIdType id_type) {
-  // DCHECK is to restrict the usage of WEBAPK_ID, WebApk should use
-  // |UkmRecorder::GetSourceIdForWebApkManifestUrl()| instead.
+  // DCHECK is to restrict the usage of WEBAPK_ID and PAYMENT_APP_ID. WebApk and
+  // Payment apps should use |UkmRecorder::GetSourceIdForWebApkManifestUrl()|
+  // and |UkmRecorder::GetSourceIdForPaymentAppFromScope()| instead.
   // TODO(crbug.com/1046964): Ideally we should restrict
   // UkmSourceId::FromOtherId() as well.
   DCHECK(id_type != SourceIdType::WEBAPK_ID);
+  DCHECK(id_type != SourceIdType::PAYMENT_APP_ID);
   return base::UkmSourceId::FromOtherId(other_id, id_type).ToInt64();
 }
 

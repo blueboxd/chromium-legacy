@@ -64,7 +64,7 @@ class OutputDirectoryFinder(_PathFinder):
       parent_dir = os.path.dirname(abs_path)
       if parent_dir == abs_path:
         break
-      abs_path = abs_path = parent_dir
+      abs_path = parent_dir
 
     # See if CWD=output directory.
     if os.path.exists('build.ninja'):

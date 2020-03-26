@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include <memory>
+#include "base/memory/scoped_refptr.h"
 
 namespace updater {
 class UpdateService;
@@ -17,7 +17,7 @@ class UpdateService;
 
 // Designated initializer.
 - (instancetype)initWithUpdateService:
-    (std::unique_ptr<updater::UpdateService>)service NS_DESIGNATED_INITIALIZER;
+    (scoped_refptr<updater::UpdateService>)service NS_DESIGNATED_INITIALIZER;
 
 @end
 

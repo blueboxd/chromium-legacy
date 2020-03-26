@@ -37,9 +37,6 @@
 //   array.
 // - NUM_INSTALL_MODES: the total numer of modes (i.e., the numer of items in
 //   kInstallModes.
-// - kUseGoogleUpdateIntegration: true or false indicating whether or not the
-//   brand uses Chrome's integration with Google Update. Google Chrome does,
-//   while Chromium does not.
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/install_static/google_chrome_install_modes.h"
 #else

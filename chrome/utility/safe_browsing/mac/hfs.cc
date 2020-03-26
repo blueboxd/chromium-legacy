@@ -367,8 +367,8 @@ bool HFSForkReadStream::Read(uint8_t* buffer,
 
     auto extent_size =
         base::CheckedNumeric<size_t>(extent->blockCount) * hfs_->block_size();
-    if (!extent_size.IsValid()) {
-      DLOG(ERROR) << "Extent blockCount overflows";
+    if (extent_size.ValueOrDefault(0) == 0) {
+      DLOG(ERROR) << "Extent blockCount overflows or is 0";
       return false;
     }
 
@@ -379,7 +379,7 @@ bool HFSForkReadStream::Read(uint8_t* buffer,
         return false;
       }
       current_extent_data_.resize(extent_size.ValueOrDie());
-      if (!hfs_->stream()->ReadExact(&current_extent_data_[0],
+      if (!hfs_->stream()->ReadExact(current_extent_data_.data(),
                                      extent_size.ValueOrDie())) {
         DLOG(ERROR) << "Failed to read extent " << current_extent_;
         return false;

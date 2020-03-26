@@ -59,9 +59,9 @@ class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
     contextual_tooltip::OverrideClockForTesting(&test_clock_);
     test_clock_.Advance(base::TimeDelta::FromSeconds(360));
     contextual_tooltip::HandleNudgeShown(
-        user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+        user1_pref_service(), contextual_tooltip::TooltipType::kInAppToHome);
     contextual_tooltip::HandleNudgeShown(
-        user2_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+        user2_pref_service(), contextual_tooltip::TooltipType::kInAppToHome);
     test_clock_.Advance(
         contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge * 2);
 
@@ -240,7 +240,7 @@ TEST_F(BackGestureContextualNudgeControllerTest, NotShownWithDragHandleNudge) {
 
   tablet_mode_api.EnterTabletMode();
   ASSERT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle,
+      user1_pref_service(), contextual_tooltip::TooltipType::kInAppToHome,
       nullptr));
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
@@ -266,7 +266,7 @@ TEST_F(BackGestureContextualNudgeControllerTest,
 
   tablet_mode_api.EnterTabletMode();
   ASSERT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle,
+      user1_pref_service(), contextual_tooltip::TooltipType::kInAppToHome,
       nullptr));
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
@@ -276,7 +276,7 @@ TEST_F(BackGestureContextualNudgeControllerTest,
       nullptr));
 
   contextual_tooltip::HandleNudgeShown(
-      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+      user1_pref_service(), contextual_tooltip::TooltipType::kInAppToHome);
   clock()->Advance(
       contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge);
   ASSERT_TRUE(nudge_controller()->auto_show_timer_for_testing()->IsRunning());
@@ -309,7 +309,7 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   tablet_mode_api.EnterTabletMode();
   clock()->Advance(contextual_tooltip::kMinInterval);
   contextual_tooltip::HandleNudgeShown(
-      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+      user1_pref_service(), contextual_tooltip::TooltipType::kInAppToHome);
 
   clock()->Advance(
       contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge);

@@ -635,8 +635,17 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
                    "Expected NV12, got: " << frame->format());
       return nullptr;
     }
+    DCHECK(frame);
 
-    input_surface = vaapi_wrapper_->CreateVASurfaceForVideoFrame(frame.get());
+    scoped_refptr<gfx::NativePixmap> pixmap =
+        CreateNativePixmapDmaBuf(frame.get());
+    if (!pixmap) {
+      NOTIFY_ERROR(kPlatformFailureError,
+                   "Failed to create NativePixmap from VideoFrame");
+      return nullptr;
+    }
+    input_surface = vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
+
     if (!input_surface) {
       NOTIFY_ERROR(kPlatformFailureError, "Failed to create VASurface");
       return nullptr;

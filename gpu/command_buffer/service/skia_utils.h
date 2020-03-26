@@ -32,6 +32,10 @@ class VulkanContextProvider;
 
 namespace gpu {
 
+#if BUILDFLAG(ENABLE_VULKAN)
+class VulkanImage;
+#endif
+
 namespace gles2 {
 class FeatureInfo;
 }  // namespace gles2
@@ -74,6 +78,8 @@ GPU_GLES2_EXPORT void DeleteSkSurface(SharedContextState* context_state,
                                       sk_sp<SkSurface> sk_surface);
 
 #if BUILDFLAG(ENABLE_VULKAN)
+GPU_GLES2_EXPORT GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image);
+
 GPU_GLES2_EXPORT GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
     VkPhysicalDevice physical_device,
     VkImageTiling tiling,

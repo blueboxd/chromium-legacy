@@ -68,6 +68,7 @@ class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate,
 
   // Helper methods to get a DownloadDelegate.
   DownloadDelegate* GetDelegate(content::WebContents* web_contents);
+  DownloadDelegate* GetDelegate(content::BrowserContext* browser_context);
   DownloadDelegate* GetDelegate(download::DownloadItem* item);
 
   content::DownloadManager* download_manager_;

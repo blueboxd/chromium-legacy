@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.actions;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -23,7 +24,9 @@ import android.view.View;
 import com.google.common.collect.ImmutableList;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -50,6 +53,8 @@ import org.chromium.chrome.browser.feed.library.basicstream.internal.pendingdism
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.StreamContentLoggingData;
 import org.chromium.chrome.browser.feed.library.sharedstream.pendingdismiss.PendingDismissCallback;
 import org.chromium.chrome.browser.feed.library.testing.sharedstream.contextmenumanager.FakeContextMenuManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedAction;
@@ -154,6 +159,9 @@ public class StreamActionApiImplTest {
     private FakeContextMenuManager mContextMenuManager;
     private StreamActionApiImpl mStreamActionApi;
     private View mView;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Before
     public void setup() {
@@ -271,6 +279,23 @@ public class StreamActionApiImplTest {
         mStreamActionApi.onElementView(ElementType.INTEREST_HEADER.getNumber());
 
         verify(mViewElementActionHandler).onElementView(ElementType.INTEREST_HEADER.getNumber());
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportClickAction_withFeature() {
+        String contentId = "contentId";
+        mStreamActionApi.reportClickAction(contentId, ACTION_PAYLOAD);
+
+        verify(mActionManager).createAndStoreAction(contentId, ACTION_PAYLOAD);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testNoReportClickAction_withoutFeature() {
+        mStreamActionApi.reportClickAction("contentId", ACTION_PAYLOAD);
+
+        verify(mActionManager, never()).createAndStoreAction(anyString(), any(ActionPayload.class));
     }
 
     @Test

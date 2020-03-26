@@ -34,11 +34,6 @@ const char kAccessibilityExposeDisplayNoneDescription[] =
     "Expose 'display: none' nodes that have an HTML ID to the browser process "
     "accessibility tree.";
 
-const char kAccessibilityInternalsPageImprovementsName[] =
-    "Accessibility internals page improvements";
-const char kAccessibilityInternalsPageImprovementsDescription[] =
-    "Improvements to the chrome://accessibility page.";
-
 const char kAccountIdMigrationName[] = "Account ID migration";
 const char kAccountIdMigrationDescription[] =
     "Migrate to use Gaia ID instead of the email as the account identifer for "
@@ -1991,6 +1986,11 @@ const char kTreatUnsafeDownloadsAsActiveDescription[] =
     "Disallows downloads of unsafe files (files that can potentially execute "
     "code), where the final download origin or any origin in the redirect "
     "chain is insecure if the originating page is secure.";
+
+const char kTrustTokensName[] = "Enable Trust Tokens";
+const char kTrustTokensDescription[] =
+    "Enables the prototype Trust Token API "
+    "(https://github.com/wicg/trust-token-api).";
 
 const char kTrySupportedChannelLayoutsName[] =
     "Causes audio output streams to check if channel layouts other than the "

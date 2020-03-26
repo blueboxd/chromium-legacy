@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
+import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -327,10 +328,12 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     @Override
     protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
         mIntentDataProvider = mWebappInfo.getProvider();
-        WebappActivityModule webappModule = new WebappActivityModule(mIntentDataProvider);
+        BaseCustomTabActivityModule baseCustomTabModule =
+                new BaseCustomTabActivityModule(mIntentDataProvider);
+        WebappActivityModule webappModule = new WebappActivityModule();
         WebappActivityComponent component =
                 ChromeApplication.getComponent().createWebappActivityComponent(
-                        commonsModule, webappModule);
+                        commonsModule, baseCustomTabModule, webappModule);
         onComponentCreated(component);
 
         mTabController = component.resolveTabController();

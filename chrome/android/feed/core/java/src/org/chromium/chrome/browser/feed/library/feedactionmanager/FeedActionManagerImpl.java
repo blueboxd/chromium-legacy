@@ -91,6 +91,21 @@ public class FeedActionManagerImpl implements ActionManager {
     }
 
     @Override
+    public void createAndStoreAction(String contentId, ActionPayload payload) {
+        mTaskQueue.execute(Task.CREATE_AND_STORE, TaskType.BACKGROUND, () -> {
+            long currentTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis());
+            mStore.editUploadableActions()
+                    .upsert(StreamUploadableAction.newBuilder()
+                                    .setFeatureContentId(contentId)
+                                    .setPayload(payload)
+                                    .setTimestampSeconds(currentTime)
+                                    .build(),
+                            contentId)
+                    .commit();
+        });
+    }
+
+    @Override
     public void uploadAllActionsAndUpdateUrl(
             String url, String consistencyTokenQueryParamName, Consumer<String> consumer) {
         mTaskQueue.execute(Task.UPLOAD_ALL_ACTIONS_FOR_URL, TaskType.BACKGROUND, () -> {

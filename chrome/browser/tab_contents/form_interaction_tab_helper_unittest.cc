@@ -4,6 +4,9 @@
 
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -85,7 +88,7 @@ TEST_F(FormInteractionTabHelperTest, HadFormInteractionSingleFrame) {
         [quit_loop = run_loop.QuitWhenIdleClosure(),
          page_node =
              performance_manager::PerformanceManager::GetPageNodeForWebContents(
-                 contents.get())](performance_manager::Graph* graph) {
+                 contents.get())]() {
           auto* frame_node = performance_manager::FrameNodeImpl::FromNode(
               page_node->GetMainFrameNode());
           frame_node->SetIsCurrent(true);
@@ -130,7 +133,7 @@ TEST_F(FormInteractionTabHelperTest, HadFormInteractionWithChildFrames) {
         [quit_loop = run_loop.QuitWhenIdleClosure(),
          page_node =
              performance_manager::PerformanceManager::GetPageNodeForWebContents(
-                 contents.get())](performance_manager::Graph* graph) {
+                 contents.get())]() {
           auto children = page_node->GetMainFrameNode()->GetChildFrameNodes();
           EXPECT_EQ(1U, children.size());
           auto* frame_node =

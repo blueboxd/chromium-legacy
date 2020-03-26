@@ -16,8 +16,9 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "url/gurl.h"
+#include "weblayer/browser/profile_impl.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_controller.h"
-#include "weblayer/public/tab.h"
 
 namespace weblayer {
 
@@ -40,7 +41,7 @@ Shell::Shell(std::unique_ptr<Tab> tab)
     // TODO: how will tests work with this on android? can we get to the
     // concrete type?
 
-    tab_->SetDownloadDelegate(this);
+    static_cast<TabImpl*>(tab_.get())->profile()->SetDownloadDelegate(this);
 #endif
   }
 }

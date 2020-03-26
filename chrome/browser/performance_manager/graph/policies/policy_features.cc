@@ -87,6 +87,10 @@ const base::Feature kPageFreezingFromPerformanceManager{
 const base::Feature kUrgentDiscardingFromPerformanceManager{
     "UrgentDiscardingFromPerformanceManager",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBackgroundTabLoadingFromPerformanceManager{
+    "BackgroundTabLoadingFromPerformanceManager",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kHighPMFMemoryPressureSignals{

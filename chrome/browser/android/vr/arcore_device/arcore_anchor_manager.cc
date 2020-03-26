@@ -44,6 +44,10 @@ mojom::XRAnchorsDataPtr ArCoreAnchorManager::GetAnchorsData() const {
     ArAnchor_getPose(arcore_session_, anchor.get(), ar_pose_.get());
     mojom::Pose pose = GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
 
+    DVLOG(3) << __func__ << ": anchor id: " << anchor_id.GetUnsafeValue()
+             << ", position=" << pose.position.ToString()
+             << ", orientation=" << pose.orientation.ToString();
+
     updated_anchors.push_back(mojom::XRAnchorData::New(
         anchor_id.GetUnsafeValue(), device::mojom::Pose::New(pose)));
   }
@@ -74,7 +78,7 @@ void ArCoreAnchorManager::ForEachArCoreAnchor(ArAnchorList* arcore_anchors,
       continue;
     }
 
-    fn(std::move(anchor));
+    fn(std::move(anchor), tracking_state);
   }
 }
 
@@ -87,11 +91,17 @@ void ArCoreAnchorManager::Update(ArFrame* ar_frame) {
   ForEachArCoreAnchor(arcore_anchors_.get(), [this, &updated_anchor_ids](
                                                  device::internal::
                                                      ScopedArCoreObject<
-                                                         ArAnchor*> ar_anchor) {
+                                                         ArAnchor*> ar_anchor,
+                                                 ArTrackingState
+                                                     tracking_state) {
     // ID
     AnchorId anchor_id;
     bool created;
     std::tie(anchor_id, created) = CreateOrGetAnchorId(ar_anchor.get());
+
+    DVLOG(3) << __func__
+             << ": anchor updated, anchor id=" << anchor_id.GetUnsafeValue()
+             << ", tracking state=" << tracking_state;
 
     DCHECK(!created)
         << "Anchor creation is app-initiated - we should never encounter an "
@@ -114,11 +124,17 @@ void ArCoreAnchorManager::Update(ArFrame* ar_frame) {
                                               &anchor_id_to_anchor_object](
                                                  device::internal::
                                                      ScopedArCoreObject<
-                                                         ArAnchor*> ar_anchor) {
+                                                         ArAnchor*> ar_anchor,
+                                                 ArTrackingState
+                                                     tracking_state) {
     // ID
     AnchorId anchor_id;
     bool created;
     std::tie(anchor_id, created) = CreateOrGetAnchorId(ar_anchor.get());
+
+    DVLOG(3) << __func__
+             << ": anchor present, anchor id=" << anchor_id.GetUnsafeValue()
+             << ", tracking state=" << tracking_state;
 
     DCHECK(!created)
         << "Anchor creation is app-initiated - we should never encounter an "

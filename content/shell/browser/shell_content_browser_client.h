@@ -39,8 +39,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   bool IsHandledURL(const GURL& url) override;
   bool ShouldTerminateOnServiceQuit(
       const service_manager::Identity& id) override;
-  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
-      base::StringPiece name) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   std::string GetAcceptLangs(BrowserContext* context) override;
@@ -135,9 +133,15 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   }
 
  protected:
+  // Call this if CreateBrowserMainParts() is overridden in a subclass.
   void set_browser_main_parts(ShellBrowserMainParts* parts) {
     shell_browser_main_parts_ = parts;
   }
+
+  // Used by CreateNetworkContext(), and can be overridden to change the
+  // parameters used there.
+  virtual network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
+      BrowserContext* context);
 
  private:
   base::OnceClosure select_client_certificate_callback_;

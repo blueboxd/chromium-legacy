@@ -22,7 +22,9 @@ import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.ExtensionRegistryLite;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
@@ -54,6 +56,8 @@ import org.chromium.chrome.browser.feed.library.testing.host.logging.FakeBasicLo
 import org.chromium.chrome.browser.feed.library.testing.host.stream.FakeTooltipSupportedApi;
 import org.chromium.chrome.browser.feed.library.testing.network.FakeNetworkClient;
 import org.chromium.chrome.browser.feed.library.testing.protocoladapter.FakeProtocolAdapter;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamToken;
 import org.chromium.components.feed.core.proto.wire.ActionTypeProto.ActionType;
 import org.chromium.components.feed.core.proto.wire.CapabilityProto.Capability;
@@ -91,6 +95,7 @@ import java.util.Set;
 /** Test of the {@link FeedRequestManagerImpl} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
 public class FeedRequestManagerImplTest {
     private static final int NOT_FOUND = 404;
     private static final String TABLE = "table";
@@ -124,6 +129,9 @@ public class FeedRequestManagerImplTest {
     private RequiredConsumer<Result<Model>> mConsumer;
     private Result<Model> mConsumedResult = Result.failure();
     private HttpResponse mFailingResponse;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Before
     public void setUp() throws Exception {
@@ -235,6 +243,12 @@ public class FeedRequestManagerImplTest {
     @Test
     public void testTriggerRefresh_enableCarouselsAdded() throws Exception {
         testCapabilityAdded(ConfigKey.ENABLE_CAROUSELS, Capability.CAROUSELS);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testTriggerRefresh_enableFeedActions() throws Exception {
+        testCapabilityAdded(Capability.CLICK_ACTION);
     }
 
     @Test
@@ -874,6 +888,16 @@ public class FeedRequestManagerImplTest {
 
     private void testCapabilityAdded(String configKey, Capability capability) throws Exception {
         Configuration configuration = new Configuration.Builder().put(configKey, true).build();
+        testCapabilityAddedWithConfig(configuration, capability);
+    }
+
+    private void testCapabilityAdded(Capability capability) throws Exception {
+        Configuration configuration = new Configuration.Builder().build();
+        testCapabilityAddedWithConfig(configuration, capability);
+    }
+
+    private void testCapabilityAddedWithConfig(Configuration configuration, Capability capability)
+            throws Exception {
         mRequestManager = new FeedRequestManagerImpl(configuration, mFakeNetworkClient,
                 mFakeProtocolAdapter, new FeedExtensionRegistry(ArrayList::new), mScheduler,
                 mFakeTaskQueue, mTimingUtils, mFakeThreadUtils, mFakeActionReader, mContext,

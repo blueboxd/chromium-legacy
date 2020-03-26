@@ -101,17 +101,19 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   auto options = blink::mojom::FindOptions::New();
-  options->run_synchronously_for_testing = true;
   Find("result", options.Clone());
+  delegate()->MarkNextReply();
+  delegate()->WaitForNextReply();
+
   options->find_next = true;
   Find("result", options.Clone());
+  delegate()->MarkNextReply();
+  delegate()->WaitForNextReply();
+
   Find("result", options.Clone());
-  LOG(INFO) << "Wait for final reply.";
   delegate()->WaitForFinalReply();
-  LOG(INFO) << "Wait complete.";
 
   FindResults results = delegate()->GetFindResults();
-  LOG(INFO) << "Results fetched.";
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(5, results.number_of_matches);
   EXPECT_EQ(3, results.active_match_ordinal);
@@ -230,7 +232,6 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
 
   // Verify that find-in-page works fine.
   auto options = blink::mojom::FindOptions::New();
-  options->run_synchronously_for_testing = true;
   Find("FXCMAP_CMap", options.Clone());
   options->find_next = true;
   Find("FXCMAP_CMap", options.Clone());
@@ -277,7 +278,6 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindMissingStringInPDF) {
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   auto options = blink::mojom::FindOptions::New();
-  options->run_synchronously_for_testing = true;
   Find("missing", options.Clone());
   delegate()->WaitForFinalReply();
 
@@ -296,7 +296,6 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   auto options = blink::mojom::FindOptions::New();
-  options->run_synchronously_for_testing = true;
   Find("r", options.Clone());
   delegate()->MarkNextReply();
   delegate()->WaitForNextReply();

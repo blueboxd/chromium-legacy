@@ -226,7 +226,8 @@ message TextInputViewProto {
   // Note that the actual impact is version-dependent and not all hints may be
   // supported, in which case a regular text input field will be displayed.
   optional InputTypeHint type = 2;
-  // The model identifier to write to.
+  // Both input and output. The model identifier containing this view's text.
+  // Should point to a single string value.
   optional string model_identifier = 3;
 }
 

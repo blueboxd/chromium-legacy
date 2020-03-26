@@ -18,6 +18,7 @@ interface ITab {
 
   INavigationController createNavigationController(in INavigationControllerClient client) = 1;
 
+  // Deprecated, use Profile.setDownloadCallbackClient.
   void setDownloadCallbackClient(IDownloadCallbackClient client) = 2;
 
   void setErrorPageCallbackClient(IErrorPageCallbackClient client) = 3;

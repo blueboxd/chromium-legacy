@@ -480,10 +480,10 @@ def AddArguments(parser):
                            'Disassemble().')
 
 
-def Run(args, parser):
+def Run(args, on_config_error):
   for path in args.inputs:
     if not path.endswith('.size'):
-      parser.error('All inputs must end with ".size"')
+      on_config_error('All inputs must end with ".size"')
 
   size_infos = [archive.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
   output_directory_finder = path_util.OutputDirectoryFinder(

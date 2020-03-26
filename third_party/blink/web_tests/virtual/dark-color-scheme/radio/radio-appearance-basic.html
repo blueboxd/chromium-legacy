@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta name="color-scheme" content="dark">
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
+<script src="../../../fast/forms/resources/common.js"></script>
+
+<!-- no style for reference -->
+<input type="radio" style="color-scheme:dark;">
+<input type="radio" checked style="color-scheme:dark;">
+<br>
+
+<!-- border -->
+<input type="radio" style="color-scheme:dark; border: 3px solid lime;">
+<input type="radio" style="color-scheme:dark; border-radius: 6px;"> <br>
+
+<!-- background -->
+<input type="radio" style="color-scheme:dark; background: linear-gradient(to bottom, #dea 0%,#9c7 44%,#494 100%);"> <br>
+
+<!-- shadow -->
+<input type="radio" style="color-scheme:dark; box-shadow: 4px 4px 10px rgba(255,0,0,0.5), inset 4px 4px 4px rgba(0,255,0,0.5);"> <br>
+
+<!-- size -->
+<input type="radio" style="color-scheme:dark; width: 8px; height; 8px;">
+<input type="radio" style="color-scheme:dark; width: 16px; height; 16px;">
+<input type="radio" style="color-scheme:dark; width: 24px; height; 24px;">
+<input type="radio" style="color-scheme:dark; width: 26px; height: 20px;">
+<input type="radio" style="color-scheme:dark; width: 1px; height: 1px;"> <br>
+
+<!-- disabled -->
+<input type="radio" disabled style="color-scheme:dark;">
+<input type="radio" disabled checked style="color-scheme:dark;"> <br>
+
+<!-- zoom -->
+<input type="radio" style="color-scheme:dark; zoom: 1.5;">
+<input type="radio" style="color-scheme:dark; zoom: 2;">
+<input type="radio" style="color-scheme:dark; zoom: 4;"> <br>
+
+<input type="radio" id="hoverTarget" style="color-scheme:dark;"/>
+<input type="radio" id="pressTarget" style="color-scheme:dark;"/>
+
+<script>
+
+runAfterLayoutAndPaint(function() {
+  var target = document.getElementById('hoverTarget');
+  var target2 = document.getElementById('pressTarget');
+  internals.setPseudoClassState(target, ":hover", true);
+  internals.setPseudoClassState(target2, ":active", true);
+}, true);
+</script>
+</body>

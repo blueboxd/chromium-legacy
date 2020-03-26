@@ -29,11 +29,6 @@
 
 [
   {
-    "name": "accessibility-internals-page-improvements",
-    "owners": [ "abigailbklein@google.com" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "account-consistency",
     "owners": [ "droger", "msarda" ],
     "expiry_milestone": 80
@@ -3902,6 +3897,11 @@
     "name": "trim-on-memory-pressure",
     "owners": [ "bgeffon", "sonnyrao" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "trust-tokens",
+    "owners": [ "davidvc", "privacy-sandbox-dev" ],
+    "expiry_milestone": 86
   },
   {
     "name": "try-supported-channel-layouts",

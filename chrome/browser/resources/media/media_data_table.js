@@ -80,7 +80,7 @@ cr.define('cr.ui', function() {
             key = k;
           });
 
-          this.delegate_.insertDataField(td, data, key);
+          this.delegate_.insertDataField(td, data, key, dataRow);
           tr.appendChild(td);
         });
       });
@@ -103,8 +103,10 @@ cr.define('cr.ui', function() {
      * @param {Element} td
      * @param {?Object} data
      * @param {string} key
+     * @param {Object} dataRow This is the row itself in case we need extra
+     *   data to render the field.
      */
-    insertDataField(td, data, key) {}
+    insertDataField(td, data, key, dataRow) {}
 
     /**
      * Compares two objects based on |sortKey|.

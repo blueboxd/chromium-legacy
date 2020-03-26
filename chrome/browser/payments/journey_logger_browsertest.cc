@@ -24,6 +24,12 @@ class JourneyLoggerTest : public PaymentRequestPlatformBrowserTestBase {
 
   void SetUpOnMainThread() override {
     PaymentRequestPlatformBrowserTestBase::SetUpOnMainThread();
+    main_frame_url_ = https_server()->GetURL("/journey_logger_test.html");
+    ASSERT_TRUE(
+        content::NavigateToURL(GetActiveWebContents(), main_frame_url_));
+  }
+
+  void SetUpForGpay() {
     gpay_server_.ServeFilesFromSourceDirectory(
         "components/test/data/payments/google.com/");
     ASSERT_TRUE(gpay_server_.Start());
@@ -33,12 +39,11 @@ class JourneyLoggerTest : public PaymentRequestPlatformBrowserTestBase {
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(
         {{method_name, &gpay_server_}});
 
-    main_frame_url_ = https_server()->GetURL("/journey_logger_test.html");
-    ASSERT_TRUE(
-        content::NavigateToURL(GetActiveWebContents(), main_frame_url_));
+    gpay_scope_url_ = gpay_server_.GetURL("google.com", "/");
   }
 
   const GURL& main_frame_url() const { return main_frame_url_; }
+  const GURL& gpay_scope_url() const { return gpay_scope_url_; }
 
   ukm::TestAutoSetUkmRecorder* test_ukm_recorder() {
     return test_ukm_recorder_.get();
@@ -47,6 +52,7 @@ class JourneyLoggerTest : public PaymentRequestPlatformBrowserTestBase {
  private:
   net::EmbeddedTestServer gpay_server_;
   GURL main_frame_url_;
+  GURL gpay_scope_url_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(JourneyLoggerTest);
@@ -91,6 +97,7 @@ IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, BasicCardOnly) {
 
 IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, GooglePaymentApp) {
   base::HistogramTester histogram_tester;
+  SetUpForGpay();
 
   EXPECT_EQ("{\"apiVersion\":1}",
             content::EvalJs(GetActiveWebContents(), "testGPay()"));
@@ -106,6 +113,7 @@ IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, GooglePaymentApp) {
 
 // Make sure the UKM was logged correctly.
 IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, UKMTransactionAmountRecorded) {
+  SetUpForGpay();
   EXPECT_EQ("{\"apiVersion\":1}",
             content::EvalJs(GetActiveWebContents(), "testGPay()"));
 
@@ -126,6 +134,81 @@ IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, UKMTransactionAmountRecorded) {
         static_cast<int64_t>(
             JourneyLogger::TransactionSize::kRegularTransaction));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(JourneyLoggerTest,
+                       UKMCheckoutEventsRecordedForAppOrigin) {
+  GURL merchant_url = https_server()->GetURL("/payment_handler.html");
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), merchant_url));
+  EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "install()"));
+
+  ResetEventWaiterForSingleEvent(TestEvent::kPaymentCompleted);
+  EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "launch()"));
+  WaitForObservedEvent();
+
+  // UKM for merchant's website origin.
+  auto entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PaymentRequest_CheckoutEvents::kEntryName);
+  size_t num_entries = entries.size();
+  EXPECT_EQ(1u, num_entries);
+  test_ukm_recorder()->ExpectEntrySourceHasUrl(entries[0], merchant_url);
+
+  // UKM for payment app's scope.
+  entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PaymentApp_CheckoutEvents::kEntryName);
+  num_entries = entries.size();
+  EXPECT_EQ(1u, num_entries);
+  test_ukm_recorder()->ExpectEntrySourceHasUrl(entries[0],
+                                               https_server()->GetURL("/"));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    JourneyLoggerTest,
+    UKMCheckoutEventsNotRecordedForAppOriginWhenNoWindowShown) {
+  SetUpForGpay();
+
+  EXPECT_EQ("{\"apiVersion\":1}",
+            content::EvalJs(GetActiveWebContents(), "testGPay()"));
+
+  // UKM for merchant's website origin.
+  auto entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PaymentRequest_CheckoutEvents::kEntryName);
+  size_t num_entries = entries.size();
+  EXPECT_EQ(1u, num_entries);
+  test_ukm_recorder()->ExpectEntrySourceHasUrl(entries[0], main_frame_url());
+
+  // No UKM for payment app's scope since the app's origin is not shown inside
+  // the PH modal window.
+  entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PaymentApp_CheckoutEvents::kEntryName);
+  num_entries = entries.size();
+  EXPECT_EQ(0u, num_entries);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    JourneyLoggerTest,
+    UKMCheckoutEventsNotRecordedForAppOriginWhenNoAppInvoked) {
+  CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
+
+  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
+  WaitForObservedEvent();
+
+  EXPECT_EQ(true, content::EvalJs(GetActiveWebContents(), "abort()"));
+
+  // UKM for merchant's website origin.
+  auto entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PaymentRequest_CheckoutEvents::kEntryName);
+  size_t num_entries = entries.size();
+  EXPECT_EQ(1u, num_entries);
+  test_ukm_recorder()->ExpectEntrySourceHasUrl(entries[0], main_frame_url());
+
+  // No UKM for payment app's scope since the request got aborted before
+  // invoking a payment app.
+  entries = test_ukm_recorder()->GetEntriesByName(
+      ukm::builders::PaymentApp_CheckoutEvents::kEntryName);
+  num_entries = entries.size();
+  EXPECT_EQ(0u, num_entries);
 }
 
 }  // namespace payments

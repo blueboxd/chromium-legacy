@@ -47,10 +47,10 @@ class DownloadBrowserTest : public WebLayerBrowserTest,
     failed_run_loop_ = std::make_unique<base::RunLoop>();
 
     Tab* tab = shell()->tab();
-
-    tab->SetDownloadDelegate(this);
-
     TabImpl* tab_impl = static_cast<TabImpl*>(tab);
+
+    tab_impl->profile()->SetDownloadDelegate(this);
+
     auto* browser_context = tab_impl->web_contents()->GetBrowserContext();
     auto* download_manager_delegate =
         content::BrowserContext::GetDownloadManager(browser_context)

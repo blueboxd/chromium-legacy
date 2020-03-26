@@ -93,13 +93,13 @@
 @end
 
 @implementation CRUUpdateCheckXPCServiceDelegate {
-  std::unique_ptr<updater::UpdateService> _service;
+  scoped_refptr<updater::UpdateService> _service;
 }
 
 - (instancetype)initWithUpdateService:
-    (std::unique_ptr<updater::UpdateService>)service {
+    (scoped_refptr<updater::UpdateService>)service {
   if (self = [super init]) {
-    _service = std::move(service);
+    _service = service;
   }
   return self;
 }

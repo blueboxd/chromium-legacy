@@ -579,6 +579,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/add_site_dialog.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_ALL_SITES_ICONS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/all_sites_icons.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <if expr="chromeos">
     <include name="IDR_SETTINGS_SITE_SETTINGS_ANDROID_INFO_BROWSER_PROXY_M_JS"
              file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/android_info_browser_proxy.m.js"
@@ -601,6 +605,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/chooser_exception_list_entry.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CLEAR_STORAGE_DIALOG_CSS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/clear_storage_dialog_css.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_SITE_SETTINGS_CONSTANTS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/constants.m.js"
            use_base_dir="false"
@@ -621,6 +629,11 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data_details_subpage.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DETAILS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_details.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DETAILS_PERMISSION_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_details_permission.m.js"
            use_base_dir="false"
@@ -649,6 +662,10 @@
            use_base_dir="false"
            type="BINDATA"
            preprocess="true" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_WEBSITE_USAGE_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/website_usage_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <if expr="not chromeos">
     <include name="IDR_SETTINGS_PRINTING_PAGE_PRINTING_BROWSER_PROXY_M_JS"
              file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/printing_browser_proxy.m.js"

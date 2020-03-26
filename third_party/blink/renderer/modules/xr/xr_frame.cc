@@ -42,6 +42,7 @@ XRFrame::XRFrame(XRSession* session, XRWorldInformation* world_information)
 
 XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
                                      ExceptionState& exception_state) const {
+  DVLOG(3) << __func__;
   if (!is_active_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kInactiveFrame);
@@ -55,6 +56,7 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
   }
 
   if (!reference_space) {
+    DVLOG(1) << __func__ << ": reference space not present, returning null";
     return nullptr;
   }
 
@@ -77,6 +79,10 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
 
   // Can only update an XRViewerPose's views with an invertible matrix.
   if (!(offset_space_from_viewer && offset_space_from_viewer->IsInvertible())) {
+    DVLOG(1) << __func__
+             << ": offset_space_from_viewer is invalid or not invertible - "
+                "returning nullptr, offset_space_from_viewer valid? "
+             << (offset_space_from_viewer ? true : false);
     return nullptr;
   }
 

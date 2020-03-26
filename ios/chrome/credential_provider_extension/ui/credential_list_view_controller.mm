@@ -10,6 +10,13 @@
 #error "This file requires ARC support."
 #endif
 
+@interface CredentialListViewController () <UISearchResultsUpdating>
+
+// Search controller that contains search bar.
+@property(nonatomic, strong) UISearchController* searchController;
+
+@end
+
 // TODO(crbug.com/1045454): Implement this view controller.
 @implementation CredentialListViewController
 
@@ -19,6 +26,26 @@
   [super viewDidLoad];
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
+
+  self.searchController =
+      [[UISearchController alloc] initWithSearchResultsController:nil];
+  self.searchController.searchResultsUpdater = self;
+  self.searchController.obscuresBackgroundDuringPresentation = NO;
+  self.tableView.tableHeaderView = self.searchController.searchBar;
+  self.navigationController.navigationBar.translucent = NO;
+
+  // Presentation of searchController will walk up the view controller hierarchy
+  // until it finds the root view controller or one that defines a presentation
+  // context. Make this class the presentation context so that the search
+  // controller does not present on top of the navigation controller.
+  self.definesPresentationContext = YES;
+}
+
+#pragma mark - UISearchResultsUpdating
+
+- (void)updateSearchResultsForSearchController:
+    (UISearchController*)searchController {
+  [self.delegate updateResultsWithFilter:searchController.searchBar.text];
 }
 
 #pragma mark - Private

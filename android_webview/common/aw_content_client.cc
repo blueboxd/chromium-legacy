@@ -52,11 +52,6 @@ base::RefCountedMemory* AwContentClient::GetDataResourceBytes(int resource_id) {
 }
 
 void AwContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-  gpu_fingerprint_ = gpu_info.gl_version + '|' + gpu_info.gl_vendor + '|' +
-                     gpu_info.gl_renderer;
-  std::replace_if(gpu_fingerprint_.begin(), gpu_fingerprint_.end(),
-                  [](char c) { return !::isprint(c); }, '_');
-
   gpu::SetKeysForCrashLogging(gpu_info);
 }
 

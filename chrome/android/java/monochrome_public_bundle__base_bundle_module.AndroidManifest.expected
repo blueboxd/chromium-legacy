@@ -80,7 +80,6 @@
       android:protectionLevel="signature"/>
   <application
       android:allowBackup="false"
-      android:appComponentFactory="androidx.core.app.CoreComponentFactory"
       android:extractNativeLibs="false"
       android:icon="@drawable/ic_launcher"
       android:label="@string/app_name"

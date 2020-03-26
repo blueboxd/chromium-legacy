@@ -13,6 +13,8 @@ namespace blink {
 XRViewerPose::XRViewerPose(XRSession* session,
                            const TransformationMatrix& pose_model_matrix)
     : XRPose(pose_model_matrix, session->EmulatedPosition()) {
+  DVLOG(3) << __func__ << ": emulatedPosition()=" << emulatedPosition();
+
   Vector<XRViewData>& view_data = session->views();
 
   // Snapshot the session's current views.

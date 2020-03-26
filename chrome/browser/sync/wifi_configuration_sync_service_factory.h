@@ -27,7 +27,8 @@ class WifiConfigurationSyncServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   static chromeos::sync_wifi::WifiConfigurationSyncService* GetForProfile(
-      Profile* profile);
+      Profile* profile,
+      bool create);
   static WifiConfigurationSyncServiceFactory* GetInstance();
   static bool ShouldRunInProfile(const Profile* profile);
 

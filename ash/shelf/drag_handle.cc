@@ -26,35 +26,35 @@ namespace {
 constexpr int kVerticalClickboxPadding = 15;
 
 // Drag handle translation distance for the first part of nudge animation.
-constexpr int kDragHandleNudgeVerticalMarginRise = -4;
+constexpr int kInAppToHomeNudgeVerticalMarginRise = -4;
 
 // Drag handle translation distance for the second part of nudge animation.
-constexpr int kDragHandleVerticalMarginDrop = 10;
+constexpr int kInAppToHomeVerticalMarginDrop = 10;
 
 // Drag handle contextual nudge text box translation distance for the nudge
 // animation at  the end.
-constexpr int kDragHandleNudgeVerticalMarginDrop = 8;
+constexpr int kInAppToHomeNudgeVerticalMarginDrop = 8;
 
 // Animation time for each translation of drag handle to show contextual nudge.
-constexpr base::TimeDelta kDragHandleAnimationTime =
+constexpr base::TimeDelta kInAppToHomeAnimationTime =
     base::TimeDelta::FromMilliseconds(300);
 
 // Animation time to return drag handle to original position after hiding
 // contextual nudge.
-constexpr base::TimeDelta kDragHandleHideAnimationDuration =
+constexpr base::TimeDelta kInAppToHomeHideAnimationDuration =
     base::TimeDelta::FromMilliseconds(600);
 
 // Animation time to return drag handle to original position after the user taps
 // to hide the contextual nudge.
-constexpr base::TimeDelta kDragHandleHideOnTapAnimationDuration =
+constexpr base::TimeDelta kInAppToHomeHideOnTapAnimationDuration =
     base::TimeDelta::FromMilliseconds(100);
 
 // Delay between animating drag handle and tooltip opacity.
-constexpr base::TimeDelta kDragHandleNudgeOpacityDelay =
+constexpr base::TimeDelta kInAppToHomeNudgeOpacityDelay =
     base::TimeDelta::FromMilliseconds(500);
 
 // Fade in time for drag handle nudge tooltip.
-constexpr base::TimeDelta kDragHandleNudgeOpacityAnimationDuration =
+constexpr base::TimeDelta kInAppToHomeNudgeOpacityAnimationDuration =
     base::TimeDelta::FromMilliseconds(200);
 
 // Delay before animating the drag handle and showing the drag handle nudge.
@@ -118,7 +118,7 @@ bool DragHandle::ShowDragHandleNudge() {
   PrefService* pref =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   base::TimeDelta nudge_duration = contextual_tooltip::GetNudgeTimeout(
-      pref, contextual_tooltip::TooltipType::kDragHandle);
+      pref, contextual_tooltip::TooltipType::kInAppToHome);
   AnimateDragHandleShow();
   ShowDragHandleTooltip();
 
@@ -129,7 +129,7 @@ bool DragHandle::ShowDragHandleNudge() {
                        false /*hidden_by_tap*/));
   }
   contextual_tooltip::HandleNudgeShown(
-      pref, contextual_tooltip::TooltipType::kDragHandle);
+      pref, contextual_tooltip::TooltipType::kInAppToHome);
   return true;
 }
 
@@ -248,20 +248,20 @@ void DragHandle::ShowDragHandleTooltip() {
     ui::LayerAnimator* transform_animator =
         drag_handle_nudge_->GetWidget()->GetLayer()->GetAnimator();
     transform_animator->SchedulePauseForProperties(
-        kDragHandleAnimationTime, ui::LayerAnimationElement::TRANSFORM);
+        kInAppToHomeAnimationTime, ui::LayerAnimationElement::TRANSFORM);
 
     // Enqueue transform animation to start after pause.
     ui::ScopedLayerAnimationSettings transform_animation_settings(
         transform_animator);
     transform_animation_settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
     transform_animation_settings.SetTransitionDuration(
-        kDragHandleAnimationTime);
+        kInAppToHomeAnimationTime);
     transform_animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
 
     // gfx::Transform translate;
     gfx::Transform translate;
-    translate.Translate(0, kDragHandleNudgeVerticalMarginDrop);
+    translate.Translate(0, kInAppToHomeNudgeVerticalMarginDrop);
     drag_handle_nudge_->GetWidget()->GetLayer()->SetTransform(translate);
   }
 
@@ -271,7 +271,7 @@ void DragHandle::ShowDragHandleTooltip() {
     ui::LayerAnimator* opacity_animator =
         drag_handle_nudge_->label()->layer()->GetAnimator();
     opacity_animator->SchedulePauseForProperties(
-        kDragHandleNudgeOpacityDelay, ui::LayerAnimationElement::OPACITY);
+        kInAppToHomeNudgeOpacityDelay, ui::LayerAnimationElement::OPACITY);
 
     // Enqueue opacity animation to start after pause.
     ui::ScopedLayerAnimationSettings opacity_animation_settings(
@@ -280,7 +280,7 @@ void DragHandle::ShowDragHandleTooltip() {
         ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
     opacity_animation_settings.SetTweenType(gfx::Tween::LINEAR);
     opacity_animation_settings.SetTransitionDuration(
-        kDragHandleNudgeOpacityAnimationDuration);
+        kInAppToHomeNudgeOpacityAnimationDuration);
     drag_handle_nudge_->label()->layer()->SetOpacity(1.0f);
   }
 }
@@ -288,8 +288,8 @@ void DragHandle::ShowDragHandleTooltip() {
 void DragHandle::HideDragHandleNudgeHelper(bool hidden_by_tap) {
   ScheduleDragHandleTranslationAnimation(
       0,
-      hidden_by_tap ? kDragHandleHideOnTapAnimationDuration
-                    : kDragHandleHideAnimationDuration,
+      hidden_by_tap ? kInAppToHomeHideOnTapAnimationDuration
+                    : kInAppToHomeHideAnimationDuration,
       hidden_by_tap ? gfx::Tween::FAST_OUT_LINEAR_IN
                     : gfx::Tween::FAST_OUT_SLOW_IN,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -303,8 +303,8 @@ void DragHandle::HideDragHandleNudgeHelper(bool hidden_by_tap) {
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     opacity_animation_settings.SetTweenType(gfx::Tween::LINEAR);
     opacity_animation_settings.SetTransitionDuration(
-        hidden_by_tap ? kDragHandleHideOnTapAnimationDuration
-                      : kDragHandleNudgeOpacityAnimationDuration);
+        hidden_by_tap ? kInAppToHomeHideOnTapAnimationDuration
+                      : kInAppToHomeNudgeOpacityAnimationDuration);
 
     // Register an animation observer to close the tooltip widget once the label
     // opacity is animated to 0 as the widget will no longer be needed after
@@ -323,11 +323,11 @@ void DragHandle::AnimateDragHandleShow() {
   // animations while the second step uses |ENQUEUE_NEW_ANIMATION| so it runs
   // after the first animation.
   ScheduleDragHandleTranslationAnimation(
-      kDragHandleNudgeVerticalMarginRise, kDragHandleAnimationTime,
+      kInAppToHomeNudgeVerticalMarginRise, kInAppToHomeAnimationTime,
       gfx::Tween::FAST_OUT_SLOW_IN,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   ScheduleDragHandleTranslationAnimation(
-      kDragHandleVerticalMarginDrop, kDragHandleAnimationTime,
+      kInAppToHomeVerticalMarginDrop, kInAppToHomeAnimationTime,
       gfx::Tween::FAST_OUT_LINEAR_IN, ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
 }
 

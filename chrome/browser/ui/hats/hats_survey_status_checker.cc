@@ -69,8 +69,8 @@ void HatsSurveyStatusChecker::CheckSurveyStatus(
 
   // Send the request and check the response header.
   auto request = std::make_unique<network::ResourceRequest>();
-  std::string url(HatsSurveyURL());
-  request->url = GURL(url + site_id);
+  std::string url_without_id(HatsSurveyURLWithoutId());
+  request->url = GURL(url_without_id + site_id);
   // Send stored cookie along with the request, but don't save any cookie.
   request->attach_same_site_cookies = true;
   request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
@@ -119,8 +119,8 @@ base::OnceClosure HatsSurveyStatusChecker::CreateTimeoutCallbackForTesting() {
 
 HatsSurveyStatusChecker::HatsSurveyStatusChecker() = default;
 
-std::string HatsSurveyStatusChecker::HatsSurveyURL() {
-  std::string url("https://www.google.com");
+std::string HatsSurveyStatusChecker::HatsSurveyURLWithoutId() {
+  std::string url("https://www.google.com/");
   return url + kHatsSurveyDataPath;
 }
 

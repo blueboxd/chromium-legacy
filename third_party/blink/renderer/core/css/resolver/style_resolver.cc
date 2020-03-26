@@ -1399,6 +1399,8 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
     });
     if (IsForcedColorsModeEnabled(state))
       filter = filter.Add(CSSProperty::kIsAffectedByForcedColors, true);
+    if (state.Style()->StyleType() == kPseudoIdMarker)
+      filter = filter.Add(CSSProperty::kValidForMarker, false);
     filter = filter.Add(CSSProperty::kAnimation, true);
     cascade->Analyze(interpolations, filter);
     cascade->Apply(&match_result, &interpolations, filter);
@@ -1449,6 +1451,23 @@ StyleRuleKeyframes* StyleResolver::FindKeyframesRule(
   return nullptr;
 }
 
+static bool PassesPropertyFilter(ValidPropertyFilter valid_property_filter,
+                                 CSSPropertyID property,
+                                 const Document& document) {
+  switch (valid_property_filter) {
+    case ValidPropertyFilter::kNoFilter:
+      return true;
+    case ValidPropertyFilter::kFirstLetter:
+      return CSSProperty::Get(property).IsValidForFirstLetter();
+    case ValidPropertyFilter::kCue:
+      return CSSProperty::Get(property).IsValidForCue();
+    case ValidPropertyFilter::kMarker:
+      return CSSProperty::Get(property).IsValidForMarker();
+  }
+  NOTREACHED();
+  return true;
+}
+
 template <CSSPropertyPriority priority>
 void StyleResolver::ApplyAnimatedStandardProperties(
     StyleResolverState& state,
@@ -1469,6 +1488,10 @@ void StyleResolver::ApplyAnimatedStandardProperties(
         entry.key.GetCSSProperty().IsAffectedByForcedColors() &&
         state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone)
       continue;
+    if (state.Style()->StyleType() == kPseudoIdMarker &&
+        !PassesPropertyFilter(ValidPropertyFilter::kMarker, property,
+                              state.GetDocument()))
+      continue;
     const Interpolation& interpolation = *entry.value.front();
     if (IsA<InvalidatableInterpolation>(interpolation)) {
       CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
@@ -1479,23 +1502,6 @@ void StyleResolver::ApplyAnimatedStandardProperties(
       To<TransitionInterpolation>(interpolation).Apply(state);
     }
   }
-}
-
-static bool PassesPropertyFilter(ValidPropertyFilter valid_property_filter,
-                                 CSSPropertyID property,
-                                 const Document& document) {
-  switch (valid_property_filter) {
-    case ValidPropertyFilter::kNoFilter:
-      return true;
-    case ValidPropertyFilter::kFirstLetter:
-      return CSSProperty::Get(property).IsValidForFirstLetter();
-    case ValidPropertyFilter::kCue:
-      return CSSProperty::Get(property).IsValidForCue();
-    case ValidPropertyFilter::kMarker:
-      return CSSProperty::Get(property).IsValidForMarker();
-  }
-  NOTREACHED();
-  return true;
 }
 
 static inline void ApplyProperty(const CSSProperty& property,

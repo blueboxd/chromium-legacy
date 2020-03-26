@@ -56,6 +56,9 @@ constexpr int kDefaultNumberOfEventsToRead = 10;
 // Maximum number of upload requests to make per upload invocation.
 constexpr int kMaxAllowedNumberOfUploadRequests = 5;
 
+// Maximum number of retries if a HTTP call to the backend fails.
+constexpr unsigned int kMaxNumHttpRetries = 3;
+
 // Maximum size of the log entries payload in bytes per HTTP request.
 // TODO (crbug.com/1043195): Change this to use an experiment flag once an
 // experiment framework for GCPW is available.
@@ -498,19 +501,12 @@ HRESULT EventLogsUploadManager::MakeUploadLogChunkRequest(
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       EventLogsUploadManager::Get()->GetGcpwServiceUploadEventViewerLogsUrl(),
       access_token, {}, request_dict, kDefaultUploadLogsRequestTimeout,
-      &request_result);
+      kMaxNumHttpRetries, &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
     return hr;
-  }
-
-  if (!request_result.has_value() ||
-      request_result->FindDictKey(kErrorKeyInRequestResult)) {
-    LOGFN(ERROR) << "error="
-                 << *request_result->FindDictKey(kErrorKeyInRequestResult);
-    return E_FAIL;
   }
 
   // Store the chunk id which is the last uploaded event log id

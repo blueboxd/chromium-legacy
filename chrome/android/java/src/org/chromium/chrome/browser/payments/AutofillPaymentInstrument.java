@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.FullCardRequestD
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.payments.PayerData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;

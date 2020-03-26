@@ -17,13 +17,14 @@
 
 // static
 chromeos::sync_wifi::WifiConfigurationSyncService*
-WifiConfigurationSyncServiceFactory::GetForProfile(Profile* profile) {
+WifiConfigurationSyncServiceFactory::GetForProfile(Profile* profile,
+                                                   bool create) {
   if (!ShouldRunInProfile(profile)) {
     return nullptr;
   }
 
   return static_cast<chromeos::sync_wifi::WifiConfigurationSyncService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, create));
 }
 
 // static

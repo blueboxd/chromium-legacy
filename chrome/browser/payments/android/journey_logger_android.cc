@@ -157,6 +157,13 @@ void JourneyLoggerAndroid::SetTriggerTime(
   journey_logger_.SetTriggerTime();
 }
 
+void JourneyLoggerAndroid::SetPaymentAppUkmSourceId(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    ukm::SourceId source_id) {
+  journey_logger_.SetPaymentAppUkmSourceId(source_id);
+}
+
 static jlong JNI_JourneyLogger_InitJourneyLoggerAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,

@@ -396,3 +396,9 @@ QUIC_FLAG(bool,
 // If true, use blackhole detector in QuicConnection to detect path degrading
 // and network blackhole.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_blackhole_detector, false)
+
+// If true, use idle network detector to detect handshake timeout and idle
+// network timeout.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_idle_network_detector,
+          false)

@@ -8,8 +8,6 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabCon
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
@@ -44,11 +42,6 @@ public class CustomTabActivityModule {
     }
 
     @Provides
-    public BrowserServicesIntentDataProvider providesBrowserServicesIntentDataProvider() {
-        return mIntentDataProvider;
-    }
-
-    @Provides
     public BrowserServicesActivityTabController provideTabController(
             CustomTabActivityTabController customTabActivityTabController) {
         return customTabActivityTabController;
@@ -69,12 +62,6 @@ public class CustomTabActivityModule {
             Lazy<DefaultCustomTabIntentHandlingStrategy> defaultHandler,
             Lazy<TwaIntentHandlingStrategy> twaHandler) {
         return mIntentDataProvider.isTrustedWebActivity() ? twaHandler.get() : defaultHandler.get();
-    }
-
-    @Provides
-    public Verifier provideVerifierDelegate(Lazy<TwaVerifier> twaVerifierDelegate) {
-        // TODO(peconn): Add handing of WebAPK/A2HS delegate.
-        return twaVerifierDelegate.get();
     }
 
     @Provides

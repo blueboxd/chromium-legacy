@@ -266,13 +266,13 @@ def AddArguments(parser):
                       help='Diffs the input_file against an older .size file')
 
 
-def Run(args, parser):
+def Run(args, on_config_error):
   if not args.input_size_file.endswith('.size'):
-    parser.error('Input must end with ".size"')
+    on_config_error('Input must end with ".size"')
   if args.diff_with and not args.diff_with.endswith('.size'):
-    parser.error('Diff input must end with ".size"')
+    on_config_error('Diff input must end with ".size"')
   if not args.output_report_file.endswith('.ndjson'):
-    parser.error('Output must end with ".ndjson"')
+    on_config_error('Output must end with ".ndjson"')
 
   size_info = archive.LoadAndPostProcessSizeInfo(args.input_size_file)
   if args.diff_with:

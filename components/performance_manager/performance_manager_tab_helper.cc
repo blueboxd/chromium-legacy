@@ -201,8 +201,7 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
   // Perform the swap in the graph.
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
-                     [](FrameNodeImpl* old_frame, FrameNodeImpl* new_frame,
-                        GraphImpl* graph) {
+                     [](FrameNodeImpl* old_frame, FrameNodeImpl* new_frame) {
                        if (old_frame) {
                          DCHECK(old_frame->is_current());
                          old_frame->SetIsCurrent(false);
@@ -220,19 +219,14 @@ void PerformanceManagerTabHelper::OnVisibilityChanged(
   const bool is_visible = visibility == content::Visibility::VISIBLE;
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
-      base::BindOnce(
-          [](PageNodeImpl* page_node, bool is_visible, GraphImpl* graph) {
-            page_node->SetIsVisible(is_visible);
-          },
-          page_node_.get(), is_visible));
+      base::BindOnce(&PageNodeImpl::SetIsVisible,
+                     base::Unretained(page_node_.get()), is_visible));
 }
 
 void PerformanceManagerTabHelper::OnAudioStateChanged(bool audible) {
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce([](PageNodeImpl* page_node, bool audible,
-                        GraphImpl* graph) { page_node->SetIsAudible(audible); },
-                     page_node_.get(), audible));
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetIsAudible,
+                                base::Unretained(page_node_.get()), audible));
 }
 
 void PerformanceManagerTabHelper::DidFinishNavigation(
@@ -258,12 +252,9 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   // Notify the frame of the committed URL.
   GURL url = navigation_handle->GetURL();
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(
-                     [](FrameNodeImpl* frame_node, const GURL& url,
-                        bool is_same_document, GraphImpl* graph) {
-                       frame_node->OnNavigationCommitted(url, is_same_document);
-                     },
-                     frame_node, url, navigation_handle->IsSameDocument()));
+      FROM_HERE, base::BindOnce(&FrameNodeImpl::OnNavigationCommitted,
+                                base::Unretained(frame_node), url,
+                                navigation_handle->IsSameDocument()));
 
   if (!navigation_handle->IsInMainFrame())
     return;
@@ -274,16 +265,10 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
-          [](PageNodeImpl* page_node, bool same_document,
-             base::TimeTicks navigation_committed_time, int64_t navigation_id,
-             const GURL& url, const std::string& contents_mime_type,
-             GraphImpl* graph) {
-            page_node->OnMainFrameNavigationCommitted(
-                same_document, navigation_committed_time, navigation_id, url,
-                contents_mime_type);
-          },
-          page_node_.get(), navigation_handle->IsSameDocument(),
-          navigation_committed_time, navigation_handle->GetNavigationId(), url,
+          &PageNodeImpl::OnMainFrameNavigationCommitted,
+          base::Unretained(page_node_.get()),
+          navigation_handle->IsSameDocument(), navigation_committed_time,
+          navigation_handle->GetNavigationId(), url,
           navigation_handle->GetWebContents()->GetContentsMimeType()));
 }
 
@@ -293,12 +278,9 @@ void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
     first_time_title_set_ = true;
     return;
   }
-
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce([](PageNodeImpl* page_node,
-                        GraphImpl* graph) { page_node->OnTitleUpdated(); },
-                     page_node_.get()));
+      FROM_HERE, base::BindOnce(&PageNodeImpl::OnTitleUpdated,
+                                base::Unretained(page_node_.get())));
 }
 
 void PerformanceManagerTabHelper::WebContentsDestroyed() {
@@ -312,12 +294,9 @@ void PerformanceManagerTabHelper::DidUpdateFaviconURL(
     first_time_favicon_set_ = true;
     return;
   }
-
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce([](PageNodeImpl* page_node,
-                        GraphImpl* graph) { page_node->OnFaviconUpdated(); },
-                     page_node_.get()));
+      FROM_HERE, base::BindOnce(&PageNodeImpl::OnFaviconUpdated,
+                                base::Unretained(page_node_.get())));
 }
 
 void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
@@ -344,11 +323,8 @@ void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
 
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
-      base::BindOnce(
-          [](FrameNodeImpl* frame_node,
-             mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver,
-             GraphImpl* graph) { frame_node->Bind(std::move(receiver)); },
-          it->second.get(), std::move(receiver)));
+      base::BindOnce(&FrameNodeImpl::Bind, base::Unretained(it->second.get()),
+                     std::move(receiver)));
 }
 
 content::WebContents* PerformanceManagerTabHelper::GetWebContents() const {
@@ -379,10 +355,8 @@ void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
-      base::BindOnce(
-          [](PageNodeImpl* page_node, ukm::SourceId ukm_source_id,
-             GraphImpl* graph) { page_node->SetUkmSourceId(ukm_source_id); },
-          page_node_.get(), ukm_source_id_));
+      base::BindOnce(&PageNodeImpl::SetUkmSourceId,
+                     base::Unretained(page_node_.get()), ukm_source_id_));
 
   first_time_title_set_ = false;
   first_time_favicon_set_ = false;

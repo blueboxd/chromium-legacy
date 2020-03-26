@@ -7,7 +7,6 @@
 
 #include <wrl/implements.h>
 
-#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -50,13 +49,7 @@ using StateChangeCallback =
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
-  UpdateServiceOutOfProcess(const UpdateServiceOutOfProcess&) = delete;
-  UpdateServiceOutOfProcess& operator=(const UpdateServiceOutOfProcess&) =
-      delete;
-  ~UpdateServiceOutOfProcess() override;
-
-  static std::unique_ptr<UpdateServiceOutOfProcess> CreateInstance();
-  static void ModuleStop();
+  UpdateServiceOutOfProcess();
 
   // Overrides for updater::UpdateService.
   // Update-checks all registered applications. Calls |callback| once the
@@ -71,8 +64,11 @@ class UpdateServiceOutOfProcess : public UpdateService {
               base::OnceCallback<void(Result)> done) override;
   void Uninitialize() override;
 
+  static void ModuleStop();
+
  private:
-  UpdateServiceOutOfProcess();
+  ~UpdateServiceOutOfProcess() override;
+
   void UpdateAllOnSTA(base::OnceCallback<void(Result)> callback);
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -249,6 +249,13 @@ public final class FeedActionParser implements ActionParser {
             return;
         }
 
+        if (urlType != OPEN_URL_INCOGNITO && openUrlData.hasContentId()
+                && openUrlData.hasPayload()) {
+            streamActionApi.reportClickAction(
+                    mProtocolAdapter.getStreamContentId(openUrlData.getContentId()),
+                    openUrlData.getPayload());
+        }
+
         String url = openUrlData.getUrl();
         switch (urlType) {
             case OPEN_URL:

@@ -126,6 +126,9 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   bool IsIncognito() const;
 
+  // Called when the payment handler requests to open a payment handler window.
+  void OnPaymentHandlerOpenWindowCalled();
+
   content::WebContents* web_contents() { return web_contents_; }
 
   bool skipped_payment_request_ui() { return skipped_payment_request_ui_; }

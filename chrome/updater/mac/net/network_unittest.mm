@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -20,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using base::test::RunClosure;
 using ResponseStartedCallback =
     update_client::NetworkFetcher::ResponseStartedCallback;
 using ProgressCallback = update_client::NetworkFetcher::ProgressCallback;
@@ -29,9 +31,6 @@ using DownloadToFileCompleteCallback =
     update_client::NetworkFetcher::DownloadToFileCompleteCallback;
 
 namespace updater {
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 static base::FilePath testFilePath;
 

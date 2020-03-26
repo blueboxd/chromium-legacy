@@ -8,6 +8,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/web/common/referrer_util.h"
 #import "ios/web/web_state/context_menu_constants.h"
+#include "ui/gfx/text_elider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -63,6 +64,12 @@ ContextMenuParams ContextMenuParamsFromElementDictionary(
   NSString* innerText = element[kContextMenuElementInnerText];
   if ([innerText length] > 0) {
     params.link_text = [innerText copy];
+  }
+  if ([params.menu_title length] > kContextMenuMaxTitleLength) {
+    base::string16 shortenedTitle;
+    gfx::ElideString(base::SysNSStringToUTF16(params.menu_title),
+                     kContextMenuMaxTitleLength, &shortenedTitle);
+    params.menu_title = base::SysUTF16ToNSString(shortenedTitle);
   }
   return params;
 }

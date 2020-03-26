@@ -24,10 +24,11 @@ void SystemFeaturesDisableListPolicyHandler::RegisterPrefs(
 }
 
 void SystemFeaturesDisableListPolicyHandler::ApplyList(
-    std::unique_ptr<base::ListValue> filtered_list,
+    base::Value filtered_list,
     PrefValueMap* prefs) {
+  DCHECK(filtered_list.is_list());
   prefs->SetValue(policy_prefs::kSystemFeaturesDisableList,
-                  base::Value::FromUniquePtrValue(std::move(filtered_list)));
+                  std::move(filtered_list));
 }
 
 }  // namespace policy

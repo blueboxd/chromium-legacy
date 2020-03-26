@@ -16,9 +16,9 @@
 #include <wrl/module.h>
 
 #include <algorithm>
-#include <memory>
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -68,7 +68,7 @@ class ComServer : public App {
   base::win::ScopedCOMInitializer com_initializer_;
 
   // The UpdateService to use for handling COM requests.
-  std::unique_ptr<UpdateService> service_;
+  scoped_refptr<UpdateService> service_;
 
   // The updater's Configurator.
   scoped_refptr<Configurator> config_;
@@ -198,7 +198,7 @@ void ComServer::FirstTaskRun() {
     Shutdown(-1);
     return;
   }
-  service_ = std::make_unique<UpdateServiceInProcess>(config_);
+  service_ = base::MakeRefCounted<UpdateServiceInProcess>(config_);
   CreateWRLModule();
   HRESULT hr = RegisterClassObject();
   if (FAILED(hr))

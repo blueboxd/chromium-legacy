@@ -31,13 +31,13 @@ content::WebUIDataSource* CreateHostDataSource() {
                           IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS);
   source->AddResourcePath("media_app.mojom-lite.js",
                           IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS);
-
   source->AddResourcePath("media_app_index_scripts.js",
                           IDR_MEDIA_APP_INDEX_SCRIPTS_JS);
 
-  // Add resources from chromeos_media_app_bundle_resources.pak.
+  // TODO(b/141588875): Switch this back to IDR_MEDIA_APP_APP_ICON_256_PNG (and
+  // add more icon resolutions) when the final icon is ready.
   source->AddResourcePath("system_assets/app_icon_256.png",
-                          IDR_MEDIA_APP_APP_ICON_256_PNG);
+                          IDR_MEDIA_APP_GALLERY_ICON_256_PNG);
 
   return source;
 }

@@ -7,7 +7,6 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
@@ -68,7 +67,7 @@ class FillLayout : public aura::LayoutManager {
 // coordinates using the offset of the root window in screen coordinates.
 class ScreenPositionClient : public wm::DefaultScreenPositionClient {
  public:
-  ScreenPositionClient() = default;
+  using DefaultScreenPositionClient::DefaultScreenPositionClient;
   ~ScreenPositionClient() override = default;
 
   // wm::DefaultScreenPositionClient:
@@ -98,9 +97,7 @@ RootWindowController::RootWindowController(
     DesktopDelegate* desktop_delegate,
     const gfx::Rect& bounds,
     content::BrowserContext* browser_context)
-    : desktop_delegate_(desktop_delegate),
-      browser_context_(browser_context),
-      screen_position_client_(std::make_unique<ScreenPositionClient>()) {
+    : desktop_delegate_(desktop_delegate), browser_context_(browser_context) {
   DCHECK(desktop_delegate_);
   DCHECK(browser_context_);
 
@@ -110,8 +107,8 @@ RootWindowController::RootWindowController(
   host_->window()->Show();
 
   aura::client::SetWindowParentingClient(host_->window(), this);
-  aura::client::SetScreenPositionClient(host_->window(),
-                                        screen_position_client_.get());
+  screen_position_client_ =
+      std::make_unique<ScreenPositionClient>(host_->window());
 
   // Ensure the window fills the display.
   host_->window()->SetLayoutManager(new FillLayout(host_->window()));
@@ -122,6 +119,9 @@ RootWindowController::RootWindowController(
 
 RootWindowController::~RootWindowController() {
   CloseAppWindows();
+  // The screen position client holds a pointer to the root window, so free it
+  // before destroying the window tree host.
+  screen_position_client_.reset();
   DestroyWindowTreeHost();
 }
 

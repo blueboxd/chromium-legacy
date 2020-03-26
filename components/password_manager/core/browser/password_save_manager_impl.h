@@ -84,15 +84,18 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 #endif
 
  protected:
-  static PendingCredentialsState FillPendingCredentials(
+  static PendingCredentialsState ComputePendingCredentialsState(
+      const autofill::PasswordForm& parsed_submitted_form,
+      const autofill::PasswordForm* similar_saved_form);
+  static autofill::PasswordForm BuildPendingCredentials(
+      PendingCredentialsState pending_credentials_state,
       const autofill::PasswordForm& parsed_submitted_form,
       const autofill::FormData& observed_form,
       const autofill::FormData& submitted_form,
       const base::Optional<base::string16>& generated_password,
       bool is_http_auth,
       bool is_credential_api_save,
-      const autofill::PasswordForm* similar_saved_form,
-      autofill::PasswordForm* pending_credentials);
+      const autofill::PasswordForm* similar_saved_form);
 
   // Returns the form_saver to be used for generated passwords. Subclasses will
   // override this method to provide different logic for get the form saver.

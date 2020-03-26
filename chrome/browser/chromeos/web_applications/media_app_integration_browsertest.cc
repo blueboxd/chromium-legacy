@@ -143,7 +143,9 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaApp) {
 
 // Test that the MediaApp successfully loads a file passed in on its launch
 // params.
-IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
+// Flaky. See https://crbug.com/1064863.
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       DISABLED_MediaAppLaunchWithFile) {
   WaitForTestSystemAppInstall();
   auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
 
@@ -238,8 +240,9 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
 
 // Test that the MediaApp can navigate other files in the directory of a file
 // that was opened.
+// Flaky. See https://crbug.com/1064864.
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
-                       FileOpenCanTraverseDirectory) {
+                       DISABLED_FileOpenCanTraverseDirectory) {
   WaitForTestSystemAppInstall();
 
   // Initialize a folder with 3 files: 2 JPEG, 1 PNG. Note this approach doesn't

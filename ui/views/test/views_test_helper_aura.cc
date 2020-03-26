@@ -21,9 +21,7 @@ ViewsTestHelperAura::ViewsTestHelperAura() {
   gfx::NativeWindow root_window = GetContext();
   if (root_window && !aura::client::GetScreenPositionClient(root_window)) {
     screen_position_client_ =
-        std::make_unique<wm::DefaultScreenPositionClient>();
-    aura::client::SetScreenPositionClient(root_window,
-                                          screen_position_client_.get());
+        std::make_unique<wm::DefaultScreenPositionClient>(root_window);
   }
 }
 
@@ -37,12 +35,9 @@ ViewsTestHelperAura::~ViewsTestHelperAura() {
     // So, although it's optional, check the root window to detect failures
     // before they hit the CQ on other platforms.
     DCHECK(root_window->children().empty()) << "Not all windows were closed.";
-
-    if (screen_position_client_.get() ==
-        aura::client::GetScreenPositionClient(root_window))
-      aura::client::SetScreenPositionClient(root_window, nullptr);
   }
 
+  screen_position_client_.reset();
   aura_test_helper_.TearDown();
 
   const wm::CaptureController* const controller = wm::CaptureController::Get();

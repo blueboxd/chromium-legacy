@@ -16,7 +16,7 @@ namespace views {
 class VIEWS_EXPORT DesktopScreenPositionClient
     : public wm::DefaultScreenPositionClient {
  public:
-  explicit DesktopScreenPositionClient(aura::Window* root_window);
+  using DefaultScreenPositionClient::DefaultScreenPositionClient;
   ~DesktopScreenPositionClient() override;
 
   // aura::client::DefaultScreenPositionClient:
@@ -25,8 +25,6 @@ class VIEWS_EXPORT DesktopScreenPositionClient
                  const display::Display& display) override;
 
  private:
-  aura::Window* root_window_;
-
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenPositionClient);
 };
 

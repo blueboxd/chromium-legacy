@@ -505,6 +505,11 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
       observer.OnSkippedWaiting(this);
   }
 
+  // TODO(crbug.com/951571): Remove this once we identified the cause of crash.
+  if (exiting_version) {
+    CHECK(!exiting_version->HasControllee());
+  }
+
   // "10. Queue a task to fire an event named activate..."
   // The browser could be shutting down. To avoid spurious start worker
   // failures, wait a bit before continuing.

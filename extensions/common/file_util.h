@@ -120,14 +120,12 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url);
 // an error.
 void SetReportErrorForInvisibleIconForTesting(bool value);
 
-// Returns true if the icons in |icon_set| exist. Otherwise, populates
-// |error| with the |error_message_id| for an invalid file. If an icon
-// is not sufficiently visible, and error checking is enabled, |error|
-// is populated with a different message, rather than one specified
-// by |error_message_id|.
+// Returns true if the icons in |icon_set| exist, and, if enabled, checks that
+// they are sufficiently visible compared to |background_color|. On failure,
+// populates |error|, which will include the given |manifest_key|.
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
-                              int error_message_id,
+                              const char* manifest_key,
                               SkColor background_color,
                               std::string* error);
 

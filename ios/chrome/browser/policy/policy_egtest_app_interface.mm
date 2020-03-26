@@ -12,8 +12,11 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
+#include "ios/chrome/browser/policy/test_platform_policy_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,6 +63,14 @@ NSString* SerializedValue(const base::Value* value) {
   const policy::PolicyMap& policyMap = policyBundle.Get(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, ""));
   return SerializedValue(policyMap.GetValue(key));
+}
+
++ (void)setSuggestPolicyEnabled:(BOOL)enabled {
+  policy::PolicyMap values;
+  values.Set(policy::key::kSearchSuggestEnabled, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
+             std::make_unique<base::Value>(enabled), nullptr);
+  GetTestPlatformPolicyProvider()->UpdateChromePolicy(values);
 }
 
 @end

@@ -26,18 +26,12 @@ const char kAssistNamePrefix[] = "my name is ";
 const char kAssistAddressPrefix[] = "my address is ";
 const char kAssistPhoneNumberPrefix[] = "my phone number is ";
 
-// Must match with IMEAssistiveAction in enums.xml
-enum class AssistiveType {
-  kGenericAction = 0,
-  kPersonalEmail = 1,
-  kPersonalAddress = 2,
-  kPersonalPhoneNumber = 3,
-  kPersonalName = 4,
-  kMaxValue = kPersonalName,
-};
-
-void RecordAssitiveConverage(AssistiveType type) {
+void RecordAssistiveCoverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
+}
+
+void RecordAssistiveSuccess(AssistiveType type) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Success", type);
 }
 
 AssistiveType ProposeAssistiveAction(const base::string16& text) {
@@ -94,6 +88,7 @@ bool AssistiveSuggester::OnKeyEvent(
     if (event.key == "Tab" || event.key == "Right") {
       std::string error;
       engine_->AcceptSuggestion(context_id_, &error);
+      RecordAssistiveSuccess(proposed_action_type_);
       return true;
     }
     DismissSuggestion();
@@ -103,7 +98,7 @@ bool AssistiveSuggester::OnKeyEvent(
   return false;
 }
 
-void AssistiveSuggester::RecordAssitiveCoverageMetrics(
+void AssistiveSuggester::RecordAssistiveCoverageMetrics(
     const base::string16& text,
     int cursor_pos,
     int anchor_pos) {
@@ -115,7 +110,7 @@ void AssistiveSuggester::RecordAssitiveCoverageMetrics(
         text.substr(start_pos, cursor_pos - start_pos);
     AssistiveType action = ProposeAssistiveAction(text_before_cursor);
     if (action != AssistiveType::kGenericAction)
-      RecordAssitiveConverage(action);
+      RecordAssistiveCoverage(action);
   }
 }
 
@@ -127,8 +122,13 @@ bool AssistiveSuggester::OnSurroundingTextChanged(const base::string16& text,
     return false;
   }
 
-  if (context_id_ == -1 || suggestion_shown_)
+  if (context_id_ == -1)
     return false;
+
+  if (suggestion_shown_) {
+    suggestion_shown_ = false;
+    DismissSuggestion();
+  }
   Suggest(text, cursor_pos, anchor_pos);
   return suggestion_shown_;
 }
@@ -160,6 +160,8 @@ base::string16 AssistiveSuggester::GetPersonalInfoSuggestion(
   AssistiveType action = ProposeAssistiveAction(text);
   if (action == AssistiveType::kGenericAction)
     return base::EmptyString16();
+
+  proposed_action_type_ = action;
 
   if (action == AssistiveType::kPersonalEmail)
     return base::UTF8ToUTF16(profile_->GetProfileUserName());

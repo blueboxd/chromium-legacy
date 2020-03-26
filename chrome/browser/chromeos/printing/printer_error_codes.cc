@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/printing/printer_error_codes.h"
 
 #include "printing/backend/cups_jobs.h"
-#include "printing/printer_status_chromeos.h"
+#include "printing/printer_status.h"
 
 namespace chromeos {
 

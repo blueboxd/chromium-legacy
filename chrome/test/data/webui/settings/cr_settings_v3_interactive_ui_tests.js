@@ -38,6 +38,18 @@ TEST_F('CrSettingsAnimatedPagesV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsSyncPageV3Test = class extends CrSettingsV3InteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/people_page_sync_page_interactive_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsSyncPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var SettingsUIV3InteractiveTest = class extends CrSettingsV3InteractiveUITest {
   /** @override */
   get browsePreload() {

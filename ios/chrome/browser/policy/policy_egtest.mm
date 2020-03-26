@@ -11,6 +11,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/policy/policy_egtest_app_interface.h"
+#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #include "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/app_launch_configuration.h"
@@ -20,8 +21,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(PolicyEGTestAppInterface)
 
 namespace {
 
@@ -60,6 +59,29 @@ std::unique_ptr<base::Value> GetPlatformPolicy(const std::string& key) {
   [ChromeEarlGrey loadURL:GURL("chrome://policy")];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_POLICY_SHOW_UNSET)];
+}
+
+// Tests for the SearchSuggestEnabled policy.
+- (void)testSearchSuggestEnabled {
+  // Loading chrome://policy isn't necessary for the test to succeed, but it
+  // provides some visual feedback as the test runs.
+  [ChromeEarlGrey loadURL:GURL("chrome://policy")];
+  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                                    IDS_POLICY_SHOW_UNSET)];
+
+  // Verify that the unmanaged pref's default value is true.
+  GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
+                 @"Unexpected default value");
+
+  // Force the preference off via policy.
+  [PolicyEGTestAppInterface setSuggestPolicyEnabled:NO];
+  GREYAssertFalse([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
+                  @"Search suggest preference was unexpectedly true");
+
+  // Force the preference on via policy.
+  [PolicyEGTestAppInterface setSuggestPolicyEnabled:YES];
+  GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSearchSuggestEnabled],
+                 @"Search suggest preference was unexpectedly false");
 }
 
 @end
@@ -121,3 +143,7 @@ std::unique_ptr<base::Value> GetPlatformPolicy(const std::string& key) {
 }
 
 @end
+
+// TODO(crbug.com/1015113): This macro breaks Xcode indexing unless it is placed
+// at the bottom of the file or followed by a semicolon.
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(PolicyEGTestAppInterface)

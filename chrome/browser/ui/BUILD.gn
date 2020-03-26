@@ -3957,7 +3957,6 @@ jumbo_static_library("ui") {
       "ash/launcher/shelf_spinner_controller.h",
       "ash/launcher/shelf_spinner_item_controller.cc",
       "ash/launcher/shelf_spinner_item_controller.h",
-      "supervised_user/parent_permission_dialog.cc",
       "supervised_user/parent_permission_dialog.h",
       "views/apps/app_dialog/app_block_dialog_view.cc",
       "views/apps/app_dialog/app_block_dialog_view.h",

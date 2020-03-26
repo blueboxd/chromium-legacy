@@ -388,6 +388,7 @@ jumbo_source_set("browser_sources") {
     "//crypto:platform",
     "//crypto:platform",
     "//extensions:extensions_browser_resources",
+    "//extensions/browser/api/declarative_net_request:core",
     "//extensions/browser/guest_view/web_view/web_ui",
     "//extensions/buildflags",
     "//extensions/common",

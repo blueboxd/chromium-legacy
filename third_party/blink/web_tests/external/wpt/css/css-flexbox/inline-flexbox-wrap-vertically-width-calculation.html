@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
-<link href="resources/flexbox.css" rel="stylesheet">
+<title>CSS Flexbox: Inline flexbox width calculation with flex-direction: column and flex-wrap</title>
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#flex-direction-property">
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#flex-wrap-property">
+<link rel="help" href="https://drafts.csswg.org/css2/visudet.html#Computing_widths_and_margins">
+<link href="support/flexbox.css" rel="stylesheet">
+<meta name="assert" content="This test checks that width is correctly computed for flexbox with flex-direction: column and flex-wrap.">
 <style>
 .inline-flexbox {
     background-color: #aaa;
@@ -26,9 +31,9 @@
     background-color: yellow;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.inline-flexbox');">
 <div id=log></div>
 <div class="inline-flexbox column align-content-flex-start wrap" data-expected-width="110" data-expected-height="60">

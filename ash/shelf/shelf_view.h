@@ -267,6 +267,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   }
   ShelfWidget* shelf_widget() const { return shelf_->shelf_widget(); }
   views::ViewModel* view_model() { return view_model_.get(); }
+  const views::ViewModel* view_model() const { return view_model_.get(); }
   bool dragged_off_shelf() const { return dragged_off_shelf_; }
   ShelfID drag_and_drop_shelf_id() const { return drag_and_drop_shelf_id_; }
 

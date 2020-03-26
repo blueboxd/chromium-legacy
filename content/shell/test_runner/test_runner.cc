@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
-#include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_web_document_subresource_filter.h"

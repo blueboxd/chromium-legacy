@@ -11,59 +11,47 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/install_prompt_permissions.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 
-class Profile;
+class GaiaAuthFetcher;
 
 namespace extensions {
 class Extension;
 }  // namespace extensions
 
+namespace signin {
+class AccessTokenFetcher;
+struct AccessTokenInfo;
+class IdentityManager;
+}  // namespace signin
+
+namespace views {
+class Label;
+}
+
 class ParentPermissionSection;
 
 // Modal dialog that shows a dialog that prompts a parent for permission by
-// asking them to enter their google account credentials.
-class ParentPermissionDialogView : public views::BubbleDialogDelegateView {
+// asking them to enter their google account credentials.  This is created only
+// when the dialog is ready to be shown (after the state has been
+// asynchronously fetched).
+class ParentPermissionDialogView : public views::BubbleDialogDelegateView,
+                                   public GaiaAuthConsumer {
  public:
-  using DoneCallback = base::OnceCallback<void(
-      internal::ParentPermissionDialogViewResult result)>;
-
-  struct Params {
-    Params();
-    explicit Params(const Params& params);
-    ~Params();
-
-    // List of email addresses of parents for whom parent permission for
-    // installation should be requested.  These should be the emails of parent
-    // accounts that are permitted to approve extension installations
-    // for the current child user.
-    std::vector<base::string16> parent_permission_email_addresses;
-
-    // If true, shows a message in the parent permission dialog that the
-    // password entered was incorrect.
-    bool show_parent_password_incorrect = true;
-
-    // The icon to be displayed.
-    gfx::ImageSkia icon;
-
-    // The message to show.
-    base::string16 message;
-
-    // An optional extension whose permissions should be displayed
-    const extensions::Extension* extension = nullptr;
-
-    // The user's profile
-    Profile* profile = nullptr;
-
-    // The parent window to this window.
-    gfx::NativeWindow window = nullptr;
+  class Observer {
+   public:
+    // Tells observers that their references to the view are becoming invalid.
+    virtual void OnParentPermissionDialogViewDestroyed() = 0;
   };
+  struct Params;
 
   ParentPermissionDialogView(std::unique_ptr<Params> params,
-                             DoneCallback done_callback);
+                             Observer* observer);
 
   ~ParentPermissionDialogView() override;
 
@@ -71,8 +59,14 @@ class ParentPermissionDialogView : public views::BubbleDialogDelegateView {
   ParentPermissionDialogView& operator=(const ParentPermissionDialogView&) =
       delete;
 
+  // Closes the dialog.
+  void CloseDialog();
+
   // Shows the parent permission dialog.
   void ShowDialog();
+
+  // Removes the observer reference.
+  void RemoveObserver();
 
   void set_selected_parent_permission_email_address(
       const base::string16& email_address) {
@@ -82,24 +76,19 @@ class ParentPermissionDialogView : public views::BubbleDialogDelegateView {
   void set_parent_permission_credential(const base::string16& credential) {
     parent_permission_credential_ = credential;
   }
-  void CloseDialogView();
 
-  // TODO(https://crbug.com/1058501):  Instead of doing this with closures, use
-  // an interface shared with the views code whose implementation wraps the
-  // underlying view, and delete the instance of that interface in the dtor of
-  // this class.
-  base::OnceClosure GetCloseDialogClosure();
+  bool invalid_credential_received() { return invalid_credential_received_; }
+  void SetIdentityManagerForTesting(signin::IdentityManager* identity_manager);
+  void SetRepromptAfterIncorrectCredential(bool reprompt);
 
  private:
-  const Params& params() const { return *params_; }
-
   base::string16 GetActiveUserFirstName() const;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
 
-  // views::DialogDeleate:
+  // views::DialogDelegate:
   bool Cancel() override;
   bool Accept() override;
 
@@ -117,6 +106,41 @@ class ParentPermissionDialogView : public views::BubbleDialogDelegateView {
 
   void ShowDialogInternal();
 
+  void AddInvalidCredentialLabel();
+  void LoadParentEmailAddresses();
+  void OnExtensionIconLoaded(const gfx::Image& image);
+  void LoadExtensionIcon();
+  void CloseWithReason(views::Widget::ClosedReason reason);
+
+  // Given an email address of the child's parent, return the parents'
+  // obfuscated gaia id.
+  std::string GetParentObfuscatedGaiaID(
+      const base::string16& parent_email) const;
+
+  // Starts the Reauth-scoped OAuth access token fetch process.
+  void StartReauthAccessTokenFetch(const std::string& parent_obfuscated_gaia_id,
+                                   const std::string& parent_credential);
+
+  // Handles the result of the access token
+  void OnAccessTokenFetchComplete(const std::string& parent_obfuscated_gaia_id,
+                                  const std::string& parent_credential,
+                                  GoogleServiceAuthError error,
+                                  signin::AccessTokenInfo access_token_info);
+
+  // Starts the Parent Reauth proof token fetch process.
+  void StartParentReauthProofTokenFetch(
+      const std::string& child_access_token,
+      const std::string& parent_obfuscated_gaia_id,
+      const std::string& credential);
+
+  // GaiaAuthConsumer
+  void OnReAuthProofTokenSuccess(
+      const std::string& reauth_proof_token) override;
+  void OnReAuthProofTokenFailure(
+      const GaiaAuthConsumer::ReAuthProofTokenStatus error) override;
+
+  void SendResult(ParentPermissionDialog::Result result);
+
   // Sets the |extension| to be optionally displayed in the dialog.  This
   // causes the view to show several extension properties including the
   // permissions, the icon and the extension name.
@@ -127,17 +151,52 @@ class ParentPermissionDialogView : public views::BubbleDialogDelegateView {
   // if an extension has been set.
   extensions::InstallPromptPermissions prompt_permissions_;
 
+  // The email address of the parents to display in the dialog.
+  std::vector<base::string16> parent_permission_email_addresses_;
+
+  bool reprompt_after_incorrect_credential_ = true;
+
+  // Contains the parent-permission related views widgets.
   std::unique_ptr<ParentPermissionSection> parent_permission_section_;
 
+  views::Label* invalid_credential_label_ = nullptr;
+
+  bool invalid_credential_received_ = false;
+
+  // The currently selected parent email.
   base::string16 selected_parent_permission_email_;
+
+  // The currently entered parent credential.
   base::string16 parent_permission_credential_;
 
-  // Configuration parameters for the prompt.
+  // Parameters for the dialog.
   std::unique_ptr<Params> params_;
 
-  DoneCallback done_callback_;
+  // Used to ensure we don't try to show same dialog twice.
+  bool is_showing_ = false;
+
+  // Used to fetch the Reauth token.
+  std::unique_ptr<GaiaAuthFetcher> reauth_token_fetcher_;
+
+  // Used to fetch OAuth2 access tokens.
+  signin::IdentityManager* identity_manager_ = nullptr;
+  std::unique_ptr<signin::AccessTokenFetcher> oauth2_access_token_fetcher_;
+
+  Observer* observer_;
 
   base::WeakPtrFactory<ParentPermissionDialogView> weak_factory_{this};
+};
+
+// Allows tests to observe the create of the testing instance of
+// ParentPermissionDialogView
+class TestParentPermissionDialogViewObserver {
+ public:
+  // Implementers should pass "this" as constructor argument.
+  TestParentPermissionDialogViewObserver(
+      TestParentPermissionDialogViewObserver* observer);
+  ~TestParentPermissionDialogViewObserver();
+  virtual void OnTestParentPermissionDialogViewCreated(
+      ParentPermissionDialogView* view) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PARENT_PERMISSION_DIALOG_VIEW_H_

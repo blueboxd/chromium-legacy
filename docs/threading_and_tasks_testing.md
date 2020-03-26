@@ -54,7 +54,7 @@ class Foo {
  public:
   Foo() : owning_sequence_(base::SequencedTaskRunnerHandle::Get()) {}
 
-  DoSomethingAndReply(base::OnceClosure reply) {
+  DoSomethingAndReply(base::OnceClosure on_done) {
     DCHECK(owning_sequence_->RunsTasksInCurrentSequence());
     something_was_done_ = true;
     owning_sequence_->PostTask(on_done);

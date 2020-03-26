@@ -725,6 +725,8 @@ jumbo_component("base") {
     "threading/post_task_and_reply_impl.h",
     "threading/scoped_blocking_call.cc",
     "threading/scoped_blocking_call.h",
+    "threading/scoped_blocking_call_internal.cc",
+    "threading/scoped_blocking_call_internal.h",
     "threading/scoped_thread_priority.cc",
     "threading/scoped_thread_priority.h",
     "threading/sequence_bound.h",

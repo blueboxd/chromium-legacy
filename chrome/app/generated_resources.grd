@@ -4201,12 +4201,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_EXTENSION_INVALID_IMAGE_PATH" desc="">
         Could not load '<ph name="IMAGE_PATH">$1<ex>/path/to/file</ex></ph>' for theme.
       </message>
-      <message name="IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED" desc="">
-        Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for page action.
-      </message>
-      <message name="IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED" desc="">
-        Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for browser action.
-      </message>
 
       <if expr="chromeos">
         <message name="IDS_EXTENSION_NOTIFICATION_INSTALLED" desc="Notification message shown in the message center when an application is successfully install.">

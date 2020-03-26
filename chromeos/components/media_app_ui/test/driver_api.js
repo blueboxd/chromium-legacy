@@ -16,6 +16,3 @@ var TestMessageResponseData;
  * }}
  */
 var TestMessageQueryData;
-
-/** @type {MessagePipe} */
-var guestMessagePipe;

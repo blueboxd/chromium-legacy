@@ -4,16 +4,21 @@
 
 package org.chromium.chrome.browser.share;
 
+import android.annotation.TargetApi;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -21,14 +26,18 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.download.DownloadManagerBridge;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.Clipboard;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 
 /**
@@ -46,6 +55,7 @@ public class ShareImageFileUtils {
     private static final String SHARE_IMAGES_DIRECTORY_NAME = "screenshot";
     private static final String JPEG_EXTENSION = ".jpg";
     private static final String FILE_NUMBER_FORMAT = " (%d)";
+    private static final String MIME_TYPE = "image/JPEG";
 
     /**
      * Check if the file related to |fileUri| is in the |folder|.
@@ -122,25 +132,20 @@ public class ShareImageFileUtils {
         }
         OnImageSaveListener listener = new OnImageSaveListener() {
             @Override
-            public void onImageSaved(File imageFile) {
-                new AsyncTask<Uri>() {
-                    @Override
-                    protected Uri doInBackground() {
-                        return ContentUriUtils.getContentUriFromFile(imageFile);
-                    }
-
-                    @Override
-                    protected void onPostExecute(Uri uri) {
-                        callback.onResult(uri);
-                    }
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            public void onImageSaved(Uri uri, String displayName) {
+                callback.onResult(uri);
             }
             @Override
             public void onImageSaveError() {}
         };
 
         String fileName = String.valueOf(System.currentTimeMillis());
-        saveImage(fileName, "", listener, (fos) -> { writeImageData(fos, jpegImageData); }, true);
+        // Path is passed as a function because in some cases getting the path should be run on a
+        // background thread.
+        saveImage(fileName,
+                ()
+                        -> { return ""; },
+                listener, (fos) -> { writeImageData(fos, jpegImageData); }, true);
     }
 
     /**
@@ -153,15 +158,21 @@ public class ShareImageFileUtils {
      */
     public static void saveBitmapToExternalStorage(
             final Context context, String fileName, Bitmap bitmap, OnImageSaveListener listener) {
-        String filePath = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath();
-        saveImage(fileName, filePath, listener, (fos) -> { writeBitmap(fos, bitmap); }, false);
+        // Passing the path as a function so that it can be called on a background thread in
+        // |saveImage|.
+        saveImage(fileName,
+                ()
+                        -> {
+                    return context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath();
+                },
+                listener, (fos) -> { writeBitmap(fos, bitmap); }, false);
     }
 
     /**
-     * Interface for notifying bitmap download result.
+     * Interface for notifying image download result.
      */
     public interface OnImageSaveListener {
-        void onImageSaved(File imageFile);
+        void onImageSaved(Uri uri, String displayName);
         void onImageSaveError();
     }
 
@@ -173,23 +184,30 @@ public class ShareImageFileUtils {
     }
 
     /**
+     * Interface for providing file path. This is used for passing a function for getting the path
+     * to other function to be called while on a background thread. Should be used on a background
+     * thread.
+     */
+    private interface FilePathProvider { String getPath(); }
+
+    /**
      * Saves image to the given file.
      *
      * @param fileName The File instance of a destination file.
-     * @param filePath The File instance of a destination file.
+     * @param filePathProvider The FilePathProvider for obtaining destination file path.
      * @param listener The OnImageSaveListener to notify the download results.
      * @param writer The FileOutputStreamWriter that writes to given stream.
      * @param isTemporary Indicates whether image should be save to a temporary file.
      */
-    private static void saveImage(String fileName, String filePath, OnImageSaveListener listener,
-            FileOutputStreamWriter writer, boolean isTemporary) {
-        new AsyncTask<File>() {
+    private static void saveImage(String fileName, FilePathProvider filePathProvider,
+            OnImageSaveListener listener, FileOutputStreamWriter writer, boolean isTemporary) {
+        new AsyncTask<Uri>() {
             @Override
-            protected File doInBackground() {
+            protected Uri doInBackground() {
                 FileOutputStream fOut = null;
                 File destFile = null;
                 try {
-                    destFile = createFile(fileName, filePath, isTemporary);
+                    destFile = createFile(fileName, filePathProvider.getPath(), isTemporary);
                     if (destFile != null && destFile.exists()) {
                         fOut = new FileOutputStream(destFile);
                         writer.write(fOut);
@@ -203,7 +221,15 @@ public class ShareImageFileUtils {
                     StreamUtil.closeQuietly(fOut);
                 }
 
-                return destFile;
+                Uri uri = FileUtils.getUriForFile(destFile);
+                if (!isTemporary) {
+                    if (BuildInfo.isAtLeastQ()) {
+                        uri = addToMediaStore(destFile);
+                    } else {
+                        addCompletedDownload(destFile);
+                    }
+                }
+                return uri;
             }
 
             @Override
@@ -212,8 +238,8 @@ public class ShareImageFileUtils {
             }
 
             @Override
-            protected void onPostExecute(File imageFile) {
-                if (imageFile == null) {
+            protected void onPostExecute(Uri uri) {
+                if (uri == null) {
                     listener.onImageSaveError();
                     return;
                 }
@@ -223,7 +249,7 @@ public class ShareImageFileUtils {
                     return;
                 }
 
-                listener.onImageSaved(imageFile);
+                listener.onImageSaved(uri, fileName);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -300,6 +326,55 @@ public class ShareImageFileUtils {
      */
     private static void writeImageData(FileOutputStream fos, final byte[] data) throws IOException {
         fos.write(data);
+    }
+
+    /**
+     * This is a pass through to the {@link AndroidDownloadManager} function of the same name.
+     * @param file The File corresponding to the download.
+     * @return the download ID of this item as assigned by the download manager.
+     */
+    public static long addCompletedDownload(File file) {
+        String title = file.getName();
+        String path = file.getPath();
+        long length = file.length();
+
+        return DownloadManagerBridge.addCompletedDownload(
+                title, title, MIME_TYPE, path, length, null, null, title);
+    }
+
+    @TargetApi(29)
+    public static Uri addToMediaStore(File file) {
+        assert BuildInfo.isAtLeastQ();
+
+        final ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, MIME_TYPE);
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+        ContentResolver database = ContextUtils.getApplicationContext().getContentResolver();
+        Uri insertUri = database.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
+
+        InputStream input = null;
+        OutputStream output = null;
+        try {
+            input = new FileInputStream(file);
+            if (insertUri != null) {
+                output = database.openOutputStream(insertUri);
+            }
+            if (output != null) {
+                byte[] buffer = new byte[4096];
+                int byteCount = 0;
+                while ((byteCount = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, byteCount);
+                }
+            }
+            file.delete();
+        } catch (IOException e) {
+        } finally {
+            StreamUtil.closeQuietly(input);
+            StreamUtil.closeQuietly(output);
+        }
+        return insertUri;
     }
 
     /**

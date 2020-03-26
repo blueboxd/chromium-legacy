@@ -49,7 +49,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
-#include "ui/wm/core/default_activation_client.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -246,7 +245,6 @@ void RenderViewHostTestHarness::SetUp() {
 
   aura_test_helper_.reset(new aura::test::AuraTestHelper());
   aura_test_helper_->SetUp(context_factory);
-  new wm::DefaultActivationClient(aura_test_helper_->GetContext());
 #endif
 
   sanity_checker_.reset(new ContentBrowserSanityChecker());

@@ -293,4 +293,36 @@ public class TabCallbackTest {
         callbackHelper.waitForCallback(callCount);
         Assert.assertEquals(false, isTabModalShowingResult[0]);
     }
+
+    @Test
+    @SmallTest
+    public void testOnTitleUpdated() throws TimeoutException {
+        String startupUrl = "about:blank";
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(startupUrl);
+
+        String titles[] = new String[1];
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void onTitleUpdated(String title) {
+                    titles[0] = title;
+                }
+            };
+            tab.registerTabCallback(callback);
+        });
+
+        String url = mActivityTestRule.getTestDataURL("simple_page.html");
+        mActivityTestRule.navigateAndWait(url);
+        // Use polling because title is allowed to go through multiple transitions.
+        CriteriaHelper.pollUiThread(() -> { return "OK".equals(titles[0]); });
+
+        url = mActivityTestRule.getTestDataURL("shakespeare.html");
+        mActivityTestRule.navigateAndWait(url);
+        CriteriaHelper.pollUiThread(() -> { return titles[0].endsWith("shakespeare.html"); });
+
+        mActivityTestRule.executeScriptSync("document.title = \"foobar\";", false);
+        Assert.assertEquals("foobar", titles[0]);
+        CriteriaHelper.pollUiThread(() -> { return "foobar".equals(titles[0]); });
+    }
 }

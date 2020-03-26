@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {PrivacyPageBrowserProxyImpl, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import 'chrome://settings/lazy_load.js';
+// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+// #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isVisible, isChildVisible, eventToPromise} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 cr.define('settings_personalization_options', function() {
 
   suite('PersonalizationOptionsTests_AllBuilds', function() {
@@ -258,4 +268,5 @@ cr.define('settings_personalization_options', function() {
       assertTrue(test_util.isChildVisible(testElement, '#linkDoctor'));
     });
   });
+  // #cr_define_end
 });

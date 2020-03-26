@@ -6,14 +6,15 @@ package org.chromium.chrome.browser.share.qrcode.share_tab;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.net.Uri;
 import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.io.File;
 
 /**
  * QrCodeShareMediator is in charge of calculating and setting values for QrCodeShareViewProperties.
@@ -35,6 +36,7 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
 
         // TODO(gayane): Request generated QR code bitmap with a callback that sets QRCODE_BITMAP
         // property.
+        mPropertyModel.set(QrCodeShareViewProperties.QRCODE_BITMAP, getTestBitmap());
     }
 
     /** Triggers download for the generated QR code bitmap if available. */
@@ -60,7 +62,7 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
 
     // ShareImageFileUtils.OnImageSaveListener implementation.
     @Override
-    public void onImageSaved(File imageFile) {
+    public void onImageSaved(Uri uri, String displayName) {
         // TODO(gayane): Maybe need to show confirmation message.
         mPropertyModel.set(QrCodeShareViewProperties.DOWNLOAD_SUCCESSFUL, true);
         RecordUserAction.record("SharingQRCode.DownloadQRCode.Succeeded");
@@ -71,5 +73,16 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
         // TODO(gayane): Maybe need to show error message.
         mPropertyModel.set(QrCodeShareViewProperties.DOWNLOAD_SUCCESSFUL, false);
         RecordUserAction.record("SharingQRCode.DownloadQRCode.Failed");
+    }
+
+    private Bitmap getTestBitmap() {
+        int size = 500;
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColor(android.graphics.Color.GREEN);
+        canvas.drawRect(0F, 0F, (float) size, (float) size, paint);
+        return bitmap;
     }
 }

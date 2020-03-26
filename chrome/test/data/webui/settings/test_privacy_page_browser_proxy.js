@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {SecureDnsUiManagementMode, SecureDnsMode} from 'chrome://settings/settings.js';
+// clang-format on
+
 /** @implements {settings.PrivacyPageBrowserProxy} */
-class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
+/* #export */ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getMetricsReporting',

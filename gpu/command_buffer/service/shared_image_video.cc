@@ -24,7 +24,6 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -32,6 +31,88 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 
 namespace gpu {
+
+namespace {
+sk_sp<SkPromiseImageTexture> CreatePromiseTextureVideo(
+    viz::VulkanContextProvider* context_provider,
+    base::android::ScopedHardwareBufferHandle ahb_handle,
+    gfx::Size size,
+    viz::ResourceFormat format) {
+  VulkanImplementation* vk_implementation =
+      context_provider->GetVulkanImplementation();
+  VkDevice vk_device = context_provider->GetDeviceQueue()->GetVulkanDevice();
+  VkPhysicalDevice vk_physical_device =
+      context_provider->GetDeviceQueue()->GetVulkanPhysicalDevice();
+
+  // Create a VkImage and import AHB.
+  VkImage vk_image;
+  VkImageCreateInfo vk_image_info;
+  VkDeviceMemory vk_device_memory;
+  VkDeviceSize mem_allocation_size;
+  VulkanYCbCrInfo ycbcr_info;
+  if (!vk_implementation->CreateVkImageAndImportAHB(
+          vk_device, vk_physical_device, size, std::move(ahb_handle), &vk_image,
+          &vk_image_info, &vk_device_memory, &mem_allocation_size,
+          &ycbcr_info)) {
+    return nullptr;
+  }
+
+  // We always use VK_IMAGE_TILING_OPTIMAL while creating the vk image in
+  // VulkanImplementationAndroid::CreateVkImageAndImportAHB. Hence pass the
+  // tiling parameter as VK_IMAGE_TILING_OPTIMAL to below call rather than
+  // passing |vk_image_info.tiling|. This is also to ensure that the promise
+  // image created here at [1] as well the fullfil image created via the current
+  // function call are consistent and both are using VK_IMAGE_TILING_OPTIMAL.
+  // [1] -
+  // https://cs.chromium.org/chromium/src/components/viz/service/display_embedder/skia_output_surface_impl.cc?rcl=db5ffd448ba5d66d9d3c5c099754e5067c752465&l=789.
+  DCHECK_EQ(static_cast<int32_t>(vk_image_info.tiling),
+            static_cast<int32_t>(VK_IMAGE_TILING_OPTIMAL));
+  GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
+      vk_physical_device, VK_IMAGE_TILING_OPTIMAL, ycbcr_info);
+
+  // Create backend texture from the VkImage.
+  GrVkAlloc alloc = {vk_device_memory, 0, mem_allocation_size, 0};
+  GrVkImageInfo vk_info = {vk_image,
+                           alloc,
+                           vk_image_info.tiling,
+                           vk_image_info.initialLayout,
+                           vk_image_info.format,
+                           vk_image_info.mipLevels,
+                           VK_QUEUE_FAMILY_EXTERNAL,
+                           GrProtected::kNo,
+                           gr_ycbcr_info};
+
+  // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
+  // if the vk_info stays the same on subsequent calls.
+  auto promise_texture = SkPromiseImageTexture::Make(
+      GrBackendTexture(size.width(), size.height(), vk_info));
+  if (!promise_texture) {
+    vkDestroyImage(vk_device, vk_image, nullptr);
+    vkFreeMemory(vk_device, vk_device_memory, nullptr);
+    return nullptr;
+  }
+
+  return promise_texture;
+}
+
+void DestroyVkPromiseTextureVideo(
+    viz::VulkanContextProvider* context_provider,
+    sk_sp<SkPromiseImageTexture> promise_texture) {
+  DCHECK(promise_texture);
+  DCHECK(promise_texture->unique());
+
+  GrVkImageInfo vk_image_info;
+  bool result =
+      promise_texture->backendTexture().getVkImageInfo(&vk_image_info);
+  DCHECK(result);
+
+  VulkanFenceHelper* fence_helper =
+      context_provider->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueImageCleanupForSubmittedWork(
+      vk_image_info.fImage, vk_image_info.fAlloc.fMemory);
+}
+
+}  // namespace
 
 SharedImageVideo::SharedImageVideo(
     const Mailbox& mailbox,
@@ -218,13 +299,10 @@ class SharedImageRepresentationVideoSkiaVk
     DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
 
     // |promise_texture_| could be null if we never being read.
-    if (!vulkan_image_)
+    if (!promise_texture_)
       return;
-    VulkanFenceHelper* fence_helper = context_state_->vk_context_provider()
-                                          ->GetDeviceQueue()
-                                          ->GetFenceHelper();
-    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-        std::move(vulkan_image_));
+    DestroyVkPromiseTextureVideo(context_state_->vk_context_provider(),
+                                 std::move(promise_texture_));
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
@@ -264,46 +342,11 @@ class SharedImageRepresentationVideoSkiaVk
       return nullptr;
     }
 
-    if (!vulkan_image_) {
-      DCHECK(!promise_texture_);
-      gfx::GpuMemoryBufferHandle gmb_handle(
-          scoped_hardware_buffer_->TakeBuffer());
-      auto* device_queue =
-          context_state_->vk_context_provider()->GetDeviceQueue();
-      vulkan_image_ = VulkanImage::CreateFromGpuMemoryBufferHandle(
-          device_queue, std::move(gmb_handle), size(), ToVkFormat(format()),
-          0 /* usage */);
-      if (!vulkan_image_)
-        return nullptr;
-
-      // We always use VK_IMAGE_TILING_OPTIMAL while creating the vk image in
-      // VulkanImplementationAndroid::CreateVkImageAndImportAHB. Hence pass the
-      // tiling parameter as VK_IMAGE_TILING_OPTIMAL to below call rather than
-      // passing |vk_image_info.tiling|. This is also to ensure that the promise
-      // image created here at [1] as well the fullfil image created via the
-      // current function call are consistent and both are using
-      // VK_IMAGE_TILING_OPTIMAL. [1] -
-      // https://cs.chromium.org/chromium/src/components/viz/service/display_embedder/skia_output_surface_impl.cc?rcl=db5ffd448ba5d66d9d3c5c099754e5067c752465&l=789.
-      DCHECK_EQ(static_cast<int32_t>(vulkan_image_->image_tiling()),
-                static_cast<int32_t>(VK_IMAGE_TILING_OPTIMAL));
-
-      GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
-          device_queue->GetVulkanPhysicalDevice(), VK_IMAGE_TILING_OPTIMAL,
-          vulkan_image_->ycbcr_info());
-      // Create backend texture from the VkImage.
-      GrVkAlloc alloc(vulkan_image_->device_memory(), 0 /* offset */,
-                      vulkan_image_->device_size(), 0 /* flags */);
-      GrVkImageInfo vk_info(vulkan_image_->image(), alloc,
-                            vulkan_image_->image_tiling(),
-                            VK_IMAGE_LAYOUT_UNDEFINED, vulkan_image_->format(),
-                            1 /* levelCount */, VK_QUEUE_FAMILY_EXTERNAL,
-                            GrProtected::kNo, gr_ycbcr_info);
-
-      // TODO(bsalomon): Determine whether it makes sense to attempt to reuse
-      // this if the vk_info stays the same on subsequent calls.
-      promise_texture_ = SkPromiseImageTexture::Make(
-          GrBackendTexture(size().width(), size().height(), vk_info));
-      DCHECK(promise_texture_);
+    if (!promise_texture_) {
+      // Create the promise texture.
+      promise_texture_ = CreatePromiseTextureVideo(
+          context_state_->vk_context_provider(),
+          scoped_hardware_buffer_->TakeBuffer(), size(), format());
     }
     return promise_texture_;
   }
@@ -384,7 +427,6 @@ class SharedImageRepresentationVideoSkiaVk
         ->GetFenceHelper();
   }
 
-  std::unique_ptr<VulkanImage> vulkan_image_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>

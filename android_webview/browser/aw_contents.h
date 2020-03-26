@@ -322,6 +322,8 @@ class AwContents : public FindHelper::Listener,
                   jboolean include_disk_files);
   void KillRenderProcess(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
+  // See //android_webview/docs/how-does-on-create-window-work.md for more
+  // details.
   void SetPendingWebContentsForPopup(
       std::unique_ptr<content::WebContents> pending);
   jlong ReleasePopupAwContents(JNIEnv* env,
@@ -413,6 +415,8 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<AwRenderViewHostExt> render_view_host_ext_;
   std::unique_ptr<FindHelper> find_helper_;
   std::unique_ptr<IconHelper> icon_helper_;
+  // See //android_webview/docs/how-does-on-create-window-work.md for more
+  // details for |pending_contents_|.
   std::unique_ptr<AwContents> pending_contents_;
   std::unique_ptr<AwPdfExporter> pdf_exporter_;
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/find_in_page/find_result_observer.h"
@@ -250,6 +251,8 @@ class TabImpl : public Tab,
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
 
   const std::string guid_;
+
+  base::string16 title_;
 
   base::WeakPtrFactory<TabImpl> weak_ptr_factory_{this};
 

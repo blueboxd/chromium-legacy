@@ -17,7 +17,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace {
@@ -114,7 +113,6 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
 // Touch visually hides the cursor on ChromeOS and Windows.
 TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
-  new wm::DefaultActivationClient(root_window());
   std::unique_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
   aura::test::TestWindowDelegate delegate;

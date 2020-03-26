@@ -545,6 +545,14 @@ api::autotest_private::Bounds ToBoundsDictionary(const gfx::Rect& bounds) {
   return result;
 }
 
+std::vector<api::autotest_private::Bounds> ToBoundsDictionaryList(
+    const std::vector<gfx::Rect>& items_bounds) {
+  std::vector<api::autotest_private::Bounds> bounds_list;
+  for (const gfx::Rect& bounds : items_bounds)
+    bounds_list.push_back(ToBoundsDictionary(bounds));
+  return bounds_list;
+}
+
 api::autotest_private::Location ToLocationDictionary(const gfx::Point& point) {
   api::autotest_private::Location result;
   result.x = point.x();
@@ -4149,6 +4157,8 @@ AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
         ToBoundsDictionary(fetched_info.right_arrow_bounds);
     scrollable_shelf_ui_info.is_animating = fetched_info.is_animating;
     scrollable_shelf_ui_info.is_overflow = fetched_info.is_overflow;
+    scrollable_shelf_ui_info.icons_bounds_in_screen =
+        ToBoundsDictionaryList(fetched_info.icons_bounds_in_screen);
 
     if (state.scroll_distance) {
       scrollable_shelf_ui_info.target_main_axis_offset =

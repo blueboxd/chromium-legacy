@@ -460,7 +460,8 @@ bool MessageView::ShouldShowControlButtons() const {
 
 void MessageView::SetNestedBorderIfNecessary() {
   if (is_nested_) {
-    SkColor border_color = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
+    SkColor border_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_UnfocusedBorderColor);
     SetBorder(views::CreateRoundedRectBorder(
         kNotificationBorderThickness, kNotificationCornerRadius, border_color));
   }

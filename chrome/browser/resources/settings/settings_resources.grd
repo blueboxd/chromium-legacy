@@ -1177,11 +1177,11 @@
       <structure name="IDR_SETTINGS_ENSURE_LAZY_LOADED_HTML"
                  file="ensure_lazy_loaded.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_WEBSITE_USAGE_PRIVATE_API_HTML"
-                 file="site_settings/website_usage_private_api.html"
+      <structure name="IDR_SETTINGS_WEBSITE_USAGE_BROWSER_PROXY_HTML"
+                 file="site_settings/website_usage_browser_proxy.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_WEBSITE_USAGE_PRIVATE_API_JS"
-                 file="site_settings/website_usage_private_api.js"
+      <structure name="IDR_SETTINGS_WEBSITE_USAGE_BROWSER_PROXY_JS"
+                 file="site_settings/website_usage_browser_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_ZOOM_LEVELS_HTML"
                  file="site_settings/zoom_levels.html"

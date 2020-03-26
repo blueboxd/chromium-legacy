@@ -49,6 +49,7 @@ enum class ProtoDbType {
   // DB Used by shared database, will always be unique.
   SHARED_DB_METADATA = 25,
   FEED_STREAM_DATABASE = 26,
+  TAB_STATE_DATABASE = 27,
   LAST,
 };
 
@@ -60,6 +61,7 @@ constexpr ProtoDbType kWhitelistedDbForSharedImpl[]{
     ProtoDbType::NOTIFICATION_SCHEDULER_NOTIFICATION_STORE,
     ProtoDbType::PRINT_JOB_DATABASE,
     ProtoDbType::FEED_STREAM_DATABASE,
+    ProtoDbType::TAB_STATE_DATABASE,
     ProtoDbType::LAST,  // Marks the end of list.
 };
 

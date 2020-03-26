@@ -1465,7 +1465,7 @@ template("mojom") {
 
       java_srcjar_target_name = target_name + "_java_sources"
       action(java_srcjar_target_name) {
-        script = "//mojo/public/tools/gn/zip.py"
+        script = "//build/android/gyp/zip.py"
         inputs = []
         if (output_file_base_paths != []) {
           foreach(base_path, output_file_base_paths) {
@@ -1477,7 +1477,7 @@ template("mojom") {
         rebase_inputs = rebase_path(inputs, root_build_dir)
         rebase_output = rebase_path(output, root_build_dir)
         args = [
-          "--zip-inputs=$rebase_inputs",
+          "--input-zips=$rebase_inputs",
           "--output=$rebase_output",
         ]
         deps = []

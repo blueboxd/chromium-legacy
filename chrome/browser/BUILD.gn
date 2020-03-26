@@ -1825,6 +1825,8 @@ jumbo_static_library("browser") {
     "sync/trusted_vault_client_android.h",
     "sync/user_event_service_factory.cc",
     "sync/user_event_service_factory.h",
+    "tab/state/tab_state_db.cc",
+    "tab/state/tab_state_db.h",
     "tab_contents/navigation_metrics_recorder.cc",
     "tab_contents/navigation_metrics_recorder.h",
     "tab_contents/tab_util.cc",
@@ -1981,6 +1983,7 @@ jumbo_static_library("browser") {
     ":ntp_background_proto",
     ":permissions_proto",
     ":resource_prefetch_predictor_proto",
+    ":tab_state_db_content_proto",
     "//base:i18n",
     "//base/allocator:buildflags",
     "//base/util/memory_pressure:memory_pressure",
@@ -5566,6 +5569,10 @@ source_set("theme_properties") {
 
 proto_library("availability_protos") {
   sources = [ "availability/proto/availability_prober_cache_entry.proto" ]
+}
+
+proto_library("tab_state_db_content_proto") {
+  sources = [ "tab/state/tab_state_db_content.proto" ]
 }
 
 proto_library("resource_prefetch_predictor_proto") {

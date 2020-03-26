@@ -231,6 +231,7 @@ TabImpl::~TabImpl() {
   // partially destructed. DidFinishNavigation can be called while destroying
   // WebContents, so stop observing first.
   Observe(nullptr);
+  web_contents_->SetDelegate(nullptr);
   web_contents_.reset();
 }
 
@@ -450,10 +451,25 @@ content::WebContents* TabImpl::OpenURLFromTab(
 
 void TabImpl::NavigationStateChanged(content::WebContents* source,
                                      content::InvalidateTypes changed_flags) {
+  DCHECK_EQ(web_contents_.get(), source);
   if (changed_flags & content::INVALIDATE_TYPE_URL) {
     for (auto& observer : observers_)
       observer.DisplayedUrlChanged(source->GetVisibleURL());
     UpdateBrowserVisibleSecurityStateIfNecessary();
+  }
+
+  // TODO(crbug.com/1064582): INVALIDATE_TYPE_TITLE is called only when a title
+  // is set on the active navigation entry, but not when the active entry
+  // changes, so check INVALIDATE_TYPE_LOAD here as well. However this should
+  // be fixed and INVALIDATE_TYPE_LOAD should be removed.
+  if (changed_flags &
+      (content::INVALIDATE_TYPE_TITLE | content::INVALIDATE_TYPE_LOAD)) {
+    base::string16 title = web_contents_->GetTitle();
+    if (title_ != title) {
+      title_ = title;
+      for (auto& observer : observers_)
+        observer.OnTitleUpdated(title);
+    }
   }
 }
 

@@ -265,6 +265,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         }
     }
 
+    // See //android_webview/docs/how-does-on-create-window-work.md for more details.
     static void completeWindowCreation(WebView parent, WebView child) {
         AwContents parentContents = ((WebViewChromium) parent.getWebViewProvider()).mAwContents;
         AwContents childContents =

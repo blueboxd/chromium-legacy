@@ -6546,8 +6546,6 @@ crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-0
 
 # Sheriff 2020-02-10
 
-crbug.com/1050559 [ Linux ] external/wpt/badging/idlharness.any.html [ Pass Failure ]
-crbug.com/1050559 [ Linux ] external/wpt/badging/idlharness.any.worker.html [ Pass Failure ]
 crbug.com/1050559 [ Linux ] external/wpt/permissions-revoke/idlharness.any.html [ Pass Failure ]
 crbug.com/1050559 [ Linux ] external/wpt/shape-detection/idlharness.https.any.html [ Pass Failure ]
 crbug.com/1050559 [ Linux ] external/wpt/video-raf/idlharness.window.html [ Pass Failure ]

@@ -59,7 +59,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
-#include "printing/printer_status_chromeos.h"
+#include "printing/printer_status.h"
 #include "url/gurl.h"
 
 namespace chromeos {

@@ -11,6 +11,8 @@ namespace content {
 class BrowserContext;
 }
 
+class ParentPermissionDialog;
+
 namespace extensions {
 
 class SupervisedUserServiceManagementAPIDelegate
@@ -34,6 +36,9 @@ class SupervisedUserServiceManagementAPIDelegate
       content::WebContents* contents,
       extensions::SupervisedUserServiceDelegate::
           ParentPermissionDialogDoneCallback done_callback) override;
+
+ private:
+  std::unique_ptr<ParentPermissionDialog> parent_permission_dialog_;
 };
 
 }  // namespace extensions

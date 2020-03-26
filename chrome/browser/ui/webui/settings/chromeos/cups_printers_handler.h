@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "printing/printer_query_result_chromeos.h"
+#include "printing/printer_query_result.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {

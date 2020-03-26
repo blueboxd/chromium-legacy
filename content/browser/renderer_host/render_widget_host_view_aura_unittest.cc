@@ -116,7 +116,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/selection_bound.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/window_util.h"
 
@@ -498,7 +497,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura_test_helper_.reset(new aura::test::AuraTestHelper());
     aura_test_helper_->SetUp(
         ImageTransportFactory::GetInstance()->GetContextFactory());
-    new wm::DefaultActivationClient(aura_test_helper_->GetContext());
 
     browser_context_.reset(new TestBrowserContext);
     process_host_ = new MockRenderProcessHost(browser_context_.get());

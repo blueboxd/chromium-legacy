@@ -536,7 +536,8 @@ TEST_F(FileUtilTest, CheckZeroLengthAndMissingIconFileUnpacked) {
   scoped_refptr<Extension> extension(file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   EXPECT_FALSE(extension);
-  EXPECT_EQ("Could not load extension icon 'missing-icon.png'.", error);
+  EXPECT_EQ("Could not load icon 'missing-icon.png' specified in 'icons'.",
+            error);
 }
 
 // Try to install an unpacked extension with an invisible icon. This
@@ -555,8 +556,10 @@ TEST_F(FileUtilTest, CheckInvisibleIconFileUnpacked) {
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
-  EXPECT_EQ("The icon is not sufficiently visible 'invisible_icon.png'.",
-            error);
+  EXPECT_EQ(
+      "Icon 'invisible_icon.png' specified in 'icons' is not "
+      "sufficiently visible.",
+      error);
 }
 
 // Try to install a packed extension with an invisible icon. This should

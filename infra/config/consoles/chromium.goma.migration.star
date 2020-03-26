@@ -1194,5 +1194,25 @@ luci.console_view(
             category = 'ios|week1b|m81',
             short_name = 'sim',
         ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-cronet',
+            category = 'ios|week1c',
+            short_name = 'cro',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-simulator-cr-recipe',
+            category = 'ios|week1c',
+            short_name = 'crr',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios-webkit-tot',
+            category = 'ios|week1c',
+            short_name = 'webkit',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ios13-sdk-device',
+            category = 'ios|week1c|ios13',
+            short_name = 'dev',
+        ),
     ],
 )

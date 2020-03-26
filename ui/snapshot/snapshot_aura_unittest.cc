@@ -34,7 +34,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/wm/core/default_activation_client.h"
 
 namespace ui {
 namespace {
@@ -111,7 +110,6 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
 
     helper_ = std::make_unique<aura::test::AuraTestHelper>();
     helper_->SetUp(context_factories_->GetContextFactory());
-    new ::wm::DefaultActivationClient(root_window());
   }
 
   void TearDown() override {

@@ -6,7 +6,6 @@
 
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/wm/core/capture_controller.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
 namespace views {
@@ -20,15 +19,11 @@ ViewsTestHelperAura::ViewsTestHelperAura() {
   aura_test_helper_.SetUp();
 
   gfx::NativeWindow root_window = GetContext();
-  if (root_window) {
-    new wm::DefaultActivationClient(root_window);
-
-    if (!aura::client::GetScreenPositionClient(root_window)) {
-      screen_position_client_ =
-          std::make_unique<wm::DefaultScreenPositionClient>();
-      aura::client::SetScreenPositionClient(root_window,
-                                            screen_position_client_.get());
-    }
+  if (root_window && !aura::client::GetScreenPositionClient(root_window)) {
+    screen_position_client_ =
+        std::make_unique<wm::DefaultScreenPositionClient>();
+    aura::client::SetScreenPositionClient(root_window,
+                                          screen_position_client_.get());
   }
 }
 

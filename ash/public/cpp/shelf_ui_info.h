@@ -13,6 +13,11 @@
 namespace ash {
 
 struct ASH_PUBLIC_EXPORT ScrollableShelfInfo {
+  ScrollableShelfInfo();
+  ScrollableShelfInfo(const ScrollableShelfInfo& info);
+  ScrollableShelfInfo& operator=(const ScrollableShelfInfo& info);
+  ~ScrollableShelfInfo();
+
   // Current offset on the main axis.
   float main_axis_offset = 0.f;
 
@@ -33,6 +38,9 @@ struct ASH_PUBLIC_EXPORT ScrollableShelfInfo {
 
   // Indicates whether scrollable shelf is in overflow mode.
   bool is_overflow = false;
+
+  // Screen bounds of visible shelf icons.
+  std::vector<gfx::Rect> icons_bounds_in_screen;
 };
 
 struct ASH_PUBLIC_EXPORT ShelfState {

@@ -40,8 +40,6 @@
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
-#include "content/shell/common/blink_test.mojom.h"
-#include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"

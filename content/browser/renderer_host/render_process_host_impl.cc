@@ -202,6 +202,7 @@
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
@@ -4980,8 +4981,7 @@ void RenderProcessHostImpl::OnMojoError(int render_process_id,
 
   // The ReceivedBadMessage call below will trigger a DumpWithoutCrashing.
   // Capture the error message in a crash key value.
-  base::debug::ScopedCrashKeyString error_key_value(
-      bad_message::GetMojoErrorCrashKey(), error);
+  mojo::debug::ScopedMessageErrorCrashKey error_key_value(error);
   bad_message::ReceivedBadMessage(render_process_id,
                                   bad_message::RPH_MOJO_PROCESS_ERROR);
 }

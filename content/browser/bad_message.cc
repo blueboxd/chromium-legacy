@@ -70,12 +70,6 @@ void ReceivedBadMessage(BrowserMessageFilter* filter, BadMessageReason reason) {
   filter->ShutdownForBadMessage();
 }
 
-base::debug::CrashKeyString* GetMojoErrorCrashKey() {
-  static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "mojo-message-error", base::debug::CrashKeySize::Size256);
-  return crash_key;
-}
-
 base::debug::CrashKeyString* GetRequestedSiteURLKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
       "requested_site_url", base::debug::CrashKeySize::Size64);

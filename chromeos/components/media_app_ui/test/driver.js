@@ -158,3 +158,15 @@ function createMockTestDirectory() {
   directory.addFileHandleForTest(new FakeFileSystemFileHandle());
   return directory;
 }
+
+/**
+ * Helper to send a single file to the guest.
+ * @param {!File} file
+ * @param {!FileSystemFileHandle} handle
+ */
+function loadFile(file, handle) {
+  currentFiles.length = 0;
+  currentFiles.push({token: -1, file, handle});
+  entryIndex = 0;
+  sendFilesToGuest();
+}

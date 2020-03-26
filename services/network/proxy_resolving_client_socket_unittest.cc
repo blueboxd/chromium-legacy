@@ -690,7 +690,8 @@ TEST_P(ProxyResolvingClientSocketTest, URLSanitized) {
       std::make_unique<net::ProxyConfigServiceFixed>(
           net::ProxyConfigWithAnnotation(proxy_config,
                                          TRAFFIC_ANNOTATION_FOR_TESTS)),
-      std::move(proxy_resolver_factory), nullptr);
+      std::move(proxy_resolver_factory), nullptr,
+      true /* quick_check_enabled */);
   context->set_proxy_resolution_service(&service);
   context->Init();
 
@@ -733,7 +734,8 @@ TEST_P(ProxyResolvingClientSocketTest,
       std::make_unique<net::ProxyConfigServiceFixed>(
           net::ProxyConfigWithAnnotation(proxy_config,
                                          TRAFFIC_ANNOTATION_FOR_TESTS)),
-      std::move(proxy_resolver_factory), nullptr);
+      std::move(proxy_resolver_factory), nullptr,
+      true /* quick_check_enabled */);
   context->set_proxy_resolution_service(&service);
   context->Init();
 
@@ -766,7 +768,8 @@ TEST_P(ProxyResolvingClientSocketTest, NoSupportedProxies) {
       std::make_unique<net::ProxyConfigServiceFixed>(
           net::ProxyConfigWithAnnotation(proxy_config,
                                          TRAFFIC_ANNOTATION_FOR_TESTS)),
-      std::move(proxy_resolver_factory), nullptr);
+      std::move(proxy_resolver_factory), nullptr,
+      true /* quick_check_enabled */);
   context->set_proxy_resolution_service(&service);
   context->Init();
 

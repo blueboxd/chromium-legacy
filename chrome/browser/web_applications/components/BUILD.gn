@@ -89,6 +89,8 @@ source_set("components") {
 
   if (is_mac) {
     sources += [
+      "app_shim_registry_mac.cc",
+      "app_shim_registry_mac.h",
       "web_app_file_handler_registration_mac.cc",
       "web_app_shortcut_mac.h",
       "web_app_shortcut_mac.mm",
@@ -159,7 +161,10 @@ source_set("unit_tests") {
   }
 
   if (is_mac) {
-    sources += [ "web_app_shortcut_mac_unittest.mm" ]
+    sources += [
+      "app_shim_registry_mac_unittest.cc",
+      "web_app_shortcut_mac_unittest.mm",
+    ]
   }
 
   if (is_desktop_linux) {

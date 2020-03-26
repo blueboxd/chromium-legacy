@@ -575,4 +575,11 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   EXPECT_TRUE(resource->StaleRevalidationRequested());
 }
 
+// This is a regression test for https://crbug.com/1062837.
+TEST(ResourceTest, DefaultOverheadSize) {
+  const KURL url("http://127.0.0.1:8000/foo.html");
+  auto* resource = MakeGarbageCollected<MockResource>(url);
+  EXPECT_EQ(resource->CalculateOverheadSizeForTest(), resource->OverheadSize());
+}
+
 }  // namespace blink

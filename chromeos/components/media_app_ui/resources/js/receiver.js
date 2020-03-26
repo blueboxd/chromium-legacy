@@ -5,19 +5,6 @@
 /** A pipe through which we can send messages to the parent frame. */
 const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
 
-/** @implements mediaApp.AbstractFileList */
-class SingleArrayBufferFileList {
-  /** @param {!mediaApp.AbstractFile} file */
-  constructor(file) {
-    this.file = file;
-    this.length = 1;
-  }
-  /** @override */
-  item(index) {
-    return index === 0 ? this.file : null;
-  }
-}
-
 /**
  * A file received from the privileged context.
  * @implements {mediaApp.AbstractFile}
@@ -72,9 +59,49 @@ class ReceivedFile {
   }
 }
 
-parentMessagePipe.registerHandler(Message.LOAD_FILE, (message) => {
-  const fileMessage = /** @type{!OpenFileMessage} */ (message);
-  loadFile(fileMessage.token, fileMessage.file);
+/**
+ * A file list consisting of all files received from the parent. Exposes the
+ * currently writable file and all other readable files in the current
+ * directory.
+ * @implements mediaApp.AbstractFileList
+ */
+class ReceivedFileList {
+  /** @param {!LoadFilesMessage} filesMessage */
+  constructor(filesMessage) {
+    // We make sure the 0th item in the list is the writable one so we
+    // don't break older versions of the media app which uses item(0) instead
+    // of getCurrentlyWritable()
+    // TODO(b/151880563): remove this.
+    let {files, writableFileIndex} = filesMessage;
+    while (writableFileIndex > 0) {
+      files.push(files.shift());
+      writableFileIndex--;
+    }
+
+    this.length = files.length;
+    /** @type {!Array<!ReceivedFile>} */
+    this.files = files.map(f => new ReceivedFile(f.file, f.token));
+    /** @type {number} */
+    this.writableFileIndex = 0;
+  }
+
+  /** @override */
+  item(index) {
+    return this.files[index] || null;
+  }
+
+  /**
+   * Returns the file which is currently writable or null if there isn't one.
+   * @return {?mediaApp.AbstractFile}
+   */
+  getCurrentlyWritable() {
+    return this.item(this.writableFileIndex);
+  }
+}
+
+parentMessagePipe.registerHandler(Message.LOAD_FILES, (message) => {
+  const filesMessage = /** @type{!LoadFilesMessage} */ (message);
+  loadFiles(new ReceivedFileList(filesMessage));
 })
 
 /**
@@ -101,22 +128,16 @@ function getApp() {
 }
 
 /**
- * Loads files associated with a message received from the host.
- * @param {number} token
- * @param {!File} file
- * @return {!Promise<!ReceivedFile>} The received file (for testing).
+ * Loads a file list into the media app.
+ * @param {!ReceivedFileList} fileList
  */
-async function loadFile(token, file) {
-  const receivedFile = new ReceivedFile(file, token);
-  const fileList = new SingleArrayBufferFileList(receivedFile);
-
+async function loadFiles(fileList) {
   const app = getApp();
   if (app) {
     await app.loadFiles(fileList);
   } else {
     window.customLaunchData = {files: fileList};
   }
-  return receivedFile;
 }
 
 /**

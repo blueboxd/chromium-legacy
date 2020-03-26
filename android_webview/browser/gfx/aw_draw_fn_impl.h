@@ -25,10 +25,6 @@ namespace gl {
 class GLImageAHardwareBuffer;
 }
 
-namespace gpu {
-class VulkanImage;
-}
-
 namespace android_webview {
 class GLNonOwnedCompatibilityContext;
 
@@ -78,7 +74,6 @@ class AwDrawFnImpl {
     sk_sp<SkImage> ahb_skimage;
     uint32_t texture_id = 0;
     uint32_t framebuffer_id = 0;
-    std::unique_ptr<gpu::VulkanImage> vulkan_image;
     GrVkImageInfo image_info;
 
     // Used to clean up Vulkan objects.

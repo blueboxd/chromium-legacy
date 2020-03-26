@@ -1003,17 +1003,17 @@ CrSettingsPersonalizationOptionsTest.prototype = {
 };
 
 TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuilds', function() {
-  mocha.grep('PersonalizationOptionsTests_AllBuilds').run();
+  runMochaSuite('PersonalizationOptionsTests_AllBuilds');
 });
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
-  mocha.grep('PersonalizationOptionsTests_OfficialBuild').run();
+  runMochaSuite('PersonalizationOptionsTests_OfficialBuild');
 });
 GEN('#endif');
 
 TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuildsOld', function() {
-  mocha.grep('PersonalizationOptionsTests_AllBuilds_Old').run();
+  runMochaSuite('PersonalizationOptionsTests_AllBuilds_Old');
 });
 
 /**
@@ -1464,13 +1464,13 @@ CrSettingsSiteDetailsTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload: 'chrome://settings/site_settings/site_details.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '//ui/webui/resources/js/util.js',
     '../test_browser_proxy.js',
     'test_util.js',
-    'ensure_lazy_loaded.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_details_tests.js',
   ]),
@@ -1654,7 +1654,6 @@ CrSettingsSiteListEntryTest.prototype = {
     '../test_browser_proxy.js',
     '../test_util.js',
     'test_util.js',
-    'ensure_lazy_loaded.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_list_entry_tests.js',
   ]),

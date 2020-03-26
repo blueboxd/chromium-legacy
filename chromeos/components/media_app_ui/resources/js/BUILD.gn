@@ -49,7 +49,7 @@ js_library("launch") {
   deps = [
     ":message_pipe",
     ":message_types",
-    "//chromeos/components/media_app_ui:mojo_bindings_js_library_for_compile",
+    ":mojo_api_bootstrap",
   ]
 }
 

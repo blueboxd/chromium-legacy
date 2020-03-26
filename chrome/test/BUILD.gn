@@ -2396,7 +2396,6 @@ if (!is_android) {
         "../browser/ui/ash/tablet_mode_page_behavior_browsertest.cc",
         "../browser/ui/ash/volume_controller_browsertest.cc",
         "../browser/ui/browser_finder_chromeos_browsertest.cc",
-        "../browser/ui/supervised_user/parent_permission_dialog_browsertest.cc",
         "../browser/ui/views/apps/app_dialog/app_dialog_view_browsertest.cc",
         "../browser/ui/views/apps/app_dialog/app_uninstall_dialog_view_browsertest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_browsertest.cc",
@@ -2416,7 +2415,7 @@ if (!is_android) {
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/views/frame/system_menu_model_builder_browsertest_chromeos.cc",
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
-        "../browser/ui/views/parent_permission_dialog_view_browsertest.cc",
+        "../browser/ui/views/parent_permission_dialog_browsertest.cc",
         "../browser/ui/views/plugin_vm/plugin_vm_installer_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_ash_interactive_ui_test.cc",
         "../browser/ui/web_applications/web_app_guest_session_browsertest_chromeos.cc",
@@ -3341,6 +3340,7 @@ test("unit_tests") {
     "../browser/resource_coordinator/tab_load_tracker_unittest.cc",
     "../browser/resources_util_unittest.cc",
     "../browser/search/contextual_search_policy_handler_android_unittest.cc",
+    "../browser/tab/state/tab_state_db_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
     # //components:components_unittests, http://crbug.com/527882.
@@ -4486,7 +4486,6 @@ test("unit_tests") {
       "../../tools/json_schema_compiler/test/features_generation_unittest.cc",
       "../browser/apps/app_shim/app_shim_host_mac_unittest.cc",
       "../browser/apps/app_shim/app_shim_manager_mac_unittest.cc",
-      "../browser/apps/app_shim/app_shim_registry_mac_unittest.cc",
       "../browser/autocomplete/keyword_extensions_delegate_impl_unittest.cc",
       "../browser/browsing_data/counters/hosted_apps_counter_unittest.cc",
       "../browser/extensions/active_tab_unittest.cc",

@@ -249,6 +249,11 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
     return test_api_->GetRenderText()->cursor_enabled();
   }
 
+  ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
+    return ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  }
+
  protected:
   Profile* profile() { return profile_.get(); }
   TestingOmniboxEditController* omnibox_edit_controller() {
@@ -697,6 +702,18 @@ TEST_F(OmniboxViewViewsTest, SelectAllOnReactivateTabAfterDeleteAll) {
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
 }
 
+TEST_F(OmniboxViewViewsTest, SelectAllDuringMouseDown) {
+  omnibox_textfield()->OnMousePressed(
+      CreateMouseEvent(ui::ET_MOUSE_PRESSED, {0, 0}));
+  omnibox_view()->SetUserText(base::ASCIIToUTF16("abc"));
+  ui::KeyEvent event_a(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  EXPECT_FALSE(omnibox_view()->IsSelectAll());
+  omnibox_textfield_view()->OnKeyPressed(event_a);
+  // Normally SelectAll happens after OnMouseRelease. Verifying this happens
+  // during OnKeyPress when the mouse is down.
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+}
+
 class OmniboxViewViewsClipboardTest
     : public OmniboxViewViewsTest,
       public ::testing::WithParamInterface<ui::TextEditCommand> {
@@ -831,11 +848,6 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   bool IsElidedUrlDisplayed() {
     return omnibox_view()->GetText() == base::ASCIIToUTF16("example.com") &&
            !omnibox_view()->model()->user_input_in_progress();
-  }
-
-  ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
-    return ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   }
 
   // Gets a point at |x_offset| from the beginning of the RenderText.

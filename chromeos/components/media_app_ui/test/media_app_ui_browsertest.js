@@ -200,7 +200,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   // Simulate steps taken to load a file via a launch event.
   const firstFile = directory.files[0];
   loadFile(await createTestImageFile(), firstFile);
-  setCurrentDirectory(directory, firstFile);
+  currentDirectoryHandle = directory;
   let testResponse;
 
   // Nothing should be deleted initially.
@@ -217,7 +217,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   // File removed from `DirectoryHandle` internal state.
   assertEquals(directory.files.length, 0);
 
-  // Even though the name is the same, the new file shouldn't shouldn't
+  // Even though the name is the same, the new file shouldn't
   // be deleted as it has a different `FileHandle` reference.
   directory.addFileHandleForTest(new FakeFileSystemFileHandle());
 

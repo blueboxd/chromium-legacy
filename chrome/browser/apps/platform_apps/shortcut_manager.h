@@ -40,8 +40,6 @@ class AppShortcutManager : public KeyedService,
   void UpdateShortcutsForAllAppsIfNeeded();
 
   // extensions::ExtensionRegistryObserver.
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const extensions::Extension* extension,
                                   bool is_update,

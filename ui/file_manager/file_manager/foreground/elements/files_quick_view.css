@@ -185,6 +185,12 @@ dialog#delete-confirm-dialog::backdrop {
   width: 36px;
 }
 
+/* TODO(files-ng): files-ng rule that gets applied to non-files-ng */
+:host-context(html.pointer-active) cr-button:not(:active):hover {
+  --hover-bg-color: none;
+  cursor: unset;
+}
+
 :host([files-ng]) cr-button::after {
   content: '';
   height: 48px;
@@ -262,7 +268,8 @@ iron-icon {
   font-weight: bold;
 }
 
-:host([files-ng]) cr-button:focus:not(:active) {
+/* TODO(files-ng): files-ng rule that gets applied to non-files-ng */
+:host-context(html.focus-outline-visible) cr-button:not(:active):focus {
   border: 2px solid var(--google-blue-300);
 }
 

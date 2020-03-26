@@ -30,7 +30,7 @@ js_type_check("closure_compile") {
     ":site_list_entry",
     ":site_settings_behavior",
     ":site_settings_prefs_browser_proxy",
-    ":website_usage_private_api",
+    ":website_usage_browser_proxy",
     ":zoom_levels",
   ]
 }
@@ -190,7 +190,7 @@ js_library("site_details") {
     ":constants",
     ":site_details_permission",
     ":site_settings_behavior",
-    ":website_usage_private_api",
+    ":website_usage_browser_proxy",
     "..:router",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
@@ -281,7 +281,7 @@ js_library("site_settings_prefs_browser_proxy") {
   ]
 }
 
-js_library("website_usage_private_api") {
+js_library("website_usage_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
@@ -326,8 +326,8 @@ js_type_check("closure_compile_module") {
     ":site_list_entry.m",
     ":site_settings_behavior.m",
     ":site_settings_prefs_browser_proxy.m",
+    ":website_usage_browser_proxy.m",
 
-    #    ":website_usage_private_api.m",
     #    ":zoom_levels.m",
   ]
 }
@@ -602,12 +602,10 @@ js_library("site_settings_prefs_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("website_usage_private_api.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/website_usage_private_api.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":website_usage_private_api_module" ]
+js_library("website_usage_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/site_settings/website_usage_browser_proxy.m.js" ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("zoom_levels.m") {
@@ -641,7 +639,6 @@ group("polymer3_elements") {
     ":site_entry_module",
     ":site_list_entry_module",
     ":site_list_module",
-    ":website_usage_private_api_module",
     ":zoom_levels_module",
   ]
 }
@@ -829,12 +826,6 @@ polymer_modulizer("site_list_entry") {
   namespace_rewrites = settings_namespace_rewrites
 }
 
-polymer_modulizer("website_usage_private_api") {
-  js_file = "website_usage_private_api.js"
-  html_file = "website_usage_private_api.html"
-  html_type = "dom-module"
-}
-
 polymer_modulizer("zoom_levels") {
   js_file = "zoom_levels.js"
   html_file = "zoom_levels.html"
@@ -849,6 +840,7 @@ js_modulizer("modulize") {
     "local_data_browser_proxy.js",
     "site_settings_behavior.js",
     "site_settings_prefs_browser_proxy.js",
+    "website_usage_browser_proxy.js",
   ]
   namespace_rewrites = settings_namespace_rewrites
 }

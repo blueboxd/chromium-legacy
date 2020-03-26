@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_shim/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
 
-#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

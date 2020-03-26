@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/test/gtest_util.h"
+#include "base/threading/scoped_blocking_call_internal.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

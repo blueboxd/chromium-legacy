@@ -111,6 +111,7 @@ class WebViewContentsClientAdapter extends SharedWebViewContentsClientAdapter {
         super(webView, webViewDelegate, context);
         try (ScopedSysTraceEvent event =
                         ScopedSysTraceEvent.scoped("WebViewContentsClientAdapter.constructor")) {
+            // See //android_webview/docs/how-does-on-create-window-work.md for more details.
             mUiThreadHandler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {

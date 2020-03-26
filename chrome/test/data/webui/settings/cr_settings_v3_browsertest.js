@@ -233,6 +233,30 @@ TEST_F('CrSettingsSiteListV3Test', 'AddExceptionDialog', function() {
   runMochaSuite('AddExceptionDialog');
 });
 
+
+// eslint-disable-next-line no-var
+var CrSettingsPersonalizationOptionsV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/personalization_options_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuilds', function() {
+  runMochaSuite('PersonalizationOptionsTests_AllBuilds');
+});
+
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+TEST_F('CrSettingsPersonalizationOptionsV3Test', 'OfficialBuild', function() {
+  runMochaSuite('PersonalizationOptionsTests_OfficialBuild');
+});
+GEN('#endif');
+
+TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuildsOld', function() {
+  runMochaSuite('PersonalizationOptionsTests_AllBuilds_Old');
+});
+
 [['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
  ['AppearancePage', 'appearance_page_test.m.js'],
  ['AutofillPage', 'autofill_page_test.m.js'],

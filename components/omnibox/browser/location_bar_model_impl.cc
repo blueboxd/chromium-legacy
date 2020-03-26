@@ -55,9 +55,12 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
     format_types |= url_formatter::kFormatUrlTrimAfterHost;
   }
 
-  // Early exit to prevent elision of URLs when relevant extension is enabled.
+  // Early exit to prevent elision of URLs when relevant extension or pref is
+  // enabled.
   if (delegate_->ShouldPreventElision()) {
-    return GetFormattedURL(format_types);
+    url_formatter::FormatUrlTypes full_url_format_types = format_types &=
+        ~url_formatter::kFormatUrlOmitHTTP;
+    return GetFormattedURL(full_url_format_types);
   }
 
 #if defined(OS_IOS)

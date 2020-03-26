@@ -12,6 +12,7 @@
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/proto/v2/wire/action_request.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_action_response.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/prefs/pref_service.h"
@@ -37,6 +38,17 @@ constexpr char kAuthenticationScope[] =
     "https://www.googleapis.com/auth/googlenow";
 constexpr char kApplicationOctetStream[] = "application/octet-stream";
 constexpr base::TimeDelta kNetworkTimeout = base::TimeDelta::FromSeconds(30);
+
+constexpr char kFeedQueryUrl[] =
+    "https://www.google.com/httpservice/retry/InteractiveDiscoverAgaService/"
+    "FeedQuery";
+constexpr char kNextPageQueryUrl[] =
+    "https://www.google.com/httpservice/retry/InteractiveDiscoverAgaService/"
+    "NextPageQuery";
+constexpr char kBackgroundQueryUrl[] =
+    "https://www.google.com/httpservice/noretry/BackgroundDiscoverAgaService/"
+    "FeedQuery";
+
 using RawResponse = FeedNetworkImpl::RawResponse;
 }  // namespace
 
@@ -366,13 +378,27 @@ FeedNetworkImpl::~FeedNetworkImpl() = default;
 void FeedNetworkImpl::SendQueryRequest(
     const feedwire::Request& request,
     base::OnceCallback<void(QueryRequestResult)> callback) {
-  // TODO(harringtond): Decide how we want to override these URLs for testing.
-  // Should probably add a command-line flag.
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
-  GURL url(
-      "https://www.google.com/httpservice/noretry/DiscoverClankService/"
-      "FeedQuery");
+
+  // TODO(harringtond): Decide how we want to override these URLs for testing.
+  // Should probably add a command-line flag.
+  GURL url;
+  switch (request.feed_request().feed_query().reason()) {
+    case feedwire::FeedQuery::SCHEDULED_REFRESH:
+    case feedwire::FeedQuery::IN_PLACE_UPDATE:
+      url = GURL(kBackgroundQueryUrl);
+      break;
+    case feedwire::FeedQuery::NEXT_PAGE_SCROLL:
+      url = GURL(kNextPageQueryUrl);
+      break;
+    case feedwire::FeedQuery::MANUAL_REFRESH:
+      url = GURL(kFeedQueryUrl);
+      break;
+    default:
+      std::move(callback).Run({});
+      return;
+  }
 
   AddMothershipPayloadQueryParams(/*is_post=*/false, binary_proto,
                                   delegate_->GetLanguageTag(), &url);

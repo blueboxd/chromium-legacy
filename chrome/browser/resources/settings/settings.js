@@ -56,3 +56,4 @@ export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.m.js';
 export {routes} from './route.m.js';
 export {Route, Router} from './router.m.js';
 export {SearchEnginesBrowserProxyImpl} from './search_engines_page/search_engines_browser_proxy.m.js';
+export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from './privacy_page/privacy_page_browser_proxy.m.js';

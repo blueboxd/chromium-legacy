@@ -5,7 +5,6 @@
 #include "base/threading/scoped_blocking_call.h"
 
 #include "base/lazy_instance.h"
-#include "base/scoped_clear_last_error.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -16,17 +15,6 @@ namespace base {
 
 namespace {
 
-// The first 8 characters of sha1 of "ScopedBlockingCall".
-// echo -n "ScopedBlockingCall" | sha1sum
-constexpr uint32_t kActivityTrackerId = 0x11be9915;
-
-LazyInstance<ThreadLocalPointer<internal::BlockingObserver>>::Leaky
-    tls_blocking_observer = LAZY_INSTANCE_INITIALIZER;
-
-// Last ScopedBlockingCall instantiated on this thread.
-LazyInstance<ThreadLocalPointer<internal::UncheckedScopedBlockingCall>>::Leaky
-    tls_last_scoped_blocking_call = LAZY_INSTANCE_INITIALIZER;
-
 #if DCHECK_IS_ON()
 // Used to verify that the trace events used in the constructor do not result in
 // instantiating a ScopedBlockingCall themselves (which would cause an infinite
@@ -36,49 +24,6 @@ LazyInstance<ThreadLocalBoolean>::Leaky tls_construction_in_progress =
 #endif
 
 }  // namespace
-
-namespace internal {
-
-UncheckedScopedBlockingCall::UncheckedScopedBlockingCall(
-    const Location& from_here,
-    BlockingType blocking_type)
-    : blocking_observer_(tls_blocking_observer.Get().Get()),
-      previous_scoped_blocking_call_(tls_last_scoped_blocking_call.Get().Get()),
-      is_will_block_(blocking_type == BlockingType::WILL_BLOCK ||
-                     (previous_scoped_blocking_call_ &&
-                      previous_scoped_blocking_call_->is_will_block_)),
-      scoped_activity_(from_here, 0, kActivityTrackerId, 0) {
-  tls_last_scoped_blocking_call.Get().Set(this);
-
-  if (blocking_observer_) {
-    if (!previous_scoped_blocking_call_) {
-      blocking_observer_->BlockingStarted(blocking_type);
-    } else if (blocking_type == BlockingType::WILL_BLOCK &&
-               !previous_scoped_blocking_call_->is_will_block_) {
-      blocking_observer_->BlockingTypeUpgraded();
-    }
-  }
-
-  if (scoped_activity_.IsRecorded()) {
-    // Also record the data for extended crash reporting.
-    const base::TimeTicks now = base::TimeTicks::Now();
-    auto& user_data = scoped_activity_.user_data();
-    user_data.SetUint("timestamp_us", now.since_origin().InMicroseconds());
-    user_data.SetUint("blocking_type", static_cast<uint64_t>(blocking_type));
-  }
-}
-
-UncheckedScopedBlockingCall::~UncheckedScopedBlockingCall() {
-  // TLS affects result of GetLastError() on Windows. ScopedClearLastError
-  // prevents side effect.
-  base::internal::ScopedClearLastError save_last_error;
-  DCHECK_EQ(this, tls_last_scoped_blocking_call.Get().Get());
-  tls_last_scoped_blocking_call.Get().Set(previous_scoped_blocking_call_);
-  if (blocking_observer_ && !previous_scoped_blocking_call_)
-    blocking_observer_->BlockingEnded();
-}
-
-}  // namespace internal
 
 ScopedBlockingCall::ScopedBlockingCall(const Location& from_here,
                                        BlockingType blocking_type)
@@ -125,26 +70,6 @@ ScopedBlockingCallWithBaseSyncPrimitives::
 ScopedBlockingCallWithBaseSyncPrimitives::
     ~ScopedBlockingCallWithBaseSyncPrimitives() {
   TRACE_EVENT_END0("base", "ScopedBlockingCallWithBaseSyncPrimitives");
-}
-
-void SetBlockingObserverForCurrentThread(BlockingObserver* blocking_observer) {
-  DCHECK(!tls_blocking_observer.Get().Get());
-  tls_blocking_observer.Get().Set(blocking_observer);
-}
-
-void ClearBlockingObserverForCurrentThread() {
-  tls_blocking_observer.Get().Set(nullptr);
-}
-
-ScopedClearBlockingObserverForTesting::ScopedClearBlockingObserverForTesting()
-    : blocking_observer_(tls_blocking_observer.Get().Get()) {
-  tls_blocking_observer.Get().Set(nullptr);
-}
-
-ScopedClearBlockingObserverForTesting::
-    ~ScopedClearBlockingObserverForTesting() {
-  DCHECK(!tls_blocking_observer.Get().Get());
-  tls_blocking_observer.Get().Set(blocking_observer_);
 }
 
 }  // namespace internal

@@ -65,8 +65,8 @@ TEST_F(ChromeExtensionsClientTest, CheckZeroLengthActionIconFiles) {
   scoped_refptr<Extension> extension2(file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   EXPECT_FALSE(extension2.get());
-  EXPECT_STREQ("Could not load icon 'icon.png' for browser action.",
-               error.c_str());
+  EXPECT_EQ("Could not load icon 'icon.png' specified in 'browser_action'.",
+            error);
 
   // Try to install an extension with a zero-length page action icon file.
   ext_dir = install_dir.AppendASCII("extensions")
@@ -77,8 +77,8 @@ TEST_F(ChromeExtensionsClientTest, CheckZeroLengthActionIconFiles) {
   scoped_refptr<Extension> extension3(file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   EXPECT_FALSE(extension3.get());
-  EXPECT_STREQ("Could not load icon 'icon.png' for page action.",
-               error.c_str());
+  EXPECT_EQ("Could not load icon 'icon.png' specified in 'page_action'.",
+            error);
 }
 
 // Test that the ManifestHandlerRegistry handler map hasn't overflowed.

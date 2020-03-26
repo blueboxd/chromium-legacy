@@ -11,11 +11,11 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
 void OnParentPermissionDialogComplete(
-    std::unique_ptr<ParentPermissionDialog> dialog,
     extensions::SupervisedUserServiceDelegate::
         ParentPermissionDialogDoneCallback delegate_done_callback,
     ParentPermissionDialog::Result result) {
@@ -73,25 +73,15 @@ void SupervisedUserServiceManagementAPIDelegate::
         content::BrowserContext* context,
         content::WebContents* contents,
         ParentPermissionDialogDoneCallback done_callback) {
-  std::unique_ptr<ParentPermissionDialog> dialog =
-      std::make_unique<ParentPermissionDialog>(
-          Profile::FromBrowserContext(context));
+  ParentPermissionDialog::DoneCallback inner_done_callback = base::BindOnce(
+      &::OnParentPermissionDialogComplete, std::move(done_callback));
 
-  // Cache the pointer so we can show the dialog after we pass
-  // ownership to the callback.
-  ParentPermissionDialog* dialog_ptr = dialog.get();
-
-  // Ownership of the dialog passes to the callback.  This allows us
-  // to have as many instances of the dialog as calls to the management
-  // API.
-  ParentPermissionDialog::DoneCallback inner_done_callback =
-      base::BindOnce(&::OnParentPermissionDialogComplete, std::move(dialog),
-                     std::move(done_callback));
-
-  // This is safe because moving a unique_ptr doesn't change the underlying
-  // object's address.
-  dialog_ptr->ShowPromptForExtensionInstallation(
-      contents, &extension, SkBitmap(), std::move(inner_done_callback));
+  parent_permission_dialog_ =
+      ParentPermissionDialog::CreateParentPermissionDialogForExtension(
+          Profile::FromBrowserContext(context), contents,
+          contents->GetTopLevelNativeWindow(), gfx::ImageSkia(), &extension,
+          std::move(inner_done_callback));
+  parent_permission_dialog_->ShowDialog();
 }
 
 }  // namespace extensions

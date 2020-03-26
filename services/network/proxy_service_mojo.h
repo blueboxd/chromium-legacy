@@ -47,6 +47,7 @@ CreateConfiguredProxyResolutionServiceUsingMojoFactory(
     std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher,
     net::HostResolver* host_resolver,
     net::NetLog* net_log,
+    bool pac_quick_check_enabled,
     net::NetworkDelegate* network_delegate);
 
 }  // namespace network

@@ -33,8 +33,8 @@ public class LauncherShortcutActivity extends Activity {
     public static final String ACTION_OPEN_NEW_TAB = "chromium.shortcut.action.OPEN_NEW_TAB";
     public static final String ACTION_OPEN_NEW_INCOGNITO_TAB =
             "chromium.shortcut.action.OPEN_NEW_INCOGNITO_TAB";
-    private static final String DYNAMIC_OPEN_NEW_INCOGNITO_TAB_ID =
-            "dynamic-new-incognito-tab-shortcut";
+    @VisibleForTesting
+    static final String DYNAMIC_OPEN_NEW_INCOGNITO_TAB_ID = "dynamic-new-incognito-tab-shortcut";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,15 +71,18 @@ public class LauncherShortcutActivity extends Activity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
 
         SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
-        if (IncognitoUtils.isIncognitoModeEnabled()) {
+        boolean incognitoEnabled = IncognitoUtils.isIncognitoModeEnabled();
+        boolean incognitoShortcutAdded =
+                preferences.readBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, false);
+
+        if (incognitoEnabled && !incognitoShortcutAdded) {
             boolean success = LauncherShortcutActivity.addIncognitoLauncherShortcut(context);
 
             // Save a shared preference indicating the incognito shortcut has been added.
             if (success) {
                 preferences.writeBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, true);
             }
-        } else if (preferences.readBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, false)
-                && !IncognitoUtils.isIncognitoModeEnabled()) {
+        } else if (!incognitoEnabled && incognitoShortcutAdded) {
             LauncherShortcutActivity.removeIncognitoLauncherShortcut(context);
             preferences.writeBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, false);
         }
@@ -88,7 +91,7 @@ public class LauncherShortcutActivity extends Activity {
     /**
      * Adds a "New incognito tab" dynamic launcher shortcut.
      * @param context The context used to retrieve the system {@link ShortcutManager}.
-     * @return True if addint the shortcut has succeeded. False if the call fails due to rate
+     * @return True if adding the shortcut has succeeded. False if the call fails due to rate
      *         limiting. See {@link ShortcutManager#addDynamicShortcuts}.
      */
     @TargetApi(Build.VERSION_CODES.N_MR1)
@@ -131,8 +134,7 @@ public class LauncherShortcutActivity extends Activity {
      *                                     LauncherShortcutActivity.
      * @return An intent for ChromeLauncherActivity that will open a new regular or incognito tab.
      */
-    @VisibleForTesting
-    public static Intent getChromeLauncherActivityIntent(
+    private static Intent getChromeLauncherActivityIntent(
             Context context, String launcherShortcutIntentAction) {
         Intent newIntent = IntentHandler.createTrustedOpenNewTabIntent(context,
                 launcherShortcutIntentAction.equals(ACTION_OPEN_NEW_INCOGNITO_TAB));

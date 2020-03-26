@@ -29,6 +29,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
   // Simulate key press event.
   void SendKeyPress(ui::KeyboardCode key);
   void SendKeyPressWithControl(ui::KeyboardCode key);
+  void SendKeyPressWithShift(ui::KeyboardCode key);
   void SendKeyPressWithSearchAndShift(ui::KeyboardCode key);
   void SendKeyPressWithSearch(ui::KeyboardCode key);
   void SendKeyPressWithSearchAndControl(ui::KeyboardCode key);

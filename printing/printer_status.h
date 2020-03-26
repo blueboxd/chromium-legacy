@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PRINTER_STATUS_CHROMEOS_H_
-#define PRINTING_PRINTER_STATUS_CHROMEOS_H_
+#ifndef PRINTING_PRINTER_STATUS_H_
+#define PRINTING_PRINTER_STATUS_H_
 
 #include <cups/cups.h>
 
@@ -77,4 +77,4 @@ struct PRINTING_EXPORT PrinterStatus {
 
 }  // namespace printing
 
-#endif  // PRINTING_PRINTER_STATUS_CHROMEOS_H_
+#endif  // PRINTING_PRINTER_STATUS_H_

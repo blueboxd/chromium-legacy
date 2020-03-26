@@ -14,8 +14,6 @@ source_set("app_shim") {
     "app_shim_listener.mm",
     "app_shim_manager_mac.cc",
     "app_shim_manager_mac.h",
-    "app_shim_registry_mac.cc",
-    "app_shim_registry_mac.h",
     "app_shim_termination_manager.cc",
     "app_shim_termination_manager.h",
     "mach_bootstrap_acceptor.cc",

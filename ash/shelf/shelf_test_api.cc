@@ -77,6 +77,13 @@ ScrollableShelfInfo ShelfTestApi::GetScrollableShelfInfoForState(
   info.is_overflow = (scrollable_shelf_view->layout_strategy_ !=
                       ScrollableShelfView::kNotShowArrowButtons);
 
+  const ShelfView* const shelf_view = scrollable_shelf_view->shelf_view_;
+  for (int i = shelf_view->first_visible_index();
+       i <= shelf_view->last_visible_index(); ++i) {
+    info.icons_bounds_in_screen.push_back(
+        shelf_view->view_model()->view_at(i)->GetBoundsInScreen());
+  }
+
   // Calculates the target offset only when |scroll_distance| is specified.
   if (state.scroll_distance != 0.f) {
     const float target_offset =

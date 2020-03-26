@@ -24,8 +24,10 @@ Polymer({
     },
 
     /**
+     * TODO(dpapad): Restore actual type !PrivacyPageVisibility after this file
+     * is no longer reused by chrome://os-settings.
      * Dictionary defining page visibility.
-     * @type {!PrivacyPageVisibility}
+     * @type {!Object}
      */
     pageVisibility: Object,
 
@@ -70,6 +72,9 @@ Polymer({
       computed: 'computeSyncFirstSetupInProgress_(syncStatus)',
     },
   },
+
+  /** @private {?settings.PrivacyPageBrowserProxy} */
+  browserProxy_: null,
 
   /**
    * @return {boolean}

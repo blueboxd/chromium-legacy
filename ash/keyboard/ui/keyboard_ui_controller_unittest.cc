@@ -38,7 +38,6 @@
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
 #if defined(USE_OZONE)
@@ -147,7 +146,6 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
 
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
     focus_controller_ = std::make_unique<TestFocusController>(root_window());
     layout_delegate_ =
         std::make_unique<TestKeyboardLayoutDelegate>(root_window());

@@ -27,6 +27,7 @@
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
@@ -181,9 +182,7 @@ std::unique_ptr<net::HttpAuthMechanism> CreateAuthSystem(
 // message handling inside the Browser process is sufficient).
 void HandleBadMessage(const std::string& error) {
   LOG(WARNING) << "Mojo error in NetworkService:" << error;
-  static auto* bad_message_reason = base::debug::AllocateCrashKeyString(
-      "bad_message_reason", base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(bad_message_reason, error);
+  mojo::debug::ScopedMessageErrorCrashKey crash_key_value(error);
   base::debug::DumpWithoutCrashing();
 }
 

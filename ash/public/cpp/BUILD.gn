@@ -205,6 +205,7 @@ component("cpp") {
     "shelf_prefs.h",
     "shelf_types.cc",
     "shelf_types.h",
+    "shelf_ui_info.cc",
     "shelf_ui_info.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",

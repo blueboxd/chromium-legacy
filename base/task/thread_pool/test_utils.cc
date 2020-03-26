@@ -11,7 +11,7 @@
 #include "base/task/thread_pool/pooled_parallel_task_runner.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
 #include "base/test/bind_test_util.h"
-#include "base/threading/scoped_blocking_call.h"
+#include "base/threading/scoped_blocking_call_internal.h"
 #include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

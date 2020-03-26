@@ -487,16 +487,15 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
     RegisteredTaskSource task_source) {
   DCHECK(task_source);
 
-  const bool task_is_worker_task =
-      BeforeRunTask(task_source->shutdown_behavior());
+  const bool should_run_tasks = BeforeRunTask(task_source->shutdown_behavior());
 
   // Run the next task in |task_source|.
   Optional<Task> task;
   TaskTraits traits;
   {
     auto transaction = task_source->BeginTransaction();
-    task = task_is_worker_task ? task_source.TakeTask(&transaction)
-                               : task_source.Clear(&transaction);
+    task = should_run_tasks ? task_source.TakeTask(&transaction)
+                            : task_source.Clear(&transaction);
     traits = transaction.traits();
   }
 
@@ -504,7 +503,7 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
     // Run the |task| (whether it's a worker task or the Clear() closure).
     RunTask(std::move(task.value()), task_source.get(), traits);
   }
-  if (task_is_worker_task)
+  if (should_run_tasks)
     AfterRunTask(task_source->shutdown_behavior());
   const bool task_source_must_be_queued = task_source.DidProcessTask();
   // |task_source| should be reenqueued iff requested by DidProcessTask().

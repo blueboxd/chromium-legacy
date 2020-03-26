@@ -159,6 +159,15 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
 
     /**
+     * @param gurl The GURL to check whether it is for the NTP.
+     * @return Whether the passed in URL is used to render the NTP.
+     */
+    public static boolean isNTPUrl(GURL gurl) {
+        if (!gurl.isValid() || !UrlUtilities.isInternalScheme(gurl)) return false;
+        return UrlConstants.NTP_HOST.equals(gurl.getHost());
+    }
+
+    /**
      * @param url The URL to check whether it is for the NTP.
      * @return Whether the passed in URL is used to render the NTP.
      */
@@ -169,8 +178,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         // We need to fixup the URL to handle about: schemes and transform them into the equivalent
         // chrome:// scheme so that GURL parses the host correctly.
         GURL gurl = UrlFormatter.fixupUrl(url);
-        if (!gurl.isValid() || !UrlUtilities.isInternalScheme(gurl)) return false;
-        return UrlConstants.NTP_HOST.equals(gurl.getHost());
+        return isNTPUrl(gurl);
     }
 
     protected class NewTabPageManagerImpl

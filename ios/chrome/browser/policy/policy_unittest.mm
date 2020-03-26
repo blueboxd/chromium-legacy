@@ -85,7 +85,7 @@ class PolicyTest : public PlatformTest {
  protected:
   // Temporary directory to hold preference files.
   base::ScopedTempDir state_directory_;
-  
+
   // The task environment for this test.
   base::test::TaskEnvironment task_environment_;
 
@@ -111,7 +111,23 @@ class PolicyTest : public PlatformTest {
 // Tests that the SearchSuggestEnabled preference is correctly managed by
 // policy.
 TEST_F(PolicyTest, TestSearchSuggestEnabled) {
-  // This preference is currently not managed.
   EXPECT_FALSE(
       pref_service_->IsManagedPreference(prefs::kSearchSuggestEnabled));
+
+  policy::PolicyMap values;
+  values.Set(policy::key::kSearchSuggestEnabled, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
+             std::make_unique<base::Value>(true), nullptr);
+  policy_provider_.UpdateChromePolicy(values);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pref_service_->IsManagedPreference(prefs::kSearchSuggestEnabled));
+  EXPECT_TRUE(pref_service_->GetBoolean(prefs::kSearchSuggestEnabled));
+
+  values.Set(policy::key::kSearchSuggestEnabled, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
+             std::make_unique<base::Value>(false), nullptr);
+  policy_provider_.UpdateChromePolicy(values);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pref_service_->IsManagedPreference(prefs::kSearchSuggestEnabled));
+  EXPECT_FALSE(pref_service_->GetBoolean(prefs::kSearchSuggestEnabled));
 }

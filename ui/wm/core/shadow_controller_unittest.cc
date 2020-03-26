@@ -16,7 +16,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/shadow_controller_delegate.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
@@ -31,7 +30,6 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
 
   void SetUp() override {
     AuraTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
     InstallShadowController(nullptr);
   }
   void TearDown() override {

@@ -30,6 +30,7 @@
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/scoped_blocking_call_internal.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time_override.h"

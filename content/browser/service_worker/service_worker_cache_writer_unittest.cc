@@ -146,8 +146,11 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   }
 
   net::Error WriteHeaders(size_t len) {
-    scoped_refptr<HttpResponseInfoIOBuffer> buf(new HttpResponseInfoIOBuffer);
+    auto buf = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
     buf->response_data_size = len;
+    buf->http_info = std::make_unique<net::HttpResponseInfo>();
+    buf->http_info->headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
     return cache_writer_->MaybeWriteHeaders(buf.get(), CreateWriteCallback());
   }
 

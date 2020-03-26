@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * The last file loaded into the guest, updated via a spy on loadFile().
- * @type {?Promise<!ReceivedFile>}
+ * The last file list loaded into the guest, updated via a spy on loadFiles().
+ * @type {?ReceivedFileList}
  */
-let lastReceivedFile = null;
+let lastReceivedFileList = null;
 
 /**
  * Acts on received TestMessageQueryData.
@@ -32,13 +32,12 @@ async function runTestQuery(data) {
     }
   } else if (data.overwriteLastFile) {
     const testBlob = new Blob([data.overwriteLastFile]);
-    const ensureLoaded = await lastReceivedFile;
-    await ensureLoaded.overwriteOriginal(testBlob);
+    await lastReceivedFileList.item(0).overwriteOriginal(testBlob);
     result = 'overwriteOriginal resolved';
   } else if (data.deleteLastFile) {
     try {
-      const ensureLoaded = await lastReceivedFile;
-      const deleteResult = await ensureLoaded.deleteOriginalFile();
+      const deleteResult =
+          await lastReceivedFileList.item(0).deleteOriginalFile();
       if (deleteResult === DeleteResult.FILE_MOVED) {
         result = 'deleteOriginalFile resolved file moved';
       } else {
@@ -65,15 +64,15 @@ function installTestHandlers() {
     throw Error('This is an error');
   });
 
-  // Log errors, rather than send them to console.error.
+  // Log errors, rather than sending them to console.error.
   parentMessagePipe.logClientError = error =>
       console.log(JSON.stringify(error));
 
   // Install spies.
-  const realLoadFile = loadFile;
-  loadFile = async (/** number */ token, /** !File */ file) => {
-    lastReceivedFile = realLoadFile(token, file);
-    return lastReceivedFile;
+  const realLoadFiles = loadFiles;
+  loadFiles = async (/** !ReceivedFileList */ fileList) => {
+    lastReceivedFileList = fileList;
+    realLoadFiles(fileList);
   }
 }
 

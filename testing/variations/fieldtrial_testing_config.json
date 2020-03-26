@@ -2300,21 +2300,6 @@
             ]
         }
     ],
-    "FeedSendFeedback": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InterestFeedFeedback"
-                    ]
-                }
-            ]
-        }
-    ],
     "FilterAdsOnAbusiveSites": [
         {
             "platforms": [
@@ -2943,6 +2928,21 @@
                     },
                     "enable_features": [
                         "InterestFeedContentSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
+    "InterestFeedFeedback": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InterestFeedFeedback"
                     ]
                 }
             ]

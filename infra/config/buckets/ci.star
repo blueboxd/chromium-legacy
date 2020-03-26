@@ -1027,7 +1027,6 @@ ci.fyi_ios_builder(
 ci.fyi_ios_builder(
     name = 'ios13-beta-simulator',
     executable = 'recipe:chromium',
-    goma_backend = goma.backend.RBE_PROD,
     properties = {
         'xcode_build_version': '11c29',
     },
@@ -1044,7 +1043,6 @@ ci.fyi_ios_builder(
 ci.fyi_ios_builder(
     name = 'ios13-sdk-simulator',
     executable = 'recipe:chromium',
-    goma_backend = goma.backend.RBE_PROD,
     properties = {
         'xcode_build_version': '11c29'
     }

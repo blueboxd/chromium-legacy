@@ -117,6 +117,21 @@ class VULKAN_EXPORT VulkanImplementation {
       VkFormat vk_formae) = 0;
 
 #if defined(OS_ANDROID)
+  // Create a VkImage, import Android AHardwareBuffer object created outside of
+  // the Vulkan device into Vulkan memory object and bind it to the VkImage.
+  // TODO(sergeyu): Remove this method and use
+  // CreateVkImageFromGpuMemoryHandle() instead.
+  virtual bool CreateVkImageAndImportAHB(
+      const VkDevice& vk_device,
+      const VkPhysicalDevice& vk_physical_device,
+      const gfx::Size& size,
+      base::android::ScopedHardwareBufferHandle ahb_handle,
+      VkImage* vk_image,
+      VkImageCreateInfo* vk_image_info,
+      VkDeviceMemory* vk_device_memory,
+      VkDeviceSize* mem_allocation_size,
+      VulkanYCbCrInfo* ycbcr_info = nullptr) = 0;
+
   // Get the sampler ycbcr conversion information from the AHB.
   virtual bool GetSamplerYcbcrConversionInfo(
       const VkDevice& vk_device,

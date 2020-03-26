@@ -22,6 +22,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -185,37 +188,6 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         return false;
     }
     return true;
-  }
-
-  // Runs the extensions test at chrome/test/data/pdf/<filename> on the PDF file
-  // at chrome/test/data/pdf/<pdf_filename>, where |filename| is loaded as a JS
-  // module.
-  void RunTestsInJsModule(const std::string& filename,
-                          const std::string& pdf_filename) {
-    extensions::ResultCatcher catcher;
-
-    GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));
-
-    // It should be good enough to just navigate to the URL. But loading up the
-    // BrowserPluginGuest seems to happen asynchronously as there was flakiness
-    // being seen due to the BrowserPluginGuest not being available yet (see
-    // crbug.com/498077). So instead use LoadPdf() which ensures that the PDF is
-    // loaded before continuing.
-    WebContents* guest_contents = LoadPdfGetGuestContents(url);
-    ASSERT_TRUE(guest_contents);
-
-    constexpr char kModuleLoaderTemplate[] =
-        R"(var s = document.createElement('script');
-           s.type = 'module';
-           s.src = '_test_resources/%s';
-           document.body.appendChild(s);)";
-
-    ASSERT_TRUE(content::ExecuteScript(
-        guest_contents,
-        base::StringPrintf(kModuleLoaderTemplate, filename.c_str())));
-
-    if (!catcher.GetNextResult())
-      FAIL() << catcher.message();
   }
 
   // Load the PDF at the given URL and ensure it has finished loading. Return
@@ -386,23 +358,6 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         base::FilePath(ChromeContentClient::kPDFPluginPath),
         browser()->profile()->GetPath());
   }
-
-  // Installs the specified service worker and tests navigating to a PDF in its
-  // scope.
-  void RunServiceWorkerTest(const std::string& worker_path) {
-    // Install the service worker.
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL(
-                       "/service_worker/create_service_worker.html"));
-    EXPECT_EQ("DONE",
-              EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                     "register('" + worker_path + "', '/pdf');"));
-
-    // Navigate to a PDF in the service worker's scope. It should load.
-    RunTestsInJsModule("basic_test.js", "test.pdf");
-    // Ensure it loaded in a PPAPI process.
-    EXPECT_EQ(1, CountPDFProcesses());
-  }
 };
 
 class PDFExtensionTestWithTestGuestViewManager : public PDFExtensionTest {
@@ -512,19 +467,6 @@ class PDFExtensionLoadTest : public PDFExtensionTest,
 };
 
 using PDFExtensionHitTestTest = PDFExtensionTest;
-
-class PDFAnnotationsTest : public PDFExtensionTest {
- public:
-  PDFAnnotationsTest() {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PDFExtensionTest::SetUpCommandLine(command_line);
-    feature_list_.InitAndEnableFeature(chrome_pdf::features::kPDFAnnotations);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
 
 // Disabled because it's flaky.
 // See the issue for details: https://crbug.com/826055.
@@ -714,102 +656,118 @@ INSTANTIATE_TEST_SUITE_P(PDFTestFiles,
                          PDFExtensionLoadTest,
                          testing::Range(0, kNumberLoadTestParts));
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
+class PDFExtensionJSTest : public PDFExtensionTest {
+ public:
+  ~PDFExtensionJSTest() override = default;
+
+ protected:
+  // Runs the extensions test at chrome/test/data/pdf/<filename> on the PDF file
+  // at chrome/test/data/pdf/<pdf_filename>, where |filename| is loaded as a JS
+  // module.
+  void RunTestsInJsModule(const std::string& filename,
+                          const std::string& pdf_filename) {
+    extensions::ResultCatcher catcher;
+
+    GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));
+
+    // It should be good enough to just navigate to the URL. But loading up the
+    // BrowserPluginGuest seems to happen asynchronously as there was flakiness
+    // being seen due to the BrowserPluginGuest not being available yet (see
+    // crbug.com/498077). So instead use LoadPdf() which ensures that the PDF is
+    // loaded before continuing.
+    WebContents* guest_contents = LoadPdfGetGuestContents(url);
+    ASSERT_TRUE(guest_contents);
+
+    constexpr char kModuleLoaderTemplate[] =
+        R"(var s = document.createElement('script');
+           s.type = 'module';
+           s.src = '_test_resources/%s';
+           document.body.appendChild(s);)";
+
+    ASSERT_TRUE(content::ExecuteScript(
+        guest_contents,
+        base::StringPrintf(kModuleLoaderTemplate, filename.c_str())));
+
+    if (!catcher.GetNextResult())
+      FAIL() << catcher.message();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Basic) {
   RunTestsInJsModule("basic_test.js", "test.pdf");
 
   // Ensure it loaded in a PPAPI process.
   EXPECT_EQ(1, CountPDFProcesses());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, BasicPlugin) {
   RunTestsInJsModule("basic_plugin_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Viewport) {
   RunTestsInJsModule("viewport_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Layout3) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Layout3) {
   RunTestsInJsModule("layout_test.js", "test-layout3.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Layout4) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Layout4) {
   RunTestsInJsModule("layout_test.js", "test-layout4.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Bookmark) {
   RunTestsInJsModule("bookmarks_test.js", "test-bookmarks-with-zoom.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Navigator) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Navigator) {
   RunTestsInJsModule("navigator_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ParamsParser) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ParamsParser) {
   RunTestsInJsModule("params_parser_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ZoomManager) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ZoomManager) {
   RunTestsInJsModule("zoom_manager_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, GestureDetector) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, GestureDetector) {
   RunTestsInJsModule("gesture_detector_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchHandling) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, TouchHandling) {
   RunTestsInJsModule("touch_handling_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Elements) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Elements) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("material_elements_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ToolbarManager) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ToolbarManager) {
   RunTestsInJsModule("toolbar_manager_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Title) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Title) {
   RunTestsInJsModule("title_test.js", "test-title.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, WhitespaceTitle) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, WhitespaceTitle) {
   RunTestsInJsModule("whitespace_title_test.js", "test-whitespace-title.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Beep) {
   RunTestsInJsModule("beep_test.js", "test-beep.pdf");
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/920684): Test times out.
-#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(ADDRESS_SANITIZER) || defined(_DEBUG)
-#define MAYBE_AnnotationsFeatureEnabled DISABLED_AnnotationsFeatureEnabled
-#else
-#define MAYBE_AnnotationsFeatureEnabled AnnotationsFeatureEnabled
-#endif
-IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, MAYBE_AnnotationsFeatureEnabled) {
-  RunTestsInJsModule("annotations_feature_enabled_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, AnnotationsFeatureDisabled) {
-  RunTestsInJsModule("annotations_feature_disabled_test.js", "test.pdf");
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Printing) {
-  RunTestsInJsModule("printing_icon_test.js", "test.pdf");
-}
-#endif
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TwoUpViewFeature) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, TwoUpViewFeature) {
   RunTestsInJsModule("two_up_view_feature_test.js", "test.pdf");
 }
 
 // TODO(tsepez): See https://crbug.com/696650.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_NoBeep) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, DISABLED_NoBeep) {
   // Block the exact query from pdf/main.js while still allowing enough
   // JavaScript to run in the extension for this test harness to complete
   // its work.
@@ -824,12 +782,96 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_NoBeep) {
   RunTestsInJsModule("nobeep_test.js", "test-beep.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PageChange) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PageChange) {
   RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Metrics) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Metrics) {
   RunTestsInJsModule("metrics_test.js", "test.pdf");
+}
+
+// Test that if the plugin tries to load a URL that redirects then it will fail
+// to load. This is to avoid the source origin of the document changing during
+// the redirect, which can have security implications. https://crbug.com/653749.
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, RedirectsFailInPlugin) {
+  RunTestsInJsModule("redirects_fail_test.js", "test.pdf");
+}
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, AnnotationsFeatureDisabled) {
+  RunTestsInJsModule("annotations_feature_disabled_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Printing) {
+  RunTestsInJsModule("printing_icon_test.js", "test.pdf");
+}
+
+class PDFAnnotationsJSTest : public PDFExtensionJSTest {
+ public:
+  ~PDFAnnotationsJSTest() override = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(chrome_pdf::features::kPDFAnnotations);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// TODO(https://crbug.com/920684): Test times out.
+#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(ADDRESS_SANITIZER) || defined(_DEBUG)
+#define MAYBE_AnnotationsFeatureEnabled DISABLED_AnnotationsFeatureEnabled
+#else
+#define MAYBE_AnnotationsFeatureEnabled AnnotationsFeatureEnabled
+#endif
+IN_PROC_BROWSER_TEST_F(PDFAnnotationsJSTest, MAYBE_AnnotationsFeatureEnabled) {
+  RunTestsInJsModule("annotations_feature_enabled_test.js", "test.pdf");
+}
+#endif  // defined(OS_CHROMEOS)
+
+// Service worker tests are regression tests for
+// https://crbug.com/916514.
+class PDFExtensionServiceWorkerJSTest : public PDFExtensionJSTest {
+ public:
+  ~PDFExtensionServiceWorkerJSTest() override = default;
+
+ protected:
+  // Installs the specified service worker and tests navigating to a PDF in its
+  // scope.
+  void RunServiceWorkerTest(const std::string& worker_path) {
+    // Install the service worker.
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(
+                       "/service_worker/create_service_worker.html"));
+    EXPECT_EQ("DONE",
+              EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                     "register('" + worker_path + "', '/pdf');"));
+
+    // Navigate to a PDF in the service worker's scope. It should load.
+    RunTestsInJsModule("basic_test.js", "test.pdf");
+    // Ensure it loaded in a PPAPI process.
+    EXPECT_EQ(1, CountPDFProcesses());
+  }
+};
+
+// Test navigating to a PDF in the scope of a service worker with no fetch event
+// handler.
+IN_PROC_BROWSER_TEST_F(PDFExtensionServiceWorkerJSTest, NoFetchHandler) {
+  RunServiceWorkerTest("empty.js");
+}
+
+// Test navigating to a PDF when a service worker intercepts the request and
+// then falls back to network by not calling FetchEvent.respondWith().
+IN_PROC_BROWSER_TEST_F(PDFExtensionServiceWorkerJSTest, NetworkFallback) {
+  RunServiceWorkerTest("network_fallback_worker.js");
+}
+
+// Test navigating to a PDF when a service worker intercepts the request and
+// provides a response.
+IN_PROC_BROWSER_TEST_F(PDFExtensionServiceWorkerJSTest, Interception) {
+  RunServiceWorkerTest("respond_with_fetch_worker.js");
 }
 
 // Ensure that the internal PDF plugin application/x-google-chrome-pdf won't be
@@ -1283,13 +1325,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
   WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
 }
 #endif
-
-// Test that if the plugin tries to load a URL that redirects then it will fail
-// to load. This is to avoid the source origin of the document changing during
-// the redirect, which can have security implications. https://crbug.com/653749.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, RedirectsFailInPlugin) {
-  RunTestsInJsModule("redirects_fail_test.js", "test.pdf");
-}
 
 // Test that even if a different tab is selected when a navigation occurs,
 // the correct tab still gets navigated (see crbug.com/672563).
@@ -1812,7 +1847,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
   SendCopyCommandAndCheckCopyPasteClipboard("HEL");
 }
 
-// TODO: test is flaky. https://crbug.com/897801
+// TODO(crbug.com/897801): test is flaky.
 IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
                        DISABLED_IndividualShiftLeftArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
@@ -2176,27 +2211,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BackgroundColor) {
   EXPECT_EQ(inner, outer);
 }
 
-// Service worker tests are regression tests for
-// https://crbug.com/916514.
-
-// Test navigating to a PDF in the scope of a service worker with no fetch event
-// handler.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerNoFetchHandler) {
-  RunServiceWorkerTest("empty.js");
-}
-
-// Test navigating to a PDF when a service worker intercepts the request and
-// then falls back to network by not calling FetchEvent.respondWith().
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerNetworkFallback) {
-  RunServiceWorkerTest("network_fallback_worker.js");
-}
-
-// Test navigating to a PDF when a service worker intercepts the request and
-// provides a response.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerInterception) {
-  RunServiceWorkerTest("respond_with_fetch_worker.js");
-}
-
 // A helper for waiting for the first request for |url_to_intercept|.
 class RequestWaiter {
  public:
@@ -2331,6 +2345,32 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
   // fails to load.
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ASSERT_TRUE(LoadPdf(test_pdf_url));
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Metrics) {
+  base::HistogramTester histograms;
+  base::UserActionTester actions;
+
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/combobox_form.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // Histograms.
+  // Duplicating some constants to avoid reaching into pdf/ internals.
+  constexpr int kLoadedDocument = 0;
+  constexpr int kAcroForm = 1;
+  histograms.ExpectUniqueSample("PDF.DocumentFeature", kLoadedDocument, 1);
+  histograms.ExpectUniqueSample("PDF.FormType", kAcroForm, 1);
+  histograms.ExpectUniqueSample("PDF.IsTagged", 0, 1);
+  histograms.ExpectUniqueSample("PDF.HasAttachment", 0, 1);
+
+  // Custom histograms.
+  histograms.ExpectUniqueSample("PDF.PageCount", 1, 1);
+
+  // User actions.
+  EXPECT_EQ(1, actions.GetActionCount("PDF.LoadSuccess"));
 }
 
 // This test suite does a simple text-extraction based on the accessibility

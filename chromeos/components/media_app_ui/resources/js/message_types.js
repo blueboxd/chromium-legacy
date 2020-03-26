@@ -13,7 +13,7 @@
  */
 const Message = {
   DELETE_FILE: 'delete-file',
-  LOAD_FILE: 'load-file',
+  LOAD_FILES: 'load-files',
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
   OVERWRITE_FILE: 'overwrite-file',
 };
@@ -33,8 +33,13 @@ let DeleteFileMessage;
 /** @typedef {{ deleteResult: DeleteResult }}  */
 let DeleteFileResponse;
 
-/** @typedef {{token: number, file: !File}} */
-let OpenFileMessage;
+/**
+ * @typedef {{
+ *    writableFileIndex: number,
+ *    files: !Array<{token: number, file: !File}>
+ * }}
+ */
+let LoadFilesMessage;
 
 /** @typedef {{token: number, blob: !Blob}} */
 let OverwriteFileMessage;

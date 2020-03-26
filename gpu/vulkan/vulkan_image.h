@@ -14,7 +14,6 @@
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_FUCHSIA)
 #include <lib/zx/vmo.h>
@@ -49,17 +48,8 @@ class VULKAN_EXPORT VulkanImage {
       const gfx::Size& size,
       VkFormat format,
       VkImageUsageFlags usage,
-      VkImageCreateFlags flags = 0,
-      VkImageTiling image_tiling = VK_IMAGE_TILING_OPTIMAL);
-
-  static std::unique_ptr<VulkanImage> CreateFromGpuMemoryBufferHandle(
-      VulkanDeviceQueue* device_queue,
-      gfx::GpuMemoryBufferHandle gmb_handle,
-      const gfx::Size& size,
-      VkFormat format,
-      VkImageUsageFlags usage,
-      VkImageCreateFlags flags = 0,
-      VkImageTiling image_tiling = VK_IMAGE_TILING_OPTIMAL);
+      VkImageCreateFlags flags,
+      VkImageTiling image_tiling);
 
   static std::unique_ptr<VulkanImage> Create(
       VulkanDeviceQueue* device_queue,
@@ -103,22 +93,13 @@ class VULKAN_EXPORT VulkanImage {
                   VkImageCreateFlags flags,
                   VkImageTiling image_tiling,
                   void* image_create_info_next,
-                  void* memory_allocation_info_next,
-                  const VkMemoryRequirements* requirements);
+                  void* memory_allocation_info_next);
   bool InitializeWithExternalMemory(VulkanDeviceQueue* device_queue,
                                     const gfx::Size& size,
                                     VkFormat format,
                                     VkImageUsageFlags usage,
                                     VkImageCreateFlags flags,
                                     VkImageTiling image_tiling);
-  bool InitializeFromGpuMemoryBufferHandle(
-      VulkanDeviceQueue* device_queue,
-      gfx::GpuMemoryBufferHandle gmb_handle,
-      const gfx::Size& size,
-      VkFormat format,
-      VkImageUsageFlags usage,
-      VkImageCreateFlags flags,
-      VkImageTiling image_tiling);
 
   VulkanDeviceQueue* device_queue_ = nullptr;
   gfx::Size size_;

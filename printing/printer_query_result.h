@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PRINTER_QUERY_RESULT_CHROMEOS_H_
-#define PRINTING_PRINTER_QUERY_RESULT_CHROMEOS_H_
+#ifndef PRINTING_PRINTER_QUERY_RESULT_H_
+#define PRINTING_PRINTER_QUERY_RESULT_H_
 
 #include "printing/printing_export.h"
 
@@ -18,4 +18,4 @@ enum PRINTING_EXPORT PrinterQueryResult {
 
 }  // namespace printing
 
-#endif  // PRINTING_PRINTER_QUERY_RESULT_CHROMEOS_H_
+#endif  // PRINTING_PRINTER_QUERY_RESULT_H_

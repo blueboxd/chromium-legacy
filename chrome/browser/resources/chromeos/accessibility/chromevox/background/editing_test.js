@@ -1311,6 +1311,7 @@ TEST_F(
       const mockFeedback = this.createMockFeedback();
       this.runWithLoadedTree(
           `
+    <p>start</p>
     <div contenteditable role="textbox">
       <p>hello</p>
     </div>

@@ -1296,6 +1296,8 @@ public class AwContents implements SmartClipProvider {
     /**
      * Called on the "source" AwContents that is opening the popup window to
      * provide the AwContents to host the pop up content.
+     *
+     * See //android_webview/docs/how-does-on-create-window-work.md for more details.
      */
     public void supplyContentsForPopup(AwContents newContents) {
         if (isDestroyed(WARN)) return;
@@ -1316,6 +1318,7 @@ public class AwContents implements SmartClipProvider {
 
     // Recap: supplyContentsForPopup() is called on the parent window's content, this method is
     // called on the popup window's content.
+    // See //android_webview/docs/how-does-on-create-window-work.md for more details.
     private void receivePopupContents(long popupNativeAwContents) {
         if (isDestroyed(WARN)) return;
         // Save existing view state.

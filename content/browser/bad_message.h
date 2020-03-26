@@ -275,10 +275,6 @@ CONTENT_EXPORT void ReceivedBadMessage(int render_process_id,
 // for the |reason|, and terminates the process for |filter|.
 void ReceivedBadMessage(BrowserMessageFilter* filter, BadMessageReason reason);
 
-// Returns a crash key named "mojo-message-error" for storing Mojo error
-// messages.
-base::debug::CrashKeyString* GetMojoErrorCrashKey();
-
 // Site isolation. These keys help debug renderer kills such as
 // https://crbug.com/773140.
 // Retuns a key named "requested_site_url".

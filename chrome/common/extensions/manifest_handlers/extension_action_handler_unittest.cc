@@ -55,8 +55,10 @@ TEST(ExtensionActionHandlerTest, LoadInvisibleBrowserActionIconUnpacked) {
       extension_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
-  EXPECT_EQ("The icon is not sufficiently visible 'invisible_icon.png'.",
-            error);
+  EXPECT_EQ(
+      "Icon 'invisible_icon.png' specified in 'browser_action' is not "
+      "sufficiently visible.",
+      error);
 }
 
 // Tests that an unpacked extension with an invisible page action
@@ -71,8 +73,10 @@ TEST(ExtensionActionHandlerTest, LoadInvisiblePageActionIconUnpacked) {
       extension_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
-  EXPECT_EQ("The icon is not sufficiently visible 'invisible_icon.png'.",
-            error);
+  EXPECT_EQ(
+      "Icon 'invisible_icon.png' specified in 'page_action' is not "
+      "sufficiently visible.",
+      error);
 }
 
 // A parameterized test suite to test each different extension action key

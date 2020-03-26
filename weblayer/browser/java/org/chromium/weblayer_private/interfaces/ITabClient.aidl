@@ -26,4 +26,7 @@ interface ITabClient {
 
   // Added in M82.
   void onTabModalStateChanged(in boolean isTabModalShowing) = 5;
+
+  // Added in M83.
+  void onTitleUpdated(in IObjectWrapper title) = 6;
 }

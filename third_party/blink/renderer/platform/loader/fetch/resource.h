@@ -419,6 +419,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   // The caller owns the |clock| which must outlive the Resource.
   static void SetClockForTesting(const base::Clock* clock);
 
+  size_t CalculateOverheadSizeForTest() const {
+    return CalculateOverheadSize();
+  }
+
  protected:
   Resource(const ResourceRequestHead&,
            ResourceType,

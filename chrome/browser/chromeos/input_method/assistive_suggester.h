@@ -18,6 +18,16 @@ class Profile;
 
 namespace chromeos {
 
+// Must match with IMEAssistiveAction in enums.xml
+enum class AssistiveType {
+  kGenericAction = 0,
+  kPersonalEmail = 1,
+  kPersonalAddress = 2,
+  kPersonalPhoneNumber = 3,
+  kPersonalName = 4,
+  kMaxValue = kPersonalName,
+};
+
 // An agent to suggest assistive information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
 class AssistiveSuggester {
@@ -32,9 +42,9 @@ class AssistiveSuggester {
 
   // Checks the text before cursor, emits metric if any assistive prefix is
   // matched.
-  void RecordAssitiveCoverageMetrics(const base::string16& text,
-                                     int cursor_pos,
-                                     int anchor_pos);
+  void RecordAssistiveCoverageMetrics(const base::string16& text,
+                                      int cursor_pos,
+                                      int anchor_pos);
 
   // Called when a surrounding text is changed.
   // Returns true if it changes the surrounding text, e.g. a suggestion is
@@ -73,6 +83,9 @@ class AssistiveSuggester {
 
   // If we are showing a suggestion right now.
   bool suggestion_shown_ = false;
+
+  // Assistive type of the last proposed assistive action.
+  AssistiveType proposed_action_type_ = AssistiveType::kGenericAction;
 
   // If the suggestion is dismissed by the user, this is necessary so that we
   // will not reshow the suggestion immediately after the user dismisses it.

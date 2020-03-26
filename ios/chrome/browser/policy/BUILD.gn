@@ -23,6 +23,7 @@ source_set("policy") {
     "//components/policy:generated",
     "//components/policy/core/common",
     "//ios/chrome/browser",
+    "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state",
     "//services/network/public/cpp",
   ]
@@ -100,6 +101,7 @@ source_set("eg2_tests") {
   deps = [
     "//base",
     "//components/strings",
+    "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser:utils",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
@@ -120,7 +122,9 @@ source_set("eg_app_support+eg2") {
   ]
   deps = [
     ":policy",
+    ":test_support",
     "//base",
+    "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/policy/core/common",
     "//ios/chrome/browser",

@@ -36,7 +36,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/public/tooltip_client.h"
 
@@ -91,9 +90,6 @@ class TooltipControllerTest : public ViewsTestBase {
     ViewsTestBase::SetUp();
 
     aura::Window* root_window = GetContext();
-
-    if (root_window)
-      new wm::DefaultActivationClient(root_window);
 #if !BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_WIN)
     if (root_window) {
       tooltip_aura_ = new views::corewm::TooltipAura();
@@ -616,7 +612,6 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
   void SetUp() override {
     at_exit_manager_ = std::make_unique<base::ShadowingAtExitManager>();
     aura::test::AuraTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
     controller_ = std::make_unique<TooltipController>(
         std::unique_ptr<corewm::Tooltip>(test_tooltip_));
     root_window()->AddPreTargetHandler(controller_.get());
@@ -696,7 +691,6 @@ class TooltipControllerTest3 : public ViewsTestBase {
     ViewsTestBase::SetUp();
 
     aura::Window* root_window = GetContext();
-    new wm::DefaultActivationClient(root_window);
 
     widget_.reset(CreateWidget(root_window));
     widget_->SetContentsView(new View);

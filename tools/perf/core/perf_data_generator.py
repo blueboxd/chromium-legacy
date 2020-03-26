@@ -668,12 +668,12 @@ GTEST_BENCHMARKS = {
         'eseckler@chromium.org, oysteine@chromium.org',
         'Speed>Tracing'),
     'load_library_perf_tests': BenchmarkMetadata(
-        'xhwang@chromium.org, crouleau@chromium.org',
+        'xhwang@chromium.org, jrummell@chromium.org',
         'Internals>Media>Encrypted'),
     'performance_browser_tests': BenchmarkMetadata(
         'miu@chromium.org', 'Internals>Media>ScreenCapture'),
     'media_perftests': BenchmarkMetadata(
-        'crouleau@chromium.org, dalecurtis@chromium.org',
+        'liberato@chromium.org, dalecurtis@chromium.org',
         'Internals>Media'),
     'views_perftests': BenchmarkMetadata(
         'tapted@chromium.org', 'Internals>Views'),

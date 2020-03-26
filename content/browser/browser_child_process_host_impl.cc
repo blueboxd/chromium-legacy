@@ -7,7 +7,6 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -30,7 +29,6 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/histogram_controller.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
@@ -50,6 +48,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_channel.h"
@@ -694,8 +693,7 @@ void BrowserChildProcessHostImpl::OnMojoError(
   // It is important to call DumpWithoutCrashing synchronously - this will help
   // to preserve the callstack and the crash keys present when the bad mojo
   // message was received.
-  base::debug::ScopedCrashKeyString scoped_error_key(
-      bad_message::GetMojoErrorCrashKey(), error);
+  mojo::debug::ScopedMessageErrorCrashKey scoped_error_key(error);
   base::debug::DumpWithoutCrashing();
 
   if (task_runner->BelongsToCurrentThread()) {

@@ -17,7 +17,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 using extensions::AppWindow;
@@ -38,7 +37,6 @@ class ShapedAppWindowTargeterTest : public views::ViewsTestBase {
  protected:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
     widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.remove_standard_frame = true;

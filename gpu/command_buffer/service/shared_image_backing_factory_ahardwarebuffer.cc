@@ -38,7 +38,6 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -56,6 +55,66 @@
 
 namespace gpu {
 namespace {
+
+sk_sp<SkPromiseImageTexture> CreatePromiseTextureAHB(
+    viz::VulkanContextProvider* context_provider,
+    base::android::ScopedHardwareBufferHandle ahb_handle,
+    gfx::Size size,
+    viz::ResourceFormat format) {
+  VulkanImplementation* vk_implementation =
+      context_provider->GetVulkanImplementation();
+  VkDevice vk_device = context_provider->GetDeviceQueue()->GetVulkanDevice();
+  VkPhysicalDevice vk_physical_device =
+      context_provider->GetDeviceQueue()->GetVulkanPhysicalDevice();
+
+  // Create a VkImage and import AHB.
+  VkImage vk_image;
+  VkImageCreateInfo vk_image_info;
+  VkDeviceMemory vk_device_memory;
+  VkDeviceSize mem_allocation_size;
+  if (!vk_implementation->CreateVkImageAndImportAHB(
+          vk_device, vk_physical_device, size, std::move(ahb_handle), &vk_image,
+          &vk_image_info, &vk_device_memory, &mem_allocation_size)) {
+    return nullptr;
+  }
+
+  // Create backend texture from the VkImage.
+  GrVkAlloc alloc = {vk_device_memory, 0, mem_allocation_size, 0};
+  GrVkImageInfo vk_info = {vk_image,
+                           alloc,
+                           vk_image_info.tiling,
+                           vk_image_info.initialLayout,
+                           vk_image_info.format,
+                           vk_image_info.mipLevels,
+                           VK_QUEUE_FAMILY_EXTERNAL};
+  // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
+  // if the vk_info stays the same on subsequent calls.
+  auto promise_texture = SkPromiseImageTexture::Make(
+      GrBackendTexture(size.width(), size.height(), vk_info));
+  if (!promise_texture) {
+    vkDestroyImage(vk_device, vk_image, nullptr);
+    vkFreeMemory(vk_device, vk_device_memory, nullptr);
+    return nullptr;
+  }
+
+  return promise_texture;
+}
+
+void DestroyVkPromiseTextureAHB(viz::VulkanContextProvider* context_provider,
+                                sk_sp<SkPromiseImageTexture> promise_texture) {
+  DCHECK(promise_texture);
+  DCHECK(promise_texture->unique());
+
+  GrVkImageInfo vk_image_info;
+  bool result =
+      promise_texture->backendTexture().getVkImageInfo(&vk_image_info);
+  DCHECK(result);
+
+  VulkanFenceHelper* fence_helper =
+      context_provider->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueImageCleanupForSubmittedWork(
+      vk_image_info.fImage, vk_image_info.fAlloc.fMemory);
+}
 
 class OverlayImage final : public gl::GLImage {
  public:
@@ -269,38 +328,21 @@ class SharedImageRepresentationSkiaVkAHB
       SharedImageManager* manager,
       SharedImageBacking* backing,
       scoped_refptr<SharedContextState> context_state,
-      std::unique_ptr<VulkanImage> vulkan_image,
+      sk_sp<SkPromiseImageTexture> promise_texture,
       MemoryTypeTracker* tracker)
       : SharedImageRepresentationSkia(manager, backing, tracker),
-        vulkan_image_(std::move(vulkan_image)),
+        promise_texture_(std::move(promise_texture)),
         context_state_(std::move(context_state)) {
-    DCHECK(vulkan_image_);
+    DCHECK(promise_texture_);
     DCHECK(context_state_);
     DCHECK(context_state_->vk_context_provider());
-    // Create backend texture from the VkImage.
-    GrVkAlloc alloc(vulkan_image_->device_memory(), 0 /* offset */,
-                    vulkan_image_->device_size(), 0 /* flags */);
-    GrVkImageInfo vk_info(vulkan_image_->image(), alloc,
-                          vulkan_image_->image_tiling(),
-                          VK_IMAGE_LAYOUT_UNDEFINED, vulkan_image_->format(),
-                          1 /* levelCount */, VK_QUEUE_FAMILY_EXTERNAL);
-
-    // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
-    // if the vk_info stays the same on subsequent calls.
-    promise_texture_ = SkPromiseImageTexture::Make(
-        GrBackendTexture(size().width(), size().height(), vk_info));
-    DCHECK(promise_texture_);
   }
 
   ~SharedImageRepresentationSkiaVkAHB() override {
+    DestroyVkPromiseTextureAHB(context_state_->vk_context_provider(),
+                               std::move(promise_texture_));
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
     DCHECK(!surface_);
-    DCHECK(vulkan_image_);
-    VulkanFenceHelper* fence_helper = context_state_->vk_context_provider()
-                                          ->GetDeviceQueue()
-                                          ->GetFenceHelper();
-    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-        std::move(vulkan_image_));
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
@@ -453,7 +495,6 @@ class SharedImageRepresentationSkiaVkAHB
     mode_ = RepresentationAccessMode::kNone;
   }
 
-  std::unique_ptr<VulkanImage> vulkan_image_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
   SkSurface* surface_ = nullptr;
@@ -609,16 +650,12 @@ SharedImageBackingAHB::ProduceSkia(
   // Check whether we are in Vulkan mode OR GL mode and accordingly create
   // Skia representation.
   if (context_state->GrContextIsVulkan()) {
-    auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
-    gfx::GpuMemoryBufferHandle gmb_handle(GetAhbHandle());
-    auto vulkan_image = VulkanImage::CreateFromGpuMemoryBufferHandle(
-        device_queue, std::move(gmb_handle), size(), ToVkFormat(format()),
-        0 /* usage */);
-    if (!vulkan_image)
+    sk_sp<SkPromiseImageTexture> promise_texture = CreatePromiseTextureAHB(
+        context_state->vk_context_provider(), GetAhbHandle(), size(), format());
+    if (!promise_texture)
       return nullptr;
-
     return std::make_unique<SharedImageRepresentationSkiaVkAHB>(
-        manager, this, std::move(context_state), std::move(vulkan_image),
+        manager, this, std::move(context_state), std::move(promise_texture),
         tracker);
   }
   DCHECK(context_state->GrContextIsGL());

@@ -20,7 +20,7 @@
 <link rel="import" href="constants.html">
 <link rel="import" href="site_details_permission.html">
 <link rel="import" href="site_settings_behavior.html">
-<link rel="import" href="website_usage_private_api.html">
+<link rel="import" href="website_usage_browser_proxy.html">
 
 <dom-module id="site-details">
   <template>
@@ -281,11 +281,6 @@
         </site-details-permission>
       </template>
     </div>
-
-    <website-usage-private-api id="usageApi"
-        website-data-usage="{{storedData_}}"
-        website-cookie-usage="{{numCookies_}}">
-    </website-usage-private-api>
   </template>
   <script src="site_details.js"></script>
 </dom-module>

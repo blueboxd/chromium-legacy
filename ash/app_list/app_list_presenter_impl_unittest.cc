@@ -22,7 +22,6 @@
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/test_views_delegate.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -112,7 +111,6 @@ AppListPresenterImplTest::~AppListPresenterImplTest() {}
 
 void AppListPresenterImplTest::SetUp() {
   AuraTestBase::SetUp();
-  new wm::DefaultActivationClient(root_window());
   container_.reset(CreateNormalWindow(kShellWindowId_AppListContainer,
                                       root_window(), nullptr));
   std::unique_ptr<AppListPresenterDelegateTest> presenter_delegate =

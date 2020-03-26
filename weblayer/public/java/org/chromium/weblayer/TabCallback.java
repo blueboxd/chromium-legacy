@@ -40,4 +40,12 @@ public abstract class TabCallback {
      * @since 82
      */
     public void onTabModalStateChanged(boolean isTabModalShowing) {}
+
+    /**
+     * Called when the title of this tab changes. Note before the page sets a title, the title may
+     * be a portion of the Uri.
+     * @param title New title of this tab.
+     * @since 83
+     */
+    public void onTitleUpdated(@NonNull String title) {}
 }

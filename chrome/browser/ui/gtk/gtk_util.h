@@ -121,6 +121,8 @@ namespace gtk {
 // Converts ui::NativeTheme::State to GtkStateFlags.
 GtkStateFlags StateToStateFlags(ui::NativeTheme::State state);
 
+SkColor GdkRgbaToSkColor(const GdkRGBA& color);
+
 // If |context| is nullptr, creates a new top-level style context
 // specified by parsing |css_node|.  Otherwise, creates the child
 // context with |context| as the parent.

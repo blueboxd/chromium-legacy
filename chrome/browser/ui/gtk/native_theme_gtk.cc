@@ -279,6 +279,14 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetBgColor(GtkCheckVersion(3, 20) ? "GtkTextView#textview.view"
                                                : "GtkTextView.view");
     case ui::NativeTheme::kColorId_TextfieldPlaceholderColor:
+      if (!GtkCheckVersion(3, 90)) {
+        auto context = GetStyleContextFromCss("GtkEntry#entry");
+        // This is copied from gtkentry.c.
+        GdkRGBA fg = {0.5, 0.5, 0.5};
+        gtk_style_context_lookup_color(context, "placeholder_text_color", &fg);
+        return GdkRgbaToSkColor(fg);
+      }
+      return GetFgColor("GtkEntry#entry #text #placeholder");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyColor:
       return GetFgColor(GtkCheckVersion(3, 20)
                             ? "GtkTextView#textview.view:disabled #text"

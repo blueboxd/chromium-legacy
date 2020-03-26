@@ -30,7 +30,9 @@ WebKioskAppLauncher::WebKioskAppLauncher(
     WebKioskAppLauncher::Delegate* delegate)
     : profile_(profile),
       delegate_(delegate),
-      url_loader_(std::make_unique<web_app::WebAppUrlLoader>()) {}
+      url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
+      data_retriever_factory_(base::BindRepeating(
+          &std::make_unique<web_app::WebAppDataRetriever>)) {}
 
 WebKioskAppLauncher::~WebKioskAppLauncher() = default;
 
@@ -52,9 +54,8 @@ void WebKioskAppLauncher::ContinueWithNetworkReady() {
   DCHECK(!is_installed_);
   install_task_.reset(new web_app::WebAppInstallTask(
       profile_, /*registrar=*/nullptr, /*shortcut_manager=*/nullptr,
-      /*file_handler_manager=*/nullptr,
-      /*install_finalizer=*/nullptr,
-      std::make_unique<web_app::WebAppDataRetriever>()));
+      /*file_handler_manager=*/nullptr, /*install_finalizer=*/nullptr,
+      data_retriever_factory_.Run()));
   install_task_->LoadAndRetrieveWebApplicationInfoWithIcons(
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_)->install_url(),
       url_loader_.get(),
@@ -99,7 +100,11 @@ void WebKioskAppLauncher::LaunchApp() {
                  ? app->launch_url()
                  : app->install_url();
 
-  Browser::CreateParams params(Browser::TYPE_APP, profile_, false);
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      app->name(), true, gfx::Rect(), profile_, false);
+  if (test_browser_window_) {
+    params.window = test_browser_window_;
+  }
 
   browser_ = Browser::Create(params);
   NavigateParams nav_params(browser_, url,
@@ -119,6 +124,21 @@ void WebKioskAppLauncher::LaunchApp() {
 void WebKioskAppLauncher::CancelCurrentInstallation() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   install_task_.reset();
+}
+
+void WebKioskAppLauncher::SetDataRetrieverFactoryForTesting(
+    base::RepeatingCallback<std::unique_ptr<web_app::WebAppDataRetriever>()>
+        data_retriever_factory) {
+  data_retriever_factory_ = data_retriever_factory;
+}
+
+void WebKioskAppLauncher::SetBrowserWindowForTesting(BrowserWindow* window) {
+  test_browser_window_ = window;
+}
+
+void WebKioskAppLauncher::SetUrlLoaderForTesting(
+    std::unique_ptr<web_app::WebAppUrlLoader> url_loader) {
+  url_loader_ = std::move(url_loader);
 }
 
 }  // namespace chromeos

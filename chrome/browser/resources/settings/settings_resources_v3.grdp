@@ -447,6 +447,16 @@
            use_base_dir="false"
            preprocess="true"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_PERSONALIZATION_OPTIONS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/personalization_options.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_RESET_PAGE_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/reset_page/reset_page.m.js"
            use_base_dir="false"

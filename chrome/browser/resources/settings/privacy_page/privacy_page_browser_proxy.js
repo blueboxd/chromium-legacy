@@ -4,9 +4,13 @@
 
 /** @fileoverview Handles interprocess communication for the privacy page. */
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /** @typedef {{enabled: boolean, managed: boolean}} */
-  let MetricsReporting;
+  /* #export */ let MetricsReporting;
 
   /** @typedef {{name: string, value: string, policy: string}} */
   let ResolverOption;
@@ -16,7 +20,7 @@ cr.define('settings', function() {
    * kept in sync with the modes in chrome/browser/net/dns_util.h.
    * @enum {string}
    */
-  const SecureDnsMode = {
+  /* #export */ const SecureDnsMode = {
     OFF: 'off',
     AUTOMATIC: 'automatic',
     SECURE: 'secure',
@@ -27,7 +31,7 @@ cr.define('settings', function() {
    * the management modes in chrome/browser/net/dns_util.h.
    * @enum {number}
    */
-  const SecureDnsUiManagementMode = {
+  /* #export */ const SecureDnsUiManagementMode = {
     NO_OVERRIDE: 0,
     DISABLED_MANAGED: 1,
     DISABLED_PARENTAL_CONTROLS: 2,
@@ -43,7 +47,7 @@ cr.define('settings', function() {
   let SecureDnsSetting;
 
   /** @interface */
-  class PrivacyPageBrowserProxy {
+  /* #export */ class PrivacyPageBrowserProxy {
     // <if expr="_google_chrome and not chromeos">
     /** @return {!Promise<!settings.MetricsReporting>} */
     getMetricsReporting() {}
@@ -93,7 +97,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.PrivacyPageBrowserProxy}
    */
-  class PrivacyPageBrowserProxyImpl {
+  /* #export */ class PrivacyPageBrowserProxyImpl {
     // <if expr="_google_chrome and not chromeos">
     /** @override */
     getMetricsReporting() {

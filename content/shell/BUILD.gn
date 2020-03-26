@@ -45,7 +45,7 @@ source_set("android_shell_descriptors") {
   public_deps = [ "//content/public/common:content_descriptors" ]
 }
 
-source_set("web_test_switches") {
+source_set("web_test_common") {
   testonly = true
   sources = [
     "common/web_test/web_test_string_util.cc",
@@ -241,7 +241,7 @@ jumbo_static_library("content_shell_lib") {
   deps = [
     ":client_hints_util",
     ":resources",
-    ":web_test_switches",
+    ":web_test_common",
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",

@@ -6,7 +6,7 @@
 
 #include "base/optional.h"
 #include "base/task/thread_pool/task_tracker.h"
-#include "base/threading/scoped_blocking_call.h"
+#include "base/threading/scoped_blocking_call_internal.h"
 #include "base/win/scoped_com_initializer.h"
 
 namespace base {

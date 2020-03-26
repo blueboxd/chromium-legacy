@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "printing/printer_status_chromeos.h"
+#include "printing/printer_status.h"
 
 namespace chromeos {
 

@@ -1784,6 +1784,15 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
   }
 
+  if (is_mouse_pressed_ && select_all_on_mouse_release_) {
+    // https://crbug.com/1063161 If the user presses the mouse button down and
+    // begins to type without releasing the mouse button, the subsequent release
+    // will delete any newly typed characters due to the SelectAll happening on
+    // mouse-up. If we detect this state, do the select-all immediately.
+    SelectAllForUserGesture();
+    select_all_on_mouse_release_ = false;
+  }
+
   return HandleEarlyTabActions(event);
 }
 

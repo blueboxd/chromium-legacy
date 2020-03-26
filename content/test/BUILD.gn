@@ -755,7 +755,6 @@ static_library("web_test_support") {
     "//content/public/common",
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
-    "//content/shell:web_test_switches",
     "//content/shell/test_runner:test_runner",
     "//device/bluetooth",
     "//device/gamepad/public/cpp:shared_with_blink",

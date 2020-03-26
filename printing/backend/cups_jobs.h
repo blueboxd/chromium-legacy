@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/version.h"
-#include "printing/printer_query_result_chromeos.h"
+#include "printing/printer_query_result.h"
 #include "printing/printing_export.h"
 
 // This file contains a collection of functions used to query IPP printers or

@@ -2,6 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+class TestWebsiteUsageBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super(['clearUsage', 'fetchUsageTotal']);
+  }
+
+  /** @override */
+  fetchUsageTotal(host) {
+    this.methodCalled('fetchUsageTotal', host);
+  }
+
+  /** @override */
+  clearUsage(origin) {
+    this.methodCalled('clearUsage', origin);
+  }
+}
+
 /** @fileoverview Suite of tests for site-details. */
 suite('SiteDetails', function() {
   /**
@@ -15,6 +31,18 @@ suite('SiteDetails', function() {
    * @type {SiteSettingsPref}
    */
   let prefs;
+
+  /**
+   * The mock site settings prefs proxy object to use during test.
+   * @type {TestSiteSettingsPrefsBrowserProxy}
+   */
+  let browserProxy;
+
+  /**
+   * The mock website usage proxy object to use during test.
+   * @type {TestWebsiteUsageBrowserProxy}
+   */
+  let websiteUsageProxy;
 
   // Initialize a site-details before each test.
   setup(function() {
@@ -128,6 +156,9 @@ suite('SiteDetails', function() {
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    websiteUsageProxy = new TestWebsiteUsageBrowserProxy();
+    settings.WebsiteUsageBrowserProxyImpl.instance_ = websiteUsageProxy;
+
     PolymerTest.clearBody();
   });
 
@@ -259,42 +290,30 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     testElement = createSiteDetails(origin);
 
-    // Remove the current website-usage-private-api element.
-    const parent = testElement.$.usageApi.parentNode;
-    assertTrue(parent != undefined);
-    testElement.$.usageApi.remove();
-
-    // Replace it with a mock version.
-    let usageCleared = false;
-    Polymer({
-      is: 'mock-website-usage-private-api-storage',
-
-      fetchUsageTotal: function(host) {
-        testElement.storedData_ = '1 KB';
-      },
-
-      clearUsage: function(origin, task) {
-        usageCleared = true;
-      },
-    });
-    const api =
-        document.createElement('mock-website-usage-private-api-storage');
-    testElement.$.usageApi = api;
-    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Call onOriginChanged_() manually to simulate a new navigation.
     testElement.currentRouteChanged(settings.Route);
-    return browserProxy.whenCalled('getOriginPermissions').then(() => {
-      // Ensure the mock's methods were called and check usage was cleared on
-      // clicking the trash button.
-      assertEquals('1 KB', testElement.storedData_);
-      assertTrue(testElement.$$('#noStorage').hidden);
-      assertFalse(testElement.$$('#storage').hidden);
+    return Promise
+        .all([
+          browserProxy.whenCalled('getOriginPermissions'),
+          websiteUsageProxy.whenCalled('fetchUsageTotal'),
+        ])
+        .then(results => {
+          const hostRequested = results[1];
+          assertEquals('foo.com', hostRequested);
+          cr.webUIListenerCallback(
+              'usage-total-changed', hostRequested, '1 KB', '10 cookies');
+          assertEquals('1 KB', testElement.storedData_);
+          assertTrue(testElement.$$('#noStorage').hidden);
+          assertFalse(testElement.$$('#storage').hidden);
 
-      testElement.$$('#confirmClearStorage .action-button').click();
-      assertTrue(usageCleared);
-    });
+          testElement.$$('#confirmClearStorage .action-button').click();
+          return websiteUsageProxy.whenCalled('clearUsage');
+        })
+        .then(originCleared => {
+          assertEquals('https://foo.com/', originCleared);
+        });
   });
 
   test('cookies gets deleted properly', function() {
@@ -302,42 +321,30 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     testElement = createSiteDetails(origin);
 
-    // Remove the current website-usage-private-api element.
-    const parent = testElement.$.usageApi.parentNode;
-    assertTrue(parent != undefined);
-    testElement.$.usageApi.remove();
-
-    // Replace it with a mock version.
-    let usageCleared = false;
-    Polymer({
-      is: 'mock-website-usage-private-api-cookies',
-
-      fetchUsageTotal: function(host) {
-        testElement.numCookies_ = '10 cookies';
-      },
-
-      clearUsage: function(origin, task) {
-        usageCleared = true;
-      },
-    });
-    const api =
-        document.createElement('mock-website-usage-private-api-cookies');
-    testElement.$.usageApi = api;
-    parent.appendChild(api);
-    Polymer.dom.flush();
-
     // Call onOriginChanged_() manually to simulate a new navigation.
     testElement.currentRouteChanged(settings.Route);
-    return browserProxy.whenCalled('getOriginPermissions').then(() => {
-      // Ensure the mock's methods were called and check usage was cleared on
-      // clicking the trash button.
-      assertEquals('10 cookies', testElement.numCookies_);
-      assertTrue(testElement.$$('#noStorage').hidden);
-      assertFalse(testElement.$$('#storage').hidden);
+    return Promise
+        .all([
+          browserProxy.whenCalled('getOriginPermissions'),
+          websiteUsageProxy.whenCalled('fetchUsageTotal'),
+        ])
+        .then(results => {
+          // Ensure the mock's methods were called and check usage was cleared
+          // on clicking the trash button.
+          const hostRequested = results[1];
+          assertEquals('foo.com', hostRequested);
+          cr.webUIListenerCallback(
+              'usage-total-changed', hostRequested, '1 KB', '10 cookies');
+          assertEquals('10 cookies', testElement.numCookies_);
+          assertTrue(testElement.$$('#noStorage').hidden);
+          assertFalse(testElement.$$('#storage').hidden);
 
-      testElement.$$('#confirmClearStorage .action-button').click();
-      assertTrue(usageCleared);
-    });
+          testElement.$$('#confirmClearStorage .action-button').click();
+          return websiteUsageProxy.whenCalled('clearUsage');
+        })
+        .then(originCleared => {
+          assertEquals('https://foo.com/', originCleared);
+        });
   });
 
   test('correct pref settings are shown', function() {
@@ -431,25 +438,6 @@ suite('SiteDetails', function() {
   test('show confirmation dialog on clear storage', function() {
     browserProxy.setPrefs(prefs);
     testElement = createSiteDetails('https://foo.com:443');
-
-    // Give |testElement.storedData_| a non-empty value to make the clear
-    // storage button appear. Also replace the website-usage-private-api element
-    // to prevent a call going back to the C++ upon confirming the dialog.
-    const parent = testElement.$.usageApi.parentNode;
-    assertTrue(parent != undefined);
-    testElement.$.usageApi.remove();
-    Polymer({
-      // Use a different mock name here to avoid an error when all tests are run
-      // together as there is no way to unregister a Polymer custom element.
-      is: 'mock1-website-usage-private-api',
-      fetchUsageTotal: function() {
-        testElement.storedData_ = '1 KB';
-      },
-      clearUsage: function(origin) {},
-    });
-    const api = document.createElement('mock1-website-usage-private-api');
-    testElement.$.usageApi = api;
-    parent.appendChild(api);
     Polymer.dom.flush();
 
     // Check both cancelling and accepting the dialog closes it.

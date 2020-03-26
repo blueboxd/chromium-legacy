@@ -40,9 +40,11 @@ using testing::ElementsAre;
 using ActionRequestResult = FeedNetwork::ActionRequestResult;
 using QueryRequestResult = FeedNetwork::QueryRequestResult;
 
-feedwire::Request GetTestFeedRequest() {
+feedwire::Request GetTestFeedRequest(feedwire::FeedQuery::RequestReason reason =
+                                         feedwire::FeedQuery::MANUAL_REFRESH) {
   feedwire::Request request;
   request.set_request_version(feedwire::Request::FEED_QUERY);
+  request.mutable_feed_request()->mutable_feed_query()->set_reason(reason);
   return request;
 }
 
@@ -182,12 +184,11 @@ class FeedNetworkTest : public testing::Test {
 TEST_F(FeedNetworkTest, SendQueryRequestEmpty) {
   CallbackReceiver<QueryRequestResult> receiver;
   feed_network()->SendQueryRequest(feedwire::Request(), receiver.Bind());
-  RespondToQueryRequest("", net::HTTP_OK);
 
   ASSERT_TRUE(receiver.GetResult());
   const QueryRequestResult& result = *receiver.GetResult();
-  EXPECT_EQ(net::HTTP_OK, result.status_code);
-  EXPECT_TRUE(result.response_body);
+  EXPECT_EQ(0, result.status_code);
+  EXPECT_FALSE(result.response_body);
 }
 
 TEST_F(FeedNetworkTest, SendQueryRequestSendsValidRequest) {
@@ -197,8 +198,8 @@ TEST_F(FeedNetworkTest, SendQueryRequestSendsValidRequest) {
       RespondToQueryRequest("", net::HTTP_OK);
 
   EXPECT_EQ(
-      "https://www.google.com/httpservice/noretry/"
-      "DiscoverClankService/FeedQuery?reqpld=%08%01&fmt=bin&hl=en",
+      "https://www.google.com/httpservice/retry/InteractiveDiscoverAgaService/"
+      "FeedQuery?reqpld=%08%01%C2%3E%04%12%02%08%01&fmt=bin&hl=en",
       resource_request.url);
   EXPECT_EQ("GET", resource_request.method);
   EXPECT_FALSE(resource_request.headers.HasHeader("content-encoding"));
@@ -221,7 +222,7 @@ TEST_F(FeedNetworkTest, SendQueryRequestInvalidResponse) {
 
 TEST_F(FeedNetworkTest, SendQueryRequestReceivesResponse) {
   CallbackReceiver<QueryRequestResult> receiver;
-  feed_network()->SendQueryRequest(feedwire::Request(), receiver.Bind());
+  feed_network()->SendQueryRequest(GetTestFeedRequest(), receiver.Bind());
   RespondToQueryRequest(GetTestFeedResponse(), net::HTTP_OK);
 
   ASSERT_TRUE(receiver.GetResult());
@@ -233,7 +234,7 @@ TEST_F(FeedNetworkTest, SendQueryRequestReceivesResponse) {
 
 TEST_F(FeedNetworkTest, SendQueryRequestIgnoresBodyForNon200Response) {
   CallbackReceiver<QueryRequestResult> receiver;
-  feed_network()->SendQueryRequest(feedwire::Request(), receiver.Bind());
+  feed_network()->SendQueryRequest(GetTestFeedRequest(), receiver.Bind());
   RespondToQueryRequest(GetTestFeedResponse(), net::HTTP_FORBIDDEN);
 
   ASSERT_TRUE(receiver.GetResult());
@@ -254,7 +255,7 @@ TEST_F(FeedNetworkTest, CancelRequest) {
 TEST_F(FeedNetworkTest, RequestTimeout) {
   base::HistogramTester histogram_tester;
   CallbackReceiver<QueryRequestResult> receiver;
-  feed_network()->SendQueryRequest(feedwire::Request(), receiver.Bind());
+  feed_network()->SendQueryRequest(GetTestFeedRequest(), receiver.Bind());
   task_environment_.FastForwardBy(TimeDelta::FromSeconds(30));
 
   ASSERT_TRUE(receiver.GetResult());
@@ -268,7 +269,11 @@ TEST_F(FeedNetworkTest, RequestTimeout) {
 TEST_F(FeedNetworkTest, ParallelRequests) {
   CallbackReceiver<QueryRequestResult> receiver1, receiver2;
   feed_network()->SendQueryRequest(GetTestFeedRequest(), receiver1.Bind());
-  feed_network()->SendQueryRequest(feedwire::Request(), receiver2.Bind());
+  // Make another request with a different URL so Respond() won't affect both
+  // requests.
+  feed_network()->SendQueryRequest(
+      GetTestFeedRequest(feedwire::FeedQuery::NEXT_PAGE_SCROLL),
+      receiver2.Bind());
 
   // Respond to both requests, avoiding FastForwardUntilNoTasksRemain until
   // a response is added for both requests.

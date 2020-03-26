@@ -25,6 +25,7 @@ class TabCallbackProxy : public TabObserver {
   // TabObserver:
   void DisplayedUrlChanged(const GURL& url) override;
   void OnRenderProcessGone() override;
+  void OnTitleUpdated(const base::string16& title) override;
 
  private:
   Tab* tab_;

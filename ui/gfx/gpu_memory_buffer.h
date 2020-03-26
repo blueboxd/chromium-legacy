@@ -55,20 +55,16 @@ using GpuMemoryBufferId = GenericSharedMemoryId;
 // time and it corresponds to |type|.
 struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferHandle();
-#if defined(OS_ANDROID)
-  explicit GpuMemoryBufferHandle(
-      base::android::ScopedHardwareBufferHandle handle);
-#endif
   GpuMemoryBufferHandle(GpuMemoryBufferHandle&& other);
   GpuMemoryBufferHandle& operator=(GpuMemoryBufferHandle&& other);
   ~GpuMemoryBufferHandle();
   GpuMemoryBufferHandle Clone() const;
   bool is_null() const { return type == EMPTY_BUFFER; }
-  GpuMemoryBufferType type = GpuMemoryBufferType::EMPTY_BUFFER;
-  GpuMemoryBufferId id{0};
+  GpuMemoryBufferType type;
+  GpuMemoryBufferId id;
   base::UnsafeSharedMemoryRegion region;
-  uint32_t offset = 0;
-  int32_t stride = 0;
+  uint32_t offset;
+  int32_t stride;
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
   NativePixmapHandle native_pixmap_handle;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)

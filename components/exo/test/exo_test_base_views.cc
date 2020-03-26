@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/display/manager/managed_display_info.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace exo {
@@ -105,8 +104,6 @@ ExoTestBaseViews::~ExoTestBaseViews() {}
 
 void ExoTestBaseViews::SetUp() {
   views::ViewsTestBase::SetUp();
-  // Takes care of its own lifetime.
-  new wm::DefaultActivationClient(root_window());
 
   wm_helper_ = std::make_unique<WMHelperTester>(root_window());
   WMHelper::SetInstance(wm_helper_.get());

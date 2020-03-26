@@ -28,6 +28,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_context_factories.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/wm_state.h"
 
 #if defined(OS_LINUX)
@@ -123,6 +124,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   host_->window()->SetEventTargeter(std::make_unique<WindowTargeter>());
 
   Window* root_window = GetContext();
+  new wm::DefaultActivationClient(root_window);  // Manages own lifetime.
   client::SetFocusClient(root_window, focus_client_.get());
   capture_client_ = std::make_unique<client::DefaultCaptureClient>(root_window);
   parenting_client_ = std::make_unique<TestWindowParentingClient>(root_window);

@@ -18,7 +18,7 @@
 #include "base/version.h"
 #include "printing/backend/cups_deleters.h"
 #include "printing/backend/cups_ipp_helper.h"
-#include "printing/printer_status_chromeos.h"
+#include "printing/printer_status.h"
 
 namespace printing {
 namespace {

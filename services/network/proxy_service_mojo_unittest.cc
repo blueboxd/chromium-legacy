@@ -127,7 +127,8 @@ class ProxyServiceMojoTest : public testing::Test {
                     TRAFFIC_ANNOTATION_FOR_TESTS)),
             base::WrapUnique(fetcher_),
             std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
-            &mock_host_resolver_, &net_log_, &network_delegate_);
+            &mock_host_resolver_, &net_log_, true /* pac_quick_check_enabled */,
+            &network_delegate_);
   }
 
   base::test::TaskEnvironment task_environment_;

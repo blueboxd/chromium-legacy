@@ -14,6 +14,12 @@
 // namespace.
 + (NSString*)valueForPlatformPolicy:(NSString*)policyKey;
 
+// Sets the |SearchSuggestEnabled| policy to the given value.
+// TODO(crbug.com/1024115): This should be replaced with a more generic API that
+// can set arbitrarily complex policy data. This suggest-specific API only
+// exists to allow us to write an example policy EG2 test.
++ (void)setSuggestPolicyEnabled:(BOOL)enabled;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_POLICY_POLICY_EGTEST_APP_INTERFACE_H_

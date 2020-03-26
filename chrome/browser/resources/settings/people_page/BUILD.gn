@@ -444,7 +444,6 @@ polymer_modulizer("sync_page") {
   js_file = "sync_page.js"
   html_file = "sync_page.html"
   html_type = "dom-module"
-  ignore_imports = [ "chrome/browser/resources/settings/privacy_page/personalization_options.html" ]
   namespace_rewrites = settings_namespace_rewrites
   auto_imports = settings_auto_imports + [
                    "ui/webui/resources/html/polymer.html|Polymer,html,flush",

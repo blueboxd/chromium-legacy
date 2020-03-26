@@ -368,6 +368,15 @@ public class Tab {
                 callback.onTabModalStateChanged(isTabModalShowing);
             }
         }
+
+        @Override
+        public void onTitleUpdated(IObjectWrapper title) {
+            StrictModeWorkaround.apply();
+            String titleString = ObjectWrapper.unwrap(title, String.class);
+            for (TabCallback callback : mCallbacks) {
+                callback.onTitleUpdated(titleString);
+            }
+        }
     }
 
     private static final class DownloadCallbackClientImpl extends IDownloadCallbackClient.Stub {

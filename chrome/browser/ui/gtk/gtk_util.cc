@@ -281,6 +281,11 @@ GtkStateFlags StateToStateFlags(ui::NativeTheme::State state) {
   }
 }
 
+SkColor GdkRgbaToSkColor(const GdkRGBA& color) {
+  return SkColorSetARGB(color.alpha * 255, color.red * 255, color.green * 255,
+                        color.blue * 255);
+}
+
 NO_SANITIZE("cfi-icall")
 ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
                                                const std::string& css_node) {
@@ -421,11 +426,6 @@ ScopedStyleContext GetStyleContextFromCss(const std::string& css_selector) {
     context = AppendCssNodeToStyleContext(context, widget_type);
   }
   return context;
-}
-
-SkColor GdkRgbaToSkColor(const GdkRGBA& color) {
-  return SkColorSetARGB(color.alpha * 255, color.red * 255, color.green * 255,
-                        color.blue * 255);
 }
 
 SkColor GetFgColorFromStyleContext(GtkStyleContext* context) {

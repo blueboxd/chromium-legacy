@@ -99,12 +99,20 @@ Polymer({
     value: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
   },
 
-  listeners: {
-    'usage-deleted': 'onUsageDeleted_',
-  },
+  /** @private {string} */
+  fetchingForHost_: '',
+
+  /** @private {?settings.WebsiteUsageBrowserProxy} */
+  websiteUsageProxy_: null,
 
   /** @override */
   attached() {
+    this.websiteUsageProxy_ =
+        settings.WebsiteUsageBrowserProxyImpl.getInstance();
+    this.addWebUIListener('usage-total-changed', (host, data, cookies) => {
+      this.onUsageTotalChanged_(host, data, cookies);
+    });
+
     this.addWebUIListener(
         'contentSettingSitePermissionChanged',
         this.onPermissionChanged_.bind(this));
@@ -141,7 +149,9 @@ Polymer({
       if (!valid) {
         settings.Router.getInstance().navigateToPreviousRoute();
       } else {
-        this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin_).hostname);
+        this.fetchingForHost_ = this.toUrl(this.origin_).hostname;
+        this.storedData_ = '';
+        this.websiteUsageProxy_.fetchUsageTotal(this.fetchingForHost_);
         this.updatePermissions_(this.getCategoryList());
       }
     });
@@ -168,6 +178,22 @@ Polymer({
     // Site details currently doesn't support embedded origins, so ignore it
     // and just check whether the origins are the same.
     this.updatePermissions_([category]);
+  },
+
+  /**
+   * Callback for when the usage total is known.
+   * @param {string} host The host that the usage was fetched for.
+   * @param {string} usage The string showing how much data the given host
+   *     is using.
+   * @param {string} cookies The string showing how many cookies the given host
+   *     is using.
+   * @private
+   */
+  onUsageTotalChanged_(host, usage, cookies) {
+    if (this.fetchingForHost_ === host) {
+      this.storedData_ = usage;
+      this.numCookies_ = cookies;
+    }
   },
 
   // <if expr="chromeos">
@@ -267,23 +293,12 @@ Polymer({
    */
   onClearStorage_(e) {
     if (this.hasUsage_(this.storedData_, this.numCookies_)) {
-      this.$.usageApi.clearUsage(this.toUrl(this.origin_).href);
-    }
-
-    this.onCloseDialog_(e);
-  },
-
-  /**
-   * Called when usage has been deleted for an origin via a non-Site Details
-   * source, e.g. clear browsing data.
-   * @param {!CustomEvent<!{origin: string}>} event
-   * @private
-   */
-  onUsageDeleted_(event) {
-    if (event.detail.origin == this.toUrl(this.origin_).href) {
+      this.websiteUsageProxy_.clearUsage(this.toUrl(this.origin_).href);
       this.storedData_ = '';
       this.numCookies_ = '';
     }
+
+    this.onCloseDialog_(e);
   },
 
   /**

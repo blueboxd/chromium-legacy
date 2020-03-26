@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @typedef {{token: number, file: !File, handle: !FileSystemFileHandle}} */
+let FileDescriptor;
+
 /**
  * Array of entries available in the current directory.
  *
- * @type {Array<{file: !File, handle: !FileSystemFileHandle}>}
+ * @type {!Array<!FileDescriptor>}
  */
 const currentFiles = [];
 
@@ -25,9 +28,9 @@ let fileToken = 0;
 
 /**
  * The file currently writable.
- * @type {?FileSystemFileHandle}
+ * @type {?FileDescriptor}
  */
-let currentlyWritableFileHandle = null;
+let currentlyWritableFile = null;
 
 /**
  * Reference to the directory handle that contains the first file in the most
@@ -49,10 +52,10 @@ guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
 
 guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   const overwrite = /** @type{OverwriteFileMessage} */ (message);
-  if (!currentlyWritableFileHandle || overwrite.token !== fileToken) {
+  if (!currentlyWritableFile || overwrite.token !== fileToken) {
     throw new Error('File not current.');
   }
-  const writer = await currentlyWritableFileHandle.createWritable();
+  const writer = await currentlyWritableFile.handle.createWritable();
   await writer.write(overwrite.blob);
   await writer.truncate(overwrite.blob.size);
   await writer.close();
@@ -62,7 +65,7 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   const deleteMsg = /** @type{DeleteFileMessage} */ (message);
 
-  if (!currentlyWritableFileHandle || deleteMsg.token !== fileToken) {
+  if (!currentlyWritableFile || deleteMsg.token !== fileToken) {
     throw new Error('File not current for delete.');
   }
 
@@ -71,7 +74,7 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   }
 
   // Get the name from the file reference. Handles file renames.
-  const currentFilename = (await currentlyWritableFileHandle.getFile()).name;
+  const currentFilename = (await currentlyWritableFile.handle.getFile()).name;
 
   // Check the file to be deleted exists in the directory handle. Prevents
   // deleting the wrong file / deleting a file that doesn't exist (this isn't
@@ -80,7 +83,7 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   const fileHandle = await currentDirectoryHandle.getFile(currentFilename);
 
   const isSameFileHandle =
-      await fileHandle.isSameEntry(currentlyWritableFileHandle);
+      await fileHandle.isSameEntry(currentlyWritableFile.handle);
   if (!isSameFileHandle) {
     return {deleteResult: DeleteResult.FILE_MOVED};
   }
@@ -89,40 +92,44 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   return {deleteResult: DeleteResult.SUCCESS};
 });
 
-/**
- * Loads a file in the guest.
- *
- * @param {?File} file
- * @param {!FileSystemFileHandle} handle
- */
-function loadFile(file, handle) {
-  const token = ++fileToken;
-  currentlyWritableFileHandle = handle;
-  guestMessagePipe.sendMessage(Message.LOAD_FILE, {token, file});
+/** Loads the current file list into the guest. */
+function sendFilesToGuest() {
+  // Before sending to guest ensure writableFileIndex is set to be writable,
+  // also clear the old token.
+  if (currentlyWritableFile) {
+    currentlyWritableFile.token = -1;
+  }
+  currentlyWritableFile = currentFiles[entryIndex];
+  currentlyWritableFile.token = ++fileToken;
+
+  /** @type {!LoadFilesMessage} */
+  const loadFilesMessage = {
+    writableFileIndex: entryIndex,
+    // Handle can't be passed through a message pipe.
+    files: currentFiles.map(fd => ({token: fd.token, file: fd.file}))
+  };
+  guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
 }
 
 /**
- * Loads a file from a handle received via the fileHandling API.
- *
- * @param {?FileSystemHandle} handle
- * @return {Promise<?File>}
+ * Gets a file from a handle received via the fileHandling API.
+ * @param {?FileSystemHandle} fileSystemHandle
+ * @return {Promise<?{file: !File, handle: !FileSystemFileHandle}>}
  */
-async function loadFileFromHandle(handle) {
-  if (!handle || !handle.isFile) {
+async function getFileFromHandle(fileSystemHandle) {
+  if (!fileSystemHandle || !fileSystemHandle.isFile) {
     return null;
   }
-
-  const fileHandle = /** @type{!FileSystemFileHandle} */ (handle);
-  const file = await fileHandle.getFile();
-  loadFile(file, fileHandle);
-  return file;
+  const handle = /** @type{!FileSystemFileHandle} */ (fileSystemHandle);
+  const file = await handle.getFile();
+  return {file, handle};
 }
 
 /**
  * Changes the working directory and initializes file iteration according to
  * the type of the opened file.
  *
- * @param {FileSystemDirectoryHandle} directory
+ * @param {!FileSystemDirectoryHandle} directory
  * @param {?File} focusFile
  */
 async function setCurrentDirectory(directory, focusFile) {
@@ -131,19 +138,32 @@ async function setCurrentDirectory(directory, focusFile) {
   }
   currentFiles.length = 0;
   for await (const /** !FileSystemHandle */ handle of directory.getEntries()) {
-    if (!handle.isFile) {
+    const asFile = await getFileFromHandle(handle);
+    if (!asFile) {
       continue;
     }
-    const fileHandle = /** @type{FileSystemFileHandle} */ (handle);
-    const file = await fileHandle.getFile();
 
     // Only allow traversal of matching mime types.
-    if (file.type === focusFile.type) {
-      currentFiles.push({file, handle: fileHandle});
+    if (asFile.file.type === focusFile.type) {
+      currentFiles.push({token: -1, file: asFile.file, handle: asFile.handle});
     }
   }
   entryIndex = currentFiles.findIndex(i => i.file.name == focusFile.name);
   currentDirectoryHandle = directory;
+  sendFilesToGuest();
+}
+
+/**
+ * Launch the media app with the files in the provided directory.
+ * @param {!FileSystemDirectoryHandle} directory
+ * @param {?FileSystemHandle} initialFileEntry
+ */
+async function launchWithDirectory(directory, initialFileEntry) {
+  const asFile = await getFileFromHandle(initialFileEntry);
+  await setCurrentDirectory(directory, asFile.file);
+
+  // Load currentFiles into the guest.
+  sendFilesToGuest();
 }
 
 /**
@@ -159,8 +179,8 @@ async function advance(direction) {
   if (entryIndex < 0) {
     entryIndex += currentFiles.length;
   }
-  const entry = currentFiles[entryIndex];
-  loadFile(entry.file, entry.handle);
+
+  sendFilesToGuest();
 }
 
 document.getElementById('prev-container')
@@ -181,9 +201,8 @@ window.addEventListener('load', () => {
       console.error('Invalid launch: files[0] is not a directory: ', params);
       return;
     }
-
-    const directory = /** @type{FileSystemDirectoryHandle} */ (params.files[0]);
-    loadFileFromHandle(params.files[1])
-        .then(file => setCurrentDirectory(directory, file));
+    const directory =
+        /** @type{!FileSystemDirectoryHandle} */ (params.files[0]);
+    launchWithDirectory(directory, params.files[1]);
   });
 });

@@ -579,9 +579,8 @@ void SiteSettingsHandler::OnGetUsageInfo() {
     }
     break;
   }
-  CallJavascriptFunction("settings.WebsiteUsagePrivateApi.returnUsageTotal",
-                         base::Value(usage_host_), base::Value(usage_string),
-                         base::Value(cookie_string));
+  FireWebUIListener("usage-total-changed", base::Value(usage_host_),
+                    base::Value(usage_string), base::Value(cookie_string));
 }
 
 #if defined(OS_CHROMEOS)

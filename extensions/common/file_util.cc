@@ -466,15 +466,17 @@ void SetReportErrorForInvisibleIconForTesting(bool value) {
 
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
-                              int error_message_id,
+                              const char* manifest_key,
                               SkColor background_color,
                               std::string* error) {
   for (const auto& entry : icon_set.map()) {
     const base::FilePath path =
         extension->GetResource(entry.second).GetFilePath();
     if (!ValidateFilePath(path)) {
-      *error = l10n_util::GetStringFUTF8(error_message_id,
-                                         base::UTF8ToUTF16(entry.second));
+      constexpr char kIconMissingError[] =
+          "Could not load icon '%s' specified in '%s'.";
+      *error = base::StringPrintf(kIconMissingError, entry.second.c_str(),
+                                  manifest_key);
       return false;
     }
 
@@ -491,9 +493,10 @@ bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
           "Extensions.ManifestIconSetIconWasVisibleForUnpackedRendered",
           is_sufficiently_visible_rendered);
       if (!is_sufficiently_visible && g_report_error_for_invisible_icon) {
-        *error = l10n_util::GetStringFUTF8(
-            IDS_EXTENSION_LOAD_ICON_NOT_SUFFICIENTLY_VISIBLE,
-            base::UTF8ToUTF16(entry.second));
+        constexpr char kIconNotSufficientlyVisibleError[] =
+            "Icon '%s' specified in '%s' is not sufficiently visible.";
+        *error = base::StringPrintf(kIconNotSufficientlyVisibleError,
+                                    entry.second.c_str(), manifest_key);
         return false;
       }
     }

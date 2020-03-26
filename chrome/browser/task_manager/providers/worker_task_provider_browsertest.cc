@@ -325,4 +325,38 @@ IN_PROC_BROWSER_TEST_F(WorkerTaskProviderBrowserTest, CreateExistingTasks) {
   StopUpdating();
 }
 
+// Tests that destroying a profile while updating will correctly remove the
+// existing tasks. An incognito browser is used because a regular profile is
+// never truly destroyed until browser shutdown (See https://crbug.com/88586).
+IN_PROC_BROWSER_TEST_F(WorkerTaskProviderBrowserTest, DestroyedProfile) {
+  StartUpdating();
+
+  EXPECT_TRUE(tasks().empty());
+  Browser* browser = CreateIncognitoBrowser();
+
+  ui_test_utils::NavigateToURL(
+      browser, embedded_test_server()->GetURL(
+                   "/service_worker/create_service_worker.html"));
+  EXPECT_EQ("DONE", EvalJs(browser->tab_strip_model()->GetActiveWebContents(),
+                           "register('respond_with_fetch_worker.js');"));
+  WaitUntilTaskCount(1);
+
+  const Task* task_1 = tasks()[0];
+  EXPECT_EQ(task_1->GetChildProcessUniqueID(), GetChildProcessID(browser));
+  EXPECT_EQ(Task::SERVICE_WORKER, task_1->GetType());
+  EXPECT_TRUE(base::StartsWith(
+      task_1->title(),
+      ExpectedTaskTitle(
+          embedded_test_server()
+              ->GetURL("/service_worker/respond_with_fetch_worker.js")
+              .spec()),
+      base::CompareCase::INSENSITIVE_ASCII));
+
+  CloseBrowserSynchronously(browser);
+
+  WaitUntilTaskCount(0);
+
+  StopUpdating();
+}
+
 }  // namespace task_manager

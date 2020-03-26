@@ -57,6 +57,11 @@ void WorkerTaskProvider::OnWorkerTaskAdded(Task* worker_task) {
 void WorkerTaskProvider::OnWorkerTaskRemoved(Task* worker_task) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // Do not forward the notification when StopUpdating() has been called, as the
+  // observer is now null.
+  if (!IsUpdating())
+    return;
+
   NotifyObserverTaskRemoved(worker_task);
 }
 

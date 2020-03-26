@@ -38,8 +38,6 @@ FORWARD_DECLARE_TEST(ServiceWorkerRegistryTest, StoragePolicyChange);
 // The instance owns ServiceworkerStorage and uses it to store/retrieve
 // registrations to/from persistent storage.
 // The instance lives on the core thread.
-// TODO(crbug.com/1039200): Move ServiceWorkerStorage's method and fields which
-// depend on ServiceWorkerRegistration into this class.
 class CONTENT_EXPORT ServiceWorkerRegistry {
  public:
   using ResourceList = ServiceWorkerStorage::ResourceList;

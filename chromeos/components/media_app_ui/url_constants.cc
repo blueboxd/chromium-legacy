@@ -8,7 +8,6 @@ namespace chromeos {
 
 const char kChromeUIMediaAppHost[] = "media-app";
 const char kChromeUIMediaAppURL[] = "chrome://media-app/";
-const char kChromeUIMediaAppGuestHost[] = "media-app-guest";
-const char kChromeUIMediaAppGuestURL[] = "chrome://media-app-guest/";
+const char kChromeUIMediaAppGuestURL[] = "chrome-untrusted://media-app/";
 
 }  // namespace chromeos

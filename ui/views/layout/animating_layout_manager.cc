@@ -43,7 +43,7 @@ ChildLayout* FindChildViewInLayout(ProposedLayout* layout, const View* view) {
 }
 
 // Describes the type of fade, used by LayoutFadeInfo (see below).
-enum LayoutFadeType {
+enum class LayoutFadeType {
   // This view is fading in as part of the current animation.
   kFadingIn,
   // This view is fading out as part of the current animation.

@@ -2337,6 +2337,11 @@
           'gtest_tests': 'goma_gtests',
         },
       },
+      'Chromium iOS Goma RBE ToT': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'CrWinGomaStaging': {
         'additional_compile_targets': [
           'all',

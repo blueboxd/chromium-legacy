@@ -764,8 +764,10 @@ class FileManager extends cr.EventTarget {
 
     metrics.startInterval('Load.InitUI');
     if (util.isFilesNg()) {
+      this.document_.documentElement.classList.add('files-ng');
       this.dialogDom_.classList.add('files-ng');
     } else {
+      this.document_.documentElement.classList.remove('files-ng');
       this.dialogDom_.classList.remove('files-ng');
     }
     this.initEssentialUI_();

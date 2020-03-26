@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -340,10 +341,10 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
                     BufferFormat(ColorParams().TransferableResourceFormat()),
                     context_provider_wrapper_->ContextProvider()
                         ->GetCapabilities())
-              : GL_TEXTURE_2D) {
-  if (!context_provider_wrapper_)
-    return;
-
+              : GL_TEXTURE_2D),
+      use_oop_rasterization_(context_provider_wrapper_->ContextProvider()
+                                 ->GetCapabilities()
+                                 .supports_oop_raster) {
   auto* gpu_memory_buffer_manager =
       Platform::Current()->GetGpuMemoryBufferManager();
   if (!is_accelerated_) {
@@ -364,11 +365,15 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   DCHECK(shared_image_interface);
 
   // The GLES2 flag is needed for rendering via GL using a GrContext.
-  // TODO(jochin): Use SHARED_IMAGE_USAGE_RASTER instead when adding support for
-  // OOP raster. See crbug.com/1023277.
-  shared_image_usage_flags = shared_image_usage_flags |
-                             gpu::SHARED_IMAGE_USAGE_GLES2 |
-                             gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+  if (use_oop_rasterization_) {
+    shared_image_usage_flags = shared_image_usage_flags |
+                               gpu::SHARED_IMAGE_USAGE_RASTER |
+                               gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+  } else {
+    shared_image_usage_flags = shared_image_usage_flags |
+                               gpu::SHARED_IMAGE_USAGE_GLES2 |
+                               gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+  }
 
   gpu::Mailbox shared_image_mailbox;
   if (gpu_memory_buffer_) {
@@ -387,6 +392,10 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   auto* raster_interface = RasterInterface();
   DCHECK(raster_interface);
   owning_thread_data().shared_image_mailbox = shared_image_mailbox;
+
+  if (use_oop_rasterization_)
+    return;
+
   owning_thread_data().texture_id_for_read_access =
       raster_interface->CreateAndConsumeForGpuRaster(shared_image_mailbox);
 
@@ -489,6 +498,7 @@ void CanvasResourceSharedImage::OnBitmapImageDestroyed(
   DCHECK(!resource->is_cross_thread());
 
   if (has_read_ref_on_texture) {
+    DCHECK(!resource->use_oop_rasterization_);
     DCHECK_GT(resource->owning_thread_data().bitmap_image_read_refs, 0u);
 
     resource->owning_thread_data().bitmap_image_read_refs--;
@@ -540,7 +550,8 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   // created here, the image will create a new representation from the mailbox
   // rather than referring to the shared image's texture ID if it was provided
   // below.
-  const bool has_read_ref_on_texture = !is_cross_thread();
+  const bool has_read_ref_on_texture =
+      !is_cross_thread() && !use_oop_rasterization_;
   GLuint texture_id_for_image = 0u;
   if (has_read_ref_on_texture) {
     texture_id_for_image = owning_thread_data().texture_id_for_read_access;

@@ -541,8 +541,6 @@ class BrowserView : public BrowserWindow,
   void OnImmersiveModeControllerDestroyed() override;
 
   // banners::AppBannerManager::Observer:
-  void OnAppBannerManagerChangedForTesting(
-      banners::AppBannerManager* new_manager) override;
   void OnInstallableWebAppStatusUpdated() override;
 
   // Creates an accessible tab label for screen readers that includes the tab

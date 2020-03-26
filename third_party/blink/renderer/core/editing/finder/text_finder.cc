@@ -456,11 +456,14 @@ void TextFinder::UpdateMatches(int identifier,
 }
 
 void TextFinder::FinishCurrentScopingEffort(int identifier) {
+  scoping_in_progress_ = false;
+  if (!OwnerFrame().GetFrame())
+    return;
+
   if (!total_match_count_)
     OwnerFrame().GetFrame()->Selection().Clear();
 
   FlushCurrentScopingEffort(identifier);
-  scoping_in_progress_ = false;
   // This frame is done, so show any scrollbar tickmarks we haven't drawn yet.
   InvalidatePaintForTickmarks();
 }

@@ -59,6 +59,9 @@ class SpeechMonitor : public content::TtsPlatform {
   // sm_.Call([this]() { DoSomething(); })
   // sm_.Replay();
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpredefined-identifier-outside-function"
+
   // Adds an expectation of spoken text.
   void ExpectSpeech(const std::string& text,
                     const base::Location& location = FROM_HERE);
@@ -70,6 +73,8 @@ class SpeechMonitor : public content::TtsPlatform {
   // Adds a call to be included in replay.
   void Call(std::function<void()> func,
             const base::Location& location = FROM_HERE);
+
+#pragma clang diagnostic pop
 
   // Replays all expectations.
   void Replay();

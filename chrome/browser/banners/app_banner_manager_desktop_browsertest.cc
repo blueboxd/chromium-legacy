@@ -44,6 +44,11 @@ class AppBannerManagerDesktopBrowserTest
  public:
   AppBannerManagerDesktopBrowserTest() : AppBannerManagerBrowserTestBase() {}
 
+  void SetUp() override {
+    TestAppBannerManagerDesktop::SetUp();
+    AppBannerManagerBrowserTestBase::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     // Trigger banners instantly.
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(0);
@@ -65,8 +70,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   base::HistogramTester tester;
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto* manager =
-      TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
+  auto* manager = TestAppBannerManagerDesktop::FromWebContents(web_contents);
 
   {
     base::RunLoop run_loop;
@@ -101,8 +105,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        DISABLED_WebAppBannerFiresAppInstalled) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto* manager =
-      TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
+  auto* manager = TestAppBannerManagerDesktop::FromWebContents(web_contents);
 
   {
     base::RunLoop run_loop;
@@ -148,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest, DestroyWebContents) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto* manager =
-      TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
+  auto* manager = TestAppBannerManagerDesktop::FromWebContents(web_contents);
 
   {
     base::RunLoop run_loop;
@@ -192,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   base::HistogramTester tester;
 
   TestAppBannerManagerDesktop* manager =
-      TestAppBannerManagerDesktop::CreateForWebContents(
+      TestAppBannerManagerDesktop::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
 
   {
@@ -223,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   base::HistogramTester tester;
 
   TestAppBannerManagerDesktop* manager =
-      TestAppBannerManagerDesktop::CreateForWebContents(
+      TestAppBannerManagerDesktop::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
 
   {
@@ -254,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        PolicyAppInstalled_NoPrompt) {
   TestAppBannerManagerDesktop* manager =
-      TestAppBannerManagerDesktop::CreateForWebContents(
+      TestAppBannerManagerDesktop::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
 
   web_app::ExternalInstallOptions options =

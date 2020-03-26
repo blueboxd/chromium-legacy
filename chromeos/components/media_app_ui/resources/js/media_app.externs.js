@@ -10,7 +10,7 @@
  */
 
 /** @const */
-var mediaApp = {};
+const mediaApp = {};
 
 /**
  * Wraps an HTML File object (or a mock, or media loaded through another means).

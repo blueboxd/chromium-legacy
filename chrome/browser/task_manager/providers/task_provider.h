@@ -40,6 +40,10 @@ class TaskProvider {
   void ClearObserver();
 
  protected:
+  // Indicates if this instance is currently tracking tasks. Will return true
+  // between the calls to StartUpdating() and StopUpdating().
+  bool IsUpdating() const;
+
   // Used by concrete task providers to notify the observer of tasks addition/
   // removal/renderer unresponsive. These methods should only be called after
   // StartUpdating() has been called and before StopUpdating() is called.

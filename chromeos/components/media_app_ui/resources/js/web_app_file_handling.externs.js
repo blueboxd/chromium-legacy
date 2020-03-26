@@ -37,7 +37,7 @@ class FileSystemWriter {
  *   data: (BufferSource|Blob|string|undefined)
  * }}
  */
-var WriteParams;
+let WriteParams;
 
 /** @interface */
 class FileSystemWritableFileStream {
@@ -66,7 +66,7 @@ class FileSystemWritableFileStream {
 }
 
 /** @typedef {{writable: boolean}} */
-var FileSystemHandlePermissionDescriptor;
+let FileSystemHandlePermissionDescriptor;
 
 /** @interface */
 class FileSystemHandle {
@@ -101,7 +101,7 @@ class FileSystemHandle {
 }
 
 /** @typedef {{keepExistingData: boolean}} */
-var FileSystemCreateWriterOptions;
+let FileSystemCreateWriterOptions;
 
 /** @interface */
 class FileSystemFileHandle extends FileSystemHandle {
@@ -123,16 +123,16 @@ class FileSystemFileHandle extends FileSystemHandle {
 }
 
 /** @typedef {{create: boolean}} */
-var FileSystemGetFileOptions;
+let FileSystemGetFileOptions;
 
 /** @typedef {{create: boolean}} */
-var FileSystemGetDirectoryOptions;
+let FileSystemGetDirectoryOptions;
 
 /** @typedef {{recursive: boolean}} */
-var FileSystemRemoveOptions;
+let FileSystemRemoveOptions;
 
 /** @typedef {{type: string}} */
-var GetSystemDirectoryOptions;
+let GetSystemDirectoryOptions;
 
 /** @interface */
 class FileSystemDirectoryHandle extends FileSystemHandle {
@@ -165,7 +165,7 @@ class FileSystemDirectoryHandle extends FileSystemHandle {
    * @return {Promise<!FileSystemDirectoryHandle>}
    */
   static getSystemDirectory(options) {}
-};
+}
 
 /** @interface */
 class LaunchParams {
@@ -179,7 +179,7 @@ class LaunchParams {
 }
 
 /** @typedef {function(LaunchParams)} */
-var LaunchConsumer;
+let LaunchConsumer;
 
 /** @interface */
 class LaunchQueue {
@@ -194,7 +194,7 @@ class LaunchQueue {
  *    extensions: (!Array<string>|undefined)
  * }}
  */
-var ChooseFileSystemEntriesOptionsAccepts;
+let ChooseFileSystemEntriesOptionsAccepts;
 
 /**
  * @typedef {{
@@ -204,7 +204,7 @@ var ChooseFileSystemEntriesOptionsAccepts;
  *    excludeAcceptAllOption: (boolean|undefined)
  * }}
  */
-var chooseFileSystemEntriesOptions;
+let chooseFileSystemEntriesOptions;
 
 /**
  * @param {(!chooseFileSystemEntriesOptions|undefined)} options

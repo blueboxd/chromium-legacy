@@ -580,6 +580,9 @@ class PDFiumEngine : public PDFEngine,
   // dictionary.
   std::string GetMetadataByField(FPDF_BYTESTRING field) const;
 
+  // Retrieves the version of the PDF (e.g. 1.4 or 2.0) as an enum.
+  PdfVersion GetDocumentVersion() const;
+
   PDFEngine::Client* const client_;
 
   // The current document layout.

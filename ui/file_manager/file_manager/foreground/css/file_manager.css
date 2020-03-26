@@ -309,7 +309,7 @@ html:not(.col-resize) #directory-tree
   background-color: var(--google-grey-100);
 }
 
-#directory-tree:focus .tree-row[selected] > .file-row {
+html.focus-outline-visible #directory-tree:focus .tree-row[selected] > .file-row {
   border: 1px solid var(--google-blue-600);
 }
 

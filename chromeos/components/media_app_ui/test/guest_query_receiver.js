@@ -9,6 +9,12 @@
 let lastReceivedFileList = null;
 
 /**
+ * Test cases registered by GUEST_TEST.
+ * @type {Map<string, function(): Promise<undefined>>}
+ */
+const guestTestCases = new Map();
+
+/**
  * Acts on received TestMessageQueryData.
  *
  * @param {TestMessageQueryData} data
@@ -51,6 +57,53 @@ async function runTestQuery(data) {
   return {testQueryResult: result};
 }
 
+/**
+ * Acts on TestMessageRunTestCase.
+ * @param {TestMessageRunTestCase} data
+ * @return {!Promise<TestMessageResponseData>}
+ */
+async function runTestCase(data) {
+  const testCase = guestTestCases.get(data.testCase);
+  if (!testCase) {
+    throw new Error(`Unknown test case: '${data.testCase}'`);
+  }
+  await testCase();  // Propate exceptions to the MessagePipe handler.
+  return {testQueryResult: 'success'};
+}
+
+/**
+ * Registers a test that runs in the guest context. To indicate failure, the
+ * test throws an exception (e.g. via assertEquals).
+ * @param {string} testName
+ * @param {function(): Promise<undefined>} testCase
+ */
+function GUEST_TEST(testName, testCase) {
+  guestTestCases.set(testName, testCase);
+}
+
+/**
+ * Tells the test driver the guest test message handlers are installed. This
+ * requires the test handler that receives the signal to be set up. The order
+ * that this occurs can not be guaranteed. So this function retries until the
+ * signal is handled, which requires the 'test-handlers-ready' handler to be
+ * registered in driver.js.
+ */
+async function signalTestHandlersReady() {
+  const EXPECTED_ERROR =
+      `No handler registered for message type 'test-handlers-ready'`;
+  while (true) {
+    try {
+      await parentMessagePipe.sendMessage('test-handlers-ready', {});
+      return;
+    } catch (/** @type {GenericErrorResponse} */ e) {
+      if (e.message !== EXPECTED_ERROR) {
+        console.error('Unepxected error in signalTestHandlersReady', e);
+        return;
+      }
+    }
+  }
+}
+
 function installTestHandlers() {
   parentMessagePipe.registerHandler('test', (data) => {
     return runTestQuery(/** @type {TestMessageQueryData} */ (data));
@@ -64,7 +117,13 @@ function installTestHandlers() {
     throw Error('This is an error');
   });
 
-  // Log errors, rather than sending them to console.error.
+  parentMessagePipe.registerHandler('run-test-case', (data) => {
+    return runTestCase(/** @type{TestMessageRunTestCase} */ (data));
+  });
+
+  // Log errors, rather than send them to console.error. This allows the error
+  // handling tests to work correctly, and is also required for
+  // signalTestHandlersReady() to operate without failing tests.
   parentMessagePipe.logClientError = error =>
       console.log(JSON.stringify(error));
 
@@ -73,7 +132,8 @@ function installTestHandlers() {
   loadFiles = async (/** !ReceivedFileList */ fileList) => {
     lastReceivedFileList = fileList;
     realLoadFiles(fileList);
-  }
+  };
+  signalTestHandlersReady();
 }
 
 // Ensure content and all scripts have loaded before installing test handlers.

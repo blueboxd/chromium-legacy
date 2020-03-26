@@ -781,16 +781,13 @@ bool ImageData::ImageDataInCanvasColorSettings(
     src_pixel_format = skcms_PixelFormat_RGBA_ffff;
 
   skcms_PixelFormat dst_pixel_format = skcms_PixelFormat_RGBA_8888;
-  if (canvas_pixel_format == CanvasPixelFormat::kF16) {
+  if (canvas_pixel_format == CanvasColorParams::GetNativeCanvasPixelFormat() &&
+      u8_color_type == kN32ColorType &&
+      kN32_SkColorType == kBGRA_8888_SkColorType) {
+    dst_pixel_format = skcms_PixelFormat_BGRA_8888;
+  } else if (canvas_pixel_format == CanvasPixelFormat::kF16) {
     dst_pixel_format = skcms_PixelFormat_RGBA_hhhh;
   }
-#if SK_PMCOLOR_BYTE_ORDER(B, G, R, A)
-  else if (canvas_pixel_format ==
-               CanvasColorParams::GetNativeCanvasPixelFormat() &&
-           u8_color_type == kN32ColorType) {
-    dst_pixel_format = skcms_PixelFormat_BGRA_8888;
-  }
-#endif
 
   skcms_AlphaFormat src_alpha_format = skcms_AlphaFormat_Unpremul;
   skcms_AlphaFormat dst_alpha_format = skcms_AlphaFormat_Unpremul;

@@ -18,13 +18,18 @@ constexpr base::FilePath::CharType kTestLibraryPath[] = FILE_PATH_LITERAL(
 constexpr base::FilePath::CharType kGuestQueryHandler[] = FILE_PATH_LITERAL(
     "chromeos/components/media_app_ui/test/guest_query_receiver.js");
 
+// Test cases that run in the guest context.
+constexpr base::FilePath::CharType kGuestTestCases[] = FILE_PATH_LITERAL(
+    "chromeos/components/media_app_ui/test/media_app_guest_ui_browsertest.js");
+
 }  // namespace
 
 MediaAppUiBrowserTest::MediaAppUiBrowserTest()
-    : SandboxedWebUiAppTestBase(chromeos::kChromeUIMediaAppURL,
-                                chromeos::kChromeUIMediaAppGuestURL,
-                                {base::FilePath(kTestLibraryPath),
-                                 base::FilePath(kGuestQueryHandler)}) {}
+    : SandboxedWebUiAppTestBase(
+          chromeos::kChromeUIMediaAppURL,
+          chromeos::kChromeUIMediaAppGuestURL,
+          {base::FilePath(kTestLibraryPath), base::FilePath(kGuestQueryHandler),
+           base::FilePath(kGuestTestCases)}) {}
 
 MediaAppUiBrowserTest::~MediaAppUiBrowserTest() = default;
 

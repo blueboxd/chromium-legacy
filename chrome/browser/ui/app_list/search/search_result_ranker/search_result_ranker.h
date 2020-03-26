@@ -111,16 +111,6 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   // The query last provided to FetchRankings.
   base::string16 last_query_;
 
-  // How much the scores produced by |results_list_group_ranker_| affect the
-  // final scores. Controlled by Finch.
-  float results_list_boost_coefficient_ = 0.0f;
-
-  // A model that ranks groups (eg. 'file' and 'omnibox'), which is used to
-  // tweak the results shown in the search results list only. This does not
-  // affect apps.
-  std::unique_ptr<RecurrenceRanker> results_list_group_ranker_;
-  std::map<std::string, float> group_ranks_;
-
   // Ranks the kinds of results possible in the zero state results list.
   std::unique_ptr<RecurrenceRanker> zero_state_group_ranker_;
   std::map<std::string, float> zero_state_group_ranks_;

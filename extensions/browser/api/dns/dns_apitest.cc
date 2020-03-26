@@ -17,6 +17,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/shell/test/shell_apitest.h"
+#include "extensions/test/result_catcher.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -76,16 +77,16 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
 }
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
-  scoped_refptr<DnsResolveFunction> resolve_function(new DnsResolveFunction());
-  scoped_refptr<const Extension> empty_extension =
-      ExtensionBuilder("Test").Build();
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtension("extension");
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(catcher.GetNextResult());
 
-  resolve_function->set_extension(empty_extension.get());
+  auto resolve_function = base::MakeRefCounted<DnsResolveFunction>();
+  resolve_function->set_extension(extension);
   resolve_function->set_has_callback(true);
 
-  std::string function_arguments("[\"");
-  function_arguments += kHostname;
-  function_arguments += "\"]";
+  std::string function_arguments = base::StringPrintf(R"(["%s"])", kHostname);
   std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       resolve_function.get(), function_arguments, browser_context()));
   base::DictionaryValue* dict = NULL;
@@ -109,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
       network::mojom::ResolveHostParameters::New();
   // Cache only lookup.
   params->source = net::HostResolverSource::LOCAL_ONLY;
-  url::Origin origin = url::Origin::Create(empty_extension->url());
+  url::Origin origin = url::Origin::Create(extension->url());
   net::NetworkIsolationKey network_isolation_key(origin, origin);
   network::DnsLookupResult result1 =
       network::BlockingDnsLookup(network_context, host_port_pair,

@@ -124,7 +124,7 @@ Animation::AnimationClassPriority AnimationPriority(
   Animation::AnimationClassPriority priority;
   if (animation.IsCSSTransition())
     priority = Animation::AnimationClassPriority::kCssTransitionPriority;
-  else if (animation.IsCSSAnimation())
+  else if (animation.IsCSSAnimation() && animation.IsOwned())
     priority = Animation::AnimationClassPriority::kCssAnimationPriority;
   else
     priority = Animation::AnimationClassPriority::kDefaultPriority;

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -43,6 +44,27 @@ bool gDisableTriggeringForTesting = false;
 
 namespace banners {
 
+AppBannerManagerDesktop::CreateAppBannerManagerForTesting
+    AppBannerManagerDesktop::override_app_banner_manager_desktop_for_testing_ =
+        nullptr;
+
+// static
+void AppBannerManagerDesktop::CreateForWebContents(
+    content::WebContents* web_contents) {
+  if (FromWebContents(web_contents))
+    return;
+
+  if (override_app_banner_manager_desktop_for_testing_) {
+    web_contents->SetUserData(
+        UserDataKey(),
+        override_app_banner_manager_desktop_for_testing_(web_contents));
+    return;
+  }
+  web_contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new AppBannerManagerDesktop(web_contents)));
+}
+
 // static
 AppBannerManager* AppBannerManager::FromWebContents(
     content::WebContents* web_contents) {
@@ -51,6 +73,11 @@ AppBannerManager* AppBannerManager::FromWebContents(
 
 void AppBannerManagerDesktop::DisableTriggeringForTesting() {
   gDisableTriggeringForTesting = true;
+}
+
+TestAppBannerManagerDesktop*
+AppBannerManagerDesktop::AsTestAppBannerManagerDesktopForTesting() {
+  return nullptr;
 }
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(

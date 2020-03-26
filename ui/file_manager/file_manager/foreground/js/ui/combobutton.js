@@ -173,6 +173,9 @@ cr.define('cr.ui', () => {
       const ripplesLayer = this.ownerDocument.createElement('div');
       ripplesLayer.classList.add('ripples');
       this.appendChild(ripplesLayer);
+      if (util.isFilesNg()) {
+        ripplesLayer.setAttribute('hidden', '');
+      }
 
       /** @private {!FilesToggleRipple} */
       this.filesToggleRipple_ = /** @type {!FilesToggleRipple} */

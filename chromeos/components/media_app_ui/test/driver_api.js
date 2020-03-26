@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @typedef {{testQueryResult: string}} */
-var TestMessageResponseData;
+let TestMessageResponseData;
 
 /**
  * @typedef {{
@@ -15,4 +15,7 @@ var TestMessageResponseData;
  *     deleteLastFile: (boolean|undefined)
  * }}
  */
-var TestMessageQueryData;
+let TestMessageQueryData;
+
+/** @typedef {{testCase: string}} */
+let TestMessageRunTestCase;

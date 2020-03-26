@@ -26,6 +26,10 @@ void TaskProvider::ClearObserver() {
   StopUpdating();
 }
 
+bool TaskProvider::IsUpdating() const {
+  return observer_ != nullptr;
+}
+
 void TaskProvider::NotifyObserverTaskAdded(Task* task) const {
   DCHECK(observer_);
   observer_->TaskAdded(task);

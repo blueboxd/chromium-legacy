@@ -304,7 +304,6 @@
     "matches": [
       "chrome://bookmarks/*",
       "chrome://extensions/*",
-      "chrome://media-app-guest/*",
       "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://sync-confirmation/*",
@@ -315,7 +314,8 @@
     "channel": "stable",
     "contexts": ["webui_untrusted"],
     "matches": [
-      "chrome-untrusted://help-app/*"
+      "chrome-untrusted://help-app/*",
+      "chrome-untrusted://media-app/*"
     ]
   }],
   "metricsPrivate.getIsCrashReportingEnabled": {

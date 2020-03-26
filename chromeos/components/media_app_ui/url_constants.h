@@ -9,7 +9,6 @@ namespace chromeos {
 
 extern const char kChromeUIMediaAppHost[];
 extern const char kChromeUIMediaAppURL[];
-extern const char kChromeUIMediaAppGuestHost[];
 extern const char kChromeUIMediaAppGuestURL[];
 
 }  // namespace chromeos

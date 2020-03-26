@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -253,6 +254,9 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
      * property model.
      **/
     private void reconcileVisualState(boolean showStatusIconWhenFocused) {
+        // No reconciliation is needed on tablet because the status icon is always shown.
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mStatusView.getContext())) return;
+
         // State requirements:
         // - The ToolbarDataProvider and views are not null.
         // - The status icon will be shown when focused.

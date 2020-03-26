@@ -2219,6 +2219,14 @@ crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Fail
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
 crbug.com/1007065 external/wpt/css/css-overflow/overflow-codependent-scrollbars.html [ Failure ]
 
+crbug.com/745905 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
+crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-001.html [ Failure ]
+crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-rtl-001.html [ Failure ]
+crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-vertical-lr-001.html [ Failure ]
+crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-vertical-lr-rtl-001.html [ Failure ]
+crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-vertical-rl-001.html [ Failure ]
+crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-vertical-rl-rtl-001.html [ Failure ]
+
 crbug.com/424365 external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-024.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-margin-001.html [ Failure ]
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-circle-004.html [ Failure ]
@@ -2943,12 +2951,6 @@ crbug.com/626703 [ Win ] external/wpt/workers/shared-worker-parse-error-failure.
 crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/shared-worker-parse-error-failure.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/workers/modules/shared-worker-parse-error-failure.html [ Timeout ]
-crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/shared-worker-parse-error-failure.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/workers/modules/shared-worker-parse-error-failure.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/workers/modules/shared-worker-parse-error-failure.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/workers/modules/shared-worker-parse-error-failure.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/shared-worker-parse-error-failure.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/workers/shared-worker-parse-error-failure.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/shared-worker-parse-error-failure.html [ Timeout ]
@@ -3784,7 +3786,6 @@ crbug.com/626703 external/wpt/css/css-fonts/font-variant-position-03.html [ Fail
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-position.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006c.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
@@ -6690,3 +6691,6 @@ crbug.com/1061029 [ Mac ] external/wpt/html/cross-origin-embedder-policy/cache-s
 crbug.com/1064065 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Pass Failure ]
 crbug.com/1064127 virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Pass Failure ]
 crbug.com/1064463 external/wpt/web-animations/interfaces/Animation/style-change-events.html [ Pass Failure ]
+
+# Sheriff 2020-03-26
+crbug.com/1064839 fast/hidpi/image-srcset-svg-canvas-2x.html [ Pass Failure ]

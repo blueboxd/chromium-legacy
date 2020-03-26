@@ -254,11 +254,6 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
     zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
   }
 
-  if (results_list_group_ranker_) {
-    group_ranks_.clear();
-    group_ranks_ = results_list_group_ranker_->Rank();
-  }
-
   if (app_ranker_) {
     // The Help app is being replaced with the Discover app, and we want to keep
     // ranking consistent by swapping the app IDs. The rename is a no-op if the
@@ -310,20 +305,6 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
       if (last_query_.empty() && zero_state_group_ranker_) {
         LogZeroStateResultScore(type, result.score);
         ScoreZeroStateItem(&result, type, &zero_state_type_counts);
-      } else if (results_list_group_ranker_) {
-        const auto& rank_it =
-            group_ranks_.find(base::NumberToString(static_cast<int>(type)));
-        // The ranker only contains entries trained with types relating to files
-        // or the omnibox. This means scores for apps, app shortcuts, and answer
-        // cards will be unchanged.
-        if (rank_it != group_ranks_.end()) {
-          // Ranker scores are guaranteed to be in [0,1]. But, enforce that the
-          // result of tweaking does not put the score above 3.0, as that may
-          // interfere with apps or answer cards.
-          result.score = std::min(
-              result.score + rank_it->second * results_list_boost_coefficient_,
-              3.0);
-        }
       } else if (!last_query_.empty() &&
                  use_aggregated_search_ranking_inference_) {
         result.score = search_ranker_score_map[result.result->id()];
@@ -408,19 +389,18 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
 
   auto model = ModelForType(app_launch_data.ranking_item_type);
   if (model == Model::MIXED_TYPES) {
-    if (app_launch_data.query.empty() && zero_state_group_ranker_) {
+    // We currently only have a mixed types model for zero-state, so stop if
+    // the launch has a query attached.
+    if (!app_launch_data.query.empty())
+      return;
+
+    LogZeroStateLaunchType(app_launch_data.ranking_item_type);
+    if (zero_state_group_ranker_) {
       zero_state_group_ranker_->Record(base::NumberToString(
-          static_cast<int>(app_launch_data.ranking_item_type)));
-    } else if (results_list_group_ranker_) {
-      results_list_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
     }
   } else if (model == Model::APPS && app_ranker_) {
     app_ranker_->Record(NormalizeAppId(app_launch_data.id));
-  }
-
-  if (model == Model::MIXED_TYPES && app_launch_data.query.empty()) {
-    LogZeroStateLaunchType(app_launch_data.ranking_item_type);
   }
 
   LogChipUsageMetrics(app_launch_data);

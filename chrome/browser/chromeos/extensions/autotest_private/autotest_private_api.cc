@@ -3480,13 +3480,6 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
   }
   ~PWABannerObserver() override {}
 
-  void OnAppBannerManagerChangedForTesting(
-      banners::AppBannerManager* new_manager) override {
-    observer_.RemoveAll();
-    observer_.Add(new_manager);
-    app_banner_manager_ = new_manager;
-  }
-
   void OnInstallableWebAppStatusUpdated() override {
     Installable installable =
         app_banner_manager_->GetInstallableWebAppCheckResultForTesting();

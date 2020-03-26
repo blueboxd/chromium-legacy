@@ -23,8 +23,13 @@ class TestAppBannerManagerDesktop : public AppBannerManagerDesktop {
   explicit TestAppBannerManagerDesktop(content::WebContents* web_contents);
   ~TestAppBannerManagerDesktop() override;
 
-  static TestAppBannerManagerDesktop* CreateForWebContents(
-      content::WebContents* web_contents);
+  // Ensure this test class will be instantiated in place of
+  // AppBannerManagerDesktop. Must be called before AppBannerManagerDesktop is
+  // first instantiated.
+  static void SetUp();
+
+  static TestAppBannerManagerDesktop* FromWebContents(
+      content::WebContents* contents);
 
   // Blocks until the existing installability check has been cleared.
   void WaitForInstallableCheckTearDown();
@@ -46,6 +51,10 @@ class TestAppBannerManagerDesktop : public AppBannerManagerDesktop {
   void OnDidPerformInstallableWebAppCheck(
       const InstallableData& result) override;
   void ResetCurrentPageData() override;
+
+  // AppBannerManagerDesktop:
+  TestAppBannerManagerDesktop* AsTestAppBannerManagerDesktopForTesting()
+      override;
 
  protected:
   // AppBannerManager:

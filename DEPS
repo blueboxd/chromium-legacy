@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '71cb6fda55ac6bc49ed96ffd2f40ca8a6d9ed135',
+  'skia_revision': 'd8c6c0e0f3a67b892f03b922c1c8aff602d08c32',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e1d6f39d4c023e188a405ba9ab9573c0f9db4b63',
+  'v8_revision': '3714932e224a7a48553563a7eb18e2ffc000d796',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b69c4e14c5e292d6c966b14b41ae7064d753c501',
+  'angle_revision': '6719f54ac7ce85d5ea812299352387033a099530',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '8351d2182b54cb47484d7228db3240a0d44bb550',
+  'catapult_revision': 'a8bbccaabeff0b1a8fd0c4eaf9f32c5128776976',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1523,7 +1523,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@056caa9eda32dbcea309df4db3049992a268c8d6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@22ff3cfaf62eaf915a1e1bd1708f006baaeb53ac',
     'condition': 'checkout_src_internal',
   },
 

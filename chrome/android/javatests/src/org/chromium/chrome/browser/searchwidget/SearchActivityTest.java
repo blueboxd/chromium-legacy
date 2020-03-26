@@ -31,7 +31,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -446,11 +445,10 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
-    @FlakyTest(message = "https://crbug.com/1064092")
     public void testRealPromoDialogDismissWithoutSelection() throws Exception {
         // Start the Activity.  It should pause when the promo dialog appears.
         mTestDelegate.shouldShowRealSearchDialog = true;
-        startSearchActivity();
+        SearchActivity activity = startSearchActivity();
         mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
         mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
         mTestDelegate.onPromoDialogShownCallback.waitForCallback(0);
@@ -460,12 +458,24 @@ public class SearchActivityTest {
         mTestDelegate.shownPromoDialog.dismiss();
 
         // SearchActivity should realize the failure case and prevent the user from using it.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
-            public Integer call() {
-                return ApplicationStatus.getRunningActivities().size();
+            public boolean isSatisfied() {
+                List<Activity> activities = ApplicationStatus.getRunningActivities();
+                if (activities.isEmpty()) return true;
+
+                if (activities.size() != 1) {
+                    updateFailureReason("Multiple non-destroyed activities: " + activities);
+                    return false;
+                }
+                if (activities.get(0) != activity) {
+                    updateFailureReason("Remaining activity is not the search activity under test: "
+                            + activities.get(0));
+                }
+                updateFailureReason("Search activity has not called finish()");
+                return activity.isFinishing();
             }
-        }));
+        });
         Assert.assertEquals(
                 1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
         Assert.assertEquals(1, mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());

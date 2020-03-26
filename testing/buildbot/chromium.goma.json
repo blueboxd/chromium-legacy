@@ -371,6 +371,11 @@
       }
     ]
   },
+  "Chromium iOS Goma RBE ToT": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "CrWinGomaStaging": {
     "additional_compile_targets": [
       "all"

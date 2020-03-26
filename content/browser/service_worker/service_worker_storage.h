@@ -60,8 +60,6 @@ FORWARD_DECLARE_TEST(ServiceWorkerStorageTest, DisabledStorage);
 // an owner of this class. When a storage operation fails, this is marked as
 // disabled and all subsequent requests are aborted until the registry is
 // restarted.
-// TODO(crbug.com/1039200): Move some methods/fields to ServiceWorkerRegistry.
-// See the toplevel description of ServiceWorkerRegistry.
 class CONTENT_EXPORT ServiceWorkerStorage {
  public:
   enum class OriginState {
@@ -116,8 +114,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   ~ServiceWorkerStorage();
 
-  // TODO(crbug.com/1039200): Stop passing ServiceWorkerRegistry once
-  // ServiceWorkerRegistration dependencies are moved to ServiceWorkerRegistry.
   static std::unique_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,

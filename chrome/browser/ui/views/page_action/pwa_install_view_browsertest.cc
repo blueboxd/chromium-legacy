@@ -69,6 +69,7 @@ class PwaInstallViewBrowserTest
                             base::Unretained(this)));
     ASSERT_TRUE(https_server_.Start());
 
+    banners::TestAppBannerManagerDesktop::SetUp();
     extensions::ExtensionBrowserTest::SetUp();
   }
 
@@ -105,8 +106,7 @@ class PwaInstallViewBrowserTest
 
     web_contents_ = GetCurrentTab();
     app_banner_manager_ =
-        banners::TestAppBannerManagerDesktop::CreateForWebContents(
-            web_contents_);
+        banners::TestAppBannerManagerDesktop::FromWebContents(web_contents_);
   }
 
   std::unique_ptr<net::test_server::HttpResponse> RequestInterceptor(
@@ -134,8 +134,7 @@ class PwaInstallViewBrowserTest
     chrome::NewTab(browser());
     content::WebContents* web_contents = GetCurrentTab();
     auto* app_banner_manager =
-        banners::TestAppBannerManagerDesktop::CreateForWebContents(
-            web_contents);
+        banners::TestAppBannerManagerDesktop::FromWebContents(web_contents);
     DCHECK(!app_banner_manager->WaitForInstallableCheck());
 
     ui_test_utils::NavigateToURL(browser(), url);

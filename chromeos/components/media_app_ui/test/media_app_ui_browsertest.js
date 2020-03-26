@@ -11,10 +11,12 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "third_party/blink/public/common/features.h"');
 
 const HOST_ORIGIN = 'chrome://media-app';
-const GUEST_ORIGIN = 'chrome://media-app-guest';
+const GUEST_ORIGIN = 'chrome-untrusted://media-app';
 
 let driver = null;
 
+// js2gtest fixtures require var here (https://crbug.com/1033337).
+// eslint-disable-next-line no-var
 var MediaAppUIBrowserTest = class extends testing.Test {
   /** @override */
   get browsePreload() {
@@ -37,7 +39,7 @@ var MediaAppUIBrowserTest = class extends testing.Test {
 
   /** @override */
   get featureList() {
-    // Note the error `Cannot read property 'setConsumer' of undefined"` will be
+    // Note the error `Cannot read property 'setConsumer' of undefined` will be
     // raised if kFileHandlingAPI is omitted.
     return {
       enabled: [
@@ -78,13 +80,13 @@ async function createTestImageFile() {
   return new File([blob], 'test_file.png', {type: 'image/png'});
 }
 
-// Tests that chrome://media-app is allowed to frame chrome://media-app-guest.
-// The URL is set in the html. If that URL can't load, test this fails like JS
-// ERROR: "Refused to frame '...' because it violates the following Content
-// Security Policy directive: "frame-src chrome://media-app-guest/".
-// This test also fails if the guest renderer is terminated, e.g., due to webui
-// performing bad IPC such as network requests (failure detected in
-// content/public/test/no_renderer_crashes_assertion.cc).
+// Tests that chrome://media-app is allowed to frame
+// chrome-untrusted://media-app. The URL is set in the html. If that URL can't
+// load, test this fails like JS ERROR: "Refused to frame '...' because it
+// violates the following Content Security Policy directive: "frame-src
+// chrome-untrusted://media-app/". This test also fails if the guest renderer is
+// terminated, e.g., due to webui performing bad IPC such as network requests
+// (failure detected in content/public/test/no_renderer_crashes_assertion.cc).
 TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
   const guest = document.querySelector('iframe');
   const app = await driver.waitForElementInGuest('backlight-app', 'tagName');
@@ -108,7 +110,7 @@ TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
 // Tests that chrome://media-app can successfully send a request to open the
 // feedback dialog and recieve a response.
 TEST_F('MediaAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
-  const result = await media_app.handler.openFeedbackDialog();
+  const result = await mediaAppPageHandler.openFeedbackDialog();
 
   assertEquals(result.errorMessage, '');
   testDone();
@@ -229,5 +231,13 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
       testResponse.testQueryResult, 'deleteOriginalFile resolved file moved');
   // New file not removed from `DirectoryHandle` internal state.
   assertEquals(directory.files.length, 1);
+  testDone();
+});
+
+// Test cases injected into the guest context.
+// See implementations in media_app_guest_ui_browsertest.js.
+
+TEST_F('MediaAppUIBrowserTest', 'GuestCanSpawnWorkers', async () => {
+  await runTestInGuest('GuestCanSpawnWorkers');
   testDone();
 });

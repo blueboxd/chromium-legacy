@@ -3696,6 +3696,7 @@ void PDFiumEngine::LoadDocumentMetadata() {
   DCHECK(document_loaded_);
 
   // Document information dictionary entries
+  doc_metadata_.version = GetDocumentVersion();
   doc_metadata_.title = GetMetadataByField("Title");
   doc_metadata_.author = GetMetadataByField("Author");
   doc_metadata_.subject = GetMetadataByField("Subject");
@@ -3717,6 +3718,39 @@ std::string PDFiumEngine::GetMetadataByField(FPDF_BYTESTRING field) const {
   string_adapter.Close(
       FPDF_GetMetaText(doc(), field, string_adapter.GetData(), size));
   return base::UTF16ToUTF8(value);
+}
+
+PdfVersion PDFiumEngine::GetDocumentVersion() const {
+  DCHECK(doc());
+
+  int version;
+  if (!FPDF_GetFileVersion(doc(), &version))
+    return PdfVersion::kUnknown;
+
+  switch (version) {
+    case 10:
+      return PdfVersion::k1_0;
+    case 11:
+      return PdfVersion::k1_1;
+    case 12:
+      return PdfVersion::k1_2;
+    case 13:
+      return PdfVersion::k1_3;
+    case 14:
+      return PdfVersion::k1_4;
+    case 15:
+      return PdfVersion::k1_5;
+    case 16:
+      return PdfVersion::k1_6;
+    case 17:
+      return PdfVersion::k1_7;
+    case 18:
+      return PdfVersion::k1_8;
+    case 20:
+      return PdfVersion::k2_0;
+    default:
+      return PdfVersion::kUnknown;
+  }
 }
 
 #if defined(PDF_ENABLE_XFA)

@@ -1,3 +1,5 @@
+import("//chrome/test/base/js2gtest.gni")
+
 source_set("test_support") {
   testonly = true
   sources = [
@@ -5,8 +7,11 @@ source_set("test_support") {
     "sandboxed_web_ui_test_base.h",
   ]
 
+  data = js2gtest_js_libraries
+
   deps = [
     "//base/test:test_support",
+    "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
     "//chromeos/constants:constants",
     "//content/test:test_support",

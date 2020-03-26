@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
-
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
@@ -16,7 +16,12 @@ CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
                            const String& animation_name)
     : Animation(execution_context, timeline, content),
       animation_name_(animation_name),
-      ignore_css_play_state_(false) {}
+      ignore_css_play_state_(false) {
+  // The owning_element does not always equal to the target element of an
+  // animation. The following spec gives an example:
+  // https://drafts.csswg.org/css-animations-2/#owning-element-section
+  owning_element_ = To<KeyframeEffect>(effect())->target();
+}
 
 String CSSAnimation::playState() const {
   FlushStyles();

@@ -944,7 +944,9 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   }
 
   // This |layout_object| did not produce any fragments.
-  //
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
+
   // Try to find ancestors if this is a culled inline.
   layout_inline_ = ToLayoutInlineOrNull(&layout_object);
   if (!layout_inline_)
@@ -1076,12 +1078,14 @@ void NGInlineCursor::MoveToLastChild() {
 }
 
 void NGInlineCursor::MoveToLastForSameLayoutObject() {
-  NGInlineCursor last;
-  while (IsNotNull()) {
-    last = *this;
+  if (!Current())
+    return;
+  NGInlineCursorPosition last;
+  do {
+    last = Current();
     MoveToNextForSameLayoutObject();
-  }
-  *this = last;
+  } while (Current());
+  MoveTo(last);
 }
 
 void NGInlineCursor::MoveToLastLogicalLeaf() {
@@ -1107,6 +1111,7 @@ void NGInlineCursor::MoveToNext() {
 
 void NGInlineCursor::MoveToNextForSameLayoutObject() {
   if (layout_inline_) {
+    DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
     // Move to next fragment in culled inline box undef |layout_inline_|.
     do {
       MoveToNext();

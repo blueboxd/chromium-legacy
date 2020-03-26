@@ -558,6 +558,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
            cancelled_indices[i] < cancelled_indices[i + 1]);
     Animation& animation =
         *running_animations_[cancelled_indices[i]]->animation;
+    animation.ClearOwningElement();
     animation.cancel();
     animation.Update(kTimingUpdateOnDemand);
     running_animations_.EraseAt(cancelled_indices[i]);

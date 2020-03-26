@@ -228,6 +228,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void OnDestroyResource();
 
  protected:
+  class CanvasImageProvider;
+
   gpu::gles2::GLES2Interface* ContextGL() const;
   gpu::raster::RasterInterface* RasterInterface() const;
   GrContext* GetGrContext() const;
@@ -258,14 +260,14 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // decodes/uploads in the cache is invalidated only when the canvas contents
   // change.
   cc::PaintImage MakeImageSnapshot();
+  virtual void RasterRecord(sk_sp<cc::PaintRecord>);
+  CanvasImageProvider* GetOrCreateCanvasImageProvider();
 
   ResourceProviderType type_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
   SkSurface::ContentChangeMode mode_ = SkSurface::kRetain_ContentChangeMode;
 
  private:
-  class CanvasImageProvider;
-
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
   bool use_hardware_decode_cache() const {

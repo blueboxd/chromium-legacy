@@ -2858,11 +2858,7 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
   if (!skia_image)
     return;
 
-#if SK_B32_SHIFT
-  image_source_format_ = kDataFormatRGBA8;
-#else
-  image_source_format_ = kDataFormatBGRA8;
-#endif
+  image_source_format_ = SK_B32_SHIFT ? kDataFormatRGBA8 : kDataFormatBGRA8;
   image_source_unpack_alignment_ =
       0;  // FIXME: this seems to always be zero - why use at all?
 

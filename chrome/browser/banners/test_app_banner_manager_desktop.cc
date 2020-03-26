@@ -17,18 +17,34 @@ namespace banners {
 TestAppBannerManagerDesktop::TestAppBannerManagerDesktop(
     content::WebContents* web_contents)
     : AppBannerManagerDesktop(web_contents) {
-  MigrateObserverListForTesting(web_contents);
+  // Ensure no real instance exists. This must be the only instance to avoid
+  // observers of AppBannerManager left observing the wrong one.
+  DCHECK_EQ(AppBannerManagerDesktop::FromWebContents(web_contents), nullptr);
 }
 
 TestAppBannerManagerDesktop::~TestAppBannerManagerDesktop() = default;
 
-TestAppBannerManagerDesktop* TestAppBannerManagerDesktop::CreateForWebContents(
+static std::unique_ptr<AppBannerManagerDesktop> CreateTestAppBannerManager(
     content::WebContents* web_contents) {
-  auto banner_manager =
-      std::make_unique<TestAppBannerManagerDesktop>(web_contents);
-  TestAppBannerManagerDesktop* result = banner_manager.get();
-  web_contents->SetUserData(UserDataKey(), std::move(banner_manager));
-  return result;
+  return std::make_unique<TestAppBannerManagerDesktop>(web_contents);
+}
+
+void TestAppBannerManagerDesktop::SetUp() {
+  AppBannerManagerDesktop::override_app_banner_manager_desktop_for_testing_ =
+      CreateTestAppBannerManager;
+}
+
+TestAppBannerManagerDesktop* TestAppBannerManagerDesktop::FromWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  // Must call TestAppBannerManagerDesktop::SetUp() first.
+  DCHECK_EQ(
+      AppBannerManagerDesktop::override_app_banner_manager_desktop_for_testing_,
+      CreateTestAppBannerManager);
+  auto* manager = AppBannerManagerDesktop::FromWebContents(web_contents);
+  DCHECK(manager);
+  DCHECK(manager->AsTestAppBannerManagerDesktopForTesting());
+  return manager->AsTestAppBannerManagerDesktopForTesting();
 }
 
 void TestAppBannerManagerDesktop::WaitForInstallableCheckTearDown() {
@@ -81,6 +97,11 @@ void TestAppBannerManagerDesktop::ResetCurrentPageData() {
   installable_.reset();
   if (tear_down_quit_closure_)
     std::move(tear_down_quit_closure_).Run();
+}
+
+TestAppBannerManagerDesktop*
+TestAppBannerManagerDesktop::AsTestAppBannerManagerDesktopForTesting() {
+  return this;
 }
 
 void TestAppBannerManagerDesktop::OnInstall(blink::mojom::DisplayMode display) {

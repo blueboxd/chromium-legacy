@@ -54,8 +54,6 @@ class AppBannerManager : public content::WebContentsObserver,
  public:
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnAppBannerManagerChangedForTesting(
-        AppBannerManager* new_manager) = 0;
     virtual void OnInstallableWebAppStatusUpdated() = 0;
   };
 
@@ -166,11 +164,6 @@ class AppBannerManager : public content::WebContentsObserver,
   void RemoveObserver(Observer* observer);
 
   virtual base::WeakPtr<AppBannerManager> GetWeakPtr() = 0;
-
-  // Used by test subclasses that replace the existing AppBannerManager
-  // instance. The observer list must be transferred over to avoid dangling
-  // pointers in the observers.
-  void MigrateObserverListForTesting(content::WebContents* web_contents);
 
   // Returns whether the site can call "event.prompt()" to prompt the user to
   // install the site.

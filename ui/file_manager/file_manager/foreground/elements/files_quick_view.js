@@ -182,6 +182,9 @@ const FilesQuickView = Polymer({
   },
 
   /**
+   * TODO(992824): investigate the this.$.innerContentPanel.focus() since the
+   * has no tabindex it seems, and so the focus() call is ignored.
+   *
    * @param {!Event} event tap event.
    *
    * @private
@@ -193,11 +196,7 @@ const FilesQuickView = Polymer({
 
     if (this.hasAttribute('files-ng')) {
       this.metadataBoxActive = !this.metadataBoxActive;
-      if (this.metadataBoxActive) {
-        event.target.setAttribute('toogle', '');
-      } else {
-        event.target.removeAttribute('toogle');
-      }
+      event.target.toggleAttribute('toogle', this.metadataBoxActive);
     }
   },
 

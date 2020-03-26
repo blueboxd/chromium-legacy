@@ -3452,11 +3452,6 @@ void BrowserView::OnImmersiveModeControllerDestroyed() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, banners::AppBannerManager::Observer implementation:
-void BrowserView::OnAppBannerManagerChangedForTesting(
-    banners::AppBannerManager* new_manager) {
-  ObserveAppBannerManager(new_manager);
-}
-
 void BrowserView::OnInstallableWebAppStatusUpdated() {
   UpdatePageActionIcon(PageActionIconType::kPwaInstall);
 }

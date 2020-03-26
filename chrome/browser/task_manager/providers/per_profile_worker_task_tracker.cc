@@ -47,7 +47,16 @@ PerProfileWorkerTaskTracker::PerProfileWorkerTaskTracker(
   }
 }
 
-PerProfileWorkerTaskTracker::~PerProfileWorkerTaskTracker() = default;
+PerProfileWorkerTaskTracker::~PerProfileWorkerTaskTracker() {
+  // Notify the |worker_task_provider_| for all outstanding tasks that are about
+  // to be deleted.
+  for (const auto& kv : dedicated_worker_tasks_)
+    worker_task_provider_->OnWorkerTaskRemoved(kv.second.get());
+  for (const auto& kv : shared_worker_tasks_)
+    worker_task_provider_->OnWorkerTaskRemoved(kv.second.get());
+  for (const auto& kv : service_worker_tasks_)
+    worker_task_provider_->OnWorkerTaskRemoved(kv.second.get());
+}
 
 void PerProfileWorkerTaskTracker::OnWorkerStarted(
     content::DedicatedWorkerId dedicated_worker_id,

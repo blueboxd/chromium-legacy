@@ -389,6 +389,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   const bool is_accelerated_;
   const bool is_overlay_candidate_;
   const GLenum texture_target_;
+  const bool use_oop_rasterization_;
 
   OwningThreadData owning_thread_data_;
 };

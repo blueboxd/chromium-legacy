@@ -14,7 +14,7 @@
  *
  * @typedef{function(string): Promise<!HTMLElement>}}
  */
-var ModuleHandler;
+let ModuleHandler;
 
 /** @type{ModuleHandler} */
 const createVideoChild = async (blobSrc) => {

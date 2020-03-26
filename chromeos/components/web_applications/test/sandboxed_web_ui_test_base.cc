@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/test/base/js_test_api.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +31,12 @@ class SandboxedWebUiAppTestBase::TestCodeInjector
 
     auto* guest_frame = navigation_handle->GetRenderFrameHost();
 
-    for (const auto& script : owner_->scripts_) {
+    // Inject the JS Test API first (assertEquals, etc).
+    std::vector<base::FilePath> scripts = JsTestApiConfig().default_libraries;
+    scripts.insert(scripts.end(), owner_->scripts_.begin(),
+                   owner_->scripts_.end());
+
+    for (const auto& script : scripts) {
       // Use ExecuteScript(), not ExecJs(), because of Content Security Policy
       // directive: "script-src chrome://resources 'self'"
       ASSERT_TRUE(
@@ -56,7 +62,8 @@ std::string SandboxedWebUiAppTestBase::LoadJsTestLibrary(
     const base::FilePath& script_path) {
   base::FilePath source_root;
   EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
-  const auto full_script_path = source_root.Append(script_path);
+  const auto full_script_path =
+      script_path.IsAbsolute() ? script_path : source_root.Append(script_path);
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string injected_content;

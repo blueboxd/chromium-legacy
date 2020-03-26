@@ -72,7 +72,8 @@ class ReceivedFileList {
     // don't break older versions of the media app which uses item(0) instead
     // of getCurrentlyWritable()
     // TODO(b/151880563): remove this.
-    let {files, writableFileIndex} = filesMessage;
+    let writableFileIndex = filesMessage.writableFileIndex;
+    const files = filesMessage.files;
     while (writableFileIndex > 0) {
       files.push(files.shift());
       writableFileIndex--;
@@ -102,7 +103,7 @@ class ReceivedFileList {
 parentMessagePipe.registerHandler(Message.LOAD_FILES, (message) => {
   const filesMessage = /** @type{!LoadFilesMessage} */ (message);
   loadFiles(new ReceivedFileList(filesMessage));
-})
+});
 
 /**
  * A delegate which exposes privileged WebUI functionality to the media

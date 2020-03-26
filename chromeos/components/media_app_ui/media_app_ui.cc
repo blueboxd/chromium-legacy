@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/url_constants.h"
 
 namespace chromeos {
 namespace {
@@ -51,12 +52,16 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   content::WebUIDataSource* host_source = CreateHostDataSource();
   content::WebUIDataSource::Add(browser_context, host_source);
 
-  // Whilst the guest is in an <iframe> rather than a <webview>, we need a CSP
-  // override to use the guest origin in the host.
-  // TODO(crbug/996088): Remove these overrides when there's a new sandboxing
-  // option for the guest.
+  // The guest is in an <iframe>. Add it to CSP.
   std::string csp = std::string("frame-src ") + kChromeUIMediaAppGuestURL + ";";
   host_source->OverrideContentSecurityPolicyChildSrc(csp);
+
+  content::WebUIDataSource* untrusted_source =
+      CreateMediaAppUntrustedDataSource();
+  content::WebUIDataSource::Add(browser_context, untrusted_source);
+
+  // Add ability to request chrome-untrusted: URLs.
+  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 }
 
 MediaAppUI::~MediaAppUI() = default;

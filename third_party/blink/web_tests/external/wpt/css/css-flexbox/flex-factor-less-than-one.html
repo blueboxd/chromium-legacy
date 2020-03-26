@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<link href="resources/flexbox.css" rel="stylesheet">
+<title>CSS Flexbox: flex factors less than one</title>
+<link href="support/flexbox.css" rel="stylesheet">
+<link rel="help" href="https://www.w3.org/TR/css-flexbox-1/#propdef-flex-grow">
+<link rel="help" href="https://www.w3.org/TR/css-flexbox-1/#propdef-flex-shrink">
+<meta name="assert" content="flex-grow and flex-shrink factors less than 1 work">
 <style>
 
 html, body {
@@ -58,9 +62,9 @@ html, body {
   writing-mode: vertical-rl;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox');">
 <div id=log></div>
 
@@ -92,7 +96,7 @@ html, body {
   <div class="child-flex-grow-0-5 basis" data-expected-width="50"></div>
   <div class="child-flex-grow-0-25 basis" data-expected-width="40"></div>
  </div>
- 
+
 <div class="flexbox container column">
   <div class="child-flex-grow-0-5 basis" data-expected-height="50"></div>
   <div class="child-flex-grow-0-25 basis" data-expected-height="40"></div>
@@ -137,7 +141,6 @@ html, body {
   <div class="child-flex-shrink-0-5 basis-big" data-expected-width="50"></div>
   <div class="child-flex-shrink-0-25 basis-big" data-expected-width="75"></div>
  </div>
- 
 <div class="flexbox container column">
   <div class="child-flex-shrink-0-5 basis-big" data-expected-height="50"></div>
   <div class="child-flex-shrink-0-25 basis-big" data-expected-height="75"></div>
